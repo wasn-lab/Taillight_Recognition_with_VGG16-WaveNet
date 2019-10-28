@@ -17,7 +17,6 @@ gmon.out
 *.weights
 *.weight
 *.engine
-*.table
 *.aarch64
 *.dgpu
 *.npy
