@@ -1,0 +1,36 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- TPP input source -->
+  <!-- 1: /LidarDetection -->
+  <!-- 2: /RadarDetection -->
+  <!-- 3: /DetectedObjectArray/cam60_1 -->
+  <!-- otherwise: /SensorFusion -->
+  <rosparam param="input_source">0</rosparam>
+
+  <!-- TPP input/output FPS -->
+  <rosparam param="input_fps">10</rosparam>
+  <rosparam param="output_fps">10</rosparam>
+
+  <!-- rviz marker lifetime -->
+  <!-- 0: Auto-assign as (1 / output_fps) -->
+  <!-- other value: manually assign -->
+  <rosparam param="m_lifetime_sec">0</rosparam>
+
+  <!-- rviz markers -->
+  <rosparam param="gen_markers">1</rosparam>
+  <rosparam param="show_classid">0</rosparam>
+  <rosparam param="show_tracktime">0</rosparam>
+  <rosparam param="show_source">0</rosparam>
+  <rosparam param="show_distance">0</rosparam>
+  <rosparam param="show_absspeed">0</rosparam>
+  <rosparam param="show_pp">0</rosparam>
+
+  <!-- rviz marker color -->
+  <rosparam param="color_lidar_tpp">[0., 1., 1., 1.]</rosparam>
+  <rosparam param="color_radar_tpp">[0.5, 0., 0., 1.]</rosparam>
+  <rosparam param="color_camera_tpp">[0.5, 0.5f, 0.5, 1.]</rosparam>
+  <rosparam param="color_fusion_tpp">[0., 1., 1., 1.]</rosparam>
+
+  <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" />
+</launch>

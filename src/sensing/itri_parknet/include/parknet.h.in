@@ -1,0 +1,33 @@
+#ifndef __PARKNET_H__
+#define __PARKNET_H__
+
+#define USE(FEATURE) (defined USE_##FEATURE  && USE_##FEATURE)
+#cmakedefine01 USE_TENSORRT
+#cmakedefine01 USE_DARKNET
+/*
+Temporarily disable USE_OPENCV_CUDA:
+C++ exception with description "OpenCV(3.4.5) /home/chtseng/openSource/opencv/modules/cudawarping/src/remap.cpp:82: error: (-215:Assertion failed) xmap.type() == CV_32F && ymap.type() == CV_32F && xmap.size() == ymap.size() in function 'remap'
+" thrown in the test body.
+*/
+// #cmakedefine01 USE_OPENCV_CUDA
+
+#cmakedefine PARKNET_CFG_DIR "@PARKNET_CFG_DIR@"
+#cmakedefine PARKNET_TEST_DATA_DIR "@PARKNET_TEST_DATA_DIR@"
+
+#define TENSORRT_VERSION_MAJOR @TensorRT_VERSION_MAJOR@
+#define TENSORRT_VERSION_MINOR @TensorRT_VERSION_MINOR@
+#define TENSORRT_VERSION_PATCH @TensorRT_VERSION_PATCH@
+
+// Default Yolo files
+#cmakedefine NETWORK_CFG_FILE "@NETWORK_CFG_FILE@"
+#cmakedefine NETWORK_WEIGHTS_FILE "@NETWORK_WEIGHTS_FILE@"
+#cmakedefine OBJECT_NAMES_FILE "@OBJECT_NAMES_FILE@"
+
+// Yolo V3 files
+#cmakedefine YOLOV3_NETWORK_CFG_FILE "@YOLOV3_NETWORK_CFG_FILE@"
+#cmakedefine YOLOV3_NETWORK_WEIGHTS_FILE "@YOLOV3_NETWORK_WEIGHTS_FILE@"
+#cmakedefine YOLOV3_OBJECT_NAMES_FILE "@YOLOV3_OBJECT_NAMES_FILE@"
+
+#cmakedefine TINY_YOLOV3_NETWORK_CFG_FILE "@TINY_YOLOV3_NETWORK_CFG_FILE@"
+#cmakedefine TINY_YOLOV3_NETWORK_WEIGHTS_FILE "@TINY_YOLOV3_NETWORK_WEIGHTS_FILE@"
+#endif // __PARKNET_H__

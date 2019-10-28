@@ -1,0 +1,27 @@
+%YAML:1.0
+---
+image_width: 1920
+image_height: 1208
+camera_name: sf3324
+camera_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [9.9253622898740832e+02, 0., 9.5916633833022922e+02, 0.,
+       9.8600377288243430e+02, 6.8182276394178507e+02, 0., 0., 1.]
+distortion_model: plumb_bob
+distortion_coefficients: !!opencv-matrix
+  rows: 1
+  cols: 5
+  dt: d
+  data: [-3.2199919729588672e-01, 1.1376000462818936e-01,
+       -3.8716575061329616e-03, -4.8476885671780662e-04,
+       -1.9913829385261022e-02]
+rectification_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix: !!opencv-matrix
+  rows: 3
+  cols: 4
+  data: [837.4457, 0.000000, 970.319, 0.000000, 0.000000, 923.037, 674.3, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]

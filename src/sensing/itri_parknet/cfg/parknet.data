@@ -1,0 +1,7 @@
+classes= 1
+train  = /home/chtseng/temp/parknet/dataset_march/train.txt
+valid  = /home/chtseng/temp/parknet/dataset_march/valid.txt
+#valid = data/coco_val_5k.list
+names = parknet.names
+backup = backup/
+

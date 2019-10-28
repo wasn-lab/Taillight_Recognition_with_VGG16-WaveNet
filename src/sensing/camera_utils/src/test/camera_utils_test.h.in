@@ -1,0 +1,7 @@
+#ifndef __CAMERA_UTILS_TEST_H__
+#define __CAMERA_UTILS_TEST_H__
+
+#cmakedefine CAMERA_UTILS_TEST_DATA_DIR "@CAMERA_UTILS_TEST_DATA_DIR@"
+#define NUM_PERF_LOOPS (100)
+
+#endif // __CAMERA_UTILS_TEST_H__

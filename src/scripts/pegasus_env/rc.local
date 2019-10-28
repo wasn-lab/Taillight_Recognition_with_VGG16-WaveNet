@@ -1,0 +1,9 @@
+mkdir -p /var/run/ssh
+mkdir -p /var/run/screen
+chmod 775 /var/run/screen
+
+killall ptp4l
+killall phc2sys
+service ntp stop
+timedatectl set-ntp false
+ntpdate pool.ntp.org

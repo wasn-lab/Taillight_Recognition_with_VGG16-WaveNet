@@ -1,0 +1,17 @@
+<launch>
+  <node name="parknet"
+    pkg="pslot_detector"
+    type="pslot_detector"
+    output="screen"
+    launch-prefix="gdb -ex run --args "
+    args="-camera_port=b
+          -publish_detection_results=true
+          -front_120_sx_compensation=0
+          -left_120_sx_compensation=0
+          -right_120_sx_compensation=0.4
+          -front_120_sy_compensation=0
+          -left_120_sy_compensation=0
+          -right_120_sy_compensation=0
+          -display_gui=true"
+  />
+</launch>

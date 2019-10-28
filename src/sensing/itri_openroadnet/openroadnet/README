@@ -1,0 +1,2 @@
+sudo pip3 install rospkg, ipython, ipywidgets, matplotlib, python3-tk
+mv /opt/ros/kinetic/lib/python2.7/dist-packages/cv2.so /opt/ros/kinetic/lib/python2.7/dist-packages/cv2.so.1

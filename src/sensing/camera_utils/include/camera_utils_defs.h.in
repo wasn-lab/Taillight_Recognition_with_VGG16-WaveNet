@@ -1,0 +1,6 @@
+#ifndef __CAMERA_UTILS_DEFS_H__
+#define __CAMERA_UTILS_DEFS_H__
+
+#cmakedefine CAMERA_UTILS_DATA_DIR "@CAMERA_UTILS_DATA_DIR@"
+
+#endif  // __CAMERA_UTILS_DEFS_H__

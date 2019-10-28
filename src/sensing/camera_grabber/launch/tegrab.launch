@@ -1,0 +1,13 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <node name="camera_b_grabber"
+    pkg="camera_grabber"
+    type="camera_grabber_node"
+    args="
+    -mode b
+    -expected_fps 20
+    "
+    output="screen"
+  />
+</launch>

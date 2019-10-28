@@ -1,0 +1,6 @@
+#ifndef __DARKNET_CONFIG_H__
+#define __DARKNET_CONFIG_H__
+
+#define DATA_LABELS_DIR "@DATA_LABELS_DIR@"
+
+#endif

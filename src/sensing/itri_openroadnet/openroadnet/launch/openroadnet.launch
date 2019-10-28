@@ -1,0 +1,9 @@
+<launch>
+        # Node
+        <node name="openroadnet" pkg="openroadnet" type="openroadnet" output="screen">
+                #<param name="standard_fps" type="int" value="0" />
+                #<param name="display" type="bool" value="true" />
+        </node>
+
+</launch>
+
