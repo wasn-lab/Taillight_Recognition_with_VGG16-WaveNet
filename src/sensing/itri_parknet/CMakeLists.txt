@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(pslot_detector)
+project(itri_parknet)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)

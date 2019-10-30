@@ -10,6 +10,6 @@ cd $repo_dir/build
 make camera_utils_test
 ../devel/lib/camera_utils/camera_utils_test
 make parknet_test
-../devel/lib/pslot_detector/parknet_test
+../devel/lib/itri_parknet/parknet_test
 
 cd -
