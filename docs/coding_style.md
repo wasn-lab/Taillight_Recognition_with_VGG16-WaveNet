@@ -1,3 +1,12 @@
+# Quick guideline.
+
+在 repository 的根目錄下有一個檔案 .clang-format，裡面是有關code formating的規則，
+您可先安裝clang-format套件，然後使用
+```
+clang-format -i your_code.cpp
+```
+來格式化程式碼。
+
 # Coding style guideline
 
 Coding style 是軟體開發時一個重要的工作，根據經驗，看程式碼的時間會遠比寫程式碼的時間來得長，一份乾淨、風格一致的程式碼可以讓人在無形中省去理解上的難度，也使之更容易維護和除錯。

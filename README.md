@@ -9,3 +9,8 @@ This repository contains the source codes of self-driving car maintained by ITRI
 ### How to build
 
 catkin_make
+
+### Developers Guide
+
+1. [How to commit code](docs/commit_code.md)
+1. [Coding style](docs/coding_style.md)
