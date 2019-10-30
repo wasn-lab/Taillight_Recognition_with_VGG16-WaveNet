@@ -6,27 +6,34 @@
 #ifndef __CAMERA_PARAMS_H__
 #define __CAMERA_PARAMS_H__
 #include <cmath>
+#include <string>
 
 namespace camera
 {
 enum id
 {
-  dummy = 0,
-  begin = 1,
-  left_60 = begin,
-  front_60,
-  right_60,
-  left_120,
-  front_120,
-  right_120,
-  left_30,
-  front_30,
-  right_30,
-  num_cams = right_30,
+  begin = 0,
+  left_60 = begin,  // 0
+  front_60,         // 1
+  right_60,         // 2
+  _dummy1,          // 3
+  left_120,         // 4
+  front_120,        // 5
+  right_120,        // 6
+  _dummy2,          // 7
+  left_30,          // 8
+  front_30,         // 9
+  right_30,         // 10
+  _dummy3,          // 11
+  num_ids           // 12
 };
-static_assert(id::begin == 1, "The first camera id is 1");
-static_assert(id::left_60 == 1, "The camera id 1 is also left_60");
-static_assert(id::num_cams == 9, "The number of cameras is 9");
+
+static_assert(id::begin == 0, "The first camera id is 1");
+static_assert(id::left_60 == 0, "The camera id 0 is also left_60");
+static_assert(id::num_ids == 12, "The number of ids is 12");
+
+extern const std::string names[id::num_ids];
+extern const std::string topics[id::num_ids];
 
 constexpr int raw_image_width = 1920;
 constexpr int raw_image_height = 1208;
