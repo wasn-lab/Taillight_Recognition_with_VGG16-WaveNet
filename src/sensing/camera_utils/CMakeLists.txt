@@ -38,6 +38,7 @@ endif ()
 
 set(CAMERA_UTILS_SOURCES
   src/camera_utils.cpp
+  src/camera_params.cpp
   src/camera_distance_mapper.cpp
   src/imu_distance.cpp
   src/imu_utils.cpp
