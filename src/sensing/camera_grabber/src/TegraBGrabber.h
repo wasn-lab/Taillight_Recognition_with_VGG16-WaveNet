@@ -31,7 +31,6 @@ private:
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
-  
 };
 }
 

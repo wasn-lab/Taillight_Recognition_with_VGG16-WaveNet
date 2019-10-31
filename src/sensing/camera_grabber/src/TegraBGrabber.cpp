@@ -7,10 +7,13 @@ namespace SensingSubSystem
 /// Class TegraBGrabber
 ///
 TegraBGrabber::TegraBGrabber()
-  : grabber(nullptr), npp8u_ptrs_distorted_(3)
-  , npp8u_ptrs_(3), ros_image(n), canvas(3)
-  , remapper_(camera::raw_image_height, camera::raw_image_width)
+  : canvas(3)
+  , grabber(nullptr)
+  , npp8u_ptrs_(3)
+  , npp8u_ptrs_distorted_(3)
   , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , remapper_(camera::raw_image_height, camera::raw_image_width)
+  , ros_image(n)
 {
   InitParameters();
 }
@@ -78,7 +81,7 @@ bool TegraBGrabber::runPerception()
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
     // start image processing
-    for (int i =0 ; i < image_num.size(); i++)
+    for (size_t i =0 ; i < image_num.size(); i++)
     {
         npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(
             camera_buffer_.cams_ptr->frames_GPU[image_num[i]]), camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[i]);

@@ -7,9 +7,12 @@ namespace SensingSubSystem
 /// Class TegraAGrabber
 ///
 TegraAGrabber::TegraAGrabber()
-  : display_(&camera_buffer_), grabber(nullptr)
-  , npp8u_ptrs_(6), ros_image(n), canvas(6)
+  : canvas(6)
+  , display_(&camera_buffer_)
+  , grabber(nullptr)
+  , npp8u_ptrs_(6)
   , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , ros_image(n)
 {
   InitParameters();
 }
