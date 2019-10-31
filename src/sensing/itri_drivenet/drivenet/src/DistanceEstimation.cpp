@@ -159,6 +159,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     
     return distance;
 }
+
 float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h)
 {
     float distance = -1;
@@ -219,6 +220,68 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
     
     return distance; 
 }
+
+float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h)
+{
+    float distance = -1;
+    float unitLength = 0.0;
+    int bias = 0;
+    float offset = 0.0;
+
+    std::vector<int> regionHeight_new = regionHeight;
+    
+    // std::cout << "piexl_loc_x: " << piexl_loc_x <<  ", piexl_loc_y: " << piexl_loc_y << std::endl;
+    for (int i = 0; i < regionHeight.size(); i++)
+    {
+        int y = img_h - piexl_loc_x;
+        if (regionHeightSlope_y[i] !=0)
+            regionHeight_new[i] = regionHeight[i] + int((1/regionHeightSlope_y[i])*y);
+        else 
+            regionHeight_new[i] = regionHeight[i];
+        // printf("region[%d], region:%d, new region:%d, \n ", i, regionHeight[i], regionHeight_new[i]);
+    }
+
+    for (int i = 1; i < regionHeight_new.size(); i++)
+    {
+        if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i-1])  
+        {
+            int regionpixel = regionHeight_new[i-1] - regionHeight_new[i];
+            int regionMeter = regionDist[i]  - regionDist[i-1];
+            if (regionpixel != 0)
+                unitLength = float(regionMeter)/float(regionpixel);
+            bias = piexl_loc_y - regionHeight_new[i];
+            offset = unitLength * float(bias);
+            distance = regionDist[i] - offset;
+            // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
+            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i], unitLength, bias, offset);
+        }
+        else if (piexl_loc_y <= regionHeight_new[i] && piexl_loc_y >= regionHeight_new[i-1])  
+        {
+            int regionpixel = regionHeight_new[i] - regionHeight_new[i-1];
+            int regionMeter = regionDist[i] - regionDist[i-1];
+            if (regionpixel != 0)
+                unitLength = float(regionMeter)/float(regionpixel);
+            bias = regionHeight_new[i] - piexl_loc_y;
+            offset = unitLength * float(bias);
+            distance = regionDist[i] - offset;
+            // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
+            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i], unitLength, bias, offset);
+        }
+        else
+        {
+            if (piexl_loc_y < regionHeight_new[0])
+                distance = 8;
+            else if(piexl_loc_y > regionHeight_new[regionHeight_new.size()-1])
+                distance = -8;
+        }
+    }  
+    
+    int multiplier = pow(10, 2);
+    distance = int(distance * multiplier) / (multiplier*1.0); 
+    
+    return distance; 
+}
+
 int CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1, cv::Point LeftLinePoint2, int object_x1, int object_y2)
 {
     int point0 = 0;
