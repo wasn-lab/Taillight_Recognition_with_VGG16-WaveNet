@@ -1,29 +1,28 @@
 #include "TegraAGrabber.h"
 #include "grabber_args_parser.h"
+#include "camera_params.h"
 
 namespace SensingSubSystem
 {
 ///
 /// Class TegraAGrabber
 ///
-TegraAGrabber::TegraAGrabber()
-  : canvas(6)
-  , display_(&camera_buffer_)
-  , grabber(nullptr)
-  , npp8u_ptrs_(6)
-  , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
-  , ros_image(n)
-{
-  InitParameters();
+  TegraAGrabber::TegraAGrabber()
+    : cam_ids_({ camera::id::left_60, camera::id::front_60, camera::id::right_60, camera::id::left_30,
+                 camera::id::front_30, camera::id::right_30 })
+    , canvas(cam_ids_.size())
+    , display_(&camera_buffer_)
+    , grabber(nullptr)
+    , npp8u_ptrs_(cam_ids_.size())
+    , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+    , ros_image(n)
+  {
+    InitParameters();
 }
 
 void TegraAGrabber::InitParameters()
 {
-  std::vector<size_t> _image_num{ 0, 1, 2, 8, 9, 10 };
-
-  image_num = _image_num;
-
-  for (int i = 0; i < 6; i++)
+  for (size_t i = 0; i < cam_ids_.size(); i++)
   {
     int dummy;
     npp8u_ptrs_[i] = nppiMalloc_8u_C3(camera::raw_image_width, camera::raw_image_height, &dummy);
@@ -45,9 +44,9 @@ TegraAGrabber::~TegraAGrabber()
 
 void TegraAGrabber::initializeModules()
 {
-  for (size_t i = 0; i < image_num.size(); ++i)
+  for (size_t i = 0; i < cam_ids_.size(); ++i)
   {
-    ros_image.add_a_pub(image_num[i], "gmsl_camera/" + std::to_string(image_num[i]));
+    ros_image.add_a_pub(cam_ids_[i], "gmsl_camera/" + std::to_string(cam_ids_[i]));
   }
 
   grabber = new MultiGMSLCameraGrabber("011100000111");
@@ -116,9 +115,9 @@ bool TegraAGrabber::runPerception()
 	// return camera grabber
     grabber->returnCameraFrame();
 
-    for (size_t i = 0; i < image_num.size(); ++i)
+    for (size_t i = 0; i < cam_ids_.size(); ++i)
     {
-      ros_image.send_image_rgb(image_num[i], canvas[i]);
+      ros_image.send_image_rgb(cam_ids_[i], canvas[i]);
     }
 
     loop_rate.sleep();
