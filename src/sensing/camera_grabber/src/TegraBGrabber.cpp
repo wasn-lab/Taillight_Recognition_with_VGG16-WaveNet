@@ -47,7 +47,8 @@ void TegraBGrabber::initializeModules()
 {
     for (size_t i = 0; i < cam_ids_.size(); ++i)
     {
-        ros_image.add_a_pub(cam_ids_[i], "gmsl_camera/" + std::to_string(cam_ids_[i]));
+        const int cam_id = cam_ids_[i];
+        ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
     }
     
     grabber = new MultiGMSLCameraGrabber("000001110000");
