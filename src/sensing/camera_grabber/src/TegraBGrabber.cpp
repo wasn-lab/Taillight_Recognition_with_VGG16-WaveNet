@@ -77,6 +77,13 @@ bool TegraBGrabber::runPerception()
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[6], grabber->getCurrentFrameData(6),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[8], grabber->getCurrentFrameData(8),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[9], grabber->getCurrentFrameData(9),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[10], grabber->getCurrentFrameData(10),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+
     // start image processing
     for (size_t i = 0; i < cam_ids_.size(); i++)
     {
