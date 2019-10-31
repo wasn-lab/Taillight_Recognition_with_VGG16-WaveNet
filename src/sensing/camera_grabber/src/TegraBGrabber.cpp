@@ -7,8 +7,8 @@ namespace SensingSubSystem
 /// Class TegraBGrabber
 ///
 TegraBGrabber::TegraBGrabber()
-  : grabber(nullptr), npp8u_ptrs_distorted_(3)
-  , npp8u_ptrs_(3), ros_image(n), canvas(3)
+  : grabber(nullptr), npp8u_ptrs_distorted_(6)
+  , npp8u_ptrs_(6), ros_image(n), canvas(6)
   , remapper_(camera::raw_image_height, camera::raw_image_width)
   , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
 {
@@ -17,12 +17,12 @@ TegraBGrabber::TegraBGrabber()
 
 void TegraBGrabber::InitParameters()
 {
-    std::vector<size_t> _image_num{ 4, 5, 6 };
+    std::vector<size_t> _image_num{ 4, 5, 6 , 8, 9, 10};
     
     image_num = _image_num;
     
     int dummy;
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 6; i++)
     {
         npp8u_ptrs_[i] = nppiMalloc_8u_C3(camera::raw_image_width, camera::raw_image_height, &dummy);
         npp8u_ptrs_distorted_[i] = nppiMalloc_8u_C3(camera::raw_image_cols, camera::raw_image_rows, &dummy);
@@ -36,7 +36,7 @@ TegraBGrabber::~TegraBGrabber()
         delete grabber;
         printf("grabber DELETED OK!\n");
     }
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 6; i++)
     {
         nppiFree(npp8u_ptrs_[i]);
         nppiFree(npp8u_ptrs_distorted_[i]);
@@ -50,7 +50,7 @@ void TegraBGrabber::initializeModules()
         ros_image.add_a_pub(image_num[i], "gmsl_camera/" + std::to_string(image_num[i]));
     }
     
-    grabber = new MultiGMSLCameraGrabber("000001110000");
+    grabber = new MultiGMSLCameraGrabber("000001110111");
     grabber->initializeCameras();
     camera_buffer_.initBuffer();
     
@@ -75,6 +75,13 @@ bool TegraBGrabber::runPerception()
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[5], grabber->getCurrentFrameData(5),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[6], grabber->getCurrentFrameData(6),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[8], grabber->getCurrentFrameData(8),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[9], grabber->getCurrentFrameData(9),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[10], grabber->getCurrentFrameData(10),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
     // start image processing
