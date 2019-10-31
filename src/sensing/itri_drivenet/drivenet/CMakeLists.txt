@@ -21,9 +21,6 @@ message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES drivenet
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
 )
 
 set(LIBS drivenet_lib
@@ -51,13 +48,12 @@ message(STATUS "DRIVENETLIB_INCLUDE: ${DRIVENETLIB_INCLUDE}")
 link_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CUDA_LIBRARY_DIRS}
-  ${TrtYolo_LIBRARY_DIRS}
   ${OpenCV_LIBRARY_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/drivenet_60_3.cpp  src/trt_yolo_interface.cpp  src/DistanceEstimation.cpp)
-add_executable(${PROJECT_NAME}_node1 src/drivenet_120_3.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation.cpp)
-add_executable(${PROJECT_NAME}_node2 src/drivenet_30_3.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation.cpp)
+add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/DistanceEstimation_b1.cpp)
+add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation_b1.cpp)
+add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation_b1.cpp)
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

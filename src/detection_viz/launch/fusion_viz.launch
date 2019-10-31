@@ -88,26 +88,10 @@
       <param name="blue"  value="0.0"/>
   </node>
   ?>
-
-  <!-- Camera 30 ******************************************************************************** -->
-  <node name="m_Detect_cam30" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
-      <param name="topic" value="/DetectedObjectArray/cam30"/>
-      <param name="red"   value="1.0"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
-  </node>
   
   <!-- Camera 60 ******************************************************************************** -->
-  <node name="m_Detect_cam60" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
-      <param name="topic" value="/DetectedObjectArray/cam60"/>
-      <param name="red"   value="1.0"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
-  </node>
-  
-  <!-- Camera 120 ******************************************************************************* -->
-  <node name="m_Detect_cam120" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
-      <param name="topic" value="/DetectedObjectArray/cam120"/>
+  <node name="m_Detect_cam60FC" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjFrontCenter"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
