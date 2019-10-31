@@ -1,0 +1,8 @@
+<!-- -->
+<launch>
+  <include file="$(find map_pub)/launch/map_pub.launch"></include>
+
+  <node pkg="localization" type="localization_node" name="localization" output="screen"></node>
+
+</launch>
+
