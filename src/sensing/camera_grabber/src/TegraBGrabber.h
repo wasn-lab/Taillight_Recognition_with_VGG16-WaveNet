@@ -15,7 +15,7 @@ public:
 
 protected:
   void InitParameters();
-  std::vector<size_t> image_num;
+  std::vector<int> cam_ids_;
   std::vector<cv::Mat> canvas;
 
   BufferConfig camera_buffer_;
@@ -31,7 +31,6 @@ private:
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
-  
 };
 }
 

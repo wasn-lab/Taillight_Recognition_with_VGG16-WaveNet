@@ -1,5 +1,6 @@
 #include "TegraAGrabber.h"
 #include "grabber_args_parser.h"
+#include "camera_params.h"
 
 namespace SensingSubSystem
 {
@@ -7,20 +8,21 @@ namespace SensingSubSystem
 /// Class TegraAGrabber
 ///
 TegraAGrabber::TegraAGrabber()
-  : display_(&camera_buffer_), grabber(nullptr)
-  , npp8u_ptrs_(3), ros_image(n), canvas(3)
+  : cam_ids_({ camera::id::left_60, camera::id::front_60, camera::id::right_60, camera::id::left_30,
+               camera::id::front_30, camera::id::right_30 })
+  , canvas(cam_ids_.size())
+  , display_(&camera_buffer_)
+  , grabber(nullptr)
+  , npp8u_ptrs_(cam_ids_.size())
   , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , ros_image(n)
 {
   InitParameters();
 }
 
 void TegraAGrabber::InitParameters()
 {
-  std::vector<size_t> _image_num{ 0, 1, 2};
-
-  image_num = _image_num;
-
-  for (int i = 0; i < 3; i++)
+  for (size_t i = 0; i < cam_ids_.size(); i++)
   {
     int dummy;
     npp8u_ptrs_[i] = nppiMalloc_8u_C3(camera::raw_image_width, camera::raw_image_height, &dummy);
@@ -42,9 +44,10 @@ TegraAGrabber::~TegraAGrabber()
 
 void TegraAGrabber::initializeModules()
 {
-  for (size_t i = 0; i < image_num.size(); ++i)
+  for (size_t i = 0; i < cam_ids_.size(); ++i)
   {
-    ros_image.add_a_pub(image_num[i], "gmsl_camera/" + std::to_string(image_num[i]));
+    const int cam_id = cam_ids_[i];
+    ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
   }
 
   grabber = new MultiGMSLCameraGrabber("011100000000");
@@ -56,7 +59,6 @@ void TegraAGrabber::initializeModules()
 
 bool TegraAGrabber::runPerception()
 {
-  
   auto fps = SensingSubSystem::get_expected_fps();
   ros::Rate loop_rate(fps);
 
@@ -75,8 +77,15 @@ bool TegraAGrabber::runPerception()
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(2),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
-	// start image processing
-	
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[8], grabber->getCurrentFrameData(8),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[9], grabber->getCurrentFrameData(9),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[10], grabber->getCurrentFrameData(10),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+
+    // start image processing
+
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[0]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[0]);
     resizer_.resize(npp8u_ptrs_[0], canvas[0]);
@@ -89,14 +98,26 @@ bool TegraAGrabber::runPerception()
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
     resizer_.resize(npp8u_ptrs_[2], canvas[2]);
 
-	// end image processing
+    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[8]),
+                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[3]);
+    resizer_.resize(npp8u_ptrs_[3], canvas[3]);
 
-	// return camera grabber
+    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[9]),
+                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[4]);
+    resizer_.resize(npp8u_ptrs_[4], canvas[4]);
+
+    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[10]),
+                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[5]);
+    resizer_.resize(npp8u_ptrs_[5], canvas[5]);
+
+    // end image processing
+
+    // return camera grabber
     grabber->returnCameraFrame();
 
-    for (size_t i = 0; i < image_num.size(); ++i)
+    for (size_t i = 0; i < cam_ids_.size(); ++i)
     {
-      ros_image.send_image_rgb(image_num[i], canvas[i]);
+      ros_image.send_image_rgb(cam_ids_[i], canvas[i]);
     }
 
     loop_rate.sleep();
