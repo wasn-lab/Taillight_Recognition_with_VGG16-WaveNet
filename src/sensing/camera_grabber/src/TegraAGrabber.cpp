@@ -7,17 +7,17 @@ namespace SensingSubSystem
 ///
 /// Class TegraAGrabber
 ///
-  TegraAGrabber::TegraAGrabber()
-    : cam_ids_({ camera::id::left_60, camera::id::front_60, camera::id::right_60, camera::id::left_30,
-                 camera::id::front_30, camera::id::right_30 })
-    , canvas(cam_ids_.size())
-    , display_(&camera_buffer_)
-    , grabber(nullptr)
-    , npp8u_ptrs_(cam_ids_.size())
-    , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
-    , ros_image(n)
-  {
-    InitParameters();
+TegraAGrabber::TegraAGrabber()
+  : cam_ids_({ camera::id::left_60, camera::id::front_60, camera::id::right_60, camera::id::left_30,
+               camera::id::front_30, camera::id::right_30 })
+  , canvas(cam_ids_.size())
+  , display_(&camera_buffer_)
+  , grabber(nullptr)
+  , npp8u_ptrs_(cam_ids_.size())
+  , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , ros_image(n)
+{
+  InitParameters();
 }
 
 void TegraAGrabber::InitParameters()
@@ -59,7 +59,6 @@ void TegraAGrabber::initializeModules()
 
 bool TegraAGrabber::runPerception()
 {
-  
   auto fps = SensingSubSystem::get_expected_fps();
   ros::Rate loop_rate(fps);
 
@@ -77,7 +76,7 @@ bool TegraAGrabber::runPerception()
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(2),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
-    
+
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[8], grabber->getCurrentFrameData(8),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[9], grabber->getCurrentFrameData(9),
@@ -85,8 +84,8 @@ bool TegraAGrabber::runPerception()
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[10], grabber->getCurrentFrameData(10),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
-	// start image processing
-	
+    // start image processing
+
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[0]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[0]);
     resizer_.resize(npp8u_ptrs_[0], canvas[0]);
@@ -111,9 +110,9 @@ bool TegraAGrabber::runPerception()
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[5]);
     resizer_.resize(npp8u_ptrs_[5], canvas[5]);
 
-	// end image processing
+    // end image processing
 
-	// return camera grabber
+    // return camera grabber
     grabber->returnCameraFrame();
 
     for (size_t i = 0; i < cam_ids_.size(); ++i)
