@@ -30,6 +30,7 @@ bool isInferData;
 bool isInferData_0;
 bool isInferData_1;
 bool isInferData_2;
+bool iscompressed = false;
 
 /// launch param
 int car_id = 1;
@@ -220,10 +221,17 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
 
-    cam120_0_topicName = "gmsl_camera/port_b/cam_0";
-    cam120_1_topicName = "gmsl_camera/port_c/cam_2";
-    cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/image_raw/compressed"), 1, callback_120_0_decode);
-    cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/image_raw/compressed"), 1, callback_120_1_decode);
+    cam120_0_topicName = "gmsl_camera/4";
+    cam120_1_topicName = "gmsl_camera/10";
+    
+    if(iscompressed){
+        cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);
+        cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/compressed"), 1, callback_120_1_decode);
+    }
+    else{
+        cam120_0 = nh.subscribe(cam120_0_topicName, 1, callback_120_0);
+        cam120_1 = nh.subscribe(cam120_1_topicName, 1, callback_120_1);        
+    }
     if(imgResult_publish){
         pubImg_120_0 = it.advertise(cam120_0_topicName + std::string("/detect_image"), 1);
         pubImg_120_1 = it.advertise(cam120_1_topicName + std::string("/detect_image"), 1);
