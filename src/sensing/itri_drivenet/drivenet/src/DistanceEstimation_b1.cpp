@@ -8,6 +8,7 @@ void DistanceEstimation::init (int car_id)
     carId = car_id;
     
     regionHeight_60_FC_x = {1207, 1173, 1132, 1101, 1075, 1054, 1038, 1024, 1012, 1002, 993, 986, 979, 972, 967, 945, 836};
+    regionHeightSlope_60_FC_y = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};    
     regionDist_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50}; 
     regionHeightSlope_60_FC_y = {0.2031, 0.2577, 0.3471, 0.6486, 1.4118, -59.5, -1.0636, -0.5938, -0.3786, -0.2682, -0.2347};
     regionHeight_60_FC_y = {-683, -307, 58, 462, 763, 1041, 1361, 1633, 1941, 2285, 2526};
@@ -60,7 +61,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     
     return distance;
 }
-float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h)
+float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel_loc_y, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_x, std::vector<float> regionDist, int img_w)
 {
     float distance = -1;
     float unitLength = 0.0;
@@ -69,12 +70,12 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl
 
     std::vector<int> regionHeight_new = regionHeight;
     
-    // std::cout << "piexl_loc_x: " << piexl_loc_x <<  ", piexl_loc_y: " << piexl_loc_y << std::endl;
+    // std::cout << "pixel_loc_x: " << pixel_loc_x <<  ", pixel_loc_y: " << pixel_loc_y << std::endl;
     for (int i = 0; i < regionHeight.size(); i++)
     {
-        int y = img_h - piexl_loc_x;
-        if (regionHeightSlope_y[i] !=0)
-            regionHeight_new[i] = regionHeight[i] + int((1/regionHeightSlope_y[i])*y);
+        // int y = img_h - pixel_loc_x;
+        if (regionHeightSlope_x[i] != 0)
+            regionHeight_new[i] = regionHeight[i] - int((regionHeightSlope_x[i])*pixel_loc_x);
         else 
             regionHeight_new[i] = regionHeight[i];
         // printf("region[%d], region:%d, new region:%d, \n ", i, regionHeight[i], regionHeight_new[i]);
@@ -82,39 +83,39 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl
 
     for (int i = 1; i < regionHeight_new.size(); i++)
     {
-        if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i-1])  
+        if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i-1])  
         {
             int regionpixel = regionHeight_new[i-1] - regionHeight_new[i];
-            int regionMeter = regionDist[i]  - regionDist[i-1];
+            int regionMeter = regionDist[i] - regionDist[i-1];
             if (regionpixel != 0)
                 unitLength = float(regionMeter)/float(regionpixel);
-            bias = piexl_loc_y - regionHeight_new[i];
+            bias = pixel_loc_y - regionHeight_new[i];
             offset = unitLength * float(bias);
             distance = regionDist[i] - offset;
             // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
-            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i], unitLength, bias, offset);
+            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", pixel_loc_y, regionDist[i], unitLength, bias, offset);
         }
-        else if (piexl_loc_y <= regionHeight_new[i] && piexl_loc_y >= regionHeight_new[i-1])  
+        else if (pixel_loc_y <= regionHeight_new[i] && pixel_loc_y >= regionHeight_new[i-1])  
         {
             int regionpixel = regionHeight_new[i] - regionHeight_new[i-1];
             int regionMeter = regionDist[i] - regionDist[i-1];
             if (regionpixel != 0)
                 unitLength = float(regionMeter)/float(regionpixel);
-            bias = regionHeight_new[i] - piexl_loc_y;
+            bias = regionHeight_new[i] - pixel_loc_y;
             offset = unitLength * float(bias);
             distance = regionDist[i] - offset;
             // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
-            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i], unitLength, bias, offset);
+            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", pixel_loc_y, regionDist[i], unitLength, bias, offset);
         }
         else
         {
-            if (piexl_loc_y < regionHeight_new[0])
+            if (pixel_loc_y < regionHeight_new[0])
                 distance = 8;
-            else if(piexl_loc_y > regionHeight_new[regionHeight_new.size()-1])
+            else if(pixel_loc_y > regionHeight_new[regionHeight_new.size()-1])
                 distance = -8;
         }
-    }  
-    
+    } 
+
     int multiplier = pow(10, 2);
     distance = int(distance * multiplier) / (multiplier*1.0); 
     
@@ -655,6 +656,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     int x_loc = y;
     int y_loc = x;
     int img_h = 1208;
+    int img_w = 1920;
     int mode = 1;
 
     if (cam_id == 2)
@@ -662,6 +664,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeight_x = regionHeight_60_FC_x;
         regionDist_x = regionDist_60_FC_x;
         regionHeight_y = regionHeight_60_FC_y;
+        regionHeightSlope_x = regionHeightSlope_60_FC_x;
         regionHeightSlope_y = regionHeightSlope_60_FC_y;
         regionDist_y = regionDist_60_FC_y;
         offset_x = Lidar_offset_x;
