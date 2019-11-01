@@ -199,7 +199,7 @@ void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_1 = cv_ptr->image;
-    calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
     if(!isInferData_1)  sync_inference(1, 6, h, &mat120_1, &vBBX120_1);
@@ -210,7 +210,7 @@ void callback_120_2(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_2 = cv_ptr->image;
-    calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
     if(!isInferData_2) sync_inference(2, 7, h, &mat120_2, &vBBX120_2);
@@ -221,38 +221,38 @@ void callback_120_3(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_3 = cv_ptr->image;
-    calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_3) sync_inference(3, 8, h, &mat120_3_rect, &vBBX120_3);
+    if(!isInferData_3) sync_inference(3, 8, h, &mat120_3, &vBBX120_3);
 }
 
 void callback_120_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_0);
-    calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_0) sync_inference(0, 5, compressImg.header, &mat120_0_rect, &vBBX120_0);
+    if(!isInferData_0) sync_inference(0, 5, compressImg.header, &mat120_0, &vBBX120_0);
 }
 
 void callback_120_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_1);
-    calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_1)  sync_inference(1, 6, compressImg.header, &mat120_1_rect, &vBBX120_1);
+    if(!isInferData_1)  sync_inference(1, 6, compressImg.header, &mat120_1, &vBBX120_1);
 }
 
 void callback_120_2_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_2);
-    calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_2)  sync_inference(2, 7, compressImg.header, &mat120_2_rect, &vBBX120_2);
+    if(!isInferData_2)  sync_inference(2, 7, compressImg.header, &mat120_2, &vBBX120_2);
 }
 
 void callback_120_3_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_3);
-    calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_3)  sync_inference(3, 8, compressImg.header, &mat120_3_rect, &vBBX120_3);
+    if(!isInferData_3)  sync_inference(3, 8, compressImg.header, &mat120_3, &vBBX120_3);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
