@@ -31,6 +31,7 @@ bool isInferData_0;
 bool isInferData_1;
 bool isInferData_2;
 bool isInferData_3;
+bool iscompressed = false;
 
 /// launch param
 int car_id = 1;
@@ -284,15 +285,24 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam120_0_topicName = "gmsl_camera/port_b/cam_1";
-    cam120_1_topicName = "gmsl_camera/port_b/cam_2";
-    cam120_2_topicName = "gmsl_camera/port_c/cam_0";
-    cam120_3_topicName = "gmsl_camera/port_c/cam_1";
+    cam120_0_topicName = "gmsl_camera/5";
+    cam120_1_topicName = "gmsl_camera/6";
+    cam120_2_topicName = "gmsl_camera/8";
+    cam120_3_topicName = "gmsl_camera/9";
 
-    cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/image_raw/compressed"), 1, callback_120_0_decode);
-    cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/image_raw/compressed"), 1, callback_120_1_decode);
-    cam120_2 = nh.subscribe(cam120_2_topicName + std::string("/image_raw/compressed"), 1, callback_120_2_decode);
-    cam120_3 = nh.subscribe(cam120_3_topicName + std::string("/image_raw/compressed"), 1, callback_120_3_decode);
+    if(iscompressed){
+        cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);
+        cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/compressed"), 1, callback_120_1_decode);
+        cam120_2 = nh.subscribe(cam120_2_topicName + std::string("/compressed"), 1, callback_120_2_decode);
+        cam120_3 = nh.subscribe(cam120_3_topicName + std::string("/compressed"), 1, callback_120_3_decode);
+    }
+    else{
+        cam120_0 = nh.subscribe(cam120_0_topicName, 1, callback_120_0);
+        cam120_1 = nh.subscribe(cam120_1_topicName, 1, callback_120_1);
+        cam120_2 = nh.subscribe(cam120_2_topicName, 1, callback_120_2);
+        cam120_3 = nh.subscribe(cam120_3_topicName, 1, callback_120_3);        
+    }
+
 
     if(imgResult_publish){
         pubImg_120_0 = it.advertise(cam120_0_topicName + std::string("/detect_image"), 1);
@@ -643,10 +653,10 @@ std::cout << "run_inference close" << std::endl;
 
 void* run_display(void* ){
     std::cout << "run_display start" << std::endl;
-    cv::namedWindow("RightFront-120", CV_WINDOW_NORMAL);
-    cv::namedWindow("RightBack-120", CV_WINDOW_NORMAL);    
     cv::namedWindow("LeftFront-120", CV_WINDOW_NORMAL);
     cv::namedWindow("LeftBack-120", CV_WINDOW_NORMAL);
+    cv::namedWindow("RightFront-120", CV_WINDOW_NORMAL);
+    cv::namedWindow("RightBack-120", CV_WINDOW_NORMAL);    
 
     int marker_h = 0;
     marker_h = 590;  
@@ -666,10 +676,10 @@ void* run_display(void* ){
         {
             cv::line(mat120_1_display, BoundaryMarker1, BoundaryMarker2, cv::Scalar(255, 255, 255), 1);
             cv::line(mat120_1_display, BoundaryMarker3, BoundaryMarker4, cv::Scalar(255, 255, 255), 1);
-            cv::imshow("RightFront-120", mat120_0_display);
-            cv::imshow("RightBack-120", mat120_1_display);
-            cv::imshow("LeftFront-120", mat120_2_display);
-            cv::imshow("LeftBack-120", mat120_3_display);
+            cv::imshow("LeftFront-120", mat120_0_display);
+            cv::imshow("LeftBack-120", mat120_1_display);
+            cv::imshow("RightFront-120", mat120_2_display);
+            cv::imshow("RightBack-120", mat120_3_display);
             cv::waitKey(1);
         }
         r.sleep();
