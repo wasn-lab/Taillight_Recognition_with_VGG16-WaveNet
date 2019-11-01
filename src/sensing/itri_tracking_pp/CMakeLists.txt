@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         msgs
-        itri_msgs
 )
 
 find_package(GFlags)
@@ -43,7 +42,6 @@ set(TPP_CATKIN_DEPS
     sensor_msgs
     std_msgs
     msgs
-    itri_msgs
 )
 
 catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
