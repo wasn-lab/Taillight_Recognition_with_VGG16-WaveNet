@@ -20,13 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PCL 1.8.1 REQUIRED)
 
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
   roscpp
