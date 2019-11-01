@@ -8,7 +8,7 @@ void DistanceEstimation::init (int car_id)
     carId = car_id;
     
     regionHeight_60_FC_x = {1207, 1173, 1132, 1101, 1075, 1054, 1038, 1024, 1012, 1002, 993, 986, 979, 972, 967, 945, 836};
-    regionHeightSlope_60_FC_y = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};    
+    regionHeightSlope_60_FC_x = {0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5};    
     regionDist_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50}; 
     regionHeightSlope_60_FC_y = {0.2031, 0.2577, 0.3471, 0.6486, 1.4118, -59.5, -1.0636, -0.5938, -0.3786, -0.2682, -0.2347};
     regionHeight_60_FC_y = {-683, -307, 58, 462, 763, 1041, 1361, 1633, 1941, 2285, 2526};
@@ -649,6 +649,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     std::vector<int> regionHeight_y;
     std::vector<float> regionDist_y;
     std::vector<float> regionHeightSlope_y;
+    std::vector<float> regionHeightSlope_x;
 
     msgs::PointXYZ p0;
     float x_distMeter = 0, y_distMeter = 0;

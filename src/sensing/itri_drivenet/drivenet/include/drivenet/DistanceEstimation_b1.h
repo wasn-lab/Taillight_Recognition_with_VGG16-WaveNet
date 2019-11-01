@@ -21,6 +21,7 @@ private:
     std::vector<int> regionHeight_60_FC_y;
     std::vector<float> regionDist_60_FC_y;
     std::vector<float> regionHeightSlope_60_FC_y;
+    std::vector<float> regionHeightSlope_60_FC_x;
 
     /// camId: 3
     std::vector<int> regionHeight_60_FL_x;
