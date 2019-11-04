@@ -6,18 +6,15 @@ int AR1::compute_params(const std::vector<long double>& xs, long double& beta0, 
 {
   int err = 0;
 
-  beta0 = 0.;
-  beta1 = 0.;
-
-  long double sum0 = 0;
-
+  long double sum0 = 0.;  // xs[1]...xs[-2]
   for (unsigned i = 1; i < (xs.size() - 1); i++)
   {
     sum0 += xs[i];
   }
-  long double sum1 = sum0 + xs[0];
 
-  long double sum_square1 = 0;
+  long double sum1 = sum0 + xs[0];  // xs[0]...xs[-2]
+
+  long double sum_square1 = 0.;  // xs[0]^2...xs[-2]^2
 
   for (unsigned i = 0; i < (xs.size() - 1); i++)
   {
@@ -33,11 +30,14 @@ int AR1::compute_params(const std::vector<long double>& xs, long double& beta0, 
 
   m.computeInverseAndDetWithCheck(inverse, determinant, is_invertible);
 
+  beta0 = 0.;
+  beta1 = 0.;
+
   if (is_invertible)
   {
-    long double sum2 = sum0 + xs.back();
+    long double sum2 = sum0 + xs.back();  // xs[1]...xs[-1]
 
-    long double sum_square2 = 0.;
+    long double sum_square2 = 0.;  // xs[0]xs[1]...xs[-2]xs[-1]
 
     for (unsigned i = 1; i < xs.size(); i++)
     {
@@ -50,8 +50,10 @@ int AR1::compute_params(const std::vector<long double>& xs, long double& beta0, 
 #if DEBUG
     std::cout << "determinant = " << determinant << std::endl;
     std::cout << "m is invertible. inverse = " << std::endl << inverse << std::endl;
+
     std::cout << "sum1 = " << sum1 << std::endl;
     std::cout << "sum_square1 = " << sum_square1 << std::endl;
+
     std::cout << "sum2 = " << sum2 << std::endl;
     std::cout << "sum_square2 = " << sum_square2 << std::endl;
 #endif
