@@ -20,6 +20,9 @@ class DBSCAN_CUDA
     segment (IndicesClusters &clusters);
 
   private:
+    static bool hasInitialCUDA;
+    static int  maxThreadsNumber;
+
     double epsilon;
     unsigned int minpts;
     Dataset::Ptr dset;
