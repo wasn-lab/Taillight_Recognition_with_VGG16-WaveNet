@@ -7,8 +7,7 @@ namespace SensingSubSystem
 /// Class TegraBGrabber
 ///
 TegraBGrabber::TegraBGrabber()
-  : cam_ids_({ camera::id::left_120, camera::id::front_120, camera::id::right_120 })
-  , canvas(cam_ids_.size())
+  : canvas(cam_ids_.size())
   , grabber(nullptr)
   , npp8u_ptrs_(cam_ids_.size())
   , npp8u_ptrs_distorted_(cam_ids_.size())
