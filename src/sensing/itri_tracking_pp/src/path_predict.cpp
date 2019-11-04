@@ -293,21 +293,27 @@ void PathPredict::confidence_ellipse(PPLongDouble& pp, const float alpha)
 
 int PathPredict::ar1_params_main(PPLongDouble& pp, std::vector<long double>& data_x, std::vector<long double>& data_y)
 {
-  pp.beta0_x = 0;
-  pp.beta1_x = 0;
+  pp.beta0_x = 0.;
+  pp.beta1_x = 0.;
 
-  pp.beta0_y = 0;
-  pp.beta1_y = 0;
+  pp.beta0_y = 0.;
+  pp.beta1_y = 0.;
 
   AR1 ar1;
 
   int err_x = ar1.compute_params(data_x, pp.beta0_x, pp.beta1_x);
+#if DEBUG
+  LOG_INFO << "beta0_x = " << pp.beta0_x << "\tbeta1_x = " << pp.beta1_x << std::endl << std::endl;
+#endif
   if (err_x > 0)
   {
     return err_x;
   }
 
   int err_y = ar1.compute_params(data_y, pp.beta0_y, pp.beta1_y);
+#if DEBUG
+  LOG_INFO << "beta0_y = " << pp.beta0_y << "\tbeta1_y = " << pp.beta1_y << std::endl << std::endl;
+#endif
   if (err_y > 0)
   {
     return err_y;
@@ -321,10 +327,6 @@ int PathPredict::ar1_params_main(PPLongDouble& pp, std::vector<long double>& dat
     pp.sum_samples_x += data_x[i];
     pp.sum_samples_y += data_y[i];
   }
-
-#if DEBUG
-  LOG_INFO << "beta0_x = " << pp.beta0_x << "\tbeta1_x = " << pp.beta1_x << std::endl << std::endl;
-#endif
 
   pp.observation_x = data_x.back();
   pp.observation_y = data_y.back();
@@ -362,7 +364,6 @@ void PathPredict::covariance_matrix(PPLongDouble& pp, std::vector<long double>& 
   pp.corr_xy = correlation(pp.cov_xy, pp.stdev_x, pp.stdev_y);
 
 #if DEBUG
-  LOG_INFO << "Forecast timestep" << i + 1 << std::endl;
   LOG_INFO << "Position x : " << O_FIX << O_P << pp.pos_x << "\t"
            << "Covariance xx: " << O_FIX << O_P << pp.cov_xx << "\t"
            << "Standard Deviation x: " << O_FIX << O_P << pp.stdev_x << "\t"
@@ -424,6 +425,10 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
 
   for (unsigned i = 0; i < num_forecasts_; i++)
   {
+#if DEBUG
+    LOG_INFO << "Forecast timestep" << i + 1 << std::endl;
+#endif
+
     if (i > 0)
     {
       pps[i] = pps[i - 1];
