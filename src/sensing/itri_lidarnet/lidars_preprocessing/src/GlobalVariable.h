@@ -17,7 +17,6 @@ class GlobalVariable
 
     static int ERROR_CODE;
 
-    static bool ENABLE_DEBUG_MODE;
     static bool ENABLE_LABEL_TOOL;
 
 };

@@ -3,7 +3,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/octree/octree.h>
+//#include <pcl/octree/octree.h>
 
 using namespace std;
 using namespace pcl;
@@ -34,8 +34,9 @@ class CuboidFilter
                     double Zmin,
                     double Zmax);
 
-    vector<PointCloud<PointXYZ>>
-    separate_cloud (PointCloud<PointXYZ>::Ptr input,
+    template <typename PointT>
+    vector<PointCloud<PointT>>
+    separate_cloud (typename PointCloud<PointT>::Ptr input,
                     float Xmin,
                     float Xmax,
                     float Ymin,
@@ -43,9 +44,12 @@ class CuboidFilter
                     float Zmin,
                     float Zmax);
 
+/*
+ *  // conflict with QT UI : boost::Q_FOREACH’ has not been declared
     PointCloud<PointXYZ>
     background_removal (const PointCloud<PointXYZ>::ConstPtr input,
                         const PointCloud<PointXYZ>::ConstPtr base);
+*/
 };
 
 #endif

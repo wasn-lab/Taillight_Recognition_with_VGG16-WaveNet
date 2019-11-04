@@ -1,6 +1,7 @@
 #include "Transform_CUDA.h"
 
 bool Transform_CUDA::hasInitialCUDA = false;
+int Transform_CUDA::maxThreadsNumber = 0;
 
 Transform_CUDA::Transform_CUDA ()
 {
@@ -11,6 +12,23 @@ Transform_CUDA::Transform_CUDA ()
     if (err != ::cudaSuccess){
       return;
     }
+
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties (&prop, 0);
+
+    if (prop.major == 2)
+    {
+      maxThreadsNumber = prop.maxThreadsPerBlock / 2;
+    }
+    else if (prop.major > 2)
+    {
+      maxThreadsNumber = prop.maxThreadsPerBlock;
+    }
+    else
+    {
+      maxThreadsNumber = 0;
+    }
+
     hasInitialCUDA = true;
   }
 }
@@ -18,29 +36,6 @@ Transform_CUDA::Transform_CUDA ()
 Transform_CUDA::~Transform_CUDA ()
 {
 
-}
-
-int
-Transform_CUDA::getNumberOfAvailableThreads ()
-{
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties (&prop, 0);
-
-  int threads = 0;
-  if (prop.major == 2)
-  {
-    threads = prop.maxThreadsPerBlock / 2;
-  }
-  else if (prop.major > 2)
-  {
-    threads = prop.maxThreadsPerBlock;
-  }
-  else
-  {
-    return 0;
-  }
-
-  return threads;
 }
 
 bool
@@ -68,7 +63,7 @@ Transform_CUDA::removePointsInsideSphere (pcl::PointCloud<pcl::PointXYZ> &point_
   if (err != ::cudaSuccess)
     return false;
 
-  err = cudaRemovePointsInsideSphere (getNumberOfAvailableThreads (), d_point_cloud, d_markers, point_cloud.points.size (), sphere_radius);
+  err = cudaRemovePointsInsideSphere (maxThreadsNumber, d_point_cloud, d_markers, point_cloud.points.size (), sphere_radius);
   if (err != ::cudaSuccess)
     return false;
 
@@ -104,22 +99,14 @@ Transform_CUDA::removePointsInsideSphere (pcl::PointCloud<pcl::PointXYZ> &point_
   return true;
 }
 
+template <typename PointT>
 bool
-Transform_CUDA::run (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
+Transform_CUDA::run (typename pcl::PointCloud<PointT> &point_cloud,
                      Eigen::Affine3f matrix)
 {
-  int threads;
-  pcl::PointXYZ * d_point_cloud;
-
-  float h_m[16];
+  PointT *d_point_cloud;
   float *d_m;
-
-  cudaError_t err = ::cudaSuccess;
-  err = cudaSetDevice (0);
-  if (err != ::cudaSuccess)
-    return false;
-
-  threads = getNumberOfAvailableThreads ();
+  float h_m[16];
 
   h_m[0] = matrix.matrix () (0, 0);
   h_m[1] = matrix.matrix () (1, 0);
@@ -141,44 +128,49 @@ Transform_CUDA::run (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   h_m[14] = matrix.matrix () (2, 3);
   h_m[15] = matrix.matrix () (3, 3);
 
-  err = cudaMalloc ((void**) &d_m, 16 * sizeof(float));
-  if (err != ::cudaSuccess)
+  if (cudaMalloc ((void**) &d_m, 16 * sizeof(float)) != ::cudaSuccess)
     return false;
 
-  err = cudaMemcpy (d_m, h_m, 16 * sizeof(float), cudaMemcpyHostToDevice);
-  if (err != ::cudaSuccess)
+  if (cudaMemcpy (d_m, h_m, 16 * sizeof(float), cudaMemcpyHostToDevice) != ::cudaSuccess)
     return false;
 
-  err = cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(pcl::PointXYZ));
-  if (err != ::cudaSuccess)
+  if (cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(PointT)) != ::cudaSuccess)
     return false;
 
-  err = cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(pcl::PointXYZ), cudaMemcpyHostToDevice);
-  if (err != ::cudaSuccess)
+  if (cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(PointT), cudaMemcpyHostToDevice) != ::cudaSuccess)
     return false;
 
-  err = cudaTransformPoints (threads, d_point_cloud, point_cloud.points.size (), d_m);
-  if (err != ::cudaSuccess)
+  if (cudaTransformPoints<PointT> (maxThreadsNumber, d_point_cloud, point_cloud.points.size (), d_m) != ::cudaSuccess)
     return false;
 
-  err = cudaMemcpy (point_cloud.points.data (), d_point_cloud, point_cloud.points.size () * sizeof(pcl::PointXYZ), cudaMemcpyDeviceToHost);
-  if (err != ::cudaSuccess)
+  if (cudaMemcpy (point_cloud.points.data (), d_point_cloud, point_cloud.points.size () * sizeof(PointT), cudaMemcpyDeviceToHost) != ::cudaSuccess)
     return false;
 
-  err = cudaFree (d_m);
-  if (err != ::cudaSuccess)
+  if (cudaFree (d_m) != ::cudaSuccess)
     return false;
 
-  err = cudaFree (d_point_cloud);
+  if (cudaFree (d_point_cloud) != ::cudaSuccess)
+    return false;
+
   d_point_cloud = NULL;
-  if (err != ::cudaSuccess)
-    return false;
 
   return true;
 }
 
-PointCloud<PointXYZI>
-Transform_CUDA::compute (PointCloud<PointXYZI>::Ptr input,
+template
+bool
+Transform_CUDA::run (pcl::PointCloud<PointXYZ> &point_cloud,
+                     Eigen::Affine3f matrix);
+
+template
+bool
+Transform_CUDA::run (pcl::PointCloud<PointXYZI> &point_cloud,
+                     Eigen::Affine3f matrix);
+
+
+template <typename PointT>
+PointCloud<PointT>
+Transform_CUDA::compute (typename PointCloud<PointT>::Ptr input,
                          float tx,
                          float ty,
                          float tz,
@@ -187,62 +179,19 @@ Transform_CUDA::compute (PointCloud<PointXYZI>::Ptr input,
                          float rz)
 {
 
-  PointCloud<PointXYZ> buff;
-  pcl::copyPointCloud (*input, buff);
-
-  Eigen::Affine3f mr = Eigen::Affine3f::Identity ();
-
-  mr.translation () << tx, ty, tz;
-
-  // The angle of rotation in radians
-  mr.rotate (Eigen::AngleAxisf (rx, Eigen::Vector3f::UnitX ()));
-  mr.rotate (Eigen::AngleAxisf (ry, Eigen::Vector3f::UnitY ()));
-  mr.rotate (Eigen::AngleAxisf (rz, Eigen::Vector3f::UnitZ ()));
-
-  //pcl::transformPointCloud (*input, buff, mr); // no cuda
-
-  if (!Transform_CUDA::run (buff, mr))
-  {
-    std::cout << "Problem with transform" << std::endl;
-    cudaDeviceReset ();
-  }
-
-  PointCloud<PointXYZI> out_cloud;
-  pcl::copyPointCloud (buff, out_cloud);
-
-  for (size_t i = 0; i < out_cloud.points.size (); ++i)
-  {
-    out_cloud.points[i].intensity = input->points[i].intensity;
-  }
-
-  return out_cloud;
-}
-
-PointCloud<PointXYZ>
-Transform_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
-                         float tx,
-                         float ty,
-                         float tz,
-                         float rx,
-                         float ry,
-                         float rz)
-{
-
-  PointCloud<PointXYZ> out_cloud;
+  PointCloud<PointT> out_cloud;
   out_cloud = *input;
 
   Eigen::Affine3f mr = Eigen::Affine3f::Identity ();
 
   mr.translation () << tx, ty, tz;
-
-  // The angle of rotation in radians
-  mr.rotate (Eigen::AngleAxisf (rx, Eigen::Vector3f::UnitX ()));
+  mr.rotate (Eigen::AngleAxisf (rx, Eigen::Vector3f::UnitX ())); // The angle of rotation in radians
   mr.rotate (Eigen::AngleAxisf (ry, Eigen::Vector3f::UnitY ()));
   mr.rotate (Eigen::AngleAxisf (rz, Eigen::Vector3f::UnitZ ()));
 
   //pcl::transformPointCloud (*input, out_cloud, mr); // no cuda
 
-  if (!Transform_CUDA::run (out_cloud, mr))
+  if (!Transform_CUDA::run<PointT> (out_cloud, mr))
   {
     std::cout << "Problem with transform" << std::endl;
     cudaDeviceReset ();
@@ -251,36 +200,33 @@ Transform_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
   return out_cloud;
 }
 
-PointCloud<PointXYZI>
-Transform_CUDA::compute (PointCloud<PointXYZI>::Ptr input,
-                         Eigen::Affine3f mr)
-{
-  PointCloud<PointXYZ> buff;
-  pcl::copyPointCloud (*input, buff);
-
-  if (!Transform_CUDA::run (buff, mr))
-  {
-    std::cout << "Problem with transform" << std::endl;
-    cudaDeviceReset ();
-  }
-
-  PointCloud<PointXYZI> out_cloud;
-  pcl::copyPointCloud (buff, out_cloud);
-
-  for (size_t i = 0; i < out_cloud.points.size (); ++i)
-  {
-    out_cloud.points[i].intensity = input->points[i].intensity;
-  }
-
-  return out_cloud;
-}
-
+template
 PointCloud<PointXYZ>
-Transform_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
+Transform_CUDA::compute (typename PointCloud<PointXYZ>::Ptr input,
+                         float tx,
+                         float ty,
+                         float tz,
+                         float rx,
+                         float ry,
+                         float rz);
+
+template
+PointCloud<PointXYZI>
+Transform_CUDA::compute (typename PointCloud<PointXYZI>::Ptr input,
+                         float tx,
+                         float ty,
+                         float tz,
+                         float rx,
+                         float ry,
+                         float rz);
+
+template <typename PointT>
+PointCloud<PointT>
+Transform_CUDA::compute (typename PointCloud<PointT>::Ptr input,
                          Eigen::Affine3f mr)
 {
 
-  PointCloud<PointXYZ> out_cloud;
+  PointCloud<PointT> out_cloud;
   out_cloud = *input;
 
   if (!Transform_CUDA::run (out_cloud, mr))
@@ -291,3 +237,13 @@ Transform_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
 
   return out_cloud;
 }
+
+template
+PointCloud<PointXYZ>
+Transform_CUDA::compute (typename PointCloud<PointXYZ>::Ptr input,
+                         Eigen::Affine3f mr);
+
+template
+PointCloud<PointXYZI>
+Transform_CUDA::compute (typename PointCloud<PointXYZI>::Ptr input,
+                         Eigen::Affine3f mr);

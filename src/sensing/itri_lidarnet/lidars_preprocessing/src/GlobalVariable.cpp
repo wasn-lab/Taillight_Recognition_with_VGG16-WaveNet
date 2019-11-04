@@ -10,6 +10,5 @@ string GlobalVariable::CONFIG_FILE_NAME = "config.ini";
 
 int GlobalVariable::ERROR_CODE = 0;
 
-bool GlobalVariable::ENABLE_DEBUG_MODE = false;
 bool GlobalVariable::ENABLE_LABEL_TOOL = false;
 

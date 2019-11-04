@@ -26,8 +26,7 @@ GDBSCAN::GDBSCAN (const Dataset::Ptr dset) :
     labels (dset->rows (), -1),
     cluster_id (0)
 {
-
-  ErrorHandle(cudaMallocHost (reinterpret_cast<void**> (&d_data), sizeof(float) * m_dset->num_points ()),"d_data");
+  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_data), sizeof(float) * m_dset->num_points ()),"d_data");
   ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Va0), vA_size),"d_Va0");
   ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Va1), vA_size),"d_Va1");
   ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Fa), vA_size),"d_Fa");
@@ -35,24 +34,19 @@ GDBSCAN::GDBSCAN (const Dataset::Ptr dset) :
 
   size_t copysize = m_dset->cols () * sizeof(float);
 
-  //const double start = omp_get_wtime ();
-
-
   for (size_t i = 0; i < m_dset->rows (); ++i)
   {
     ErrorHandle(cudaMemcpy (d_data + i * m_dset->cols (), m_dset->data ()[i].data (), copysize, cudaMemcpyHostToDevice),"memcpy");
 
     //std::cout << "Copied " << i << "th row to device, size = " << copysize;
   }
-
-  //std::cout << "[DBSCNA] CUDA " << (omp_get_wtime () - start) <<std::endl;
 }
 
 GDBSCAN::~GDBSCAN ()
 {
   if (d_data)
   {
-    cudaFreeHost (d_data);
+    cudaFree (d_data);
     d_data = 0;
   }
 
@@ -89,9 +83,10 @@ GDBSCAN::~GDBSCAN ()
 
 void
 GDBSCAN::fit (float eps,
-              size_t min_elems)
+              size_t min_elems, int maxThreadsNumber)
 {
-  // First Step (Vertices degree calculation): For each vertex, we calculate the
+
+  // Vertices degree calculation: For each vertex, we calculate the
   // total number of adjacent vertices. However we can use the multiple cores of
   // the GPU to process multiple vertices in parallel. Our parallel strategy
   // using GPU assigns a thread to each vertex, i.e., each entry of the vector
@@ -101,17 +96,14 @@ GDBSCAN::fit (float eps,
   // (embarrassingly parallel problem). Thus, the computational complexity can
   // be reduced from O(V2) to O(V).
 
-  int N = static_cast<int> (m_dset->rows ());
-  int colsize = static_cast<int> (m_dset->cols ());
+  int N = static_cast<int> (m_dset->rows ()); //size()
+  int colsize = static_cast<int> (m_dset->cols ()); //3 XYZ
 
-  //std::cout << "Starting vertdegree on " << N << "x" << colsize << " "<< (N + 255) / 256 << "x" << 256;
-
-  vertdegree (N, colsize, eps, d_data, d_Va0);
+  vertdegree (N, colsize, eps, d_data, d_Va0, maxThreadsNumber);
 
   //std::cout << "Executed vertdegree transfer";
 
-  //   Second Step (Calculation of the adjacency lists indices): The second
-  //   value in Va is related to the start
+  // Calculation of the adjacency lists indices: The second value in Va is related to the start
   // index in Ea of the adjacency list of a particular vertex. The calculation
   // of this value depends on the start index of the vertex adjacency list and
   // the degree of the previous vertex. For example, the start index for the
@@ -129,7 +121,6 @@ GDBSCAN::fit (float eps,
 
   //Executed adjlistsind transfer;
 
-  //Va_device_to_host
   ErrorHandle(cudaMemcpy (&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost),"memcpy Va0 device to host");
   ErrorHandle(cudaMemcpy (&h_Va1[0], d_Va1, vA_size, cudaMemcpyDeviceToHost),"memcpy Va1 device to host");
 
@@ -142,8 +133,7 @@ GDBSCAN::fit (float eps,
     }
   }
 
-  //   Third Step (Assembly of adjacency lists): Having the vector Va been
-  //   completely filled, i.e., for each
+  // Assembly of adjacency lists: Having the vector Va been completely filled, i.e., for each
   // vertex, we know its degree and the start index of its adjacency list,
   // calculated in the two previous steps, we can now simply mount the compact
   // adjacency list, represented by Ea. Following the logic of the first step,

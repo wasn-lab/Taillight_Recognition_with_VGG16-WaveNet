@@ -7,7 +7,6 @@
 #include "NoiseFilter.h"
 
 #include "DBSCAN_CUDA.h"
-#include "CudaCtx.h"
 
 
 #define TAG_RAW    -2
@@ -29,7 +28,7 @@ class S1Cluster
 
     CLUSTER_INFO*
     getClusters (bool is_debug,
-                 PointCloud<PointXYZIL>::ConstPtr inputIL,
+                 const PointCloud<PointXYZIL>::ConstPtr inputIL,
                  int *cluster_number);
 
   private:
