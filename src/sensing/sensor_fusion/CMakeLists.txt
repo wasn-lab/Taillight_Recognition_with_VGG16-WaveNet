@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(msgs REQUIRED)
-find_package(PCL 1.7 REQUIRED)
+find_package(PCL 1.9 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(CUDA REQUIRED)
