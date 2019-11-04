@@ -27,13 +27,13 @@ int AR1::compute_params(const std::vector<long double>& xs, long double& beta0, 
   Eigen::Matrix2d m;
   m << 3., sum1, sum1, sum_square1;
   Eigen::Matrix3d inverse;
-  
+
   bool is_invertible = false;
   double determinant = 0.;
 
   m.computeInverseAndDetWithCheck(inverse, determinant, is_invertible);
 
-  if(is_invertible)
+  if (is_invertible)
   {
     long double sum2 = sum0 + xs.back();
 
@@ -56,14 +56,15 @@ int AR1::compute_params(const std::vector<long double>& xs, long double& beta0, 
     std::cout << "sum_square2 = " << sum_square2 << std::endl;
 #endif
   }
-  else {
+  else
+  {
     std::cout << "m is not invertible." << std::endl;
     err = 2;
   }
 
 #if DEBUG
-    std::cout << "beta0 = " << beta0 << std::endl;
-    std::cout << "beta1 = " << beta1 << std::endl;
+  std::cout << "beta0 = " << beta0 << std::endl;
+  std::cout << "beta1 = " << beta1 << std::endl;
 #endif
 
   return err;
