@@ -21,7 +21,7 @@ protected:
   const std::vector<int> cam_ids_{ camera::id::left_60,  camera::id::front_60,  camera::id::right_60,
                                    camera::id::left_120, camera::id::front_120, camera::id::right_120 };
 #elif CAR_MODEL_IS_HINO
-  const std::vector<int> cam_ids_{camera::id::left_120, camera::id::front_120, camera::id::right_120};
+  const std::vector<int> cam_ids_{ camera::id::left_120, camera::id::front_120, camera::id::right_120 };
 #else
 #error "car model is not well defined"
 #endif
