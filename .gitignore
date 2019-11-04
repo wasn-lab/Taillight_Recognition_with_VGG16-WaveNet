@@ -3,6 +3,7 @@ devel*/
 .vscode/
 *.swp
 *.pyc
+rospack_cache*
 .DS_Store
 .cproject
 .project

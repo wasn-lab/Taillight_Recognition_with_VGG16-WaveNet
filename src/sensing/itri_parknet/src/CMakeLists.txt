@@ -29,6 +29,7 @@ set(PARKNET_INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/darknet/src
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src
+    ${car_model_BINARY_DIR}/include
     ${camera_utils_SOURCE_DIR}/include
     ${GLOG_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}

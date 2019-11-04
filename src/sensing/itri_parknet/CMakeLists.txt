@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     message_generation
     msgs
+    car_model
 )
 
 #set(OpenCV_DIR "/opt/ros/kinetic/share/OpenCV-3.3.1-dev" CACHE STRING "")
