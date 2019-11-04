@@ -11,9 +11,7 @@ static double output_fps = 10;  // expected publish rate
 
 static unsigned int num_publishs_per_loop =
     std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
-;
 
-constexpr unsigned int num_callbacks = 3;
 constexpr unsigned int num_forecasts_ = 20;
 
 constexpr unsigned int num_2dbox_corners = 4;
