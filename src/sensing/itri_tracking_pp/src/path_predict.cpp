@@ -135,7 +135,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 #endif
 
       int err = 0;
-      err = predict(max_order_, num_forecasts_, data_x, data_y, pps);
+      err = predict(max_order_, num_forecasts_, data_x, data_y, pps, 0);
       if (err > 0)
       {
         pp_objs_[i].track.is_ready_prediction = false;
@@ -378,7 +378,8 @@ void PathPredict::covariance_matrix(PPLongDouble& pp, std::vector<long double>& 
 }
 
 int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
-                         std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
+                         std::vector<long double>& data_y, std::vector<PPLongDouble>& pps,
+                         const unsigned int confidence_lv)
 {
   if (data_x.size() != data_y.size())
   {
@@ -390,6 +391,20 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
   {
     LOG_INFO << "Error: max_order_ > #(input data)" << std::endl;
     return 2;
+  }
+
+  // assign confidence_thr by confidence_lv
+  float confidence_thr = 0.f;
+  switch (confidence_lv)
+  {
+    case 1:
+      confidence_thr = 1.15f;  // 75%
+      break;
+    case 2:
+      confidence_thr = 1.96f;  // 95%
+      break;
+    default:
+      confidence_thr = 0.675f;  // 50%
   }
 
 #if DEBUG
@@ -420,7 +435,7 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {
-      confidence_ellipse(pps[i], 0.675);  // 50%: 0.675; 75%: 1.15; 95%: 1.96
+      confidence_ellipse(pps[i], confidence_thr);
     }
   }
 
