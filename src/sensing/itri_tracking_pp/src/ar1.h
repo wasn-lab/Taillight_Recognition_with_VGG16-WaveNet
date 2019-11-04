@@ -20,14 +20,6 @@ public:
 
 private:
   DISALLOW_COPY_AND_ASSIGN(AR1);
-
-  long double determinant(const long double a, const long double b, const long double c, const long double d);
-
-  int inverse2(const long double a, const long double b, const long double c, const long double d,  //
-               long double& A, long double& B, long double& C, long double& D);
-
-  int inverse_A_square(const long double sum, const long double sum_square,  //
-                       long double& A, long double& B, long double& C, long double& D);
 };
 }  // namespace tpp
 
