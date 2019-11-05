@@ -14,10 +14,10 @@ CameraDistanceMapper::CameraDistanceMapper(const camera::id cam_id)
   , z_in_meters_ptr_(new float[camera::raw_image_rows][camera::raw_image_cols])
 {
   assert(cam_id >= camera::id::begin);
-  assert(cam_id <= camera::id::num_cams);
+  assert(cam_id <= camera::id::num_ids);
   // Currently only FOV120 are supported
-  assert(cam_id >= camera::id::left_120);
-  assert(cam_id <= camera::id::right_120);
+  assert(cam_id >= camera::id::top_front_120);
+  assert(cam_id <= camera::id::top_rear_120);
 
   read_dist_from_json();
 }

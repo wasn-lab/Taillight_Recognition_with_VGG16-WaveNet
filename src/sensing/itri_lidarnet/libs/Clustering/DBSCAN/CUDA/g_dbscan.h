@@ -19,7 +19,8 @@ vertdegree (int N,
             int colsize,
             float eps,
             float* d_data,
-            int* d_Va);
+            int* d_Va,
+            int maxThreadsNumber);
 
 void
 adjlistsind (int N,
@@ -54,7 +55,7 @@ class GDBSCAN : private boost::noncopyable
 
     void
     fit (float eps,
-         size_t min_elems);
+         size_t min_elems, int maxThreadsNumber);
     void
     predict (IndicesClusters &index);
 

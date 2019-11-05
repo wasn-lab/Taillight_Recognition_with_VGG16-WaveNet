@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(pslot_detector)
+project(itri_parknet)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     message_generation
     msgs
+    car_model
 )
 
 #set(OpenCV_DIR "/opt/ros/kinetic/share/OpenCV-3.3.1-dev" CACHE STRING "")

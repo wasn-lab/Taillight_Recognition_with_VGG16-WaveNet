@@ -1,5 +1,24 @@
 #include "eval_utility.h"
 
+VPointCloud pointcloudIL2I(VPointCloudXYZIL::Ptr cloud_il)
+{
+
+	VPointCloud pcdExtract;
+	pcdExtract.points.reserve(cloud_il->points.size());
+
+	for (size_t i = 0; i < cloud_il->points.size(); ++i)
+	{
+		VPoint pointinfo;
+		pointinfo.x = cloud_il->points.at(i).x;
+		pointinfo.y = cloud_il->points.at(i).y;
+		pointinfo.z = cloud_il->points.at(i).z;
+		pointinfo.intensity = cloud_il->points.at(i).intensity;
+
+		pcdExtract.points.push_back(pointinfo);
+	}
+
+	return pcdExtract;
+}
 
 VPointCloudXYZIL pcdExtract_byClass(VPointCloudXYZIL::Ptr cloud_il, int class_index)
 {
@@ -10,6 +29,21 @@ VPointCloudXYZIL pcdExtract_byClass(VPointCloudXYZIL::Ptr cloud_il, int class_in
 	for (size_t i = 0; i < cloud_il->points.size(); ++i)
 	{
 		if (cloud_il->points.at(i).label == class_index)
+			pcdExtract.points.push_back(cloud_il->points.at(i));
+	}
+
+	return pcdExtract;
+}
+
+VPointCloudXYZIL pcdExtract_allLabelObj(VPointCloudXYZIL::ConstPtr cloud_il)
+{
+
+	VPointCloudXYZIL pcdExtract;
+	pcdExtract.points.reserve(cloud_il->points.size());
+
+	for (size_t i = 0; i < cloud_il->points.size(); ++i)
+	{
+		if (cloud_il->points.at(i).label > 0)
 			pcdExtract.points.push_back(cloud_il->points.at(i));
 	}
 

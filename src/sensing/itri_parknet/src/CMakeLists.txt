@@ -1,4 +1,5 @@
 set(PARKNET_LIB "parknet")
+set(PARKNET_EXE "itri_parknet")
 
 # Setup *.cpp to build libparknet
 set(PARKNET_LIB_SRCS
@@ -28,6 +29,7 @@ set(PARKNET_INCLUDE_DIRS
     ${PROJECT_SOURCE_DIR}/darknet/src
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src
+    ${car_model_BINARY_DIR}/include
     ${camera_utils_SOURCE_DIR}/include
     ${GLOG_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
@@ -71,16 +73,16 @@ include_directories(${PARKNET_INCLUDE_DIRS})
 
 if (USE_CUDA)
     cuda_add_library(${PARKNET_LIB} STATIC ${PARKNET_LIB_SRCS})
-    cuda_add_executable(pslot_detector ${PARKNET_DETECTOR_SRCS})
+    cuda_add_executable(${PARKNET_EXE} ${PARKNET_DETECTOR_SRCS})
     target_link_libraries(${PARKNET_LIB} ${PARKNET_LIB_DEPS})
-    target_link_libraries(pslot_detector ${PARKNET_LIB})
+    target_link_libraries(${PARKNET_EXE} ${PARKNET_LIB})
 else ()
     add_library(${PARKNET_LIB} STATIC ${PARKNET_LIB_SRCS})
-    add_executable(pslot_detector ${PARKNET_DETECTOR_SRCS})
+    add_executable(${PARKNET_EXE} ${PARKNET_DETECTOR_SRCS})
     target_link_libraries(${PARKNET_LIB} ${PARKNET_LIB_DEPS})
-    target_link_libraries(pslot_detector ${PARKNET_LIB})
+    target_link_libraries(${PARKNET_EXE} ${PARKNET_LIB})
 endif ()
 add_dependencies(${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
-add_dependencies(pslot_detector ${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PARKNET_EXE} ${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
 add_subdirectory(alignment)
 add_subdirectory(test)

@@ -71,6 +71,11 @@ float Velocity::get_ego_speed()
 
 // === setter ===
 
+void Velocity::set_dt(const long long dt)
+{
+  dt_ = dt;
+}
+
 void Velocity::set_ego_x_rel(const float ego_x_rel)
 {
   ego_x_rel_ = ego_x_rel;
@@ -138,6 +143,31 @@ void Velocity::init_ego_speed(const float ego_speed)
 {
   ego_speed_prev_ = ego_speed_;
   ego_speed_ = ego_speed;
+}
+
+void Velocity::init_object_relative_position(const float obj_x_rel, const float obj_x_rel_prev,  //
+                                             const float obj_y_rel, const float obj_y_rel_prev)
+{
+  obj_x_rel_ = obj_x_rel;
+  obj_x_rel_prev_ = obj_x_rel_prev;
+
+  obj_y_rel_ = obj_y_rel;
+  obj_y_rel_prev_ = obj_y_rel_prev;
+}
+
+void Velocity::compute_ego_position_absolute()
+{
+  ego_x_abs_prev_ = ego_x_abs_;  // meter
+  ego_y_abs_prev_ = ego_y_abs_;  // meter
+
+  float buf[1][2] = { ego_x_rel_, ego_y_rel_ };
+  rotate(buf, 1, ego_heading_);
+
+  ego_x_abs_ = buf[0][0];  // meter
+  ego_y_abs_ = buf[0][1];  // meter
+
+  ego_dx_abs_ = ego_x_abs_ - ego_x_abs_prev_;  // meters
+  ego_dy_abs_ = ego_y_abs_ - ego_y_abs_prev_;  // meters
 }
 
 void Velocity::compute_position_displacement()

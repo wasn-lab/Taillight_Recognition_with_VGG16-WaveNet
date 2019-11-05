@@ -3,21 +3,21 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
-
-#include "../UserDefine.h"
+#include <visualization_msgs/MarkerArray.h>
 
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
 
+#include "../UserDefine.h"
+
+#include <fstream>
+#include <boost/filesystem.hpp>
+namespace BFS = boost::filesystem;
+#define ENABLE_VALIDATION_MODE false
+
 class RosModuleHINO
 {
   public:
-
-    static ros::Publisher ErrorCode_pub;
-    static ros::Publisher Rviz_pub;
-    static ros::Publisher LidarAllNonGround_pub;
-    static ros::Publisher LidarDetection_pub;
-    static ros::Publisher CameraDetection_pub;
 
     static void
     initial (string nodename,
@@ -29,10 +29,49 @@ class RosModuleHINO
 
       ErrorCode_pub = n.advertise<msgs::ErrorCode> ("/ErrorCode", 1);
       Rviz_pub = n.advertise<sensor_msgs::PointCloud2> ("/LidarAll/NonGround2", 1);
+      LidarLeft_pub = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarLeft", 1);
+      LidarRight_pub = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarRight", 1);
+      LidarFront_pub = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarFront", 1);
+      LidarTop_pub = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarTop", 1);
+      LidarAll_pub = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarAll", 1);
       LidarAllNonGround_pub = n.advertise<PointCloud<PointXYZI>> ("/LidarAll/NonGround", 1);
       LidarDetection_pub = n.advertise<msgs::DetectedObjectArray> ("/LidarDetection", 1);
+      LidarDetectionRVIZ_pub = n.advertise<visualization_msgs::MarkerArray> ("/LidarDetection/polygons", 1);
       CameraDetection_pub = n.advertise<msgs::DetectedObjectArray> ("/CameraDetection", 1);
+    }
 
+    static void
+    RegisterCallBackLidarRaw (void
+                              (*cb1) (const boost::shared_ptr<const sensor_msgs::PointCloud2>&),
+                              void
+                              (*cb2) (const boost::shared_ptr<const sensor_msgs::PointCloud2>&),
+                              void
+                              (*cb3) (const boost::shared_ptr<const sensor_msgs::PointCloud2>&),
+                              void
+                              (*cb4) (const boost::shared_ptr<const sensor_msgs::PointCloud2>&))
+    {
+      ros::NodeHandle n;
+      static ros::Subscriber LidarFrontSub = n.subscribe ("/LidarFront/Raw", 1, cb1);
+      static ros::Subscriber LidarLeftSub = n.subscribe ("/LidarLeft/Raw", 1, cb2);
+      static ros::Subscriber LidarRightSub = n.subscribe ("/LidarRight/Raw", 1, cb3);
+      static ros::Subscriber LidarTopSub = n.subscribe ("/LidarTop/Raw", 1, cb4);
+    }
+
+    static void
+    RegisterCallBackLidar (void
+                           (*cb1) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb2) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb3) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb4) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
+    {
+      ros::NodeHandle n;
+      static ros::Subscriber LidarFrontSub = n.subscribe ("/LidarFront", 1, cb1);
+      static ros::Subscriber LidarLeftSub = n.subscribe ("/LidarLeft", 1, cb2);
+      static ros::Subscriber LidarRightSub = n.subscribe ("/LidarRight", 1, cb3);
+      static ros::Subscriber LidarTopSub = n.subscribe ("/LidarTop", 1, cb4);
     }
 
     static void
@@ -63,35 +102,20 @@ class RosModuleHINO
     }
 
     static void
-    RegisterCallBackLidarRaw (void
-                              (*cb1) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb2) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb3) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb4) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
+    RegisterCallBackSSN (void
+    (*cb) (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr&))
     {
       ros::NodeHandle n;
-      static ros::Subscriber LidarFrontSub = n.subscribe ("/LidarFront", 1, cb1);
-      static ros::Subscriber LidarLeftSub = n.subscribe ("/LidarLeft", 1, cb2);
-      static ros::Subscriber LidarRightSub = n.subscribe ("/LidarRight", 1, cb3);
-      static ros::Subscriber LidarTopSub = n.subscribe ("/LidarTop", 1, cb4);
+      static ros::Subscriber result_cloud_P0deg = n.subscribe ("/squ_seg/result_cloud", 1, cb);
     }
 
     static void
-    RegisterCallBackSSN (void
-                         (*cb2) (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr&),
-                         void
-                         (*cb3) (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr&),
-                         void
-                         (*cb4) (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr&))
+    RegisterCallBackGT (void
+    (*cb1) (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr&))
     {
       ros::NodeHandle n;
 
-      static ros::Subscriber result_cloud_N90deg = n.subscribe ("/squ_seg/result_cloud_N90deg", 1, cb2);
-      static ros::Subscriber result_cloud_P0deg = n.subscribe ("/squ_seg/result_cloud_P0deg", 1, cb3);
-      static ros::Subscriber result_cloud_P90deg = n.subscribe ("/squ_seg/result_cloud_P90deg", 1, cb4);
+      static ros::Subscriber GT_cloud = n.subscribe ("/LidarGT", 1, cb1);
     }
 
     static void
@@ -155,6 +179,33 @@ class RosModuleHINO
       spR_msg.header.stamp = ros::Time::now ();
       spR_msg.header.frame_id = "lidar";
       Rviz_pub.publish (spR_msg);
+    }
+
+    static void
+    send_LidarAll (PointCloud<PointXYZI> inputLeft,
+                   PointCloud<PointXYZI> inputRight,
+                   PointCloud<PointXYZI> inputFront,
+                   PointCloud<PointXYZI> inputTop,
+                   PointCloud<PointXYZI> inputAll,
+                   pcl::uint64_t pcltime,
+                   string frameId)
+    {
+      inputLeft.header.frame_id = frameId;
+      inputLeft.header.stamp = pcltime;
+      inputRight.header.frame_id = frameId;
+      inputRight.header.stamp = pcltime;
+      inputFront.header.frame_id = frameId;
+      inputFront.header.stamp = pcltime;
+      inputTop.header.frame_id = frameId;
+      inputTop.header.stamp = pcltime;
+      inputAll.header.frame_id = frameId;
+      inputAll.header.stamp = pcltime;
+
+      LidarLeft_pub.publish (inputLeft);
+      LidarRight_pub.publish (inputRight);
+      LidarFront_pub.publish (inputFront);
+      LidarTop_pub.publish (inputTop);
+      LidarAll_pub.publish (inputAll);
     }
 
     template <typename PointT>
@@ -337,6 +388,65 @@ class RosModuleHINO
       msgObjArr.header.frame_id = frameId;
       LidarDetection_pub.publish (msgObjArr);
 
+#if ENABLE_VALIDATION_MODE == true
+      // open a file to output convexhull
+      BFS::path dir_output("/home/itri/self_driving_lidar/output");
+
+      if(!BFS::exists(dir_output))
+      BFS::create_directories(dir_output);
+
+      ofstream convexFile;
+      convexFile.open(dir_output.string() + "/" + frameId + ".txt");
+
+      for (size_t i = 0; i < msgObjArr.objects.size(); i++)
+      {
+        convexFile << msgObjArr.objects[i].bPoint.p0.z << " "
+        << msgObjArr.objects[i].bPoint.p1.z << " ";
+        for (size_t j = 0; j < msgObjArr.objects[i].cPoint.lowerAreaPoints.size(); j++)
+        {
+          convexFile << msgObjArr.objects[i].cPoint.lowerAreaPoints[j].x << " " << msgObjArr.objects[i].cPoint.lowerAreaPoints[j].y << " ";
+        }
+        convexFile << "\n";
+      }
+      convexFile.close();
+
+      cout << "OUTPUT: " << dir_output.string() + "/" + frameId + ".txt" << endl;
+#endif
+
+    }
+
+    static void
+    Send_LidarResultsRVIZ (CLUSTER_INFO* cluster_info,
+                           int cluster_size)
+    {
+      visualization_msgs::MarkerArray markerArray;
+      markerArray.markers.resize (cluster_size);
+
+      size_t TrackID = 0;
+      for (int i = 0; i < cluster_size; ++i)
+      {
+        markerArray.markers[i].header.frame_id = "lidar";
+        markerArray.markers[i].header.stamp = ros::Time ();
+        markerArray.markers[i].id = TrackID++;
+        markerArray.markers[i].action = visualization_msgs::Marker::ADD;
+        markerArray.markers[i].type = visualization_msgs::Marker::LINE_STRIP;
+        markerArray.markers[i].pose.orientation.w = 1.0;
+        markerArray.markers[i].scale.x = 0.1;
+        markerArray.markers[i].color.r = 0.0;
+        markerArray.markers[i].color.g = 1.0;
+        markerArray.markers[i].color.b = 0.0;
+        markerArray.markers[i].color.a = 1.0;
+        markerArray.markers[i].lifetime = ros::Duration (0.1);
+
+        markerArray.markers[i].points.resize(cluster_info[i].convex_hull.size ());
+        for (size_t j = 0; j < cluster_info[i].convex_hull.size (); ++j)
+        {
+          markerArray.markers[i].points[j].x = cluster_info[i].convex_hull.points[j].x;
+          markerArray.markers[i].points[j].y = cluster_info[i].convex_hull.points[j].y;
+          markerArray.markers[i].points[j].z = cluster_info[i].convex_hull.points[j].z;
+        }
+      }
+      LidarDetectionRVIZ_pub.publish (markerArray);
     }
 
     static void
@@ -376,12 +486,32 @@ class RosModuleHINO
 
     }
 
+  private:
+
+    static ros::Publisher ErrorCode_pub;
+    static ros::Publisher Rviz_pub;
+    static ros::Publisher LidarLeft_pub;
+    static ros::Publisher LidarRight_pub;
+    static ros::Publisher LidarFront_pub;
+    static ros::Publisher LidarTop_pub;
+    static ros::Publisher LidarAll_pub;
+    static ros::Publisher LidarAllNonGround_pub;
+    static ros::Publisher LidarDetection_pub;
+    static ros::Publisher LidarDetectionRVIZ_pub;
+    static ros::Publisher CameraDetection_pub;
+
 };
 
 ros::Publisher RosModuleHINO::ErrorCode_pub;
 ros::Publisher RosModuleHINO::Rviz_pub;
+ros::Publisher RosModuleHINO::LidarLeft_pub;
+ros::Publisher RosModuleHINO::LidarRight_pub;
+ros::Publisher RosModuleHINO::LidarFront_pub;
+ros::Publisher RosModuleHINO::LidarTop_pub;
+ros::Publisher RosModuleHINO::LidarAll_pub;
 ros::Publisher RosModuleHINO::LidarAllNonGround_pub;
 ros::Publisher RosModuleHINO::LidarDetection_pub;
+ros::Publisher RosModuleHINO::LidarDetectionRVIZ_pub;
 ros::Publisher RosModuleHINO::CameraDetection_pub;
 
 #endif // ROSMODULE_H

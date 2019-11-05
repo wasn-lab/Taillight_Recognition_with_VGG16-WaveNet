@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-    <name>pslot_detector</name>
+    <name>itri_parknet</name>
     <version>0.0.0</version>
     <description>parkin slot detector</description>
     <maintainer email="chtseng@itri.org.tw">chtseng</maintainer>

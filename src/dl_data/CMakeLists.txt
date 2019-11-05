@@ -6,7 +6,6 @@ set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 set(DRIVENET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_drivenet/drivenet/data/yolo)
 set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_parknet/weights)
 set(OPENROADNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_openroadnet/openroadnet)
-set(MAIN_DRIVENET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/sensing_subsystem_camera/src/DriveNet/data/yolo)
 set(CAMERA_UTILS_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_utils/data)
 set(CAMERA_GRABBER_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_grabber/src/CameraGrabber)
 
