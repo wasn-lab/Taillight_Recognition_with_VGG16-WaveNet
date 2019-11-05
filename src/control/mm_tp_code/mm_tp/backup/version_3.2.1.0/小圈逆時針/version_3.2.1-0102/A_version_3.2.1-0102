@@ -1,0 +1,10 @@
+此版本object mode已實車測試
+此版本freespace mode 已實車測試
+此版本兩段皆會避障-有freespace及object兩種mode
+此版本為大地圖,3p停車場逆時針
+look ahead time 計算及傳輸
+seg id , target id 計算及傳輸
+若所有線段都有物件時,維持上一刻結果
+根據自身車速調整是否要切換道路
+物件輸入分成兩個mode 1為需要為絕對座標 0相對座標
+此為ukf new參數

@@ -66,7 +66,11 @@ visualization_msgs::Marker MarkerGen::create_box_marker(const unsigned int idx, 
 {
   visualization_msgs::Marker marker;
 
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
   marker.header = obj_header;
+#endif
   marker.ns = "PPOutput_b";
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.orientation.w = 1.0;
@@ -94,7 +98,11 @@ visualization_msgs::Marker MarkerGen::create_polygon_marker(const unsigned int i
 {
   visualization_msgs::Marker marker;
 
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
   marker.header = obj_header;
+#endif
   marker.ns = "PPOutput_p";
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.orientation.x = 0.0;
@@ -203,7 +211,11 @@ visualization_msgs::Marker MarkerGen::create_trackid_marker(const unsigned int i
 {
   visualization_msgs::Marker marker;
 
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
   marker.header = obj.header;
+#endif
   marker.ns = "PPOutput_i";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
@@ -252,7 +264,11 @@ visualization_msgs::Marker MarkerGen::create_speed_marker(const unsigned int idx
 {
   visualization_msgs::Marker marker;
 
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
   marker.header = obj_header;
+#endif
   marker.ns = "PPOutput_s";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
@@ -286,7 +302,11 @@ visualization_msgs::Marker MarkerGen::create_delay_marker(const unsigned int idx
 {
   visualization_msgs::Marker marker;
 
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
   marker.header = obj_header;
+#endif
   marker.ns = "PPOutput_d";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
@@ -317,7 +337,11 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
 {
   visualization_msgs::Marker marker;
 
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
   marker.header = obj_header;
+#endif
   marker.ns = "PPOutput_pp";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;

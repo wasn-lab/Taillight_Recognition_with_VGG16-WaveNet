@@ -74,7 +74,7 @@ private:
   void covariance_matrix(PPLongDouble& pp, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
   int predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
-              std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
+              std::vector<long double>& data_y, std::vector<PPLongDouble>& pps, const unsigned int confidence_lv);
 };
 }  // namespace tpp
 

@@ -8,5 +8,5 @@ namespace SensingSubSystem
 {
 // Util function:  copy from cv::Mat to cv::Mat
 void copyBufferByIndex(const std::vector<cv::Mat>& in, std::vector<cv::Mat>& out, std::vector<size_t>& num);
-};  // namespace
-#endif // __GRABBER_IMAGE_UTILS_H__
+};      // namespace
+#endif  // __GRABBER_IMAGE_UTILS_H__

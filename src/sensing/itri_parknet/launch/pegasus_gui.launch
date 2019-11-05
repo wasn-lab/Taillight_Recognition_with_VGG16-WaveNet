@@ -1,7 +1,7 @@
 <launch>
   <node name="parknet"
-    pkg="pslot_detector"
-    type="pslot_detector"
+    pkg="itri_parknet"
+    type="itri_parknet"
     output="screen"
     args="-camera_port= 
           -publish_detection_results=true

@@ -1,0 +1,17 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+	<node pkg="GUI_Publisher" type="GUI_Publisher_all" name="GUI_Publisher_all" output="screen" cwd="node" respawn="true"  />
+	<node pkg="trimble_gps_imu_pub" type="trimble_gps_imu_pub_node" name="trimble_gps_imu_pub_node" output="screen" cwd="node" respawn="true"  />
+	<node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  />
+	<!--node pkg="dSPACE_subscriber" type="dSPACE_subscriber" name="dSPACE_subscriber" output="screen" cwd="node" respawn="true"  /-->
+	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  />
+	<node pkg="lidarxyz2lla" type="lidarxyz2lla_node" name="lidarxyz2lla_node" output="screen" cwd="node" respawn="true"  />
+	<node pkg="rad_grab" type="RadFrontPub" name="RadFrontPub" output="screen" cwd="node" respawn="true"  />
+	<node pkg="rad_grab" type="RadFrontSub_CAN" name="RadFrontSub_CAN" output="screen" cwd="node" respawn="true"  />
+	<!--node pkg="Geofence" type="Geofence" name="Geofence" output="screen" cwd="node" respawn="true"  /-->
+	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
+		<param name="Path_flag" value="0" type="int"/>
+	</node-->
+
+</launch>

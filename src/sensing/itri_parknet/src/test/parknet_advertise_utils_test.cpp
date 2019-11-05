@@ -1,3 +1,5 @@
+#include "car_model.h"
+#if CAR_MODEL_IS_HINO
 #include <gtest/gtest.h>
 #include <glog/logging.h>
 #include "parknet_camera.h"
@@ -122,3 +124,4 @@ TEST(ParknetAdvertiseUtilsTest, test_convert_corner_to_marking_point)
 }
 #endif
 }  // parknet
+#endif // CAR_MODEL_IS_HINO

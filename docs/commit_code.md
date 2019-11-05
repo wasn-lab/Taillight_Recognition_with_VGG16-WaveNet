@@ -55,8 +55,7 @@ $ git push
 
 Reviewer需要有maintainer權限，目前有
 @root (austin)
-@chinghao.liu
 @Wayne
 @chtseng
 @hankliu
-
+@chinghao.liu
