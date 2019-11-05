@@ -78,6 +78,8 @@ std::vector<cv::Mat*> matSrcs;
 std::vector<uint32_t> matOrder;
 std::vector<uint32_t> matId;
 std::vector<std_msgs::Header> headers;
+std::vector<int> dist_rows;
+std::vector<int> dist_cols;
 
 DistanceEstimation de;
 Yolo_app yoloApp;
@@ -99,7 +101,7 @@ void image_init()
     }
 }
 
-void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx){
+void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
@@ -113,6 +115,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         matId.push_back(camId);
         vbbx_output.push_back(vbbx);
         headers.push_back(header);
+        dist_cols.push_back(dist_w);
+        dist_rows.push_back(dist_h);
         std::cout << __FILE__ << __LINE__ << ", camOrder: " << camOrder << std::endl;
     }
 
@@ -166,7 +170,7 @@ void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
     // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_0) sync_inference(0, 4, h, &mat120_0, &vBBX120_0);
+    if(!isInferData_0) sync_inference(0, 4, h, &mat120_0, &vBBX120_0, 1920, 1208);
 }
 
 void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
@@ -177,21 +181,21 @@ void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
     // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_1)  sync_inference(1, 5, h, &mat120_1, &vBBX120_1);
+    if(!isInferData_1)  sync_inference(1, 5, h, &mat120_1, &vBBX120_1, 1920, 1208);
 }
 
 void callback_120_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_0);
 
     // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
-    if(!isInferData_0) sync_inference(0, 4, compressImg.header, &mat120_0, &vBBX120_0);
+    if(!isInferData_0) sync_inference(0, 4, compressImg.header, &mat120_0, &vBBX120_0, 1920, 1208);
 }
 
 void callback_120_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_1);
 
     // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
-    if(!isInferData_1)  sync_inference(1, 5, compressImg.header, &mat120_1, &vBBX120_1);
+    if(!isInferData_1)  sync_inference(1, 5, compressImg.header, &mat120_1, &vBBX120_1, 1920, 1208);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
@@ -405,6 +409,8 @@ std::cout << "run_inference start" << std::endl;
     std::vector<cv::Mat*> matSrcs_tmp;
     std::vector<uint32_t> matOrder_tmp;
     std::vector<uint32_t> matId_tmp;
+    std::vector<int> dist_cols_tmp;    
+    std::vector<int> dist_rows_tmp;
 
     cv::Mat M_display;
     cv::Mat M_display_tmp;
@@ -423,6 +429,8 @@ std::cout << "run_inference start" << std::endl;
         matSrcs_tmp = matSrcs;
         matOrder_tmp = matOrder;
         matId_tmp = matId;
+        dist_cols_tmp = dist_cols;
+        dist_rows_tmp = dist_rows;
 
         // reset data
         headers.clear();
@@ -432,12 +440,14 @@ std::cout << "run_inference start" << std::endl;
         vBBX120_0.clear();
         vBBX120_1.clear();
         vbbx_output.clear();
+        dist_cols.clear();
+        dist_rows.clear();
         isInferData = false;
         isInferData_0 = false;
         isInferData_1 = false;
 
         if (!input_resize) yoloApp.input_preprocess(matSrcs_tmp); 
-        else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize); 
+        else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
 
         yoloApp.inference_yolo();
         yoloApp.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
@@ -530,6 +540,8 @@ std::cout << "run_inference start" << std::endl;
         matOrder_tmp.clear();
         matId_tmp.clear();
         vbbx_output_tmp.clear();
+        dist_cols_tmp.clear();
+        dist_rows_tmp.clear();
         r.sleep();
     }
 std::cout << __FILE__ << __LINE__ << std::endl;

@@ -49,26 +49,16 @@ void Yolo_app::input_preprocess(std::vector<cv::Mat*> &matSrcs){
     yoloInput = yoloInput - inferYolo->getInputH()*inferYolo->getInputW()*3* batchSize;
 
 }
-void Yolo_app::input_preprocess(std::vector<cv::Mat*> &matSrcs, std::vector<uint32_t> matId, int input_size){
+void Yolo_app::input_preprocess(std::vector<cv::Mat*> &matSrcs, std::vector<uint32_t> matId, int input_size, std::vector<int> dist_cols, std::vector<int> dist_rows){
     dsImgs_rows.clear();
     dsImgs_cols.clear();
-    int img_h = 1208;
-    int img_w = 1920;
+    dsImgs_cols = dist_cols;
+    dsImgs_rows = dist_rows;
     int cam_id;
     for(uint i = 0 ; i < batchSize; i++){
         cam_id = matId[i];
-        if (cam_id == 7 || cam_id == 9){
-            img_w = 1208;
-            img_h = 1920;
-        }
-        else{
-            img_w = 1920;
-            img_h = 1208;
-        }   
-        
+
         float* tmp = dsImags.preprocessing(*matSrcs[i], inferYolo->getInputH(), inferYolo->getInputW(), input_size);
-        dsImgs_rows.push_back(img_h);
-        dsImgs_cols.push_back(img_w);
 
         cudaMemcpyAsync(yoloInput, tmp, inferYolo->getInputH()*inferYolo->getInputW()*3*sizeof(float), cudaMemcpyDeviceToDevice, inferYolo->m_CudaStream);
         cudaFree(tmp);
