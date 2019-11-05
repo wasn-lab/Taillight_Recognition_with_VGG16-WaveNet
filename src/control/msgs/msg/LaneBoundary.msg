@@ -1,2 +1,0 @@
-Header LaneBoundaryheader
-PointXY[] lanePoints

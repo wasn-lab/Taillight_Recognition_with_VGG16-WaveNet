@@ -1,2 +1,0 @@
-Header lidHeader
-LidRoiBox[] lidRoiBox
