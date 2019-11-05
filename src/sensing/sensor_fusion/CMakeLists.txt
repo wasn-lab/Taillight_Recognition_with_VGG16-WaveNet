@@ -9,11 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   msgs
-  image_transport
-  cv_bridge
 )
 
-find_package(msgs REQUIRED)
 find_package(PCL 1.9 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
