@@ -35,7 +35,7 @@ TegraBGrabber::~TegraBGrabber()
     delete grabber;
     printf("grabber DELETED OK!\n");
   }
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < cam_ids_.size(); i++)
   {
     nppiFree(npp8u_ptrs_[i]);
     nppiFree(npp8u_ptrs_distorted_[i]);
@@ -50,7 +50,7 @@ void TegraBGrabber::initializeModules()
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
   }
 
-  grabber = new MultiGMSLCameraGrabber("000001110000");
+  grabber = new MultiGMSLCameraGrabber("000001110111");
   grabber->initializeCameras();
   camera_buffer_.initBuffer();
 

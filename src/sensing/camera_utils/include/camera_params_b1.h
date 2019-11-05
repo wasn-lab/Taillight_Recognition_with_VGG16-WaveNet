@@ -16,23 +16,23 @@ namespace camera
 enum id
 {
   begin = 0,
-  left_60 = begin,  // 0
-  front_60,         // 1
-  right_60,         // 2
-  _dummy1,          // 3
-  left_120,         // 4
-  front_120,        // 5
-  right_120,        // 6
-  _dummy2,          // 7
-  __left_120,          // 8
-  __front_120,         // 9
-  __right_120,         // 10
-  _dummy3,          // 11
-  num_ids           // 12
+  right_60 = begin,           // 0
+  front_60,                   // 1
+  left_60,                    // 2
+  _dummy1,                    // 3
+  top_front_120,              // 4
+  top_right_front_120,        // 5
+  top_right_rear_120,         // 6
+  _dummy2,                    // 7
+  top_left_front_120,         // 8
+  top_left_rear_120,          // 9
+  top_rear_120,               // 10
+  _dummy3,                    // 11
+  num_ids                     // 12
 };
 
 static_assert(id::begin == 0, "The first camera id is 1");
-static_assert(id::left_60 == 0, "The camera id 0 is also left_60");
+static_assert(id::right_60 == 0, "The camera id 0 is also right_60");
 static_assert(id::num_ids == 12, "The number of ids is 12");
 
 extern const std::string names[id::num_ids];
