@@ -75,15 +75,7 @@ bool TegraAGrabber::runPerception()
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(2),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
-    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[8], grabber->getCurrentFrameData(8),
-               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
-    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[9], grabber->getCurrentFrameData(9),
-               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
-    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[10], grabber->getCurrentFrameData(10),
-               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
-
     // start image processing
-
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[0]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[0]);
     resizer_.resize(npp8u_ptrs_[0], canvas[0]);
@@ -96,17 +88,6 @@ bool TegraAGrabber::runPerception()
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
     resizer_.resize(npp8u_ptrs_[2], canvas[2]);
 
-    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[8]),
-                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[3]);
-    resizer_.resize(npp8u_ptrs_[3], canvas[3]);
-
-    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[9]),
-                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[4]);
-    resizer_.resize(npp8u_ptrs_[4], canvas[4]);
-
-    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[10]),
-                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[5]);
-    resizer_.resize(npp8u_ptrs_[5], canvas[5]);
 
     // end image processing
 
