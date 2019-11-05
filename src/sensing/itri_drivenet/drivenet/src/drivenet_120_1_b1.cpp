@@ -285,10 +285,10 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam120_0_topicName = "gmsl_camera/5";
-    cam120_1_topicName = "gmsl_camera/6";
-    cam120_2_topicName = "gmsl_camera/8";
-    cam120_3_topicName = "gmsl_camera/9";
+    cam120_0_topicName = "/cam/R_front";
+    cam120_1_topicName = "/cam/R_rear";
+    cam120_2_topicName = "/cam/L_front";
+    cam120_3_topicName = "/cam/L_rear";
 
     if(iscompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);

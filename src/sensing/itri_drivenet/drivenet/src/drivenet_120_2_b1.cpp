@@ -221,8 +221,8 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
 
-    cam120_0_topicName = "gmsl_camera/4";
-    cam120_1_topicName = "gmsl_camera/10";
+    cam120_0_topicName = "/cam/F_top";
+    cam120_1_topicName = "/cam/B_top";
     
     if(iscompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);

@@ -193,8 +193,6 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 	    pubImg_60_2.publish(imgMsg);
 }
 
-
-/// roslaunch drivenet drivenet60.launch
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "drivenet_60_b1");
@@ -210,9 +208,9 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam60_0_topicName = "gmsl_camera/0";
-    cam60_1_topicName = "gmsl_camera/1";
-    cam60_2_topicName = "gmsl_camera/2";
+    cam60_0_topicName = "/cam/F_right";
+    cam60_1_topicName = "/cam/F_center";
+    cam60_2_topicName = "/cam/F_left";
     
     if (iscompressed){
         cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
