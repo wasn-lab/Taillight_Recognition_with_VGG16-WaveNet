@@ -665,10 +665,18 @@ std::cout << "run_inference close" << std::endl;
 
 void* run_display(void* ){
     std::cout << "run_display start" << std::endl;
+    cv::namedWindow("RightFront-120", CV_WINDOW_NORMAL);
+    cv::namedWindow("RightBack-120", CV_WINDOW_NORMAL);   
     cv::namedWindow("LeftFront-120", CV_WINDOW_NORMAL);
     cv::namedWindow("LeftBack-120", CV_WINDOW_NORMAL);
-    cv::namedWindow("RightFront-120", CV_WINDOW_NORMAL);
-    cv::namedWindow("RightBack-120", CV_WINDOW_NORMAL);    
+    cv::resizeWindow("RightFront-120", 480, 360);
+    cv::resizeWindow("RightBack-120", 480, 360);
+    cv::resizeWindow("LeftFront-120", 480, 360);
+    cv::resizeWindow("LeftBack-120", 480, 360);
+    cv::moveWindow("RightFront-120", 1025, 360);   
+    cv::moveWindow("RightBack-120", 1500, 360);
+    cv::moveWindow("LeftFront-120", 545, 360);
+    cv::moveWindow("LeftBack-120", 0, 360);   
 
     int marker_h = 0;
     marker_h = 590;  

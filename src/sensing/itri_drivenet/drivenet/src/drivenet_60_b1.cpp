@@ -545,6 +545,12 @@ void* run_display(void* ){
     cv::namedWindow("RightSide-60", cv::WINDOW_NORMAL);
     cv::namedWindow("Center-60", cv::WINDOW_NORMAL);
     cv::namedWindow("LeftSide-60", cv::WINDOW_NORMAL);
+    cv::resizeWindow("RightSide-60", 480, 360);
+    cv::resizeWindow("Center-60", 480, 360);
+    cv::resizeWindow("LeftSide-60", 480, 360);
+    cv::moveWindow("RightSide-60", 1025, 30);
+    cv::moveWindow("Center-60", 545, 30);   
+    cv::moveWindow("LeftSide-60", 0, 30);   
 
     int marker_h = 0;
     if (car_id == 1) marker_h = 590;
