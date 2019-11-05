@@ -8,23 +8,23 @@ DATE: Oct, 2019
 namespace camera
 {
 const std::string names[id::num_ids] = {
-  "left_60", "front_60", "right_60", "",
-  "left_120", "front_120", "right_120", "",
-  "__left_120", "__front_120", "__right_120", "",
+  "F_right", "F_center", "F_left", "",
+  "F_top", "R_front", "R_rear", "",
+  "L_front", "L_rear", "B_top", "",
 };
 
 const std::string topics[id::num_ids] = {
-  "/gmsl_camera/left_60",
-  "/gmsl_camera/front_60",
-  "/gmsl_camera/right_60",
+  "/cam/F_right",
+  "/cam/F_center",
+  "/cam/F_left",
   "",
-  "/gmsl_camera/left_120",
-  "/gmsl_camera/front_120",
-  "/gmsl_camera/right_120",
+  "/cam/F_top",
+  "/cam/R_front",
+  "/cam/R_rear",
   "",
-  "/gmsl_camera/__left_120",
-  "/gmsl_camera/__front_120",
-  "/gmsl_camera/__right_120",
+  "/cam/L_front",
+  "/cam/L_rear",
+  "/cam/B_top",
   "",
 };
 

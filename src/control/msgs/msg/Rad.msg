@@ -1,2 +1,0 @@
-Header radHeader
-PointXYZV[] radPoint

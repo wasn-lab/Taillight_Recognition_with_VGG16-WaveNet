@@ -163,10 +163,10 @@ void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_0 = cv_ptr->image;
-    calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_0) sync_inference(0, 4, h, &mat120_0_rect, &vBBX120_0);
+    if(!isInferData_0) sync_inference(0, 4, h, &mat120_0, &vBBX120_0);
 }
 
 void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
@@ -174,24 +174,24 @@ void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_1 = cv_ptr->image;
-    calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_1)  sync_inference(1, 5, h, &mat120_1_rect, &vBBX120_1);
+    if(!isInferData_1)  sync_inference(1, 5, h, &mat120_1, &vBBX120_1);
 }
 
 void callback_120_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_0);
 
-    calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
-    if(!isInferData_0) sync_inference(0, 4, compressImg.header, &mat120_0_rect, &vBBX120_0);
+    // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+    if(!isInferData_0) sync_inference(0, 4, compressImg.header, &mat120_0, &vBBX120_0);
 }
 
 void callback_120_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_1);
 
-    calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
-    if(!isInferData_1)  sync_inference(1, 5, compressImg.header, &mat120_1_rect, &vBBX120_1);
+    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+    if(!isInferData_1)  sync_inference(1, 5, compressImg.header, &mat120_1, &vBBX120_1);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
