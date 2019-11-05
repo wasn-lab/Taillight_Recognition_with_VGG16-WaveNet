@@ -3,9 +3,9 @@
 //
 // Code generated for Simulink model 'MM_TP'.
 //
-// Model version                  : 1.392
+// Model version                  : 1.393
 // Simulink Coder version         : 8.14 (R2018a) 06-Feb-2018
-// C/C++ source code generated on : Tue Oct 29 16:53:02 2019
+// C/C++ source code generated on : Mon Nov  4 22:32:09 2019
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -413,8 +413,8 @@ void MM_DPP_1ModelClass::invNxN(const real_T x[25], real_T y[25])
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void MM_DPP_1ModelClass::merge(int32_T idx[113], real_T x[113], int32_T offset,
-  int32_T np, int32_T nq, int32_T iwork[113], real_T xwork[113])
+void MM_DPP_1ModelClass::merge(int32_T idx[188], real_T x[188], int32_T offset,
+  int32_T np, int32_T nq, int32_T iwork[188], real_T xwork[188])
 {
   int32_T n;
   int32_T q;
@@ -465,13 +465,13 @@ void MM_DPP_1ModelClass::merge(int32_T idx[113], real_T x[113], int32_T offset,
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void MM_DPP_1ModelClass::sort(real_T x[113], int32_T idx[113])
+void MM_DPP_1ModelClass::sort(real_T x[188], int32_T idx[188])
 {
   int32_T nNaNs;
-  real_T xwork[113];
-  int32_T iwork[113];
+  real_T xwork[188];
+  int32_T iwork[188];
   real_T x4[4];
-  int8_T idx4[4];
+  uint8_T idx4[4];
   int32_T ib;
   int32_T m;
   int8_T perm[4];
@@ -480,25 +480,25 @@ void MM_DPP_1ModelClass::sort(real_T x[113], int32_T idx[113])
   int32_T i3;
   int32_T i4;
   x4[0] = 0.0;
-  idx4[0] = 0;
+  idx4[0] = 0U;
   x4[1] = 0.0;
-  idx4[1] = 0;
+  idx4[1] = 0U;
   x4[2] = 0.0;
-  idx4[2] = 0;
+  idx4[2] = 0U;
   x4[3] = 0.0;
-  idx4[3] = 0;
-  memset(&idx[0], 0, 113U * sizeof(int32_T));
-  memset(&xwork[0], 0, 113U * sizeof(real_T));
+  idx4[3] = 0U;
+  memset(&idx[0], 0, 188U * sizeof(int32_T));
+  memset(&xwork[0], 0, 188U * sizeof(real_T));
   nNaNs = 0;
   ib = 0;
-  for (m = 0; m < 113; m++) {
+  for (m = 0; m < 188; m++) {
     if (rtIsNaN(x[m])) {
-      idx[112 - nNaNs] = m + 1;
-      xwork[112 - nNaNs] = x[m];
+      idx[187 - nNaNs] = m + 1;
+      xwork[187 - nNaNs] = x[m];
       nNaNs++;
     } else {
       ib++;
-      idx4[ib - 1] = (int8_T)(m + 1);
+      idx4[ib - 1] = (uint8_T)(m + 1);
       x4[ib - 1] = x[m];
       if (ib == 4) {
         ib = m - nNaNs;
@@ -621,8 +621,8 @@ void MM_DPP_1ModelClass::sort(real_T x[113], int32_T idx[113])
       break;
     }
 
-    for (m = 113; m - 112 <= ib; m++) {
-      i1 = perm[m - 113] - 1;
+    for (m = 188; m - 187 <= ib; m++) {
+      i1 = perm[m - 188] - 1;
       i2 = (m - nNaNs) - ib;
       idx[i2] = idx4[i1];
       x[i2] = x4[i1];
@@ -631,27 +631,27 @@ void MM_DPP_1ModelClass::sort(real_T x[113], int32_T idx[113])
 
   m = nNaNs >> 1;
   for (ib = 1; ib <= m; ib++) {
-    i2 = (ib - nNaNs) + 112;
+    i2 = (ib - nNaNs) + 187;
     i1 = idx[i2];
-    idx[i2] = idx[113 - ib];
-    idx[113 - ib] = i1;
-    x[i2] = xwork[113 - ib];
-    x[113 - ib] = xwork[i2];
+    idx[i2] = idx[188 - ib];
+    idx[188 - ib] = i1;
+    x[i2] = xwork[188 - ib];
+    x[188 - ib] = xwork[i2];
   }
 
   if ((nNaNs & 1U) != 0U) {
-    x[(m - nNaNs) + 113] = xwork[(m - nNaNs) + 113];
+    x[(m - nNaNs) + 188] = xwork[(m - nNaNs) + 188];
   }
 
-  if (113 - nNaNs > 1) {
-    memset(&iwork[0], 0, 113U * sizeof(int32_T));
-    ib = (113 - nNaNs) >> 2;
+  if (188 - nNaNs > 1) {
+    memset(&iwork[0], 0, 188U * sizeof(int32_T));
+    ib = (188 - nNaNs) >> 2;
     m = 4;
     while (ib > 1) {
       if ((ib & 1U) != 0U) {
         ib--;
         i1 = m * ib;
-        i2 = 113 - (nNaNs + i1);
+        i2 = 188 - (nNaNs + i1);
         if (i2 > m) {
           merge(idx, x, i1, m, i2 - m, iwork, xwork);
         }
@@ -666,25 +666,41 @@ void MM_DPP_1ModelClass::sort(real_T x[113], int32_T idx[113])
       m = i1;
     }
 
-    if (113 - nNaNs > m) {
-      merge(idx, x, 0, m, 113 - (nNaNs + m), iwork, xwork);
+    if (188 - nNaNs > m) {
+      merge(idx, x, 0, m, 188 - (nNaNs + m), iwork, xwork);
     }
   }
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void MM_DPP_1ModelClass::rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy
-  [226], real_T dist[113])
+void MM_DPP_1ModelClass::power(const real_T a[188], real_T y[188])
 {
   int32_T k;
-  real_T a;
-  real_T temp;
-  for (k = 0; k < 113; k++) {
-    a = pt_xy[k] - ref_xy[0];
-    temp = a * a;
-    a = pt_xy[113 + k] - ref_xy[1];
-    temp += a * a;
-    dist[k] = std::sqrt(temp);
+  for (k = 0; k < 188; k++) {
+    y[k] = a[k] * a[k];
+  }
+}
+
+// Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
+void MM_DPP_1ModelClass::rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy
+  [376], real_T dist[188])
+{
+  real_T pt_xy_0[188];
+  real_T tmp[188];
+  real_T tmp_0[188];
+  int32_T k;
+  for (k = 0; k < 188; k++) {
+    pt_xy_0[k] = pt_xy[k] - ref_xy[0];
+  }
+
+  power(pt_xy_0, tmp);
+  for (k = 0; k < 188; k++) {
+    pt_xy_0[k] = pt_xy[188 + k] - ref_xy[1];
+  }
+
+  power(pt_xy_0, tmp_0);
+  for (k = 0; k < 188; k++) {
+    dist[k] = std::sqrt(tmp[k] + tmp_0[k]);
   }
 }
 
@@ -701,20 +717,20 @@ real_T MM_DPP_1ModelClass::rel_dist_xy_c(const real_T ref_xy[2], const real_T
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
 void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
-  oi_xy[226], const real_T dist_op[113], const real_T Map_data[2599], real_T
+  oi_xy[376], const real_T dist_op[188], const real_T Map_data[4324], real_T
   *seg_id_near, real_T *op_distance, real_T oi_near[2], real_T *note, real_T
   *seg_direction, real_T *head_err, real_T num_lane_direction[4], real_T
   *seg_heading)
 {
   real_T op_distance_n;
   real_T C;
-  int32_T b_index[226];
-  real_T SEG_GPS_HEAD[226];
-  real_T dist_ini[113];
-  real_T dist_end[113];
-  int32_T iidx[113];
-  boolean_T x[113];
-  int8_T ii_data[113];
+  int32_T b_index[376];
+  real_T SEG_GPS_HEAD[376];
+  real_T dist_ini[188];
+  real_T dist_end[188];
+  int32_T iidx[188];
+  boolean_T x[188];
+  uint8_T ii_data[188];
   int32_T idx;
   int32_T b_ii;
   boolean_T ex;
@@ -723,39 +739,39 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
   real_T d_a;
   real_T oi_xy_0[2];
   boolean_T exitg1;
-  memcpy(&dist_ini[0], &dist_op[0], 113U * sizeof(real_T));
+  memcpy(&dist_ini[0], &dist_op[0], 188U * sizeof(real_T));
   sort(dist_ini, iidx);
-  for (b_ii = 0; b_ii < 113; b_ii++) {
+  for (b_ii = 0; b_ii < 188; b_ii++) {
     b_index[b_ii] = iidx[b_ii];
-    b_index[b_ii + 113] = 0;
+    b_index[b_ii + 188] = 0;
     SEG_GPS_HEAD[b_ii] = Map_data[b_ii];
-    SEG_GPS_HEAD[113 + b_ii] = Map_data[791 + b_ii];
+    SEG_GPS_HEAD[188 + b_ii] = Map_data[1316 + b_ii];
   }
 
-  for (idx = 0; idx < 113; idx++) {
-    op_distance_n = Map_data[b_index[idx] + 112] - oi_xy[b_index[idx] - 1];
-    C = Map_data[b_index[idx] + 225] - oi_xy[b_index[idx] + 112];
-    c_a = Map_data[b_index[idx] + 338] - oi_xy[b_index[idx] - 1];
-    d_a = Map_data[b_index[idx] + 451] - oi_xy[b_index[idx] + 112];
+  for (idx = 0; idx < 188; idx++) {
+    op_distance_n = Map_data[b_index[idx] + 187] - oi_xy[b_index[idx] - 1];
+    C = Map_data[b_index[idx] + 375] - oi_xy[b_index[idx] + 187];
+    c_a = Map_data[b_index[idx] + 563] - oi_xy[b_index[idx] - 1];
+    d_a = Map_data[b_index[idx] + 751] - oi_xy[b_index[idx] + 187];
     if (std::sqrt(op_distance_n * op_distance_n + C * C) <= Map_data[b_index[idx]
-        + 903]) {
-      b_index[113 + idx] = (std::sqrt(c_a * c_a + d_a * d_a) <=
-                            Map_data[b_index[idx] + 903]);
+        + 1503]) {
+      b_index[188 + idx] = (std::sqrt(c_a * c_a + d_a * d_a) <=
+                            Map_data[b_index[idx] + 1503]);
     } else {
-      b_index[113 + idx] = 0;
+      b_index[188 + idx] = 0;
     }
 
-    x[idx] = (b_index[113 + idx] == 1);
+    x[idx] = (b_index[188 + idx] == 1);
   }
 
   idx = 0;
   b_ii = 1;
   exitg1 = false;
-  while ((!exitg1) && (b_ii < 114)) {
+  while ((!exitg1) && (b_ii < 189)) {
     if (x[b_ii - 1]) {
       idx++;
-      ii_data[idx - 1] = (int8_T)b_ii;
-      if (idx >= 113) {
+      ii_data[idx - 1] = (uint8_T)b_ii;
+      if (idx >= 188) {
         exitg1 = true;
       } else {
         b_ii++;
@@ -767,15 +783,15 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
 
   if (1 > idx) {
     *note = 1.0;
-    rel_dist_xy(X_pos, &Map_data[113], dist_ini);
-    rel_dist_xy(X_pos, &Map_data[339], dist_end);
+    rel_dist_xy(X_pos, &Map_data[188], dist_ini);
+    rel_dist_xy(X_pos, &Map_data[564], dist_end);
     if (!rtIsNaN(dist_ini[0])) {
       idx = 0;
     } else {
       idx = -1;
       b_ii = 2;
       exitg1 = false;
-      while ((!exitg1) && (b_ii < 114)) {
+      while ((!exitg1) && (b_ii < 189)) {
         if (!rtIsNaN(dist_ini[b_ii - 1])) {
           idx = b_ii - 1;
           exitg1 = true;
@@ -790,7 +806,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       idx = 0;
     } else {
       op_distance_n = dist_ini[idx];
-      for (b_ii = idx + 1; b_ii + 1 < 114; b_ii++) {
+      for (b_ii = idx + 1; b_ii + 1 < 189; b_ii++) {
         if (op_distance_n > dist_ini[b_ii]) {
           op_distance_n = dist_ini[b_ii];
           idx = b_ii;
@@ -804,7 +820,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = -1;
       d_k = 2;
       exitg1 = false;
-      while ((!exitg1) && (d_k < 114)) {
+      while ((!exitg1) && (d_k < 189)) {
         if (!rtIsNaN(dist_end[d_k - 1])) {
           b_ii = d_k - 1;
           exitg1 = true;
@@ -819,7 +835,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = 0;
     } else {
       C = dist_end[b_ii];
-      for (d_k = b_ii + 1; d_k + 1 < 114; d_k++) {
+      for (d_k = b_ii + 1; d_k + 1 < 189; d_k++) {
         if (C > dist_end[d_k]) {
           C = dist_end[d_k];
           b_ii = d_k;
@@ -834,36 +850,36 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     *seg_id_near = Map_data[idx];
     *op_distance = dist_op[idx];
     oi_near[0] = oi_xy[idx];
-    oi_near[1] = oi_xy[idx + 113];
-    if ((idx + 1 > 1) && (idx + 1 < 113)) {
+    oi_near[1] = oi_xy[idx + 188];
+    if ((idx + 1 > 1) && (idx + 1 < 188)) {
       oi_xy_0[0] = oi_xy[idx];
-      oi_xy_0[1] = oi_xy[idx + 113];
+      oi_xy_0[1] = oi_xy[idx + 188];
       op_distance_n = rel_dist_xy_c(X_pos, oi_xy_0);
-      oi_xy_0[0] = Map_data[idx + 113];
-      oi_xy_0[1] = Map_data[idx + 226];
+      oi_xy_0[0] = Map_data[idx + 188];
+      oi_xy_0[1] = Map_data[idx + 376];
       if (op_distance_n < rel_dist_xy_c(X_pos, oi_xy_0)) {
-        oi_xy_0[0] = Map_data[idx + 339];
-        oi_xy_0[1] = Map_data[idx + 452];
+        oi_xy_0[0] = Map_data[idx + 564];
+        oi_xy_0[1] = Map_data[idx + 752];
         if (op_distance_n < rel_dist_xy_c(X_pos, oi_xy_0)) {
           *note = 0.0;
         }
       }
     }
 
-    for (b_ii = 0; b_ii < 113; b_ii++) {
+    for (b_ii = 0; b_ii < 188; b_ii++) {
       x[b_ii] = (SEG_GPS_HEAD[b_ii] == Map_data[idx]);
     }
 
     idx = -1;
     ex = x[0];
-    for (b_ii = 0; b_ii < 112; b_ii++) {
+    for (b_ii = 0; b_ii < 187; b_ii++) {
       if ((int32_T)ex < (int32_T)x[b_ii + 1]) {
         ex = x[b_ii + 1];
         idx = b_ii;
       }
     }
 
-    *head_err = std::abs(heading - SEG_GPS_HEAD[idx + 114]);
+    *head_err = std::abs(heading - SEG_GPS_HEAD[idx + 189]);
     if (*head_err <= 0.78539816339744828) {
       *seg_direction = 1.0;
     } else if ((*head_err >= 0.78539816339744828) && (*head_err <= 90.0)) {
@@ -877,21 +893,21 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     *seg_id_near = Map_data[idx];
     *op_distance = dist_op[idx];
     oi_near[0] = oi_xy[idx];
-    oi_near[1] = oi_xy[b_index[ii_data[0] - 1] + 112];
-    for (b_ii = 0; b_ii < 113; b_ii++) {
+    oi_near[1] = oi_xy[b_index[ii_data[0] - 1] + 187];
+    for (b_ii = 0; b_ii < 188; b_ii++) {
       x[b_ii] = (Map_data[b_index[ii_data[0] - 1] - 1] == SEG_GPS_HEAD[b_ii]);
     }
 
     idx = -1;
     ex = x[0];
-    for (b_ii = 0; b_ii < 112; b_ii++) {
+    for (b_ii = 0; b_ii < 187; b_ii++) {
       if ((int32_T)ex < (int32_T)x[b_ii + 1]) {
         ex = x[b_ii + 1];
         idx = b_ii;
       }
     }
 
-    *head_err = std::abs(heading - SEG_GPS_HEAD[idx + 114]);
+    *head_err = std::abs(heading - SEG_GPS_HEAD[idx + 189]);
     if (*head_err <= 0.78539816339744828) {
       *seg_direction = 1.0;
     } else if ((*head_err >= 0.78539816339744828) && (*head_err <= 90.0)) {
@@ -900,15 +916,15 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       *seg_direction = 2.0;
     }
 
-    rel_dist_xy(X_pos, &Map_data[113], dist_ini);
-    rel_dist_xy(X_pos, &Map_data[339], dist_end);
+    rel_dist_xy(X_pos, &Map_data[188], dist_ini);
+    rel_dist_xy(X_pos, &Map_data[564], dist_end);
     if (!rtIsNaN(dist_ini[0])) {
       idx = 0;
     } else {
       idx = -1;
       b_ii = 2;
       exitg1 = false;
-      while ((!exitg1) && (b_ii < 114)) {
+      while ((!exitg1) && (b_ii < 189)) {
         if (!rtIsNaN(dist_ini[b_ii - 1])) {
           idx = b_ii - 1;
           exitg1 = true;
@@ -923,7 +939,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       idx = 0;
     } else {
       op_distance_n = dist_ini[idx];
-      for (b_ii = idx + 1; b_ii + 1 < 114; b_ii++) {
+      for (b_ii = idx + 1; b_ii + 1 < 189; b_ii++) {
         if (op_distance_n > dist_ini[b_ii]) {
           op_distance_n = dist_ini[b_ii];
           idx = b_ii;
@@ -937,7 +953,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = -1;
       d_k = 2;
       exitg1 = false;
-      while ((!exitg1) && (d_k < 114)) {
+      while ((!exitg1) && (d_k < 189)) {
         if (!rtIsNaN(dist_end[d_k - 1])) {
           b_ii = d_k - 1;
           exitg1 = true;
@@ -952,7 +968,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = 0;
     } else {
       C = dist_end[b_ii];
-      for (d_k = b_ii + 1; d_k + 1 < 114; d_k++) {
+      for (d_k = b_ii + 1; d_k + 1 < 189; d_k++) {
         if (C > dist_end[d_k]) {
           C = dist_end[d_k];
           b_ii = d_k;
@@ -972,20 +988,20 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
         idx = b_ii;
       }
 
-      for (b_ii = 0; b_ii < 113; b_ii++) {
+      for (b_ii = 0; b_ii < 188; b_ii++) {
         x[b_ii] = (Map_data[b_index[ii_data[0] - 1] - 1] == SEG_GPS_HEAD[b_ii]);
       }
 
       b_ii = -1;
       ex = x[0];
-      for (d_k = 0; d_k < 112; d_k++) {
+      for (d_k = 0; d_k < 187; d_k++) {
         if ((int32_T)ex < (int32_T)x[d_k + 1]) {
           ex = x[d_k + 1];
           b_ii = d_k;
         }
       }
 
-      *head_err = std::abs(heading - SEG_GPS_HEAD[b_ii + 114]);
+      *head_err = std::abs(heading - SEG_GPS_HEAD[b_ii + 189]);
       if (*head_err <= 0.78539816339744828) {
         *seg_direction = 1.0;
       } else if ((*head_err >= 0.78539816339744828) && (*head_err <= 90.0)) {
@@ -997,27 +1013,27 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       *seg_id_near = Map_data[idx];
       *op_distance = dist_op[idx];
       oi_near[0] = oi_xy[idx];
-      oi_near[1] = oi_xy[idx + 113];
+      oi_near[1] = oi_xy[idx + 188];
     }
   }
 
-  for (b_ii = 0; b_ii < 113; b_ii++) {
-    dist_ini[b_ii] = Map_data[791 + b_ii] * 3.1415926535897931 / 180.0;
+  for (b_ii = 0; b_ii < 188; b_ii++) {
+    dist_ini[b_ii] = Map_data[1316 + b_ii] * 3.1415926535897931 / 180.0;
     x[b_ii] = (Map_data[b_ii] == *seg_id_near);
   }
 
   idx = 0;
   ex = x[0];
-  for (b_ii = 0; b_ii < 112; b_ii++) {
+  for (b_ii = 0; b_ii < 187; b_ii++) {
     if ((int32_T)ex < (int32_T)x[b_ii + 1]) {
       ex = x[b_ii + 1];
       idx = b_ii + 1;
     }
   }
 
-  op_distance_n = oi_near[1] - Map_data[565 + idx] * oi_near[0];
-  if (Map_data[565 + idx] < 0.0) {
-    C = (-Map_data[565 + idx] * X_pos[0] - op_distance_n) + X_pos[1];
+  op_distance_n = oi_near[1] - Map_data[940 + idx] * oi_near[0];
+  if (Map_data[940 + idx] < 0.0) {
+    C = (-Map_data[940 + idx] * X_pos[0] - op_distance_n) + X_pos[1];
     if (dist_ini[idx] > 4.71238898038469) {
       if (!(dist_ini[idx] < 6.2831853071795862)) {
         C = -C;
@@ -1025,14 +1041,14 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     } else {
       C = -C;
     }
-  } else if (Map_data[565 + idx] == 0.0) {
+  } else if (Map_data[940 + idx] == 0.0) {
     if (oi_near[1] < X_pos[1]) {
       C = -1.0;
     } else {
       C = 1.0;
     }
   } else {
-    C = (Map_data[565 + idx] * X_pos[0] + op_distance_n) - X_pos[1];
+    C = (Map_data[940 + idx] * X_pos[0] + op_distance_n) - X_pos[1];
     if (dist_ini[idx] > 3.1415926535897931) {
       if (!(dist_ini[idx] < 4.71238898038469)) {
         C = -C;
@@ -1042,7 +1058,7 @@ void MM_DPP_1ModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     }
   }
 
-  num_lane_direction[0] = Map_data[565 + idx];
+  num_lane_direction[0] = Map_data[940 + idx];
   num_lane_direction[1] = op_distance_n;
   num_lane_direction[2] = C;
   if (C < 0.0) {
@@ -1148,12 +1164,12 @@ void MM_DPP_1ModelClass::merge_block(int32_T idx_data[], real_T x_data[],
 void MM_DPP_1ModelClass::sortIdx(real_T x_data[], int32_T *x_size, int32_T
   idx_data[], int32_T *idx_size)
 {
-  real_T c_x_data[113];
-  real_T xwork_data[113];
-  int32_T iwork_data[113];
+  real_T c_x_data[188];
+  real_T xwork_data[188];
+  int32_T iwork_data[188];
   int32_T n;
   real_T x4[4];
-  int8_T idx4[4];
+  uint8_T idx4[4];
   int32_T ib;
   int32_T wOffset;
   int32_T itmp;
@@ -1162,10 +1178,10 @@ void MM_DPP_1ModelClass::sortIdx(real_T x_data[], int32_T *x_size, int32_T
   int32_T i3;
   int32_T i4;
   int32_T c_x_size;
-  int8_T b_x_idx_0;
-  int8_T b_idx_0;
-  b_x_idx_0 = (int8_T)*x_size;
-  b_idx_0 = (int8_T)*x_size;
+  uint8_T b_x_idx_0;
+  uint8_T b_idx_0;
+  b_x_idx_0 = (uint8_T)*x_size;
+  b_idx_0 = (uint8_T)*x_size;
   *idx_size = b_x_idx_0;
   if (0 <= b_x_idx_0 - 1) {
     memset(&idx_data[0], 0, b_x_idx_0 * sizeof(int32_T));
@@ -1183,14 +1199,14 @@ void MM_DPP_1ModelClass::sortIdx(real_T x_data[], int32_T *x_size, int32_T
     }
 
     x4[0] = 0.0;
-    idx4[0] = 0;
+    idx4[0] = 0U;
     x4[1] = 0.0;
-    idx4[1] = 0;
+    idx4[1] = 0U;
     x4[2] = 0.0;
-    idx4[2] = 0;
+    idx4[2] = 0U;
     x4[3] = 0.0;
-    idx4[3] = 0;
-    b_idx_0 = (int8_T)*x_size;
+    idx4[3] = 0U;
+    b_idx_0 = (uint8_T)*x_size;
     if (0 <= b_idx_0 - 1) {
       memset(&xwork_data[0], 0, b_idx_0 * sizeof(real_T));
     }
@@ -1205,7 +1221,7 @@ void MM_DPP_1ModelClass::sortIdx(real_T x_data[], int32_T *x_size, int32_T
         n++;
       } else {
         ib++;
-        idx4[ib - 1] = (int8_T)(wOffset + 1);
+        idx4[ib - 1] = (uint8_T)(wOffset + 1);
         x4[ib - 1] = c_x_data[wOffset];
         if (ib == 4) {
           ib = wOffset - n;
@@ -1372,9 +1388,9 @@ void MM_DPP_1ModelClass::sort_g(real_T x_data[], int32_T *x_size, int32_T
   idx_data[], int32_T *idx_size)
 {
   int32_T dim;
-  real_T vwork_data[113];
+  real_T vwork_data[188];
   int32_T vstride;
-  int32_T iidx_data[113];
+  int32_T iidx_data[188];
   int32_T b;
   int32_T c_k;
   int32_T vwork_size;
@@ -1390,8 +1406,8 @@ void MM_DPP_1ModelClass::sort_g(real_T x_data[], int32_T *x_size, int32_T
     b = 1;
   }
 
-  vwork_size = (int8_T)b;
-  *idx_size = (int8_T)*x_size;
+  vwork_size = (uint8_T)b;
+  *idx_size = (uint8_T)*x_size;
   vstride = 1;
   c_k = 1;
   while (c_k <= dim - 1) {
@@ -1417,10 +1433,10 @@ void MM_DPP_1ModelClass::sort_g(real_T x_data[], int32_T *x_size, int32_T
 void MM_DPP_1ModelClass::power_l(const real_T a_data[], const int32_T *a_size,
   real_T y_data[], int32_T *y_size)
 {
-  real_T z1_data[113];
+  real_T z1_data[188];
   int32_T loop_ub;
-  int8_T a_idx_0;
-  a_idx_0 = (int8_T)*a_size;
+  uint8_T a_idx_0;
+  a_idx_0 = (uint8_T)*a_size;
   if (0 <= a_idx_0 - 1) {
     memcpy(&z1_data[0], &y_data[0], a_idx_0 * sizeof(real_T));
   }
@@ -1429,7 +1445,7 @@ void MM_DPP_1ModelClass::power_l(const real_T a_data[], const int32_T *a_size,
     z1_data[loop_ub] = a_data[loop_ub] * a_data[loop_ub];
   }
 
-  *y_size = (int8_T)*a_size;
+  *y_size = (uint8_T)*a_size;
   if (0 <= a_idx_0 - 1) {
     memcpy(&y_data[0], &z1_data[0], a_idx_0 * sizeof(real_T));
   }
@@ -1439,10 +1455,10 @@ void MM_DPP_1ModelClass::power_l(const real_T a_data[], const int32_T *a_size,
 void MM_DPP_1ModelClass::power_lz(const real_T a_data[], const int32_T *a_size,
   real_T y_data[], int32_T *y_size)
 {
-  real_T z1_data[113];
+  real_T z1_data[188];
   int32_T loop_ub;
-  int8_T a_idx_0;
-  a_idx_0 = (int8_T)*a_size;
+  uint8_T a_idx_0;
+  a_idx_0 = (uint8_T)*a_size;
   if (0 <= a_idx_0 - 1) {
     memcpy(&z1_data[0], &y_data[0], a_idx_0 * sizeof(real_T));
   }
@@ -1451,7 +1467,7 @@ void MM_DPP_1ModelClass::power_lz(const real_T a_data[], const int32_T *a_size,
     z1_data[loop_ub] = std::sqrt(a_data[loop_ub]);
   }
 
-  *y_size = (int8_T)*a_size;
+  *y_size = (uint8_T)*a_size;
   if (0 <= a_idx_0 - 1) {
     memcpy(&y_data[0], &z1_data[0], a_idx_0 * sizeof(real_T));
   }
@@ -1462,9 +1478,9 @@ void MM_DPP_1ModelClass::rel_dist_xy_d(const real_T ref_xy[2], const real_T
   pt_xy_data[], const int32_T pt_xy_size[2], real_T dist_data[], int32_T
   *dist_size)
 {
-  real_T pt_xy_data_0[113];
-  real_T tmp_data[113];
-  real_T tmp_data_0[113];
+  real_T pt_xy_data_0[188];
+  real_T tmp_data[188];
+  real_T tmp_data_0[188];
   int32_T loop_ub;
   int32_T i;
   int32_T pt_xy_size_0;
@@ -1499,18 +1515,18 @@ void MM_DPP_1ModelClass::MM_f(real_T heading, const real_T X_pos[2], const
   real_T *note, real_T *seg_direction, real_T *head_err, real_T
   num_lane_direction[4], real_T *seg_heading)
 {
-  real_T xy_ini_data[226];
-  real_T xy_end_data[226];
-  real_T seg_id_data[113];
-  real_T ind_temp_data[113];
+  real_T xy_ini_data[376];
+  real_T xy_end_data[376];
+  real_T seg_id_data[188];
+  real_T ind_temp_data[188];
   real_T op_distance_n;
   real_T C;
-  int32_T b_index_data[226];
-  real_T SEG_GPS_HEAD_data[226];
-  real_T dist_ini_data[113];
-  real_T dist_end_data[113];
-  boolean_T x_data[113];
-  int32_T ii_data[113];
+  int32_T b_index_data[376];
+  real_T SEG_GPS_HEAD_data[376];
+  real_T dist_ini_data[188];
+  real_T dist_end_data[188];
+  boolean_T x_data[188];
+  int32_T ii_data[188];
   int32_T nx;
   int32_T idx;
   int32_T g_idx;
@@ -2109,27 +2125,6 @@ void MM_DPP_1ModelClass::power_j(const real_T a_data[], const int32_T *a_size,
   int16_T a_idx_0;
   a_idx_0 = (int16_T)*a_size;
   if (0 <= a_idx_0 - 1) {
-    memcpy(&rtDW.z1_data_k[0], &y_data[0], a_idx_0 * sizeof(real_T));
-  }
-
-  for (loop_ub = 0; loop_ub < a_idx_0; loop_ub++) {
-    rtDW.z1_data_k[loop_ub] = a_data[loop_ub] * a_data[loop_ub];
-  }
-
-  *y_size = (int16_T)*a_size;
-  if (0 <= a_idx_0 - 1) {
-    memcpy(&y_data[0], &rtDW.z1_data_k[0], a_idx_0 * sizeof(real_T));
-  }
-}
-
-// Function for MATLAB Function: '<S2>/EndPointDecision2'
-void MM_DPP_1ModelClass::power_k(const real_T a_data[], const int32_T *a_size,
-  real_T y_data[], int32_T *y_size)
-{
-  int32_T loop_ub;
-  int16_T a_idx_0;
-  a_idx_0 = (int16_T)*a_size;
-  if (0 <= a_idx_0 - 1) {
     memcpy(&rtDW.z1_data_c[0], &y_data[0], a_idx_0 * sizeof(real_T));
   }
 
@@ -2143,6 +2138,27 @@ void MM_DPP_1ModelClass::power_k(const real_T a_data[], const int32_T *a_size,
   }
 }
 
+// Function for MATLAB Function: '<S2>/EndPointDecision2'
+void MM_DPP_1ModelClass::power_ke(const real_T a_data[], const int32_T *a_size,
+  real_T y_data[], int32_T *y_size)
+{
+  int32_T loop_ub;
+  int16_T a_idx_0;
+  a_idx_0 = (int16_T)*a_size;
+  if (0 <= a_idx_0 - 1) {
+    memcpy(&rtDW.z1_data_b[0], &y_data[0], a_idx_0 * sizeof(real_T));
+  }
+
+  for (loop_ub = 0; loop_ub < a_idx_0; loop_ub++) {
+    rtDW.z1_data_b[loop_ub] = a_data[loop_ub] * a_data[loop_ub];
+  }
+
+  *y_size = (int16_T)*a_size;
+  if (0 <= a_idx_0 - 1) {
+    memcpy(&y_data[0], &rtDW.z1_data_b[0], a_idx_0 * sizeof(real_T));
+  }
+}
+
 // Function for MATLAB Function: '<S2>/DangerousArea1'
 void MM_DPP_1ModelClass::abs_i(const real_T x[4], real_T y[4])
 {
@@ -2153,7 +2169,7 @@ void MM_DPP_1ModelClass::abs_i(const real_T x[4], real_T y[4])
 }
 
 // Function for MATLAB Function: '<S2>/DangerousArea1'
-void MM_DPP_1ModelClass::power(const real_T a[4], real_T y[4])
+void MM_DPP_1ModelClass::power_k(const real_T a[4], real_T y[4])
 {
   y[0] = a[0] * a[0];
   y[1] = a[1] * a[1];
@@ -3413,20 +3429,17 @@ void MM_DPP_1ModelClass::step()
   real_T seg_direction;
   real_T head_err;
   real_T seg_heading;
-  real_T oi_xy_data[226];
-  real_T dist_op_data[113];
+  real_T oi_xy_data[376];
+  real_T dist_op_data[188];
   real_T forward_length;
-  real_T xy_ends_POS_data[452];
   real_T total_length;
-  real_T Forward_Static_Path_id_0_data[113];
-  int16_T cb_data[113];
-  real_T Forward_Static_Path_data[454];
+  real_T Forward_Static_Path_id_0_data[188];
+  int16_T cb_data[188];
   real_T count;
   real_T count_1;
   real_T target_k;
   real_T Length_1;
   real_T ang_1;
-  real_T Forward_Static_Path_data_0[454];
   real_T End_x;
   real_T End_y;
   real_T y;
@@ -3562,32 +3575,32 @@ void MM_DPP_1ModelClass::step()
   real_T K_113[11];
   real_T b_Path_dis_data[11];
   int8_T p_data[9];
-  int32_T t_data[113];
-  int32_T u_data[113];
-  int32_T v_data[113];
-  real_T end_heading_0_data[113];
+  int32_T t_data[188];
+  int32_T u_data[188];
+  int32_T v_data[188];
+  real_T end_heading_0_data[188];
   real_T OB_enlargescale_frontbehind;
-  int32_T t_data_0[113];
-  int32_T u_data_0[113];
-  int32_T v_data_0[113];
+  int32_T t_data_0[188];
+  int32_T u_data_0[188];
+  int32_T v_data_0[188];
   static const real_T a[11] = { 0.0, 0.1, 0.2, 0.30000000000000004, 0.4, 0.5,
     0.6, 0.7, 0.8, 0.9, 1.0 };
 
-  real_T table[226];
-  real_T shortest_distance[113];
-  int8_T settled[113];
-  int8_T pidx_data[113];
-  int8_T zz_data[113];
-  real_T tmp_path_data[113];
-  int8_T nidx_data[113];
-  int8_T c_data[113];
-  int32_T ii_data_0[113];
+  real_T table[376];
+  real_T shortest_distance[188];
+  int8_T settled[188];
+  uint8_T pidx_data[188];
+  uint8_T zz_data[188];
+  real_T tmp_path_data[188];
+  uint8_T nidx_data[188];
+  uint8_T c_data[188];
+  int32_T ii_data_0[188];
   int32_T idx;
   int32_T b_idx;
   int32_T n;
-  boolean_T x_data[113];
-  boolean_T b_x[113];
-  int8_T f_ii_data[113];
+  boolean_T x_data[188];
+  boolean_T b_x[188];
+  uint8_T f_ii_data[188];
   real_T rtb_Add;
   real_T rtb_Gain1;
   real_T rtb_Gain_p;
@@ -3610,10 +3623,10 @@ void MM_DPP_1ModelClass::step()
   real_T rtb_X_AUG[55];
   real_T rtb_K[25];
   real_T rtb_V_boundingbox[400];
-  real_T rtb_Forward_Static_Path_id_l[113];
-  real_T rtb_Forward_Static_Path_x_h[113];
-  real_T rtb_Forward_Static_Path_y_p[113];
-  real_T rtb_Forward_Static_Path_id_i[113];
+  real_T rtb_Forward_Static_Path_id_l[188];
+  real_T rtb_Forward_Static_Path_x_h[188];
+  real_T rtb_Forward_Static_Path_y_p[188];
+  real_T rtb_Forward_Static_Path_id_i[188];
   real_T rtb_XP_i[78];
   real_T rtb_YP_g[78];
   real_T rtb_XP[78];
@@ -3667,7 +3680,7 @@ void MM_DPP_1ModelClass::step()
   //   Sum: '<S2>/Sum'
   //   Sum: '<S2>/Sum1'
 
-  rtb_Add = std::abs(1.0 - rtDW.Memory1_PreviousInput) + std::abs(113.0 -
+  rtb_Add = std::abs(1.0 - rtDW.Memory1_PreviousInput) + std::abs(188.0 -
     rtDW.Memory_PreviousInput);
 
   // Outputs for Enabled SubSystem: '<S2>/Enabled Subsystem' incorporates:
@@ -3677,21 +3690,21 @@ void MM_DPP_1ModelClass::step()
     // MATLAB Function: '<S13>/Dijkstra' incorporates:
     //   Constant: '<S2>/Constant7'
 
-    memset(&table[0], 0, 226U * sizeof(real_T));
-    for (i = 0; i < 113; i++) {
+    memset(&table[0], 0, 376U * sizeof(real_T));
+    for (i = 0; i < 188; i++) {
       shortest_distance[i] = (rtInf);
       settled[i] = 0;
     }
 
-    memset(&rtDW.path[0], 0, 12769U * sizeof(real_T));
+    memset(&rtDW.path[0], 0, 35344U * sizeof(real_T));
     idx = 0;
     i = 1;
     exitg1 = false;
-    while ((!exitg1) && (i < 114)) {
+    while ((!exitg1) && (i < 189)) {
       if (rtConstP.Constant3_Value[i - 1] == 1.0) {
         idx++;
         ii_data_0[idx - 1] = i;
-        if (idx >= 113) {
+        if (idx >= 188) {
           exitg1 = true;
         } else {
           i++;
@@ -3706,21 +3719,21 @@ void MM_DPP_1ModelClass::step()
     }
 
     for (b_ix = 0; b_ix < idx; b_ix++) {
-      pidx_data[b_ix] = (int8_T)ii_data_0[b_ix];
+      pidx_data[b_ix] = (uint8_T)ii_data_0[b_ix];
     }
 
     shortest_distance[ii_data_0[0] - 1] = 0.0;
-    table[ii_data_0[0] + 112] = 0.0;
+    table[ii_data_0[0] + 187] = 0.0;
     settled[ii_data_0[0] - 1] = 1;
     rtDW.path[ii_data_0[0] - 1] = 1.0;
     b_idx = 0;
     idx = 1;
     exitg1 = false;
-    while ((!exitg1) && (idx < 114)) {
-      if (rtConstP.Constant3_Value[idx - 1] == 113.0) {
+    while ((!exitg1) && (idx < 189)) {
+      if (rtConstP.Constant3_Value[idx - 1] == 188.0) {
         b_idx++;
         ii_data_0[b_idx - 1] = idx;
-        if (b_idx >= 113) {
+        if (b_idx >= 188) {
           exitg1 = true;
         } else {
           idx++;
@@ -3737,23 +3750,23 @@ void MM_DPP_1ModelClass::step()
     }
 
     for (b_ix = 0; b_ix < idx; b_ix++) {
-      zz_data[b_ix] = (int8_T)ii_data_0[b_ix];
+      zz_data[b_ix] = (uint8_T)ii_data_0[b_ix];
     }
 
     do {
       exitg2 = 0;
       b_ix = zz_data[0] - 1;
       if (settled[b_ix] == 0) {
-        for (iy = 0; iy < 113; iy++) {
-          table[iy] = table[113 + iy];
+        for (iy = 0; iy < 188; iy++) {
+          table[iy] = table[188 + iy];
         }
 
-        n = pidx_data[0] + 112;
+        n = pidx_data[0] + 187;
         table[n] = 0.0;
         b_idx = 0;
-        for (ix = 0; ix < 113; ix++) {
+        for (ix = 0; ix < 188; ix++) {
           b_x_0 = (rtConstP.Constant3_Value[pidx_data[0] - 1] ==
-                   rtConstP.Constant5_Value[113 + ix]);
+                   rtConstP.Constant5_Value[188 + ix]);
           if (b_x_0) {
             b_idx++;
           }
@@ -3763,27 +3776,27 @@ void MM_DPP_1ModelClass::step()
 
         ix = b_idx;
         b_idx = 0;
-        for (idx = 0; idx < 113; idx++) {
+        for (idx = 0; idx < 188; idx++) {
           if (b_x[idx]) {
-            c_data[b_idx] = (int8_T)(idx + 1);
+            c_data[b_idx] = (uint8_T)(idx + 1);
             b_idx++;
           }
         }
 
         for (i = 0; i < ix; i++) {
-          for (iy = 0; iy < 113; iy++) {
-            b_x[iy] = (rtConstP.Constant5_Value[c_data[i] + 225] ==
+          for (iy = 0; iy < 188; iy++) {
+            b_x[iy] = (rtConstP.Constant5_Value[c_data[i] + 375] ==
                        rtConstP.Constant3_Value[iy]);
           }
 
           b_idx = -1;
           idx = 1;
           exitg1 = false;
-          while ((!exitg1) && (idx < 114)) {
+          while ((!exitg1) && (idx < 189)) {
             if (b_x[idx - 1]) {
               b_idx++;
               ii_data_0[b_idx] = idx;
-              if (b_idx + 1 >= 113) {
+              if (b_idx + 1 >= 188) {
                 exitg1 = true;
               } else {
                 idx++;
@@ -3795,26 +3808,26 @@ void MM_DPP_1ModelClass::step()
 
           if (!(settled[ii_data_0[0] - 1] != 0)) {
             rtb_X_state_0[0] = rtConstP.Constant3_Value[n] -
-              rtConstP.Constant3_Value[ii_data_0[0] + 112];
-            rtb_X_state_0[1] = rtConstP.Constant3_Value[pidx_data[0] + 225] -
-              rtConstP.Constant3_Value[ii_data_0[0] + 225];
+              rtConstP.Constant3_Value[ii_data_0[0] + 187];
+            rtb_X_state_0[1] = rtConstP.Constant3_Value[pidx_data[0] + 375] -
+              rtConstP.Constant3_Value[ii_data_0[0] + 375];
             power_n(rtb_X_state_0, rtb_Oi_near_l);
             ajj = std::sqrt(sum_e(rtb_Oi_near_l));
             if ((table[ii_data_0[0] - 1] == 0.0) || (table[ii_data_0[0] - 1] >
                  table[pidx_data[0] - 1] + ajj)) {
-              table[ii_data_0[0] + 112] = table[pidx_data[0] - 1] + ajj;
-              for (iy = 0; iy < 113; iy++) {
-                b_x[iy] = (rtDW.path[(113 * iy + pidx_data[0]) - 1] != 0.0);
+              table[ii_data_0[0] + 187] = table[pidx_data[0] - 1] + ajj;
+              for (iy = 0; iy < 188; iy++) {
+                b_x[iy] = (rtDW.path[(188 * iy + pidx_data[0]) - 1] != 0.0);
               }
 
               idx = 0;
               b_idx = 1;
               exitg1 = false;
-              while ((!exitg1) && (b_idx < 114)) {
+              while ((!exitg1) && (b_idx < 189)) {
                 if (b_x[b_idx - 1]) {
                   idx++;
-                  f_ii_data[idx - 1] = (int8_T)b_idx;
-                  if (idx >= 113) {
+                  f_ii_data[idx - 1] = (uint8_T)b_idx;
+                  if (idx >= 188) {
                     exitg1 = true;
                   } else {
                     b_idx++;
@@ -3836,19 +3849,19 @@ void MM_DPP_1ModelClass::step()
               }
 
               for (b_idx = 0; b_idx < c_ix; b_idx++) {
-                tmp_path_data[b_idx] = rtDW.path[((f_ii_data[b_idx] - 1) * 113 +
+                tmp_path_data[b_idx] = rtDW.path[((f_ii_data[b_idx] - 1) * 188 +
                   pidx_data[0]) - 1];
               }
 
               idx = ii_data_0[0] - 1;
               for (iy = 0; iy < c_ix; iy++) {
-                rtDW.path[idx + 113 * iy] = tmp_path_data[iy];
+                rtDW.path[idx + 188 * iy] = tmp_path_data[iy];
               }
 
-              rtDW.path[idx + 113 * c_ix] = rtConstP.Constant5_Value[c_data[i] +
-                225];
+              rtDW.path[idx + 188 * c_ix] = rtConstP.Constant5_Value[c_data[i] +
+                375];
             } else {
-              table[ii_data_0[0] + 112] = table[ii_data_0[0] - 1];
+              table[ii_data_0[0] + 187] = table[ii_data_0[0] - 1];
             }
           }
         }
@@ -3856,11 +3869,11 @@ void MM_DPP_1ModelClass::step()
         i = 0;
         idx = 1;
         exitg1 = false;
-        while ((!exitg1) && (idx < 114)) {
-          if (table[idx + 112] != 0.0) {
+        while ((!exitg1) && (idx < 189)) {
+          if (table[idx + 187] != 0.0) {
             i++;
             ii_data_0[i - 1] = idx;
-            if (i >= 113) {
+            if (i >= 188) {
               exitg1 = true;
             } else {
               idx++;
@@ -3877,32 +3890,32 @@ void MM_DPP_1ModelClass::step()
         }
 
         for (iy = 0; iy < idx; iy++) {
-          nidx_data[iy] = (int8_T)ii_data_0[iy];
+          nidx_data[iy] = (uint8_T)ii_data_0[iy];
         }
 
         if (idx <= 2) {
           if (idx == 1) {
-            OB_enlargescale_frontbehind = table[ii_data_0[0] + 112];
-          } else if (table[ii_data_0[0] + 112] > table[ii_data_0[1] + 112]) {
-            OB_enlargescale_frontbehind = table[ii_data_0[1] + 112];
-          } else if (rtIsNaN(table[ii_data_0[0] + 112])) {
-            if (!rtIsNaN(table[ii_data_0[1] + 112])) {
-              OB_enlargescale_frontbehind = table[ii_data_0[1] + 112];
+            OB_enlargescale_frontbehind = table[ii_data_0[0] + 187];
+          } else if (table[ii_data_0[0] + 187] > table[ii_data_0[1] + 187]) {
+            OB_enlargescale_frontbehind = table[ii_data_0[1] + 187];
+          } else if (rtIsNaN(table[ii_data_0[0] + 187])) {
+            if (!rtIsNaN(table[ii_data_0[1] + 187])) {
+              OB_enlargescale_frontbehind = table[ii_data_0[1] + 187];
             } else {
-              OB_enlargescale_frontbehind = table[ii_data_0[0] + 112];
+              OB_enlargescale_frontbehind = table[ii_data_0[0] + 187];
             }
           } else {
-            OB_enlargescale_frontbehind = table[ii_data_0[0] + 112];
+            OB_enlargescale_frontbehind = table[ii_data_0[0] + 187];
           }
         } else {
-          if (!rtIsNaN(table[ii_data_0[0] + 112])) {
+          if (!rtIsNaN(table[ii_data_0[0] + 187])) {
             b_idx = 1;
           } else {
             b_idx = 0;
             i = 2;
             exitg1 = false;
             while ((!exitg1) && (i <= idx)) {
-              if (!rtIsNaN(table[ii_data_0[i - 1] + 112])) {
+              if (!rtIsNaN(table[ii_data_0[i - 1] + 187])) {
                 b_idx = i;
                 exitg1 = true;
               } else {
@@ -3912,12 +3925,12 @@ void MM_DPP_1ModelClass::step()
           }
 
           if (b_idx == 0) {
-            OB_enlargescale_frontbehind = table[ii_data_0[0] + 112];
+            OB_enlargescale_frontbehind = table[ii_data_0[0] + 187];
           } else {
-            OB_enlargescale_frontbehind = table[ii_data_0[b_idx - 1] + 112];
+            OB_enlargescale_frontbehind = table[ii_data_0[b_idx - 1] + 187];
             while (b_idx + 1 <= idx) {
-              if (OB_enlargescale_frontbehind > table[ii_data_0[b_idx] + 112]) {
-                OB_enlargescale_frontbehind = table[ii_data_0[b_idx] + 112];
+              if (OB_enlargescale_frontbehind > table[ii_data_0[b_idx] + 187]) {
+                OB_enlargescale_frontbehind = table[ii_data_0[b_idx] + 187];
               }
 
               b_idx++;
@@ -3926,7 +3939,7 @@ void MM_DPP_1ModelClass::step()
         }
 
         for (iy = 0; iy < idx; iy++) {
-          x_data[iy] = (table[ii_data_0[iy] + 112] ==
+          x_data[iy] = (table[ii_data_0[iy] + 187] ==
                         OB_enlargescale_frontbehind);
         }
 
@@ -3962,7 +3975,7 @@ void MM_DPP_1ModelClass::step()
         } else {
           pidx_data[0] = nidx_data[ii_data_0[0] - 1];
           i = nidx_data[ii_data_0[0] - 1] - 1;
-          shortest_distance[i] = table[nidx_data[ii_data_0[0] - 1] + 112];
+          shortest_distance[i] = table[nidx_data[ii_data_0[0] - 1] + 187];
           settled[i] = 1;
         }
       } else {
@@ -3970,17 +3983,17 @@ void MM_DPP_1ModelClass::step()
       }
     } while (exitg2 == 0);
 
-    for (iy = 0; iy < 113; iy++) {
-      b_x[iy] = (rtDW.path[(113 * iy + zz_data[0]) - 1] != 0.0);
+    for (iy = 0; iy < 188; iy++) {
+      b_x[iy] = (rtDW.path[(188 * iy + zz_data[0]) - 1] != 0.0);
     }
 
     i = 0;
     idx = 0;
     exitg1 = false;
-    while ((!exitg1) && (idx + 1 < 114)) {
+    while ((!exitg1) && (idx + 1 < 189)) {
       if (b_x[idx]) {
         i++;
-        if (i >= 113) {
+        if (i >= 188) {
           exitg1 = true;
         } else {
           idx++;
@@ -4003,7 +4016,7 @@ void MM_DPP_1ModelClass::step()
     rtDW.dist = shortest_distance[b_ix];
     rtDW.SFunction_DIMS3_c = c_ix;
     for (b_ix = 0; b_ix < c_ix; b_ix++) {
-      rtDW.path_2[b_ix] = rtDW.path[(113 * b_ix + zz_data[0]) - 1];
+      rtDW.path_2[b_ix] = rtDW.path[(188 * b_ix + zz_data[0]) - 1];
     }
 
     // End of MATLAB Function: '<S13>/Dijkstra'
@@ -4041,9 +4054,9 @@ void MM_DPP_1ModelClass::step()
 
   rtDW.SFunction_DIMS2_m = rtDW.path_out1.size;
   rtDW.SFunction_DIMS3_l = rtDW.path_out1.size;
-  rtDW.SFunction_DIMS4_h[0] = 113;
+  rtDW.SFunction_DIMS4_h[0] = 188;
   rtDW.SFunction_DIMS4_h[1] = 23;
-  memcpy(&rtDW.Static_Path_0[0], &rtConstP.pooled2[0], 2599U * sizeof(real_T));
+  memcpy(&rtDW.Static_Path_0[0], &rtConstP.pooled2[0], 4324U * sizeof(real_T));
   rtDW.SFunction_DIMS6_c = rtDW.path_out1.size;
 
   // Gain: '<S1>/Gain' incorporates:
@@ -4619,24 +4632,24 @@ void MM_DPP_1ModelClass::step()
   // MATLAB Function: '<S3>/SLAM_UKF_MM' incorporates:
   //   Constant: '<S3>/Constant4'
 
-  for (ix = 0; ix < 113; ix++) {
-    if (rtConstP.pooled2[565 + ix] == (rtInf)) {
-      table[ix] = rtConstP.pooled2[113 + ix];
-      table[113 + ix] = rtb_X[1];
-    } else if (rtConstP.pooled2[565 + ix] == 0.0) {
+  for (ix = 0; ix < 188; ix++) {
+    if (rtConstP.pooled2[940 + ix] == (rtInf)) {
+      table[ix] = rtConstP.pooled2[188 + ix];
+      table[188 + ix] = rtb_X[1];
+    } else if (rtConstP.pooled2[940 + ix] == 0.0) {
       table[ix] = rtb_X[0];
-      table[113 + ix] = rtConstP.pooled2[226 + ix];
+      table[188 + ix] = rtConstP.pooled2[376 + ix];
     } else {
-      rtb_Gain1 = -1.0 / rtConstP.pooled2[565 + ix];
+      rtb_Gain1 = -1.0 / rtConstP.pooled2[940 + ix];
       b_j = rtb_X[1] - rtb_Gain1 * rtb_X[0];
-      forward_length = rtConstP.pooled2[565 + ix] - rtb_Gain1;
-      table[ix] = (b_j - rtConstP.pooled2[678 + ix]) / forward_length;
-      table[113 + ix] = (rtConstP.pooled2[565 + ix] * b_j - rtConstP.pooled2[678
-                         + ix] * rtb_Gain1) / forward_length;
+      forward_length = rtConstP.pooled2[940 + ix] - rtb_Gain1;
+      table[ix] = (b_j - rtConstP.pooled2[1128 + ix]) / forward_length;
+      table[188 + ix] = (rtConstP.pooled2[940 + ix] * b_j - rtConstP.pooled2
+                         [1128 + ix] * rtb_Gain1) / forward_length;
     }
 
     OB_enlargescale_frontbehind = table[ix] - rtb_X[0];
-    offset_6 = table[113 + ix] - rtb_X[1];
+    offset_6 = table[188 + ix] - rtb_X[1];
     shortest_distance[ix] = std::sqrt(OB_enlargescale_frontbehind *
       OB_enlargescale_frontbehind + offset_6 * offset_6);
   }
@@ -4751,25 +4764,26 @@ void MM_DPP_1ModelClass::step()
   xy_ends_POS_size_idx_0 = rtDW.SFunction_DIMS4_h[0];
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix] = rtDW.Static_Path_0[b_ix + rtDW.SFunction_DIMS4_h[0]];
+    rtDW.xy_ends_POS_data[b_ix] = rtDW.Static_Path_0[b_ix +
+      rtDW.SFunction_DIMS4_h[0]];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0] = rtDW.Static_Path_0
+    rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0] = rtDW.Static_Path_0
       [(rtDW.SFunction_DIMS4_h[0] << 1) + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + (xy_ends_POS_size_idx_0 << 1)] =
+    rtDW.xy_ends_POS_data[b_ix + (xy_ends_POS_size_idx_0 << 1)] =
       rtDW.Static_Path_0[rtDW.SFunction_DIMS4_h[0] * 3 + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0 * 3] = rtDW.Static_Path_0
-      [(rtDW.SFunction_DIMS4_h[0] << 2) + b_ix];
+    rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0 * 3] =
+      rtDW.Static_Path_0[(rtDW.SFunction_DIMS4_h[0] << 2) + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
@@ -4856,22 +4870,22 @@ void MM_DPP_1ModelClass::step()
 
     iy = c_ix - jj;
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[jj + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[jj + b_ix];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(jj + b_ix) +
-        xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(jj +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(jj +
-        b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(jj + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(jj +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data[(jj
+        + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     if (b_idx > i) {
@@ -4911,41 +4925,42 @@ void MM_DPP_1ModelClass::step()
     n = ix - c_ix;
     iy = n + d_ix;
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[c_ix + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[c_ix + b_ix];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(c_ix + b_ix)
-        + xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(c_ix +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(c_ix
-        + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(c_ix +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[(b_ix + ix) - c_ix] = xy_ends_POS_data[b_ix];
+      rtDW.Static_Path_ends_POS_data[(b_ix + ix) - c_ix] =
+        rtDW.xy_ends_POS_data[b_ix];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + iy] =
-        xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0];
+        rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + (iy << 1)] =
-        xy_ends_POS_data[(xy_ends_POS_size_idx_0 << 1) + b_ix];
+        rtDW.xy_ends_POS_data[(xy_ends_POS_size_idx_0 << 1) + b_ix];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + iy * 3] =
-        xy_ends_POS_data[xy_ends_POS_size_idx_0 * 3 + b_ix];
+        rtDW.xy_ends_POS_data[xy_ends_POS_size_idx_0 * 3 + b_ix];
     }
 
     if (b_idx > rtDW.SFunction_DIMS4_h[0]) {
@@ -5012,22 +5027,22 @@ void MM_DPP_1ModelClass::step()
 
     iy = n - c_ix;
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[c_ix + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[c_ix + b_ix];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(c_ix + b_ix)
-        + xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(c_ix +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(c_ix
-        + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(c_ix +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     if (b_idx > rtDW.SFunction_DIMS4_h[0]) {
@@ -5085,25 +5100,26 @@ void MM_DPP_1ModelClass::step()
   xy_ends_POS_size_idx_0 = rtDW.SFunction_DIMS4_h[0];
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix] = rtDW.Static_Path_0[b_ix + rtDW.SFunction_DIMS4_h[0]];
+    rtDW.xy_ends_POS_data[b_ix] = rtDW.Static_Path_0[b_ix +
+      rtDW.SFunction_DIMS4_h[0]];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0] = rtDW.Static_Path_0
+    rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0] = rtDW.Static_Path_0
       [(rtDW.SFunction_DIMS4_h[0] << 1) + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + (xy_ends_POS_size_idx_0 << 1)] =
+    rtDW.xy_ends_POS_data[b_ix + (xy_ends_POS_size_idx_0 << 1)] =
       rtDW.Static_Path_0[rtDW.SFunction_DIMS4_h[0] * 3 + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0 * 3] = rtDW.Static_Path_0
-      [(rtDW.SFunction_DIMS4_h[0] << 2) + b_ix];
+    rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0 * 3] =
+      rtDW.Static_Path_0[(rtDW.SFunction_DIMS4_h[0] << 2) + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
@@ -5190,22 +5206,22 @@ void MM_DPP_1ModelClass::step()
 
     iy = c_ix - jj;
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[jj + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[jj + b_ix];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(jj + b_ix) +
-        xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(jj +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(jj +
-        b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(jj + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(jj +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data[(jj
+        + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     if (b_idx > i) {
@@ -5245,41 +5261,42 @@ void MM_DPP_1ModelClass::step()
     n = ix - c_ix;
     iy = n + d_ix;
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[c_ix + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[c_ix + b_ix];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(c_ix + b_ix)
-        + xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(c_ix +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(c_ix
-        + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(c_ix +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[(b_ix + ix) - c_ix] = xy_ends_POS_data[b_ix];
+      rtDW.Static_Path_ends_POS_data[(b_ix + ix) - c_ix] =
+        rtDW.xy_ends_POS_data[b_ix];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + iy] =
-        xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0];
+        rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + (iy << 1)] =
-        xy_ends_POS_data[(xy_ends_POS_size_idx_0 << 1) + b_ix];
+        rtDW.xy_ends_POS_data[(xy_ends_POS_size_idx_0 << 1) + b_ix];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + iy * 3] =
-        xy_ends_POS_data[xy_ends_POS_size_idx_0 * 3 + b_ix];
+        rtDW.xy_ends_POS_data[xy_ends_POS_size_idx_0 * 3 + b_ix];
     }
 
     if (b_idx > rtDW.SFunction_DIMS4_h[0]) {
@@ -5346,22 +5363,22 @@ void MM_DPP_1ModelClass::step()
 
     iy = n - c_ix;
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[c_ix + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[c_ix + b_ix];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(c_ix + b_ix)
-        + xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(c_ix +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(c_ix
-        + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(c_ix +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     if (b_idx > rtDW.SFunction_DIMS4_h[0]) {
@@ -5400,35 +5417,37 @@ void MM_DPP_1ModelClass::step()
   b_idx = iy + 1;
   d_ix = (b_idx << 1) - 1;
   if (0 <= d_ix) {
-    memset(&Forward_Static_Path_data[0], 0, (d_ix + 1) * sizeof(real_T));
+    memset(&rtDW.Forward_Static_Path_data[0], 0, (d_ix + 1) * sizeof(real_T));
   }
 
   d_ix = iy - 1;
   if (0 <= d_ix) {
-    memcpy(&Forward_Static_Path_data[0], &rtDW.Static_Path_ends_POS_data[0],
+    memcpy(&rtDW.Forward_Static_Path_data[0], &rtDW.Static_Path_ends_POS_data[0],
            (d_ix + 1) * sizeof(real_T));
   }
 
   for (b_ix = 0; b_ix <= d_ix; b_ix++) {
-    Forward_Static_Path_data[b_ix + b_idx] = rtDW.Static_Path_ends_POS_data[b_ix
-      + iy];
+    rtDW.Forward_Static_Path_data[b_ix + b_idx] =
+      rtDW.Static_Path_ends_POS_data[b_ix + iy];
   }
 
   b_ix = iy - 1;
-  Forward_Static_Path_data[iy] = rtDW.Static_Path_ends_POS_data[(iy << 1) + b_ix];
-  Forward_Static_Path_data[iy + b_idx] = rtDW.Static_Path_ends_POS_data[iy * 3 +
+  rtDW.Forward_Static_Path_data[iy] = rtDW.Static_Path_ends_POS_data[(iy << 1) +
     b_ix];
+  rtDW.Forward_Static_Path_data[iy + b_idx] = rtDW.Static_Path_ends_POS_data[iy *
+    3 + b_ix];
   rtDW.SFunction_DIMS2_h = b_idx;
   d_ix = b_idx - 1;
   if (0 <= d_ix) {
-    memcpy(&rtb_Forward_Static_Path_x_h[0], &Forward_Static_Path_data[0], (d_ix
-            + 1) * sizeof(real_T));
+    memcpy(&rtb_Forward_Static_Path_x_h[0], &rtDW.Forward_Static_Path_data[0],
+           (d_ix + 1) * sizeof(real_T));
   }
 
   rtDW.SFunction_DIMS3_k = b_idx;
   d_ix = b_idx - 1;
   for (b_ix = 0; b_ix <= d_ix; b_ix++) {
-    rtb_Forward_Static_Path_y_p[b_ix] = Forward_Static_Path_data[b_ix + b_idx];
+    rtb_Forward_Static_Path_y_p[b_ix] = rtDW.Forward_Static_Path_data[b_ix +
+      b_idx];
   }
 
   rtDW.SFunction_DIMS6_a[0] = rtDW.SFunction_DIMS4_h[0];
@@ -5493,9 +5512,9 @@ void MM_DPP_1ModelClass::step()
     rtDW.rtb_X_data[b_ix] = rtb_X[1] - rtDW.Path_RES_1_data[b_ix + jj];
   }
 
-  power_ec(rtDW.rtb_X_data, &jj, rtDW.tmp_data_m, &i);
+  power_ec(rtDW.rtb_X_data, &jj, rtDW.tmp_data_c, &i);
   for (b_ix = 0; b_ix < n; b_ix++) {
-    rtDW.ob_distance_data[b_ix] = rtDW.tmp_data[b_ix] + rtDW.tmp_data_m[b_ix];
+    rtDW.ob_distance_data[b_ix] = rtDW.tmp_data[b_ix] + rtDW.tmp_data_c[b_ix];
   }
 
   if (n <= 2) {
@@ -5666,7 +5685,7 @@ void MM_DPP_1ModelClass::step()
     d_ix = Path_RES_0_size_idx_1 - 1;
     for (b_ix = 0; b_ix <= d_ix; b_ix++) {
       for (iy = 0; iy < n; iy++) {
-        rtDW.Path_RES_0_data_c[iy + n * b_ix] =
+        rtDW.Path_RES_0_data_k[iy + n * b_ix] =
           rtDW.Path_RES_0_data[xy_ends_POS_size_idx_0 * b_ix + iy];
       }
     }
@@ -5680,7 +5699,7 @@ void MM_DPP_1ModelClass::step()
 
     for (b_ix = 0; b_ix < c_ix; b_ix++) {
       for (iy = 0; iy < jj; iy++) {
-        rtDW.Path_RES_data[(iy + ix) + i * b_ix] = rtDW.Path_RES_0_data_c[jj *
+        rtDW.Path_RES_data[(iy + ix) + i * b_ix] = rtDW.Path_RES_0_data_k[jj *
           b_ix + iy];
       }
     }
@@ -5705,25 +5724,26 @@ void MM_DPP_1ModelClass::step()
   xy_ends_POS_size_idx_0 = rtDW.SFunction_DIMS4_h[0];
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix] = rtDW.Static_Path_0[b_ix + rtDW.SFunction_DIMS4_h[0]];
+    rtDW.xy_ends_POS_data[b_ix] = rtDW.Static_Path_0[b_ix +
+      rtDW.SFunction_DIMS4_h[0]];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0] = rtDW.Static_Path_0
+    rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0] = rtDW.Static_Path_0
       [(rtDW.SFunction_DIMS4_h[0] << 1) + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + (xy_ends_POS_size_idx_0 << 1)] =
+    rtDW.xy_ends_POS_data[b_ix + (xy_ends_POS_size_idx_0 << 1)] =
       rtDW.Static_Path_0[rtDW.SFunction_DIMS4_h[0] * 3 + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
   for (b_ix = 0; b_ix < d_ix; b_ix++) {
-    xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0 * 3] = rtDW.Static_Path_0
-      [(rtDW.SFunction_DIMS4_h[0] << 2) + b_ix];
+    rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0 * 3] =
+      rtDW.Static_Path_0[(rtDW.SFunction_DIMS4_h[0] << 2) + b_ix];
   }
 
   d_ix = rtDW.SFunction_DIMS4_h[0];
@@ -5811,22 +5831,22 @@ void MM_DPP_1ModelClass::step()
 
     iy = c_ix - jj;
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[jj + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[jj + b_ix];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(jj + b_ix) +
-        xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(jj +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(jj +
-        b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(jj + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(jj +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data[(jj
+        + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     if (b_idx > i) {
@@ -5866,41 +5886,42 @@ void MM_DPP_1ModelClass::step()
     n = ix - c_ix;
     iy = n + d_ix;
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[c_ix + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[c_ix + b_ix];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(c_ix + b_ix)
-        + xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(c_ix +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(c_ix
-        + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < n; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(c_ix +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[(b_ix + ix) - c_ix] = xy_ends_POS_data[b_ix];
+      rtDW.Static_Path_ends_POS_data[(b_ix + ix) - c_ix] =
+        rtDW.xy_ends_POS_data[b_ix];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + iy] =
-        xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0];
+        rtDW.xy_ends_POS_data[b_ix + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + (iy << 1)] =
-        xy_ends_POS_data[(xy_ends_POS_size_idx_0 << 1) + b_ix];
+        rtDW.xy_ends_POS_data[(xy_ends_POS_size_idx_0 << 1) + b_ix];
     }
 
     for (b_ix = 0; b_ix < d_ix; b_ix++) {
       rtDW.Static_Path_ends_POS_data[((b_ix + ix) - c_ix) + iy * 3] =
-        xy_ends_POS_data[xy_ends_POS_size_idx_0 * 3 + b_ix];
+        rtDW.xy_ends_POS_data[xy_ends_POS_size_idx_0 * 3 + b_ix];
     }
 
     if (b_idx > rtDW.SFunction_DIMS4_h[0]) {
@@ -5967,22 +5988,22 @@ void MM_DPP_1ModelClass::step()
 
     iy = n - c_ix;
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix] = xy_ends_POS_data[c_ix + b_ix];
+      rtDW.Static_Path_ends_POS_data[b_ix] = rtDW.xy_ends_POS_data[c_ix + b_ix];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy] = xy_ends_POS_data[(c_ix + b_ix)
-        + xy_ends_POS_size_idx_0];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy] = rtDW.xy_ends_POS_data[(c_ix +
+        b_ix) + xy_ends_POS_size_idx_0];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = xy_ends_POS_data[(c_ix
-        + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
+      rtDW.Static_Path_ends_POS_data[b_ix + (iy << 1)] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + (xy_ends_POS_size_idx_0 << 1)];
     }
 
     for (b_ix = 0; b_ix < iy; b_ix++) {
-      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = xy_ends_POS_data[(c_ix +
-        b_ix) + xy_ends_POS_size_idx_0 * 3];
+      rtDW.Static_Path_ends_POS_data[b_ix + iy * 3] = rtDW.xy_ends_POS_data
+        [(c_ix + b_ix) + xy_ends_POS_size_idx_0 * 3];
     }
 
     if (b_idx > rtDW.SFunction_DIMS4_h[0]) {
@@ -6015,36 +6036,37 @@ void MM_DPP_1ModelClass::step()
   b_idx = iy + 1;
   d_ix = (b_idx << 1) - 1;
   if (0 <= d_ix) {
-    memset(&Forward_Static_Path_data_0[0], 0, (d_ix + 1) * sizeof(real_T));
+    memset(&rtDW.Forward_Static_Path_data_m[0], 0, (d_ix + 1) * sizeof(real_T));
   }
 
   d_ix = iy - 1;
   if (0 <= d_ix) {
-    memcpy(&Forward_Static_Path_data_0[0], &rtDW.Static_Path_ends_POS_data[0],
-           (d_ix + 1) * sizeof(real_T));
+    memcpy(&rtDW.Forward_Static_Path_data_m[0], &rtDW.Static_Path_ends_POS_data
+           [0], (d_ix + 1) * sizeof(real_T));
   }
 
   for (b_ix = 0; b_ix <= d_ix; b_ix++) {
-    Forward_Static_Path_data_0[b_ix + b_idx] =
+    rtDW.Forward_Static_Path_data_m[b_ix + b_idx] =
       rtDW.Static_Path_ends_POS_data[b_ix + iy];
   }
 
   b_ix = iy - 1;
-  Forward_Static_Path_data_0[iy] = rtDW.Static_Path_ends_POS_data[(iy << 1) +
-    b_ix];
-  Forward_Static_Path_data_0[iy + b_idx] = rtDW.Static_Path_ends_POS_data[iy * 3
+  rtDW.Forward_Static_Path_data_m[iy] = rtDW.Static_Path_ends_POS_data[(iy << 1)
     + b_ix];
+  rtDW.Forward_Static_Path_data_m[iy + b_idx] =
+    rtDW.Static_Path_ends_POS_data[iy * 3 + b_ix];
   rtDW.SFunction_DIMS2_a = b_idx;
   d_ix = b_idx - 1;
   if (0 <= d_ix) {
-    memcpy(&rtb_Forward_Static_Path_x_h[0], &Forward_Static_Path_data_0[0],
+    memcpy(&rtb_Forward_Static_Path_x_h[0], &rtDW.Forward_Static_Path_data_m[0],
            (d_ix + 1) * sizeof(real_T));
   }
 
   rtDW.SFunction_DIMS3_a = b_idx;
   d_ix = b_idx - 1;
   for (b_ix = 0; b_ix <= d_ix; b_ix++) {
-    rtb_Forward_Static_Path_y_p[b_ix] = Forward_Static_Path_data_0[b_ix + b_idx];
+    rtb_Forward_Static_Path_y_p[b_ix] = rtDW.Forward_Static_Path_data_m[b_ix +
+      b_idx];
   }
 
   rtDW.SFunction_DIMS4_l = i;
@@ -6109,17 +6131,17 @@ void MM_DPP_1ModelClass::step()
   }
 
   for (b_ix = 0; b_ix < jj; b_ix++) {
-    rtDW.tmp_data_m[b_ix] = seg_direction - rtDW.Path_RES_1_data[b_ix];
+    rtDW.tmp_data_c[b_ix] = seg_direction - rtDW.Path_RES_1_data[b_ix];
   }
 
-  power_j(rtDW.tmp_data_m, &jj, rtDW.tmp_data, &n);
+  power_j(rtDW.tmp_data_c, &jj, rtDW.tmp_data, &n);
   for (b_ix = 0; b_ix < jj; b_ix++) {
     rtDW.rtb_X_data[b_ix] = head_err - rtDW.Path_RES_1_data[b_ix + jj];
   }
 
-  power_j(rtDW.rtb_X_data, &jj, rtDW.tmp_data_m, &i);
+  power_j(rtDW.rtb_X_data, &jj, rtDW.tmp_data_c, &i);
   for (b_ix = 0; b_ix < n; b_ix++) {
-    rtDW.ob_distance_data[b_ix] = rtDW.tmp_data[b_ix] + rtDW.tmp_data_m[b_ix];
+    rtDW.ob_distance_data[b_ix] = rtDW.tmp_data[b_ix] + rtDW.tmp_data_c[b_ix];
   }
 
   if (n <= 2) {
@@ -6290,7 +6312,7 @@ void MM_DPP_1ModelClass::step()
     d_ix = Path_RES_0_size_idx_1 - 1;
     for (b_ix = 0; b_ix <= d_ix; b_ix++) {
       for (iy = 0; iy < n; iy++) {
-        rtDW.Path_RES_0_data_c[iy + n * b_ix] =
+        rtDW.Path_RES_0_data_k[iy + n * b_ix] =
           rtDW.Path_RES_0_data[xy_ends_POS_size_idx_0 * b_ix + iy];
       }
     }
@@ -6304,7 +6326,7 @@ void MM_DPP_1ModelClass::step()
 
     for (b_ix = 0; b_ix < c_ix; b_ix++) {
       for (iy = 0; iy < jj; iy++) {
-        rtDW.Path_RES_data[(iy + ix) + i * b_ix] = rtDW.Path_RES_0_data_c[jj *
+        rtDW.Path_RES_data[(iy + ix) + i * b_ix] = rtDW.Path_RES_0_data_k[jj *
           b_ix + iy];
       }
     }
@@ -6374,17 +6396,17 @@ void MM_DPP_1ModelClass::step()
   }
 
   for (b_ix = 0; b_ix < jj; b_ix++) {
-    rtDW.tmp_data_m[b_ix] = seg_direction - rtDW.Path_RES_1_data[b_ix];
+    rtDW.tmp_data_c[b_ix] = seg_direction - rtDW.Path_RES_1_data[b_ix];
   }
 
-  power_k(rtDW.tmp_data_m, &jj, rtDW.tmp_data, &n);
+  power_ke(rtDW.tmp_data_c, &jj, rtDW.tmp_data, &n);
   for (b_ix = 0; b_ix < jj; b_ix++) {
     rtDW.rtb_X_data[b_ix] = head_err - rtDW.Path_RES_1_data[b_ix + jj];
   }
 
-  power_k(rtDW.rtb_X_data, &jj, rtDW.tmp_data_m, &i);
+  power_ke(rtDW.rtb_X_data, &jj, rtDW.tmp_data_c, &i);
   for (b_ix = 0; b_ix < n; b_ix++) {
-    rtDW.ob_distance_data[b_ix] = rtDW.tmp_data[b_ix] + rtDW.tmp_data_m[b_ix];
+    rtDW.ob_distance_data[b_ix] = rtDW.tmp_data[b_ix] + rtDW.tmp_data_c[b_ix];
   }
 
   if (n <= 2) {
@@ -6555,7 +6577,7 @@ void MM_DPP_1ModelClass::step()
     d_ix = Path_RES_0_size_idx_1 - 1;
     for (b_ix = 0; b_ix <= d_ix; b_ix++) {
       for (iy = 0; iy < n; iy++) {
-        rtDW.Path_RES_0_data_c[iy + n * b_ix] =
+        rtDW.Path_RES_0_data_k[iy + n * b_ix] =
           rtDW.Path_RES_0_data[xy_ends_POS_size_idx_0 * b_ix + iy];
       }
     }
@@ -6569,7 +6591,7 @@ void MM_DPP_1ModelClass::step()
 
     for (b_ix = 0; b_ix < c_ix; b_ix++) {
       for (iy = 0; iy < jj; iy++) {
-        rtDW.Path_RES_data[(iy + ix) + i * b_ix] = rtDW.Path_RES_0_data_c[jj *
+        rtDW.Path_RES_data[(iy + ix) + i * b_ix] = rtDW.Path_RES_0_data_k[jj *
           b_ix + iy];
       }
     }
@@ -6956,12 +6978,12 @@ void MM_DPP_1ModelClass::step()
     OB_enlargescale_frontbehind_0[1] = count_1 - rtb_num_lane_direction_f[1];
     OB_enlargescale_frontbehind_0[2] = count_1 - rtb_num_lane_direction_f[2];
     OB_enlargescale_frontbehind_0[3] = count_1 - rtb_num_lane_direction_f[3];
-    power(OB_enlargescale_frontbehind_0, rtb_num_lane_direction_b);
+    power_k(OB_enlargescale_frontbehind_0, rtb_num_lane_direction_b);
     OB_enlargescale_frontbehind_0[0] = ang_1 - rtb_H_y_out[0];
     OB_enlargescale_frontbehind_0[1] = ang_1 - rtb_H_y_out[1];
     OB_enlargescale_frontbehind_0[2] = ang_1 - rtb_H_y_out[2];
     OB_enlargescale_frontbehind_0[3] = ang_1 - rtb_H_y_out[3];
-    power(OB_enlargescale_frontbehind_0, tmp);
+    power_k(OB_enlargescale_frontbehind_0, tmp);
     K1[0] = rtb_num_lane_direction_b[0] + tmp[0];
     K1[1] = rtb_num_lane_direction_b[1] + tmp[1];
     K1[2] = rtb_num_lane_direction_b[2] + tmp[2];
@@ -9840,7 +9862,7 @@ void MM_DPP_1ModelClass::step()
   // Update for Memory: '<S2>/Memory' incorporates:
   //   Constant: '<S2>/Constant8'
 
-  rtDW.Memory_PreviousInput = 113.0;
+  rtDW.Memory_PreviousInput = 188.0;
 
   // MATLAB Function: '<S2>/Final_Static_Path'
   if (rtb_Add > 0.0) {

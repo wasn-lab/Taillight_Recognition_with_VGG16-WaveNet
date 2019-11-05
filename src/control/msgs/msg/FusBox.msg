@@ -1,0 +1,10 @@
+uint16   x
+uint16   y
+uint16   width
+uint16   height
+uint16   id
+uint8    cls
+float32  prob
+uint16  distance
+BoxPoint boxPoint
+PointXYZ[] pointCloud

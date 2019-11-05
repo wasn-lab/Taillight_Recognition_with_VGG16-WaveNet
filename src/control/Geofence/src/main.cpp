@@ -39,7 +39,7 @@
 
 
 // Specify running mode
-//#define TEST
+#define VIRTUAL
 
 
 static Geofence PCloud_Geofence;
@@ -73,12 +73,12 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg){
 		Point_temp.Y = msg->objects[i].bPoint.p7.y;
 		Point_temp.Speed = msg->objects[i].relSpeed;
 		PointCloud_temp.push_back(Point_temp);
-		Point_temp.X = msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x + msg->objects[i].bPoint.p7.x;
-		Point_temp.Y = msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y + msg->objects[i].bPoint.p7.y;
+		Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x + msg->objects[i].bPoint.p7.x)/4;
+		Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y + msg->objects[i].bPoint.p7.y)/4;
 		Point_temp.Speed = msg->objects[i].relSpeed;
 		PointCloud_temp.push_back(Point_temp);
 	}
-	#ifdef TEST
+	#ifdef VIRTUAL
 		BBox_Geofence.setPointCloud(PointCloud_temp,false,SLAM_x,SLAM_y,Heading);
 	#else
 		BBox_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
@@ -126,7 +126,7 @@ int main(int argc, char **argv){
 	ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
-	#ifdef TEST
+	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPCloud);
 	#else
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPCloud);
@@ -183,7 +183,7 @@ int main(int argc, char **argv){
 			cout << "Trigger: " << BBox_Geofence.getTrigger() << " ";
  			cout << "Distance: " <<  setprecision(6) << BBox_Geofence.getDistance() << "\t";
 			cout << "Speed: " << setprecision(6) << BBox_Geofence.getObjSpeed() << endl;
-			cout << "(X,Y): " << "(" << BBox_Geofence.getNearest_X() << "," << PCloud_Geofence.getNearest_Y() << ")" << endl << endl;
+			cout << "(X,Y): " << "(" << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << ")" << endl << endl;
 			//cout << "Speed: " << PCloud_Geofence.Xpoly_one.size() << "\t" << PCloud_Geofence.Xpoly_two.size() << "\t" << PCloud_Geofence.Ypoly_one.size() << "\t" << PCloud_Geofence.Ypoly_two.size() << endl;
 			//cout << "Pointcloud: " << PCloud_Geofence.PointCloud.size() << endl;
 			frame.data[0] = (short int)(BBox_Geofence.getDistance()*100);

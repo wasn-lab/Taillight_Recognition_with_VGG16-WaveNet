@@ -3,9 +3,9 @@
 //
 // Code generated for Simulink model 'MM_TP'.
 //
-// Model version                  : 1.392
+// Model version                  : 1.393
 // Simulink Coder version         : 8.14 (R2018a) 06-Feb-2018
-// C/C++ source code generated on : Tue Oct 29 16:53:02 2019
+// C/C++ source code generated on : Mon Nov  4 22:32:09 2019
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -102,28 +102,28 @@ typedef struct tag_sJCxfmxS8gBOONUZjbjUd9E sJCxfmxS8gBOONUZjbjUd9E;
 #endif                                 //typedef_sJCxfmxS8gBOONUZjbjUd9E
 
 // Custom Type definition for MATLAB Function: '<S2>/Final_Static_Path'
-#ifndef struct_emxArray_real_T_113
-#define struct_emxArray_real_T_113
+#ifndef struct_emxArray_real_T_188
+#define struct_emxArray_real_T_188
 
-struct emxArray_real_T_113
+struct emxArray_real_T_188
 {
-  real_T data[113];
+  real_T data[188];
   int32_T size;
 };
 
-#endif                                 //struct_emxArray_real_T_113
+#endif                                 //struct_emxArray_real_T_188
 
-#ifndef typedef_emxArray_real_T_113
-#define typedef_emxArray_real_T_113
+#ifndef typedef_emxArray_real_T_188
+#define typedef_emxArray_real_T_188
 
-typedef struct emxArray_real_T_113 emxArray_real_T_113;
+typedef struct emxArray_real_T_188 emxArray_real_T_188;
 
-#endif                                 //typedef_emxArray_real_T_113
+#endif                                 //typedef_emxArray_real_T_188
 
 // Block signals and states (default storage) for system '<Root>'
 typedef struct {
-  emxArray_real_T_113 path_out1;       // '<S2>/Final_Static_Path'
-  real_T path_2[113];                  // '<S13>/Dijkstra'
+  emxArray_real_T_188 path_out1;       // '<S2>/Final_Static_Path'
+  real_T path_2[188];                  // '<S13>/Dijkstra'
   real_T UnitDelay1_DSTATE[5];         // '<S3>/Unit Delay1'
   real_T UnitDelay35_DSTATE[4];        // '<S3>/Unit Delay35'
   real_T UnitDelay37_DSTATE[25];       // '<S3>/Unit Delay37'
@@ -134,22 +134,25 @@ typedef struct {
   real_T UnitDelay19_DSTATE[4];        // '<S2>/Unit Delay19'
   real_T UnitDelay15_DSTATE[4];        // '<S2>/Unit Delay15'
   real_T UnitDelay5_DSTATE[22];        // '<S2>/Unit Delay5'
-  real_T Static_Path_ends_POS_data[904];
+  real_T xy_ends_POS_data[752];
+  real_T Static_Path_ends_POS_data[1504];
+  real_T Forward_Static_Path_data[754];
   real_T Path_RES_0_data[40000];
   real_T Path_RES_0_1[40000];
   real_T Path_RES_1_data[40000];
   real_T ob_distance_data[20000];
   real_T Path_RES_data[80000];
-  real_T Forward_Static_Path_0_data[2599];
-  real_T path[12769];
-  real_T Static_Path_0[2599];          // '<S2>/Final_Static_Path'
+  real_T Forward_Static_Path_data_m[754];
+  real_T Forward_Static_Path_0_data[4324];
+  real_T path[35344];
+  real_T Static_Path_0[4324];          // '<S2>/Final_Static_Path'
   real_T rtb_X_data[20000];
   real_T tmp_data[20000];
-  real_T tmp_data_m[20000];
-  real_T Path_RES_0_data_c[40000];
+  real_T tmp_data_c[20000];
+  real_T Path_RES_0_data_k[40000];
   real_T z1_data[20000];
-  real_T z1_data_k[20000];
   real_T z1_data_c[20000];
+  real_T z1_data_b[20000];
   real_T dist;                         // '<S13>/Dijkstra'
   real_T UnitDelay_DSTATE;             // '<S2>/Unit Delay'
   real_T UnitDelay38_DSTATE;           // '<S3>/Unit Delay38'
@@ -188,17 +191,17 @@ typedef struct {
   //    '<S2>/Constant6'
   //    '<S3>/Constant4'
 
-  real_T pooled2[2599];
+  real_T pooled2[4324];
 
   // Expression: nodes
   //  Referenced by: '<S2>/Constant3'
 
-  real_T Constant3_Value[339];
+  real_T Constant3_Value[564];
 
   // Expression: segments
   //  Referenced by: '<S2>/Constant5'
 
-  real_T Constant5_Value[339];
+  real_T Constant5_Value[564];
 
   // Expression: diag([0.00025,0.00025,0.0000001,1,0.0001])
   //  Referenced by: '<S3>/Unit Delay37'
@@ -337,14 +340,15 @@ class MM_DPP_1ModelClass {
   // private member function(s) for subsystem '<Root>'
   real_T sum(const real_T x[10]);
   void invNxN(const real_T x[25], real_T y[25]);
-  void merge(int32_T idx[113], real_T x[113], int32_T offset, int32_T np,
-             int32_T nq, int32_T iwork[113], real_T xwork[113]);
-  void sort(real_T x[113], int32_T idx[113]);
-  void rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy[226], real_T dist
-                   [113]);
+  void merge(int32_T idx[188], real_T x[188], int32_T offset, int32_T np,
+             int32_T nq, int32_T iwork[188], real_T xwork[188]);
+  void sort(real_T x[188], int32_T idx[188]);
+  void power(const real_T a[188], real_T y[188]);
+  void rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy[376], real_T dist
+                   [188]);
   real_T rel_dist_xy_c(const real_T ref_xy[2], const real_T pt_xy[2]);
-  void MM(real_T heading, const real_T X_pos[2], const real_T oi_xy[226], const
-          real_T dist_op[113], const real_T Map_data[2599], real_T *seg_id_near,
+  void MM(real_T heading, const real_T X_pos[2], const real_T oi_xy[376], const
+          real_T dist_op[188], const real_T Map_data[4324], real_T *seg_id_near,
           real_T *op_distance, real_T oi_near[2], real_T *note, real_T
           *seg_direction, real_T *head_err, real_T num_lane_direction[4], real_T
           *seg_heading);
@@ -373,10 +377,10 @@ class MM_DPP_1ModelClass {
                 int32_T *y_size);
   void power_j(const real_T a_data[], const int32_T *a_size, real_T y_data[],
                int32_T *y_size);
-  void power_k(const real_T a_data[], const int32_T *a_size, real_T y_data[],
-               int32_T *y_size);
+  void power_ke(const real_T a_data[], const int32_T *a_size, real_T y_data[],
+                int32_T *y_size);
   void abs_i(const real_T x[4], real_T y[4]);
-  void power(const real_T a[4], real_T y[4]);
+  void power_k(const real_T a[4], real_T y[4]);
   void G2splines(real_T xa, real_T ya, real_T thetaa, real_T ka, real_T xb,
                  real_T yb, real_T thetab, real_T kb, real_T path_length, real_T
                  X_0[11], real_T Y[11], real_T XP[6], real_T YP[6], real_T K[11],

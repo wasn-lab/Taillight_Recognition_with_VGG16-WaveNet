@@ -40,7 +40,7 @@
 
 
 // Specify running mode
-#define TEST
+#define VIRTUAL
 
 static double Heading, SLAM_x, SLAM_y;
 static Geofence BBox_Geofence;
@@ -55,6 +55,7 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 
 void VehinfoCallback(const msgs::VehInfo::ConstPtr& VImsg){
   	Ego_speed_ms = VImsg->ego_speed;
+	//Ego_speed_ms = 7.6;
 }
 
 void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg){
@@ -66,6 +67,7 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg){
 void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){	
 	Recommand_Speed.clear();
 	for(int i=0;i<msg->objects.size();i++){
+		//cout << "Start point: " << msg->objects[i].bPoint.p0.x << "," <<  msg->objects[i].bPoint.p0.y << endl;
 		for(int j=0;j<msg->objects[i].track.forecasts.size();j++){
 			Point Point_temp;
 			vector<Point> PointCloud_temp;
@@ -76,7 +78,10 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 			Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
 			Point_temp.Speed = msg->objects[i].relSpeed;
 			PointCloud_temp.push_back(Point_temp);
-			#ifdef TEST
+
+			//cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y << endl;
+
+			#ifdef VIRTUAL
 				BBox_Geofence.setPointCloud(PointCloud_temp,false,SLAM_x,SLAM_y,Heading);
 			#else
 				BBox_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
@@ -85,14 +90,14 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				cerr << "Please initialize all PCloud parameters first" << endl;
 				return;
 			}
-			#ifdef TEST
+			#ifdef VIRTUAL
 				if(BBox_Geofence.getDistance()<80){
-					cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << "m" << endl;
+					cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << "m     " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 				}
 			#endif
 			if(BBox_Geofence.getDistance()<Range_max & BBox_Geofence.getDistance()>Range_min){
 				Recommand_Speed.push_back((2*BBox_Geofence.getDistance()/time)-Ego_speed_ms);
-				#ifdef TEST
+				#ifdef VIRTUAL
 					cout << "Collision appears" << endl;
 				#endif
 			} 
@@ -108,7 +113,7 @@ int main(int argc, char **argv){
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	ros::Subscriber VI_sub = n.subscribe("veh_info", 1, VehinfoCallback);
-	#ifdef TEST
+	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPP);
 	#else
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
@@ -142,19 +147,14 @@ int main(int argc, char **argv){
 		else{
         	double minElement = *std::min_element(Recommand_Speed.begin(), Recommand_Speed.end());	
 			cout << "Recommand speed: " << minElement << endl;
+			frame.can_id  = 0x593;
+			frame.data[0] = (short int)(minElement*100);
+			frame.data[1] = (short int)(minElement*100)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
 		}
-		/*
-		frame.can_id  = 0x590;
-		frame.data[0] = (short int)(PCloud_Geofence.getDistance()*100);
-		frame.data[1] = (short int)(PCloud_Geofence.getDistance()*100)>>8;
-		frame.data[2] = (short int)(PCloud_Geofence.getObjSpeed()*100);
-		frame.data[3] = (short int)(PCloud_Geofence.getObjSpeed()*100)>>8;
-		frame.data[4] = (short int)(PCloud_Geofence.getNearest_X()*100);
-		frame.data[5] = (short int)(PCloud_Geofence.getNearest_X()*100)>>8;
-		frame.data[6] = (short int)(PCloud_Geofence.getNearest_Y()*100);
-		frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y()*100)>>8;
-		nbytes = write(s, &frame, sizeof(struct can_frame));
-		*/
+		
+		
+		
 		loop_rate.sleep();	
 	}
 	close(s);
