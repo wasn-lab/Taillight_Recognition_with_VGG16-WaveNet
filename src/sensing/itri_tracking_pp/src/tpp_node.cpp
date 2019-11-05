@@ -195,8 +195,15 @@ void TPPNode::subscribe_and_advertise_topics()
   }
   else if (in_source_ == 4)
   {
-    LOG_INFO << "Input Source: Virtual" << std::endl;
-    fusion_sub_ = nh_.subscribe("virBB_array", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Virtual_abs" << std::endl;
+    fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
+    topic = "PathPredictionOutput";
+    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
+  }
+  else if (in_source_ == 5)
+  {
+    LOG_INFO << "Input Source: Virtual_rel" << std::endl;
+    fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
