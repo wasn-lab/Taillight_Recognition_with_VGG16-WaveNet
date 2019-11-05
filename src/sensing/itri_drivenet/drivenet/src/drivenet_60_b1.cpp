@@ -81,6 +81,8 @@ std::vector<cv::Mat*> matSrcs;
 std::vector<uint32_t> matOrder;
 std::vector<uint32_t> matId;
 std::vector<std_msgs::Header> headers;
+std::vector<int> dist_rows;
+std::vector<int> dist_cols;
 
 DistanceEstimation de;
 Yolo_app yoloApp;
@@ -104,7 +106,7 @@ void image_init()
     }
 }
 
-void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx){
+void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
 
     pthread_mutex_lock(&mtxInfer);
 
@@ -120,6 +122,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         matId.push_back(camId);
         vbbx_output.push_back(vbbx);
         headers.push_back(header);
+        dist_cols.push_back(dist_w);
+        dist_rows.push_back(dist_h);
         std::cout << __FILE__ << __LINE__ << ", camOrder: " << camOrder << std::endl;
     }
 
@@ -140,7 +144,7 @@ void callback_60_0(const sensor_msgs::Image::ConstPtr &msg){
     mat60_0 = cv_ptr->image;
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_0) sync_inference(0, 1, h, &mat60_0, &vBBX60_0);
+    if(!isInferData_0) sync_inference(0, 1, h, &mat60_0, &vBBX60_0, 1920, 1208);
 }
 
 void callback_60_1(const sensor_msgs::Image::ConstPtr &msg){
@@ -150,7 +154,7 @@ void callback_60_1(const sensor_msgs::Image::ConstPtr &msg){
     mat60_1 = cv_ptr->image;
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_1)  sync_inference(1, 2, h, &mat60_1, &vBBX60_1);
+    if(!isInferData_1)  sync_inference(1, 2, h, &mat60_1, &vBBX60_1, 1920, 1208);
 }
 
 void callback_60_2(const sensor_msgs::Image::ConstPtr &msg){
@@ -160,25 +164,25 @@ void callback_60_2(const sensor_msgs::Image::ConstPtr &msg){
     mat60_2 = cv_ptr->image;
     
     std_msgs::Header h = msg->header;
-    if(!isInferData_2) sync_inference(2, 3, h, &mat60_2, &vBBX60_2);
+    if(!isInferData_2) sync_inference(2, 3, h, &mat60_2, &vBBX60_2, 1920, 1208);
 }
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat60_0);
 
-    if(!isInferData_0) sync_inference(0, 1, compressImg.header, &mat60_0, &vBBX60_0);
+    if(!isInferData_0) sync_inference(0, 1, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
 }
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat60_1);
 
-    if(!isInferData_1)  sync_inference(1, 2, compressImg.header, &mat60_1, &vBBX60_1);
+    if(!isInferData_1)  sync_inference(1, 2, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
 }
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat60_2);
     
-    if(!isInferData_2) sync_inference(2, 3, compressImg.header, &mat60_2, &vBBX60_2);
+    if(!isInferData_2) sync_inference(2, 3, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
@@ -193,8 +197,6 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 	    pubImg_60_2.publish(imgMsg);
 }
 
-
-/// roslaunch drivenet drivenet60.launch
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "drivenet_60_b1");
@@ -210,9 +212,9 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam60_0_topicName = "gmsl_camera/0";
-    cam60_1_topicName = "gmsl_camera/1";
-    cam60_2_topicName = "gmsl_camera/2";
+    cam60_0_topicName = "/cam/F_right";
+    cam60_1_topicName = "/cam/F_center";
+    cam60_2_topicName = "/cam/F_left";
     
     if (iscompressed){
         cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
@@ -389,6 +391,8 @@ std::cout << "run_inference start" << std::endl;
     std::vector<cv::Mat*> matSrcs_tmp;
     std::vector<uint32_t> matOrder_tmp;
     std::vector<uint32_t> matId_tmp;
+    std::vector<int> dist_cols_tmp;    
+    std::vector<int> dist_rows_tmp;
 
     cv::Mat M_display;
     cv::Mat M_display_tmp;
@@ -407,6 +411,8 @@ std::cout << "run_inference start" << std::endl;
         matSrcs_tmp = matSrcs;
         matOrder_tmp = matOrder;
         matId_tmp = matId;
+        dist_cols_tmp = dist_cols;
+        dist_rows_tmp = dist_rows;
 
         // reset data
         headers.clear();
@@ -417,13 +423,15 @@ std::cout << "run_inference start" << std::endl;
         vBBX60_0.clear();
         vBBX60_1.clear();
         vBBX60_2.clear();
+        dist_cols.clear();
+        dist_rows.clear();
         isInferData = false;
         isInferData_0 = false;
         isInferData_1 = false;
         isInferData_2 = false;
 
         if (!input_resize) yoloApp.input_preprocess(matSrcs_tmp); 
-        else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize); 
+        else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
 
         yoloApp.inference_yolo(); 
         yoloApp.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
@@ -523,6 +531,8 @@ std::cout << "run_inference start" << std::endl;
         matOrder_tmp.clear();
         matId_tmp.clear();
         vbbx_output_tmp.clear();
+        dist_cols_tmp.clear();
+        dist_rows_tmp.clear();
         r.sleep();
     }
 std::cout << __FILE__ << __LINE__ << std::endl;
@@ -535,6 +545,12 @@ void* run_display(void* ){
     cv::namedWindow("RightSide-60", cv::WINDOW_NORMAL);
     cv::namedWindow("Center-60", cv::WINDOW_NORMAL);
     cv::namedWindow("LeftSide-60", cv::WINDOW_NORMAL);
+    cv::resizeWindow("RightSide-60", 480, 360);
+    cv::resizeWindow("Center-60", 480, 360);
+    cv::resizeWindow("LeftSide-60", 480, 360);
+    cv::moveWindow("RightSide-60", 1025, 30);
+    cv::moveWindow("Center-60", 545, 30);   
+    cv::moveWindow("LeftSide-60", 0, 30);   
 
     int marker_h = 0;
     if (car_id == 1) marker_h = 590;
