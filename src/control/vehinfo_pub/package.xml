@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>vehinfo_pub</name>
+  <version>0.0.0</version>
+  <description>The vehinfo_pub package</description>
+
+   <maintainer email="barjobcxu@gmail.com">u300</maintainer>
+
+
+  <license>TODO</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>msgs</run_depend>
+  <run_depend>message_generation</run_depend>
+
+  <export>
+
+
+  </export>
+</package>
