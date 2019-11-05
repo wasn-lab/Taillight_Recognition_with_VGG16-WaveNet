@@ -1,2 +1,0 @@
-Header camHeader
-CamBox[] camObj
