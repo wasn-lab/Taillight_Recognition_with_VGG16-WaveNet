@@ -3726,9 +3726,9 @@ int main(int argc, char** argv)
   ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
 
   // Camera object detection input
-  ros::Subscriber cam60_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam60", 2, cam60_1_DetectionCb);
-  ros::Subscriber cam30_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam30", 2, cam30_1_DetectionCb);
-  ros::Subscriber cam120_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam120", 2, cam120_1_DetectionCb);
+  ros::Subscriber sub_cam_F_right = nhFus.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
+  ros::Subscriber sub_cam_F_center = nhFus.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
+  ros::Subscriber sub_cam_F_left = nhFus.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
 
   fusMsg_pub = nhFus.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
 
