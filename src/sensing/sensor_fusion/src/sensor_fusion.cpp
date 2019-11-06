@@ -3720,7 +3720,7 @@ int main(int argc, char** argv)
   // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
 
   // Radar object detection input
-  ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
+  // ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
 
   // Lidar object detection input
   ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
