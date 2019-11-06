@@ -467,18 +467,19 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
     if (BoxPass_flag)
     {
         boxPoint = de.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
-        
-        camInfo.u = box.x1;
-        camInfo.v = box.y1;
-        camInfo.width = box.x2 - box.x1;
-        camInfo.height = box.y2 - box.y1;
-        camInfo.prob = box.prob;
-
-        detObj.classId = translate_label(box.label);
         detObj.bPoint = boxPoint;
-        detObj.camInfo = camInfo;
-        detObj.fusionSourceId = 0;
     }
+
+    camInfo.u = box.x1;
+    camInfo.v = box.y1;
+    camInfo.width = box.x2 - box.x1;
+    camInfo.height = box.y2 - box.y1;
+    camInfo.prob = box.prob;
+
+    detObj.classId = translate_label(box.label);
+    detObj.camInfo = camInfo;
+    detObj.fusionSourceId = 0;
+
     return detObj;
 }
 
@@ -562,39 +563,40 @@ std::cout << "run_inference start" << std::endl;
             for(int i = 0; i < pool.size(); i++)
             {
                 detObj = pool[i].get();
-                if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
-                    vDo.push_back(detObj);
+                vDo.push_back(detObj);
                 if(display_flag)
                 {   
-                    int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                    if (cam_order == 0)
-                    {
-                        distMeter_p0x = detObj.bPoint.p3.x;
-                        distMeter_p3x = detObj.bPoint.p7.y;
-                        distMeter_p0y = detObj.bPoint.p3.y;  
-                        distMeter_p3y = detObj.bPoint.p7.y;
-                    }                    
-                    else if (cam_order == 2)
-                    {
-                        distMeter_p0x = detObj.bPoint.p4.x;
-                        distMeter_p3x = detObj.bPoint.p0.y;
-                        distMeter_p0y = detObj.bPoint.p4.y;  
-                        distMeter_p3y = detObj.bPoint.p0.y;
-                    }
-                    else
-                    {
-                        distMeter_p0x = detObj.bPoint.p0.x;
-                        distMeter_p3x = detObj.bPoint.p3.x;
-                        distMeter_p0y = detObj.bPoint.p0.y;                    
-                        distMeter_p3y = detObj.bPoint.p3.y;                        
-                    }
+                    if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
+                        int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
+                        if (cam_order == 0)
+                        {
+                            distMeter_p0x = detObj.bPoint.p3.x;
+                            distMeter_p3x = detObj.bPoint.p7.y;
+                            distMeter_p0y = detObj.bPoint.p3.y;  
+                            distMeter_p3y = detObj.bPoint.p7.y;
+                        }                    
+                        else if (cam_order == 2)
+                        {
+                            distMeter_p0x = detObj.bPoint.p4.x;
+                            distMeter_p3x = detObj.bPoint.p0.y;
+                            distMeter_p0y = detObj.bPoint.p4.y;  
+                            distMeter_p3y = detObj.bPoint.p0.y;
+                        }
+                        else
+                        {
+                            distMeter_p0x = detObj.bPoint.p0.x;
+                            distMeter_p3x = detObj.bPoint.p3.x;
+                            distMeter_p0y = detObj.bPoint.p0.y;                    
+                            distMeter_p3y = detObj.bPoint.p3.y;                        
+                        }
 
-                    int x1 = detObj.camInfo.u;
-                    int x2 = detObj.camInfo.u + detObj.camInfo.width;
-                    int y2 = detObj.camInfo.v + detObj.camInfo.height;
+                        int x1 = detObj.camInfo.u;
+                        int x2 = detObj.camInfo.u + detObj.camInfo.width;
+                        int y2 = detObj.camInfo.v + detObj.camInfo.height;
 
-                    cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y), cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
-                    cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y), cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
+                        cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y), cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
+                        cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y), cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
+                    }
                 }
             }
 			doa.header = headers_tmp[ndx];
@@ -645,7 +647,8 @@ std::cout << "run_inference start" << std::endl;
                         image_publisher(mat120_3_display, headers_tmp[ndx], 3);
                     }
                 }
-            }        
+            }
+            vDo.clear();        
         }
 
         // reset data
