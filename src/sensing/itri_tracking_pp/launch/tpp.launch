@@ -5,7 +5,8 @@
   <!-- 1: /LidarDetection -->
   <!-- 2: /RadarDetection -->
   <!-- 3: /DetectedObjectArray/cam60_1 -->
-  <!-- 4: /virBB_array  -->
+  <!-- 4: /abs_virBB_array -->
+  <!-- 5: /rel_virBB_array -->
   <!-- otherwise: /SensorFusion -->
   <rosparam param="input_source">0</rosparam>
 
