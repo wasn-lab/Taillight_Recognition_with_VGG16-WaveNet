@@ -270,108 +270,6 @@ void MySigintHandler(int sig)
   ros::shutdown();
 }
 
-int main(int argc, char** argv)
-{
-  cam_det = new int*[5];
-  for (int j = 0; j < 5; j++)
-  {
-    cam_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(cam_det[j], 0, sizeof(int) * max_det);
-  }
-
-  lid_det = new int*[5];
-  for (int j = 0; j < 5; j++)
-  {
-    lid_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(lid_det[j], 0, sizeof(int) * max_det);
-  }
-
-  radar_det = new int*[5];
-  for (int j = 0; j < 5; j++)
-  {
-    radar_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(radar_det[j], 0, sizeof(int) * max_det);
-  }
-
-  bb_det = new int*[6];
-  for (int j = 0; j < 6; j++)
-  {
-    bb_det[j] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det[j], 0, sizeof(int) * (3 * max_det));
-  }
-
-  // Variables for Fused Detection
-
-  bb_det2 = new int*[6];
-  for (int j = 0; j < 6; j++)
-  {
-    bb_det2[j] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det2[j], 0, sizeof(int) * (3 * max_det));
-  }
-
-  /**************************************************************************/
-
-  ros::init(argc, argv, "sensor_fusion");
-  ros::NodeHandle nhFus;
-  // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
-  // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
-
-  // Radar object detection input
-  ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
-
-  // Lidar object detection input
-  ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
-
-  // Camera object detection input
-  ros::Subscriber cam60_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam60", 2, cam60_1_DetectionCb);
-  ros::Subscriber cam30_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam30", 2, cam30_1_DetectionCb);
-  ros::Subscriber cam120_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam120", 2, cam120_1_DetectionCb);
-
-  fusMsg_pub = nhFus.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
-
-  syncCount = 0;
-  pthread_mutex_init(&callback_mutex, NULL);
-  pthread_cond_init(&callback_cond, NULL);
-
-  dbgPCView = 0;
-  // pthread_mutex_init(&mut_dbgPCView,NULL);
-  // pthread_cond_init(&cnd_dbgPCView,NULL);
-  // pthread_create(&thrd_dbgPCView, NULL, &dbg_drawPointCloud, NULL);
-
-  // ros::spin();
-
-  // fps30
-  // rosPublisher = new ROSPublish();
-  // publisher = std::thread(&ROSPublish::tickFuntion, rosPublisher);
-  // mPublish_cb = ROSPublish::staticPublishCallbackFunction;
-
-  signal(SIGINT, MySigintHandler);
-
-  ros::MultiThreadedSpinner spinner(TOTAL_CB);
-  spinner.spin();  // spin() will not return until the node has been shutdown
-
-  /*******************************************************/
-
-  for (int j = 0; j < 5; j++)
-    free(cam_det[j]);
-
-  for (int j = 0; j < 5; j++)
-    free(lid_det[j]);
-
-  for (int j = 0; j < 5; j++)
-    free(radar_det[j]);
-
-  for (int j = 0; j < 6; j++)
-    free(bb_det[j]);
-
-  for (int j = 0; j < 6; j++)
-    free(bb_det2[j]);
-
-  printf("***********free memory 3**************\n");
-  /******************************************************/
-  return 0;
-}
-
 /************************************************************************/
 /*****************************ITRI-DriveNet******************************/
 /************************************************************************/
@@ -3773,4 +3671,106 @@ void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const
   p.x += x;
   p.y += y;
   p.z += z;
+}
+
+int main(int argc, char** argv)
+{
+  cam_det = new int*[5];
+  for (int j = 0; j < 5; j++)
+  {
+    cam_det[j] = (int*)malloc(sizeof(int) * max_det);
+    memset(cam_det[j], 0, sizeof(int) * max_det);
+  }
+
+  lid_det = new int*[5];
+  for (int j = 0; j < 5; j++)
+  {
+    lid_det[j] = (int*)malloc(sizeof(int) * max_det);
+    memset(lid_det[j], 0, sizeof(int) * max_det);
+  }
+
+  radar_det = new int*[5];
+  for (int j = 0; j < 5; j++)
+  {
+    radar_det[j] = (int*)malloc(sizeof(int) * max_det);
+    memset(radar_det[j], 0, sizeof(int) * max_det);
+  }
+
+  bb_det = new int*[6];
+  for (int j = 0; j < 6; j++)
+  {
+    bb_det[j] = (int*)malloc(sizeof(int) * (3 * max_det));
+    memset(bb_det[j], 0, sizeof(int) * (3 * max_det));
+  }
+
+  // Variables for Fused Detection
+
+  bb_det2 = new int*[6];
+  for (int j = 0; j < 6; j++)
+  {
+    bb_det2[j] = (int*)malloc(sizeof(int) * (3 * max_det));
+    memset(bb_det2[j], 0, sizeof(int) * (3 * max_det));
+  }
+
+  /**************************************************************************/
+
+  ros::init(argc, argv, "sensor_fusion");
+  ros::NodeHandle nhFus;
+  // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
+  // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
+
+  // Radar object detection input
+  ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
+
+  // Lidar object detection input
+  ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
+
+  // Camera object detection input
+  ros::Subscriber cam60_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam60", 2, cam60_1_DetectionCb);
+  ros::Subscriber cam30_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam30", 2, cam30_1_DetectionCb);
+  ros::Subscriber cam120_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam120", 2, cam120_1_DetectionCb);
+
+  fusMsg_pub = nhFus.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
+
+  syncCount = 0;
+  pthread_mutex_init(&callback_mutex, NULL);
+  pthread_cond_init(&callback_cond, NULL);
+
+  dbgPCView = 0;
+  // pthread_mutex_init(&mut_dbgPCView,NULL);
+  // pthread_cond_init(&cnd_dbgPCView,NULL);
+  // pthread_create(&thrd_dbgPCView, NULL, &dbg_drawPointCloud, NULL);
+
+  // ros::spin();
+
+  // fps30
+  // rosPublisher = new ROSPublish();
+  // publisher = std::thread(&ROSPublish::tickFuntion, rosPublisher);
+  // mPublish_cb = ROSPublish::staticPublishCallbackFunction;
+
+  signal(SIGINT, MySigintHandler);
+
+  ros::MultiThreadedSpinner spinner(TOTAL_CB);
+  spinner.spin();  // spin() will not return until the node has been shutdown
+
+  /*******************************************************/
+
+  for (int j = 0; j < 5; j++)
+    free(cam_det[j]);
+
+  for (int j = 0; j < 5; j++)
+    free(lid_det[j]);
+
+  for (int j = 0; j < 5; j++)
+    free(radar_det[j]);
+
+  for (int j = 0; j < 6; j++)
+    free(bb_det[j]);
+
+  for (int j = 0; j < 6; j++)
+    free(bb_det2[j]);
+
+  printf("***********free memory 3**************\n");
+  /******************************************************/
+  return 0;
 }
