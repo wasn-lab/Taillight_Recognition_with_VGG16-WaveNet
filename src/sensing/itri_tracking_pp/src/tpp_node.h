@@ -11,6 +11,8 @@
 #include "marker_gen.h"
 #include <visualization_msgs/MarkerArray.h>
 
+#include <fstream>
+
 namespace tpp
 {
 class TPPNode
@@ -48,33 +50,34 @@ private:
 
   KalmanTrackers KTs_;
 
-  EgoParam ego_speed_mps_;
-  EgoParam ego_rollrate_radps_;
-  EgoParam ego_pitchrate_radps_;
-  EgoParam ego_yawrate_radps_;
+  EgoParam ego_x_m_;
+  EgoParam ego_y_m_;
+  EgoParam ego_heading_rad_;
 
   Velocity vel_;
 
   PathPredict pp_;
 
   ros::NodeHandle nh_;
+  ros::NodeHandle nh2_;
+
+  // custom callback queue
+  ros::CallbackQueue queue_;
 
   ros::Publisher pp_pub_;
 
   MarkerGen mg_;
 
   ros::Subscriber fusion_sub_;
-  ros::Subscriber ego_speed_sub_;
-  ros::Subscriber ego_RPYrate_sub_;
+  ros::Subscriber localization_sub_;
 
   double loop_begin = 0.;    // seconds
   double loop_elapsed = 0.;  // seconds
 
   bool is_legal_dt_ = false;
 
-  void callback_ego_speed(const itri_msgs::VehicleState::ConstPtr& input);
-  void callback_ego_RPYrate(const sensor_msgs::Imu::ConstPtr& input);
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
+  void callback_localization(const msgs::LocalizationToVeh::ConstPtr& input);
 
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
@@ -102,6 +105,8 @@ private:
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
+
+  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 };
 }  // namespace tpp
 

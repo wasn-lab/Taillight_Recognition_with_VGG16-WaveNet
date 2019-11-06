@@ -11,12 +11,13 @@
 using namespace std;
 using namespace pcl;
 
-
+template <typename PointT>
 cudaError_t
 cudaTransformPoints (int threads,
-                     pcl::PointXYZ *d_point_cloud,
+                     PointT *d_point_cloud,
                      int number_of_points,
                      float *d_matrix);
+
 cudaError_t
 cudaRemovePointsInsideSphere (int threads,
                               pcl::PointXYZ *d_point_cloud,
@@ -30,20 +31,17 @@ class Transform_CUDA
     Transform_CUDA ();
     ~Transform_CUDA ();
 
-    void
-    warmUpGPU ();
-    int
-    getNumberOfAvailableThreads ();
-
     bool
     removePointsInsideSphere (pcl::PointCloud<pcl::PointXYZ> &point_cloud);
 
+    template <typename PointT>
     bool
-    run (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
+    run (typename pcl::PointCloud<PointT> &point_cloud,
          Eigen::Affine3f matrix);
 
-    PointCloud<PointXYZI>
-    compute (PointCloud<PointXYZI>::Ptr input,
+    template <typename PointT>
+    PointCloud<PointT>
+    compute (typename PointCloud<PointT>::Ptr input,
                              float tx,
                              float ty,
                              float tz,
@@ -51,25 +49,15 @@ class Transform_CUDA
                              float ry,
                              float rz);
 
-    PointCloud<PointXYZ>
-    compute (PointCloud<PointXYZ>::Ptr input,
-             float tx,
-             float ty,
-             float tz,
-             float rx,
-             float ry,
-             float rz);
+    template <typename PointT>
+    PointCloud<PointT>
+    compute (typename PointCloud<PointT>::Ptr input,
+                             Eigen::Affine3f mr);
 
-    PointCloud<PointXYZI>
-    compute (PointCloud<PointXYZI>::Ptr input,
-             Eigen::Affine3f mr);
-
-    PointCloud<PointXYZ>
-    compute (PointCloud<PointXYZ>::Ptr input,
-             Eigen::Affine3f mr);
 
   private:
     static bool hasInitialCUDA;
+    static int  maxThreadsNumber;
 
 };
 

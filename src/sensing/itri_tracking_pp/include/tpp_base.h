@@ -18,6 +18,8 @@
 #include <Eigen/Eigenvalues>
 
 #include <ros/ros.h>
+#include <ros/spinner.h>
+#include <ros/callback_queue.h>
 
 // ros msgs
 #include <msgs/PointXYZV.h>
@@ -27,7 +29,7 @@
 #include <msgs/TrackInfo.h>
 #include <msgs/DetectedObject.h>
 #include <msgs/DetectedObjectArray.h>
-#include <itri_msgs/VehicleState.h>
+#include <msgs/LocalizationToVeh.h>
 
 #include <std_msgs/ColorRGBA.h>
 #include <sensor_msgs/Imu.h>
@@ -49,6 +51,14 @@
 
 #define FPS 0
 #define ENABLE_PROFILING_MODE 0
+#define FPS_EXTRAPOLATION 0
+
+// virtual input test
+#define VIRTUAL_INPUT 0
+#define SAME_OBJ_MARKER_HEADER 0
+#define SAVE_OUTPUT_TXT 0
+
+#define SPEEDUP_KALMAN_VEL_EST 1  // spped up kalman velocity estimation
 
 // debug
 #define DEBUG 0
@@ -58,9 +68,7 @@
 #define DEBUG_HUNGARIAN_DIST 0
 #define DEBUG_PP 0
 #define DEBUG_TRACKTIME 0
-
 #define DELAY_TIME 1
-#define FPS_EXTRAPOLATION 1
 
 #define FILL_CONVEX_HULL 1
 

@@ -3,6 +3,7 @@
 S1Cluster::S1Cluster () :
     viewID (NULL)
 {
+
 }
 
 S1Cluster::S1Cluster (boost::shared_ptr<pcl::visualization::PCLVisualizer> input_viewer,
@@ -11,10 +12,8 @@ S1Cluster::S1Cluster (boost::shared_ptr<pcl::visualization::PCLVisualizer> input
   viewer = input_viewer;
   viewID = input_viewID;
 
-  CudaCtx ctx;
-
   dbscan.setEpsilon (0.8);
-  dbscan.setMinpts (3);
+  dbscan.setMinpts (2);
 }
 
 S1Cluster::~S1Cluster ()
@@ -23,7 +22,7 @@ S1Cluster::~S1Cluster ()
 
 CLUSTER_INFO*
 S1Cluster::getClusters (bool debug,
-                        PointCloud<PointXYZIL>::ConstPtr inputIL,
+                        const PointCloud<PointXYZIL>::ConstPtr inputIL,
                         int *cluster_number)
 {
   pcl::StopWatch timer;
@@ -42,17 +41,17 @@ S1Cluster::getClusters (bool debug,
     }
   }
 
-  *ptr_cur_cloud = NoiseFilter ().runUniformSampling<PointXYZ> (ptr_cur_cloud, 0.15);
+  *ptr_cur_cloud = NoiseFilter ().runUniformSampling<PointXYZ> (ptr_cur_cloud, 0.1);
 
 #if ENABLE_DEBUG_MODE == true
-  cout << "-------------------------------Part 0 : get cluster_vector " << timer.getTimeSeconds () << "," << inputIL->size () << endl;
+  cout << "-------------------------------Part 0 : get cluster_vector " << timer.getTimeSeconds () << "," << ptr_cur_cloud->size () << endl;
 #endif
 
   dbscan.setInputCloud (ptr_cur_cloud);
   dbscan.segment (vectorCluster);
 
 #if ENABLE_DEBUG_MODE == true
-  cout << "-------------------------------Part 1 : get cluster_vector " << timer.getTimeSeconds () << "," << inputIL->size () << endl;
+  cout << "-------------------------------Part 1 : get cluster_vector " << timer.getTimeSeconds () << "," << ptr_cur_cloud->size () << endl;
 #endif
 
   vector<CLUSTER_INFO> cluster_vector;  // initialize an vector of cluster Information
@@ -67,7 +66,6 @@ S1Cluster::getClusters (bool debug,
     raw_cloud.resize (vectorCluster.at (i).indices.size ());
     raw_cloud_IL.resize (vectorCluster.at (i).indices.size ());
 
-#pragma omp parallel for
     for (size_t j = 0; j < vectorCluster.at (i).indices.size (); j++)
     {
       raw_cloud.points[j] = ptr_cur_cloud->points[vectorCluster.at (i).indices.at (j)];
@@ -189,13 +187,13 @@ S1Cluster::getClusters (bool debug,
   {
     if (cluster_vector.at (i).cluster_tag == 1)
     {
-      if (cluster_vector.at (i).dx > 16 || cluster_vector.at (i).dy > 16 || cluster_vector.at (i).dz > 4)
+      if (cluster_vector.at (i).dx > 10 || cluster_vector.at (i).dy > 10 || cluster_vector.at (i).dz > 4)
         cluster_vector.at (i).cluster_tag = 0;
 
-      if (cluster_vector.at (i).dis_center_origin < 45)
+      if (cluster_vector.at (i).dis_center_origin < 40)
       {
 
-        if (cluster_vector.at (i).center.y > 3 || cluster_vector.at (i).center.y < -3)
+        if (cluster_vector.at (i).center.y > 3.5 || cluster_vector.at (i).center.y < -3.5)
         {
 
           if (cluster_vector.at (i).dz < 0.1)
@@ -210,7 +208,7 @@ S1Cluster::getClusters (bool debug,
         }
         else
         {
-          if (cluster_vector.at (i).max.z < -2.0 && cluster_vector.at (i).dy > 1.5)
+          if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
             cluster_vector.at (i).cluster_tag = 0;
         }
 
@@ -340,8 +338,8 @@ S1Cluster::getClusters (bool debug,
        viewer->addText3D (to_string (intPart) + "." + to_string (floatPart), cluster_vector.at (i).max, 0.7, 255, 255, 255, to_string (*viewID));
        ++*viewID;*/
 
-      viewer->addText3D (to_string (cluster_vector.at (i).cluster_tag), cluster_vector.at (i).max, 0.7, 255, 255, 255, to_string (*viewID));
-      ++*viewID;
+/*      viewer->addText3D (to_string (cluster_vector.at (i).cluster_tag), cluster_vector.at (i).max, 0.7, 255, 255, 255, to_string (*viewID));
+      ++*viewID;*/
 
       /*
        viewer->addText3D (to_string (cluster_vector.at (i).cloud.size()/(cluster_vector.at (i).dx*cluster_vector.at (i).dy)), cluster_vector.at (i).max, 0.7, 255, 255, 255, to_string (*viewID));
@@ -352,6 +350,7 @@ S1Cluster::getClusters (bool debug,
        viewer->addText3D (to_string (cluster_vector.at (i).cluster_tag) + "", cluster_vector.at (i).max, 0.7, 255, 255, 255, to_string (*viewID));
        ++*viewID;
        */
+
 
 #if ENABLE_DEBUG_MODE == true
 

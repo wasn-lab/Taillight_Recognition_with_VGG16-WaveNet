@@ -107,8 +107,9 @@ CuboidFilter::hollow_removal<PointXYZI> (typename PointCloud<PointXYZI>::Ptr inp
                 double Zmin,
                 double Zmax);
 
-vector<PointCloud<PointXYZ>>
-CuboidFilter::separate_cloud (PointCloud<PointXYZ>::Ptr input,
+template <typename PointT>
+vector<PointCloud<PointT>>
+CuboidFilter::separate_cloud (typename PointCloud<PointT>::Ptr input,
                 float Xmin,
                 float Xmax,
                 float Ymin,
@@ -116,11 +117,11 @@ CuboidFilter::separate_cloud (PointCloud<PointXYZ>::Ptr input,
                 float Zmin,
                 float Zmax)
 {
-  vector<PointCloud<PointXYZ>> output;
+  vector<PointCloud<PointT>> output;
   output.resize (2);
 
-  PointCloud<PointXYZ> cloud1;
-  PointCloud<PointXYZ> cloud2;
+  PointCloud<PointT> cloud1;
+  PointCloud<PointT> cloud2;
   cloud1.resize (input->size ());
   cloud2.resize (input->size ());
 
@@ -148,7 +149,27 @@ CuboidFilter::separate_cloud (PointCloud<PointXYZ>::Ptr input,
 
 }
 
-PointCloud<PointXYZ>
+template
+vector<PointCloud<PointXYZ>>
+CuboidFilter::separate_cloud (typename PointCloud<PointXYZ>::Ptr input,
+                float Xmin,
+                float Xmax,
+                float Ymin,
+                float Ymax,
+                float Zmin,
+                float Zmax);
+
+template
+vector<PointCloud<PointXYZI>>
+CuboidFilter::separate_cloud (typename PointCloud<PointXYZI>::Ptr input,
+                float Xmin,
+                float Xmax,
+                float Ymin,
+                float Ymax,
+                float Zmin,
+                float Zmax);
+
+/*PointCloud<PointXYZ>
 CuboidFilter::background_removal (const PointCloud<PointXYZ>::ConstPtr input,
                     const PointCloud<PointXYZ>::ConstPtr base)
 {
@@ -187,4 +208,4 @@ CuboidFilter::background_removal (const PointCloud<PointXYZ>::ConstPtr input,
   }
 
   return out_cloud;
-}
+}*/

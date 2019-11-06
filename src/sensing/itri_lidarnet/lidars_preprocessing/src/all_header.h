@@ -191,5 +191,7 @@ using namespace Eigen;
 
 #include "UserDefine.h"
 
+#define ENABLE_DEBUG_MODE false
+
 
 #endif /* ALL_HEADER_H_ */

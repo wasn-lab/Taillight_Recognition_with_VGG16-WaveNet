@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>trimble_gps_imu_pub</name>
+  <version>0.0.0</version>
+  <description>The trimble_gps_imu_pub package</description>
+  <maintainer email="bchsu1125@gmail.com">u300</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_generation</run_depend>
+
+</package>
+
+

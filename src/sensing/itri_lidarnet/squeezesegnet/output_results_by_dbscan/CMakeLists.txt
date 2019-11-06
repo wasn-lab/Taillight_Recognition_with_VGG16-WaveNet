@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   libs
 )                 
-                                                                          
+                                                                           
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
       
@@ -236,7 +236,19 @@ message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
 ##   Source file    ##
 ######################
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1.cpp")
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_GTgen.cpp")
               
-cuda_add_executable   (${PROJECT_NAME} ${SOURCES_SRCS})
-add_dependencies	  (${PROJECT_NAME} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS})
+add_dependencies	  (${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
+target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+              
+cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS})
+add_dependencies	  (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
+target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+
+cuda_add_executable   (${PROJECT_NAME}_GTgen src/main_GTgen.cpp ${SOURCES_SRCS})
+add_dependencies	  (${PROJECT_NAME}_GTgen msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
+target_link_libraries (${PROJECT_NAME}_GTgen ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+

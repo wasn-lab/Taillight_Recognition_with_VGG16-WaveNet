@@ -149,7 +149,7 @@ PlaneGroundFilter::runMorphological (const typename PointCloud<PointT>::ConstPtr
   apmf.setSlope (setSlope);                       //0.9
   apmf.setInitialDistance (setInitialDistance);   //0.32
   apmf.setMaxDistance (setMaxDistance);           //0.33
-  apmf.setNumberOfThreads (3);
+  apmf.setNumberOfThreads (2);
   apmf.extract (output.indices);
   return output;
 }

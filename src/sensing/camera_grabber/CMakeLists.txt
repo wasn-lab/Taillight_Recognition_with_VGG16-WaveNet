@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   image_transport
   cv_bridge
+  car_model
   camera_utils
 )
 
@@ -78,6 +79,7 @@ endif ()
 ## Your package locations should be listed before other locations
 include_directories(
   ${OpenCV_INCLUDE_DIRS}
+  ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
   ${GLOG_INCLUDE_DIRS}
   src/Framework
