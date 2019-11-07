@@ -60,6 +60,16 @@ Reviewer需要有maintainer權限，目前有
 @hankliu
 @chinghao.liu
 
+### Review 注意事項
+
+為了確定master branch處於可以build pass並能順利執行，Review時請注意以下事項。
+
+- 在 Review 頁面，下方有個 Changes 的 tab, 點下去可以看到改了什麼，要看程式是否有考慮不週之處。
+- 是否有誤上檔案，如
+  * 大型檔案（Repository太大的話，會出現無法push的問題，同時在下載code時也會很慢）
+  * log 檔
+- 點下 Merge button之前，看一下上方pipeline的執行結果，pipeline執行失敗的話，強行merge必然會出現build fail，不可點下Merge。
+
 ### 常見問題
 
 #### 要怎麼把master branch裡的code merge到自己的local branch?
@@ -82,7 +92,7 @@ $ git branch -a
   remotes/origin/tracking_pp
 
 # 把最新的code抓回來
-$ git pull
+$ git fetch
 remote: Enumerating objects: 62, done.
 remote: Counting objects: 100% (62/62), done.
 remote: Compressing objects: 100% (47/47), done.

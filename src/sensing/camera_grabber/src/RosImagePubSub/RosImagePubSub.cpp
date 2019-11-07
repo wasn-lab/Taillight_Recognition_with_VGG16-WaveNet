@@ -111,7 +111,7 @@ RosImagePubSub::RosImagePubSub(ros::NodeHandle& nh_in) : _nh_ptr(&nh_in), _ros_i
 //
 bool RosImagePubSub::add_a_pub(size_t id_in, const std::string& topic_name)
 {
-  auto result = _image_publisher_map.emplace(id_in, _ros_it.advertise(topic_name, 10));
+  auto result = _image_publisher_map.emplace(id_in, _ros_it.advertise(topic_name, 1));
   return result.second;
 }
 
