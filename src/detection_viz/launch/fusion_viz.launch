@@ -26,7 +26,7 @@
   </node>
 
   <!-- Fusion *********************************************************************************** -->
-  <node name="m_SensorFusion" pkg="detection_viz" type="marker_gen_detection_fake.py" output="screen">
+  <node name="m_SensorFusion" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/SensorFusion"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
@@ -34,7 +34,7 @@
   </node>
   
   <!-- Fusion Polygon *************************************************************************** -->
-  <node name="m_SensorFusion_polygon" pkg="detection_viz" type="polygon_gen_detection_fake.py" output="screen">
+  <node name="m_SensorFusion_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen">
       <param name="topic" value="/SensorFusion"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
