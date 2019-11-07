@@ -5,8 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /PP_fusion1
-        - /Local_Path1/Status1
       Splitter Ratio: 0.5
     Tree Height: 425
   - Class: rviz/Selection
@@ -66,7 +64,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 212
+      Max Intensity: 239
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: LidarAll
@@ -80,6 +78,18 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /cam/F_center
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: cam60_mid_raw
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
       Value: true
     - Alpha: 0.5
       Cell Size: 10
@@ -102,7 +112,7 @@ Visualization Manager:
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /LidarDetection/markers
-      Name: Lidar
+      Name: Lidar_bbox
       Namespaces:
         {}
       Queue Size: 100
@@ -112,7 +122,6 @@ Visualization Manager:
       Marker Topic: /LidarDetection/polygons
       Name: Lidar_polygon
       Namespaces:
-        "": true
         /LidarDetection: true
       Queue Size: 100
       Value: true
@@ -126,8 +135,24 @@ Visualization Manager:
       Value: false
     - Class: rviz/MarkerArray
       Enabled: true
+      Marker Topic: /CamObjFrontCenter/markers
+      Name: Camera_bbox
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /DetectedObjectArray/cam60/delay
+      Name: Camera_delay
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
       Marker Topic: /RadarDetection/markers
-      Name: Radar
+      Name: Radar_bbox
       Namespaces:
         {}
       Queue Size: 100
@@ -141,25 +166,9 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /CamObjFrontCenter/markers
-      Name: Camera
-      Namespaces:
-        /CamObjFrontCenter: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /DetectedObjectArray/cam60/delay
-      Name: Camera_delay
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /SensorFusion/markers
-      Name: Fusion
+      Name: Fusion_bbox
       Namespaces:
         {}
       Queue Size: 100
@@ -169,7 +178,7 @@ Visualization Manager:
       Marker Topic: /SensorFusion/polygons
       Name: Fusion_polygon
       Namespaces:
-        /SensorFusion: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -198,279 +207,95 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/lidar/markers
-      Name: PP_lidar
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/lidar/markers
+          Name: TPP_lidar_bbox
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/lidar/polygons
+          Name: TPP_lidar_polygon
+          Namespaces:
+            PPOutput_p: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/lidar/id
+          Name: TPP_lidar_id
+          Namespaces:
+            PPOutput_i: true
+            PPOutput_q: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/lidar/delay
+          Name: TPP_lidar_delay
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/lidar/speed
+          Name: TPP_lidar_speed
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/markers
+          Name: TPP_fusion_bbox
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/polygons
+          Name: TPP_fusion_polygon
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/id
+          Name: TPP_fusion_id
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/delay
+          Name: TPP_fusion_delay
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/speed
+          Name: TPP_fusion_speed
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+      Enabled: true
+      Name: TPP_output
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /PathPredictionOutput/lidar/polygons
-      Name: PP_lidar_polygon
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/lidar/id
-      Name: PP_lidar_id
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/lidar/delay
-      Name: PP_lidar_delay
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/lidar/speed
-      Name: PP_lidar_speed
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/radar/markers
-      Name: PP_radar
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/radar/id
-      Name: PP_radar_id
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/radar/delay
-      Name: PP_radar_delay
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/radar/speed
-      Name: PP_radar_speed
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/camera/markers
-      Name: PP_camera
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/camera/id
-      Name: PP_camera_id
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/camera/delay
-      Name: PP_camera_delay
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/camera/speed
-      Name: PP_camera_speed
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/markers
-      Name: PP_fusion
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/polygons
-      Name: PP_fusion_polygon
-      Namespaces:
-        PPOutput_p: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/id
-      Name: PP_fusion_id
-      Namespaces:
-        PPOutput_i: true
-        PPOutput_q: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/delay
-      Name: PP_fusion_delay
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /PathPredictionOutput/speed
-      Name: PP_fusion_speed
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /DetectedObjectArray/cam60_1/markers
-      Name: ---------------------------------
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 117
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: LidarFront
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.0599999987
-      Style: Flat Squares
-      Topic: /LidarFront/Raw
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 255
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: LiDAR_top
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.100000001
-      Style: Flat Squares
-      Topic: /LidarTop/Raw
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /RadarDetection/markers
-      Name: Markers_Radar
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /RadarDetection/delay
-      Name: Delays_Radar
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LaneToDecisionOutput/markers
-      Name: Markers_Lane
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LaneToDecisionOutput/delay
-      Name: Delays_Lane
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LightToDecisionOutput/markers
-      Name: Markers_Light
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LightToDecisionOutput/delay
-      Name: Delays_Light
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /SignToDecisionOutput/markers
-      Name: Markers_Sign
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /SignToDecisionOutput/delay
-      Name: Delays_Sign
+      Marker Topic: /PathPredictionOutput/pp
+      Name: PP_forecast
       Namespaces:
         {}
       Queue Size: 100
@@ -483,24 +308,12 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /cam/F_center
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: cam60_mid_raw
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /RadarMarker
       Name: Radar_filtered_point
       Namespaces:
-        RadarPlotter: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -527,13 +340,61 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /PathPredictionOutput/pp
-      Name: PP_forecast
+      Enabled: false
+      Marker Topic: /DetectedObjectArray/cam60_1/markers
+      Name: ---------------------------------
       Namespaces:
-        PPOutput_pp: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /LaneToDecisionOutput/markers
+      Name: Markers_Lane
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /LaneToDecisionOutput/delay
+      Name: Delays_Lane
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /LightToDecisionOutput/markers
+      Name: Markers_Light
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /LightToDecisionOutput/delay
+      Name: Delays_Light
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SignToDecisionOutput/markers
+      Name: Markers_Sign
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /SignToDecisionOutput/delay
+      Name: Delays_Sign
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -558,26 +419,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 129.532059
+      Angle: -1.57079995
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 2.38237834
-        Y: -0.68846488
-        Z: -8.33210945
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.56979632
+      Scale: 10.8797617
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 3.13681865
+      Value: TopDownOrtho (rviz)
+      X: 11.9072752
+      Y: -0.121832706
     Saved: ~
 Window Geometry:
   Displays:
