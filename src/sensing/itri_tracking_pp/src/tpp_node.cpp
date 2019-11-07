@@ -106,14 +106,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
 
-    if (in_source_ == 1 || in_source_ == 3)
-    {
-      for (unsigned i = 0; i < KTs_.objs_.size(); i++)
-      {
-        KTs_.objs_[i].header.frame_id = "lidar";
-      }
-    }
-    else if (in_source_ == 2)
+    if (in_source_ == 2)
     {
       for (unsigned i = 0; i < KTs_.objs_.size(); i++)
       {
@@ -124,7 +117,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     {
       for (unsigned i = 0; i < KTs_.objs_.size(); i++)
       {
-        KTs_.objs_[i].header.frame_id = "SensorFusion";
+        KTs_.objs_[i].header.frame_id = "lidar";
       }
     }
 

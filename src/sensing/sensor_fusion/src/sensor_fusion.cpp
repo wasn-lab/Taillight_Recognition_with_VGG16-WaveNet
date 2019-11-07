@@ -980,10 +980,10 @@ void decisionFusion()
 
   msgFusionObj.objects = vDetectedObjectDF;
 
-  // add timestamp frame_id seq
-  msgFusionObj.header.stamp = msgLidarObj.header.stamp;  // ros::Time::now();//msgLidarObj.header.stamp;
-  msgFusionObj.header.frame_id = "SensorFusion";         // msgLidarObj.header.frame_id;
+  msgFusionObj.header.stamp = msgLidarObj.header.stamp;
+  msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
+
   fusMsg_pub.publish(msgFusionObj);
 
   /************************************************************************/
@@ -1303,10 +1303,10 @@ void decision3DFusion()
 
   msgFusionObj.objects = vDetectedObjectDF;
 
-  // add timestamp frame_id seq
-  msgFusionObj.header.stamp = msgLidarObj.header.stamp;  // ros::Time::now();//msgLidarObj.header.stamp;
-  msgFusionObj.header.frame_id = "SensorFusion";         // msgLidarObj.header.frame_id;
+  msgFusionObj.header.stamp = msgLidarObj.header.stamp;
+  msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
+
   fusMsg_pub.publish(msgFusionObj);
 
   /************************************************************************/
