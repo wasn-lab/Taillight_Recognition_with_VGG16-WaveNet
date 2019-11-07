@@ -14,6 +14,27 @@ void DistanceEstimation::init (int car_id)
     regionHeight_60_FC_y = {-1099, -509, -112, 242, 608, 913, 1220, 1510, 1746, 2016, 2346};
     regionDist_60_FC_y = {5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5};
 
+    regionHeight_120_FT_x = {1002, 740, 574, 460, 379, 320, 272, 231, 198, 171, 150, 130, 115, 99, 86, 75, 65, 57, 48, 40, 10}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+    regionDist_120_FT_x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25}; //5 to 10, 20 to 50m (~5m)
+    regionHeight_120_FT_y = {1008, 1292, 1732, 2258, 2641, 3030, 3471, 3619, 3709, 3548}; //-2 to 0 to 2(~1m) //Vertical line
+    regionHeightSlope_120_FT_y = {-30, -4.4615, -1.8, -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862}; 
+    regionDist_120_FT_y = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9}; //-2 to 0 to 2 (~1m)
+
+    regionHeight_120_RF_x = {1148, 830, 544, 377, 236, 157, 52}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+    regionDist_120_RF_x = {0, 1, 2, 3, 4, 5, 6}; //5 to 10, 20 to 50m (~5m)
+    regionHeight_120_RF_y = {2507, 1904, 1498, 1032, 637, 357, -80}; //-2 to 0 to 2(~1m) //Vertical line
+    regionHeightSlope_120_RF_y = {-1.2286, -2.4524, -6.000, 21.3529, 4.7308, 3.0297, 1.8171}; 
+    regionDist_120_RF_y = {-6, -5, -4, -3, -2, -1, -0}; //-2 to 0 to 2 (~1m)
+
+    regionHeight_120_RB_x = {1194, 838, 565, 395, 253, 138, 63, 17}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+    regionDist_120_RB_x = {0, 1, 2, 3, 4, 5, 6, 7}; //5 to 10, 20 to 50m (~5m)
+    regionHeight_120_RB_y = {2049, 1688, 1209, 714, 217, -114, -738}; //-2 to 0 to 2(~1m) //Vertical line
+    regionHeightSlope_120_RB_y = {-1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539}; 
+    regionDist_120_RB_y = {-9, -8, -7, -6, -5, -4, -3}; //-2 to 0 to 2 (~1m)
+
+
+
+    
     Lidar_offset_x = 0;
     Lidar_offset_y = 2.490/2;
 }
@@ -668,6 +689,33 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeightSlope_x = regionHeightSlope_60_FC_x;
         regionHeightSlope_y = regionHeightSlope_60_FC_y;
         regionDist_y = regionDist_60_FC_y;
+        offset_x = Lidar_offset_x;
+    }else if(cam_id == 4)
+    {
+        regionHeight_x = regionHeight_120_FT_x;
+        regionDist_x = regionDist_120_FT_x;
+        regionHeight_y = regionHeight_120_FT_y;
+        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
+        regionHeightSlope_y = regionHeightSlope_120_FT_y;
+        regionDist_y = regionDist_120_FT_y;
+        offset_x = Lidar_offset_x;
+    }else if(cam_id == 5)
+    {
+        regionHeight_x = regionHeight_120_RF_x;
+        regionDist_x = regionDist_120_RF_x;
+        regionHeight_y = regionHeight_120_RF_y;
+        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
+        regionHeightSlope_y = regionHeightSlope_120_RF_y;
+        regionDist_y = regionDist_120_RF_y;
+        offset_x = Lidar_offset_x;
+    }else if(cam_id == 6)
+    {
+        regionHeight_x = regionHeight_120_RB_x;
+        regionDist_x = regionDist_120_RB_x;
+        regionHeight_y = regionHeight_120_RB_y;
+        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
+        regionHeightSlope_y = regionHeightSlope_120_RB_y;
+        regionDist_y = regionDist_120_RB_y;
         offset_x = Lidar_offset_x;
     }
     else

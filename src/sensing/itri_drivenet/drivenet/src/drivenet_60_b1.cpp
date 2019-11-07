@@ -355,10 +355,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
     }
     else if(camOrder == 1)
     {
-        cv::Point LeftLinePoint1(611, 945);
-        cv::Point LeftLinePoint2(-678, 1207);
-        cv::Point RightLinePoint1(1405, 945);
-        cv::Point RightLinePoint2(2522, 1207);
+        cv::Point LeftLinePoint1(419, 914);
+        cv::Point LeftLinePoint2(-1099, 1207);
+        cv::Point RightLinePoint1(1179, 914);
+        cv::Point RightLinePoint2(2346, 1207);
 
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
