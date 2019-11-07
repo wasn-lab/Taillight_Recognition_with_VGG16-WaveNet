@@ -46,13 +46,13 @@
 #define radar_coordinate_offset_Y 0
 #define radar_coordinate_offset_Z 0.875
 
-#define lidar_coordinate_offset_X 0
+#define lidar_coordinate_offset_X 0.4
 #define lidar_coordinate_offset_Y 0
-#define lidar_coordinate_offset_Z 0
+#define lidar_coordinate_offset_Z 3.42
 
-#define cam_coordinate_offset_X 0
+#define cam_coordinate_offset_X 0.4
 #define cam_coordinate_offset_Y 0
-#define cam_coordinate_offset_Z 0
+#define cam_coordinate_offset_Z 3.42
 /************************************************************************/
 
 //#define EnableFusion
