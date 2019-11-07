@@ -2,7 +2,7 @@
   <arg name="pub_tf" default="true" />
 
   <!-- rviz ************************************************************************************* -->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/HINO_fusion.rviz" />
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/U3_b1.rviz" />
 
   <!-- TF *************************************************************************************** -->
   <group if="$(arg pub_tf)">
