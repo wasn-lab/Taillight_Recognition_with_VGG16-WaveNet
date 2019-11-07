@@ -1,8 +1,6 @@
 
 #include <math.h>
-#include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
-#include <cv_bridge/cv_bridge.h>
 #include <iostream>
 #include <signal.h>
 #include <opencv2/core.hpp>
@@ -90,61 +88,6 @@ double image_point[3];
 /************************************************************************/
 void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const float z);
 void transform_coordinate_main(msgs::ConvexPoint& cp, const float x, const float y, const float z);
-
-// for Intensity Measurement
-int nSeg = 10;
-int window_ = fSize - 1, check = 1;
-int* interLux;
-double LN_prob;
-double** assoc;
-double* weaconf = (double*)malloc(sizeof(double) * 2);
-double const_ = 2 / PI;
-int do_weather = 0;
-
-typedef struct _scanlimit scanlimit_t;
-struct _scanlimit
-{
-  int x;
-  int y;
-  double nRoad;
-  double nSky;
-};
-typedef struct _lux lux_t;
-struct _lux
-{
-  int* sky_up;
-  int* sky_dw;
-  int* road_ul;
-  int* road_ucl;
-  int* road_ucr;
-  int* road_ur;
-  int* road_dl;
-  int* road_dcl;
-  int* road_dcr;
-  int* road_dr;
-  int* alux;
-  bool high;
-};
-typedef struct _wea wea_t;
-struct _wea
-{
-  double* sky;
-  double* road;
-  bool norm;
-};
-typedef struct _image3 image3_t;
-struct _image3
-{
-  int* pixel;
-  int width, height;
-};
-
-typedef struct _image image_t;
-struct _image
-{
-  int* pixel;
-  int width, height;
-};
 
 uint32_t dbgPCView;
 pthread_mutex_t mut_dbgPCView;
@@ -237,6 +180,7 @@ msgs::DetectedObjectArray msgCam120_2_Obj;
 msgs::DetectedObjectArray msgFusionObj;
 ros::Publisher fusMsg_pub;
 std::thread publisher;
+
 void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
 void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
 void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
@@ -249,10 +193,9 @@ void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray
 void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
 void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
 
-void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-
 void decisionFusion();
 void decision3DFusion();
+
 void Cam30_0_view_fusion(void);
 void Cam30_1_view_fusion(void);
 void Cam30_2_view_fusion(void);
@@ -292,47 +235,7 @@ msgs::DetectedObjectArray msgLidar_frontshort;
 
 void overlap_analysis(int** bb_det, int total_det);
 void overlap_fusion(int** cam, int ncam, int** rad, int nrad, int** det, int* total_det);
-void param_fusion(int**& det, int& ndet, lux_t lums, wea_t& stds, scanlimit_t scan, double scale, image_t& overmap,
-                  image_t& undrmap, double anchor_pt[2]);
 
-// for Intensity Measurement
-void luxmeter(image_t lummap, scanlimit_t scan, lux_t& lums);
-// for Over- and Under-Exposures Detections
-void expmeter(image_t lummap, image_t satmap, image_t& overmap, image_t& undrmap);
-// for Weather Detection
-void weathermeter(image_t lummap, scanlimit_t scan, lux_t lums, wea_t& stds);
-
-// QuickSort3 Algorithm
-void swaps(int* a, int* b);
-void partition(int a[], int low, int high, int& i, int& j);
-void quickSort(int a[], int low, int high);
-// RGB to Lab-Lux and HSV-Sat Maps
-double min_ch(double R, double G, double B);
-double HC(double q);
-double GC(double q);
-void RGB2LuxSat(image3_t input, image_t& lummap, image_t& satmap);
-
-void cvMat2Arr(cv::Mat input, image3_t& image);
-void Arr2cvMat(image3_t image, cv::Mat& output);
-void arr2cvMat(image_t image, cv::Mat& output);
-
-image_t luxImage, satImage;
-image3_t rgbImage;
-scanlimit_t limit;
-lux_t lux;
-image_t ovImage, uvImage;
-wea_t weh;
-struct timeval t1, t2, ta, tb;
-struct timeval t3, t4;
-double elapsedTime, elapsedTimes, elapsedTimeX = 0, elapsedTime1 = 0, elapsedTime2 = 0, elapsedTime3 = 0, frameID = 1;
-;
-
-double diff = 0, mean_diff = 0, diff_thr = 0;
-int BAD = 0, GUT = 0;
-bool trigger = false;
-
-double factor;
-double ref_point[2] = { 0., 0. };
 /**************************************************************************/
 int** cam_det;
 int** lid_det;
@@ -365,299 +268,6 @@ void MySigintHandler(int sig)
   publisher.join();
   printf("after join()\n");
   ros::shutdown();
-}
-
-int main(int argc, char** argv)
-{
-  int i, j;
-  int rw_height = 1208, rw_width = 1920;
-  int height = 180, width;
-  width = (height * rw_width) / rw_height;
-
-  int size = width * height;
-  luxImage.pixel = (int*)malloc(sizeof(int) * size);
-  luxImage.height = height;
-  luxImage.width = width;
-  satImage.pixel = (int*)malloc(sizeof(int) * size);
-  satImage.height = height;
-  satImage.width = width;
-
-  rgbImage.pixel = (int*)malloc(sizeof(int) * (3 * size));
-  rgbImage.height = height;
-  rgbImage.width = width;
-
-  limit.x = width / 4;
-  limit.y = height / 4;
-  limit.nRoad = (double)(height * width) / 16;
-  limit.nSky = (double)(height * width) / 4;
-
-  lux.high = false;
-  lux.sky_up = (int*)malloc(sizeof(int) * fSize);
-  lux.sky_dw = (int*)malloc(sizeof(int) * fSize);
-  lux.road_ul = (int*)malloc(sizeof(int) * fSize);
-  lux.road_ucl = (int*)malloc(sizeof(int) * fSize);
-  lux.road_ucr = (int*)malloc(sizeof(int) * fSize);
-  lux.road_ur = (int*)malloc(sizeof(int) * fSize);
-  lux.road_dl = (int*)malloc(sizeof(int) * fSize);
-  lux.road_dcl = (int*)malloc(sizeof(int) * fSize);
-  lux.road_dcr = (int*)malloc(sizeof(int) * fSize);
-  lux.road_dr = (int*)malloc(sizeof(int) * fSize);
-  lux.alux = (int*)malloc(sizeof(int) * 10);
-  for (int z = 0; z < 10; z++)
-  {
-    lux.alux[z] = 0;
-  }
-
-  ovImage.pixel = (int*)malloc(sizeof(int) * size);
-  ovImage.height = height;
-  ovImage.width = width;
-  uvImage.pixel = (int*)malloc(sizeof(int) * size);
-  uvImage.height = height;
-  uvImage.width = width;
-
-  weh.sky = (double*)malloc(sizeof(double) * 2);
-  weh.road = (double*)malloc(sizeof(double) * 8);
-  weh.norm = 1;
-
-  factor = height / (double)(rw_height);  // var8.scale = (float)iheight / (float)rheight;height = 180, rw_height = 1208
-  ref_point[0] = (double)rw_width / 2.;   // anchor_pt[0] = (float)rw_width / 2;
-  ref_point[1] = (double)rw_height;       // anchor_pt[1] = (float)rw_height;
-
-  /**************************************************************************/
-
-  cam_det = new int*[5];
-  for (j = 0; j < 5; j++)
-  {
-    cam_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(cam_det[j], 0, sizeof(int) * max_det);
-  }
-
-  lid_det = new int*[5];
-  for (j = 0; j < 5; j++)
-  {
-    lid_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(lid_det[j], 0, sizeof(int) * max_det);
-  }
-
-  radar_det = new int*[5];
-  for (j = 0; j < 5; j++)
-  {
-    radar_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(radar_det[j], 0, sizeof(int) * max_det);
-  }
-
-  bb_det = new int*[6];
-  for (int j = 0; j < 6; j++)
-  {
-    bb_det[j] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det[j], 0, sizeof(int) * (3 * max_det));
-  }
-
-  // Variables for Fused Detection
-
-  bb_det2 = new int*[6];
-  for (int j = 0; j < 6; j++)
-  {
-    bb_det2[j] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det2[j], 0, sizeof(int) * (3 * max_det));
-  }
-
-  /**************************************************************************/
-
-  // init_intensity_measure();
-
-  ros::init(argc, argv, "sensor_fusion");
-  ros::NodeHandle nhFus;
-  // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
-  // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
-
-  // Radar object detection input
-  ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
-
-  // Lidar object detection input
-  ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
-
-  // Camera object detection input
-  ros::Subscriber cam60_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam60", 2, cam60_1_DetectionCb);
-  ros::Subscriber cam30_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam30", 2, cam30_1_DetectionCb);
-  ros::Subscriber cam120_1_DetectionSub = nhFus.subscribe("/DetectedObjectArray/cam120", 2, cam120_1_DetectionCb);
-
-  image_transport::ImageTransport it(nhFus);
-  image_transport::Subscriber sub1_0 = it.subscribe("/gmsl_camera/port_a/cam_1/image_raw", 2, imageCallback,
-                                                    ros::VoidPtr(), image_transport::TransportHints("compressed"));
-
-  fusMsg_pub = nhFus.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
-
-  syncCount = 0;
-  pthread_mutex_init(&callback_mutex, NULL);
-  pthread_cond_init(&callback_cond, NULL);
-
-  dbgPCView = 0;
-  // pthread_mutex_init(&mut_dbgPCView,NULL);
-  // pthread_cond_init(&cnd_dbgPCView,NULL);
-  // pthread_create(&thrd_dbgPCView, NULL, &dbg_drawPointCloud, NULL);
-
-  // ros::spin();
-
-  // fps30
-  // rosPublisher = new ROSPublish();
-  // publisher = std::thread(&ROSPublish::tickFuntion, rosPublisher);
-  // mPublish_cb = ROSPublish::staticPublishCallbackFunction;
-
-  signal(SIGINT, MySigintHandler);
-
-  ros::MultiThreadedSpinner spinner(TOTAL_CB);
-  spinner.spin();  // spin() will not return until the node has been shutdown
-
-  /*******************************************************/
-
-  for (j = 0; j < 5; j++)
-    free(cam_det[j]);
-
-  for (j = 0; j < 5; j++)
-    free(lid_det[j]);
-
-  for (j = 0; j < 5; j++)
-    free(radar_det[j]);
-
-  for (int j = 0; j < 6; j++)
-    free(bb_det[j]);
-
-  for (int j = 0; j < 6; j++)
-    free(bb_det2[j]);
-
-  free(luxImage.pixel);
-  free(satImage.pixel);
-  free(rgbImage.pixel);
-  free(lux.sky_up);
-  free(lux.sky_dw);
-
-  free(lux.road_ul);
-  free(lux.road_ucl);
-
-  free(lux.road_ucr);
-  free(lux.road_ur);
-
-  free(lux.road_dl);
-  free(lux.road_dcl);
-
-  free(lux.road_dcr);
-  free(lux.road_dr);
-
-  free(lux.alux);
-
-  free(ovImage.pixel);
-  free(uvImage.pixel);
-  free(weh.sky);
-  free(weh.road);
-
-  printf("***********free memory 3**************\n");
-  /******************************************************/
-  return 0;
-}
-
-void imageCallback(const sensor_msgs::ImageConstPtr& msg)
-{
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  struct timeval start;
-  struct timeval end;
-
-  unsigned long diff;
-
-  cv::Mat resized;
-
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::BGR8);
-  InImage = cv_ptr->image;
-
-  // InImage2 = InImage.clone();
-
-  int rw_height = 1208, rw_width = 1920;
-  int height = 180, width;
-  width = (height * rw_width) / rw_height;
-
-  /*
-
-      resize(camA, resized, Size(width, height));
-      cvMat2Arr(resized, rgbImage[k]);
-      RGB2LuxSat(rgbImage[k], luxImage[k], satImage[k]); // 25.520 ms
-  */
-
-  gettimeofday(&start, NULL);
-
-  // resize(InImage, resized, Size(width, height));
-  resize(InImage, resized, cv::Size(width, height));
-  cvMat2Arr(resized, rgbImage);
-  RGB2LuxSat(rgbImage, luxImage, satImage);
-  // Parameter Detection
-  luxmeter(luxImage, limit, lux);
-  expmeter(luxImage, satImage, ovImage, uvImage);
-
-  gettimeofday(&end, NULL);
-  diff = 1000000 * (end.tv_sec - start.tv_sec) + end.tv_usec - start.tv_usec;
-  printf("**********************image parameter detection is %ld **********************\n", diff);
-
-  /************************************************************************/
-  if (do_weather != 1)
-  {
-    if (lux.sky_up[7] > 0)
-    {
-      weathermeter(luxImage, limit, lux, weh);
-
-      elapsedTime = (t4.tv_sec - t3.tv_sec) * 1000.0;  // sec to ms
-      elapsedTime += (t4.tv_usec - t3.tv_usec) / 1000.0;
-      cout << "weathermeter(luxImage, limit, lux, weh): " << elapsedTime << " ms.\n";
-
-      mean_diff = 0;
-      for (int k = 0; k < 4; k++)
-      {
-        mean_diff += weh.road[k] / (double)lux.alux[k + 2];
-      }
-      mean_diff /= 4;
-      diff = 0;
-      for (int k = 0; k < 4; k++)
-      {
-        diff += abs(((weh.road[k] / (double)lux.alux[k + 2]) - mean_diff));
-      }
-      if (lux.high == false)
-      {
-        diff_thr = 0.6;
-      }
-      else
-      {
-        diff_thr = 0.4;
-      }
-      if (trigger == false)
-      {
-        if (diff > diff_thr)
-        {
-          BAD++;
-          GUT = 0;
-        }
-        else
-        {
-          GUT++;
-          BAD = 0;
-        }
-        if (BAD > 10)
-        {
-          weh.norm = false;
-          trigger = true;
-        }
-        if (GUT > 10)
-        {
-          weh.norm = true;
-          trigger = true;
-        }
-      }
-    }
-
-    do_weather = 1;
-  }
-/************************************************************************/
-#ifdef EnableImage
-  sync_callbackThreads();
-#endif
 }
 
 /************************************************************************/
@@ -1799,15 +1409,6 @@ void Cam60_0_view_fusion(void)
 
   printf("Lidar_num,Cam60_0_num,total_det => %d,%d,%d\n", Lidar_num, Cam60_0_num, total_det);
 
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam60_0 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
-
   /*********************************************************************************************************/
   for (int j = 0; j < Cam60_0_num; j++)
   {
@@ -2158,15 +1759,6 @@ void Cam60_1_view_fusion(void)
 
   printf("**************overlap_fusion************\n");
 
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************param_fusion************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam60_1 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************param_fusion************\n");
-
   /*********************************************************************************************************/
 
   vDetectedObjectTemp.clear();
@@ -2401,15 +1993,6 @@ void Cam60_2_view_fusion(void)
 
   printf("Lidar_num,Cam60_2_num,total_det => %d,%d,%d\n", Lidar_num, Cam60_2_num, total_det);
 
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam60_2 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
-
   /*********************************************************************************************************/
   for (int j = 0; j < Cam60_2_num; j++)
   {
@@ -2545,15 +2128,6 @@ void Cam30_0_view_fusion(void)
   total_det = Cam30_0_num + Lidar_num;
 
   printf("Lidar_num,Cam30_0_num,total_det => %d,%d,%d\n", Lidar_num, Cam30_0_num, total_det);
-
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam30_0 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
 
   /*********************************************************************************************************/
   for (int j = 0; j < Cam30_0_num; j++)
@@ -2757,15 +2331,6 @@ void Cam30_1_view_fusion(void)
 
   printf("Lidar_num,radar_num,Cam30_1_num,total_det => %d,%d,%d,%d\n", Lidar_num, radar_num, Cam30_1_num, total_det);
 
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam30_1 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
-
   /*********************************************************************************************************/
   for (int j = 0; j < Cam30_1_num; j++)
   {
@@ -2955,15 +2520,6 @@ void Cam30_2_view_fusion(void)
 
   printf("Lidar_num,Cam30_2_num,total_det => %d,%d,%d\n", Lidar_num, Cam30_2_num, total_det);
 
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam30_2 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
-
   /*********************************************************************************************************/
   for (int j = 0; j < Cam30_2_num; j++)
   {
@@ -3100,15 +2656,6 @@ void Cam120_0_view_fusion(void)
 
   printf("Lidar_num,Cam120_0_num,total_det => %d,%d,%d\n", Lidar_num, Cam120_0_num, total_det);
 
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam120_0 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
-
   /*********************************************************************************************************/
   for (int j = 0; j < Cam120_0_num; j++)
   {
@@ -3244,15 +2791,6 @@ void Cam120_1_view_fusion(void)
   total_det = Cam120_1_num + Lidar_num;
 
   printf("Lidar_num,Cam120_1_num,total_det => %d,%d,%d\n", Lidar_num, Cam120_1_num, total_det);
-
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam120_1 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
 
   /*********************************************************************************************************/
   for (int j = 0; j < Cam120_1_num; j++)
@@ -3416,15 +2954,6 @@ void Cam120_2_view_fusion(void)
   total_det = Cam120_2_num + Lidar_num;
 
   printf("Lidar_num,Cam120_2_num,total_det => %d,%d,%d\n", Lidar_num, Cam120_2_num, total_det);
-
-  param_fusion(bb_det, total_det, lux, weh, limit, factor, ovImage, uvImage, ref_point);
-
-  printf("**************************\n");
-  for (int j = 0; j < total_det; j++)
-    printf("Cam120_2 view bb_det[][%d]  %d %d %d %d %d %d\n", j, bb_det[0][j], bb_det[1][j], bb_det[2][j], bb_det[3][j],
-           bb_det[4][j], bb_det[5][j]);
-
-  printf("**************************\n");
 
   /*********************************************************************************************************/
   for (int j = 0; j < Cam120_2_num; j++)
@@ -3929,221 +3458,6 @@ void overlap_fusion(int** cam, int ncam, int** rad, int nrad, int** det, int* to
   printf("***********free memory 2**************\n");
 }
 
-// the function of param_fusion is to determine any independent bounding boxes, whether it is just a false positive or
-// an actual true positive
-void param_fusion(int**& det, int& ndet, lux_t lums, wea_t& stds, scanlimit_t scan, double scale, image_t& overmap,
-                  image_t& undrmap, double anchor_pt[2])
-{
-  int m, m2, mem_;
-  double time_w, temp, tempA, tempB, tempC, over, undr, dist;
-  double luxconf, rotconf, expconf, disconf, c_luxconf, c_expconf, c_rotconf, c_disconf;
-  for (int j = 0; j < ndet; j++)
-  {
-    mem_ = det[5][j];
-    if (mem_ == 0)
-    {
-      // Calculate the weather-based confidence
-      if (stds.norm == true)
-      {
-        weaconf[0] = 1.0;
-        weaconf[1] = 1.0;
-      }
-      else
-      {
-        weaconf[0] = 0.7;
-        weaconf[1] = 0.9;
-      }
-      // Calculate the lux-related confidences
-      if (lums.high == true)
-      {
-        time_w = 0.6;
-      }
-      else
-      {
-        time_w = 0.4;
-      }
-      int xs = (int)round((double)det[0][j] * scale);
-      int xe = (int)round((double)(det[0][j] + det[2][j]) * scale);
-      int ys = (int)round((double)det[1][j] * scale);
-      int ye = (int)round((double)(det[1][j] + det[3][j]) * scale);
-      tempA = 0;
-      tempB = 0;
-      tempC = 0;
-      over = 0.;
-      undr = 0.;
-      for (int y_scan = ys; y_scan < ye; y_scan++)
-      {
-        if (y_scan < (scan.y * 2))
-        {
-          for (int x_scan = xs; x_scan < xe; x_scan++)
-          {
-            over += (double)overmap.pixel[x_scan + (y_scan * overmap.width)];
-            tempC++;
-            if (det[4][j] == 0)
-            {
-              undr += (double)undrmap.pixel[x_scan + (y_scan * undrmap.width)];
-            }
-            else
-            {
-              continue;
-            }
-          }
-        }
-        else
-        {
-          if (y_scan < (scan.y * 3))
-          {
-            m = 0;
-          }
-          else
-          {
-            m = 4;
-          }
-          for (int x_scan = xs; x_scan < xe; x_scan++)
-          {
-            if (x_scan < (scan.x))
-            {
-              tempA += lums.alux[m + 2];
-            }
-            else if (x_scan < (scan.x * 2))
-            {
-              tempA += lums.alux[3 + m];
-            }
-            else if (x_scan < (scan.x * 3))
-            {
-              tempA += lums.alux[4 + m];
-            }
-            else
-            {
-              tempA += lums.alux[5 + m];
-            }
-            tempB++;
-
-            over += (double)overmap.pixel[x_scan + (y_scan * overmap.width)];
-            ;
-            if (det[4][j] == 0)
-            {
-              undr += (double)undrmap.pixel[x_scan + (y_scan * undrmap.width)];
-            }
-            else
-            {
-              continue;
-            }
-          }
-        }
-      }
-
-      printf("tempA = %f \n", tempA);
-
-      tempA = tempA / 255;
-      temp = 1 + (2 * exp(((1 - ((tempA / tempB) * 4)) * -10) + 1));
-
-      printf("temp = %f \n", temp);
-
-      tempA = (1 / temp) * (1 / temp);
-      temp = 255 * (tempB + tempC);
-      double xc = ((double)det[0][j] + ((double)(det[2][j]) / 2));
-      double yc = ((double)det[1][j] + ((double)(det[3][j]) / 2));
-      tempC = anchor_pt[0] - xc;
-      tempB = anchor_pt[1] - yc;
-      m = det[4][j];
-      printf("det[4][j] == %d\n", det[4][j]);
-      dist = 1 - ((double)(ye - 80) / 80);
-      // Calculate the distance-based confidence
-      if (m == 0)
-      {
-        printf("m == 0\n");
-        luxconf = tempA;
-        expconf = 1 - ((time_w * (over / temp)) + ((1 - time_w) * (undr / temp)));
-        rotconf = 1 - ((acos(tempB / sqrt((tempC * tempC) + (tempB * tempB))) * const_) * 1.5);
-        c_luxconf = 0.1;
-        c_expconf = 0.7;  //
-        c_rotconf = 1 - ((acos(tempB / sqrt((tempC * tempC) + (tempB * tempB))) * const_) * 0.5);
-        if (dist < 0.3)
-        {
-          temp = 1 + (10 * exp((dist * -60) + 1));
-          disconf = 1 / (temp * temp);
-        }
-        else
-        {
-          temp = 1 + (10 * exp(((dist - 0.3) * -25)) + 1);
-          disconf = 1 - (1 / (temp * temp));
-        }
-        if (dist < 0.3)
-        {
-          temp = 1 + (10 * exp((dist * -50) + 1));
-          c_disconf = 1 / (temp * temp);
-        }
-        else
-        {
-          temp = 1 + (10 * exp(((dist - 0.3) * -8)) + 1);
-          c_disconf = 1 - (1 / (temp * temp));
-        }
-        m2 = 1;
-      }
-      else
-      {
-        luxconf = 0.8;
-        expconf = 0.8;  //
-        rotconf = 1 - ((acos(tempB / sqrt((tempC * tempC) + (tempB * tempB))) * const_) * 4);
-        c_luxconf = tempA;
-        c_expconf = 1 - ((time_w * (over / temp)) + ((1 - time_w) * (undr / temp)));
-        c_rotconf = 1 - ((acos(tempB / sqrt((tempC * tempC) + (tempB * tempB))) * const_) * 2);
-        if (dist < 0.3)
-        {
-          temp = 1 + (10 * exp((dist * -50) + 1));
-          disconf = 1 / (temp * temp);
-        }
-        else
-        {
-          temp = 1 + (10 * exp(((dist - 0.3) * -8)) + 1);
-          disconf = 1 - (1 / (temp * temp));
-        }
-        if (dist < 0.3)
-        {
-          temp = 1 + (10 * exp((dist * -60) + 1));
-          c_disconf = 1 / (temp * temp);
-        }
-        else
-        {
-          temp = 1 + (10 * exp(((dist - 0.3) * -25)) + 1);
-          c_disconf = 1 - (1 / (temp * temp));
-        }
-        m2 = 0;
-      }
-
-      if ((tempA) == 0)
-      {  // if (isnan(tempA) == 1){
-        det[4][j] = -1;
-        det[5][j] = -1;
-      }
-      else
-      {
-        // tempA = ((weaconf[m] + luxconf + expconf + rotconf + disconf) / 5);
-        // tempB = ((weaconf[m2] + c_luxconf + c_expconf + c_rotconf + c_disconf) / 5);
-        tempA = ((weaconf[m] + luxconf + expconf + disconf) / 4);
-        tempB = ((weaconf[m2] + c_luxconf + c_expconf + c_disconf) / 4);
-
-        if (tempA < tempB)
-        {
-          printf("tempA(small) = %f ### %f %f %f %f %f  \n", tempA, weaconf[m], luxconf, expconf, rotconf, disconf);
-          printf("tempB(big  ) = %f ### %f %f %f %f %f  \n", tempB, weaconf[m2], c_luxconf, c_expconf, c_rotconf,
-                 c_disconf);
-          printf("BBox %d,%d,%d,%d \n", det[0][j], det[1][j], det[2][j], det[3][j]);
-          det[4][j] = -1;
-          det[5][j] = -1;
-        }
-        else
-        {
-          printf("tempA = %f ### %f %f %f %f %f  \n", tempA, weaconf[m], luxconf, expconf, rotconf, disconf);
-          printf("tempB = %f ### %f %f %f %f %f  \n", tempB, weaconf[m2], c_luxconf, c_expconf, c_rotconf, c_disconf);
-          printf("BBox %d,%d,%d,%d \n", det[0][j], det[1][j], det[2][j], det[3][j]);
-        }
-      }
-    }
-  }
-}
-
 // QuickSort3 Algorithm
 void swaps(int* a, int* b)
 {
@@ -4182,499 +3496,6 @@ void partition(int a[], int low, int high, int& i, int& j)
   }
   i = low - 1;
   j = mid;
-}
-void quickSort(int a[], int low, int high)
-{
-  if (low >= high)
-  {
-    return;
-  }
-  int i, j;
-  partition(a, low, high, i, j);
-  // known issues, fixed by below comment
-  quickSort(a, low, i);
-  quickSort(a, low, i);
-  //
-  // Corrected code
-  // quickSort(a, j, high);
-}
-
-// RGB to Lab-Lux and HSV-Sat Maps
-double min_ch(double R, double G, double B)
-{
-  double min = R;
-  if (G < min)
-  {
-    min = G;
-  }
-  if (B < min)
-  {
-    min = B;
-  }
-  return min;
-}
-double HC(double q)
-{
-  double value;
-  if (q > 0.008856)
-  {
-    value = pow(q, 0.333333);
-    return value;
-  }
-  else
-  {
-    value = 7.787 * q + 0.137931;
-    return value;
-  }
-}
-double GC(double q)
-{
-  double value;
-  if (q > 0.04045)
-  {
-    value = pow((q + 0.055) / 1.055, 2.4);
-    return value;
-  }
-  else
-  {
-    value = q / 12.92;
-    return value;
-  }
-}
-void RGB2LuxSat(image3_t input, image_t& lummap, image_t& satmap)
-{
-  double R = 0.0, B = 0.0, G = 0.0;   // To store R, G, and B values of a specific in-pixel
-  double S = 0.0, I = 0.0;            // To store S and I values of a specific out-pixel
-  double aux_c1 = 0.0, aux_c2 = 0.0;  // To store various values temporarily during calc.
-
-  int lummap_size = lummap.height * lummap.width;
-  for (int y = 0; y < lummap.height; y++)
-  {
-    for (int x = 0; x < lummap.width; x++)
-    {
-      // a. Acquires the Pixel Values and Normalize Them (0-1)
-      B = GC((double)(input.pixel[(x + (y * lummap.width))]) / 255);
-      G = GC((double)(input.pixel[(lummap_size) + (x + (y * lummap.width))]) / 255);
-      R = GC((double)(input.pixel[(2 * lummap_size) + (x + (y * lummap.width))]) / 255);
-
-      aux_c1 = ((0.212656 * R) + (0.715158 * G) + (0.0721856 * B));
-      if (aux_c1 > 0.008856)
-      {
-        I = (116 * HC(aux_c1) - 16) / 100;
-      }
-      else
-      {
-        I = (903.3 * aux_c1) / 100;
-      }
-
-      // b. Reset the auxiliary variables
-      aux_c1 = 0.0;
-      aux_c2 = 0.0;
-
-      // c. Fills the Intensity Channel and Normalize the Value to 0-255
-      lummap.pixel[x + (y * lummap.width)] = (int)(I * 255);
-
-      // d. Fills the Saturation Channel and Normalize the Value to 0-255
-      if (I > 0.0)
-      {
-        aux_c2 = min_ch(R, G, B);
-        S = 1 - ((3 / (R + B + G)) * aux_c2);
-        satmap.pixel[x + (y * satmap.width)] = (int)(S * 255);
-      }
-      else
-      {
-        satmap.pixel[x + (y * satmap.width)] = 0;
-      }
-    }
-  }
-}
-
-// for Intensity Measurement
-void luxmeter(image_t lummap, scanlimit_t scan, lux_t& lums)
-{
-  double meanAUX = 0.0, meanAUX2 = 0.0, meanAUX3 = 0.0, meanAUX4 = 0.0;
-  if (window_ == (fSize - 1))
-  {
-    interLux = (int*)malloc(sizeof(int) * (nSeg * fSize));
-    for (int _index = 0; _index < (nSeg * fSize); _index++)
-    {
-      interLux[_index] = 0;
-    }
-  }
-  if (window_ > -1)
-  {
-    check = 1;
-    for (int k = 0; k < 2; k++)
-    {
-      meanAUX = 0.;
-      for (int j = k * scan.y; j < (k + 1) * scan.y; j++)
-      {
-        for (int i = 0; i < lummap.width; i++)
-        {
-          meanAUX += (double)lummap.pixel[i + (j * lummap.width)];
-        }
-      }
-      interLux[k + (nSeg * window_)] = (int)round(meanAUX / scan.nSky);
-    }
-    for (int k = 2; k < 4; k++)
-    {
-      meanAUX = 0.;
-      meanAUX2 = 0.;
-      meanAUX3 = 0.;
-      meanAUX4 = 0.;
-      for (int j = k * scan.y; j < (k + 1) * scan.y; j++)
-      {
-        for (int i = 0; i < scan.x; i++)
-        {
-          meanAUX += (double)lummap.pixel[i + (j * lummap.width)];
-          meanAUX2 += (double)lummap.pixel[i + scan.x + (j * lummap.width)];
-          meanAUX3 += (double)lummap.pixel[i + (scan.x * 2) + (j * lummap.width)];
-          meanAUX4 += (double)lummap.pixel[i + (scan.x * 3) + (j * lummap.width)];
-        }
-      }
-      interLux[(k * check) + (nSeg * window_)] = (int)round(meanAUX / scan.nRoad);
-      interLux[(k * check) + 1 + (nSeg * window_)] = (int)round(meanAUX2 / scan.nRoad);
-      interLux[(k * check) + 2 + (nSeg * window_)] = (int)round(meanAUX3 / scan.nRoad);
-      interLux[(k * check) + 3 + (nSeg * window_)] = (int)round(meanAUX4 / scan.nRoad);
-      check = 2;
-    }
-    window_--;
-  }
-  else
-  {
-    check = 1;
-    for (int m = (fSize - 1); m > 0; m--)
-    {
-      for (int k = 0; k < nSeg; k++)
-      {
-        interLux[k + (nSeg * m)] = interLux[k + (nSeg * (m - 1))];
-      }
-    }
-    for (int k = 0; k < 2; k++)
-    {
-      meanAUX = 0.;
-      for (int j = k * scan.y; j < (k + 1) * scan.y; j++)
-      {
-        for (int i = 0; i < lummap.width; i++)
-        {
-          meanAUX += (double)lummap.pixel[i + (j * lummap.width)];
-        }
-      }
-      interLux[k] = (int)round(meanAUX / scan.nSky);
-    }
-    for (int k = 2; k < 4; k++)
-    {
-      meanAUX = 0.;
-      meanAUX2 = 0.;
-      meanAUX3 = 0.;
-      meanAUX4 = 0.;
-      for (int j = k * scan.y; j < (k + 1) * scan.y; j++)
-      {
-        for (int i = 0; i < scan.x; i++)
-        {
-          meanAUX += (double)lummap.pixel[i + (j * lummap.width)];
-          meanAUX2 += (double)lummap.pixel[i + scan.x + (j * lummap.width)];
-          meanAUX3 += (double)lummap.pixel[i + (scan.x * 2) + (j * lummap.width)];
-          meanAUX4 += (double)lummap.pixel[i + (scan.x * 3) + (j * lummap.width)];
-        }
-      }
-      interLux[(k * check)] = (int)round(meanAUX / scan.nRoad);
-      interLux[(k * check) + 1] = (int)round(meanAUX2 / scan.nRoad);
-      interLux[(k * check) + 2] = (int)round(meanAUX3 / scan.nRoad);
-      interLux[(k * check) + 3] = (int)round(meanAUX4 / scan.nRoad);
-      check = 2;
-    }
-
-    for (int m = 0; m < fSize; m++)
-    {
-      lums.sky_up[m] = interLux[0 + (nSeg * m)];
-      lums.sky_dw[m] = interLux[1 + (nSeg * m)];
-      lums.road_ul[m] = interLux[2 + (nSeg * m)];
-      lums.road_ucl[m] = interLux[3 + (nSeg * m)];
-      lums.road_ucr[m] = interLux[4 + (nSeg * m)];
-      lums.road_ur[m] = interLux[5 + (nSeg * m)];
-      lums.road_dl[m] = interLux[6 + (nSeg * m)];
-      lums.road_dcl[m] = interLux[7 + (nSeg * m)];
-      lums.road_dcr[m] = interLux[8 + (nSeg * m)];
-      lums.road_dr[m] = interLux[9 + (nSeg * m)];
-    }
-    quickSort(lums.sky_up, 0, fSize - 1);
-    quickSort(lums.sky_dw, 0, fSize - 1);
-    quickSort(lums.road_ul, 0, fSize - 1);
-    quickSort(lums.road_ucl, 0, fSize - 1);
-    quickSort(lums.road_ucr, 0, fSize - 1);
-    quickSort(lums.road_ur, 0, fSize - 1);
-    quickSort(lums.road_dl, 0, fSize - 1);
-    quickSort(lums.road_dcl, 0, fSize - 1);
-    quickSort(lums.road_dcr, 0, fSize - 1);
-    quickSort(lums.road_dr, 0, fSize - 1);
-
-    if (lums.sky_up[4] > lums.sky_dw[4])
-    {
-      LN_prob = ((double)lums.sky_up[4] * 0.6) + ((double)lums.sky_dw[4] * 0.4);
-    }
-    else
-    {
-      LN_prob = ((double)lums.sky_up[4] * 0.4) + ((double)lums.sky_dw[4] * 0.6);
-    }
-
-    if (LN_prob < 80)
-    {
-      lums.high = false;
-    }
-    else
-    {
-      lums.high = true;
-    }
-
-    lums.alux[0] = lums.sky_up[4];
-    lums.alux[1] = lums.sky_dw[4];
-    lums.alux[2] = lums.road_ul[4];
-    lums.alux[3] = lums.road_ucl[4];
-    lums.alux[4] = lums.road_ucr[4];
-    lums.alux[5] = lums.road_ur[4];
-    lums.alux[6] = lums.road_dl[4];
-    lums.alux[7] = lums.road_dcl[4];
-    lums.alux[8] = lums.road_dcr[4];
-    lums.alux[9] = lums.road_dr[4];
-  }
-}
-
-// for Over- and Under-Exposures Detections
-void expmeter(image_t lummap, image_t satmap, image_t& overmap, image_t& undrmap)
-{
-  double sat_elem, lux_elem, isat_elem, ilux_elem;
-
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      lux_elem = (double)lummap.pixel[i + (j * lummap.width)] / 255;
-      ilux_elem = 1 - lux_elem;
-      sat_elem = (double)satmap.pixel[i + (j * satmap.width)] / 255;
-      isat_elem = 1 - sat_elem;
-      overmap.pixel[i + (j * overmap.width)] = (int)((lux_elem * isat_elem) * 255);
-      undrmap.pixel[i + (j * undrmap.width)] = (int)((ilux_elem * sat_elem) * 255);
-    }
-  }
-
-  double median = 0., cluster = 0., pop = 0., px_aux = 0;
-  double means[3] = { 0., 0., 0. };
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      px_aux = overmap.pixel[i + (j * overmap.width)];
-      median += px_aux;
-    }
-  }
-  median /= (double)(lummap.height * lummap.width);
-  pop = 0.0;
-
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      px_aux = overmap.pixel[i + (j * overmap.width)];
-      if (px_aux > median)
-      {
-        cluster += px_aux;
-        pop++;
-      }
-    }
-  }
-  cluster /= pop;
-  pop = 0.0;
-
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      px_aux = overmap.pixel[i + (j * overmap.width)];
-      if (px_aux > cluster)
-      {
-        means[0] += px_aux;
-        pop++;
-      }
-    }
-  }
-  means[0] /= pop;
-  pop = 0.0;
-
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      px_aux = overmap.pixel[i + (j * overmap.width)];
-      if (px_aux > means[0])
-      {
-        means[1] += px_aux;
-        pop++;
-      }
-    }
-  }
-  means[1] /= pop;
-  pop = 0.0;
-
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      px_aux = overmap.pixel[i + (j * overmap.width)];
-      if (px_aux > means[1])
-      {
-        means[2] += px_aux;
-        pop++;
-      }
-    }
-  }
-  means[2] /= pop;
-  pop = 0.0;
-
-  for (int j = 0; j < lummap.height; j++)
-  {
-    for (int i = 0; i < lummap.width; i++)
-    {
-      px_aux = overmap.pixel[i + (j * overmap.width)];
-      if (px_aux > cluster)
-      {
-        if (px_aux > 250)
-        {
-          overmap.pixel[i + (j * overmap.width)] = 255;
-        }
-        else if (px_aux > means[2])
-        {
-          overmap.pixel[i + (j * overmap.width)] = 207;
-        }
-        else if (px_aux > means[1])
-        {
-          overmap.pixel[i + (j * overmap.width)] = 128;
-        }
-        else
-        {
-          overmap.pixel[i + (j * overmap.width)] = 51;
-        }
-      }
-      else
-      {
-        overmap.pixel[i + (j * overmap.width)] = 0;
-      }
-
-      px_aux = undrmap.pixel[i + (j * undrmap.width)];
-      if (px_aux > cluster)
-      {
-        if (px_aux > 250)
-        {
-          undrmap.pixel[i + (j * undrmap.width)] = 255;
-        }
-        else if (px_aux > means[2])
-        {
-          undrmap.pixel[i + (j * undrmap.width)] = 207;
-        }
-        else if (px_aux > means[1])
-        {
-          undrmap.pixel[i + (j * undrmap.width)] = 128;
-        }
-        else
-        {
-          undrmap.pixel[i + (j * undrmap.width)] = 51;
-        }
-      }
-      else
-      {
-        undrmap.pixel[i + (j * undrmap.width)] = 0;
-      }
-    }
-  }
-}
-
-// for Weather Detection
-void weathermeter(image_t lummap, scanlimit_t scan, lux_t lums, wea_t& stds)
-{
-  double stdAUX = 0.0, stdAUX2 = 0.0, stdAUX3 = 0.0, stdAUX4 = 0.0;
-  double meanAUX = 0.0, meanAUX2 = 0.0, meanAUX3 = 0.0, meanAUX4 = 0.0;
-  check = 4;
-  for (int k = 0; k < 2; k++)
-  {
-    stdAUX = 0.;
-    meanAUX = (double)lums.alux[k];
-    for (int j = k * scan.y; j < (k + 1) * scan.y; j++)
-    {
-      for (int i = 0; i < lummap.width; i++)
-      {
-        stdAUX += pow(((double)lummap.pixel[i + (j * lummap.width)] - meanAUX), 2);
-      }
-    }
-    stds.sky[k] = sqrt(stdAUX / (double)scan.nSky);
-  }
-  for (int k = 0; k < 2; k++)
-  {
-    stdAUX = 0.;
-    stdAUX2 = 0.;
-    stdAUX3 = 0.;
-    stdAUX4 = 0.;
-    meanAUX = (double)lums.alux[(k * check) + 2];
-    meanAUX2 = (double)lums.alux[(k * check) + 3];
-    meanAUX3 = (double)lums.alux[(k * check) + 4];
-    meanAUX4 = (double)lums.alux[(k * check) + 5];
-    for (int j = (k + 2) * scan.y; j < (k + 3) * scan.y; j++)
-    {
-      for (int i = 0; i < scan.x; i++)
-      {
-        stdAUX += pow(((double)lummap.pixel[i + (j * lummap.width)] - meanAUX), 2);
-        stdAUX2 += pow(((double)lummap.pixel[i + scan.x + (j * lummap.width)] - meanAUX), 2);
-        stdAUX3 += pow(((double)lummap.pixel[i + (scan.x * 2) + (j * lummap.width)] - meanAUX), 2);
-        stdAUX4 += pow(((double)lummap.pixel[i + (scan.x * 3) + (j * lummap.width)] - meanAUX), 2);
-      }
-    }
-    stds.road[(k * check)] = sqrt(stdAUX / (double)scan.nRoad);
-    stds.road[(k * check) + 1] = sqrt(stdAUX2 / (double)scan.nRoad);
-    stds.road[(k * check) + 2] = sqrt(stdAUX3 / (double)scan.nRoad);
-    stds.road[(k * check) + 3] = sqrt(stdAUX4 / (double)scan.nRoad);
-  }
-}
-
-void cvMat2Arr(cv::Mat input, image3_t& image)
-{
-  if (input.empty())
-  {
-    return;
-  }
-  int image_size = image.height * image.width;
-  for (int c = 0; c < 3; c++)
-  {
-    for (int y = 0; y < image.height; y++)
-    {
-      for (int x = 0; x < image.width; x++)
-      {
-        image.pixel[(c * image_size) + (x + (y * image.width))] = (int)input.at<cv::Vec3b>(y, x)[c];
-      }
-    }
-  }
-}
-void Arr2cvMat(image3_t image, cv::Mat& output)
-{
-  int image_size = image.height * image.width;
-  for (int c = 0; c < 3; c++)
-  {
-    for (int y = 0; y < image.height; y++)
-    {
-      for (int x = 0; x < image.width; x++)
-      {
-        output.at<cv::Vec3b>(y, x)[c] = image.pixel[(c * image_size) + (x + (y * image.width))];
-      }
-    }
-  }
-}
-void arr2cvMat(image_t image, cv::Mat& output)
-{
-  for (int y = 0; y < image.height; y++)
-  {
-    for (int x = 0; x < image.width; x++)
-    {
-      output.at<uchar>(y, x) = image.pixel[x + (y * image.width)];
-    }
-  }
 }
 
 void sync_callbackThreads()
@@ -4850,4 +3671,106 @@ void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const
   p.x += x;
   p.y += y;
   p.z += z;
+}
+
+int main(int argc, char** argv)
+{
+  cam_det = new int*[5];
+  for (int j = 0; j < 5; j++)
+  {
+    cam_det[j] = (int*)malloc(sizeof(int) * max_det);
+    memset(cam_det[j], 0, sizeof(int) * max_det);
+  }
+
+  lid_det = new int*[5];
+  for (int j = 0; j < 5; j++)
+  {
+    lid_det[j] = (int*)malloc(sizeof(int) * max_det);
+    memset(lid_det[j], 0, sizeof(int) * max_det);
+  }
+
+  radar_det = new int*[5];
+  for (int j = 0; j < 5; j++)
+  {
+    radar_det[j] = (int*)malloc(sizeof(int) * max_det);
+    memset(radar_det[j], 0, sizeof(int) * max_det);
+  }
+
+  bb_det = new int*[6];
+  for (int j = 0; j < 6; j++)
+  {
+    bb_det[j] = (int*)malloc(sizeof(int) * (3 * max_det));
+    memset(bb_det[j], 0, sizeof(int) * (3 * max_det));
+  }
+
+  // Variables for Fused Detection
+
+  bb_det2 = new int*[6];
+  for (int j = 0; j < 6; j++)
+  {
+    bb_det2[j] = (int*)malloc(sizeof(int) * (3 * max_det));
+    memset(bb_det2[j], 0, sizeof(int) * (3 * max_det));
+  }
+
+  /**************************************************************************/
+
+  ros::init(argc, argv, "sensor_fusion");
+  ros::NodeHandle nhFus;
+  // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
+  // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
+
+  // Radar object detection input
+  // ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
+
+  // Lidar object detection input
+  ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
+
+  // Camera object detection input
+  ros::Subscriber sub_cam_F_right = nhFus.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
+  ros::Subscriber sub_cam_F_center = nhFus.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
+  ros::Subscriber sub_cam_F_left = nhFus.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
+
+  fusMsg_pub = nhFus.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
+
+  syncCount = 0;
+  pthread_mutex_init(&callback_mutex, NULL);
+  pthread_cond_init(&callback_cond, NULL);
+
+  dbgPCView = 0;
+  // pthread_mutex_init(&mut_dbgPCView,NULL);
+  // pthread_cond_init(&cnd_dbgPCView,NULL);
+  // pthread_create(&thrd_dbgPCView, NULL, &dbg_drawPointCloud, NULL);
+
+  // ros::spin();
+
+  // fps30
+  // rosPublisher = new ROSPublish();
+  // publisher = std::thread(&ROSPublish::tickFuntion, rosPublisher);
+  // mPublish_cb = ROSPublish::staticPublishCallbackFunction;
+
+  signal(SIGINT, MySigintHandler);
+
+  ros::MultiThreadedSpinner spinner(TOTAL_CB);
+  spinner.spin();  // spin() will not return until the node has been shutdown
+
+  /*******************************************************/
+
+  for (int j = 0; j < 5; j++)
+    free(cam_det[j]);
+
+  for (int j = 0; j < 5; j++)
+    free(lid_det[j]);
+
+  for (int j = 0; j < 5; j++)
+    free(radar_det[j]);
+
+  for (int j = 0; j < 6; j++)
+    free(bb_det[j]);
+
+  for (int j = 0; j < 6; j++)
+    free(bb_det2[j]);
+
+  printf("***********free memory 3**************\n");
+  /******************************************************/
+  return 0;
 }
