@@ -82,7 +82,7 @@ $ git branch -a
   remotes/origin/tracking_pp
 
 # 把最新的code抓回來
-$ git pull
+$ git fetch
 remote: Enumerating objects: 62, done.
 remote: Counting objects: 100% (62/62), done.
 remote: Compressing objects: 100% (47/47), done.
