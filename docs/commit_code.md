@@ -62,8 +62,13 @@ Reviewer需要有maintainer權限，目前有
 
 ### Review 注意事項
 
-- 在 Review 頁面，下方有個 Changes 的 tab, 點下去可以看到改了什麼，要看程式是否有考慮不週之處，以及是否有誤上檔案。
-- 點下 Merge button之前，看一下上方pipeline的執行結果，pipeline執行失敗的話，強行merge必然會出現build fail，不可點下Merge
+為了確定master branch處於可以build pass並能順利執行，Review時請注意以下事項。
+
+- 在 Review 頁面，下方有個 Changes 的 tab, 點下去可以看到改了什麼，要看程式是否有考慮不週之處。
+- 是否有誤上檔案，如
+  * 大型檔案（Repository太大的話，會出現無法push的問題，同時在下載code時也會很慢）
+  * log 檔
+- 點下 Merge button之前，看一下上方pipeline的執行結果，pipeline執行失敗的話，強行merge必然會出現build fail，不可點下Merge。
 
 ### 常見問題
 
