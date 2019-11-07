@@ -46,13 +46,13 @@
 #define radar_coordinate_offset_Y 0
 #define radar_coordinate_offset_Z 0.875
 
-#define lidar_coordinate_offset_X 0.4
+#define lidar_coordinate_offset_X 0
 #define lidar_coordinate_offset_Y 0
-#define lidar_coordinate_offset_Z 3.42
+#define lidar_coordinate_offset_Z 0
 
-#define cam_coordinate_offset_X 0.4
+#define cam_coordinate_offset_X 0
 #define cam_coordinate_offset_Y 0
-#define cam_coordinate_offset_Z 3.42
+#define cam_coordinate_offset_Z 0
 /************************************************************************/
 
 //#define EnableFusion
@@ -980,10 +980,10 @@ void decisionFusion()
 
   msgFusionObj.objects = vDetectedObjectDF;
 
-  // add timestamp frame_id seq
-  msgFusionObj.header.stamp = msgLidarObj.header.stamp;  // ros::Time::now();//msgLidarObj.header.stamp;
-  msgFusionObj.header.frame_id = "SensorFusion";         // msgLidarObj.header.frame_id;
+  msgFusionObj.header.stamp = msgLidarObj.header.stamp;
+  msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
+
   fusMsg_pub.publish(msgFusionObj);
 
   /************************************************************************/
@@ -1303,10 +1303,10 @@ void decision3DFusion()
 
   msgFusionObj.objects = vDetectedObjectDF;
 
-  // add timestamp frame_id seq
-  msgFusionObj.header.stamp = msgLidarObj.header.stamp;  // ros::Time::now();//msgLidarObj.header.stamp;
-  msgFusionObj.header.frame_id = "SensorFusion";         // msgLidarObj.header.frame_id;
+  msgFusionObj.header.stamp = msgLidarObj.header.stamp;
+  msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
+
   fusMsg_pub.publish(msgFusionObj);
 
   /************************************************************************/
