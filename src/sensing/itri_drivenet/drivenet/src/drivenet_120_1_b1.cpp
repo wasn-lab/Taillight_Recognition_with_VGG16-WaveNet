@@ -315,10 +315,10 @@ int main(int argc, char **argv)
         pubImg_120_3 = it.advertise(cam120_3_topicName + std::string("/detect_image"), 1);
     }
 
-    pub120_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjLeftFront", 4);
-    pub120_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjLeftBack", 4);
-    pub120_2 = nh.advertise<msgs::DetectedObjectArray>("/CamObjRightFront", 4);   
-    pub120_3 = nh.advertise<msgs::DetectedObjectArray>("/CamObjRightBack", 4);
+    pub120_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjRightFront", 4);
+    pub120_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjRightBack", 4);
+    pub120_2 = nh.advertise<msgs::DetectedObjectArray>("/CamObjLeftFront", 4);   
+    pub120_3 = nh.advertise<msgs::DetectedObjectArray>("/CamObjLeftBack", 4);
 
     pthread_mutex_init(&mtxInfer,NULL);
     pthread_cond_init(&cndInfer,NULL);
@@ -676,10 +676,10 @@ void* run_display(void* ){
     cv::resizeWindow("RightBack-120", 480, 360);
     cv::resizeWindow("LeftFront-120", 480, 360);
     cv::resizeWindow("LeftBack-120", 480, 360);
-    cv::moveWindow("RightFront-120", 1025, 360);   
-    cv::moveWindow("RightBack-120", 1500, 360);
-    cv::moveWindow("LeftFront-120", 545, 360);
-    cv::moveWindow("LeftBack-120", 0, 360);   
+    cv::moveWindow("RightFront-120", 1025, 360);
+    cv::moveWindow("RightBack-120", 1500, 360);   
+    cv::moveWindow("LeftFront-120", 545, 360);   
+    cv::moveWindow("LeftBack-120", 0, 360);
 
     int marker_h = 0;
     marker_h = 590;  
@@ -699,10 +699,10 @@ void* run_display(void* ){
         {
             cv::line(mat120_1_display, BoundaryMarker1, BoundaryMarker2, cv::Scalar(255, 255, 255), 1);
             cv::line(mat120_1_display, BoundaryMarker3, BoundaryMarker4, cv::Scalar(255, 255, 255), 1);
-            cv::imshow("LeftFront-120", mat120_0_display);
-            cv::imshow("LeftBack-120", mat120_1_display);
-            cv::imshow("RightFront-120", mat120_2_display);
-            cv::imshow("RightBack-120", mat120_3_display);
+            cv::imshow("RightFront-120", mat120_0_display);
+            cv::imshow("RightBack-120", mat120_1_display);
+            cv::imshow("LeftFront-120", mat120_2_display);
+            cv::imshow("LeftBack-120", mat120_3_display);
             cv::waitKey(1);
         }
         r.sleep();
