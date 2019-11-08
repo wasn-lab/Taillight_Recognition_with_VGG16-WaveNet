@@ -13,7 +13,7 @@
 #include <future>
 
 #include "drivenet/trt_yolo_interface.h"
-#include "drivenet/distanceEstimation_b1.h"
+#include "drivenet/distance_estimation_b1.h"
 #include <msgs/DetectedObjectArray.h>
 
 pthread_t thrdYolo;
