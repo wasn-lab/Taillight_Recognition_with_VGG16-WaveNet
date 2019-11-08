@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   cv_bridge
   drivenet_lib
+  car_model
+  camera_utils
 )
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
@@ -24,6 +26,7 @@ catkin_package(
 )
 
 set(LIBS drivenet_lib
+         camera_utils
          ${OpenCV_LIBRARIES}
          nvinfer
          nvinfer_plugin
@@ -39,6 +42,8 @@ include_directories(
   include 
   ${INCLUDE_DIRS}
   ${DRIVENETLIB_INCLUDE}
+  ${car_model_BINARY_DIR}/include
+  ${camera_utils_SOURCE_DIR}/include
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}

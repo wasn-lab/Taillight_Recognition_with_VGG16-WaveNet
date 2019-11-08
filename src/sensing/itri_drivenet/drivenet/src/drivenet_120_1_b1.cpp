@@ -16,6 +16,7 @@
 #include "drivenet/distance_estimation_b1.h"
 #include "drivenet/boundary_util.h"
 #include "drivenet/object_label_util.h"
+#include "camera_params.h" // include camera topic name
 #include <msgs/DetectedObjectArray.h>
 
 using namespace DriveNet;
@@ -291,10 +292,10 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam120_0_topicName = "/cam/R_front";
-    cam120_1_topicName = "/cam/R_rear";
-    cam120_2_topicName = "/cam/L_front";
-    cam120_3_topicName = "/cam/L_rear";
+    cam120_0_topicName = camera::topics[5];
+    cam120_1_topicName = camera::topics[6];
+    cam120_2_topicName = camera::topics[8];
+    cam120_3_topicName = camera::topics[9];
 
     if(iscompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);

@@ -20,17 +20,17 @@ source ./devel/setup.bash
 
 FOV60 CamObjFrontRight, CamObjFrontCenter, CamObjFrontLeft
 ```
-roslaunch drivenet b1_drivenet60.launch
+roslaunch drivenet b1_drivenet_60.launch
 ```
 
 FOV120 CamObjRightFront, CamObjRightBack, CamObjLeftFront, CamObjLeftBack
 ```
-roslaunch drivenet b1_drivenet120_1.launch 
+roslaunch drivenet b1_drivenet_120_1.launch 
 ```
 
 FOV120 CamObjFrontCenter, CamObjBackTop
 ```
-roslaunch drivenet b1_drivenet120_2.launch
+roslaunch drivenet b1_drivenet_120_2.launch
 ```
 
 
