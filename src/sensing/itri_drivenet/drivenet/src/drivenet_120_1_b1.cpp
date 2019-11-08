@@ -14,6 +14,8 @@
 
 #include "drivenet/trt_yolo_interface.h"
 #include "drivenet/distance_estimation_b1.h"
+#include "drivenet/boundary_util.h"
+#include "drivenet/object_label_util.h"
 #include <msgs/DetectedObjectArray.h>
 
 using namespace DriveNet;
@@ -358,69 +360,6 @@ std::cout << __FILE__ << __LINE__ << std::endl;
     ros::shutdown();
 
     return 0;
-}
-
-int translate_label(int label) {
-    if(label == 0){
-        return 1;
-    }else if(label == 1){
-        return 2;        
-    }else if(label == 2){
-        return 4;
-    }else if(label == 3){
-        return 3;
-    }else if(label == 5){
-        return 5;
-    }else if(label == 7){
-        return 6;
-    }else {
-        return 0;
-    }
-}
-cv::Scalar get_labelColor(std::vector<cv::Scalar> colors, int label_id)
-{
-    cv::Scalar class_color;
-    if(label_id == 0)
-        class_color = colors[0];
-    else if (label_id == 1 || label_id == 3)
-        class_color = colors[1];
-    else if (label_id == 2 || label_id == 5 || label_id == 7)
-        class_color = colors[2];
-    else
-        class_color = colors[3];
-    return class_color;
-}
-bool CheckBoxInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1, cv::Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2)
-{
-    bool point1 = false;
-    bool point2 = false;
-    // printf("x1: %d, y1: %d, x2: %d, y2:%d\n", object_x1, object_y1, object_x2, object_y2);
-    ///right
-    int C1 = (RightLinePoint1.x - RightLinePoint2.x)*(object_y2 - RightLinePoint2.y) - (object_x2 - RightLinePoint2.x)*(RightLinePoint1.y - RightLinePoint2.y);
-    int C2 = (RightLinePoint1.x - RightLinePoint2.x)*(object_y2 - RightLinePoint2.y) - (object_x1 - RightLinePoint2.x)*(RightLinePoint1.y - RightLinePoint2.y);
-    ///left
-    int C3 = (LeftLinePoint1.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x2 - LeftLinePoint2.x)*(LeftLinePoint1.y - LeftLinePoint2.y);
-    int C4 = (LeftLinePoint1.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x1 - LeftLinePoint2.x)*(LeftLinePoint1.y - LeftLinePoint2.y);
-    ///up
-    int C5 = (RightLinePoint1.x - LeftLinePoint1.x)*(object_y2 - LeftLinePoint1.y) - (object_x2 - LeftLinePoint1.x)*(RightLinePoint1.y - LeftLinePoint1.y);
-    int C6 = (RightLinePoint1.x - LeftLinePoint1.x)*(object_y2 - LeftLinePoint1.y) - (object_x1 - LeftLinePoint1.x)*(RightLinePoint1.y - LeftLinePoint1.y);
-    ///bottom
-    int C7 = (RightLinePoint2.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x2 - LeftLinePoint2.x)*(RightLinePoint2.y - LeftLinePoint2.y);
-    int C8 = (RightLinePoint2.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x1 - LeftLinePoint2.x)*(RightLinePoint2.y - LeftLinePoint2.y);
-
-    // printf("C1:%d, C3:%d, C5:%d, C7:%d\n", C1, C3, C5, C7);
-    // printf("C2:%d, C4:%d, C6:%d, C8:%d\n", C2, C4, C6, C8);
-
-    if (C1 < 0 && C3 > 0 && C5 > 0 && C7 < 0)
-        point2 = true;
-    else
-        point2 = false;
-    if (C2 < 0 && C4 > 0 && C6 > 0 && C8 < 0)
-        point1 = true;  
-    else
-        point1 = false;      
-    return point1 && point2;
-    
 }
 
 void* run_interp(void* ){
