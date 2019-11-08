@@ -1,4 +1,4 @@
-#include "drivenet/DistanceEstimation_b1.h"
+#include "drivenet/distanceEstimation_b1.h"
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -31,9 +31,6 @@ void DistanceEstimation::init (int car_id)
     regionHeight_120_RB_y = {2049, 1688, 1209, 714, 217, -114, -738}; //-2 to 0 to 2(~1m) //Vertical line
     regionHeightSlope_120_RB_y = {-1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539}; 
     regionDist_120_RB_y = {-9, -8, -7, -6, -5, -4, -3}; //-2 to 0 to 2 (~1m)
-
-
-
     
     Lidar_offset_x = 0;
     Lidar_offset_y = 2.490/2;
