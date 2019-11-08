@@ -2,24 +2,12 @@
   <arg name="pub_tf" default="true" />
 
   <!-- rviz ************************************************************************************* -->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/HINO_fusion.rviz" />
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/U3_b1.rviz" />
 
   <!-- TF *************************************************************************************** -->
   <group if="$(arg pub_tf)">
-      <node pkg="tf2_ros" type="static_transform_publisher" name="TPP_tf2"        args="0 0 0 0 0 0       /base_link  /SensorFusion" />
-      <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"      args="0.4 0 3.42 0 0 0  /base_link  /lidar"        />
-      <!--node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2_raw"  args="0.4 0 3.42 0 0 0  /base_link  /lidar_top"    /-->
+      <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_tf2"    args="0 0 0 0 0 0   /base_link  /lidar" />
   </group>
-
-  <?ignore
-  <!-- TPP_from_Fusion ************************************************************************** -->
-  <node name="m_TPP_fusion" pkg="detection_viz" type="marker_polygon_gen_tpp.py" output="screen">
-      <param name="topic" value="/PathPredictionOutput"/>
-      <param name="red"   value="0.0"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
-  </node>
-  ?>
 
   <!-- Lidar ************************************************************************************ -->
   <node name="m_LidarDetection" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
@@ -37,18 +25,8 @@
       <param name="blue"  value="0.0"/>
   </node>
 
-  <?ignore
-  <!-- TPP_from_Lidar *************************************************************************** -->
-  <node name="m_TPP_lidar" pkg="detection_viz" type="marker_polygon_gen_tpp.py" output="screen">
-      <param name="topic" value="/PathPredictionOutput/lidar"/>
-      <param name="red"   value="0.0"/>
-      <param name="green" value="0.5"/>
-      <param name="blue"  value="0.0"/>
-  </node>
-  ?>
-
   <!-- Fusion *********************************************************************************** -->
-  <node name="m_SensorFusion" pkg="detection_viz" type="marker_gen_detection_fake.py" output="screen">
+  <node name="m_SensorFusion" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/SensorFusion"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
@@ -56,7 +34,7 @@
   </node>
   
   <!-- Fusion Polygon *************************************************************************** -->
-  <node name="m_SensorFusion_polygon" pkg="detection_viz" type="polygon_gen_detection_fake.py" output="screen">
+  <node name="m_SensorFusion_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen">
       <param name="topic" value="/SensorFusion"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
@@ -79,16 +57,6 @@
       <param name="blue"  value="0.0"/>
   </node>
 
-  <?ignore
-  <!-- TPP_from_Radar *************************************************************************** -->
-  <node name="m_TPP_radar" pkg="detection_viz" type="marker_polygon_gen_tpp.py" output="screen">
-      <param name="topic" value="/PathPredictionOutput/radar"/>
-      <param name="red"   value="0.5"/>
-      <param name="green" value="0.0"/>
-      <param name="blue"  value="0.0"/>
-  </node>
-  ?>
-  
   <!-- Camera 60 ******************************************************************************** -->
   <node name="m_Detect_cam60FC" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjFrontCenter"/>
@@ -97,16 +65,6 @@
       <param name="blue"  value="1.0"/>
   </node>
   
-  <?ignore
-  <!-- TPP_from_Camera60_1 ********************************************************************** -->
-  <node name="m_TPP_camera" pkg="detection_viz" type="marker_polygon_gen_tpp.py" output="screen">
-      <param name="topic" value="/PathPredictionOutput/camera"/>
-      <param name="red"   value="0.5"/>
-      <param name="green" value="0.5"/>
-      <param name="blue"  value="0.5"/>
-  </node>
-  ?>
-
   <!-- LaneNet ********************************************************************************** -->
   <node name="m_Lane_all_cam" pkg="detection_viz" type="marker_lane_curve.py" output="screen">
       <param name="topic" value="/LaneToDecisionOutput"/>
