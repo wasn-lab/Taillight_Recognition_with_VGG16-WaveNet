@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   cv_bridge
   drivenet_lib
+  car_model
+  camera_utils
 )
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
@@ -24,6 +26,7 @@ catkin_package(
 )
 
 set(LIBS drivenet_lib
+         camera_utils
          ${OpenCV_LIBRARIES}
          nvinfer
          nvinfer_plugin
@@ -39,6 +42,8 @@ include_directories(
   include 
   ${INCLUDE_DIRS}
   ${DRIVENETLIB_INCLUDE}
+  ${car_model_BINARY_DIR}/include
+  ${camera_utils_SOURCE_DIR}/include
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
@@ -51,9 +56,9 @@ link_directories(
   ${OpenCV_LIBRARY_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/DistanceEstimation_b1.cpp)
-add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation_b1.cpp)
-add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation_b1.cpp)
+add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp)
+add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp)
+add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp)
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
