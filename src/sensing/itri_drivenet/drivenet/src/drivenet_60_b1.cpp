@@ -12,13 +12,10 @@
 #include <thread>
 #include <future>
 
-#include "drivenet/trt_yolo_interface.h"
-#include "drivenet/distance_estimation_b1.h"
-#include "drivenet/boundary_util.h"
-#include "drivenet/object_label_util.h"
-#include "camera_params.h" // include camera topic name
-
+#include "drivenet/drivenet_60_b1.h"
 #include <msgs/DetectedObjectArray.h>
+
+using namespace DriveNet;
 
 pthread_t thrdYolo;
 pthread_t thrdInterp;
@@ -33,13 +30,6 @@ bool isInferData_0;
 bool isInferData_1;
 bool isInferData_2;
 bool iscompressed = false;
-
-/// launch param
-int car_id = 1;
-bool standard_FPS = 0;
-bool display_flag = 0;
-bool input_resize = 0; //grabber input mode 0: 1920x1208, 1:608x384 yolo format
-bool imgResult_publish = 0; 
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
@@ -87,9 +77,6 @@ std::vector<uint32_t> matId;
 std::vector<std_msgs::Header> headers;
 std::vector<int> dist_rows;
 std::vector<int> dist_cols;
-
-DistanceEstimation de;
-Yolo_app yoloApp;
 
 // Prepare cv::Mat
 void image_init()
@@ -215,9 +202,9 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam60_0_topicName = camera::topics[0];
-    cam60_1_topicName = camera::topics[1];
-    cam60_2_topicName = camera::topics[2];
+    cam60_0_topicName = camera::topics[cam_ids_[0]];
+    cam60_1_topicName = camera::topics[cam_ids_[1]];
+    cam60_2_topicName = camera::topics[cam_ids_[2]];
     
     std::cout << "cam60_0_topicName " << cam60_0_topicName << std::endl;
     std::cout << "cam60_1_topicName " << cam60_1_topicName << std::endl;
@@ -256,7 +243,7 @@ int main(int argc, char **argv)
     std::string cfg_file = "/b1_yolo_60.cfg";
     image_init();
     yoloApp.init_yolo(pkg_path, cfg_file);
-    de.init(car_id);
+    distEst.init(car_id);
 
 std::cout << __FILE__ << __LINE__ << std::endl;    
     ros::MultiThreadedSpinner spinner(3);
@@ -318,7 +305,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
     if (BoxPass_flag)
     {
-        boxPoint = de.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
+        boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
         detObj.bPoint = boxPoint;
     }
 

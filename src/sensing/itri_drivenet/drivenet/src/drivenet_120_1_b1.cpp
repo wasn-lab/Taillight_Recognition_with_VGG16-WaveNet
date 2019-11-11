@@ -12,11 +12,12 @@
 #include <thread>
 #include <future>
 
+#include "drivenet/drivenet_120_1_b1.h"
 #include "drivenet/trt_yolo_interface.h"
 #include "drivenet/distance_estimation_b1.h"
 #include "drivenet/boundary_util.h"
 #include "drivenet/object_label_util.h"
-#include "camera_params.h" // include camera topic name
+
 #include <msgs/DetectedObjectArray.h>
 
 using namespace DriveNet;
@@ -35,13 +36,6 @@ bool isInferData_1;
 bool isInferData_2;
 bool isInferData_3;
 bool iscompressed = false;
-
-/// launch param
-int car_id = 1;
-bool standard_FPS = 0;
-bool display_flag = 0;
-bool input_resize = 0; //grabber input mode 0: 1920x1208, 1:608x608 yolo format
-bool imgResult_publish = 0;
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
@@ -105,9 +99,6 @@ std::vector<uint32_t> matId;
 std::vector<std_msgs::Header> headers;
 std::vector<int> dist_rows;
 std::vector<int> dist_cols;
-
-DistanceEstimation de;
-Yolo_app yoloApp;
 
 // Prepare cv::Mat
 void image_init()
@@ -292,10 +283,10 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
-    cam120_0_topicName = camera::topics[5];
-    cam120_1_topicName = camera::topics[6];
-    cam120_2_topicName = camera::topics[8];
-    cam120_3_topicName = camera::topics[9];
+    cam120_0_topicName = camera::topics[cam_ids_[0]];
+    cam120_1_topicName = camera::topics[cam_ids_[1]];
+    cam120_2_topicName = camera::topics[cam_ids_[2]];
+    cam120_3_topicName = camera::topics[cam_ids_[3]];
 
     if(iscompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);
@@ -336,7 +327,7 @@ int main(int argc, char **argv)
     std::string cfg_file = "/b1_yolo_120_1.cfg";
     image_init();
     yoloApp.init_yolo(pkg_path, cfg_file);
-    de.init(car_id);
+    distEst.init(car_id);
     cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
     std::cout << "calibMatrix_filepath: " << calibMatrix_filepath << std::endl; 
     loadCalibrationMatrix(calibMatrix_filepath, cameraMatrix, distCoeffs);
@@ -406,7 +397,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
     if (BoxPass_flag)
     {
-        boxPoint = de.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
+        boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
         detObj.bPoint = boxPoint;
     }
 
