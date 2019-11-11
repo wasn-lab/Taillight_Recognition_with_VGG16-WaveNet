@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(drivenet)
 
 add_compile_options(-std=c++11 -O3)
+set (CMAKE_BUILD_TYPE Release) 
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -10,9 +11,9 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   image_transport
   cv_bridge
-  drivenet_lib
   car_model
   camera_utils
+  drivenet_lib
 )
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
@@ -41,9 +42,9 @@ add_definitions("-DNPP")
 include_directories(
   include 
   ${INCLUDE_DIRS}
-  ${DRIVENETLIB_INCLUDE}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${DRIVENETLIB_INCLUDE}
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
