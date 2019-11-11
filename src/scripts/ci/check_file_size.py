@@ -21,6 +21,8 @@ def _check_fsize(affected_files):
     ret = False
     fsize_limit = 15 * (2**20)
     for fname in affected_files:
+        if not os.path.isfile(fname):
+            continue
         fsize = os.path.getsize(fname)
         print("{}: {} bytes".format(fname, fsize))
         if fsize > fsize_limit:
