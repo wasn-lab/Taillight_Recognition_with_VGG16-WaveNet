@@ -75,6 +75,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_ = input->header;
 
 #if VIRTUAL_INPUT
+  objs_header_.frame_id = "lidar";
   vel_.set_dt(100000000);  // 0.1s = 100,000,000ns
   is_legal_dt_ = true;
 #else
