@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Check if a merge request contains any file > 20MB.
+Check if a merge request contains any large file.
 """
 from __future__ import print_function
 import subprocess
