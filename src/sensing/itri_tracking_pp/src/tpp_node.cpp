@@ -685,6 +685,7 @@ int TPPNode::run()
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner.reset(new ros::AsyncSpinner(0, &queue_));
+  g_spinner->start();
 
   g_trigger = true;
 
@@ -695,9 +696,6 @@ int TPPNode::run()
     // Enable state changed
     if (g_trigger && is_legal_dt_)
     {
-      // Stop callback_localization
-      g_spinner->stop();
-
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;
 #endif
@@ -710,9 +708,19 @@ int TPPNode::run()
 
       vel_.compute_ego_position_absolute();
 
-      KTs_.kalman_tracker_main(vel_.get_dt(), vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
-                               vel_.get_ego_heading());
-      compute_velocity_kalman(vel_.get_ego_dx_abs(), vel_.get_ego_dy_abs());
+      dt_ = vel_.get_dt();
+      ego_x_abs_ = vel_.get_ego_x_abs();
+      ego_y_abs_ = vel_.get_ego_y_abs();
+      ego_z_abs_ = vel_.get_ego_z_abs();
+      ego_heading_ = vel_.get_ego_heading();
+      ego_dx_abs_ = vel_.get_ego_dx_abs();
+      ego_dy_abs_ = vel_.get_ego_dy_abs();
+
+      // std::cout << dt_ << " " << ego_x_abs_ << " " << ego_y_abs_ << " " << ego_z_abs_ << " " <<  ego_heading_ << " "
+      // << ego_dx_abs_ << " " << ego_dy_abs_ << std::endl;
+
+      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      compute_velocity_kalman(ego_dx_abs_, ego_dy_abs_);
 
       publish_tracking();
 
@@ -740,11 +748,6 @@ int TPPNode::run()
                << std::endl;
 #endif
 
-      // Start callback_localization
-      queue_.clear();
-      g_spinner->start();
-
-      // Reset trigger
       g_trigger = false;
     }
 
