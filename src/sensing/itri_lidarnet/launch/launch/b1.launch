@@ -1,0 +1,324 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+<!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
+<rosparam param="LidarFrontLeft_Fine_Param">[0.47, 1.09, -1.85, 0.03, -0.04, 1.77]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[0.47, -1.07, -1.85, -0.03, -0.05, -1.81]</rosparam>
+<rosparam param="LidarRearLeft_Fine_Param">[-6.36, 1.23, -2.24, 3.14, -3.08, -1.09]</rosparam>
+<rosparam param="LidarRearRight_Fine_Param">[-6.37, -1, -2.28, 0.03, -0.05, -2.05]</rosparam>
+<!-- Ros Parameter Backup 
+<rosparam param="LidarFrontLeft_Fine_Param">[0.47, 1.09, -1.85, 0.03, -0.04, 1.77]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[0.41, -1.09, -1.83, -0.02, -0.05, -1.8]</rosparam>
+<rosparam param="LidarRearLeft_Fine_Param">[-6.34, 1.31, -2.19, 3.13, -3.08, -1.09]</rosparam>
+<rosparam param="LidarRearRight_Fine_Param">[-6.37, -0.98, -2.22, 0.05, -0.07, -2.05]</rosparam>
+-->
+<!-- Global arg ************************************************************ -->
+	<arg name="mode" default="0" />
+	<arg name="rpm_16" default="1200.0"/>
+	<arg name="rpm_32" default="1200.0"/>
+	<rosparam param="LaunchFileName">b1.launch</rosparam>
+<!-- *********************************************************************** -->
+	<group if="$(eval arg('mode') == 0)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
+		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
+		<node pkg="lidar_squseg_inference"      type="squeezeseg_inference"	 	 	name="squseg_inference"    			output="screen" cwd="node" args="hino1 X 0 1" />
+		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
+	</group>
+
+	<group if="$(eval arg('mode') == 1)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" args="-D"  />
+		<node pkg="display" 					type="display_b1" 					name="display_b1" 					output="screen" />
+	</group>
+
+	<group if="$(eval arg('mode') == 2)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node"  />
+	</group>
+
+	<group if="$(eval arg('mode') == 3)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 		 	name="lidars_grabber_b1" 	  		output="screen" cwd="node"  />
+		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
+	</group>
+
+	<group if="$(eval arg('mode') == 4)">
+		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
+		<node pkg="lidar_squseg_inference"      type="squeezeseg_inference"	 	 	name="squseg_inference"    			output="screen" cwd="node" args="hino1 X 0 1" />
+		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
+	</group>
+
+	<!-- Only Velodyne Driver -->
+	<group if="$(eval arg('mode') == 5)"></group>
+
+<!-- ********************************************************************************** -->
+	<group ns="LidarFrontRight" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
+
+	<!-- declare arguments with default values -->
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  	<arg name="device_ip" default="192.168.1.220" />
+	<arg name="frame_id" default="lidar_front_right" />
+ 	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+  	<arg name="max_range" default="60.0" />
+  	<arg name="min_range" default="0.4" />
+  	<arg name="pcap" default="" />
+	<arg name="port" default="2220" />
+	<arg name="read_fast" default="false" />
+	<arg name="read_once" default="false" />
+	<arg name="repeat_delay" default="0.0" />
+	<arg name="rpm" default="$(arg rpm_16)" />
+	<arg name="gps_time" default="false" />
+	<arg name="cut_angle" default="-0.01" />
+	<arg name="laserscan_ring" default="-1" />
+	<arg name="laserscan_resolution" default="0.007" />
+	<arg name="topic_name" default="Raw" />
+	<remap from="velodyne_points" to="$(arg topic_name)" />
+
+	<!-- start nodelet manager and driver nodelets -->
+	<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+		<arg name="device_ip" value="$(arg device_ip)"/>
+		<arg name="frame_id" value="$(arg frame_id)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="model" value="VLP16"/>
+	    	<arg name="pcap" value="$(arg pcap)"/>
+	    	<arg name="port" value="$(arg port)"/>
+	    	<arg name="read_fast" value="$(arg read_fast)"/>
+	    	<arg name="read_once" value="$(arg read_once)"/>
+	    	<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+	    	<arg name="rpm" value="$(arg rpm)"/>
+	    	<arg name="gps_time" value="$(arg gps_time)"/>
+	    	<arg name="cut_angle" value="$(arg cut_angle)"/>
+	  </include>
+
+	  <!-- start cloud nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+	    	<arg name="calibration" value="$(arg calibration)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="max_range" value="$(arg max_range)"/>
+	    	<arg name="min_range" value="$(arg min_range)"/>
+	  </include>
+
+	  <!-- start laserscan nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+		<arg name="manager" value="$(arg manager)" />
+	   	<arg name="ring" value="$(arg laserscan_ring)"/>
+	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
+	  </include>
+	</group>
+
+<!-- ********************************************************************************** -->
+	<group ns="LidarFrontLeft" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
+
+	<!-- declare arguments with default values -->
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  	<arg name="device_ip" default="192.168.1.221" />
+	<arg name="frame_id" default="lidar_front_left" />
+ 	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+  	<arg name="max_range" default="60.0" />
+  	<arg name="min_range" default="0.4" />
+  	<arg name="pcap" default="" />
+	<arg name="port" default="2221" />
+	<arg name="read_fast" default="false" />
+	<arg name="read_once" default="false" />
+	<arg name="repeat_delay" default="0.0" />
+	<arg name="rpm" default="$(arg rpm_16)" />
+	<arg name="gps_time" default="false" />
+	<arg name="cut_angle" default="-0.01" />
+	<arg name="laserscan_ring" default="-1" />
+	<arg name="laserscan_resolution" default="0.007" />
+	<arg name="topic_name" default="Raw" />
+	<remap from="velodyne_points" to="$(arg topic_name)" />
+
+	<!-- start nodelet manager and driver nodelets -->
+	<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+		<arg name="device_ip" value="$(arg device_ip)"/>
+		<arg name="frame_id" value="$(arg frame_id)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="model" value="VLP16"/>
+	    	<arg name="pcap" value="$(arg pcap)"/>
+	    	<arg name="port" value="$(arg port)"/>
+	    	<arg name="read_fast" value="$(arg read_fast)"/>
+	    	<arg name="read_once" value="$(arg read_once)"/>
+	    	<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+	    	<arg name="rpm" value="$(arg rpm)"/>
+	    	<arg name="gps_time" value="$(arg gps_time)"/>
+	    	<arg name="cut_angle" value="$(arg cut_angle)"/>
+	  </include>
+
+	  <!-- start cloud nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+	    	<arg name="calibration" value="$(arg calibration)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="max_range" value="$(arg max_range)"/>
+	    	<arg name="min_range" value="$(arg min_range)"/>
+	  </include>
+
+	  <!-- start laserscan nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+		<arg name="manager" value="$(arg manager)" />
+	   	<arg name="ring" value="$(arg laserscan_ring)"/>
+	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
+	  </include>
+	</group>
+
+<!-- ********************************************************************************** -->
+	<group ns="LidarRearRight" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
+
+	<!-- declare arguments with default values -->
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  	<arg name="device_ip" default="192.168.1.222" />
+	<arg name="frame_id" default="lidar_rear_right" />
+ 	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+  	<arg name="max_range" default="60.0" />
+  	<arg name="min_range" default="0.4" />
+  	<arg name="pcap" default="" />
+	<arg name="port" default="2222" />
+	<arg name="read_fast" default="false" />
+	<arg name="read_once" default="false" />
+	<arg name="repeat_delay" default="0.0" />
+	<arg name="rpm" default="$(arg rpm_16)" />
+	<arg name="gps_time" default="false" />
+	<arg name="cut_angle" default="-0.01" />
+	<arg name="laserscan_ring" default="-1" />
+	<arg name="laserscan_resolution" default="0.007" />
+	<arg name="topic_name" default="Raw" />
+	<remap from="velodyne_points" to="$(arg topic_name)" />
+
+	<!-- start nodelet manager and driver nodelets -->
+	<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+		<arg name="device_ip" value="$(arg device_ip)"/>
+		<arg name="frame_id" value="$(arg frame_id)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="model" value="VLP16"/>
+	    	<arg name="pcap" value="$(arg pcap)"/>
+	    	<arg name="port" value="$(arg port)"/>
+	    	<arg name="read_fast" value="$(arg read_fast)"/>
+	    	<arg name="read_once" value="$(arg read_once)"/>
+	    	<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+	    	<arg name="rpm" value="$(arg rpm)"/>
+	    	<arg name="gps_time" value="$(arg gps_time)"/>
+	    	<arg name="cut_angle" value="$(arg cut_angle)"/>
+	  </include>
+
+	  <!-- start cloud nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+	    	<arg name="calibration" value="$(arg calibration)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="max_range" value="$(arg max_range)"/>
+	    	<arg name="min_range" value="$(arg min_range)"/>
+	  </include>
+
+	  <!-- start laserscan nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+		<arg name="manager" value="$(arg manager)" />
+	   	<arg name="ring" value="$(arg laserscan_ring)"/>
+	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
+	  </include>
+	</group>
+
+<!-- ********************************************************************************** -->
+	<group ns="LidarRearLeft" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
+
+	<!-- declare arguments with default values -->
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  	<arg name="device_ip" default="192.168.1.223" />
+	<arg name="frame_id" default="lidar_rear_left" />
+ 	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+  	<arg name="max_range" default="60.0" />
+  	<arg name="min_range" default="0.4" />
+  	<arg name="pcap" default="" />
+	<arg name="port" default="2223" />
+	<arg name="read_fast" default="false" />
+	<arg name="read_once" default="false" />
+	<arg name="repeat_delay" default="0.0" />
+	<arg name="rpm" default="$(arg rpm_16)" />
+	<arg name="gps_time" default="false" />
+	<arg name="cut_angle" default="-0.01" />
+	<arg name="laserscan_ring" default="-1" />
+	<arg name="laserscan_resolution" default="0.007" />
+	<arg name="topic_name" default="Raw" />
+	<remap from="velodyne_points" to="$(arg topic_name)" />
+
+	<!-- start nodelet manager and driver nodelets -->
+	<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+		<arg name="device_ip" value="$(arg device_ip)"/>
+		<arg name="frame_id" value="$(arg frame_id)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="model" value="VLP16"/>
+	    	<arg name="pcap" value="$(arg pcap)"/>
+	    	<arg name="port" value="$(arg port)"/>
+	    	<arg name="read_fast" value="$(arg read_fast)"/>
+	    	<arg name="read_once" value="$(arg read_once)"/>
+	    	<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+	    	<arg name="rpm" value="$(arg rpm)"/>
+	    	<arg name="gps_time" value="$(arg gps_time)"/>
+	    	<arg name="cut_angle" value="$(arg cut_angle)"/>
+	  </include>
+
+	  <!-- start cloud nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+	    	<arg name="calibration" value="$(arg calibration)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="max_range" value="$(arg max_range)"/>
+	    	<arg name="min_range" value="$(arg min_range)"/>
+	  </include>
+
+	  <!-- start laserscan nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+		<arg name="manager" value="$(arg manager)" />
+	   	<arg name="ring" value="$(arg laserscan_ring)"/>
+	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
+	  </include>
+	</group>
+
+<!-- ********************************************************************************** -->
+	<group ns="LidarFrontTop" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
+		<!-- declare arguments with default values -->
+		<arg name="calibration" default="$(find velodyne_pointcloud)/params/32db.yaml"/>
+		<arg name="device_ip" default="192.168.1.224" />
+		<arg name="frame_id" default="lidar_front_top" />
+		<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+		<arg name="max_range" default="80.0" />
+		<arg name="min_range" default="0.4" />
+		<arg name="pcap" default="" />
+		<arg name="port" default="2224" />
+		<arg name="read_fast" default="false" />
+		<arg name="read_once" default="false" />
+		<arg name="repeat_delay" default="0.0" />
+		<arg name="rpm" default="$(arg rpm_32)" />
+		<arg name="gps_time" default="false" />
+		<arg name="cut_angle" default="-0.01" />
+		<arg name="laserscan_ring" default="-1" />
+		<arg name="laserscan_resolution" default="0.007" />
+		<arg name="topic_name" default="Raw" />
+		<remap from="velodyne_points" to="$(arg topic_name)" />
+
+		<!-- start nodelet manager and driver nodelets -->
+		<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+			<arg name="device_ip" value="$(arg device_ip)"/>
+			<arg name="frame_id" value="$(arg frame_id)"/>
+			<arg name="manager" value="$(arg manager)" />
+			<arg name="model" value="32E"/>
+			<arg name="pcap" value="$(arg pcap)"/>
+			<arg name="port" value="$(arg port)"/>
+			<arg name="read_fast" value="$(arg read_fast)"/>
+			<arg name="read_once" value="$(arg read_once)"/>
+			<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+			<arg name="rpm" value="$(arg rpm)"/>
+			<arg name="gps_time" value="$(arg gps_time)"/>
+			<arg name="cut_angle" value="$(arg cut_angle)"/>
+		</include>
+
+		<!-- start cloud nodelet -->
+		<include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+			<arg name="calibration" value="$(arg calibration)"/>
+			<arg name="manager" value="$(arg manager)" />
+			<arg name="max_range" value="$(arg max_range)"/>
+			<arg name="min_range" value="$(arg min_range)"/>
+		</include>
+
+		<!-- start laserscan nodelet -->
+		<include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+			<arg name="manager" value="$(arg manager)" />
+			<arg name="ring" value="$(arg laserscan_ring)"/>
+			<arg name="resolution" value="$(arg laserscan_resolution)"/>
+		</include>
+	</group>
+
+</launch>

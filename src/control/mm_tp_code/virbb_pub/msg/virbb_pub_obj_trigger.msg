@@ -1,0 +1,4 @@
+bool AEB_obj_trigger
+bool Static_obj_trigger
+bool Dynamic_obj_trigger
+bool rvizPP_obj_trigger

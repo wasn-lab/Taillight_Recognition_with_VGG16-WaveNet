@@ -208,8 +208,7 @@ include_directories(
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_BUILD_TYPE Release)
-set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
-set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
+set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES -DOTHER_STUFF=1")
 
 ######################
 ##       VTK        ##
@@ -232,7 +231,15 @@ set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 include_directories     (${CUDA_INCLUDE_DIRS}) 
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
    
-
+######################
+##       QT         ##
+######################
+find_package            (Qt5 REQUIRED COMPONENTS Widgets Core)
+set                     (QT_HEADERS src/UI/QtViewer.h)
+set                     (QT_FORMS   src/UI/QtViewer.ui)
+QT5_WRAP_CPP            (QT_HEADERS_MOC   ${QT_HEADERS})
+QT5_WRAP_UI             (QT_FORMS_HEADERS ${QT_FORMS})
+ADD_DEFINITIONS         (${QT_DEFINITIONS})
  
 ######################
 ##   Source file    ##
@@ -246,7 +253,12 @@ list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
 ##     Vehicle      ##
 ######################               
  
-cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} )
+cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
+add_dependencies	  (${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
+target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
+
+cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
 add_dependencies	  (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
 target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
 qt5_use_modules       (${PROJECT_NAME}_hino Widgets)

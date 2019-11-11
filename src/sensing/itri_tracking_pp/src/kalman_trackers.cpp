@@ -130,6 +130,10 @@ void KalmanTrackers::extract_box_centers()
     BoxCenter box_center;
     extract_box_center(box_center, objs_[i].bPoint);
     box_centers_.push_back(box_center);
+
+    objs_[i].lidarInfo.boxCenter.x = (objs_[i].bPoint.p0.x + objs_[i].bPoint.p6.x) / 2;
+    objs_[i].lidarInfo.boxCenter.y = (objs_[i].bPoint.p0.y + objs_[i].bPoint.p6.y) / 2;
+    objs_[i].lidarInfo.boxCenter.z = (objs_[i].bPoint.p0.z + objs_[i].bPoint.p6.z) / 2;
   }
 }
 
@@ -234,6 +238,19 @@ void KalmanTrackers::update_associated_trackers()
 
         tracks_[j].box_center_prev_ = tracks_[j].box_center_;
         tracks_[j].box_center_ = box_centers_[i];
+
+#if SPEEDUP_KALMAN_VEL_EST
+        if (tracks_[j].tracktime_ == 2)
+        {
+          Point32 p_abs;
+          tracks_[j].box_center_.pos.get_point_abs(p_abs);
+          Point32 p_abs_prev;
+          tracks_[j].box_center_prev_.pos.get_point_abs(p_abs_prev);
+
+          tracks_[j].kalman_.statePre.at<float>(2) = (p_abs.x - p_abs_prev.x) / dt_;
+          tracks_[j].kalman_.statePre.at<float>(3) = (p_abs.y - p_abs_prev.y) / dt_;
+        }
+#endif
 
         tracks_[j].box_corners_ = box_corners_of_boxes_[i];
 

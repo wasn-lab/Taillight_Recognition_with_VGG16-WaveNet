@@ -3,6 +3,7 @@ devel*/
 .vscode/
 *.swp
 *.pyc
+rospack_cache*
 .DS_Store
 .cproject
 .project
@@ -31,7 +32,7 @@ src/sensing/sensing_subsystem_camera/src/LaneNet/\.project
 src/sensing/sensing_subsystem_camera/src/LaneNet/platform_CMakeList\.txt
 *.so
 src/sensing/sensing_subsystem_camera/src/LaneNet/data/
-
+src/sensing/localization/src/map_pub/done_map/
 src/sensing/sensing_subsystem_camera/resources/
 src/sensing/camera_utils/data/front_120.json
 src/sensing/camera_utils/data/left_120.json

@@ -1,0 +1,22 @@
+Header header
+
+float32 Vehicle_Target_x
+float32 Vehicle_Target_y
+float32[6] XP_final
+float32[6] YP_final
+float32[6] XP_final_1
+float32[6] YP_final_1
+float32[5] X_UKF_SLAM
+float32 J_minind
+float32 J_finalind
+float32 End_x
+float32 End_y
+float32 forward_length
+uint16 seg_id_near
+uint16 Target_seg_id
+float32 Look_ahead_time
+float32[13] J_fsc
+float32[13] J
+float32 forward_length_free
+float32 takeover_length
+uint16 avoidance_mode

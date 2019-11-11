@@ -2,16 +2,16 @@
 
 namespace tpp
 {
-std::mutex bbox_mutex;
-std::condition_variable keep_go_cv;
-bool keep_go = false;
+boost::shared_ptr<ros::AsyncSpinner> g_spinner;
+
+bool g_trigger = false;
+
 static volatile bool keep_run = true;
 
 void signal_handler(int sig)
 {
   if (sig == SIGINT)
   {
-    keep_go_cv.notify_all();
     keep_run = false;
   }
 }
@@ -34,39 +34,30 @@ static bool done_with_profiling()
 #endif
 }
 
-void TPPNode::callback_ego_speed(const itri_msgs::VehicleState::ConstPtr& input)
+// called from custom callback queue
+void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
 {
-  ego_speed_mps_.update(kmph_to_mps(input->speed));
+  // set ego vehicle's relative pose
+  ego_x_m_.update(input->x);
+  ego_y_m_.update(input->y);
+  ego_heading_rad_.update(input->heading * 0.01745329251f);
+
+  vel_.set_ego_x_rel(ego_x_m_.kf_.get_estimate());
+  vel_.set_ego_y_rel(ego_y_m_.kf_.get_estimate());
+  vel_.set_ego_heading(ego_heading_rad_.kf_.get_estimate());
 
 #if DEBUG_DATA_IN
-  LOG_INFO << "ego_speed = " << ego_speed_mps_.kf_.get_estimate() << " m/s" << std::endl;
+  LOG_INFO << "ego_x = " << vel_.get_ego_x_rel() << "  ego_y = " << vel_.get_ego_y_rel()
+           << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
 #endif
-
-  vel_.init_ego_speed(ego_speed_mps_.kf_.get_estimate());  // mps
 }
 
-void TPPNode::callback_ego_RPYrate(const sensor_msgs::Imu::ConstPtr& input)
-{
-  ego_rollrate_radps_.update(input->angular_velocity.x);
-  ego_pitchrate_radps_.update(input->angular_velocity.y);
-  ego_yawrate_radps_.update(input->angular_velocity.z);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_rollrate = " << ego_rollrate_radps_.kf_.get_estimate() << " rad/s" << std::endl;
-  LOG_INFO << "ego_pitchrate = " << ego_pitchrate_radps_.kf_.get_estimate() << " rad/s" << std::endl;
-  LOG_INFO << "ego_yawrate = " << ego_yawrate_radps_.kf_.get_estimate() << " rad/s" << std::endl;
-#endif
-
-  vel_.init_ego_yawrate(ego_yawrate_radps_.kf_.get_estimate());  // radians / second
-}
-
+// called from global callback queue
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_COMPACT
   LOG_INFO << "-----------------------------------------" << std::endl;
 #endif
-
-  std::unique_lock<std::mutex> lock(bbox_mutex);
 
 #if FPS_EXTRAPOLATION
   loop_begin = ros::Time::now().toSec();
@@ -83,6 +74,11 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
 
+#if VIRTUAL_INPUT
+  objs_header_.frame_id = "lidar";
+  vel_.set_dt(100000000);  // 0.1s = 100,000,000ns
+  is_legal_dt_ = true;
+#else
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
@@ -95,6 +91,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   {
     is_legal_dt_ = false;
   }
+#endif
 
   KTs_.header_ = objs_header_;
 
@@ -109,25 +106,18 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
 
-    if (in_source_ == 1 || in_source_ == 3)
+    if (in_source_ == 2)
     {
       for (unsigned i = 0; i < KTs_.objs_.size(); i++)
       {
-        KTs_.objs_[i].header.frame_id = "lidar";
-      }
-    }
-    else if (in_source_ == 2)
-    {
-      for (unsigned i = 0; i < KTs_.objs_.size(); i++)
-      {
-        KTs_.objs_[i].header.frame_id = "radar";
+        KTs_.objs_[i].header.frame_id = "RadFront";
       }
     }
     else
     {
       for (unsigned i = 0; i < KTs_.objs_.size(); i++)
       {
-        KTs_.objs_[i].header.frame_id = "SensorFusion";
+        KTs_.objs_[i].header.frame_id = "lidar";
       }
     }
 
@@ -162,9 +152,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #endif
   }
 
-  keep_go = true;
-
-  keep_go_cv.notify_one();
+  g_trigger = true;
 
 #if FPS
   clock_t end_time = clock();
@@ -180,39 +168,52 @@ void TPPNode::subscribe_and_advertise_topics()
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: Lidar" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection", 2, &TPPNode::callback_fusion, this);
+    fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput/lidar";
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
   else if (in_source_ == 2)
   {
     LOG_INFO << "Input Source: Radar" << std::endl;
-    fusion_sub_ = nh_.subscribe("RadarDetection", 2, &TPPNode::callback_fusion, this);
+    fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput/radar";
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
   else if (in_source_ == 3)
   {
     LOG_INFO << "Input Source: Camera" << std::endl;
-    fusion_sub_ = nh_.subscribe("DetectedObjectArray/cam60_1", 2, &TPPNode::callback_fusion, this);
+    fusion_sub_ = nh_.subscribe("DetectedObjectArray/cam60_1", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput/camera";
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
+  }
+  else if (in_source_ == 4)
+  {
+    LOG_INFO << "Input Source: Virtual_abs" << std::endl;
+    fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
+    topic = "PathPredictionOutput";
+    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
+  }
+  else if (in_source_ == 5)
+  {
+    LOG_INFO << "Input Source: Virtual_rel" << std::endl;
+    fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
+    topic = "PathPredictionOutput";
+    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else
   {
     LOG_INFO << "Input Source: Fusion" << std::endl;
-    fusion_sub_ = nh_.subscribe("SensorFusion", 2, &TPPNode::callback_fusion, this);
+    fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
 
-  if (use_ego_speed_)
-  {
-    ego_speed_sub_ = nh_.subscribe("vehicle_state", 2, &TPPNode::callback_ego_speed, this);
-  }
-  ego_RPYrate_sub_ = nh_.subscribe("imu/data", 2, &TPPNode::callback_ego_RPYrate, this);
+  nh2_.setCallbackQueue(&queue_);
+
+  // Note that we use different NodeHandle here
+  localization_sub_ = nh2_.subscribe("localization_to_veh", 2, &TPPNode::callback_localization, this);
 
   if (gen_markers_)
   {
@@ -322,8 +323,9 @@ void TPPNode::compute_velocity_kalman(const float ego_dx_abs, const float ego_dy
           KTs_.tracks_[i].box_.track.absolute_velocity.x, KTs_.tracks_[i].box_.track.absolute_velocity.y);
 
       // relative velocity in absolute coordinate
-      float rel_vx_abs = abs_vx_abs - 3.6f * (ego_dx_abs / KTs_.get_dt());  // km/h
-      float rel_vy_abs = abs_vy_abs - 3.6f * (ego_dy_abs / KTs_.get_dt());  // km/h
+      float scale = 3.6f / KTs_.get_dt();
+      float rel_vx_abs = abs_vx_abs - scale * ego_dx_abs;  // km/h
+      float rel_vy_abs = abs_vy_abs - scale * ego_dy_abs;  // km/h
 
       // compute relative velocity in relative coordinate (km/h)
       transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, KTs_.tracks_[i].box_.track.relative_velocity.x,
@@ -472,9 +474,74 @@ void TPPNode::publish_tracking()
   }
 }
 
+void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
+{
+  std::ofstream ofs;
+  std::stringstream ss;
+  ss << "../../../tracking_output.txt";
+  std::string fname = ss.str();
+
+  if (objs.empty())
+  {
+    std::cout << "objs is empty. No output to txt." << std::endl;
+    return;
+  }
+
+  ofs.open(fname, std::ios_base::app);
+
+  for (size_t i = 0; i < objs.size(); i++)
+  {
+    if (objs[i].track.is_ready_prediction)
+    {
+      ofs << std::fixed                                               //
+          << objs[i].header.stamp << ", "                             // #1 time stamp
+          << objs[i].track.id << ", "                                 // #2 track id
+          << objs[i].lidarInfo.boxCenter.x << ", "                    // #3 original bbox center x
+          << objs[i].lidarInfo.boxCenter.y << ", "                    // #4 original bbox center y
+          << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #5 modified bbox center x
+          << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6 modified bbox center y
+          << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx
+          << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy
+          << objs[i].absSpeed << ", "                                 // #9 abs speed
+          << objs[i].track.relative_velocity.x << ", "                // #10 rel vx
+          << objs[i].track.relative_velocity.y << ", "                // #11 rel vy
+          << objs[i].relSpeed;                                        // #12 rel speed
+
+      // #13 ppx in 5 ticks
+      // #14 ppy in 5 ticks
+      // #15 ppx in 10 ticks
+      // #16 ppy in 10 ticks
+      // #17 ppx in 15 ticks
+      // #18 ppy in 15 ticks
+      // #19 ppx in 20 ticks
+      // #20 ppy in 20 ticks
+      for (size_t j = 0; j < objs[i].track.forecasts.size(); j = j + 5)
+      {
+        ofs << ", " << objs[i].track.forecasts[j].position.x << ", " << objs[i].track.forecasts[j].position.y;
+      }
+      ofs << ", "                          //
+          << vel_.get_ego_x_abs() << ", "  // #21 kf ego x abs
+          << vel_.get_ego_x_rel() << ", "  // #22 kf ego x rel
+          << vel_.get_ego_y_abs() << ", "  // #23 kf ego y abs
+          << vel_.get_ego_y_rel() << ", "  // #24 kf ego y rel
+          << vel_.get_ego_z_abs() << ", "  // #25 kf ego z abs
+          << vel_.get_ego_z_rel() << ", "  // #26 kf ego z rel
+          << vel_.get_ego_heading();       // #27 kf ego heading
+    }
+    ofs << "\n";
+    std::cout << "[Produced] time = " << objs[i].header.stamp << ", track_id = " << objs[i].track.id << std::endl;
+  }
+
+  ofs.close();
+}
+
 void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
+#if SAVE_OUTPUT_TXT
+  save_output_to_txt(objs);
+#endif
+
   msgs::DetectedObjectArray msg;
 
   msg.header = objs_header_;
@@ -612,21 +679,25 @@ int TPPNode::run()
 
   subscribe_and_advertise_topics();
 
-  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20190901_1730!" << std::endl;
+  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191101_1730!" << std::endl;
 
   signal(SIGINT, signal_handler);
 
-  ros::AsyncSpinner spinner(num_callbacks);
-  spinner.start();
+  // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
+  g_spinner.reset(new ros::AsyncSpinner(0, &queue_));
 
-  ros::Rate r(output_fps);
+  g_trigger = true;
+
+  ros::Rate loop_rate(output_fps);
 
   while (ros::ok() && !done_with_profiling() && keep_run)
   {
-    std::unique_lock<std::mutex> lock(bbox_mutex);
-
-    if (is_legal_dt_)
+    // Enable state changed
+    if (g_trigger && is_legal_dt_)
     {
+      // Stop callback_localization
+      g_spinner->stop();
+
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;
 #endif
@@ -637,8 +708,7 @@ int TPPNode::run()
 
       // Tracking start ==========================================================================
 
-      vel_.compute_position_displacement();
-      vel_.update_localization();
+      vel_.compute_ego_position_absolute();
 
       KTs_.kalman_tracker_main(vel_.get_dt(), vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
                                vel_.get_ego_heading());
@@ -649,8 +719,8 @@ int TPPNode::run()
 #if DELAY_TIME
       mc_.module_pubtime_sec = ros::Time::now().toSec();
 #endif
-      // Tracking end ============================================================================
-      // PP start ================================================================================
+
+      // Tracking end && PP start ================================================================
 
       pp_.callback_tracking(pp_objs_, vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
                             vel_.get_ego_heading());
@@ -664,20 +734,31 @@ int TPPNode::run()
 
       // PP end ==================================================================================
 
-      keep_go = false;
-
 #if FPS
       clock_t end_time = clock();
       LOG_INFO << "Running time of Tracking PP main process: " << clock_to_milliseconds(end_time - begin_time) << "ms"
                << std::endl;
 #endif
+
+      // Start callback_localization
+      queue_.clear();
+      g_spinner->start();
+
+      // Reset trigger
+      g_trigger = false;
     }
 
-    keep_go_cv.wait(lock);
-    r.sleep();
+    // Process messages on global callback queue
+    ros::spinOnce();
+    loop_rate.sleep();
   }
 
-  spinner.stop();
+  // Release AsyncSpinner object
+  g_spinner.reset();
+
+  // Wait for ROS threads to terminate
+  ros::waitForShutdown();
+
   LOG_INFO << "END ITRI_Tracking_PP" << std::endl;
 
   return 0;

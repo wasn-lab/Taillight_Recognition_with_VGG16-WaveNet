@@ -17,7 +17,11 @@
 
 using namespace std;
 
+VPointCloud pointcloudIL2I(VPointCloudXYZIL::Ptr cloud_il);
+
 VPointCloudXYZIL pcdExtract_byClass(VPointCloudXYZIL::Ptr cloud_il, int class_index);
+
+VPointCloudXYZIL pcdExtract_allLabelObj(VPointCloudXYZIL::ConstPtr cloud_il);
 
 class pointcloudEval
 {
@@ -26,7 +30,7 @@ class pointcloudEval
 
   public:
     float iou;
-    bool GT_cloudExist, PD_cloudExist;
+    bool GT_cloudExist = true, PD_cloudExist = true;
 
     pointcloudEval ();
     pointcloudEval (VPointCloudXYZIL::Ptr input_cloud_GT, VPointCloudXYZIL::Ptr input_cloud_PD);

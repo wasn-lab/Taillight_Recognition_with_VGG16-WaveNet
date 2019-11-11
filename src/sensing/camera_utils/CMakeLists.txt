@@ -4,10 +4,11 @@ project(camera_utils)
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
-catkin_package(CATKIN_DEPENDS roscpp geometry_msgs)
 find_package(catkin REQUIRED COMPONENTS
+  car_model
   roscpp
   geometry_msgs)
+catkin_package(CATKIN_DEPENDS roscpp geometry_msgs car_model)
 
 find_package(OpenCV REQUIRED)
 find_package(Glog REQUIRED)
@@ -38,7 +39,8 @@ endif ()
 
 set(CAMERA_UTILS_SOURCES
   src/camera_utils.cpp
-  src/camera_params.cpp
+  src/camera_params_hino.cpp
+  src/camera_params_b1.cpp
   src/camera_distance_mapper.cpp
   src/imu_distance.cpp
   src/imu_utils.cpp
@@ -66,6 +68,7 @@ set(CAMERA_UTILS_INCLUDE_DIRS
   ${CUDA_TOOLKIT_INCLUDE}
   ${GLOG_INCLUDE_DIRS}
 	${JSONCPP_INCLUDE_DIR}
+  ${car_model_BINARY_DIR}/include
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_BINARY_DIR}/include)
 

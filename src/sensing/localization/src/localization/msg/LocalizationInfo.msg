@@ -1,0 +1,10 @@
+Header header
+float32 duration_time
+int32 iteration
+float32 fitness_score
+float32 x
+float32 y
+float32 z
+float32 row
+float32 pitch
+float32 yaw
