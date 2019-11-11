@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Calculate the publishing hz of given topics.
 """
