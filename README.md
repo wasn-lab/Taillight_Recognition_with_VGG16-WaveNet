@@ -3,7 +3,7 @@ This repository contains the source codes of self-driving car maintained by ITRI
 ### Prerequisite
 
 1. Cuda
-1. PCL
+1. PCL 1.9.0
 1. ROS
 
 ### How to build
