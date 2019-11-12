@@ -2,6 +2,7 @@
 set -x
 set -e
 
+export PATH=/usr/local/cmake-3.15.5/bin:$PATH
 echo "The script works only for cmake >= 3.10. Your cmake version is:"
 cmake --version
 
