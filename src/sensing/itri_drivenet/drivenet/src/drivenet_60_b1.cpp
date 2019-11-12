@@ -13,6 +13,7 @@
 #include <future>
 
 #include "drivenet/drivenet_60_b1.h"
+
 #include <msgs/DetectedObjectArray.h>
 
 using namespace DriveNet;
@@ -114,11 +115,10 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << __FILE__ << __LINE__ << ", camOrder: " << camOrder << std::endl;
+        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 3) {
-        // std::cout << "collect 3 camera finish " << std::endl;
         isInferData = true;
         pthread_cond_signal(&cndInfer);
     }
@@ -206,9 +206,6 @@ int main(int argc, char **argv)
     cam60_1_topicName = camera::topics[cam_ids_[1]];
     cam60_2_topicName = camera::topics[cam_ids_[2]];
     
-    std::cout << "cam60_0_topicName " << cam60_0_topicName << std::endl;
-    std::cout << "cam60_1_topicName " << cam60_1_topicName << std::endl;
-    std::cout << "cam60_2_topicName " << cam60_2_topicName << std::endl;
     if (iscompressed){
         cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
         cam60_1 = nh.subscribe(cam60_1_topicName + std::string("/compressed"), 1, callback_60_1_decode);
@@ -244,11 +241,9 @@ int main(int argc, char **argv)
     image_init();
     yoloApp.init_yolo(pkg_path, cfg_file);
     distEst.init(car_id);
-
-std::cout << __FILE__ << __LINE__ << std::endl;    
+  
     ros::MultiThreadedSpinner spinner(3);
     spinner.spin();
-std::cout << __FILE__ << __LINE__ << std::endl;
 
     isInferStop = true;
     pthread_join(thrdYolo, NULL);
@@ -257,8 +252,6 @@ std::cout << __FILE__ << __LINE__ << std::endl;
     if (display_flag == 1)
         pthread_join(thrdDisplay, NULL);   
 
-std::cout << __FILE__ << __LINE__ << std::endl;
-
     yoloApp.delete_yolo_infer();
     ros::shutdown();
 
@@ -266,7 +259,7 @@ std::cout << __FILE__ << __LINE__ << std::endl;
 }
 
 void* run_interp(void* ){
-std::cout << "run_interp start" << std::endl;
+    std::cout << "run_interp start" << std::endl;
     ros::Rate r(30);    
 	while(ros::ok() && !isInferStop)
     {
@@ -275,7 +268,7 @@ std::cout << "run_interp start" << std::endl;
 		pub60_2.publish(doa60_2);
         r.sleep();
 	}
-        std::cout << "run_interp close" << std::endl;
+    std::cout << "run_interp close" << std::endl;
 	pthread_exit(0);
 }
 
@@ -323,8 +316,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 }
 
 void* run_yolo(void* ){
-std::cout << __FILE__ << __LINE__ << std::endl;
-std::cout << "run_inference start" << std::endl;
+    std::cout << "run_inference start" << std::endl;
     std::vector<std_msgs::Header> headers_tmp;
     std::vector<std::vector<ITRI_Bbox>* > vbbx_output_tmp;
     std::vector<cv::Mat*> matSrcs_tmp;
@@ -476,8 +468,7 @@ std::cout << "run_inference start" << std::endl;
         dist_rows_tmp.clear();
         r.sleep();
     }
-std::cout << __FILE__ << __LINE__ << std::endl;
-std::cout << "run_inference close" << std::endl;
+    std::cout << "run_inference close" << std::endl;
     pthread_exit(0);
 }
 
@@ -517,6 +508,7 @@ void* run_display(void* ){
         }
         r.sleep();
 	}
-        std::cout << "run_display close" << std::endl;
+
+    std::cout << "run_display close" << std::endl;
 	pthread_exit(0);
 }

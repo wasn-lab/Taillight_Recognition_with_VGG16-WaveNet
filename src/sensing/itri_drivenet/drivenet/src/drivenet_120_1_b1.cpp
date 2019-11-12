@@ -13,10 +13,6 @@
 #include <future>
 
 #include "drivenet/drivenet_120_1_b1.h"
-#include "drivenet/trt_yolo_interface.h"
-#include "drivenet/distance_estimation_b1.h"
-#include "drivenet/boundary_util.h"
-#include "drivenet/object_label_util.h"
 
 #include <msgs/DetectedObjectArray.h>
 
@@ -137,7 +133,7 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << __FILE__ << __LINE__ << ", camOrder: " << camOrder << std::endl;
+        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 4) {
@@ -270,7 +266,7 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 /// roslaunch drivenet drivenet120.launch
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "drivenet_120_3");
+    ros::init(argc, argv, "drivenet_120_1_b1");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
 
@@ -331,13 +327,9 @@ int main(int argc, char **argv)
     cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
     std::cout << "calibMatrix_filepath: " << calibMatrix_filepath << std::endl; 
     loadCalibrationMatrix(calibMatrix_filepath, cameraMatrix, distCoeffs);
-    
-std::cout << __FILE__ << __LINE__ << std::endl;
 
     ros::MultiThreadedSpinner spinner(4);
     spinner.spin();
-
-std::cout << __FILE__ << __LINE__ << std::endl;
 
     isInferStop = true;
     pthread_join(thrdYolo, NULL);
@@ -345,8 +337,6 @@ std::cout << __FILE__ << __LINE__ << std::endl;
         pthread_join(thrdInterp, NULL);
     if (display_flag == 1)
         pthread_join(thrdDisplay, NULL);   
-
-std::cout << __FILE__ << __LINE__ << std::endl;
 
     yoloApp.delete_yolo_infer();
     ros::shutdown();
@@ -366,7 +356,7 @@ void* run_interp(void* ){
 
         r.sleep();
 	}
-        std::cout << "run_interp close" << std::endl;
+    std::cout << "run_interp close" << std::endl;
 	pthread_exit(0);
 }
 
@@ -415,8 +405,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 }
 
 void* run_yolo(void* ){
-std::cout << __FILE__ << __LINE__ << std::endl;
-std::cout << "run_inference start" << std::endl;
+    std::cout << "run_inference start" << std::endl;
     std::vector<std_msgs::Header> headers_tmp;
     std::vector<std::vector<ITRI_Bbox>* > vbbx_output_tmp;
     std::vector<cv::Mat*> matSrcs_tmp;
@@ -592,8 +581,8 @@ std::cout << "run_inference start" << std::endl;
         dist_rows_tmp.clear();
         r.sleep();
     }
-std::cout << __FILE__ << __LINE__ << std::endl;
-std::cout << "run_inference close" << std::endl;
+
+    std::cout << "run_inference close" << std::endl;
     pthread_exit(0);
 }
 
@@ -638,6 +627,7 @@ void* run_display(void* ){
         }
         r.sleep();
 	}
+
     std::cout << "run_display close" << std::endl;
 	pthread_exit(0);
 }
