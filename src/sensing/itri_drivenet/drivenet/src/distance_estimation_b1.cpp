@@ -1,4 +1,4 @@
-#include "drivenet/DistanceEstimation_b1.h"
+#include "drivenet/distance_estimation_b1.h"
 #include <vector>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -7,12 +7,31 @@ void DistanceEstimation::init (int car_id)
 {     
     carId = car_id;
     
-    regionHeight_60_FC_x = {1207, 1173, 1132, 1101, 1075, 1054, 1038, 1024, 1012, 1002, 993, 986, 979, 972, 967, 945, 836};
-    regionDist_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50}; 
-    regionHeightSlope_60_FC_y = {0.2031, 0.2577, 0.3471, 0.6486, 1.4118, -59.5, -1.0636, -0.5938, -0.3786, -0.2682, -0.2347};
-    regionHeight_60_FC_y = {-683, -307, 58, 462, 763, 1041, 1361, 1633, 1941, 2285, 2526};
-    regionDist_60_FC_y = {5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5};
+    regionHeight_60_FC_x = {1207, 1181, 1141, 1110, 1086/*10*/, 1070, 1052, 1039, 1028, 1019, 1009, 1003, 996, 991, 985/*20*/, 960, 946, 934, 926, 919, 914/*50*/}; 
+    // regionHeightSlope_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50};  
+    regionDist_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50}; 
+    regionHeightSlope_60_FC_y = {0.081, 0.161 ,0.224, 0.304, 0.44, 1.02, 3.87, -1.53, -0.66, -0.452, -0.333, -0.251, -0.121}; 
+    regionHeight_60_FC_y = {-3172, -1099, -509, -112, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801};
+    regionDist_60_FC_y = {10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10};
 
+    regionHeight_120_FT_x = {1002, 740, 574, 460, 379, 320, 272, 231, 198, 171, 150, 130, 115, 99, 86, 75, 65, 57, 48, 40, 10}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+    regionDist_120_FT_x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25}; //5 to 10, 20 to 50m (~5m)
+    regionHeight_120_FT_y = {1008, 1292, 1732, 2258, 2641, 3030, 3471, 3619, 3709, 3548}; //-2 to 0 to 2(~1m) //Vertical line
+    regionHeightSlope_120_FT_y = {-30, -4.4615, -1.8, -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862}; 
+    regionDist_120_FT_y = {0, -1, -2, -3, -4, -5, -6, -7, -8, -9}; //-2 to 0 to 2 (~1m)
+
+    regionHeight_120_RF_x = {1148, 830, 544, 377, 236, 157, 52}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+    regionDist_120_RF_x = {0, 1, 2, 3, 4, 5, 6}; //5 to 10, 20 to 50m (~5m)
+    regionHeight_120_RF_y = {2507, 1904, 1498, 1032, 637, 357, -80}; //-2 to 0 to 2(~1m) //Vertical line
+    regionHeightSlope_120_RF_y = {-1.2286, -2.4524, -6.000, 21.3529, 4.7308, 3.0297, 1.8171}; 
+    regionDist_120_RF_y = {-6, -5, -4, -3, -2, -1, -0}; //-2 to 0 to 2 (~1m)
+
+    regionHeight_120_RB_x = {1194, 838, 565, 395, 253, 138, 63, 17}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+    regionDist_120_RB_x = {0, 1, 2, 3, 4, 5, 6, 7}; //5 to 10, 20 to 50m (~5m)
+    regionHeight_120_RB_y = {2049, 1688, 1209, 714, 217, -114, -738}; //-2 to 0 to 2(~1m) //Vertical line
+    regionHeightSlope_120_RB_y = {-1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539}; 
+    regionDist_120_RB_y = {-9, -8, -7, -6, -5, -4, -3}; //-2 to 0 to 2 (~1m)
+    
     Lidar_offset_x = 0;
     Lidar_offset_y = 2.490/2;
 }
@@ -60,7 +79,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     
     return distance;
 }
-float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h)
+float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel_loc_y, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_x, std::vector<float> regionDist, int img_w)
 {
     float distance = -1;
     float unitLength = 0.0;
@@ -69,12 +88,12 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl
 
     std::vector<int> regionHeight_new = regionHeight;
     
-    // std::cout << "piexl_loc_x: " << piexl_loc_x <<  ", piexl_loc_y: " << piexl_loc_y << std::endl;
+    // std::cout << "pixel_loc_x: " << pixel_loc_x <<  ", pixel_loc_y: " << pixel_loc_y << std::endl;
     for (int i = 0; i < regionHeight.size(); i++)
     {
-        int y = img_h - piexl_loc_x;
-        if (regionHeightSlope_y[i] !=0)
-            regionHeight_new[i] = regionHeight[i] + int((1/regionHeightSlope_y[i])*y);
+        // int y = img_h - pixel_loc_x;
+        if (regionHeightSlope_x[i] != 0)
+            regionHeight_new[i] = regionHeight[i] - int((regionHeightSlope_x[i])*pixel_loc_x);
         else 
             regionHeight_new[i] = regionHeight[i];
         // printf("region[%d], region:%d, new region:%d, \n ", i, regionHeight[i], regionHeight_new[i]);
@@ -82,39 +101,39 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl
 
     for (int i = 1; i < regionHeight_new.size(); i++)
     {
-        if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i-1])  
+        if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i-1])  
         {
             int regionpixel = regionHeight_new[i-1] - regionHeight_new[i];
-            int regionMeter = regionDist[i]  - regionDist[i-1];
+            int regionMeter = regionDist[i] - regionDist[i-1];
             if (regionpixel != 0)
                 unitLength = float(regionMeter)/float(regionpixel);
-            bias = piexl_loc_y - regionHeight_new[i];
+            bias = pixel_loc_y - regionHeight_new[i];
             offset = unitLength * float(bias);
             distance = regionDist[i] - offset;
             // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
-            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i], unitLength, bias, offset);
+            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", pixel_loc_y, regionDist[i], unitLength, bias, offset);
         }
-        else if (piexl_loc_y <= regionHeight_new[i] && piexl_loc_y >= regionHeight_new[i-1])  
+        else if (pixel_loc_y <= regionHeight_new[i] && pixel_loc_y >= regionHeight_new[i-1])  
         {
             int regionpixel = regionHeight_new[i] - regionHeight_new[i-1];
             int regionMeter = regionDist[i] - regionDist[i-1];
             if (regionpixel != 0)
                 unitLength = float(regionMeter)/float(regionpixel);
-            bias = regionHeight_new[i] - piexl_loc_y;
+            bias = regionHeight_new[i] - pixel_loc_y;
             offset = unitLength * float(bias);
             distance = regionDist[i] - offset;
             // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
-            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i], unitLength, bias, offset);
+            // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", pixel_loc_y, regionDist[i], unitLength, bias, offset);
         }
         else
         {
-            if (piexl_loc_y < regionHeight_new[0])
+            if (pixel_loc_y < regionHeight_new[0])
                 distance = 8;
-            else if(piexl_loc_y > regionHeight_new[regionHeight_new.size()-1])
+            else if(pixel_loc_y > regionHeight_new[regionHeight_new.size()-1])
                 distance = -8;
         }
-    }  
-    
+    } 
+
     int multiplier = pow(10, 2);
     distance = int(distance * multiplier) / (multiplier*1.0); 
     
@@ -648,6 +667,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     std::vector<int> regionHeight_y;
     std::vector<float> regionDist_y;
     std::vector<float> regionHeightSlope_y;
+    std::vector<float> regionHeightSlope_x;
 
     msgs::PointXYZ p0;
     float x_distMeter = 0, y_distMeter = 0;
@@ -655,6 +675,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     int x_loc = y;
     int y_loc = x;
     int img_h = 1208;
+    int img_w = 1920;
     int mode = 1;
 
     if (cam_id == 2)
@@ -662,8 +683,36 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeight_x = regionHeight_60_FC_x;
         regionDist_x = regionDist_60_FC_x;
         regionHeight_y = regionHeight_60_FC_y;
+        regionHeightSlope_x = regionHeightSlope_60_FC_x;
         regionHeightSlope_y = regionHeightSlope_60_FC_y;
         regionDist_y = regionDist_60_FC_y;
+        offset_x = Lidar_offset_x;
+    }else if(cam_id == 4)
+    {
+        regionHeight_x = regionHeight_120_FT_x;
+        regionDist_x = regionDist_120_FT_x;
+        regionHeight_y = regionHeight_120_FT_y;
+        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
+        regionHeightSlope_y = regionHeightSlope_120_FT_y;
+        regionDist_y = regionDist_120_FT_y;
+        offset_x = Lidar_offset_x;
+    }else if(cam_id == 5)
+    {
+        regionHeight_x = regionHeight_120_RF_x;
+        regionDist_x = regionDist_120_RF_x;
+        regionHeight_y = regionHeight_120_RF_y;
+        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
+        regionHeightSlope_y = regionHeightSlope_120_RF_y;
+        regionDist_y = regionDist_120_RF_y;
+        offset_x = Lidar_offset_x;
+    }else if(cam_id == 6)
+    {
+        regionHeight_x = regionHeight_120_RB_x;
+        regionDist_x = regionDist_120_RB_x;
+        regionHeight_y = regionHeight_120_RB_y;
+        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
+        regionHeightSlope_y = regionHeightSlope_120_RB_y;
+        regionDist_y = regionDist_120_RB_y;
         offset_x = Lidar_offset_x;
     }
     else

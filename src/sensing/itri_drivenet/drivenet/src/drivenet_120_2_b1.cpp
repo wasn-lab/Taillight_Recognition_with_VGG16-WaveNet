@@ -13,7 +13,10 @@
 #include <future>
 
 #include "drivenet/trt_yolo_interface.h"
-#include "drivenet/DistanceEstimation_b1.h"
+#include "drivenet/distance_estimation_b1.h"
+#include "drivenet/boundary_util.h"
+#include "drivenet/object_label_util.h"
+#include "camera_params.h" // include camera topic name
 #include <msgs/DetectedObjectArray.h>
 
 using namespace DriveNet;
@@ -78,6 +81,8 @@ std::vector<cv::Mat*> matSrcs;
 std::vector<uint32_t> matOrder;
 std::vector<uint32_t> matId;
 std::vector<std_msgs::Header> headers;
+std::vector<int> dist_rows;
+std::vector<int> dist_cols;
 
 DistanceEstimation de;
 Yolo_app yoloApp;
@@ -99,7 +104,7 @@ void image_init()
     }
 }
 
-void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx){
+void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
@@ -113,6 +118,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         matId.push_back(camId);
         vbbx_output.push_back(vbbx);
         headers.push_back(header);
+        dist_cols.push_back(dist_w);
+        dist_rows.push_back(dist_h);
         std::cout << __FILE__ << __LINE__ << ", camOrder: " << camOrder << std::endl;
     }
 
@@ -163,10 +170,10 @@ void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_0 = cv_ptr->image;
-    calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_0) sync_inference(0, 4, h, &mat120_0_rect, &vBBX120_0);
+    if(!isInferData_0) sync_inference(0, 4, h, &mat120_0, &vBBX120_0, 1920, 1208);
 }
 
 void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
@@ -174,24 +181,24 @@ void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_1 = cv_ptr->image;
-    calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_1)  sync_inference(1, 5, h, &mat120_1_rect, &vBBX120_1);
+    if(!isInferData_1)  sync_inference(1, 5, h, &mat120_1, &vBBX120_1, 1920, 1208);
 }
 
 void callback_120_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_0);
 
-    calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
-    if(!isInferData_0) sync_inference(0, 4, compressImg.header, &mat120_0_rect, &vBBX120_0);
+    // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+    if(!isInferData_0) sync_inference(0, 4, compressImg.header, &mat120_0, &vBBX120_0, 1920, 1208);
 }
 
 void callback_120_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_1);
 
-    calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
-    if(!isInferData_1)  sync_inference(1, 5, compressImg.header, &mat120_1_rect, &vBBX120_1);
+    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+    if(!isInferData_1)  sync_inference(1, 5, compressImg.header, &mat120_1, &vBBX120_1, 1920, 1208);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
@@ -221,9 +228,9 @@ int main(int argc, char **argv)
 	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
 
 
-    cam120_0_topicName = "gmsl_camera/4";
-    cam120_1_topicName = "gmsl_camera/10";
-    
+    cam120_0_topicName = camera::topics[4];
+    cam120_1_topicName = camera::topics[10];
+
     if(iscompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);
         cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/compressed"), 1, callback_120_1_decode);
@@ -279,70 +286,6 @@ std::cout << __FILE__ << __LINE__ << std::endl;
 
     return 0;
 }
-
-int translate_label(int label) {
-    if(label == 0){
-        return 1;
-    }else if(label == 1){
-        return 2;        
-    }else if(label == 2){
-        return 4;
-    }else if(label == 3){
-        return 3;
-    }else if(label == 5){
-        return 5;
-    }else if(label == 7){
-        return 6;
-    }else {
-        return 0;
-    }
-}
-cv::Scalar get_labelColor(std::vector<cv::Scalar> colors, int label_id)
-{
-    cv::Scalar class_color;
-    if(label_id == 0)
-        class_color = colors[0];
-    else if (label_id == 1 || label_id == 3)
-        class_color = colors[1];
-    else if (label_id == 2 || label_id == 5 || label_id == 7)
-        class_color = colors[2];
-    else
-        class_color = colors[3];
-    return class_color;
-}
-bool CheckBoxInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1, cv::Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2)
-{
-    bool point1 = false;
-    bool point2 = false;
-    // printf("x1: %d, y1: %d, x2: %d, y2:%d\n", object_x1, object_y1, object_x2, object_y2);
-    ///right
-    int C1 = (RightLinePoint1.x - RightLinePoint2.x)*(object_y2 - RightLinePoint2.y) - (object_x2 - RightLinePoint2.x)*(RightLinePoint1.y - RightLinePoint2.y);
-    int C2 = (RightLinePoint1.x - RightLinePoint2.x)*(object_y2 - RightLinePoint2.y) - (object_x1 - RightLinePoint2.x)*(RightLinePoint1.y - RightLinePoint2.y);
-    ///left
-    int C3 = (LeftLinePoint1.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x2 - LeftLinePoint2.x)*(LeftLinePoint1.y - LeftLinePoint2.y);
-    int C4 = (LeftLinePoint1.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x1 - LeftLinePoint2.x)*(LeftLinePoint1.y - LeftLinePoint2.y);
-    ///up
-    int C5 = (RightLinePoint1.x - LeftLinePoint1.x)*(object_y2 - LeftLinePoint1.y) - (object_x2 - LeftLinePoint1.x)*(RightLinePoint1.y - LeftLinePoint1.y);
-    int C6 = (RightLinePoint1.x - LeftLinePoint1.x)*(object_y2 - LeftLinePoint1.y) - (object_x1 - LeftLinePoint1.x)*(RightLinePoint1.y - LeftLinePoint1.y);
-    ///bottom
-    int C7 = (RightLinePoint2.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x2 - LeftLinePoint2.x)*(RightLinePoint2.y - LeftLinePoint2.y);
-    int C8 = (RightLinePoint2.x - LeftLinePoint2.x)*(object_y2 - LeftLinePoint2.y) - (object_x1 - LeftLinePoint2.x)*(RightLinePoint2.y - LeftLinePoint2.y);
-
-    // printf("C1:%d, C3:%d, C5:%d, C7:%d\n", C1, C3, C5, C7);
-    // printf("C2:%d, C4:%d, C6:%d, C8:%d\n", C2, C4, C6, C8);
-
-    if (C1 < 0 && C3 > 0 && C5 > 0 && C7 < 0)
-        point2 = true;
-    else
-        point2 = false;
-    if (C2 < 0 && C4 > 0 && C6 > 0 && C8 < 0)
-        point1 = true;  
-    else
-        point1 = false;      
-    return point1 && point2;
-    
-}
-
 void* run_interp(void* ){
     std::cout << "run_interp start" << std::endl;
     ros::Rate r(30);
@@ -382,18 +325,20 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
     if (BoxPass_flag)
     {
         boxPoint = de.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
-        
-        camInfo.u = box.x1;
-        camInfo.v = box.y1;
-        camInfo.width = box.x2 - box.x1;
-        camInfo.height = box.y2 - box.y1;
-        camInfo.prob = box.prob;
-
-        detObj.classId = translate_label(box.label);
         detObj.bPoint = boxPoint;
-        detObj.camInfo = camInfo;
-        detObj.fusionSourceId = 0;
+
     }
+
+    camInfo.u = box.x1;
+    camInfo.v = box.y1;
+    camInfo.width = box.x2 - box.x1;
+    camInfo.height = box.y2 - box.y1;
+    camInfo.prob = box.prob;
+
+    detObj.classId = translate_label(box.label);
+    detObj.camInfo = camInfo;
+    detObj.fusionSourceId = 0;
+
     return detObj;
 }
 
@@ -405,6 +350,8 @@ std::cout << "run_inference start" << std::endl;
     std::vector<cv::Mat*> matSrcs_tmp;
     std::vector<uint32_t> matOrder_tmp;
     std::vector<uint32_t> matId_tmp;
+    std::vector<int> dist_cols_tmp;    
+    std::vector<int> dist_rows_tmp;
 
     cv::Mat M_display;
     cv::Mat M_display_tmp;
@@ -423,6 +370,8 @@ std::cout << "run_inference start" << std::endl;
         matSrcs_tmp = matSrcs;
         matOrder_tmp = matOrder;
         matId_tmp = matId;
+        dist_cols_tmp = dist_cols;
+        dist_rows_tmp = dist_rows;
 
         // reset data
         headers.clear();
@@ -432,12 +381,14 @@ std::cout << "run_inference start" << std::endl;
         vBBX120_0.clear();
         vBBX120_1.clear();
         vbbx_output.clear();
+        dist_cols.clear();
+        dist_rows.clear();
         isInferData = false;
         isInferData_0 = false;
         isInferData_1 = false;
 
         if (!input_resize) yoloApp.input_preprocess(matSrcs_tmp); 
-        else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize); 
+        else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
 
         yoloApp.inference_yolo();
         yoloApp.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
@@ -467,32 +418,33 @@ std::cout << "run_inference start" << std::endl;
             for(int i = 0; i < pool.size(); i++)
             {
                 detObj = pool[i].get();
-                if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
-                    vDo.push_back(detObj);
+                vDo.push_back(detObj);
                 if(display_flag)
                 {   
-                    int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                    if (cam_order == 0)
-                    {
-                        distMeter_p0x = detObj.bPoint.p3.x;
-                        distMeter_p3x = detObj.bPoint.p7.y;
-                        distMeter_p0y = detObj.bPoint.p3.y;  
-                        distMeter_p3y = detObj.bPoint.p7.y;
-                    }                    
-                    else
-                    {
-                        distMeter_p0x = detObj.bPoint.p0.x;
-                        distMeter_p3x = detObj.bPoint.p3.x;
-                        distMeter_p0y = detObj.bPoint.p0.y;                    
-                        distMeter_p3y = detObj.bPoint.p3.y;                        
+                    if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
+                        int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
+                        if (cam_order == 0)
+                        {
+                            distMeter_p0x = detObj.bPoint.p3.x;
+                            distMeter_p3x = detObj.bPoint.p7.y;
+                            distMeter_p0y = detObj.bPoint.p3.y;  
+                            distMeter_p3y = detObj.bPoint.p7.y;
+                        }                    
+                        else
+                        {
+                            distMeter_p0x = detObj.bPoint.p0.x;
+                            distMeter_p3x = detObj.bPoint.p3.x;
+                            distMeter_p0y = detObj.bPoint.p0.y;                    
+                            distMeter_p3y = detObj.bPoint.p3.y;                        
+                        }
+
+                        int x1 = detObj.camInfo.u;
+                        int x2 = detObj.camInfo.u + detObj.camInfo.width;
+                        int y2 = detObj.camInfo.v + detObj.camInfo.height;
+
+                        cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y), cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
+                        cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y), cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
                     }
-
-                    int x1 = detObj.camInfo.u;
-                    int x2 = detObj.camInfo.u + detObj.camInfo.width;
-                    int y2 = detObj.camInfo.v + detObj.camInfo.height;
-
-                    cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y), cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
-                    cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y), cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
                 }
             }
 
@@ -523,6 +475,7 @@ std::cout << "run_inference start" << std::endl;
                     }
                 }
             }
+            vDo.clear();
         }
         // reset data
         headers_tmp.clear();
@@ -530,6 +483,8 @@ std::cout << "run_inference start" << std::endl;
         matOrder_tmp.clear();
         matId_tmp.clear();
         vbbx_output_tmp.clear();
+        dist_cols_tmp.clear();
+        dist_rows_tmp.clear();
         r.sleep();
     }
 std::cout << __FILE__ << __LINE__ << std::endl;
@@ -541,6 +496,10 @@ void* run_display(void* ){
     std::cout << "run_display start" << std::endl;
     cv::namedWindow("FrontTop-120", CV_WINDOW_NORMAL);
     cv::namedWindow("BackTop-120", CV_WINDOW_NORMAL);
+    cv::resizeWindow("FrontTop-120", 480, 360);
+    cv::resizeWindow("BackTop-120", 480, 360);
+    cv::moveWindow("FrontTop-120", 0, 720);   
+    cv::moveWindow("BackTop-120", 545, 720);
 
     int marker_h = 0;
     marker_h = 590;
