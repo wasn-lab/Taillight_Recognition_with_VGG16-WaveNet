@@ -6,13 +6,13 @@ boost::shared_ptr<ros::AsyncSpinner> g_spinner;
 
 bool g_trigger = false;
 
-static volatile bool keep_run = true;
-
 void signal_handler(int sig)
 {
   if (sig == SIGINT)
   {
-    keep_run = false;
+    LOG_INFO << "END ITRI_Tracking_PP" << std::endl;
+    g_spinner->stop();
+    ros::shutdown();
   }
 }
 
@@ -34,9 +34,12 @@ static bool done_with_profiling()
 #endif
 }
 
-// called from custom callback queue
 void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
 {
+#if DEBUG_CALLBACK
+  LOG_INFO << "callback_localization() start" << std::endl;
+#endif
+
   // set ego vehicle's relative pose
   ego_x_m_.update(input->x);
   ego_y_m_.update(input->y);
@@ -52,19 +55,18 @@ void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& inp
 #endif
 }
 
-// called from global callback queue
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
+#if DEBUG_CALLBACK
+  LOG_INFO << "callback_fusion() start" << std::endl;
+#endif
+
 #if DEBUG_COMPACT
   LOG_INFO << "-----------------------------------------" << std::endl;
 #endif
 
 #if FPS_EXTRAPOLATION
   loop_begin = ros::Time::now().toSec();
-#endif
-
-#if DEBUG
-  LOG_INFO << "callback_fusion() start" << std::endl;
 #endif
 
 #if FPS
@@ -679,7 +681,7 @@ int TPPNode::run()
 
   subscribe_and_advertise_topics();
 
-  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191101_1730!" << std::endl;
+  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191111_1500!" << std::endl;
 
   signal(SIGINT, signal_handler);
 
@@ -691,9 +693,12 @@ int TPPNode::run()
 
   ros::Rate loop_rate(output_fps);
 
-  while (ros::ok() && !done_with_profiling() && keep_run)
+  while (ros::ok() && !done_with_profiling())
   {
-    // Enable state changed
+#if DEBUG_CALLBACK
+    LOG_INFO << "ROS loop start" << std::endl;
+#endif
+
     if (g_trigger && is_legal_dt_)
     {
 #if DEBUG
@@ -751,18 +756,10 @@ int TPPNode::run()
       g_trigger = false;
     }
 
-    // Process messages on global callback queue
+    // Process messages on callback_fusion()
     ros::spinOnce();
     loop_rate.sleep();
   }
-
-  // Release AsyncSpinner object
-  g_spinner.reset();
-
-  // Wait for ROS threads to terminate
-  ros::waitForShutdown();
-
-  LOG_INFO << "END ITRI_Tracking_PP" << std::endl;
 
   return 0;
 }
