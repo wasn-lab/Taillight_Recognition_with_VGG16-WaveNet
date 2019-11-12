@@ -1,0 +1,4 @@
+*:*host_defines.h:143
+*:/opt/*
+*:/usr/*
+*:*devel/include/msgs*
