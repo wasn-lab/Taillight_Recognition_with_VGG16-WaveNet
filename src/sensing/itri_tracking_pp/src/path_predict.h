@@ -15,6 +15,13 @@
 
 namespace tpp
 {
+struct PointLD
+{
+  long double x;
+  long double y;
+  long double z;
+};
+
 class PathPredict
 {
 public:
@@ -47,12 +54,14 @@ private:
 
   std::size_t num_pp_input_in_use_ = 0;
 
+  std::vector<PointLD> offsets_;
+  void compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y);
+  void normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y);
+
   void create_pp_input(const Point32 point, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
   void create_pp_input_main(const msgs::TrackInfo& track, std::vector<long double>& data_x,
                             std::vector<long double>& data_y);
-
-  void resolve_repeating_number(long double& x1, long double& x2, long double& x3, long double& x4);
 
   long double variance(const std::vector<long double>& samples, const long double sum_samples);
 

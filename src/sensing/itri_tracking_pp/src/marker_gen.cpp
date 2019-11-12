@@ -333,7 +333,8 @@ visualization_msgs::Marker MarkerGen::create_delay_marker(const unsigned int idx
 }
 
 visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, const float x, const float y,
-                                                       std_msgs::Header obj_header, const PPLongDouble pp)
+                                                       std_msgs::Header obj_header, const PPLongDouble pp,
+                                                       const unsigned int forecast_seq)
 {
   visualization_msgs::Marker marker;
 
@@ -358,10 +359,10 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
   marker.pose.orientation = tf2::toMsg(pp.q1);
 
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
-  marker.color.r = 1.0;
-  marker.color.g = 0.5;
-  marker.color.b = 0.5;
-  marker.color.a = 0.5;
+  marker.color.r = 0.75;
+  marker.color.g = 1.0 - forecast_seq * 0.05;
+  marker.color.b = 0.0;
+  marker.color.a = 1.0;
 
   return marker;
 }
@@ -431,7 +432,7 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
       for (unsigned j = 0; j < objs[i].track.forecasts.size(); j++)
       {
         m_pp_.markers.push_back(create_pp_marker(idx++, objs[i].track.forecasts[j].position.x,
-                                                 objs[i].track.forecasts[j].position.y, objs[i].header, ppss[i][j]));
+                                                 objs[i].track.forecasts[j].position.y, objs[i].header, ppss[i][j], j));
       }
     }
   }
