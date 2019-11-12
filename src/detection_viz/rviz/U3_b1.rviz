@@ -1,12 +1,11 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 75
+    Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Global Options1
+      Expanded: ~
       Splitter Ratio: 0.5
-    Tree Height: 425
+    Tree Height: 500
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -25,7 +24,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LidarAll
+    SyncSource: ""
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -122,7 +121,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/polygons
       Name: Lidar_polygon
       Namespaces:
-        /LidarDetection: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -222,7 +221,7 @@ Visualization Manager:
           Marker Topic: /PathPredictionOutput/lidar/polygons
           Name: TPP_lidar_polygon
           Namespaces:
-            PPOutput_p: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -230,8 +229,7 @@ Visualization Manager:
           Marker Topic: /PathPredictionOutput/lidar/id
           Name: TPP_lidar_id
           Namespaces:
-            PPOutput_i: true
-            PPOutput_q: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -291,15 +289,27 @@ Visualization Manager:
           Queue Size: 100
           Value: false
       Enabled: true
-      Name: TPP_output
-    - Class: rviz/MarkerArray
+      Name: Tracking_output
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/lidar/pp
+          Name: PP_from_lidar
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/pp
+          Name: PP_from_fusion
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
       Enabled: true
-      Marker Topic: /PathPredictionOutput/pp
-      Name: PP_forecast
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
+      Name: PP_output
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /PSOutput/markers
