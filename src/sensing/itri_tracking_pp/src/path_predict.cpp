@@ -100,69 +100,6 @@ void PathPredict::resolve_repeating_number(long double& x1, long double& x2, lon
     x4 += 0.0000002;
 }
 
-void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-                       const bool show_pp)
-{
-  show_pp_ = show_pp;
-
-  std::vector<std::vector<PPLongDouble> >().swap(ppss);
-  ppss.reserve(pp_objs_.size());
-
-  for (unsigned i = 0; i < pp_objs_.size(); i++)
-  {
-#if DEBUG_COMPACT
-    LOG_INFO << "[Track ID] " << pp_objs_[i].track.id << std::endl;
-#endif
-
-    std::vector<PPLongDouble> pps;
-
-    if (pp_objs_[i].track.is_ready_prediction)
-    {
-      std::vector<long double> data_x;
-      std::vector<long double> data_y;
-      create_pp_input_main(pp_objs_[i].track, data_x, data_y);
-
-#if DEBUG
-      LOG_INFO << "data_x size = " << data_x.size() << std::endl;
-      LOG_INFO << "= Predict X =" << std::endl;
-      for (unsigned j = 0; j < data_x.size(); j++)
-        LOG_INFO << "Data " << j + 1 << ": " << data_x[j] << std::endl;
-
-      LOG_INFO << "data_y size = " << data_y.size() << std::endl;
-      LOG_INFO << "= Predict Y =" << std::endl;
-      for (unsigned j = 0; j < data_y.size(); j++)
-        LOG_INFO << "Data " << j + 1 << ": " << data_y[j] << std::endl;
-#endif
-
-      int err = 0;
-      err = predict(max_order_, num_forecasts_, data_x, data_y, pps, 0);
-      if (err > 0)
-      {
-        pp_objs_[i].track.is_ready_prediction = false;
-        continue;
-      }
-
-      for (unsigned j = 0; j < num_forecasts_; j++)
-      {
-        pp_objs_[i].track.forecasts[j].position.x = pps[j].pos_x;
-        pp_objs_[i].track.forecasts[j].position.y = pps[j].pos_y;
-        pp_objs_[i].track.forecasts[j].covariance_xx = pps[j].cov_xx;
-        pp_objs_[i].track.forecasts[j].covariance_yy = pps[j].cov_yy;
-        pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
-        pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
-      }
-    }
-    else
-    {
-#if DEBUG
-      LOG_INFO << "Require 4+ elements in trajectory." << std::endl;
-#endif
-    }
-
-    ppss.push_back(pps);
-  }
-}
-
 long double PathPredict::variance(const std::vector<long double>& samples, const long double mean)
 {
   if (samples.size() < 2)
@@ -445,5 +382,68 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
   }
 
   return 0;
+}
+
+void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
+                       const bool show_pp)
+{
+  show_pp_ = show_pp;
+
+  std::vector<std::vector<PPLongDouble> >().swap(ppss);
+  ppss.reserve(pp_objs_.size());
+
+  for (unsigned i = 0; i < pp_objs_.size(); i++)
+  {
+#if DEBUG_COMPACT
+    LOG_INFO << "[Track ID] " << pp_objs_[i].track.id << std::endl;
+#endif
+
+    std::vector<PPLongDouble> pps;
+
+    if (pp_objs_[i].track.is_ready_prediction)
+    {
+      std::vector<long double> data_x;
+      std::vector<long double> data_y;
+      create_pp_input_main(pp_objs_[i].track, data_x, data_y);
+
+#if DEBUG
+      LOG_INFO << "data_x size = " << data_x.size() << std::endl;
+      LOG_INFO << "= Predict X =" << std::endl;
+      for (unsigned j = 0; j < data_x.size(); j++)
+        LOG_INFO << "Data " << j + 1 << ": " << data_x[j] << std::endl;
+
+      LOG_INFO << "data_y size = " << data_y.size() << std::endl;
+      LOG_INFO << "= Predict Y =" << std::endl;
+      for (unsigned j = 0; j < data_y.size(); j++)
+        LOG_INFO << "Data " << j + 1 << ": " << data_y[j] << std::endl;
+#endif
+
+      int err = 0;
+      err = predict(max_order_, num_forecasts_, data_x, data_y, pps, 0);
+      if (err > 0)
+      {
+        pp_objs_[i].track.is_ready_prediction = false;
+        continue;
+      }
+
+      for (unsigned j = 0; j < num_forecasts_; j++)
+      {
+        pp_objs_[i].track.forecasts[j].position.x = pps[j].pos_x;
+        pp_objs_[i].track.forecasts[j].position.y = pps[j].pos_y;
+        pp_objs_[i].track.forecasts[j].covariance_xx = pps[j].cov_xx;
+        pp_objs_[i].track.forecasts[j].covariance_yy = pps[j].cov_yy;
+        pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
+        pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
+      }
+    }
+    else
+    {
+#if DEBUG
+      LOG_INFO << "Require 4+ elements in trajectory." << std::endl;
+#endif
+    }
+
+    ppss.push_back(pps);
+  }
 }
 }  // namespace tpp
