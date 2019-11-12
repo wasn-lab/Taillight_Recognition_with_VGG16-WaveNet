@@ -30,7 +30,7 @@ bool isInferData;
 bool isInferData_0;
 bool isInferData_1;
 bool isInferData_2;
-bool iscompressed = false;
+bool isCompressed = false;
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     cam60_1_topicName = camera::topics[cam_ids_[1]];
     cam60_2_topicName = camera::topics[cam_ids_[2]];
     
-    if (iscompressed){
+    if (isCompressed){
         cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
         cam60_1 = nh.subscribe(cam60_1_topicName + std::string("/compressed"), 1, callback_60_1_decode);
         cam60_2 = nh.subscribe(cam60_2_topicName + std::string("/compressed"), 1, callback_60_2_decode);

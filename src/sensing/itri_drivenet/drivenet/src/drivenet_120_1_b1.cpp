@@ -31,7 +31,8 @@ bool isInferData_0;
 bool isInferData_1;
 bool isInferData_2;
 bool isInferData_3;
-bool iscompressed = false;
+bool isCompressed = false;
+bool isCalibration = false;
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
@@ -145,39 +146,7 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     while(isInferData) usleep(5);
     
 }
-void loadCalibrationMatrix(cv::String yml_filename, cv::Mat &cameraMatrix, cv::Mat &distCoeffs)
-{
-    std::cout << "yml_filename: " << yml_filename << std::endl; 
-    int imageWidth, imageHeight;
-    std::string cameraName;
-    cv::FileStorage fs;
-    fs.open(yml_filename, cv::FileStorage::READ);
-    if( !fs.isOpened() ){
-        std::cerr << " Fail to open " << yml_filename << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    // Get camera parameters
- 
-    fs["image_width"] >> imageWidth;
-    fs["image_height"] >> imageHeight;
-    fs["camera_name"] >> cameraName;
-    std::cout << "Get camera_matrix" << std::endl;
-    fs["camera_matrix"] >> cameraMatrix;
-    std::cout << "Get distortion_coefficients" << std::endl; 
-    fs["distortion_coefficients"] >> distCoeffs; 
 
-    // Print out the camera parameters
-    // std::cout << "\n -- Camera parameters -- " << std::endl;
-    // std::cout << "\n CameraMatrix = " << std::endl << " " << cameraMatrix << std::endl << std::endl;
-    // std::cout << " Distortion coefficients = " << std::endl << " " << distCoeffs << std::endl << std::endl;
-
-    fs.release();
-}
-void calibrationImage(const cv::Mat src, cv::Mat &dst, cv::Mat cameraMatrix, cv::Mat distCoeffs)
-{
-    cv::Mat M_raw = src.clone();
-    undistort(M_raw, dst, cameraMatrix, distCoeffs);
-}
 void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
     cv_bridge::CvImageConstPtr cv_ptr =
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -284,7 +253,7 @@ int main(int argc, char **argv)
     cam120_2_topicName = camera::topics[cam_ids_[2]];
     cam120_3_topicName = camera::topics[cam_ids_[3]];
 
-    if(iscompressed){
+    if(isCompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);
         cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/compressed"), 1, callback_120_1_decode);
         cam120_2 = nh.subscribe(cam120_2_topicName + std::string("/compressed"), 1, callback_120_2_decode);
@@ -324,9 +293,12 @@ int main(int argc, char **argv)
     image_init();
     yoloApp.init_yolo(pkg_path, cfg_file);
     distEst.init(car_id);
-    cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
-    std::cout << "calibMatrix_filepath: " << calibMatrix_filepath << std::endl; 
-    loadCalibrationMatrix(calibMatrix_filepath, cameraMatrix, distCoeffs);
+
+    if(isCalibration){
+        cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
+        std::cout << "calibMatrix_filepath: " << calibMatrix_filepath << std::endl; 
+        loadCalibrationMatrix(calibMatrix_filepath, cameraMatrix, distCoeffs);
+    }
 
     ros::MultiThreadedSpinner spinner(4);
     spinner.spin();
