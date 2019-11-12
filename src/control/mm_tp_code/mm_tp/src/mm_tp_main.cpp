@@ -70,6 +70,8 @@ struct pose
     double yaw;
 };
 
+pose path_pose;
+
 void publishNavPath(double XP_final[], double YP_final[], double XP_final_1[], double YP_final_1[], int index)
 {
 	nav_msgs::Path Dpath;
@@ -85,6 +87,7 @@ void publishNavPath(double XP_final[], double YP_final[], double XP_final_1[], d
 		Dpose.header.seq = i;
 		Dpose.pose.position.x = XP_final[0] + XP_final[1]*pow(u,1) + XP_final[2]*pow(u,2) + XP_final[3]*pow(u,3) + XP_final[4]*pow(u,4) + XP_final[5]*pow(u,5);
 		Dpose.pose.position.y = YP_final[0] + YP_final[1]*pow(u,1) + YP_final[2]*pow(u,2) + YP_final[3]*pow(u,3) + YP_final[4]*pow(u,4) + YP_final[5]*pow(u,5);
+		Dpose.pose.position.z = path_pose.z - 2.6;
 		Dpose.pose.orientation.w = 1.0;
 		Dpath.poses.push_back(Dpose);
 	}
@@ -94,6 +97,7 @@ void publishNavPath(double XP_final[], double YP_final[], double XP_final_1[], d
 		Dpose.header.seq = i+j;
 		Dpose.pose.position.x = XP_final_1[0] + XP_final_1[1]*pow(u,1) + XP_final_1[2]*pow(u,2) + XP_final_1[3]*pow(u,3) + XP_final_1[4]*pow(u,4) + XP_final_1[5]*pow(u,5);
 		Dpose.pose.position.y = YP_final_1[0] + YP_final_1[1]*pow(u,1) + YP_final_1[2]*pow(u,2) + YP_final_1[3]*pow(u,3) + YP_final_1[4]*pow(u,4) + YP_final_1[5]*pow(u,5);
+		Dpose.pose.position.z = path_pose.z - 2.6;
 		Dpose.pose.orientation.w = 1.0;
 		Dpath.poses.push_back(Dpose);
 	}
@@ -115,6 +119,7 @@ void publishNavPath_1(double XP_final_1[], double YP_final_1[], int index)
 		Dpose.header.seq = j;
 		Dpose.pose.position.x = XP_final_1[0] + XP_final_1[1]*pow(u,1) + XP_final_1[2]*pow(u,2) + XP_final_1[3]*pow(u,3) + XP_final_1[4]*pow(u,4) + XP_final_1[5]*pow(u,5);
 		Dpose.pose.position.y = YP_final_1[0] + YP_final_1[1]*pow(u,1) + YP_final_1[2]*pow(u,2) + YP_final_1[3]*pow(u,3) + YP_final_1[4]*pow(u,4) + YP_final_1[5]*pow(u,5);
+		Dpose.pose.position.z = path_pose.z - 2.6;
 		Dpose.pose.orientation.w = 1.0;
 		Dpath.poses.push_back(Dpose);
 	}
@@ -378,6 +383,8 @@ void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
 	rtObj.rtU.SLAM_counter++;
 	if (rtObj.rtU.SLAM_counter > 255)
     	rtObj.rtU.SLAM_counter = 0;
+
+    path_pose.z = PSmsg->pose.position.z;
 }
 
 void imu_data_callback(const sensor_msgs::Imu::ConstPtr& imumsg)

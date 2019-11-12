@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(Geofence)
+project(geofence_pp)
 
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -55,9 +55,11 @@ ${PCL_INCLUDE_DIRS}
 ##add_dependencies(Geofence_old ${catkin_EXPORTED_TARGETS} )
 
 
-add_executable(Geofence src/main.cpp src/Geofence_Class.cpp )
-target_link_libraries(Geofence ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(Geofence ${catkin_EXPORTED_TARGETS} )
+add_executable(geofence_pp src/main.cpp src/Geofence_Class.cpp )
+target_link_libraries(geofence_pp ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(geofence_pp ${catkin_EXPORTED_TARGETS} )
+add_dependencies(geofence_pp ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 
 
 
