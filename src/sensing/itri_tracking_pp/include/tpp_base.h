@@ -62,6 +62,7 @@
 
 // debug
 #define DEBUG 0
+#define DEBUG_CALLBACK 0
 #define DEBUG_COMPACT 0
 #define DEBUG_DATA_IN 0
 #define DEBUG_VELOCITY 0
