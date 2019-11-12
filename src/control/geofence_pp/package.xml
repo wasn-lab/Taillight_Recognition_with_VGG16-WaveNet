@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>GUI_Publisher</name>
+  <name>geofence_pp</name>
   <version>0.0.0</version>
-  <description>Flags CAN communication</description>
+  <description>Control_CPP</description>
   <maintainer email="u300@todo.todo">u300</maintainer>
   <license>TODO</license>
 
