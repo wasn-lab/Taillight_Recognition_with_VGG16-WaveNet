@@ -302,11 +302,11 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         BoxPass_flag = false;
     }
     else if(camOrder == 1){
-        ///boundary
-        // cv::Point LeftLinePoint1(555, 0);
-        // cv::Point LeftLinePoint2(-709, 1207);
-        // cv::Point RightLinePoint1(1293, 0);
-        // cv::Point RightLinePoint2(2365, 1207);
+        // boundary for back top 120
+        // cv::Point LeftLinePoint1(737, 143);
+        // cv::Point LeftLinePoint2(-264, 1207);
+        // cv::Point RightLinePoint1(1181, 143);
+        // cv::Point RightLinePoint2(1995, 1207);
         // BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
 
         // if (box.y2 < 319) BoxPass_flag = false;
