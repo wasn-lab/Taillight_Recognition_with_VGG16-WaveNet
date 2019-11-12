@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>dSPACE_subscriber</name>
+  <name>dspace_subscriber</name>
   <version>0.0.0</version>
   <description>Dspace_subscriber</description>
   <maintainer email="u300@todo.todo">u300</maintainer>
