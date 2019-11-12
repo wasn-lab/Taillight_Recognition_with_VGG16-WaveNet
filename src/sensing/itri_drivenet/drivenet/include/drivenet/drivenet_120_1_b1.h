@@ -28,7 +28,7 @@ Yolo_app yoloApp;
 int car_id = 1;
 bool standard_FPS = 0;
 bool display_flag = 0;
-bool input_resize = 0; //grabber input mode 0: 1920x1208, 1:608x384 yolo format
+bool input_resize = 1; //grabber input mode 0: 1920x1208, 1:608x384 yolo format
 bool imgResult_publish = 0; 
 
 #endif /*DRIVENET_120_1_B1_H_*/
