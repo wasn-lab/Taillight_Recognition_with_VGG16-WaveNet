@@ -84,22 +84,6 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
   }
 }
 
-void PathPredict::resolve_repeating_number(long double& x1, long double& x2, long double& x3, long double& x4)
-{
-  if (x1 == x2)
-    x2 += 0.000001;
-  if (x1 == x3)
-    x3 += 0.0000015;
-  if (x1 == x4)
-    x4 += 0.000002;
-  if (x2 == x3)
-    x3 += 0.0000001;
-  if (x2 == x4)
-    x4 += 0.00000015;
-  if (x3 == x4)
-    x4 += 0.0000002;
-}
-
 long double PathPredict::variance(const std::vector<long double>& samples, const long double mean)
 {
   if (samples.size() < 2)
@@ -292,10 +276,9 @@ void PathPredict::covariance_matrix(PPLongDouble& pp, std::vector<long double>& 
   // x
   ar1_pp(pp.beta0_x, pp.beta1_x, pp.pos_x, pp.observation_x, pp.sum_samples_x, pp.mean_x, pp.cov_xx, pp.stdev_x,
          data_x);
-
+  // y
   ar1_pp(pp.beta0_y, pp.beta1_y, pp.pos_y, pp.observation_y, pp.sum_samples_y, pp.mean_y, pp.cov_yy, pp.stdev_y,
          data_y);
-
   // xy
   pp.cov_xy = covariance(data_x, data_y, pp.mean_x, pp.mean_y);
   pp.corr_xy = correlation(pp.cov_xy, pp.stdev_x, pp.stdev_y);
