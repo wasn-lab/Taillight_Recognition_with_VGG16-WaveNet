@@ -235,7 +235,7 @@ int box_shrink(int cam_id, std::vector<int> Points_src, std::vector<int> &Points
     cv::Point RightLinePoint2; 
 
     int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
-    if (cam_id == 2)
+    if (cam_id == 1)
     {
         LeftLinePoint1 = cv::Point(891, 584);
         LeftLinePoint2 = cv::Point(360, 1207);
@@ -346,7 +346,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 7; obstacle_w = 2.5;} 
 
     ///1
-    if(cam_id == 1 || cam_id == 2 || cam_id == 3 || cam_id == 4)
+    if(cam_id == 0 || cam_id == 1 || cam_id == 2 || cam_id == 4)
     {
         /// Camera Perspective   ///  Spec view
         ///   p5------p6         ///   p5------p6
@@ -407,7 +407,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     //     p4 = p0_cam;
     //     p7 = p4_cam;
     // }
-    else if (cam_id == 9)
+    else if (cam_id == 10)
     {
         /// Camera Perspective   ///  Spec view
         ///   p2------p1         ///   p5------p6
@@ -507,7 +507,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     p3 = GetPointDist(x2, y2, cam_id);
 
     ///1
-    if(cam_id == 1 || cam_id == 2 || cam_id == 3 || cam_id == 4)
+    if(cam_id == 0 || cam_id == 1 || cam_id == 2 || cam_id == 4)
     {
         /// Camera Perspective   ///  Spec view
         ///   p5------p6         ///   p5------p6
@@ -611,7 +611,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     //     p4 = p3_cam;
     //     p7 = p0_cam;
     // }
-    else if (cam_id == 9)
+    else if (cam_id == 10)
     {
         /// Camera Perspective   ///  Spec view
         ///   p2------p1         ///   p5------p6
@@ -692,7 +692,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     int img_w = 1920;
     int mode = 1;
 
-    if (cam_id == 2)
+    if (cam_id == 1)
     {
         regionHeight_x = regionHeight_60_FC_x;
         regionDist_x = regionDist_60_FC_x;
@@ -725,7 +725,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeightSlope_y = regionHeightSlope_120_RB_y;
         regionDist_y = regionDist_120_RB_y;
         offset_x = Lidar_offset_x;
-    }else if(cam_id == 9)
+    }else if(cam_id == 10)
     {
         regionHeight_x = regionHeight_120_BT_x;
         regionDist_x = regionDist_120_BT_x;
