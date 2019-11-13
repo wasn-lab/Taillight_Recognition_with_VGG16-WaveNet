@@ -323,6 +323,8 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
 {
     msgs::PointXYZ p1, p2, p4, p5, p6, p7;
     msgs::BoxPoint point8;
+    int offset_y = 0;
+    
     ///3D bounding box
     ///   p5------p6
     ///   /|  2   /|
@@ -344,7 +346,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 7; obstacle_w = 2.5;} 
 
     ///1
-    if(cam_id == 1 || cam_id == 2 || cam_id == 3 || cam_id == 5 || cam_id == 8 )
+    if(cam_id == 1 || cam_id == 2 || cam_id == 3 || cam_id == 4)
     {
         /// Camera Perspective   ///  Spec view
         ///   p5------p6         ///   p5------p6
@@ -359,53 +361,53 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
         p7 = p3;
         p7.x = p7.x + obstacle_l;
     }
-    else if (cam_id == 4)
-    {
-        /// Camera Perspective   ///  Spec view
-        ///   p6------p2         ///   p5------p6
-        ///   /|  2   /|         ///   /|  2   /|
-        /// p5-|----p7 |         /// p1-|----p2 |
-        ///  |p7----|-p3   ->    ///  |p4----|-p7
-        ///  |/  1  | /          ///  |/  1  | /
-        /// p4-----P0            /// p0-----P3
+    // else if (cam_id == 4)
+    // {
+    //     /// Camera Perspective   ///  Spec view
+    //     ///   p6------p2         ///   p5------p6
+    //     ///   /|  2   /|         ///   /|  2   /|
+    //     /// p5-|----p7 |         /// p1-|----p2 |
+    //     ///  |p7----|-p3   ->    ///  |p4----|-p7
+    //     ///  |/  1  | /          ///  |/  1  | /
+    //     /// p4-----P0            /// p0-----P3
 
-        msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-        p0_cam = p0;
-        p3_cam = p3;
-        p4_cam = p0_cam;
-        p4_cam.y = p4_cam.y - obstacle_w;
-        p7_cam = p3_cam;
-        p7_cam.y = p7_cam.y - obstacle_w;
+    //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
+    //     p0_cam = p0;
+    //     p3_cam = p3;
+    //     p4_cam = p0_cam;
+    //     p4_cam.y = p4_cam.y - obstacle_w;
+    //     p7_cam = p3_cam;
+    //     p7_cam.y = p7_cam.y - obstacle_w;
 
-        p0 = p4_cam;
-        p3 = p0_cam;
-        p4 = p7_cam;
-        p7 = p3_cam;
-    }
-    else if (cam_id == 6)
-    {
-        /// Camera Perspective   ///  Spec view
-        ///   p1------p5         ///   p5------p6
-        ///   /|  2   /|         ///   /|  2   /|
-        /// p2-|----p6 |         /// p1-|----p2 |
-        ///  |p0----|-p4   ->    ///  |p4----|-p7
-        ///  |/  1  | /          ///  |/  1  | /
-        /// p3-----P7            /// p0-----P3
+    //     p0 = p4_cam;
+    //     p3 = p0_cam;
+    //     p4 = p7_cam;
+    //     p7 = p3_cam;
+    // }
+    // else if (cam_id == 6)
+    // {
+    //     /// Camera Perspective   ///  Spec view
+    //     ///   p1------p5         ///   p5------p6
+    //     ///   /|  2   /|         ///   /|  2   /|
+    //     /// p2-|----p6 |         /// p1-|----p2 |
+    //     ///  |p0----|-p4   ->    ///  |p4----|-p7
+    //     ///  |/  1  | /          ///  |/  1  | /
+    //     /// p3-----P7            /// p0-----P3
 
-        msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-        p0_cam = p0;
-        p3_cam = p3;
-        p4_cam = p0_cam;
-        p4_cam.y = p4_cam.y + obstacle_w;
-        p7_cam = p3_cam;
-        p7_cam.y = p7_cam.y + obstacle_w;
+    //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
+    //     p0_cam = p0;
+    //     p3_cam = p3;
+    //     p4_cam = p0_cam;
+    //     p4_cam.y = p4_cam.y + obstacle_w;
+    //     p7_cam = p3_cam;
+    //     p7_cam.y = p7_cam.y + obstacle_w;
 
-        p0 = p3_cam;
-        p3 = p7_cam;
-        p4 = p0_cam;
-        p7 = p4_cam;
-    }
-    else if (cam_id == 7 || cam_id == 9)
+    //     p0 = p3_cam;
+    //     p3 = p7_cam;
+    //     p4 = p0_cam;
+    //     p7 = p4_cam;
+    // }
+    else if (cam_id == 9)
     {
         /// Camera Perspective   ///  Spec view
         ///   p2------p1         ///   p5------p6
@@ -416,9 +418,15 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
         /// p7-----P4            /// p0-----P3
 
         msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
+        offset_y = Lidar_offset_y*(-1);
+        
+        p0_cam.x = p0.x *(-1);
+        p3_cam.x = p3.x *(-1);
+        p0_cam.y = p0.y *(-1) + offset_y;
+        p3_cam.y = p3.y *(-1) + offset_y;
+        p0_cam.z = p0.z;
+        p3_cam.z = p3.z;
 
-        p0_cam = p0;
-        p3_cam = p3;
         p4_cam = p0_cam;
         p4_cam.x = p4_cam.x - obstacle_l;
         p7_cam = p3_cam;
@@ -428,7 +436,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
         p3 = p4_cam;
         p4 = p3_cam;
         p7 = p0_cam;
-    }
+    }    
 
     ///2
     p1 = p0;
@@ -499,7 +507,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     p3 = GetPointDist(x2, y2, cam_id);
 
     ///1
-    if(cam_id == 1 || cam_id == 2 || cam_id == 3 || cam_id == 5 || cam_id == 8 )
+    if(cam_id == 1 || cam_id == 2 || cam_id == 3 || cam_id == 4)
     {
         /// Camera Perspective   ///  Spec view
         ///   p5------p6         ///   p5------p6
@@ -514,95 +522,95 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
         p7 = p3;
         p7.x = p7.x + obstacle_l;
     }
-    else if (cam_id == 4)
-    {
-        /// Camera Perspective   ///  Spec view
-        ///   p6------p2         ///   p5------p6
-        ///   /|  2   /|         ///   /|  2   /|
-        /// p5-|----p7 |         /// p1-|----p2 |
-        ///  |p7----|-p3   ->    ///  |p4----|-p7
-        ///  |/  1  | /          ///  |/  1  | /
-        /// p4-----P0            /// p0-----P3
+    // else if (cam_id == 4)
+    // {
+    //     /// Camera Perspective   ///  Spec view
+    //     ///   p6------p2         ///   p5------p6
+    //     ///   /|  2   /|         ///   /|  2   /|
+    //     /// p5-|----p7 |         /// p1-|----p2 |
+    //     ///  |p7----|-p3   ->    ///  |p4----|-p7
+    //     ///  |/  1  | /          ///  |/  1  | /
+    //     /// p4-----P0            /// p0-----P3
 
-        msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-        offset_y = Lidar_offset_y;
+    //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
+    //     offset_y = Lidar_offset_y;
 
-        p0_cam.x = p0.x *(-1);
-        p3_cam.x = p3.x *(-1);
-        p0_cam.z = p0.y + offset_y;
-        p3_cam.z = p3.y + offset_y;
-        p0_cam.z = p0.z;
-        p3_cam.z = p3.z;
-        p4_cam = p0_cam;
-        p4_cam.y = p4_cam.y - obstacle_w;
-        p7_cam = p3_cam;
-        p7_cam.y = p7_cam.y - obstacle_w;
+    //     p0_cam.x = p0.x *(-1);
+    //     p3_cam.x = p3.x *(-1);
+    //     p0_cam.z = p0.y + offset_y;
+    //     p3_cam.z = p3.y + offset_y;
+    //     p0_cam.z = p0.z;
+    //     p3_cam.z = p3.z;
+    //     p4_cam = p0_cam;
+    //     p4_cam.y = p4_cam.y - obstacle_w;
+    //     p7_cam = p3_cam;
+    //     p7_cam.y = p7_cam.y - obstacle_w;
 
-        p0 = p4_cam;
-        p3 = p0_cam;
-        p4 = p7_cam;
-        p7 = p3_cam;
-    }
-    else if (cam_id == 6)
-    {
-        /// Camera Perspective   ///  Spec view
-        ///   p1------p5         ///   p5------p6
-        ///   /|  2   /|         ///   /|  2   /|
-        /// p2-|----p6 |         /// p1-|----p2 |
-        ///  |p0----|-p4   ->    ///  |p4----|-p7
-        ///  |/  1  | /          ///  |/  1  | /
-        /// p3-----P7            /// p0-----P3
+    //     p0 = p4_cam;
+    //     p3 = p0_cam;
+    //     p4 = p7_cam;
+    //     p7 = p3_cam;
+    // }
+    // else if (cam_id == 6)
+    // {
+    //     /// Camera Perspective   ///  Spec view
+    //     ///   p1------p5         ///   p5------p6
+    //     ///   /|  2   /|         ///   /|  2   /|
+    //     /// p2-|----p6 |         /// p1-|----p2 |
+    //     ///  |p0----|-p4   ->    ///  |p4----|-p7
+    //     ///  |/  1  | /          ///  |/  1  | /
+    //     /// p3-----P7            /// p0-----P3
 
-        msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-        offset_y = Lidar_offset_y*(-1);
+    //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
+    //     offset_y = Lidar_offset_y*(-1);
 
-        p0_cam.x = p0.x *(-1);
-        p3_cam.x = p3.x *(-1);
-        p0_cam.z = p0.y + offset_y;
-        p3_cam.z = p3.y + offset_y;
-        p0_cam.z = p0.z;
-        p3_cam.z = p3.z;
-        p4_cam = p0_cam;
-        p4_cam.y = p4_cam.y + obstacle_w;
-        p7_cam = p3_cam;
-        p7_cam.y = p7_cam.y + obstacle_w;
+    //     p0_cam.x = p0.x *(-1);
+    //     p3_cam.x = p3.x *(-1);
+    //     p0_cam.z = p0.y + offset_y;
+    //     p3_cam.z = p3.y + offset_y;
+    //     p0_cam.z = p0.z;
+    //     p3_cam.z = p3.z;
+    //     p4_cam = p0_cam;
+    //     p4_cam.y = p4_cam.y + obstacle_w;
+    //     p7_cam = p3_cam;
+    //     p7_cam.y = p7_cam.y + obstacle_w;
 
-        p0 = p3_cam;
-        p3 = p7_cam;
-        p4 = p0_cam;
-        p7 = p4_cam;
-    }
-    else if (cam_id == 7)
-    {
-        /// Camera Perspective   ///  Spec view
-        ///   p2------p1         ///   p5------p6
-        ///   /|  2   /|         ///   /|  2   /|
-        /// p6-|----p5 |         /// p1-|----p2 |
-        ///  |p3----|-p0   ->    ///  |p4----|-p7
-        ///  |/  1  | /          ///  |/  1  | /
-        /// p7-----P4            /// p0-----P3
+    //     p0 = p3_cam;
+    //     p3 = p7_cam;
+    //     p4 = p0_cam;
+    //     p7 = p4_cam;
+    // }
+    // else if (cam_id == 7)
+    // {
+    //     /// Camera Perspective   ///  Spec view
+    //     ///   p2------p1         ///   p5------p6
+    //     ///   /|  2   /|         ///   /|  2   /|
+    //     /// p6-|----p5 |         /// p1-|----p2 |
+    //     ///  |p3----|-p0   ->    ///  |p4----|-p7
+    //     ///  |/  1  | /          ///  |/  1  | /
+    //     /// p7-----P4            /// p0-----P3
 
-        msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
+    //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
         
-        offset_y = Lidar_offset_y;
+    //     offset_y = Lidar_offset_y;
 
-        p0_cam.x = p0.x *(-1);
-        p3_cam.x = p3.x *(-1);
-        p0_cam.y = p0.y + offset_y;
-        p3_cam.y = p3.y + offset_y;
-        p0_cam.z = p0.z;   
-        p3_cam.z = p3.z;
+    //     p0_cam.x = p0.x *(-1);
+    //     p3_cam.x = p3.x *(-1);
+    //     p0_cam.y = p0.y + offset_y;
+    //     p3_cam.y = p3.y + offset_y;
+    //     p0_cam.z = p0.z;   
+    //     p3_cam.z = p3.z;
         
-        p4_cam = p0_cam;
-        p4_cam.x = p4_cam.x - obstacle_l;
-        p7_cam = p3_cam;
-        p7_cam.x = p7_cam.x - obstacle_l;
+    //     p4_cam = p0_cam;
+    //     p4_cam.x = p4_cam.x - obstacle_l;
+    //     p7_cam = p3_cam;
+    //     p7_cam.x = p7_cam.x - obstacle_l;
 
-        p0 = p7_cam;
-        p3 = p4_cam;
-        p4 = p3_cam;
-        p7 = p0_cam;
-    }
+    //     p0 = p7_cam;
+    //     p3 = p4_cam;
+    //     p4 = p3_cam;
+    //     p7 = p0_cam;
+    // }
     else if (cam_id == 9)
     {
         /// Camera Perspective   ///  Spec view
@@ -698,7 +706,6 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeight_x = regionHeight_120_FT_x;
         regionDist_x = regionDist_120_FT_x;
         regionHeight_y = regionHeight_120_FT_y;
-        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
         regionHeightSlope_y = regionHeightSlope_120_FT_y;
         regionDist_y = regionDist_120_FT_y;
         offset_x = Lidar_offset_x;
@@ -707,7 +714,6 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeight_x = regionHeight_120_RF_x;
         regionDist_x = regionDist_120_RF_x;
         regionHeight_y = regionHeight_120_RF_y;
-        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
         regionHeightSlope_y = regionHeightSlope_120_RF_y;
         regionDist_y = regionDist_120_RF_y;
         offset_x = Lidar_offset_x;
@@ -716,7 +722,6 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeight_x = regionHeight_120_RB_x;
         regionDist_x = regionDist_120_RB_x;
         regionHeight_y = regionHeight_120_RB_y;
-        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
         regionHeightSlope_y = regionHeightSlope_120_RB_y;
         regionDist_y = regionDist_120_RB_y;
         offset_x = Lidar_offset_x;
@@ -725,7 +730,6 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         regionHeight_x = regionHeight_120_BT_x;
         regionDist_x = regionDist_120_BT_x;
         regionHeight_y = regionHeight_120_BT_y;
-        // regionHeightSlope_x = regionHeightSlope_120_FT_x;
         regionHeightSlope_y = regionHeightSlope_120_BT_y;
         regionDist_y = regionDist_120_BT_y;
         offset_x = Lidar_offset_x;
