@@ -264,7 +264,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         BoxPass_flag = false;
     }
     else if(camOrder == 1){
-        // boundary for back top 120
+        // Back top 120 range:
+        // x axis: 8 ~ 20 meters
+        // y axis: -3 ~ 3 meters
+        
         // cv::Point LeftLinePoint1(737, 143);
         // cv::Point LeftLinePoint2(-264, 1207);
         // cv::Point RightLinePoint1(1181, 143);

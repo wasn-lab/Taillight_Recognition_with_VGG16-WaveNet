@@ -343,7 +343,9 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         BoxPass_flag = false;
     }
     else if(camOrder == 1){
-        // boundary for front top 120
+        // Front top 120 range:
+        // x axis: 0 ~ 7 meters
+        // y axis: -9 ~ 6 meters
         // cv::Point LeftLinePoint1(127, 272);
         // cv::Point LeftLinePoint2(-1422, 1207);
         // cv::Point RightLinePoint1(1904, 272);
