@@ -68,16 +68,25 @@ void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, con
 
   offsets_.push_back(offset);
 #if DEBUG_PP
-  LOG_INFO << "PP offset = " << offsets_.back().x << " " << offsets_.back().y << " " << offsets_.back().z << std::endl;
+  LOG_INFO << "PP offset = x:" << offsets_.back().x << " y:" << offsets_.back().y << " z:" << offsets_.back().z << std::endl;
 #endif
 }
 
 void PathPredict::normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y)
 {
+#if DEBUG_PP
+    LOG_INFO << "== Before & After PP Data Normalization ==" << std::endl;
+#endif
   for (unsigned i = 0; i < data_x.size(); i++)
   {
-    data_x[i] = data_x[i] + offsets_.back().x;
-    data_y[i] = data_y[i] + offsets_.back().y;
+#if DEBUG_PP
+    LOG_INFO << i + 1 << "  data_x = " << data_x[i] << "  data_y = " << data_y[i] << std::endl;
+#endif
+    data_x[i] += offsets_.back().x;
+    data_y[i] += offsets_.back().y;
+#if DEBUG_PP
+    LOG_INFO << i + 1 << "  data_x = " << data_x[i] << "  data_y = " << data_y[i] << std::endl;
+#endif
   }
 }
 
@@ -221,7 +230,7 @@ void PathPredict::confidence_ellipse(PPLongDouble& pp, const float alpha)
   vertices[3].x = pp.pos_x + diff2x;
   vertices[3].y = pp.pos_y + diff2y;
 
-#if DEBUG_PP
+#if DEBUG_CONF_E
   LOG_INFO << "pp.cov_xx: " << pp.cov_xx << "  pp.cov_yy: " << pp.cov_yy << "  pp.cov_xy: " << pp.cov_xy << std::endl;
   LOG_INFO << "cov_xx: " << cov_xx << "  cov_yy: " << cov_yy << "  cov_xy: " << cov_xy << std::endl;
 
@@ -362,7 +371,7 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
   }
 
 #if DEBUG_PP
-  printf("Estimating an AR(%lu) model using %lu samples to forecast %lu steps\n\n",
+  printf("\nEstimating an AR(%lu) model using %lu samples to forecast %lu steps\n\n",
          static_cast<unsigned long>(max_order_), static_cast<unsigned long>(data_x.size()),
          static_cast<unsigned long>(num_forecasts_));
 #endif
@@ -429,13 +438,14 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
       normalize_pos(data_x, data_y);
 
 #if DEBUG_PP
+      LOG_INFO << std::endl;
+      LOG_INFO << "== Predict X ==" << std::endl;
       LOG_INFO << "data_x size = " << data_x.size() << std::endl;
-      LOG_INFO << "= Predict X =" << std::endl;
       for (unsigned j = 0; j < data_x.size(); j++)
         LOG_INFO << "Data " << j + 1 << ": " << data_x[j] << std::endl;
 
+      LOG_INFO << "== Predict Y ==" << std::endl;
       LOG_INFO << "data_y size = " << data_y.size() << std::endl;
-      LOG_INFO << "= Predict Y =" << std::endl;
       for (unsigned j = 0; j < data_y.size(); j++)
         LOG_INFO << "Data " << j + 1 << ": " << data_y[j] << std::endl;
 #endif
