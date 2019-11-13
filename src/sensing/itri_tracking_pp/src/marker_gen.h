@@ -71,7 +71,8 @@ private:
                                                  std_msgs::Header obj_header);
 
   visualization_msgs::Marker create_pp_marker(const unsigned int idx, const float x, const float y,
-                                              std_msgs::Header obj_header, const PPLongDouble pp);
+                                              std_msgs::Header obj_header, const PPLongDouble pp,
+                                              const unsigned int forecast_seq);
 
   void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
 
