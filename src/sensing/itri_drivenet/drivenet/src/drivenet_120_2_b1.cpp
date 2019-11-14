@@ -323,10 +323,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         // Back top 120 range:
         // x axis: 8 ~ 20 meters
         // y axis: -3 ~ 3 meters
-        cv::Point LeftLinePoint1(737, 143);
-        cv::Point LeftLinePoint2(-264, 1207);
-        cv::Point RightLinePoint1(1181, 143);
-        cv::Point RightLinePoint2(1995, 1207);
+        cv::Point LeftLinePoint1(511, 143);
+        cv::Point LeftLinePoint2(-1230, 1207);
+        cv::Point RightLinePoint1(1337, 143);
+        cv::Point RightLinePoint2(2808, 1207);
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
 

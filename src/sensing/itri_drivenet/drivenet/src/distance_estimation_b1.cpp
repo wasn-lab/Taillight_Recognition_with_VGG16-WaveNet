@@ -32,14 +32,14 @@ void DistanceEstimation::init (int car_id)
     regionHeightSlope_120_RB_y = {-1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539}; 
     regionDist_120_RB_y = {-9, -8, -7, -6, -5, -4, -3}; //-2 to 0 to 2 (~1m)
 
-    regionHeight_120_BT_x = {1207, 836, 650, 532, 435, 367, 316, 270, 240, 210, 182, 161, 143}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
-    regionDist_120_BT_x = {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}; //5 to 10, 20 to 50m (~5m)
-    regionHeight_120_BT_y = {-264, 40, 475, 875, 1370, 1704, 1995}; //-2 to 0 to 2(~1m) //Vertical line
-    regionHeightSlope_120_BT_y = {1.063, 1.372, 2.624, 14.2, -2.951, -1.727, -1.167}; 
-    regionDist_120_BT_y = {-3, -2, -1, 0, 1, 2, 3}; //-3 to 0 to 3 (~1m)  
+    regionHeight_120_BT_x = {1207, 836, 650, 532, 435, 367, 316, 270, 240, 210, 182, 161, 143}; //
+    regionDist_120_BT_x = {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}; //
+    regionHeight_120_BT_y = {-1230, -861, -264, 40, 475, 875, 1370, 1704, 2195, 2439, 2808}; //Vertical line
+    regionHeightSlope_120_BT_y = {0.612, 0.7197, 1.063, 1.372, 2.624, 14.2, -2.951, -1.727, -1.167, -0.9098, -0.724}; 
+    regionDist_120_BT_y = {5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5}; //-5 to 0 to 5 (~1m) 
     
     Lidar_offset_x = 0;
-    Lidar_offset_y = 2.490/2;
+    Lidar_offset_y = 0;
 }
 
 float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist)
@@ -195,9 +195,9 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
         else
         {
             if (piexl_loc_y < regionHeight_new[0])
-                distance = 8;
+                distance = regionDist[-1] + 0.5;
             else if(piexl_loc_y > regionHeight_new[regionHeight_new.size()-1])
-                distance = -8;
+                distance = regionDist[-1] - 0.5; 
         }
     }  
     
