@@ -134,7 +134,7 @@ void callback_60_0(const sensor_msgs::Image::ConstPtr &msg){
     mat60_0 = cv_ptr->image;
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_0) sync_inference(0, 1, h, &mat60_0, &vBBX60_0, 1920, 1208);
+    if(!isInferData_0) sync_inference(0, 0, h, &mat60_0, &vBBX60_0, 1920, 1208);
 }
 
 void callback_60_1(const sensor_msgs::Image::ConstPtr &msg){
@@ -144,7 +144,7 @@ void callback_60_1(const sensor_msgs::Image::ConstPtr &msg){
     mat60_1 = cv_ptr->image;
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_1)  sync_inference(1, 2, h, &mat60_1, &vBBX60_1, 1920, 1208);
+    if(!isInferData_1)  sync_inference(1, 1, h, &mat60_1, &vBBX60_1, 1920, 1208);
 }
 
 void callback_60_2(const sensor_msgs::Image::ConstPtr &msg){
@@ -154,25 +154,25 @@ void callback_60_2(const sensor_msgs::Image::ConstPtr &msg){
     mat60_2 = cv_ptr->image;
     
     std_msgs::Header h = msg->header;
-    if(!isInferData_2) sync_inference(2, 3, h, &mat60_2, &vBBX60_2, 1920, 1208);
+    if(!isInferData_2) sync_inference(2, 2, h, &mat60_2, &vBBX60_2, 1920, 1208);
 }
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat60_0);
 
-    if(!isInferData_0) sync_inference(0, 1, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
+    if(!isInferData_0) sync_inference(0, 0, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
 }
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat60_1);
 
-    if(!isInferData_1)  sync_inference(1, 2, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
+    if(!isInferData_1)  sync_inference(1, 1, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
 }
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat60_2);
     
-    if(!isInferData_2) sync_inference(2, 3, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
+    if(!isInferData_2) sync_inference(2, 2, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
