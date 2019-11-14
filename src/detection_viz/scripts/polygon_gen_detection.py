@@ -50,7 +50,7 @@ class Node:
         marker.id = idx
         marker.type = Marker.LINE_STRIP
         marker.scale.x = 0.1
-        marker.lifetime = rospy.Duration(0.1)
+        marker.lifetime = rospy.Duration(1.0)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
