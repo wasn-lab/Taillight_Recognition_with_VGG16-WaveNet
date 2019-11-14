@@ -86,3 +86,7 @@ add_dependencies(${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PARKNET_EXE} ${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
 add_subdirectory(alignment)
 add_subdirectory(test)
+
+# Debug only:
+# include(CmakeUtils)
+# dump_cmake_variables()
