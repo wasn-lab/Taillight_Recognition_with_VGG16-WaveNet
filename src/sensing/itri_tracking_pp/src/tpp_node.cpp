@@ -234,7 +234,7 @@ void TPPNode::subscribe_and_advertise_topics()
     std::string topic5 = topic + "/delay";
     mc_.pub_delay = nh_.advertise<visualization_msgs::MarkerArray>(topic5, 2);
 
-    if (mc_.show_pp)
+    if (mc_.show_pp > 0)
     {
       std::string topic6 = topic + "/pp";
       mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
@@ -645,6 +645,12 @@ void TPPNode::set_ros_params()
 
   //-----------------------------------------------
 
+  double pp_input_shift_m = 0.;
+  par.get_ros_param_double("pp_input_shift_m", pp_input_shift_m);
+  pp_.set_input_shift_m((long double)pp_input_shift_m);
+
+  //-----------------------------------------------
+
   par.get_ros_param_double("m_lifetime_sec", mc_.lifetime_sec);
 
   if (mc_.lifetime_sec == 0)
@@ -660,7 +666,7 @@ void TPPNode::set_ros_params()
   par.get_ros_param_bool("show_source", mc_.show_source);
   par.get_ros_param_bool("show_distance", mc_.show_distance);
   par.get_ros_param_bool("show_absspeed", mc_.show_distance);
-  par.get_ros_param_bool("show_pp", mc_.show_pp);
+  par.get_ros_param_uint("show_pp", mc_.show_pp);
 
   //-----------------------------------------------
 
