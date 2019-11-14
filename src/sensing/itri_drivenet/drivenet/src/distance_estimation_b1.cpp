@@ -75,7 +75,9 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
         else
         {
             if (piexl_loc > regionHeight[0])
-                distance = 6;
+                distance = regionHeight[0] - 0.2;
+            else if (piexl_loc < regionHeight[-1])
+                distance = regionHeight[-1] + 0.2;
         }
     }
     // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc, regionDist[i], unitLength, bias, offset);
@@ -491,7 +493,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     /// 7: truck
     float obstacle_h = 2, obstacle_l = 2 , obstacle_w = 2;
     if(class_id == 0) { obstacle_h = 1.8; obstacle_l = 0.33; obstacle_w = 0.6;}
-    else if(class_id == 1 || class_id == 3) { obstacle_h = 1.8; obstacle_l = 2.5; obstacle_w = 0.6;}
+    else if(class_id == 1 || class_id == 3) { obstacle_h = 1.8; obstacle_l = 1.5; obstacle_w = 0.6;} // obstacle_l = 2.5
     else if(class_id == 2) { obstacle_h = 1.5; obstacle_l = 2; obstacle_w = 2;} // obstacle_l = 5
     else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 2.5; obstacle_w = 2.5;} //obstacle_l = 7
 

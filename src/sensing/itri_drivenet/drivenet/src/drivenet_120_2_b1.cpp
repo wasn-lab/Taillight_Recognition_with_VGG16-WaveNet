@@ -134,7 +134,7 @@ void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
     if(isCalibration){
         if(input_resize) {
             cv::resize(mat120_0, mat120_0_rect, cv::Size(rawimg_w, rawimg_h));          
-            //calibrationImage(mat120_0_resize, mat120_0_rect, cameraMatrix, distCoeffs);
+            calibrationImage(mat120_0_resize, mat120_0_rect, cameraMatrix, distCoeffs);
         }
         else{
             calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
@@ -431,17 +431,17 @@ void* run_yolo(void* ){
                         int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
                         if (cam_order == 0)
                         {
-                            distMeter_p0x = detObj.bPoint.p3.x;
-                            distMeter_p3x = detObj.bPoint.p7.y;
-                            distMeter_p0y = detObj.bPoint.p3.y;  
-                            distMeter_p3y = detObj.bPoint.p7.y;
+                            distMeter_p0x = detObj.bPoint.p0.x;
+                            distMeter_p3x = detObj.bPoint.p3.y;
+                            distMeter_p0y = detObj.bPoint.p0.y;  
+                            distMeter_p3y = detObj.bPoint.p3.y;
                         }                    
                         else
                         {
-                            distMeter_p0x = detObj.bPoint.p0.x;
-                            distMeter_p3x = detObj.bPoint.p3.x;
-                            distMeter_p0y = detObj.bPoint.p0.y;                    
-                            distMeter_p3y = detObj.bPoint.p3.y;                        
+                            distMeter_p0x = detObj.bPoint.p7.x;
+                            distMeter_p3x = detObj.bPoint.p4.x;
+                            distMeter_p0y = detObj.bPoint.p7.y;                    
+                            distMeter_p3y = detObj.bPoint.p4.y;                        
                         }
 
                         int x1 = detObj.camInfo.u;
