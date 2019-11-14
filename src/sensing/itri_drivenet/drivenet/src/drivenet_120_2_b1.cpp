@@ -309,28 +309,30 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
     bool BoxPass_flag = false;
     if (camOrder == 0){
-        BoxPass_flag = false;
+        // Front top 120 range:
+        // x axis: 0 ~ 7 meters
+        // y axis: -9 ~ 6 meters
+        cv::Point LeftLinePoint1(127, 272);
+        cv::Point LeftLinePoint2(-1422, 1207);
+        cv::Point RightLinePoint1(1904, 272);
+        cv::Point RightLinePoint2(3548, 1207);
+        BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
     else if(camOrder == 1){
         // Back top 120 range:
         // x axis: 8 ~ 20 meters
         // y axis: -3 ~ 3 meters
-        
-        // cv::Point LeftLinePoint1(737, 143);
-        // cv::Point LeftLinePoint2(-264, 1207);
-        // cv::Point RightLinePoint1(1181, 143);
-        // cv::Point RightLinePoint2(1995, 1207);
-        // BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
-
-        // if (box.y2 < 319) BoxPass_flag = false;
-        BoxPass_flag = false;
+        cv::Point LeftLinePoint1(737, 143);
+        cv::Point LeftLinePoint2(-264, 1207);
+        cv::Point RightLinePoint1(1181, 143);
+        cv::Point RightLinePoint2(1995, 1207);
+        BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
 
     if (BoxPass_flag)
     {
         boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
         detObj.bPoint = boxPoint;
-
     }
 
     camInfo.u = box.x1;

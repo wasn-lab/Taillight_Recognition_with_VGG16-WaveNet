@@ -64,6 +64,19 @@
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
   </node>
+  <!-- Camera 120 ******************************************************************************** -->
+  <node name="m_Detect_cam120FT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjFrontTop"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>
+  <node name="m_Detect_cam60BT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjBackTop"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>
   
   <!-- LaneNet ********************************************************************************** -->
   <node name="m_Lane_all_cam" pkg="detection_viz" type="marker_lane_curve.py" output="screen">
