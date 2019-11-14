@@ -5,7 +5,7 @@ import rospy
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
-from jsk_recognition_msgs.msg import PolygonArray
+# from jsk_recognition_msgs.msg import PolygonArray
 from geometry_msgs.msg import Polygon, PolygonStamped, Point32, Point
 from std_msgs.msg import Header
 
