@@ -74,10 +74,10 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
         }
         else
         {
-            if (piexl_loc > regionHeight[0])
-                distance = regionHeight[0] - 0.2;
-            else if (piexl_loc < regionHeight[-1])
-                distance = regionHeight[-1] + 0.2;
+            if (piexl_loc > regionHeight.front())
+                distance = regionHeight.front() - 0.2;
+            else if (piexl_loc < regionHeight.back())
+                distance = regionHeight.back() + 0.2;
         }
     }
     // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc, regionDist[i], unitLength, bias, offset);
@@ -196,13 +196,13 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
         }
         else
         {
-            if (piexl_loc_y < regionHeight_new[0])
-                distance = regionDist[-1] + 0.5;
-            else if(piexl_loc_y > regionHeight_new[regionHeight_new.size()-1])
-                distance = regionDist[-1] - 0.5; 
+            if (piexl_loc_y < regionHeight_new.front())
+                distance = regionDist.front() + 0.5;
+            else if(piexl_loc_y > regionHeight_new.back())
+                distance = regionDist.back() - 0.5; 
         }
     }  
-    
+
     int multiplier = pow(10, 2);
     distance = int(distance * multiplier) / (multiplier*1.0); 
     
