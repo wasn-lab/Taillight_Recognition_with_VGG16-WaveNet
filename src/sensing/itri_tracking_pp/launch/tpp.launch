@@ -30,7 +30,11 @@
   <rosparam param="show_source">0</rosparam>
   <rosparam param="show_distance">0</rosparam>
   <rosparam param="show_absspeed">0</rosparam>
-  <rosparam param="show_pp">1</rosparam>
+  
+  <!-- <=0: No show pp -->
+  <!--   1: Show pp point w/ confidence ellipse -->
+  <!-- >=2: Show pp point w/o confidence ellipse -->
+  <rosparam param="show_pp">2</rosparam>
 
   <!-- rviz marker color -->
   <rosparam param="color_lidar_tpp">[0., 1., 1., 1.]</rosparam>
