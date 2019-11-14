@@ -79,6 +79,14 @@ private:
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
   void callback_localization(const msgs::LocalizationToVeh::ConstPtr& input);
 
+  float dt_ = 0.f;
+  float ego_x_abs_ = 0.f;
+  float ego_y_abs_ = 0.f;
+  float ego_z_abs_ = 0.f;
+  float ego_heading_ = 0.f;
+  float ego_dx_abs_ = 0.f;
+  float ego_dy_abs_ = 0.f;
+
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
   void init_velocity(msgs::TrackInfo& track);

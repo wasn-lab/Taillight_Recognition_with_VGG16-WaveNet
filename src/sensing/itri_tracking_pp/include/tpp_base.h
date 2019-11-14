@@ -62,11 +62,13 @@
 
 // debug
 #define DEBUG 0
+#define DEBUG_CALLBACK 0
 #define DEBUG_COMPACT 0
 #define DEBUG_DATA_IN 0
 #define DEBUG_VELOCITY 0
 #define DEBUG_HUNGARIAN_DIST 0
 #define DEBUG_PP 0
+#define DEBUG_CONF_E 0
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
 

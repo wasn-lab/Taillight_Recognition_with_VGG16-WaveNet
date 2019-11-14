@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "RadFrontSub_BBox");  
   ros::NodeHandle n;
   ros::Subscriber RadFrontSub = n.subscribe("RadFront", 1, callbackRadFront);
-	BBox_pub = n.advertise<msgs::DetectedObjectArray>("PathPredictionOutput/lidar", 1); 
+	BBox_pub = n.advertise<msgs::DetectedObjectArray>("PathPredictionOutput/radar", 1); 
   ros::Rate rate(100);
   while (ros::ok())
   {

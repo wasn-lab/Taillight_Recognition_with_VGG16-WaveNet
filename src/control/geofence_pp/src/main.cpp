@@ -40,12 +40,14 @@
 
 
 // Specify running mode
-#define VIRTUAL
+//#define VIRTUAL
+//#define RADARBOX
+#define TRACKINGBOX
 
 static double Heading, SLAM_x, SLAM_y;
 static Geofence BBox_Geofence;
 static double Ego_speed_ms;
-static vector<double> Recommand_Speed;
+static int PP_Stop=0;
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
@@ -65,7 +67,7 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg){
 }
 
 void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){	
-	Recommand_Speed.clear();
+	PP_Stop = 0;
 	for(int i=0;i<msg->objects.size();i++){
 		//cout << "Start point: " << msg->objects[i].bPoint.p0.x << "," <<  msg->objects[i].bPoint.p0.y << endl;
 		for(int j=0;j<msg->objects[i].track.forecasts.size();j++){
@@ -90,16 +92,12 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				cerr << "Please initialize all PCloud parameters first" << endl;
 				return;
 			}
-			#ifdef VIRTUAL
-				if(BBox_Geofence.getDistance()<80){
-					cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << "m     " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
-				}
-			#endif
+			if(BBox_Geofence.getDistance()<80){
+				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << "m     " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
+			}
 			if(BBox_Geofence.getDistance()<Range_max & BBox_Geofence.getDistance()>Range_min){
-				Recommand_Speed.push_back((2*BBox_Geofence.getDistance()/time)-Ego_speed_ms);
-				#ifdef VIRTUAL
-					cout << "Collision appears" << endl;
-				#endif
+				//cout << "Collision appears" << endl;
+				PP_Stop = 1;	
 			} 
 		}	
 	}
@@ -115,8 +113,10 @@ int main(int argc, char **argv){
 	ros::Subscriber VI_sub = n.subscribe("veh_info", 1, VehinfoCallback);
 	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPP);
+	#elif defined RADARBOX
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPP);
 	#else
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
 	#endif
 	ros::Rate loop_rate(10);
 
@@ -141,20 +141,16 @@ int main(int argc, char **argv){
 	while (ros::ok())
 	{
 		ros::spinOnce();
-		if(Recommand_Speed.size()<1){
-			cout << "Nothing in boundary" << endl;
+		if(PP_Stop==0){
+			cout << "No Collision" << endl;
 		}
-		else{
-        	double minElement = *std::min_element(Recommand_Speed.begin(), Recommand_Speed.end());	
-			cout << "Recommand speed: " << minElement << endl;
-			frame.can_id  = 0x593;
-			frame.data[0] = (short int)(minElement*100);
-			frame.data[1] = (short int)(minElement*100)>>8;
-			nbytes = write(s, &frame, sizeof(struct can_frame));
+		else{	
+			cout << "Collision appears" << endl;		
 		}
-		
-		
-		
+		frame.can_id  = 0x595;
+		frame.data[0] = (short int)(PP_Stop*100);
+		frame.data[1] = (short int)(PP_Stop*100)>>8;
+		nbytes = write(s, &frame, sizeof(struct can_frame));
 		loop_rate.sleep();	
 	}
 	close(s);

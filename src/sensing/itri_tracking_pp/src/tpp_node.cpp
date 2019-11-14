@@ -4,16 +4,15 @@ namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
 
-bool g_enable = false;
 bool g_trigger = false;
-
-static volatile bool keep_run = true;
 
 void signal_handler(int sig)
 {
   if (sig == SIGINT)
   {
-    keep_run = false;
+    LOG_INFO << "END ITRI_Tracking_PP" << std::endl;
+    g_spinner->stop();
+    ros::shutdown();
   }
 }
 
@@ -35,9 +34,12 @@ static bool done_with_profiling()
 #endif
 }
 
-// called from custom callback queue
 void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
 {
+#if DEBUG_CALLBACK
+  LOG_INFO << "callback_localization() start" << std::endl;
+#endif
+
   // set ego vehicle's relative pose
   ego_x_m_.update(input->x);
   ego_y_m_.update(input->y);
@@ -53,19 +55,18 @@ void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& inp
 #endif
 }
 
-// called from global callback queue
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
+#if DEBUG_CALLBACK
+  LOG_INFO << "callback_fusion() start" << std::endl;
+#endif
+
 #if DEBUG_COMPACT
   LOG_INFO << "-----------------------------------------" << std::endl;
 #endif
 
 #if FPS_EXTRAPOLATION
   loop_begin = ros::Time::now().toSec();
-#endif
-
-#if DEBUG
-  LOG_INFO << "callback_fusion() start" << std::endl;
 #endif
 
 #if FPS
@@ -76,6 +77,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_ = input->header;
 
 #if VIRTUAL_INPUT
+  objs_header_.frame_id = "lidar";
   vel_.set_dt(100000000);  // 0.1s = 100,000,000ns
   is_legal_dt_ = true;
 #else
@@ -519,7 +521,6 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
       {
         ofs << ", " << objs[i].track.forecasts[j].position.x << ", " << objs[i].track.forecasts[j].position.y;
       }
-
       ofs << ", "                          //
           << vel_.get_ego_x_abs() << ", "  // #21 kf ego x abs
           << vel_.get_ego_x_rel() << ", "  // #22 kf ego x rel
@@ -644,6 +645,12 @@ void TPPNode::set_ros_params()
 
   //-----------------------------------------------
 
+  double pp_input_shift_m = 0.;
+  par.get_ros_param_double("pp_input_shift_m", pp_input_shift_m);
+  pp_.set_input_shift_m((long double)pp_input_shift_m);
+
+  //-----------------------------------------------
+
   par.get_ros_param_double("m_lifetime_sec", mc_.lifetime_sec);
 
   if (mc_.lifetime_sec == 0)
@@ -680,97 +687,85 @@ int TPPNode::run()
 
   subscribe_and_advertise_topics();
 
-  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191101_1730!" << std::endl;
+  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191111_1500!" << std::endl;
 
   signal(SIGINT, signal_handler);
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner.reset(new ros::AsyncSpinner(0, &queue_));
+  g_spinner->start();
 
-  g_enable = true;
   g_trigger = true;
 
   ros::Rate loop_rate(output_fps);
 
-  while (ros::ok() && !done_with_profiling() && keep_run)
+  while (ros::ok() && !done_with_profiling())
   {
-    // Enable state changed
-    if (g_trigger)
-    {
-      if (g_enable)
-      {
-        // Clear old callback from the queue
-        queue_.clear();
-        // Start the spinner
-        g_spinner->start();
+#if DEBUG_CALLBACK
+    LOG_INFO << "ROS loop start" << std::endl;
+#endif
 
-        if (is_legal_dt_)
-        {
+    if (g_trigger && is_legal_dt_)
+    {
 #if DEBUG
-          LOG_INFO << "Tracking main process start" << std::endl;
+      LOG_INFO << "Tracking main process start" << std::endl;
 #endif
 
 #if FPS
-          clock_t begin_time = clock();
+      clock_t begin_time = clock();
 #endif
 
-          // Tracking start ==========================================================================
+      // Tracking start ==========================================================================
 
-          vel_.compute_ego_position_absolute();
+      vel_.compute_ego_position_absolute();
 
-          KTs_.kalman_tracker_main(vel_.get_dt(), vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
-                                   vel_.get_ego_heading());
-          compute_velocity_kalman(vel_.get_ego_dx_abs(), vel_.get_ego_dy_abs());
+      dt_ = vel_.get_dt();
+      ego_x_abs_ = vel_.get_ego_x_abs();
+      ego_y_abs_ = vel_.get_ego_y_abs();
+      ego_z_abs_ = vel_.get_ego_z_abs();
+      ego_heading_ = vel_.get_ego_heading();
+      ego_dx_abs_ = vel_.get_ego_dx_abs();
+      ego_dy_abs_ = vel_.get_ego_dy_abs();
 
-          publish_tracking();
+      // std::cout << dt_ << " " << ego_x_abs_ << " " << ego_y_abs_ << " " << ego_z_abs_ << " " <<  ego_heading_ << " "
+      // << ego_dx_abs_ << " " << ego_dy_abs_ << std::endl;
+
+      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      compute_velocity_kalman(ego_dx_abs_, ego_dy_abs_);
+
+      publish_tracking();
 
 #if DELAY_TIME
-          mc_.module_pubtime_sec = ros::Time::now().toSec();
+      mc_.module_pubtime_sec = ros::Time::now().toSec();
 #endif
-          // Tracking end ============================================================================
-          // PP start ================================================================================
 
-          pp_.callback_tracking(pp_objs_, vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
-                                vel_.get_ego_heading());
-          pp_.main(pp_objs_, ppss, mc_.show_pp);
+      // Tracking end && PP start ================================================================
+
+      pp_.callback_tracking(pp_objs_, vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
+                            vel_.get_ego_heading());
+      pp_.main(pp_objs_, ppss, mc_.show_pp);
 
 #if FPS_EXTRAPOLATION
-          publish_pp_extrapolation(pp_pub_, pp_objs_, box_centers_kalman_rel_, box_centers_kalman_next_rel_);
+      publish_pp_extrapolation(pp_pub_, pp_objs_, box_centers_kalman_rel_, box_centers_kalman_next_rel_);
 #else
-          publish_pp(pp_pub_, pp_objs_, 0, 0);
+      publish_pp(pp_pub_, pp_objs_, 0, 0);
 #endif
 
 // PP end ==================================================================================
 
 #if FPS
-          clock_t end_time = clock();
-          LOG_INFO << "Running time of Tracking PP main process: " << clock_to_milliseconds(end_time - begin_time)
-                   << "ms" << std::endl;
+      clock_t end_time = clock();
+      LOG_INFO << "Running time of Tracking PP main process: " << clock_to_milliseconds(end_time - begin_time) << "ms"
+               << std::endl;
 #endif
-        }
-      }
-      else
-      {
-        // Stop the spinner
-        g_spinner->stop();
-        ROS_INFO("Spinner disabled");
-      }
-      // Reset trigger
+
       g_trigger = false;
     }
 
-    // Process messages on global callback queue
+    // Process messages on callback_fusion()
     ros::spinOnce();
     loop_rate.sleep();
   }
-
-  // Release AsyncSpinner object
-  g_spinner.reset();
-
-  // Wait for ROS threads to terminate
-  ros::waitForShutdown();
-
-  LOG_INFO << "END ITRI_Tracking_PP" << std::endl;
 
   return 0;
 }
