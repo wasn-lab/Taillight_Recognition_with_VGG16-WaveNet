@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <thread>
 #include <future>
+#include <mutex>
 
 #include "drivenet/drivenet_60_b1.h"
 
@@ -34,6 +35,7 @@ bool isCompressed = false;
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
+std::mutex display_mutex;
 
 std::string cam60_0_topicName;
 std::string cam60_1_topicName;
@@ -427,7 +429,9 @@ void* run_yolo(void* ){
                 else pub60_0.publish(doa);
 
                 if(imgResult_publish || display_flag) {
+                    display_mutex.lock();
                     mat60_0_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat60_0_display, headers_tmp[ndx], 0);
@@ -438,7 +442,9 @@ void* run_yolo(void* ){
                 else pub60_1.publish(doa);
 
                 if(imgResult_publish || display_flag) {
+                    display_mutex.lock();
                     mat60_1_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat60_1_display, headers_tmp[ndx], 1);
@@ -448,9 +454,10 @@ void* run_yolo(void* ){
                 if (standard_FPS == 1) doa60_2 = doa;
                 else pub60_2.publish(doa);
 
-                if(imgResult_publish || display_flag) 
-                {               
+                if(imgResult_publish || display_flag) {        
+                    display_mutex.lock();       
                     mat60_2_display = M_display.clone(); 
+                    display_mutex.unlock();
 
                     if(imgResult_publish)
                     {
@@ -503,11 +510,13 @@ void* run_display(void* ){
     {
         if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
         { 
+            display_mutex.lock();   
             cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
             cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
             cv::imshow("RightSide-60", mat60_0_display);
             cv::imshow("Center-60", mat60_1_display);
             cv::imshow("LeftSide-60", mat60_2_display);
+            display_mutex.unlock(); 
             cv::waitKey(1);
         }
         r.sleep();

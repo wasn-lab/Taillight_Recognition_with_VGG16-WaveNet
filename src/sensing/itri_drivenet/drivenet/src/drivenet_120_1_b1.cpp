@@ -36,6 +36,7 @@ bool isCalibration = false;
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
+std::mutex display_mutex;
 
 std::string cam120_0_topicName;
 std::string cam120_1_topicName;
@@ -615,7 +616,9 @@ void* run_yolo(void* ){
                 else pub120_0.publish(doa); 
 
                 if(imgResult_publish || display_flag) {
+                    display_mutex.lock();
                     mat120_0_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_0_display, headers_tmp[ndx], 0);
@@ -626,7 +629,9 @@ void* run_yolo(void* ){
                 else pub120_1.publish(doa);
 
                 if(imgResult_publish || display_flag) {
+                    display_mutex.lock();                    
                     mat120_1_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_1_display, headers_tmp[ndx], 1);
@@ -637,7 +642,9 @@ void* run_yolo(void* ){
                 else pub120_2.publish(doa);
 
                 if(imgResult_publish || display_flag){
+                    display_mutex.lock(); 
                     mat120_2_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_2_display, headers_tmp[ndx], 2);
@@ -648,7 +655,9 @@ void* run_yolo(void* ){
                 else pub120_3.publish(doa);
                                 
                 if(imgResult_publish || display_flag){
+                    display_mutex.lock(); 
                     mat120_3_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_3_display, headers_tmp[ndx], 3);
@@ -706,12 +715,14 @@ void* run_display(void* ){
             && mat120_2_display.cols*mat120_2_display.rows == rawimg_size
             && mat120_3_display.cols*mat120_3_display.rows == rawimg_size)
         {
+            display_mutex.lock();
             // cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
             // cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
             cv::imshow("RightFront-120", mat120_0_display);
             cv::imshow("RightBack-120", mat120_1_display);
             cv::imshow("LeftFront-120", mat120_2_display);
             cv::imshow("LeftBack-120", mat120_3_display);
+            display_mutex.unlock();
             cv::waitKey(1);
         }
         r.sleep();
