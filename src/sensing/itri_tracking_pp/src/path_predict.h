@@ -55,6 +55,10 @@ private:
   std::size_t num_pp_input_in_use_ = 0;
 
   std::vector<PointLD> offsets_;
+  // setting offset_bias_ large enough ensure all input data and pp points far from 0 
+  // warning: near 0 would distord pp results
+  long double offset_bias_ = 150.;
+
   void compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y);
   void normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y);
 

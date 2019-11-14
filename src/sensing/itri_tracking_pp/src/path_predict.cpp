@@ -62,9 +62,9 @@ void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, con
   }
 
   PointLD offset;
-  offset.x = -min.x + 1.;
-  offset.y = -min.y + 1.;
-  offset.z = 0.;
+  offset.x = -min.x + offset_bias_;
+  offset.y = -min.y + offset_bias_;
+  offset.z = 0. + offset_bias_;
 
   offsets_.push_back(offset);
 #if DEBUG_PP
