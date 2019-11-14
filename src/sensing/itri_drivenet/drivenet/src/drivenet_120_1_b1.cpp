@@ -232,13 +232,11 @@ void callback_120_3(const sensor_msgs::Image::ConstPtr &msg){
         if(input_resize) {
             cv::resize(mat120_3, mat120_3_resize, cv::Size(rawimg_w, rawimg_h));            
             calibrationImage(mat120_3_resize, mat120_3_rect, cameraMatrix, distCoeffs);
-            std::cout << "cols: " << mat120_2_resize.cols << "row: " << mat120_2_resize.rows << std::endl;
         }
         else{
             calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
         }
         if(!isInferData_3)  sync_inference(3, 9, h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
-        std::cout << "mat120_3_rect" << std::endl;
     }
     else{
         if(!isInferData_3)  sync_inference(3, 9, h, &mat120_3, &vBBX120_3, 1920, 1208);
@@ -690,14 +688,16 @@ void* run_display(void* ){
     cv::moveWindow("LeftFront-120", 545, 360);   
     cv::moveWindow("LeftBack-120", 0, 360);
 
-    int marker_h = 0;
-    marker_h = 590;  
-
-    cv::Point BoundaryMarker1, BoundaryMarker2, BoundaryMarker3, BoundaryMarker4;
-    BoundaryMarker1 = cv::Point(img_w/2 + 20, marker_h);
-    BoundaryMarker2 = cv::Point(img_w/2 - 20, marker_h);
-    BoundaryMarker3 = cv::Point(img_w/2, marker_h + 20);
-    BoundaryMarker4 = cv::Point(img_w/2, marker_h - 20);
+    // int marker_h_0, marker_h_1, marker_h_2, marker_h_3;
+    // marker_h_0 = 590;  
+    // cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
+    // cv::Point BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4;
+    // cv::Point BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4;
+    // cv::Point BoundaryMarker_3_1, BoundaryMarker_3_2, BoundaryMarker_3_3, BoundaryMarker_3_4;
+    // BoundaryMarker(rawimg_w, BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4, marker_h_0);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4, marker_h_1);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4, marker_h_2);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_3_1, BoundaryMarker_3_2, BoundaryMarker_3_3, BoundaryMarker_3_4, marker_h_3);
 
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
@@ -706,8 +706,8 @@ void* run_display(void* ){
             && mat120_2_display.cols*mat120_2_display.rows == rawimg_size
             && mat120_3_display.cols*mat120_3_display.rows == rawimg_size)
         {
-            cv::line(mat120_1_display, BoundaryMarker1, BoundaryMarker2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat120_1_display, BoundaryMarker3, BoundaryMarker4, cv::Scalar(255, 255, 255), 1);
+            // cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+            // cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
             cv::imshow("RightFront-120", mat120_0_display);
             cv::imshow("RightBack-120", mat120_1_display);
             cv::imshow("LeftFront-120", mat120_2_display);

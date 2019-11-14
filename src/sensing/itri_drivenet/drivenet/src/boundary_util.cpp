@@ -1,6 +1,6 @@
 #include "drivenet/boundary_util.h"
 
-bool CheckBoxInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1, cv::Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2)
+bool CheckBoxInArea(Point RightLinePoint1, Point RightLinePoint2, Point LeftLinePoint1, Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2)
 {
     // printf("x1: %d, y1: %d, x2: %d, y2:%d\n", object_x1, object_y1, object_x2, object_y2);
     ///right
@@ -23,4 +23,12 @@ bool CheckBoxInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Po
         return true;         
     else
         return false;
+}
+
+void BoundaryMarker(int img_w, Point &BoundaryMarker1, Point &BoundaryMarker2, Point &BoundaryMarker3, Point &BoundaryMarker4, int marker_h)
+{
+    BoundaryMarker1 = Point(img_w/2 + 20, marker_h);
+    BoundaryMarker2 = Point(img_w/2 - 20, marker_h);
+    BoundaryMarker3 = Point(img_w/2, marker_h + 20);
+    BoundaryMarker4 = Point(img_w/2, marker_h - 20);
 }

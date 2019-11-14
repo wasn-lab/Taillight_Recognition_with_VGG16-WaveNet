@@ -487,23 +487,24 @@ void* run_display(void* ){
     cv::moveWindow("Center-60", 545, 30);   
     cv::moveWindow("LeftSide-60", 0, 30);   
 
-    int marker_h = 0;
-    if (car_id == 1) marker_h = 590;
-    else if (car_id == 1) marker_h = 584;    
+    int marker_h_0, marker_h_1, marker_h_2;
+    marker_h_1 = 914;
 
-    cv::Point BoundaryMarker1, BoundaryMarker2, BoundaryMarker3, BoundaryMarker4;
-    BoundaryMarker1 = cv::Point(img_w/2 + 20, marker_h);
-    BoundaryMarker2 = cv::Point(img_w/2 - 20, marker_h);
-    BoundaryMarker3 = cv::Point(img_w/2, marker_h + 20);
-    BoundaryMarker4 = cv::Point(img_w/2, marker_h - 20);
+    // cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
+    cv::Point BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4;
+    // cv::Point BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4;
+    // BoundaryMarker(rawimg_w, BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4, marker_h_0);
+    BoundaryMarker(rawimg_w, BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4, marker_h_1);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4, marker_h_2);
+
 
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
     {
         if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
         { 
-            cv::line(mat60_1_display, BoundaryMarker1, BoundaryMarker2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat60_1_display, BoundaryMarker3, BoundaryMarker4, cv::Scalar(255, 255, 255), 1);
+            cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+            cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
             cv::imshow("RightSide-60", mat60_0_display);
             cv::imshow("Center-60", mat60_1_display);
             cv::imshow("LeftSide-60", mat60_2_display);

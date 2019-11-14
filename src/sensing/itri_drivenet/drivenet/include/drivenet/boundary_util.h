@@ -4,6 +4,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-bool CheckBoxInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1, cv::Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2);
+using namespace cv;
+
+bool CheckBoxInArea(Point RightLinePoint1, Point RightLinePoint2, Point LeftLinePoint1, Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2);
+void BoundaryMarker(int img_w, Point &BoundaryMarker1, Point &BoundaryMarker2, Point &BoundaryMarker3, Point &BoundaryMarker4, int marker_h);
 
 #endif /*BOUNDARYUTIL_H_*/

@@ -132,8 +132,8 @@ void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
 
     if(isCalibration){
         if(input_resize) {
-            cv::resize(mat120_0, mat120_0_resize, cv::Size(rawimg_w, rawimg_h));          
-            calibrationImage(mat120_0_resize, mat120_0_rect, cameraMatrix, distCoeffs);
+            cv::resize(mat120_0, mat120_0_rect, cv::Size(rawimg_w, rawimg_h));          
+            //calibrationImage(mat120_0_resize, mat120_0_rect, cameraMatrix, distCoeffs);
         }
         else{
             calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
@@ -505,22 +505,23 @@ void* run_display(void* ){
     cv::moveWindow("FrontTop-120", 0, 720);   
     cv::moveWindow("BackTop-120", 545, 720);
 
-    int marker_h = 0;
-    marker_h = 590;
+    int marker_h_0, marker_h_1;
+    marker_h_0 = 272; marker_h_1 = 143;
 
-    cv::Point BoundaryMarker1, BoundaryMarker2, BoundaryMarker3, BoundaryMarker4;
-    BoundaryMarker1 = cv::Point(img_w/2 + 20, marker_h);
-    BoundaryMarker2 = cv::Point(img_w/2 - 20, marker_h);
-    BoundaryMarker3 = cv::Point(img_w/2, marker_h + 20);
-    BoundaryMarker4 = cv::Point(img_w/2, marker_h - 20);
+    cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
+    cv::Point BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4;
+    BoundaryMarker(rawimg_w, BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4, marker_h_0);
+    BoundaryMarker(rawimg_w, BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4, marker_h_1);
 
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
     {
         if (mat120_0_display.cols*mat120_0_display.rows == rawimg_size && mat120_1_display.cols*mat120_1_display.rows == rawimg_size)
         {
-            cv::line(mat120_1_display, BoundaryMarker1, BoundaryMarker2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat120_1_display, BoundaryMarker3, BoundaryMarker4, cv::Scalar(255, 255, 255), 1);
+            cv::line(mat120_0_display, BoundaryMarker_0_1, BoundaryMarker_0_2, cv::Scalar(255, 255, 255), 1);
+            cv::line(mat120_0_display, BoundaryMarker_0_3, BoundaryMarker_0_4, cv::Scalar(255, 255, 255), 1);
+            cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+            cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
             cv::imshow("FrontTop-120", mat120_0_display);
             cv::imshow("BackTop-120", mat120_1_display);
             cv::waitKey(1);
