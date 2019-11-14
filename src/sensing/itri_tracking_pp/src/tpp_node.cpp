@@ -645,6 +645,12 @@ void TPPNode::set_ros_params()
 
   //-----------------------------------------------
 
+  double pp_input_shift_m = 0.;
+  par.get_ros_param_double("pp_input_shift_m", pp_input_shift_m);
+  pp_.set_input_shift_m((long double)pp_input_shift_m);
+
+  //-----------------------------------------------
+
   par.get_ros_param_double("m_lifetime_sec", mc_.lifetime_sec);
 
   if (mc_.lifetime_sec == 0)
@@ -745,7 +751,7 @@ int TPPNode::run()
       publish_pp(pp_pub_, pp_objs_, 0, 0);
 #endif
 
-      // PP end ==================================================================================
+// PP end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();

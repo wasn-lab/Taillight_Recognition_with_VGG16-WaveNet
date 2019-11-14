@@ -62,20 +62,21 @@ void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, con
   }
 
   PointLD offset;
-  offset.x = -min.x + offset_bias_;
-  offset.y = -min.y + offset_bias_;
-  offset.z = 0. + offset_bias_;
+  offset.x = -min.x + input_shift_m_;
+  offset.y = -min.y + input_shift_m_;
+  offset.z = 0.;
 
   offsets_.push_back(offset);
 #if DEBUG_PP
-  LOG_INFO << "PP offset = x:" << offsets_.back().x << " y:" << offsets_.back().y << " z:" << offsets_.back().z << std::endl;
+  LOG_INFO << "PP offset = x:" << offsets_.back().x << " y:" << offsets_.back().y << " z:" << offsets_.back().z
+           << std::endl;
 #endif
 }
 
 void PathPredict::normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y)
 {
 #if DEBUG_PP
-    LOG_INFO << "== Before & After PP Data Normalization ==" << std::endl;
+  LOG_INFO << "== Before & After PP Data Normalization ==" << std::endl;
 #endif
   for (unsigned i = 0; i < data_x.size(); i++)
   {

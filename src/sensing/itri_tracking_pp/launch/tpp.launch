@@ -14,6 +14,10 @@
   <rosparam param="input_fps">10</rosparam>
   <rosparam param="output_fps">10</rosparam>
 
+  <!-- PP AR(1) parameters -->
+  <!-- translate pp input's origin to (pp_input_shift, pp_input_shift) -->
+  <rosparam param="pp_input_shift_m">150.</rosparam>
+
   <!-- rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
