@@ -8,14 +8,14 @@
 class DistanceEstimation{
 private:
 
-    /// camId: 1
+    /// camId: 0
     std::vector<int> regionHeight_60_FR_x;
     std::vector<float> regionDist_60_FR_x; 
     std::vector<int> regionHeight_60_FR_y;
     std::vector<float> regionDist_60_FR_y;
     std::vector<float> regionHeightSlope_60_FR_y;
 
-    /// camId: 2
+    /// camId: 1
     std::vector<int> regionHeight_60_FC_x;
     std::vector<float> regionDist_60_FC_x; 
     std::vector<int> regionHeight_60_FC_y;
@@ -23,7 +23,7 @@ private:
     std::vector<float> regionHeightSlope_60_FC_y;
     std::vector<float> regionHeightSlope_60_FC_x;
 
-    /// camId: 3
+    /// camId: 2
     std::vector<int> regionHeight_60_FL_x;
     std::vector<float> regionDist_60_FL_x; 
     std::vector<int> regionHeight_60_FL_y;
@@ -51,21 +51,21 @@ private:
     std::vector<float> regionDist_120_RB_y;
     std::vector<float> regionHeightSlope_120_RB_y;
 
-    /// camId: 7
+    /// camId: 8
     std::vector<int> regionHeight_120_LF_x;
     std::vector<float> regionDist_120_LF_x; 
     std::vector<int> regionHeight_120_LF_y;
     std::vector<float> regionDist_120_LF_y;
     std::vector<float> regionHeightSlope_120_LF_y;
 
-    /// camId: 8    
+    /// camId: 9    
     std::vector<int> regionHeight_120_LR_x;
     std::vector<float> regionDist_120_LR_x; 
     std::vector<int> regionHeight_120_LR_y;
     std::vector<float> regionDist_120_LR_y;
     std::vector<float> regionHeightSlope_120_LR_y;
 
-    /// camId: 9   
+    /// camId: 10  
     std::vector<int> regionHeight_120_BT_x;
     std::vector<float> regionDist_120_BT_x; 
     std::vector<int> regionHeight_120_BT_y;

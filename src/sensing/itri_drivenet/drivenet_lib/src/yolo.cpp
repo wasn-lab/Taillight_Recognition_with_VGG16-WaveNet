@@ -38,29 +38,35 @@ Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferPara
     m_configBlocks = parseConfigFile(m_ConfigFilePath);
     parseConfigBlocks();
 
-    if (m_Precision == "kFLOAT")
+    if (m_Engine == nullptr)
     {
-        createYOLOEngine();
+        if (m_Precision == "kFLOAT")
+        {
+            createYOLOEngine();
+        }
+        else if (m_Precision == "kINT8")
+        {
+            Int8EntropyCalibrator calibrator(m_BatchSize, m_CalibImages, m_CalibImagesFilePath,
+                                            m_CalibTableFilePath, m_InputSize, m_InputH, m_InputW,
+                                            m_InputBlobName);
+            createYOLOEngine(nvinfer1::DataType::kINT8, &calibrator);
+        }
+        else if (m_Precision == "kHALF")
+        {
+            createYOLOEngine(nvinfer1::DataType::kHALF, nullptr);
+        }
+        else
+        {
+            std::cout << "Unrecognized precision type " << m_Precision << std::endl;
+            assert(0);
+        }
+        assert(m_PluginFactory != nullptr);
+        std::cout << "Loading TRT Engine..." << std::endl;
+        m_Engine = loadTRTEngine(m_EnginePath, m_PluginFactory, m_Logger);
+        std::cout << "Loading Complete!" << std::endl << std::endl;
+        assert (m_Engine != nullptr);
     }
-    else if (m_Precision == "kINT8")
-    {
-        Int8EntropyCalibrator calibrator(m_BatchSize, m_CalibImages, m_CalibImagesFilePath,
-                                         m_CalibTableFilePath, m_InputSize, m_InputH, m_InputW,
-                                         m_InputBlobName);
-        createYOLOEngine(nvinfer1::DataType::kINT8, &calibrator);
-    }
-    else if (m_Precision == "kHALF")
-    {
-        createYOLOEngine(nvinfer1::DataType::kHALF, nullptr);
-    }
-    else
-    {
-        std::cout << "Unrecognized precision type " << m_Precision << std::endl;
-        assert(0);
-    }
-    assert(m_PluginFactory != nullptr);
-    m_Engine = loadTRTEngine(m_EnginePath, m_PluginFactory, m_Logger);
-    assert(m_Engine != nullptr);
+    
     m_Context = m_Engine->createExecutionContext();
     assert(m_Context != nullptr);
     m_InputBindingIndex = m_Engine->getBindingIndex(m_InputBlobName.c_str());
@@ -153,7 +159,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
 
         if (m_configBlocks.at(i).at("type") == "net")
         {
-            printLayerInfo("", "layer", "     inp_size", "     out_size", "weightPtr");
+            // printLayerInfo("", "layer", "     inp_size", "     out_size", "weightPtr");
         }
         else if (m_configBlocks.at(i).at("type") == "convolutional")
         {
@@ -178,7 +184,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             channels = getNumChannels(previous);
             std::string outputVol = dimsToString(previous->getDimensions());
             tensorOutputs.push_back(out->getOutput(0));
-            printLayerInfo(layerIndex, layerType, inputVol, outputVol, std::to_string(weightPtr));
+            // printLayerInfo(layerIndex, layerType, inputVol, outputVol, std::to_string(weightPtr));
         }
         else if (m_configBlocks.at(i).at("type") == "shortcut")
         {
@@ -201,7 +207,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             assert(previous != nullptr);
             std::string outputVol = dimsToString(previous->getDimensions());
             tensorOutputs.push_back(ew->getOutput(0));
-            printLayerInfo(layerIndex, "skip", inputVol, outputVol, "    -");
+            // printLayerInfo(layerIndex, "skip", inputVol, outputVol, "    -");
         }
         else if (m_configBlocks.at(i).at("type") == "yolo")
         {
@@ -231,7 +237,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             m_Network->markOutput(*previous);
             channels = getNumChannels(previous);
             tensorOutputs.push_back(yolo->getOutput(0));
-            printLayerInfo(layerIndex, "yolo", inputVol, outputVol, std::to_string(weightPtr));
+            // printLayerInfo(layerIndex, "yolo", inputVol, outputVol, std::to_string(weightPtr));
             ++outputTensorCount;
         }
         else if (m_configBlocks.at(i).at("type") == "region")
@@ -263,7 +269,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             m_Network->markOutput(*previous);
             channels = getNumChannels(previous);
             tensorOutputs.push_back(region->getOutput(0));
-            printLayerInfo(layerIndex, "region", inputVol, outputVol, std::to_string(weightPtr));
+            // printLayerInfo(layerIndex, "region", inputVol, outputVol, std::to_string(weightPtr));
             std::cout << "Anchors are being converted to network input resolution i.e. Anchors x "
                       << curRegionTensor.stride << " (stride)" << std::endl;
             for (auto& anchor : curRegionTensor.anchors) anchor *= curRegionTensor.stride;
@@ -284,7 +290,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             std::string outputVol = dimsToString(previous->getDimensions());
             channels = getNumChannels(previous);
             tensorOutputs.push_back(reorg->getOutput(0));
-            printLayerInfo(layerIndex, "reorg", inputVol, outputVol, std::to_string(weightPtr));
+            // printLayerInfo(layerIndex, "reorg", inputVol, outputVol, std::to_string(weightPtr));
         }
         // route layers (single or concat)
         else if (m_configBlocks.at(i).at("type") == "route")
@@ -322,8 +328,8 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
                 channels
                     = getNumChannels(tensorOutputs[idx1]) + getNumChannels(tensorOutputs[idx2]);
                 tensorOutputs.push_back(concat->getOutput(0));
-                printLayerInfo(layerIndex, "route", "        -", outputVol,
-                               std::to_string(weightPtr));
+                // printLayerInfo(layerIndex, "route", "        -", outputVol,
+                //                std::to_string(weightPtr));
             }
             else
             {
@@ -339,8 +345,8 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
                 // set the output volume depth
                 channels = getNumChannels(tensorOutputs[idx]);
                 tensorOutputs.push_back(tensorOutputs[idx]);
-                printLayerInfo(layerIndex, "route", "        -", outputVol,
-                               std::to_string(weightPtr));
+                // printLayerInfo(layerIndex, "route", "        -", outputVol,
+                            //    std::to_string(weightPtr));
             }
         }
         else if (m_configBlocks.at(i).at("type") == "upsample")
@@ -351,7 +357,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             previous = out->getOutput(0);
             std::string outputVol = dimsToString(previous->getDimensions());
             tensorOutputs.push_back(out->getOutput(0));
-            printLayerInfo(layerIndex, "upsample", inputVol, outputVol, "    -");
+            // printLayerInfo(layerIndex, "upsample", inputVol, outputVol, "    -");
         }
         else if (m_configBlocks.at(i).at("type") == "maxpool")
         {
@@ -366,7 +372,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
             assert(previous != nullptr);
             std::string outputVol = dimsToString(previous->getDimensions());
             tensorOutputs.push_back(out->getOutput(0));
-            printLayerInfo(layerIndex, "maxpool", inputVol, outputVol, std::to_string(weightPtr));
+            // printLayerInfo(layerIndex, "maxpool", inputVol, outputVol, std::to_string(weightPtr));
         }
         else
         {
@@ -382,16 +388,40 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
         assert(0);
     }
 
-    std::cout << "Output blob names :" << std::endl;
-    for (auto& tensor : m_OutputTensors) std::cout << tensor.blobName << std::endl;
+    // std::cout << "Output blob names :" << std::endl;
+    // for (auto& tensor : m_OutputTensors) std::cout << tensor.blobName << std::endl;
 
     // Create and cache the engine if not already present
     if (fileExists(m_EnginePath))
     {
-        std::cout << "Using previously generated plan file located at " << m_EnginePath
-                  << std::endl;
-        destroyNetworkUtils(trtWeights);
-        return;
+        std::cout << "Check the engine compatibility..." << std::endl;
+        assert(m_PluginFactory != nullptr);
+        m_Engine = loadTRTEngine(m_EnginePath, m_PluginFactory, m_Logger);
+
+        std::string logger_error;
+        int found = m_Logger._msgs.find_first_of(",");
+        logger_error = m_Logger._msgs.substr(0,found);
+
+        if (logger_error == compatibilityError || m_Logger._msgs == compatibilityWarning) 
+        {
+            std::cout << "Engine Compatibility Errors: Using incompatible gpu device, the program will be rebuild engine file." << std::endl;
+            if(!removeFile(m_EnginePath)) assert("Couldn't remove Engine file.");
+            m_Engine = false;
+            if(m_PluginFactory) m_PluginFactory->destroy();   
+        }
+        else if (!m_Engine)
+        {
+            assert (m_Engine != nullptr);
+        } 
+        else if (m_Engine)
+        {
+            std::cout << "The engine plan file is generated on an compatible device!" << std::endl;
+            std::cout << "Using previously generated plan file located at " << m_EnginePath << std::endl;
+            m_Engine = false;
+            if(m_PluginFactory) m_PluginFactory->destroy();  
+            destroyNetworkUtils(trtWeights);
+            return;
+        }
     }
 
     std::cout << "Unable to find cached TensorRT engine for network : " << m_NetworkType
@@ -632,8 +662,8 @@ void Yolo::destroyNetworkUtils(std::vector<nvinfer1::Weights>& trtWeights)
 {
     if (m_Network) m_Network->destroy();
     if (m_Engine) m_Engine->destroy();
-    if (m_Builder) m_Builder->destroy();
-    if (m_ModelStream) m_ModelStream->destroy();
+    if (m_Builder) m_Builder->destroy();    
+    if (m_ModelStream) m_ModelStream->destroy();       
 
     // deallocate the weights
     for (uint i = 0; i < trtWeights.size(); ++i)
