@@ -62,11 +62,13 @@
 
 // debug
 #define DEBUG 0
+#define DEBUG_CALLBACK 0
 #define DEBUG_COMPACT 0
 #define DEBUG_DATA_IN 0
 #define DEBUG_VELOCITY 0
 #define DEBUG_HUNGARIAN_DIST 0
 #define DEBUG_PP 0
+#define DEBUG_CONF_E 0
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
 
@@ -130,7 +132,7 @@ struct MarkerConfig
   bool show_source = 0;
   bool show_distance = 0;
   bool show_absspeed = 0;  // km/h
-  bool show_pp = 0;        // km/h
+  unsigned int show_pp = 0;
 
   std_msgs::ColorRGBA color;
   std_msgs::ColorRGBA color_lidar_tpp;

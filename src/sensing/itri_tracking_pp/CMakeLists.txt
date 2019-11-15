@@ -49,7 +49,7 @@ catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIR}
+        ${Eigen3_INCLUDE_DIR}
 )
 
 set(SOURCES_SRCS

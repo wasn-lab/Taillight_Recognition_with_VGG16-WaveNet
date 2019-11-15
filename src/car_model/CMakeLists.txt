@@ -14,7 +14,5 @@ catkin_package(
 configure_file(
     include/car_model.h.in
     ${PROJECT_BINARY_DIR}/include/car_model.h)
-include_directories(${PROJECT_BINARY_DIR}/include)
-catkin_add_gtest(
-    car_model_test
-    test/car_model_test.cpp)
+
+add_subdirectory(test)

@@ -41,29 +41,28 @@ catkin_package(CATKIN_DEPENDS
 ###########
 include_directories(${catkin_INCLUDE_DIRS})
 
-add_executable(RadFrontSub_BBox src/RadFrontSub_BBox.cpp)
-target_link_libraries(RadFrontSub_BBox ${catkin_LIBRARIES})
-add_dependencies(RadFrontSub_BBox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(radfrontsub_bbox src/RadFrontSub_BBox.cpp)
+target_link_libraries(radfrontsub_bbox ${catkin_LIBRARIES})
+add_dependencies(radfrontsub_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(RadFrontPub_txt src/RadFrontPub_txt.cpp)
-target_link_libraries(RadFrontPub_txt ${catkin_LIBRARIES})
-add_dependencies(RadFrontPub_txt ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(radfrontpub_txt src/RadFrontPub_txt.cpp)
+target_link_libraries(radfrontpub_txt ${catkin_LIBRARIES})
+add_dependencies(radfrontpub_txt ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(radfrontpub src/RadFrontPub.cpp)
+target_link_libraries(radfrontpub ${catkin_LIBRARIES})
+add_dependencies(radfrontpub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(RadFrontPub src/RadFrontPub.cpp)
-target_link_libraries(RadFrontPub ${catkin_LIBRARIES})
-add_dependencies(RadFrontPub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(radfrontsub src/RadFrontSub.cpp)
+target_link_libraries(radfrontsub ${catkin_LIBRARIES})
+add_dependencies(radfrontsub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(RadFrontSub src/RadFrontSub.cpp)
-target_link_libraries(RadFrontSub ${catkin_LIBRARIES})
-add_dependencies(RadFrontSub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(radfrontsub_rviz src/RadFrontSub_rviz.cpp)
+target_link_libraries(radfrontsub_rviz ${catkin_LIBRARIES})
+add_dependencies(radfrontsub_rviz ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(RadFrontSub2 src/RadFrontSub2.cpp)
-target_link_libraries(RadFrontSub2 ${catkin_LIBRARIES})
-add_dependencies(RadFrontSub2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(RadFrontSub_CAN src/RadFrontSub_CAN.cpp)
-target_link_libraries(RadFrontSub_CAN ${catkin_LIBRARIES})
-add_dependencies(RadFrontSub_CAN ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(radfrontsub_can src/RadFrontSub_CAN.cpp)
+target_link_libraries(radfrontsub_can ${catkin_LIBRARIES})
+add_dependencies(radfrontsub_can ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 

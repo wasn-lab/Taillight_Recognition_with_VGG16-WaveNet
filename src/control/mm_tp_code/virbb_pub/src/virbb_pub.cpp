@@ -48,6 +48,7 @@ bool AEBObjTrigger_last = false;
 bool StaticObjTrigger = false;
 bool DynamicObjTrigger = false;
 bool rvizPubPointObjTrigger = false;
+bool rvizPubPointObjTrigger_click = false;
 std::string rvizPublisherPoint_frame_id;
 
 struct object
@@ -235,7 +236,7 @@ void rvizPublisherPointCallback(const geometry_msgs::PointStamped::ConstPtr& rvi
 	rvizPublisherPoint.roll = current_pose.roll;
 	rvizPublisherPoint.pitch = current_pose.pitch;
 	rvizPublisherPoint.yaw = current_pose.yaw;
-	rvizPubPointObjTrigger = true;
+	rvizPubPointObjTrigger_click = true;
 	rvizppobj_index = 0;
 }
 
@@ -570,7 +571,7 @@ void obs_main(int hz)
 
 	// AEB obj
 	id ++;
-	object abs_Obsaeb1_object;
+	object abs_Obsaeb1_object{0};
 	abs_Obsaeb1_object.sx = read_tmp_a[0];//4.6;
 	abs_Obsaeb1_object.sy = read_tmp_a[1];//1.8;
 	abs_Obsaeb1_object.sz = read_tmp_a[2];//1.5;
@@ -586,7 +587,7 @@ void obs_main(int hz)
 	}
 
 	// rviz PubPoint obj
-	if (rvizPubPointObjTrigger == true)
+	if (rvizPubPointObjTrigger == true && rvizPubPointObjTrigger_click == true)
 	{
 		id ++;
 		object abs_ObsrvizPP1_object;
@@ -608,7 +609,10 @@ void obs_main(int hz)
 		rel_BBArraymsg.objects.push_back(rel_BBmsg);
 	}
 	if (rvizPubPointObjTrigger == false)
+	{
 		rvizppobj_index = 0;
+		rvizPubPointObjTrigger_click = false;
+	}
 	
 	// Publish
 	abs_BB_array_pub.publish(abs_BBArraymsg);
