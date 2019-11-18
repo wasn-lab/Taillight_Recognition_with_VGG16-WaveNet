@@ -193,6 +193,7 @@ int ParknetImageManager::image_processing_pipeline(const Npp8u* npp8u_1920_1208_
                                         npp8u_ptr_608x608_rgb_undistorted_[cam_id], camera::num_yolov3_bytes_per_row_u8,
                                         roi, rgb_order);
   assert(status == NPP_SUCCESS);
+  NO_UNUSED_VAR_CHECK(status);
 
   // u8 -> 32f
   status =
