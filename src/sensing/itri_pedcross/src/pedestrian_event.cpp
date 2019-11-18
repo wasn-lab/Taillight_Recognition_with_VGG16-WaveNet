@@ -1,73 +1,83 @@
 #include "pedestrian_event.h"
-// root folder is ./devel/lib/pedestrian_event/
+#if USE_GLOG
+#include <glog/logging.h>
+#endif
+
 namespace ped
 {
 void PedestrianEvent::run()
 {
   // std::cout<<"hi"<<std::endl;
+
   pedestrian_event();
 }
 
 void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
-  // std::cout << "image";
-  imageCache.push_back(*msg);
-
+  // buffer raw image in cv::Mat
   cv_bridge::CvImageConstPtr cv_ptr_image;
   cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat mgs_decode = cv_ptr_image->image;
+  cv::Mat mgs_decode;
+  cv_ptr_image->image.copyTo(mgs_decode);
+  cv::imshow("ih",mgs_decode);
+  cv::waitKey(1);
   std::cout << mgs_decode.rows<<" "<<mgs_decode.cols<<std::endl;
 
-  if (mgs_decode.rows != 0 && mgs_decode.cols != 0)
-    imageCacheMat.push_back(mgs_decode);
-
+  // buffer raw image in msg
+  imageCache.emplace_back(msg->header.stamp, mgs_decode);
+  
+  // control the size of buffer
   if (imageCache.size() > buffer_size)
   {
-    imageCache.erase(imageCache.begin());
-    imageCacheMat.erase(imageCacheMat.begin());
+    imageCache.pop_front();
   }
-  //  std::cout << imageCache.size()<<std::endl;
 }
 
 void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  if (!imageCache.empty())
+  if (!imageCache.empty())// do if there is image in buffer 
   {
     count++;
     ros::Time start, stop;
     start = ros::Time::now();
-    std::cout <<"time stamp: " <<msg->header.stamp<<std::endl;
-
-    std::vector<cv::Mat>::const_iterator it_save_Mat = imageCacheMat.begin();
-    std::vector<sensor_msgs::Image>::const_iterator it;
-    for (it = imageCache.begin(); it != imageCache.end(); ++it)
+    std::cout <<"time stamp: " <<msg->header.stamp<<" buffer size: "<<imageCache.size()<<std::endl;
+    
+    // get raw image with same timestamp 
+//    std::vector<cv::Mat>::const_iterator it_save_Mat = imageCacheMat.begin();
+    //std::map<ros::Time, cv::Mat>::iterator it;
+    cv::Mat matrix;
+    for (int i=imageCache.size()-1; i>=0; i--)
     {
-      sensor_msgs::Image ptr = *it;
-      if (ptr.header.stamp - msg->header.stamp <= ros::Duration(0))
+      //sensor_msgs::Image ptr = *it;
+      if (imageCache[i].first <= msg->header.stamp)
       {
-        // std::cout <<"GOT CHA !!!!! time: "<< it->header.stamp<<std::endl;
+        std::cout <<"GOT CHA !!!!! time: "<< imageCache[i].first<<std::endl;
+        matrix = imageCache[i].second;
+        break;
       }
       else
       {
-        break;
+        //matrix = imageCache[i].second;
+        //break;
       }
-      it_save_Mat++;
+      //it_save_Mat++;
     }
 
-    it = imageCache.begin();
-    // std::cout <<"dalay :"<< msg->header.stamp - it->header.stamp <<std::endl;
-    if (it_save_Mat == imageCacheMat.end())
-      it_save_Mat--;
-    std::cout <<"dalayx:"<< it_save_Mat - imageCacheMat.begin() <<std::endl;
-    cv::Mat matrix = *it_save_Mat;
-    // cv::imwrite( "/home/itri457854/frame.png", matrix );
+    // get buffer image
+    //it = imageCache.begin();
+    //if (it_save_Mat == imageCacheMat.end())
+      //it_save_Mat-=4;
+    //cv::Mat matrix = *it_save_Mat;
+    //cv::imshow("ih",matrix);
+    //cv::waitKey(1);
     std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (std::vector<msgs::DetectedObject>::const_iterator it = msg->objects.begin(); it != msg->objects.end(); ++it)
     {
       msgs::DetectedObject obj = *it;
-      if (obj.classId == 1)
+      if (obj.classId == 1)// 1 for people
       {
+        // set msg infomation
         msgs::PedObject obj_pub;
         obj_pub.header = obj.header;
         obj_pub.header.frame_id = obj.header.frame_id;
@@ -76,7 +86,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         obj_pub.camInfo = obj.camInfo;
         obj_pub.bPoint = obj.bPoint;
 
-         
+        //
         obj_pub.camInfo.u*=0.3167;
         obj_pub.camInfo.v*=0.3179;
         obj_pub.camInfo.width*=0.3167; 
@@ -171,6 +181,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       cv::Rect box;
       cv::Mat matrix2;
       matrix.copyTo(matrix2);
+      
       for (std::vector<msgs::PedObject>::const_iterator it = msg_pub.objects.begin(); it != msg_pub.objects.end(); ++it)
       {
         msgs::PedObject obj = *it;
@@ -240,28 +251,19 @@ void PedestrianEvent::pedestrian_event()
   g_trigger = true;
 
   // Loop with 100 Hz rate
-  ros::Rate loop_rate(100);
+  ros::Rate loop_rate(30);
   while (ros::ok())
   {
     // Enable state changed
     if (g_trigger)
     {
-      if (g_enable)
-      {
         // Clear old callback from the queue
         queue.clear();
         // Start the spinner
         g_spinner->start();
         ROS_INFO("Spinner enabled");
-      }
-      else
-      {
-        // Stop the spinner
-        g_spinner->stop();
-        ROS_INFO("Spinner disabled");
-      }
-      // Reset trigger
-      g_trigger = false;
+        // Reset trigger
+        g_trigger = false;
     }
 
     // Process messages on global callback queue
@@ -350,6 +352,9 @@ std::vector<cv::Point> PedestrianEvent::get_openpose_keypoint(cv::Mat input_imag
 
 int main(int argc, char** argv)
 {
+#if USE_GLOG
+  google::InstallFailureSignalHandler();
+#endif
   ros::Time::init();
   ros::Time start, stop;
   start = ros::Time::now();
