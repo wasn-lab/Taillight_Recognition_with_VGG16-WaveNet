@@ -280,7 +280,7 @@ void PedestrianEvent::pedestrian_event()
 std::vector<cv::Point> PedestrianEvent::get_openpose_keypoint(cv::Mat input_image)
 {
   ros::Time timer = ros::Time::now();
-  int nPoints = 15;
+  int nPoints = 25;
   std::vector<cv::Point> points(nPoints);
 
   // // max pixel of width or height can only be 368
@@ -365,8 +365,8 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
   pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR+std::string("/rf.yml"));
-  std::string protoFile = PED_MODEL_DIR+std::string("/mpi/pose_deploy_linevec_faster_4_stages.prototxt");
-  std::string weightsFile = PED_MODEL_DIR+std::string("/mpi/pose_iter_160000.caffemodel");
+  std::string protoFile = PED_MODEL_DIR+std::string("/body_25/pose_deploy.prototxt");
+  std::string weightsFile = PED_MODEL_DIR+std::string("/body_25/pose_iter_584000.caffemodel");
   pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
 
   ros::NodeHandle nh;
