@@ -36,12 +36,17 @@ public:
                          const float ego_z_abs, const float ego_heading);
 
   void main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-            const bool show_pp);
+            const unsigned int show_pp);
+
+  void set_input_shift_m(const long double shift_m)
+  {
+    input_shift_m_ = shift_m;
+  }
 
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
-  bool show_pp_ = 0;
+  unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
   const std::size_t num_pp_input_min_ = 6;
@@ -55,6 +60,10 @@ private:
   std::size_t num_pp_input_in_use_ = 0;
 
   std::vector<PointLD> offsets_;
+  // set input_shift_m_ large enough to ensure all input data and pp points far from (0, 0)
+  // warning: near 0 would distord pp results
+  long double input_shift_m_ = 0.;
+
   void compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y);
   void normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y);
 

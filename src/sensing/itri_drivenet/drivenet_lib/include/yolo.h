@@ -144,6 +144,10 @@ protected:
     };
 
 private:
+
+    ///error message
+    std::string compatibilityWarning = "Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors.";
+    std::string compatibilityError = "The engine plan file is generated on an incompatible device";
     void createYOLOEngine(const nvinfer1::DataType dataType = nvinfer1::DataType::kFLOAT,
                           Int8EntropyCalibrator* calibrator = nullptr);
     std::vector<std::map<std::string, std::string>> parseConfigFile(const std::string cfgFilePath);

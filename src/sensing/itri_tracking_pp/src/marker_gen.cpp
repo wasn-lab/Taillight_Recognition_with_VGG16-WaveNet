@@ -348,8 +348,20 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
   marker.id = idx;
   marker.type = visualization_msgs::Marker::CYLINDER;
 
-  marker.scale.x = pp.a1 + 0.00001;  // scale;
-  marker.scale.y = pp.a2 + 0.00001;  // scale;
+  if (mc_.show_pp == 1)
+  {
+    marker.scale.x = pp.a1 + 0.00001;
+    marker.scale.y = pp.a2 + 0.00001;
+  }
+  else if (mc_.show_pp >= 2)
+  {
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+  }
+  else
+  {
+    LOG_INFO << "Error: No show pp but run pp marker scale setting!" << std::endl;
+  }
   marker.scale.z = 0.1;
 
   marker.pose.position.x = x;
@@ -360,8 +372,20 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
 
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
   marker.color.r = 0.75;
-  marker.color.g = 1.0 - forecast_seq * 0.05;
-  marker.color.b = 0.0;
+  if (mc_.show_pp == 1)
+  {
+    marker.color.g = 1.0 - forecast_seq * 0.05;
+    marker.color.b = 0.0;
+  }
+  else if (mc_.show_pp >= 2)
+  {
+    marker.color.g = 1.0;
+    marker.color.b = 0.0 + forecast_seq * 0.05;
+  }
+  else
+  {
+    LOG_INFO << "Error: No show pp but run pp marker color setting!" << std::endl;
+  }
   marker.color.a = 1.0;
 
   return marker;
@@ -455,7 +479,7 @@ void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector
 
   process_polygon_marker(idx, objs);
 
-  if (mc_.show_pp)
+  if (mc_.show_pp > 0)
   {
     process_pp_marker(idx, objs, ppss);
   }

@@ -30,7 +30,7 @@ void ROSParamsParser::get_ros_param_uint(const std::string& param_name, unsigned
     int output_int = 0;
     nh_.param(param_name, output_int, (int)0);
 
-    output = (unsigned int)output_int;
+    output = (output_int >= 0) ? (unsigned int)output_int : 0;
 
     ROS_INFO("Got param '%s': %u", param_name.c_str(), output);
   }
