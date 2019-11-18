@@ -14,61 +14,62 @@ void PedestrianEvent::run()
 
 void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
-  // buffer raw image in msg
-  imageCache.push_back(*msg);
-  
   // buffer raw image in cv::Mat
   cv_bridge::CvImageConstPtr cv_ptr_image;
   cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat mgs_decode = cv_ptr_image->image;
-  //cv::imshow("ih",mgs_decode);
-  //cv::waitKey(1);
+  cv::Mat mgs_decode;
+  cv_ptr_image->image.copyTo(mgs_decode);
+  cv::imshow("ih",mgs_decode);
+  cv::waitKey(1);
   std::cout << mgs_decode.rows<<" "<<mgs_decode.cols<<std::endl;
+
+  // buffer raw image in msg
+  imageCache.emplace_back(msg->header.stamp, mgs_decode);
   
   // control the size of buffer
-  if (mgs_decode.rows != 0 && mgs_decode.cols != 0)
-    imageCacheMat.push_back(mgs_decode);
-
   if (imageCache.size() > buffer_size)
   {
-    imageCache.erase(imageCache.begin());
-    imageCacheMat.erase(imageCacheMat.begin());
+    imageCache.pop_front();
   }
 }
 
 void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  if (!imageCacheMat.empty())// do if there is image in buffer 
+  if (!imageCache.empty())// do if there is image in buffer 
   {
     count++;
     ros::Time start, stop;
     start = ros::Time::now();
-    std::cout <<"time stamp: " <<msg->header.stamp<<" buffer size: "<<imageCacheMat.size()<<std::endl;
+    std::cout <<"time stamp: " <<msg->header.stamp<<" buffer size: "<<imageCache.size()<<std::endl;
     
     // get raw image with same timestamp 
-    std::vector<cv::Mat>::const_iterator it_save_Mat = imageCacheMat.begin();
-    std::vector<sensor_msgs::Image>::const_iterator it;
-    for (it = imageCache.begin(); it != imageCache.end(); ++it)
+//    std::vector<cv::Mat>::const_iterator it_save_Mat = imageCacheMat.begin();
+    //std::map<ros::Time, cv::Mat>::iterator it;
+    cv::Mat matrix;
+    for (int i=imageCache.size()-1; i>=0; i--)
     {
-      sensor_msgs::Image ptr = *it;
-      if (ptr.header.stamp - msg->header.stamp <= ros::Duration(0))
+      //sensor_msgs::Image ptr = *it;
+      if (imageCache[i].first <= msg->header.stamp)
       {
-        // std::cout <<"GOT CHA !!!!! time: "<< it->header.stamp<<std::endl;
+        std::cout <<"GOT CHA !!!!! time: "<< imageCache[i].first<<std::endl;
+        matrix = imageCache[i].second;
+        break;
       }
       else
       {
-        break;
+        //matrix = imageCache[i].second;
+        //break;
       }
-      it_save_Mat++;
+      //it_save_Mat++;
     }
 
     // get buffer image
-    it = imageCache.begin();
-    if (it_save_Mat == imageCacheMat.end())
-      it_save_Mat-=4;
-    cv::Mat matrix = *it_save_Mat;
-    cv::imshow("ih",matrix);
-    cv::waitKey(1);
+    //it = imageCache.begin();
+    //if (it_save_Mat == imageCacheMat.end())
+      //it_save_Mat-=4;
+    //cv::Mat matrix = *it_save_Mat;
+    //cv::imshow("ih",matrix);
+    //cv::waitKey(1);
     std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (std::vector<msgs::DetectedObject>::const_iterator it = msg->objects.begin(); it != msg->objects.end(); ++it)

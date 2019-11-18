@@ -18,6 +18,7 @@
 // #include <caffe/caffe.hpp>
 #include <ped_def.h>
 #include <cv_bridge/cv_bridge.h>
+#include <map>
 
 #define USE_GLOG 1
 #if USE_GLOG
@@ -48,8 +49,7 @@ public:
 
   void run();
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  std::vector<sensor_msgs::Image> imageCache;
-  std::vector<cv::Mat> imageCacheMat;
+  std::deque< std::pair<ros::Time, cv::Mat> > imageCache;
   unsigned int buffer_size = 60;
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();

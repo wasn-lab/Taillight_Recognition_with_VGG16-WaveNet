@@ -25,17 +25,17 @@ catkin_download_test_data(
     MD5 d20e9859ff9ba625e2747578dae99cf2
 )
 catkin_download_test_data(
-    ped_models_mpi
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/mpi/pose_iter_160000.caffemodel"
-    DESTINATION ${PED_MODEL_DIR}/mpi
-    MD5 2ca0990c7562bd7ae03f3f54afa96e00
+    ped_models_body25
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
+    DESTINATION ${PED_MODEL_DIR}/body_25
+    MD5 78287b57cf85fa89c03f1393d368e5b7
 )
 
 catkin_download_test_data(
-    ped_models_mpi_txt
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/mpi/pose_deploy_linevec_faster_4_stages.prototxt"
-    DESTINATION ${PED_MODEL_DIR}/mpi
-    MD5 67ad3541c09b6f015151a230f52aa0b1
+    ped_models_body25_txt
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
+    DESTINATION ${PED_MODEL_DIR}/body_25
+    MD5 451938635cf007327c3cf235ed483844
 )
 
 find_package(catkin REQUIRED COMPONENTS
