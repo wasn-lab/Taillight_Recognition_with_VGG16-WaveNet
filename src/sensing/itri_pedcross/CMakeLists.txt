@@ -55,7 +55,7 @@ endif ()
 
 find_package(Glog)
 
-find_package(OpenCV 3 REQUIRED
+find_package(OpenCV 3.4.3 REQUIRED
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
@@ -96,6 +96,7 @@ target_link_libraries(
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
         #caffe
+	glog
         cv_bridge
 )
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})

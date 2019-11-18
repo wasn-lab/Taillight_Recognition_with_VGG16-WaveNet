@@ -19,6 +19,20 @@
 #include <ped_def.h>
 #include <cv_bridge/cv_bridge.h>
 
+#define USE_GLOG 1
+#if USE_GLOG
+#include "glog/logging.h"
+#define LOG_INFO LOG(INFO)
+#define LOG_WARNING LOG(WARNING)
+#define LOG_ERROR LOG(ERROR)
+#define LOG_FATAL LOG(FATAL)
+#else
+#define LOG_INFO std::cout
+#define LOG_WARNING std::cout
+#define LOG_ERROR std::cout
+#define LOG_FATAL std::cout
+#endif
+
 namespace ped
 {
 class PedestrianEvent
