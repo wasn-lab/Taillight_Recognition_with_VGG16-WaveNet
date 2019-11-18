@@ -22,6 +22,7 @@ set(PARKNET_LIB_SRCS
 
 # -Wunused-local-typedef is caused by glog of older version
 set_source_files_properties(parknet_node_impl.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-local-typedef)
+set_source_files_properties(parknet_image_manager.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-local-typedef)
 
 set(PARKNET_INCLUDE_DIRS
     ${catkin_INCLUDE_DIRS}

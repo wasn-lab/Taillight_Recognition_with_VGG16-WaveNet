@@ -1,6 +1,7 @@
 #ifndef __PARKNET_H__
 #define __PARKNET_H__
 
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
 #define USE(FEATURE) (defined USE_##FEATURE  && USE_##FEATURE)
 #cmakedefine01 USE_TENSORRT
 #cmakedefine01 USE_DARKNET
