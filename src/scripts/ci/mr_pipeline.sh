@@ -20,14 +20,7 @@ if [[ "${xml_status}" =~ "package.xml" ]]; then
 else
   echo "merge request doest not have package.xml -> Dirty build"
   catkin_make
-fi
-
-if [[ -d build_clang ]]; then
-  pushd build_clang
-  make -j
-  popd
-else
-  bash src/scripts/ci/module_build_clang.sh
+  catkin_make --build build_clang -DCATKIN_DEVEL_PREFIX=devel_clang
 fi
 
 popd
