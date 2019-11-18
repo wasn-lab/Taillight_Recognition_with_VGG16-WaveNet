@@ -19,8 +19,8 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
   cv::Mat mgs_decode;
   cv_ptr_image->image.copyTo(mgs_decode);
-  cv::imshow("ih",mgs_decode);
-  cv::waitKey(1);
+  //cv::imshow("ih",mgs_decode);
+  //cv::waitKey(1);
   std::cout << mgs_decode.rows<<" "<<mgs_decode.cols<<std::endl;
 
   // buffer raw image in msg
