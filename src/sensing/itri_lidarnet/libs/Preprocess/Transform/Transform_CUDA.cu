@@ -1,7 +1,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-__global__ void kernel_cudaTransformPoints(pcl::PointXYZ *d_point_cloud, int number_of_points, float *d_matrix)
+template <typename PointT>
+__global__ void kernel_cudaTransformPoints(PointT *d_point_cloud, int number_of_points, float *d_matrix)
 {
 	int ind=blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -19,7 +20,15 @@ __global__ void kernel_cudaTransformPoints(pcl::PointXYZ *d_point_cloud, int num
 	}
 }
 
-cudaError_t cudaTransformPoints(int threads, pcl::PointXYZ *d_point_cloud, int number_of_points, float *d_matrix)
+template
+__global__ void kernel_cudaTransformPoints(pcl::PointXYZ *d_point_cloud, int number_of_points, float *d_matrix);
+
+template
+__global__ void kernel_cudaTransformPoints(pcl::PointXYZI *d_point_cloud, int number_of_points, float *d_matrix);
+
+
+template <typename PointT>
+cudaError_t cudaTransformPoints(int threads, PointT *d_point_cloud, int number_of_points, float *d_matrix)
 {
 	kernel_cudaTransformPoints<<<number_of_points/threads+1,threads>>>
 		(d_point_cloud, number_of_points, d_matrix);
@@ -27,6 +36,13 @@ cudaError_t cudaTransformPoints(int threads, pcl::PointXYZ *d_point_cloud, int n
 	cudaDeviceSynchronize();
 	return cudaGetLastError();
 }
+
+template
+cudaError_t cudaTransformPoints(int threads, pcl::PointXYZ *d_point_cloud, int number_of_points, float *d_matrix);
+
+template
+cudaError_t cudaTransformPoints(int threads, pcl::PointXYZI *d_point_cloud, int number_of_points, float *d_matrix);
+
 
 __global__ void kernel_cudaRemovePointsInsideSphere
 	(pcl::PointXYZ *d_point_cloud, bool *d_markers, int number_of_points, float sphere_radius)

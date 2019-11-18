@@ -26,6 +26,11 @@ public:
   void init_ego_yawrate(const float ego_yawrate);
   void init_ego_speed(const float ego_speed);
 
+  void init_object_relative_position(const float obj_x_rel, const float obj_x_rel_prev,  //
+                                     const float obj_y_rel, const float obj_y_rel_prev);
+
+  void compute_ego_position_absolute();
+
   void compute_position_displacement();
 
   void update_localization();
@@ -54,6 +59,7 @@ public:
   float get_ego_speed();
 
   // setter
+  void set_dt(const long long dt);
   void set_ego_x_rel(const float ego_x_rel);
   void set_ego_y_rel(const float ego_y_rel);
   void set_ego_z_rel(const float ego_z_rel);

@@ -17,6 +17,7 @@ int main(int argc, char* argv[])
   gflags::ParseCommandLineFlags(&argc, &argv, false);
   google::InstallFailureSignalHandler();
   cv::setNumThreads(0);
+  LOG(INFO) << "OpenCV Version: " << CV_VERSION;
   ParknetNode app;
   app.run(argc, argv);
 

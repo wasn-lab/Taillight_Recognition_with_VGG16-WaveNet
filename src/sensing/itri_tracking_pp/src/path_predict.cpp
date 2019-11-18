@@ -16,7 +16,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
     num_pp_input_in_use_ =
         std::max(std::min(num_pp_input_max_, (std::size_t)pp_objs_[i].track.max_length), num_pp_input_min_);
 
-#if DEBUG
+#if DEBUG_PP
     LOG_INFO << "num_pp_input_in_use_ =" << num_pp_input_in_use_ << std::endl;
 #endif
 
@@ -43,6 +43,51 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       pp_objs_[i].track.forecasts[j].covariance_xy = 0;
       pp_objs_[i].track.forecasts[j].correlation_xy = 0;
     }
+  }
+}
+
+void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y)
+{
+  PointLD min;
+  min.x = std::numeric_limits<long double>::max();
+  min.y = std::numeric_limits<long double>::max();
+
+  for (unsigned i = 0; i < data_x.size(); i++)
+  {
+    if (data_x[i] < min.x)
+      min.x = data_x[i];
+
+    if (data_y[i] < min.y)
+      min.y = data_y[i];
+  }
+
+  PointLD offset;
+  offset.x = -min.x + input_shift_m_;
+  offset.y = -min.y + input_shift_m_;
+  offset.z = 0.;
+
+  offsets_.push_back(offset);
+#if DEBUG_PP
+  LOG_INFO << "PP offset = x:" << offsets_.back().x << " y:" << offsets_.back().y << " z:" << offsets_.back().z
+           << std::endl;
+#endif
+}
+
+void PathPredict::normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y)
+{
+#if DEBUG_PP
+  LOG_INFO << "== Before & After PP Data Normalization ==" << std::endl;
+#endif
+  for (unsigned i = 0; i < data_x.size(); i++)
+  {
+#if DEBUG_PP
+    LOG_INFO << i + 1 << "  data_x = " << data_x[i] << "  data_y = " << data_y[i] << std::endl;
+#endif
+    data_x[i] += offsets_.back().x;
+    data_y[i] += offsets_.back().y;
+#if DEBUG_PP
+    LOG_INFO << i + 1 << "  data_x = " << data_x[i] << "  data_y = " << data_y[i] << std::endl;
+#endif
   }
 }
 
@@ -81,85 +126,6 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
     {
       create_pp_input(track.states[i].position, data_x, data_y);
     }
-  }
-}
-
-void PathPredict::resolve_repeating_number(long double& x1, long double& x2, long double& x3, long double& x4)
-{
-  if (x1 == x2)
-    x2 += 0.000001;
-  if (x1 == x3)
-    x3 += 0.0000015;
-  if (x1 == x4)
-    x4 += 0.000002;
-  if (x2 == x3)
-    x3 += 0.0000001;
-  if (x2 == x4)
-    x4 += 0.00000015;
-  if (x3 == x4)
-    x4 += 0.0000002;
-}
-
-void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-                       const bool show_pp)
-{
-  show_pp_ = show_pp;
-
-  std::vector<std::vector<PPLongDouble> >().swap(ppss);
-  ppss.reserve(pp_objs_.size());
-
-  for (unsigned i = 0; i < pp_objs_.size(); i++)
-  {
-#if DEBUG_COMPACT
-    LOG_INFO << "[Track ID] " << pp_objs_[i].track.id << std::endl;
-#endif
-
-    std::vector<PPLongDouble> pps;
-
-    if (pp_objs_[i].track.is_ready_prediction)
-    {
-      std::vector<long double> data_x;
-      std::vector<long double> data_y;
-      create_pp_input_main(pp_objs_[i].track, data_x, data_y);
-
-#if DEBUG
-      LOG_INFO << "data_x size = " << data_x.size() << std::endl;
-      LOG_INFO << "= Predict X =" << std::endl;
-      for (unsigned j = 0; j < data_x.size(); j++)
-        LOG_INFO << "Data " << j + 1 << ": " << data_x[j] << std::endl;
-
-      LOG_INFO << "data_y size = " << data_y.size() << std::endl;
-      LOG_INFO << "= Predict Y =" << std::endl;
-      for (unsigned j = 0; j < data_y.size(); j++)
-        LOG_INFO << "Data " << j + 1 << ": " << data_y[j] << std::endl;
-#endif
-
-      int err = 0;
-      err = predict(max_order_, num_forecasts_, data_x, data_y, pps);
-      if (err > 0)
-      {
-        pp_objs_[i].track.is_ready_prediction = false;
-        continue;
-      }
-
-      for (unsigned j = 0; j < num_forecasts_; j++)
-      {
-        pp_objs_[i].track.forecasts[j].position.x = pps[j].pos_x;
-        pp_objs_[i].track.forecasts[j].position.y = pps[j].pos_y;
-        pp_objs_[i].track.forecasts[j].covariance_xx = pps[j].cov_xx;
-        pp_objs_[i].track.forecasts[j].covariance_yy = pps[j].cov_yy;
-        pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
-        pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
-      }
-    }
-    else
-    {
-#if DEBUG
-      LOG_INFO << "Require 4+ elements in trajectory." << std::endl;
-#endif
-    }
-
-    ppss.push_back(pps);
   }
 }
 
@@ -265,7 +231,7 @@ void PathPredict::confidence_ellipse(PPLongDouble& pp, const float alpha)
   vertices[3].x = pp.pos_x + diff2x;
   vertices[3].y = pp.pos_y + diff2y;
 
-#if DEBUG_PP
+#if DEBUG_CONF_E
   LOG_INFO << "pp.cov_xx: " << pp.cov_xx << "  pp.cov_yy: " << pp.cov_yy << "  pp.cov_xy: " << pp.cov_xy << std::endl;
   LOG_INFO << "cov_xx: " << cov_xx << "  cov_yy: " << cov_yy << "  cov_xy: " << cov_xy << std::endl;
 
@@ -285,29 +251,33 @@ void PathPredict::confidence_ellipse(PPLongDouble& pp, const float alpha)
   LOG_INFO << "pp.q2: " << pp.q2[0] << " " << pp.q2[1] << " " << pp.q2[2] << " " << pp.q2[3] << std::endl;
 
   for (unsigned int i = 0; i < 4; i++)
-  {
     LOG_INFO << "vertices[" << i << "]: (" << vertices[i].x << ", " << vertices[i].y << ")" << std::endl;
-  }
 #endif
 }
 
 int PathPredict::ar1_params_main(PPLongDouble& pp, std::vector<long double>& data_x, std::vector<long double>& data_y)
 {
-  pp.beta0_x = 0;
-  pp.beta1_x = 0;
+  pp.beta0_x = 0.;
+  pp.beta1_x = 0.;
 
-  pp.beta0_y = 0;
-  pp.beta1_y = 0;
+  pp.beta0_y = 0.;
+  pp.beta1_y = 0.;
 
   AR1 ar1;
 
   int err_x = ar1.compute_params(data_x, pp.beta0_x, pp.beta1_x);
+#if DEBUG_PP
+  LOG_INFO << "beta0_x = " << pp.beta0_x << "\tbeta1_x = " << pp.beta1_x << std::endl << std::endl;
+#endif
   if (err_x > 0)
   {
     return err_x;
   }
 
   int err_y = ar1.compute_params(data_y, pp.beta0_y, pp.beta1_y);
+#if DEBUG_PP
+  LOG_INFO << "beta0_y = " << pp.beta0_y << "\tbeta1_y = " << pp.beta1_y << std::endl << std::endl;
+#endif
   if (err_y > 0)
   {
     return err_y;
@@ -321,10 +291,6 @@ int PathPredict::ar1_params_main(PPLongDouble& pp, std::vector<long double>& dat
     pp.sum_samples_x += data_x[i];
     pp.sum_samples_y += data_y[i];
   }
-
-#if DEBUG
-  LOG_INFO << "beta0_x = " << pp.beta0_x << "\tbeta1_x = " << pp.beta1_x << std::endl << std::endl;
-#endif
 
   pp.observation_x = data_x.back();
   pp.observation_y = data_y.back();
@@ -353,16 +319,14 @@ void PathPredict::covariance_matrix(PPLongDouble& pp, std::vector<long double>& 
   // x
   ar1_pp(pp.beta0_x, pp.beta1_x, pp.pos_x, pp.observation_x, pp.sum_samples_x, pp.mean_x, pp.cov_xx, pp.stdev_x,
          data_x);
-
+  // y
   ar1_pp(pp.beta0_y, pp.beta1_y, pp.pos_y, pp.observation_y, pp.sum_samples_y, pp.mean_y, pp.cov_yy, pp.stdev_y,
          data_y);
-
   // xy
   pp.cov_xy = covariance(data_x, data_y, pp.mean_x, pp.mean_y);
   pp.corr_xy = correlation(pp.cov_xy, pp.stdev_x, pp.stdev_y);
 
-#if DEBUG
-  LOG_INFO << "Forecast timestep" << i + 1 << std::endl;
+#if DEBUG_PP
   LOG_INFO << "Position x : " << O_FIX << O_P << pp.pos_x << "\t"
            << "Covariance xx: " << O_FIX << O_P << pp.cov_xx << "\t"
            << "Standard Deviation x: " << O_FIX << O_P << pp.stdev_x << "\t"
@@ -378,7 +342,8 @@ void PathPredict::covariance_matrix(PPLongDouble& pp, std::vector<long double>& 
 }
 
 int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
-                         std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
+                         std::vector<long double>& data_y, std::vector<PPLongDouble>& pps,
+                         const unsigned int confidence_lv)
 {
   if (data_x.size() != data_y.size())
   {
@@ -392,8 +357,22 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
     return 2;
   }
 
-#if DEBUG
-  printf("Estimating an AR(%lu) model using %lu samples to forecast %lu steps\n\n",
+  // assign confidence_thr by confidence_lv
+  float confidence_thr = 0.f;
+  switch (confidence_lv)
+  {
+    case 1:
+      confidence_thr = 1.15f;  // 75%
+      break;
+    case 2:
+      confidence_thr = 1.96f;  // 95%
+      break;
+    default:
+      confidence_thr = 0.675f;  // 50%
+  }
+
+#if DEBUG_PP
+  printf("\nEstimating an AR(%lu) model using %lu samples to forecast %lu steps\n\n",
          static_cast<unsigned long>(max_order_), static_cast<unsigned long>(data_x.size()),
          static_cast<unsigned long>(num_forecasts_));
 #endif
@@ -409,6 +388,10 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
 
   for (unsigned i = 0; i < num_forecasts_; i++)
   {
+#if DEBUG_PP
+    LOG_INFO << "Forecast timestep" << i + 1 << std::endl;
+#endif
+
     if (i > 0)
     {
       pps[i] = pps[i - 1];
@@ -416,14 +399,84 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
     covariance_matrix(pps[i], data_x, data_y);
   }
 
-  if (show_pp_)
+  if (show_pp_ > 0)
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {
-      confidence_ellipse(pps[i], 0.675);  // 50%: 0.675; 75%: 1.15; 95%: 1.96
+      confidence_ellipse(pps[i], confidence_thr);
     }
   }
 
   return 0;
+}
+
+void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
+                       const unsigned int show_pp)
+{
+  show_pp_ = show_pp;
+
+  std::vector<std::vector<PPLongDouble> >().swap(ppss);
+  ppss.reserve(pp_objs_.size());
+
+  std::vector<PointLD>().swap(offsets_);
+  offsets_.reserve(pp_objs_.size());
+
+  for (unsigned i = 0; i < pp_objs_.size(); i++)
+  {
+#if DEBUG_COMPACT
+    LOG_INFO << "[Track ID] " << pp_objs_[i].track.id << std::endl;
+#endif
+
+    std::vector<PPLongDouble> pps;
+
+    if (pp_objs_[i].track.is_ready_prediction)
+    {
+      std::vector<long double> data_x;
+      std::vector<long double> data_y;
+
+      create_pp_input_main(pp_objs_[i].track, data_x, data_y);
+      compute_pos_offset(data_x, data_y);
+      normalize_pos(data_x, data_y);
+
+#if DEBUG_PP
+      LOG_INFO << std::endl;
+      LOG_INFO << "== Predict X ==" << std::endl;
+      LOG_INFO << "data_x size = " << data_x.size() << std::endl;
+      for (unsigned j = 0; j < data_x.size(); j++)
+        LOG_INFO << "Data " << j + 1 << ": " << data_x[j] << std::endl;
+
+      LOG_INFO << "== Predict Y ==" << std::endl;
+      LOG_INFO << "data_y size = " << data_y.size() << std::endl;
+      for (unsigned j = 0; j < data_y.size(); j++)
+        LOG_INFO << "Data " << j + 1 << ": " << data_y[j] << std::endl;
+#endif
+
+      int err = 0;
+      err = predict(max_order_, num_forecasts_, data_x, data_y, pps, 0);
+      if (err > 0)
+      {
+        pp_objs_[i].track.is_ready_prediction = false;
+        continue;
+      }
+
+      for (unsigned j = 0; j < num_forecasts_; j++)
+      {
+        pp_objs_[i].track.forecasts[j].position.x = pps[j].pos_x - offsets_[i].x;
+        pp_objs_[i].track.forecasts[j].position.y = pps[j].pos_y - offsets_[i].y;
+        pp_objs_[i].track.forecasts[j].covariance_xx = pps[j].cov_xx;
+        pp_objs_[i].track.forecasts[j].covariance_yy = pps[j].cov_yy;
+        pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
+        pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
+      }
+    }
+    else
+    {
+#if DEBUG
+      LOG_INFO << "Require 4+ elements in trajectory." << std::endl;
+#endif
+    }
+
+    ppss.push_back(pps);
+  }
 }
 }  // namespace tpp

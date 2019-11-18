@@ -5,12 +5,18 @@
   <!-- 1: /LidarDetection -->
   <!-- 2: /RadarDetection -->
   <!-- 3: /DetectedObjectArray/cam60_1 -->
+  <!-- 4: /abs_virBB_array -->
+  <!-- 5: /rel_virBB_array -->
   <!-- otherwise: /SensorFusion -->
   <rosparam param="input_source">0</rosparam>
 
   <!-- TPP input/output FPS -->
   <rosparam param="input_fps">10</rosparam>
   <rosparam param="output_fps">10</rosparam>
+
+  <!-- PP AR(1) parameters -->
+  <!-- translate pp input's origin to (pp_input_shift, pp_input_shift) -->
+  <rosparam param="pp_input_shift_m">150.</rosparam>
 
   <!-- rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
@@ -24,7 +30,11 @@
   <rosparam param="show_source">0</rosparam>
   <rosparam param="show_distance">0</rosparam>
   <rosparam param="show_absspeed">0</rosparam>
-  <rosparam param="show_pp">0</rosparam>
+  
+  <!-- <=0: No show pp -->
+  <!--   1: Show pp point w/ confidence ellipse -->
+  <!-- >=2: Show pp point w/o confidence ellipse -->
+  <rosparam param="show_pp">2</rosparam>
 
   <!-- rviz marker color -->
   <rosparam param="color_lidar_tpp">[0., 1., 1., 1.]</rosparam>

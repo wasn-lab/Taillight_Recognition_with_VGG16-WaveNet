@@ -1,0 +1,38 @@
+-----------StaticObj.txt-------------
+1.x (m)
+2.y (m)
+3.z (m)
+4.roll (rad)
+5.pitch (rad)
+6.yaw (rad)
+7.sx (m)
+8.sy (m)
+9.sz (m)
+
+-----------DynamicObj.txt-------------
+1.x (m)
+2.y (m)
+3.z (m)
+4.roll (rad)
+5.pitch (rad)
+6.yaw (rad)
+7.sx (m)
+8.sy (m)
+9.sz (m)
+10.velocity (m/s)
+11.time loop (s)
+
+-----------AEBObj.txt-------------
+1.sx (m)
+2.sy (m)
+3.sz (m)
+4.front dist (m)
+
+-----------rvizPubPointObj.txt-------------
+1.add roll (rad)
+2.add pitch (rad)
+3.add yaw (rad)
+4.sx (m)
+5.sy (m)
+6.sz (m)
+7.velocity (m/s)

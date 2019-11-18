@@ -18,7 +18,6 @@
 #include "CameraGrabber/MultiGMSLCameraGrabber.h"
 #include "RosImagePubSub.hpp"
 
-
 #include "npp_utils.h"
 #include "npp.h"
 #include "npp_resizer.h"
@@ -57,9 +56,9 @@ public:
   {
     for (size_t i = 0; i < size; ++i)
       if (frames_GPU[i] != nullptr)
-        {
-          cudaFree(frames_GPU[i]);
-        }
+      {
+        cudaFree(frames_GPU[i]);
+      }
     cudaStreamDestroy(st);
   }
 
@@ -150,16 +149,15 @@ public:
       canvas[i] = cv::Mat(cam_H, cam_W, CV_8UC4, camera_buffer_cpu[i]);
       cv::cvtColor(canvas[i], canvas[i], CV_RGBA2BGR, cam_C);
     }
-
   }
 
-  private:
-    const size_t RAWSIZE_ = MultiGMSLCameraGrabber::ImageSize / sizeof(uint8_t);
-    const size_t cam_H = MultiGMSLCameraGrabber::H;
-    const size_t cam_W = MultiGMSLCameraGrabber::W;
-    const size_t cam_C = 3;  // BGR 3 channels
-    cudaStream_t st;
-  };
+private:
+  const size_t RAWSIZE_ = MultiGMSLCameraGrabber::ImageSize / sizeof(uint8_t);
+  const size_t cam_H = MultiGMSLCameraGrabber::H;
+  const size_t cam_W = MultiGMSLCameraGrabber::W;
+  const size_t cam_C = 3;  // BGR 3 channels
+  cudaStream_t st;
+};
 }  // end namespace SensingSubSystem
 
 #endif

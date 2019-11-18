@@ -208,7 +208,10 @@ add_definitions         (${PCL_DEFINITIONS})
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+
+file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
  
-add_executable(squeezeseg_inference src/squeezeseg_inference.cpp)
+add_executable(squeezeseg_inference ${SOURCES_SRCS})
 add_dependencies(squeezeseg_inference ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(squeezeseg_inference ${catkin_LIBRARIES} ${PCL_LIBRARIES})

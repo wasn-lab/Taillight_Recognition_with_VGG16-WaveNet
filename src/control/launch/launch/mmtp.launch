@@ -1,0 +1,37 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+	<node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
+		<param name="Path_flag" value="0" type="int"/>
+		<param name="look_ahead_time_straight" value="1.6" type="double"/>
+                <param name="look_ahead_time_turn" value="1.6" type="double"/><!--1.1-->
+		<param name="ID_1" value="61" type="int"/>
+		<param name="ID_2" value="79" type="int"/>
+		<param name="ID_3" value="83" type="int"/>
+		<param name="ID_4" value="104" type="int"/>
+		<param name="Freespace_mode" value="0" type="int"/>
+		<param name="safe_range" value="0.6" type="double"/>
+		<param name="w_l" value="0" type="double"/><!--0.5-->
+		<param name="w_k" value="0" type="double"/><!--1-->
+		<param name="w_k_1" value="0" type="double"/><!--1-->
+		<param name="w_obs" value="30" type="double"/>
+		<param name="w_c" value="5" type="double"/>
+		<param name="w_lane" value="100" type="double"/>
+		<param name="w_fs" value="30" type="double"/>
+		<param name="takeover_mag" value="2" type="double"/><!--2-->
+		<param name="forward_length_2" value="20" type="double"/>
+		<param name="J_minvalue_diff_min" value="0" type="double"/>
+		<param name="J_minvalue_index" value="0" type="double"/>
+		<param name="VirBB_mode" value="1" type="double"/>
+		<param name="w_off_" value="10" type="double"/>
+		<param name="w_off_avoid" value="5" type="double"/>
+		<param name="OB_enlarge" value="0.3" type="double"/>
+	</node>
+	<node pkg="virbb_pub" type="virbb_pub" name="virbb_pub" output="screen" cwd="node" respawn="true"  >
+		<param name="hz" value="100" type="int"/>
+		<param name="ppdt" value="0.5" type="double"/>
+		<param name="ppft" value="2" type="double"/>
+	</node>
+	<!--node pkg="tf2_ros" type="static_transform_publisher" name="lidar2baselink" args="0 0 0 0 0 0  /base_link /lidar"/-->
+
+</launch>

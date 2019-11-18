@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(drivenet)
 
 add_compile_options(-std=c++11 -O3)
+set (CMAKE_BUILD_TYPE Release) 
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -10,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   image_transport
   cv_bridge
+  car_model
+  camera_utils
   drivenet_lib
 )
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
@@ -21,12 +24,10 @@ message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES drivenet
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
 )
 
 set(LIBS drivenet_lib
+         camera_utils
          ${OpenCV_LIBRARIES}
          nvinfer
          nvinfer_plugin
@@ -41,6 +42,8 @@ add_definitions("-DNPP")
 include_directories(
   include 
   ${INCLUDE_DIRS}
+  ${car_model_BINARY_DIR}/include
+  ${camera_utils_SOURCE_DIR}/include
   ${DRIVENETLIB_INCLUDE}
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -51,13 +54,12 @@ message(STATUS "DRIVENETLIB_INCLUDE: ${DRIVENETLIB_INCLUDE}")
 link_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CUDA_LIBRARY_DIRS}
-  ${TrtYolo_LIBRARY_DIRS}
   ${OpenCV_LIBRARY_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/drivenet_60_3.cpp  src/trt_yolo_interface.cpp  src/DistanceEstimation.cpp)
-add_executable(${PROJECT_NAME}_node1 src/drivenet_120_3.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation.cpp)
-add_executable(${PROJECT_NAME}_node2 src/drivenet_30_3.cpp  src/trt_yolo_interface.cpp src/DistanceEstimation.cpp)
+add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp src/image_preprocessing.cpp)
+add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp)
+add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp)
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

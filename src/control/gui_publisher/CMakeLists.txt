@@ -1,0 +1,67 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(gui_publisher)
+
+
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  std_msgs
+  message_generation
+  msgs
+)
+
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  msgs
+)
+
+###################################
+## catkin specific configuration ##
+###################################
+catkin_package(CATKIN_DEPENDS
+  roscpp 
+  rospy 
+  std_msgs 
+  message_runtime 
+  msgs
+)
+
+###########
+## Build ##
+###########
+include_directories(${catkin_INCLUDE_DIRS})
+
+
+#add_executable(GUI_Publisher01 src/GUI_Publisher01.cpp )
+#target_link_libraries(GUI_Publisher01 ${catkin_LIBRARIES})
+#add_dependencies(GUI_Publisher01 GUI_Publisher01_generate_messages_cpp)
+#
+#add_executable(GUI_Publisher02 src/GUI_Publisher02.cpp )
+#target_link_libraries(GUI_Publisher02 ${catkin_LIBRARIES})
+#add_dependencies(GUI_Publisher02 GUI_Publisher02_generate_messages_cpp)
+
+#add_executable(GUI_Publisher03 src/GUI_Publisher03.cpp )
+#target_link_libraries(GUI_Publisher03 ${catkin_LIBRARIES})
+#add_dependencies(GUI_Publisher03 GUI_Publisher03_generate_messages_cpp)
+
+
+add_executable(gui_publisher_all src/GUI_Publisher_all.cpp )
+target_link_libraries(gui_publisher_all ${catkin_LIBRARIES})
+add_dependencies(gui_publisher_all gui_publisher_all_generate_messages_cpp)
+add_dependencies(gui_publisher_all ${catkin_EXPORTED_TARGETS} )
+add_dependencies(gui_publisher_all ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
+
+

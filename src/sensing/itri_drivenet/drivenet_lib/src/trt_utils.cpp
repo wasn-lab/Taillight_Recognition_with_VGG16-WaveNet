@@ -50,6 +50,22 @@ bool fileExists(const std::string fileName, bool verbose)
     return true;
 }
 
+bool removeFile(const std::string fileName, bool verbose)
+{
+    verbose = std::experimental::filesystem::remove(std::experimental::filesystem::path(fileName));
+    if (verbose) 
+    {
+        std::cout << "The " << fileName << " was deleted." << std::endl;
+        return true;
+    }
+    else 
+    {
+        std::cout << "The " << fileName << " was't deleted." << std::endl;
+        return false;
+    }
+
+}
+
 BBox convertBBoxNetRes(const float& bx, const float& by, const float& bw, const float& bh,
                        const uint& stride, const uint& netW, const uint& netH)
 {
@@ -204,7 +220,6 @@ nvinfer1::ICudaEngine* loadTRTEngine(const std::string planFilePath, PluginFacto
                                      Logger& logger)
 {
     // reading the model in memory
-    std::cout << "Loading TRT Engine..." << std::endl;
     assert(fileExists(planFilePath));
     std::stringstream trtModelStream;
     trtModelStream.seekg(0, trtModelStream.beg);
@@ -225,7 +240,6 @@ nvinfer1::ICudaEngine* loadTRTEngine(const std::string planFilePath, PluginFacto
         = runtime->deserializeCudaEngine(modelMem, modelSize, pluginFactory);
     free(modelMem);
     runtime->destroy();
-    std::cout << "Loading Complete!" << std::endl;
 
     return engine;
 }
@@ -267,7 +281,7 @@ std::vector<float> loadWeights(const std::string weightsFilePath, const std::str
     std::cout << "Loading complete!" << std::endl;
     delete[] floatWeight;
 
-    std::cout << "Total Number of weights read : " << weights.size() << std::endl;
+    std::cout << "Total Number of weights read : " << weights.size() << std::endl << std::endl;
     return weights;
 }
 

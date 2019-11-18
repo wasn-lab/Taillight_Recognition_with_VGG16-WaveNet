@@ -11,15 +11,73 @@ sudo apt-get install ros-kinetic-cv-bridge
 ```
 
 ### How to run
+
+car 1:
+
 ```
 source ./devel/setup.bash
-roslaunch drivenet drivenet60.launch
-roslaunch drivenet drivenet120.launch
-roslaunch drivenet drivenet30.launch
 ```
-### How to evaluate
+
+FOV60 CamObjFrontRight, CamObjFrontCenter, CamObjFrontLeft
 ```
-rostopic echo /DetectedObjectArray/cam30
-rostopic echo /DetectedObjectArray/cam60
-rostopic echo /DetectedObjectArray/cam120
+roslaunch drivenet b1_drivenet_60.launch
 ```
+
+FOV120 CamObjRightFront, CamObjRightBack, CamObjLeftFront, CamObjLeftBack
+```
+roslaunch drivenet b1_drivenet_120_1.launch 
+```
+
+FOV120 CamObjFrontCenter, CamObjBackTop
+```
+roslaunch drivenet b1_drivenet_120_2.launch
+```
+
+
+### How to setup parameters of launch file 
+
+1. car_id (Choose car config)
+```
+1: car 1 (b1~.launch)
+```
+
+1. standard_fps (regular publisher)
+```
+0: disable (default)
+1: enable
+```
+
+2. display  (2D detection visualization)
+```
+0: disable (default)
+1: enable
+```
+
+3. input_resize (2D detection visualization)
+```
+0: disable
+1: enable (default)
+```
+
+4. imgResult_publish (2D detection visualization publisher)
+```
+0: disable (default)
+1: enable
+```
+
+### How to evaluate results
+```
+rostopic echo /CamObjFrontRight
+rostopic echo /CamObjFrontCenter
+rostopic echo /CamObjFrontLeft
+
+rostopic echo /CamObjRightFront
+rostopic echo /CamObjRightBack
+rostopic echo /CamObjLeftFront
+rostopic echo /CamObjLeftBack
+
+rostopic echo /CamObjFrontCenter
+rostopic echo /CamObjBackTop
+```
+
+

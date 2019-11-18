@@ -1,3 +1,5 @@
+#include "car_model.h"
+#if CAR_MODEL_IS_HINO
 #include <gtest/gtest.h>
 #include "camera_params.h"
 #include "camera_distance_mapper.h"
@@ -20,3 +22,4 @@ TEST(CameraUtilsTest, test_distance_mapper_init)
 
   LOG(INFO) << mat.at<float>(1208 / 2, 1920 / 2);
 }
+#endif // CAR_MODEL_IS_HINO

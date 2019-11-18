@@ -1,0 +1,7 @@
+#ifndef __PED_DEF_H__
+#define __PED_DEF_H__
+
+#cmakedefine PED_MODEL_DIR "@PED_MODEL_DIR@"
+
+#endif
+

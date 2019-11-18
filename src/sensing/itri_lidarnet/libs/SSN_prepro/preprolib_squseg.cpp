@@ -259,7 +259,7 @@ void SSNspan_config(float *OUT_ptr, const char ViewType, const float phi_center)
 		const float SPAN_PARA[3][2] = {{90, 512},
 		                         {180, 1024},
 								 {90, 512}};      // {span, imagewidth}
-		int phi_center_ind;
+		int phi_center_ind = 0;
 
 		switch (int(phi_center))
 		{
