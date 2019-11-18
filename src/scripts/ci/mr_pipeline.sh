@@ -8,6 +8,7 @@ readonly build_type="${build_type:-Release}"
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
+git fetch
 
 python src/scripts/ci/check_file_size.py
 
