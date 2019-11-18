@@ -11,7 +11,7 @@ readonly devel_dir=devel_clang
 pushd $repo_dir
 
 # clean up the previous build.
-for _dir in ${build_dir} ; do
+for _dir in ${build_dir} ${devel_dir}; do
     if [[ -d $_dir ]]; then
         rm -rf $_dir
     fi
