@@ -51,7 +51,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       //sensor_msgs::Image ptr = *it;
       if (imageCache[i].first <= msg->header.stamp)
       {
-        std::cout <<"GOT CHA !!!!! time: "<< imageCache[i].first<<std::endl;
+        std::cout <<"GOT CHA !!!!! time: "<< imageCache[i].first<<" , "<<msg->header.stamp<<std::endl;
         matrix = imageCache[i].second;
         break;
       }
@@ -145,18 +145,16 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
         std::vector<cv::Point> keypoints = get_openpose_keypoint(cropedImage);
         std::cout << keypoints.size() << std::endl;
+
         
         for(unsigned int i=0;i<keypoints.size();i++)
           cv::circle(cropedImage, keypoints.at(i), 2, cv::Scalar(0, 255, 0));
 
-        // std::vector<int> params;
-        // params.resize(3, 0);
-        // params[0] = CV_IMWRITE_PNG_COMPRESSION;
-        // params[1] = 1;
-        // cv::imencode(".png", cropedImage, msg_pub3.data, params);
+        
         sensor_msgs::ImageConstPtr msg_pub3 = cv_bridge::CvImage(std_msgs::Header(), "bgr8",cropedImage).toImageMsg();
         pose_pub.publish(msg_pub3);
-        obj_pub.crossProbability = load_model(obj.camInfo.u, obj.camInfo.v, obj.camInfo.width, obj.camInfo.height);
+        obj_pub.crossProbability = Crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u+obj.camInfo.width, obj.camInfo.v+obj.camInfo.height, keypoints);
+        std::cout<<"prob: "<<obj_pub.crossProbability<<std::endl;
         pedObjs.push_back(obj_pub);
       }
     }
@@ -172,12 +170,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
       chatter_pub.publish(msg_pub);
 
-      // sensor_msgs::Image msg_pub2;
-      // msg_pub2 = *it;
-      // std::vector<int> params;
-      // params.resize(3, 0);
-      // params[0] = CV_IMWRITE_PNG_COMPRESSION;
-      // params[1] = 1;
       cv::Rect box;
       cv::Mat matrix2;
       matrix.copyTo(matrix2);
@@ -199,11 +191,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       }
 
       cv::resize(matrix2, matrix2, cv::Size(matrix2.cols / 1, matrix2.rows / 1));
-      // cv::imshow("image", matrix2);
-      // cv::waitKey(10);
-      // sensor_msgs::Image msg_img = msg_pub2;
-      // cv::imencode(".png", matrix2, msg_img.data, params);
-      // msg_img = cv_bridge::CvImage(std_msgs::Header(), "bgr8",matrix2).toImageMsg();
+      
       sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8",matrix2).toImageMsg();
 
       // std::cout<<"object num: "<<pedObjs.size()<<std::endl;
@@ -214,14 +202,134 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
   }
 }
+double PedestrianEvent::Crossing_predict(double bb_x1, double bb_y1, double bb_x2, double bb_y2, std::vector<cv::Point> keypoint)
+		{
+		    try
+		    {
+                std::vector<double> keypoints_x;
+                std::vector<double> keypoints_y;
+                
+                //Get body we need
+                int body_part[13] = {1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14};
+                for(int i=0; i<13; i++)
+                {
+                    keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
+                    keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
+                    
+                }
+                
+                //Caculate the features
+                int keypoints_num = 13;
+                std::vector<double> feature;
 
-float PedestrianEvent::load_model(float u, float v, float w, float h)
-{
-  cv::Mat array = cv::Mat(1, 4, CV_32F, { u, v, u + w, v + h });
-  float p = rf->predict(array);
-  // std::cout<<"prediction: "<<p<<std::endl;
-  return p;
-}
+                //Add bbox to feature vector
+                double bbox[] = {bb_x1, bb_y1, bb_x2, bb_y2};
+                feature.insert(feature.end(), bbox,bbox + sizeof(bbox) / sizeof(bbox[0]));
+
+                //Caculate x_distance, y_distance, distance, angle
+                for(int m=0; m<keypoints_num; m++)
+                {       
+                    for(int n=m+1; n<keypoints_num; n++)
+                    {
+                        double dist_x, dist_y, dist, angle;
+                        if(keypoints_x[m]!=0.0f &&  keypoints_y[m]!=0.0f && keypoints_x[n]!=0.0f && keypoints_y[n]!=0.0f)
+                        {
+                            dist_x = abs(keypoints_x[m]-keypoints_x[n]);
+                            dist_y = abs(keypoints_y[m]-keypoints_y[n]);
+                            dist = Get_distance2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
+                            angle = Get_angle2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
+                        }
+                        else
+                        {
+                            dist_x = 0.0f;
+                            dist_y = 0.0f;
+                            dist = 0.0f;
+                            angle = 0.0f;
+                        }
+                        double input[] = {dist_x,dist_y,dist,angle};
+                        feature.insert(feature.end(),input,input + sizeof(input) / sizeof(input[0]));
+                    }
+                }
+                
+                for(int m=0; m<keypoints_num; m++)
+                {       
+                    for(int n=m+1; n<keypoints_num; n++)
+                    {
+                        for(int k=n+1; k<keypoints_num; k++)
+                        {
+                            double angle[3] = {0.0f, 0.0f, 0.0f};
+                            double* angle_ptr;    
+                            if((keypoints_x[m]!=0.0f ||  keypoints_y[m]!=0.0f) && (keypoints_x[n]!=0.0f || keypoints_y[n]!=0.0f) && (keypoints_x[k]!=0.0f || keypoints_y[k]!=0.0f))
+                            {
+
+                                angle_ptr = Get_triangle_angle(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n], keypoints_x[k], keypoints_y[k]);
+                                angle[0] = *angle_ptr;
+                                angle[1] = *(angle_ptr+1);
+                                angle[2] = *(angle_ptr+2);
+                            }
+                            feature.insert(feature.end(), angle, angle + sizeof(angle) / sizeof(angle[0]));
+                        }
+                    }
+                }
+                
+                
+                //Convert vector to array
+                static double feature_arr[1174];
+                std::copy(feature.begin(), feature.end(), feature_arr);
+                //Convert array to Mat
+                cv::Mat feature_mat =cv::Mat(1, 1174, CV_32F, feature_arr);
+                //Predict
+                double predict_result = Predict(feature_mat);
+                
+                return predict_result;
+		    }
+		    catch (const std::exception& e)
+		    {
+          std::cout<<"predict error"<<std::endl;
+		    }
+		}
+
+        double PedestrianEvent::Get_distance2(double x1, double y1, double x2, double y2)
+        {
+            return sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+        }
+        
+        double PedestrianEvent::Get_angle2(double x1, double y1, double x2, double y2)
+        {
+            return M_PI/2 - atan2(abs(y1-y2), abs(x1-x2));
+        }
+
+    double* PedestrianEvent::Get_triangle_angle(double x1, double y1, double x2, double y2, double x3, double y3)
+        {
+            double a = Get_distance2(x1, y1, x2, y2);
+            double b = Get_distance2(x2, y2, x3, y3);
+            double c = Get_distance2(x1, y1, x3, y3);
+            double test = (a*a + c*c - b*b)/(2*a*c);
+            static double angle[3] = {0.0f, 0.0f, 0.0f};
+            if (test  <= 1 && test >= -1)
+            {
+                angle[0] = acos((a*a + c*c - b*b)/(2*a*c));
+                angle[1] = acos((a*a + b*b - c*c)/(2*a*b));
+                angle[2] = M_PI - angle[0] - angle[1];
+            }
+            else
+            {
+                if (std::max(a, std::max(b, c)) == a)
+                    angle[2] = M_PI;
+                else if (std::max(a, std::max(b, c)) == b)
+                    angle[0] = M_PI;
+                else
+                    angle[1] = M_PI;
+            }
+            return angle;
+        } 
+
+    double PedestrianEvent::Predict(cv::Mat input_data)
+		{
+			double p =rf->predict(input_data);
+			std::cout<<"prediction: "<<p<<std::endl;
+		    return p;
+        }
 
 void PedestrianEvent::pedestrian_event()
 {
@@ -364,7 +472,7 @@ int main(int argc, char** argv)
   // lenet.CopyTrainedLayersFrom("models/mpi/pose_iter_160000.caffemodel");
 
   ped::PedestrianEvent pe;
-  pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR+std::string("/rf.yml"));
+  pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR+std::string("/rf_1frames_1.yml"));
   std::string protoFile = PED_MODEL_DIR+std::string("/body_25/pose_deploy.prototxt");
   std::string weightsFile = PED_MODEL_DIR+std::string("/body_25/pose_iter_584000.caffemodel");
   pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
