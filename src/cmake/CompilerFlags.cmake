@@ -62,7 +62,6 @@ APPEND_GLOBAL_COMPILER_FLAGS(
     -Wno-unused-parameter
     -Wcast-align
     -Wformat-security
-    -Wmissing-format-attribute
     -Wpointer-arith
     -Wwrite-strings)
 
