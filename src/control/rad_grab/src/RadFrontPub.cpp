@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     int nbytes, i;
     static struct ifreq ifr;
     static struct sockaddr_ll sll;
-    char *ifname = "can1";
+    const char *ifname = "can1";
     int ifindex;
     int opt;
     int send_one_frame = 0;
