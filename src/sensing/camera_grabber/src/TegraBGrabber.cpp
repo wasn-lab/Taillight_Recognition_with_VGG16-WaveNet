@@ -35,7 +35,7 @@ TegraBGrabber::~TegraBGrabber()
     delete grabber;
     printf("grabber DELETED OK!\n");
   }
-  for (int i = 0; i < cam_ids_.size(); i++)
+  for (size_t i = 0; i < cam_ids_.size(); i++)
   {
     nppiFree(npp8u_ptrs_[i]);
     nppiFree(npp8u_ptrs_distorted_[i]);
