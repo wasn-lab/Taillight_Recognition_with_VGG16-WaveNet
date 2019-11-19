@@ -584,7 +584,7 @@ void processLocalDatum( int length, char *pData )
 
         memcpy( id, pData, 8 );
         pData += 8;
-        id[9] = 0;
+        // id[9] = 0;  // Out of bound
 
         lat = getDouble( &pData ) * 180.0 / PI;
         lon = getDouble( &pData ) * 180.0 / PI;
@@ -1196,13 +1196,13 @@ void processLbandStatus( int length, char *pData )
                 "  I/Q ratio:%g"
                 "  Estimated BER:%g"
                 "\n"
-                "  Total unique words(UW):%d"
-                "  Bad UW:%d"
-                "  Bad UW bits:%d"
+                "  Total unique words(UW):%lu"
+                "  Bad UW:%lu"
+                "  Bad UW bits:%lu"
                 "\n"
-                "  Total Viterbi:%d"
-                "  Corrected Viterbi:%d"
-                "  Bad messages:%d"
+                "  Total Viterbi:%lu"
+                "  Corrected Viterbi:%lu"
+                "  Bad messages:%lu"
                 "\n"
                 "  Meas freq valid?:%d"
                 "  Meas freq:%.3f"
@@ -1332,7 +1332,7 @@ void processINSFullNavigation( int length, char *pData )
         Traverse_accel_Y = getFloat( &pData );
         Down_accel_Z = getFloat( &pData );
 
-        printf( "  GPS_Week:%d TOWms:%ld IMU_Status:%02X \n", GPS_week_number, GPS_time_ms, IMU_alignment_status );
+        printf( "  GPS_Week:%d TOWms:%u IMU_Status:%02X \n", GPS_week_number, GPS_time_ms, IMU_alignment_status );
         printf( " \n " );
         printf( "  GPS Quality:%02X Lat:%.7lf Long:%.7lf Alt:%.3lf \n", GPS_quality_indicator,  Latitude, Longitude, Altitude );
         printf( " \n " );
@@ -1472,7 +1472,7 @@ void processINSRMS( int length, char *pData )
         Pitch_RMS = (double) getFloat( &pData );
         Heading_RMS = (double) getFloat( &pData );
 
-        printf( "  GPS_Week:%d TOWms:%ld IMU_Status:%02X \n", GPS_week_number, GPS_time_ms, IMU_alignment_status );
+        printf( "  GPS_Week:%d TOWms:%u IMU_Status:%02X \n", GPS_week_number, GPS_time_ms, IMU_alignment_status );
         printf( " \n " );
         printf( "  GPS Quality:%02X North Pos RMS:%.3lf East Pos RMS:%.3lf Down Pos RMS:%.3lf \n", GPS_quality_indicator,  North_Position_RMS, East_Position_RMS, Down_Position_RMS );
         printf( " \n " );
