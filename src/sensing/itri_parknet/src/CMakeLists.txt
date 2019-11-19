@@ -22,6 +22,7 @@ set(PARKNET_LIB_SRCS
 
 # -Wunused-local-typedef is caused by glog of older version
 set_source_files_properties(parknet_node_impl.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-local-typedef)
+set_source_files_properties(parknet_image_manager.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-local-typedef)
 
 set(PARKNET_INCLUDE_DIRS
     ${catkin_INCLUDE_DIRS}
@@ -86,7 +87,3 @@ add_dependencies(${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PARKNET_EXE} ${PARKNET_LIB} ${catkin_EXPORTED_TARGETS})
 add_subdirectory(alignment)
 add_subdirectory(test)
-
-# Debug only:
-# include(CmakeUtils)
-# dump_cmake_variables()
