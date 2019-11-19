@@ -56,11 +56,11 @@ public:
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
   std::vector<cv::Point> get_openpose_keypoint(cv::Mat input_image);
-  double Crossing_predict(double bb_x1, double bb_y1, double bb_x2, double bb_y2, std::vector<cv::Point> keypoint);
-  double* Get_triangle_angle(double x1, double y1, double x2, double y2, double x3, double y3);
-  double Get_distance2(double x1, double y1, double x2, double y2);
-  double Get_angle2(double x1, double y1, double x2, double y2);
-  double Predict(cv::Mat input_data);
+  double crossing_predict(double bb_x1, double bb_y1, double bb_x2, double bb_y2, std::vector<cv::Point> keypoint);
+  double* get_triangle_angle(double x1, double y1, double x2, double y2, double x3, double y3);
+  double get_distance2(double x1, double y1, double x2, double y2);
+  double get_angle2(double x1, double y1, double x2, double y2);
+  double predict_rf(cv::Mat input_data);
   cv::dnn::Net net_openpose;
   cv::Ptr<cv::ml::RTrees> rf;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner;
