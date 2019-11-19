@@ -8,16 +8,19 @@ readonly build_type="${build_type:-Release}"
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
+git fetch
 
 python src/scripts/ci/check_file_size.py
+python src/scripts/ci/check_locked_file.py
 
-readonly output=$(python src/scripts/ci/check_package_change.py)
-if [[ "${output}" =~ "package.xml" ]]; then
-  echo "merge request has package.xml -> Clean build"
+readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
+echo ${clean_build_status}
+if [[ "${clean_build_status}" =~ "Clean build" ]]; then
   bash src/scripts/ci/module_build.sh
+  bash src/scripts/ci/module_build_clang.sh
 else
-  echo "merge request doest not have package.xml -> Dirty build"
   catkin_make
+  catkin_make --build build_clang -DCATKIN_DEVEL_PREFIX=devel_clang
 fi
 
 popd

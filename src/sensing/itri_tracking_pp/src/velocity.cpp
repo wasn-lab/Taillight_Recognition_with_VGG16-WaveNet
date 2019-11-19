@@ -160,7 +160,7 @@ void Velocity::compute_ego_position_absolute()
   ego_x_abs_prev_ = ego_x_abs_;  // meter
   ego_y_abs_prev_ = ego_y_abs_;  // meter
 
-  float buf[1][2] = { ego_x_rel_, ego_y_rel_ };
+  float buf[1][2] = { {ego_x_rel_, ego_y_rel_} };
   rotate(buf, 1, ego_heading_);
 
   ego_x_abs_ = buf[0][0];  // meter
@@ -194,7 +194,7 @@ void Velocity::update_localization()
 
   ego_heading_prev_ = ego_heading_;
 
-  float buf[1][2] = { ego_dx_rel_, ego_dy_rel_ };
+  float buf[1][2] = { {ego_dx_rel_, ego_dy_rel_} };
   rotate(buf, 1, ego_heading_prev_);
 
   ego_dx_abs_ = buf[0][0];
@@ -217,7 +217,7 @@ void Velocity::compute_object_absolute_position_displacement()
   obj_dx_rel_to_prev_ego_ = ego_dx_rel_ + obj_dx_rel_to_each_ego_;  // meter
   obj_dy_rel_to_prev_ego_ = ego_dy_rel_ + obj_dy_rel_to_each_ego_;  // meter
 
-  float buf[1][2] = { obj_dx_rel_to_prev_ego_, obj_dy_rel_to_prev_ego_ };
+  float buf[1][2] = { {obj_dx_rel_to_prev_ego_, obj_dy_rel_to_prev_ego_} };
   rotate(buf, 1, ego_heading_prev_);
 
   obj_dx_abs_ = buf[0][0];  // meter

@@ -1,3 +1,5 @@
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+
 find_package(OpenCV)
 find_package(PCL)
 # PCL Variables: see PCLConfig.cmake (usu in /usr/local/share/pcl-1.9)
@@ -12,3 +14,6 @@ catkin_add_gtest(
     car_model_test
     car_model_test.cpp
     env_checker.cpp)
+
+# include(CmakeUtils)
+# dump_cmake_variables()

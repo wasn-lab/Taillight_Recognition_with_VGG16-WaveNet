@@ -406,7 +406,10 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
         {
             std::cout << "Engine Compatibility Errors: Using incompatible gpu device, the program will be rebuild engine file." << std::endl;
             if(!removeFile(m_EnginePath)) assert("Couldn't remove Engine file.");
-            m_Engine = false;
+            if(m_Engine){
+                m_Engine->destroy();
+                m_Engine = nullptr;
+            }
             if(m_PluginFactory) m_PluginFactory->destroy();   
         }
         else if (!m_Engine)
@@ -417,7 +420,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
         {
             std::cout << "The engine plan file is generated on an compatible device!" << std::endl;
             std::cout << "Using previously generated plan file located at " << m_EnginePath << std::endl;
-            m_Engine = false;
+            m_Engine = nullptr;
             if(m_PluginFactory) m_PluginFactory->destroy();  
             destroyNetworkUtils(trtWeights);
             return;
