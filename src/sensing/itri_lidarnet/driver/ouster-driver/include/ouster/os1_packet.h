@@ -53,7 +53,6 @@ struct trig_table_entry {
 static trig_table_entry trig_table[pixels_per_column];
 }
 
-/*
 static bool init_tables() {
     for (int i = 0; i < pixels_per_column; i++) {
         trig_table[i] = {sinf(beam_altitude_angles[i] * 2 * M_PI / 360.0f),
@@ -64,7 +63,6 @@ static bool init_tables() {
 }
 
 static bool tables_initialized = init_tables();
-*/
 
 // lidar column fields
 inline const uint8_t* nth_col(int n, const uint8_t* udp_buf) {
