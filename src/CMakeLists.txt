@@ -61,6 +61,5 @@ else()
 endif()
 
 catkin_workspace()
-
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(GlobalConfig)
