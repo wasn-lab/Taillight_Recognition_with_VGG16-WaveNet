@@ -278,15 +278,13 @@ void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjA
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = Cam60_0_ObjArray->objects;
   msgCam60_0_Obj.header = Cam60_0_ObjArray->header;
   // printf("Cam60_0_ObjArray->objects.size() = %ld\n",Cam60_0_ObjArray->objects.size());
 
   Cam60_0_num = Cam60_0_ObjArray->objects.size();
 
-  for (i = 0; i < Cam60_0_ObjArray->objects.size(); i++)
+  for (unsigned i = 0; i < Cam60_0_ObjArray->objects.size(); i++)
   {
     Cam60_0_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam60_0_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -307,8 +305,6 @@ void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjA
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   vDetectedObjectCAM_60_1.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = Cam60_1_ObjArray->objects;
   msgCam60_1_Obj.header = Cam60_1_ObjArray->header;
@@ -319,7 +315,7 @@ void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjA
   else
     Cam60_1_num_cb = Cam60_1_ObjArray->objects.size();
 
-  for (i = 0; i < Cam60_1_num_cb; i++)
+  for (int i = 0; i < Cam60_1_num_cb; i++)
   {
     Cam60_1_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam60_1_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -339,15 +335,13 @@ void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjA
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = Cam60_2_ObjArray->objects;
   msgCam60_2_Obj.header = Cam60_2_ObjArray->header;
   // printf("Cam60_2_ObjArray->objects.size() = %ld\n",Cam60_2_ObjArray->objects.size());
 
   Cam60_2_num = Cam60_2_ObjArray->objects.size();
 
-  for (i = 0; i < Cam60_2_ObjArray->objects.size(); i++)
+  for (unsigned i = 0; i < Cam60_2_ObjArray->objects.size(); i++)
   {
     Cam60_2_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam60_2_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -369,15 +363,13 @@ void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjA
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = Cam30_0_ObjArray->objects;
   msgCam30_0_Obj.header = Cam30_0_ObjArray->header;
   // printf("Cam30_0_ObjArray->objects.size() = %ld\n",Cam30_0_ObjArray->objects.size());
 
   Cam30_0_num = Cam30_0_ObjArray->objects.size();
 
-  for (i = 0; i < Cam30_0_ObjArray->objects.size(); i++)
+  for (unsigned i = 0; i < Cam30_0_ObjArray->objects.size(); i++)
   {
     Cam30_0_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam30_0_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -397,8 +389,6 @@ std_msgs::Header cam30_1_Header;
 void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjArray)
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  int i, j, tmp, a, b, c, d;
 
   vDetectedObjectCAM_30_1.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = Cam30_1_ObjArray->objects;
@@ -422,15 +412,13 @@ void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjA
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = Cam30_2_ObjArray->objects;
   msgCam30_2_Obj.header = Cam30_2_ObjArray->header;
   // printf("Cam30_2_ObjArray->objects.size() = %ld\n",Cam30_2_ObjArray->objects.size());
 
   Cam30_2_num = Cam30_2_ObjArray->objects.size();
 
-  for (i = 0; i < Cam30_2_ObjArray->objects.size(); i++)
+  for (unsigned i = 0; i < Cam30_2_ObjArray->objects.size(); i++)
   {
     Cam30_2_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam30_2_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -453,15 +441,13 @@ void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_Ob
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = Cam120_0_ObjArray->objects;
   msgCam120_0_Obj.header = Cam120_0_ObjArray->header;
   // printf("Cam120_0_ObjArray->objects.size() = %ld\n",Cam120_0_ObjArray->objects.size());
 
   Cam120_0_num = Cam120_0_ObjArray->objects.size();
 
-  for (i = 0; i < Cam120_0_ObjArray->objects.size(); i++)
+  for (unsigned i = 0; i < Cam120_0_ObjArray->objects.size(); i++)
   {
     Cam120_0_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam120_0_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -481,8 +467,6 @@ std_msgs::Header cam120_1_Header;
 void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_ObjArray)
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  int i, j, tmp, a, b, c, d;
 
   vDetectedObjectCAM_120_1.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = Cam120_1_ObjArray->objects;
@@ -508,15 +492,13 @@ void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_Ob
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = Cam120_2_ObjArray->objects;
   msgCam120_2_Obj.header = Cam120_2_ObjArray->header;
   // printf("Cam120_2_ObjArray->objects.size() = %ld\n",Cam120_2_ObjArray->objects.size());
 
   Cam120_2_num = Cam120_2_ObjArray->objects.size();
 
-  for (i = 0; i < Cam120_2_ObjArray->objects.size(); i++)
+  for (unsigned i = 0; i < Cam120_2_ObjArray->objects.size(); i++)
   {
     Cam120_2_uv[i][0] = vDetectedObject[i].camInfo.u;
     Cam120_2_uv[i][1] = vDetectedObject[i].camInfo.v;
@@ -545,8 +527,6 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
   vDetectedObjectTemp.clear();
   vDetectedObjectLID.clear();
 
-  int i, j, tmp, a, b, c, d;
-
   std::vector<msgs::DetectedObject> vDetectedObject = LidarObjArray->objects;
   msgLidarObj.header = LidarObjArray->header;
 
@@ -572,7 +552,6 @@ void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray)
 {
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
-  int i, j, tmp, a, b, c, d;
   vDetectedObjectRAD.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = RadObjArray->objects;
 
@@ -583,7 +562,7 @@ void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray)
   else
     radar_num_cb = RadObjArray->objects.size();
 
-  for (i = 0; i < radar_num_cb; i++)
+  for (int i = 0; i < radar_num_cb; i++)
   {
     radar_uv[i][0] = vDetectedObject[i].radarInfo.imgPoint60.x;
     radar_uv[i][1] = vDetectedObject[i].radarInfo.imgPoint60.y;
@@ -600,8 +579,6 @@ void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray)
 
 void decisionFusion()
 {
-  int tmp, a, b, c, d;
-  int i, j;
   float p0x, p0y, p3x, p3y, cx, cy;
   float theta;
 
@@ -685,7 +662,7 @@ void decisionFusion()
   /************************************************************************/
   printf("radar_num_cb = %d \n", radar_num_cb);
 
-  for (int j = 0; j < msgRadObj.objects.size(); j++)
+  for (unsigned j = 0; j < msgRadObj.objects.size(); j++)
   {
     msgRadObj.objects[j].header = msgRadObj.header;  // add timestamp for radar object
 
@@ -966,16 +943,16 @@ void decisionFusion()
   // Cam120_2_view_fusion();
 
   /************************************************************************/
-  for (j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
+  for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
     vDetectedObjectDF.push_back(vDetectedObjectCAM_120_1[j]);
 
-  for (j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
+  for (unsigned j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
     vDetectedObjectDF.push_back(vDetectedObjectCAM_30_1[j]);
 
-  for (int j = 0; j < msgLidar_rear_Obj.objects.size(); j++)
+  for (unsigned j = 0; j < msgLidar_rear_Obj.objects.size(); j++)
     vDetectedObjectDF.push_back(msgLidar_rear_Obj.objects[j]);
 
-  for (int j = 0; j < msgLidar_frontshort.objects.size(); j++)
+  for (unsigned j = 0; j < msgLidar_frontshort.objects.size(); j++)
     vDetectedObjectDF.push_back(msgLidar_frontshort.objects[j]);
 
   msgFusionObj.objects = vDetectedObjectDF;
@@ -991,13 +968,6 @@ void decisionFusion()
 
 void decision3DFusion()
 {
-  int tmp, a, b, c, d;
-  int i, j;
-  float p0x, p0y, p0z, p6x, p6y, p6z;
-  float q0x, q0y, q0z, q6x, q6y, q6z;
-  int case1, case2, skipRAD;
-  int width_A = 0, width_B = 0, width_AB = 0, height_A = 0, height_B = 0, height_AB = 0;
-
   /************************************************************************/
   vDetectedObjectDF.clear();
   vDetectedObjectRAD.clear();
@@ -1055,7 +1025,7 @@ void decision3DFusion()
   /************************************************************************/
   printf("radar_num_cb = %d \n", radar_num_cb);
 
-  for (int j = 0; j < msgRadObj.objects.size(); j++)
+  for (unsigned j = 0; j < msgRadObj.objects.size(); j++)
   {
     msgRadObj.objects[j].header = msgRadObj.header;  // add timestamp for radar object
 
@@ -1244,39 +1214,38 @@ void decision3DFusion()
   printf("vDetectedObjectCAM_120_1.size() = %ld \n", vDetectedObjectCAM_120_1.size());
   /************************************************************************/
 
-  for (j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
+  for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
     vDetectedObjectDF.push_back(vDetectedObjectCAM_120_1[j]);
 
-  for (j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
+  for (unsigned j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
     vDetectedObjectDF.push_back(vDetectedObjectCAM_30_1[j]);
 
-  for (j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
+  for (unsigned j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
     vDetectedObjectDF.push_back(vDetectedObjectCAM_60_1[j]);
 
-  for (j = 0; j < vDetectedObjectLID.size(); j++)
+  for (unsigned j = 0; j < vDetectedObjectLID.size(); j++)
     vDetectedObjectDF.push_back(vDetectedObjectLID[j]);
 
-  case1 = 0;
-  case2 = 0;
-  skipRAD = 0;
+  int case1 = 0;
+  int case2 = 0;
+  int skipRAD = 0;
 
-  for (i = 0; i < vDetectedObjectRAD.size(); i++)
+  float p0x, p0y, p6x, p6y;
+  float q0x, q0y, q6x, q6y;
+
+  for (unsigned i = 0; i < vDetectedObjectRAD.size(); i++)
   {
     p0x = vDetectedObjectRAD[i].bPoint.p0.x;  // min
     p0y = vDetectedObjectRAD[i].bPoint.p0.y;  // min
-    p0z = vDetectedObjectRAD[i].bPoint.p0.z;  // min
     p6x = vDetectedObjectRAD[i].bPoint.p6.x;  // max
     p6y = vDetectedObjectRAD[i].bPoint.p6.y;  // max
-    p6z = vDetectedObjectRAD[i].bPoint.p6.z;  // max
 
-    for (j = 0; j < vDetectedObjectLID.size(); j++)
+    for (unsigned j = 0; j < vDetectedObjectLID.size(); j++)
     {
       q0x = vDetectedObjectLID[j].bPoint.p0.x;  // min
       q0y = vDetectedObjectLID[j].bPoint.p0.y;  // min
-      q0z = vDetectedObjectLID[j].bPoint.p0.z;  // min
       q6x = vDetectedObjectLID[j].bPoint.p6.x;  // max
       q6y = vDetectedObjectLID[j].bPoint.p6.y;  // max
-      q6z = vDetectedObjectLID[j].bPoint.p6.z;  // max
 
       // Known issues, fixed by below comment
       case1 = ((p0x < q6x) && (p0x > q0x)) && ((p0y > q6y) && (p0y < q0y));
@@ -1314,8 +1283,6 @@ void decision3DFusion()
 
 void Cam60_0_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
   double X_3d;
   double Y_3d;
   double Z_3d;
@@ -1332,7 +1299,7 @@ void Cam60_0_view_fusion(void)
   // Variables for Camera-based Detection
   // int total_cam;
 
-  for (i = 0; i < Cam60_0_num; i++)
+  for (int i = 0; i < Cam60_0_num; i++)
   {
     cam_det[0][i] = Cam60_0_uv[i][0];
     cam_det[1][i] = Cam60_0_uv[i][1];
@@ -1340,7 +1307,7 @@ void Cam60_0_view_fusion(void)
     cam_det[3][i] = Cam60_0_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -1349,7 +1316,7 @@ void Cam60_0_view_fusion(void)
   overlap_analysis(cam_det, Cam60_0_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam60_0_num; j++)
+  for (int j = 0; j < Cam60_0_num; j++)
     printf("1:cam60_0_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -1359,7 +1326,7 @@ void Cam60_0_view_fusion(void)
   // int total_lidar;
 
   printf("msgLidar_60_0_Obj.objects.size() = %ld\n", msgLidar_60_0_Obj.objects.size());
-  for (i = 0; i < msgLidar_60_0_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_60_0_Obj.objects.size(); i++)
   {
     Y_3d = msgLidar_60_0_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
     X_3d = (msgLidar_60_0_Obj.objects[i].bPoint.p1.y) * (-1);
@@ -1387,7 +1354,7 @@ void Cam60_0_view_fusion(void)
 
   Lidar_num = msgLidar_60_0_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -1396,7 +1363,7 @@ void Cam60_0_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("0:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -1475,13 +1442,11 @@ void Cam60_0_view_fusion(void)
 
 void Cam60_1_view_fusion(void)
 {
-  float p0x, p0y, p0z, p6x, p6y, p6z;
-  float q0x, q0y, q0z, q6x, q6y, q6z;
+  float p0x, p0y, p6x, p6y;
+  float q0x, q0y, q6x, q6y;
   float pxcenter, pycenter, qxcenter, qycenter;
   float diff;
   int ndet;
-  int tmp, a, b, c, d;
-  int i, j;
   double X_3d;
   double Y_3d;
   double Z_3d;
@@ -1496,7 +1461,7 @@ void Cam60_1_view_fusion(void)
 
   int case1 = 0, width_A = 0, width_B = 0, width_AB = 0, height_A = 0, height_B = 0, height_AB = 0;
 
-  for (i = 0; i < msgLidar_60_1_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_60_1_Obj.objects.size(); i++)
   {
     p0x = msgLidar_60_1_Obj.objects[i].bPoint.p0.x;  // min
     p0y = msgLidar_60_1_Obj.objects[i].bPoint.p0.y;  // min
@@ -1505,7 +1470,7 @@ void Cam60_1_view_fusion(void)
     pxcenter = (p0x + p6x) / 2;
     pycenter = (p0y + p6y) / 2;
 
-    for (j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
+    for (unsigned j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
     {
       q0x = vDetectedObjectCAM_60_1[j].bPoint.p0.x;  // min
       q0y = vDetectedObjectCAM_60_1[j].bPoint.p0.y;  // min
@@ -1539,12 +1504,12 @@ void Cam60_1_view_fusion(void)
   // int total_cam;
   // int **cam_det;
   // cam_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(cam_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < Cam60_1_num; i++)
+  for (int i = 0; i < Cam60_1_num; i++)
   {
     cam_det[0][i] = Cam60_1_uv[i][0];
     cam_det[1][i] = Cam60_1_uv[i][1];
@@ -1552,7 +1517,7 @@ void Cam60_1_view_fusion(void)
     cam_det[3][i] = Cam60_1_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
   }
@@ -1561,7 +1526,7 @@ void Cam60_1_view_fusion(void)
   // overlap_analysis(cam_det, Cam60_1_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam60_1_num; j++)
+  for (int j = 0; j < Cam60_1_num; j++)
     printf("1:cam60_1_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -1571,13 +1536,13 @@ void Cam60_1_view_fusion(void)
   // int total_lidar;
   // int **lid_det;
   // lid_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
   printf("msgLidar_60_1_Obj.objects.size() = %ld\n", msgLidar_60_1_Obj.objects.size());
-  for (i = 0; i < msgLidar_60_1_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_60_1_Obj.objects.size(); i++)
   {
     Y_3d = msgLidar_60_1_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
     X_3d = (msgLidar_60_1_Obj.objects[i].bPoint.p1.y) * (-1);
@@ -1605,7 +1570,7 @@ void Cam60_1_view_fusion(void)
 
   Lidar_num = msgLidar_60_1_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -1614,7 +1579,7 @@ void Cam60_1_view_fusion(void)
   // overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -1623,7 +1588,7 @@ void Cam60_1_view_fusion(void)
   // Variables for RaDAR-based Detection
 
   printf("msgRadObj.objects.size() = %ld\n", msgRadObj.objects.size());
-  for (i = 0; i < msgRadObj.objects.size(); i++)
+  for (unsigned i = 0; i < msgRadObj.objects.size(); i++)
   {
     Y_3d = msgRadObj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
     X_3d = (msgRadObj.objects[i].bPoint.p1.y) * (-1);
@@ -1649,7 +1614,7 @@ void Cam60_1_view_fusion(void)
     radar_det[3][i] = weight_2d;
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     radar_det[4][j] = 0;
     // finalDETECT[j] = true;
@@ -1658,7 +1623,7 @@ void Cam60_1_view_fusion(void)
   // overlap_analysis(radar_det, radar_num);
 
   printf("**************************\n");
-  for (j = 0; j < radar_num; j++)
+  for (int j = 0; j < radar_num; j++)
     printf("1:RadarDetection radar_det[][%d]  %d %d %d %d %d\n", j, radar_det[0][j], radar_det[1][j], radar_det[2][j],
            radar_det[3][j], radar_det[4][j]);
 
@@ -1724,8 +1689,8 @@ void Cam60_1_view_fusion(void)
   }
 
   /**********************************************************************************************************/
-  for (i = 0; i < Lidar_num; i++)
-    for (j = 0; j < Cam60_1_num; j++)
+  for (int i = 0; i < Lidar_num; i++)
+    for (int j = 0; j < Cam60_1_num; j++)
       if (check3D[i][j] == 1)
       {
         /**********************************************************************************************************/
@@ -1827,7 +1792,7 @@ void Cam60_1_view_fusion(void)
 
   /************************************************************************/
   case1 = 0;
-  for (i = 0; i < vDetectedObjectRAD.size(); i++)
+  for (unsigned i = 0; i < vDetectedObjectRAD.size(); i++)
   {
     p0x = vDetectedObjectRAD[i].bPoint.p0.x;  // min
     p0y = vDetectedObjectRAD[i].bPoint.p0.y;  // min
@@ -1836,7 +1801,7 @@ void Cam60_1_view_fusion(void)
     pxcenter = (p0x + p6x) / 2;
     pycenter = (p0y + p6y) / 2;
 
-    for (j = 0; j < vDetectedObjectTemp.size(); j++)
+    for (unsigned j = 0; j < vDetectedObjectTemp.size(); j++)
     {
       q0x = vDetectedObjectTemp[j].bPoint.p0.x;  // min
       q0y = vDetectedObjectTemp[j].bPoint.p0.y;  // min
@@ -1872,8 +1837,6 @@ void Cam60_1_view_fusion(void)
 
 void Cam60_2_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
   double X_3d;
   double Y_3d;
   double Z_3d;
@@ -1891,12 +1854,12 @@ void Cam60_2_view_fusion(void)
   // int total_cam;
   // int **cam_det;
   // cam_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(cam_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < Cam60_2_num; i++)
+  for (int i = 0; i < Cam60_2_num; i++)
   {
     cam_det[0][i] = Cam60_2_uv[i][0];
     cam_det[1][i] = Cam60_2_uv[i][1];
@@ -1904,7 +1867,7 @@ void Cam60_2_view_fusion(void)
     cam_det[3][i] = Cam60_2_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -1913,7 +1876,7 @@ void Cam60_2_view_fusion(void)
   overlap_analysis(cam_det, Cam60_2_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam60_2_num; j++)
+  for (int j = 0; j < Cam60_2_num; j++)
     printf("1:cam60_2_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -1921,13 +1884,13 @@ void Cam60_2_view_fusion(void)
   // prepare data for decision fusion
   // Variables for Lidar-based Detection(Lidar_60_0)
 
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
   printf("msgLidar_60_2_Obj.objects.size() = %ld\n", msgLidar_60_2_Obj.objects.size());
-  for (i = 0; i < msgLidar_60_2_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_60_2_Obj.objects.size(); i++)
   {
     Y_3d = msgLidar_60_2_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
     X_3d = (msgLidar_60_2_Obj.objects[i].bPoint.p1.y) * (-1);
@@ -1955,7 +1918,7 @@ void Cam60_2_view_fusion(void)
 
   Lidar_num = msgLidar_60_2_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -1964,7 +1927,7 @@ void Cam60_2_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("2:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -2059,9 +2022,6 @@ void Cam60_2_view_fusion(void)
 
 void Cam30_0_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
-
   /************************************************************************/
   /*******************Cam30_0 view for decision fusion*********************/
   /************************************************************************/
@@ -2071,7 +2031,7 @@ void Cam30_0_view_fusion(void)
   // Variables for Camera-based Detection
   // int total_cam;
 
-  for (i = 0; i < Cam30_0_num; i++)
+  for (int i = 0; i < Cam30_0_num; i++)
   {
     cam_det[0][i] = Cam30_0_uv[i][0];
     cam_det[1][i] = Cam30_0_uv[i][1];
@@ -2079,7 +2039,7 @@ void Cam30_0_view_fusion(void)
     cam_det[3][i] = Cam30_0_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2088,7 +2048,7 @@ void Cam30_0_view_fusion(void)
   overlap_analysis(cam_det, Cam30_0_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam30_0_num; j++)
+  for (int j = 0; j < Cam30_0_num; j++)
     printf("1:cam30_0_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -2097,7 +2057,7 @@ void Cam30_0_view_fusion(void)
   // Variables for Lidar-based Detection(Lidar_30_0)
   // int total_lidar;
 
-  for (i = 0; i < msgLidar_30_0_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_30_0_Obj.objects.size(); i++)
   {
     lid_det[0][i] = msgLidar_30_0_Obj.objects[i].lidarInfo.u;
     lid_det[1][i] = msgLidar_30_0_Obj.objects[i].lidarInfo.v;
@@ -2107,7 +2067,7 @@ void Cam30_0_view_fusion(void)
 
   Lidar_num = msgLidar_30_0_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2116,7 +2076,7 @@ void Cam30_0_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -2195,8 +2155,6 @@ void Cam30_0_view_fusion(void)
 
 void Cam30_1_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
   /************************************************************************/
   /*******************Cam30_1 view for decision fusion*********************/
   /************************************************************************/
@@ -2207,12 +2165,12 @@ void Cam30_1_view_fusion(void)
   // int total_cam;
   // int **cam_det;
   // cam_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(cam_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < Cam30_1_num; i++)
+  for (int i = 0; i < Cam30_1_num; i++)
   {
     cam_det[0][i] = Cam30_1_uv[i][0];
     cam_det[1][i] = Cam30_1_uv[i][1];
@@ -2220,7 +2178,7 @@ void Cam30_1_view_fusion(void)
     cam_det[3][i] = Cam30_1_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2229,7 +2187,7 @@ void Cam30_1_view_fusion(void)
   overlap_analysis(cam_det, Cam30_1_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam30_1_num; j++)
+  for (int j = 0; j < Cam30_1_num; j++)
     printf("1:cam30_1_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -2239,12 +2197,12 @@ void Cam30_1_view_fusion(void)
   // int total_lidar;
   // int **lid_det;
   // lid_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < msgLidar_30_1_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_30_1_Obj.objects.size(); i++)
   {
     lid_det[0][i] = msgLidar_30_1_Obj.objects[i].lidarInfo.u;
     lid_det[1][i] = msgLidar_30_1_Obj.objects[i].lidarInfo.v;
@@ -2254,7 +2212,7 @@ void Cam30_1_view_fusion(void)
 
   Lidar_num = msgLidar_30_1_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2263,7 +2221,7 @@ void Cam30_1_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -2273,12 +2231,12 @@ void Cam30_1_view_fusion(void)
   // int total_radar;
   // int **radar_det;
   // radar_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(radar_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < radar_num; i++)
+  for (int i = 0; i < radar_num; i++)
   {
     radar_det[0][i] = radar_uv[i][0];
     radar_det[1][i] = radar_uv[i][1];
@@ -2286,7 +2244,7 @@ void Cam30_1_view_fusion(void)
     radar_det[3][i] = radar_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     radar_det[4][j] = 0;
     // finalDETECT[j] = true;
@@ -2295,7 +2253,7 @@ void Cam30_1_view_fusion(void)
   overlap_analysis(radar_det, radar_num);
 
   printf("**************************\n");
-  for (j = 0; j < radar_num; j++)
+  for (int j = 0; j < radar_num; j++)
     printf("1:RadarDetection radar_det[][%d]  %d %d %d %d %d\n", j, radar_det[0][j], radar_det[1][j], radar_det[2][j],
            radar_det[3][j], radar_det[4][j]);
 
@@ -2423,8 +2381,6 @@ void Cam30_1_view_fusion(void)
 
 void Cam30_2_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
   /************************************************************************/
   /*******************Cam30_2 view for decision fusion*********************/
   /************************************************************************/
@@ -2435,12 +2391,12 @@ void Cam30_2_view_fusion(void)
   // int total_cam;
   // int **cam_det;
   // cam_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(cam_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < Cam30_2_num; i++)
+  for (int i = 0; i < Cam30_2_num; i++)
   {
     cam_det[0][i] = Cam30_2_uv[i][0];
     cam_det[1][i] = Cam30_2_uv[i][1];
@@ -2448,7 +2404,7 @@ void Cam30_2_view_fusion(void)
     cam_det[3][i] = Cam30_2_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2457,7 +2413,7 @@ void Cam30_2_view_fusion(void)
   overlap_analysis(cam_det, Cam30_2_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam30_2_num; j++)
+  for (int j = 0; j < Cam30_2_num; j++)
     printf("1:cam30_2_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -2467,12 +2423,12 @@ void Cam30_2_view_fusion(void)
   // int total_lidar;
   // int **lid_det;
   // lid_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < msgLidar_30_2_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_30_2_Obj.objects.size(); i++)
   {
     lid_det[0][i] = msgLidar_30_2_Obj.objects[i].lidarInfo.u;
     lid_det[1][i] = msgLidar_30_2_Obj.objects[i].lidarInfo.v;
@@ -2482,7 +2438,7 @@ void Cam30_2_view_fusion(void)
 
   Lidar_num = msgLidar_30_2_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2491,7 +2447,7 @@ void Cam30_2_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -2586,9 +2542,6 @@ void Cam30_2_view_fusion(void)
 
 void Cam120_0_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
-
   /************************************************************************/
   /*******************Cam120_0 view for decision fusion*********************/
   /************************************************************************/
@@ -2598,7 +2551,7 @@ void Cam120_0_view_fusion(void)
   // Variables for Camera-based Detection
   // int total_cam;
 
-  for (i = 0; i < Cam120_0_num; i++)
+  for (int i = 0; i < Cam120_0_num; i++)
   {
     cam_det[0][i] = Cam120_0_uv[i][0];
     cam_det[1][i] = Cam120_0_uv[i][1];
@@ -2606,7 +2559,7 @@ void Cam120_0_view_fusion(void)
     cam_det[3][i] = Cam120_0_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2615,7 +2568,7 @@ void Cam120_0_view_fusion(void)
   overlap_analysis(cam_det, Cam120_0_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam120_0_num; j++)
+  for (int j = 0; j < Cam120_0_num; j++)
     printf("1:cam120_0_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -2624,7 +2577,7 @@ void Cam120_0_view_fusion(void)
   // Variables for Lidar-based Detection(Lidar_120_0)
   // int total_lidar;
 
-  for (i = 0; i < msgLidar_120_0_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_120_0_Obj.objects.size(); i++)
   {
     lid_det[0][i] = msgLidar_120_0_Obj.objects[i].lidarInfo.u;
     lid_det[1][i] = msgLidar_120_0_Obj.objects[i].lidarInfo.v;
@@ -2634,7 +2587,7 @@ void Cam120_0_view_fusion(void)
 
   Lidar_num = msgLidar_120_0_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2643,7 +2596,7 @@ void Cam120_0_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -2722,9 +2675,6 @@ void Cam120_0_view_fusion(void)
 
 void Cam120_1_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
-
   /************************************************************************/
   /*******************Cam120_1 view for decision fusion*********************/
   /************************************************************************/
@@ -2734,7 +2684,7 @@ void Cam120_1_view_fusion(void)
   // Variables for Camera-based Detection
   // int total_cam;
 
-  for (i = 0; i < Cam120_1_num; i++)
+  for (int i = 0; i < Cam120_1_num; i++)
   {
     cam_det[0][i] = Cam120_1_uv[i][0];
     cam_det[1][i] = Cam120_1_uv[i][1];
@@ -2742,7 +2692,7 @@ void Cam120_1_view_fusion(void)
     cam_det[3][i] = Cam120_1_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2751,7 +2701,7 @@ void Cam120_1_view_fusion(void)
   overlap_analysis(cam_det, Cam120_1_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam120_1_num; j++)
+  for (int j = 0; j < Cam120_1_num; j++)
     printf("1:cam120_1_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -2760,7 +2710,7 @@ void Cam120_1_view_fusion(void)
   // Variables for Lidar-based Detection(Lidar_120_1)
   // int total_lidar;
 
-  for (i = 0; i < msgLidar_120_1_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_120_1_Obj.objects.size(); i++)
   {
     lid_det[0][i] = msgLidar_120_1_Obj.objects[i].lidarInfo.u;
     lid_det[1][i] = msgLidar_120_1_Obj.objects[i].lidarInfo.v;
@@ -2770,7 +2720,7 @@ void Cam120_1_view_fusion(void)
 
   Lidar_num = msgLidar_120_1_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2779,7 +2729,7 @@ void Cam120_1_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -2858,8 +2808,6 @@ void Cam120_1_view_fusion(void)
 
 void Cam120_2_view_fusion(void)
 {
-  int tmp, a, b, c, d;
-  int i, j;
   /************************************************************************/
   /*******************Cam120_2 view for decision fusion*********************/
   /************************************************************************/
@@ -2870,12 +2818,12 @@ void Cam120_2_view_fusion(void)
   // int total_cam;
   // int **cam_det;
   // cam_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(cam_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < Cam120_2_num; i++)
+  for (int i = 0; i < Cam120_2_num; i++)
   {
     cam_det[0][i] = Cam120_2_uv[i][0];
     cam_det[1][i] = Cam120_2_uv[i][1];
@@ -2883,7 +2831,7 @@ void Cam120_2_view_fusion(void)
     cam_det[3][i] = Cam120_2_uv[i][3];
   }
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     cam_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2892,7 +2840,7 @@ void Cam120_2_view_fusion(void)
   overlap_analysis(cam_det, Cam120_2_num);
 
   printf("**************************\n");
-  for (j = 0; j < Cam120_2_num; j++)
+  for (int j = 0; j < Cam120_2_num; j++)
     printf("1:cam120_2_Detection cam_det[][%d]  %d %d %d %d %d\n", j, cam_det[0][j], cam_det[1][j], cam_det[2][j],
            cam_det[3][j], cam_det[4][j]);
 
@@ -2902,12 +2850,12 @@ void Cam120_2_view_fusion(void)
   // int total_lidar;
   // int **lid_det;
   // lid_det = new int *[5];
-  for (j = 0; j < 5; j++)
+  for (int j = 0; j < 5; j++)
   {
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
-  for (i = 0; i < msgLidar_120_2_Obj.objects.size(); i++)
+  for (unsigned i = 0; i < msgLidar_120_2_Obj.objects.size(); i++)
   {
     lid_det[0][i] = msgLidar_120_2_Obj.objects[i].lidarInfo.u;
     lid_det[1][i] = msgLidar_120_2_Obj.objects[i].lidarInfo.v;
@@ -2917,7 +2865,7 @@ void Cam120_2_view_fusion(void)
 
   Lidar_num = msgLidar_120_2_Obj.objects.size();
 
-  for (j = 0; j < max_det; j++)
+  for (int j = 0; j < max_det; j++)
   {
     lid_det[4][j] = 0;
     // finalDETECT[j + max_det] = true;
@@ -2926,7 +2874,7 @@ void Cam120_2_view_fusion(void)
   overlap_analysis(lid_det, Lidar_num);
 
   printf("**************************\n");
-  for (j = 0; j < Lidar_num; j++)
+  for (int j = 0; j < Lidar_num; j++)
     printf("1:LidarDetection lid_det[][%d]  %d %d %d %d %d\n", j, lid_det[0][j], lid_det[1][j], lid_det[2][j],
            lid_det[3][j], lid_det[4][j]);
 
@@ -3379,8 +3327,6 @@ void overlap_fusion(int** cam, int ncam, int** rad, int nrad, int** det, int* to
 
   for (int j = 0; j < ndet; j++)
   {
-    int x_scanA = det[0][j], y_scanA = det[1][j];
-    int w_scanA = x_scanA + det[2][j], h_scanA = y_scanA + det[3][j];
     for (int i = 0; i < ndet; i++)
     {
       if (assoc[j][i] > 0.150)
@@ -3520,15 +3466,11 @@ void sync_callbackThreads()
       printf("****************************do_function****************************\n");
 
 #ifdef EnableFusion
-
       decisionFusion();
       printf(" case1 \n");
-
 #else
-
       decision3DFusion();
       printf(" case2 \n");
-
 #endif
 
       // dbgPCView = 1;
@@ -3599,14 +3541,7 @@ void vector_add_3d(double v1[3], double v2[3], double result[3])
 
 int fusion_3D_to_2D(double x_3d, double y_3d, double z_3d, int* u_2d, int* v_2d)
 {
-  int i, j, k, u, v, tmp;
-  int x_length, y_length;
-
-  double radar_length;
-  double radar_degree;
-  double radar_x;
-  double radar_y;
-  int count = 0;
+  int u, v;
 
   // Object coordinate transformation
 
@@ -3656,6 +3591,8 @@ int fusion_3D_to_2D(double x_3d, double y_3d, double z_3d, int* u_2d, int* v_2d)
   }
 
   printf("<== fusion_3D_to_2D \n");
+
+  return 0;
 }
 
 void transform_coordinate_main(msgs::ConvexPoint& cp, const float x, const float y, const float z)

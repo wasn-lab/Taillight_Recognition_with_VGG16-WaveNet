@@ -134,7 +134,7 @@ void yoloConfigParserInit(int argc, char** argv, std::string pkg_path)
     FLAGS_labels_file_path = pkg_path + FLAGS_labels_file_path;
     std::cout << "FLAGS_wts_file_path: " << FLAGS_wts_file_path << std::endl;
     std::cout << "FLAGS_config_file_path: " << FLAGS_config_file_path << std::endl;
-    std::cout << "FLAGS_labels_file_path: " << FLAGS_labels_file_path << std::endl;
+    std::cout << "FLAGS_labels_file_path: " << FLAGS_labels_file_path << std::endl << std::endl;
 }
 
 NetworkInfo getYoloNetworkInfo()

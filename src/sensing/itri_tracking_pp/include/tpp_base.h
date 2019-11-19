@@ -132,7 +132,7 @@ struct MarkerConfig
   bool show_source = 0;
   bool show_distance = 0;
   bool show_absspeed = 0;  // km/h
-  bool show_pp = 0;        // km/h
+  unsigned int show_pp = 0;
 
   std_msgs::ColorRGBA color;
   std_msgs::ColorRGBA color_lidar_tpp;

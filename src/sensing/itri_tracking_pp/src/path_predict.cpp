@@ -399,7 +399,7 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
     covariance_matrix(pps[i], data_x, data_y);
   }
 
-  if (show_pp_)
+  if (show_pp_ > 0)
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {
@@ -411,7 +411,7 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
 }
 
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-                       const bool show_pp)
+                       const unsigned int show_pp)
 {
   show_pp_ = show_pp;
 
