@@ -34,7 +34,7 @@
 #define LOG_FATAL std::cout
 #endif
 
-# define M_PIl          3.141592653589793238462643383279502884L /* pi */
+#define M_PIl 3.141592653589793238462643383279502884L /* pi */
 
 namespace ped
 {
@@ -51,7 +51,7 @@ public:
 
   void run();
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  std::deque< std::pair<ros::Time, cv::Mat> > imageCache;
+  std::deque<std::pair<ros::Time, cv::Mat> > imageCache;
   unsigned int buffer_size = 60;
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
