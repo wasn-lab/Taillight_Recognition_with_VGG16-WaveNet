@@ -19,10 +19,16 @@ link_directories("/opt/ros/kinetic/lib")
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
-    ped_models_rf
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_1.yml"
+    ped_models_rf_pose
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frame.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 a94041adc846ffd1cca187f09f319061
+    MD5 b6d15293464f6ec0c9380a8872077180
+)
+catkin_download_test_data(
+    ped_models_rf
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
+    DESTINATION ${PED_MODEL_DIR}
+    MD5 d20e9859ff9ba625e2747578dae99cf2
 )
 catkin_download_test_data(
     ped_models_body25
