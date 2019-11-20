@@ -493,22 +493,22 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 
   for (size_t i = 0; i < objs.size(); i++)
   {
+    ofs << std::fixed                                               //
+        << objs[i].header.stamp << ", "                             // #1 time stamp
+        << objs[i].track.id << ", "                                 // #2 track id
+        << objs[i].lidarInfo.boxCenter.x << ", "                    // #3 original bbox center x
+        << objs[i].lidarInfo.boxCenter.y << ", "                    // #4 original bbox center y
+        << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #5 modified bbox center x
+        << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6 modified bbox center y
+        << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx
+        << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy
+        << objs[i].absSpeed << ", "                                 // #9 abs speed
+        << objs[i].track.relative_velocity.x << ", "                // #10 rel vx
+        << objs[i].track.relative_velocity.y << ", "                // #11 rel vy
+        << objs[i].relSpeed;                                        // #12 rel speed
+
     if (objs[i].track.is_ready_prediction)
     {
-      ofs << std::fixed                                               //
-          << objs[i].header.stamp << ", "                             // #1 time stamp
-          << objs[i].track.id << ", "                                 // #2 track id
-          << objs[i].lidarInfo.boxCenter.x << ", "                    // #3 original bbox center x
-          << objs[i].lidarInfo.boxCenter.y << ", "                    // #4 original bbox center y
-          << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #5 modified bbox center x
-          << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6 modified bbox center y
-          << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx
-          << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy
-          << objs[i].absSpeed << ", "                                 // #9 abs speed
-          << objs[i].track.relative_velocity.x << ", "                // #10 rel vx
-          << objs[i].track.relative_velocity.y << ", "                // #11 rel vy
-          << objs[i].relSpeed;                                        // #12 rel speed
-
       // #13 ppx in 5 ticks
       // #14 ppy in 5 ticks
       // #15 ppx in 10 ticks
@@ -521,6 +521,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
       {
         ofs << ", " << objs[i].track.forecasts[j].position.x << ", " << objs[i].track.forecasts[j].position.y;
       }
+
       ofs << ", "                          //
           << vel_.get_ego_x_abs() << ", "  // #21 kf ego x abs
           << vel_.get_ego_x_rel() << ", "  // #22 kf ego x rel
@@ -530,6 +531,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
           << vel_.get_ego_z_rel() << ", "  // #26 kf ego z rel
           << vel_.get_ego_heading();       // #27 kf ego heading
     }
+    
     ofs << "\n";
     std::cout << "[Produced] time = " << objs[i].header.stamp << ", track_id = " << objs[i].track.id << std::endl;
   }
