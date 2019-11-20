@@ -4,9 +4,11 @@ option(USE_GPROF "Use gprof for performance profiling" OFF)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(COMPILER_IS_CLANG TRUE)
+    set(COMPILER_IS_GNUCXX FALSE)
 endif ()
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(COMPILER_IS_CLANG FALSE)
     set(COMPILER_IS_GNUCXX TRUE)
 endif ()
 
@@ -60,9 +62,8 @@ APPEND_GLOBAL_COMPILER_FLAGS(
     -Wno-deprecated-declarations
     -Wno-comment
     -Wno-unused-parameter
-    -Wcast-align
+#    -Wcast-align
     -Wformat-security
-    -Wmissing-format-attribute
     -Wpointer-arith
     -Wwrite-strings)
 
