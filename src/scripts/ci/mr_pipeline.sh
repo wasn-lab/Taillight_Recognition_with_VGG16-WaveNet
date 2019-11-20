@@ -33,4 +33,8 @@ else
   catkin_make
 fi
 
+set +x
+source devel/setup.bash
+python src/scripts/ci/run_pylint.py
+
 popd
