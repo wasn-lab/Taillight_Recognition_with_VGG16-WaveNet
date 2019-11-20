@@ -3,6 +3,11 @@
 namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
+static double input_fps = 5;    // known callback rate
+static double output_fps = 10;  // expected publish rate
+
+static unsigned int num_publishs_per_loop =
+    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 
 bool g_trigger = false;
 

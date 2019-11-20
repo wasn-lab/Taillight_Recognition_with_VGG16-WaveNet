@@ -12,11 +12,8 @@
 #include <thread>
 #include <future>
 
-#include "drivenet/trt_yolo_interface.h"
-#include "drivenet/distance_estimation_b1.h"
-#include "drivenet/boundary_util.h"
-#include "drivenet/object_label_util.h"
-#include "camera_params.h" // include camera topic name
+#include "drivenet/drivenet_120_1_b1.h"
+
 #include <msgs/DetectedObjectArray.h>
 
 using namespace DriveNet;
@@ -34,17 +31,12 @@ bool isInferData_0;
 bool isInferData_1;
 bool isInferData_2;
 bool isInferData_3;
-bool iscompressed = false;
-
-/// launch param
-int car_id = 1;
-bool standard_FPS = 0;
-bool display_flag = 0;
-bool input_resize = 0; //grabber input mode 0: 1920x1208, 1:608x608 yolo format
-bool imgResult_publish = 0;
+bool isCompressed = false;
+bool isCalibration = false;
 
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
+std::mutex display_mutex;
 
 std::string cam120_0_topicName;
 std::string cam120_1_topicName;
@@ -76,21 +68,25 @@ int img_size = img_w*img_h;
 int rawimg_size = rawimg_w*rawimg_h;
 
 cv::Mat mat120_0;
+cv::Mat mat120_0_resize;
 cv::Mat mat120_0_rect;
 cv::Mat mat120_0_display;
 std::vector<ITRI_Bbox> vBBX120_0;
 
 cv::Mat mat120_1;
+cv::Mat mat120_1_resize;
 cv::Mat mat120_1_rect;
 cv::Mat mat120_1_display;
 std::vector<ITRI_Bbox> vBBX120_1;
 
 cv::Mat mat120_2;
+cv::Mat mat120_2_resize;
 cv::Mat mat120_2_rect;
 cv::Mat mat120_2_display;
 std::vector<ITRI_Bbox> vBBX120_2;
 
 cv::Mat mat120_3;
+cv::Mat mat120_3_resize;
 cv::Mat mat120_3_rect;
 cv::Mat mat120_3_display;
 std::vector<ITRI_Bbox> vBBX120_3;
@@ -105,9 +101,6 @@ std::vector<uint32_t> matId;
 std::vector<std_msgs::Header> headers;
 std::vector<int> dist_rows;
 std::vector<int> dist_cols;
-
-DistanceEstimation de;
-Yolo_app yoloApp;
 
 // Prepare cv::Mat
 void image_init()
@@ -146,7 +139,7 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << __FILE__ << __LINE__ << ", camOrder: " << camOrder << std::endl;
+        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 4) {
@@ -158,47 +151,28 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     while(isInferData) usleep(5);
     
 }
-void loadCalibrationMatrix(cv::String yml_filename, cv::Mat &cameraMatrix, cv::Mat &distCoeffs)
-{
-    std::cout << "yml_filename: " << yml_filename << std::endl; 
-    int imageWidth, imageHeight;
-    std::string cameraName;
-    cv::FileStorage fs;
-    fs.open(yml_filename, cv::FileStorage::READ);
-    if( !fs.isOpened() ){
-        std::cerr << " Fail to open " << yml_filename << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    // Get camera parameters
- 
-    fs["image_width"] >> imageWidth;
-    fs["image_height"] >> imageHeight;
-    fs["camera_name"] >> cameraName;
-    std::cout << "Get camera_matrix" << std::endl;
-    fs["camera_matrix"] >> cameraMatrix;
-    std::cout << "Get distortion_coefficients" << std::endl; 
-    fs["distortion_coefficients"] >> distCoeffs; 
 
-    // Print out the camera parameters
-    // std::cout << "\n -- Camera parameters -- " << std::endl;
-    // std::cout << "\n CameraMatrix = " << std::endl << " " << cameraMatrix << std::endl << std::endl;
-    // std::cout << " Distortion coefficients = " << std::endl << " " << distCoeffs << std::endl << std::endl;
-
-    fs.release();
-}
-void calibrationImage(const cv::Mat src, cv::Mat &dst, cv::Mat cameraMatrix, cv::Mat distCoeffs)
-{
-    cv::Mat M_raw = src.clone();
-    undistort(M_raw, dst, cameraMatrix, distCoeffs);
-}
 void callback_120_0(const sensor_msgs::Image::ConstPtr &msg){
     cv_bridge::CvImageConstPtr cv_ptr =
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_0 = cv_ptr->image;
-    
+
     std_msgs::Header h = msg->header;
-    if(!isInferData_0) sync_inference(0, 5, h, &mat120_0, &vBBX120_0, 1920, 1208);
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_0, mat120_0_resize, cv::Size(rawimg_w, rawimg_h));          
+            calibrationImage(mat120_0_resize, mat120_0_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_0)  sync_inference(0, 5, h, &mat120_0_rect, &vBBX120_0, 1920, 1208);
+    }
+    else{
+        if(!isInferData_0)  sync_inference(0, 5, h, &mat120_0, &vBBX120_0, 1920, 1208);
+    } 
 }
 
 void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
@@ -206,10 +180,22 @@ void callback_120_1(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_1 = cv_ptr->image;
-    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_1)  sync_inference(1, 6, h, &mat120_1, &vBBX120_1, 1920, 1208);
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_1, mat120_1_resize, cv::Size(rawimg_w, rawimg_h));            
+            calibrationImage(mat120_1_resize, mat120_1_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_1)  sync_inference(1, 6, h, &mat120_1_rect, &vBBX120_1, 1920, 1208);
+    }
+    else{
+        if(!isInferData_1)  sync_inference(1, 6, h, &mat120_1, &vBBX120_1, 1920, 1208);
+    }
 }
 
 void callback_120_2(const sensor_msgs::Image::ConstPtr &msg){
@@ -217,10 +203,22 @@ void callback_120_2(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_2 = cv_ptr->image;
-    // calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_2) sync_inference(2, 7, h, &mat120_2, &vBBX120_2, 1920, 1208);
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_2, mat120_2_resize, cv::Size(rawimg_w, rawimg_h));            
+            calibrationImage(mat120_2_resize, mat120_2_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_2)  sync_inference(2, 8, h, &mat120_2_rect, &vBBX120_2, 1920, 1208);
+    }
+    else{
+        if(!isInferData_2)  sync_inference(2, 8, h, &mat120_2, &vBBX120_2, 1920, 1208);
+    }
 }
 
 void callback_120_3(const sensor_msgs::Image::ConstPtr &msg){
@@ -228,38 +226,102 @@ void callback_120_3(const sensor_msgs::Image::ConstPtr &msg){
         cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
     mat120_3 = cv_ptr->image;
-    // calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
 
     std_msgs::Header h = msg->header;
-    if(!isInferData_3) sync_inference(3, 8, h, &mat120_3, &vBBX120_3, 1920, 1208);
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_3, mat120_3_resize, cv::Size(rawimg_w, rawimg_h));            
+            calibrationImage(mat120_3_resize, mat120_3_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_3)  sync_inference(3, 9, h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
+    }
+    else{
+        if(!isInferData_3)  sync_inference(3, 9, h, &mat120_3, &vBBX120_3, 1920, 1208);
+    }
 }
 
 void callback_120_0_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_0);
-    // calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_0) sync_inference(0, 5, compressImg.header, &mat120_0, &vBBX120_0, 1920, 1208);
+    std_msgs::Header h = compressImg.header;
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_0, mat120_0_resize, cv::Size(rawimg_w, rawimg_h));          
+            calibrationImage(mat120_0_resize, mat120_0_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_0)  sync_inference(0, 5, h, &mat120_0_rect, &vBBX120_0, 1920, 1208);
+    }
+    else{
+        if(!isInferData_0)  sync_inference(0, 5, h, &mat120_0, &vBBX120_0, 1920, 1208);
+    } 
 }
 
 void callback_120_1_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_1);
-    // calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_1)  sync_inference(1, 6, compressImg.header, &mat120_1, &vBBX120_1, 1920, 1208);
+    std_msgs::Header h = compressImg.header;
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_1, mat120_1_resize, cv::Size(rawimg_w, rawimg_h));            
+            calibrationImage(mat120_1_resize, mat120_1_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_1)  sync_inference(1, 6, h, &mat120_1_rect, &vBBX120_1, 1920, 1208);
+    }
+    else{
+        if(!isInferData_1)  sync_inference(1, 6, h, &mat120_1, &vBBX120_1, 1920, 1208);
+    }
 }
 
 void callback_120_2_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_2);
-    // calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_2)  sync_inference(2, 7, compressImg.header, &mat120_2, &vBBX120_2, 1920, 1208);
+    std_msgs::Header h = compressImg.header;
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_2, mat120_2_resize, cv::Size(rawimg_w, rawimg_h));            
+            calibrationImage(mat120_2_resize, mat120_2_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_2)  sync_inference(2, 8, h, &mat120_2_rect, &vBBX120_2, 1920, 1208);
+    }
+    else{
+        if(!isInferData_2)  sync_inference(2, 8, h, &mat120_2, &vBBX120_2, 1920, 1208);
+    }
 }
 
 void callback_120_3_decode(sensor_msgs::CompressedImage compressImg){
     cv::imdecode(cv::Mat(compressImg.data),1).copyTo(mat120_3);
-    // calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
 
-    if(!isInferData_3)  sync_inference(3, 8, compressImg.header, &mat120_3, &vBBX120_3, 1920, 1208);
+    std_msgs::Header h = compressImg.header;
+
+    if(isCalibration){
+        if(input_resize) {
+            cv::resize(mat120_3, mat120_3_resize, cv::Size(rawimg_w, rawimg_h));            
+            calibrationImage(mat120_3_resize, mat120_3_rect, cameraMatrix, distCoeffs);
+        }
+        else{
+            calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
+        }
+        if(!isInferData_3)  sync_inference(3, 9, h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
+    }
+    else{
+        if(!isInferData_3)  sync_inference(3, 9, h, &mat120_3, &vBBX120_3, 1920, 1208);
+    }
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
@@ -279,25 +341,25 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 /// roslaunch drivenet drivenet120.launch
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "drivenet_120_3");
+    ros::init(argc, argv, "drivenet_120_1_b1");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
 
     isInferStop = false;
     isInferData = false;
 
-    if (ros::param::get(ros::this_node::getName()+"/car_id", car_id));
-	if (ros::param::get(ros::this_node::getName()+"/standard_fps", standard_FPS));
-	if (ros::param::get(ros::this_node::getName()+"/display", display_flag));
-	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
-	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
+    ros::param::get(ros::this_node::getName()+"/car_id", car_id);
+    ros::param::get(ros::this_node::getName()+"/standard_fps", standard_FPS);
+    ros::param::get(ros::this_node::getName()+"/display", display_flag);
+    ros::param::get(ros::this_node::getName()+"/input_resize", input_resize);
+    ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish);
 
-    cam120_0_topicName = camera::topics[5];
-    cam120_1_topicName = camera::topics[6];
-    cam120_2_topicName = camera::topics[8];
-    cam120_3_topicName = camera::topics[9];
+    cam120_0_topicName = camera::topics[cam_ids_[0]];
+    cam120_1_topicName = camera::topics[cam_ids_[1]];
+    cam120_2_topicName = camera::topics[cam_ids_[2]];
+    cam120_3_topicName = camera::topics[cam_ids_[3]];
 
-    if(iscompressed){
+    if(isCompressed){
         cam120_0 = nh.subscribe(cam120_0_topicName + std::string("/compressed"), 1, callback_120_0_decode);
         cam120_1 = nh.subscribe(cam120_1_topicName + std::string("/compressed"), 1, callback_120_1_decode);
         cam120_2 = nh.subscribe(cam120_2_topicName + std::string("/compressed"), 1, callback_120_2_decode);
@@ -336,17 +398,16 @@ int main(int argc, char **argv)
     std::string cfg_file = "/b1_yolo_120_1.cfg";
     image_init();
     yoloApp.init_yolo(pkg_path, cfg_file);
-    de.init(car_id);
-    cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
-    std::cout << "calibMatrix_filepath: " << calibMatrix_filepath << std::endl; 
-    loadCalibrationMatrix(calibMatrix_filepath, cameraMatrix, distCoeffs);
-    
-std::cout << __FILE__ << __LINE__ << std::endl;
+    distEst.init(car_id);
+
+    if(isCalibration){
+        cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
+        std::cout << "Calibration mode is open, calibMatrix filepath: " << calibMatrix_filepath << std::endl; 
+        loadCalibrationMatrix(calibMatrix_filepath, cameraMatrix, distCoeffs);
+    }
 
     ros::MultiThreadedSpinner spinner(4);
     spinner.spin();
-
-std::cout << __FILE__ << __LINE__ << std::endl;
 
     isInferStop = true;
     pthread_join(thrdYolo, NULL);
@@ -354,8 +415,6 @@ std::cout << __FILE__ << __LINE__ << std::endl;
         pthread_join(thrdInterp, NULL);
     if (display_flag == 1)
         pthread_join(thrdDisplay, NULL);   
-
-std::cout << __FILE__ << __LINE__ << std::endl;
 
     yoloApp.delete_yolo_infer();
     ros::shutdown();
@@ -375,7 +434,7 @@ void* run_interp(void* ){
 
         r.sleep();
 	}
-        std::cout << "run_interp close" << std::endl;
+    std::cout << "run_interp close" << std::endl;
 	pthread_exit(0);
 }
 
@@ -387,26 +446,36 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
     bool BoxPass_flag = false;
     if (camOrder == 0){
+        // Right front 120 range:
+
         BoxPass_flag = false;
     }
     else if(camOrder == 1){
-        // ///boundary
-        // cv::Point LeftLinePoint1(555, 0);
-        // cv::Point LeftLinePoint2(-709, 1207);
-        // cv::Point RightLinePoint1(1293, 0);
-        // cv::Point RightLinePoint2(2365, 1207);
+        // Right back 120 range:
+        // x axis: 0 ~ 7 meters
+        // y axis: -9 ~ 6 meters
+        // cv::Point LeftLinePoint1(127, 272);
+        // cv::Point LeftLinePoint2(-1422, 1207);
+        // cv::Point RightLinePoint1(1904, 272);
+        // cv::Point RightLinePoint2(3548, 1207);
         // BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
 
         // if (box.y2 < 319) BoxPass_flag = false;
         BoxPass_flag = false;
     }
     else if(camOrder == 2){
+        // Left Front 120 range:
         BoxPass_flag = false;
+    }
+    else if(camOrder == 3)
+    {
+        // Left back 120 range:
+        BoxPass_flag = false;        
     }
 
     if (BoxPass_flag)
     {
-        boxPoint = de.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
+        boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, camId);
         detObj.bPoint = boxPoint;
     }
 
@@ -424,8 +493,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 }
 
 void* run_yolo(void* ){
-std::cout << __FILE__ << __LINE__ << std::endl;
-std::cout << "run_inference start" << std::endl;
+    std::cout << "run_inference start" << std::endl;
     std::vector<std_msgs::Header> headers_tmp;
     std::vector<std::vector<ITRI_Bbox>* > vbbx_output_tmp;
     std::vector<cv::Mat*> matSrcs_tmp;
@@ -472,7 +540,7 @@ std::cout << "run_inference start" << std::endl;
         isInferData_2 = false;
         isInferData_3 = false;
 
-        if (!input_resize) yoloApp.input_preprocess(matSrcs_tmp); 
+        if (!input_resize || isCalibration) yoloApp.input_preprocess(matSrcs_tmp); 
         else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
 
         yoloApp.inference_yolo();
@@ -548,7 +616,9 @@ std::cout << "run_inference start" << std::endl;
                 else pub120_0.publish(doa); 
 
                 if(imgResult_publish || display_flag) {
+                    display_mutex.lock();
                     mat120_0_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_0_display, headers_tmp[ndx], 0);
@@ -559,7 +629,9 @@ std::cout << "run_inference start" << std::endl;
                 else pub120_1.publish(doa);
 
                 if(imgResult_publish || display_flag) {
+                    display_mutex.lock();                    
                     mat120_1_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_1_display, headers_tmp[ndx], 1);
@@ -570,7 +642,9 @@ std::cout << "run_inference start" << std::endl;
                 else pub120_2.publish(doa);
 
                 if(imgResult_publish || display_flag){
+                    display_mutex.lock(); 
                     mat120_2_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_2_display, headers_tmp[ndx], 2);
@@ -581,7 +655,9 @@ std::cout << "run_inference start" << std::endl;
                 else pub120_3.publish(doa);
                                 
                 if(imgResult_publish || display_flag){
+                    display_mutex.lock(); 
                     mat120_3_display = M_display.clone();
+                    display_mutex.unlock();
 
                     if(imgResult_publish){
                         image_publisher(mat120_3_display, headers_tmp[ndx], 3);
@@ -601,8 +677,8 @@ std::cout << "run_inference start" << std::endl;
         dist_rows_tmp.clear();
         r.sleep();
     }
-std::cout << __FILE__ << __LINE__ << std::endl;
-std::cout << "run_inference close" << std::endl;
+
+    std::cout << "run_inference close" << std::endl;
     pthread_exit(0);
 }
 
@@ -621,14 +697,16 @@ void* run_display(void* ){
     cv::moveWindow("LeftFront-120", 545, 360);   
     cv::moveWindow("LeftBack-120", 0, 360);
 
-    int marker_h = 0;
-    marker_h = 590;  
-
-    cv::Point BoundaryMarker1, BoundaryMarker2, BoundaryMarker3, BoundaryMarker4;
-    BoundaryMarker1 = cv::Point(img_w/2 + 20, marker_h);
-    BoundaryMarker2 = cv::Point(img_w/2 - 20, marker_h);
-    BoundaryMarker3 = cv::Point(img_w/2, marker_h + 20);
-    BoundaryMarker4 = cv::Point(img_w/2, marker_h - 20);
+    // int marker_h_0, marker_h_1, marker_h_2, marker_h_3;
+    // marker_h_0 = 590;  
+    // cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
+    // cv::Point BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4;
+    // cv::Point BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4;
+    // cv::Point BoundaryMarker_3_1, BoundaryMarker_3_2, BoundaryMarker_3_3, BoundaryMarker_3_4;
+    // BoundaryMarker(rawimg_w, BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4, marker_h_0);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4, marker_h_1);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4, marker_h_2);
+    // BoundaryMarker(rawimg_w, BoundaryMarker_3_1, BoundaryMarker_3_2, BoundaryMarker_3_3, BoundaryMarker_3_4, marker_h_3);
 
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
@@ -637,16 +715,19 @@ void* run_display(void* ){
             && mat120_2_display.cols*mat120_2_display.rows == rawimg_size
             && mat120_3_display.cols*mat120_3_display.rows == rawimg_size)
         {
-            cv::line(mat120_1_display, BoundaryMarker1, BoundaryMarker2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat120_1_display, BoundaryMarker3, BoundaryMarker4, cv::Scalar(255, 255, 255), 1);
+            display_mutex.lock();
+            // cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+            // cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
             cv::imshow("RightFront-120", mat120_0_display);
             cv::imshow("RightBack-120", mat120_1_display);
             cv::imshow("LeftFront-120", mat120_2_display);
             cv::imshow("LeftBack-120", mat120_3_display);
+            display_mutex.unlock();
             cv::waitKey(1);
         }
         r.sleep();
 	}
+
     std::cout << "run_display close" << std::endl;
 	pthread_exit(0);
 }

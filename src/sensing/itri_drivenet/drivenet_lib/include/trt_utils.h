@@ -33,6 +33,8 @@ struct BBoxInfo
 class Logger : public nvinfer1::ILogger
 {
 public:
+    std::string _msgs;
+
     void log(nvinfer1::ILogger::Severity severity, const char* msg) override
     {
         // suppress info-level messages
@@ -47,6 +49,7 @@ public:
         default: std::cerr << "UNKNOWN: "; break;
         }
         std::cerr << msg << std::endl;
+        _msgs = msg;
     }
 };
 
@@ -89,6 +92,7 @@ cv::Mat blobFromDsImages(const std::vector<cv::Mat>& inputImages, const int& inp
 std::string trim(std::string s);
 float clamp(const float val, const float minVal, const float maxVal);
 bool fileExists(const std::string fileName, bool verbose = true);
+bool removeFile(const std::string fileName, bool verbose = true);
 BBox convertBBoxNetRes(const float& bx, const float& by, const float& bw, const float& bh,
                        const uint& stride, const uint& netW, const uint& netH);
 void convertBBoxImgRes(const float scalingFactor, const float& xOffset, const float& yOffset,

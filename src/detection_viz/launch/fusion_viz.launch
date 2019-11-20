@@ -64,7 +64,57 @@
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
   </node>
-  
+  <node name="m_Detect_cam60FL" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjFrontLeft"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>
+  <node name="m_Detect_cam60FR" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjFrontRight"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>
+
+   <!-- Camera 120 ******************************************************************************** -->
+  <node name="m_Detect_cam120FT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjFrontTop"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>  
+  <node name="m_Detect_cam120BT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjBackTop"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>  
+  <node name="m_Detect_cam120LF" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjLeftFront"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>  
+  <node name="m_Detect_cam120LB" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjLeftBack"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>  
+  <node name="m_Detect_cam120RF" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjRightFront"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>  
+  <node name="m_Detect_cam120RB" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/CamObjRightBack"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+  </node>  
+
   <!-- LaneNet ********************************************************************************** -->
   <node name="m_Lane_all_cam" pkg="detection_viz" type="marker_lane_curve.py" output="screen">
       <param name="topic" value="/LaneToDecisionOutput"/>
