@@ -11,7 +11,6 @@ from sensor_msgs.msg import CompressedImage, PointCloud2
 class HZCalculatorNode(object):
     def __init__(self):
         print("Listen for 1 minute and calculate topic frequency.")
-        a +=
         rospy.init_node("HZCalculatorNode")
         self.subscriptions = [
             {"topic": "/gmsl_camera/port_d/cam_0/image_raw/compressed",
