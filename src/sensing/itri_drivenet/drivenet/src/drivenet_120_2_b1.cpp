@@ -436,7 +436,7 @@ void* run_yolo(void* ){
                             distMeter_p0y = detObj.bPoint.p0.y;  
                             distMeter_p3y = detObj.bPoint.p3.y;
                         }                    
-                        else
+                        else if (cam_order == 1)
                         {
                             distMeter_p0x = detObj.bPoint.p7.x;
                             distMeter_p3x = detObj.bPoint.p4.x;

@@ -576,26 +576,19 @@ void* run_yolo(void* ){
                 {   
                     if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
                         int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                        if (cam_order == 0)
-                        {
-                            distMeter_p0x = detObj.bPoint.p3.x;
-                            distMeter_p3x = detObj.bPoint.p7.y;
-                            distMeter_p0y = detObj.bPoint.p3.y;  
-                            distMeter_p3y = detObj.bPoint.p7.y;
-                        }                    
-                        else if (cam_order == 2)
+                        if (cam_order == 0 || cam_order == 1)
                         {
                             distMeter_p0x = detObj.bPoint.p4.x;
                             distMeter_p3x = detObj.bPoint.p0.y;
                             distMeter_p0y = detObj.bPoint.p4.y;  
                             distMeter_p3y = detObj.bPoint.p0.y;
-                        }
-                        else
+                        }                    
+                        else if (cam_order == 2 || cam_order == 3)
                         {
-                            distMeter_p0x = detObj.bPoint.p0.x;
-                            distMeter_p3x = detObj.bPoint.p3.x;
-                            distMeter_p0y = detObj.bPoint.p0.y;                    
-                            distMeter_p3y = detObj.bPoint.p3.y;                        
+                            distMeter_p0x = detObj.bPoint.p3.x;
+                            distMeter_p3x = detObj.bPoint.p7.y;
+                            distMeter_p0y = detObj.bPoint.p3.y;  
+                            distMeter_p3y = detObj.bPoint.p7.y;
                         }
 
                         int x1 = detObj.camInfo.u;
