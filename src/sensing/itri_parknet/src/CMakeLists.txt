@@ -21,7 +21,7 @@ set(PARKNET_LIB_SRCS
     yolo3_detector.cpp)
 
 # -Wunused-local-typedef is caused by glog of older version
-if (COMPIELR_IS_CLANG)
+if (COMPILER_IS_CLANG)
   set_source_files_properties(parknet_node_impl.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-local-typedef)
   set_source_files_properties(parknet_image_manager.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-local-typedef)
 endif ()
