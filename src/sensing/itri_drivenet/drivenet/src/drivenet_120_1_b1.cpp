@@ -518,6 +518,29 @@ void* run_yolo(void* ){
         headers_tmp = headers;
         vbbx_output_tmp = vbbx_output;
         matSrcs_tmp = matSrcs;
+        for (int i = 0; i < matSrcs_tmp.size(); i++)
+        {
+            if (!matSrcs_tmp[i]->data)
+            {
+                std::cout << "Unable to read matSrcs_tmp " << i << " image." << std::endl;
+                continue;
+            }
+            else if (matSrcs_tmp[i]->cols <= 0 || matSrcs_tmp[i]->rows <= 0)
+            {
+                std::cout << "matSrcs_tmp " << i << " Mat cols: " << matSrcs_tmp[i]->cols << ", rows: " << matSrcs_tmp[i]->rows << std::endl;
+                continue;
+            }
+            if (!matSrcs[i]->data)
+            {
+                std::cout << "Unable to read matSrcs " << i << " image." << std::endl;
+                continue;
+            }
+            else if (matSrcs[i]->cols <= 0 || matSrcs[i]->rows <= 0)
+            {
+                std::cout << "matSrcs " << i << " Mat cols: " << matSrcs[i]->cols << ", rows: " << matSrcs[i]->rows << std::endl;
+                continue;
+            }
+        } 
         matOrder_tmp = matOrder;
         matId_tmp = matId;
         dist_cols_tmp = dist_cols;
