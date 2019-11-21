@@ -139,7 +139,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
+
+        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 4) {
@@ -669,6 +670,12 @@ void* run_yolo(void* ){
             }
             vDo.clear();        
         }
+
+        std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << ", "
+            <<  camera::topics[cam_ids_[1]] << ", " 
+            <<  camera::topics[cam_ids_[2]] << "and " 
+            <<  camera::topics[cam_ids_[3]] 
+            << " image." << std::endl;
 
         // reset data
         headers_tmp.clear();
