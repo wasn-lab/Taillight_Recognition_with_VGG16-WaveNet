@@ -290,8 +290,8 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         // Front center 60 range:
         // x axis: 7 ~ 50 meters
         // y axis: -10 ~ 10 meters
-        cv::Point LeftLinePoint1(458, 914);
-        cv::Point LeftLinePoint2(-3172, 1181);
+        cv::Point LeftLinePoint1(636, 914);
+        cv::Point LeftLinePoint2(-1817, 1181);
         cv::Point RightLinePoint1(1371, 914);
         cv::Point RightLinePoint2(3801, 1181);
 
