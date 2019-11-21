@@ -562,7 +562,8 @@ void* run_display(void* ){
         {
             if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
             { 
-                try{
+                try
+                {
                     display_mutex.lock();   
                     cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
                     cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
@@ -572,9 +573,9 @@ void* run_display(void* ){
                     display_mutex.unlock(); 
                     cv::waitKey(1);
                 }
-                catch (cv::Exception& e){
+                catch (cv::Exception& e)
+                {
                     std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
-                    continue;
                 }
             }
         }

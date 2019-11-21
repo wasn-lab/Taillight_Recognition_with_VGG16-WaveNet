@@ -774,7 +774,6 @@ void* run_display(void* ){
                 catch (cv::Exception& e)
                 {
                         std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
-                        continue;
                 }
             }
         }

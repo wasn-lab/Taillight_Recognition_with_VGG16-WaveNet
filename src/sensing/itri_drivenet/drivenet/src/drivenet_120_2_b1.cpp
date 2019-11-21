@@ -572,7 +572,8 @@ void* run_display(void* ){
         {
             if (mat120_0_display.cols*mat120_0_display.rows == rawimg_size && mat120_1_display.cols*mat120_1_display.rows == rawimg_size)
             {
-                try{
+                try
+                {
                     display_mutex.lock();
                     cv::line(mat120_0_display, BoundaryMarker_0_1, BoundaryMarker_0_2, cv::Scalar(255, 255, 255), 1);
                     cv::line(mat120_0_display, BoundaryMarker_0_3, BoundaryMarker_0_4, cv::Scalar(255, 255, 255), 1);
@@ -585,7 +586,6 @@ void* run_display(void* ){
                 }
                 catch (cv::Exception& e){
                     std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
-                    continue;
                 }
             }
         }
