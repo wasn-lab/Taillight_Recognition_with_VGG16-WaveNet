@@ -375,26 +375,26 @@ void* run_yolo(void* ){
         headers_tmp = headers;
         vbbx_output_tmp = vbbx_output;
         matSrcs_tmp = matSrcs;
-        for (int i = 0; i < matSrcs_tmp.size(); i++)
+        for (auto &mat : matSrcs_tmp)
         {
-            if (!matSrcs_tmp[i]->data)
+            if (!mat->data)
             {
-                std::cout << "Unable to read matSrcs_tmp " << i << " image." << std::endl;
+                std::cout << "Unable to read matSrcs_tmp image." << std::endl;
                 continue;
             }
-            else if (matSrcs_tmp[i]->cols <= 0 || matSrcs_tmp[i]->rows <= 0)
+            else if (mat->cols <= 0 || mat->rows <= 0)
             {
-                std::cout << "matSrcs_tmp " << i << " Mat cols: " << matSrcs_tmp[i]->cols << ", rows: " << matSrcs_tmp[i]->rows << std::endl;
+                std::cout << "matSrcs_tmp Mat cols: " << mat->cols << ", rows: " << mat->rows << std::endl;
                 continue;
             }
-            if (!matSrcs[i]->data)
+            if (!mat->data)
             {
-                std::cout << "Unable to read matSrcs " << i << " image." << std::endl;
+                std::cout << "Unable to read matSrcs image." << std::endl;
                 continue;
             }
-            else if (matSrcs[i]->cols <= 0 || matSrcs[i]->rows <= 0)
+            else if (mat->cols <= 0 || mat->rows <= 0)
             {
-                std::cout << "matSrcs " << i << " Mat cols: " << matSrcs[i]->cols << ", rows: " << matSrcs[i]->rows << std::endl;
+                std::cout << "matSrcs Mat cols: " << mat->cols << ", rows: " << mat->rows << std::endl;
                 continue;
             }
         } 
