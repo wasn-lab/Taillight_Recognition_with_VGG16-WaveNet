@@ -522,7 +522,7 @@ void* run_yolo(void* ){
             }
             vDo.clear();
         }
-        std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << ", "
+        std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << " and "
             <<  camera::topics[cam_ids_[1]]
             << " image." << std::endl;
 

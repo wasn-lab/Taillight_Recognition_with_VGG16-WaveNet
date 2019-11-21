@@ -506,7 +506,7 @@ void* run_yolo(void* ){
         }
 
         std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << ", "
-            <<  camera::topics[cam_ids_[1]] << "and " 
+            <<  camera::topics[cam_ids_[1]] << " and " 
             <<  camera::topics[cam_ids_[2]] 
             << " image." << std::endl;
 
