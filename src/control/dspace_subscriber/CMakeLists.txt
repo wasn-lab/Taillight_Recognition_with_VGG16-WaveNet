@@ -20,11 +20,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare ROS messages, services and actions ##
 ################################################
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#  msgs
+#)
 
 ###################################
 ## catkin specific configuration ##
@@ -46,7 +46,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 add_executable(dspace_subscriber src/dSPACE_subscriber.cpp )
 target_link_libraries(dspace_subscriber ${catkin_LIBRARIES})
 add_dependencies(dspace_subscriber dspace_subscriber_generate_messages_cpp)
-add_dependencies(dspace_subscriber ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(dspace_subscriber ${catkin_EXPORTED_TARGETS})
 
 
 

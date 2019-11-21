@@ -20,11 +20,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare ROS messages, services and actions ##
 ################################################
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#  msgs
+#)
 
 ###################################
 ## catkin specific configuration ##
@@ -60,7 +60,7 @@ add_executable(gui_publisher_all src/GUI_Publisher_all.cpp )
 target_link_libraries(gui_publisher_all ${catkin_LIBRARIES})
 add_dependencies(gui_publisher_all gui_publisher_all_generate_messages_cpp)
 add_dependencies(gui_publisher_all ${catkin_EXPORTED_TARGETS} )
-add_dependencies(gui_publisher_all ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(gui_publisher_all ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
 

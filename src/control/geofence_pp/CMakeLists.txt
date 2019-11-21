@@ -22,11 +22,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare ROS messages, services and actions ##
 ################################################
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#  msgs
+#)
 
 ###################################
 ## catkin specific configuration ##
@@ -58,7 +58,7 @@ ${PCL_INCLUDE_DIRS}
 add_executable(geofence_pp src/main.cpp src/Geofence_Class.cpp )
 target_link_libraries(geofence_pp ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(geofence_pp ${catkin_EXPORTED_TARGETS} )
-add_dependencies(geofence_pp ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(geofence_pp ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
 
