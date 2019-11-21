@@ -381,6 +381,16 @@ void* run_yolo(void* ){
             std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
             if(imgResult_publish || display_flag)  
             {
+                if (!(*matSrcs_tmp[ndx]).data)
+                {
+                    std::cout << "Unable to read *matSrcs_tmp : id " << ndx << "." << std::endl;
+                    continue;
+                }
+                else if ((*matSrcs_tmp[ndx]).cols <= 0 || (*matSrcs_tmp[ndx]).rows <= 0)
+                {
+                    std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[ndx]).cols << ", rows: " << (*matSrcs_tmp[ndx]).rows << std::endl;
+                    continue;
+                }
                 cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h) , 0, 0, 0);
                 M_display = M_display_tmp;
             }
@@ -508,16 +518,25 @@ void* run_display(void* ){
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
     {
-        if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
-        { 
-            display_mutex.lock();   
-            cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
-            cv::imshow("RightSide-60", mat60_0_display);
-            cv::imshow("Center-60", mat60_1_display);
-            cv::imshow("LeftSide-60", mat60_2_display);
-            display_mutex.unlock(); 
-            cv::waitKey(1);
+        if (mat60_0_display.data || mat60_1_display.data || mat60_2_display.data)
+        {
+            if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
+            { 
+                try{
+                    display_mutex.lock();   
+                    cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+                    cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+                    cv::imshow("RightSide-60", mat60_0_display);
+                    cv::imshow("Center-60", mat60_1_display);
+                    cv::imshow("LeftSide-60", mat60_2_display);
+                    display_mutex.unlock(); 
+                    cv::waitKey(1);
+                }
+                catch (cv::Exception& e){
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                    continue;
+                }
+            }
         }
         r.sleep();
 	}
