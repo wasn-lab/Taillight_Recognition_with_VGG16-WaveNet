@@ -416,7 +416,15 @@ void* run_yolo(void* ){
                     std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[ndx]).cols << ", rows: " << (*matSrcs_tmp[ndx]).rows << std::endl;
                     continue;
                 }
-                cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h) , 0, 0, 0);
+                try
+                {
+                    cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+                }             
+                catch (cv::Exception& e)
+                {
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                    continue;
+                }
                 M_display = M_display_tmp;
             }
 
