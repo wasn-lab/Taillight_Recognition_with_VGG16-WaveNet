@@ -124,6 +124,7 @@ int NPPResizerImpl::resize_to_letterbox_yolov3(const Npp8u* npp8u_ptr_in, Npp8u*
 
   NppStatus result = nppiResize_8u_C3R(npp8u_ptr_in, src_line_steps_, src_size_, src_roi_, npp8u_ptr_cuda_608x384_,
                                        dst_line_steps_, temp_size, temp_roi, interpolation_mode_);
+  (void)(result);  // Suppress -Wunused-but-set-variable
   assert(result == NPP_SUCCESS);
 
   const Npp8u border_rgb_color[] = { 0, 0, 0, 0 };

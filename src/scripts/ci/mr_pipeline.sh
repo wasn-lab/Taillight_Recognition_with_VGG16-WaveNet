@@ -8,7 +8,23 @@ readonly build_type="${build_type:-Release}"
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
+
+echo "Put the merge request based on the tip code. If it fails, then the "
+echo "developer must manually update the merge request."
 git fetch
+git merge remotes/origin/master --no-ff
+
+set +e
+git merge-base --is-ancestor remotes/origin/master HEAD
+if [[ "$?" != "0" ]]; then
+  echo "The merge request is not based the latest master. Please do "
+  echo "  $ git fetch"
+  echo "  $ git merge remotes/origin/master --no-ff"
+  echo "  $ git push"
+  echo "to trigger the merge request pipeline again."
+  exit 1
+fi
+set -e
 
 python src/scripts/ci/check_file_size.py
 python src/scripts/ci/check_locked_file.py
@@ -17,10 +33,12 @@ readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
 echo ${clean_build_status}
 if [[ "${clean_build_status}" =~ "Clean build" ]]; then
   bash src/scripts/ci/module_build.sh
-  bash src/scripts/ci/module_build_clang.sh
 else
   catkin_make
-  catkin_make --build build_clang -DCATKIN_DEVEL_PREFIX=devel_clang
 fi
+
+set +x
+source devel/setup.bash
+python src/scripts/ci/run_pylint.py
 
 popd

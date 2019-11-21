@@ -677,11 +677,11 @@ int main( int argc, char **argv )
 
 	// Ini
 	int hz = 100;
-	if (ros::param::get(ros::this_node::getName()+"/hz", hz));
+	ros::param::get(ros::this_node::getName()+"/hz", hz);
 	ppdt = 0.5;
-	if (ros::param::get(ros::this_node::getName()+"/ppdt", ppdt));
+	ros::param::get(ros::this_node::getName()+"/ppdt", ppdt);
 	ppft = 2;
-	if (ros::param::get(ros::this_node::getName()+"/ppft", ppft));
+	ros::param::get(ros::this_node::getName()+"/ppft", ppft);
 
 	// Subscriber
 	// ros::Subscriber object_subscriber = nh.subscribe("current_pose", 1, RelchatterCallback);

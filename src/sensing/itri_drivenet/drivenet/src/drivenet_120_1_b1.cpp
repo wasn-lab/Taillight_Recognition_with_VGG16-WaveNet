@@ -349,11 +349,11 @@ int main(int argc, char **argv)
     isInferStop = false;
     isInferData = false;
 
-    if (ros::param::get(ros::this_node::getName()+"/car_id", car_id));
-	if (ros::param::get(ros::this_node::getName()+"/standard_fps", standard_FPS));
-	if (ros::param::get(ros::this_node::getName()+"/display", display_flag));
-	if (ros::param::get(ros::this_node::getName()+"/input_resize", input_resize));
-	if (ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish));
+    ros::param::get(ros::this_node::getName()+"/car_id", car_id);
+    ros::param::get(ros::this_node::getName()+"/standard_fps", standard_FPS);
+    ros::param::get(ros::this_node::getName()+"/display", display_flag);
+    ros::param::get(ros::this_node::getName()+"/input_resize", input_resize);
+    ros::param::get(ros::this_node::getName()+"/imgResult_publish", imgResult_publish);
 
     cam120_0_topicName = camera::topics[cam_ids_[0]];
     cam120_1_topicName = camera::topics[cam_ids_[1]];
