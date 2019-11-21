@@ -45,7 +45,6 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(dspace_subscriber src/dSPACE_subscriber.cpp )
 target_link_libraries(dspace_subscriber ${catkin_LIBRARIES})
-add_dependencies(dspace_subscriber dspace_subscriber_generate_messages_cpp)
 add_dependencies(dspace_subscriber ${catkin_EXPORTED_TARGETS})
 
 

@@ -58,7 +58,6 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(gui_publisher_all src/GUI_Publisher_all.cpp )
 target_link_libraries(gui_publisher_all ${catkin_LIBRARIES})
-add_dependencies(gui_publisher_all gui_publisher_all_generate_messages_cpp)
 add_dependencies(gui_publisher_all ${catkin_EXPORTED_TARGETS} )
 #add_dependencies(gui_publisher_all ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
