@@ -364,6 +364,7 @@ void* run_yolo(void* ){
     cv::Mat M_display_tmp;
     std::vector<cv::Scalar> cls_color = {cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0) , cv::Scalar(125, 125, 125)};
     cv::Scalar class_color;
+    bool isDataVaild = true;
 
     ros::Rate r(30);
     while(ros::ok() && !isInferStop)
@@ -372,32 +373,22 @@ void* run_yolo(void* ){
         if(!isInferData) pthread_cond_wait(&cndInfer, &mtxInfer);
         pthread_mutex_unlock(&mtxInfer);
 
+        isDataVaild = true;
+        matSrcs_tmp = matSrcs;
+        for (auto &mat : matSrcs) isDataVaild *= CheckMatDataValid(*mat);
+        for (auto &mat : matSrcs_tmp) isDataVaild *= CheckMatDataValid(*mat);
+        if (!isDataVaild) 
+        {
+            // reset data
+            isInferData = false;
+            isInferData_0 = false;
+            isDataVaild = true;
+            matSrcs_tmp.clear();
+            continue;
+        }
+
         headers_tmp = headers;
         vbbx_output_tmp = vbbx_output;
-        matSrcs_tmp = matSrcs;
-        for (auto &mat : matSrcs_tmp)
-        {
-            if (!mat->data)
-            {
-                std::cout << "Unable to read matSrcs_tmp image." << std::endl;
-                continue;
-            }
-            else if (mat->cols <= 0 || mat->rows <= 0)
-            {
-                std::cout << "matSrcs_tmp Mat cols: " << mat->cols << ", rows: " << mat->rows << std::endl;
-                continue;
-            }
-            if (!mat->data)
-            {
-                std::cout << "Unable to read matSrcs image." << std::endl;
-                continue;
-            }
-            else if (mat->cols <= 0 || mat->rows <= 0)
-            {
-                std::cout << "matSrcs Mat cols: " << mat->cols << ", rows: " << mat->rows << std::endl;
-                continue;
-            }
-        } 
         matOrder_tmp = matOrder;
         matId_tmp = matId;
         dist_cols_tmp = dist_cols;
@@ -413,9 +404,6 @@ void* run_yolo(void* ){
         vbbx_output.clear();
         dist_cols.clear();
         dist_rows.clear();
-        isInferData = false;
-        isInferData_0 = false;
-        isInferData_1 = false;
 
         if (!input_resize || isCalibration) yoloApp.input_preprocess(matSrcs_tmp); 
         else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
@@ -534,6 +522,10 @@ void* run_yolo(void* ){
             <<  camera::topics[cam_ids_[1]]
             << " image." << std::endl;
 
+        isInferData = false;
+        isInferData_0 = false;
+        isInferData_1 = false;
+        
         // reset data
         headers_tmp.clear();
         matSrcs_tmp.clear();
@@ -544,6 +536,7 @@ void* run_yolo(void* ){
         dist_rows_tmp.clear();
         r.sleep();
     }
+
     std::cout << "run_inference close" << std::endl;
     pthread_exit(0);
 }
