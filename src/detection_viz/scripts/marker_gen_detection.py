@@ -6,6 +6,8 @@ import rospy
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 from rosgraph_msgs.msg import Clock
+#
+import fps_calculator as FPS
 
 BOX_ORDER = [
     0, 1,
@@ -34,29 +36,17 @@ class Node:
         self.c_red = rospy.get_param("~red")
         self.c_green = rospy.get_param("~green")
         self.c_blue = rospy.get_param("~blue")
+        self.delay_prefix = rospy.get_param("~delay_prefix", "")
+        self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
         self.t_clock = rospy.Time()
 
-        self.box_mark_pub = \
-            rospy.Publisher(
-                self.inputTopic + "/markers",
-                MarkerArray,
-                queue_size=1)
-        self.delay_txt_mark_pub = \
-            rospy.Publisher(
-                self.inputTopic + "/delay",
-                MarkerArray,
-                queue_size=1)
+        self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
+        self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
 
-        self.clock_sub = \
-                rospy.Subscriber(
-                "/clock",
-                Clock,
-                self.clock_CB)
-        self.detection_sub = \
-            rospy.Subscriber(
-                self.inputTopic,
-                DetectedObjectArray,
-                self.path_prediction_output_callback)
+        self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
+        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
+        # FPS
+        self.fps_cal = FPS.FPS()
 
     def run(self):
         rospy.spin()
@@ -73,20 +63,31 @@ class Node:
         p.z = (point_1.z + point_2.z) * 0.5 + 2.0
         return p
 
-    def path_prediction_output_callback(self, message):
+    def text_marker_position_origin(self):
+        p = Point()
+        p.x = self.delay_pos_x
+        p.y = 0.0
+        p.z = 2.0
+        return p
+
+    def detection_callback(self, message):
+        current_stamp = rospy.get_rostime()
+        self.fps_cal.step()
+        # print("fps = %f" % self.fps_cal.fps)
         box_list = MarkerArray()
-        text_list = MarkerArray()
+        delay_list = MarkerArray()
         idx = 1
         for i in range(len(message.objects)):
-            point = self.text_marker_position(message.objects[i].bPoint)
+            # point = self.text_marker_position(message.objects[i].bPoint)
             box_list.markers.append( self.create_bounding_box_marker( idx, message.header, message.objects[i].bPoint) )
+            # delay_list.markers.append( self.create_delay_text_marker( idx, message.header, point) )
             idx += 1
-            text_list.markers.append( self.create_delay_text_marker( idx, message.header, point) )
-            idx += 1
-
+        #
+        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps ) )
+        #
         self.box_mark_pub.publish(box_list)
-        self.delay_txt_mark_pub.publish(text_list)
-        
+        self.delay_txt_mark_pub.publish(delay_list)
+
 
     def create_bounding_box_marker(self, idx, header, bbox):
         marker = Marker()
@@ -98,7 +99,7 @@ class Node:
         marker.id = idx
         marker.type = Marker.LINE_LIST
         marker.scale.x = 0.2
-        marker.lifetime = rospy.Duration(0.2)
+        marker.lifetime = rospy.Duration(1.0)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
@@ -126,7 +127,7 @@ class Node:
         return marker
 
 
-    def create_delay_text_marker(self, idx, header, point):
+    def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None):
         marker = Marker()
         marker.header.frame_id = header.frame_id
         marker.header.stamp = header.stamp
@@ -137,12 +138,19 @@ class Node:
         # marker.scale.x = 10.0
         # marker.scale.y = 1.0
         marker.scale.z = 2.0
-        marker.lifetime = rospy.Duration(0.2)
+        marker.lifetime = rospy.Duration(1.0)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
         marker.color.a = 1.0
-        marker.text = "%.3fms" % ((rospy.get_rostime() - header.stamp).to_sec() * 1000.0)
+        # marker.text = "%.3fms" % ((rospy.get_rostime() - header.stamp).to_sec() * 1000.0)
+        if len(str(self.delay_prefix)) > 0:
+            marker.text = "[%s] " % str(self.delay_prefix)
+        else:
+            marker.text = ""
+        marker.text += "%.3fms" % ((current_stamp - header.stamp).to_sec() * 1000.0)
+        if not fps is None:
+            marker.text += " fps = %.1f" % fps
 
         marker.pose.position.x = point.x
         marker.pose.position.y = point.y
