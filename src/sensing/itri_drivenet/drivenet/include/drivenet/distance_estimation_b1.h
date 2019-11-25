@@ -4,6 +4,8 @@
 //ROS message
 #include <msgs/BoxPoint.h>
 #include <msgs/PointXYZ.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 class DistanceEstimation{
 private:
@@ -82,10 +84,22 @@ private:
     float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight, std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
     msgs::PointXYZ GetPointDist(int x, int y, int cam_id);
 
+    
+
 public:
     void init(int carId);
     msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, int cam_id);
     msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id);
+
+    /// camId: 1
+    // Front center 60 range:
+    // x axis: 7 ~ 50 meters
+    // y axis: -10 ~ 10 meters
+    cv::Point LeftLinePoint1_60_FC;
+    cv::Point LeftLinePoint2_60_FC;
+    cv::Point RightLinePoint1_60_FC;
+    cv::Point RightLinePoint2_60_FC;
+
 };
 
 #endif /*DISTANCEESTIMATION_H_*/

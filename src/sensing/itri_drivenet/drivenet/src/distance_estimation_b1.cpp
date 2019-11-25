@@ -13,6 +13,10 @@ void DistanceEstimation::init (int car_id)
     regionHeightSlope_60_FC_y = {0.12, 0.209, 0.27, 0.337, 0.44, 1.02, 3.87, -1.53, -0.66, -0.452, -0.333, -0.251, -0.121}; 
     regionHeight_60_FC_y = {-1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801}; 
     regionDist_60_FC_y = {10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10};
+    LeftLinePoint1_60_FC = cv::Point(636, 914);
+    LeftLinePoint2_60_FC = cv::Point(-1817, 1181);
+    RightLinePoint1_60_FC = cv::Point(1371, 914);;
+    RightLinePoint2_60_FC = cv::Point(3801, 1181);;
 
 
     regionHeight_120_FT_x = {1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171, 150, 130, 115, 99, 86, 75, 65, 57, 48, 40, 10};  //Horizontal line
@@ -692,8 +696,8 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     int x_loc = y;
     int y_loc = x;
     int img_h = 1208;
-    int img_w = 1920;
-    int mode = 1;
+    // int img_w = 1920;
+    // int mode = 1;
 
     if (cam_id == 1)
     {
