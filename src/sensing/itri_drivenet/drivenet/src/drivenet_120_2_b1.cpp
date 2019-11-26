@@ -99,8 +99,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
-    if (camOrder == 0 && !isInferData_0) {isInferData_0 = true; isPushData = true;}
-    if (camOrder == 1 && !isInferData_1) {isInferData_1 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[0] && !isInferData_0) {isInferData_0 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[1] && !isInferData_1) {isInferData_1 = true; isPushData = true;}
 
     if (isPushData)
     {
@@ -211,9 +211,9 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-    if(camOrder == 0)
+    if(cam_ids_[cam_order] == cam_ids_[0])
 	    pubImg_120_0.publish(imgMsg);
-    else if (camOrder == 1)
+    else if (cam_ids_[cam_order] == cam_ids_[1])
  	    pubImg_120_1.publish(imgMsg);
 }
 
@@ -310,7 +310,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
     double *diatance_pixel_array;
 
     bool BoxPass_flag = false;
-    if (camOrder == 0){
+    if (cam_ids_[cam_order] == cam_ids_[0]){
         // Front top 120 range:
         // x axis: 0 ~ 7 meters
         // y axis: -9 ~ 6 meters
@@ -320,7 +320,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         cv::Point RightLinePoint2 = distEst.RightLinePoint2_120_FT;
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
-    else if(camOrder == 1){
+    else if(cam_ids_[cam_order] == cam_ids_[1]){
         // Back top 120 range:
         // x axis: 8 ~ 20 meters
         // y axis: -3 ~ 3 meters
@@ -460,14 +460,14 @@ void* run_yolo(void* ){
                 {   
                     if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
                         int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                        if (cam_order == 0)
+                        if (cam_ids_[cam_order] == cam_ids_[0])
                         {
                             distMeter_p0x = detObj.bPoint.p0.x;
                             distMeter_p3x = detObj.bPoint.p3.y;
                             distMeter_p0y = detObj.bPoint.p0.y;  
                             distMeter_p3y = detObj.bPoint.p3.y;
                         }                    
-                        else if (cam_order == 1)
+                        else if (cam_ids_[cam_order] == cam_ids_[1])
                         {
                             distMeter_p0x = detObj.bPoint.p7.x;
                             distMeter_p3x = detObj.bPoint.p4.x;
@@ -489,7 +489,7 @@ void* run_yolo(void* ){
             doa.header.frame_id = "lidar";
             doa.objects = vDo;
 
-            if(cam_order == 0){
+            if(cam_ids_[cam_order] == cam_ids_[0]){
                 if (standard_FPS == 1) doa120_0 = doa;
                 else pub120_0.publish(doa);
 
@@ -502,7 +502,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_0_display, headers_tmp[ndx], 0);
                     }
                 }
-            }else if(cam_order == 1){
+            }else if(cam_ids_[cam_order] == cam_ids_[1]){
                 if (standard_FPS == 1) doa120_1 = doa;
                 else pub120_1.publish(doa);
 

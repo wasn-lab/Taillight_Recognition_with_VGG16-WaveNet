@@ -329,13 +329,13 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-    if(camOrder == 0)
+    if(cam_ids_[cam_order] == cam_ids_[0])
 	    pubImg_120_0.publish(imgMsg);
-    else if (camOrder == 1)
+    else if (cam_ids_[cam_order] == cam_ids_[1])
  	    pubImg_120_1.publish(imgMsg);
-    else if (camOrder == 2)
+    else if (cam_ids_[cam_order] == cam_ids_[2])
 	    pubImg_120_2.publish(imgMsg);
-    else if (camOrder == 3)
+    else if (cam_ids_[cam_order] == cam_ids_[3])
 	    pubImg_120_3.publish(imgMsg);
 }
 
@@ -446,12 +446,12 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
     double *diatance_pixel_array;
 
     bool BoxPass_flag = false;
-    if (camOrder == 0){
+    if (cam_ids_[cam_order] == cam_ids_[0]){
         // Right front 120 range:
 
         BoxPass_flag = false;
     }
-    else if(camOrder == 1){
+    else if(cam_ids_[cam_order] == cam_ids_[1]){
         // Right back 120 range:
         // x axis: 0 ~ 7 meters
         // y axis: -9 ~ 6 meters
@@ -464,11 +464,11 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         // if (box.y2 < 319) BoxPass_flag = false;
         BoxPass_flag = false;
     }
-    else if(camOrder == 2){
+    else if(cam_ids_[cam_order] == cam_ids_[2]){
         // Left Front 120 range:
         BoxPass_flag = false;
     }
-    else if(camOrder == 3)
+    else if(cam_ids_[cam_order] ==  cam_ids_[3])
     {
         // Left back 120 range:
         BoxPass_flag = false;        
@@ -605,14 +605,14 @@ void* run_yolo(void* ){
                 {   
                     if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
                         int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                        if (cam_order == 0 || cam_order == 1)
+                        if (cam_ids_[cam_order] == cam_ids_[0] || cam_ids_[cam_order] == cam_ids_[1])
                         {
                             distMeter_p0x = detObj.bPoint.p4.x;
                             distMeter_p3x = detObj.bPoint.p0.y;
                             distMeter_p0y = detObj.bPoint.p4.y;  
                             distMeter_p3y = detObj.bPoint.p0.y;
                         }                    
-                        else if (cam_order == 2 || cam_order == 3)
+                        else if (cam_ids_[cam_order] == cam_ids_[2] || cam_ids_[cam_order] == cam_ids_[3])
                         {
                             distMeter_p0x = detObj.bPoint.p3.x;
                             distMeter_p3x = detObj.bPoint.p7.y;
@@ -633,7 +633,7 @@ void* run_yolo(void* ){
             doa.header.frame_id = "lidar";
             doa.objects = vDo;
 
-            if(cam_order == 0){
+            if(cam_ids_[cam_order] == cam_ids_[0]){
                 if (standard_FPS == 1) doa120_0 = doa;
                 else pub120_0.publish(doa); 
 
@@ -646,7 +646,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_0_display, headers_tmp[ndx], 0);
                     }
                 }
-            }else if(cam_order == 1){
+            }else if(cam_ids_[cam_order] == cam_ids_[1]){
                 if (standard_FPS == 1) doa120_1 = doa;
                 else pub120_1.publish(doa);
 
@@ -659,7 +659,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_1_display, headers_tmp[ndx], 1);
                     }
                 }
-            }else if(cam_order == 2){
+            }else if(cam_ids_[cam_order] == cam_ids_[2]){
                 if (standard_FPS == 1) doa120_2 = doa;
                 else pub120_2.publish(doa);
 
@@ -672,7 +672,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_2_display, headers_tmp[ndx], 2);
                     }
                 }
-            }else if(cam_order == 3){
+            }else if(cam_ids_[cam_order] == cam_ids_[3]){
                 if (standard_FPS == 1) doa120_3 = doa;
                 else pub120_3.publish(doa);
                                 

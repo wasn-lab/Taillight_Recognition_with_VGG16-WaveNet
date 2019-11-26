@@ -104,9 +104,9 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
-    if (camOrder == 0 && !isInferData_0) {isInferData_0 = true; isPushData = true;}
-    if (camOrder == 1 && !isInferData_1) {isInferData_1 = true; isPushData = true;}
-    if (camOrder == 2 && !isInferData_2) {isInferData_2 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[0] && !isInferData_0) {isInferData_0 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[1] && !isInferData_1) {isInferData_1 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[2] && !isInferData_2) {isInferData_2 = true; isPushData = true;}
 
     if (isPushData)
     {
@@ -182,11 +182,11 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-    if(camOrder == 0)
+    if(cam_ids_[cam_order] == cam_ids_[0])
 	    pubImg_60_0.publish(imgMsg);
-    else if (camOrder == 1)
+    else if (cam_ids_[cam_order] == cam_ids_[1])
  	    pubImg_60_1.publish(imgMsg);
-    else if (camOrder == 2)
+    else if (cam_ids_[cam_order] == cam_ids_[2])
 	    pubImg_60_2.publish(imgMsg);
 }
 
@@ -283,10 +283,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
     bool BoxPass_flag = false;
 
-    if (camOrder == 0){
+    if (cam_ids_[cam_order] == cam_ids_[0]){
         BoxPass_flag = false;
     }
-    else if(camOrder == 1)
+    else if(cam_ids_[cam_order] == cam_ids_[1])
     {
         // Front center 60 range:
         // x axis: 7 ~ 50 meters
@@ -298,7 +298,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
-    else if (camOrder == 2){
+    else if (cam_ids_[cam_order] == cam_ids_[2]){
         BoxPass_flag = false; 
     }
 
@@ -455,7 +455,7 @@ void* run_yolo(void* ){
             doa.header.frame_id = "lidar"; //mapping to lidar coordinate
             doa.objects = vDo;
 
-			if(cam_order == 0) {
+			if(cam_ids_[cam_order] == cam_ids_[0]) {
 
                 if (standard_FPS == 1) doa60_0 = doa;
                 else pub60_0.publish(doa);
@@ -469,7 +469,7 @@ void* run_yolo(void* ){
                         image_publisher(mat60_0_display, headers_tmp[ndx], 0);
                     }
                 }
-			}else if(cam_order == 1) {	
+			}else if(cam_ids_[cam_order] == cam_ids_[1]) {	
                 if (standard_FPS == 1) doa60_1 = doa;		
                 else pub60_1.publish(doa);
 
@@ -482,7 +482,7 @@ void* run_yolo(void* ){
                         image_publisher(mat60_1_display, headers_tmp[ndx], 1);
                     }
                 }
-			}else if(cam_order == 2) {
+			}else if(cam_ids_[cam_order] == cam_ids_[2]) {
                 if (standard_FPS == 1) doa60_2 = doa;
                 else pub60_2.publish(doa);
 
