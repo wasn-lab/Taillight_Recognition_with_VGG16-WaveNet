@@ -8,7 +8,11 @@ readonly build_type="${build_type:-Release}"
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
+
+echo "Put the merge request based on the tip code. If it fails, then the "
+echo "developer must manually update the merge request."
 git fetch
+git merge remotes/origin/master --no-ff
 
 set +e
 git merge-base --is-ancestor remotes/origin/master HEAD
