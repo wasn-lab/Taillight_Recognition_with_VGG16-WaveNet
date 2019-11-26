@@ -335,11 +335,11 @@ void* run_yolo(void* ){
     cv::Mat M_display_tmp;
     std::vector<cv::Scalar> cls_color = {cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0) , cv::Scalar(125, 125, 125)};
     cv::Scalar class_color;
-    bool isDataVaild = true;
 
     ros::Rate r(30);
     while(ros::ok() && !isInferStop)
     {
+        bool isDataVaild = true;
         pthread_mutex_lock(&mtxInfer);
         if(!isInferData) pthread_cond_wait(&cndInfer, &mtxInfer);
         pthread_mutex_unlock(&mtxInfer);
