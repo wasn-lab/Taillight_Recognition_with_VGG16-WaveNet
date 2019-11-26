@@ -314,20 +314,20 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         // Front top 120 range:
         // x axis: 0 ~ 7 meters
         // y axis: -9 ~ 6 meters
-        cv::Point LeftLinePoint1(127, 272);
-        cv::Point LeftLinePoint2(-1422, 1207);
-        cv::Point RightLinePoint1(1904, 272);
-        cv::Point RightLinePoint2(3548, 1207);
+        cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_120_FT;
+        cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_120_FT;
+        cv::Point RightLinePoint1 = distEst.RightLinePoint1_120_FT;
+        cv::Point RightLinePoint2 = distEst.RightLinePoint2_120_FT;
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
     else if(camOrder == 1){
         // Back top 120 range:
         // x axis: 8 ~ 20 meters
         // y axis: -3 ~ 3 meters
-        cv::Point LeftLinePoint1(422, 143);
-        cv::Point LeftLinePoint2(-1566, 1207);
-        cv::Point RightLinePoint1(1400, 143);
-        cv::Point RightLinePoint2(3152, 1207);
+        cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_120_BT;
+        cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_120_BT;
+        cv::Point RightLinePoint1 = distEst.RightLinePoint1_120_BT;
+        cv::Point RightLinePoint2 = distEst.RightLinePoint2_120_BT;
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
 
