@@ -121,26 +121,26 @@ void image_init()
     }
 }
 
-void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
+void sync_inference(int cam_order, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
-    if (camOrder == 0 && !isInferData_0) {isInferData_0 = true; isPushData = true;}
-    if (camOrder == 1 && !isInferData_1) {isInferData_1 = true; isPushData = true;}
-    if (camOrder == 2 && !isInferData_2) {isInferData_2 = true; isPushData = true;}
-    if (camOrder == 3 && !isInferData_3) {isInferData_3 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[0] && !isInferData_0) {isInferData_0 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[1] && !isInferData_1) {isInferData_1 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[2] && !isInferData_2) {isInferData_2 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[3] && !isInferData_3) {isInferData_3 = true; isPushData = true;}
 
     if (isPushData)
     {
         matSrcs.push_back(mat);
-        matOrder.push_back(camOrder);
+        matOrder.push_back(cam_order);
         matId.push_back(camId);
         vbbx_output.push_back(vbbx);
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
 
-        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
+        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[cam_order]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 4) {
@@ -325,7 +325,7 @@ void callback_120_3_decode(sensor_msgs::CompressedImage compressImg){
     }
 }
 
-void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
+void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
@@ -439,7 +439,7 @@ void* run_interp(void* ){
 	pthread_exit(0);
 }
 
-msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
+msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId){
     msgs::DetectedObject detObj;
     msgs::BoxPoint boxPoint;
     msgs::CamInfo camInfo;
