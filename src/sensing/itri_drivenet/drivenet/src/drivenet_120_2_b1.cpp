@@ -95,7 +95,7 @@ void image_init()
     }
 }
 
-void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
+void sync_inference(int cam_order, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
@@ -105,14 +105,14 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     if (isPushData)
     {
         matSrcs.push_back(mat);
-        matOrder.push_back(camOrder);
+        matOrder.push_back(cam_order);
         matId.push_back(camId);
         vbbx_output.push_back(vbbx);
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
 
-        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
+        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[cam_order]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 2) {
@@ -207,7 +207,7 @@ void callback_120_1_decode(sensor_msgs::CompressedImage compressImg){
     }
 }
 
-void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
+void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
@@ -303,7 +303,7 @@ void* run_interp(void* ){
 	pthread_exit(0);
 }
 
-msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
+msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId){
     msgs::DetectedObject detObj;
     msgs::BoxPoint boxPoint;
     msgs::CamInfo camInfo;
