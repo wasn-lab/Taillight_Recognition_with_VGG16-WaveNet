@@ -171,9 +171,13 @@ float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const in
 }
 float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize)
 {
-    if (!srcImg.data || srcImg.cols <= 0 || srcImg.rows <= 0)
+    if (!srcImg.data)
     {
         std::cout << "Unable to read image : " << std::endl;
+        assert(0);
+    }
+    else if (srcImg.cols <= 0 || srcImg.rows <= 0){
+        std::cout << "image size - cols: " << srcImg.cols << ", rows: " << srcImg.rows << std::endl;
         assert(0);
     }
 

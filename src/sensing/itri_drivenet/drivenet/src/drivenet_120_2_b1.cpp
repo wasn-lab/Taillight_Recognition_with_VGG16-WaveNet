@@ -99,8 +99,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
-    if (camOrder == 0 && !isInferData_0) {isInferData_0 = true; isPushData = true;}
-    if (camOrder == 1 && !isInferData_1) {isInferData_1 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[0] && !isInferData_0) {isInferData_0 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[1] && !isInferData_1) {isInferData_1 = true; isPushData = true;}
 
     if (isPushData)
     {
@@ -111,7 +111,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
+
+        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 2) {
@@ -210,9 +211,9 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-    if(camOrder == 0)
+    if(cam_ids_[cam_order] == cam_ids_[0])
 	    pubImg_120_0.publish(imgMsg);
-    else if (camOrder == 1)
+    else if (cam_ids_[cam_order] == cam_ids_[1])
  	    pubImg_120_1.publish(imgMsg);
 }
 
@@ -309,24 +310,24 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
     double *diatance_pixel_array;
 
     bool BoxPass_flag = false;
-    if (camOrder == 0){
+    if (cam_ids_[cam_order] == cam_ids_[0]){
         // Front top 120 range:
         // x axis: 0 ~ 7 meters
         // y axis: -9 ~ 6 meters
-        cv::Point LeftLinePoint1(127, 272);
-        cv::Point LeftLinePoint2(-1422, 1207);
-        cv::Point RightLinePoint1(1904, 272);
-        cv::Point RightLinePoint2(3548, 1207);
+        cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_120_FT;
+        cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_120_FT;
+        cv::Point RightLinePoint1 = distEst.RightLinePoint1_120_FT;
+        cv::Point RightLinePoint2 = distEst.RightLinePoint2_120_FT;
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
-    else if(camOrder == 1){
+    else if(cam_ids_[cam_order] == cam_ids_[1]){
         // Back top 120 range:
         // x axis: 8 ~ 20 meters
         // y axis: -3 ~ 3 meters
-        cv::Point LeftLinePoint1(422, 143);
-        cv::Point LeftLinePoint2(-1566, 1207);
-        cv::Point RightLinePoint1(1400, 143);
-        cv::Point RightLinePoint2(3152, 1207);
+        cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_120_BT;
+        cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_120_BT;
+        cv::Point RightLinePoint1 = distEst.RightLinePoint1_120_BT;
+        cv::Point RightLinePoint2 = distEst.RightLinePoint2_120_BT;
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
 
@@ -367,13 +368,27 @@ void* run_yolo(void* ){
     ros::Rate r(30);
     while(ros::ok() && !isInferStop)
     {
+        bool isDataVaild = true;
         pthread_mutex_lock(&mtxInfer);
         if(!isInferData) pthread_cond_wait(&cndInfer, &mtxInfer);
         pthread_mutex_unlock(&mtxInfer);
 
+        isDataVaild = true;
+        matSrcs_tmp = matSrcs;
+        for (auto &mat : matSrcs) isDataVaild &= CheckMatDataValid(*mat);
+        for (auto &mat : matSrcs_tmp) isDataVaild &= CheckMatDataValid(*mat);
+        if (!isDataVaild) 
+        {
+            // reset data
+            isInferData = false;
+            isInferData_0 = false;
+            isDataVaild = true;
+            matSrcs_tmp.clear();
+            continue;
+        }
+
         headers_tmp = headers;
         vbbx_output_tmp = vbbx_output;
-        matSrcs_tmp = matSrcs;
         matOrder_tmp = matOrder;
         matId_tmp = matId;
         dist_cols_tmp = dist_cols;
@@ -389,9 +404,6 @@ void* run_yolo(void* ){
         vbbx_output.clear();
         dist_cols.clear();
         dist_rows.clear();
-        isInferData = false;
-        isInferData_0 = false;
-        isInferData_1 = false;
 
         if (!input_resize || isCalibration) yoloApp.input_preprocess(matSrcs_tmp); 
         else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
@@ -401,11 +413,30 @@ void* run_yolo(void* ){
 
         msgs::DetectedObjectArray doa;
         std::vector<msgs::DetectedObject> vDo;
-        for(uint32_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++){
+        for(uint32_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
+        {
             std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
             if(imgResult_publish || display_flag)  
             {
-                cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+                if (!(*matSrcs_tmp[ndx]).data)
+                {
+                    std::cout << "Unable to read *matSrcs_tmp : id " << ndx << "." << std::endl;
+                    continue;
+                }
+                else if ((*matSrcs_tmp[ndx]).cols <= 0 || (*matSrcs_tmp[ndx]).rows <= 0)
+                {
+                    std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[ndx]).cols << ", rows: " << (*matSrcs_tmp[ndx]).rows << std::endl;
+                    continue;
+                }   
+                try
+                {
+                    cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+                }             
+                catch (cv::Exception& e)
+                {
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                    continue;
+                }
                 M_display = M_display_tmp;
             }
             msgs::DetectedObject detObj;
@@ -429,14 +460,14 @@ void* run_yolo(void* ){
                 {   
                     if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
                         int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                        if (cam_order == 0)
+                        if (cam_ids_[cam_order] == cam_ids_[0])
                         {
                             distMeter_p0x = detObj.bPoint.p0.x;
                             distMeter_p3x = detObj.bPoint.p3.y;
                             distMeter_p0y = detObj.bPoint.p0.y;  
                             distMeter_p3y = detObj.bPoint.p3.y;
                         }                    
-                        else
+                        else if (cam_ids_[cam_order] == cam_ids_[1])
                         {
                             distMeter_p0x = detObj.bPoint.p7.x;
                             distMeter_p3x = detObj.bPoint.p4.x;
@@ -458,7 +489,7 @@ void* run_yolo(void* ){
             doa.header.frame_id = "lidar";
             doa.objects = vDo;
 
-            if(cam_order == 0){
+            if(cam_ids_[cam_order] == cam_ids_[0]){
                 if (standard_FPS == 1) doa120_0 = doa;
                 else pub120_0.publish(doa);
 
@@ -471,7 +502,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_0_display, headers_tmp[ndx], 0);
                     }
                 }
-            }else if(cam_order == 1){
+            }else if(cam_ids_[cam_order] == cam_ids_[1]){
                 if (standard_FPS == 1) doa120_1 = doa;
                 else pub120_1.publish(doa);
 
@@ -487,6 +518,14 @@ void* run_yolo(void* ){
             }
             vDo.clear();
         }
+        std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << " and "
+            <<  camera::topics[cam_ids_[1]]
+            << " image." << std::endl;
+
+        isInferData = false;
+        isInferData_0 = false;
+        isInferData_1 = false;
+        
         // reset data
         headers_tmp.clear();
         matSrcs_tmp.clear();
@@ -497,6 +536,7 @@ void* run_yolo(void* ){
         dist_rows_tmp.clear();
         r.sleep();
     }
+
     std::cout << "run_inference close" << std::endl;
     pthread_exit(0);
 }
@@ -521,17 +561,26 @@ void* run_display(void* ){
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
     {
-        if (mat120_0_display.cols*mat120_0_display.rows == rawimg_size && mat120_1_display.cols*mat120_1_display.rows == rawimg_size)
+        if(mat120_0_display.data || mat120_1_display.data)
         {
-            display_mutex.lock();
-            cv::line(mat120_0_display, BoundaryMarker_0_1, BoundaryMarker_0_2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat120_0_display, BoundaryMarker_0_3, BoundaryMarker_0_4, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
-            cv::imshow("FrontTop-120", mat120_0_display);
-            cv::imshow("BackTop-120", mat120_1_display);
-            display_mutex.unlock();
-            cv::waitKey(1);
+            if (mat120_0_display.cols*mat120_0_display.rows == rawimg_size && mat120_1_display.cols*mat120_1_display.rows == rawimg_size)
+            {
+                try
+                {
+                    display_mutex.lock();
+                    cv::line(mat120_0_display, BoundaryMarker_0_1, BoundaryMarker_0_2, cv::Scalar(255, 255, 255), 1);
+                    cv::line(mat120_0_display, BoundaryMarker_0_3, BoundaryMarker_0_4, cv::Scalar(255, 255, 255), 1);
+                    cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+                    cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+                    cv::imshow("FrontTop-120", mat120_0_display);
+                    cv::imshow("BackTop-120", mat120_1_display);
+                    display_mutex.unlock();
+                    cv::waitKey(1);
+                }
+                catch (cv::Exception& e){
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                }
+            }
         }
         r.sleep();
 	}

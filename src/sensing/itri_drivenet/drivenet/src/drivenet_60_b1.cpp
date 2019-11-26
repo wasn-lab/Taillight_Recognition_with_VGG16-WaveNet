@@ -104,9 +104,9 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
-    if (camOrder == 0 && !isInferData_0) {isInferData_0 = true; isPushData = true;}
-    if (camOrder == 1 && !isInferData_1) {isInferData_1 = true; isPushData = true;}
-    if (camOrder == 2 && !isInferData_2) {isInferData_2 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[0] && !isInferData_0) {isInferData_0 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[1] && !isInferData_1) {isInferData_1 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[2] && !isInferData_2) {isInferData_2 = true; isPushData = true;}
 
     if (isPushData)
     {
@@ -117,7 +117,8 @@ void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
+
+        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 3) {
@@ -181,11 +182,11 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-    if(camOrder == 0)
+    if(cam_ids_[cam_order] == cam_ids_[0])
 	    pubImg_60_0.publish(imgMsg);
-    else if (camOrder == 1)
+    else if (cam_ids_[cam_order] == cam_ids_[1])
  	    pubImg_60_1.publish(imgMsg);
-    else if (camOrder == 2)
+    else if (cam_ids_[cam_order] == cam_ids_[2])
 	    pubImg_60_2.publish(imgMsg);
 }
 
@@ -282,22 +283,22 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
 
     bool BoxPass_flag = false;
 
-    if (camOrder == 0){
+    if (cam_ids_[cam_order] == cam_ids_[0]){
         BoxPass_flag = false;
     }
-    else if(camOrder == 1)
+    else if(cam_ids_[cam_order] == cam_ids_[1])
     {
         // Front center 60 range:
         // x axis: 7 ~ 50 meters
         // y axis: -10 ~ 10 meters
-        cv::Point LeftLinePoint1(458, 914);
-        cv::Point LeftLinePoint2(-3172, 1181);
-        cv::Point RightLinePoint1(1371, 914);
-        cv::Point RightLinePoint2(3801, 1181);
+        cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_60_FC;
+        cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_60_FC;
+        cv::Point RightLinePoint1 = distEst.RightLinePoint1_60_FC;
+        cv::Point RightLinePoint2 = distEst.RightLinePoint2_60_FC;
 
         BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2, box.x2, box.y2);
     }
-    else if (camOrder == 2){
+    else if (cam_ids_[cam_order] == cam_ids_[2]){
         BoxPass_flag = false; 
     }
 
@@ -338,13 +339,28 @@ void* run_yolo(void* ){
     ros::Rate r(30);
     while(ros::ok() && !isInferStop)
     {
+        bool isDataVaild = true;
         pthread_mutex_lock(&mtxInfer);
         if(!isInferData) pthread_cond_wait(&cndInfer, &mtxInfer);
         pthread_mutex_unlock(&mtxInfer);
+
         // copy data
+        matSrcs_tmp = matSrcs;
+        for (auto &mat : matSrcs) isDataVaild &= CheckMatDataValid(*mat);
+        for (auto &mat : matSrcs_tmp) isDataVaild &= CheckMatDataValid(*mat);
+        if (!isDataVaild) 
+        {
+            // reset data
+            isInferData = false;
+            isInferData_0 = false;
+            isInferData_1 = false;
+            isDataVaild = true;
+            matSrcs_tmp.clear();
+            continue;
+        }
+
         headers_tmp = headers;
         vbbx_output_tmp = vbbx_output;
-        matSrcs_tmp = matSrcs;
         matOrder_tmp = matOrder;
         matId_tmp = matId;
         dist_cols_tmp = dist_cols;
@@ -361,10 +377,6 @@ void* run_yolo(void* ){
         vBBX60_2.clear();
         dist_cols.clear();
         dist_rows.clear();
-        isInferData = false;
-        isInferData_0 = false;
-        isInferData_1 = false;
-        isInferData_2 = false;
 
         if (!input_resize) yoloApp.input_preprocess(matSrcs_tmp); 
         else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
@@ -381,7 +393,25 @@ void* run_yolo(void* ){
             std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
             if(imgResult_publish || display_flag)  
             {
-                cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h) , 0, 0, 0);
+                if (!(*matSrcs_tmp[ndx]).data)
+                {
+                    std::cout << "Unable to read *matSrcs_tmp : id " << ndx << "." << std::endl;
+                    continue;
+                }
+                else if ((*matSrcs_tmp[ndx]).cols <= 0 || (*matSrcs_tmp[ndx]).rows <= 0)
+                {
+                    std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[ndx]).cols << ", rows: " << (*matSrcs_tmp[ndx]).rows << std::endl;
+                    continue;
+                }
+                try
+                {
+                    cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+                }             
+                catch (cv::Exception& e)
+                {
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                    continue;
+                }
                 M_display = M_display_tmp;
             }
 
@@ -408,11 +438,13 @@ void* run_yolo(void* ){
                     if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
                         int distMeter_p0x = detObj.bPoint.p0.x;
                         int distMeter_p0y = detObj.bPoint.p0.y;
+                        int distMeter_p3x = detObj.bPoint.p3.x;
+                        int distMeter_p3y = detObj.bPoint.p3.y;
+
                         int x1 = detObj.camInfo.u;
                         int x2 = detObj.camInfo.u + detObj.camInfo.width;
                         int y2 = detObj.camInfo.v + detObj.camInfo.height;
-                        int distMeter_p3x = detObj.bPoint.p3.x;
-                        int distMeter_p3y = detObj.bPoint.p3.y;
+
                         cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y), cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
                         cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y), cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
                     }
@@ -423,7 +455,7 @@ void* run_yolo(void* ){
             doa.header.frame_id = "lidar"; //mapping to lidar coordinate
             doa.objects = vDo;
 
-			if(cam_order == 0) {
+			if(cam_ids_[cam_order] == cam_ids_[0]) {
 
                 if (standard_FPS == 1) doa60_0 = doa;
                 else pub60_0.publish(doa);
@@ -437,7 +469,7 @@ void* run_yolo(void* ){
                         image_publisher(mat60_0_display, headers_tmp[ndx], 0);
                     }
                 }
-			}else if(cam_order == 1) {	
+			}else if(cam_ids_[cam_order] == cam_ids_[1]) {	
                 if (standard_FPS == 1) doa60_1 = doa;		
                 else pub60_1.publish(doa);
 
@@ -450,7 +482,7 @@ void* run_yolo(void* ){
                         image_publisher(mat60_1_display, headers_tmp[ndx], 1);
                     }
                 }
-			}else if(cam_order == 2) {
+			}else if(cam_ids_[cam_order] == cam_ids_[2]) {
                 if (standard_FPS == 1) doa60_2 = doa;
                 else pub60_2.publish(doa);
 
@@ -467,6 +499,16 @@ void* run_yolo(void* ){
 			}
             vDo.clear();
         }
+
+        std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << ", "
+            <<  camera::topics[cam_ids_[1]] << " and " 
+            <<  camera::topics[cam_ids_[2]] 
+            << " image." << std::endl;
+
+        isInferData = false;
+        isInferData_0 = false;
+        isInferData_1 = false;
+        isInferData_2 = false;
 
         // reset data
         headers_tmp.clear();
@@ -508,16 +550,26 @@ void* run_display(void* ){
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
     {
-        if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
-        { 
-            display_mutex.lock();   
-            cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-            cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
-            cv::imshow("RightSide-60", mat60_0_display);
-            cv::imshow("Center-60", mat60_1_display);
-            cv::imshow("LeftSide-60", mat60_2_display);
-            display_mutex.unlock(); 
-            cv::waitKey(1);
+        if (mat60_0_display.data || mat60_1_display.data || mat60_2_display.data)
+        {
+            if (mat60_0_display.cols*mat60_0_display.rows == rawimg_size && mat60_1_display.cols*mat60_1_display.rows == rawimg_size && mat60_2_display.cols*mat60_2_display.rows == rawimg_size)
+            { 
+                try
+                {
+                    display_mutex.lock();   
+                    cv::line(mat60_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+                    cv::line(mat60_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+                    cv::imshow("RightSide-60", mat60_0_display);
+                    cv::imshow("Center-60", mat60_1_display);
+                    cv::imshow("LeftSide-60", mat60_2_display);
+                    display_mutex.unlock(); 
+                    cv::waitKey(1);
+                }
+                catch (cv::Exception& e)
+                {
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                }
+            }
         }
         r.sleep();
 	}
