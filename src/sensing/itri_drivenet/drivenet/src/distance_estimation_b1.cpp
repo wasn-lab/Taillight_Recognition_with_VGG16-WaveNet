@@ -240,97 +240,86 @@ int CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::P
 }
 int box_shrink(int cam_id, std::vector<int> Points_src, std::vector<int> &Points_dst)
 {
+    // PointsSrc = {class_id, x1, x2, y2};
+    // PointsDst = {class_id, x1, x2, y2};
+    
     // int edge_left, edge_right;
-    int area_id = 1; //1: left, 2:right
+    int area_id_R = 1; //1: left, 2:right
+    int area_id_L = 1; //1: left, 2:right
 
+    // Four points of RoI which need to shrink (usually road lane)
     cv::Point LeftLinePoint1;
     cv::Point LeftLinePoint2;
     cv::Point RightLinePoint1;
     cv::Point RightLinePoint2; 
 
-    int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
+    // int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
+    
     if (cam_id == 1)
     {
-        LeftLinePoint1 = cv::Point(891, 584);
-        LeftLinePoint2 = cv::Point(360, 1207);
-        RightLinePoint1 = cv::Point(1020, 584);
-        RightLinePoint2 = cv::Point(1470, 1207);        
-        area_id = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box_center_x, Points_src[3]);
+        // From x 6 - 50 m, y -3 to +3 m.
+        LeftLinePoint1 = cv::Point(869, 914);
+        LeftLinePoint2 = cv::Point(0, 1207);
+        RightLinePoint1 = cv::Point(1097, 914);
+        RightLinePoint2 = cv::Point(1746, 1207);        
+        area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1], Points_src[3]);
+        area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2], Points_src[3]);
     }
 
-    double shrink_ratio_left;
-    double shrink_ratio_right;
-    double shrink_ratio_center;
+    double shrink_ratio;
 
     switch(Points_src[0])
     {
         case 0:{ //0:person
-            shrink_ratio_left = 1;
-            shrink_ratio_right = 1;
-            shrink_ratio_center = 0.8;
+            shrink_ratio = 1;
             break;
         }
         //1:bicycle, 3:motorbike
         case 1:{
-            shrink_ratio_left = 1;
-            shrink_ratio_right = 1;
-            shrink_ratio_center = 0.9;
+            shrink_ratio = 0.9;
             break;
         } 
         case 3:{
-            shrink_ratio_left = 1;
-            shrink_ratio_right = 1;
-            shrink_ratio_center = 0.9;
+            shrink_ratio = 0.9;
             break;
         }
         //2:car
         case 2:{ 
-            shrink_ratio_left = 1;
-            shrink_ratio_right = 1;
-            shrink_ratio_center = 0.5;
+            shrink_ratio = 0.7;
             break;
         }
         //5:bus, 7:truck
         case 5:{ 
-            shrink_ratio_left = 1;
-            shrink_ratio_right = 1;
-            shrink_ratio_center = 0.7;            
+            shrink_ratio = 0.7;            
             break;
         }       
         case 7:{ 
-            shrink_ratio_left = 1;
-            shrink_ratio_right = 1;
-            shrink_ratio_center = 0.7;            
+            shrink_ratio = 0.7;            
             break;
         }       
         default:{
-            shrink_ratio_left = 0.1;
-            shrink_ratio_right = 0.1;
-            shrink_ratio_center = 0.1;
+            shrink_ratio = 1;
             break;
         }
     }
-    //std::cout << "class id: " << Points_src[0] << ", shrink_ratio_left: " << shrink_ratio_left << ", shrink_ratio_right: " << shrink_ratio_right << std::endl;
-
-    // Over left edge
-    if(area_id == 0) //over right edge
+    
+    // Shrink box when one of x1, x2 is in area and another is not in the area.
+    if(area_id_L != area_id_R)
     {
-        // shrink x
-        Points_dst[1] = (box_center_x - Points_src[1])*shrink_ratio_center + Points_src[1];
-        Points_dst[2] = Points_src[2] - (Points_src[2] - box_center_x)*shrink_ratio_center;
+        if(area_id_L == 1 && area_id_R == 0)
+        {
+            // Keep x1 and shrink right
+            Points_dst[1] = Points_src[1];
+            Points_dst[2] = Points_src[1] + (Points_src[2]-Points_src[1])*shrink_ratio;
+        }
+        if(area_id_L == 0 && area_id_R == 2)
+        {
+            // Keep x2 and shrink left
+            Points_dst[1] = Points_src[2] - (Points_src[2]-Points_src[1])*shrink_ratio;            
+            Points_dst[2] = Points_src[2];
+        }
     }
-    else if(area_id == 1)
-    {   
-        // shrink x
-        Points_dst[1] = (box_center_x - Points_src[1])*(shrink_ratio_left-0.3) + Points_src[1];
-        Points_dst[2] = Points_src[2] - (Points_src[2] - box_center_x)*shrink_ratio_left;
-    }
-    else if(area_id == 2) //over right edge
-    {
-        // shrink x
-        Points_dst[1] = (box_center_x - Points_src[1])*shrink_ratio_right + Points_src[1];
-        Points_dst[2] = Points_src[2] - (Points_src[2] - box_center_x)*(shrink_ratio_right-0.3);
-    }
+  
     return 0;
 }
 msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id)
