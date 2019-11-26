@@ -10,6 +10,10 @@ There are two input interfaces which can be used at the same time
 - Keyboard input (which can be disabled by passing --NO_KEY_IN argument)
 - Sending ROS topics
 
+The recorded rosbag files will be defaultly saved under ~/rosbag_files 
+If you want to change the location, you can do one of the following
+- Create symlink with name "rosbag_files" under "~/" (recommended, it's useful for changing the storaging place to other disks)
+- Modify the path in "rosbag_setting.yaml" configuration file (not recommended for the sake of version control)
 
 # Usage
 ## Run
@@ -37,6 +41,7 @@ Type a command and press ENTER:
 ----------------------
 s:start
 t:terminate
+c:cut file 
 k:keep file
 q:quit
 ----------------------
@@ -76,7 +81,7 @@ Modifying the topic names explicitly list in the following files can change the 
 
 Auto-mode:
 ```
-ecord_topics_auto.txt      
+record_topics_auto.txt      
 ```
 
 Manual mode:
