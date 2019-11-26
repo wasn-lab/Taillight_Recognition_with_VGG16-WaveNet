@@ -189,8 +189,26 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
         sensor_msgs::ImageConstPtr msg_pub3 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", cropedImage).toImageMsg();
         pose_pub.publish(msg_pub3);
-        obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                                    obj.camInfo.v + obj.camInfo.height, keypoints);
+        bool has_keypoint = false;
+        int count_points = 0;
+        for (unsigned int i = 0; i < 25; i++)
+        {
+          if (keypoints.at(i).x != 0 || keypoints.at(i).y != 0)
+          {
+            count_points++;
+            if (count_points >= 3)
+              has_keypoint = true;
+          }
+        }
+        if (has_keypoint)
+          obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                                                      obj.camInfo.v + obj.camInfo.height, keypoints);
+        else
+        {
+          std::vector<cv::Point> no_keypoint;
+          obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                                                      obj.camInfo.v + obj.camInfo.height, no_keypoint);
+        }
         std::cout << "prob: " << obj_pub.crossProbability << std::endl;
         pedObjs.push_back(obj_pub);
       }
@@ -222,16 +240,19 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         else
           box.y = 0;
 
-        std::stringstream ss;
-        ss << std::setprecision(2) << obj.crossProbability;
         std::string probability;
-        if (obj.crossProbability >= 0.5)
+        int p = 100 * obj.crossProbability;
+        if (p >= 50)
         {
-          probability = "C (" + ss.str() + ")";
+          probability = "C (" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+        }
+        else if (p >= 10)
+        {
+          probability = "NC (" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
         }
         else
         {
-          probability = "NC (" + ss.str() + ")";
+          probability = "NC (" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
         }
         cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 120, 240),
                     2, 4, 0);
@@ -257,84 +278,97 @@ double PedestrianEvent::crossing_predict(double bb_x1, double bb_y1, double bb_x
 {
   try
   {
-    std::vector<double> keypoints_x;
-    std::vector<double> keypoints_y;
-
-    // Get body we need
-    int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-    for (int i = 0; i < 13; i++)
+    if (!keypoint.empty())
     {
-      keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
-      keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
-    }
+      std::vector<double> keypoints_x;
+      std::vector<double> keypoints_y;
 
-    // Caculate the features
-    int keypoints_num = 13;
-    std::vector<double> feature;
-
-    // Add bbox to feature vector
-    double bbox[] = { bb_x1, bb_y1, bb_x2, bb_y2 };
-    feature.insert(feature.end(), bbox, bbox + sizeof(bbox) / sizeof(bbox[0]));
-
-    // Caculate x_distance, y_distance, distance, angle
-    for (int m = 0; m < keypoints_num; m++)
-    {
-      for (int n = m + 1; n < keypoints_num; n++)
+      // Get body we need
+      int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+      for (int i = 0; i < 13; i++)
       {
-        double dist_x, dist_y, dist, angle;
-        if (keypoints_x[m] != 0.0f && keypoints_y[m] != 0.0f && keypoints_x[n] != 0.0f && keypoints_y[n] != 0.0f)
-        {
-          dist_x = abs(keypoints_x[m] - keypoints_x[n]);
-          dist_y = abs(keypoints_y[m] - keypoints_y[n]);
-          dist = get_distance2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
-          angle = get_angle2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
-        }
-        else
-        {
-          dist_x = 0.0f;
-          dist_y = 0.0f;
-          dist = 0.0f;
-          angle = 0.0f;
-        }
-        double input[] = { dist_x, dist_y, dist, angle };
-        feature.insert(feature.end(), input, input + sizeof(input) / sizeof(input[0]));
+        keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
+        keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
       }
-    }
 
-    for (int m = 0; m < keypoints_num; m++)
-    {
-      for (int n = m + 1; n < keypoints_num; n++)
+      // Caculate the features
+      int keypoints_num = 13;
+      std::vector<double> feature;
+
+      // Add bbox to feature vector
+      double bbox[] = { bb_x1, bb_y1, bb_x2, bb_y2 };
+      feature.insert(feature.end(), bbox, bbox + sizeof(bbox) / sizeof(bbox[0]));
+
+      // Caculate x_distance, y_distance, distance, angle
+      for (int m = 0; m < keypoints_num; m++)
       {
-        for (int k = n + 1; k < keypoints_num; k++)
+        for (int n = m + 1; n < keypoints_num; n++)
         {
-          double angle[3] = { 0.0f, 0.0f, 0.0f };
-          double* angle_ptr;
-          if ((keypoints_x[m] != 0.0f || keypoints_y[m] != 0.0f) &&
-              (keypoints_x[n] != 0.0f || keypoints_y[n] != 0.0f) && (keypoints_x[k] != 0.0f || keypoints_y[k] != 0.0f))
+          double dist_x, dist_y, dist, angle;
+          if (keypoints_x[m] != 0.0f && keypoints_y[m] != 0.0f && keypoints_x[n] != 0.0f && keypoints_y[n] != 0.0f)
           {
-            angle_ptr = get_triangle_angle(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n],
-                                           keypoints_x[k], keypoints_y[k]);
-            angle[0] = *angle_ptr;
-            angle[1] = *(angle_ptr + 1);
-            angle[2] = *(angle_ptr + 2);
+            dist_x = abs(keypoints_x[m] - keypoints_x[n]);
+            dist_y = abs(keypoints_y[m] - keypoints_y[n]);
+            dist = get_distance2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
+            angle = get_angle2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
           }
-          feature.insert(feature.end(), angle, angle + sizeof(angle) / sizeof(angle[0]));
+          else
+          {
+            dist_x = 0.0f;
+            dist_y = 0.0f;
+            dist = 0.0f;
+            angle = 0.0f;
+          }
+          double input[] = { dist_x, dist_y, dist, angle };
+          feature.insert(feature.end(), input, input + sizeof(input) / sizeof(input[0]));
         }
       }
-    }
-    // Convert vector to array
-    static double feature_arr[1174];
-    std::copy(feature.begin(), feature.end(), feature_arr);
-    // Convert array to Mat
-    cv::Mat feature_mat = cv::Mat(1, 1174, CV_32F, feature_arr);
-    // Predict
-    double predict_result = predict_rf(feature_mat);
 
-    return predict_result;
+      for (int m = 0; m < keypoints_num; m++)
+      {
+        for (int n = m + 1; n < keypoints_num; n++)
+        {
+          for (int k = n + 1; k < keypoints_num; k++)
+          {
+            double angle[3] = { 0.0f, 0.0f, 0.0f };
+            double* angle_ptr;
+            if ((keypoints_x[m] != 0.0f || keypoints_y[m] != 0.0f) &&
+                (keypoints_x[n] != 0.0f || keypoints_y[n] != 0.0f) &&
+                (keypoints_x[k] != 0.0f || keypoints_y[k] != 0.0f))
+            {
+              angle_ptr = get_triangle_angle(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n],
+                                             keypoints_x[k], keypoints_y[k]);
+              angle[0] = *angle_ptr;
+              angle[1] = *(angle_ptr + 1);
+              angle[2] = *(angle_ptr + 2);
+            }
+            feature.insert(feature.end(), angle, angle + sizeof(angle) / sizeof(angle[0]));
+          }
+        }
+      }
+      // Convert vector to array
+      static double feature_arr[1174];
+      std::copy(feature.begin(), feature.end(), feature_arr);
+      // Convert array to Mat
+      cv::Mat feature_mat = cv::Mat(1, 1174, CV_32F, feature_arr);
+      // Predict
+      double predict_result = predict_rf_pose(feature_mat);
+
+      return predict_result;
+    }
+    else
+    {
+      cv::Mat feature_mat = cv::Mat(1, 4, CV_32F, { bb_x1, bb_y1, bb_x2, bb_y2 });
+      // Predict
+      double predict_result = predict_rf(feature_mat);
+
+      return predict_result;
+    }
   }
   catch (const std::exception& e)
   {
     std::cout << "predict error" << std::endl;
+    return 0;
   }
 }
 
@@ -376,6 +410,20 @@ double* PedestrianEvent::get_triangle_angle(double x1, double y1, double x2, dou
   return angle;
 }
 
+// use random forest model to predict cross probability
+// return cross probability
+double PedestrianEvent::predict_rf_pose(cv::Mat input_data)
+{
+  cv::Mat votes;
+  rf_pose->getVotes(input_data, votes, 0);
+  double positive = votes.at<int>(1, 1);
+  double negative = votes.at<int>(1, 0);
+  double p = positive / (negative + positive);
+  std::cout << "prediction: " << p << votes.size() << std::endl;
+  std::cout << votes.at<int>(0, 0) << " " << votes.at<int>(0, 1) << std::endl;
+  std::cout << votes.at<int>(1, 0) << " " << votes.at<int>(1, 1) << std::endl;
+  return p;
+}
 // use random forest model to predict cross probability
 // return cross probability
 double PedestrianEvent::predict_rf(cv::Mat input_data)
@@ -488,7 +536,8 @@ int main(int argc, char** argv)
   // lenet.CopyTrainedLayersFrom("models/mpi/pose_iter_160000.caffemodel");
 
   ped::PedestrianEvent pe;
-  pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_1frames_1.yml"));
+  pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf.yml"));
+  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_1frame.yml"));
   std::string protoFile = PED_MODEL_DIR + std::string("/body_25/pose_deploy.prototxt");
   std::string weightsFile = PED_MODEL_DIR + std::string("/body_25/pose_iter_584000.caffemodel");
   pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);

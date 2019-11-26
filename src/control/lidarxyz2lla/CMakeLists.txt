@@ -71,10 +71,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs
- )
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -149,7 +149,7 @@ add_executable(lidarxyz2lla_node src/lidarxyz2lla.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(lidarxyz2lla_node ${catkin_LIBRARIES})
 add_dependencies(lidarxyz2lla_node ${catkin_EXPORTED_TARGETS} )
-add_dependencies(lidarxyz2lla_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(lidarxyz2lla_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 #############
 ## Install ##
 #############

@@ -61,8 +61,10 @@ public:
   double get_distance2(double x1, double y1, double x2, double y2);
   double get_angle2(double x1, double y1, double x2, double y2);
   double predict_rf(cv::Mat input_data);
+  double predict_rf_pose(cv::Mat input_data);
   cv::dnn::Net net_openpose;
   cv::Ptr<cv::ml::RTrees> rf;
+  cv::Ptr<cv::ml::RTrees> rf_pose;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner;
   ros::Publisher chatter_pub;
   ros::Publisher box_pub;
