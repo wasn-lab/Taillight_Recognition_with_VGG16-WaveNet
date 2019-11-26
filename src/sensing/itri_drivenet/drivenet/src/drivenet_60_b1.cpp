@@ -346,8 +346,8 @@ void* run_yolo(void* ){
 
         // copy data
         matSrcs_tmp = matSrcs;
-        for (auto &mat : matSrcs) isDataVaild *= CheckMatDataValid(*mat);
-        for (auto &mat : matSrcs_tmp) isDataVaild *= CheckMatDataValid(*mat);
+        for (auto &mat : matSrcs) isDataVaild &= CheckMatDataValid(*mat);
+        for (auto &mat : matSrcs_tmp) isDataVaild &= CheckMatDataValid(*mat);
         if (!isDataVaild) 
         {
             // reset data
