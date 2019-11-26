@@ -161,7 +161,7 @@ void sync_inference(int cam_order, int camId, std_msgs::Header& header, cv::Mat*
     // std::cout << "Subscribe " <<  camera::topics[cam_ids_[cam_order]] << " image." << std::endl;
   }
 
-  if (matOrder.size() == 4)
+  if (matOrder.size() == cam_ids_.size())
   {
     isInferData = true;
     pthread_cond_signal(&cndInfer);
@@ -192,12 +192,12 @@ void callback_120_0(const sensor_msgs::Image::ConstPtr& msg)
       calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_0)
-      sync_inference(0, 5, h, &mat120_0_rect, &vBBX120_0, 1920, 1208);
+      sync_inference(0, cam_ids_[0], h, &mat120_0_rect, &vBBX120_0, 1920, 1208);
   }
   else
   {
     if (!isInferData_0)
-      sync_inference(0, 5, h, &mat120_0, &vBBX120_0, 1920, 1208);
+      sync_inference(0, cam_ids_[0], h, &mat120_0, &vBBX120_0, 1920, 1208);
   }
 }
 
@@ -221,12 +221,12 @@ void callback_120_1(const sensor_msgs::Image::ConstPtr& msg)
       calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_1)
-      sync_inference(1, 6, h, &mat120_1_rect, &vBBX120_1, 1920, 1208);
+      sync_inference(1, cam_ids_[1], h, &mat120_1_rect, &vBBX120_1, 1920, 1208);
   }
   else
   {
     if (!isInferData_1)
-      sync_inference(1, 6, h, &mat120_1, &vBBX120_1, 1920, 1208);
+      sync_inference(1, cam_ids_[1], h, &mat120_1, &vBBX120_1, 1920, 1208);
   }
 }
 
@@ -250,12 +250,12 @@ void callback_120_2(const sensor_msgs::Image::ConstPtr& msg)
       calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_2)
-      sync_inference(2, 8, h, &mat120_2_rect, &vBBX120_2, 1920, 1208);
+      sync_inference(2, cam_ids_[2], h, &mat120_2_rect, &vBBX120_2, 1920, 1208);
   }
   else
   {
     if (!isInferData_2)
-      sync_inference(2, 8, h, &mat120_2, &vBBX120_2, 1920, 1208);
+      sync_inference(2, cam_ids_[2], h, &mat120_2, &vBBX120_2, 1920, 1208);
   }
 }
 
@@ -279,12 +279,12 @@ void callback_120_3(const sensor_msgs::Image::ConstPtr& msg)
       calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_3)
-      sync_inference(3, 9, h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
+      sync_inference(3, cam_ids_[3], h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
   }
   else
   {
     if (!isInferData_3)
-      sync_inference(3, 9, h, &mat120_3, &vBBX120_3, 1920, 1208);
+      sync_inference(3, cam_ids_[3], h, &mat120_3, &vBBX120_3, 1920, 1208);
   }
 }
 
@@ -306,12 +306,12 @@ void callback_120_0_decode(sensor_msgs::CompressedImage compressImg)
       calibrationImage(mat120_0, mat120_0_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_0)
-      sync_inference(0, 5, h, &mat120_0_rect, &vBBX120_0, 1920, 1208);
+      sync_inference(0, cam_ids_[0], h, &mat120_0_rect, &vBBX120_0, 1920, 1208);
   }
   else
   {
     if (!isInferData_0)
-      sync_inference(0, 5, h, &mat120_0, &vBBX120_0, 1920, 1208);
+      sync_inference(0, cam_ids_[0], h, &mat120_0, &vBBX120_0, 1920, 1208);
   }
 }
 
@@ -333,12 +333,12 @@ void callback_120_1_decode(sensor_msgs::CompressedImage compressImg)
       calibrationImage(mat120_1, mat120_1_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_1)
-      sync_inference(1, 6, h, &mat120_1_rect, &vBBX120_1, 1920, 1208);
+      sync_inference(1, cam_ids_[1], h, &mat120_1_rect, &vBBX120_1, 1920, 1208);
   }
   else
   {
     if (!isInferData_1)
-      sync_inference(1, 6, h, &mat120_1, &vBBX120_1, 1920, 1208);
+      sync_inference(1, cam_ids_[1], h, &mat120_1, &vBBX120_1, 1920, 1208);
   }
 }
 
@@ -360,12 +360,12 @@ void callback_120_2_decode(sensor_msgs::CompressedImage compressImg)
       calibrationImage(mat120_2, mat120_2_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_2)
-      sync_inference(2, 8, h, &mat120_2_rect, &vBBX120_2, 1920, 1208);
+      sync_inference(2, cam_ids_[2], h, &mat120_2_rect, &vBBX120_2, 1920, 1208);
   }
   else
   {
     if (!isInferData_2)
-      sync_inference(2, 8, h, &mat120_2, &vBBX120_2, 1920, 1208);
+      sync_inference(2, cam_ids_[2], h, &mat120_2, &vBBX120_2, 1920, 1208);
   }
 }
 
@@ -387,12 +387,12 @@ void callback_120_3_decode(sensor_msgs::CompressedImage compressImg)
       calibrationImage(mat120_3, mat120_3_rect, cameraMatrix, distCoeffs);
     }
     if (!isInferData_3)
-      sync_inference(3, 9, h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
+      sync_inference(3, cam_ids_[3], h, &mat120_3_rect, &vBBX120_3, 1920, 1208);
   }
   else
   {
     if (!isInferData_3)
-      sync_inference(3, 9, h, &mat120_3, &vBBX120_3, 1920, 1208);
+      sync_inference(3, cam_ids_[3], h, &mat120_3, &vBBX120_3, 1920, 1208);
   }
 }
 

@@ -134,7 +134,7 @@ void sync_inference(int cam_order, int camId, std_msgs::Header& header, cv::Mat*
     // std::cout << "Subscribe " <<  camera::topics[cam_ids_[cam_order]] << " image." << std::endl;
   }
 
-  if (matOrder.size() == 3)
+  if (matOrder.size() == cam_ids_.size())
   {
     isInferData = true;
     pthread_cond_signal(&cndInfer);
@@ -152,8 +152,9 @@ void callback_60_0(const sensor_msgs::Image::ConstPtr& msg)
   mat60_0 = cv_ptr->image;
 
   std_msgs::Header h = msg->header;
+
   if (!isInferData_0)
-    sync_inference(0, 0, h, &mat60_0, &vBBX60_0, 1920, 1208);
+    sync_inference(0, cam_ids_[0], h, &mat60_0, &vBBX60_0, 1920, 1208);
 }
 
 void callback_60_1(const sensor_msgs::Image::ConstPtr& msg)
@@ -164,7 +165,7 @@ void callback_60_1(const sensor_msgs::Image::ConstPtr& msg)
 
   std_msgs::Header h = msg->header;
   if (!isInferData_1)
-    sync_inference(1, 1, h, &mat60_1, &vBBX60_1, 1920, 1208);
+    sync_inference(1, cam_ids_[1], h, &mat60_1, &vBBX60_1, 1920, 1208);
 }
 
 void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
@@ -175,7 +176,7 @@ void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
 
   std_msgs::Header h = msg->header;
   if (!isInferData_2)
-    sync_inference(2, 2, h, &mat60_2, &vBBX60_2, 1920, 1208);
+    sync_inference(2, cam_ids_[2], h, &mat60_2, &vBBX60_2, 1920, 1208);
 }
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
@@ -183,7 +184,7 @@ void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_0);
 
   if (!isInferData_0)
-    sync_inference(0, 0, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
+    sync_inference(0, cam_ids_[0], compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
 }
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
@@ -191,7 +192,7 @@ void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_1);
 
   if (!isInferData_1)
-    sync_inference(1, 1, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
+    sync_inference(1, cam_ids_[1], compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
 }
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
@@ -199,7 +200,7 @@ void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_2);
 
   if (!isInferData_2)
-    sync_inference(2, 2, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
+    sync_inference(2, cam_ids_[2], compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
