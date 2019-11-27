@@ -1,7 +1,8 @@
 #!/bin/bash
 set -x
 set -e
-readonly build_type="${build_type:-Release}"
+# Use debug mode to silence unused variables.
+readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
@@ -16,11 +17,14 @@ for _dir in ${build_dir} ${devel_dir} ${scan_build_result}; do
     fi
 done
 blacklist="dl_data"
+#blacklist="dl_data;ndt_gpu;convex_fusion;lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing;localization"
+
 scan-build -o ${scan_build_result} catkin_make \
     --build ${build_dir} \
     -DCATKIN_DEVEL_PREFIX=${devel_dir} \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+    -DSCAN_BUILD_MODE=1 \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist"
 
 #if [[ -d ${scan_build_result} ]]; then
