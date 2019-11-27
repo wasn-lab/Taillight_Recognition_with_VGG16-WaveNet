@@ -23,12 +23,23 @@ def _get_affected_files():
     return [fname.strip() for fname in output.splitlines()]
 
 
+def _rw_file_marking_executable(fname, rw_exts):
+    should_be_rw = False
+    for ext in rw_exts:
+        if fname.endswith(ext):
+            should_be_rw = True
+    if not should_be_rw:
+        return False
+    else:
+        return os.access(fname, os.X_OK)
+
 def _check_fmod(affected_files):
+    rw_exts = _get_rw_exts()
     exes = []
     for fname in affected_files:
         if not os.path.isfile(fname):
             continue
-        if os.access(fname, os.X_OK):
+        if _rw_file_marking_executable(fname, rw_exts):
             exes.append(fname)
     if exes:
         logging.error("File type is executable: %s", " ".join(exes))
