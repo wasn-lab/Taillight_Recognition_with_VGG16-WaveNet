@@ -7,6 +7,7 @@ import subprocess
 import os
 import sys
 import logging
+import io
 
 
 def _get_rw_exts():
