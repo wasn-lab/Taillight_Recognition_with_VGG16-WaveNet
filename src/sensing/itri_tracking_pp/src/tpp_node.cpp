@@ -513,8 +513,10 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
     ofs << "#1 time stamp (s), "                       //
         << "#2 track id, "                             //
         << "#3 dt (s), "                               //
+#if VIRTUAL_INPUT
         << "#4-1 GT bbox center x (m), "               //
         << "#4-2 GT bbox center y (m), "               //
+#endif
         << "#5-1 input bbox center x (m), "            //
         << "#5-2 input bbox center y (m), "            //
         << "#6-1 kalman-filtered bbox center x (m), "  //
@@ -558,8 +560,10 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << objs_header_.stamp.toSec() << ", "                       // #1 time stamp (s)
         << objs[i].track.id << ", "                                 // #2 track id
         << dt_s.toSec() << ", "                                     // #3 dt (s)
+#if VIRTUAL_INPUT
         << gt_x_ << ", "                                            // #4-1 GT bbox center x (m)
         << gt_y_ << ", "                                            // #4-2 GT bbox center y (m)
+#endif
         << objs[i].lidarInfo.boxCenter.x << ", "                    // #5-1 input bbox center x (m)
         << objs[i].lidarInfo.boxCenter.y << ", "                    // #5-2 input bbox center y (m)
         << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #6-1 kalman-filtered bbox center x (m)
