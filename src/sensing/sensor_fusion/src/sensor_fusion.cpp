@@ -84,7 +84,7 @@ double R_Matrix[9] = { 0.999999, 0.000495691, 0.00167342, 0.0017453, -0.284015, 
 double temp[3];
 double radar_xyz[3];
 double camera_xyz[3];
-double image_point[3];
+double image_point[3] = { 0 };
 /************************************************************************/
 void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const float z);
 void transform_coordinate_main(msgs::ConvexPoint& cp, const float x, const float y, const float z);
@@ -1454,7 +1454,7 @@ void Cam60_1_view_fusion(void)
   int V_2d;
   int width_2d;
   int weight_2d;
-  int check3D[max_det][max_det] = { 0 };
+  int check3D[max_det][max_det] = { { 0 } };
   /************************************************************************/
   /*******************Cam60_1 view for decision fusion*********************/
   /************************************************************************/
@@ -3541,7 +3541,7 @@ void vector_add_3d(double v1[3], double v2[3], double result[3])
 
 int fusion_3D_to_2D(double x_3d, double y_3d, double z_3d, int* u_2d, int* v_2d)
 {
-  int u, v;
+  int u = 0, v = 0;
 
   // Object coordinate transformation
 
