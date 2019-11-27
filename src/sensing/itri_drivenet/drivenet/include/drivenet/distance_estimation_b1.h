@@ -16,6 +16,7 @@ private:
   std::vector<int> regionHeight_60_FR_y;
   std::vector<float> regionDist_60_FR_y;
   std::vector<float> regionHeightSlope_60_FR_y;
+  std::vector<float> regionHeightSlope_60_FR_x;
 
   /// camId: 1
   std::vector<int> regionHeight_60_FC_x;
@@ -31,6 +32,7 @@ private:
   std::vector<int> regionHeight_60_FL_y;
   std::vector<float> regionDist_60_FL_y;
   std::vector<float> regionHeightSlope_60_FL_y;
+  std::vector<float> regionHeightSlope_60_FL_x;
 
   /// camId: 4
   std::vector<int> regionHeight_120_FT_x;
