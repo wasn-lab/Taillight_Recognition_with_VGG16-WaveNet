@@ -29,7 +29,7 @@ def _run_pylint(affected_files):
             output = err.output
             num_fail += 1
             logging.error("pylint failed for %s", fname)
-        print(output)
+        print(output.decode("utf-8"))
     return num_fail
 
 def main():

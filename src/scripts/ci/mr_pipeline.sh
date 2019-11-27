@@ -28,6 +28,7 @@ set -e
 
 python src/scripts/ci/check_file_size.py
 python src/scripts/ci/check_locked_file.py
+python src/scripts/ci/check_file_mod.py
 
 readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
 echo ${clean_build_status}
