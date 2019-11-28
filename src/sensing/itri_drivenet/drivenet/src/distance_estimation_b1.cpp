@@ -18,7 +18,7 @@ void DistanceEstimation::init(int car_id)
                                 -0.104,-0.107,-0.110,-0.110,-0.113/*20*/,
                                 -0.113,-0.119,-0.120,-0.120,-0.121/*25*/,
                                 -0.128,-0.127,-0.136,-0.148,-0.142}; 
-    regionDist_60_FR_y = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
+    regionDist_60_FR_y = {-5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30};
     regionHeight_60_FR_x = {1674, 1418, 1174, 895, 664, 470, 230, 20, -132, -340}; 
     regionHeightSlope_60_FR_x = {-1.661, -0.842, -0.603, -0.439, -0.349, -0.297, -0.253, -0.220, -0.203, -0.182}; 
     regionDist_60_FR_x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -904,11 +904,31 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     regionHeight_x = regionHeight_60_FC_x;
     regionDist_x = regionDist_60_FC_x;
     regionHeight_y = regionHeight_60_FC_y;
-    regionHeightSlope_x = regionHeightSlope_60_FC_x;
+    // regionHeightSlope_x = regionHeightSlope_60_FC_x;
     regionHeightSlope_y = regionHeightSlope_60_FC_y;
     regionDist_y = regionDist_60_FC_y;
     offset_x = Lidar_offset_x;
   }
+  else if (cam_id == 0)
+  {
+    regionHeight_x = regionHeight_60_FR_x;
+    regionDist_x = regionDist_60_FR_x;
+    regionHeight_y = regionHeight_60_FR_y;
+    regionHeightSlope_x = regionHeightSlope_60_FR_x;    
+    regionHeightSlope_y = regionHeightSlope_60_FR_y;
+    regionDist_y = regionDist_60_FR_y;
+    offset_x = Lidar_offset_x;
+  }
+//   else if (cam_id == 2)
+//   {
+//     regionHeight_x = regionHeight_60_FL_x;
+//     regionDist_x = regionDist_60_FL_x;
+//     regionHeight_y = regionHeight_60_FL_y;
+//     regionHeightSlope_x = regionHeightSlope_60_FL_x;        
+//     regionHeightSlope_y = regionHeightSlope_60_FL_y;
+//     regionDist_y = regionDist_60_FL_y;
+//     offset_x = Lidar_offset_x;
+//   }
   else if (cam_id == 4)
   {
     regionHeight_x = regionHeight_120_FT_x;
@@ -953,14 +973,18 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     return p0;
   }
 
-  if (regionDist_x.size() != 0)
-    x_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
-  if (regionDist_y.size() != 0)
-    y_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, img_h);
+    if(cam_id == 1 || cam_id == 4 || cam_id == 10)
+    {
+        if (regionDist_x.size() != 0)
+            x_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
+        if (regionDist_y.size() != 0)
+            y_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, img_h);
 
-  p0.x = x_distMeter + offset_x;
-  p0.y = y_distMeter;
-  p0.z = Lidar_offset_z;
+        p0.x = x_distMeter + offset_x;
+        p0.y = y_distMeter;
+        p0.z = Lidar_offset_z;
+    }
+
 
   return p0;
 }
