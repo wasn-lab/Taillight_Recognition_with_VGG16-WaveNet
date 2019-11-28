@@ -28,7 +28,7 @@ try:
     JT = json.loads(T)
     print(JT)
 except:
-    ptint("No json received.")
+    print("No json received.")
 
 
 
