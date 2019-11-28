@@ -61,10 +61,14 @@ endif ()
 
 find_package(Glog)
 
-find_package(OpenCV 3.4.3 REQUIRED
+find_package(OpenCV
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
+if (${OpenCV_VERSION} VERSION_LESS "3.4.3")
+  message(STATUS "OpenCV_VERSION=${OpenCV_VERSION} < 3.4.3. Skip building ${PROJECT_NAME}")
+  return()
+endif ()
 
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)

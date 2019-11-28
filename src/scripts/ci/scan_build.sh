@@ -33,6 +33,7 @@ scan-build -o ${output_dir} catkin_make \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
     -j6
 
-chmod +r -R ${output_dir}
+find ${output_dir} -type d -exec chmod 755 {} \;
+find ${output_dir} -type f -exec chmod 644 {} \;
 echo "Visit http://ci.itriadv.co/scan_build/ to see the html results (accessible in itri.org.tw only)."
 popd
