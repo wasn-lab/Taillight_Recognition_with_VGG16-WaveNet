@@ -8,6 +8,9 @@ void DistanceEstimation::init(int car_id)
     carId = car_id;
 
     // camId: 0 (Front Right)
+    regionHeight_60_FR_x = {1674, 1418, 1174, 895, 664, 470, 230, 20, -132, -340}; 
+    regionHeightSlope_60_FR_x = {-1.661, -0.842, -0.603, -0.439, -0.349, -0.297, -0.253, -0.220, -0.203, -0.182}; 
+    regionDist_60_FR_x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     regionHeight_60_FR_y = {1197/*5*/,1171,1149,1121,1108,1098/*10*/,
                             1092,1091,1090,1089,1084/*15*/,
                             1083,1082,1080,1073,1073/*20*/,
@@ -19,9 +22,6 @@ void DistanceEstimation::init(int car_id)
                                 -0.113,-0.119,-0.120,-0.120,-0.121/*25*/,
                                 -0.128,-0.127,-0.136,-0.148,-0.142}; 
     regionDist_60_FR_y = {-5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30};
-    regionHeight_60_FR_x = {1674, 1418, 1174, 895, 664, 470, 230, 20, -132, -340}; 
-    regionHeightSlope_60_FR_x = {-1.661, -0.842, -0.603, -0.439, -0.349, -0.297, -0.253, -0.220, -0.203, -0.182}; 
-    regionDist_60_FR_x = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
     // camId: 1 (Front Center)
     regionHeight_60_FC_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
@@ -984,6 +984,18 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         p0.y = y_distMeter;
         p0.z = Lidar_offset_z;
     }
+
+    // if(cam_id == 0 || cam_id == 2)
+    // {
+    //     if (regionDist_y.size() != 0)
+    //         y_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
+    //     if (regionDist_x.size() != 0)
+    //         x_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_x, regionHeightSlope_x, regionDist_x, img_h);
+
+    //     p0.x = x_distMeter + offset_x;
+    //     p0.y = y_distMeter;
+    //     p0.z = Lidar_offset_z;
+    // }
 
 
   return p0;
