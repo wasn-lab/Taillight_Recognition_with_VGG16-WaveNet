@@ -391,7 +391,7 @@ void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjA
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
   vDetectedObjectCAM_30_1.clear();
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam30_1_ObjArray->objects;
+  // std::vector<msgs::DetectedObject> vDetectedObject = Cam30_1_ObjArray->objects;
   msgCam30_1_Obj.header = Cam30_1_ObjArray->header;
   // printf("Cam30_1_ObjArray->objects.size() = %zu\n",Cam30_1_ObjArray->objects.size());
 
@@ -469,7 +469,7 @@ void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_Ob
   // std::cerr << __func__ << ":" << __LINE__ << std::endl;
 
   vDetectedObjectCAM_120_1.clear();
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam120_1_ObjArray->objects;
+  // std::vector<msgs::DetectedObject> vDetectedObject = Cam120_1_ObjArray->objects;
   msgCam120_1_Obj.header = Cam120_1_ObjArray->header;
   // printf("Cam120_1_ObjArray->objects.size() = %zu\n",Cam120_1_ObjArray->objects.size());
 
@@ -527,7 +527,7 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
   vDetectedObjectTemp.clear();
   vDetectedObjectLID.clear();
 
-  std::vector<msgs::DetectedObject> vDetectedObject = LidarObjArray->objects;
+  // std::vector<msgs::DetectedObject> vDetectedObject = LidarObjArray->objects;
   msgLidarObj.header = LidarObjArray->header;
 
   if (pre_h.stamp.sec == LidarObjArray->header.stamp.sec && pre_h.stamp.nsec == LidarObjArray->header.stamp.nsec)
