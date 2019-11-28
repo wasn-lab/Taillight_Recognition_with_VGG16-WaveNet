@@ -1,9 +1,9 @@
 /LidarAll
-/LidarFrontRight/Raw
-/LidarFrontLeft/Raw
-/LidarRearRight/Raw
-/LidarRearLeft/Raw
-/LidarFrontTop/Raw
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+# /LidarFrontTop/Raw
 /LidarDetection
 
 # /points_map
