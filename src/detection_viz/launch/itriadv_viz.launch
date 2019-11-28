@@ -1,8 +1,9 @@
 <launch>
   <arg name="pub_tf" default="true" />
+  <arg name="rviz_config" default="U3_b3" />
 
   <!-- rviz ************************************************************************************* -->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/U3_b2.rviz" />
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/$(arg rviz_config).rviz" />
 
   <!-- TF *************************************************************************************** -->
   <group if="$(arg pub_tf)">
