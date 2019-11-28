@@ -280,7 +280,7 @@ void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjA
 
   std::vector<msgs::DetectedObject> vDetectedObject = Cam60_0_ObjArray->objects;
   msgCam60_0_Obj.header = Cam60_0_ObjArray->header;
-  // printf("Cam60_0_ObjArray->objects.size() = %ld\n",Cam60_0_ObjArray->objects.size());
+  // printf("Cam60_0_ObjArray->objects.size() = %zu\n",Cam60_0_ObjArray->objects.size());
 
   Cam60_0_num = Cam60_0_ObjArray->objects.size();
 
@@ -308,7 +308,7 @@ void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjA
   vDetectedObjectCAM_60_1.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = Cam60_1_ObjArray->objects;
   msgCam60_1_Obj.header = Cam60_1_ObjArray->header;
-  // printf("Cam60_1_ObjArray->objects.size() = %ld\n",Cam60_1_ObjArray->objects.size());
+  // printf("Cam60_1_ObjArray->objects.size() = %zu\n",Cam60_1_ObjArray->objects.size());
 
   if (Cam60_1_ObjArray->objects.size() > max_det)
     Cam60_1_num_cb = max_det;
@@ -337,7 +337,7 @@ void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjA
 
   std::vector<msgs::DetectedObject> vDetectedObject = Cam60_2_ObjArray->objects;
   msgCam60_2_Obj.header = Cam60_2_ObjArray->header;
-  // printf("Cam60_2_ObjArray->objects.size() = %ld\n",Cam60_2_ObjArray->objects.size());
+  // printf("Cam60_2_ObjArray->objects.size() = %zu\n",Cam60_2_ObjArray->objects.size());
 
   Cam60_2_num = Cam60_2_ObjArray->objects.size();
 
@@ -365,7 +365,7 @@ void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjA
 
   std::vector<msgs::DetectedObject> vDetectedObject = Cam30_0_ObjArray->objects;
   msgCam30_0_Obj.header = Cam30_0_ObjArray->header;
-  // printf("Cam30_0_ObjArray->objects.size() = %ld\n",Cam30_0_ObjArray->objects.size());
+  // printf("Cam30_0_ObjArray->objects.size() = %zu\n",Cam30_0_ObjArray->objects.size());
 
   Cam30_0_num = Cam30_0_ObjArray->objects.size();
 
@@ -393,7 +393,7 @@ void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjA
   vDetectedObjectCAM_30_1.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = Cam30_1_ObjArray->objects;
   msgCam30_1_Obj.header = Cam30_1_ObjArray->header;
-  // printf("Cam30_1_ObjArray->objects.size() = %ld\n",Cam30_1_ObjArray->objects.size());
+  // printf("Cam30_1_ObjArray->objects.size() = %zu\n",Cam30_1_ObjArray->objects.size());
 
   if (Cam30_1_ObjArray->objects.size() > max_det)
     Cam30_1_num_cb = max_det;
@@ -414,7 +414,7 @@ void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjA
 
   std::vector<msgs::DetectedObject> vDetectedObject = Cam30_2_ObjArray->objects;
   msgCam30_2_Obj.header = Cam30_2_ObjArray->header;
-  // printf("Cam30_2_ObjArray->objects.size() = %ld\n",Cam30_2_ObjArray->objects.size());
+  // printf("Cam30_2_ObjArray->objects.size() = %zu\n",Cam30_2_ObjArray->objects.size());
 
   Cam30_2_num = Cam30_2_ObjArray->objects.size();
 
@@ -443,7 +443,7 @@ void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_Ob
 
   std::vector<msgs::DetectedObject> vDetectedObject = Cam120_0_ObjArray->objects;
   msgCam120_0_Obj.header = Cam120_0_ObjArray->header;
-  // printf("Cam120_0_ObjArray->objects.size() = %ld\n",Cam120_0_ObjArray->objects.size());
+  // printf("Cam120_0_ObjArray->objects.size() = %zu\n",Cam120_0_ObjArray->objects.size());
 
   Cam120_0_num = Cam120_0_ObjArray->objects.size();
 
@@ -471,7 +471,7 @@ void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_Ob
   vDetectedObjectCAM_120_1.clear();
   std::vector<msgs::DetectedObject> vDetectedObject = Cam120_1_ObjArray->objects;
   msgCam120_1_Obj.header = Cam120_1_ObjArray->header;
-  // printf("Cam120_1_ObjArray->objects.size() = %ld\n",Cam120_1_ObjArray->objects.size());
+  // printf("Cam120_1_ObjArray->objects.size() = %zu\n",Cam120_1_ObjArray->objects.size());
 
   Cam120_1_num_cb = Cam120_1_ObjArray->objects.size();
 
@@ -494,7 +494,7 @@ void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_Ob
 
   std::vector<msgs::DetectedObject> vDetectedObject = Cam120_2_ObjArray->objects;
   msgCam120_2_Obj.header = Cam120_2_ObjArray->header;
-  // printf("Cam120_2_ObjArray->objects.size() = %ld\n",Cam120_2_ObjArray->objects.size());
+  // printf("Cam120_2_ObjArray->objects.size() = %zu\n",Cam120_2_ObjArray->objects.size());
 
   Cam120_2_num = Cam120_2_ObjArray->objects.size();
 
@@ -590,10 +590,10 @@ void decisionFusion()
   std::vector<msgs::DetectedObject> vLidar_60_1_Object;
   std::vector<msgs::DetectedObject> vLidar_60_2_Object;
 
-  std::vector<msgs::DetectedObject> vLidar_120_0_Object;
-  std::vector<msgs::DetectedObject> vLidar_120_1_Object;
-  std::vector<msgs::DetectedObject> vLidar_120_2_Object;
-  std::vector<msgs::DetectedObject> vLidar_others_Object;
+  // std::vector<msgs::DetectedObject> vLidar_120_0_Object;
+  // std::vector<msgs::DetectedObject> vLidar_120_1_Object;
+  // std::vector<msgs::DetectedObject> vLidar_120_2_Object;
+  // std::vector<msgs::DetectedObject> vLidar_others_Object;
   std::vector<msgs::DetectedObject> vLidar_rear_Object;
   std::vector<msgs::DetectedObject> vLidar_frontshort_Object;
 
@@ -655,7 +655,7 @@ void decisionFusion()
   }
 
   Lidar_num = vDetectedObjectLID.size();
-  printf("vDetectedObjectRAD.size() = %ld \n", vDetectedObjectLID.size());
+  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectLID.size());
 
   /************************************************************************/
 
@@ -708,7 +708,7 @@ void decisionFusion()
   }
 
   radar_num = vDetectedObjectRAD.size();
-  printf("vDetectedObjectRAD.size() = %ld \n", vDetectedObjectRAD.size());
+  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectRAD.size());
   /************************************************************************/
 
   /************************************************************************/
@@ -763,7 +763,7 @@ void decisionFusion()
 
   Cam60_1_num_cb = 0;  // YF 2019081901
   Cam60_1_num = vDetectedObjectCAM_60_1.size();
-  printf("vDetectedObjectCAM_60_1.size() = %ld \n", vDetectedObjectCAM_60_1.size());
+  printf("vDetectedObjectCAM_60_1.size() = %zu \n", vDetectedObjectCAM_60_1.size());
   /************************************************************************/
 
   /************************************************************************/
@@ -813,7 +813,7 @@ void decisionFusion()
 
   Cam30_1_num_cb = 0;  // YF 2019081901
   Cam30_1_num = vDetectedObjectCAM_30_1.size();
-  printf("vDetectedObjectCAM_30_1.size() = %ld \n", vDetectedObjectCAM_30_1.size());
+  printf("vDetectedObjectCAM_30_1.size() = %zu \n", vDetectedObjectCAM_30_1.size());
   /************************************************************************/
 
   /************************************************************************/
@@ -863,7 +863,7 @@ void decisionFusion()
 
   Cam120_1_num_cb = 0;  // YF 2019081901
   Cam120_1_num = vDetectedObjectCAM_120_1.size();
-  printf("vDetectedObjectCAM_120_1.size() = %ld \n", vDetectedObjectCAM_120_1.size());
+  printf("vDetectedObjectCAM_120_1.size() = %zu \n", vDetectedObjectCAM_120_1.size());
   /************************************************************************/
 
   for (int j = 0; j < Lidar_num; j++)
@@ -924,14 +924,14 @@ void decisionFusion()
   msgLidar_rear_Obj.objects = vLidar_rear_Object;
   msgLidar_frontshort.objects = vLidar_frontshort_Object;
 
-  printf("put Lidar object to different view(total,60_0,60_1,60_2,30_1,rear) :%d,%ld,%ld,%ld,%ld\n", Lidar_num,
+  printf("put Lidar object to different view(total,60_0,60_1,60_2,30_1,rear) :%d,%zu,%zu,%zu,%zu\n", Lidar_num,
          msgLidar_60_0_Obj.objects.size(), msgLidar_60_1_Obj.objects.size(), msgLidar_60_2_Obj.objects.size(),
          msgLidar_rear_Obj.objects.size());
 
-  printf("put Lidar object to different view(30_0,30_1,30_2) :%ld,%ld,%ld\n", msgLidar_30_0_Obj.objects.size(),
+  printf("put Lidar object to different view(30_0,30_1,30_2) :%zu,%zu,%zu\n", msgLidar_30_0_Obj.objects.size(),
          msgLidar_30_1_Obj.objects.size(), msgLidar_30_2_Obj.objects.size());
 
-  printf("put Lidar object to different view(120_0,120_1,120_2) :%ld,%ld,%ld\n", msgLidar_120_0_Obj.objects.size(),
+  printf("put Lidar object to different view(120_0,120_1,120_2) :%zu,%zu,%zu\n", msgLidar_120_0_Obj.objects.size(),
          msgLidar_120_1_Obj.objects.size(), msgLidar_120_2_Obj.objects.size());
   /************************************************************************/
 
@@ -1020,7 +1020,7 @@ void decision3DFusion()
   }
 
   Lidar_num = vDetectedObjectLID.size();
-  printf("vDetectedObjectRAD.size() = %ld \n", vDetectedObjectLID.size());
+  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectLID.size());
 
   /************************************************************************/
   printf("radar_num_cb = %d \n", radar_num_cb);
@@ -1067,7 +1067,7 @@ void decision3DFusion()
   }
 
   radar_num = vDetectedObjectRAD.size();
-  printf("vDetectedObjectRAD.size() = %ld \n", vDetectedObjectRAD.size());
+  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectRAD.size());
   /************************************************************************/
   /************************************************************************/
   printf("Cam60_1_num_cb = %d \n", Cam60_1_num_cb);
@@ -1115,7 +1115,7 @@ void decision3DFusion()
 
   Cam60_1_num_cb = 0;  // YF 2019081901
   Cam60_1_num = vDetectedObjectCAM_60_1.size();
-  printf("vDetectedObjectCAM_60_1.size() = %ld \n", vDetectedObjectCAM_60_1.size());
+  printf("vDetectedObjectCAM_60_1.size() = %zu \n", vDetectedObjectCAM_60_1.size());
   /************************************************************************/
   /************************************************************************/
   printf("Cam30_1_num_cb = %d \n", Cam30_1_num_cb);
@@ -1163,7 +1163,7 @@ void decision3DFusion()
 
   Cam30_1_num_cb = 0;  // YF 2019081901
   Cam30_1_num = vDetectedObjectCAM_30_1.size();
-  printf("vDetectedObjectCAM_30_1.size() = %ld \n", vDetectedObjectCAM_30_1.size());
+  printf("vDetectedObjectCAM_30_1.size() = %zu \n", vDetectedObjectCAM_30_1.size());
   /************************************************************************/
   /************************************************************************/
   printf("Cam120_1_num_cb = %d \n", Cam120_1_num_cb);
@@ -1211,7 +1211,7 @@ void decision3DFusion()
 
   Cam120_1_num_cb = 0;  // YF 2019081901
   Cam120_1_num = vDetectedObjectCAM_120_1.size();
-  printf("vDetectedObjectCAM_120_1.size() = %ld \n", vDetectedObjectCAM_120_1.size());
+  printf("vDetectedObjectCAM_120_1.size() = %zu \n", vDetectedObjectCAM_120_1.size());
   /************************************************************************/
 
   for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
@@ -1230,11 +1230,11 @@ void decision3DFusion()
   int case2 = 0;
   int skipRAD = 0;
 
-  float p0x, p0y, p6x, p6y;
-  float q0x, q0y, q6x, q6y;
-
   for (unsigned i = 0; i < vDetectedObjectRAD.size(); i++)
   {
+    float p0x, p0y, p6x, p6y;
+    float q0x, q0y, q6x, q6y;
+
     p0x = vDetectedObjectRAD[i].bPoint.p0.x;  // min
     p0y = vDetectedObjectRAD[i].bPoint.p0.y;  // min
     p6x = vDetectedObjectRAD[i].bPoint.p6.x;  // max
@@ -1325,7 +1325,7 @@ void Cam60_0_view_fusion(void)
   // Variables for Lidar-based Detection(Lidar_60_0)
   // int total_lidar;
 
-  printf("msgLidar_60_0_Obj.objects.size() = %ld\n", msgLidar_60_0_Obj.objects.size());
+  printf("msgLidar_60_0_Obj.objects.size() = %zu\n", msgLidar_60_0_Obj.objects.size());
   for (unsigned i = 0; i < msgLidar_60_0_Obj.objects.size(); i++)
   {
     Y_3d = msgLidar_60_0_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
@@ -1493,7 +1493,7 @@ void Cam60_1_view_fusion(void)
       if ((diff < BB2BB_distance) || (width_AB < width_A + width_B && height_AB < height_A + height_B))
       {
         check3D[i][j] = 1;
-        printf("Lidar %d and camera %d overlap \n", i, j);
+        printf("Lidar %u and camera %u overlap \n", i, j);
       }
     }
   }
@@ -1541,7 +1541,7 @@ void Cam60_1_view_fusion(void)
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
-  printf("msgLidar_60_1_Obj.objects.size() = %ld\n", msgLidar_60_1_Obj.objects.size());
+  printf("msgLidar_60_1_Obj.objects.size() = %zu\n", msgLidar_60_1_Obj.objects.size());
   for (unsigned i = 0; i < msgLidar_60_1_Obj.objects.size(); i++)
   {
     Y_3d = msgLidar_60_1_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
@@ -1587,7 +1587,7 @@ void Cam60_1_view_fusion(void)
   // prepare data for decision fusion
   // Variables for RaDAR-based Detection
 
-  printf("msgRadObj.objects.size() = %ld\n", msgRadObj.objects.size());
+  printf("msgRadObj.objects.size() = %zu\n", msgRadObj.objects.size());
   for (unsigned i = 0; i < msgRadObj.objects.size(); i++)
   {
     Y_3d = msgRadObj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
@@ -1889,7 +1889,7 @@ void Cam60_2_view_fusion(void)
     memset(lid_det[j], 0, sizeof(int) * max_det);
   }
 
-  printf("msgLidar_60_2_Obj.objects.size() = %ld\n", msgLidar_60_2_Obj.objects.size());
+  printf("msgLidar_60_2_Obj.objects.size() = %zu\n", msgLidar_60_2_Obj.objects.size());
   for (unsigned i = 0; i < msgLidar_60_2_Obj.objects.size(); i++)
   {
     Y_3d = msgLidar_60_2_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
@@ -3153,10 +3153,6 @@ void overlap_analysis(int** bb_det, int total_det)
       else
       {
         if (toggle == true)
-        {
-          bb_det[4][j] = 1;
-        }
-        else
         {
           bb_det[4][j] = 1;
         }
