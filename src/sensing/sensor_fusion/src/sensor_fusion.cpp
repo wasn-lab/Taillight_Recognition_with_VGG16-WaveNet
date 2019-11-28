@@ -1233,7 +1233,6 @@ void decision3DFusion()
   for (unsigned i = 0; i < vDetectedObjectRAD.size(); i++)
   {
     float p0x, p0y, p6x, p6y;
-    float q0x, q0y, q6x, q6y;
 
     p0x = vDetectedObjectRAD[i].bPoint.p0.x;  // min
     p0y = vDetectedObjectRAD[i].bPoint.p0.y;  // min
@@ -1242,6 +1241,7 @@ void decision3DFusion()
 
     for (unsigned j = 0; j < vDetectedObjectLID.size(); j++)
     {
+      float q0x, q0y, q6x, q6y;
       q0x = vDetectedObjectLID[j].bPoint.p0.x;  // min
       q0y = vDetectedObjectLID[j].bPoint.p0.y;  // min
       q6x = vDetectedObjectLID[j].bPoint.p6.x;  // max
@@ -1283,13 +1283,8 @@ void decision3DFusion()
 
 void Cam60_0_view_fusion(void)
 {
-  double X_3d;
-  double Y_3d;
-  double Z_3d;
   int U_2d;
   int V_2d;
-  int width_2d;
-  int weight_2d;
   /************************************************************************/
   /*******************Cam60_0 view for decision fusion*********************/
   /************************************************************************/
@@ -1328,6 +1323,12 @@ void Cam60_0_view_fusion(void)
   printf("msgLidar_60_0_Obj.objects.size() = %zu\n", msgLidar_60_0_Obj.objects.size());
   for (unsigned i = 0; i < msgLidar_60_0_Obj.objects.size(); i++)
   {
+    double X_3d;
+    double Y_3d;
+    double Z_3d;
+    int width_2d;
+    int weight_2d;
+
     Y_3d = msgLidar_60_0_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
     X_3d = (msgLidar_60_0_Obj.objects[i].bPoint.p1.y) * (-1);
     Z_3d = msgLidar_60_0_Obj.objects[i].bPoint.p1.z;
@@ -1837,13 +1838,8 @@ void Cam60_1_view_fusion(void)
 
 void Cam60_2_view_fusion(void)
 {
-  double X_3d;
-  double Y_3d;
-  double Z_3d;
   int U_2d;
   int V_2d;
-  int width_2d;
-  int weight_2d;
   /************************************************************************/
   /*******************Cam60_2 view for decision fusion*********************/
   /************************************************************************/
@@ -1892,6 +1888,11 @@ void Cam60_2_view_fusion(void)
   printf("msgLidar_60_2_Obj.objects.size() = %zu\n", msgLidar_60_2_Obj.objects.size());
   for (unsigned i = 0; i < msgLidar_60_2_Obj.objects.size(); i++)
   {
+    double X_3d;
+    double Y_3d;
+    double Z_3d;
+    int width_2d;
+    int weight_2d;
     Y_3d = msgLidar_60_2_Obj.objects[i].bPoint.p1.x - radar_coordinate_offset_X;
     X_3d = (msgLidar_60_2_Obj.objects[i].bPoint.p1.y) * (-1);
     Z_3d = msgLidar_60_2_Obj.objects[i].bPoint.p1.z;
@@ -3078,19 +3079,17 @@ void overlap_analysis(int** bb_det, int total_det)
       }
     }
   }
-  int ncount;
-  int mem1_, mem2_;
-  bool toggle = false;
   for (int j = 0; j < total_det; j++)
   {
-    ncount = 0;
+    int mem1_;
     mem1_ = bb_det[4][j];
-    toggle = false;
     if (mem1_ == 0)
     {
+      int ncount = 0;
+      bool toggle = false;
       for (int i = 0; i < total_det; i++)
       {
-        mem2_ = bb_det[4][i];
+        int mem2_ = bb_det[4][i];
         if (mem2_ == 0)
         {
           if (assoc[j][i] > 0)
