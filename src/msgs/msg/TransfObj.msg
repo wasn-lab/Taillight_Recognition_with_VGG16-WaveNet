@@ -1,0 +1,2 @@
+Header transfHeader
+TransfBox[] transfObj
