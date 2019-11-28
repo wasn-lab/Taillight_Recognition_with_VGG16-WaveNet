@@ -9,7 +9,7 @@ import threading
 import yaml, json
 # File operations
 import datetime
-import dircache
+# import dircache # <-- Python2.x only, repalce with os.listdir
 import shutil
 # Args
 import argparse
@@ -360,7 +360,8 @@ class ROSBAG_CALLER:
         """
         This is a helper funtion for finding the latest (inactive) bag file.
         """
-        file_list = dircache.listdir(self.output_dir_tmp)
+        # file_list = dircache.listdir(self.output_dir_tmp) # Python 2.x only
+        file_list = os.listdir(self.output_dir_tmp)
         file_list.sort() # Sort in ascending order
         #
         if timestamp is None:
@@ -415,7 +416,8 @@ class ROSBAG_CALLER:
         """
         This is a helper funtion for finding the latest (inactive) bag file.
         """
-        file_list = dircache.listdir(self.output_dir_tmp)
+        # file_list = dircache.listdir(self.output_dir_tmp) # Python 2.x only
+        file_list = os.listdir(self.output_dir_tmp)
         file_list.sort() # Sort in ascending order
         #
         target_date_start = datetime.datetime.fromtimestamp(timestamp_start)
@@ -509,7 +511,7 @@ class ROSBAG_CALLER:
             # erase_last_lines(n=3, erase=False) # To make the cursor position back to the front of line
             #
             (closest_file_name, is_last) = self._get_latest_inactive_bag(_post_trigger_timestamp)
-            if not closest_file_name in file_in_pre_zone_list:
+            if (not closest_file_name is None) and not closest_file_name in file_in_pre_zone_list:
                 shutil.copy2( (self.output_dir_tmp + closest_file_name), self.output_dir_kept)
                 file_in_pre_zone_list.append(closest_file_name)
             if not is_last:
@@ -575,7 +577,20 @@ def _backup_trigger_callback(data):
 
 def main(sys_args):
     global _rosbag_caller
+    global txt_input
     # global _recorder_running_pub
+
+    # Fix the Python 2.x and 3.x compatibility problem
+    #----------------------------------------------------------#
+    # The original "input" is deprecated in Python 3.x,
+    # and the "raw_input" was renamed to "input"
+    # --> For Python 2.x, use "input" as "raw_input"
+    # --> For Python 3.x, use "input" normally
+    try:
+        txt_input = raw_input
+    except NameError:
+        txt_input = input
+    #----------------------------------------------------------#
 
     # Process arguments
     parser = argparse.ArgumentParser(description="Record ROS messages to rosbag files with enhanced controllability.\nThere are mainly two usage:\n- Manual-mode: simple start/stop record control\n- Auto-mode: Continuous recording with files backup via triggers.")
@@ -716,7 +731,8 @@ def main(sys_args):
     while not rospy.is_shutdown():
         if not _is_key_in:
             # A blocking std_in function
-            str_in = raw_input("\n----------------------\nType a command and press ENTER:\n----------------------\ns:start \nt:terminate \nc:cut file \nk:keep file \nq:quit \n----------------------\n>>> ")
+            # str_in = raw_input("\n----------------------\nType a command and press ENTER:\n----------------------\ns:start \nt:terminate \nc:cut file \nk:keep file \nq:quit \n----------------------\n>>> ") # <-- This can only be used in Python 2.x
+            str_in = txt_input("\n----------------------\nType a command and press ENTER:\n----------------------\ns:start \nt:terminate \nc:cut file \nk:keep file \nq:quit \n----------------------\n>>> ") # The wrapper is called at the beginning of the main()
             #
             if str_in == 's': # Start
                 _rosbag_caller.start(_warning=True)
