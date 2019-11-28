@@ -44,7 +44,7 @@ class Node:
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
 
-        self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
+        # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         # FPS
         self.fps_cal = FPS.FPS()

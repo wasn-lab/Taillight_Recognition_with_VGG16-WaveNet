@@ -3,8 +3,7 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /LidarAll1
+      Expanded: ~
       Splitter Ratio: 0.582872927
     Tree Height: 374
   - Class: rviz/Selection
@@ -516,6 +515,22 @@ Visualization Manager:
       Unreliable: false
       Use Timestamp: false
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /occupancy_grid/delayTxt
+      Name: occ_latency
+      Namespaces:
+        /occupancy_grid_d: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /current_pose/delayTxt
+      Name: pose_latency
+      Namespaces:
+        /current_pose_d: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -541,7 +556,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 104.508743
+      Distance: 107.293854
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
