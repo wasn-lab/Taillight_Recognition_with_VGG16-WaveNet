@@ -121,25 +121,26 @@ void image_init()
     }
 }
 
-void sync_inference(int camOrder, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
+void sync_inference(int cam_order, int camId, std_msgs::Header& header, cv::Mat *mat, std::vector<ITRI_Bbox>* vbbx, int dist_w, int dist_h){
     pthread_mutex_lock(&mtxInfer);
 
     bool isPushData = false;
-    if (camOrder == 0 && !isInferData_0) {isInferData_0 = true; isPushData = true;}
-    if (camOrder == 1 && !isInferData_1) {isInferData_1 = true; isPushData = true;}
-    if (camOrder == 2 && !isInferData_2) {isInferData_2 = true; isPushData = true;}
-    if (camOrder == 3 && !isInferData_3) {isInferData_3 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[0] && !isInferData_0) {isInferData_0 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[1] && !isInferData_1) {isInferData_1 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[2] && !isInferData_2) {isInferData_2 = true; isPushData = true;}
+    if (cam_ids_[cam_order] == cam_ids_[3] && !isInferData_3) {isInferData_3 = true; isPushData = true;}
 
     if (isPushData)
     {
         matSrcs.push_back(mat);
-        matOrder.push_back(camOrder);
+        matOrder.push_back(cam_order);
         matId.push_back(camId);
         vbbx_output.push_back(vbbx);
         headers.push_back(header);
         dist_cols.push_back(dist_w);
         dist_rows.push_back(dist_h);
-        std::cout << "Subscribe " <<  camera::topics[cam_ids_[camOrder]] << " image." << std::endl;
+
+        // std::cout << "Subscribe " <<  camera::topics[cam_ids_[cam_order]] << " image." << std::endl;
     }
 
     if(matOrder.size() == 4) {
@@ -324,17 +325,17 @@ void callback_120_3_decode(sensor_msgs::CompressedImage compressImg){
     }
 }
 
-void image_publisher(cv::Mat image, std_msgs::Header header, int camOrder)
+void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
 {
     imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-    if(camOrder == 0)
+    if(cam_ids_[cam_order] == cam_ids_[0])
 	    pubImg_120_0.publish(imgMsg);
-    else if (camOrder == 1)
+    else if (cam_ids_[cam_order] == cam_ids_[1])
  	    pubImg_120_1.publish(imgMsg);
-    else if (camOrder == 2)
+    else if (cam_ids_[cam_order] == cam_ids_[2])
 	    pubImg_120_2.publish(imgMsg);
-    else if (camOrder == 3)
+    else if (cam_ids_[cam_order] == cam_ids_[3])
 	    pubImg_120_3.publish(imgMsg);
 }
 
@@ -438,19 +439,19 @@ void* run_interp(void* ){
 	pthread_exit(0);
 }
 
-msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
+msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId){
     msgs::DetectedObject detObj;
     msgs::BoxPoint boxPoint;
     msgs::CamInfo camInfo;
     double *diatance_pixel_array;
 
     bool BoxPass_flag = false;
-    if (camOrder == 0){
+    if (cam_ids_[cam_order] == cam_ids_[0]){
         // Right front 120 range:
 
         BoxPass_flag = false;
     }
-    else if(camOrder == 1){
+    else if(cam_ids_[cam_order] == cam_ids_[1]){
         // Right back 120 range:
         // x axis: 0 ~ 7 meters
         // y axis: -9 ~ 6 meters
@@ -463,11 +464,11 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int camOrder, int camId){
         // if (box.y2 < 319) BoxPass_flag = false;
         BoxPass_flag = false;
     }
-    else if(camOrder == 2){
+    else if(cam_ids_[cam_order] == cam_ids_[2]){
         // Left Front 120 range:
         BoxPass_flag = false;
     }
-    else if(camOrder == 3)
+    else if(cam_ids_[cam_order] ==  cam_ids_[3])
     {
         // Left back 120 range:
         BoxPass_flag = false;        
@@ -509,14 +510,29 @@ void* run_yolo(void* ){
 
     ros::Rate r(30);
     while(ros::ok() && !isInferStop){
+        bool isDataVaild = true;
 
         pthread_mutex_lock(&mtxInfer);
         if(!isInferData) pthread_cond_wait(&cndInfer, &mtxInfer);
         pthread_mutex_unlock(&mtxInfer);
 
+        matSrcs_tmp = matSrcs;
+        for (auto &mat : matSrcs) isDataVaild &= CheckMatDataValid(*mat);
+        for (auto &mat : matSrcs_tmp) isDataVaild &= CheckMatDataValid(*mat);
+        if (!isDataVaild) 
+        {
+            // reset data
+            isInferData = false;
+            isInferData_0 = false;
+            isInferData_1 = false;
+            isInferData_2 = false;
+            isDataVaild = true;
+            matSrcs_tmp.clear();
+            continue;
+        }
+
         headers_tmp = headers;
         vbbx_output_tmp = vbbx_output;
-        matSrcs_tmp = matSrcs;
         matOrder_tmp = matOrder;
         matId_tmp = matId;
         dist_cols_tmp = dist_cols;
@@ -534,11 +550,6 @@ void* run_yolo(void* ){
         vbbx_output.clear();
         dist_cols.clear();
         dist_rows.clear();
-        isInferData = false;
-        isInferData_0 = false;
-        isInferData_1 = false;
-        isInferData_2 = false;
-        isInferData_3 = false;
 
         if (!input_resize || isCalibration) yoloApp.input_preprocess(matSrcs_tmp); 
         else yoloApp.input_preprocess(matSrcs_tmp, matId_tmp, input_resize, dist_cols_tmp, dist_rows_tmp); 
@@ -552,7 +563,25 @@ void* run_yolo(void* ){
             std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
             if(imgResult_publish || display_flag)  
             {
-                cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+                if (!(*matSrcs_tmp[ndx]).data)
+                {
+                    std::cout << "Unable to read *matSrcs_tmp : id " << ndx << "." << std::endl;
+                    continue;
+                }
+                else if ((*matSrcs_tmp[ndx]).cols <= 0 || (*matSrcs_tmp[ndx]).rows <= 0)
+                {
+                    std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[ndx]).cols << ", rows: " << (*matSrcs_tmp[ndx]).rows << std::endl;
+                    continue;
+                }
+                try
+                {
+                    cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+                }             
+                catch (cv::Exception& e)
+                {
+                    std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                    continue;
+                }
                 M_display = M_display_tmp;
             }
             msgs::DetectedObject detObj;
@@ -576,26 +605,19 @@ void* run_yolo(void* ){
                 {   
                     if(detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0){
                         int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
-                        if (cam_order == 0)
-                        {
-                            distMeter_p0x = detObj.bPoint.p3.x;
-                            distMeter_p3x = detObj.bPoint.p7.y;
-                            distMeter_p0y = detObj.bPoint.p3.y;  
-                            distMeter_p3y = detObj.bPoint.p7.y;
-                        }                    
-                        else if (cam_order == 2)
+                        if (cam_ids_[cam_order] == cam_ids_[0] || cam_ids_[cam_order] == cam_ids_[1])
                         {
                             distMeter_p0x = detObj.bPoint.p4.x;
                             distMeter_p3x = detObj.bPoint.p0.y;
                             distMeter_p0y = detObj.bPoint.p4.y;  
                             distMeter_p3y = detObj.bPoint.p0.y;
-                        }
-                        else
+                        }                    
+                        else if (cam_ids_[cam_order] == cam_ids_[2] || cam_ids_[cam_order] == cam_ids_[3])
                         {
-                            distMeter_p0x = detObj.bPoint.p0.x;
-                            distMeter_p3x = detObj.bPoint.p3.x;
-                            distMeter_p0y = detObj.bPoint.p0.y;                    
-                            distMeter_p3y = detObj.bPoint.p3.y;                        
+                            distMeter_p0x = detObj.bPoint.p3.x;
+                            distMeter_p3x = detObj.bPoint.p7.y;
+                            distMeter_p0y = detObj.bPoint.p3.y;  
+                            distMeter_p3y = detObj.bPoint.p7.y;
                         }
 
                         int x1 = detObj.camInfo.u;
@@ -611,7 +633,7 @@ void* run_yolo(void* ){
             doa.header.frame_id = "lidar";
             doa.objects = vDo;
 
-            if(cam_order == 0){
+            if(cam_ids_[cam_order] == cam_ids_[0]){
                 if (standard_FPS == 1) doa120_0 = doa;
                 else pub120_0.publish(doa); 
 
@@ -624,7 +646,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_0_display, headers_tmp[ndx], 0);
                     }
                 }
-            }else if(cam_order == 1){
+            }else if(cam_ids_[cam_order] == cam_ids_[1]){
                 if (standard_FPS == 1) doa120_1 = doa;
                 else pub120_1.publish(doa);
 
@@ -637,7 +659,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_1_display, headers_tmp[ndx], 1);
                     }
                 }
-            }else if(cam_order == 2){
+            }else if(cam_ids_[cam_order] == cam_ids_[2]){
                 if (standard_FPS == 1) doa120_2 = doa;
                 else pub120_2.publish(doa);
 
@@ -650,7 +672,7 @@ void* run_yolo(void* ){
                         image_publisher(mat120_2_display, headers_tmp[ndx], 2);
                     }
                 }
-            }else if(cam_order == 3){
+            }else if(cam_ids_[cam_order] == cam_ids_[3]){
                 if (standard_FPS == 1) doa120_3 = doa;
                 else pub120_3.publish(doa);
                                 
@@ -666,6 +688,18 @@ void* run_yolo(void* ){
             }
             vDo.clear();        
         }
+
+        std::cout << "Detect " <<  camera::topics[cam_ids_[0]] << ", "
+            <<  camera::topics[cam_ids_[1]] << ", " 
+            <<  camera::topics[cam_ids_[2]] << " and " 
+            <<  camera::topics[cam_ids_[3]] 
+            << " image." << std::endl;
+
+        isInferData = false;
+        isInferData_0 = false;
+        isInferData_1 = false;
+        isInferData_2 = false;
+        isInferData_3 = false;
 
         // reset data
         headers_tmp.clear();
@@ -711,19 +745,30 @@ void* run_display(void* ){
     ros::Rate r(10);
 	while(ros::ok() && !isInferStop)
     {
-        if (mat120_0_display.cols*mat120_0_display.rows == rawimg_size && mat120_1_display.cols*mat120_1_display.rows == rawimg_size 
-            && mat120_2_display.cols*mat120_2_display.rows == rawimg_size
-            && mat120_3_display.cols*mat120_3_display.rows == rawimg_size)
+        if(mat120_0_display.data || mat120_1_display.data || mat120_2_display.data || mat120_3_display.data)
         {
-            display_mutex.lock();
-            // cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-            // cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
-            cv::imshow("RightFront-120", mat120_0_display);
-            cv::imshow("RightBack-120", mat120_1_display);
-            cv::imshow("LeftFront-120", mat120_2_display);
-            cv::imshow("LeftBack-120", mat120_3_display);
-            display_mutex.unlock();
-            cv::waitKey(1);
+            if (mat120_0_display.cols*mat120_0_display.rows == rawimg_size 
+                && mat120_1_display.cols*mat120_1_display.rows == rawimg_size 
+                && mat120_2_display.cols*mat120_2_display.rows == rawimg_size
+                && mat120_3_display.cols*mat120_3_display.rows == rawimg_size)
+            {
+                try
+                {
+                    display_mutex.lock();
+                    // cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+                    // cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+                    cv::imshow("RightFront-120", mat120_0_display);
+                    cv::imshow("RightBack-120", mat120_1_display);
+                    cv::imshow("LeftFront-120", mat120_2_display);
+                    cv::imshow("LeftBack-120", mat120_3_display);
+                    display_mutex.unlock();
+                    cv::waitKey(1);
+                }
+                catch (cv::Exception& e)
+                {
+                        std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
+                }
+            }
         }
         r.sleep();
 	}

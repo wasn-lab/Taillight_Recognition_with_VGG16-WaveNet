@@ -6,6 +6,7 @@
 #include "drivenet/distance_estimation_b1.h"
 #include "drivenet/boundary_util.h"
 #include "drivenet/object_label_util.h"
+#include "drivenet/image_exception_handling.h"
 
 #if CAR_MODEL_IS_B1
   // TODO: fill in the correct camera id.

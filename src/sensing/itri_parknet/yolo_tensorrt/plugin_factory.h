@@ -74,7 +74,7 @@ private:
 
     struct INvPluginDeleter
     {
-        void operator()(nvinfer1::plugin::INvPlugin* ptr)
+        void operator()(nvinfer1::plugin::INvPlugin* ptr) const
         {
             if (ptr)
             {
@@ -84,7 +84,7 @@ private:
     };
     struct IPluginDeleter
     {
-        void operator()(nvinfer1::IPlugin* ptr)
+        void operator()(nvinfer1::IPlugin* ptr) const
         {
             if (ptr)
             {

@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drivenet_lib)
 
-add_definitions(-O3 -g)
-
-add_compile_options(-std=c++11) 
-
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+add_compile_options(-std=c++11 -O3)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)                    
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
