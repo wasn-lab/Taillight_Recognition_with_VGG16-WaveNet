@@ -96,9 +96,8 @@ DsImage::DsImage(const std::string& path, const int& inputH, const int& inputW) 
     m_YOffset(0),
     m_ScalingFactor(0.0),
     m_RNG(cv::RNG(unsigned(std::time(0)))),
-    m_ImageName()
+    m_ImageName(std::experimental::filesystem::path(path).stem().string())
 {
-    m_ImageName = std::experimental::filesystem::path(path).stem().string();
     m_OrigImage = cv::imread(path, CV_LOAD_IMAGE_COLOR);
 
     if (!m_OrigImage.data || m_OrigImage.cols <= 0 || m_OrigImage.rows <= 0)
