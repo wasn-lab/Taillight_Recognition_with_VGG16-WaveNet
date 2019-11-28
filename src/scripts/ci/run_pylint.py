@@ -3,6 +3,7 @@
 Check if a merge request contains any large file.
 """
 from __future__ import print_function
+import os
 import subprocess
 import sys
 import logging
