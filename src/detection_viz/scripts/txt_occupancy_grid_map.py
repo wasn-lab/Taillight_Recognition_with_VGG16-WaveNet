@@ -6,7 +6,8 @@ from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
 # from jsk_recognition_msgs.msg import PolygonArray
-from geometry_msgs.msg import Polygon, PolygonStamped, Point32, Point
+from geometry_msgs.msg import Point32, Point
+from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
 from msgs.msg import *
 from rosgraph_msgs.msg import Clock
@@ -26,12 +27,11 @@ class Node:
         self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.t_clock = rospy.Time()
-
-        self.polygon_pub = rospy.Publisher(self.inputTopic + "/poly", MarkerArray, queue_size=1)
+        #
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
-
+        #
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
-        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
+        self.detection_sub = rospy.Subscriber(self.inputTopic, OccupancyGrid, self.detection_callback)
         # FPS
         self.fps_cal = FPS.FPS()
 
@@ -60,44 +60,11 @@ class Node:
         current_stamp = rospy.get_rostime()
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
-        box_list = MarkerArray()
         delay_list = MarkerArray()
-        idx = 1
-        for i in range(len(message.objects)):
-            # point = self.text_marker_position(message.objects[i].cPoint)
-            box_list.markers.append(self.create_polygon(message.header, message.objects[i].cPoint, idx))
-            idx += 1
-        #
         delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps ) )
         #
-        self.polygon_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
 
-
-    def create_polygon(self, header, cPoint, idx):
-        marker = Marker()
-        marker.header.frame_id = header.frame_id
-        marker.header.stamp = header.stamp
-        marker.ns = self.inputTopic
-        marker.action = Marker.ADD
-        marker.pose.orientation.w = 1.0
-
-        marker.id = idx
-        marker.type = Marker.LINE_STRIP
-        marker.scale.x = 0.1
-        marker.lifetime = rospy.Duration(1.0)
-        marker.color.r = self.c_red
-        marker.color.g = self.c_green
-        marker.color.b = self.c_blue
-        marker.color.a = 1.0
-
-        marker.points = []
-        if len(cPoint.lowerAreaPoints) > 0:
-            for i in range(len(cPoint.lowerAreaPoints)):
-                marker.points.append(cPoint.lowerAreaPoints[i])
-            marker.points.append(cPoint.lowerAreaPoints[0])
-
-        return marker
 
     def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None):
         marker = Marker()

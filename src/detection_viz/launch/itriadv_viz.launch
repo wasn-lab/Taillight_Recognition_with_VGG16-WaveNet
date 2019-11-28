@@ -1,8 +1,9 @@
 <launch>
   <arg name="pub_tf" default="true" />
+  <arg name="rviz_config" default="U3_b3" />
 
   <!-- rviz ************************************************************************************* -->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/U3_b2.rviz" />
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/$(arg rviz_config).rviz" />
 
   <!-- TF *************************************************************************************** -->
   <group if="$(arg pub_tf)">
@@ -120,6 +121,27 @@
       <param name="delay_prefix"  value="cam120RB"/>
       <param name="delay_pos_x"  value="-1.0"/>
   </node>
+
+  <!-- Current pose ********************************************************************************** -->
+  <node name="m_current_pose" pkg="detection_viz" type="txt_current_pose.py" output="screen">
+      <param name="topic" value="/current_pose"/>
+      <param name="red"   value="0.0"/>
+      <param name="green" value="0.5"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="pose"/>
+      <param name="delay_pos_x"  value="-7.0"/>
+  </node>
+
+  <!-- Occupancy grid map ********************************************************************************** -->
+  <node name="m_occ" pkg="detection_viz" type="txt_occupancy_grid_map.py" output="screen">
+      <param name="topic" value="/occupancy_grid"/>
+      <param name="red"   value="0.0"/>
+      <param name="green" value="0.5"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="occ"/>
+      <param name="delay_pos_x"  value="-9.0"/>
+  </node>
+
 
   <!-- LaneNet ********************************************************************************** -->
   <node name="m_Lane_all_cam" pkg="detection_viz" type="marker_lane_curve.py" output="screen">
