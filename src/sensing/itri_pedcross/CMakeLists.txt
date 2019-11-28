@@ -61,7 +61,7 @@ endif ()
 
 find_package(Glog)
 
-find_package(OpenCV 3.4.3 REQUIRED
+find_package(OpenCV
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
