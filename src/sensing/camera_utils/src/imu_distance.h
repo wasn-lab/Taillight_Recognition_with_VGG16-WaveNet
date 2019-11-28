@@ -46,7 +46,7 @@ struct SensorRay
 class IMUDistance
 {
 public:
-  IMUDistance(const PoseRPY sensor_pose)
+  IMUDistance(const PoseRPY& sensor_pose) : sray_()
   {
     init(sensor_pose);
   }
@@ -111,10 +111,10 @@ public:
 
   // step 1
   void set_dt_sec(const double dt_sec);
-  void set_imu_and_sensor_rpyrate(const RPYRate imu_rpyrate, const double dt_sec);
+  void set_imu_and_sensor_rpyrate(const RPYRate& imu_rpyrate, const double dt_sec);
 
   // step 2
-  void read_obj_bbox2d(const BBox2D bbox);
+  void read_obj_bbox2d(const BBox2D& bbox);
 
   // step 3 ~ 5
   int run(double& ego2obj_distance_m);
@@ -147,7 +147,7 @@ private:
 
   double ego2obj_distance_m_ = 0.;
 
-  void init(const PoseRPY sensor_pose);
+  void init(const PoseRPY& sensor_pose);
 
   // step 1.1
   void compute_imu_rpy_displacement();

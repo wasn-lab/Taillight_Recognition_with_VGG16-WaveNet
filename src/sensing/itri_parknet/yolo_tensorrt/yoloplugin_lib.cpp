@@ -153,7 +153,8 @@ std::vector<YoloPluginOutput*> YoloPluginProcess(YoloPluginCtx* ctx, std::vector
     assert((cvmats.size() <= ctx->batchSize) && "Image batch size exceeds TRT engines batch size");
     std::vector<YoloPluginOutput*> outputs = std::vector<YoloPluginOutput*>(cvmats.size(), nullptr);
     cv::Mat preprocessedImages;
-    struct timeval preStart, preEnd, inferStart, inferEnd, postStart, postEnd;
+    struct timeval preStart = { 0, 0 }, preEnd = { 0, 0 }, inferStart = { 0, 0 }, inferEnd = { 0, 0 },
+                   postStart = { 0, 0 }, postEnd = { 0, 0 };
     double preElapsed = 0.0, inferElapsed = 0.0, postElapsed = 0.0;
 
     if (cvmats.size() > 0)
