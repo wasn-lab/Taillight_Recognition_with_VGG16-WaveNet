@@ -19,6 +19,8 @@ def _run_pylint(affected_files):
     num_fail = 0
     rc_file = "src/scripts/ci/pylintrc"
     for fname in affected_files:
+        if not os.path.isfile(fname):
+            continue
         if not fname.endswith(".py"):
             continue
         cmd = ["pylint", "-E", "--rcfile=" + rc_file, fname]
