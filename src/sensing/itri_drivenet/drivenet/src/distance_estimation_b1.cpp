@@ -10,15 +10,23 @@ void DistanceEstimation::init (int car_id)
     regionHeight_60_FC_x = {1207, 1181, 1141, 1110, 1086/*10*/, 1070, 1052, 1039, 1028, 1019, 1009, 1003, 996, 991, 985/*20*/, 960, 946, 934, 926, 919, 914/*50*/}; 
     // regionHeightSlope_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50};  
     regionDist_60_FC_x = {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50}; 
-    regionHeightSlope_60_FC_y = {0.081, 0.161 ,0.224, 0.304, 0.44, 1.02, 3.87, -1.53, -0.66, -0.452, -0.333, -0.251, -0.121}; 
-    regionHeight_60_FC_y = {-3172, -1099, -509, -112, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801};
+    regionHeightSlope_60_FC_y = {0.12, 0.209, 0.27, 0.337, 0.44, 1.02, 3.87, -1.53, -0.66, -0.452, -0.333, -0.251, -0.121}; 
+    regionHeight_60_FC_y = {-1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801}; 
     regionDist_60_FC_y = {10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10};
+    LeftLinePoint1_60_FC = cv::Point(636, 914);
+    LeftLinePoint2_60_FC = cv::Point(-1817, 1181);
+    RightLinePoint1_60_FC = cv::Point(1371, 914);
+    RightLinePoint2_60_FC = cv::Point(3801, 1181);
 
     regionHeight_120_FT_x = {1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171, 150, 130, 115, 99, 86, 75, 65, 57, 48, 40, 10};  //Horizontal line
     regionDist_120_FT_x = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25}; 
     regionHeight_120_FT_y = {-1422, -1131, -824, -412, 70, 490, 942, 1292, 1732, 2258, 2641, 3030, 3471, 3619, 3709, 3548}; //Vertical line
     regionHeightSlope_120_FT_y = {0.603, 0.682, 0.784, 1.012, 1.56, 2.908, 48.28, -4.4615, -1.8, -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862}; 
     regionDist_120_FT_y = {6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9}; 
+    LeftLinePoint1_120_FT = cv::Point(127, 272);     
+    LeftLinePoint2_120_FT = cv::Point(-1422, 1207);
+    RightLinePoint1_120_FT = cv::Point(1904, 272);
+    RightLinePoint2_120_FT = cv::Point(3548, 1207);
 
     regionHeight_120_RF_x = {1148, 830, 544, 377, 236, 157, 52}; //5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
     regionDist_120_RF_x = {0, 1, 2, 3, 4, 5, 6}; //5 to 10, 20 to 50m (~5m)
@@ -37,7 +45,11 @@ void DistanceEstimation::init (int car_id)
     regionHeight_120_BT_y = {-1566, -1230, -861, -264, 40, 475, 875, 1370, 1704, 2195, 2439, 2808, 3152}; //Vertical line
     regionHeightSlope_120_BT_y = {0.536, 0.612, 0.7197, 1.063, 1.372, 2.624, 14.2, -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608}; 
     regionDist_120_BT_y = {6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6}; //-5 to 0 to 5 (~1m) 
-    
+    LeftLinePoint1_120_BT = cv::Point(422, 143);     
+    LeftLinePoint2_120_BT = cv::Point(-1566, 1207);
+    RightLinePoint1_120_BT = cv::Point(1400, 143);
+    RightLinePoint2_120_BT = cv::Point(3152, 1207);
+
     Lidar_offset_x = 0;
     Lidar_offset_y = 0;
 }
@@ -48,7 +60,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     float unitLength = 0.0;
     int bias = 0;
     float offset = 0.0;
-    for (int i = 1; i < regionHeight.size(); i++)
+    for (uint i = 1; i < regionHeight.size(); i++)
     {
         if ((piexl_loc >= regionHeight[i] && piexl_loc <= regionHeight[i-1]))  
         {
@@ -97,7 +109,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
     std::vector<int> regionHeight_new = regionHeight;
     
     // std::cout << "pixel_loc_x: " << pixel_loc_x <<  ", pixel_loc_y: " << pixel_loc_y << std::endl;
-    for (int i = 0; i < regionHeight.size(); i++)
+    for (uint i = 0; i < regionHeight.size(); i++)
     {
         // int y = img_h - pixel_loc_x;
         if (regionHeightSlope_x[i] != 0)
@@ -107,7 +119,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
         // printf("region[%d], region:%d, new region:%d, \n ", i, regionHeight[i], regionHeight_new[i]);
     }
 
-    for (int i = 1; i < regionHeight_new.size(); i++)
+    for (uint i = 1; i < regionHeight_new.size(); i++)
     {
         if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i-1])  
         {
@@ -158,7 +170,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
     std::vector<int> regionHeight_new = regionHeight;
     
     // std::cout << "piexl_loc_x: " << piexl_loc_x <<  ", piexl_loc_y: " << piexl_loc_y << std::endl;
-    for (int i = 0; i < regionHeight.size(); i++)
+    for (uint i = 0; i < regionHeight.size(); i++)
     {
         int y = img_h - piexl_loc_x;
         if (regionHeightSlope_y[i] !=0)
@@ -168,7 +180,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
         // printf("region[%d], region:%d, new region:%d, \n ", i, regionHeight[i], regionHeight_new[i]);
     }
 
-    for (int i = 1; i < regionHeight_new.size(); i++)
+    for (uint i = 1; i < regionHeight_new.size(); i++)
     {
         if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i-1])  
         {
@@ -228,7 +240,7 @@ int CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::P
 }
 int box_shrink(int cam_id, std::vector<int> Points_src, std::vector<int> &Points_dst)
 {
-    int edge_left, edge_right;
+    // int edge_left, edge_right;
     int area_id = 1; //1: left, 2:right
 
     cv::Point LeftLinePoint1;
@@ -341,11 +353,11 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     /// \    /
     ///obstacle_w
 
-    float obstacle_h = 2, obstacle_l = 2 , obstacle_w = 2;
-    if(class_id == 0) { obstacle_h = 1.8; obstacle_l = 0.33; obstacle_w = 0.6;}
-    else if(class_id == 1 || class_id == 3) { obstacle_h = 1.8; obstacle_l = 2.5; obstacle_w = 0.6;}
-    else if(class_id == 2) { obstacle_h = 1.5; obstacle_l = 5; obstacle_w = 2;}
-    else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 7; obstacle_w = 2.5;} 
+    float obstacle_h = 2, obstacle_l = 2 /*, obstacle_w = 2*/;
+    if(class_id == 0) { obstacle_h = 1.8; obstacle_l = 0.33; /*obstacle_w = 0.6;*/}
+    else if(class_id == 1 || class_id == 3) { obstacle_h = 1.8; obstacle_l = 2.5; /*obstacle_w = 0.6;*/}
+    else if(class_id == 2) { obstacle_h = 1.5; obstacle_l = 5; /*obstacle_w = 2;*/}
+    else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 7; /*obstacle_w = 2.5;*/} 
 
     ///1
     if(cam_id == 0 || cam_id == 1 || cam_id == 2 || cam_id == 4)
@@ -491,11 +503,11 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     /// 3: motorbike
     /// 5: bus
     /// 7: truck
-    float obstacle_h = 2, obstacle_l = 2 , obstacle_w = 2;
-    if(class_id == 0) { obstacle_h = 1.8; obstacle_l = 0.33; obstacle_w = 0.6;}
-    else if(class_id == 1 || class_id == 3) { obstacle_h = 1.8; obstacle_l = 1.5; obstacle_w = 0.6;} // obstacle_l = 2.5
-    else if(class_id == 2) { obstacle_h = 1.5; obstacle_l = 2; obstacle_w = 2;} // obstacle_l = 5
-    else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 2.5; obstacle_w = 2.5;} //obstacle_l = 7
+    float obstacle_h = 2, obstacle_l = 2 /*, obstacle_w = 2*/;
+    if(class_id == 0) { obstacle_h = 1.8; obstacle_l = 0.33; /*obstacle_w = 0.6;*/}
+    else if(class_id == 1 || class_id == 3) { obstacle_h = 1.8; obstacle_l = 1.5; /*obstacle_w = 0.6;*/} // obstacle_l = 2.5
+    else if(class_id == 2) { obstacle_h = 1.5; obstacle_l = 2; /*obstacle_w = 2;*/} // obstacle_l = 5
+    else if(class_id == 5 || class_id == 7) {obstacle_h = 2; obstacle_l = 2.5; /*obstacle_w = 2.5;*/} //obstacle_l = 7
 
     // if(cam_id == 2 || cam_id == 5 || cam_id == 7 || cam_id == 8 || cam_id == 9)
     // {
@@ -691,8 +703,8 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     int x_loc = y;
     int y_loc = x;
     int img_h = 1208;
-    int img_w = 1920;
-    int mode = 1;
+    // int img_w = 1920;
+    // int mode = 1;
 
     if (cam_id == 1)
     {

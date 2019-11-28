@@ -69,7 +69,7 @@ float clamp(const float val, const float minVal, const float maxVal)
     return std::min(maxVal, std::max(minVal, val));
 }
 
-bool fileExists(const std::string fileName, bool verbose)
+bool fileExists(const std::string& fileName, bool verbose)
 {
     if (!std::experimental::filesystem::exists(std::experimental::filesystem::path(fileName)))
     {
@@ -124,7 +124,7 @@ void printPredictions(const BBoxInfo& b, const std::string& className)
               << " xmax:" << b.box.x2 << " ymax:" << b.box.y2 << std::endl;
 }
 
-std::vector<std::string> loadListFromTextFile(const std::string filename)
+std::vector<std::string> loadListFromTextFile(const std::string& filename)
 {
     assert(fileExists(filename));
     std::vector<std::string> list;
@@ -149,7 +149,7 @@ std::vector<std::string> loadListFromTextFile(const std::string filename)
     return list;
 }
 
-std::vector<std::string> loadImageList(const std::string filename, const std::string prefix)
+std::vector<std::string> loadImageList(const std::string& filename, const std::string& prefix)
 {
     std::vector<std::string> fileList = loadListFromTextFile(filename);
     for (auto& file : fileList)
@@ -229,7 +229,7 @@ std::vector<BBoxInfo> nonMaximumSuppression(const float nmsThresh, std::vector<B
     return out;
 }
 
-nvinfer1::ICudaEngine* loadTRTEngine(const std::string planFilePath, PluginFactory* pluginFactory,
+nvinfer1::ICudaEngine* loadTRTEngine(const std::string& planFilePath, PluginFactory* pluginFactory,
                                      Logger& logger)
 {
     // reading the model in memory
@@ -259,13 +259,12 @@ nvinfer1::ICudaEngine* loadTRTEngine(const std::string planFilePath, PluginFacto
     return engine;
 }
 
-std::vector<float> loadWeights(const std::string weightsFilePath, const std::string& networkType)
+std::vector<float> loadWeights(const std::string& weightsFilePath, const std::string& networkType)
 {
     assert(fileExists(weightsFilePath));
     std::cout << "Loading pre-trained weights..." << std::endl;
     std::ifstream file(weightsFilePath, std::ios_base::binary);
     assert(file.good());
-    std::string line;
 
     if (networkType == "yolov2")
     {

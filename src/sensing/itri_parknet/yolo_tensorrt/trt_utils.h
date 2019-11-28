@@ -117,20 +117,20 @@ cv::Mat blobFromDsImages(const std::vector<DsImage>& inputImages, const int& inp
                          const int& inputW);
 std::string trim(std::string s);
 float clamp(const float val, const float minVal, const float maxVal);
-bool fileExists(const std::string fileName, bool verbose = true);
+bool fileExists(const std::string& fileName, bool verbose = true);
 BBox convertBBoxNetRes(const float& bx, const float& by, const float& bw, const float& bh,
                        const uint& stride, const uint& netW, const uint& netH);
 void convertBBoxImgRes(const float scalingFactor, const float& xOffset, const float& yOffset,
                        BBox& bbox);
 void printPredictions(const BBoxInfo& info, const std::string& className);
-std::vector<std::string> loadListFromTextFile(const std::string filename);
-std::vector<std::string> loadImageList(const std::string filename, const std::string prefix);
+std::vector<std::string> loadListFromTextFile(const std::string& filename);
+std::vector<std::string> loadImageList(const std::string& filename, const std::string& prefix);
 std::vector<BBoxInfo> nmsAllClasses(const float nmsThresh, std::vector<BBoxInfo>& binfo,
                                     const uint numClasses);
 std::vector<BBoxInfo> nonMaximumSuppression(const float nmsThresh, std::vector<BBoxInfo> binfo);
-nvinfer1::ICudaEngine* loadTRTEngine(const std::string planFilePath, PluginFactory* pluginFactory,
+nvinfer1::ICudaEngine* loadTRTEngine(const std::string& planFilePath, PluginFactory* pluginFactory,
                                      Logger& logger);
-std::vector<float> loadWeights(const std::string weightsFilePath, const std::string& networkType);
+std::vector<float> loadWeights(const std::string& weightsFilePath, const std::string& networkType);
 std::string dimsToString(const nvinfer1::Dims d);
 void displayDimType(const nvinfer1::Dims d);
 int getNumChannels(nvinfer1::ITensor* t);
