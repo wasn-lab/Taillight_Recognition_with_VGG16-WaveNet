@@ -62,6 +62,7 @@ APPEND_GLOBAL_COMPILER_FLAGS(
     -Wno-deprecated-declarations
     -Wno-comment
     -Wno-unused-parameter
+    -Wno-deprecated-declarations
 #    -Wcast-align
     -Wformat-security
     -Wpointer-arith
@@ -82,7 +83,7 @@ if (DEFINED SCAN_BUILD_MODE)
 endif()
 
 if (COMPILER_IS_CLANG)
-    APPEND_GLOBAL_COMPILER_FLAGS(-Wuninitialized)
+    APPEND_GLOBAL_COMPILER_FLAGS(-Wuninitialized -Wno-deprecated-register)
     if (WARNING_AS_ERROR)
       APPEND_GLOBAL_COMPILER_FLAGS(-Werror=return-type)
       APPEND_GLOBAL_COMPILER_FLAGS(-Werror=sign-compare)
