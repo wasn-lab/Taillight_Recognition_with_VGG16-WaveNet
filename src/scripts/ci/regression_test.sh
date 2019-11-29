@@ -2,6 +2,12 @@
 set -x
 set -e
 
+if [[ ! -z "$(pgrep rosmaster)" ]]; then
+  echo "OK: rosmaster is running."
+else
+  rosmaster --core &
+fi
+
 readonly repo_dir=$(git rev-parse --show-toplevel)
 export ROS_HOME=$repo_dir
 cd $repo_dir/build
