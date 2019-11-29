@@ -617,6 +617,7 @@ void ROS_INTERFACE::_ROS_worker(){
 //----------------------------------------------//
 bool ROS_INTERFACE::update_current_slice_time(){
     _current_slice_time = TIME_STAMP::Time::now() - TIME_STAMP::Time(_global_delay);
+    return true;
 }
 //----------------------------------------------//
 
@@ -1004,6 +1005,7 @@ bool ROS_INTERFACE::send_Image(const int topic_id, const cv::Mat &content_in){
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", content_in).toImageMsg();
     _image_publisher_list[ _ps_id ].publish(msg);
     //
+    return true;
 }
 //---------------------------------------------------------------//
 
@@ -1224,6 +1226,7 @@ bool ROS_INTERFACE::send_ITRIPointCloud(const int topic_id, const pcl::PointClou
     }
     //-------------------------//
     _publisher_list[ _ps_id ].publish(msg);
+    return true;
 }
 //---------------------------------------------------------------//
 
@@ -1282,6 +1285,7 @@ bool ROS_INTERFACE::send_ITRI3DBoundingBox(const int topic_id, const msgs::LidRo
     msgs::LidRoi msg;
     msg = content_in;
     _publisher_list[ _ps_id ].publish(msg);
+    return true;
 }
 //---------------------------------------------------------------//
 
