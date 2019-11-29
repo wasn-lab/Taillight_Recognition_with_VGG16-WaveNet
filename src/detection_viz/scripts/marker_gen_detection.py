@@ -38,12 +38,13 @@ class Node:
         self.c_blue = rospy.get_param("~blue")
         self.delay_prefix = rospy.get_param("~delay_prefix", "")
         self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
+        self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.t_clock = rospy.Time()
 
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
 
-        self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
+        # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         # FPS
         self.fps_cal = FPS.FPS()
@@ -66,7 +67,7 @@ class Node:
     def text_marker_position_origin(self):
         p = Point()
         p.x = self.delay_pos_x
-        p.y = 0.0
+        p.y = self.delay_pos_y
         p.z = 2.0
         return p
 
