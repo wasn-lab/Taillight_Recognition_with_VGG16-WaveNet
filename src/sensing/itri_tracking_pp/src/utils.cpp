@@ -251,6 +251,7 @@ void set_config(const MarkerConfig& in, MarkerConfig& out)
   out.pub_bbox = in.pub_bbox;
   out.pub_polygon = in.pub_polygon;
   out.pub_pp = in.pub_pp;
+  out.pub_vel = in.pub_vel;
 
   out.pub_id = in.pub_id;
   out.pub_speed = in.pub_speed;
