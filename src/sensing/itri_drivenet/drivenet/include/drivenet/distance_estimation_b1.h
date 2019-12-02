@@ -93,6 +93,13 @@ public:
   msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, int cam_id);
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id);
 
+
+  /// camId:0
+  // Front right 60 range:
+  // x axis: 7 ~ 50 meters
+  // y axis: -10 ~ 10 meters
+  cv::Point LeftLinePoint1_60_FR, LeftLinePoint2_60_FR, RightLinePoint1_60_FR, RightLinePoint2_60_FR;
+
   /// camId: 1
   // Front center 60 range:
   // x axis: 7 ~ 50 meters
