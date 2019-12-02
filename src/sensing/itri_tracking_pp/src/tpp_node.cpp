@@ -83,9 +83,8 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
 #if VIRTUAL_INPUT
   objs_header_.frame_id = "lidar";
-  vel_.set_dt(100000000);  // 0.1s = 100,000,000ns
-  is_legal_dt_ = true;
-#else
+#endif
+
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
@@ -98,7 +97,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   {
     is_legal_dt_ = false;
   }
-#endif
 
   KTs_.header_ = objs_header_;
 
@@ -112,6 +110,14 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
+
+#if VIRTUAL_INPUT
+    for (unsigned i = 0; i < KTs_.objs_.size(); i++)
+    {
+      gt_x_ = KTs_.objs_[i].radarInfo.imgPoint60.x;
+      gt_y_ = KTs_.objs_[i].radarInfo.imgPoint60.y;
+    }
+#endif
 
     if (in_source_ == 2)
     {
@@ -244,6 +250,9 @@ void TPPNode::subscribe_and_advertise_topics()
       std::string topic6 = topic + "/pp";
       mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
     }
+
+    std::string topic7 = topic + "/vel";
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
   }
 }
 
@@ -436,7 +445,7 @@ void TPPNode::publish_tracking()
 #if FPS_EXTRAPOLATION
         box.track.tracktime = (KTs_.tracks_[i].tracktime_ - 1) * num_publishs_per_loop + 1;
 #else
-    	box.track.tracktime = KTs_.tracks_[i].tracktime_;
+        box.track.tracktime = KTs_.tracks_[i].tracktime_;
 #endif
 
         // set max_length
@@ -481,6 +490,12 @@ void TPPNode::publish_tracking()
   }
 }
 
+inline bool test_file_exist(const std::string& name)
+{
+  ifstream f(name.c_str());
+  return f.good();
+}
+
 void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
@@ -494,34 +509,85 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
     return;
   }
 
-  ofs.open(fname, std::ios_base::app);
+  if (!test_file_exist(fname))
+  {
+    ofs.open(fname, std::ios_base::app);
+
+    ofs << "#1 time stamp (s), "  //
+        << "#2 track id, "        //
+        << "#3 dt (s), "          //
+#if VIRTUAL_INPUT
+        << "#4-1 GT bbox center x (m), "  //
+        << "#4-2 GT bbox center y (m), "  //
+#endif
+        << "#5-1 input bbox center x (m), "            //
+        << "#5-2 input bbox center y (m), "            //
+        << "#6-1 kalman-filtered bbox center x (m), "  //
+        << "#6-2 kalman-filtered bbox center y (m), "  //
+        << "#7 abs vx (km/h), "                        //
+        << "#8 abs vy (km/h), "                        //
+        << "#9 abs speed (km/h), "                     //
+        << "#10 rel vx (km/h), "                       //
+        << "#11 rel vy (km/h), "                       //
+        << "#12 rel speed (km/h), "                    //
+        << "#13 ppx in 5 ticks (m), "                  //
+        << "#14 ppy in 5 ticks (m), "                  //
+        << "#15 ppx in 10 ticks (m), "                 //
+        << "#16 ppy in 10 ticks (m), "                 //
+        << "#17 ppx in 15 ticks (m), "                 //
+        << "#18 ppy in 15 ticks (m), "                 //
+        << "#19 ppx in 20 ticks (m), "                 //
+        << "#20 ppy in 20 ticks (m), "                 //
+        << "#21 kf ego x abs (km/h), "                 //
+        << "#22 kf ego y abs (km/h), "                 //
+        << "#23 kf ego z abs (km/h), "                 //
+        << "#24 kf ego y rel (km/h), "                 //
+        << "#25 kf ego y rel (km/h), "                 //
+        << "#26 kf ego z rel (km/h), "                 //
+        << "#27 kf ego heading (rad), "                //
+        << "#28 kf Q1, "                               //
+        << "#29 kf Q2, "                               //
+        << "#30 kf Q3, "                               //
+        << "#31 kf R, "                                //
+        << "#32 kf P0\n";
+  }
+  else
+  {
+    ofs.open(fname, std::ios_base::app);
+  }
 
   for (size_t i = 0; i < objs.size(); i++)
   {
-    ofs << std::fixed                                               //
-        << objs[i].header.stamp << ", "                             // #1 time stamp
-        << objs[i].track.id << ", "                                 // #2 track id
-        << objs[i].lidarInfo.boxCenter.x << ", "                    // #3 original bbox center x
-        << objs[i].lidarInfo.boxCenter.y << ", "                    // #4 original bbox center y
-        << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #5 modified bbox center x
-        << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6 modified bbox center y
-        << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx
-        << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy
-        << objs[i].absSpeed << ", "                                 // #9 abs speed
-        << objs[i].track.relative_velocity.x << ", "                // #10 rel vx
-        << objs[i].track.relative_velocity.y << ", "                // #11 rel vy
-        << objs[i].relSpeed;                                        // #12 rel speed
+    ros::Duration dt_s(0, dt_);
+    ofs << std::fixed                          //
+        << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
+        << objs[i].track.id << ", "            // #2 track id
+        << dt_s.toSec() << ", "                // #3 dt (s)
+#if VIRTUAL_INPUT
+        << gt_x_ << ", "  // #4-1 GT bbox center x (m)
+        << gt_y_ << ", "  // #4-2 GT bbox center y (m)
+#endif
+        << objs[i].lidarInfo.boxCenter.x << ", "                    // #5-1 input bbox center x (m)
+        << objs[i].lidarInfo.boxCenter.y << ", "                    // #5-2 input bbox center y (m)
+        << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #6-1 kalman-filtered bbox center x (m)
+        << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6-2 kalman-filtered bbox center y (m)
+        << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx (km/h)
+        << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy (km/h)
+        << objs[i].absSpeed << ", "                                 // #9 abs speed (km/h)
+        << objs[i].track.relative_velocity.x << ", "                // #10 rel vx (km/h)
+        << objs[i].track.relative_velocity.y << ", "                // #11 rel vy (km/h)
+        << objs[i].relSpeed;                                        // #12 rel speed (km/h)
 
     if (objs[i].track.is_ready_prediction)
     {
-      // #13 ppx in 5 ticks
-      // #14 ppy in 5 ticks
-      // #15 ppx in 10 ticks
-      // #16 ppy in 10 ticks
-      // #17 ppx in 15 ticks
-      // #18 ppy in 15 ticks
-      // #19 ppx in 20 ticks
-      // #20 ppy in 20 ticks
+      // #13 ppx in 5 ticks (m)
+      // #14 ppy in 5 ticks (m)
+      // #15 ppx in 10 ticks (m)
+      // #16 ppy in 10 ticks (m)
+      // #17 ppx in 15 ticks (m)
+      // #18 ppy in 15 ticks (m)
+      // #19 ppx in 20 ticks (m)
+      // #20 ppy in 20 ticks (m)
       for (size_t j = 0; j < objs[i].track.forecasts.size(); j = j + 5)
       {
         ofs << ", " << objs[i].track.forecasts[j].position.x << ", " << objs[i].track.forecasts[j].position.y;
@@ -529,14 +595,21 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 
       ofs << ", "                          //
           << vel_.get_ego_x_abs() << ", "  // #21 kf ego x abs
-          << vel_.get_ego_x_rel() << ", "  // #22 kf ego x rel
-          << vel_.get_ego_y_abs() << ", "  // #23 kf ego y abs
-          << vel_.get_ego_y_rel() << ", "  // #24 kf ego y rel
-          << vel_.get_ego_z_abs() << ", "  // #25 kf ego z abs
+          << vel_.get_ego_y_abs() << ", "  // #22 kf ego y abs
+          << vel_.get_ego_z_abs() << ", "  // #23 kf ego z abs
+          << vel_.get_ego_x_rel() << ", "  // #24 kf ego x rel
+          << vel_.get_ego_y_rel() << ", "  // #25 kf ego y rel
           << vel_.get_ego_z_rel() << ", "  // #26 kf ego z rel
-          << vel_.get_ego_heading();       // #27 kf ego heading
+          << vel_.get_ego_heading();       // #27 kf ego heading (rad)
+
+      ofs << ", "                   //
+          << KTs_.get_Q1() << ", "  // #28 kf Q1
+          << KTs_.get_Q2() << ", "  // #29 kf Q2
+          << KTs_.get_Q3() << ", "  // #30 kf Q3
+          << KTs_.get_R() << ", "   // #31 kf R
+          << KTs_.get_P0();         // #32 kf P0
     }
-    
+
     ofs << "\n";
     std::cout << "[Produced] time = " << objs[i].header.stamp << ", track_id = " << objs[i].track.id << std::endl;
   }
@@ -769,8 +842,7 @@ int TPPNode::run()
       g_trigger = false;
     }
 
-    // Process messages on callback_fusion()
-    ros::spinOnce();
+    ros::spinOnce();  // Process callback_fusion()
     loop_rate.sleep();
   }
 

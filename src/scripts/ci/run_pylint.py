@@ -3,6 +3,7 @@
 Check if a merge request contains any large file.
 """
 from __future__ import print_function
+import os
 import subprocess
 import sys
 import logging
@@ -19,6 +20,8 @@ def _run_pylint(affected_files):
     num_fail = 0
     rc_file = "src/scripts/ci/pylintrc"
     for fname in affected_files:
+        if not os.path.isfile(fname):
+            continue
         if not fname.endswith(".py"):
             continue
         cmd = ["pylint", "-E", "--rcfile=" + rc_file, fname]
@@ -29,7 +32,9 @@ def _run_pylint(affected_files):
             output = err.output
             num_fail += 1
             logging.error("pylint failed for %s", fname)
-        print(output)
+        output = output.decode("utf-8")
+        if output:
+            print(output)
     return num_fail
 
 def main():

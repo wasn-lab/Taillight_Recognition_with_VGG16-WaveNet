@@ -50,14 +50,12 @@ visualization_msgs::Marker MarkerGen::create_seq_marker(const unsigned int idx, 
   return marker;
 }
 
-geometry_msgs::Point MarkerGen::text_marker_position(const msgs::BoxPoint bbox)
+geometry_msgs::Point MarkerGen::text_marker_position(const Point32 p1, const Point32 p2, const double z_offset)
 {
-  Point32 p1 = bbox.p1;
-  Point32 p2 = bbox.p2;
   geometry_msgs::Point p;
   p.x = (p1.x + p2.x) * 0.5;
   p.y = (p1.y + p2.y) * 0.5;
-  p.z = (p1.z + p2.z) * 0.5 + 2.0;
+  p.z = (p1.z + p2.z) * 0.5 + z_offset;
   return p;
 }
 
@@ -355,8 +353,8 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
   }
   else if (mc_.show_pp >= 2)
   {
-    marker.scale.x = 0.1;
-    marker.scale.y = 0.1;
+    marker.scale.x = 0.25;
+    marker.scale.y = 0.25;
   }
   else
   {
@@ -371,22 +369,60 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
   marker.pose.orientation = tf2::toMsg(pp.q1);
 
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
-  marker.color.r = 0.75;
   if (mc_.show_pp == 1)
   {
+    marker.color.r = 0.75;
     marker.color.g = 1.0 - forecast_seq * 0.05;
     marker.color.b = 0.0;
   }
   else if (mc_.show_pp >= 2)
   {
+    marker.color.r = 0.0;
     marker.color.g = 1.0;
-    marker.color.b = 0.0 + forecast_seq * 0.05;
+    marker.color.b = 1.0;
   }
   else
   {
     LOG_INFO << "Error: No show pp but run pp marker color setting!" << std::endl;
   }
   marker.color.a = 1.0;
+
+  return marker;
+}
+
+visualization_msgs::Marker MarkerGen::create_vel_marker(const unsigned int idx, const geometry_msgs::Point point,
+                                                        const float vx, const float vy, std_msgs::Header obj_header)
+{
+  visualization_msgs::Marker marker;
+
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
+  marker.header = obj_header;
+#endif
+  marker.ns = "PPOutput_pp";
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.id = idx;
+  marker.type = visualization_msgs::Marker::LINE_LIST;
+
+  marker.scale.x = 0.25;
+
+  marker.lifetime = ros::Duration(mc_.lifetime_sec);
+
+  marker.color.r = 1.0;
+  marker.color.g = 0.0;
+  marker.color.b = 1.0;
+  marker.color.a = 1.0;
+
+  marker.points.push_back(point);
+
+  geometry_msgs::Point p;
+  double scale = 0.5555555556;  // 5 / 9
+  p.x = point.x + vx * scale;
+  p.y = point.y + vy * scale;
+  p.z = point.z;
+
+  marker.points.push_back(p);
 
   return marker;
 }
@@ -403,7 +439,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
 
   for (unsigned i = 0; i < objs.size(); i++)
   {
-    geometry_msgs::Point point = text_marker_position(objs[i].bPoint);
+    geometry_msgs::Point point = text_marker_position(objs[i].bPoint.p1, objs[i].bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, objs[i]));
     m_speed_.markers.push_back(create_speed_marker(idx++, point, objs[i].header, objs[i].relSpeed, objs[i].absSpeed));
     m_delay_.markers.push_back(create_delay_marker(idx++, point, objs[i].header));
@@ -464,6 +500,21 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
   mc_.pub_pp.publish(m_pp_);
 }
 
+void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+{
+  std::vector<visualization_msgs::Marker>().swap(m_vel_.markers);
+  m_vel_.markers.reserve(objs.size());
+
+  for (unsigned i = 0; i < objs.size(); i++)
+  {
+    geometry_msgs::Point point = text_marker_position(objs[i].bPoint.p0, objs[i].bPoint.p6, 0.);
+    m_vel_.markers.push_back(create_vel_marker(idx++, point, objs[i].track.absolute_velocity.x,
+                                               objs[i].track.absolute_velocity.y, objs[i].header));
+  }
+
+  mc_.pub_vel.publish(m_vel_);
+}
+
 void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject>& objs,
                                 MarkerConfig mc, std::vector<std::vector<PPLongDouble> >& ppss)
 {
@@ -483,5 +534,7 @@ void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector
   {
     process_pp_marker(idx, objs, ppss);
   }
+
+  process_vel_marker(idx, objs);
 }
 }  // namespace tpp
