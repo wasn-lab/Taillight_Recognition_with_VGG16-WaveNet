@@ -8,7 +8,7 @@ readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
 
 if [[ -d /var/www/html/scan_build ]]; then
-  readonly output_dir=/var/www/html/scan_build
+  readonly output_dir=$(readlink -e /var/www/html/scan_build)
 else
   readonly output_dir=/tmp
 fi
