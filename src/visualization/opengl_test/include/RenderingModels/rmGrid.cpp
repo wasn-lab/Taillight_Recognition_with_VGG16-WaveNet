@@ -139,7 +139,7 @@ void rmGrid::Update(ROS_INTERFACE &ros_interface){
     // Note: We get the transform update even if there is no new content in for maximum smoothness
     //      (the tf will update even there is no data)
     bool tf_successed = false;
-    glm::mat4 _model_tf = ROStf2GLMmatrix(ros_interface.get_tf("map", tf_successed, false));
+    glm::mat4 _model_tf = ROStf2GLMmatrix(ros_interface.get_tf("GUI_map", tf_successed, false));
     // glm::mat4 _model_tf = ROStf2GLMmatrix(ros_interface.get_tf(_ROS_topic_id, tf_successed, true, msg_time));
     // m_shape.model = _model_tf;
     set_pose_modle_ref_by_world(_model_tf);

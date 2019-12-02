@@ -90,12 +90,12 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in)
 
 
     // Grid ground
-    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "map", "base" ) );
+    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_map", "GUI_base" ) );
     _rmGrid_ptr->set_grid_param(1.0, 1.0, 10, 10, -6.0f, false);
     _rm_BaseModel.push_back( _rmGrid_ptr );
     /*
     // Grid local
-    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "base", "base" ) );
+    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_base", "GUI_base" ) );
     _rmGrid_ptr->set_grid_param(1.0, 1.0, 10, 10, -3.0f, false, glm::vec3(0.2f, 0.2f, 0.5f));
     _rm_BaseModel.push_back( _rmGrid_ptr );
     */
@@ -125,7 +125,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in)
 
 
     // rmlv2ObjectTracking
-    _rm_BaseModel.push_back( std::shared_ptr<rmlv2ObjectTracking>(new rmlv2ObjectTracking(_Assets_path, int(MSG_ID::lidar_bounding_box_tracking), "map") ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmlv2ObjectTracking>(new rmlv2ObjectTracking(_Assets_path, int(MSG_ID::lidar_bounding_box_tracking), "GUI_map") ) );
     // Taged Lidar bounding box (tracking, rendering in wire)
     _rm_BaseModel.push_back( std::shared_ptr<rmlv2TagBoundingBox3D>(new rmlv2TagBoundingBox3D(_Assets_path, int(MSG_ID::lidar_bounding_box_tracking)) ) );
 
@@ -137,7 +137,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in)
     // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TagBoundingBox2D>(new rmlv2TagBoundingBox2D(_Assets_path, int(MSG_ID::bounding_box_image_front_all)) ) );
 
     // Sweeping object
-    // _rm_BaseModel.push_back( std::shared_ptr<rmSweepingObject>(new rmSweepingObject(_Assets_path, "base" ) ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmSweepingObject>(new rmSweepingObject(_Assets_path, "GUI_base" ) ) );
 
     // rmlv2PathPlanFake
     _fake_path_ptr.reset(   new rmlv2PathPlanFake(_Assets_path, int(MSG_ID::vehicle_info) )   );
@@ -146,9 +146,9 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in)
 
 
     // Circle
-    // _rm_BaseModel.push_back( std::shared_ptr<rmCircle>(new rmCircle(_Assets_path, "base" ) ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmCircle>(new rmCircle(_Assets_path, "GUI_base" ) ) );
     // rmPolyLines3D
-    // _rm_BaseModel.push_back( std::shared_ptr<rmPolyLines3D>(new rmPolyLines3D(_Assets_path, "base") ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmPolyLines3D>(new rmPolyLines3D(_Assets_path, "GUI_base") ) );
 
 
 
@@ -276,7 +276,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in)
 
 
 
-    // _text3D_ptr.reset( new rmText3D_v2(_Assets_path, "base" ) );
+    // _text3D_ptr.reset( new rmText3D_v2(_Assets_path, "GUI_base" ) );
     // _text3D_ptr->Translate(glm::vec3(1.0f, -2.0f, -2.0f));
     // _text3D_ptr->Rotate(glm::vec3(0.0f,0.0f,1.0f), M_PI); // Flip
     // _text3D_ptr->Rotate(glm::vec3(1.0f,0.0f,0.0f), M_PI/2.0);
@@ -308,7 +308,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in)
 
     /*
     // rmColorBoard
-    _color_board_ptr.reset( new rmColorBoard(_Assets_path, "base", glm::vec4(0.0f, 0.2f, 0.8f, 0.5f), false, true ) );
+    _color_board_ptr.reset( new rmColorBoard(_Assets_path, "GUI_base", glm::vec4(0.0f, 0.2f, 0.8f, 0.5f), false, true ) );
     _color_board_ptr->shape.setBoardSizePixel(150, 100);
     _color_board_ptr->shape.setBoardPositionCVPixel(-10,10,1,ALIGN_X::RIGHT, ALIGN_Y::TOP );
     _rm_BaseModel.push_back( _color_board_ptr );

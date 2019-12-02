@@ -3,14 +3,14 @@
 
 
     <!-- base frame (lidar) -->
-    <link name="base">
+    <link name="GUI_base">
     </link>
 
 
     <!-- base frame (lidar frame) to the footprint (ground level) -->
     <joint name="base_joint" type="fixed">
         <origin xyz="0 0 -3.0" rpy="0 0 0" />
-        <parent link="base"/>
+        <parent link="GUI_base"/>
         <child link="GUI_base_footprint" />
     </joint>
 
