@@ -35,6 +35,13 @@ private:
 
                                                 0, 4, 1, 5, 2, 6, 3, 7 };
 
+  geometry_msgs::Point init_Point(const double x, const double y, const double z);
+
+  geometry_msgs::Point text_marker_position(const Point32 p1, const Point32 p2, const double z_offset);
+
+  void set_marker_attr(visualization_msgs::Marker& marker, const geometry_msgs::Point point);
+
+  // marker arrays
   visualization_msgs::MarkerArray m_id_;
   visualization_msgs::MarkerArray m_speed_;
   visualization_msgs::MarkerArray m_delay_;
@@ -42,13 +49,9 @@ private:
   visualization_msgs::MarkerArray m_polygon_;
   visualization_msgs::MarkerArray m_box_;
   visualization_msgs::MarkerArray m_pp_;
+  visualization_msgs::MarkerArray m_vel_;
 
-  geometry_msgs::Point init_Point(const double x, const double y, const double z);
-
-  geometry_msgs::Point text_marker_position(const msgs::BoxPoint bbox);
-
-  void set_marker_attr(visualization_msgs::Marker& marker, const geometry_msgs::Point point);
-
+  // create markers
   visualization_msgs::Marker create_seq_marker(const unsigned int idx, const geometry_msgs::Point point);
 
   visualization_msgs::Marker create_box_marker(const unsigned int idx, const msgs::BoxPoint bbox,
@@ -74,6 +77,10 @@ private:
                                               std_msgs::Header obj_header, const PPLongDouble pp,
                                               const unsigned int forecast_seq);
 
+  visualization_msgs::Marker create_vel_marker(const unsigned int idx, const geometry_msgs::Point point, const float vx,
+                                               const float vy, std_msgs::Header obj_header);
+
+  // process markers
   void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
 
   void process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
@@ -82,6 +89,8 @@ private:
 
   void process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
                          std::vector<std::vector<PPLongDouble> >& ppss);
+
+  void process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
 };
 }  // namespace tpp
 

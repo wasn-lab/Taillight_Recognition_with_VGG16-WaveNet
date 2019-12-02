@@ -250,6 +250,9 @@ void TPPNode::subscribe_and_advertise_topics()
       std::string topic6 = topic + "/pp";
       mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
     }
+
+    std::string topic7 = topic + "/vel";
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
   }
 }
 
@@ -442,7 +445,7 @@ void TPPNode::publish_tracking()
 #if FPS_EXTRAPOLATION
         box.track.tracktime = (KTs_.tracks_[i].tracktime_ - 1) * num_publishs_per_loop + 1;
 #else
-    	box.track.tracktime = KTs_.tracks_[i].tracktime_;
+        box.track.tracktime = KTs_.tracks_[i].tracktime_;
 #endif
 
         // set max_length
@@ -510,12 +513,12 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   {
     ofs.open(fname, std::ios_base::app);
 
-    ofs << "#1 time stamp (s), "                       //
-        << "#2 track id, "                             //
-        << "#3 dt (s), "                               //
+    ofs << "#1 time stamp (s), "  //
+        << "#2 track id, "        //
+        << "#3 dt (s), "          //
 #if VIRTUAL_INPUT
-        << "#4-1 GT bbox center x (m), "               //
-        << "#4-2 GT bbox center y (m), "               //
+        << "#4-1 GT bbox center x (m), "  //
+        << "#4-2 GT bbox center y (m), "  //
 #endif
         << "#5-1 input bbox center x (m), "            //
         << "#5-2 input bbox center y (m), "            //
@@ -556,13 +559,13 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   for (size_t i = 0; i < objs.size(); i++)
   {
     ros::Duration dt_s(0, dt_);
-    ofs << std::fixed                                               //
-        << objs_header_.stamp.toSec() << ", "                       // #1 time stamp (s)
-        << objs[i].track.id << ", "                                 // #2 track id
-        << dt_s.toSec() << ", "                                     // #3 dt (s)
+    ofs << std::fixed                          //
+        << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
+        << objs[i].track.id << ", "            // #2 track id
+        << dt_s.toSec() << ", "                // #3 dt (s)
 #if VIRTUAL_INPUT
-        << gt_x_ << ", "                                            // #4-1 GT bbox center x (m)
-        << gt_y_ << ", "                                            // #4-2 GT bbox center y (m)
+        << gt_x_ << ", "  // #4-1 GT bbox center x (m)
+        << gt_y_ << ", "  // #4-2 GT bbox center y (m)
 #endif
         << objs[i].lidarInfo.boxCenter.x << ", "                    // #5-1 input bbox center x (m)
         << objs[i].lidarInfo.boxCenter.y << ", "                    // #5-2 input bbox center y (m)
@@ -839,8 +842,7 @@ int TPPNode::run()
       g_trigger = false;
     }
 
-    // Process messages on callback_fusion()
-    ros::spinOnce();
+    ros::spinOnce();  // Process callback_fusion()
     loop_rate.sleep();
   }
 

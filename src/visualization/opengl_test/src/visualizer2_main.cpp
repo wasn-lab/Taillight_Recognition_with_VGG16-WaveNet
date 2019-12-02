@@ -179,39 +179,39 @@ void TW_CALL ResetViewCB(void * clientData)
 
 // Take screenshot
 //------------------------------------//
-void takeScreenshotPNG(){
-    const unsigned int Width = windows_width;
-	const unsigned int Height = windows_height;
-	int size = Width * Height * 4;
-	unsigned char *pixels = new unsigned char[size];
-	unsigned char *rotatedPixels = new unsigned char[size];
-	glReadBuffer(GL_FRONT);
-	glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-	// invert Y axis
-	for (int h = 0; h < Height; ++h)
-	{
-		for (int w = 0; w < Width; ++w)
-		{
-			rotatedPixels[((Height - h - 1) * Width + w) * 4] = pixels[(h * Width + w) * 4];
-			rotatedPixels[((Height - h - 1) * Width + w) * 4 + 1] = pixels[(h * Width + w) * 4 + 1];
-			rotatedPixels[((Height - h - 1) * Width + w) * 4 + 2] = pixels[(h * Width + w) * 4 + 2];
-			rotatedPixels[((Height - h - 1) * Width + w) * 4 + 3] = pixels[(h * Width + w) * 4 + 3];
-		}
-	}
-
-    static int fileIndex = 0;
-    while (1)
-    {
-    	string fileName = string("./" + to_string(fileIndex) + ".png").c_str();
-    	std::ifstream infile(fileName);
-    	if (!infile.good())
-    		break;
-    	fileIndex++;
-    }
-    // stbi_write_png(string("./" + to_string(fileIndex) + ".png").c_str(), Width, Height, 4, rotatedPixels, 0);
-    delete pixels, rotatedPixels;
-    printf("Take screenshot\n");
-}
+// void takeScreenshotPNG(){
+//     const unsigned int Width = windows_width;
+// 	const unsigned int Height = windows_height;
+// 	int size = Width * Height * 4;
+// 	unsigned char *pixels = new unsigned char[size];
+// 	unsigned char *rotatedPixels = new unsigned char[size];
+// 	glReadBuffer(GL_FRONT);
+// 	glReadPixels(0, 0, Width, Height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+// 	// invert Y axis
+// 	for (int h = 0; h < Height; ++h)
+// 	{
+// 		for (int w = 0; w < Width; ++w)
+// 		{
+// 			rotatedPixels[((Height - h - 1) * Width + w) * 4] = pixels[(h * Width + w) * 4];
+// 			rotatedPixels[((Height - h - 1) * Width + w) * 4 + 1] = pixels[(h * Width + w) * 4 + 1];
+// 			rotatedPixels[((Height - h - 1) * Width + w) * 4 + 2] = pixels[(h * Width + w) * 4 + 2];
+// 			rotatedPixels[((Height - h - 1) * Width + w) * 4 + 3] = pixels[(h * Width + w) * 4 + 3];
+// 		}
+// 	}
+//
+//     static int fileIndex = 0;
+//     while (1)
+//     {
+//     	string fileName = string("./" + to_string(fileIndex) + ".png").c_str();
+//     	std::ifstream infile(fileName);
+//     	if (!infile.good())
+//     		break;
+//     	fileIndex++;
+//     }
+//     // stbi_write_png(string("./" + to_string(fileIndex) + ".png").c_str(), Width, Height, 4, rotatedPixels, 0);
+//     delete pixels, rotatedPixels;
+//     printf("Take screenshot\n");
+// }
 void takeScreenshotPNG_openCV(){
 	const unsigned int Width = windows_width;
 	const unsigned int Height = windows_height;
@@ -402,7 +402,7 @@ void screen_streaming_step_2(){
     static int index = 0;
     int nextIndex = 0;                  // pbo index used for next frame
     //
-    static std::vector<glm::ivec2> size_list(PBO_COUNT, glm::vec2(windows_width, windows_height) );
+    static std::vector<glm::ivec2> size_list(PBO_COUNT, glm::vec2(SCREEN_WIDTH, SCREEN_HEIGHT) );
 
     // start
     //-----------------------//
@@ -419,7 +419,7 @@ void screen_streaming_step_2(){
 
 
     // Update size and image
-    size_list[index] = glm::ivec2(windows_width, windows_height);
+    size_list[index] = glm::ivec2(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // set the framebuffer to read
     glReadBuffer(GL_FRONT);
