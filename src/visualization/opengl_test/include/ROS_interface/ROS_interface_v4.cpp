@@ -11,7 +11,7 @@ ROS_INTERFACE::ROS_INTERFACE():
     // _num_topics(0),
     _msg_type_2_topic_params( size_t(MSG::M_TYPE::NUM_MSG_TYPE) ),
     //
-    _ref_frame("map"), _stationary_frame("map"),
+    _ref_frame("GUI_map"), _stationary_frame("GUI_map"),
     _is_using_latest_tf_common_update_time(false),
     _latest_tf_common_update_time(ros::Time(0)),
     _current_slice_time(), _global_delay(0.1f)
@@ -27,7 +27,7 @@ ROS_INTERFACE::ROS_INTERFACE(int argc, char **argv):
     // _num_topics(0),
     _msg_type_2_topic_params( size_t(MSG::M_TYPE::NUM_MSG_TYPE) ),
     //
-    _ref_frame("map"), _stationary_frame("map"),
+    _ref_frame("GUI_map"), _stationary_frame("GUI_map"),
     _is_using_latest_tf_common_update_time(false),
     _latest_tf_common_update_time(ros::Time(0)),
     _current_slice_time(), _global_delay(0.1f)
