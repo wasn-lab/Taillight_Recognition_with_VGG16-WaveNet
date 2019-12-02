@@ -306,6 +306,22 @@ Visualization Manager:
             {}
           Queue Size: 100
           Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/vel
+          Name: TPP_fusion_vel2s
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /abs_virBB_array/bbox
+          Name: virbb_bbox
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
       Enabled: true
       Name: Tracking_output
     - Class: rviz/Group

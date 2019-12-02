@@ -1,0 +1,2 @@
+Header lidHeader
+PointXYZI[] pointCloud

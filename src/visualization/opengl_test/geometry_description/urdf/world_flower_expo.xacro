@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<robot name="world" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- map frame -->
+    <link name="GUI_map">
+    </link>
+
+    <!-- GUI_NLOS frame -->
+    <joint name="NLOS_joint" type="fixed">
+        <origin xyz="0 0 -3.0" rpy="0 0 0" />
+        <parent link="GUI_map"/>
+        <child link="GUI_NLOS" />
+    </joint>
+
+    <link name="GUI_NLOS">
+    </link>
+
+
+</robot>

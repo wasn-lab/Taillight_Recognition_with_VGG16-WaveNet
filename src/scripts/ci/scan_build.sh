@@ -8,7 +8,7 @@ readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
 
 if [[ -d /var/www/html/scan_build ]]; then
-  readonly output_dir=/var/www/html/scan_build
+  readonly output_dir=$(readlink -e /var/www/html/scan_build)
 else
   readonly output_dir=/tmp
 fi
@@ -33,6 +33,7 @@ scan-build -o ${output_dir} catkin_make \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
     -j6
 
-chmod +r -R ${output_dir}
+find ${output_dir} -type d -exec chmod 755 {} \;
+find ${output_dir} -type f -exec chmod 644 {} \;
 echo "Visit http://ci.itriadv.co/scan_build/ to see the html results (accessible in itri.org.tw only)."
 popd
