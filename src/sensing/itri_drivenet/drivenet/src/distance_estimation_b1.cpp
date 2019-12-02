@@ -896,7 +896,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
   int x_loc = y;
   int y_loc = x;
   int img_h = 1208;
-  // int img_w = 1920;
+  int img_w = 1920;
   // int mode = 1;
 
   if (cam_id == 1)
@@ -985,17 +985,17 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
         p0.z = Lidar_offset_z;
     }
 
-    // if(cam_id == 0 || cam_id == 2)
-    // {
-    //     if (regionDist_y.size() != 0)
-    //         y_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
-    //     if (regionDist_x.size() != 0)
-    //         x_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_x, regionHeightSlope_x, regionDist_x, img_h);
+    if(cam_id == 0 || cam_id == 2)
+    {
+        if (regionDist_y.size() != 0)
+            y_distMeter = ComputeObjectYDist(x_loc, y_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, img_w);
+        if (regionDist_x.size() != 0)
+            x_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_x, regionHeightSlope_x, regionDist_x, img_h);
 
-    //     p0.x = x_distMeter + offset_x;
-    //     p0.y = y_distMeter;
-    //     p0.z = Lidar_offset_z;
-    // }
+        p0.x = x_distMeter + offset_x;
+        p0.y = y_distMeter;
+        p0.z = Lidar_offset_z;
+    }
 
 
   return p0;
