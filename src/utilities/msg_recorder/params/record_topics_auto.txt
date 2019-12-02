@@ -1,13 +1,14 @@
 /LidarAll
-#/LidarFrontRight/Raw
-#/LidarFrontLeft/Raw
-#/LidarRearRight/Raw
-#/LidarRearLeft/Raw
-#/LidarFrontTop/Raw
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+/LidarFrontTop/Raw # For debugging localization
 /LidarDetection
 
 # /points_map
 
+# Raw image
 /cam/F_right
 /cam/F_center
 /cam/F_left
@@ -18,6 +19,17 @@
 /cam/L_rear
 /cam/B_top
 
+# Image with 2D bbox
+# /cam/F_right/detect_image
+# /cam/F_center/detect_image
+# /cam/F_left/detect_image
+# /cam/F_top/detect_image
+# /cam/R_front/detect_image
+# /cam/R_rear/detect_image
+# /cam/L_front/detect_image
+# /cam/L_rear/detect_image
+# /cam/B_top/detect_image
+
 #/CamObjFrontRight
 #/CamObjFrontCenter
 #/CamObjFrontLeft
@@ -27,6 +39,7 @@
 #/CamObjLeftFront
 #/CamObjLeftBack
 #/CamObjBackTop
+
 
 /current_pose
 /veh_info
@@ -40,7 +53,13 @@
 /rel_virBB_array
 /abs_virBB_array
 /marker_array_topic
-#/LidarDetection
+
+/adFront
+/radar_point_cloud
+/PathPredictionOutput/radar
+/RadarMarker
+/Geofence_PC
+
 
 /mm_tp_topic
 /nav_path
