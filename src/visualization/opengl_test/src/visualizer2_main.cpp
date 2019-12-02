@@ -615,10 +615,10 @@ void ROS_update(){
 
 
     // Update the "_latest_tf_common_update_time"
-    // ros_interface.update_latest_tf_common_update_time("map", "base");
+    // ros_interface.update_latest_tf_common_update_time("GUI_map", "GUI_base");
     ros_api.ros_interface.set_global_delay(0.2);
     ros_api.ros_interface.update_current_slice_time();
-    // ros_api.ros_interface.set_ref_frame("base"); <-- do this in Scene (base class with camera mode selection)
+    // ros_api.ros_interface.set_ref_frame("GUI_base"); <-- do this in Scene (base class with camera mode selection)
 
     // Update data
     bool is_updated = ros_api.update();

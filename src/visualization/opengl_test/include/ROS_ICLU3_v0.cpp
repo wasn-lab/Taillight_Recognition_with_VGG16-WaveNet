@@ -126,92 +126,92 @@ bool ROS_API::_set_up_topics(){
         using MSG::M_TYPE;
 #if __ROS_INTERFACE_VER__ == 1
         // tfGeoPoseStamped
-        ros_interface.add_a_topic( int(MSG_ID::ego_pose), "current_pose", int(M_TYPE::tfGeoPoseStamped), true, 10, 100, "map", true, "base");
+        ros_interface.add_a_topic( int(MSG_ID::ego_pose), "current_pose", int(M_TYPE::tfGeoPoseStamped), true, 10, 100, "GUI_map", true, "GUI_base");
         // Vehicle info
-        ros_interface.add_a_topic( int(MSG_ID::vehicle_info), "taichung_veh_info", int(M_TYPE::ITRICarInfoCarA), true, 100, 100, "base");
-        ros_interface.add_a_topic( int(MSG_ID::dynamic_path), "dynamic_path_para", int(M_TYPE::ITRIDynamicPath), true, 100, 100, "base");
+        ros_interface.add_a_topic( int(MSG_ID::vehicle_info), "taichung_veh_info", int(M_TYPE::ITRICarInfoCarA), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::dynamic_path), "dynamic_path_para", int(M_TYPE::ITRIDynamicPath), true, 100, 100, "GUI_base");
         // Flag_info
-        ros_interface.add_a_topic( int(MSG_ID::flag_info_1), "Flag_Info01", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "base");
-        ros_interface.add_a_topic( int(MSG_ID::flag_info_2), "Flag_Info02", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "base");
-        ros_interface.add_a_topic( int(MSG_ID::flag_info_3), "Flag_Info03", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "base");
+        ros_interface.add_a_topic( int(MSG_ID::flag_info_1), "Flag_Info01", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::flag_info_2), "Flag_Info02", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::flag_info_3), "Flag_Info03", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
         // Image
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_right), "camera/1/0/image_sync", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_center), "camera/1/1/image_sync", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_left), "camera/1/2/image_sync", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_top), "camera/0/2/image_sync", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_fore), "camera/2/0/image", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_rear), "camera/2/1/image", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_fore), "camera/0/0/image", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "camera/0/1/image", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "camera/2/2/image", int(M_TYPE::Image), true, 2, 20, "base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_right), "camera/1/0/image_sync", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_center), "camera/1/1/image_sync", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_left), "camera/1/2/image_sync", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_top), "camera/0/2/image_sync", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_fore), "camera/2/0/image", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_rear), "camera/2/1/image", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_fore), "camera/0/0/image", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "camera/0/1/image", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "camera/2/2/image", int(M_TYPE::Image), true, 2, 20, "GUI_base");
         // 2D bounding box
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_all), "CamMsg", int(M_TYPE::ITRICamObj), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_top), "CamObj4", int(M_TYPE::ITRICamObj), true, 10, 20, "base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_all), "CamMsg", int(M_TYPE::ITRICamObj), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_top), "CamObj4", int(M_TYPE::ITRICamObj), true, 10, 20, "GUI_base");
         // PointCloud
-        ros_interface.add_a_topic( int(MSG_ID::point_cloud_raw), "LidFrontLeft_sync", int(M_TYPE::ITRIPointCloud), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::point_cloud_map), "points_map", int(M_TYPE::PointCloud2), true, 2, 20, "map");
+        ros_interface.add_a_topic( int(MSG_ID::point_cloud_raw), "LidFrontLeft_sync", int(M_TYPE::ITRIPointCloud), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::point_cloud_map), "points_map", int(M_TYPE::PointCloud2), true, 2, 20, "GUI_map");
         // Detection, tracking and pp.
-        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_raw), "LidRoi", int(M_TYPE::ITRI3DBoundingBox), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_tracking), "LiDAR_Track", int(M_TYPE::ITRICamObj), true, 10, 20, "base"); // <-- The tracking resuly is on map frame
+        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_raw), "LidRoi", int(M_TYPE::ITRI3DBoundingBox), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_tracking), "LiDAR_Track", int(M_TYPE::ITRICamObj), true, 10, 20, "GUI_base"); // <-- The tracking resuly is on map frame
         // NLOS boxs
         ros_interface.add_a_topic( int(MSG_ID::nlos_box), "V2X_msg", int(M_TYPE::ITRICamObj), true, 10, 20, "GUI_NLOS");
-        ros_interface.add_a_topic( int(MSG_ID::nlos_gf), "NLOS_GF", int(M_TYPE::ITRITransObj), true, 10, 20, "map");
+        ros_interface.add_a_topic( int(MSG_ID::nlos_gf), "NLOS_GF", int(M_TYPE::ITRITransObj), true, 10, 20, "GUI_map");
         // GUI operatios
         ros_interface.add_a_topic( int(MSG_ID::GUI_operatio), "GUI2/operation", int(M_TYPE::GUI2_op), true, 100, 100);
         ros_interface.add_a_topic( int(MSG_ID::GUI_state), "GUI2/state", int(M_TYPE::GUI2_op), false, 100, 1);
         //
 #elif __ROS_INTERFACE_VER__ == 2
         // tfGeoPoseStamped
-        ros_interface.add_a_topic( int(MSG_ID::ego_pose), "current_pose", int(M_TYPE::tfGeoPoseStamped), true, 10, 100, "map", true, "base");
+        ros_interface.add_a_topic( int(MSG_ID::ego_pose), "current_pose", int(M_TYPE::tfGeoPoseStamped), true, 10, 100, "GUI_map", true, "GUI_base");
         // Vehicle info
-        ros_interface.add_a_topic( int(MSG_ID::vehicle_info), "veh_info", int(M_TYPE::ITRICarInfo), true, 100, 100, "base");
-        ros_interface.add_a_topic( int(MSG_ID::dynamic_path), "dynamic_path_para", int(M_TYPE::ITRIDynamicPath), true, 100, 100, "base");
+        ros_interface.add_a_topic( int(MSG_ID::vehicle_info), "veh_info", int(M_TYPE::ITRICarInfo), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::dynamic_path), "dynamic_path_para", int(M_TYPE::ITRIDynamicPath), true, 100, 100, "GUI_base");
         // Flag_info
-        ros_interface.add_a_topic( int(MSG_ID::flag_info_1), "Flag_Info01", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "base");
-        ros_interface.add_a_topic( int(MSG_ID::flag_info_2), "Flag_Info02", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "base");
-        ros_interface.add_a_topic( int(MSG_ID::flag_info_3), "Flag_Info03", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "base");
+        ros_interface.add_a_topic( int(MSG_ID::flag_info_1), "Flag_Info01", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::flag_info_2), "Flag_Info02", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::flag_info_3), "Flag_Info03", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
         // Image
     #if __HINO_VER__ == 1
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_right), "gmsl_camera/port_a/cam_0/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_center), "gmsl_camera/port_a/cam_1/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_left), "gmsl_camera/port_a/cam_2/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_top), "gmsl_camera/port_b/cam_0/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_fore), "gmsl_camera/port_c/cam_0/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_rear), "gmsl_camera/port_c/cam_1/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_fore), "gmsl_camera/port_b/cam_1/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "gmsl_camera/port_b/cam_2/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "gmsl_camera/port_c/cam_2/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_right), "gmsl_camera/port_a/cam_0/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_center), "gmsl_camera/port_a/cam_1/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_left), "gmsl_camera/port_a/cam_2/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_top), "gmsl_camera/port_b/cam_0/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_fore), "gmsl_camera/port_c/cam_0/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_rear), "gmsl_camera/port_c/cam_1/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_fore), "gmsl_camera/port_b/cam_1/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "gmsl_camera/port_b/cam_2/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "gmsl_camera/port_c/cam_2/image_raw", int(M_TYPE::CompressedImageJpegOnly), true, 2, 20, "GUI_base");
     #elif __HINO_VER__ == 2
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_right), "cam/F_right", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_center), "cam/F_center", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_left), "cam/F_left", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_top), "cam/F_top", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_fore), "cam/R_front", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_rear), "cam/R_rear", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_fore), "cam/L_front", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "cam/L_rear", int(M_TYPE::Image), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "cam/B_top", int(M_TYPE::Image), true, 2, 20, "base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_right), "cam/F_right", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_center), "cam/F_center", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_left), "cam/F_left", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_top), "cam/F_top", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_fore), "cam/R_front", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_rear), "cam/R_rear", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_fore), "cam/L_front", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "cam/L_rear", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "cam/B_top", int(M_TYPE::Image), true, 2, 20, "GUI_base");
     #endif
 
         // 2D bounding box
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_right), "CamObjFrontRight", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_center), "CamObjFrontCenter", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_left), "CamObjFrontLeft", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_top), "CamObjFrontTop", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_right_fore), "CamObjRightFront", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_right_rear), "CamObjRightBack", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_left_fore), "CamObjLeftFront", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_left_rear), "CamObjLeftBack", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_rear_center), "CamObjBackTop", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_right), "CamObjFrontRight", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_center), "CamObjFrontCenter", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_left), "CamObjFrontLeft", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_front_top), "CamObjFrontTop", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_right_fore), "CamObjRightFront", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_right_rear), "CamObjRightBack", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_left_fore), "CamObjLeftFront", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_left_rear), "CamObjLeftBack", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::bounding_box_image_rear_center), "CamObjBackTop", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
         // PointCloud
-        ros_interface.add_a_topic( int(MSG_ID::point_cloud_raw), "LidarAll", int(M_TYPE::PointCloud2), true, 2, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::point_cloud_map), "points_map", int(M_TYPE::PointCloud2), true, 2, 20, "map");
+        ros_interface.add_a_topic( int(MSG_ID::point_cloud_raw), "LidarAll", int(M_TYPE::PointCloud2), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::point_cloud_map), "points_map", int(M_TYPE::PointCloud2), true, 2, 20, "GUI_map");
         // Detection, tracking and pp.
-        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_raw), "LidarDetection", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base");
-        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_tracking), "LiDAR_Track", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "base"); // <-- The tracking resuly is on map frame
+        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_raw), "LidarDetection", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::lidar_bounding_box_tracking), "LiDAR_Track", int(M_TYPE::ITRIDetectedObjectArray), true, 10, 20, "GUI_base"); // <-- The tracking resuly is on map frame
         // NLOS boxs
         ros_interface.add_a_topic( int(MSG_ID::nlos_box), "V2X_msg", int(M_TYPE::ITRICamObj), true, 10, 20, "GUI_NLOS");
-        ros_interface.add_a_topic( int(MSG_ID::nlos_gf), "NLOS_GF", int(M_TYPE::ITRITransObj), true, 10, 20, "map");
+        ros_interface.add_a_topic( int(MSG_ID::nlos_gf), "NLOS_GF", int(M_TYPE::ITRITransObj), true, 10, 20, "GUI_map");
         // GUI operatios
         ros_interface.add_a_topic( int(MSG_ID::GUI_operatio), "GUI2/operation", int(M_TYPE::GUI2_op), true, 100, 100);
         ros_interface.add_a_topic( int(MSG_ID::GUI_state), "GUI2/state", int(M_TYPE::GUI2_op), false, 100, 1);
