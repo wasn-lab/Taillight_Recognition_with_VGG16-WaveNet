@@ -318,15 +318,15 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId)
     // Front right 60 range:
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
-    cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_60_FR;
-    cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_60_FR;
-    cv::Point RightLinePoint1 = distEst.RightLinePoint1_60_FR;
-    cv::Point RightLinePoint2 = distEst.RightLinePoint2_60_FR;
+    // cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_60_FR;
+    // cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_60_FR;
+    // cv::Point RightLinePoint1 = distEst.RightLinePoint1_60_FR;
+    // cv::Point RightLinePoint2 = distEst.RightLinePoint2_60_FR;
 
-    BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2,
-                                  box.x2, box.y2);
+    // BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2,
+    //                               box.x2, box.y2);
 
-    // BoxPass_flag = false;
+    BoxPass_flag = false;
   }
   else if (cam_ids_[cam_order] == cam_ids_[1])
   {
@@ -400,11 +400,12 @@ void* run_yolo(void*)
     if (!isDataVaild)
     {
       // reset data
+      matSrcs.clear();
+      matSrcs_tmp.clear();
       isInferData = false;
       isInferData_0 = false;
       isInferData_1 = false;
       isDataVaild = true;
-      matSrcs_tmp.clear();
       continue;
     }
 

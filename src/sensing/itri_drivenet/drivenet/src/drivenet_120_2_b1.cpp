@@ -431,10 +431,11 @@ void* run_yolo(void*)
     if (!isDataVaild)
     {
       // reset data
+      matSrcs.clear();
+      matSrcs_tmp.clear();
       isInferData = false;
       isInferData_0 = false;
       isDataVaild = true;
-      matSrcs_tmp.clear();
       continue;
     }
 

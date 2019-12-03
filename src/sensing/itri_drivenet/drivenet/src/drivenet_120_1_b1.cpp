@@ -608,12 +608,13 @@ void* run_yolo(void*)
     if (!isDataVaild)
     {
       // reset data
+      matSrcs.clear();
+      matSrcs_tmp.clear();
       isInferData = false;
       isInferData_0 = false;
       isInferData_1 = false;
       isInferData_2 = false;
       isDataVaild = true;
-      matSrcs_tmp.clear();
       continue;
     }
 
