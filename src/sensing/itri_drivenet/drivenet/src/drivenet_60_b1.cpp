@@ -365,6 +365,25 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId)
   return detObj;
 }
 
+void reset_data()
+{
+  matSrcs.clear();
+  headers.clear();
+  matOrder.clear();
+  matId.clear();
+  vBBX60_0.clear();
+  vBBX60_1.clear();
+  vBBX60_2.clear();
+  vbbx_output.clear();
+  dist_cols.clear();
+  dist_rows.clear();
+
+  isInferData = false;
+  isInferData_0 = false;
+  isInferData_1 = false;
+  isInferData_2 = false;
+}
+
 void* run_yolo(void*)
 {
   std::cout << "run_inference start" << std::endl;
@@ -399,12 +418,7 @@ void* run_yolo(void*)
       isDataVaild &= CheckMatDataValid(*mat);
     if (!isDataVaild)
     {
-      // reset data
-      matSrcs.clear();
-      matSrcs_tmp.clear();
-      isInferData = false;
-      isInferData_0 = false;
-      isInferData_1 = false;
+      reset_data();
       isDataVaild = true;
       continue;
     }
@@ -418,7 +432,7 @@ void* run_yolo(void*)
 
     // reset data
     reset_data();
-    matSrcs.clear();
+    std::cout << "reset_data " << isDataVaild << std::endl;
 
     if (!input_resize)
       yoloApp.input_preprocess(matSrcs_tmp);
@@ -567,11 +581,6 @@ void* run_yolo(void*)
 
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << ", " << camera::topics[cam_ids_[1]] << " and "
               << camera::topics[cam_ids_[2]] << " image." << std::endl;
-
-    isInferData = false;
-    isInferData_0 = false;
-    isInferData_1 = false;
-    isInferData_2 = false;
 
     // reset data
     headers_tmp.clear();

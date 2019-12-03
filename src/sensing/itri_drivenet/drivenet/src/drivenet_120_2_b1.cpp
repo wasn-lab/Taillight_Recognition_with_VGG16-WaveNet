@@ -396,6 +396,23 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId)
   return detObj;
 }
 
+void reset_data()
+{
+  matSrcs.clear();
+  headers.clear();
+  matOrder.clear();
+  matId.clear();
+  vBBX120_0.clear();
+  vBBX120_1.clear();
+  vbbx_output.clear();
+  dist_cols.clear();
+  dist_rows.clear();
+
+  isInferData = false;
+  isInferData_0 = false;
+  isInferData_1 = false;
+}
+
 void* run_yolo(void*)
 {
   std::cout << "run_inference start" << std::endl;
@@ -431,10 +448,7 @@ void* run_yolo(void*)
     if (!isDataVaild)
     {
       // reset data
-      matSrcs.clear();
-      matSrcs_tmp.clear();
-      isInferData = false;
-      isInferData_0 = false;
+      reset_data();
       isDataVaild = true;
       continue;
     }
@@ -448,7 +462,7 @@ void* run_yolo(void*)
 
     // reset data
     reset_data();
-    matSrcs.clear();
+    std::cout << "reset_data." << std::endl;
 
     if (!input_resize || isCalibration)
       yoloApp.input_preprocess(matSrcs_tmp);

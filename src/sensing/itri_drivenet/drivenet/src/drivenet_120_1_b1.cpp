@@ -573,6 +573,26 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId)
   return detObj;
 }
 
+void reset_data()
+{
+  matSrcs.clear();
+  headers.clear();
+  matOrder.clear();
+  matId.clear();
+  vBBX120_0.clear();
+  vBBX120_1.clear();
+  vBBX120_2.clear();
+  vbbx_output.clear();
+  dist_cols.clear();
+  dist_rows.clear();
+
+  isInferData = false;
+  isInferData_0 = false;
+  isInferData_1 = false;
+  isInferData_2 = false;
+  isInferData_3 = false;
+}
+
 void* run_yolo(void*)
 {
   std::cout << "run_inference start" << std::endl;
@@ -608,12 +628,7 @@ void* run_yolo(void*)
     if (!isDataVaild)
     {
       // reset data
-      matSrcs.clear();
-      matSrcs_tmp.clear();
-      isInferData = false;
-      isInferData_0 = false;
-      isInferData_1 = false;
-      isInferData_2 = false;
+      reset_data();
       isDataVaild = true;
       continue;
     }
@@ -800,12 +815,6 @@ void* run_yolo(void*)
 
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << ", " << camera::topics[cam_ids_[1]] << ", "
               << camera::topics[cam_ids_[2]] << " and " << camera::topics[cam_ids_[3]] << " image." << std::endl;
-
-    isInferData = false;
-    isInferData_0 = false;
-    isInferData_1 = false;
-    isInferData_2 = false;
-    isInferData_3 = false;
 
     // reset data
     headers_tmp.clear();
