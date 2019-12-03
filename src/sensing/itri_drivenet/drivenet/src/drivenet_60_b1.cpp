@@ -432,7 +432,6 @@ void* run_yolo(void*)
 
     // reset data
     reset_data();
-    std::cout << "reset_data " << isDataVaild << std::endl;
 
     if (!input_resize)
       yoloApp.input_preprocess(matSrcs_tmp);
