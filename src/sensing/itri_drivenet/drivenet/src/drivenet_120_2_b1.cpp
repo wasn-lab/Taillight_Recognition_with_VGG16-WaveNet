@@ -462,7 +462,6 @@ void* run_yolo(void*)
 
     // reset data
     reset_data();
-    std::cout << "reset_data." << std::endl;
 
     if (!input_resize || isCalibration)
       yoloApp.input_preprocess(matSrcs_tmp);
