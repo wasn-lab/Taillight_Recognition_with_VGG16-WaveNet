@@ -83,16 +83,19 @@ private:
 
   float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
   float ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
-                                    std::vector<float> regionHeightSlope_x, std::vector<float> regionDist, int img_w);
+                                    std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
   float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
                            std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
   msgs::PointXYZ GetPointDist(int x, int y, int cam_id);
+  int box_shrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
 
 public:
   void init(int carId);
   msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, int cam_id);
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id);
 
+  int CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1,
+                     cv::Point LeftLinePoint2, int object_x1, int object_y2);
 
   /// camId:0
   // Front right 60 range:
