@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <rosgraph_msgs/Clock.h>
 
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
@@ -33,6 +34,15 @@ class RosModuleB1
       LidarAllNonGround_pub = n.advertise<PointCloud<PointXYZI>> ("/LidarAll/NonGround", 1);
       LidarDetection_pub = n.advertise<msgs::DetectedObjectArray> ("/LidarDetection", 1);
       LidarDetectionRVIZ_pub = n.advertise<visualization_msgs::MarkerArray> ("/LidarDetection/polygons", 1);
+    }
+
+    static void
+    RegisterCallBackClock (void
+    (*cb1) (const rosgraph_msgs::Clock&))
+    {
+      ros::NodeHandle n;
+
+      static ros::Subscriber ClockSub = n.subscribe ("/clock", 1, cb1);
     }
 
     static void
@@ -290,12 +300,17 @@ class RosModuleB1
         markerArray.markers[i].color.a = 1.0;
         markerArray.markers[i].lifetime = ros::Duration (0.1);
 
-        markerArray.markers[i].points.resize(cluster_info[i].convex_hull.size ());
+        markerArray.markers[i].points.resize(cluster_info[i].convex_hull.size ()+1);
         for (size_t j = 0; j < cluster_info[i].convex_hull.size (); ++j)
         {
           markerArray.markers[i].points[j].x = cluster_info[i].convex_hull.points[j].x;
           markerArray.markers[i].points[j].y = cluster_info[i].convex_hull.points[j].y;
           markerArray.markers[i].points[j].z = cluster_info[i].convex_hull.points[j].z;
+          if(j == (cluster_info[i].convex_hull.size ()-1)){
+            markerArray.markers[i].points[j+1].x = cluster_info[i].convex_hull.points[0].x;
+            markerArray.markers[i].points[j+1].y = cluster_info[i].convex_hull.points[0].y;
+            markerArray.markers[i].points[j+1].z = cluster_info[i].convex_hull.points[0].z;
+          }
         }
       }
       LidarDetectionRVIZ_pub.publish (markerArray);

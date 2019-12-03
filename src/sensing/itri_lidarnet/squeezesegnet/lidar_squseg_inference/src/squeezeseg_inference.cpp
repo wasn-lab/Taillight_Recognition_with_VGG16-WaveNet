@@ -42,8 +42,8 @@ bool hybrid_detect = 0;
 // position of projection center
 // #define x_projCenter -2
 // #define z_projCenter -1.4
-const float x_projCenter = proj_center(data_set,0);
-const float z_projCenter = proj_center(data_set,1);
+// const float x_projCenter = proj_center(data_set,0);
+// const float z_projCenter = proj_center(data_set,1);
 
 //  ======= global variabes of tensorflow =======
 // std::vector<TF_Output> input_ops;
@@ -70,12 +70,15 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     VPointCloud::Ptr select_Cloud(new VPointCloud);
     if (hybrid_detect == 1)
     {
-      *select_Cloud = CuboidFilter().pass_through_soild<PointXYZI>(release_Cloud, -40, 30, -3.0, 3.0, -3.12, 0);
+      *select_Cloud = CuboidFilter().pass_through_soild<PointXYZI>(release_Cloud, -30, 50, -3.0, 3.0, -3.12, 0);
     }
     //   ========================================================================================================================
     
     // the origin of coordinate is shifted -2 m in x-axis and -1.4 m in z-axis in SSN to maximize projection ratio
     // Note that following shift will be recovered in TF_inference::TF_run() !!!!!!!!!!!!!1
+    const float x_projCenter = proj_center(data_set, 0);
+    const float z_projCenter = proj_center(data_set, 1);
+
     for (size_t i = 0; i < release_Cloud->points.size (); i++)
     {
       release_Cloud->points[i].x = release_Cloud->points[i].x - x_projCenter;
@@ -89,6 +92,7 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 
     // VPointCloudXYZIL::Ptr result_cloud(new VPointCloudXYZIL);
 
+#if(false)
     vector<thread> mthreads;
     for(size_t i=0; i < SSN_all.size(); i++)
     {
@@ -96,13 +100,14 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
       // ros::Duration(0.02).sleep();
     }
 
-    // thread mThread(&TF_inference::TF_run, &SSN_P0deg, release_Cloud, result_cloud);
-
     for(size_t i=0; i < SSN_all.size(); i++)
       mthreads.at(i).join();
-
-    // mThread.join();
-
+#else
+    SSN_all.at(0).TF_run(release_Cloud, result_cloud.at(0));
+    SSN_all.at(1).TF_run(release_Cloud, result_cloud.at(1));
+    SSN_all.at(2).TF_run(release_Cloud, result_cloud.at(2));
+    SSN_all.at(3).TF_run(release_Cloud, result_cloud.at(3));
+#endif
 
     VPointCloudXYZIL::Ptr result_cloud_all(new VPointCloudXYZIL);
 
@@ -199,7 +204,7 @@ main (int argc,
 
   // int TF_ERcode = SSN_P0deg.TF_init();
 
-  ros::Rate loop_rate (10);
+  ros::Rate loop_rate (40);
 
   while (ros::ok ())
   {
