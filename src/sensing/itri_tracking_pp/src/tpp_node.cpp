@@ -195,7 +195,7 @@ void TPPNode::subscribe_and_advertise_topics()
   else if (in_source_ == 3)
   {
     LOG_INFO << "Input Source: Camera" << std::endl;
-    fusion_sub_ = nh_.subscribe("DetectedObjectArray/cam60_1", 1, &TPPNode::callback_fusion, this);
+    fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput/camera";
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
