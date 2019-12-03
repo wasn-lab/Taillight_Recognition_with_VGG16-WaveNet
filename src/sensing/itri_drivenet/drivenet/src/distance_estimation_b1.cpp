@@ -106,6 +106,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
       bias = piexl_loc - regionHeight[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
+      break;
       // printf("region[%d~%d][%d~%d], X- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], distance);
       // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc, regionDist[i],
       // unitLength, bias, offset);
@@ -118,6 +119,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
       bias = regionHeight[i] - piexl_loc;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
+      break;
       // printf("region[%d~%d][%d~%d], X- distance: %f\n ", i-1, i, regionHeight[i-1], regionHeight[i], distance);
       // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc, regionDist[i],
       // unitLength, bias, offset);
@@ -241,6 +243,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       bias = piexl_loc_y - regionHeight_new[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
+      break;
       // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1],
       // regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
       // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i],
@@ -255,6 +258,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       bias = regionHeight_new[i] - piexl_loc_y;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
+      break;
       // printf("region[%d~%d][%d~%d], new region[%d~%d], Y- distance: %f\n ", i-1, i, regionHeight[i-1],
       // regionHeight[i], regionHeight_new[i-1], regionHeight_new[i], distance);
       // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc_y, regionDist[i],
