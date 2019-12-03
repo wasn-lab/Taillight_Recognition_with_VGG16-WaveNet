@@ -447,15 +447,8 @@ void* run_yolo(void*)
     dist_rows_tmp = dist_rows;
 
     // reset data
-    headers.clear();
+    reset_data();
     matSrcs.clear();
-    matOrder.clear();
-    matId.clear();
-    vBBX120_0.clear();
-    vBBX120_1.clear();
-    vbbx_output.clear();
-    dist_cols.clear();
-    dist_rows.clear();
 
     if (!input_resize || isCalibration)
       yoloApp.input_preprocess(matSrcs_tmp);
