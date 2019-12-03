@@ -24,6 +24,6 @@ int car_id = 1;
 bool standard_FPS = 0;
 bool display_flag = 0;
 bool input_resize = 1;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
-bool imgResult_publish = 0;
+bool imgResult_publish = 1;
 
 #endif /*DRIVENET_120_2_B1_H_*/
