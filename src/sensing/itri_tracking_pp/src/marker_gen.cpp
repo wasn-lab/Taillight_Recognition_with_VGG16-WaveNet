@@ -332,7 +332,7 @@ visualization_msgs::Marker MarkerGen::create_delay_marker(const unsigned int idx
 
 visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, const float x, const float y,
                                                        std_msgs::Header obj_header, const PPLongDouble pp,
-                                                       const unsigned int forecast_seq)
+                                                       const unsigned int forecast_seq, const float abs_speed_kmph)
 {
   visualization_msgs::Marker marker;
 
@@ -348,8 +348,9 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
 
   if (mc_.show_pp == 1)
   {
-    marker.scale.x = pp.a1 + 0.00001;
-    marker.scale.y = pp.a2 + 0.00001;
+    double scale = abs_speed_kmph * (forecast_seq + 1) / 36.;
+    marker.scale.x = scale;
+    marker.scale.y = scale / 2;
   }
   else if (mc_.show_pp >= 2)
   {
@@ -371,8 +372,8 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
   if (mc_.show_pp == 1)
   {
-    marker.color.r = 0.75;
-    marker.color.g = 1.0 - forecast_seq * 0.05;
+    marker.color.r = 0.8;
+    marker.color.g = 0.9 - forecast_seq * 0.035;
     marker.color.b = 0.0;
   }
   else if (mc_.show_pp >= 2)
@@ -385,7 +386,7 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
   {
     LOG_INFO << "Error: No show pp but run pp marker color setting!" << std::endl;
   }
-  marker.color.a = 1.0;
+  marker.color.a = 0.3 - forecast_seq * 0.005;
 
   return marker;
 }
@@ -489,10 +490,11 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
   {
     if (objs[i].track.is_ready_prediction)
     {
-      for (unsigned j = 0; j < objs[i].track.forecasts.size(); j++)
+      for (int j = objs[i].track.forecasts.size() - 1; j >= 0; j--)
       {
         m_pp_.markers.push_back(create_pp_marker(idx++, objs[i].track.forecasts[j].position.x,
-                                                 objs[i].track.forecasts[j].position.y, objs[i].header, ppss[i][j], j));
+                                                 objs[i].track.forecasts[j].position.y, objs[i].header, ppss[i][j], j,
+                                                 objs[i].absSpeed));
       }
     }
   }
