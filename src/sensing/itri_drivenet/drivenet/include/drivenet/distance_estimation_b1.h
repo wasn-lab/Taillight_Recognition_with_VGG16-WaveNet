@@ -6,75 +6,29 @@
 #include <msgs/PointXYZ.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+struct DisEstiParams
+{
+  std::vector<int> regionHeight_x;
+  std::vector<float> regionDist_x;
+  std::vector<int> regionHeight_y;
+  std::vector<float> regionDist_y;
+  std::vector<float> regionHeightSlope_x;
+  std::vector<float> regionHeightSlope_y;
+};
 
 class DistanceEstimation
 {
 private:
-  /// camId: 0
-  std::vector<int> regionHeight_60_FR_x;
-  std::vector<float> regionDist_60_FR_x;
-  std::vector<int> regionHeight_60_FR_y;
-  std::vector<float> regionDist_60_FR_y;
-  std::vector<float> regionHeightSlope_60_FR_y;
-  std::vector<float> regionHeightSlope_60_FR_x;
-
-  /// camId: 1
-  std::vector<int> regionHeight_60_FC_x;
-  std::vector<float> regionDist_60_FC_x;
-  std::vector<int> regionHeight_60_FC_y;
-  std::vector<float> regionDist_60_FC_y;
-  std::vector<float> regionHeightSlope_60_FC_y;
-  std::vector<float> regionHeightSlope_60_FC_x;
-
-  /// camId: 2
-  std::vector<int> regionHeight_60_FL_x;
-  std::vector<float> regionDist_60_FL_x;
-  std::vector<int> regionHeight_60_FL_y;
-  std::vector<float> regionDist_60_FL_y;
-  std::vector<float> regionHeightSlope_60_FL_y;
-  std::vector<float> regionHeightSlope_60_FL_x;
-
-  /// camId: 4
-  std::vector<int> regionHeight_120_FT_x;
-  std::vector<float> regionDist_120_FT_x;
-  std::vector<int> regionHeight_120_FT_y;
-  std::vector<float> regionDist_120_FT_y;
-  std::vector<float> regionHeightSlope_120_FT_y;
-
-  /// camId: 5
-  std::vector<int> regionHeight_120_RF_x;
-  std::vector<float> regionDist_120_RF_x;
-  std::vector<int> regionHeight_120_RF_y;
-  std::vector<float> regionDist_120_RF_y;
-  std::vector<float> regionHeightSlope_120_RF_y;
-
-  /// camId: 6
-  std::vector<int> regionHeight_120_RB_x;
-  std::vector<float> regionDist_120_RB_x;
-  std::vector<int> regionHeight_120_RB_y;
-  std::vector<float> regionDist_120_RB_y;
-  std::vector<float> regionHeightSlope_120_RB_y;
-
-  /// camId: 8
-  std::vector<int> regionHeight_120_LF_x;
-  std::vector<float> regionDist_120_LF_x;
-  std::vector<int> regionHeight_120_LF_y;
-  std::vector<float> regionDist_120_LF_y;
-  std::vector<float> regionHeightSlope_120_LF_y;
-
-  /// camId: 9
-  std::vector<int> regionHeight_120_LR_x;
-  std::vector<float> regionDist_120_LR_x;
-  std::vector<int> regionHeight_120_LR_y;
-  std::vector<float> regionDist_120_LR_y;
-  std::vector<float> regionHeightSlope_120_LR_y;
-
-  /// camId: 10
-  std::vector<int> regionHeight_120_BT_x;
-  std::vector<float> regionDist_120_BT_x;
-  std::vector<int> regionHeight_120_BT_y;
-  std::vector<float> regionDist_120_BT_y;
-  std::vector<float> regionHeightSlope_120_BT_y;
+  DisEstiParams camFR60, camFC60, camFL60, camFT120, camRF120, camRB120, camLF120, camLB120, camBT120;
+  /// camId: 0 = camFR60
+  /// camId: 1 = camFC60
+  /// camId: 2 = camFL60
+  /// camId: 4 = camFT120
+  /// camId: 5 = camRF120
+  /// camId: 6 = camRB120
+  /// camId: 8 = camLF120
+  /// camId: 9 = camLB120
+  /// camId: 10 = camBT120
 
   float Lidar_offset_x = 0;
   float Lidar_offset_y = 0;
