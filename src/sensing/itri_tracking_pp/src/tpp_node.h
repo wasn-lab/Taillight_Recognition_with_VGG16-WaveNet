@@ -109,7 +109,6 @@ private:
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
 
-
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
   void init_velocity(msgs::TrackInfo& track);
@@ -136,6 +135,7 @@ private:
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
+  void get_current_ego_data();
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 #if TTC_TEST

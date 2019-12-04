@@ -855,6 +855,22 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
 }
 #endif
 
+void TPPNode::get_current_ego_data()
+{
+  dt_ = vel_.get_dt();
+  ego_x_abs_ = vel_.get_ego_x_abs();
+  ego_y_abs_ = vel_.get_ego_y_abs();
+  ego_z_abs_ = vel_.get_ego_z_abs();
+  ego_heading_ = vel_.get_ego_heading();
+  ego_dx_abs_ = vel_.get_ego_dx_abs();
+  ego_dy_abs_ = vel_.get_ego_dy_abs();
+
+  ego_speed_kmph_ = vel_.get_ego_speed_kmph();
+  vel_.ego_velx_vely_kmph_abs();
+  ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
+  ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
+}
+
 void TPPNode::set_ros_params()
 {
   ROSParamsParser par(nh_);
@@ -945,18 +961,7 @@ int TPPNode::run()
       seq_ = seq_cb_;
 #endif
 
-      dt_ = vel_.get_dt();
-      ego_x_abs_ = vel_.get_ego_x_abs();
-      ego_y_abs_ = vel_.get_ego_y_abs();
-      ego_z_abs_ = vel_.get_ego_z_abs();
-      ego_heading_ = vel_.get_ego_heading();
-      ego_dx_abs_ = vel_.get_ego_dx_abs();
-      ego_dy_abs_ = vel_.get_ego_dy_abs();
-
-      ego_speed_kmph_ = vel_.get_ego_speed_kmph();
-      vel_.ego_velx_vely_kmph_abs();
-      ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
-      ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
+      get_current_ego_data();
 
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       compute_velocity_kalman();
