@@ -393,15 +393,9 @@ void TPPNode::compute_velocity_kalman()
       KTs_.tracks_[i].box_.track.absolute_velocity.speed = euclidean_distance(
           KTs_.tracks_[i].box_.track.absolute_velocity.x, KTs_.tracks_[i].box_.track.absolute_velocity.y);
 
-// relative velocity in absolute coordinate
-#if TTC_TEST
+      // relative velocity in absolute coordinate
       float rel_vx_abs = abs_vx_abs - ego_velx_abs_kmph_;  // km/h
       float rel_vy_abs = abs_vy_abs - ego_vely_abs_kmph_;  // km/h
-#else
-      float scale = 3.6f / dt_;
-      float rel_vx_abs = abs_vx_abs - scale * ego_dx_abs_;  // km/h
-      float rel_vy_abs = abs_vy_abs - scale * ego_dy_abs_;  // km/h
-#endif
 
       // compute relative velocity in relative coordinate (km/h)
       transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, KTs_.tracks_[i].box_.track.relative_velocity.x,
