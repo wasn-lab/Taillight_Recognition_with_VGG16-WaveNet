@@ -16,6 +16,14 @@ struct DisEstiParams
   std::vector<float> regionHeightSlope_y;
 };
 
+struct CheckArea
+{
+  cv::Point LeftLinePoint1;
+  cv::Point LeftLinePoint2;
+  cv::Point RightLinePoint1;
+  cv::Point RightLinePoint2;
+};
+
 class DistanceEstimation
 {
 private:
@@ -56,25 +64,23 @@ public:
   // Front right 60 range:
   // x axis: 7 ~ 50 meters
   // y axis: -10 ~ 10 meters
-  cv::Point LeftLinePoint1_60_FR, LeftLinePoint2_60_FR, RightLinePoint1_60_FR, RightLinePoint2_60_FR;
 
   /// camId: 1
   // Front center 60 range:
   // x axis: 7 ~ 50 meters
   // y axis: -10 ~ 10 meters
-  cv::Point LeftLinePoint1_60_FC, LeftLinePoint2_60_FC, RightLinePoint1_60_FC, RightLinePoint2_60_FC;
 
   /// camId: 4
   // Front top 120 range:
   // x axis: 0 ~ 7 meters
   // y axis: -9 ~ 6 meters
-  cv::Point LeftLinePoint1_120_FT, LeftLinePoint2_120_FT, RightLinePoint1_120_FT, RightLinePoint2_120_FT;
 
   /// camId: 10
   // Back top 120 range:
   // x axis: 8 ~ 20 meters
   // y axis: -3 ~ 3 meters
-  cv::Point LeftLinePoint1_120_BT, LeftLinePoint2_120_BT, RightLinePoint1_120_BT, RightLinePoint2_120_BT;
+
+  CheckArea camFR60_area, camFC60_area, camFT120_area, camBT120_area;
 };
 
 #endif /*DISTANCEESTIMATION_H_*/

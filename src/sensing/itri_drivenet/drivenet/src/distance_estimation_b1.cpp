@@ -24,10 +24,10 @@ void DistanceEstimation::init(int car_id)
                                 0.128,0.127,0.136,0.148,0.142}; 
     camFR60.regionDist_y = {-4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30};
 
-    LeftLinePoint1_60_FR = cv::Point(0, 1083);
-    LeftLinePoint2_60_FR = cv::Point(-340, 1207);
-    RightLinePoint1_60_FR = cv::Point(1919, 810);
-    RightLinePoint2_60_FR = cv::Point(1674, 1207);
+    camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
+    camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
+    camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
+    camFR60_area.RightLinePoint2 = cv::Point(1674, 1207);
 
     // camId: 1 (Front Center)
     camFC60.regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
@@ -37,10 +37,10 @@ void DistanceEstimation::init(int car_id)
     camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
     camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
-    LeftLinePoint1_60_FC = cv::Point(636, 914);
-    LeftLinePoint2_60_FC = cv::Point(-1817, 1207);
-    RightLinePoint1_60_FC = cv::Point(1371, 914);
-    RightLinePoint2_60_FC = cv::Point(3801, 1207);
+    camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
+    camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
+    camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
+    camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
 
     // camId: 4 (Front Top)
     camFT120.regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
@@ -53,10 +53,10 @@ void DistanceEstimation::init(int car_id)
                                     -1.8,  -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862 };
     camFT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9 };
 
-    LeftLinePoint1_120_FT = cv::Point(127, 272);
-    LeftLinePoint2_120_FT = cv::Point(-1422, 1207);
-    RightLinePoint1_120_FT = cv::Point(1904, 272);
-    RightLinePoint2_120_FT = cv::Point(3548, 1207);
+    camFT120_area.LeftLinePoint1 = cv::Point(127, 272);
+    camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
+    camFT120_area.RightLinePoint1 = cv::Point(1904, 272);
+    camFT120_area.RightLinePoint2 = cv::Point(3548, 1207);
 
     // camId: 5 (Right Front)
     camRF120.regionHeight_x = { 1148, 830, 544, 377, 236, 157, 52 };      // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
@@ -80,10 +80,10 @@ void DistanceEstimation::init(int car_id)
                                     -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608 };
     camBT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 }; 
 
-    LeftLinePoint1_120_BT = cv::Point(422, 143);
-    LeftLinePoint2_120_BT = cv::Point(-1566, 1207);
-    RightLinePoint1_120_BT = cv::Point(1400, 143);
-    RightLinePoint2_120_BT = cv::Point(3152, 1207);
+    camBT120_area.LeftLinePoint1 = cv::Point(422, 143);
+    camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
+    camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
+    camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
 
     Lidar_offset_x = 0;
     Lidar_offset_y = 0;

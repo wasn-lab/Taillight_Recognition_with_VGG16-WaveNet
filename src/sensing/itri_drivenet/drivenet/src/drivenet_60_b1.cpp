@@ -318,10 +318,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId)
     // Front right 60 range:
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
-    cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_60_FR;
-    cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_60_FR;
-    cv::Point RightLinePoint1 = distEst.RightLinePoint1_60_FR;
-    cv::Point RightLinePoint2 = distEst.RightLinePoint2_60_FR;
+    cv::Point LeftLinePoint1 = distEst.camFR60_area.LeftLinePoint1;
+    cv::Point LeftLinePoint2 = distEst.camFR60_area.LeftLinePoint2;
+    cv::Point RightLinePoint1 = distEst.camFR60_area.RightLinePoint1;
+    cv::Point RightLinePoint2 = distEst.camFR60_area.RightLinePoint2;
 
     BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2,
                                   box.x2, box.y2);
@@ -331,10 +331,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order, int camId)
     // Front center 60 range:
     // x axis: 7 ~ 50 meters
     // y axis: -10 ~ 10 meters
-    cv::Point LeftLinePoint1 = distEst.LeftLinePoint1_60_FC;
-    cv::Point LeftLinePoint2 = distEst.LeftLinePoint2_60_FC;
-    cv::Point RightLinePoint1 = distEst.RightLinePoint1_60_FC;
-    cv::Point RightLinePoint2 = distEst.RightLinePoint2_60_FC;
+    cv::Point LeftLinePoint1 = distEst.camFC60_area.LeftLinePoint1;
+    cv::Point LeftLinePoint2 = distEst.camFC60_area.LeftLinePoint2;
+    cv::Point RightLinePoint1 = distEst.camFC60_area.RightLinePoint1;
+    cv::Point RightLinePoint2 = distEst.camFC60_area.RightLinePoint2;
 
     BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2,
                                   box.x2, box.y2);
