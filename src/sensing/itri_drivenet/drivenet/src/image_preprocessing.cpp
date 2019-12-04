@@ -32,7 +32,7 @@ void loadCalibrationMatrix(String yml_filename, Mat& cameraMatrix, Mat& distCoef
 
   fs.release();
 }
-void calibrationImage(const Mat src, Mat& dst, Mat cameraMatrix, Mat distCoeffs)
+void calibrationImage(const Mat& src, Mat& dst, Mat cameraMatrix, Mat distCoeffs)
 {
   Mat M_raw = src.clone();
   undistort(M_raw, dst, cameraMatrix, distCoeffs);
