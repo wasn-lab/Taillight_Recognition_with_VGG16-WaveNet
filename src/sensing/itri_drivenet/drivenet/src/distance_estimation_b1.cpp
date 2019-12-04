@@ -299,7 +299,143 @@ int DistanceEstimation::CheckPointInArea(cv::Point RightLinePoint1, cv::Point Ri
     else
         return point0;
 }
-int DistanceEstimation::box_shrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
+float DistanceEstimation::RatioDefine(int cam_id, int cls)
+{
+    float ratio;
+    if(cam_id == 1)
+    {
+        switch (cls)
+        {
+            case 0:
+            {  // 0:person
+            ratio = 1;
+            break;
+            }
+            // 1:bicycle, 3:motorbike
+            case 1:
+            {
+            ratio = 0.9;
+            break;
+            }
+            case 3:
+            {
+            ratio = 0.9;
+            break;
+            }
+            // 2:car
+            case 2:
+            {
+            ratio = 0.7;
+            break;
+            }
+            // 5:bus, 7:truck
+            case 5:
+            {
+            ratio = 0.7;
+            break;
+            }
+            case 7:
+            {
+            ratio = 0.7;
+            break;
+            }
+            default:
+            {
+            ratio = 1;
+            break;
+            }
+        }
+    }else if(cam_id == 4)
+    {
+        switch (cls)
+        {
+            case 0:
+            {  // 0:person
+            ratio = 1;
+            break;
+            }
+            // 1:bicycle, 3:motorbike
+            case 1:
+            {
+            ratio = 0.9;
+            break;
+            }
+            case 3:
+            {
+            ratio = 0.9;
+            break;
+            }
+            // 2:car
+            case 2:
+            {
+            ratio = 0.7;
+            break;
+            }
+            // 5:bus, 7:truck
+            case 5:
+            {
+            ratio = 0.5;
+            break;
+            }
+            case 7:
+            {
+            ratio = 0.5;
+            break;
+            }
+            default:
+            {
+            ratio = 1;
+            break;
+            }
+        }
+    }else if(cam_id == 10)
+    {
+        switch (cls)
+        {
+            case 0:
+            {  // 0:person
+            ratio = 1;
+            break;
+            }
+            // 1:bicycle, 3:motorbike
+            case 1:
+            {
+            ratio = 0.9;
+            break;
+            }
+            case 3:
+            {
+            ratio = 0.9;
+            break;
+            }
+            // 2:car
+            case 2:
+            {
+            ratio = 0.7;
+            break;
+            }
+            // 5:bus, 7:truck
+            case 5:
+            {
+            ratio = 0.5;
+            break;
+            }
+            case 7:
+            {
+            ratio = 0.5;
+            break;
+            }
+            default:
+            {
+            ratio = 1;
+            break;
+            }
+        }
+    }
+    return ratio;
+}
+
+int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
 {
     // PointsSrc = {class_id, x1, x2, y2};
     // PointsDst = {class_id, x1, x2, y2};
@@ -330,47 +466,6 @@ int DistanceEstimation::box_shrink(int cam_id, std::vector<int> Points_src, std:
         area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
                                     Points_src[3]);
         
-        switch (Points_src[0])
-        {
-            case 0:
-            {  // 0:person
-            shrink_ratio = 1;
-            break;
-            }
-            // 1:bicycle, 3:motorbike
-            case 1:
-            {
-            shrink_ratio = 0.9;
-            break;
-            }
-            case 3:
-            {
-            shrink_ratio = 0.9;
-            break;
-            }
-            // 2:car
-            case 2:
-            {
-            shrink_ratio = 0.7;
-            break;
-            }
-            // 5:bus, 7:truck
-            case 5:
-            {
-            shrink_ratio = 0.7;
-            break;
-            }
-            case 7:
-            {
-            shrink_ratio = 0.7;
-            break;
-            }
-            default:
-            {
-            shrink_ratio = 1;
-            break;
-            }
-        }
     }else if(cam_id == 4)
     {
         // From x 0 - 7 m, y -2 to +2 m.
@@ -381,49 +476,7 @@ int DistanceEstimation::box_shrink(int cam_id, std::vector<int> Points_src, std:
         area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
                                     Points_src[3]);
         area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
-                                    Points_src[3]);
-        
-        switch (Points_src[0])
-        {
-            case 0:
-            {  // 0:person
-            shrink_ratio = 1;
-            break;
-            }
-            // 1:bicycle, 3:motorbike
-            case 1:
-            {
-            shrink_ratio = 0.9;
-            break;
-            }
-            case 3:
-            {
-            shrink_ratio = 0.9;
-            break;
-            }
-            // 2:car
-            case 2:
-            {
-            shrink_ratio = 0.7;
-            break;
-            }
-            // 5:bus, 7:truck
-            case 5:
-            {
-            shrink_ratio = 0.5;
-            break;
-            }
-            case 7:
-            {
-            shrink_ratio = 0.5;
-            break;
-            }
-            default:
-            {
-            shrink_ratio = 1;
-            break;
-            }
-        }
+                                    Points_src[3]);        
     }else if(cam_id == 10)
     {
         // From x -8 to -20 m, y -3 to +3 m.
@@ -436,49 +489,9 @@ int DistanceEstimation::box_shrink(int cam_id, std::vector<int> Points_src, std:
                                     Points_src[3]);
         area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
                                     Points_src[3]);
-        
-        switch (Points_src[0])
-        {
-            case 0:
-            {  // 0:person
-            shrink_ratio = 1;
-            break;
-            }
-            // 1:bicycle, 3:motorbike
-            case 1:
-            {
-            shrink_ratio = 0.9;
-            break;
-            }
-            case 3:
-            {
-            shrink_ratio = 0.9;
-            break;
-            }
-            // 2:car
-            case 2:
-            {
-            shrink_ratio = 0.7;
-            break;
-            }
-            // 5:bus, 7:truck
-            case 5:
-            {
-            shrink_ratio = 0.5;
-            break;
-            }
-            case 7:
-            {
-            shrink_ratio = 0.5;
-            break;
-            }
-            default:
-            {
-            shrink_ratio = 1;
-            break;
-            }
-        }
     }
+
+    shrink_ratio = RatioDefine(cam_id, Points_src[0]);
 
     // Shrink box when one of x1, x2 is in area and another is not in the area.
     if (area_id_L != area_id_R)
@@ -711,7 +724,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   {
       std::vector<int> PointsSrc = {class_id, x1, x2, y2};
       std::vector<int> PointsDst = {class_id, x1, x2, y2};
-      box_shrink(cam_id, PointsSrc, PointsDst);
+      BoxShrink(cam_id, PointsSrc, PointsDst);
       x1 = PointsDst[1]; x2 = PointsDst[2];
   }
 

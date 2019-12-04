@@ -87,7 +87,8 @@ private:
   float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
                            std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
   msgs::PointXYZ GetPointDist(int x, int y, int cam_id);
-  int box_shrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
+  int BoxShrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
+  float RatioDefine(int cam_id, int cls);
 
 public:
   void init(int carId);
