@@ -393,15 +393,9 @@ void TPPNode::compute_velocity_kalman()
       KTs_.tracks_[i].box_.track.absolute_velocity.speed = euclidean_distance(
           KTs_.tracks_[i].box_.track.absolute_velocity.x, KTs_.tracks_[i].box_.track.absolute_velocity.y);
 
-// relative velocity in absolute coordinate
-#if TTC_TEST
+      // relative velocity in absolute coordinate
       float rel_vx_abs = abs_vx_abs - ego_velx_abs_kmph_;  // km/h
       float rel_vy_abs = abs_vy_abs - ego_vely_abs_kmph_;  // km/h
-#else
-      float scale = 3.6f / dt_;
-      float rel_vx_abs = abs_vx_abs - scale * ego_dx_abs_;  // km/h
-      float rel_vy_abs = abs_vy_abs - scale * ego_dy_abs_;  // km/h
-#endif
 
       // compute relative velocity in relative coordinate (km/h)
       transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, KTs_.tracks_[i].box_.track.relative_velocity.x,
@@ -855,6 +849,22 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
 }
 #endif
 
+void TPPNode::get_current_ego_data()
+{
+  dt_ = vel_.get_dt();
+  ego_x_abs_ = vel_.get_ego_x_abs();
+  ego_y_abs_ = vel_.get_ego_y_abs();
+  ego_z_abs_ = vel_.get_ego_z_abs();
+  ego_heading_ = vel_.get_ego_heading();
+  ego_dx_abs_ = vel_.get_ego_dx_abs();
+  ego_dy_abs_ = vel_.get_ego_dy_abs();
+
+  ego_speed_kmph_ = vel_.get_ego_speed_kmph();
+  vel_.ego_velx_vely_kmph_abs();
+  ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
+  ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
+}
+
 void TPPNode::set_ros_params()
 {
   ROSParamsParser par(nh_);
@@ -945,18 +955,7 @@ int TPPNode::run()
       seq_ = seq_cb_;
 #endif
 
-      dt_ = vel_.get_dt();
-      ego_x_abs_ = vel_.get_ego_x_abs();
-      ego_y_abs_ = vel_.get_ego_y_abs();
-      ego_z_abs_ = vel_.get_ego_z_abs();
-      ego_heading_ = vel_.get_ego_heading();
-      ego_dx_abs_ = vel_.get_ego_dx_abs();
-      ego_dy_abs_ = vel_.get_ego_dy_abs();
-
-      ego_speed_kmph_ = vel_.get_ego_speed_kmph();
-      vel_.ego_velx_vely_kmph_abs();
-      ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
-      ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
+      get_current_ego_data();
 
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       compute_velocity_kalman();
