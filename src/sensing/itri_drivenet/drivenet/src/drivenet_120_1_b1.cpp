@@ -654,7 +654,7 @@ void* run_yolo(void*)
 
     msgs::DetectedObjectArray doa;
     std::vector<msgs::DetectedObject> vDo;
-    for (uint32_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
+    for (size_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
     {
       std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
       if (imgResult_publish || display_flag)
@@ -696,7 +696,7 @@ void* run_yolo(void*)
           cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
         }
       }
-      for (int i = 0; i < pool.size(); i++)
+      for (size_t i = 0; i < pool.size(); i++)
       {
         detObj = pool[i].get();
         vDo.push_back(detObj);
