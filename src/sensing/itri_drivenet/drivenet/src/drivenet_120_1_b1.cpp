@@ -582,6 +582,7 @@ void reset_data()
   vBBX120_0.clear();
   vBBX120_1.clear();
   vBBX120_2.clear();
+  vBBX120_3.clear();
   vbbx_output.clear();
   dist_cols.clear();
   dist_rows.clear();

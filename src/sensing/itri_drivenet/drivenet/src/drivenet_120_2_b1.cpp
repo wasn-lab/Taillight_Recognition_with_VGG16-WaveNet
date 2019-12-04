@@ -439,7 +439,6 @@ void* run_yolo(void*)
       pthread_cond_wait(&cndInfer, &mtxInfer);
     pthread_mutex_unlock(&mtxInfer);
 
-    isDataVaild = true;
     matSrcs_tmp = matSrcs;
     for (auto& mat : matSrcs)
       isDataVaild &= CheckMatDataValid(*mat);
@@ -597,10 +596,6 @@ void* run_yolo(void*)
     }
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << " and " << camera::topics[cam_ids_[1]] << " image."
               << std::endl;
-
-    isInferData = false;
-    isInferData_0 = false;
-    isInferData_1 = false;
 
     // reset data
     headers_tmp.clear();
