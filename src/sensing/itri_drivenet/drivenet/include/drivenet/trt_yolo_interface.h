@@ -46,7 +46,7 @@ public:
 
   void init_yolo(std::string pkg_path, std::string cfg_file);
   void input_preprocess(std::vector<cv::Mat*>& matSrcs);
-  void input_preprocess(std::vector<cv::Mat*>& matSrcs, std::vector<uint32_t> matOrders, int input_size,
+  void input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size,
                         std::vector<int> dist_w, std::vector<int> dist_h);
   void inference_yolo();
   void get_yolo_result(std::vector<uint32_t>* order, std::vector<std::vector<ITRI_Bbox>*>& vbbx_output);
