@@ -10,7 +10,6 @@
 #include "drivenet/image_exception_handling.h"
 
 #if CAR_MODEL_IS_B1
-// TODO: fill in the correct camera id.
 const std::vector<int> cam_ids_{
   camera::id::top_right_front_120, camera::id::top_right_rear_120, camera::id::top_left_front_120,
   camera::id::top_left_rear_120,

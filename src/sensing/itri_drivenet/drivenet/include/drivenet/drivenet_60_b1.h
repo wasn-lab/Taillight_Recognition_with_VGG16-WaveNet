@@ -9,7 +9,6 @@
 #include "drivenet/image_exception_handling.h"
 
 #if CAR_MODEL_IS_B1
-// TODO: fill in the correct camera id.
 const std::vector<int> cam_ids_{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
 #else
 #error "car model is not well defined"
