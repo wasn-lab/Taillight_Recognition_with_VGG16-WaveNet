@@ -54,7 +54,7 @@ def get_mr(_id, headers):
     # See if it's end of merge list
     return ( not is_empty_mr(data), data, req )
 
-def get_mr_list_id_range(_sid, _eid, headers):
+def get_mr_list_id_range(headers,_sid, _eid, target_branch="master", state="merged"):
     """
     Request a list of merge requests in given id range
     input:
@@ -67,7 +67,16 @@ def get_mr_list_id_range(_sid, _eid, headers):
     """
     # url = BASE_URL + "?created_after=2019-11-26T14:44:29.238+08:00"
     # url = BASE_URL + "?iids[]=100&iids[]=110"
+
+    #
     url = BASE_URL + "?"
+    if not target_branch is None:
+        url += "target_branch=%s" % target_branch
+        url += "&"
+    if not state is None:
+        url += "state=%s" % state
+        url += "&"
+    #
     for _id in range(_sid, _eid+1):
         url += "iids[]=%d" % _id
         if _id != _eid:
@@ -101,10 +110,13 @@ def get_mr_list_date_range(headers, _s_date, _e_date, target_branch="master", st
     _e_date_utc = _e_date - dT
     #
     url = BASE_URL + "?"
-    # url += "target_branch=%s" % target_branch
-    # url += "&"
-    # url += "state=%s" % state
-    # url += "&"
+    if not target_branch is None:
+        url += "target_branch=%s" % target_branch
+        url += "&"
+    if not state is None:
+        url += "state=%s" % state
+        url += "&"
+    #
     url += "created_after=%s" % _s_date_utc.strftime("%Y-%m-%dT%H:%M:%S")
     url += "&"
     url += "created_before=%s" % _e_date_utc.strftime("%Y-%m-%dT%H:%M:%S")
@@ -137,7 +149,7 @@ def _list_mr_description(s_date, e_date, target_branch="master"):
     print("req = %s" % req)
     for data in data_list:
         print("-" * 70)
-        print("Merge id: !%s" % str(data["reference"]))
+        print("Merge id: %s" % str(data["reference"]))
 
         # analyize data
         #-----------------------------#
@@ -223,7 +235,7 @@ def main():
 
 
     #
-    # data_list, req = get_mr_list_date_range(_s_date, _e_date, gitlab_headers)
+    # data_list, req = get_mr_list_date_range(gitlab_headers, _s_date, _e_date)
     # print("type(data) = %s" % str(type(data_list)))
     # print("len(data) = %d" % len(data_list))
     # # print("data = %s" % str(json.dumps(data_list, indent=4)))
