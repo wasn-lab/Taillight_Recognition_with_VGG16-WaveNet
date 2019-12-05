@@ -181,7 +181,7 @@ def _stack_mr_description(s_date, e_date, target_branch="master", state="merged"
     global gitlab_headers
 
     data_list = get_mr_list_date_range(gitlab_headers, s_date, e_date, target_branch, state)
-    print("type(data) = %s" % str(type(data_list)))
+    # print("type(data) = %s" % str(type(data_list)))
     print("len(data) = %d" % len(data_list))
     #
     log_dict = dict() # source_branch:chage-logs
@@ -196,6 +196,14 @@ def _stack_mr_description(s_date, e_date, target_branch="master", state="merged"
         _log_title = data.get("title", "")
         # log_new += "<%s>\n" % _log_title
 
+        # Descriptions
+        _log_des_all = data.get("description", "")
+
+        # _log_des_all = _log_des_all.rstrip().lstrip()
+        # _res = _log_des_all.splitlines()
+        # print("_res = %s" % _res)
+
+
         # Parse
         _pat = "## "
         _pat_s = "<!--"
@@ -203,7 +211,7 @@ def _stack_mr_description(s_date, e_date, target_branch="master", state="merged"
         #
         _log_des = ""
 
-        _log_des_all = data.get("description", "")
+
         idx_1 = _log_des_all.find(_pat)
         if idx_1 >= 0:
             # idx_1 += len(_pat)
@@ -216,22 +224,32 @@ def _stack_mr_description(s_date, e_date, target_branch="master", state="merged"
             idx_e = _log_des_all.find(_pat_e, idx_s)
             idx_e += len(_pat_e)
 
+            _log_des_tmp = ""
             if (idx_s >= 0) and (idx_e >= 0):
-                _log_des = _log_des_all[idx_1:idx_s] + _log_des_all[idx_e:idx_2]
+                _log_des_tmp = _log_des_all[idx_1:idx_s] + _log_des_all[idx_e:idx_2]
             else:
-                _log_des = _log_des_all[idx_1:idx_2]
+                _log_des_tmp = _log_des_all[idx_1:idx_2]
             # print("(idx_1, idx_2, idx_s) = (%d, %d, %d)" % (idx_1, idx_2, idx_s))
+
+            # Arrange further
+            _log_des_tmp = _log_des_tmp.rstrip().lstrip()
+            _res = _log_des_tmp.splitlines()
+            for _line in _res:
+                _log_des += _line.rstrip().lstrip() + "\n"
+            # print("_res = %s" % _res)
         else:
-            print("no matched")
+            # print("no matched")
             if len(_log_des_all) > 0:
-                _log_des = _log_des_all
+                _log_des = "<%s>\n" % _log_title
+                _log_des += _log_des_all
             else:
-                _log_des = "- %s" % _log_title
+                _log_des = "- <%s>" % _log_title
 
         _log_des = _log_des.rstrip().lstrip()
         # print("_log_des = %s" % _log_des)
         log_new += _log_des
         # log_new += "\n---\n"
+        # log_new += "\n"
         log_new += "\n\n"
 
         # Stack in
@@ -239,11 +257,15 @@ def _stack_mr_description(s_date, e_date, target_branch="master", state="merged"
         log_dict[str(data["source_branch"])] = log_hist + log_new
 
     #
+    log_out = ""
     sources = log_dict.keys()
     for _sr in sources:
-        print("-" * 70)
-        print("Source: %s\n" % _sr)
-        print(log_dict[_sr])
+        log_out += ("-" * 70) + "\n"
+        log_out += ("Source: %s\n\n" % _sr)
+        log_out += (log_dict[_sr]) + "\n"
+    print(log_out)
+    #
+    return log_dict
 
 
 def string_to_datetime(date_str):
