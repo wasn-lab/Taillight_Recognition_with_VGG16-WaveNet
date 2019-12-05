@@ -29,7 +29,17 @@
 #include <msgs/TrackInfo.h>
 #include <msgs/DetectedObject.h>
 #include <msgs/DetectedObjectArray.h>
+#include <msgs/VehInfo.h>
 #include <msgs/LocalizationToVeh.h>
+
+#define TTC_TEST 0
+#if TTC_TEST
+#include <tf/tf.h>
+#include <std_msgs/Int32.h>
+#include <std_msgs/Float64.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
+#endif
 
 #include <std_msgs/ColorRGBA.h>
 #include <sensor_msgs/Imu.h>
@@ -58,7 +68,7 @@
 #define SAME_OBJ_MARKER_HEADER 0
 #define SAVE_OUTPUT_TXT 0
 
-#define SPEEDUP_KALMAN_VEL_EST 1  // spped up kalman velocity estimation
+#define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
 
 // debug
 #define DEBUG 0
@@ -74,7 +84,7 @@
 
 #define FILL_CONVEX_HULL 1
 
-#define USE_RADAR_REL_SPEED 1  // use radar's relative speed w.r.t. ego-vehicle
+#define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
 #if USE_RADAR_REL_SPEED
 #define USE_RADAR_ABS_SPEED 0  // compute absolute speed from ege speed, ego heading, and radar's relative speed
 #endif

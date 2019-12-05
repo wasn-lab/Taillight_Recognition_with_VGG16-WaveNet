@@ -6,7 +6,7 @@ namespace tpp
 {
 // 1: /LidarDetection
 // 2: /RadarDetection
-// 3: /DetectedObjectArray/cam60_1
+// 3: /CamObjFrontCenter
 // otherwise: /SensorFusion
 DEFINE_int32(in_source, 0, "TPP input source");
 DEFINE_bool(ego_speed, true, "TPP use ego speed");

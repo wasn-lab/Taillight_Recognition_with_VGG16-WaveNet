@@ -75,7 +75,7 @@ private:
 
   visualization_msgs::Marker create_pp_marker(const unsigned int idx, const float x, const float y,
                                               std_msgs::Header obj_header, const PPLongDouble pp,
-                                              const unsigned int forecast_seq);
+                                              const unsigned int forecast_seq, const float abs_speed_kmph);
 
   visualization_msgs::Marker create_vel_marker(const unsigned int idx, const geometry_msgs::Point point, const float vx,
                                                const float vy, std_msgs::Header obj_header);
