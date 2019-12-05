@@ -175,7 +175,75 @@ def _list_mr_description(s_date, e_date, target_branch="master", state="merged")
         print("source_branch: %s" % str(data["source_branch"]) )
         print("target_branch: %s" % str(data["target_branch"]) )
         # print("data = %s" % str(json.dumps(data, indent=4)))
-        # print("\nDescriptions:\n%s" % str(data["description"]))
+        print("\nDescriptions:\n%s" % data["description"])
+
+def _stack_mr_description(s_date, e_date, target_branch="master", state="merged"):
+    global gitlab_headers
+
+    data_list = get_mr_list_date_range(gitlab_headers, s_date, e_date, target_branch, state)
+    print("type(data) = %s" % str(type(data_list)))
+    print("len(data) = %d" % len(data_list))
+    #
+    log_dict = dict() # source_branch:chage-logs
+    for data in data_list:
+        log_new = ""
+        log_new += "Merge id: %s\n" % str(data["reference"])
+        # log_new += "%s --> %s\n" % (str(data["source_branch"]), str(data["target_branch"]))
+        # log_new += "created_at: %s\n" % str(data["created_at"])
+        # log_new += "merged_at: %s\n" % str(data["merged_at"])
+
+        # Title
+        _log_title = data.get("title", "")
+        # log_new += "<%s>\n" % _log_title
+
+        # Parse
+        _pat = "## "
+        _pat_s = "<!--"
+        _pat_e = "-->"
+        #
+        _log_des = ""
+
+        _log_des_all = data.get("description", "")
+        idx_1 = _log_des_all.find(_pat)
+        if idx_1 >= 0:
+            # idx_1 += len(_pat)
+            idx_1 = _log_des_all.find("?", idx_1)
+            idx_1 += 1
+            #
+            idx_2 = _log_des_all.find(_pat, idx_1)
+            #
+            idx_s = _log_des_all.find(_pat_s, idx_1)
+            idx_e = _log_des_all.find(_pat_e, idx_s)
+            idx_e += len(_pat_e)
+
+            if (idx_s >= 0) and (idx_e >= 0):
+                _log_des = _log_des_all[idx_1:idx_s] + _log_des_all[idx_e:idx_2]
+            else:
+                _log_des = _log_des_all[idx_1:idx_2]
+            # print("(idx_1, idx_2, idx_s) = (%d, %d, %d)" % (idx_1, idx_2, idx_s))
+        else:
+            print("no matched")
+            if len(_log_des_all) > 0:
+                _log_des = _log_des_all
+            else:
+                _log_des = "- %s" % _log_title
+
+        _log_des = _log_des.rstrip().lstrip()
+        # print("_log_des = %s" % _log_des)
+        log_new += _log_des
+        # log_new += "\n---\n"
+        log_new += "\n\n"
+
+        # Stack in
+        log_hist = log_dict.get(str(data["source_branch"]), "")
+        log_dict[str(data["source_branch"])] = log_hist + log_new
+
+    #
+    sources = log_dict.keys()
+    for _sr in sources:
+        print("-" * 70)
+        print("Source: %s\n" % _sr)
+        print(log_dict[_sr])
 
 
 def string_to_datetime(date_str):
@@ -239,8 +307,9 @@ def main():
     print("End at [%s]" % _e_date.strftime("%Y-%m-%dT%H:%M:%S"))
 
     # _list_mr_description(_s_date, _e_date, target_branch=None, state=None)
-    _list_mr_description(_s_date, _e_date, target_branch="master", state="merged")
+    # _list_mr_description(_s_date, _e_date, target_branch="master", state="merged")
 
+    _stack_mr_description(_s_date, _e_date, target_branch="master", state="merged")
 
     #
     # data_list = get_mr_list_date_range(gitlab_headers, _s_date, _e_date)
