@@ -293,17 +293,17 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
     // 0:person
       case 0:
         return 1;
-        
+
       // 1:bicycle, 3:motorbike
       case 1:
-        return 0.9;
-
-      case 3:
         return 0.9;
 
       // 2:car
       case 2:
         return 0.7;
+
+      case 3:
+        return 0.9;
 
       // 5:bus, 7:truck
       case 5:
@@ -816,12 +816,6 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 }
 msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
 {
-  std::vector<int> regionHeight_x;
-  std::vector<float> regionDist_x;
-  std::vector<int> regionHeight_y;
-  std::vector<float> regionDist_y;
-  std::vector<float> regionHeightSlope_y;
-  std::vector<float> regionHeightSlope_x;
 
   msgs::PointXYZ p0;
   float x_distMeter = 0, y_distMeter = 0;
@@ -830,103 +824,89 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
   int y_loc = x;
   int img_h = 1208;
 
-  if (cam_id == 1)
+  DisEstiParams Parmas;
+
+  offset_x = Lidar_offset_x;
+
+  switch(cam_id)
   {
-    regionHeight_x = camFC60.regionHeight_x;
-    regionDist_x = camFC60.regionDist_x;
-    regionHeight_y = camFC60.regionHeight_y;
-    // regionHeightSlope_x = camFC60.regionHeightSlope_x;
-    regionHeightSlope_y = camFC60.regionHeightSlope_y;
-    regionDist_y = camFC60.regionDist_y;
-    offset_x = Lidar_offset_x;
-  }
-  else if (cam_id == 0)
-  {
-    regionHeight_x = camFR60.regionHeight_x;
-    regionDist_x = camFR60.regionDist_x;
-    regionHeight_y = camFR60.regionHeight_y;
-    regionHeightSlope_x = camFR60.regionHeightSlope_x;
-    regionHeightSlope_y = camFR60.regionHeightSlope_y;
-    regionDist_y = camFR60.regionDist_y;
-    offset_x = Lidar_offset_x;
-  }
-  //   else if (cam_id == 2)
-  //   {
-  //     regionHeight_x = regionHeight_60_FL_x;
-  //     regionDist_x = regionDist_60_FL_x;
-  //     regionHeight_y = regionHeight_60_FL_y;
-  //     regionHeightSlope_x = regionHeightSlope_60_FL_x;
-  //     regionHeightSlope_y = regionHeightSlope_60_FL_y;
-  //     regionDist_y = regionDist_60_FL_y;
-  //     offset_x = Lidar_offset_x;
-  //   }
-  else if (cam_id == 4)
-  {
-    regionHeight_x = camFT120.regionHeight_x;
-    regionDist_x = camFT120.regionDist_x;
-    regionHeight_y = camFT120.regionHeight_y;
-    regionHeightSlope_y = camFT120.regionHeightSlope_y;
-    regionDist_y = camFT120.regionDist_y;
-    offset_x = Lidar_offset_x;
-  }
-  //   else if (cam_id == 5)
-  //   {
-  //     regionHeight_x = regionHeight_120_RF_x;
-  //     regionDist_x = regionDist_120_RF_x;
-  //     regionHeight_y = regionHeight_120_RF_y;
-  //     regionHeightSlope_y = regionHeightSlope_120_RF_y;
-  //     regionDist_y = regionDist_120_RF_y;
-  //     offset_x = Lidar_offset_x;
-  //   }
-  //   else if (cam_id == 6)
-  //   {
-  //     regionHeight_x = regionHeight_120_RB_x;
-  //     regionDist_x = regionDist_120_RB_x;
-  //     regionHeight_y = regionHeight_120_RB_y;
-  //     regionHeightSlope_y = regionHeightSlope_120_RB_y;
-  //     regionDist_y = regionDist_120_RB_y;
-  //     offset_x = Lidar_offset_x;
-  //   }
-  else if (cam_id == 10)
-  {
-    regionHeight_x = camBT120.regionHeight_x;
-    regionDist_x = camBT120.regionDist_x;
-    regionHeight_y = camBT120.regionHeight_y;
-    regionHeightSlope_y = camBT120.regionHeightSlope_y;
-    regionDist_y = camBT120.regionDist_y;
-    offset_x = Lidar_offset_x;
-  }
-  else
-  {
-    p0.x = 0;
-    p0.y = 0;
-    p0.z = 0;
-    return p0;
+    case 0:
+    {
+      Parmas = camFR60;
+      break;
+    }
+    
+    case 1:
+    {
+      Parmas = camFC60;
+      break;
+    }
+
+    case 2:
+    {
+      Parmas = camFL60;
+      break;
+    }
+    
+    case 4:
+    {
+      Parmas = camFT120;
+      break;
+    }
+    
+    case 5:
+    {
+      Parmas = camRF120;
+      break;
+    }
+
+    case 6:
+    {
+      Parmas = camRB120;
+      break;
+    }
+
+    case 8:
+    {
+      Parmas = camLF120;
+      break;
+    }
+
+    case 9:
+    {
+      Parmas = camLB120;
+      break;
+    }
+    
+    case 10:
+    {
+      Parmas = camBT120;
+      break;
+    }
+
+    default:
+      return p0;
   }
 
   if (cam_id == 1 || cam_id == 4 || cam_id == 10)
   {
-    if (regionDist_x.size() != 0)
-      x_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
-    if (regionDist_y.size() != 0)
-      y_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, img_h);
-
-    p0.x = x_distMeter + offset_x;
-    p0.y = y_distMeter;
-    p0.z = Lidar_offset_z;
+    if (Parmas.regionDist_x.size() != 0)
+      x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
+    if (Parmas.regionDist_y.size() != 0)
+      y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y, Parmas.regionDist_y, img_h);
   }
 
   if (cam_id == 0)
   {
-    if (regionDist_y.size() != 0)
-      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y);
-    if (regionDist_x.size() != 0)
-      x_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_x, regionHeightSlope_x, regionDist_x, img_h);
-
-    p0.x = x_distMeter + offset_x;
-    p0.y = y_distMeter;
-    p0.z = Lidar_offset_z;
+    if (Parmas.regionDist_x.size() != 0)
+      x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x, Parmas.regionDist_x, img_h);
+    if (Parmas.regionDist_y.size() != 0)
+      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y, Parmas.regionDist_y);
   }
+
+  p0.x = x_distMeter + offset_x;
+  p0.y = y_distMeter;
+  p0.z = Lidar_offset_z;
 
   return p0;
 }
