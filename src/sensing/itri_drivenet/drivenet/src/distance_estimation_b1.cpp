@@ -490,9 +490,9 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
   ///  |/  1  | /
   /// p0-----P3
 
-  /// |----| \ 
-    /// |    |  obstacle_l
-  /// |----| /
+  /// |----|\
+  /// |    | obstacle_l
+  /// |----|/
   /// \    /
   /// obstacle_w
 
@@ -649,9 +649,9 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   /// p0-----P3
 
   /// birds view
-  /// |----| \ 
-    /// |    |  obstacle_l
-  /// |----| /
+  /// |----|\
+  /// |    | obstacle_l
+  /// |----|/
   /// \    /
   /// obstacle_w
 
