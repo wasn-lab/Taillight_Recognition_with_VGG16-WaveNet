@@ -243,18 +243,17 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
   return distance;
 }
 
-int DistanceEstimation::CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1,
-                                         cv::Point LeftLinePoint2, int object_x1, int object_y2)
+int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
 {
   int point0 = 0;
   int point1 = 1;
   int point2 = 2;
   /// right
-  int C1 = (RightLinePoint1.x - RightLinePoint2.x) * (object_y2 - RightLinePoint2.y) -
-           (object_x1 - RightLinePoint2.x) * (RightLinePoint1.y - RightLinePoint2.y);
+  int C1 = (area.RightLinePoint1.x - area.RightLinePoint2.x) * (object_y2 - area.RightLinePoint2.y) -
+           (object_x1 - area.RightLinePoint2.x) * (area.RightLinePoint1.y - area.RightLinePoint2.y);
   /// left
-  int C2 = (LeftLinePoint1.x - LeftLinePoint2.x) * (object_y2 - LeftLinePoint2.y) -
-           (object_x1 - LeftLinePoint2.x) * (LeftLinePoint1.y - LeftLinePoint2.y);
+  int C2 = (area.LeftLinePoint1.x - area.LeftLinePoint2.x) * (object_y2 - area.LeftLinePoint2.y) -
+           (object_x1 - area.LeftLinePoint2.x) * (area.LeftLinePoint1.y - area.LeftLinePoint2.y);
 
   if (C1 > 0)
     return point2;
@@ -263,6 +262,7 @@ int DistanceEstimation::CheckPointInArea(cv::Point RightLinePoint1, cv::Point Ri
   else
     return point0;
 }
+
 float DistanceEstimation::RatioDefine(int cam_id, int cls)
 {
   float ratio;
@@ -413,48 +413,45 @@ int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::
   double shrink_ratio;
 
   // Four points of RoI which need to shrink (usually road lane)
-  cv::Point LeftLinePoint1;
-  cv::Point LeftLinePoint2;
-  cv::Point RightLinePoint1;
-  cv::Point RightLinePoint2;
+  CheckArea areaCheck;
 
   // int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
 
   if (cam_id == 1)
   {
     // From x 6 - 50 m, y -3 to +3 m.
-    LeftLinePoint1 = cv::Point(869, 914);
-    LeftLinePoint2 = cv::Point(0, 1207);
-    RightLinePoint1 = cv::Point(1097, 914);
-    RightLinePoint2 = cv::Point(1746, 1207);
-    area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
+    areaCheck.LeftLinePoint1 = cv::Point(869, 914);
+    areaCheck.LeftLinePoint2 = cv::Point(0, 1207);
+    areaCheck.RightLinePoint1 = cv::Point(1097, 914);
+    areaCheck.RightLinePoint2 = cv::Point(1746, 1207);
+    area_id_L = CheckPointInArea(areaCheck, Points_src[1],
                                  Points_src[3]);
-    area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
+    area_id_R = CheckPointInArea(areaCheck, Points_src[2],
                                  Points_src[3]);
   }
   else if (cam_id == 4)
   {
     // From x 0 - 7 m, y -2 to +2 m.
-    LeftLinePoint1 = cv::Point(510, 272);
-    LeftLinePoint2 = cv::Point(-412, 1207);
-    RightLinePoint1 = cv::Point(1351, 272);
-    RightLinePoint2 = cv::Point(2258, 1207);
-    area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
+    areaCheck.LeftLinePoint1 = cv::Point(510, 272);
+    areaCheck.LeftLinePoint2 = cv::Point(-412, 1207);
+    areaCheck.RightLinePoint1 = cv::Point(1351, 272);
+    areaCheck.RightLinePoint2 = cv::Point(2258, 1207);
+    area_id_L = CheckPointInArea(areaCheck, Points_src[1],
                                  Points_src[3]);
-    area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
+    area_id_R = CheckPointInArea(areaCheck, Points_src[2],
                                  Points_src[3]);
   }
   else if (cam_id == 10)
   {
     // From x -8 to -20 m, y -3 to +3 m.
-    LeftLinePoint1 = cv::Point(737, 143);
-    LeftLinePoint2 = cv::Point(-264, 1207);
-    RightLinePoint1 = cv::Point(1182, 143);
-    RightLinePoint2 = cv::Point(2195, 1207);
+    areaCheck.LeftLinePoint1 = cv::Point(737, 143);
+    areaCheck.LeftLinePoint2 = cv::Point(-264, 1207);
+    areaCheck.RightLinePoint1 = cv::Point(1182, 143);
+    areaCheck.RightLinePoint2 = cv::Point(2195, 1207);
 
-    area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
+    area_id_L = CheckPointInArea(areaCheck, Points_src[1],
                                  Points_src[3]);
-    area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
+    area_id_R = CheckPointInArea(areaCheck, Points_src[2],
                                  Points_src[3]);
   }
 
@@ -856,23 +853,6 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   point8.p5 = p5;
   point8.p6 = p6;
   point8.p7 = p7;
-
-  // std::cout << "3D: p0(x, y, z) = (" << point8.p0.x  << ", " <<  point8.p0.y <<  ", " << point8.p0.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p1(x, y, z) = (" << point8.p1.x  << ", " <<  point8.p1.y <<  ", " << point8.p1.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p2(x, y, z) = (" << point8.p2.x  << ", " <<  point8.p2.y <<  ", " << point8.p2.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p3(x, y, z) = (" << point8.p3.x  << ", " <<  point8.p3.y <<  ", " << point8.p3.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p4(x, y, z) = (" << point8.p4.x  << ", " <<  point8.p4.y <<  ", " << point8.p4.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p5(x, y, z) = (" << point8.p5.x  << ", " <<  point8.p5.y <<  ", " << point8.p5.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p6(x, y, z) = (" << point8.p6.x  << ", " <<  point8.p6.y <<  ", " << point8.p6.z << ")." <<
-  // std::endl;
-  // std::cout << "3D: p7(x, y, z) = (" << point8.p7.x  << ", " <<  point8.p7.y <<  ", " << point8.p7.z << ")." <<
-  // std::endl;
 
   return point8;
 }
