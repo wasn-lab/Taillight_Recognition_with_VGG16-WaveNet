@@ -36,6 +36,10 @@ bool isCompressed = false;
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
 std::mutex display_mutex;
+std::mutex image_mutex_0;
+std::mutex image_mutex_1;
+std::mutex image_mutex_2;
+std::mutex image_mutex;
 
 std::string cam60_0_topicName;
 std::string cam60_1_topicName;
@@ -147,7 +151,9 @@ void callback_60_0(const sensor_msgs::Image::ConstPtr& msg)
 {
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
+  image_mutex_0.lock();
   mat60_0 = cv_ptr->image;
+  image_mutex_0.unlock();
 
   std_msgs::Header h = msg->header;
 
@@ -159,7 +165,9 @@ void callback_60_1(const sensor_msgs::Image::ConstPtr& msg)
 {
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
+  image_mutex_1.lock();
   mat60_1 = cv_ptr->image;
+  image_mutex_1.unlock();
 
   std_msgs::Header h = msg->header;
   if (!isInferData_1)
@@ -170,7 +178,9 @@ void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
 {
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
+  image_mutex_2.lock();
   mat60_2 = cv_ptr->image;
+  image_mutex_2.unlock();
 
   std_msgs::Header h = msg->header;
   if (!isInferData_2)
@@ -179,7 +189,9 @@ void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
 {
+  image_mutex_0.lock();
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_0);
+  image_mutex_0.unlock();
 
   if (!isInferData_0)
     sync_inference(camera::id::right_60, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
@@ -187,7 +199,9 @@ void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
 {
+  image_mutex_1.lock();
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_1);
+  image_mutex_1.unlock();
 
   if (!isInferData_1)
     sync_inference(camera::id::front_60, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
@@ -195,7 +209,9 @@ void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
 {
+  image_mutex_2.lock();
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_2);
+  image_mutex_2.unlock();
 
   if (!isInferData_2)
     sync_inference(camera::id::left_60, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
@@ -261,9 +277,9 @@ int main(int argc, char** argv)
 
   pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
   if (standard_FPS == 1)
-  pthread_create(&thrdInterp, NULL, &run_interp, NULL);
+    pthread_create(&thrdInterp, NULL, &run_interp, NULL);
   if (display_flag == 1)
-  pthread_create(&thrdDisplay, NULL, &run_display, NULL);
+    pthread_create(&thrdDisplay, NULL, &run_display, NULL);
 
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/b1_yolo_60.cfg";
@@ -316,8 +332,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camFR60_area,
-                                  box.x1, box.y2, box.x2, box.y2);
+    BoxPass_flag = CheckBoxInArea(distEst.camFR60_area, box.x1, box.y2, box.x2, box.y2);
   }
   else if (cam_order == camera::id::front_60)
   {
@@ -325,8 +340,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 7 ~ 50 meters
     // y axis: -10 ~ 10 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camFC60_area,
-                                  box.x1, box.y2, box.x2, box.y2);
+    BoxPass_flag = CheckBoxInArea(distEst.camFC60_area, box.x1, box.y2, box.x2, box.y2);
   }
   else if (cam_order == camera::id::left_60)
   {
@@ -376,6 +390,7 @@ void* run_yolo(void*)
   std::vector<std_msgs::Header> headers_tmp;
   std::vector<std::vector<ITRI_Bbox>*> vbbx_output_tmp;
   std::vector<cv::Mat*> matSrcs_tmp;
+  std::vector<cv::Mat> matSrcsRaw_tmp(cam_ids_.size());
   std::vector<uint32_t> matOrder_tmp;
   std::vector<int> dist_cols_tmp;
   std::vector<int> dist_rows_tmp;
@@ -390,23 +405,21 @@ void* run_yolo(void*)
   while (ros::ok() && !isInferStop)
   {
     bool isDataVaild = true;
+
+    // waiting for data
     pthread_mutex_lock(&mtxInfer);
     if (!isInferData)
       pthread_cond_wait(&cndInfer, &mtxInfer);
     pthread_mutex_unlock(&mtxInfer);
 
     // copy data
-    matSrcs_tmp = matSrcs;
-    for (auto& mat : matSrcs)
-      isDataVaild &= CheckMatDataValid(*mat);
-    for (auto& mat : matSrcs_tmp)
-      isDataVaild &= CheckMatDataValid(*mat);
-    if (!isDataVaild)
+    image_mutex.lock();
+    for (size_t ndx = 0; ndx < cam_ids_.size(); ndx++)
     {
-      reset_data();
-      isDataVaild = true;
-      continue;
+      matSrcsRaw_tmp[ndx] = matSrcs[ndx]->clone();
+      matSrcs_tmp.push_back(&matSrcsRaw_tmp[ndx]);
     }
+    image_mutex.unlock();
 
     headers_tmp = headers;
     vbbx_output_tmp = vbbx_output;
@@ -417,6 +430,20 @@ void* run_yolo(void*)
     // reset data
     reset_data();
 
+    // check data
+    for (auto& mat : matSrcs)
+      isDataVaild &= CheckMatDataValid(*mat);
+    for (auto& mat : matSrcs_tmp)
+      isDataVaild &= CheckMatDataValid(*mat);
+    if (!isDataVaild)
+    {
+      reset_data();
+      matSrcs_tmp.clear();
+      isDataVaild = true;
+      continue;
+    }
+
+    // inference
     if (!input_resize)
       yoloApp.input_preprocess(matSrcs_tmp);
     else
@@ -425,9 +452,7 @@ void* run_yolo(void*)
     yoloApp.inference_yolo();
     yoloApp.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
 
-    /**
-     *      publish results here
-     */
+    // publish results
     msgs::DetectedObjectArray doa;
     std::vector<msgs::DetectedObject> vDo;
     for (size_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
@@ -590,7 +615,7 @@ void* run_display(void*)
   cv::moveWindow("Center-60", 545, 30);
   cv::moveWindow("LeftSide-60", 0, 30);
 
-  int marker_h_1; //, marker_h_0, marker_h_2;
+  int marker_h_1;  //, marker_h_0, marker_h_2;
   marker_h_1 = 914;
 
   // cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
