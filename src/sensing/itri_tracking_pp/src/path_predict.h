@@ -64,6 +64,8 @@ private:
   // warning: near 0 would distord pp results
   long double input_shift_m_ = 0.;
 
+  float confidence_thr_ = 0.f;
+
   void compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y);
   void normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y);
 
@@ -92,7 +94,12 @@ private:
   void covariance_matrix(PPLongDouble& pp, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
   int predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
-              std::vector<long double>& data_y, std::vector<PPLongDouble>& pps, const unsigned int confidence_lv);
+              std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
+
+  void confidence_threshold(const unsigned int confidence_lv);
+
+  void confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
+                               std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
 };
 }  // namespace tpp
 

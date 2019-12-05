@@ -24,7 +24,7 @@ public:
   int init_time(const double secs, const double secs_prev);
 
   void init_ego_yawrate(const float ego_yawrate);
-  void init_ego_speed(const float ego_speed);
+  void init_ego_speed_kmph(const float ego_speed_kmph);
 
   void init_object_relative_position(const float obj_x_rel, const float obj_x_rel_prev,  //
                                      const float obj_y_rel, const float obj_y_rel_prev);
@@ -56,16 +56,22 @@ public:
   float get_ego_dz_abs();
   float get_ego_heading();
   float get_ego_yawrate();
-  float get_ego_speed();
+  float get_ego_speed_kmph();
+  float get_ego_velx_kmph_abs();
+  float get_ego_vely_kmph_abs();
 
   // setter
   void set_dt(const long long dt);
+  void set_ego_x_abs(const float ego_x_abs);
+  void set_ego_y_abs(const float ego_y_abs);
+  void set_ego_z_abs(const float ego_z_abs);
   void set_ego_x_rel(const float ego_x_rel);
   void set_ego_y_rel(const float ego_y_rel);
   void set_ego_z_rel(const float ego_z_rel);
   void set_ego_heading(const float ego_heading);
   void set_ego_yawrate(const float ego_yawrate);
-  void set_ego_speed(const float ego_speed);
+  void set_ego_speed_kmph(const float ego_speed_kmph);
+  void ego_velx_vely_kmph_abs();
 
 private:
   DISALLOW_COPY_AND_ASSIGN(Velocity);
@@ -82,6 +88,10 @@ private:
   long long time_ = 0;
   long long time_prev_ = 0;
 
+  bool is_ego_x_firsttime_ = true;
+  bool is_ego_y_firsttime_ = true;
+  bool is_ego_heading_firsttime_ = true;
+
   float ego_x_abs_ = 0;
   float ego_x_abs_prev_ = 0;
   float ego_x_rel_ = 0;
@@ -89,6 +99,9 @@ private:
   float ego_dx_rel_ = 0;
   float ego_vx_abs_ = 0;
   float ego_vx_rel_ = 0;
+
+  float ego_velx_kmph_abs_ = 0.;
+  float ego_vely_kmph_abs_ = 0.;
 
   float ego_y_abs_ = 0;
   float ego_y_abs_prev_ = 0;
@@ -113,8 +126,11 @@ private:
   float ego_yawrate_ = 0;
   float ego_yawrate_prev_ = 0;
 
-  float ego_speed_ = 0;
-  float ego_speed_prev_ = 0;
+  float ego_speed_kmph_ = 0;
+  float ego_speed_kmph_prev_ = 0;
+
+  float ego_speed_mps_ = 0;
+  float ego_speed_mps_prev_ = 0;
 
   float ego_radius_ = 0;
 

@@ -113,18 +113,28 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
 {
   int start = track.head - num_pp_input_in_use_ + 1;
 
+#if DEBUG_PP_TRAJ
+  LOG_INFO << std::endl;
+#endif
+
   for (int i = start; i <= track.head; i++)
   {
     if (i < 0)
     {
       if (track.is_over_max_length)
       {
-        create_pp_input(track.states[i + track.max_length].position, data_x, data_y);
+        create_pp_input(track.states[i + track.max_length].estimated_position, data_x, data_y);
+#if DEBUG_PP_TRAJ
+        LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back() << " (abs_coord: " << track.states[i + track.max_length].estimated_position.x << " " <<  track.states[i + track.max_length].estimated_position.y << ")" << std::endl;
+#endif
       }
     }
     else
     {
-      create_pp_input(track.states[i].position, data_x, data_y);
+      create_pp_input(track.states[i].estimated_position, data_x, data_y);
+#if DEBUG_PP_TRAJ
+      LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back() << " (abs_coord: " << track.states[i].estimated_position.x << " " << track.states[i].estimated_position.y << ")" << std::endl;
+#endif
     }
   }
 }
@@ -342,8 +352,7 @@ void PathPredict::covariance_matrix(PPLongDouble& pp, std::vector<long double>& 
 }
 
 int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
-                         std::vector<long double>& data_y, std::vector<PPLongDouble>& pps,
-                         const unsigned int confidence_lv)
+                         std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
 {
   if (data_x.size() != data_y.size())
   {
@@ -355,20 +364,6 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
   {
     LOG_INFO << "Error: max_order_ > #(input data)" << std::endl;
     return 2;
-  }
-
-  // assign confidence_thr by confidence_lv
-  float confidence_thr = 0.f;
-  switch (confidence_lv)
-  {
-    case 1:
-      confidence_thr = 1.15f;  // 75%
-      break;
-    case 2:
-      confidence_thr = 1.96f;  // 95%
-      break;
-    default:
-      confidence_thr = 0.675f;  // 50%
   }
 
 #if DEBUG_PP
@@ -386,6 +381,27 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
     pps.push_back(pp);
   }
 
+  return 0;
+}
+
+void PathPredict::confidence_threshold(const unsigned int confidence_lv)
+{
+  switch (confidence_lv)
+  {
+    case 1:
+      confidence_thr_ = 1.15f;  // 75%
+      break;
+    case 2:
+      confidence_thr_ = 1.96f;  // 95%
+      break;
+    default:
+      confidence_thr_ = 0.675f;  // 50%
+  }
+}
+
+void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
+                                          std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
+{
   for (unsigned i = 0; i < num_forecasts_; i++)
   {
 #if DEBUG_PP
@@ -403,11 +419,9 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {
-      confidence_ellipse(pps[i], confidence_thr);
+      confidence_ellipse(pps[i], confidence_thr_);
     }
   }
-
-  return 0;
 }
 
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
@@ -420,6 +434,8 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 
   std::vector<PointLD>().swap(offsets_);
   offsets_.reserve(pp_objs_.size());
+
+  confidence_threshold(0);
 
   for (unsigned i = 0; i < pp_objs_.size(); i++)
   {
@@ -452,12 +468,14 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 #endif
 
       int err = 0;
-      err = predict(max_order_, num_forecasts_, data_x, data_y, pps, 0);
+      err = predict(max_order_, num_forecasts_, data_x, data_y, pps);
       if (err > 0)
       {
         pp_objs_[i].track.is_ready_prediction = false;
         continue;
       }
+
+      confidence_ellipse_main(num_forecasts_, data_x, data_y, pps);
 
       for (unsigned j = 0; j < num_forecasts_; j++)
       {
@@ -468,6 +486,13 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
       }
+
+#if DEBUG_PP_TRAJ
+      for (unsigned j = 0; j < num_forecasts_; j++)
+      {
+        LOG_INFO << "Traj " << (j + 1) << " " << pp_objs_[i].track.forecasts[j].position.x << " " << pp_objs_[i].track.forecasts[j].position.y << std::endl;
+      }
+#endif
     }
     else
     {

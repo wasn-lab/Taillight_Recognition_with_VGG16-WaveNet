@@ -64,9 +64,19 @@ float Velocity::get_ego_yawrate()
   return ego_yawrate_;
 }
 
-float Velocity::get_ego_speed()
+float Velocity::get_ego_speed_kmph()
 {
-  return ego_speed_;
+  return ego_speed_kmph_;
+}
+
+float Velocity::get_ego_velx_kmph_abs()
+{
+  return ego_velx_kmph_abs_;
+}
+
+float Velocity::get_ego_vely_kmph_abs()
+{
+  return ego_vely_kmph_abs_;
 }
 
 // === setter ===
@@ -74,6 +84,36 @@ float Velocity::get_ego_speed()
 void Velocity::set_dt(const long long dt)
 {
   dt_ = dt;
+}
+
+void Velocity::set_ego_x_abs(const float ego_x_abs)
+{
+  if (is_ego_x_firsttime_)
+  {
+    ego_x_abs_ = ego_x_abs;
+    ego_dx_abs_ = 0;
+    is_ego_x_firsttime_ = false;
+    return;
+  }
+
+  ego_x_abs_prev_ = ego_x_abs_;
+  ego_x_abs_ = ego_x_abs;
+  ego_dx_abs_ = ego_x_abs_ - ego_x_abs_prev_;
+}
+
+void Velocity::set_ego_y_abs(const float ego_y_abs)
+{
+  if (is_ego_y_firsttime_)
+  {
+    ego_y_abs_ = ego_y_abs;
+    ego_dy_abs_ = 0;
+    is_ego_y_firsttime_ = false;
+    return;
+  }
+
+  ego_y_abs_prev_ = ego_y_abs_;
+  ego_y_abs_ = ego_y_abs;
+  ego_dy_abs_ = ego_y_abs_ - ego_y_abs_prev_;
 }
 
 void Velocity::set_ego_x_rel(const float ego_x_rel)
@@ -88,7 +128,17 @@ void Velocity::set_ego_y_rel(const float ego_y_rel)
 
 void Velocity::set_ego_heading(const float ego_heading)
 {
+  if (is_ego_heading_firsttime_)
+  {
+    ego_heading_ = ego_heading;
+    ego_psi_ = 0;
+    is_ego_heading_firsttime_ = false;
+    return;
+  }
+
+  ego_heading_prev_ = ego_heading_;
   ego_heading_ = ego_heading;
+  ego_psi_ = ego_heading_ - ego_heading_prev_;
 }
 
 void Velocity::set_ego_yawrate(const float ego_yawrate)
@@ -96,9 +146,16 @@ void Velocity::set_ego_yawrate(const float ego_yawrate)
   ego_yawrate_ = ego_yawrate;
 }
 
-void Velocity::set_ego_speed(const float ego_speed)
+void Velocity::set_ego_speed_kmph(const float ego_speed_kmph)
 {
-  ego_speed_ = ego_speed;
+  ego_speed_kmph_ = ego_speed_kmph;
+}
+
+void Velocity::ego_velx_vely_kmph_abs()
+{
+  float dist = euclidean_distance(ego_x_abs_, ego_y_abs_);
+  ego_velx_kmph_abs_ = ego_speed_kmph_ * ego_x_abs_ / dist;
+  ego_vely_kmph_abs_ = ego_speed_kmph_ * ego_y_abs_ / dist;
 }
 
 // ==============
@@ -139,10 +196,10 @@ void Velocity::init_ego_yawrate(const float ego_yawrate)
   ego_yawrate_ = ego_yawrate;
 }
 
-void Velocity::init_ego_speed(const float ego_speed)
+void Velocity::init_ego_speed_kmph(const float ego_speed_kmph)
 {
-  ego_speed_prev_ = ego_speed_;
-  ego_speed_ = ego_speed;
+  ego_speed_kmph_prev_ = ego_speed_kmph_;
+  ego_speed_kmph_ = ego_speed_kmph;
 }
 
 void Velocity::init_object_relative_position(const float obj_x_rel, const float obj_x_rel_prev,  //
@@ -176,12 +233,12 @@ void Velocity::compute_position_displacement()
 
   if (ego_yawrate_prev_ == 0)
   {
-    ego_dx_rel_ = ego_speed_prev_ * dt_ / 1000000000;  // meter
-    ego_dy_rel_ = 0;                                   // meter
+    ego_dx_rel_ = ego_speed_mps_prev_ * dt_ / 1000000000;  // meter
+    ego_dy_rel_ = 0;                                       // meter
     return;
   }
 
-  ego_radius_ = ego_speed_prev_ / ego_yawrate_prev_;  // meter
+  ego_radius_ = ego_speed_mps_prev_ / ego_yawrate_prev_;  // meter
 
   ego_dx_rel_ = ego_radius_ * std::sin(ego_psi_);        // meters
   ego_dy_rel_ = ego_radius_ * (1 - std::cos(ego_psi_));  // meters
