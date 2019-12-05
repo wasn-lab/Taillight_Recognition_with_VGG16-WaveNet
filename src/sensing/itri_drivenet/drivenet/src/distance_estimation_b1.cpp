@@ -115,7 +115,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
   float unitLength = 0.0;
   int bias = 0;
   float offset = 0.0;
-  for (uint i = 1; i < regionHeight.size(); i++)
+  for (size_t i = 1; i < regionHeight.size(); i++)
   {
     if (piexl_loc >= regionHeight[i] && piexl_loc <= regionHeight[i - 1])
     {
@@ -160,7 +160,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
 
   std::vector<int> regionHeight_new = regionHeight;
 
-  for (uint i = 0; i < regionHeight.size(); i++)
+  for (size_t i = 0; i < regionHeight.size(); i++)
   {
     if (regionHeightSlope[i] != 0)
       regionHeight_new[i] = regionHeight[i] - int((regionHeightSlope[i]) * pixel_loc_x);
@@ -168,7 +168,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
       regionHeight_new[i] = regionHeight[i];
   }
 
-  for (uint i = 1; i < regionHeight_new.size(); i++)
+  for (size_t i = 1; i < regionHeight_new.size(); i++)
   {
     if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i - 1])
     {
@@ -219,7 +219,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
 
   std::vector<int> regionHeight_new = regionHeight;
 
-  for (uint i = 0; i < regionHeight.size(); i++)
+  for (size_t i = 0; i < regionHeight.size(); i++)
   {
     int y = img_h - piexl_loc_x;
     if (regionHeightSlope_y[i] != 0)
@@ -228,7 +228,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       regionHeight_new[i] = regionHeight[i];
   }
 
-  for (uint i = 1; i < regionHeight_new.size(); i++)
+  for (size_t i = 1; i < regionHeight_new.size(); i++)
   {
     if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i - 1])
     {
