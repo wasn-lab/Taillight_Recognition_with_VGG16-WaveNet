@@ -9,8 +9,6 @@
 #include "drivenet/image_preprocessing.h"
 #include "drivenet/image_exception_handling.h"
 
-using namespace DriveNet;
-
 #if CAR_MODEL_IS_B1
 const std::vector<int> cam_ids_{
   camera::id::top_right_front_120, camera::id::top_right_rear_120, camera::id::top_left_front_120,
