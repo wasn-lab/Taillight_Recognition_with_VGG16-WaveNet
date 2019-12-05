@@ -58,7 +58,7 @@ public:
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id);
 
   int CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1,
-                     cv::Point LeftLinePoint2, int object_x1, int object_y2);
+                       cv::Point LeftLinePoint2, int object_x1, int object_y2);
 
   /// camId:0
   // Front right 60 range:

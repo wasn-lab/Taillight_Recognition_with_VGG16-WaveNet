@@ -15,7 +15,7 @@ namespace DriveNet
   {                                                                                                                    \
     if (status != 0)                                                                                                   \
     {                                                                                                                  \
-      if(cudaGetErrorString(status)!= "no error")                                                                      \
+      if (cudaGetErrorString(status) != "no error")                                                                    \
       {                                                                                                                \
         std::cout << "Cuda failure: status: " << status << std::endl;                                                  \
         std::cout << "Cuda failure: " << cudaGetErrorString(status) << " in file " << __FILE__ << " at line "          \

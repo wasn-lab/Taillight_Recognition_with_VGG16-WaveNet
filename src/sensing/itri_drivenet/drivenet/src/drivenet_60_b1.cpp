@@ -98,8 +98,8 @@ void image_init()
   }
 }
 
-void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::vector<ITRI_Bbox>* vbbx,
-                    int dist_w, int dist_h)
+void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::vector<ITRI_Bbox>* vbbx, int dist_w,
+                    int dist_h)
 {
   pthread_mutex_lock(&mtxInfer);
 
@@ -317,12 +317,9 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camFR60_area.RightLinePoint1, 
-                                  distEst.camFR60_area.RightLinePoint2, 
-                                  distEst.camFR60_area.LeftLinePoint1, 
-                                  distEst.camFR60_area.LeftLinePoint2, 
-                                  box.x1, box.y2,
-                                  box.x2, box.y2);
+    BoxPass_flag = CheckBoxInArea(distEst.camFR60_area.RightLinePoint1, distEst.camFR60_area.RightLinePoint2,
+                                  distEst.camFR60_area.LeftLinePoint1, distEst.camFR60_area.LeftLinePoint2, box.x1,
+                                  box.y2, box.x2, box.y2);
   }
   else if (cam_order == camera::id::front_60)
   {
@@ -330,12 +327,9 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 7 ~ 50 meters
     // y axis: -10 ~ 10 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camFC60_area.RightLinePoint1, 
-                                  distEst.camFC60_area.RightLinePoint2, 
-                                  distEst.camFC60_area.LeftLinePoint1, 
-                                  distEst.camFC60_area.LeftLinePoint2, 
-                                  box.x1, box.y2,
-                                  box.x2, box.y2);
+    BoxPass_flag = CheckBoxInArea(distEst.camFC60_area.RightLinePoint1, distEst.camFC60_area.RightLinePoint2,
+                                  distEst.camFC60_area.LeftLinePoint1, distEst.camFC60_area.LeftLinePoint2, box.x1,
+                                  box.y2, box.x2, box.y2);
   }
   else if (cam_order == camera::id::left_60)
   {

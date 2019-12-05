@@ -120,8 +120,8 @@ void image_init()
   }
 }
 
-void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::vector<ITRI_Bbox>* vbbx,
-                    int dist_w, int dist_h)
+void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::vector<ITRI_Bbox>* vbbx, int dist_w,
+                    int dist_h)
 {
   pthread_mutex_lock(&mtxInfer);
 

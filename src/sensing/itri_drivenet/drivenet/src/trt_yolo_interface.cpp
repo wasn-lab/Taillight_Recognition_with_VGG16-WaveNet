@@ -52,8 +52,8 @@ void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs)
   cudaStreamSynchronize(inferYolo->m_CudaStream);
   yoloInput = yoloInput - inferYolo->getInputH() * inferYolo->getInputW() * 3 * batchSize;
 }
-void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size,
-                                std::vector<int> dist_cols, std::vector<int> dist_rows)
+void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int> dist_cols,
+                                std::vector<int> dist_rows)
 {
   dsImgs_rows.clear();
   dsImgs_cols.clear();

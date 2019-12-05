@@ -5,88 +5,86 @@
 
 void DistanceEstimation::init(int car_id)
 {
-    carId = car_id;
+  carId = car_id;
 
-    // camId: 0 (Front Right)
-    camFR60.regionHeight_x = {-340, -132, 20, 230, 470, 664, 895, 1174, 1418, 1674}; 
-    camFR60.regionHeightSlope_x = {0.182, 0.203, 0.220, 0.253, 0.297, 0.349, 0.439, 0.603, 0.842, 1.661};
-    camFR60.regionDist_x = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+  // camId: 0 (Front Right)
+  camFR60.regionHeight_x = { -340, -132, 20, 230, 470, 664, 895, 1174, 1418, 1674 };
+  camFR60.regionHeightSlope_x = { 0.182, 0.203, 0.220, 0.253, 0.297, 0.349, 0.439, 0.603, 0.842, 1.661 };
+  camFR60.regionDist_x = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
-    camFR60.regionHeight_y = {1207,1197/*5*/,1171,1149,1121,1108,1098/*10*/,
-                            1092,1091,1090,1089,1084/*15*/,
-                            1083,1082,1080,1073,1073/*20*/,
-                            1067,1072,1070,1066,1063/*25*/,
-                            1071,1065,1078,1097,1083/*30*/}; 
-    camFR60.regionHeightSlope_y = {0,-0.002/*5*/,0.014,0.034,0.047,0.056,0.064/*10*/,
-                                0.072,0.082,0.091,0.096,0.098/*15*/,
-                                0.104,0.107,0.110,0.110,0.113/*20*/,
-                                0.113,0.119,0.120,0.120,0.121/*25*/,
-                                0.128,0.127,0.136,0.148,0.142}; 
-    camFR60.regionDist_y = {-4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16, -17, -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30};
+  camFR60.regionHeight_y = { 1207, 1197 /*5*/,  1171, 1149, 1121, 1108, 1098 /*10*/, 1092, 1091, 1090,
+                             1089, 1084 /*15*/, 1083, 1082, 1080, 1073, 1073 /*20*/, 1067, 1072, 1070,
+                             1066, 1063 /*25*/, 1071, 1065, 1078, 1097, 1083 /*30*/ };
+  camFR60.regionHeightSlope_y = { 0,     -0.002 /*5*/, 0.014, 0.034, 0.047, 0.056, 0.064 /*10*/, 0.072, 0.082, 0.091,
+                                  0.096, 0.098 /*15*/, 0.104, 0.107, 0.110, 0.110, 0.113 /*20*/, 0.113, 0.119, 0.120,
+                                  0.120, 0.121 /*25*/, 0.128, 0.127, 0.136, 0.148, 0.142 };
+  camFR60.regionDist_y = { -4,  -5,  -6,  -7,  -8,  -9,  -10, -11, -12, -13, -14, -15, -16, -17,
+                           -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30 };
 
-    camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
-    camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
-    camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
-    camFR60_area.RightLinePoint2 = cv::Point(1674, 1207);
+  camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
+  camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
+  camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
+  camFR60_area.RightLinePoint2 = cv::Point(1674, 1207);
 
-    // camId: 1 (Front Center)
-    camFC60.regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
-                            1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
-    camFC60.regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
-    camFC60.regionHeightSlope_y = {0.12, 0.209, 0.27, 0.337, 0.44, 1.02, 3.87, -1.53, -0.66, -0.452, -0.333, -0.251, -0.121};
-    camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
-    camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+  // camId: 1 (Front Center)
+  camFC60.regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
+                             1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
+  camFC60.regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  camFC60.regionHeightSlope_y = { 0.12,  0.209, 0.27,   0.337,  0.44,   1.02,  3.87,
+                                  -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
+  camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
+  camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
-    camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
-    camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
-    camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
-    camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
+  camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
+  camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
+  camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
+  camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
 
-    // camId: 4 (Front Top)
-    camFT120.regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
-                                150,  130,  115, 99,  86,  75,  65,  57,  48,  40,  10 }; 
-    camFT120.regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25 };
-    camFT120.regionHeight_y = {
-        -1422, -1131, -824, -412, 70, 490, 942, 1292, 1732, 2258, 2641, 3030, 3471, 3619, 3709, 3548
-    }; 
-    camFT120.regionHeightSlope_y = { 0.603, 0.682,   0.784,   1.012,   1.56,    2.908,   48.28,   -4.4615,
-                                    -1.8,  -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862 };
-    camFT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9 };
+  // camId: 4 (Front Top)
+  camFT120.regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
+                              150,  130,  115, 99,  86,  75,  65,  57,  48,  40,  10 };
+  camFT120.regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25 };
+  camFT120.regionHeight_y = { -1422, -1131, -824, -412, 70,   490,  942,  1292,
+                              1732,  2258,  2641, 3030, 3471, 3619, 3709, 3548 };
+  camFT120.regionHeightSlope_y = { 0.603, 0.682,   0.784,   1.012,   1.56,    2.908,   48.28,   -4.4615,
+                                   -1.8,  -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862 };
+  camFT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9 };
 
-    camFT120_area.LeftLinePoint1 = cv::Point(127, 272);
-    camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
-    camFT120_area.RightLinePoint1 = cv::Point(1904, 272);
-    camFT120_area.RightLinePoint2 = cv::Point(3548, 1207);
+  camFT120_area.LeftLinePoint1 = cv::Point(127, 272);
+  camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
+  camFT120_area.RightLinePoint1 = cv::Point(1904, 272);
+  camFT120_area.RightLinePoint2 = cv::Point(3548, 1207);
 
-    // camId: 5 (Right Front)
-    camRF120.regionHeight_x = { 1148, 830, 544, 377, 236, 157, 52 };      // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
-    camRF120.regionDist_x = { 0, 1, 2, 3, 4, 5, 6 };                      // 5 to 10, 20 to 50m (~5m)
-    camRF120.regionHeight_y = { 2507, 1904, 1498, 1032, 637, 357, -80 };  //-2 to 0 to 2(~1m) //Vertical line
-    camRF120.regionHeightSlope_y = { -1.2286, -2.4524, -6.000, 21.3529, 4.7308, 3.0297, 1.8171 };
-    camRF120.regionDist_y = { -6, -5, -4, -3, -2, -1, -0 };  //-2 to 0 to 2 (~1m)
+  // camId: 5 (Right Front)
+  camRF120.regionHeight_x = { 1148, 830, 544, 377, 236, 157, 52 };  // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+  camRF120.regionDist_x = { 0, 1, 2, 3, 4, 5, 6 };                  // 5 to 10, 20 to 50m (~5m)
+  camRF120.regionHeight_y = { 2507, 1904, 1498, 1032, 637, 357, -80 };  //-2 to 0 to 2(~1m) //Vertical line
+  camRF120.regionHeightSlope_y = { -1.2286, -2.4524, -6.000, 21.3529, 4.7308, 3.0297, 1.8171 };
+  camRF120.regionDist_y = { -6, -5, -4, -3, -2, -1, -0 };  //-2 to 0 to 2 (~1m)
 
-    // camId: 6 (Right Back)
-    camRB120.regionHeight_x = { 1194, 838, 565, 395, 253, 138, 63, 17 };  // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
-    camRB120.regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7 };                   // 5 to 10, 20 to 50m (~5m)
-    camRB120.regionHeight_y = { 2049, 1688, 1209, 714, 217, -114, -738 };  //-2 to 0 to 2(~1m) //Vertical line
-    camRB120.regionHeightSlope_y = { -1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539 };
-    camRB120.regionDist_y = { -9, -8, -7, -6, -5, -4, -3 };  //-2 to 0 to 2 (~1m)
+  // camId: 6 (Right Back)
+  camRB120.regionHeight_x = { 1194, 838, 565, 395, 253, 138, 63, 17 };   // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal
+                                                                         // line
+  camRB120.regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7 };                    // 5 to 10, 20 to 50m (~5m)
+  camRB120.regionHeight_y = { 2049, 1688, 1209, 714, 217, -114, -738 };  //-2 to 0 to 2(~1m) //Vertical line
+  camRB120.regionHeightSlope_y = { -1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539 };
+  camRB120.regionDist_y = { -9, -8, -7, -6, -5, -4, -3 };  //-2 to 0 to 2 (~1m)
 
-    // camId: 10 (Back Top)
-    camBT120.regionHeight_x = { 1207, 836, 650, 532, 435, 367, 316, 270, 240, 210, 182, 161, 143 };            
-    camBT120.regionDist_x = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };                             
-    camBT120.regionHeight_y = { -1566, -1230, -861, -264, 40, 475, 875, 1370, 1704, 2195, 2439, 2808, 3152 };  
-    camBT120.regionHeightSlope_y = { 0.536,  0.612,  0.7197, 1.063,   1.372,  2.624, 14.2,
-                                    -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608 };
-    camBT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 }; 
+  // camId: 10 (Back Top)
+  camBT120.regionHeight_x = { 1207, 836, 650, 532, 435, 367, 316, 270, 240, 210, 182, 161, 143 };
+  camBT120.regionDist_x = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+  camBT120.regionHeight_y = { -1566, -1230, -861, -264, 40, 475, 875, 1370, 1704, 2195, 2439, 2808, 3152 };
+  camBT120.regionHeightSlope_y = { 0.536,  0.612,  0.7197, 1.063,   1.372,  2.624, 14.2,
+                                   -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608 };
+  camBT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 };
 
-    camBT120_area.LeftLinePoint1 = cv::Point(422, 143);
-    camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
-    camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
-    camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
+  camBT120_area.LeftLinePoint1 = cv::Point(422, 143);
+  camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
+  camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
+  camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
 
-    Lidar_offset_x = 0;
-    Lidar_offset_y = 0;
+  Lidar_offset_x = 0;
+  Lidar_offset_y = 0;
 }
 
 float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
@@ -162,7 +160,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
   for (uint i = 1; i < regionHeight_new.size(); i++)
   {
     if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i - 1])
-    {       
+    {
       int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
       int regionMeter = regionDist[i - 1] - regionDist[i];
       if (regionpixel != 0)
@@ -177,7 +175,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
       // unitLength, bias, offset);
     }
     else if (pixel_loc_y <= regionHeight_new[i] && pixel_loc_y >= regionHeight_new[i - 1])
-    {               
+    {
       int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
@@ -192,7 +190,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
       // unitLength, bias, offset);
     }
     else
-    {                       
+    {
       if (pixel_loc_y > regionHeight_new.front())
       {
         distance = regionDist.front() + 0.5;
@@ -280,237 +278,240 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
 }
 
 int DistanceEstimation::CheckPointInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1,
-                     cv::Point LeftLinePoint2, int object_x1, int object_y2)
+                                         cv::Point LeftLinePoint2, int object_x1, int object_y2)
 {
-    int point0 = 0;
-    int point1 = 1;
-    int point2 = 2;
-    /// right
-    int C1 = (RightLinePoint1.x - RightLinePoint2.x) * (object_y2 - RightLinePoint2.y) -
-            (object_x1 - RightLinePoint2.x) * (RightLinePoint1.y - RightLinePoint2.y);
-    /// left
-    int C2 = (LeftLinePoint1.x - LeftLinePoint2.x) * (object_y2 - LeftLinePoint2.y) -
-            (object_x1 - LeftLinePoint2.x) * (LeftLinePoint1.y - LeftLinePoint2.y);
+  int point0 = 0;
+  int point1 = 1;
+  int point2 = 2;
+  /// right
+  int C1 = (RightLinePoint1.x - RightLinePoint2.x) * (object_y2 - RightLinePoint2.y) -
+           (object_x1 - RightLinePoint2.x) * (RightLinePoint1.y - RightLinePoint2.y);
+  /// left
+  int C2 = (LeftLinePoint1.x - LeftLinePoint2.x) * (object_y2 - LeftLinePoint2.y) -
+           (object_x1 - LeftLinePoint2.x) * (LeftLinePoint1.y - LeftLinePoint2.y);
 
-    if (C1 > 0)
-        return point2;
-    else if (C2 < 0)
-        return point1;
-    else
-        return point0;
+  if (C1 > 0)
+    return point2;
+  else if (C2 < 0)
+    return point1;
+  else
+    return point0;
 }
 float DistanceEstimation::RatioDefine(int cam_id, int cls)
 {
-    float ratio;
-    if(cam_id == 1)
+  float ratio;
+  if (cam_id == 1)
+  {
+    switch (cls)
     {
-        switch (cls)
-        {
-            case 0:
-            {  // 0:person
-            ratio = 1;
-            break;
-            }
-            // 1:bicycle, 3:motorbike
-            case 1:
-            {
-            ratio = 0.9;
-            break;
-            }
-            case 3:
-            {
-            ratio = 0.9;
-            break;
-            }
-            // 2:car
-            case 2:
-            {
-            ratio = 0.7;
-            break;
-            }
-            // 5:bus, 7:truck
-            case 5:
-            {
-            ratio = 0.7;
-            break;
-            }
-            case 7:
-            {
-            ratio = 0.7;
-            break;
-            }
-            default:
-            {
-            ratio = 1;
-            break;
-            }
-        }
-    }else if(cam_id == 4)
-    {
-        switch (cls)
-        {
-            case 0:
-            {  // 0:person
-            ratio = 1;
-            break;
-            }
-            // 1:bicycle, 3:motorbike
-            case 1:
-            {
-            ratio = 0.9;
-            break;
-            }
-            case 3:
-            {
-            ratio = 0.9;
-            break;
-            }
-            // 2:car
-            case 2:
-            {
-            ratio = 0.7;
-            break;
-            }
-            // 5:bus, 7:truck
-            case 5:
-            {
-            ratio = 0.5;
-            break;
-            }
-            case 7:
-            {
-            ratio = 0.5;
-            break;
-            }
-            default:
-            {
-            ratio = 1;
-            break;
-            }
-        }
-    }else if(cam_id == 10)
-    {
-        switch (cls)
-        {
-            case 0:
-            {  // 0:person
-            ratio = 1;
-            break;
-            }
-            // 1:bicycle, 3:motorbike
-            case 1:
-            {
-            ratio = 0.9;
-            break;
-            }
-            case 3:
-            {
-            ratio = 0.9;
-            break;
-            }
-            // 2:car
-            case 2:
-            {
-            ratio = 0.7;
-            break;
-            }
-            // 5:bus, 7:truck
-            case 5:
-            {
-            ratio = 0.5;
-            break;
-            }
-            case 7:
-            {
-            ratio = 0.5;
-            break;
-            }
-            default:
-            {
-            ratio = 1;
-            break;
-            }
-        }
+      case 0:
+      {  // 0:person
+        ratio = 1;
+        break;
+      }
+      // 1:bicycle, 3:motorbike
+      case 1:
+      {
+        ratio = 0.9;
+        break;
+      }
+      case 3:
+      {
+        ratio = 0.9;
+        break;
+      }
+      // 2:car
+      case 2:
+      {
+        ratio = 0.7;
+        break;
+      }
+      // 5:bus, 7:truck
+      case 5:
+      {
+        ratio = 0.7;
+        break;
+      }
+      case 7:
+      {
+        ratio = 0.7;
+        break;
+      }
+      default:
+      {
+        ratio = 1;
+        break;
+      }
     }
-    return ratio;
+  }
+  else if (cam_id == 4)
+  {
+    switch (cls)
+    {
+      case 0:
+      {  // 0:person
+        ratio = 1;
+        break;
+      }
+      // 1:bicycle, 3:motorbike
+      case 1:
+      {
+        ratio = 0.9;
+        break;
+      }
+      case 3:
+      {
+        ratio = 0.9;
+        break;
+      }
+      // 2:car
+      case 2:
+      {
+        ratio = 0.7;
+        break;
+      }
+      // 5:bus, 7:truck
+      case 5:
+      {
+        ratio = 0.5;
+        break;
+      }
+      case 7:
+      {
+        ratio = 0.5;
+        break;
+      }
+      default:
+      {
+        ratio = 1;
+        break;
+      }
+    }
+  }
+  else if (cam_id == 10)
+  {
+    switch (cls)
+    {
+      case 0:
+      {  // 0:person
+        ratio = 1;
+        break;
+      }
+      // 1:bicycle, 3:motorbike
+      case 1:
+      {
+        ratio = 0.9;
+        break;
+      }
+      case 3:
+      {
+        ratio = 0.9;
+        break;
+      }
+      // 2:car
+      case 2:
+      {
+        ratio = 0.7;
+        break;
+      }
+      // 5:bus, 7:truck
+      case 5:
+      {
+        ratio = 0.5;
+        break;
+      }
+      case 7:
+      {
+        ratio = 0.5;
+        break;
+      }
+      default:
+      {
+        ratio = 1;
+        break;
+      }
+    }
+  }
+  return ratio;
 }
 
 int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
 {
-    // PointsSrc = {class_id, x1, x2, y2};
-    // PointsDst = {class_id, x1, x2, y2};
+  // PointsSrc = {class_id, x1, x2, y2};
+  // PointsDst = {class_id, x1, x2, y2};
 
-    // int edge_left, edge_right;
-    int area_id_R = 1;  // 1: left, 2:right
-    int area_id_L = 1;  // 1: left, 2:right
+  // int edge_left, edge_right;
+  int area_id_R = 1;  // 1: left, 2:right
+  int area_id_L = 1;  // 1: left, 2:right
 
-    double shrink_ratio;
+  double shrink_ratio;
 
-    // Four points of RoI which need to shrink (usually road lane)
-    cv::Point LeftLinePoint1;
-    cv::Point LeftLinePoint2;
-    cv::Point RightLinePoint1;
-    cv::Point RightLinePoint2;
+  // Four points of RoI which need to shrink (usually road lane)
+  cv::Point LeftLinePoint1;
+  cv::Point LeftLinePoint2;
+  cv::Point RightLinePoint1;
+  cv::Point RightLinePoint2;
 
-    // int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
+  // int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
 
-    if (cam_id == 1)
+  if (cam_id == 1)
+  {
+    // From x 6 - 50 m, y -3 to +3 m.
+    LeftLinePoint1 = cv::Point(869, 914);
+    LeftLinePoint2 = cv::Point(0, 1207);
+    RightLinePoint1 = cv::Point(1097, 914);
+    RightLinePoint2 = cv::Point(1746, 1207);
+    area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
+                                 Points_src[3]);
+    area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
+                                 Points_src[3]);
+  }
+  else if (cam_id == 4)
+  {
+    // From x 0 - 7 m, y -2 to +2 m.
+    LeftLinePoint1 = cv::Point(510, 272);
+    LeftLinePoint2 = cv::Point(-412, 1207);
+    RightLinePoint1 = cv::Point(1351, 272);
+    RightLinePoint2 = cv::Point(2258, 1207);
+    area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
+                                 Points_src[3]);
+    area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
+                                 Points_src[3]);
+  }
+  else if (cam_id == 10)
+  {
+    // From x -8 to -20 m, y -3 to +3 m.
+    LeftLinePoint1 = cv::Point(737, 143);
+    LeftLinePoint2 = cv::Point(-264, 1207);
+    RightLinePoint1 = cv::Point(1182, 143);
+    RightLinePoint2 = cv::Point(2195, 1207);
+
+    area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
+                                 Points_src[3]);
+    area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
+                                 Points_src[3]);
+  }
+
+  shrink_ratio = RatioDefine(cam_id, Points_src[0]);
+
+  // Shrink box when one of x1, x2 is in area and another is not in the area.
+  if (area_id_L != area_id_R)
+  {
+    if (area_id_L == 1 && area_id_R == 0)
     {
-        // From x 6 - 50 m, y -3 to +3 m.
-        LeftLinePoint1 = cv::Point(869, 914);
-        LeftLinePoint2 = cv::Point(0, 1207);
-        RightLinePoint1 = cv::Point(1097, 914);
-        RightLinePoint2 = cv::Point(1746, 1207);
-        area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
-                                    Points_src[3]);
-        area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
-                                    Points_src[3]);
-        
-    }else if(cam_id == 4)
-    {
-        // From x 0 - 7 m, y -2 to +2 m.
-        LeftLinePoint1 = cv::Point(510, 272);
-        LeftLinePoint2 = cv::Point(-412, 1207);
-        RightLinePoint1 = cv::Point(1351, 272);
-        RightLinePoint2 = cv::Point(2258, 1207);
-        area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
-                                    Points_src[3]);
-        area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
-                                    Points_src[3]);        
-    }else if(cam_id == 10)
-    {
-        // From x -8 to -20 m, y -3 to +3 m.
-        LeftLinePoint1 = cv::Point(737, 143);
-        LeftLinePoint2 = cv::Point(-264, 1207);
-        RightLinePoint1 = cv::Point(1182, 143);
-        RightLinePoint2 = cv::Point(2195, 1207);
-
-        area_id_L = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[1],
-                                    Points_src[3]);
-        area_id_R = CheckPointInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, Points_src[2],
-                                    Points_src[3]);
+      // Keep x1 and shrink right
+      Points_dst[1] = Points_src[1];
+      Points_dst[2] = Points_src[1] + (Points_src[2] - Points_src[1]) * shrink_ratio;
     }
-
-    shrink_ratio = RatioDefine(cam_id, Points_src[0]);
-
-    // Shrink box when one of x1, x2 is in area and another is not in the area.
-    if (area_id_L != area_id_R)
+    if (area_id_L == 0 && area_id_R == 2)
     {
-        if (area_id_L == 1 && area_id_R == 0)
-        {
-        // Keep x1 and shrink right
-        Points_dst[1] = Points_src[1];
-        Points_dst[2] = Points_src[1] + (Points_src[2] - Points_src[1]) * shrink_ratio;
-        }
-        if (area_id_L == 0 && area_id_R == 2)
-        {
-        // Keep x2 and shrink left
-        Points_dst[1] = Points_src[2] - (Points_src[2] - Points_src[1]) * shrink_ratio;
-        Points_dst[2] = Points_src[2];
-        }
+      // Keep x2 and shrink left
+      Points_dst[1] = Points_src[2] - (Points_src[2] - Points_src[1]) * shrink_ratio;
+      Points_dst[2] = Points_src[2];
     }
+  }
 
-    return 0;
+  return 0;
 }
 msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id)
 {
@@ -720,12 +721,13 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     obstacle_l = 2.5; /*obstacle_w = 2.5;*/
   }                   // obstacle_l = 7
 
-  if(cam_id == 1 || cam_id == 4 || cam_id == 10 /*|| cam_id == 8 || cam_id == 9*/)
+  if (cam_id == 1 || cam_id == 4 || cam_id == 10 /*|| cam_id == 8 || cam_id == 9*/)
   {
-      std::vector<int> PointsSrc = {class_id, x1, x2, y2};
-      std::vector<int> PointsDst = {class_id, x1, x2, y2};
-      BoxShrink(cam_id, PointsSrc, PointsDst);
-      x1 = PointsDst[1]; x2 = PointsDst[2];
+    std::vector<int> PointsSrc = { class_id, x1, x2, y2 };
+    std::vector<int> PointsDst = { class_id, x1, x2, y2 };
+    BoxShrink(cam_id, PointsSrc, PointsDst);
+    x1 = PointsDst[1];
+    x2 = PointsDst[2];
   }
 
   /// 1
@@ -939,21 +941,21 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     regionHeight_x = camFR60.regionHeight_x;
     regionDist_x = camFR60.regionDist_x;
     regionHeight_y = camFR60.regionHeight_y;
-    regionHeightSlope_x = camFR60.regionHeightSlope_x;    
+    regionHeightSlope_x = camFR60.regionHeightSlope_x;
     regionHeightSlope_y = camFR60.regionHeightSlope_y;
     regionDist_y = camFR60.regionDist_y;
     offset_x = Lidar_offset_x;
   }
-//   else if (cam_id == 2)
-//   {
-//     regionHeight_x = regionHeight_60_FL_x;
-//     regionDist_x = regionDist_60_FL_x;
-//     regionHeight_y = regionHeight_60_FL_y;
-//     regionHeightSlope_x = regionHeightSlope_60_FL_x;        
-//     regionHeightSlope_y = regionHeightSlope_60_FL_y;
-//     regionDist_y = regionDist_60_FL_y;
-//     offset_x = Lidar_offset_x;
-//   }
+  //   else if (cam_id == 2)
+  //   {
+  //     regionHeight_x = regionHeight_60_FL_x;
+  //     regionDist_x = regionDist_60_FL_x;
+  //     regionHeight_y = regionHeight_60_FL_y;
+  //     regionHeightSlope_x = regionHeightSlope_60_FL_x;
+  //     regionHeightSlope_y = regionHeightSlope_60_FL_y;
+  //     regionDist_y = regionDist_60_FL_y;
+  //     offset_x = Lidar_offset_x;
+  //   }
   else if (cam_id == 4)
   {
     regionHeight_x = camFT120.regionHeight_x;
@@ -963,24 +965,24 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     regionDist_y = camFT120.regionDist_y;
     offset_x = Lidar_offset_x;
   }
-//   else if (cam_id == 5)
-//   {
-//     regionHeight_x = regionHeight_120_RF_x;
-//     regionDist_x = regionDist_120_RF_x;
-//     regionHeight_y = regionHeight_120_RF_y;
-//     regionHeightSlope_y = regionHeightSlope_120_RF_y;
-//     regionDist_y = regionDist_120_RF_y;
-//     offset_x = Lidar_offset_x;
-//   }
-//   else if (cam_id == 6)
-//   {
-//     regionHeight_x = regionHeight_120_RB_x;
-//     regionDist_x = regionDist_120_RB_x;
-//     regionHeight_y = regionHeight_120_RB_y;
-//     regionHeightSlope_y = regionHeightSlope_120_RB_y;
-//     regionDist_y = regionDist_120_RB_y;
-//     offset_x = Lidar_offset_x;
-//   }
+  //   else if (cam_id == 5)
+  //   {
+  //     regionHeight_x = regionHeight_120_RF_x;
+  //     regionDist_x = regionDist_120_RF_x;
+  //     regionHeight_y = regionHeight_120_RF_y;
+  //     regionHeightSlope_y = regionHeightSlope_120_RF_y;
+  //     regionDist_y = regionDist_120_RF_y;
+  //     offset_x = Lidar_offset_x;
+  //   }
+  //   else if (cam_id == 6)
+  //   {
+  //     regionHeight_x = regionHeight_120_RB_x;
+  //     regionDist_x = regionDist_120_RB_x;
+  //     regionHeight_y = regionHeight_120_RB_y;
+  //     regionHeightSlope_y = regionHeightSlope_120_RB_y;
+  //     regionDist_y = regionDist_120_RB_y;
+  //     offset_x = Lidar_offset_x;
+  //   }
   else if (cam_id == 10)
   {
     regionHeight_x = camBT120.regionHeight_x;
@@ -998,29 +1000,29 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     return p0;
   }
 
-    if(cam_id == 1 || cam_id == 4 || cam_id == 10)
-    {
-        if (regionDist_x.size() != 0)
-            x_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
-        if (regionDist_y.size() != 0)
-            y_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, img_h);
+  if (cam_id == 1 || cam_id == 4 || cam_id == 10)
+  {
+    if (regionDist_x.size() != 0)
+      x_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
+    if (regionDist_y.size() != 0)
+      y_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, img_h);
 
-        p0.x = x_distMeter + offset_x;
-        p0.y = y_distMeter;
-        p0.z = Lidar_offset_z;
-    }
+    p0.x = x_distMeter + offset_x;
+    p0.y = y_distMeter;
+    p0.z = Lidar_offset_z;
+  }
 
-    if(cam_id == 0)
-    {
-        if (regionDist_y.size() != 0)
-            y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y);
-        if (regionDist_x.size() != 0)
-            x_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_x, regionHeightSlope_x, regionDist_x, img_h);
+  if (cam_id == 0)
+  {
+    if (regionDist_y.size() != 0)
+      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y);
+    if (regionDist_x.size() != 0)
+      x_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_x, regionHeightSlope_x, regionDist_x, img_h);
 
-        p0.x = x_distMeter + offset_x;
-        p0.y = y_distMeter;
-        p0.z = Lidar_offset_z;
-    }
+    p0.x = x_distMeter + offset_x;
+    p0.y = y_distMeter;
+    p0.z = Lidar_offset_z;
+  }
 
   return p0;
 }
