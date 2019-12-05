@@ -355,9 +355,8 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 0 ~ 7 meters
     // y axis: -9 ~ 6 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camFT120_area.RightLinePoint1, distEst.camFT120_area.RightLinePoint2,
-                                  distEst.camFT120_area.LeftLinePoint1, distEst.camFT120_area.LeftLinePoint2, box.x1,
-                                  box.y2, box.x2, box.y2);
+    BoxPass_flag = CheckBoxInArea(distEst.camFT120_area,
+                                  box.x1, box.y2, box.x2, box.y2);
   }
   else if (cam_order == camera::id::top_rear_120)
   {
@@ -365,9 +364,8 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 8 ~ 20 meters
     // y axis: -3 ~ 3 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camBT120_area.RightLinePoint1, distEst.camBT120_area.RightLinePoint2,
-                                  distEst.camBT120_area.LeftLinePoint1, distEst.camBT120_area.LeftLinePoint2, box.x1,
-                                  box.y2, box.x2, box.y2);
+    BoxPass_flag = CheckBoxInArea(distEst.camBT120_area,
+                                  box.x1, box.y2, box.x2, box.y2);
   }
 
   if (BoxPass_flag)
