@@ -286,49 +286,34 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
 
 float DistanceEstimation::RatioDefine(int cam_id, int cls)
 {
-  float ratio;
   if (cam_id == 1)
   {
     switch (cls)
     {
+    // 0:person
       case 0:
-      {  // 0:person
-        ratio = 1;
-        break;
-      }
+        return 1;
+        
       // 1:bicycle, 3:motorbike
       case 1:
-      {
-        ratio = 0.9;
-        break;
-      }
+        return 0.9;
+
       case 3:
-      {
-        ratio = 0.9;
-        break;
-      }
+        return 0.9;
+
       // 2:car
       case 2:
-      {
-        ratio = 0.7;
-        break;
-      }
+        return 0.7;
+
       // 5:bus, 7:truck
       case 5:
-      {
-        ratio = 0.7;
-        break;
-      }
+        return 0.7;
+
       case 7:
-      {
-        ratio = 0.7;
-        break;
-      }
+        return 0.7;
+
       default:
-      {
-        ratio = 1;
-        break;
-      }
+        return 1;
     }
   }
   else if (cam_id == 4)
@@ -336,43 +321,29 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
     switch (cls)
     {
       case 0:
-      {  // 0:person
-        ratio = 1;
-        break;
-      }
+        return 1;
+        // 0:person
+
       // 1:bicycle, 3:motorbike
       case 1:
-      {
-        ratio = 0.9;
-        break;
-      }
-      case 3:
-      {
-        ratio = 0.9;
-        break;
-      }
+        return 0.9;
+
       // 2:car
       case 2:
-      {
-        ratio = 0.7;
-        break;
-      }
+        return 0.7;
+
+      case 3:
+        return 0.9;
+
       // 5:bus, 7:truck
       case 5:
-      {
-        ratio = 0.5;
-        break;
-      }
+        return 0.5;
+
       case 7:
-      {
-        ratio = 0.5;
-        break;
-      }
+        return 0.5;
+
       default:
-      {
-        ratio = 1;
-        break;
-      }
+        return 1;
     }
   }
   else if (cam_id == 10)
@@ -380,46 +351,33 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
     switch (cls)
     {
       case 0:
-      {  // 0:person
-        ratio = 1;
-        break;
-      }
+        // 0:person
+        return 1;
+
       // 1:bicycle, 3:motorbike
       case 1:
-      {
-        ratio = 0.9;
-        break;
-      }
-      case 3:
-      {
-        ratio = 0.9;
-        break;
-      }
+        return 0.9;
+
       // 2:car
       case 2:
-      {
-        ratio = 0.7;
-        break;
-      }
+        return 0.7;
+
+      case 3:
+        return 0.9;
+
       // 5:bus, 7:truck
       case 5:
-      {
-        ratio = 0.5;
-        break;
-      }
+        return 0.5;
+
       case 7:
-      {
-        ratio = 0.5;
-        break;
-      }
+        return 0.5;
+
       default:
-      {
-        ratio = 1;
-        break;
-      }
+        return 1;
+
     }
   }
-  return ratio;
+  return 1;
 }
 
 int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
