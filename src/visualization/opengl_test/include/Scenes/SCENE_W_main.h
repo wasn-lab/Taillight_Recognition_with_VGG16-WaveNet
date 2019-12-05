@@ -122,7 +122,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     /*
     // Grid ground
-    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "map", "base" ) );
+    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_map", "GUI_base" ) );
     // _rmGrid_ptr->set_grid_param(1.0, 1.0, 10, 10, 0.0f, false);
     // _rmGrid_ptr->set_grid_param(1.0, 1.0, 10, 10, -6.0f, false);
     _rmGrid_ptr->set_grid_param(1.0, 1.0, 10, 10, -3.0f, true);
@@ -131,14 +131,14 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     /*
     // Grid local
-    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "base", "base" ) );
+    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_base", "GUI_base" ) );
     _rmGrid_ptr->set_grid_param(1.0, 1.0, 10, 10, -3.0f, false, glm::vec3(0.2f, 0.2f, 0.5f));
     _rm_BaseModel.push_back( _rmGrid_ptr );
     */
 
     /*
     // Grid ground
-    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "map", "GUI_base_footprint" ) );
+    _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_map", "GUI_base_footprint" ) );
     _rmGrid_ptr->set_grid_param(5.0, 5.0, 10, 10, 0.0f, true, glm::vec3(0.5f,0.5f,0.5f));
     _rm_BaseModel.push_back( _rmGrid_ptr );
     */
@@ -173,11 +173,11 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
 
     // rmlv2ObjectTracking
-    // _rm_BaseModel.push_back( std::shared_ptr<rmlv2ObjectTracking>(new rmlv2ObjectTracking(_Assets_path, int(MSG_ID::lidar_bounding_box_tracking), "map") ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmlv2ObjectTracking>(new rmlv2ObjectTracking(_Assets_path, int(MSG_ID::lidar_bounding_box_tracking), "GUI_map") ) );
 
     /*
     // MagicPowder
-    std::shared_ptr<rmMagicPowder> mp_ptr(new rmMagicPowder(_Assets_path, int(MSG_ID::lidar_bounding_box_raw), "map") );
+    std::shared_ptr<rmMagicPowder> mp_ptr(new rmMagicPowder(_Assets_path, int(MSG_ID::lidar_bounding_box_raw), "GUI_map") );
     mp_ptr->set_color(glm::vec3(0.0f, 1.0f, 1.0f));
     _rm_BaseModel.push_back( mp_ptr );
     */
@@ -213,7 +213,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TagBoundingBox2D>(new rmlv2TagBoundingBox2D(_Assets_path, int(MSG_ID::bounding_box_image_front_all)) ) );
 
     // Sweeping object
-    // _rm_BaseModel.push_back( std::shared_ptr<rmSweepingObject>(new rmSweepingObject(_Assets_path, "base" ) ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmSweepingObject>(new rmSweepingObject(_Assets_path, "GUI_base" ) ) );
 
     // rmlv2PathPlanFake
     // _fake_path_ptr.reset(   new rmlv2PathPlanFake(_Assets_path, int(MSG_ID::vehicle_info) )   );
@@ -221,14 +221,14 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _rm_BaseModel.push_back( _fake_path_ptr );
 
     // (True) Planning path
-    _planning_path_ptr.reset(   new rmlv2PathPlan_v1(_Assets_path, int(MSG_ID::dynamic_path), "map" )   );
+    _planning_path_ptr.reset(   new rmlv2PathPlan_v1(_Assets_path, int(MSG_ID::dynamic_path), "GUI_map" )   );
     // _planning_path_ptr->Translate(glm::vec3(-5.5f, 0.0f, 0.0f));
     _rm_BaseModel.push_back( _planning_path_ptr );
 
     // Circle
-    // _rm_BaseModel.push_back( std::shared_ptr<rmCircle>(new rmCircle(_Assets_path, "base" ) ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmCircle>(new rmCircle(_Assets_path, "GUI_base" ) ) );
     // rmPolyLines3D
-    // _rm_BaseModel.push_back( std::shared_ptr<rmPolyLines3D>(new rmPolyLines3D(_Assets_path, "base") ) );
+    // _rm_BaseModel.push_back( std::shared_ptr<rmPolyLines3D>(new rmPolyLines3D(_Assets_path, "GUI_base") ) );
 
 
 
@@ -455,7 +455,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
 
 
-    // _text3D_ptr.reset( new rmText3D_v2(_Assets_path, "base" ) );
+    // _text3D_ptr.reset( new rmText3D_v2(_Assets_path, "GUI_base" ) );
     // _text3D_ptr->Translate(glm::vec3(1.0f, -2.0f, -2.0f));
     // _text3D_ptr->Rotate(glm::vec3(0.0f,0.0f,1.0f), M_PI); // Flip
     // _text3D_ptr->Rotate(glm::vec3(1.0f,0.0f,0.0f), M_PI/2.0);
@@ -487,7 +487,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // Test image array (image word)
     //---------------------------------//
     // {
-    //     std::shared_ptr<rmImageArray> image_array_ptr( new rmImageArray(_Assets_path, "base") );
+    //     std::shared_ptr<rmImageArray> image_array_ptr( new rmImageArray(_Assets_path, "GUI_base") );
     //     // Enter the image file name
     //     std::vector<std::string> image_name_list;
     //     image_name_list.push_back("TFL_red_off.png");
@@ -522,7 +522,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     /*
     // rmColorBoard
-    _color_board_ptr.reset( new rmColorBoard(_Assets_path, "base", glm::vec4(0.0f, 0.2f, 0.8f, 0.5f), false, true ) );
+    _color_board_ptr.reset( new rmColorBoard(_Assets_path, "GUI_base", glm::vec4(0.0f, 0.2f, 0.8f, 0.5f), false, true ) );
     _color_board_ptr->shape.setBoardSizePixel(150, 100);
     _color_board_ptr->shape.setBoardPositionCVPixel(-10,10,1,ALIGN_X::RIGHT, ALIGN_Y::TOP );
     _rm_BaseModel.push_back( _color_board_ptr );

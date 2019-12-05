@@ -98,6 +98,14 @@ void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPo
   box_center.pos.set_anchor_abs(anchor_abs);
   box_center.pos.transform_rel2abs();
 
+#if DEBUG
+  Point32 p_abs;
+  box_center.pos.get_point_abs(p_abs);
+  LOG_INFO << "box_center x:" << p_rel.x << " " << p_abs.x << std::endl;
+  LOG_INFO << "box_center y:" << p_rel.y << " " << p_abs.y << std::endl;
+  LOG_INFO << "box_center z:" << p_rel.z << " " << p_abs.z << std::endl;
+#endif
+
   box_center.x_length = euclidean_distance(box.p3.x - box.p0.x, box.p3.y - box.p0.y);
   box_center.y_length = euclidean_distance(box.p4.x - box.p0.x, box.p4.y - box.p0.y);
   box_center.z_length = box.p1.z - box.p0.z;

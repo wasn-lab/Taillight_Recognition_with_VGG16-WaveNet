@@ -14,7 +14,7 @@ public:
     rmlv2PathPlan_v1(
         std::string _path_Assets_in,
         int _ROS_topic_id_in,
-        std::string data_representation_frame_in="map"
+        std::string data_representation_frame_in="GUI_map"
     );
     //
 	void Update(float dt);

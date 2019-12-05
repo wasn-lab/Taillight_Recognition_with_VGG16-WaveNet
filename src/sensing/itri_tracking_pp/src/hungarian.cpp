@@ -46,9 +46,10 @@ double Hungarian::solve(vector<vector<double> >& DistMatrix, vector<int>& Assign
 //********************************************************//
 void Hungarian::assignment_optimal(int* assignment, double* cost, double* distMatrixIn, int nOfRows, int nOfColumns)
 {
-  double *distMatrix, *distMatrixTemp, *distMatrixEnd, *columnEnd, value, minValue;
+  double *distMatrix, *distMatrixTemp, *distMatrixEnd, *columnEnd, value;
   bool *coveredColumns, *coveredRows, *starMatrix, *newStarMatrix, *primeMatrix;
   int nOfElements, minDim, row, col;
+  double minValue = DBL_MAX;
 
   /* initialization */
   *cost = 0;
