@@ -83,6 +83,27 @@ void DistanceEstimation::init(int car_id)
   camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
   camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
 
+
+  // Area needs to shrink
+
+    // From x 6 - 50 m, y -3 to +3 m.
+    ShrinkArea_camFR60.LeftLinePoint1 = cv::Point(869, 914);
+    ShrinkArea_camFR60.LeftLinePoint2 = cv::Point(0, 1207);
+    ShrinkArea_camFR60.RightLinePoint1 = cv::Point(1097, 914);
+    ShrinkArea_camFR60.RightLinePoint2 = cv::Point(1746, 1207);
+
+    // From x 0 - 7 m, y -2 to +2 m.
+    ShrinkArea_camFT120.LeftLinePoint1 = cv::Point(510, 272);
+    ShrinkArea_camFT120.LeftLinePoint2 = cv::Point(-412, 1207);
+    ShrinkArea_camFT120.RightLinePoint1 = cv::Point(1351, 272);
+    ShrinkArea_camFT120.RightLinePoint2 = cv::Point(2258, 1207);
+
+    // From x -8 to -20 m, y -3 to +3 m.
+    ShrinkArea_camBT120.LeftLinePoint1 = cv::Point(737, 143);
+    ShrinkArea_camBT120.LeftLinePoint2 = cv::Point(-264, 1207);
+    ShrinkArea_camBT120.RightLinePoint1 = cv::Point(1182, 143);
+    ShrinkArea_camBT120.RightLinePoint2 = cv::Point(2195, 1207);
+
   Lidar_offset_x = 0;
   Lidar_offset_y = 0;
 }
@@ -412,46 +433,25 @@ int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::
 
   double shrink_ratio;
 
-  // Four points of RoI which need to shrink (usually road lane)
-  CheckArea areaCheck;
-
-  // int box_center_x = (Points_src[1] + Points_src[2]) / 2; // get x center of objects
-
   if (cam_id == 1)
   {
-    // From x 6 - 50 m, y -3 to +3 m.
-    areaCheck.LeftLinePoint1 = cv::Point(869, 914);
-    areaCheck.LeftLinePoint2 = cv::Point(0, 1207);
-    areaCheck.RightLinePoint1 = cv::Point(1097, 914);
-    areaCheck.RightLinePoint2 = cv::Point(1746, 1207);
-    area_id_L = CheckPointInArea(areaCheck, Points_src[1],
+    area_id_L = CheckPointInArea(ShrinkArea_camFR60, Points_src[1],
                                  Points_src[3]);
-    area_id_R = CheckPointInArea(areaCheck, Points_src[2],
+    area_id_R = CheckPointInArea(ShrinkArea_camFR60, Points_src[2],
                                  Points_src[3]);
   }
   else if (cam_id == 4)
   {
-    // From x 0 - 7 m, y -2 to +2 m.
-    areaCheck.LeftLinePoint1 = cv::Point(510, 272);
-    areaCheck.LeftLinePoint2 = cv::Point(-412, 1207);
-    areaCheck.RightLinePoint1 = cv::Point(1351, 272);
-    areaCheck.RightLinePoint2 = cv::Point(2258, 1207);
-    area_id_L = CheckPointInArea(areaCheck, Points_src[1],
+    area_id_L = CheckPointInArea(ShrinkArea_camFT120, Points_src[1],
                                  Points_src[3]);
-    area_id_R = CheckPointInArea(areaCheck, Points_src[2],
+    area_id_R = CheckPointInArea(ShrinkArea_camFT120, Points_src[2],
                                  Points_src[3]);
   }
   else if (cam_id == 10)
   {
-    // From x -8 to -20 m, y -3 to +3 m.
-    areaCheck.LeftLinePoint1 = cv::Point(737, 143);
-    areaCheck.LeftLinePoint2 = cv::Point(-264, 1207);
-    areaCheck.RightLinePoint1 = cv::Point(1182, 143);
-    areaCheck.RightLinePoint2 = cv::Point(2195, 1207);
-
-    area_id_L = CheckPointInArea(areaCheck, Points_src[1],
+    area_id_L = CheckPointInArea(ShrinkArea_camBT120, Points_src[1],
                                  Points_src[3]);
-    area_id_R = CheckPointInArea(areaCheck, Points_src[2],
+    area_id_R = CheckPointInArea(ShrinkArea_camBT120, Points_src[2],
                                  Points_src[3]);
   }
 
