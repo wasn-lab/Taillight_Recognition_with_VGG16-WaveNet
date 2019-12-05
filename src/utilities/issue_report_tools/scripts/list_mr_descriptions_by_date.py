@@ -58,9 +58,11 @@ def get_mr_list_id_range(headers,_sid, _eid, target_branch="master", state="merg
     """
     Request a list of merge requests in given id range
     input:
+        - headers
         - _sid: start mr-id
         - _eid: end mr-id
-        - headers
+        - target_branch
+        - state: opened, closed, locked, or merged
     output:
         - data_list
         - requested URL
@@ -70,31 +72,41 @@ def get_mr_list_id_range(headers,_sid, _eid, target_branch="master", state="merg
 
     #
     url = BASE_URL + "?"
-    if not target_branch is None:
-        url += "target_branch=%s" % target_branch
-        url += "&"
-    if not state is None:
-        url += "state=%s" % state
-        url += "&"
-    #
     for _id in range(_sid, _eid+1):
         url += "iids[]=%d" % _id
         if _id != _eid:
                 url += "&"
-    req = requests.get(url=url, headers=headers)
-    data_list = req.json() # <-- a dict()
-    # See if it's end of merge list
+    #
+    if not target_branch is None:
+        url += "&target_branch=%s" % target_branch
+    if not state is None:
+        url += "&state=%s" % state
+    #
+
+    # Loop for pages
+    #----------------------------#
+    data_list = list()
+    _page_id = "1"
+    while True:
+        print("_page_id = %s" % _page_id)
+        url_page = url + "&page=%s" % _page_id
+        req = requests.get(url=url_page, headers=headers)
+        data_list += req.json() # <-- a dict()
+        _page_id = req.headers["X-Next-Page"]
+        if len(_page_id) == 0:
+            break
+    #----------------------------#
     return ( data_list, req )
 
 def get_mr_list_date_range(headers, _s_date, _e_date, target_branch="master", state="merged"):
     """
     Request a list of merge requests in given id range
     input:
-        - _sid: start mr-id
-        - _eid: end mr-id
+        - headers
+        - _s_date: start mr created date
+        - _e_date: end mr created date
         - target_branch
         - state: opened, closed, locked, or merged
-        - headers
     output:
         - data_list
         - requested URL
@@ -110,43 +122,38 @@ def get_mr_list_date_range(headers, _s_date, _e_date, target_branch="master", st
     _e_date_utc = _e_date - dT
     #
     url = BASE_URL + "?"
-    if not target_branch is None:
-        url += "target_branch=%s" % target_branch
-        url += "&"
-    if not state is None:
-        url += "state=%s" % state
-        url += "&"
-    #
     url += "created_after=%s" % _s_date_utc.strftime("%Y-%m-%dT%H:%M:%S")
     url += "&"
     url += "created_before=%s" % _e_date_utc.strftime("%Y-%m-%dT%H:%M:%S")
-    req = requests.get(url=url, headers=headers)
-    data_list = req.json() # <-- a dict()
+    #
+    if not target_branch is None:
+        url += "&target_branch=%s" % target_branch
+    if not state is None:
+        url += "&state=%s" % state
+    #
 
-    if len(data_list) == 20:
-        _e_date_tail = convert_gitlab_time_to_datetime(data_list[-1]["created_at"])
-        _e_date_tail += datetime.timedelta(seconds=1) # Plus 1 second to prevent from missing log due to truncation of second
-        print("Narrowing searching range: %s ~ %s" % (_s_date.strftime("%Y-%m-%dT%H:%M:%S"), _e_date_tail.strftime("%Y-%m-%dT%H:%M:%S")))
-        data_list_tail, req_tail = get_mr_list_date_range(headers, _s_date, _e_date_tail, target_branch, state)
-        id_head = 0
-        for _idx in range(len(data_list_tail)):
-            _a = data_list[-1]["reference"]
-            _b = data_list_tail[_idx]["reference"]
-            if _b < _a:
-                id_head = _idx
-                break
-        print("id_head = %d" % id_head)
-        data_list += data_list_tail[id_head:]
-    # See if it's end of merge list
-    return ( data_list, req )
+    # Loop for pages
+    #----------------------------#
+    data_list = list()
+    _page_id = "1"
+    while True:
+        print("_page_id = %s" % _page_id)
+        url_page = url + "&page=%s" % _page_id
+        req = requests.get(url=url_page, headers=headers)
+        data_list += req.json() # <-- a dict()
+        _page_id = req.headers["X-Next-Page"]
+        if len(_page_id) == 0:
+            break
+    #----------------------------#
 
-def _list_mr_description(s_date, e_date, target_branch="master"):
+    return data_list
+
+def _list_mr_description(s_date, e_date, target_branch="master", state="merged"):
     global gitlab_headers
 
-    data_list, req = get_mr_list_date_range(gitlab_headers, s_date, e_date, target_branch)
+    data_list = get_mr_list_date_range(gitlab_headers, s_date, e_date, target_branch, state)
     print("type(data) = %s" % str(type(data_list)))
     print("len(data) = %d" % len(data_list))
-    print("req = %s" % req)
     for data in data_list:
         print("-" * 70)
         print("Merge id: %s" % str(data["reference"]))
@@ -231,15 +238,16 @@ def main():
     print("Start at [%s]" % _s_date.strftime("%Y-%m-%dT%H:%M:%S"))
     print("End at [%s]" % _e_date.strftime("%Y-%m-%dT%H:%M:%S"))
 
-    _list_mr_description(_s_date, _e_date)
+    # _list_mr_description(_s_date, _e_date, target_branch=None, state=None)
+    _list_mr_description(_s_date, _e_date, target_branch="master", state="merged")
 
 
     #
-    # data_list, req = get_mr_list_date_range(gitlab_headers, _s_date, _e_date)
+    # data_list = get_mr_list_date_range(gitlab_headers, _s_date, _e_date)
     # print("type(data) = %s" % str(type(data_list)))
     # print("len(data) = %d" % len(data_list))
     # # print("data = %s" % str(json.dumps(data_list, indent=4)))
-    # print("req.url = %s" % req.url)
+    # # print("req.url = %s" % req.url)
     #
     # for data in data_list:
     #     print("-" * 70)
