@@ -460,11 +460,11 @@ int main(int argc, char** argv)
   pthread_mutex_init(&mtxInfer, NULL);
   pthread_cond_init(&cndInfer, NULL);
 
-  int ret = pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
+  pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
   if (standard_FPS == 1)
-    int retInterp = pthread_create(&thrdInterp, NULL, &run_interp, NULL);
+  pthread_create(&thrdInterp, NULL, &run_interp, NULL);
   if (display_flag == 1)
-    int retDisplay = pthread_create(&thrdDisplay, NULL, &run_display, NULL);
+  pthread_create(&thrdDisplay, NULL, &run_display, NULL);
 
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/b1_yolo_120_1.cfg";
@@ -517,7 +517,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::DetectedObject detObj;
   msgs::BoxPoint boxPoint;
   msgs::CamInfo camInfo;
-  double* diatance_pixel_array;
 
   bool BoxPass_flag = false;
   if (cam_order == camera::id::top_right_front_120)
@@ -698,7 +697,7 @@ void* run_yolo(void*)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {
-            int distMeter_p0x, distMeter_p3x, distMeter_p0y, distMeter_p3y;
+            int distMeter_p0x = 0, distMeter_p3x = 0, distMeter_p0y = 0, distMeter_p3y = 0;
             if (cam_order == camera::id::top_right_front_120 || cam_order == camera::id::top_right_rear_120)
             {
               distMeter_p0x = detObj.bPoint.p4.x;

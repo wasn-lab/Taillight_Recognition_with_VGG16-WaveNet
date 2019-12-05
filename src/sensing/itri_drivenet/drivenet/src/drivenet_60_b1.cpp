@@ -259,11 +259,11 @@ int main(int argc, char** argv)
   pthread_mutex_init(&mtxInfer, NULL);
   pthread_cond_init(&cndInfer, NULL);
 
-  int ret = pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
+  pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
   if (standard_FPS == 1)
-    int retInterp = pthread_create(&thrdInterp, NULL, &run_interp, NULL);
+  pthread_create(&thrdInterp, NULL, &run_interp, NULL);
   if (display_flag == 1)
-    int retDisplay = pthread_create(&thrdDisplay, NULL, &run_display, NULL);
+  pthread_create(&thrdDisplay, NULL, &run_display, NULL);
 
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/b1_yolo_60.cfg";
@@ -307,7 +307,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::DetectedObject detObj;
   msgs::BoxPoint boxPoint;
   msgs::CamInfo camInfo;
-  double* diatance_pixel_array;
 
   bool BoxPass_flag = false;
 
@@ -593,7 +592,7 @@ void* run_display(void*)
   cv::moveWindow("Center-60", 545, 30);
   cv::moveWindow("LeftSide-60", 0, 30);
 
-  int marker_h_0, marker_h_1, marker_h_2;
+  int marker_h_1; //, marker_h_0, marker_h_2;
   marker_h_1 = 914;
 
   // cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
