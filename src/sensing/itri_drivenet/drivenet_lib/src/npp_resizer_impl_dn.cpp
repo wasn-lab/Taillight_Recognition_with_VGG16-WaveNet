@@ -56,9 +56,9 @@ NPPResizerImpl::~NPPResizerImpl()
 }
 
 int NPPResizerImpl::resize(Npp8u* src, Npp8u* dst)
-{                                     
-  NppStatus result = nppiResize_8u_C3R(src, src_line_steps_, src_size_, src_roi_, dst,
-                                       dst_line_steps_, dst_size_, dst_roi_, interpolation_mode_);
+{
+  NppStatus result = nppiResize_8u_C3R(src, src_line_steps_, src_size_, src_roi_, dst, dst_line_steps_, dst_size_,
+                                       dst_roi_, interpolation_mode_);
   if (result != NPP_SUCCESS)
   {
     LOG(WARNING) << "nppiResize_8u_C3R returns: " << result;
