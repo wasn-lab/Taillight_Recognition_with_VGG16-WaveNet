@@ -27,7 +27,7 @@ if(OpenCV_FOUND)
   message(STATUS "OpenCV Libararies Dir: ${OpenCV_LIBRARY_DIRS}")
 endif()
 
-find_package(CUDA 10.0 REQUIRED)
+find_package(CUDA REQUIRED)
 if (CUDA_FOUND)
   message(STATUS "CUDA Include Dir: ${CUDA_INCLUDE_DIRS}")
   message(STATUS "CUDA Libararies: ${CUDA_LIBRARIES}")
