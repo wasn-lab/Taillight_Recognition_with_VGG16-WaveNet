@@ -7,7 +7,7 @@ void Yolo_app::init_yolo(std::string pkg_path, std::string cfg_file)
   std::string cfgFile("--flagfile=");
   cfgFile += pkg_path + cfg_file;
   std::cout << cfgFile.c_str() << std::endl;
-  char* argv[2] = { "trt-yolo-app", (char*)cfgFile.c_str() };
+  char* argv[2] = { (char*)"trt-yolo-app", (char*)cfgFile.c_str() };
 
   yoloConfigParserInit(argc, argv, pkg_path);
   NetworkInfo yoloInfo = getYoloNetworkInfo();
