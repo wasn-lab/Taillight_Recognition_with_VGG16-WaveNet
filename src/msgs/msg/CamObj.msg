@@ -1,0 +1,2 @@
+Header camHeader
+CamBox[] camObj

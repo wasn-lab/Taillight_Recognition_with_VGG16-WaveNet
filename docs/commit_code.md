@@ -58,6 +58,7 @@ Reviewer需要有maintainer權限，目前有
 @Wayne
 @chtseng
 @hankliu
+@BensonHuang
 @chinghao.liu
 
 ### Review 注意事項
@@ -110,3 +111,7 @@ Merge made by the 'recursive' strategy.
 注意，git merge 的來源是remotes/origin/master, 不是自己local裡的master喔。
 
 
+#### 要如何啟動merge request的builder做clean build?
+
+為了快速執行完pipeline, builder會在package.xml或cmake檔案（CMakeLists.txt或*.cmake)有改動時才會做clean build,
+故只要任一個cmake檔有改動（如加一個空白行），然後commit上去，builder就會做clean build。

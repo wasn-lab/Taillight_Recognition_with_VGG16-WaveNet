@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drivenet)
 
-add_compile_options(-std=c++11 -O3)
-set (CMAKE_BUILD_TYPE Release) 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -21,6 +21,10 @@ find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 find_package(CUDA REQUIRED)
 find_package(TensorRT)
 message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
+if (NOT TensorRT_FOUND)
+  message("Cannot find TensorRT. Skip ${PROJECT_NAME}")
+  return()
+endif()
 
 catkin_package(
   INCLUDE_DIRS include
@@ -34,13 +38,13 @@ set(LIBS drivenet_lib
          ${CUDA_LIBRARIES}
          ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppisu.so
          ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppig.so
-         gflags 
+         gflags
          stdc++fs)
 
-add_definitions("-DNPP") 
+add_definitions("-DNPP")
 
 include_directories(
-  include 
+  include
   ${INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
@@ -57,9 +61,11 @@ link_directories(
   ${OpenCV_LIBRARY_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp src/image_preprocessing.cpp)
-add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp)
-add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp)
+file(GLOB_RECURSE EXCEPTION_SRCS src/exception_handling/*.cpp)
+
+add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp src/image_preprocessing.cpp  ${EXCEPTION_SRCS})
+add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp   ${EXCEPTION_SRCS})
+add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp  ${EXCEPTION_SRCS})
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

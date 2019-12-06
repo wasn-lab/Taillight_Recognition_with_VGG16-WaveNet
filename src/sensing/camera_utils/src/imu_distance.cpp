@@ -2,14 +2,13 @@
 
 namespace imu_distance
 {
-void IMUDistance::init(const PoseRPY sensor_pose)
+void IMUDistance::init(const PoseRPY& sensor_pose)
 {
   imu_pose_.position.x = 0.;
   imu_pose_.position.y = 0.;
   imu_pose_.position.z = 0.;
 
   imu_pose_.orientation.roll_rad = 0.;
-  imu_pose_.orientation.pitch_rad = 0.;
   imu_pose_.orientation.pitch_rad = 0.;
 
   imu_pose_.rpyrate.rollrate_radps = 0.;
@@ -36,7 +35,7 @@ void IMUDistance::set_dt_sec(const double dt_sec)
   dt_sec_ = dt_sec;
 }
 
-void IMUDistance::set_imu_and_sensor_rpyrate(const RPYRate imu_rpyrate, const double dt_sec)
+void IMUDistance::set_imu_and_sensor_rpyrate(const RPYRate& imu_rpyrate, const double dt_sec)
 {
   set_dt_sec(dt_sec);
 
@@ -85,7 +84,7 @@ void IMUDistance::compute_sensor_position_with_dpitch_only()
   sensor_pose_.position.z = rotated.z;  // meter
 }
 
-void IMUDistance::read_obj_bbox2d(const BBox2D bbox)
+void IMUDistance::read_obj_bbox2d(const BBox2D& bbox)
 {
   obj_pivot_x2d_ = (double)(bbox.x + bbox.h - 1);
   obj_pivot_y2d_ = (double)bbox.y + 0.5 * (bbox.w - 1);

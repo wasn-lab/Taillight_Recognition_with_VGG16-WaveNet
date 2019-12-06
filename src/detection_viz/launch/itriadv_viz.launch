@@ -1,13 +1,20 @@
 <launch>
   <arg name="pub_tf" default="true" />
+  <arg name="rviz_config" default="U3_b3" />
 
   <!-- rviz ************************************************************************************* -->
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/U3_b2.rviz" />
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/$(arg rviz_config).rviz" />
 
   <!-- TF *************************************************************************************** -->
   <group if="$(arg pub_tf)">
       <node pkg="tf2_ros" type="static_transform_publisher" name="lidar_tf2"    args="0 0 0 0 0 0   /base_link  /lidar" />
   </group>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="bus_footprint_tf2"    args="-2.75 0 -3.1 0 0 0  /lidar /base_footprint" />
+
+  <!--Bus footprint-->
+  <node name="bus_footprint" pkg="detection_viz" type="bus_footprint.py" output="screen"/>
+
 
   <!-- Lidar Polygon **************************************************************************** -->
   <node name="m_LidarDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen">
@@ -15,16 +22,27 @@
       <param name="red"   value="0.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="lidar"/>
       <param name="delay_pos_x"  value="3.0"/>
   </node>
 
- 
   <!-- Fusion Polygon *************************************************************************** -->
   <node name="m_SensorFusion_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen">
       <param name="topic" value="/SensorFusion"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="fusion"/>
+      <param name="delay_pos_x"  value="5.0"/>
+  </node>
+
+  <!-- virbb bbox ******************************************************************************* -->
+  <node name="m_virbb" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
+      <param name="topic" value="/abs_virBB_array"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="fusion"/>
       <param name="delay_pos_x"  value="5.0"/>
   </node>
 
@@ -34,7 +52,8 @@
       <param name="red"   value="1.0"/>
       <param name="green" value="0.0"/>
       <param name="blue"  value="0.0"/>
-      <param name="delay_pos_x"  value="-1.0"/>
+      <param name="delay_prefix"  value="radar"/>
+      <param name="delay_pos_x"  value="1.0"/>
   </node>
 
   <!-- Camera 60 ******************************************************************************** -->
@@ -43,18 +62,24 @@
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="cam60FC"/>
+      <param name="delay_pos_x"  value="-1.0"/>
   </node>
   <node name="m_Detect_cam60FL" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjFrontLeft"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="cam60FL"/>
+      <param name="delay_pos_x"  value="-1.0"/>
   </node>
   <node name="m_Detect_cam60FR" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjFrontRight"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="cam60FR"/>
+      <param name="delay_pos_x"  value="-1.0"/>
   </node>
    <!-- Camera 120 ******************************************************************************** -->
   <node name="m_Detect_cam120FT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
@@ -62,43 +87,76 @@
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-  </node>  
+      <param name="delay_prefix"  value="cam120FT"/>
+      <param name="delay_pos_x"  value="-3.0"/>
+  </node>
   <node name="m_Detect_cam120BT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjBackTop"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-  </node>  
+      <param name="delay_prefix"  value="cam120BT"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+  </node>
   <node name="m_Detect_cam120LF" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjLeftFront"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-  </node>  
+      <param name="delay_prefix"  value="cam120LF"/>
+      <param name="delay_pos_x"  value="-1.0"/>
+  </node>
   <node name="m_Detect_cam120LB" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjLeftBack"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-  </node>  
+      <param name="delay_prefix"  value="cam120LB"/>
+      <param name="delay_pos_x"  value="-1.0"/>
+  </node>
   <node name="m_Detect_cam120RF" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjRightFront"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-  </node>  
+      <param name="delay_prefix"  value="cam120RF"/>
+      <param name="delay_pos_x"  value="-1.0"/>
+  </node>
   <node name="m_Detect_cam120RB" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjRightBack"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-  </node>  
+      <param name="delay_prefix"  value="cam120RB"/>
+      <param name="delay_pos_x"  value="-1.0"/>
+  </node>
+
+  <!-- Current pose ********************************************************************************** -->
+  <node name="m_current_pose" pkg="detection_viz" type="txt_current_pose.py" output="screen">
+      <param name="topic" value="/current_pose"/>
+      <param name="red"   value="0.0"/>
+      <param name="green" value="0.5"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="pose"/>
+      <param name="delay_pos_x"  value="-7.0"/>
+  </node>
+
+  <!-- Occupancy grid map ********************************************************************************** -->
+  <node name="m_occ" pkg="detection_viz" type="txt_occupancy_grid_map.py" output="screen">
+      <param name="topic" value="/occupancy_grid"/>
+      <param name="red"   value="0.0"/>
+      <param name="green" value="0.5"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="occ"/>
+      <param name="delay_pos_x"  value="-9.0"/>
+  </node>
+
 
   <!-- LaneNet ********************************************************************************** -->
   <node name="m_Lane_all_cam" pkg="detection_viz" type="marker_lane_curve.py" output="screen">
       <param name="topic" value="/LaneToDecisionOutput"/>
   </node>
-  
+
   <!-- SignalNet(Light) ************************************************************************* -->
   <node name="m_light_all_cam" pkg="detection_viz" type="marker_traffic_signal.py" output="screen">
       <param name="topic" value="/LightToDecisionOutput"/>

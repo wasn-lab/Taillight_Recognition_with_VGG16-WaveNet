@@ -29,3 +29,4 @@ catkin_make \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist"
 popd
+

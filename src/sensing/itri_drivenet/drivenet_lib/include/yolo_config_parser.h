@@ -5,7 +5,8 @@
 
 #include <ctime>
 #include <gflags/gflags.h>
-namespace DriveNet{
+namespace DriveNet
+{
 // Init to be called at the very beginning to verify all config params are valid
 void yoloConfigParserInit(int argc, char** argv, std::string pkg_path);
 
@@ -24,4 +25,4 @@ std::string getSaveDetectionsPath();
 uint getBatchSize();
 bool getShuffleTestSet();
 }
-#endif //_YOLO_CONFIG_PARSER_
+#endif  //_YOLO_CONFIG_PARSER_

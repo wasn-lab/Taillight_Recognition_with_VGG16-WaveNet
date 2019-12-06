@@ -1,21 +1,24 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drivenet_lib)
 
-add_definitions(-O3 -g)
-
-add_compile_options(-std=c++11) 
-
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
-) 
+)
 
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp rospy
 )
+
+find_package(TensorRT)
+if (NOT TensorRT_FOUND)
+  message("Cannot find TensorRT. Skip ${PROJECT_NAME}")
+  return()
+endif()
 
 find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 if(OpenCV_FOUND)
@@ -24,23 +27,12 @@ if(OpenCV_FOUND)
   message(STATUS "OpenCV Libararies Dir: ${OpenCV_LIBRARY_DIRS}")
 endif()
 
-find_package(CUDA 10.0 REQUIRED)
+find_package(CUDA REQUIRED)
 if (CUDA_FOUND)
   message(STATUS "CUDA Include Dir: ${CUDA_INCLUDE_DIRS}")
   message(STATUS "CUDA Libararies: ${CUDA_LIBRARIES}")
-  set(CUDA_LIBRARY_DIRS /usr/local/cuda/lib64) 
+  set(CUDA_LIBRARY_DIRS /usr/local/cuda/lib64)
   message(STATUS "CUDA Libararies Dir: ${CUDA_LIBRARY_DIRS}")
-  set(
-    CUDA_NVCC_FLAGS
-    ${CUDA_NVCC_FLAGS};
-    -O3
-    -gencode arch=compute_30,code=sm_30
-    -gencode arch=compute_35,code=sm_35
-    -gencode arch=compute_50,code=[sm_50,compute_50]
-    -gencode arch=compute_52,code=[sm_52,compute_52]
-    -gencode arch=compute_61,code=sm_61
-    -gencode arch=compute_62,code=sm_62
-  )
 endif()
 
 find_package(TensorRT)
@@ -62,7 +54,7 @@ set(LIBS ${OpenCV_LIBRARIES}
          cuda
          glog
          )
-add_definitions("-DNPP") 
+add_definitions("-DNPP")
 
 include_directories(
   include

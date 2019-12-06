@@ -10,10 +10,10 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -33,7 +33,7 @@ target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 MESSAGE("Generate ${PROJECT_NAME}")
 
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_node_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
