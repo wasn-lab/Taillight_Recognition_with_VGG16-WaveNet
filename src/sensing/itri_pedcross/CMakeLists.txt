@@ -20,9 +20,9 @@ set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frame.yml"
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_normalization.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 b6d15293464f6ec0c9380a8872077180
+    MD5 ca81a33f18d06f6011d206d3ac9b790d
 )
 catkin_download_test_data(
     ped_models_rf
@@ -61,14 +61,10 @@ endif ()
 
 find_package(Glog)
 
-find_package(OpenCV
+find_package(OpenCV 3.4.3 REQUIRED
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
-if (${OpenCV_VERSION} VERSION_LESS "3.4.3")
-  message(STATUS "OpenCV_VERSION=${OpenCV_VERSION} < 3.4.3. Skip building ${PROJECT_NAME}")
-  return()
-endif ()
 
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
