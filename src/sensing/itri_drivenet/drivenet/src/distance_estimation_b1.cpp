@@ -6,7 +6,17 @@
 void DistanceEstimation::init(int car_id)
 {
   carId = car_id;
+  
+  initParams();
+  initShrinkArea();
+  initDetectArea();
 
+  Lidar_offset_x = 0;
+  Lidar_offset_y = 0;
+}
+
+void DistanceEstimation::initParams()
+{
   // camId: 0 (Front Right)
   camFR60.regionHeight_x = { -340, -132, 20, 230, 470, 664, 895, 1174, 1418, 1674 };
   camFR60.regionHeightSlope_x = { 0.182, 0.203, 0.220, 0.253, 0.297, 0.349, 0.439, 0.603, 0.842, 1.661 };
@@ -21,11 +31,6 @@ void DistanceEstimation::init(int car_id)
   camFR60.regionDist_y = { -4,  -5,  -6,  -7,  -8,  -9,  -10, -11, -12, -13, -14, -15, -16, -17,
                            -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30 };
 
-  camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
-  camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
-  camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
-  camFR60_area.RightLinePoint2 = cv::Point(1674, 1207);
-
   // camId: 1 (Front Center)
   camFC60.regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
                              1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
@@ -34,11 +39,6 @@ void DistanceEstimation::init(int car_id)
                                   -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
   camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
   camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
-
-  camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
-  camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
-  camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
-  camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
 
   // camId: 4 (Front Top)
   camFT120.regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
@@ -49,11 +49,6 @@ void DistanceEstimation::init(int car_id)
   camFT120.regionHeightSlope_y = { 0.603, 0.682,   0.784,   1.012,   1.56,    2.908,   48.28,   -4.4615,
                                    -1.8,  -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862 };
   camFT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9 };
-
-  camFT120_area.LeftLinePoint1 = cv::Point(127, 272);
-  camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
-  camFT120_area.RightLinePoint1 = cv::Point(1904, 272);
-  camFT120_area.RightLinePoint2 = cv::Point(3548, 1207);
 
   // camId: 5 (Right Front)
   camRF120.regionHeight_x = { 1148, 830, 544, 377, 236, 157, 52 };  // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
@@ -78,14 +73,11 @@ void DistanceEstimation::init(int car_id)
                                    -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608 };
   camBT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 };
 
-  camBT120_area.LeftLinePoint1 = cv::Point(422, 143);
-  camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
-  camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
-  camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
+}
 
-
-  // Area needs to shrink
-
+void DistanceEstimation::initShrinkArea()
+{
+    // Area needs to shrink
     // From x 6 - 50 m, y -3 to +3 m.
     ShrinkArea_camFR60.LeftLinePoint1 = cv::Point(869, 914);
     ShrinkArea_camFR60.LeftLinePoint2 = cv::Point(0, 1207);
@@ -103,9 +95,29 @@ void DistanceEstimation::init(int car_id)
     ShrinkArea_camBT120.LeftLinePoint2 = cv::Point(-264, 1207);
     ShrinkArea_camBT120.RightLinePoint1 = cv::Point(1182, 143);
     ShrinkArea_camBT120.RightLinePoint2 = cv::Point(2195, 1207);
+}
 
-  Lidar_offset_x = 0;
-  Lidar_offset_y = 0;
+void DistanceEstimation::initDetectArea()
+{
+  camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
+  camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
+  camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
+  camFR60_area.RightLinePoint2 = cv::Point(1674, 1207);
+
+  camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
+  camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
+  camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
+  camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
+
+  camFT120_area.LeftLinePoint1 = cv::Point(127, 272);
+  camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
+  camFT120_area.RightLinePoint1 = cv::Point(1904, 272);
+  camFT120_area.RightLinePoint2 = cv::Point(3548, 1207);
+
+  camBT120_area.LeftLinePoint1 = cv::Point(422, 143);
+  camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
+  camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
+  camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
 }
 
 float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,

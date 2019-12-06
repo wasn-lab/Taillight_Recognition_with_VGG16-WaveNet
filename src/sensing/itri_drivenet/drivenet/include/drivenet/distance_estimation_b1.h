@@ -44,6 +44,10 @@ private:
   float Lidar_offset_z = -3;
   int carId = 1;
 
+  void initParams();
+  void initShrinkArea();
+  void initDetectArea();
+
   float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
   float ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
                                     std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
