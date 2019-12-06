@@ -2,10 +2,10 @@
 
 bool CheckMatDataValid(Mat src)
 {
-    if (src.empty())
-    {
-        std::cout << "Unable to read image." << std::endl;
-        return false;
-    }
-    return true;
+  if (src.empty())
+  {
+    std::cout << "Unable to read image." << std::endl;
+    return false;
+  }
+  return true;
 }

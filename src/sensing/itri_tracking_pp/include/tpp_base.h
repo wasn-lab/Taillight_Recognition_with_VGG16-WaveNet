@@ -78,6 +78,7 @@
 #define DEBUG_VELOCITY 0
 #define DEBUG_HUNGARIAN_DIST 0
 #define DEBUG_PP 0
+#define DEBUG_PP_TRAJ 0
 #define DEBUG_CONF_E 0
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
