@@ -109,9 +109,9 @@ void DistanceEstimation::initDetectArea()
   camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
   camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
 
-  camFT120_area.LeftLinePoint1 = cv::Point(127, 272);
+  camFT120_area.LeftLinePoint1 = cv::Point(294, 171);
   camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
-  camFT120_area.RightLinePoint1 = cv::Point(1904, 272);
+  camFT120_area.RightLinePoint1 = cv::Point(1783, 171);
   camFT120_area.RightLinePoint2 = cv::Point(3548, 1207);
 
   camBT120_area.LeftLinePoint1 = cv::Point(422, 143);
