@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drivenet)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)                              
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -21,6 +21,10 @@ find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 find_package(CUDA REQUIRED)
 find_package(TensorRT)
 message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
+if (NOT TensorRT_FOUND)
+  message("Cannot find TensorRT. Skip ${PROJECT_NAME}")
+  return()
+endif()
 
 catkin_package(
   INCLUDE_DIRS include
@@ -34,13 +38,13 @@ set(LIBS drivenet_lib
          ${CUDA_LIBRARIES}
          ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppisu.so
          ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppig.so
-         gflags 
+         gflags
          stdc++fs)
 
-add_definitions("-DNPP") 
+add_definitions("-DNPP")
 
 include_directories(
-  include 
+  include
   ${INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
