@@ -1,5 +1,8 @@
 #!/bin/bash
+# Experimental:
 # Build executables with address sanitizer (ASAN)
+# Use running cuda programs, use
+# ASAN_OPTIONS=protect_shadow_gap=0:replace_intrin=0:alloc_dealloc_mismatch=0
 set -x
 set -e
 
@@ -7,6 +10,8 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build
 readonly devel_dir=devel
+export CC=clang
+export CXX=clang++
 pushd $repo_dir
 
 # clean up the previous build.
