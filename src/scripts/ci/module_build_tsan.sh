@@ -1,8 +1,7 @@
 #!/bin/bash
 # Experimental:
 # Build executables with address sanitizer (ASAN)
-# Use running cuda programs, use
-# ASAN_OPTIONS=protect_shadow_gap=0:replace_intrin=0:alloc_dealloc_mismatch=0
+# Use TSAN_OPTIONS=second_deadlock_stack=1 to get more informative warning message
 set -x
 set -e
 
@@ -10,8 +9,8 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build
 readonly devel_dir=devel
-export CC=clang
-export CXX=clang++
+#export CC=clang
+#export CXX=clang++
 pushd $repo_dir
 
 # clean up the previous build.
@@ -31,7 +30,7 @@ catkin_make \
     -DCATKIN_DEVEL_PREFIX=${devel_dir} \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-    -DENABLE_ADDRESS_SANITIZER=1 \
+    -DENABLE_THREAD_SANITIZER=1 \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist"
 popd
 
