@@ -6,7 +6,7 @@
 void DistanceEstimation::init(int car_id)
 {
   carId = car_id;
-  
+
   initParams();
   initShrinkArea();
   initDetectArea();
@@ -72,29 +72,28 @@ void DistanceEstimation::initParams()
   camBT120.regionHeightSlope_y = { 0.536,  0.612,  0.7197, 1.063,   1.372,  2.624, 14.2,
                                    -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608 };
   camBT120.regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 };
-
 }
 
 void DistanceEstimation::initShrinkArea()
 {
-    // Area needs to shrink
-    // From x 6 - 50 m, y -3 to +3 m.
-    ShrinkArea_camFR60.LeftLinePoint1 = cv::Point(869, 914);
-    ShrinkArea_camFR60.LeftLinePoint2 = cv::Point(0, 1207);
-    ShrinkArea_camFR60.RightLinePoint1 = cv::Point(1097, 914);
-    ShrinkArea_camFR60.RightLinePoint2 = cv::Point(1746, 1207);
+  // Area needs to shrink
+  // From x 6 - 50 m, y -3 to +3 m.
+  ShrinkArea_camFR60.LeftLinePoint1 = cv::Point(869, 914);
+  ShrinkArea_camFR60.LeftLinePoint2 = cv::Point(0, 1207);
+  ShrinkArea_camFR60.RightLinePoint1 = cv::Point(1097, 914);
+  ShrinkArea_camFR60.RightLinePoint2 = cv::Point(1746, 1207);
 
-    // From x 0 - 7 m, y -2 to +2 m.
-    ShrinkArea_camFT120.LeftLinePoint1 = cv::Point(510, 272);
-    ShrinkArea_camFT120.LeftLinePoint2 = cv::Point(-412, 1207);
-    ShrinkArea_camFT120.RightLinePoint1 = cv::Point(1351, 272);
-    ShrinkArea_camFT120.RightLinePoint2 = cv::Point(2258, 1207);
+  // From x 0 - 7 m, y -2 to +2 m.
+  ShrinkArea_camFT120.LeftLinePoint1 = cv::Point(510, 272);
+  ShrinkArea_camFT120.LeftLinePoint2 = cv::Point(-412, 1207);
+  ShrinkArea_camFT120.RightLinePoint1 = cv::Point(1351, 272);
+  ShrinkArea_camFT120.RightLinePoint2 = cv::Point(2258, 1207);
 
-    // From x -8 to -20 m, y -3 to +3 m.
-    ShrinkArea_camBT120.LeftLinePoint1 = cv::Point(737, 143);
-    ShrinkArea_camBT120.LeftLinePoint2 = cv::Point(-264, 1207);
-    ShrinkArea_camBT120.RightLinePoint1 = cv::Point(1182, 143);
-    ShrinkArea_camBT120.RightLinePoint2 = cv::Point(2195, 1207);
+  // From x -8 to -20 m, y -3 to +3 m.
+  ShrinkArea_camBT120.LeftLinePoint1 = cv::Point(737, 143);
+  ShrinkArea_camBT120.LeftLinePoint2 = cv::Point(-264, 1207);
+  ShrinkArea_camBT120.RightLinePoint1 = cv::Point(1182, 143);
+  ShrinkArea_camBT120.RightLinePoint2 = cv::Point(2195, 1207);
 }
 
 void DistanceEstimation::initDetectArea()
@@ -302,7 +301,7 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
   {
     switch (cls)
     {
-    // 0:person
+      // 0:person
       case 0:
         return 1;
 
@@ -334,7 +333,7 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
     {
       case 0:
         return 1;
-        // 0:person
+      // 0:person
 
       // 1:bicycle, 3:motorbike
       case 1:
@@ -386,7 +385,6 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
 
       default:
         return 1;
-
     }
   }
   return 1;
@@ -405,24 +403,18 @@ int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::
 
   if (cam_id == 1)
   {
-    area_id_L = CheckPointInArea(ShrinkArea_camFR60, Points_src[1],
-                                 Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea_camFR60, Points_src[2],
-                                 Points_src[3]);
+    area_id_L = CheckPointInArea(ShrinkArea_camFR60, Points_src[1], Points_src[3]);
+    area_id_R = CheckPointInArea(ShrinkArea_camFR60, Points_src[2], Points_src[3]);
   }
   else if (cam_id == 4)
   {
-    area_id_L = CheckPointInArea(ShrinkArea_camFT120, Points_src[1],
-                                 Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea_camFT120, Points_src[2],
-                                 Points_src[3]);
+    area_id_L = CheckPointInArea(ShrinkArea_camFT120, Points_src[1], Points_src[3]);
+    area_id_R = CheckPointInArea(ShrinkArea_camFT120, Points_src[2], Points_src[3]);
   }
   else if (cam_id == 10)
   {
-    area_id_L = CheckPointInArea(ShrinkArea_camBT120, Points_src[1],
-                                 Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea_camBT120, Points_src[2],
-                                 Points_src[3]);
+    area_id_L = CheckPointInArea(ShrinkArea_camBT120, Points_src[1], Points_src[3]);
+    area_id_R = CheckPointInArea(ShrinkArea_camBT120, Points_src[2], Points_src[3]);
   }
 
   shrink_ratio = RatioDefine(cam_id, Points_src[0]);
@@ -828,7 +820,6 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 }
 msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
 {
-
   msgs::PointXYZ p0;
   float x_distMeter = 0, y_distMeter = 0;
   float offset_x = 0;
@@ -840,14 +831,14 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
 
   offset_x = Lidar_offset_x;
 
-  switch(cam_id)
+  switch (cam_id)
   {
     case 0:
     {
       Parmas = camFR60;
       break;
     }
-    
+
     case 1:
     {
       Parmas = camFC60;
@@ -859,13 +850,13 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       Parmas = camFL60;
       break;
     }
-    
+
     case 4:
     {
       Parmas = camFT120;
       break;
     }
-    
+
     case 5:
     {
       Parmas = camRF120;
@@ -889,7 +880,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       Parmas = camLB120;
       break;
     }
-    
+
     case 10:
     {
       Parmas = camBT120;
@@ -905,15 +896,18 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     if (Parmas.regionDist_x.size() != 0)
       x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
     if (Parmas.regionDist_y.size() != 0)
-      y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y, Parmas.regionDist_y, img_h);
+      y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
+                                       Parmas.regionDist_y, img_h);
   }
 
   if (cam_id == 0)
   {
     if (Parmas.regionDist_x.size() != 0)
-      x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x, Parmas.regionDist_x, img_h);
+      x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
+                                       Parmas.regionDist_x, img_h);
     if (Parmas.regionDist_y.size() != 0)
-      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y, Parmas.regionDist_y);
+      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
+                                                Parmas.regionDist_y);
   }
 
   p0.x = x_distMeter + offset_x;

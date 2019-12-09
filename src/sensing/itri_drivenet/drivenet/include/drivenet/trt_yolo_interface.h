@@ -13,6 +13,7 @@
 #include "yolo.h"
 #include "yolo_config_parser.h"
 #include "yolov3.h"
+#include "boundary_util.h"
 
 using namespace DriveNet;
 struct ITRI_Bbox

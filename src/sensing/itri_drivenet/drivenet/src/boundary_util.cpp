@@ -1,7 +1,6 @@
 #include "drivenet/boundary_util.h"
 
-bool CheckBoxInArea(CheckArea areaCheck,
-                    int object_x1, int object_y1, int object_x2, int object_y2)
+bool checkBoxInArea(CheckArea areaCheck, int object_x1, int object_y1, int object_x2, int object_y2)
 {
   // printf("x1: %d, y1: %d, x2: %d, y2:%d\n", object_x1, object_y1, object_x2, object_y2);
   /// right
@@ -34,12 +33,21 @@ bool CheckBoxInArea(CheckArea areaCheck,
     return false;
 }
 
-
-void BoundaryMarker(int img_w, Point& BoundaryMarker1, Point& BoundaryMarker2, Point& BoundaryMarker3,
-                    Point& BoundaryMarker4, int marker_h)
+template <typename T1, typename T2>
+void checkValueInRange(T1& value, T2 min, T2 max)
 {
-  BoundaryMarker1 = Point(img_w / 2 + 20, marker_h);
-  BoundaryMarker2 = Point(img_w / 2 - 20, marker_h);
-  BoundaryMarker3 = Point(img_w / 2, marker_h + 20);
-  BoundaryMarker4 = Point(img_w / 2, marker_h - 20);
+  if (value < min)
+    value = min;
+  else if (value > max)
+    value = max;
+}
+template void checkValueInRange<float, int>(float& value, int min, int max);
+
+void boundaryMarker(int img_w, Point& boundaryMarker1, Point& boundaryMarker2, Point& boundaryMarker3,
+                    Point& boundaryMarker4, int marker_h)
+{
+  boundaryMarker1 = Point(img_w / 2 + 20, marker_h);
+  boundaryMarker2 = Point(img_w / 2 - 20, marker_h);
+  boundaryMarker3 = Point(img_w / 2, marker_h + 20);
+  boundaryMarker4 = Point(img_w / 2, marker_h - 20);
 }
