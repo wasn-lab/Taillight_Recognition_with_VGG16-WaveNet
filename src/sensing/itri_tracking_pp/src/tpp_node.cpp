@@ -126,6 +126,8 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   clock_t begin_time = clock();
 #endif
 
+  get_current_ego_data();  // sync data
+
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
 
@@ -954,8 +956,6 @@ int TPPNode::run()
 #if TTC_TEST
       seq_ = seq_cb_;
 #endif
-
-      get_current_ego_data();
 
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       compute_velocity_kalman();

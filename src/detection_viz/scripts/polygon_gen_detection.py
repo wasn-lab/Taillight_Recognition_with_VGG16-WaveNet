@@ -62,19 +62,45 @@ class Node:
         # print("fps = %f" % self.fps_cal.fps)
         box_list = MarkerArray()
         delay_list = MarkerArray()
-        idx = 1
-        for i in range(len(message.objects)):
-            # point = self.text_marker_position(message.objects[i].cPoint)
-            box_list.markers.append(self.create_polygon(message.header, message.objects[i].cPoint, idx))
-            idx += 1
+        # idx = 1
+        # for i in range(len(message.objects)):
+        #     # point = self.text_marker_position(message.objects[i].cPoint)
+        #     box_list.markers.append(self.create_polygon(message.header, message.objects[i].cPoint, idx))
+        #     idx += 1
         #
+        box_list.markers.append(self.create_polygon_list(message.header, message.objects, 1))
         delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps ) )
         #
         self.polygon_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
 
 
-    def create_polygon(self, header, cPoint, idx):
+    # def create_polygon(self, header, cPoint, idx):
+    #     marker = Marker()
+    #     marker.header.frame_id = header.frame_id
+    #     marker.header.stamp = header.stamp
+    #     marker.ns = self.inputTopic
+    #     marker.action = Marker.ADD
+    #     marker.pose.orientation.w = 1.0
+    #
+    #     marker.id = idx
+    #     marker.type = Marker.LINE_STRIP
+    #     marker.scale.x = 0.1
+    #     marker.lifetime = rospy.Duration(1.0)
+    #     marker.color.r = self.c_red
+    #     marker.color.g = self.c_green
+    #     marker.color.b = self.c_blue
+    #     marker.color.a = 1.0
+    #
+    #     marker.points = []
+    #     if len(cPoint.lowerAreaPoints) > 0:
+    #         for i in range(len(cPoint.lowerAreaPoints)):
+    #             marker.points.append(cPoint.lowerAreaPoints[i])
+    #         marker.points.append(cPoint.lowerAreaPoints[0])
+    #
+    #     return marker
+
+    def create_polygon_list(self, header, objects, idx):
         marker = Marker()
         marker.header.frame_id = header.frame_id
         marker.header.stamp = header.stamp
@@ -83,7 +109,7 @@ class Node:
         marker.pose.orientation.w = 1.0
 
         marker.id = idx
-        marker.type = Marker.LINE_STRIP
+        marker.type = Marker.LINE_LIST
         marker.scale.x = 0.1
         marker.lifetime = rospy.Duration(1.0)
         marker.color.r = self.c_red
@@ -92,10 +118,14 @@ class Node:
         marker.color.a = 1.0
 
         marker.points = []
-        if len(cPoint.lowerAreaPoints) > 0:
-            for i in range(len(cPoint.lowerAreaPoints)):
-                marker.points.append(cPoint.lowerAreaPoints[i])
-            marker.points.append(cPoint.lowerAreaPoints[0])
+        for _i in range(len(objects)):
+            cPoint = objects[_i].cPoint
+            if len(cPoint.lowerAreaPoints) > 0:
+                for i in range(len(cPoint.lowerAreaPoints)-1):
+                    marker.points.append(cPoint.lowerAreaPoints[i])
+                    marker.points.append(cPoint.lowerAreaPoints[i+1])
+                marker.points.append(cPoint.lowerAreaPoints[-1])
+                marker.points.append(cPoint.lowerAreaPoints[0])
 
         return marker
 

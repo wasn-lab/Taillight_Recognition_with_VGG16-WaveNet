@@ -24,6 +24,12 @@ find_package(catkin REQUIRED COMPONENTS
     car_model
 )
 
+find_package(TensorRT)
+if (USE_TENSORRT AND NOT TensorRT_FOUND)
+  message("Cannot find TensorRT. Skip ${PROJECT_NAME}")
+  return()
+endif()
+
 #set(OpenCV_DIR "/opt/ros/kinetic/share/OpenCV-3.3.1-dev" CACHE STRING "")
 find_package(OpenCV REQUIRED
              NO_MODULE
@@ -41,7 +47,6 @@ endif ()
 
 find_package(CUDA)
 
-find_package(TensorRT)
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
   message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
@@ -76,10 +81,6 @@ endif ()
 if (USE_TENSORRT)
   if (NOT CUDA_FOUND)
     message("Turn off USE_TENSORRT since USE_CUDA is FALSE.")
-    set(USE_TENSORRT OFF)
-  endif()
-  if (NOT TensorRT_FOUND)
-    message("Turn off USE_TENSORRT since TensorRT is not installed.")
     set(USE_TENSORRT OFF)
   endif()
 endif ()

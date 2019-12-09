@@ -76,10 +76,10 @@
   <node name="m_Detect_cam60FR" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjFrontRight"/>
       <param name="red"   value="1.0"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
+      <param name="green" value="0.0"/>
+      <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="cam60FR"/>
-      <param name="delay_pos_x"  value="-1.0"/>
+      <param name="delay_pos_x"  value="-3.0"/>
   </node>
    <!-- Camera 120 ******************************************************************************** -->
   <node name="m_Detect_cam120FT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
@@ -88,7 +88,7 @@
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
       <param name="delay_prefix"  value="cam120FT"/>
-      <param name="delay_pos_x"  value="-3.0"/>
+      <param name="delay_pos_x"  value="-5.0"/>
   </node>
   <node name="m_Detect_cam120BT" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjBackTop"/>
@@ -96,7 +96,7 @@
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
       <param name="delay_prefix"  value="cam120BT"/>
-      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="delay_pos_x"  value="-7.0"/>
   </node>
   <node name="m_Detect_cam120LF" pkg="detection_viz" type="marker_gen_detection.py" output="screen">
       <param name="topic" value="/CamObjLeftFront"/>
@@ -135,7 +135,7 @@
   <node name="m_current_pose" pkg="detection_viz" type="txt_current_pose.py" output="screen">
       <param name="topic" value="/current_pose"/>
       <param name="red"   value="0.0"/>
-      <param name="green" value="0.5"/>
+      <param name="green" value="0.8"/>
       <param name="blue"  value="1.0"/>
       <param name="delay_prefix"  value="pose"/>
       <param name="delay_pos_x"  value="-7.0"/>
@@ -145,9 +145,9 @@
   <node name="m_occ" pkg="detection_viz" type="txt_occupancy_grid_map.py" output="screen">
       <param name="topic" value="/occupancy_grid"/>
       <param name="red"   value="0.0"/>
-      <param name="green" value="0.5"/>
+      <param name="green" value="0.8"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="occ"/>
+      <param name="delay_prefix"  value="freespace"/>
       <param name="delay_pos_x"  value="-9.0"/>
   </node>
 
