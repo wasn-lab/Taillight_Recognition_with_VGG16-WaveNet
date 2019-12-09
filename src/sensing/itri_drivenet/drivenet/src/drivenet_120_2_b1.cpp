@@ -378,7 +378,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 0 ~ 7 meters
     // y axis: -9 ~ 6 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camFT120_area, box.x1, box.y2, box.x2, box.y2);
+    BoxPass_flag = checkBoxInArea(distEst.camFT120_area, box.x1, box.y2, box.x2, box.y2);
   }
   else if (cam_order == camera::id::top_rear_120)
   {
@@ -386,7 +386,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 8 ~ 20 meters
     // y axis: -3 ~ 3 meters
 
-    BoxPass_flag = CheckBoxInArea(distEst.camBT120_area, box.x1, box.y2, box.x2, box.y2);
+    BoxPass_flag = checkBoxInArea(distEst.camBT120_area, box.x1, box.y2, box.x2, box.y2);
   }
 
   if (BoxPass_flag)
@@ -647,10 +647,10 @@ void* run_display(void*)
   marker_h_0 = 272;
   marker_h_1 = 143;
 
-  cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
-  cv::Point BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4;
-  BoundaryMarker(rawimg_w, BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4, marker_h_0);
-  BoundaryMarker(rawimg_w, BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4, marker_h_1);
+  cv::Point boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4;
+  cv::Point boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4;
+  boundaryMarker(rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4, marker_h_0);
+  boundaryMarker(rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4, marker_h_1);
 
   ros::Rate r(10);
   while (ros::ok() && !isInferStop)
@@ -663,10 +663,10 @@ void* run_display(void*)
         try
         {
           display_mutex.lock();
-          cv::line(mat120_0_display, BoundaryMarker_0_1, BoundaryMarker_0_2, cv::Scalar(255, 255, 255), 1);
-          cv::line(mat120_0_display, BoundaryMarker_0_3, BoundaryMarker_0_4, cv::Scalar(255, 255, 255), 1);
-          cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-          cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+          cv::line(mat120_0_display, boundaryMarker_0_1, boundaryMarker_0_2, cv::Scalar(255, 255, 255), 1);
+          cv::line(mat120_0_display, boundaryMarker_0_3, boundaryMarker_0_4, cv::Scalar(255, 255, 255), 1);
+          cv::line(mat120_1_display, boundaryMarker_1_1, boundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+          cv::line(mat120_1_display, boundaryMarker_1_3, boundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
           cv::imshow("FrontTop-120", mat120_0_display);
           cv::imshow("BackTop-120", mat120_1_display);
           display_mutex.unlock();
