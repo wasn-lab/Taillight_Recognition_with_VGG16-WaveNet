@@ -13,40 +13,44 @@
 #include "yolo.h"
 #include "yolo_config_parser.h"
 #include "yolov3.h"
+#include "boundary_util.h"
 
 using namespace DriveNet;
-struct ITRI_Bbox{
-    int32_t label;
-    int32_t classId; // For coco benchmarking
-    float   prob;
-    float   x1;
-    float   y1;
-    float   x2;
-    float   y2;
+struct ITRI_Bbox
+{
+  int32_t label;
+  int32_t classId;  // For coco benchmarking
+  float prob;
+  float x1;
+  float y1;
+  float x2;
+  float y2;
 };
 
-class Yolo_app{
+class Yolo_app
+{
 public:
-    Yolo* inferYolo;
-    bool decode;
-    bool doBenchmark;
-    bool viewDetections;
-    bool saveDetections;
-    uint batchSize;
-    bool shuffleTestSet;
+  Yolo* inferYolo;
+  bool decode;
+  bool doBenchmark;
+  bool viewDetections;
+  bool saveDetections;
+  uint batchSize;
+  bool shuffleTestSet;
 
-    DsImage dsImags;
+  DsImage dsImags;
 
-    std::vector<int> dsImgs_rows;
-    std::vector<int> dsImgs_cols;
+  std::vector<int> dsImgs_rows;
+  std::vector<int> dsImgs_cols;
 
-    float* yoloInput;
+  float* yoloInput;
 
-    void init_yolo(std::string pkg_path, std::string cfg_file);
-    void input_preprocess(std::vector<cv::Mat*> &matSrcs);
-    void input_preprocess(std::vector<cv::Mat*> &matSrcs, std::vector<uint32_t> matOrders, int input_size, std::vector<int> dist_w, std::vector<int> dist_h);
-    void inference_yolo(); 
-    void get_yolo_result(std::vector<uint32_t>* order, std::vector<std::vector<ITRI_Bbox>* > &vbbx_output);
-    void delete_yolo_infer();
+  void init_yolo(std::string pkg_path, std::string cfg_file);
+  void input_preprocess(std::vector<cv::Mat*>& matSrcs);
+  void input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int> dist_w,
+                        std::vector<int> dist_h);
+  void inference_yolo();
+  void get_yolo_result(std::vector<uint32_t>* order, std::vector<std::vector<ITRI_Bbox>*>& vbbx_output);
+  void delete_yolo_infer();
 };
 #endif /*TRT_YOLO_INTERFACE_H*/

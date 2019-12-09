@@ -5,8 +5,8 @@
 
 #include "npp_resizer_dn.h"
 #include "npp_resizer_impl_dn.h"
-namespace DriveNet_npp{
-
+namespace DriveNet_npp
+{
 NPPResizer::NPPResizer(const int src_rows, const int src_cols, const double row_scale_factor,
                        const double col_scale_factor)
 {

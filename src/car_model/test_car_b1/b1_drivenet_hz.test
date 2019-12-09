@@ -1,0 +1,28 @@
+<launch>
+    <!-- drivenet_60 !-->
+    <node name="drivenet_node" pkg="drivenet" type="drivenet_node" output="screen">
+        <param name="car_id" type="int" value="1" />
+        <param name="standard_fps" type="bool" value="0" />
+        <param name="display" type="bool" value="0" />
+        <param name="input_resize" type="bool" value="1" />
+        <param name="imgResult_publish" type="bool" value="1" />
+
+    </node>
+
+    <node pkg="rosbag" type="play" name="player" output="screen" args="$(find car_model)/../bags/my_record_2019-11-27-16-36-54.bag" required="true"/>
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+          topics:
+            - name: /cam/F_left/detect_image
+              timeout: 50
+              negative: False
+        </rosparam>
+    </test>
+
+    <param name="hztest1/topic" value="/cam/F_left/detect_image" />
+    <param name="hztest1/hz" value="20.0" />
+    <param name="hztest1/hzerror" value="10.0" />
+    <param name="hztest1/test_duration" value="50" />
+    <test test-name="hztest_test" pkg="rostest" type="hztest" name="hztest1" />
+</launch>
