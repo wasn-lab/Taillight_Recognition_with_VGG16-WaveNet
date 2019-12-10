@@ -8,6 +8,7 @@
 #include "msgs/DynamicPath.h"
 #include "msgs/LocalizationToVeh.h"
 #include "msgs/VehInfo.h"
+#include "msgs/MMTPInfo.h"
 #include <geometry_msgs/PoseStamped.h> //ros
 #include <geometry_msgs/PolygonStamped.h>
 #include <sensor_msgs/Imu.h>
@@ -53,11 +54,12 @@ ros::Publisher polygon_pub;
 ros::Publisher polygon_array_pub;
 ros::Publisher FS_occ_pub;
 ros::Publisher Localization_UKF_pub;
+ros::Publisher mmtpinfo_pub;
 
 int Path_flag, Freespace_mode, VirBB_mode;
 float look_ahead_time_straight, look_ahead_time_turn;
 int ID_1, ID_2, ID_3, ID_4;
-float safe_range, takeover_mag, forward_length_2, J_minvalue_diff_min, J_minvalue_index, OB_enlarge;
+float safe_range, takeover_mag, forward_length_2, J_minvalue_diff_min, J_minvalue_index, OB_enlarge, min_takeoverlength, Delay_length;
 float w_l, w_k, w_k_1, w_obs, w_c, w_lane, w_fs, w_off_, w_off_avoid;
 
 struct pose
@@ -87,7 +89,7 @@ void publishNavPath(double XP_final[], double YP_final[], double XP_final_1[], d
 		Dpose.header.seq = i;
 		Dpose.pose.position.x = XP_final[0] + XP_final[1]*pow(u,1) + XP_final[2]*pow(u,2) + XP_final[3]*pow(u,3) + XP_final[4]*pow(u,4) + XP_final[5]*pow(u,5);
 		Dpose.pose.position.y = YP_final[0] + YP_final[1]*pow(u,1) + YP_final[2]*pow(u,2) + YP_final[3]*pow(u,3) + YP_final[4]*pow(u,4) + YP_final[5]*pow(u,5);
-		Dpose.pose.position.z = path_pose.z - 2.6;
+		Dpose.pose.position.z = path_pose.z - 3;
 		Dpose.pose.orientation.w = 1.0;
 		Dpath.poses.push_back(Dpose);
 	}
@@ -97,7 +99,7 @@ void publishNavPath(double XP_final[], double YP_final[], double XP_final_1[], d
 		Dpose.header.seq = i+j;
 		Dpose.pose.position.x = XP_final_1[0] + XP_final_1[1]*pow(u,1) + XP_final_1[2]*pow(u,2) + XP_final_1[3]*pow(u,3) + XP_final_1[4]*pow(u,4) + XP_final_1[5]*pow(u,5);
 		Dpose.pose.position.y = YP_final_1[0] + YP_final_1[1]*pow(u,1) + YP_final_1[2]*pow(u,2) + YP_final_1[3]*pow(u,3) + YP_final_1[4]*pow(u,4) + YP_final_1[5]*pow(u,5);
-		Dpose.pose.position.z = path_pose.z - 2.6;
+		Dpose.pose.position.z = path_pose.z - 3;
 		Dpose.pose.orientation.w = 1.0;
 		Dpath.poses.push_back(Dpose);
 	}
@@ -119,7 +121,7 @@ void publishNavPath_1(double XP_final_1[], double YP_final_1[], int index)
 		Dpose.header.seq = j;
 		Dpose.pose.position.x = XP_final_1[0] + XP_final_1[1]*pow(u,1) + XP_final_1[2]*pow(u,2) + XP_final_1[3]*pow(u,3) + XP_final_1[4]*pow(u,4) + XP_final_1[5]*pow(u,5);
 		Dpose.pose.position.y = YP_final_1[0] + YP_final_1[1]*pow(u,1) + YP_final_1[2]*pow(u,2) + YP_final_1[3]*pow(u,3) + YP_final_1[4]*pow(u,4) + YP_final_1[5]*pow(u,5);
-		Dpose.pose.position.z = path_pose.z - 2.6;
+		Dpose.pose.position.z = path_pose.z - 3;
 		Dpose.pose.orientation.w = 1.0;
 		Dpath.poses.push_back(Dpose);
 	}
@@ -173,6 +175,8 @@ void rt_OneStep(void)
 	rtObj.rtU.w_off_ = w_off_;
 	rtObj.rtU.w_off_avoid = w_off_avoid;
 	rtObj.rtU.OB_enlarge = OB_enlarge;
+	rtObj.rtU.min_takeoverlength = min_takeoverlength;
+	rtObj.rtU.Delay_length = Delay_length;
 
 	// Set model inputs here
 	std::cout << "-----------------------------------------"  << std::endl;
@@ -232,10 +236,10 @@ void rt_OneStep(void)
 	// }
 
 	// int J_finalindex = rtObj.rtY.J_finalind-1;
-	// std::cout << "U_c[" << J_finalindex << "]:" << rtObj.rtY.U_c[J_finalindex] << std::endl;
-	// std::cout << "U_c_1[" << J_finalindex << "]:" << rtObj.rtY.U_c_1[J_finalindex] << std::endl;
-	// std::cout << "safety_level_all[" << J_finalindex << "]:" << rtObj.rtY.safety_level_all[J_finalindex] << std::endl;
-	// std::cout << "safety_level_all_1[" << J_finalindex << "]:" << rtObj.rtY.safety_level_all_1[J_finalindex] << std::endl;
+	std::cout << "U_c[" << 5 << "]:" << rtObj.rtY.U_c[4] << std::endl;
+	std::cout << "U_c_1[" << 5 << "]:" << rtObj.rtY.U_c_1[4] << std::endl;
+	std::cout << "safety_level_all[" << "5" << "]:" << rtObj.rtY.safety_level_all[4] << std::endl;
+	std::cout << "safety_level_all_1[" << "5" << "]:" << rtObj.rtY.safety_level_all_1[4] << std::endl;
 	// std::cout << "J_fsc[" << J_finalindex << "]:" << rtObj.rtY.J_fsc[J_finalindex] << std::endl;
 	std::cout << "avoidance_mode:" << rtObj.rtY.avoidance_mode << std::endl;
 	
@@ -305,9 +309,7 @@ void rt_OneStep(void)
 	dpmsg.YP2_4 = rtObj.rtY.YP_final_1[4];
 	dpmsg.YP2_5 = rtObj.rtY.YP_final_1[5];
 
-	dynamicpath_pub.publish(dpmsg);
-	// std::cout << "rtY_XP10_pub:" << dpmsg.XP1_0 << std::endl;
-	// std::cout << "rtY_YP10_pub:" << dpmsg.YP1_0 << std::endl;
+	// dynamicpath_pub.publish(dpmsg);
 
 	// Publisher 3
 	msgs::LocalizationToVeh ltvmsg;
@@ -320,6 +322,11 @@ void rt_OneStep(void)
 
 	publishNavPath(rtObj.rtY.XP_final,rtObj.rtY.YP_final,rtObj.rtY.XP_final_1,rtObj.rtY.YP_final_1,std::floor(rtObj.rtY.takeoverlength_ind));
 	publishNavPath_1(rtObj.rtY.XP_final_1,rtObj.rtY.YP_final_1,std::floor(rtObj.rtY.takeoverlength_ind));
+
+	// Publisher 4
+	msgs::MMTPInfo mmtpinfomsg;
+	mmtpinfomsg.Deadend_flag = rtObj.rtY.Deadend_flag;
+	mmtpinfo_pub.publish(mmtpinfomsg);
 
 	// Indicate task complete
 	OverrunFlag = false;
@@ -500,7 +507,7 @@ void FS_data_callback(const nav_msgs::OccupancyGrid& FSmsg)
 	int width = costmap_.info.width;
 
 	// cost initialization
-	for (int i = 0; i < height; i++)
+	for (int i = 0; i < height; i++) //for (int i = height/2 - 10; i < height/2 + 11; i++) //
 	{
 		for (int j = 0; j < width; j++)
 		{
@@ -516,6 +523,7 @@ void FS_data_callback(const nav_msgs::OccupancyGrid& FSmsg)
 				FScost = 1;
 			}
 			rtObj.rtU.Freespace[fs_index] = FScost;
+			// std::cout << "123132132132132131321 : " << rtObj.rtU.Freespace[fs_index] << std::endl;
 		}
 	}
 
@@ -541,20 +549,20 @@ void FS_data_callback(const nav_msgs::OccupancyGrid& FSmsg)
 	// std::cout << "width = " << width << std::endl; //250
 	// int tmp_costmap = 0;
 	// int tmp_freespace = 0;
-	// for (int k=-11*15;k<1;k++)
+	// for (int k=-11*15;k<10;k++)
 	// 	{
-	// 		for (int m=-5;m<6;m++)
+	// 		for (int m=-10;m<20;m++)
 	// 		{
-	// 			int ttt = costmap_.data[(74+m)*250 + (174+k)];
-	// 			int ooo = rtObj.rtU.Freespace[(width-1-(174+k)) + (height-1-(74+m))*width];
-	// 			std::cout << "costmap :(" << k << "," << m << ")=" << ttt << std::endl;
+	// 			int ttt = costmap_.data[(height/2-1+m)*width + (width/2-1+k)];
+	// 			int ooo = rtObj.rtU.Freespace[(width-1-(width/2-1+k)) + (height-1-(height/2-1+m))*width];
+	// 			// std::cout << "costmap :(" << k << "," << m << ")=" << ttt << std::endl;
 	// 			// std::cout << "Freespace :(" << m << "," << k << ")=" << ooo << std::endl;
-				// if (ttt > 0)
-				// 	tmp_costmap++;
+	// 			if (ttt > 0)
+	// 				tmp_costmap++;
 	// 			if (ooo > 0)
 	// 				tmp_freespace++;
-		// 	}
-		// }
+	// 		}
+	// 	}
 	// std::cout << "---------------------------------tmp_costmap = " << tmp_costmap << std::endl;
 	// std::cout << "tmp_freespace = " << tmp_freespace << std::endl;
 }
@@ -616,6 +624,10 @@ int main(int argc, char **argv)
 	ros::param::get(ros::this_node::getName()+"/w_off_avoid", w_off_avoid);
 	OB_enlarge = 0.3;
 	ros::param::get(ros::this_node::getName()+"/OB_enlarge", OB_enlarge);
+	min_takeoverlength = 15;
+	ros::param::get(ros::this_node::getName()+"/min_takeoverlength", min_takeoverlength);
+	Delay_length = 7/3;
+	ros::param::get(ros::this_node::getName()+"/Delay_length", Delay_length);
 	
 	// subscriber
 	// Test
@@ -632,7 +644,8 @@ int main(int argc, char **argv)
 	// publisher
 	// Main
 	mmtp_pub = nh.advertise<mm_tp::MM_TP_msg>("mm_tp_topic", 1);
-	dynamicpath_pub = nh.advertise<msgs::DynamicPath>("dynamic_path_para", 1);
+	// dynamicpath_pub = nh.advertise<msgs::DynamicPath>("dynamic_path_para", 1);
+	mmtpinfo_pub = nh.advertise<msgs::MMTPInfo>("mm_tp_info", 1);
 	// rviz
 	NavPath_Pub = nh.advertise<nav_msgs::Path>("nav_path", 1);
 	NavPath_1_Pub = nh.advertise<nav_msgs::Path>("nav_path_1", 1);

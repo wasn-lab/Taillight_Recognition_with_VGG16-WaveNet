@@ -129,7 +129,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A0: " <<
         " msg.XP1_0: " << std::setprecision(10) << msg.XP1_0 << " "<<
         " msg.XP1_1: " << std::setprecision(10) << msg.XP1_1 << " " << std::endl;
-	Publisher[3].publish(msg);	
+	    Publisher[3].publish(msg);
+        return 1;	
 	}
     break;
     case 0x3A1:
@@ -146,7 +147,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A1: " <<
         " msg.XP1_2: " << std::setprecision(10) << msg.XP1_2 << " "<<
         " msg.XP1_3: " << std::setprecision(10) << msg.XP1_3 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3A2:
@@ -163,7 +165,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A2: " <<
         " msg.XP1_4: " << std::setprecision(10) << msg.XP1_4 << " "<<
         " msg.XP1_5: " << std::setprecision(10) << msg.XP1_5 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
 
@@ -180,7 +183,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A3: " <<
         " msg.YP1_0: " << std::setprecision(10) << msg.YP1_0 << " "<<
         " msg.YP1_1: " << std::setprecision(10) << msg.YP1_1 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3A4:
@@ -197,7 +201,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A4: " <<
         " msg.YP1_2: " << std::setprecision(10) << msg.YP1_2 << " "<<
         " msg.YP1_3: " << std::setprecision(10) << msg.YP1_3 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3A5:
@@ -213,7 +218,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A5: " <<
         " msg.YP1_4: " << std::setprecision(10) << msg.YP1_4 << " "<<
         " msg.YP1_5: " << std::setprecision(10) << msg.YP1_5 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
 
@@ -230,7 +236,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A6: " <<
         " msg.XP2_0: " << std::setprecision(10) << msg.XP2_0 << " "<<
         " msg.XP2_1: " << std::setprecision(10) << msg.XP2_1 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3A7:
@@ -246,7 +253,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A7: " <<
         " msg.XP2_2: " << std::setprecision(10) << msg.XP2_2 << " "<<
         " msg.XP2_3: " << std::setprecision(10) << msg.XP2_3 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3A8:
@@ -262,7 +270,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A8: " <<
         " msg.XP2_4: " << std::setprecision(10) << msg.XP2_4 << " "<<
         " msg.XP2_5: " << std::setprecision(10) << msg.XP2_5 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3A9:
@@ -278,7 +287,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3A9: " <<
         " msg.YP2_0: " << std::setprecision(10) << msg.YP2_0 << " "<<
         " msg.YP2_1: " << std::setprecision(10) << msg.YP2_1 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3B0:
@@ -294,7 +304,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
         std::cout <<  "Got 0x3B0: " <<
         " msg.YP2_2: " << std::setprecision(10) << msg.YP2_2 << " "<<
         " msg.YP2_3: " << std::setprecision(10) << msg.YP2_3 << " " << std::endl;
-	Publisher[3].publish(msg);
+	    Publisher[3].publish(msg);
+        return 1;
 	}
     break;
     case 0x3B1:
@@ -310,7 +321,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 	    std::cout <<  "Got 0x3B1: " <<
 	    " msg.YP2_4: " << std::setprecision(10) << msg.YP2_4 << " "<<
 	    " msg.YP2_5: " << std::setprecision(10) << msg.YP2_5 << " " << std::endl;
-		Publisher[3].publish(msg);	
+		Publisher[3].publish(msg);
+        return 1;	
 	}
     break;
 

@@ -19,6 +19,7 @@
 #include "msgs/LocalizationToVeh.h"
 #include "msgs/VehInfo.h"
 #include "ros/ros.h"
+#include <nav_msgs/Path.h>
 
 //For PCL
 #include <sensor_msgs/PointCloud2.h>
@@ -60,26 +61,75 @@ void VehinfoCallback(const msgs::VehInfo::ConstPtr& VImsg){
 	//Ego_speed_ms = 7.6;
 }
 
-void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg){
+void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
+{
 	vector<double> XX{msg->XP1_0, msg->XP1_1, msg->XP1_2, msg->XP1_3, msg->XP1_4, msg->XP1_5, msg->XP2_0, msg->XP2_1, msg->XP2_2, msg->XP2_3, msg->XP2_4, msg->XP2_5};
 	vector<double> YY{msg->YP1_0, msg->YP1_1, msg->YP1_2, msg->YP1_3, msg->YP1_4, msg->YP1_5, msg->YP2_0, msg->YP2_1, msg->YP2_2, msg->YP2_3, msg->YP2_4, msg->YP2_5};
-	BBox_Geofence.setPoly(XX,YY,6);
+	vector<Point> Position;
+    double Resolution = 0.001;
+	Point Pos;
+    for(double i=0.0;i<1.0;i+=Resolution){ 
+        Pos.X = XX[0] + XX[1]*i +  XX[2]*pow(i,2) +  XX[3]*pow(i,3) +  XX[4]*pow(i,4) +  XX[5]*pow(i,5);
+        Pos.Y = YY[0] + YY[1]*i +  YY[2]*pow(i,2) +  YY[3]*pow(i,3) +  YY[4]*pow(i,4) +  YY[5]*pow(i,5);            
+        Position.push_back(Pos);
+    }
+    for(double i=0.0;i<1.0;i+=Resolution){
+        Pos.X = XX[6] + XX[7]*i +  XX[8]*pow(i,2) +  XX[9]*pow(i,3) +  XX[10]*pow(i,4) + XX[11]*pow(i,5);
+        Pos.Y = YY[6] + YY[7]*i +  YY[8]*pow(i,2) +  YY[9]*pow(i,3) +  YY[10]*pow(i,4) + YY[11]*pow(i,5);
+        Position.push_back(Pos);
+    }
+	BBox_Geofence.setPath(Position);
+}
+
+void astar_callback(const nav_msgs::Path::ConstPtr& msg){
+	vector<Point> Position;
+	Point Pos;
+	double Resolution = 100;
+	for(int i=1;i<msg->poses.size();i++){
+		for(int j=0;j<Resolution;j++){
+			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
+			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
+			Position.push_back(Pos);
+		}	
+	}
+	BBox_Geofence.setPath(Position);
 }
 
 void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){	
 	PP_Stop = 0;
 	for(int i=0;i<msg->objects.size();i++){
 		//cout << "Start point: " << msg->objects[i].bPoint.p0.x << "," <<  msg->objects[i].bPoint.p0.y << endl;
+		double Center_X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x + msg->objects[i].bPoint.p7.x)/4;
+		double Center_Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y + msg->objects[i].bPoint.p7.y)/4;
 		for(int j=0;j<msg->objects[i].track.forecasts.size();j++){
 			Point Point_temp;
 			vector<Point> PointCloud_temp;
 			double time = (j+1)*0.5;
-			double Range_min = time*Ego_speed_ms;
-			double Range_max = time*Ego_speed_ms+7; // Length of bus = 7m
+			double Range_front = time*Ego_speed_ms;
+			double Range_back = time*Ego_speed_ms-7; // Length of bus = 7m
+			if(Range_back<0) Range_back=0;
+			
 			Point_temp.X = msg->objects[i].track.forecasts[j].position.x;
 			Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
 			Point_temp.Speed = msg->objects[i].relSpeed;
 			PointCloud_temp.push_back(Point_temp);
+			Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p0.x);
+			Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p0.y);
+			Point_temp.Speed = msg->objects[i].relSpeed;
+			PointCloud_temp.push_back(Point_temp);
+			Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p3.x);
+			Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p3.y);
+			Point_temp.Speed = msg->objects[i].relSpeed;
+			PointCloud_temp.push_back(Point_temp);
+			Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p4.x);
+			Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p4.y);
+			Point_temp.Speed = msg->objects[i].relSpeed;
+			PointCloud_temp.push_back(Point_temp);
+			Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p7.x);
+			Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p7.y);
+			Point_temp.Speed = msg->objects[i].relSpeed;
+			PointCloud_temp.push_back(Point_temp);
+			
 
 			//cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y << endl;
 
@@ -93,9 +143,10 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				return;
 			}
 			if(BBox_Geofence.getDistance()<80){
-				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << "m     " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
+				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
+				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 			}
-			if(BBox_Geofence.getDistance()<Range_max & BBox_Geofence.getDistance()>Range_min){
+			if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back)){
 				//cout << "Collision appears" << endl;
 				PP_Stop = 1;	
 			} 
@@ -111,6 +162,7 @@ int main(int argc, char **argv){
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	ros::Subscriber VI_sub = n.subscribe("veh_info", 1, VehinfoCallback);
+	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
 	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPP);
 	#elif defined RADARBOX

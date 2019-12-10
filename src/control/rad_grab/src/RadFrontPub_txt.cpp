@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     size_t size = 0;
     ssize_t read;
     int cur_timesec[2];
-    if ((read = getline(&buffer, &size, txt)) != -1)
+    if (read = getline(&buffer, &size, txt) != -1)
     {
         strncpy(&ch, buffer, 1);
         // printf("%c\n", ch);
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
         // printf("h.seq: %d, h.stamp: %d.%d\n", h.seq, h.stamp.sec, h.stamp.nsec);
 
         count = 0;
-        while ((read = getline(&buffer, &size, txt)) != -1)
+        while (read = getline(&buffer, &size, txt) != -1)
         {
             strncpy(&ch, buffer, 1);
             // printf("%c\n", ch);
