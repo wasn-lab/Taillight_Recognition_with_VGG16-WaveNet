@@ -15,12 +15,14 @@
 #define CUDA 1
 #define SBG 0
 #define TRIMBLE 1
+#define MAPPING 0
 
 #include "localization_can_class.h"
 #include "pcl_conversions.h"
 #include "localization/ErrorCode.h"
 #include "localization/LocalizationToVeh.h"
 #include "localization/VehInfo.h"
+
 
 #include <chrono>
 #include <fstream>
@@ -50,6 +52,10 @@
 #include <pcl/registration/ndt.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#ifdef MAPPING
+#include <dynamic_reconfigure/server.h>
+#include <localization/localizationConfig.h>
+#endif
 
 #if CUDA
 #include <cuda_downsample/cuda_downsample_class.h>
@@ -87,7 +93,10 @@ enum init_status {
 
 static pose initial_pose, predict_pose, previous_pose, ndt_pose, current_pose,
             localizer_pose, current_pose_sbg, sbg_raw_pose,
-            sbg_local_pose, sbg_vm_pose, current_pose_2vm, initial_pose_key, current_gnss2local_pose, initial_input_pose;
+            sbg_local_pose, sbg_vm_pose, current_pose_2vm, initial_pose_key, current_gnss2local_pose, initial_input_pose, rviz_input_pose;
+#if MAPPING
+static pose added_pose;
+#endif
 
 static double offset_x, offset_y, offset_z, offset_yaw; // current_pos - previous_pose
 static double offset_sbg_x, offset_sbg_y, offset_sbg_z, offset_sbg_roll, offset_sbg_pitch, offset_sbg_yaw;
@@ -105,15 +114,26 @@ static int init_key_pose_flag = 0;
 static std::shared_ptr<gpu::GNormalDistributionsTransform> north_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
 static std::shared_ptr<gpu::GNormalDistributionsTransform> south_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
 #endif
+
 static pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
 pcl::PointCloud<pcl::PointXYZI>::Ptr LidFrontTop_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI> LidFrontTop;
 
-// Default values
-static int max_iter = 30;      // Maximum iterations
-static float ndt_res = 1.4;     // Resolution
-static double step_size = 0.1;  // Step size
-static double trans_eps = 0.01; // Transformation epsilon
+#if MAPPING
+pcl::PointCloud<pcl::PointXYZI>::Ptr mapping_pointsCloudPtr (new pcl::PointCloud<pcl::PointXYZI>);
+static std::shared_ptr<gpu::GNormalDistributionsTransform> north_gpu_ndt_mapping_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
+static std::shared_ptr<gpu::GNormalDistributionsTransform> south_gpu_ndt_mapping_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
+static pcl::PointCloud<pcl::PointXYZI> new_sub_map;
+static int go_into_mapping_cnt = 0;
+static bool save_pcd = false;
+static std::string pcd_name = "sub_map.pcd";
+#endif
+
+// Default values localization mapping
+static int max_iter = 30;      // Maximum iterations 30 30
+static float ndt_res = 1.4;     // Resolution MAPPING 1.0 2.0
+static double step_size = 0.1;  // Step size 0.1  0.2
+static double trans_eps = 0.01; // Transformation epsilon  0.01 0.02
 
 static ros::Publisher ndt_pose_pub;
 static geometry_msgs::PoseStamped ndt_pose_msg;
@@ -158,6 +178,7 @@ static int iteration = 0;
 static double fitness_score = 0.0;
 static double trans_probability = 0.0; // Get the registration alignment probability.
 
+
 static double diff = 0.0;
 static double diff_x = 0.0, diff_y = 0.0, diff_z = 0.0, diff_yaw = 0.0;
 
@@ -186,9 +207,15 @@ static std::string _offset = "linear"; // linear, zero, quadratic
 static ros::Publisher pointCloudPublisher;
 static sensor_msgs::PointCloud2 current_points;
 
+static ros::Publisher subMapPointCloudPublisher;
+static sensor_msgs::PointCloud2 subMapPointCloud;
+
 static bool use_ndt_gpu_ = true;
 static bool use_gps_ = false;
 static bool use_trimble_ = true;
+static bool use_rviz_ = false;
+static bool got_rviz_pose = false;
+
 static bool use_local_transform_ = false;
 static bool is_gps_new = false;
 static bool is_trimble_new = false;
@@ -222,6 +249,37 @@ pcl::PointXYZI log_slam_point;
 static CudaDownSample CDS;
 #endif
 
+#if MAPPING
+void cfg_callback(localization::localizationConfig &config, uint32_t level) {
+
+
+        if(save_pcd)
+        {
+                std::cout << "SAVING PCD .........................." << std::endl;
+                pcl::PointCloud<pcl::PointXYZI>::Ptr save_pcd_mapPtr(new pcl::PointCloud<pcl::PointXYZI>);
+                *save_pcd_mapPtr += new_sub_map;
+
+                if (save_pcd_mapPtr->size() > 2)
+                {
+                        if(pcl::io::savePCDFileBinary(pcd_name, *save_pcd_mapPtr) == -1) {
+                                std::cout << "Failed saving " << "total_map.pcd" << "." << std::endl;
+                        }
+                        std::cout << "Saved " << "sub_map.pcd" << " (" << save_pcd_mapPtr->size() << " points)" << std::endl;
+                        save_pcd = false;
+                }
+                else
+                {
+                        std::cout << "no points to savePCD" << std::endl;
+                        save_pcd = false;
+                }
+        }
+        save_pcd = config.save_pcd;
+        pcd_name = config.pcd_name;
+        std::cout << "CFG CALL BACK 1. save_pcd "  << save_pcd << " 2. name " << pcd_name << std::endl;
+
+}
+#endif
+
 pthread_mutex_t mutex;
 
 bool inRange(float low, float high, float input)
@@ -236,7 +294,7 @@ bool heading_rate(float low, float high, float input)
 
 float find_z(const pcl::PointCloud<pcl::PointXYZI> &input, const pcl::PointXYZI center_p, double max_range)
 {
-        std::cout << " finding z value... " << std::endl;
+        std::cout << " finding z value ... " << std::endl;
 
         pcl::PointCloud<pcl::PointXYZI> ranged_scan;
         pcl::PointXYZI p;
@@ -262,7 +320,7 @@ float find_z(const pcl::PointCloud<pcl::PointXYZI> &input, const pcl::PointXYZI 
 
         if (ranged_scan.points.size()< 2)
         {
-                std::cout << " Poor info of Z... " << std::endl;
+                std::cout << " Poor info of Z ... " << std::endl;
                 return min_value;
         }
         else
@@ -290,7 +348,7 @@ void transformPoint(const struct pose &input_pose, struct pose &pose_output, con
 }
 
 
-static void initializePose(const struct pose &init_sbg_pose)
+static void initializePose(const struct pose &init_pose)
 {
         current_velocity = 0;
         current_velocity_x = 0;
@@ -298,15 +356,15 @@ static void initializePose(const struct pose &init_sbg_pose)
         current_velocity_z = 0;
         angular_velocity = 0;
 
-        transformPoint(init_sbg_pose, sbg_local_pose, vector_to_map);
-        sbg_local_pose.yaw = init_sbg_pose.yaw;
+        transformPoint(init_pose, sbg_local_pose, vector_to_map);
+        sbg_local_pose.yaw = init_pose.yaw;
 
-        initial_pose.x = init_sbg_pose.x;
-        initial_pose.y = init_sbg_pose.y;
-        initial_pose.z = init_sbg_pose.z;
-        initial_pose.roll = init_sbg_pose.roll;
-        initial_pose.pitch = init_sbg_pose.pitch;
-        initial_pose.yaw = init_sbg_pose.yaw;
+        initial_pose.x = init_pose.x;
+        initial_pose.y = init_pose.y;
+        initial_pose.z = init_pose.z;
+        initial_pose.roll = init_pose.roll;
+        initial_pose.pitch = init_pose.pitch;
+        initial_pose.yaw = init_pose.yaw;
 
         // Setting position and posture for the first time.
         localizer_pose.x = initial_pose.x;
@@ -336,14 +394,27 @@ static void initializePose(const struct pose &init_sbg_pose)
         offset_yaw = 0.0;
 
         std::cout << " initial pose loaded " << std::endl;
-        std::cout << " initial_pose.x: " << initial_pose.x << std::endl;
-        std::cout << " initial_pose.y: " << initial_pose.y << std::endl;
-        std::cout << " initial_pose.z: " << initial_pose.z << std::endl;
-        std::cout << " initial_pose.roll: " << initial_pose.roll << std::endl;
-        std::cout << " initial_pose.pitch: " << initial_pose.pitch << std::endl;
-        std::cout << " initial_pose.yaw: " << initial_pose.yaw << std::endl;
+        std::cout << " initial_pose.x : " << initial_pose.x << std::endl;
+        std::cout << " initial_pose.y : " << initial_pose.y << std::endl;
+        std::cout << " initial_pose.z : " << initial_pose.z << std::endl;
+        std::cout << " initial_pose.roll : " << initial_pose.roll << std::endl;
+        std::cout << " initial_pose.pitch : " << initial_pose.pitch << std::endl;
+        std::cout << " initial_pose.yaw : " << initial_pose.yaw << std::endl;
 }
 
+void rviz_initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& initial_input) {
+
+        rviz_input_pose.x = initial_input->pose.pose.position.x;
+        rviz_input_pose.y = initial_input->pose.pose.position.y;
+        rviz_input_pose.z = 0;
+        rviz_input_pose.roll = 0;
+        rviz_input_pose.pitch = 0;
+        rviz_input_pose.yaw = tf::getYaw(initial_input->pose.pose.orientation);
+
+        std::cout << "pose init by rviz " << std::endl;
+        std::cout << "got a new start x:" << rviz_input_pose.x << " y:" << rviz_input_pose.y << " yaw:" << rviz_input_pose.yaw << " from rviz." << std::endl;
+        got_rviz_pose = true;
+}
 
 static void north_map_callback(const sensor_msgs::PointCloud2::ConstPtr &input)
 {
@@ -351,7 +422,7 @@ static void north_map_callback(const sensor_msgs::PointCloud2::ConstPtr &input)
 
         if (points_map_num != input->width)
         {
-                std::cout << " north points map loading... " << std::endl;
+                std::cout << " north points map loading ... " << std::endl;
 
                 points_map_num = input->width;
 
@@ -379,10 +450,15 @@ static void north_map_callback(const sensor_msgs::PointCloud2::ConstPtr &input)
                         pthread_mutex_lock(&mutex);
                         north_gpu_ndt_ptr = north_gpu_ndt_ptr_;
                         pthread_mutex_unlock(&mutex);
+
+#if MAPPING
+                        north_gpu_ndt_mapping_ptr = north_gpu_ndt_ptr_;
+#endif
                 }
 
                 north_map_loaded = true;
                 std::cout << " north_map loaded " << std::endl;
+
         }
 }
 
@@ -393,7 +469,7 @@ south_map_callback(const sensor_msgs::PointCloud2::ConstPtr &input)
 
         if (points_map_num != input->width)
         {
-                std::cout << " south points map loading... " << std::endl;
+                std::cout << " south points map loading ... " << std::endl;
 
                 points_map_num = input->width;
 
@@ -418,6 +494,9 @@ south_map_callback(const sensor_msgs::PointCloud2::ConstPtr &input)
                         pthread_mutex_lock(&mutex);
                         south_gpu_ndt_ptr = south_gpu_ndt_ptr_;
                         pthread_mutex_unlock(&mutex);
+#if MAPPING
+                        south_gpu_ndt_mapping_ptr = south_gpu_ndt_ptr_;
+#endif
                 }
 
                 south_map_loaded = true;
@@ -455,13 +534,13 @@ static void sbg_callback(const localization::VehInfo::ConstPtr &input)
 
         if (input->gps_fault_flag)
         {
-                std::cout << "gps_fault_flag" << std::endl;
+                std::cout << "gps_fault_flag " << std::endl;
                 return;
         }
         if (!is_pose_init) {
                 initializePose(sbg_vm_pose);
                 is_pose_init = true;
-                std::cout << "pose_init by SBG" << std::endl;
+                std::cout << "pose_init by SBG " << std::endl;
 
         }
         is_gps_new = true;
@@ -509,7 +588,15 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 initializePose(initial_pose_key);
                 is_pose_init = true;
                 init_key_pose_flag = 0;
-                std::cout << "init_pose by KEY" << std::endl;
+                std::cout << "init_pose by KEY " << std::endl;
+
+        }
+
+        if (use_rviz_ && got_rviz_pose)
+        {
+                initializePose(rviz_input_pose);
+                got_rviz_pose = false;
+                std::cout << "init_pose by RVIZ " << std::endl;
 
         }
 #if SBG
@@ -517,7 +604,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
         {
                 initializePose(sbg_vm_pose);
                 is_pose_init = true;
-                std::cout << "is_init_pose by SBG" << std::endl;
+                std::cout << "is_init_pose by SBG " << std::endl;
 
         }
 #endif
@@ -534,13 +621,13 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 {
                         p_.z = 0;
                         p_.intensity = 1;
-                        p_.z = find_z(lidar_map_south, p_, 5.0);
+                        p_.z = find_z(lidar_map_south, p_, 10.0);
                 }
                 else if (p_.x > 100)
                 {
                         p_.z = 0;
                         p_.intensity = 1;
-                        p_.z = find_z(lidar_map_north, p_, 5.0);
+                        p_.z = find_z(lidar_map_north, p_, 10.0);
                 }
 
                 if (is_got_z_)
@@ -548,14 +635,14 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         initial_input_pose.z = p_.z + 2.7; //lidar height
                         initializePose(initial_input_pose);
                         is_pose_init = true;
-                        std::cout << "init_pose by TRIMBLE" << std::endl;
+                        std::cout << "init_pose by TRIMBLE " << std::endl;
                 }
         }
 #endif
         if(!is_pose_init)
         {
                 ros::Rate ros_rate(1);
-                std::cout <<"NO initial input" << std::endl;
+                std::cout <<"NO initial input " << std::endl;
                 ros_rate.sleep();
                 return;
         }
@@ -577,12 +664,14 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
                 pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+                pcl::PointCloud<pcl::PointXYZI>::Ptr mapping_trg_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+                pose predict_pose_for_ndt;
 
 #if CUDA
                 if (!CDS.downsampling(*LidFrontTop_cloudPtr, voxel_leaf_size))
                 {
                         cudaDeviceReset();
-                        std::cout << "cudaDownSample.downsampling NOT SUCCESFULL" << std::endl;
+                        std::cout << "cudaDownSample.downsampling NOT SUCCESFULL " << std::endl;
                 }
                 else
                 {
@@ -601,8 +690,123 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 std::chrono::time_point<std::chrono::system_clock> align_start, align_end;
                 static double align_time = 0.0;
 
-                pthread_mutex_lock(&mutex);
 
+#if MAPPING
+                if (go_into_mapping_cnt > 10)
+                {
+                        pthread_mutex_lock(&mutex);
+                        pcl::PointXYZI p;
+                        pcl::PointCloud<pcl::PointXYZI> scan;
+                        double r;
+
+                        for (pcl::PointCloud<pcl::PointXYZI>::const_iterator item = filtered_scan_ptr->begin(); item != filtered_scan_ptr->end(); item++)
+                        {
+                                p.x = (double)item->x;
+                                p.y = (double)item->y;
+                                p.z = (double)item->z;
+                                p.intensity = (double)item->intensity;
+
+                                r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
+                                if (5 < r && r < 120)
+                                {
+                                        scan.push_back(p);
+                                }
+                        }
+                        pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
+
+                        if (use_ndt_gpu_ == true && current_pose.x > 100)
+                        {
+                                north_gpu_ndt_mapping_ptr->setInputSource(scan_ptr);
+
+                        }
+
+                        if (use_ndt_gpu_ == true && current_pose.x < 100)
+                        {
+                                south_gpu_ndt_mapping_ptr->setInputSource(scan_ptr);
+
+                        }
+
+// Guess the initial gross estimation of the transformation
+                        predict_pose.x = previous_pose.x + offset_x;
+                        predict_pose.y = previous_pose.y + offset_y;
+                        predict_pose.z = previous_pose.z + offset_z;
+                        predict_pose.roll = previous_pose.roll;
+                        predict_pose.pitch = previous_pose.pitch;
+                        predict_pose.yaw = previous_pose.yaw + offset_yaw;
+
+//[]predict_pose_for_ndt
+
+                        predict_pose_for_ndt = predict_pose;
+
+                        Eigen::Translation3f init_translation(predict_pose_for_ndt.x, predict_pose_for_ndt.y, predict_pose_for_ndt.z);
+                        Eigen::AngleAxisf init_rotation_x(predict_pose_for_ndt.roll, Eigen::Vector3f::UnitX());
+                        Eigen::AngleAxisf init_rotation_y(predict_pose_for_ndt.pitch, Eigen::Vector3f::UnitY());
+                        Eigen::AngleAxisf init_rotation_z(predict_pose_for_ndt.yaw, Eigen::Vector3f::UnitZ());
+                        Eigen::Matrix4f init_guess = (init_translation * init_rotation_z *init_rotation_y * init_rotation_x) *tf_btol;
+
+                        if (use_ndt_gpu_ == true && current_pose.x > 100)
+                        {
+                                align_start = std::chrono::system_clock::now();
+                                north_gpu_ndt_mapping_ptr->align(init_guess);
+                                align_end = std::chrono::system_clock::now();
+                                has_converged = north_gpu_ndt_mapping_ptr->hasConverged();
+                                std::cout << "[Time] : North align  " << tt_.toc() << "ms" << std::endl;
+
+                                t = north_gpu_ndt_mapping_ptr->getFinalTransformation();
+                                iteration = north_gpu_ndt_mapping_ptr->getFinalNumIteration();
+                                // fitness_score = north_gpu_ndt_ptr->getFitnessScore();
+                                trans_probability = north_gpu_ndt_mapping_ptr->getTransformationProbability();
+                                pcl::transformPointCloud(*scan_ptr, *transformed_filtered_scan_ptr, t);
+
+                        }
+
+                        if (use_ndt_gpu_ == true && current_pose.x < 100)
+                        {
+                                align_start = std::chrono::system_clock::now();
+                                south_gpu_ndt_mapping_ptr->align(init_guess);
+                                align_end = std::chrono::system_clock::now();
+                                has_converged = south_gpu_ndt_mapping_ptr->hasConverged();
+                                std::cout << "[Time] : South align  " << tt_.toc() << "ms"<< std::endl;
+
+                                t = south_gpu_ndt_mapping_ptr->getFinalTransformation();
+                                iteration = south_gpu_ndt_mapping_ptr->getFinalNumIteration();
+                                // fitness_score = south_gpu_ndt_ptr->getFitnessScore();
+                                trans_probability = south_gpu_ndt_mapping_ptr->getTransformationProbability();
+
+                                pcl::transformPointCloud(*scan_ptr, *transformed_filtered_scan_ptr, t);
+
+
+
+                        }
+
+                        align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() /1000.0;
+
+                        t2 = t * tf_btol.inverse();
+
+                        if (pointCloudPublisher.getNumSubscribers() != 0) {
+                                pcl::toROSMsg(*transformed_filtered_scan_ptr, current_points);
+                                current_points.header.stamp = input->header.stamp;
+                                current_points.header.seq = input->header.seq;
+                                current_points.header.frame_id = "/map";
+                                pointCloudPublisher.publish(current_points);
+                        }
+
+                        if (subMapPointCloudPublisher.getNumSubscribers() != 0) {
+                                pcl::toROSMsg(new_sub_map, subMapPointCloud);
+                                subMapPointCloud.header.stamp = input->header.stamp;
+                                subMapPointCloud.header.seq = input->header.seq;
+                                subMapPointCloud.header.frame_id = "/map";
+                                subMapPointCloudPublisher.publish(subMapPointCloud);
+                        }
+
+
+                        pthread_mutex_unlock(&mutex);
+                }
+
+                else
+                {
+#endif
+                pthread_mutex_lock(&mutex);
                 if (use_ndt_gpu_ == true && current_pose.x > 100)
                 {
                         north_gpu_ndt_ptr->setInputSource(filtered_scan_ptr);
@@ -615,7 +819,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
                 }
 
-                // Guess the initial gross estimation of the transformation
+// Guess the initial gross estimation of the transformation
                 predict_pose.x = previous_pose.x + offset_x;
                 predict_pose.y = previous_pose.y + offset_y;
                 predict_pose.z = previous_pose.z + offset_z;
@@ -623,8 +827,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 predict_pose.pitch = previous_pose.pitch;
                 predict_pose.yaw = previous_pose.yaw + offset_yaw;
 
-                //[]predict_pose_for_ndt
-                pose predict_pose_for_ndt;
+//[]predict_pose_for_ndt
 
                 predict_pose_for_ndt = predict_pose;
 
@@ -679,6 +882,16 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
                 pthread_mutex_unlock(&mutex);
 
+
+#if MAPPING
+        }
+        go_into_mapping_cnt++;
+        std::cout << "-------go_into_mapping_cnt---------" << go_into_mapping_cnt << "--------------" << std::endl;
+
+#endif
+
+
+
                 tf::Matrix3x3 mat_l; // localizer
                 mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)),
                                static_cast<double>(t(0, 2)), static_cast<double>(t(1, 0)),
@@ -686,7 +899,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                                static_cast<double>(t(2, 0)), static_cast<double>(t(2, 1)),
                                static_cast<double>(t(2, 2)));
 
-                // Update localizer_pose
+// Update localizer_pose
                 localizer_pose.x = t(0, 3);
                 localizer_pose.y = t(1, 3);
                 localizer_pose.z = t(2, 3);
@@ -699,12 +912,12 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                                static_cast<double>(t2(2, 0)), static_cast<double>(t2(2, 1)),
                                static_cast<double>(t2(2, 2)));
 
-                // Update ndt_pose
+// Update ndt_pose
                 ndt_pose.x = t2(0, 3);
                 ndt_pose.y = t2(1, 3);
                 ndt_pose.z = t2(2, 3);
                 mat_b.getRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw, 1);
-                // current_pose_2vm = ndt_pose;
+// current_pose_2vm = ndt_pose;
                 transformPoint(ndt_pose, current_pose_2vm, vector_to_map.inverse());
 
 #if LOG_ALIGNMENT
@@ -734,7 +947,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         current_pose_2vm.yaw += 2 * M_PI;
                 }
 
-                // Calculate the difference between ndt_pose and predict_pose
+// Calculate the difference between ndt_pose and predict_pose
                 predict_pose_error = sqrt((ndt_pose.x - predict_pose_for_ndt.x) *
                                           (ndt_pose.x - predict_pose_for_ndt.x) +
                                           (ndt_pose.y - predict_pose_for_ndt.y) *
@@ -768,7 +981,50 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         current_pose.yaw = predict_pose_for_ndt.yaw;
                 }
 
-                // Compute the velocity and acceleration
+
+
+#if MAPPING
+
+                double shift = sqrt(pow(current_pose.x - added_pose.x, 2.0) + pow(current_pose.y - added_pose.y, 2.0));
+                std::cout << "--------///shift////"<<  shift << "///shift///-------" << std::endl;
+
+                if (shift >= 2.0)
+                {
+                        added_pose.x = current_pose.x;
+                        added_pose.y = current_pose.y;
+                        added_pose.z = current_pose.z;
+                        added_pose.roll = current_pose.roll;
+                        added_pose.pitch = current_pose.pitch;
+                        added_pose.yaw = current_pose.yaw;
+
+                        if (use_ndt_gpu_ == true && current_pose.x > 100)
+                        {
+                                // *mapping_trg_ptr += *transformed_filtered_scan_ptr;
+                                *mapping_trg_ptr += new_sub_map;
+                                *mapping_trg_ptr += lidar_map_north;
+
+                                north_gpu_ndt_mapping_ptr->setInputTarget(mapping_trg_ptr);
+                                new_sub_map += *transformed_filtered_scan_ptr;
+
+                        }
+
+                        if (use_ndt_gpu_ == true && current_pose.x < 100)
+                        {
+                                // *mapping_trg_ptr += *transformed_filtered_scan_ptr;
+                                *mapping_trg_ptr += new_sub_map;
+                                *mapping_trg_ptr += lidar_map_south;
+                                south_gpu_ndt_mapping_ptr->setInputTarget(mapping_trg_ptr);
+
+                                new_sub_map += *transformed_filtered_scan_ptr;
+
+
+                        }
+
+
+
+                }
+#endif
+// Compute the velocity and acceleration
                 scan_duration = current_scan_time - previous_scan_time;
                 double secs = scan_duration.toSec();
                 diff_x = current_pose.x - previous_pose.x;
@@ -825,7 +1081,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         }
                         ndt_pose_pub.publish(ndt_pose_msg);
                 }
-                // current_pose is published by vel_pose_mux
+// current_pose is published by vel_pose_mux
 
                 current_q.setRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
                 current_pose_msg.header.frame_id = "/map";
@@ -950,7 +1206,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
 
 
-                // Send TF "/base_link" to "/map"
+// Send TF "/base_link" to "/map"
                 transform.setOrigin(tf::Vector3(current_pose.x, current_pose.y, current_pose.z));
                 transform.setRotation(current_q);
 
@@ -966,7 +1222,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() /1000.0;
                 time_ndt_matching.data = exe_time;
 
-                // Set values for /estimate_twist
+// Set values for /estimate_twist
                 estimate_twist_msg.header.stamp = current_scan_time;
                 estimate_twist_msg.header.frame_id = "/base_link";
                 estimate_twist_msg.twist.linear.x = current_velocity;
@@ -977,7 +1233,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 estimate_twist_msg.twist.angular.z = angular_velocity;
 
                 tt_.toc();
-                /* Compute NDT_Reliability */
+/* Compute NDT_Reliability */
                 ndt_reliability.data = Wa * (exe_time / 100.0) * 100.0 +
                                        Wb * (iteration / 10.0) * 100.0 +
                                        Wc * ((2.0 - trans_probability) / 2.0) * 100.0;
@@ -995,6 +1251,8 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                           << sbg_raw_pose.pitch << ", " << sbg_raw_pose.yaw << ")"
                           << std::endl;
 #endif
+
+
 #if TRIMBLE
 
                 std::cout << "(current_gnss2local_pose x,y,z,roll,pitch,yaw): " << std::endl;
@@ -1034,7 +1292,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         log_distance += log_distance;
                 }
 #endif
-                // Update offset
+// Update offset
                 if (_offset == "linear")
                 {
                         offset_x = diff_x;
@@ -1055,7 +1313,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         offset_yaw = 0.0;
                 }
 
-                // Update previous_***
+// Update previous_***
                 previous_pose.x = current_pose.x;
                 previous_pose.y = current_pose.y;
                 previous_pose.z = current_pose.z;
@@ -1073,16 +1331,16 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 previous_velocity_z = current_velocity_z;
                 previous_accel = current_accel;
 
-                // Set values for /ndt_stat
-                // localization_info_pub_msg.header.stamp = current_scan_time;
-                // localization_info_pub_msg.exe_time = time_ndt_matching.data;
-                // localization_info_pub_msg.iteration = iteration;
-                // localization_info_pub_msg.score = fitness_score;
-                // localization_info_pub_msg.velocity = current_velocity;
-                // localization_info_pub_msg.acceleration = current_accel;
-                // localization_info_pub_msg.use_predict_pose = 0;
-                //
-                // localization_info_pub.publish(localization_info_pub_msg);
+// Set values for /ndt_stat
+// localization_info_pub_msg.header.stamp = current_scan_time;
+// localization_info_pub_msg.exe_time = time_ndt_matching.data;
+// localization_info_pub_msg.iteration = iteration;
+// localization_info_pub_msg.score = fitness_score;
+// localization_info_pub_msg.velocity = current_velocity;
+// localization_info_pub_msg.acceleration = current_accel;
+// localization_info_pub_msg.use_predict_pose = 0;
+//
+// localization_info_pub.publish(localization_info_pub_msg);
 
 
 
@@ -1095,6 +1353,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
         localization_to_veh_pub_msg.z = current_pose_2vm.z;
         localization_to_veh_pub_msg.ndt_reliability = ndt_reliability.data;
         localization_to_veh_pub.publish(localization_to_veh_pub_msg);
+
 }
 
 void *thread_func(void *args) {
@@ -1116,12 +1375,25 @@ void *thread_func(void *args) {
 
 int main(int argc, char **argv) {
 
+
         CDS.warmUpGPU();
         ros::init(argc, argv, "localization");
         pthread_mutex_init(&mutex, NULL);
 
         ros::NodeHandle nh;
         ros::NodeHandle private_nh("~");
+        private_nh.getParam("use_rviz_", use_rviz_);
+        std::cout << "use_rviz_: " << use_rviz_ << std::endl;
+
+#if MAPPING
+
+        private_nh.getParam("save_pcd", save_pcd);
+        private_nh.getParam("pcd_name", pcd_name);
+        dynamic_reconfigure::Server<localization::localizationConfig> cfg_server;
+        dynamic_reconfigure::Server<localization::localizationConfig>::CallbackType cfg_tmp;
+        cfg_tmp = boost::bind(&cfg_callback, _1, _2);
+        cfg_server.setCallback(cfg_tmp);
+#endif
         init_status = NOT_INITIALIZED;
         tf_x_ = 0.20;
         tf_y_ = 0;
@@ -1146,13 +1418,27 @@ int main(int argc, char **argv) {
         initial_pose.roll = 0.0;
         initial_pose.pitch = 0.0;
         initial_pose.yaw = 0.0;
+#if MAPPING
+        added_pose.x = 0.0;
+        added_pose.y = 0.0;
+        added_pose.z = 0.0;
+        added_pose.roll = 0.0;
+        added_pose.pitch = 0.0;
+        added_pose.yaw = 0.0;
+#endif
+        // initial_pose_key.x = 574.30;
+        // initial_pose_key.y = -153.03;
+        // initial_pose_key.z = -23.45;
+        // initial_pose_key.roll = -0.0237587304412;
+        // initial_pose_key.pitch = 0.00238022293266;
+        // initial_pose_key.yaw = 3.01196590467;
 
-        initial_pose_key.x = 0;
-        initial_pose_key.y = 0;
-        initial_pose_key.z = 0;
-        initial_pose_key.roll = 0.0;
-        initial_pose_key.pitch = 0.0;
-        initial_pose_key.yaw = -M_PI/2;
+        initial_pose_key.x = 460.222;
+        initial_pose_key.y = -254.724655151;
+        initial_pose_key.z = -23.6271781921;
+        initial_pose_key.roll = 0.0196261;
+        initial_pose_key.pitch = 0.0681919;
+        initial_pose_key.yaw = -1.6733683;
 
         voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
 
@@ -1168,18 +1454,25 @@ int main(int argc, char **argv) {
         predict_pose_pub =nh.advertise<geometry_msgs::PoseStamped>("/predict_pose", 1000);
 
         localization_to_veh_pub = nh.advertise<localization::LocalizationToVeh>("/localization_to_veh", 1000);
+#if MAPPING
+        subMapPointCloudPublisher =nh.advertise<sensor_msgs::PointCloud2>("sub_map_", 1, true);
+#endif
 
         // Subscribers
         ros::Subscriber LidFrontTopSub =nh.subscribe("LidarFrontTop", 1, callbackLidFrontTop);
+        ros::Subscriber subRvizPose = nh.subscribe("/initialpose", 1, rviz_initialpose_callback);
+
+        // ros::Subscriber LidFrontTopSub =nh.subscribe("LidarFrontLeft", 1, callbackLidFrontTop);
+
 #if SBG
         ros::Subscriber sbg_sub = nh.subscribe("veh_info", 10, sbg_callback);
-#endif
+        #endif
 #if TRIMBLE
         ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_data", 10, gnss2local_callback);
-#endif
+        #endif
         pthread_t thread;
         pthread_create(&thread, NULL, thread_func, NULL);
-        ros::MultiThreadedSpinner s(2);
+        ros::MultiThreadedSpinner s(3);
         ros::spin(s);
 
         return 0;
