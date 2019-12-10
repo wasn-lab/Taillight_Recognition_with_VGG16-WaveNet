@@ -344,7 +344,12 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   }
   else if (cam_order == camera::id::left_60)
   {
-    BoxPass_flag = false;
+    // Front left 60 range:
+    // x axis: 0 - 10 meters
+    // y axis: 4 ~ 30 meters
+
+    BoxPass_flag = checkBoxInArea(distEst.camFL60_area, box.x1, box.y2, box.x2, box.y2);
+    // BoxPass_flag = false;
   }
 
   if (BoxPass_flag)

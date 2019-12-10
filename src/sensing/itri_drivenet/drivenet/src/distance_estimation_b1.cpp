@@ -40,6 +40,20 @@ void DistanceEstimation::initParams()
   camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
   camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
+  // camId: 2 (Front Left)
+  camFL60.regionHeight_x = { 54, 335, 644, 1022, 1351, 1556, 1758, 1975, 2230, 2429 };
+  camFL60.regionHeightSlope_x = { 24.14, -1.1794, -0.784, -0.4609, -0.3457, -0.3001, -0.2656, -0.2371, -0.21, -0.1928 };
+  camFL60.regionDist_x = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+  camFL60.regionHeight_y = { 1207, 1193 /*5*/,  1144, 1083, 1030, 1000, 975 /*10*/, 953, 933, 915,
+                             904, 895 /*15*/, 883, 876, 868, 862, 856 /*20*/, 850, 843, 839,
+                             835, 830 /*25*/, 825, 821, 815, 810, 805 /*30*/ };
+  camFL60.regionHeightSlope_y = { 0,     0.002 /*5*/, -0.014, -0.034, -0.047, -0.056, -0.064 /*10*/, -0.072, -0.082, -0.091,
+                                  -0.096, -0.098 /*15*/, -0.104, -0.107, -0.110, -0.110, -0.113 /*20*/, -0.113, -0.119, -0.120,
+                                  -0.120, -0.121 /*25*/, -0.128, -0.127, -0.136, -0.139, -0.142 };
+  camFL60.regionDist_y = { 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                           18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };
+
   // camId: 4 (Front Top)
   camFT120.regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
                               150,  130,  115, 99,  86,  75,  65,  57,  48,  40,  10 };
@@ -107,6 +121,11 @@ void DistanceEstimation::initDetectArea()
   camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
   camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
   camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
+
+  camFL60_area.LeftLinePoint1 = cv::Point(54, 805);
+  camFL60_area.LeftLinePoint2 = cv::Point(54, 1207);
+  camFL60_area.RightLinePoint1 = cv::Point(1919, 1077);
+  camFL60_area.RightLinePoint2 = cv::Point(2429, 1207);
 
   camFT120_area.LeftLinePoint1 = cv::Point(294, 171);
   camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
@@ -900,7 +919,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
                                        Parmas.regionDist_y, img_h);
   }
 
-  if (cam_id == camera::id::right_60)
+  if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
   {
     if (Parmas.regionDist_x.size() != 0)
       x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,

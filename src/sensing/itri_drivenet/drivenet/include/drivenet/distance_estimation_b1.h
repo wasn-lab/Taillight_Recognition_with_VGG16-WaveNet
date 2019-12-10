@@ -84,7 +84,7 @@ public:
   // x axis: 8 ~ 20 meters
   // y axis: -3 ~ 3 meters
 
-  CheckArea camFR60_area, camFC60_area, camFT120_area, camBT120_area;
+  CheckArea camFR60_area, camFC60_area, camFL60_area, camFT120_area, camBT120_area;
 };
 
 #endif /*DISTANCEESTIMATION_H_*/
