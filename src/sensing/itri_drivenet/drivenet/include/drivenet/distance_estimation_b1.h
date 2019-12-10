@@ -2,6 +2,7 @@
 #define DISTANCEESTIMATION_H_
 
 // ROS message
+#include "camera_params.h"  // include camera topic name
 #include <msgs/BoxPoint.h>
 #include <msgs/PointXYZ.h>
 #include <opencv2/core/core.hpp>

@@ -297,7 +297,7 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
 
 float DistanceEstimation::RatioDefine(int cam_id, int cls)
 {
-  if (cam_id == 1)
+  if (cam_id == camera::id::front_60)
   {
     switch (cls)
     {
@@ -327,7 +327,7 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
         return 1;
     }
   }
-  else if (cam_id == 4)
+  else if (cam_id == camera::id::top_front_120)
   {
     switch (cls)
     {
@@ -357,7 +357,7 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
         return 1;
     }
   }
-  else if (cam_id == 10)
+  else if (cam_id == camera::id::top_rear_120)
   {
     switch (cls)
     {
@@ -401,17 +401,17 @@ int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::
 
   double shrink_ratio;
 
-  if (cam_id == 1)
+  if (cam_id == camera::id::front_60)
   {
     area_id_L = CheckPointInArea(ShrinkArea_camFR60, Points_src[1], Points_src[3]);
     area_id_R = CheckPointInArea(ShrinkArea_camFR60, Points_src[2], Points_src[3]);
   }
-  else if (cam_id == 4)
+  else if (cam_id == camera::id::top_front_120)
   {
     area_id_L = CheckPointInArea(ShrinkArea_camFT120, Points_src[1], Points_src[3]);
     area_id_R = CheckPointInArea(ShrinkArea_camFT120, Points_src[2], Points_src[3]);
   }
-  else if (cam_id == 10)
+  else if (cam_id == camera::id::top_rear_120)
   {
     area_id_L = CheckPointInArea(ShrinkArea_camBT120, Points_src[1], Points_src[3]);
     area_id_R = CheckPointInArea(ShrinkArea_camBT120, Points_src[2], Points_src[3]);
@@ -481,7 +481,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
   }
 
   /// 1
-  if (cam_id == 0 || cam_id == 1 || cam_id == 2 || cam_id == 4)
+  if (cam_id == camera::id::right_60 || cam_id == camera::id::front_60 || cam_id == camera::id::left_60 || cam_id == camera::id::top_front_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -496,7 +496,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     p7 = p3;
     p7.x = p7.x + obstacle_l;
   }
-  // else if (cam_id == 4)
+  // else if (cam_id == camera::id::top_front_120)
   // {
   //     /// Camera Perspective   ///  Spec view
   //     ///   p6------p2         ///   p5------p6
@@ -542,7 +542,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
   //     p4 = p0_cam;
   //     p7 = p4_cam;
   // }
-  else if (cam_id == 10)
+  else if (cam_id == camera::id::top_rear_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p2------p1         ///   p5------p6
@@ -646,7 +646,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     obstacle_l = 2.5; /*obstacle_w = 2.5;*/
   }                   // obstacle_l = 7
 
-  if (cam_id == 1 || cam_id == 4 || cam_id == 10 /*|| cam_id == 8 || cam_id == 9*/)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120 /*|| cam_id == 8 || cam_id == 9*/)
   {
     std::vector<int> PointsSrc = { class_id, x1, x2, y2 };
     std::vector<int> PointsDst = { class_id, x1, x2, y2 };
@@ -660,7 +660,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   p3 = GetPointDist(x2, y2, cam_id);
 
   /// 1
-  if (cam_id == 0 || cam_id == 1 || cam_id == 2 || cam_id == 4)
+  if (cam_id == camera::id::right_60 || cam_id == camera::id::front_60 || cam_id == camera::id::left_60 || cam_id == camera::id::top_front_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -675,7 +675,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     p7 = p3;
     p7.x = p7.x + obstacle_l;
   }
-  // else if (cam_id == 4)
+  // else if (cam_id == camera::id::top_front_120)
   // {
   //     /// Camera Perspective   ///  Spec view
   //     ///   p6------p2         ///   p5------p6
@@ -764,7 +764,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   //     p4 = p3_cam;
   //     p7 = p0_cam;
   // }
-  else if (cam_id == 10)
+  else if (cam_id == camera::id::top_rear_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p2------p1         ///   p5------p6
@@ -833,55 +833,55 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
 
   switch (cam_id)
   {
-    case 0:
+    case camera::id::right_60:
     {
       Parmas = camFR60;
       break;
     }
 
-    case 1:
+    case camera::id::front_60:
     {
       Parmas = camFC60;
       break;
     }
 
-    case 2:
+    case camera::id::left_60:
     {
       Parmas = camFL60;
       break;
     }
 
-    case 4:
+    case camera::id::top_front_120:
     {
       Parmas = camFT120;
       break;
     }
 
-    case 5:
+    case camera::id::top_right_front_120:
     {
       Parmas = camRF120;
       break;
     }
 
-    case 6:
+    case camera::id::top_right_rear_120:
     {
       Parmas = camRB120;
       break;
     }
 
-    case 8:
+    case camera::id::top_left_front_120:
     {
       Parmas = camLF120;
       break;
     }
 
-    case 9:
+    case camera::id::top_left_rear_120:
     {
       Parmas = camLB120;
       break;
     }
 
-    case 10:
+    case camera::id::top_rear_120:
     {
       Parmas = camBT120;
       break;
@@ -891,7 +891,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       return p0;
   }
 
-  if (cam_id == 1 || cam_id == 4 || cam_id == 10)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
   {
     if (Parmas.regionDist_x.size() != 0)
       x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
@@ -900,7 +900,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
                                        Parmas.regionDist_y, img_h);
   }
 
-  if (cam_id == 0)
+  if (cam_id == camera::id::right_60)
   {
     if (Parmas.regionDist_x.size() != 0)
       x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
