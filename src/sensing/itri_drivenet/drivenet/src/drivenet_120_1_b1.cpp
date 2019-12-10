@@ -571,7 +571,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // cv::Point LeftLinePoint2(-1422, 1207);
     // cv::Point RightLinePoint1(1904, 272);
     // cv::Point RightLinePoint2(3548, 1207);
-    // BoxPass_flag = CheckBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2,
+    // BoxPass_flag = checkBoxInArea(RightLinePoint1, RightLinePoint2, LeftLinePoint1, LeftLinePoint2, box.x1, box.y2,
     // box.x2, box.y2);
 
     // if (box.y2 < 319) BoxPass_flag = false;
@@ -891,17 +891,17 @@ void* run_display(void*)
 
   // int marker_h_0, marker_h_1, marker_h_2, marker_h_3;
   // marker_h_0 = 590;
-  // cv::Point BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4;
-  // cv::Point BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4;
-  // cv::Point BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4;
-  // cv::Point BoundaryMarker_3_1, BoundaryMarker_3_2, BoundaryMarker_3_3, BoundaryMarker_3_4;
-  // BoundaryMarker(rawimg_w, BoundaryMarker_0_1, BoundaryMarker_0_2, BoundaryMarker_0_3, BoundaryMarker_0_4,
+  // cv::Point boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4;
+  // cv::Point boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4;
+  // cv::Point boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4;
+  // cv::Point boundaryMarker_3_1, boundaryMarker_3_2, boundaryMarker_3_3, boundaryMarker_3_4;
+  // boundaryMarker(rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4,
   // marker_h_0);
-  // BoundaryMarker(rawimg_w, BoundaryMarker_1_1, BoundaryMarker_1_2, BoundaryMarker_1_3, BoundaryMarker_1_4,
+  // boundaryMarker(rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4,
   // marker_h_1);
-  // BoundaryMarker(rawimg_w, BoundaryMarker_2_1, BoundaryMarker_2_2, BoundaryMarker_2_3, BoundaryMarker_2_4,
+  // boundaryMarker(rawimg_w, boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4,
   // marker_h_2);
-  // BoundaryMarker(rawimg_w, BoundaryMarker_3_1, BoundaryMarker_3_2, BoundaryMarker_3_3, BoundaryMarker_3_4,
+  // boundaryMarker(rawimg_w, boundaryMarker_3_1, boundaryMarker_3_2, boundaryMarker_3_3, boundaryMarker_3_4,
   // marker_h_3);
 
   ros::Rate r(10);
@@ -917,8 +917,8 @@ void* run_display(void*)
         try
         {
           display_mutex.lock();
-          // cv::line(mat120_1_display, BoundaryMarker_1_1, BoundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-          // cv::line(mat120_1_display, BoundaryMarker_1_3, BoundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+          // cv::line(mat120_1_display, boundaryMarker_1_1, boundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+          // cv::line(mat120_1_display, boundaryMarker_1_3, boundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
           cv::imshow("RightFront-120", mat120_0_display);
           cv::imshow("RightBack-120", mat120_1_display);
           cv::imshow("LeftFront-120", mat120_2_display);
