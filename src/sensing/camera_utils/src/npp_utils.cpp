@@ -33,6 +33,7 @@ int npp8u_ptr_to_cvmat(const Npp8u* in_npp8u_ptr, const size_t in_num_bytes, cv:
   // TODO: extend to other channels like 1, 4
   assert(in_num_bytes % dim_size == 0);
   assert(channels == 3);
+  (void)(channels);
 
   if (!out_img.empty())
   {

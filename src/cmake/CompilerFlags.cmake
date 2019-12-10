@@ -4,9 +4,11 @@ option(USE_GPROF "Use gprof for performance profiling" OFF)
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(COMPILER_IS_CLANG TRUE)
+    set(COMPILER_IS_GNUCXX FALSE)
 endif ()
 
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(COMPILER_IS_CLANG FALSE)
     set(COMPILER_IS_GNUCXX TRUE)
 endif ()
 
@@ -60,9 +62,8 @@ APPEND_GLOBAL_COMPILER_FLAGS(
     -Wno-deprecated-declarations
     -Wno-comment
     -Wno-unused-parameter
-    -Wcast-align
+#    -Wcast-align
     -Wformat-security
-    -Wmissing-format-attribute
     -Wpointer-arith
     -Wwrite-strings)
 
@@ -72,8 +73,22 @@ if (COMPILER_IS_GNUCXX)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-discarded-qualifiers")
 endif ()
 
+if (NOT DEFINED WARNING_AS_ERROR)
+  set(WARNING_AS_ERROR TRUE)
+endif()
+
+if (DEFINED SCAN_BUILD_MODE)
+  APPEND_GLOBAL_COMPILER_FLAGS(-U_FORTIFY_SOURCE)
+endif()
+
 if (COMPILER_IS_CLANG)
     APPEND_GLOBAL_COMPILER_FLAGS(-Wuninitialized)
+#    if (WARNING_AS_ERROR)
+#      APPEND_GLOBAL_COMPILER_FLAGS(-Werror=return-type)
+#      APPEND_GLOBAL_COMPILER_FLAGS(-Werror=sign-compare)
+#      APPEND_GLOBAL_COMPILER_FLAGS(-Werror=sometimes-uninitialized)
+#      APPEND_GLOBAL_COMPILER_FLAGS(-Werror=writable-strings)
+#    endif ()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-ignored-qualifiers -Wno-missing-field-initializers -Wno-incompatible-pointer-types-discards-qualifiers")
 endif ()
 

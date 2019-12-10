@@ -185,7 +185,7 @@ void transform_point_abs2rel(const float x_abs, const float y_abs, const float z
                              const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
                              const float ego_heading)
 {
-  float point[1][3] = { x_abs, y_abs, z_abs };
+  float point[1][3] = { { x_abs, y_abs, z_abs } };
   translate3(point, 1, -ego_x_abs, -ego_y_abs, -ego_z_abs);
   rotate3(point, 1, -ego_heading);
 
@@ -199,7 +199,7 @@ void transform_point_rel2abs(const float x_rel, const float y_rel, const float z
                              const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
                              const float ego_heading)
 {
-  float point[1][3] = { x_rel, y_rel, z_rel };
+  float point[1][3] = { { x_rel, y_rel, z_rel } };
   rotate3(point, 1, ego_heading);
   translate3(point, 1, ego_x_abs, ego_y_abs, ego_z_abs);
 
@@ -211,7 +211,7 @@ void transform_point_rel2abs(const float x_rel, const float y_rel, const float z
 void transform_vector_abs2rel(const float vx_abs, const float vy_abs, float& vx_rel, float& vy_rel,
                               const float ego_heading)
 {
-  float vec[1][2] = { vx_abs, vy_abs };
+  float vec[1][2] = { { vx_abs, vy_abs } };
 
   rotate(vec, 1, -ego_heading);
 
@@ -222,7 +222,7 @@ void transform_vector_abs2rel(const float vx_abs, const float vy_abs, float& vx_
 void transform_vector_rel2abs(const float vx_rel, const float vy_rel, float& vx_abs, float& vy_abs,
                               const float ego_heading)
 {
-  float vec[1][2] = { vx_rel, vy_rel };
+  float vec[1][2] = { { vx_rel, vy_rel } };
 
   rotate(vec, 1, ego_heading);
 
@@ -251,6 +251,7 @@ void set_config(const MarkerConfig& in, MarkerConfig& out)
   out.pub_bbox = in.pub_bbox;
   out.pub_polygon = in.pub_polygon;
   out.pub_pp = in.pub_pp;
+  out.pub_vel = in.pub_vel;
 
   out.pub_id = in.pub_id;
   out.pub_speed = in.pub_speed;

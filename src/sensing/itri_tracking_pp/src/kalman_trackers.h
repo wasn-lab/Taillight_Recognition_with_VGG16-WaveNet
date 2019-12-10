@@ -33,6 +33,31 @@ public:
   void kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
                            const float ego_heading);
 
+  float get_Q1()
+  {
+    return Q1;
+  }
+
+  float get_Q2()
+  {
+    return Q2;
+  }
+
+  float get_Q3()
+  {
+    return Q3;
+  }
+
+  float get_R()
+  {
+    return R;
+  }
+
+  float get_P0()
+  {
+    return P0;
+  }
+
 private:
   DISALLOW_COPY_AND_ASSIGN(KalmanTrackers);
 

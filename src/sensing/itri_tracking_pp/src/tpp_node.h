@@ -48,6 +48,11 @@ private:
   std::vector<Point32> box_centers_kalman_next_rel_;
 #endif
 
+#if VIRTUAL_INPUT
+  double gt_x_ = 0.;
+  double gt_y_ = 0.;
+#endif
+
   KalmanTrackers KTs_;
 
   EgoParam ego_x_m_;
@@ -68,16 +73,30 @@ private:
 
   MarkerGen mg_;
 
+#if TTC_TEST
+  unsigned int seq_ = 0;
+  unsigned int seq_cb_ = 0;
+  ros::Subscriber seq_sub_;
+  void callback_seq(const std_msgs::Int32::ConstPtr& input);
+#endif
+
   ros::Subscriber fusion_sub_;
   ros::Subscriber localization_sub_;
-
-  double loop_begin = 0.;    // seconds
-  double loop_elapsed = 0.;  // seconds
-
-  bool is_legal_dt_ = false;
+  ros::Subscriber ego_speed_kmph_sub_;
 
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
+
+#if TTC_TEST
+  void callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input);
+  void callback_localization(const visualization_msgs::Marker::ConstPtr& input);
+#else
+  void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
   void callback_localization(const msgs::LocalizationToVeh::ConstPtr& input);
+#endif
+
+  bool is_legal_dt_ = false;
+  double loop_begin = 0.;    // seconds
+  double loop_elapsed = 0.;  // seconds
 
   float dt_ = 0.f;
   float ego_x_abs_ = 0.f;
@@ -86,6 +105,9 @@ private:
   float ego_heading_ = 0.f;
   float ego_dx_abs_ = 0.f;
   float ego_dy_abs_ = 0.f;
+  double ego_speed_kmph_ = 0.;
+  double ego_velx_abs_kmph_ = 0.;
+  double ego_vely_abs_kmph_ = 0.;
 
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
@@ -98,7 +120,7 @@ private:
   float compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
                                         const float box_center_y_abs);
 
-  void compute_velocity_kalman(const float ego_dx_abs, const float ego_dy_abs);
+  void compute_velocity_kalman();
 
   void push_to_vector(BoxCenter a, std::vector<Point32>& b);
   void publish_tracking();
@@ -113,8 +135,13 @@ private:
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
+  void get_current_ego_data();
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
+#if TTC_TEST
+  float closest_distance_of_obj_pivot(const msgs::DetectedObject& obj);
+  void save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs);
+#endif
 };
 }  // namespace tpp
 

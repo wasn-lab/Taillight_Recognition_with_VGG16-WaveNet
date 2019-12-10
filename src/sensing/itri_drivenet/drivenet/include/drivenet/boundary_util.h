@@ -3,7 +3,14 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "drivenet/distance_estimation_b1.h"
 
-bool CheckBoxInArea(cv::Point RightLinePoint1, cv::Point RightLinePoint2, cv::Point LeftLinePoint1, cv::Point LeftLinePoint2, int object_x1, int object_y1, int object_x2, int object_y2);
+using namespace cv;
+
+bool checkBoxInArea(CheckArea areaCheck, int object_x1, int object_y1, int object_x2, int object_y2);
+template <typename T1, typename T2>
+extern void checkValueInRange(T1& value, T2 min, T2 max);
+void boundaryMarker(int img_w, Point& boundaryMarker1, Point& boundaryMarker2, Point& boundaryMarker3,
+                    Point& boundaryMarker4, int marker_h);
 
 #endif /*BOUNDARYUTIL_H_*/

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_type" default="ICLU_B1" />
+    <arg name="world_type" default="world_flower_expo" />
+
+    <arg name="robot_description_path"	 value="$(find opengl_test)/geometry_description/urdf/$(arg robot_type).xacro" />
+    <arg name="world_description_path"	 value="$(find opengl_test)/geometry_description/urdf/$(arg world_type).xacro" />
+
+
+    <!-- Is the following parameter necessary for real robot??-->
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg robot_description_path)" />
+    <param name="world_description" command="$(find xacro)/xacro --inorder $(arg world_description_path)" />
+
+    <!--node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" / -->
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+        <param name="publish_frequency" value="10.0"/>
+        <param name="ignore_timestamp" value="false"/>
+        <param name="use_tf_static" value="true"/>
+        <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg robot_description_path)" />
+
+        <remap from="joint_states" to="robot_joint_states" />
+    </node>
+
+    <node name="world_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+        <param name="publish_frequency" value="10.0"/>
+        <param name="ignore_timestamp" value="false"/> <!-- Default: false -->
+        <param name="use_tf_static" value="true"/>
+        <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg world_description_path)" />
+
+        <remap from="robot_description" to="world_description" />
+        <remap from="joint_states" to="world_joint_states" />
+    </node>
+</launch>

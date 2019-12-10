@@ -6,7 +6,7 @@ export PATH=/usr/local/cmake-3.15.5/bin:$PATH
 echo "The script works only for cmake >= 3.10. Your cmake version is:"
 cmake --version
 
-readonly build_type="${build_type:-Release}"
+readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
 
@@ -20,6 +20,6 @@ done
 catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-    -DCATKIN_BLACKLIST_PACKAGES="dl_data;localization" \
+    -DCATKIN_BLACKLIST_PACKAGES="dl_data;localization;opengl_test" \
     -DCMAKE_CXX_CPPCHECK="cppcheck;--template=gcc;--enable=style,warning;--inconclusive;--inline-suppr;--suppressions-list=${repo_dir}/src/scripts/ci/cppcheck_suppression.txt"
 popd

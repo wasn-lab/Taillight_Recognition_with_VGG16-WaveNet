@@ -1,5 +1,6 @@
 build*/
 devel*/
+CATKIN_IGNORE
 .vscode/
 *.swp
 *.pyc
@@ -37,4 +38,5 @@ src/sensing/sensing_subsystem_camera/resources/
 src/sensing/camera_utils/data/front_120.json
 src/sensing/camera_utils/data/left_120.json
 src/sensing/camera_utils/data/right_120.json
-
+src/sensing/itri_pedcross/models/
+src/bags/

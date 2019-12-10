@@ -20,12 +20,13 @@ find_package(catkin REQUIRED COMPONENTS
         msgs
 )
 
+find_package(Glog)
+
 find_package(GFlags)
+
 if (NOT GFLAGS_FOUND)
   message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
 endif ()
-
-find_package(Glog)
 
 find_package(OpenCV 3 REQUIRED
              NO_MODULE

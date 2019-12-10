@@ -16,3 +16,6 @@ configure_file(
     ${PROJECT_BINARY_DIR}/include/car_model.h)
 
 add_subdirectory(test)
+if (CAR_MODEL_IS_B1)
+  add_subdirectory(test_car_b1)
+endif ()

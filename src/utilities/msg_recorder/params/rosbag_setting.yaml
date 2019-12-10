@@ -1,0 +1,37 @@
+#---------------------#
+start_at_begining:  false # Determin if it's going to start rosbag record when the program begin
+#---------------------#
+
+# I/O setting
+#-----------------------------------#
+# Topics to be recorded, for explicitly identify the topic names, please list in "record_topics.txt"
+is_recording_all_topics: false # true # false
+#-----------------------------------#
+output_dir_tmp:     ~/rosbag_files # /media/itri/1TB/rosbag_files
+bag_name_prefix:    my_record
+output_dir_kept:    ~/rosbag_files/backup # /media/itri/1TB/rosbag_files/backup
+#-----------------------------------#
+
+# Output behavior setting
+#-----------------------------------#
+is_splitting:       false # true
+split_size:         5000    # MB, no effect if no split
+max_split_num:      # 6       # Maximum number of split files. The oldest file will be delete When the one is generated, no effect if no split; empty -> None
+#-----------------------------------#
+record_duration:            # duration to stop/split; empty -> None -> eternal; 1m -> 1 min.; 30 -> 30 sec.; 2h -> 2 hours
+#-----------------------------------#
+is_compressed:      false
+compression_method: lz4     # lz4/bz2, default -> lz4; bz2 -> slow, high compression; lz4 -> fast, low compression
+#-----------------------------------#
+
+# Backup setting
+#-----------------------------------#
+time_pre_trigger:    5.0    # sec.
+time_post_trigger:   5.0    # sec.
+#-----------------------------------#
+
+# Performance tunning
+#-----------------------------------#
+buffsize:                   # Input buffer size for all messages before bagging, empty -> None -> 256MB
+chunksize:                  # Advanced, memory with SIZE KB for each chunks before writing to disk. Tune if needed. empty -> None -> default 768KB
+#-----------------------------------#

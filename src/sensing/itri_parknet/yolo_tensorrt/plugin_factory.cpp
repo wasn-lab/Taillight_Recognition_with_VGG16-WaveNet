@@ -111,7 +111,8 @@ YoloLayerV3::YoloLayerV3(const void* data, size_t length)
     read(d, m_NumClasses);
     read(d, m_GridSize);
     read(d, m_OutputSize);
-    assert(d = a + length);
+    assert(d == a + length);
+    (void)(a);  // silence -Wunused-variable
 };
 
 YoloLayerV3::YoloLayerV3(const uint& numBoxes, const uint& numClasses, const uint& gridSize) :
@@ -169,4 +170,5 @@ void YoloLayerV3::serialize(void* buffer)
     write(d, m_GridSize);
     write(d, m_OutputSize);
     assert(d == a + getSerializationSize());
+    (void)(a);  // silence -Wunused-variable
 }

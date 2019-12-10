@@ -3,6 +3,11 @@
 namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
+static double input_fps = 5;    // known callback rate
+static double output_fps = 10;  // expected publish rate
+
+static unsigned int num_publishs_per_loop =
+    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 
 bool g_trigger = false;
 
@@ -34,26 +39,74 @@ static bool done_with_profiling()
 #endif
 }
 
+#if TTC_TEST
+void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
+{
+  seq_cb_ = input->data;
+
+#if DEBUG_DATA_IN
+  std::cout << "seq_cb_ = " << seq_cb_ << std::endl;
+#endif
+}
+
+void TPPNode::callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input)
+{
+  vel_.set_ego_speed_kmph(input->data);
+
+#if DEBUG_DATA_IN
+  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
+#endif
+}
+
+void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& input)
+{
+#if DEBUG_CALLBACK
+  LOG_INFO << "callback_localization() start" << std::endl;
+#endif
+
+  vel_.set_ego_x_abs(input->pose.position.x);
+  vel_.set_ego_y_abs(input->pose.position.y);
+
+  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                   input->pose.orientation.w);
+  tf::Matrix3x3 m(q);
+
+  double roll, pitch, yaw;
+  m.getRPY(roll, pitch, yaw);
+
+  vel_.set_ego_heading(yaw);
+
+#if DEBUG_DATA_IN
+  LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
+           << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
+#endif
+}
+#else  // TTC_TEST == 0
+void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
+{
+  vel_.set_ego_speed_kmph(input->ego_speed * 3.6);
+
+#if DEBUG_DATA_IN
+  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
+#endif
+}
+
 void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
   LOG_INFO << "callback_localization() start" << std::endl;
 #endif
 
-  // set ego vehicle's relative pose
-  ego_x_m_.update(input->x);
-  ego_y_m_.update(input->y);
-  ego_heading_rad_.update(input->heading * 0.01745329251f);
-
-  vel_.set_ego_x_rel(ego_x_m_.kf_.get_estimate());
-  vel_.set_ego_y_rel(ego_y_m_.kf_.get_estimate());
-  vel_.set_ego_heading(ego_heading_rad_.kf_.get_estimate());
+  vel_.set_ego_x_abs(input->x);
+  vel_.set_ego_y_abs(input->y);
+  vel_.set_ego_heading(input->heading * 0.01745329251f);
 
 #if DEBUG_DATA_IN
-  LOG_INFO << "ego_x = " << vel_.get_ego_x_rel() << "  ego_y = " << vel_.get_ego_y_rel()
+  LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
            << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
 #endif
 }
+#endif
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
@@ -73,14 +126,15 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   clock_t begin_time = clock();
 #endif
 
+  get_current_ego_data();  // sync data
+
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
 
 #if VIRTUAL_INPUT
   objs_header_.frame_id = "lidar";
-  vel_.set_dt(100000000);  // 0.1s = 100,000,000ns
-  is_legal_dt_ = true;
-#else
+#endif
+
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
@@ -93,7 +147,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   {
     is_legal_dt_ = false;
   }
-#endif
 
   KTs_.header_ = objs_header_;
 
@@ -107,6 +160,14 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
+
+#if VIRTUAL_INPUT
+    for (unsigned i = 0; i < KTs_.objs_.size(); i++)
+    {
+      gt_x_ = KTs_.objs_[i].radarInfo.imgPoint60.x;
+      gt_y_ = KTs_.objs_[i].radarInfo.imgPoint60.y;
+    }
+#endif
 
     if (in_source_ == 2)
     {
@@ -184,7 +245,7 @@ void TPPNode::subscribe_and_advertise_topics()
   else if (in_source_ == 3)
   {
     LOG_INFO << "Input Source: Camera" << std::endl;
-    fusion_sub_ = nh_.subscribe("DetectedObjectArray/cam60_1", 1, &TPPNode::callback_fusion, this);
+    fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
     topic = "PathPredictionOutput/camera";
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
@@ -214,8 +275,15 @@ void TPPNode::subscribe_and_advertise_topics()
 
   nh2_.setCallbackQueue(&queue_);
 
-  // Note that we use different NodeHandle here
-  localization_sub_ = nh2_.subscribe("localization_to_veh", 2, &TPPNode::callback_localization, this);
+// Note that we use different NodeHandle here
+#if TTC_TEST
+  seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
+  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);
+  localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
+#else
+  ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
+  localization_sub_ = nh2_.subscribe("localization_to_veh", 1, &TPPNode::callback_localization, this);
+#endif
 
   if (gen_markers_)
   {
@@ -239,6 +307,9 @@ void TPPNode::subscribe_and_advertise_topics()
       std::string topic6 = topic + "/pp";
       mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
     }
+
+    std::string topic7 = topic + "/vel";
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
   }
 }
 
@@ -277,11 +348,11 @@ float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const 
 float TPPNode::compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
                                                const float box_center_y_abs)
 {
-  float ego_vx = vel_.get_ego_speed() * std::cos(vel_.get_ego_heading());
-  float ego_vy = vel_.get_ego_speed() * std::sin(vel_.get_ego_heading());
+  float ego_vx = ego_speed_kmph_ * std::cos(ego_heading_);
+  float ego_vy = ego_speed_kmph_ * std::sin(ego_heading_);
 
-  float vecx_ego2obj_abs = box_center_x_abs - vel_.get_ego_x_abs();
-  float vecy_ego2obj_abs = box_center_y_abs - vel_.get_ego_y_abs();
+  float vecx_ego2obj_abs = box_center_x_abs - ego_x_abs_;
+  float vecy_ego2obj_abs = box_center_y_abs - ego_y_abs_;
 
   float dist_ego2obj_tmp = euclidean_distance(vecx_ego2obj_abs, vecy_ego2obj_abs);
   float dist_ego2obj = 0;
@@ -299,7 +370,7 @@ float TPPNode::compute_radar_absolute_velocity(const float radar_speed_rel, cons
   return radar_speed_abs;
 }
 
-void TPPNode::compute_velocity_kalman(const float ego_dx_abs, const float ego_dy_abs)
+void TPPNode::compute_velocity_kalman()
 {
   for (unsigned i = 0; i < KTs_.tracks_.size(); i++)
   {
@@ -317,7 +388,7 @@ void TPPNode::compute_velocity_kalman(const float ego_dx_abs, const float ego_dy
 
       // compute absolute velocity in relative coordinate (km/h)
       transform_vector_abs2rel(abs_vx_abs, abs_vy_abs, KTs_.tracks_[i].box_.track.absolute_velocity.x,
-                               KTs_.tracks_[i].box_.track.absolute_velocity.y, vel_.get_ego_heading());
+                               KTs_.tracks_[i].box_.track.absolute_velocity.y, ego_heading_);
       KTs_.tracks_[i].box_.track.absolute_velocity.z = 0.f;  // km/h
 
       // absolute speed
@@ -325,13 +396,12 @@ void TPPNode::compute_velocity_kalman(const float ego_dx_abs, const float ego_dy
           KTs_.tracks_[i].box_.track.absolute_velocity.x, KTs_.tracks_[i].box_.track.absolute_velocity.y);
 
       // relative velocity in absolute coordinate
-      float scale = 3.6f / KTs_.get_dt();
-      float rel_vx_abs = abs_vx_abs - scale * ego_dx_abs;  // km/h
-      float rel_vy_abs = abs_vy_abs - scale * ego_dy_abs;  // km/h
+      float rel_vx_abs = abs_vx_abs - ego_velx_abs_kmph_;  // km/h
+      float rel_vy_abs = abs_vy_abs - ego_vely_abs_kmph_;  // km/h
 
       // compute relative velocity in relative coordinate (km/h)
       transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, KTs_.tracks_[i].box_.track.relative_velocity.x,
-                               KTs_.tracks_[i].box_.track.relative_velocity.y, vel_.get_ego_heading());
+                               KTs_.tracks_[i].box_.track.relative_velocity.y, ego_heading_);
       KTs_.tracks_[i].box_.track.relative_velocity.z = 0.f;  // km/h
 
       // relative speed
@@ -377,12 +447,13 @@ void TPPNode::compute_velocity_kalman(const float ego_dx_abs, const float ego_dy
     }
 #else
     Point32 p_rel;
-    KTs_.tracks_[i].box_center_.pos.get_point_rel(p_rel);
-    Vector3_32 rel_v_rel;
+    KTs_.tracks_[i].box_center_.pos.get_point_rel(p_rel);  // m
 
-    rel_v_rel.x = KTs_.tracks_[i].box_.track.relative_velocity.x;
-    rel_v_rel.y = KTs_.tracks_[i].box_.track.relative_velocity.y;
-    rel_v_rel.z = KTs_.tracks_[i].box_.track.relative_velocity.z;
+    Vector3_32 rel_v_rel;
+    rel_v_rel.x = KTs_.tracks_[i].box_.track.relative_velocity.x;  // km/h
+    rel_v_rel.y = KTs_.tracks_[i].box_.track.relative_velocity.y;  // km/h
+    rel_v_rel.z = KTs_.tracks_[i].box_.track.relative_velocity.z;  // km/h
+
     KTs_.tracks_[i].box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
 #endif
   }
@@ -431,7 +502,7 @@ void TPPNode::publish_tracking()
 #if FPS_EXTRAPOLATION
         box.track.tracktime = (KTs_.tracks_[i].tracktime_ - 1) * num_publishs_per_loop + 1;
 #else
-    	box.track.tracktime = KTs_.tracks_[i].tracktime_;
+        box.track.tracktime = KTs_.tracks_[i].tracktime_;
 #endif
 
         // set max_length
@@ -476,6 +547,12 @@ void TPPNode::publish_tracking()
   }
 }
 
+inline bool test_file_exist(const std::string& name)
+{
+  ifstream f(name.c_str());
+  return f.good();
+}
+
 void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
@@ -489,47 +566,102 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
     return;
   }
 
-  ofs.open(fname, std::ios_base::app);
+  if (!test_file_exist(fname))
+  {
+    ofs.open(fname, std::ios_base::app);
+
+    ofs << "#1 time stamp (s), "  //
+        << "#2 track id, "        //
+        << "#3 dt (s), "          //
+#if VIRTUAL_INPUT
+        << "#4-1 GT bbox center x (m), "  //
+        << "#4-2 GT bbox center y (m), "  //
+#endif
+        << "#5-1 input bbox center x (m), "            //
+        << "#5-2 input bbox center y (m), "            //
+        << "#6-1 kalman-filtered bbox center x (m), "  //
+        << "#6-2 kalman-filtered bbox center y (m), "  //
+        << "#7 abs vx (km/h), "                        //
+        << "#8 abs vy (km/h), "                        //
+        << "#9 abs speed (km/h), "                     //
+        << "#10 rel vx (km/h), "                       //
+        << "#11 rel vy (km/h), "                       //
+        << "#12 rel speed (km/h), "                    //
+        << "#13 ppx in 5 ticks (m), "                  //
+        << "#14 ppy in 5 ticks (m), "                  //
+        << "#15 ppx in 10 ticks (m), "                 //
+        << "#16 ppy in 10 ticks (m), "                 //
+        << "#17 ppx in 15 ticks (m), "                 //
+        << "#18 ppy in 15 ticks (m), "                 //
+        << "#19 ppx in 20 ticks (m), "                 //
+        << "#20 ppy in 20 ticks (m), "                 //
+        << "#21 ego x abs (m), "                       //
+        << "#22 ego y abs (m), "                       //
+        << "#23 ego z abs (m), "                       //
+        << "#24 ego heading (rad), "                   //
+        << "#25 kf Q1, "                               //
+        << "#26 kf Q2, "                               //
+        << "#27 kf Q3, "                               //
+        << "#28 kf R, "                                //
+        << "#29 kf P0\n";
+  }
+  else
+  {
+    ofs.open(fname, std::ios_base::app);
+  }
+
+  ros::Duration dt_s(0, dt_);
 
   for (size_t i = 0; i < objs.size(); i++)
   {
+    ofs << std::fixed                          //
+        << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
+        << objs[i].track.id << ", "            // #2 track id
+        << dt_s.toSec() << ", "                // #3 dt (s)
+#if VIRTUAL_INPUT
+        << gt_x_ << ", "  // #4-1 GT bbox center x (m)
+        << gt_y_ << ", "  // #4-2 GT bbox center y (m)
+#endif
+        << objs[i].lidarInfo.boxCenter.x << ", "                    // #5-1 input bbox center x (m)
+        << objs[i].lidarInfo.boxCenter.y << ", "                    // #5-2 input bbox center y (m)
+        << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #6-1 kalman-filtered bbox center x (m)
+        << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6-2 kalman-filtered bbox center y (m)
+        << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx (km/h)
+        << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy (km/h)
+        << objs[i].absSpeed << ", "                                 // #9 abs speed (km/h)
+        << objs[i].track.relative_velocity.x << ", "                // #10 rel vx (km/h)
+        << objs[i].track.relative_velocity.y << ", "                // #11 rel vy (km/h)
+        << objs[i].relSpeed;                                        // #12 rel speed (km/h)
+
     if (objs[i].track.is_ready_prediction)
     {
-      ofs << std::fixed                                               //
-          << objs[i].header.stamp << ", "                             // #1 time stamp
-          << objs[i].track.id << ", "                                 // #2 track id
-          << objs[i].lidarInfo.boxCenter.x << ", "                    // #3 original bbox center x
-          << objs[i].lidarInfo.boxCenter.y << ", "                    // #4 original bbox center y
-          << (objs[i].bPoint.p0.x + objs[i].bPoint.p6.x) / 2 << ", "  // #5 modified bbox center x
-          << (objs[i].bPoint.p0.y + objs[i].bPoint.p6.y) / 2 << ", "  // #6 modified bbox center y
-          << objs[i].track.absolute_velocity.x << ", "                // #7 abs vx
-          << objs[i].track.absolute_velocity.y << ", "                // #8 abs vy
-          << objs[i].absSpeed << ", "                                 // #9 abs speed
-          << objs[i].track.relative_velocity.x << ", "                // #10 rel vx
-          << objs[i].track.relative_velocity.y << ", "                // #11 rel vy
-          << objs[i].relSpeed;                                        // #12 rel speed
-
-      // #13 ppx in 5 ticks
-      // #14 ppy in 5 ticks
-      // #15 ppx in 10 ticks
-      // #16 ppy in 10 ticks
-      // #17 ppx in 15 ticks
-      // #18 ppy in 15 ticks
-      // #19 ppx in 20 ticks
-      // #20 ppy in 20 ticks
+      // #13 ppx in 5 ticks (m)
+      // #14 ppy in 5 ticks (m)
+      // #15 ppx in 10 ticks (m)
+      // #16 ppy in 10 ticks (m)
+      // #17 ppx in 15 ticks (m)
+      // #18 ppy in 15 ticks (m)
+      // #19 ppx in 20 ticks (m)
+      // #20 ppy in 20 ticks (m)
       for (size_t j = 0; j < objs[i].track.forecasts.size(); j = j + 5)
       {
         ofs << ", " << objs[i].track.forecasts[j].position.x << ", " << objs[i].track.forecasts[j].position.y;
       }
-      ofs << ", "                          //
-          << vel_.get_ego_x_abs() << ", "  // #21 kf ego x abs
-          << vel_.get_ego_x_rel() << ", "  // #22 kf ego x rel
-          << vel_.get_ego_y_abs() << ", "  // #23 kf ego y abs
-          << vel_.get_ego_y_rel() << ", "  // #24 kf ego y rel
-          << vel_.get_ego_z_abs() << ", "  // #25 kf ego z abs
-          << vel_.get_ego_z_rel() << ", "  // #26 kf ego z rel
-          << vel_.get_ego_heading();       // #27 kf ego heading
+
+      ofs << ", "                //
+          << ego_x_abs_ << ", "  // #21 ego x abs
+          << ego_y_abs_ << ", "  // #22 ego y abs
+          << ego_z_abs_ << ", "  // #23 ego z abs
+          << ego_heading_;       // #24 ego heading (rad)
+
+      ofs << ", "                   //
+          << KTs_.get_Q1() << ", "  // #25 kf Q1
+          << KTs_.get_Q2() << ", "  // #26 kf Q2
+          << KTs_.get_Q3() << ", "  // #27 kf Q3
+          << KTs_.get_R() << ", "   // #28 kf R
+          << KTs_.get_P0();         // #29 kf P0
     }
+
     ofs << "\n";
     std::cout << "[Produced] time = " << objs[i].header.stamp << ", track_id = " << objs[i].track.id << std::endl;
   }
@@ -537,11 +669,99 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   ofs.close();
 }
 
+#if TTC_TEST
+float TPPNode::closest_distance_of_obj_pivot(const msgs::DetectedObject& obj)
+{
+  float dist_c = euclidean_distance((obj.bPoint.p0.x + obj.bPoint.p6.x) / 2, (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2);
+  float dist_p0 = euclidean_distance(obj.bPoint.p0.x, obj.bPoint.p0.y);
+  float dist_p3 = euclidean_distance(obj.bPoint.p3.x, obj.bPoint.p3.y);
+  float dist_p4 = euclidean_distance(obj.bPoint.p4.x, obj.bPoint.p4.y);
+  float dist_p7 = euclidean_distance(obj.bPoint.p7.x, obj.bPoint.p7.y);
+
+  return std::min(std::min(std::min(std::min(dist_c, dist_p0), dist_p3), dist_p4), dist_p7);
+}
+
+void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
+{
+  std::ofstream ofs;
+  std::stringstream ss;
+  ss << "../../../ttc_output.csv";
+  std::string fname = ss.str();
+
+  if (objs.empty())
+  {
+    std::cout << "objs is empty. No output to .csv." << std::endl;
+    return;
+  }
+
+  if (!test_file_exist(fname))
+  {
+    ofs.open(fname, std::ios_base::app);
+
+    ofs << "Frame number,"              //
+        << "Timestamp,"                 //
+        << "dt (sec),"                  //
+        << "Track ID,"                  //
+        << "Distance of SV & POV (m),"  //
+        << "SV abs. speed (km/h),"      //
+        << "POV abs. speed (km/h),"     //
+        << "POV rel. speed (km/h),"     //
+        << "TTC (sec)\n";
+  }
+  else
+  {
+    ofs.open(fname, std::ios_base::app);
+  }
+
+  ros::Duration dt_s(0, dt_);
+
+  for (size_t i = 0; i < objs.size(); i++)
+  {
+    float dist_m = closest_distance_of_obj_pivot(objs[i]);  //  Distance of SV & POV (m)
+    double ttc_s = (objs[i].relSpeed < 0) ? (dist_m * 3.6f) / -objs[i].relSpeed : -1.;
+
+    if (ttc_s != -1.)
+    {
+      ofs << seq_ << ","                        // Frame number
+          << objs_header_.stamp.toSec() << ","  // Timestamp
+          << dt_s.toSec() << ", "               // dt (sec)
+          << objs[i].track.id << ","            // Track ID
+          << dist_m << ","                      // Distance of SV & POV (m)
+          << ego_speed_kmph_ << ","             // SV abs. speed (km/h)
+          << objs[i].absSpeed << ","            // POV abs. speed (km/h)
+          << objs[i].relSpeed << ","            // POV rel. speed (km/h)
+          << ttc_s << "\n";                     // TTC (sec)
+
+      if (ttc_s >= 0.)
+        LOG_INFO << fixed << setprecision(3)  //
+                 << "Seq: " << seq_ << "   Track ID: " << objs[i].track.id << "   dist = " << dist_m
+                 << "m   TTC: " << ttc_s << "s (rel. speed = " << objs[i].relSpeed << " km/h)" << std::endl;
+      else
+        LOG_INFO << fixed << setprecision(3)  //
+                 << "Seq: " << seq_ << "   Track ID: " << objs[i].track.id << "   dist = " << dist_m
+                 << "m   TTC: ERROR!" << std::endl;
+    }
+    else
+    {
+      LOG_INFO << fixed << setprecision(3)  //
+               << "Seq: " << seq_ << "   Track ID: " << objs[i].track.id << "   dist = " << dist_m << "m   TTC: X"
+               << std::endl;
+    }
+  }
+
+  ofs.close();
+}
+#endif
+
 void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
 #if SAVE_OUTPUT_TXT
   save_output_to_txt(objs);
+#endif
+
+#if TTC_TEST
+  save_ttc_to_csv(objs);
 #endif
 
   msgs::DetectedObjectArray msg;
@@ -631,6 +851,22 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
 }
 #endif
 
+void TPPNode::get_current_ego_data()
+{
+  dt_ = vel_.get_dt();
+  ego_x_abs_ = vel_.get_ego_x_abs();
+  ego_y_abs_ = vel_.get_ego_y_abs();
+  ego_z_abs_ = vel_.get_ego_z_abs();
+  ego_heading_ = vel_.get_ego_heading();
+  ego_dx_abs_ = vel_.get_ego_dx_abs();
+  ego_dy_abs_ = vel_.get_ego_dy_abs();
+
+  ego_speed_kmph_ = vel_.get_ego_speed_kmph();
+  vel_.ego_velx_vely_kmph_abs();
+  ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
+  ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
+}
+
 void TPPNode::set_ros_params()
 {
   ROSParamsParser par(nh_);
@@ -665,7 +901,7 @@ void TPPNode::set_ros_params()
   par.get_ros_param_bool("show_tracktime", mc_.show_tracktime);
   par.get_ros_param_bool("show_source", mc_.show_source);
   par.get_ros_param_bool("show_distance", mc_.show_distance);
-  par.get_ros_param_bool("show_absspeed", mc_.show_distance);
+  par.get_ros_param_bool("show_absspeed", mc_.show_absspeed);
   par.get_ros_param_uint("show_pp", mc_.show_pp);
 
   //-----------------------------------------------
@@ -717,21 +953,12 @@ int TPPNode::run()
 
       // Tracking start ==========================================================================
 
-      vel_.compute_ego_position_absolute();
-
-      dt_ = vel_.get_dt();
-      ego_x_abs_ = vel_.get_ego_x_abs();
-      ego_y_abs_ = vel_.get_ego_y_abs();
-      ego_z_abs_ = vel_.get_ego_z_abs();
-      ego_heading_ = vel_.get_ego_heading();
-      ego_dx_abs_ = vel_.get_ego_dx_abs();
-      ego_dy_abs_ = vel_.get_ego_dy_abs();
-
-      // std::cout << dt_ << " " << ego_x_abs_ << " " << ego_y_abs_ << " " << ego_z_abs_ << " " <<  ego_heading_ << " "
-      // << ego_dx_abs_ << " " << ego_dy_abs_ << std::endl;
+#if TTC_TEST
+      seq_ = seq_cb_;
+#endif
 
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-      compute_velocity_kalman(ego_dx_abs_, ego_dy_abs_);
+      compute_velocity_kalman();
 
       publish_tracking();
 
@@ -741,8 +968,7 @@ int TPPNode::run()
 
       // Tracking end && PP start ================================================================
 
-      pp_.callback_tracking(pp_objs_, vel_.get_ego_x_abs(), vel_.get_ego_y_abs(), vel_.get_ego_z_abs(),
-                            vel_.get_ego_heading());
+      pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       pp_.main(pp_objs_, ppss, mc_.show_pp);
 
 #if FPS_EXTRAPOLATION
@@ -762,8 +988,7 @@ int TPPNode::run()
       g_trigger = false;
     }
 
-    // Process messages on callback_fusion()
-    ros::spinOnce();
+    ros::spinOnce();  // Process callback_fusion()
     loop_rate.sleep();
   }
 
