@@ -18,5 +18,5 @@ catkin_make -DCATKIN_ENABLE_TESTING=1
 source devel/setup.bash
 
 # Run tests
-catkin_make run_tests_car_model_rostest_test_car_b1_b1_drivenet_60.test
+catkin_make run_tests_car_model_rostest_test_car_b1_drivenet_60.test
 
