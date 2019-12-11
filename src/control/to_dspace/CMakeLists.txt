@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dspace_subscriber)
+project(to_dspace)
 
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -43,9 +43,9 @@ catkin_package(CATKIN_DEPENDS
 include_directories(${catkin_INCLUDE_DIRS})
 
 
-add_executable(dspace_subscriber src/dSPACE_subscriber.cpp )
-target_link_libraries(dspace_subscriber ${catkin_LIBRARIES})
-add_dependencies(dspace_subscriber ${catkin_EXPORTED_TARGETS})
+add_executable(to_dspace src/to_dspace.cpp )
+target_link_libraries(to_dspace ${catkin_LIBRARIES})
+add_dependencies(to_dspace ${catkin_EXPORTED_TARGETS})
 
 
 

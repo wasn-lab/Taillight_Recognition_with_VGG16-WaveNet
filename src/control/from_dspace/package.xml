@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>gui_publisher</name>
+  <name>from_dspace</name>
   <version>0.0.0</version>
   <description>Flags CAN communication</description>
   <maintainer email="u300@todo.todo">u300</maintainer>

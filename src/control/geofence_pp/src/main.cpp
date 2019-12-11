@@ -20,6 +20,7 @@
 #include "msgs/VehInfo.h"
 #include "ros/ros.h"
 #include <nav_msgs/Path.h>
+#include <visualization_msgs/Marker.h>
 
 //For PCL
 #include <sensor_msgs/PointCloud2.h>
@@ -49,6 +50,7 @@ static double Heading, SLAM_x, SLAM_y;
 static Geofence BBox_Geofence;
 static double Ego_speed_ms;
 static int PP_Stop=0;
+ros::Publisher PP_geofence;
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
@@ -94,6 +96,42 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	}
 	BBox_Geofence.setPath(Position);
 }
+
+void Publish_Marker_Radar(Point temp)
+{ 
+    uint32_t shape = visualization_msgs::Marker::SPHERE;
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "/map";
+    //marker.header.stamp = ros::Time::now();
+    marker.ns = "PP_Plotter";
+    marker.id = 0;
+    marker.type = shape;
+    marker.action = visualization_msgs::Marker::ADD;
+	marker.lifetime = ros::Duration();
+
+	marker.pose.position.x = temp.X;
+    marker.pose.position.y = temp.Y;
+    marker.pose.position.z = -3.0;  // Set pooint to groud in /map frame
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 0.0;
+
+    // Set the scale of the marker -- 1x1x1 here means 1m on a side
+    marker.scale.x = 1.0;
+    marker.scale.y = 1.0;
+    marker.scale.z = 1.0;
+
+    // Set the color -- be sure to set alpha to something non-zero!
+    marker.color.r = 1.0f;
+    marker.color.g = 0.0f;
+    marker.color.b = 0.0f;
+    marker.color.a = 1.0;
+
+    PP_geofence.publish(marker);  
+}
+
+
 
 void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){	
 	PP_Stop = 0;
@@ -142,9 +180,13 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				cerr << "Please initialize all PCloud parameters first" << endl;
 				return;
 			}
+
+			//Plot geofence PP
+
 			if(BBox_Geofence.getDistance()<80){
 				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
+				//Plot geofence PP
 			}
 			if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back)){
 				//cout << "Collision appears" << endl;
@@ -170,6 +212,9 @@ int main(int argc, char **argv){
 	#else
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
 	#endif
+	PP_geofence = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
+
+
 	ros::Rate loop_rate(10);
 
 	int s;

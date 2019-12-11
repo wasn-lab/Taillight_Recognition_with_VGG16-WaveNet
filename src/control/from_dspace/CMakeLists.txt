@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(gui_publisher)
+project(from_dspace)
 
 
 ## Compile as C++11, supported in ROS Kinetic and newer
@@ -56,9 +56,9 @@ include_directories(${catkin_INCLUDE_DIRS})
 #add_dependencies(GUI_Publisher03 GUI_Publisher03_generate_messages_cpp)
 
 
-add_executable(gui_publisher_all src/GUI_Publisher_all.cpp )
-target_link_libraries(gui_publisher_all ${catkin_LIBRARIES})
-add_dependencies(gui_publisher_all ${catkin_EXPORTED_TARGETS} )
+add_executable(from_dspace src/from_dspace.cpp )
+target_link_libraries(from_dspace ${catkin_LIBRARIES})
+add_dependencies(from_dspace ${catkin_EXPORTED_TARGETS} )
 #add_dependencies(gui_publisher_all ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
