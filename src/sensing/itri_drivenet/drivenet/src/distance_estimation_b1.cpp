@@ -678,8 +678,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   p0 = GetPointDist(x1, y2, cam_id);
   p3 = GetPointDist(x2, y2, cam_id);
 
-  /// 1
-  if (cam_id == camera::id::right_60 || cam_id == camera::id::front_60 || cam_id == camera::id::left_60 || cam_id == camera::id::top_front_120)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -694,6 +693,23 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     p7 = p3;
     p7.x = p7.x + obstacle_l;
   }
+  else if (cam_id == camera::id::right_60)
+  {
+    p4 = p0;
+    p0 = p3;
+    p3.y = p3.y - obstacle_l;
+    p7 = p4;
+    p7.y = p7.y - obstacle_l;
+  }
+  else if (cam_id == camera::id::left_60)
+  {
+    p4 = p0;
+    p0 = p3;
+    p3.y = p3.y + obstacle_l;
+    p7 = p4;
+    p7.y = p7.y + obstacle_l;
+  }
+
   // else if (cam_id == camera::id::top_front_120)
   // {
   //     /// Camera Perspective   ///  Spec view
