@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 set -e
-readonly build_type="${build_type:-Release}"
+readonly build_type="${build_type:-RelWithDebInfo}"
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build
