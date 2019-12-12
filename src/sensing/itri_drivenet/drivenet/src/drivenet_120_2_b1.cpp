@@ -269,9 +269,9 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
 {
   imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-  if (cam_ids_[cam_order] == cam_ids_[0])
+  if (cam_order == camera::id::top_front_120)
     pubImg_120_0.publish(imgMsg);
-  else if (cam_ids_[cam_order] == cam_ids_[1])
+  else if (cam_order == camera::id::top_rear_120)
     pubImg_120_1.publish(imgMsg);
 }
 
@@ -591,7 +591,7 @@ void* run_yolo(void*)
 
           if (imgResult_publish)
           {
-            image_publisher(mat120_0_display, headers_tmp[ndx], 0);
+            image_publisher(mat120_0_display, headers_tmp[ndx], cam_order);
           }
         }
       }
@@ -610,7 +610,7 @@ void* run_yolo(void*)
 
           if (imgResult_publish)
           {
-            image_publisher(mat120_1_display, headers_tmp[ndx], 1);
+            image_publisher(mat120_1_display, headers_tmp[ndx], cam_order);
           }
         }
       }
