@@ -2,8 +2,12 @@
 
 <launch>
 
+    <node pkg="issue_reporter" type="fake_tf_broadcast" args="lidar lidar_1" respawn="false" name="costmap_lidar_all" output="screen" />
+
     <node pkg="costmap_2d" type="costmap_2d_node" respawn="false" name="costmap_lidar_all" output="screen" clear_params="true" ns="A">
         <rosparam file="$(find issue_reporter)/launch/params/costmap_params_lidar_all.yaml" command="load" ns="costmap"/>
     </node>
+
+
 
 </launch>

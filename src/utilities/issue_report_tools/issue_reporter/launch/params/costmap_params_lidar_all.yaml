@@ -3,22 +3,22 @@ plugins:
     - {name: obstacle_layer,       type: "costmap_2d::ObstacleLayer"} # VoxelLayer
     - {name: inflation_layer,      type: "costmap_2d::InflationLayer"}
 
-update_frequency: 10.0 # 20.0
-publish_frequency: 5.0 # 10.0
+update_frequency: 20.0 # 20.0
+publish_frequency: 20.0 # 10.0
 
-global_frame: /lidar # odom
-robot_base_frame: /lidar
+global_frame: /lidar
+robot_base_frame: /lidar_1
 static_map: false
 rolling_window: true
 
 transform_tolerance: 0.5
 
 resolution: 0.5 # 0.05
-width: 30.0
-height: 30.0
+width: 60.0
+height: 60.0
 
 
-footprint: [[-0.57, 0.36],[0.57, 0.36],[0.57, -0.36],[-0.57, -0.36]]
+footprint: [[-3.5, 1.3],[3.5, 1.3],[3.5, -1.3],[-3.5, -1.3]]
 # footprint: [[-0.57, 0.28],[-0.52, 0.33],[0.52, 0.33],[0.57, 0.28],[0.57, -0.28],[0.52,-0.33],[-0.52,-0.33],[-0.57, -0.28]]
 
 
@@ -29,8 +29,12 @@ obstacle_layer:
     ray_trace_reduction_ratio: 0.92 # max: 1.0
     # Sensors
     observation_sources: LidarAll # laser_rear
-    LidarAll: {sensor_frame: lidar, data_type: PointCloud2, topic: /LidarAll, marking: true, clearing: false, expected_update_rate: 1.0, observation_persistence: 0.0, max_obstacle_height: 1.0, min_obstacle_height: -2.5}
+    LidarAll: {sensor_frame: lidar, data_type: PointCloud2, topic: /LidarAll, marking: true, clearing: true, expected_update_rate: 1.0, observation_persistence: 0.0, max_obstacle_height: 0.0, min_obstacle_height: -1.8}
+    # LidarAll: {sensor_frame: lidar, data_type: PointCloud2, topic: /LidarAll, marking: true, clearing: true, expected_update_rate: 1.0, observation_persistence: 0.0, max_obstacle_height: 3.0, min_obstacle_height: 1.0}
     # laser_rear: {sensor_frame: laser_rear, data_type: LaserScan, topic: /scan_rear, marking: true, clearing: true, expected_update_rate: 1.0, inf_is_valid: true, observation_persistence: 0.5}
+
+    max_obstacle_height: 3.0
+
     # consecutive_point_filter
     consecutive_point_filter_enable: false # true
     # SOR filter
@@ -42,5 +46,5 @@ obstacle_layer:
     ror_searching_radius: 0.1
 
 inflation_layer:
-    inflation_radius: 3.0
+    inflation_radius: 5.0
     cost_scaling_factor: 10.0 # 10.0
