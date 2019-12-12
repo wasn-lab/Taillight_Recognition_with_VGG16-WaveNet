@@ -108,15 +108,11 @@ setLayerName (std::string layer_name)
 void LogTotxt(const std::vector<float> contour_distance);
 
 
-void
-publishPoints(const PointCloud<PointXYZI>::ConstPtr input,
-              const ros::Publisher& pub);
 
 bool
 RegisterCallbacks(const ros::NodeHandle& n);
 
-bool
-RosInitialize(const ros::NodeHandle& n);
+
 
 void
 setInputCloud (const PointCloud<PointXYZI>::ConstPtr input);
