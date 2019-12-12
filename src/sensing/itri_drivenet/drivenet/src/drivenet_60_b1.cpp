@@ -541,7 +541,7 @@ void* run_yolo(void*)
 
           if (imgResult_publish)
           {
-            image_publisher(mat60_0_display, headers_tmp[ndx], 0);
+            image_publisher(mat60_0_display, headers_tmp[ndx], cam_order);
           }
         }
       }
@@ -560,7 +560,7 @@ void* run_yolo(void*)
 
           if (imgResult_publish)
           {
-            image_publisher(mat60_1_display, headers_tmp[ndx], 1);
+            image_publisher(mat60_1_display, headers_tmp[ndx], cam_order);
           }
         }
       }
@@ -579,7 +579,7 @@ void* run_yolo(void*)
 
           if (imgResult_publish)
           {
-            image_publisher(mat60_2_display, headers_tmp[ndx], 2);
+            image_publisher(mat60_2_display, headers_tmp[ndx], cam_order);
           }
         }
       }
