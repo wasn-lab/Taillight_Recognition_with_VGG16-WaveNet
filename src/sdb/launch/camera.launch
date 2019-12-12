@@ -8,7 +8,8 @@
 
 	<node name="msg_recorder"
 		pkg="msg_recorder"
-		type="msg_recorder.py"/>
+		type="msg_recorder.py"
+		args="-A --NO_KEY_IN"/>
 
 	<include file="$(find detection_viz)/launch/itriadv_viz.launch"/>
 
