@@ -21,6 +21,7 @@ class Geofence{
     double getObjSpeed();
     double getNearest_X();
     double getNearest_Y();
+    struct Point findDirection();
 
     int setPointCloud(const vector<Point> &PointCloud,bool isLocal, double SLAM_x, double SLAM_y, double Heading); //Update pointcloud, must set before fist execution of Calcuator
     int setPath(const vector<Point> &PathPoints); //Update Path points in absolute coordibate, must set before fist execution of Calcuator
