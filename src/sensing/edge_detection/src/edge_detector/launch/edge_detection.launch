@@ -1,0 +1,32 @@
+<!--launch file for edge_detection -->
+<launch>
+<!--ros param not release yet except for LidarAll_flag -->
+  <arg name="theta_sample" default="360"/>
+  <arg name="max_radius" default="50"/>
+  <arg name="grid_min_value" default="0"/>
+  <arg name="grid_max_value" default="1"/>
+  <arg name="grid_length_x" default="70"/>
+  <arg name="grid_length_y" default="30"/>
+  <arg name="grid_resolution" default="0.2"/>
+  <arg name="grid_position_x" default="20"/>
+  <arg name="grid_position_y" default="0"/>
+  <arg name="maximum_lidar_height_thres" default="5"/>
+  <arg name="minimum_lidar_height_thres" default="-5"/>
+  <arg name="LidarAll_flag" default="true"/>
+
+  <node pkg="edge_detection" type="edge_detection_node" name="edge_detection" output="screen">
+    <param name="theta_sample" value="$(arg theta_sample)"/>
+    <param name="max_radius" value="$(arg max_radius)"/>
+    <param name="grid_min_value" value="$(arg grid_min_value)"/>
+    <param name="grid_max_value" value="$(arg grid_max_value)"/>
+    <param name="grid_length_x" value="$(arg grid_length_x)"/>
+    <param name="grid_length_y" value="$(arg grid_length_y)"/>
+    <param name="grid_resolution" value="$(arg grid_resolution)"/>
+    <param name="grid_position_x" value="$(arg grid_position_x)"/>
+    <param name="grid_position_y" value="$(arg grid_position_y)"/>
+    <param name="maximum_lidar_height_thres" value="$(arg maximum_lidar_height_thres)"/>
+    <param name="minimum_lidar_height_thres" value="$(arg minimum_lidar_height_thres)"/>
+    <param name="LidarAll_flag" value="$(arg LidarAll_flag)"/> <!--true: LidarAll false: three lidars -->
+  </node>
+
+</launch>
