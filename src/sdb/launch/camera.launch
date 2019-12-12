@@ -1,0 +1,16 @@
+<launch>
+
+	<include file="$(find drivenet)/launch/b1_drivenet_60.launch"/>
+
+	<include file="$(find drivenet)/launch/b1_drivenet_120_1.launch"/>
+	
+	<include file="$(find drivenet)/launch/b1_drivenet_120_2.launch"/>
+
+	<node name="msg_recorder"
+		pkg="msg_recorder"
+		type="msg_recorder.py"
+		args="-A --NO_KEY_IN"/>
+
+	<include file="$(find detection_viz)/launch/itriadv_viz.launch"/>
+
+</launch>
