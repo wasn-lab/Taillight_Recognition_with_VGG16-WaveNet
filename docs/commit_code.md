@@ -111,6 +111,10 @@ Merge made by the 'recursive' strategy.
 注意，git merge 的來源是remotes/origin/master, 不是自己local裡的master喔。
 
 
+#### merge request pipeline 回報failure, 改完code之後要再新建一個merge request嗎?
+
+不用再新建merge request。 merge request是把branch最新的code合進master裡，所以只要把修改完的code push上來，就會重啟pipeline的程序並更新其狀態。
+
 #### 要如何啟動merge request的builder做clean build?
 
 為了快速執行完pipeline, builder會在package.xml或cmake檔案（CMakeLists.txt或*.cmake)有改動時才會做clean build,

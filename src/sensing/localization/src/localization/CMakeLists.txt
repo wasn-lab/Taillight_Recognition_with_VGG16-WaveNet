@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   ndt_gpu
   cuda_downsample
+  dynamic_reconfigure
 )
 
 
@@ -31,6 +32,10 @@ generate_messages(
   std_msgs
 )
 
+generate_dynamic_reconfigure_options(
+ cfg/localization.cfg
+ )
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
@@ -41,6 +46,8 @@ catkin_package(
   cuda_downsample
 
 )
+
+
 
 include_directories(
  include
@@ -59,12 +66,15 @@ add_executable(${PROJECT_NAME}_node
 )
 
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-
+#target_link_libraries(dynamic_reconfigure_node ${catkin_LIBRARIES})
 
 MESSAGE("Generate ${PROJECT_NAME}")
 
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_node_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg node_example_generate_messages_cpp)
+
+
 if(CUDA_FOUND)
   target_include_directories(${PROJECT_NAME}_node PRIVATE ${CUDA_INCLUDE_DIRS})
 

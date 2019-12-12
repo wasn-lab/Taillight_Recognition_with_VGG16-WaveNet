@@ -1,12 +1,5 @@
 <launch>
-    <!-- drivenet_60 !-->
-    <node name="drivenet_node" pkg="drivenet" type="drivenet_node" output="screen">
-        <param name="car_id" type="int" value="1" />
-        <param name="standard_fps" type="bool" value="0" />
-        <param name="display" type="bool" value="0" />
-        <param name="input_resize" type="bool" value="1" />
-        <param name="imgResult_publish" type="bool" value="1" />
-    </node>
+    <include file="$(find drivenet)/launch/b1_drivenet_60.launch"/>
 
     <node pkg="rosbag" type="play" name="player" output="screen" args="$(find car_model)/../bags/my_record_2019-11-27-16-36-54.bag" required="true"/>
 
