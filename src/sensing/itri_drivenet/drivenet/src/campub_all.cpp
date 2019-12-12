@@ -192,7 +192,7 @@ int main(int argc, char** argv)
   CamObjLB = nh.subscribe("/CamObjLeftBack", 1, callback_CamObjLB);
   CamObjBT = nh.subscribe("/CamObjBackTop", 1, callback_CamObjBT);
 
-  CamObjAll = nh.advertise<msgs::DetectedObjectArray>("/CamObjAll", 8);
+  CamObjAll = nh.advertise<msgs::DetectedObjectArray>("/CameraDetection", 8);
 
   ros::Rate loop_rate(30);
 
