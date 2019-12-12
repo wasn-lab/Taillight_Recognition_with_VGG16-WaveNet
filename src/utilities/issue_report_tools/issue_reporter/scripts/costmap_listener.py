@@ -141,6 +141,7 @@ class COSTMAP_LISTENER(object):
         rospy.Subscriber("%s/costmap" % self.costmap_ns, OccupancyGrid, self._costmap_CB)
         rospy.Subscriber("%s/costmap_updates" % self.costmap_ns, OccupancyGridUpdate, self._costmap_update_CB)
 
+        self.im_show_h = None
 
 
     def _costmap_CB(self, data):
@@ -162,7 +163,6 @@ class COSTMAP_LISTENER(object):
         #
         if not self.costmap_initiated:
             self.costmap_initiated = True
-
 
 
     def _costmap_update_CB(self, data):
@@ -473,9 +473,15 @@ class COSTMAP_LISTENER(object):
             Cmap_H = cv2.flip(self.costmap,0)>=100
         else:
             Cmap_H = cv2.flip(self.costmap,0)
-        plt.imshow(Cmap_H, cmap = 'gray', interpolation = 'bicubic')
-        plt.show(block = False)
-        # plt.draw()
+        #
+        Cmap_H_90 = np.rot90(Cmap_H)
+        #
+        if self.im_show_h is None:
+            self.im_show_h = plt.imshow(Cmap_H_90, cmap = 'gray', interpolation = 'nearest')
+        else:
+            self.im_show_h.set_data(Cmap_H_90)
+        # plt.show(block = False)
+        plt.draw()
         plt.pause(0.001)
 
 
@@ -483,8 +489,9 @@ def costmap_listener():
     # Init. node
     rospy.init_node('costmap_listener', anonymous=True)
 
-    costmap_ns = "/move_base/local_costmap"
+    # costmap_ns = "/move_base/local_costmap"
     # costmap_ns = "/move_base/global_costmap"
+    costmap_ns = "/A/costmap_lidar_all/costmap"
 
     # tf listener
     tf_buffer = tf2_ros.Buffer()
@@ -492,8 +499,8 @@ def costmap_listener():
 
     param_dict = dict()
     param_dict['costmap_ns'] = costmap_ns
-    param_dict['map_frame_id'] = 'map'
-    param_dict['base_frame_id'] = 'base_footprint'
+    param_dict['map_frame_id'] = 'lidar' # 'map'
+    param_dict['base_frame_id'] = 'lidar_1' # 'base_footprint'
     param_dict['is_using_external_footprint'] = False
     # param_dict['footprint'] = [[-0.57, 0.36],[0.57, 0.36],[0.57, -0.36],[-0.57, -0.36]] # [(1,1),(1,-1),(-1,-1),(-1,1)]
     #
@@ -505,7 +512,7 @@ def costmap_listener():
         #
         if costmap_L.costmap_updated:
             # print("costmap_updated")
-            costmap_L.plot_costmap(show_obstacle_onlt=False)
+            costmap_L.plot_costmap(show_obstacle_onlt=True)
             costmap_L.costmap_updated = False
             #
             cost = costmap_L.get_current_footprint_cost()
