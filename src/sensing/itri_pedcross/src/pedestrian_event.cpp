@@ -542,13 +542,15 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
   ros::Time timer = ros::Time::now();
 #endif
 
-  std::vector<cv::Point2f> points(number_keypoints);
+  std::vector<cv::Point2f> points;
+  points.reserve(number_keypoints);
 
   cv::Mat input_Blob = cv::dnn::blobFromImage(input_image, 1.0 / 255, cv::Size(input_image.cols, input_image.rows),
                                               cv::Scalar(0, 0, 0), false, false);
 
   net_openpose.setInput(input_Blob);
 
+  float height = input_image.rows;
   cv::Mat output = net_openpose.forward();
   for (int n = 0; n < number_keypoints; n++)
   {
@@ -559,21 +561,14 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
     cv::minMaxLoc(probMap, 0, &prob, 0, &maxLoc);
     if (prob > 0.005) // confidence
     {
-      float x = maxLoc.x;
-      float y = maxLoc.y;
-      points[n] = cv::Point2f(x, y);
+      float x = maxLoc.x / height;
+      float y = maxLoc.y / height;
+      points.push_back(cv::Point2f(x, y));
     }
     else
-      points[n] = cv::Point2f(0.0, 0.0);
-  }
-  float height = input_image.rows;
-  for (int n = 0; n < number_keypoints; n++)
-  {
-    points[n].x /= height;
-    points[n].y /= height;
-#if USE_GLOG
-    std::cout << points[n] << " height: " << height << std::endl;
-#endif
+    {
+      points.push_back(cv::Point2f(0.0, 0.0));
+    }
   }
 #if USE_GLOG
   std::cout << "Openpose time cost: " << ros::Time::now() - timer << std::endl;
