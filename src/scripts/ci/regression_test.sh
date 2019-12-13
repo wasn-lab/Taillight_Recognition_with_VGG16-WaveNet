@@ -21,3 +21,4 @@ make car_model_test
 ../devel/lib/car_model/car_model_test
 
 cd -
+echo "ALL done!"
