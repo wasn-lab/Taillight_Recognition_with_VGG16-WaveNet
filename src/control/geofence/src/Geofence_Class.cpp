@@ -15,6 +15,9 @@ using namespace std;
 double Geofence::getDistance(){
     return Distance;
 }
+double Geofence::getDistance_w(){
+    return Distance_wide;
+}
 double Geofence::getFarest(){
     return Farest;
 }
@@ -103,6 +106,7 @@ int Geofence::Calculator(){
     }
 
     vector<double> P_Distance(PointCloud.size(),300); //Distance of every pointcloud (default 100)
+    vector<double> P_Distance_w(PointCloud.size(),300); //Distance of every pointcloud in wider range (default 100)
     for(int i=0;i<PointCloud.size();i++){
         vector<double> V_Distance(PathPoints.size(),300); // Vertical diatnce to the path
         for(int j=0;j<PathPoints.size();j++){
@@ -112,7 +116,10 @@ int Geofence::Calculator(){
         double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
         if(minElement<BOUNDARY){
             P_Distance[i] = PathLength[minElementIndex];      
-        }        
+        }
+        if(minElement<(BOUNDARY+0.5)){
+            P_Distance_w[i] = PathLength[minElementIndex];      
+        }     
     }
     int minElementIndex = std::min_element(P_Distance.begin(),P_Distance.end()) - P_Distance.begin();
     double minElement = *std::min_element(P_Distance.begin(), P_Distance.end());
@@ -129,6 +136,9 @@ int Geofence::Calculator(){
         Nearest_Y = 3000;
 	}
     Distance = minElement;
+
+    minElement = *std::min_element(P_Distance_w.begin(), P_Distance_w.end());
+    Distance_wide = minElement;
 
     //Calculate farest point
     for(int i=0;i<P_Distance.size();i++){

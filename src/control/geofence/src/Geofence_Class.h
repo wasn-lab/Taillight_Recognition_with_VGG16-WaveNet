@@ -16,6 +16,7 @@ struct Point {
 class Geofence{
     public:
     double getDistance();
+    double getDistance_w();
     double getFarest();
     bool getTrigger();
     double getObjSpeed();
@@ -34,9 +35,11 @@ class Geofence{
     vector<double> PathLength;
     vector<Point> PointCloud;
     double Distance; //Geofence distance
+    double Distance_wide;  // for path planning
     double Farest; //The farest point
     bool Trigger; //Whether there is a object in the path
     double ObjSpeed; //Geofence speed
     double Nearest_X; //Nearest point's (X,Y)
-    double Nearest_Y; 
+    double Nearest_Y;
+    
 };
