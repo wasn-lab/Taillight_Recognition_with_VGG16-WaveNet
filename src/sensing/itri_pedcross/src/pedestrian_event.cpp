@@ -155,7 +155,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         bool has_keypoint = false;
         int count_points = 0;
         int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-        for (unsigned int i = 0; i < 13; i++)
+        unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
+        for (unsigned int i = 0; i < body_part_size; i++)
         {
           // keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.width / obj_pub.camInfo.width;
           // keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj.camInfo.width / obj_pub.camInfo.width;
@@ -178,7 +179,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         pedObjs.push_back(obj_pub);
 
         // draw keypoints on cropped and whole image
-        for (unsigned int i = 0; i < 13; i++)
+        for (unsigned int i = 0; i < body_part_size; i++)
         {
           keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj_pub.camInfo.height;
           keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj_pub.camInfo.height;
@@ -193,7 +194,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         }
         // draw hands
         int body_part1[7] = { 4, 3, 2, 1, 5, 6, 7 };
-        for (unsigned int i = 0; i < 6; i++)
+        unsigned int body_part1_size = sizeof(body_part1) / sizeof(*body_part1);
+        for (unsigned int i = 0; i < body_part1_size - 1; i++)
         {
           if ((keypoints.at(body_part1[i]).x != 0 || keypoints.at(body_part1[i]).y != 0) &&
               (keypoints.at(body_part1[i + 1]).x != 0 || keypoints.at(body_part1[i + 1]).y != 0))
@@ -209,7 +211,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         }
         // draw legs
         int body_part2[7] = { 11, 10, 9, 1, 12, 13, 14 };
-        for (unsigned int i = 0; i < 6; i++)
+        unsigned int body_part2_size = sizeof(body_part2) / sizeof(*body_part2);
+        for (unsigned int i = 0; i < body_part2_size - 1; i++)
         {
           if ((keypoints.at(body_part2[i]).x != 0 || keypoints.at(body_part2[i]).y != 0) &&
               (keypoints.at(body_part2[i + 1]).x != 0 || keypoints.at(body_part2[i + 1]).y != 0))
@@ -303,13 +306,14 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
 
       // Get body we need
       int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-      for (int i = 0; i < 13; i++)
+      int body_part_size = sizeof(body_part) / sizeof(*body_part);
+      for (int i = 0; i < body_part_size; i++)
       {
         keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
         keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
       }
       // Calculate the features
-      int keypoints_num = 13;
+      int keypoints_num = body_part_size;
       std::vector<float> feature;
 
       // Add bbox to feature vector
