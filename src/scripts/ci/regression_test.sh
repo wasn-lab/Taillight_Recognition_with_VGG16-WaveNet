@@ -22,3 +22,4 @@ make car_model_test
 
 cd -
 echo "ALL done!"
+exit 0
