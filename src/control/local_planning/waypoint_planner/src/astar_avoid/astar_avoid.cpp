@@ -197,6 +197,7 @@ void AstarAvoid::run()
     }
     else if (state_ == AstarAvoid::STATE::STOPPING)
     {
+      avoiding_path_flag.data = 3;
       ROS_INFO("STOPPING");
       // avoid_waypoints_ = base_waypoints_;
       bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
@@ -214,6 +215,7 @@ void AstarAvoid::run()
     }
     else if (state_ == AstarAvoid::STATE::PLANNING)
     {
+      avoiding_path_flag.data = 2;
       ROS_INFO("PLANNING");
       start_plan_time = ros::WallTime::now();
       std::cout << "planning inginging" << std::endl;
@@ -233,7 +235,9 @@ void AstarAvoid::run()
     {
       ROS_INFO("AVOIDING");
       avoiding_path_flag.data = 1;
+      // ROS_INFO("bool flag data");
       bool reached = (getLocalClosestWaypoint(avoid_waypoints_, current_pose_global_.pose, closest_search_size_) > end_of_avoid_index + 5);
+      // ROS_INFO("bool reched");
       if (reached)
       {
         ROS_INFO("AVOIDING -> RELAYING, Reached goal");
@@ -248,6 +252,7 @@ void AstarAvoid::run()
           state_ = AstarAvoid::STATE::STOPPING;
         }
       }
+      // ROS_INFO("end avoiding");
     }
     avoiding_flag_pub.publish(avoiding_path_flag);
     rate_->sleep();
@@ -277,15 +282,15 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
 {
   bool found_path = false;
   int closest_waypoint_index = getLocalClosestWaypoint(avoid_waypoints_, current_pose_global_.pose, closest_search_size_);
-  std::cout << "closest_waypoint_index :" << closest_waypoint_index << std::endl;
-  std::cout << "costmap_.header.frame_id : " << costmap_.header.frame_id << std::endl;
+  // std::cout << "closest_waypoint_index :" << closest_waypoint_index << std::endl;
+  // std::cout << "costmap_.header.frame_id : " << costmap_.header.frame_id << std::endl;
 
   // update goal pose incrementally and execute A* search
   for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_); i += search_waypoints_delta_)
   {
     // update goal index
     int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
-    std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
+    // std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
     if (goal_waypoint_index >= static_cast<int>(avoid_waypoints_.waypoints.size()))
     {
       break;
@@ -293,7 +298,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
 
     // update goal pose
     goal_pose_global_ = avoid_waypoints_.waypoints[goal_waypoint_index].pose;
-    std::cout << "goal_pose_global_.header.frame_id : " << goal_pose_global_.header.frame_id << std::endl;
+    // std::cout << "goal_pose_global_.header.frame_id : " << goal_pose_global_.header.frame_id << std::endl;
     goal_pose_local_.header = costmap_.header;
     goal_pose_local_.pose = transformPose(goal_pose_global_.pose,
                                           getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
@@ -423,7 +428,7 @@ void AstarAvoid::publishWaypoints()
       Dpose.pose = wp.pose.pose;
       Dpath.poses.push_back(Dpose);
     }
-    // static ros::Publisher navpath_astar_pub = nh_.advertise<nav_msgs::Path>("nav_path_astar_final", 1, true); //////////////////////////
+
     if (safety_waypoints.waypoints.size() > 0)
     {
       safety_waypoints_pub_.publish(safety_waypoints);
@@ -453,24 +458,29 @@ int AstarAvoid::getLocalClosestWaypoint(const autoware_msgs::Lane& waypoints, co
 {
   static autoware_msgs::Lane local_waypoints;  // around self-vehicle
   const int prev_index = closest_local_index_;
-
+  // ROS_INFO("11111111111111111");
   // search in all waypoints if lane_select judges you're not on waypoints
   if (closest_local_index_ == -1)
   {
     closest_local_index_ = getClosestWaypoint(waypoints, pose);
+    // ROS_INFO("22222222222222222222");
   }
   // search in limited area based on prev_index
   else
   {
+  	// ROS_INFO("33333333333333333333");
     // get neighborhood waypoints around prev_index
     int start_index = std::max(0, prev_index - search_size / 2);
     int end_index = std::min(prev_index + search_size / 2, (int)waypoints.waypoints.size());
+    // ROS_INFO("444444444444444444444");
     auto start_itr = waypoints.waypoints.begin() + start_index;
     auto end_itr = waypoints.waypoints.begin() + end_index;
+    // ROS_INFO("555555555555555555555");
     local_waypoints.waypoints = std::vector<autoware_msgs::Waypoint>(start_itr, end_itr);
-
+    // ROS_INFO("666666666666666666666666");
     // get closest waypoint in neighborhood waypoints
     closest_local_index_ = start_index + getClosestWaypoint(local_waypoints, pose);
+    // ROS_INFO("777777777777777777777");
   }
   // std::cout << "closest_local_index_ : " << closest_local_index_ << std::endl;
   return closest_local_index_;

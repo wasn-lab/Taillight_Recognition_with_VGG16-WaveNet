@@ -141,8 +141,8 @@ int main(int argc, char **argv)
         ros::Subscriber current_pose_2vm_sub = nh.subscribe("localization_to_veh", 1, localization_to_veh_callback);
         // ros::Subscriber current_pose_2vm_sub_2 = nh.subscribe("current_pose", 1, localization_to_veh_callback_2);
         ros::Subscriber IMU_acc_rpy_sub = nh.subscribe("imu_data", 1, imu_data_callback);
-        ros::Subscriber mmtp_sub = nh.subscribe("mm_tp_topic", 1, mmtp_callback);
-        // ros::Subscriber ukfmm_sub = nh.subscribe("ukf_mm_topic", 1, ukfmm_callback);
+        // ros::Subscriber mmtp_sub = nh.subscribe("mm_tp_topic", 1, mmtp_callback);
+        ros::Subscriber ukfmm_sub = nh.subscribe("ukf_mm_topic", 1, ukfmm_callback);
 
         // one vehicle target y
         // ros::Subscriber astar_vehicle_target_sub = nh.subscribe("vehicle_target_point", 1, astar_callback);

@@ -30,7 +30,7 @@
 
 #include <nav_msgs/OccupancyGrid.h> // costmap
 #include <nav_msgs/Path.h>
-#include <jsk_recognition_msgs/PolygonArray.h>
+// #include <jsk_recognition_msgs/PolygonArray.h>
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -401,19 +401,19 @@ void imu_data_callback(const sensor_msgs::Imu::ConstPtr& imumsg)
 
 void BB_data_callback(const msgs::DetectedObjectArray::ConstPtr& BBmsg)
 {
-	jsk_recognition_msgs::PolygonArray polygon_array;
-	polygon_array.labels.push_back(3);
+	// jsk_recognition_msgs::PolygonArray polygon_array;
+	// polygon_array.labels.push_back(3);
 	// geometry_msgs::PolygonStamped polygon;
-	if (VirBB_mode == 1)
-	{
-		// polygon.header.frame_id = "map";
-		polygon_array.header.frame_id = "map";
-	}
-	else
-	{
-		// polygon.header.frame_id = "lidar";
-		polygon_array.header.frame_id = "lidar";
-	}
+	// if (VirBB_mode == 1)
+	// {
+	// 	// polygon.header.frame_id = "map";
+	// 	polygon_array.header.frame_id = "map";
+	// }
+	// else
+	// {
+	// 	// polygon.header.frame_id = "lidar";
+	// 	polygon_array.header.frame_id = "lidar";
+	// }
 	geometry_msgs::Point32 point;
 
 	int size = BBmsg->objects.size();
@@ -486,10 +486,9 @@ void BB_data_callback(const msgs::DetectedObjectArray::ConstPtr& BBmsg)
 		polygon.polygon.points.push_back(point);
 
 		polygon_pub.publish(polygon);
-		polygon_array.polygons.push_back(polygon);					
+		// polygon_array.polygons.push_back(polygon);					
 	}
-	// polygon_pub.publish(polygon);
-	polygon_array_pub.publish(polygon_array);
+	// polygon_array_pub.publish(polygon_array);
 }
 
 void FS_data_callback(const nav_msgs::OccupancyGrid& FSmsg)
@@ -650,7 +649,7 @@ int main(int argc, char **argv)
 	NavPath_Pub = nh.advertise<nav_msgs::Path>("nav_path", 1);
 	NavPath_1_Pub = nh.advertise<nav_msgs::Path>("nav_path_1", 1);
 	polygon_pub = nh.advertise<geometry_msgs::PolygonStamped>("obs_polygon", 1);
-	polygon_array_pub = nh.advertise<jsk_recognition_msgs::PolygonArray>("obs_polygon_array", 1);
+	// polygon_array_pub = nh.advertise<jsk_recognition_msgs::PolygonArray>("obs_polygon_array", 1);
 	FS_occ_pub = nh.advertise<nav_msgs::OccupancyGrid>("fs_occ_grid", 1);
 	Localization_UKF_pub = nh.advertise<msgs::LocalizationToVeh>("localization_ukf", 1);
 

@@ -8,17 +8,14 @@
 #include "libwaypoint_follower/libwaypoint_follower.h"
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float64.h>
-#include <std_msgs/Bool.h>
 #include <nav_msgs/Path.h>
 #include <math.h>
-#include "astar_initial/UKF_MM_msg.h"
 
 ros::Publisher basepath_pub;
 ros::Publisher closetwaypoint_pub;
 ros::Publisher obstacletwaypoint_pub;
 ros::Publisher NavPath_Pub;
 ros::Publisher rearcurrentpose_pub;
-ros::Publisher enable_avoid_pub;
 
 #define RT_PI 3.14159265358979323846
 
@@ -29,9 +26,6 @@ int closest_local_index_ = -1;
 int search_size_ = 30;
 int closet_local_start_i = -10;
 double wheel_dis = 3.8;
-std_msgs::Int32 obswaypoints;
-bool enable_avoid = false;
-bool avoid_flag = 0;
 
 double seg_id[2000] = {};
 double seg_x[2000] = {};
@@ -295,7 +289,7 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
 
 void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 {
-  int obswaypoints_data = std::ceil(obsdismsg->data);// + wheel_dis);
+  int obswaypoints_data = std::ceil(obsdismsg->data + wheel_dis);
   if (obswaypoints_data > 30)
     obswaypoints_data = -1;
   int obswaypoints_data_ = obswaypoints_data;
@@ -306,34 +300,15 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
   else
     obs_index = 0;
 
-  if (avoid_flag == 0 && obs_index < 10) // detect time < 3s
+  if (obs_index < 10) // detect time < 3s
     obswaypoints_data_ = -1;
   ///////////////////////////////////////////////////////////////////
 
-  // std_msgs::Int32 obswaypoints;
+  std_msgs::Int32 obswaypoints;
   obswaypoints.data = obswaypoints_data_;
   std::cout << "obswaypoints.data : " << obswaypoints.data << std::endl;
   obstacletwaypoint_pub.publish(obswaypoints);
   pre_obswaypoints_data = obswaypoints_data;
-}
-
-void ukfmmCallback(const astar_initial::UKF_MM_msg::ConstPtr& ukfmmmsg)
-{
-  if (ukfmmmsg->seg_id_near > 4 && ukfmmmsg->seg_id_near < 301)
-    enable_avoid = false;
-  else
-  {
-    enable_avoid = true;
-  }
-  // std::cout << "enable_avoid : " << enable_avoid << std::endl;
-  std_msgs::Bool enable_avoid_;
-  enable_avoid_.data = enable_avoid;
-  enable_avoid_pub.publish(enable_avoid_);
-}
-
-void avoidingflagCallback(const std_msgs::Int32::ConstPtr& avoidflagmsg)
-{
-  avoid_flag = avoidflagmsg->data;
 }
 
 int main(int argc, char** argv)
@@ -344,14 +319,11 @@ int main(int argc, char** argv)
   globalpathinit();
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber obstacle_dis_sub = node.subscribe("Geofence_PC", 1, obsdisCallback);
-  ros::Subscriber ukf_mm_sub = node.subscribe("ukf_mm_topic", 1, ukfmmCallback);
-  ros::Subscriber avoiding_flag_sub = node.subscribe("avoiding_path", 1, avoidingflagCallback);
   basepath_pub = node.advertise<autoware_msgs::Lane>("base_waypoints", 10, true);
   closetwaypoint_pub = node.advertise<std_msgs::Int32>("closest_waypoint", 10, true);
   obstacletwaypoint_pub = node.advertise<std_msgs::Int32>("obstacle_waypoint", 10, true);
   NavPath_Pub = node.advertise<nav_msgs::Path>("nav_path_astar_base", 10, true);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
-  enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
   // { 
