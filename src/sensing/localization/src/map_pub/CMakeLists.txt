@@ -20,8 +20,13 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PCL 1.8.1 REQUIRED)
 
 
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 catkin_package(
-  INCLUDE_DIRS
+  INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
   roscpp
@@ -33,10 +38,10 @@ set(POINTS_MAP_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/done_map)
 
 if (NOT EXISTS ${POINTS_MAP_DIRS}/total_map.pcd)
       message( STATUS " downloading points map" )
-         
+
     file(
     DOWNLOAD
-    	http://nas.itriadv.co:8888/Share/ADV/LiDAR_maps/done_map_total_itri_mini/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd    	
+    	http://nas.itriadv.co:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd    	
     STATUS
         status
     LOG 
@@ -60,4 +65,4 @@ target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 MESSAGE("Generate ${PROJECT_NAME}")
 
-add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_node_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
