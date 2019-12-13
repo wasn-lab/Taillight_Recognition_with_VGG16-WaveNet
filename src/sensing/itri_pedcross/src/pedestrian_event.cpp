@@ -324,8 +324,8 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
           float dist_x, dist_y, dist, angle;
           if (keypoints_x[m] != 0.0f && keypoints_y[m] != 0.0f && keypoints_x[n] != 0.0f && keypoints_y[n] != 0.0f)
           {
-            dist_x = get_abs(keypoints_x[m] - keypoints_x[n]);
-            dist_y = get_abs(keypoints_y[m] - keypoints_y[n]);
+            dist_x = std::fabs(keypoints_x[m] - keypoints_x[n]);
+            dist_y = std::fabs(keypoints_y[m] - keypoints_y[n]);
             dist = get_distance2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
             angle = get_angle2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
           }
@@ -389,13 +389,6 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
   }
 }
 
-float PedestrianEvent::get_abs(float input)
-{
-  if (input < 0)
-    input *= (-1);
-  return input;
-}
-
 // return Euclidian distance between two points
 float PedestrianEvent::get_distance2(float x1, float y1, float x2, float y2)
 {
@@ -405,7 +398,7 @@ float PedestrianEvent::get_distance2(float x1, float y1, float x2, float y2)
 // return degree with line formed by two points and vertical line
 float PedestrianEvent::get_angle2(float x1, float y1, float x2, float y2)
 {
-  return M_PI / 2 - atan2(get_abs(y1 - y2), get_abs(x1 - x2));
+  return M_PI / 2 - atan2(std::fabs(y1 - y2), std::fabs(x1 - x2));
 }
 
 // return 3 inner angles of the triangle formed by three points
