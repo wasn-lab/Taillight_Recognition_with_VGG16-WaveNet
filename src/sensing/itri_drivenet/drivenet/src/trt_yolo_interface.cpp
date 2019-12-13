@@ -87,6 +87,12 @@ void Yolo_app::get_yolo_result(std::vector<uint32_t>* order, std::vector<std::ve
     std::vector<ITRI_Bbox>* tmpOut = vbbx_output[imageIdx];
     for (auto b : remaining)
     {
+      // check the value of the bounding box is valid.
+      checkValueInRange(b.box.x1, 0, dsImgs_cols.at(imageIdx));
+      checkValueInRange(b.box.y1, 0, dsImgs_rows.at(imageIdx));
+      checkValueInRange(b.box.x2, 0, dsImgs_cols.at(imageIdx));
+      checkValueInRange(b.box.y2, 0, dsImgs_rows.at(imageIdx));
+
       ITRI_Bbox tmpBBx;
       tmpBBx.label = b.label;
       tmpBBx.classId = b.classId;
