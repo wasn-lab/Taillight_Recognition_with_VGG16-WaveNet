@@ -41,6 +41,7 @@
 #endif
 
 #define M_PIl 3.141592653589793238462643383279502884L /* pi */
+#define NUM_FEATURES 1174
 
 namespace ped
 {
@@ -81,6 +82,10 @@ public:
   bool g_enable = false;
   bool g_trigger = false;
   int count;
+  int cross_threshold = 55; // percentage
+  double scaling_ratio_width = 0.3167;
+  double scaling_ratio_height = 0.3179;
+  int number_keypoints = 25;
 };
 }  // namespace ped
 

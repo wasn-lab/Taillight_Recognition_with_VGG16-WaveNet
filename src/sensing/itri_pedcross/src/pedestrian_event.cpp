@@ -86,10 +86,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         std::cout << "Track ID: " << obj.track.id << std::endl;
 #endif
         // resize from 1920*1208 to 608*384
-        obj_pub.camInfo.u *= 0.3167;
-        obj_pub.camInfo.v *= 0.3179;
-        obj_pub.camInfo.width *= 0.3167;
-        obj_pub.camInfo.height *= 0.3179;
+        obj_pub.camInfo.u *= scaling_ratio_width;
+        obj_pub.camInfo.v *= scaling_ratio_height;
+        obj_pub.camInfo.width *= scaling_ratio_width;
+        obj_pub.camInfo.height *= scaling_ratio_height;
 
         // Avoid index out of bounds
         if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
@@ -254,7 +254,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
         std::string probability;
         int p = 100 * obj.crossProbability;
-        if (p >= 55)
+        if (p >= cross_threshold)
         {
           probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255),
@@ -308,7 +308,7 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
         keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
         keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
       }
-      // Caculate the features
+      // Calculate the features
       int keypoints_num = 13;
       std::vector<float> feature;
 
@@ -316,7 +316,7 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
       float bbox[] = { bb_x1, bb_y1, bb_x2, bb_y2 };
       feature.insert(feature.end(), bbox, bbox + sizeof(bbox) / sizeof(bbox[0]));
 
-      // Caculate x_distance, y_distance, distance, angle
+      // Calculate x_distance, y_distance, distance, angle
       for (int m = 0; m < keypoints_num; m++)
       {
         for (int n = m + 1; n < keypoints_num; n++)
@@ -364,10 +364,10 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
         }
       }
       // Convert vector to array
-      static float feature_arr[1174];
+      static float feature_arr[NUM_FEATURES];
       std::copy(feature.begin(), feature.end(), feature_arr);
       // Convert array to Mat
-      cv::Mat feature_mat = cv::Mat(1, 1174, CV_32F, feature_arr);
+      cv::Mat feature_mat = cv::Mat(1, NUM_FEATURES, CV_32F, feature_arr);
       // Predict
       float predict_result = predict_rf_pose(feature_mat);
 
@@ -538,8 +538,7 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
   ros::Time timer = ros::Time::now();
 #endif
 
-  int nPoints = 25;
-  std::vector<cv::Point2f> points(nPoints);
+  std::vector<cv::Point2f> points(number_keypoints);
 
   cv::Mat input_Blob = cv::dnn::blobFromImage(input_image, 1.0 / 255, cv::Size(input_image.cols, input_image.rows),
                                               cv::Scalar(0, 0, 0), false, false);
@@ -547,14 +546,14 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
   net_openpose.setInput(input_Blob);
 
   cv::Mat output = net_openpose.forward();
-  for (int n = 0; n < nPoints; n++)
+  for (int n = 0; n < number_keypoints; n++)
   {
     cv::Mat probMap(output.size[2], output.size[3], CV_32F, output.ptr(0, n));
     cv::resize(probMap, probMap, cv::Size(input_image.cols, input_image.rows));
     cv::Point maxLoc;
     double prob;
     cv::minMaxLoc(probMap, 0, &prob, 0, &maxLoc);
-    if (prob > 0.005)
+    if (prob > 0.005) // confidence
     {
       float x = maxLoc.x;
       float y = maxLoc.y;
@@ -564,10 +563,10 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
       points[n] = cv::Point2f(0.0, 0.0);
   }
   float height = input_image.rows;
-  for (int n = 0; n < nPoints; n++)
+  for (int n = 0; n < number_keypoints; n++)
   {
-    points[n].x = points[n].x / height;
-    points[n].y = points[n].y / height;
+    points[n].x /= height;
+    points[n].y /= height;
 #if USE_GLOG
     std::cout << points[n] << " height: " << height << std::endl;
 #endif
