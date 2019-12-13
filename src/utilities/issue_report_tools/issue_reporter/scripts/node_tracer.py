@@ -127,9 +127,11 @@ def main(sys_args):
         node_dict["unpinged"] = unpinged
         #
         node_dict["alive"] = list()
-        node_dict["closed"] = list()
+        # node_dict["closed"] = list()
         node_dict["untraced"] = list()
         node_dict["zombi_traced"] = list()
+        #
+        _closed = list()
         #
         for _nd in pinged:
             if _nd in node_list:
@@ -138,9 +140,14 @@ def main(sys_args):
                 node_dict["untraced"].append(_nd)
         for _nd in node_list:
             if not _nd in pinged:
-                node_dict["closed"].append(_nd)
+                # node_dict["closed"].append(_nd)
+                _closed.append(_nd)
+                if not _nd in node_dict["closed"]:
+                    print("Node <%s> closed." % _nd)
             if _nd in unpinged:
                 node_dict["zombi_traced"].append(_nd)
+        #
+        node_dict["closed"] = _closed
         #
         print("pinged =\n%s" % str(node_dict["pinged"]) )
         print("unpinged =\n%s" % str(node_dict["unpinged"]) )
