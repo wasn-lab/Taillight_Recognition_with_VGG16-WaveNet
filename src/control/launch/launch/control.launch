@@ -1,7 +1,8 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
-	<node pkg="gui_publisher" type="gui_publisher_all" name="gui_publisher_all" output="screen" cwd="node" respawn="true"  />
+	<node pkg="from_dspace" type="from_dspace" name="from_dspace" output="screen" cwd="node" respawn="true"  />
+	<node pkg="to_dspace" type="to_dspace" name="to_dspace" output="screen" cwd="node" respawn="true"  />
 	<node pkg="trimble_gps_imu_pub" type="trimble_gps_imu_pub_node" name="trimble_gps_imu_pub_node" output="screen" cwd="node" respawn="true"  />
 	<node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  />

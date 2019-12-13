@@ -8,8 +8,8 @@
 //Can setup
 #define CAN_DLC 8;
 #define CAN_CHNNEL "can1"
-const int NumOfReceiveID = 15;
-const int NumOfTopic = 4;
+const int NumOfReceiveID = 3;
+const int NumOfTopic = 3;
 
 #include "msgs/Flag_Info.h"
 #include "msgs/DynamicPath.h"
@@ -115,6 +115,34 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 	    return 1;
 	}
     break;
+
+    case 0x604:
+	{
+	    msgs::Flag_Info msg_temp;
+		msg_temp.Dspace_Flag01 = frame.data[0];
+		msg_temp.Dspace_Flag02 = frame.data[1];
+		msg_temp.Dspace_Flag03 = frame.data[2];
+		msg_temp.Dspace_Flag04 = frame.data[3];
+		msg_temp.Dspace_Flag05 = frame.data[4];
+		msg_temp.Dspace_Flag06 = frame.data[5];
+		msg_temp.Dspace_Flag07 = frame.data[6];
+		msg_temp.Dspace_Flag08 = frame.data[7];
+
+	    cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
+	    cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
+	    cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
+	    cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
+	    cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
+	    cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
+	    cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
+	    cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
+
+	    Publisher[3].publish(msg_temp);
+	    return 1;
+	}
+    break;
+    
+    /*
 	case 0x3A0:
 	{
         int XP1_0_tmp;
@@ -301,7 +329,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 		
 	}
     break;
-
+    */
     default:
 		{
 		    // Should never get here if the receive filters were set up correctly
@@ -326,9 +354,9 @@ int main(int argc, char **argv)
 	//ros::Publisher Publisher03 = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
 	ros::Publisher Publisher[NumOfTopic];
 	Publisher[0] = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
-	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
-	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
-	Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
+	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
+	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
+	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
 	uint32_t seq = 0;
 
     int rc;
@@ -340,6 +368,9 @@ int main(int argc, char **argv)
 	filter[0].can_id = 0x601;
 	filter[1].can_id = 0x602;
 	filter[2].can_id = 0x603;
+    filter[4].can_id = 0x604;
+
+    /*
 	filter[3].can_id = 0x3A0;
 	filter[4].can_id = 0x3A1;
 	filter[5].can_id = 0x3A2;
@@ -352,7 +383,7 @@ int main(int argc, char **argv)
 	filter[12].can_id = 0x3A9;
 	filter[13].can_id = 0x3B0;
 	filter[14].can_id = 0x3B1;
-
+    */
 
     int s;
     const char *ifname = CAN_CHNNEL;
@@ -391,9 +422,9 @@ int main(int argc, char **argv)
     {
     	// For msgs that need more than one CAN_ID
     	//msgs::DynamicPath msg;
-        msg123.header.stamp = ros::Time::now();
-        msg123.header.frame_id = "dynamicpath";
-        msg123.header.seq = seq++;
+        //msg123.header.stamp = ros::Time::now();
+        //msg123.header.frame_id = "dynamicpath";
+        //msg123.header.seq = seq++;
         
         for (int i =0; i <NumOfReceiveID; i++)
         {

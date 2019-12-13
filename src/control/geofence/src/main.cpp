@@ -161,8 +161,13 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	double Resolution = 100;
-	for(int i=1;i<msg->poses.size();i++){
+	int size = 40;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+
+	double Resolution = 50;
+	for(int i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
 			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
@@ -277,6 +282,7 @@ int main(int argc, char **argv){
 			frame.can_id  = 0x590;
 			cout << "Trigger: " << PCloud_Geofence.getTrigger() << " ";
  			cout << "Distance: " <<  setprecision(6) <<PCloud_Geofence.getDistance() << "\t";
+			cout << "Distance_wide: " <<  setprecision(6) <<PCloud_Geofence.getDistance_w() << "\t";
 			cout << "Speed: " << setprecision(6) <<PCloud_Geofence.getObjSpeed() << endl;
 			cout << "(X,Y): " << "(" << PCloud_Geofence.getNearest_X() << "," << PCloud_Geofence.getNearest_Y() << ")" << endl;
 			//cout << "Speed: " << PCloud_Geofence.Xpoly_one.size() << "\t" << PCloud_Geofence.Xpoly_two.size() << "\t" << PCloud_Geofence.Ypoly_one.size() << "\t" << PCloud_Geofence.Ypoly_two.size() << endl;
@@ -291,7 +297,7 @@ int main(int argc, char **argv){
 			frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
 			std_msgs::Float64 Geofence_temp;
-			Geofence_temp.data = PCloud_Geofence.getDistance();
+			Geofence_temp.data = PCloud_Geofence.getDistance_w();
 			Geofence_PC.publish(Geofence_temp);  
 		}
 		else{
