@@ -5,6 +5,7 @@
  *	 Institute: ITRI ICL U300
  */
 #define SAVEMAP 0
+#define TRANSFORMMAP 0
 
 #include <ros/ros.h>
 #include <iostream>
@@ -15,7 +16,9 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/transforms.h>
 #include <ros/package.h>
-#include <pcl_conversions/pcl_conversions.h>
+//#include <pcl_conversions/pcl_conversions.h>
+#include "pcl_conversions.h"
+
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/passthrough.h>
@@ -52,7 +55,7 @@ main (int argc, char** argv)
 {
         crop_cord = "x";
         crop_value_min = -300;
-        crop_value_max = 400;
+        crop_value_max = 700;
         crop_value_mean = (crop_value_min + crop_value_max)/2;
         crop_value_range = 50;
 
@@ -92,12 +95,18 @@ main (int argc, char** argv)
                 }
                 else
                 {
+#if TRANSFORMMAP
                         Eigen::Matrix4f init_guess_;
                         init_guess_ << 1.0000000,  0.0000000,  0.0000000, 0,
                         0.0000000,  0.0000000,  -1.0000000, 0,
                         0.0000000,  1.0000000,  0.0000000, 0,
                         0,0,0,1;
                         pcl::transformPointCloud(*tmp_cloud, *cloud, init_guess_);
+#else
+                        *cloud += *tmp_cloud;
+#endif
+
+
 
 #if SAVEMAP
                         if(pcl::io::savePCDFileBinary("total_map_transformed.pcd", *cloud) == -1) {
@@ -149,7 +158,7 @@ main (int argc, char** argv)
                   << std::endl;
 
         pcl::toROSMsg(*filtered_cloud_total, total_map_ptcloud);
-        total_map_ptcloud.header.stamp = ros::Time::now();
+        //total_map_ptcloud.header.stamp = ros::Time::now();
         total_map_ptcloud.header.seq = ++seq_;
         total_map_ptcloud.header.frame_id = "/map";
 
@@ -165,7 +174,7 @@ main (int argc, char** argv)
         pass.filter(*filtered_cloud_total_north);
         pcl::toROSMsg(*filtered_cloud_total_north, total_map_ptcloud_north);
 
-        total_map_ptcloud_north.header.stamp = ros::Time::now();
+        //total_map_ptcloud_north.header.stamp = ros::Time::now();
         total_map_ptcloud_north.header.seq = seq_;
         total_map_ptcloud_north.header.frame_id = "/map";
         northMapPointCloudPublisher.publish(total_map_ptcloud_north);
@@ -181,7 +190,7 @@ main (int argc, char** argv)
         pass.filter(*filtered_cloud_total_south);
         pcl::toROSMsg(*filtered_cloud_total_south, total_map_ptcloud_south);
 
-        total_map_ptcloud_south.header.stamp = ros::Time::now();
+        //total_map_ptcloud_south.header.stamp = ros::Time::now();
         total_map_ptcloud_south.header.seq = seq_;
         total_map_ptcloud_south.header.frame_id = "/map";
         southMapPointCloudPublisher.publish(total_map_ptcloud_south);

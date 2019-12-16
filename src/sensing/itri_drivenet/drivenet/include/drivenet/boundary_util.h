@@ -7,9 +7,10 @@
 
 using namespace cv;
 
-bool CheckBoxInArea(CheckArea areaCheck,
-                    int object_x1, int object_y1, int object_x2, int object_y2);
-void BoundaryMarker(int img_w, Point& BoundaryMarker1, Point& BoundaryMarker2, Point& BoundaryMarker3,
-                    Point& BoundaryMarker4, int marker_h);
+bool checkBoxInArea(CheckArea areaCheck, int object_x1, int object_y1, int object_x2, int object_y2);
+template <typename T1, typename T2>
+extern void checkValueInRange(T1& value, T2 min, T2 max);
+void boundaryMarker(int img_w, Point& boundaryMarker1, Point& boundaryMarker2, Point& boundaryMarker3,
+                    Point& boundaryMarker4, int marker_h);
 
 #endif /*BOUNDARYUTIL_H_*/
