@@ -1845,40 +1845,40 @@ void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const
 int main(int argc, char** argv)
 {
   cam_det = new int*[5];
-  for (int j = 0; j < 5; j++)
+  for (int i = 0; i < 5; i++)
   {
-    cam_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(cam_det[j], 0, sizeof(int) * max_det);
+    cam_det[i] = (int*)malloc(sizeof(int) * max_det);
+    memset(cam_det[i], 0, sizeof(int) * max_det);
   }
 
   lid_det = new int*[5];
-  for (int j = 0; j < 5; j++)
+  for (int i = 0; i < 5; i++)
   {
-    lid_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(lid_det[j], 0, sizeof(int) * max_det);
+    lid_det[i] = (int*)malloc(sizeof(int) * max_det);
+    memset(lid_det[i], 0, sizeof(int) * max_det);
   }
 
   radar_det = new int*[5];
-  for (int j = 0; j < 5; j++)
+  for (int i = 0; i < 5; i++)
   {
-    radar_det[j] = (int*)malloc(sizeof(int) * max_det);
-    memset(radar_det[j], 0, sizeof(int) * max_det);
+    radar_det[i] = (int*)malloc(sizeof(int) * max_det);
+    memset(radar_det[i], 0, sizeof(int) * max_det);
   }
 
   bb_det = new int*[6];
-  for (int j = 0; j < 6; j++)
+  for (int i = 0; i < 6; i++)
   {
-    bb_det[j] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det[j], 0, sizeof(int) * (3 * max_det));
+    bb_det[i] = (int*)malloc(sizeof(int) * (3 * max_det));
+    memset(bb_det[i], 0, sizeof(int) * (3 * max_det));
   }
 
   // Variables for Fused Detection
 
   bb_det2 = new int*[6];
-  for (int j = 0; j < 6; j++)
+  for (int i = 0; i < 6; i++)
   {
-    bb_det2[j] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det2[j], 0, sizeof(int) * (3 * max_det));
+    bb_det2[i] = (int*)malloc(sizeof(int) * (3 * max_det));
+    memset(bb_det2[i], 0, sizeof(int) * (3 * max_det));
   }
 
   /**************************************************************************/
@@ -1924,20 +1924,20 @@ int main(int argc, char** argv)
 
   /*******************************************************/
 
-  for (int j = 0; j < 5; j++)
-    free(cam_det[j]);
+  for (int i = 0; i < 5; i++)
+    free(cam_det[i]);
 
-  for (int j = 0; j < 5; j++)
-    free(lid_det[j]);
+  for (int i = 0; i < 5; i++)
+    free(lid_det[i]);
 
-  for (int j = 0; j < 5; j++)
-    free(radar_det[j]);
+  for (int i = 0; i < 5; i++)
+    free(radar_det[i]);
 
-  for (int j = 0; j < 6; j++)
-    free(bb_det[j]);
+  for (int i = 0; i < 6; i++)
+    free(bb_det[i]);
 
-  for (int j = 0; j < 6; j++)
-    free(bb_det2[j]);
+  for (int i = 0; i < 6; i++)
+    free(bb_det2[i]);
 
   printf("***********free memory 3**************\n");
   /******************************************************/
