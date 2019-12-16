@@ -259,19 +259,26 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         int p = 100 * obj.crossProbability;
         if (p >= cross_threshold)
         {
-          probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+          if (show_probability)
+            probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+          else
+            probability = "C";
+
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255),
                       2, 4, 0);
         }
-        else if (p >= 10)
-        {
-          probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
-          cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
-                      cv::Scalar(100, 220, 0), 2, 4, 0);
-        }
         else
         {
-          probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+          if (show_probability)
+          {
+            if (p >= 10)
+              probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+            else
+              probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+          }
+          else
+            probability = "NC";
+
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
                       cv::Scalar(100, 220, 0), 2, 4, 0);
         }
@@ -608,6 +615,9 @@ int main(int argc, char** argv)
   pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/DrawBBox", 1);  // DrawBBox is pub topic
   ros::NodeHandle nh3;
   pe.pose_pub = nh3.advertise<sensor_msgs::Image&>("/OpenPoseBox", 1);  // OpenPoseBox is pub topic
+
+  // Get parameters from ROS
+  nh.getParam("/show_probability", pe.show_probability);
 
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;

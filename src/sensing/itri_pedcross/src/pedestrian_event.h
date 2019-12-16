@@ -86,6 +86,7 @@ public:
   double scaling_ratio_width = 0.3167;
   double scaling_ratio_height = 0.3179;
   int number_keypoints = 25;
+  bool show_probability = true;
 };
 }  // namespace ped
 
