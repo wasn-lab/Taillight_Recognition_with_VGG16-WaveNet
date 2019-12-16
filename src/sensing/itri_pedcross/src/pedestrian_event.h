@@ -84,10 +84,10 @@ public:
   bool g_enable = false;
   bool g_trigger = false;
   int count;
-  int cross_threshold = 55; // percentage
-  double scaling_ratio_width = 0.3167;
-  double scaling_ratio_height = 0.3179;
-  int number_keypoints = 25;
+  const int cross_threshold = 55; // percentage
+  const double scaling_ratio_width = 0.3167;
+  const double scaling_ratio_height = 0.3179;
+  const int number_keypoints = 25;
   bool show_probability = true;
 };
 }  // namespace ped

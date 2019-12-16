@@ -20,18 +20,12 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   // buffer raw image in cv::Mat with timestamp
   cv_bridge::CvImageConstPtr cv_ptr_image;
   cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat mgs_decode;
-  cv_ptr_image->image.copyTo(mgs_decode);
+  cv::Mat msg_decode;
+  cv_ptr_image->image.copyTo(msg_decode);
 
   // buffer raw image in msg
-  imageCache.push_back({msg->header.stamp, mgs_decode});
+  imageCache.push_back({msg->header.stamp, msg_decode});
 
-  // control the size of buffer
-  /*
-  if (imageCache.size() > buffer_size)
-  {
-    imageCache.pop_front();
-  }*/
 #if USE_GLOG
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -261,7 +255,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         if (p >= cross_threshold)
         {
           if (show_probability)
-            probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+            probability = "C(" + std::to_string(p / 100.) + "." + std::to_string(p % 100) + ")";
           else
             probability = "C";
 
@@ -273,9 +267,9 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           if (show_probability)
           {
             if (p >= 10)
-              probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+              probability = "NC(" + std::to_string(p / 100.) + "." + std::to_string(p % 100) + ")";
             else
-              probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+              probability = "NC(" + std::to_string(p / 100.) + ".0" + std::to_string(p % 100) + ")";
           }
           else
             probability = "NC";
