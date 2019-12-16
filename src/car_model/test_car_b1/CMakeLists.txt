@@ -8,8 +8,8 @@ if (CATKIN_ENABLE_TESTING)
   )
   add_rostest(drivenet_60.test
     DEPENDENCIES drivenet_node my_record_2019-11-27-16-36-54.bag)
-  # add_rostest(drivenet_120_2.test
-  #  DEPENDENCIES drivenet_node my_record_2019-11-27-16-36-54.bag)
+  add_rostest(drivenet_120_1.test
+     DEPENDENCIES drivenet_node1 my_record_2019-11-27-16-36-54.bag)
   add_rostest(drivenet_120_2.test
-    DEPENDENCIES drivenet_node my_record_2019-11-27-16-36-54.bag)
+    DEPENDENCIES drivenet_node2 my_record_2019-11-27-16-36-54.bag)
 endif()
