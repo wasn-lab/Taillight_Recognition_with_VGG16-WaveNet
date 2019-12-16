@@ -224,6 +224,7 @@ void AstarAvoid::run()
         ROS_INFO("PLANNING -> AVOIDING, Found path");
         state_ = AstarAvoid::STATE::AVOIDING;
         start_avoid_time = ros::WallTime::now();
+        std::cout << "end_of_avoid_index : " << end_of_avoid_index << std::endl;
       }
       else
       {
@@ -237,6 +238,7 @@ void AstarAvoid::run()
       avoiding_path_flag.data = 1;
       // ROS_INFO("bool flag data");
       bool reached = (getLocalClosestWaypoint(avoid_waypoints_, current_pose_global_.pose, closest_search_size_) > end_of_avoid_index + 5);
+      std::cout << "end_of_avoid_index : " << end_of_avoid_index << std::endl;
       // ROS_INFO("bool reched");
       if (reached)
       {
@@ -250,6 +252,8 @@ void AstarAvoid::run()
         {
           ROS_INFO("AVOIDING -> STOPPING, Abort avoiding");
           state_ = AstarAvoid::STATE::STOPPING;
+          // ROS_INFO("AVOIDING -> PLANNING, Abort avoiding");
+          // state_ = AstarAvoid::STATE::PLANNING;
         }
       }
       // ROS_INFO("end avoiding");
