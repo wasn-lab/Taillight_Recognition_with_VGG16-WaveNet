@@ -610,11 +610,11 @@ int main(int argc, char** argv)
   pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_1frames_normalization.yml"));
 
   ros::NodeHandle nh;
-  pe.chatter_pub = nh.advertise<msgs::PedObjectArray>("/PedestrianIntention", 1);  // PedestrianIntention is pub topic
+  pe.chatter_pub = nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
-  pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/DrawBBox", 1);  // DrawBBox is pub topic
+  pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh3;
-  pe.pose_pub = nh3.advertise<sensor_msgs::Image&>("/OpenPoseBox", 1);  // OpenPoseBox is pub topic
+  pe.pose_pub = nh3.advertise<sensor_msgs::Image&>("/PedCross/CroppedBox", 1);  // /PedCross/CroppedBox is pub topic
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);
