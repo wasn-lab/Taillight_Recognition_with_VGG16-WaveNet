@@ -244,7 +244,6 @@ PublishCallbackFunctionPtr mPublish_cb;
 ROSPublish* rosPublisher;
 
 /**************************************************************************/
-int fusion_3D_to_2D(double x_3d, double y_3d, double z_3d, int* u_2d, int* v_2d);
 
 void MySigintHandler(int sig)
 {
@@ -1826,62 +1825,6 @@ void vector_add_3d(double v1[3], double v2[3], double result[3])
   result[0] = v1[0] + v2[0];
   result[1] = v1[1] + v2[1];
   result[2] = v1[2] + v2[2];
-}
-
-int fusion_3D_to_2D(double x_3d, double y_3d, double z_3d, int* u_2d, int* v_2d)
-{
-  int u = 0, v = 0;
-
-  // Object coordinate transformation
-
-  radar_xyz[0] = x_3d;
-  radar_xyz[1] = y_3d;
-  radar_xyz[2] = -0.1;
-
-  printf("radar_xyz[0],radar_xyz[1],radar_xyz[2] ==>  %f,  %f,  %f \n", radar_xyz[0], radar_xyz[1], radar_xyz[2]);
-
-  matrix_vector_multiply_3x3_3d(R_Matrix, radar_xyz, temp);
-  vector_add_3d(t_Vector, temp, camera_xyz);
-  matrix_vector_multiply_3x3_3d(K_Matrix, camera_xyz, image_point);
-  if (image_point[2] > 0)
-  {
-    u = (int)(image_point[0] / image_point[2]);
-    v = (int)(image_point[1] / image_point[2]);
-
-    printf("fov60: u is %d, v is %d \n", u, v);
-  }
-
-  if ((u > 0) && (u < 1920) && (v < 1208) && (v > 0))
-  {
-    if (u > (1920 - 11))
-    {
-      u = 1920 - 11;
-    }
-    else if (u < 10)
-    {
-      u = 10;
-    }
-    if (v > (1208 - 11))
-    {
-      v = 1208 - 11;
-    }
-    else if (v < 10)
-    {
-      v = 10;
-    }
-
-    *u_2d = u;
-    *v_2d = v;
-  }
-  else
-  {
-    *u_2d = 0;
-    *v_2d = 0;
-  }
-
-  printf("<== fusion_3D_to_2D \n");
-
-  return 0;
 }
 
 void transform_coordinate_main(msgs::ConvexPoint& cp, const float x, const float y, const float z)
