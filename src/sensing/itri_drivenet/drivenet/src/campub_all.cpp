@@ -118,24 +118,31 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "CamPub");
   ros::NodeHandle nh;
 
-  // ros::param::get(ros::this_node::getName() + "/car_id", car_id);
   // cam60_0_topicName = camera::topics[camera::id::right_60];
   // cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
 
-  // pub60_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontRight", 8);
+  CamObjFR_topicName = camera::topics_obj[camera::id::right_60];
+  CamObjFC_topicName = camera::topics_obj[camera::id::front_60];
+  CamObjFL_topicName = camera::topics_obj[camera::id::left_60];
+  CamObjFT_topicName = camera::topics_obj[camera::id::top_front_120];
+  CamObjRF_topicName = camera::topics_obj[camera::id::top_right_front_120];
+  CamObjRB_topicName = camera::topics_obj[camera::id::top_right_rear_120];
+  CamObjLF_topicName = camera::topics_obj[camera::id::top_left_front_120];
+  CamObjLB_topicName = camera::topics_obj[camera::id::top_left_rear_120];
+  CamObjBT_topicName = camera::topics_obj[camera::id::top_rear_120];
 
   // Subscribe msgs
-  CamObjFR = nh.subscribe("/CamObjFrontRight", 1, callback_CamObjFR);
-  CamObjFC = nh.subscribe("/CamObjFrontCenter", 1, callback_CamObjFC);
-  CamObjFL = nh.subscribe("/CamObjFrontLeft", 1, callback_CamObjFL);
-  CamObjFT = nh.subscribe("/CamObjFrontTop", 1, callback_CamObjFT);
-  CamObjRF = nh.subscribe("/CamObjRightFront", 1, callback_CamObjRF);
-  CamObjRB = nh.subscribe("/CamObjRightBack", 1, callback_CamObjRB);
-  CamObjLF = nh.subscribe("/CamObjLeftFront", 1, callback_CamObjLF);
-  CamObjLB = nh.subscribe("/CamObjLeftBack", 1, callback_CamObjLB);
-  CamObjBT = nh.subscribe("/CamObjBackTop", 1, callback_CamObjBT);
+  CamObjFR = nh.subscribe(CamObjFR_topicName, 1, callback_CamObjFR);
+  CamObjFC = nh.subscribe(CamObjFC_topicName, 1, callback_CamObjFC);
+  CamObjFL = nh.subscribe(CamObjFL_topicName, 1, callback_CamObjFL);
+  CamObjFT = nh.subscribe(CamObjFT_topicName, 1, callback_CamObjFT);
+  CamObjRF = nh.subscribe(CamObjRF_topicName, 1, callback_CamObjRF);
+  CamObjRB = nh.subscribe(CamObjRB_topicName, 1, callback_CamObjRB);
+  CamObjLF = nh.subscribe(CamObjLF_topicName, 1, callback_CamObjLF);
+  CamObjLB = nh.subscribe(CamObjLB_topicName, 1, callback_CamObjLB);
+  CamObjBT = nh.subscribe(CamObjBT_topicName, 1, callback_CamObjBT);
 
-  CamObjAll = nh.advertise<msgs::DetectedObjectArray>("/CameraDetection", 8);
+  CamObjAll = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
 
   ros::Rate loop_rate(30);
 

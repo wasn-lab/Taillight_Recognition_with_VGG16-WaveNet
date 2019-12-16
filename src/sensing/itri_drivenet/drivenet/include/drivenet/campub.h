@@ -36,3 +36,13 @@ std::vector<msgs::DetectedObject> arrCamObjLF;
 std::vector<msgs::DetectedObject> arrCamObjLB;
 std::vector<msgs::DetectedObject> arrCamObjBT;
 
+std::string CamObjFR_topicName;
+std::string CamObjFC_topicName;
+std::string CamObjFL_topicName;
+std::string CamObjFT_topicName;
+std::string CamObjRF_topicName;
+std::string CamObjRB_topicName;
+std::string CamObjLF_topicName;
+std::string CamObjLB_topicName;
+std::string CamObjBT_topicName;
+

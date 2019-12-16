@@ -28,6 +28,23 @@ const std::string topics[id::num_ids] = {
   "",
 };
 
+const std::string topics_obj[id::num_ids] = {
+  "/CamObjFrontRight",
+  "/CamObjFrontCenter",
+  "/CamObjFrontLeft",
+  "",
+  "/CamObjFrontTop",
+  "/CamObjRightFront",
+  "/CamObjRightBack",
+  "",
+  "/CamObjLeftFront",
+  "/CamObjLeftBack",
+  "/CamObjBackTop",
+  "",
+};
+
+const std::string detect_result = "/CameraDetection";
+
 };  // namespace
 
 #endif  // CAR_MODEL_IS_B1
