@@ -24,13 +24,14 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   cv_ptr_image->image.copyTo(mgs_decode);
 
   // buffer raw image in msg
-  imageCache.emplace_back(msg->header.stamp, mgs_decode);
+  imageCache.push_back({msg->header.stamp, mgs_decode});
 
   // control the size of buffer
+  /*
   if (imageCache.size() > buffer_size)
   {
     imageCache.pop_front();
-  }
+  }*/
 #if USE_GLOG
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -618,6 +619,8 @@ int main(int argc, char** argv)
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);
+
+  pe.imageCache  = boost::circular_buffer< std::pair<ros::Time, cv::Mat> > (pe.buffer_size);
 
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;

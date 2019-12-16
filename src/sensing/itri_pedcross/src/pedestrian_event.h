@@ -19,6 +19,7 @@
 #include <ped_def.h>
 #include <cv_bridge/cv_bridge.h>
 #include <map>
+#include <boost/circular_buffer.hpp>
 
 // 0 front center
 // 1 front left
@@ -58,8 +59,7 @@ public:
 
   void run();
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  std::deque<std::pair<ros::Time, cv::Mat> > imageCache;
-  unsigned int buffer_size = 60;
+  int buffer_size = 60;
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
   std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
@@ -79,6 +79,8 @@ public:
   ros::Publisher box_pub;
   ros::Publisher pose_pub;
   ros::Time total_time;
+  //std::deque<std::pair<ros::Time, cv::Mat> > imageCache;
+  boost::circular_buffer< std::pair<ros::Time, cv::Mat> > imageCache;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
