@@ -19,6 +19,7 @@ fi
 
 catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
+    -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 
 popd
