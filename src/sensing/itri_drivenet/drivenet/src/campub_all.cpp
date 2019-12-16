@@ -50,6 +50,10 @@ void collectRepub()
 {
   // arrCamObjAll = arrCamObjBT + arrCamObjLB;
   msgs::DetectedObjectArray arrCamObjAll;
+  size_t allSize = arrCamObjFR.size() + arrCamObjFC.size() + arrCamObjFL.size()
+                  + arrCamObjFT.size() + arrCamObjRF.size() + arrCamObjRB.size()
+                  + arrCamObjLF.size() + arrCamObjLB.size() + arrCamObjBT.size();
+  arrCamObjAll.objects.reserve(allSize);
   arrCamObjAll.header = HeaderAll;
 
   for(size_t i = 0; i < arrCamObjFR.size(); i++)
