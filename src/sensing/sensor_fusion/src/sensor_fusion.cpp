@@ -1259,46 +1259,6 @@ void decision3DFusion()
   /************************************************************************/
 }
 
-// QuickSort3 Algorithm
-void swaps(int* a, int* b)
-{
-  int temp = *a;
-  *a = *b;
-  *b = temp;
-}
-void partition(int a[], int low, int high, int& i, int& j)
-{
-  if (high - low <= 1)
-  {
-    if (a[high] < a[low])
-    {
-      swaps(&a[high], &a[low]);
-    }
-    i = low;
-    j = high;
-    return;
-  }
-  int mid = low;
-  int pivot = a[high];
-  while (mid <= high)
-  {
-    if (a[mid] < pivot)
-    {
-      swaps(&a[low++], &a[mid++]);
-    }
-    else if (a[mid] == pivot)
-    {
-      mid++;
-    }
-    else if (a[mid] > pivot)
-    {
-      swaps(&a[mid], &a[high--]);
-    }
-  }
-  i = low - 1;
-  j = mid;
-}
-
 void sync_callbackThreads()
 {
   int tmp;
