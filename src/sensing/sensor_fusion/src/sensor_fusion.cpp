@@ -32,6 +32,8 @@
 // fps30
 #include "ROSPublish.h"
 
+#define CAMERA_DETECTION 0
+
 #define LID_Front_Short 20
 #define BB2BB_distance 4  // 3
 
@@ -1895,9 +1897,13 @@ int main(int argc, char** argv)
   ros::Subscriber LidarDetectionSub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
 
   // Camera object detection input
+#if CAMERA_DETECTION == 1
+  ros::Subscriber cam_det_sub = nh.subscribe("/CameraDetection", 1, cam60_1_DetectionCb);
+#else
   ros::Subscriber sub_cam_F_right = nh.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
   ros::Subscriber sub_cam_F_center = nh.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
   ros::Subscriber sub_cam_F_left = nh.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
+#endif
 
   fusMsg_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
 
