@@ -179,7 +179,7 @@ msgs::DetectedObjectArray msgCam120_2_Obj;
 /************************************************************************/
 
 msgs::DetectedObjectArray msgFusionObj;
-ros::Publisher fusMsg_pub;
+ros::Publisher fusion_pub;
 std::thread publisher;
 
 void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
@@ -942,7 +942,7 @@ void decisionFusion()
   msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
 
-  fusMsg_pub.publish(msgFusionObj);
+  fusion_pub.publish(msgFusionObj);
 
   /************************************************************************/
 }
@@ -1257,7 +1257,7 @@ void decision3DFusion()
   msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
 
-  fusMsg_pub.publish(msgFusionObj);
+  fusion_pub.publish(msgFusionObj);
 
   /************************************************************************/
 }
@@ -1893,18 +1893,18 @@ int main(int argc, char** argv)
   // ros::Subscriber RadarDetectionSub = nh.subscribe("/RadarDetection", 2, RadarDetectionCb);
 
   // Lidar object detection input
-  ros::Subscriber LidarDetectionSub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
+  ros::Subscriber lidar_det_sub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
 
   // Camera object detection input
 #if CAMERA_DETECTION == 1
   ros::Subscriber cam_det_sub = nh.subscribe("/CameraDetection", 1, cam60_1_DetectionCb);
 #else
-  ros::Subscriber sub_cam_F_right = nh.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
-  ros::Subscriber sub_cam_F_center = nh.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
-  ros::Subscriber sub_cam_F_left = nh.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
+  ros::Subscriber cam_F_right_sub = nh.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
+  ros::Subscriber cam_F_center_sub = nh.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
+  ros::Subscriber cam_F_left_sub = nh.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
 #endif
 
-  fusMsg_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
+  fusion_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
 
   syncCount = 0;
   pthread_mutex_init(&callback_mutex, NULL);
