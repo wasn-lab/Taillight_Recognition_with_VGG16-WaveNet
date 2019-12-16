@@ -1,63 +1,4 @@
-#include "ros/ros.h"
-#include "std_msgs/Header.h"
-#include <ros/package.h>
-
-#include <nodelet/nodelet.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-
-#include <iostream>
-#include <boost/thread.hpp>
-#include <pthread.h>
-#include <thread>
-#include <future>
-#include <mutex>
-
-#include "drivenet/drivenet_60_b1.h"
-
-#include <msgs/DetectedObjectArray.h>
-
-using namespace DriveNet;
-
-// Subscriber: 8 cams
-ros::Subscriber CamObjFR;
-ros::Subscriber CamObjFC;
-ros::Subscriber CamObjFL;
-ros::Subscriber CamObjFT;
-
-ros::Subscriber CamObjRF;
-ros::Subscriber CamObjRB;
-
-ros::Subscriber CamObjLF;
-ros::Subscriber CamObjLB;
-
-ros::Subscriber CamObjBT;
-
-// Publisher: 1, represent all cams
-ros::Publisher CamObjAll;
-
-// msgs::DetectedObjectArray arrCamObjFR;
-// msgs::DetectedObjectArray arrCamObjFC;
-// msgs::DetectedObjectArray arrCamObjFL;
-// msgs::DetectedObjectArray arrCamObjFT;
-// msgs::DetectedObjectArray arrCamObjRF;
-// msgs::DetectedObjectArray arrCamObjRB;
-// msgs::DetectedObjectArray arrCamObjLF;
-// msgs::DetectedObjectArray arrCamObjLB;
-// msgs::DetectedObjectArray arrCamObjBT;
-
-std_msgs::Header HeaderAll;
-
-std::vector<msgs::DetectedObject> arrCamObjFR;
-std::vector<msgs::DetectedObject> arrCamObjFC;
-std::vector<msgs::DetectedObject> arrCamObjFL;
-std::vector<msgs::DetectedObject> arrCamObjFT;
-std::vector<msgs::DetectedObject> arrCamObjRF;
-std::vector<msgs::DetectedObject> arrCamObjRB;
-std::vector<msgs::DetectedObject> arrCamObjLF;
-std::vector<msgs::DetectedObject> arrCamObjLB;
-std::vector<msgs::DetectedObject> arrCamObjBT;
-
+#include "drivenet/campub.h" 
 
 void callback_CamObjFR(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
@@ -72,43 +13,36 @@ void callback_CamObjFC(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 
 void callback_CamObjFL(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjFL = DetectMsg->objects;
 }
 
 void callback_CamObjFT(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjFT = DetectMsg->objects;
 }
 
 void callback_CamObjRF(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjRF = DetectMsg->objects;
 }
 
 void callback_CamObjRB(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjRB = DetectMsg->objects;
 }
 
 void callback_CamObjLF(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjLF = DetectMsg->objects;
 }
 
 void callback_CamObjLB(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjLB = DetectMsg->objects;
 }
 
 void callback_CamObjBT(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  
   arrCamObjBT = DetectMsg->objects;
 }
 
@@ -120,46 +54,55 @@ void collectRepub()
 
   for(size_t i = 0; i < arrCamObjFR.size(); i++)
   {
+    arrCamObjFR[i].camInfo.id = camera::id::right_60; 
     arrCamObjAll.objects.push_back(arrCamObjFR[i]);
   }
 
   for(size_t i = 0; i < arrCamObjFC.size(); i++)
   {
+    arrCamObjFC[i].camInfo.id = camera::id::front_60;      
     arrCamObjAll.objects.push_back(arrCamObjFC[i]);
   }
 
   for(size_t i = 0; i < arrCamObjFL.size(); i++)
   {
+    arrCamObjFL[i].camInfo.id = camera::id::left_60;  
     arrCamObjAll.objects.push_back(arrCamObjFL[i]);
   }
 
   for(size_t i = 0; i < arrCamObjFT.size(); i++)
   {
+    arrCamObjFT[i].camInfo.id = camera::id::top_front_120;      
     arrCamObjAll.objects.push_back(arrCamObjFT[i]);
   }
 
   for(size_t i = 0; i < arrCamObjRF.size(); i++)
   {
+    arrCamObjRF[i].camInfo.id = camera::id::top_right_front_120;   
     arrCamObjAll.objects.push_back(arrCamObjRF[i]);
   }
 
   for(size_t i = 0; i < arrCamObjRB.size(); i++)
   {
+    arrCamObjRB[i].camInfo.id = camera::id::top_right_rear_120;    
     arrCamObjAll.objects.push_back(arrCamObjRB[i]);
   }
 
   for(size_t i = 0; i < arrCamObjLF.size(); i++)
   {
+    arrCamObjLF[i].camInfo.id = camera::id::top_left_front_120;      
     arrCamObjAll.objects.push_back(arrCamObjLF[i]);
   }
 
   for(size_t i = 0; i < arrCamObjLB.size(); i++)
   {
+    arrCamObjLB[i].camInfo.id = camera::id::top_left_rear_120;  
     arrCamObjAll.objects.push_back(arrCamObjLB[i]);
   }
 
   for(size_t i = 0; i < arrCamObjBT.size(); i++)
   {
+    arrCamObjBT[i].camInfo.id = camera::id::top_rear_120;    
     arrCamObjAll.objects.push_back(arrCamObjBT[i]);
   }
   
