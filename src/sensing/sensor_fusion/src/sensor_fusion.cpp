@@ -1884,22 +1884,22 @@ int main(int argc, char** argv)
   /**************************************************************************/
 
   ros::init(argc, argv, "sensor_fusion");
-  ros::NodeHandle nhFus;
+  ros::NodeHandle nh;
   // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
   // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
 
   // Radar object detection input
-  // ros::Subscriber RadarDetectionSub = nhFus.subscribe("/RadarDetection", 2, RadarDetectionCb);
+  // ros::Subscriber RadarDetectionSub = nh.subscribe("/RadarDetection", 2, RadarDetectionCb);
 
   // Lidar object detection input
-  ros::Subscriber LidarDetectionSub = nhFus.subscribe("/LidarDetection", 2, LidarDetectionCb);
+  ros::Subscriber LidarDetectionSub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
 
   // Camera object detection input
-  ros::Subscriber sub_cam_F_right = nhFus.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
-  ros::Subscriber sub_cam_F_center = nhFus.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
-  ros::Subscriber sub_cam_F_left = nhFus.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
+  ros::Subscriber sub_cam_F_right = nh.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
+  ros::Subscriber sub_cam_F_center = nh.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
+  ros::Subscriber sub_cam_F_left = nh.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
 
-  fusMsg_pub = nhFus.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
+  fusMsg_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
 
   syncCount = 0;
   pthread_mutex_init(&callback_mutex, NULL);
