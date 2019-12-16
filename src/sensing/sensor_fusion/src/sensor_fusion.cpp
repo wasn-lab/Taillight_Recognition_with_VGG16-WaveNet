@@ -1,5 +1,5 @@
 
-#include <math.h>
+#include <cmath>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 #include <signal.h>
@@ -40,7 +40,6 @@
 #define max_det 64
 
 #define fSize 9
-#define PI 3.14159265358979
 
 /************************************************************************/
 
@@ -869,7 +868,7 @@ void decisionFusion()
         p3y = msgLidarObj.objects[j].bPoint.p3.y;
         cx = (p0x + p3x) / 2;
         cy = (p0y + p3y) / 2;
-        theta = atan2(cx, cy * (-1)) * (180 / PI);
+        theta = atan2(cx, cy * (-1)) * (180 / M_PI);
         printf("theta :%f\n", theta);
 
         if (theta > 120)
