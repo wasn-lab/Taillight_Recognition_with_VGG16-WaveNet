@@ -1,8 +1,8 @@
 /LidarAll
-# /LidarFrontRight/Raw
-# /LidarFrontLeft/Raw
-# /LidarRearRight/Raw
-# /LidarRearLeft/Raw
+/LidarFrontRight/Raw
+/LidarFrontLeft/Raw
+/LidarRearRight/Raw
+/LidarRearLeft/Raw
 /LidarFrontTop/Raw # For debugging localization
 /LidarDetection
 
