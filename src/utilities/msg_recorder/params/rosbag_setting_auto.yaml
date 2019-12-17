@@ -15,8 +15,8 @@ output_dir_kept:    ~/rosbag_files/backup # /media/itri/1TB/rosbag_files/backup
 # Output behavior setting
 #-----------------------------------#
 is_splitting:       true
-split_size:         3096    # MB, no effect if no split
-max_split_num:      20 # 6       # Maximum number of split files. The oldest file will be delete When the one is generated, no effect if no split; empty -> None
+split_size:         5120    # MB, no effect if no split
+max_split_num:      30 # 6       # Maximum number of split files. The oldest file will be delete When the one is generated, no effect if no split; empty -> None
 #-----------------------------------#
 record_duration:    30 # 2       # duration to stop/split; empty -> None -> eternal; 1m -> 1 min.; 30 -> 30 sec.; 2h -> 2 hours
 #-----------------------------------#
@@ -26,8 +26,8 @@ compression_method: lz4     # lz4/bz2, default -> lz4; bz2 -> slow, high compres
 
 # Backup setting
 #-----------------------------------#
-time_pre_trigger:    5.0    # sec.
-time_post_trigger:   5.0    # sec.
+time_pre_trigger:    15.0    # sec.
+time_post_trigger:   15.0    # sec.
 #-----------------------------------#
 
 # Performance tunning
