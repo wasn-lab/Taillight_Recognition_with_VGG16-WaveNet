@@ -14,7 +14,7 @@ namespace DriveNet_npp
 {
 // Only accepts images of 3 channels(RGB) and each color is unsigned char.
 NPPRotaterImpl::NPPRotaterImpl(const int src_rows, const int src_cols, const int rotation_degree)
-:NPPRotaterImpl(src_rows, src_cols, src_cols, src_rows)
+  : NPPRotaterImpl(src_rows, src_cols, src_cols, src_rows)
 {
 }
 
@@ -57,7 +57,7 @@ NPPRotaterImpl::~NPPRotaterImpl()
 int NPPRotaterImpl::rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_degree)
 {
   std::lock_guard<std::mutex> lk(mu_);
-  
+
   if (rotation_degree == 180)
   {
     dst_rows_ = src.rows;
@@ -76,10 +76,10 @@ int NPPRotaterImpl::rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_
   const double shift_x = -rotated_bounding_box[0][0];
   const double shift_y = -rotated_bounding_box[0][1];
 
-
   cudaMemcpy(src_npp8u_ptr_cuda_, src.data, num_src_bytes_, cudaMemcpyHostToDevice);
-  NppStatus result = nppiRotate_8u_C3R(src_npp8u_ptr_cuda_, src_size_, src_line_steps_, src_roi_, dst_npp8u_ptr_cuda_, dst_line_steps_,
-                                       dst_roi_, rotation_degree, shift_x, shift_y, interpolation_mode_);
+  NppStatus result =
+      nppiRotate_8u_C3R(src_npp8u_ptr_cuda_, src_size_, src_line_steps_, src_roi_, dst_npp8u_ptr_cuda_, dst_line_steps_,
+                        dst_roi_, rotation_degree, shift_x, shift_y, interpolation_mode_);
   if (result != NPP_SUCCESS)
   {
     LOG(WARNING) << "nppiResize_8u_C3R returns: " << result;

@@ -4,7 +4,7 @@ namespace tpp
 {
 void ROSParamsParser::get_ros_param_bool(const std::string& param_name, bool& output)
 {
-  int x_int;
+  int x_int = 0;
   get_ros_param_int(param_name, x_int);
   output = (bool)x_int;
 }
