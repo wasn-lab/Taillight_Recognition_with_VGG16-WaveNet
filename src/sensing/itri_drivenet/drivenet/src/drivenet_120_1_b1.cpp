@@ -728,6 +728,8 @@ void* run_yolo(void*)
             float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2));
             rounding(distance, 1);
             std::string distance_str = floatToString(distance);
+
+            class_color = get_commonLabelColor(cls_color, detObj.classId);
             cv::putText(M_display, distance_str + " m",
                         cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
