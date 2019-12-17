@@ -36,10 +36,6 @@ bool isCompressed = false;
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
 std::mutex display_mutex;
-std::mutex image_mutex_0;
-std::mutex image_mutex_1;
-std::mutex image_mutex_2;
-std::mutex image_mutex;
 
 std::string cam60_0_topicName;
 std::string cam60_1_topicName;
@@ -149,72 +145,62 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
 
 void callback_60_0(const sensor_msgs::Image::ConstPtr& msg)
 {
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
-  image_mutex_0.lock();
-  mat60_0 = cv_ptr->image;
-  image_mutex_0.unlock();
-
-  std_msgs::Header h = msg->header;
-
   if (!isInferData_0)
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    mat60_0 = cv_ptr->image;
+    std_msgs::Header h = msg->header;
     sync_inference(camera::id::right_60, h, &mat60_0, &vBBX60_0, 1920, 1208);
+  }
 }
 
 void callback_60_1(const sensor_msgs::Image::ConstPtr& msg)
 {
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
-  image_mutex_1.lock();
-  mat60_1 = cv_ptr->image;
-  image_mutex_1.unlock();
-
-  std_msgs::Header h = msg->header;
   if (!isInferData_1)
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    mat60_1 = cv_ptr->image;
+    std_msgs::Header h = msg->header;
     sync_inference(camera::id::front_60, h, &mat60_1, &vBBX60_1, 1920, 1208);
+  }
 }
 
 void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
 {
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
-  image_mutex_2.lock();
-  mat60_2 = cv_ptr->image;
-  image_mutex_2.unlock();
-
-  std_msgs::Header h = msg->header;
   if (!isInferData_2)
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    mat60_2 = cv_ptr->image;
+    std_msgs::Header h = msg->header;
     sync_inference(camera::id::left_60, h, &mat60_2, &vBBX60_2, 1920, 1208);
+  }
 }
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
 {
-  image_mutex_0.lock();
-  cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_0);
-  image_mutex_0.unlock();
-
   if (!isInferData_0)
+  {
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_0);
     sync_inference(camera::id::right_60, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
+  }
 }
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
 {
-  image_mutex_1.lock();
-  cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_1);
-  image_mutex_1.unlock();
-
   if (!isInferData_1)
+  {
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_1);
     sync_inference(camera::id::front_60, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
+  }
 }
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
 {
-  image_mutex_2.lock();
-  cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_2);
-  image_mutex_2.unlock();
-
   if (!isInferData_2)
+  {
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_2);
     sync_inference(camera::id::left_60, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
+  }
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
@@ -297,6 +283,7 @@ int main(int argc, char** argv)
   if (display_flag == 1)
     pthread_join(thrdDisplay, NULL);
 
+  pthread_mutex_destroy(&mtxInfer); 
   yoloApp.delete_yolo_infer();
   ros::shutdown();
 
@@ -418,13 +405,11 @@ void* run_yolo(void*)
     pthread_mutex_unlock(&mtxInfer);
 
     // copy data
-    image_mutex.lock();
     for (size_t ndx = 0; ndx < cam_ids_.size(); ndx++)
     {
       matSrcsRaw_tmp[ndx] = matSrcs[ndx]->clone();
       matSrcs_tmp.push_back(&matSrcsRaw_tmp[ndx]);
     }
-    image_mutex.unlock();
 
     headers_tmp = headers;
     vbbx_output_tmp = vbbx_output;
