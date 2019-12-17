@@ -336,6 +336,7 @@ int main(int argc, char **argv){
 		else{
 			cerr << "Please initialize all BBox parameters first" << endl;
 		}
+
 		cout << "========Radar=========" << endl;
 		if(Radar_Geofence.Calculator()==0){
 			frame.can_id  = 0x592;
@@ -355,15 +356,17 @@ int main(int argc, char **argv){
 			frame.data[7] = (short int)(Radar_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
 			Publish_Marker_Radar(Radar_Geofence.getNearest_X(), Radar_Geofence.getNearest_Y());
-			frame.can_id  = 0x599;
-			cout << "avoiding_path: " << avoiding_path_flag << " ";
-			frame.data[0] = (short int)(avoiding_path_flag);
-			frame.data[1] = (short int)(avoiding_path_flag)>>8;
-			nbytes = write(s, &frame, sizeof(struct can_frame));
+			
 		}
 		else{
 			cerr << "Please initialize all Radar parameters first" << endl;
 		}
+		
+		frame.can_id  = 0x599;
+		cout << "avoiding_path: " << avoiding_path_flag << " ";
+		frame.data[0] = (short int)(avoiding_path_flag);
+		frame.data[1] = (short int)(avoiding_path_flag)>>8;
+		nbytes = write(s, &frame, sizeof(struct can_frame));
 		cout << "******************************************" << endl;
 		loop_rate.sleep();	
 	}
