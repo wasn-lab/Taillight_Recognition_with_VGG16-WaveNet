@@ -283,7 +283,7 @@ int main(int argc, char** argv)
   if (display_flag == 1)
     pthread_join(thrdDisplay, NULL);
 
-  pthread_mutex_destroy(&mtxInfer); 
+  pthread_mutex_destroy(&mtxInfer);
   yoloApp.delete_yolo_infer();
   ros::shutdown();
 
@@ -502,16 +502,15 @@ void* run_yolo(void*)
             float distMeter_p0y = detObj.bPoint.p0.y;
             float distMeter_p3y = detObj.bPoint.p3.y;
 
-            float centerPoint[2]; 
-            centerPoint[0] = (distMeter_p0x + distMeter_p3x)/2;
-            centerPoint[1] = (distMeter_p0y + distMeter_p3y)/2;
+            float centerPoint[2];
+            centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
+            centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
             float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2));
             rounding(distance, 1);
             std::string distance_str = floatToString(distance);
 
             class_color = get_commonLabelColor(cls_color, detObj.classId);
-            cv::putText(M_display, distance_str + " m",
-                        cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
+            cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
         }
       }

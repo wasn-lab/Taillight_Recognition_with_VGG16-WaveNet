@@ -3,6 +3,6 @@
 
 #include <cmath>
 
-void rounding(float &num, int index);
+void rounding(float& num, int index);
 
 #endif /*MATHUTIL_H_*/
