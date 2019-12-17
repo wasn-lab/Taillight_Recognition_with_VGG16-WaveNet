@@ -6,7 +6,6 @@ import sys, os
 import signal
 import subprocess
 import threading
-import Queue
 import yaml, json
 # File operations
 import datetime
@@ -14,7 +13,12 @@ import datetime
 import shutil
 # Args
 import argparse
-
+#-------------------------#
+try:
+    import queue as Queue # Python 3.x
+except:
+    import Queue # Python 2.x
+#-------------------------#
 from std_msgs.msg import (
     Empty,
     Bool,
