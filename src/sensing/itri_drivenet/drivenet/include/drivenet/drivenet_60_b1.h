@@ -1,5 +1,5 @@
-#ifndef DRIVENET_120_2_B1_H_
-#define DRIVENET_120_2_B1_H_
+#ifndef DRIVENET_60_B1_H_
+#define DRIVENET_60_B1_H_
 
 #include "camera_params.h"  // include camera topic name
 #include "drivenet/trt_yolo_interface.h"
@@ -25,4 +25,4 @@ bool display_flag = 0;
 bool input_resize = 1;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
 bool imgResult_publish = 1;
 
-#endif /*DRIVENET_120_2_B1_H_*/
+#endif /*DRIVENET_60_B1_H_*/
