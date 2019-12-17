@@ -7,18 +7,20 @@ include(CompilerFlags)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
-)
+) 
 
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp rospy
 )
 
-find_package(TensorRT)
-if (NOT TensorRT_FOUND)
-  message("Cannot find TensorRT. Skip ${PROJECT_NAME}")
-  return()
-endif()
+find_package(TensorRT) 
+if (NOT TensorRT_FOUND) 
+  message("Cannot find TensorRT. Skip ${PROJECT_NAME}") 
+  return() 
+endif() 
+message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
+
 
 find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 if(OpenCV_FOUND)
@@ -31,12 +33,10 @@ find_package(CUDA REQUIRED)
 if (CUDA_FOUND)
   message(STATUS "CUDA Include Dir: ${CUDA_INCLUDE_DIRS}")
   message(STATUS "CUDA Libararies: ${CUDA_LIBRARIES}")
-  set(CUDA_LIBRARY_DIRS /usr/local/cuda/lib64)
+  set(CUDA_LIBRARY_DIRS /usr/local/cuda/lib64) 
   message(STATUS "CUDA Libararies Dir: ${CUDA_LIBRARY_DIRS}")
 endif()
 
-find_package(TensorRT)
-message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLIB REQUIRED glib-2.0)
@@ -54,7 +54,7 @@ set(LIBS ${OpenCV_LIBRARIES}
          cuda
          glog
          )
-add_definitions("-DNPP")
+add_definitions("-DNPP") 
 
 include_directories(
   include
