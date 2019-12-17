@@ -528,7 +528,7 @@ void* run_yolo(void*)
             if (cam_order == camera::id::top_front_120)
             {
               distMeter_p0x = detObj.bPoint.p0.x;
-              distMeter_p3x = detObj.bPoint.p3.y;
+              distMeter_p3x = detObj.bPoint.p3.x;
               distMeter_p0y = detObj.bPoint.p0.y;
               distMeter_p3y = detObj.bPoint.p3.y;
             }

@@ -498,8 +498,8 @@ void* run_yolo(void*)
             int x1 = detObj.camInfo.u;
             int y1 = detObj.camInfo.v;
             float distMeter_p0x = detObj.bPoint.p0.x;
-            float distMeter_p0y = detObj.bPoint.p0.y;
             float distMeter_p3x = detObj.bPoint.p3.x;
+            float distMeter_p0y = detObj.bPoint.p0.y;
             float distMeter_p3y = detObj.bPoint.p3.y;
 
             float centerPoint[2]; 
