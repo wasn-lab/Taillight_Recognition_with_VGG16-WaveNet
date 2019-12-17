@@ -306,8 +306,10 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
   else
     obs_index = 0;
 
-  if (obs_index < 60) // detect time < 3s
+  if (obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
     obswaypoints_data_ = -1;
+  // if (avoid_flag != 0 && obs_index < 2) //
+  //   obswaypoints_data_ = -1;
   ///////////////////////////////////////////////////////////////////
 
   // std_msgs::Int32 obswaypoints;
