@@ -495,19 +495,23 @@ void* run_yolo(void*)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {
-            int distMeter_p0x = detObj.bPoint.p0.x;
-            int distMeter_p0y = detObj.bPoint.p0.y;
-            int distMeter_p3x = detObj.bPoint.p3.x;
-            int distMeter_p3y = detObj.bPoint.p3.y;
-
             int x1 = detObj.camInfo.u;
-            int x2 = detObj.camInfo.u + detObj.camInfo.width;
-            int y2 = detObj.camInfo.v + detObj.camInfo.height;
+            int y1 = detObj.camInfo.v;
+            float distMeter_p0x = detObj.bPoint.p0.x;
+            float distMeter_p0y = detObj.bPoint.p0.y;
+            float distMeter_p3x = detObj.bPoint.p3.x;
+            float distMeter_p3y = detObj.bPoint.p3.y;
 
-            cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y),
-                        cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
-            cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y),
-                        cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
+            float centerPoint[2]; 
+            centerPoint[0] = (distMeter_p0x + distMeter_p3x)/2;
+            centerPoint[1] = (distMeter_p0y + distMeter_p3y)/2;
+            float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2));
+
+            rounding(distance, 1);
+            std::string distance_str = floatToString(distance);
+
+            cv::putText(M_display, distance_str + " m",
+                        cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
         }
       }

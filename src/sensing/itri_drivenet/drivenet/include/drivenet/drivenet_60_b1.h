@@ -7,6 +7,8 @@
 #include "drivenet/boundary_util.h"
 #include "drivenet/object_label_util.h"
 #include "drivenet/image_exception_handling.h"
+#include "drivenet/math_util.h"
+#include "drivenet/type_conversion.h"
 
 #if CAR_MODEL_IS_B1
 const std::vector<int> cam_ids_{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
