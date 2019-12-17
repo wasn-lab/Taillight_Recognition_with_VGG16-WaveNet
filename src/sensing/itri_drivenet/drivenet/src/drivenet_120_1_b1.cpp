@@ -485,7 +485,7 @@ int main(int argc, char** argv)
   if (display_flag == 1)
     pthread_join(thrdDisplay, NULL);
 
-  pthread_mutex_destroy(&mtxInfer); 
+  pthread_mutex_destroy(&mtxInfer);
   yoloApp.delete_yolo_infer();
   ros::shutdown();
 
@@ -704,30 +704,33 @@ void* run_yolo(void*)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {
-            int distMeter_p0x = 0, distMeter_p3x = 0, distMeter_p0y = 0, distMeter_p3y = 0;
+            int x1 = detObj.camInfo.u;
+            int y1 = detObj.camInfo.v;
+            float distMeter_p0x = 0, distMeter_p3x = 0, distMeter_p0y = 0, distMeter_p3y = 0;
             if (cam_order == camera::id::top_right_front_120 || cam_order == camera::id::top_right_rear_120)
             {
               distMeter_p0x = detObj.bPoint.p4.x;
-              distMeter_p3x = detObj.bPoint.p0.y;
+              distMeter_p3x = detObj.bPoint.p0.x;
               distMeter_p0y = detObj.bPoint.p4.y;
               distMeter_p3y = detObj.bPoint.p0.y;
             }
             else if (cam_order == camera::id::top_left_front_120 || cam_order == camera::id::top_left_rear_120)
             {
               distMeter_p0x = detObj.bPoint.p3.x;
-              distMeter_p3x = detObj.bPoint.p7.y;
+              distMeter_p3x = detObj.bPoint.p7.x;
               distMeter_p0y = detObj.bPoint.p3.y;
               distMeter_p3y = detObj.bPoint.p7.y;
             }
 
-            int x1 = detObj.camInfo.u;
-            int x2 = detObj.camInfo.u + detObj.camInfo.width;
-            int y2 = detObj.camInfo.v + detObj.camInfo.height;
+            float centerPoint[2];
+            centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
+            centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
+            float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2));
+            rounding(distance, 1);
+            std::string distance_str = floatToString(distance);
 
-            cv::putText(M_display, std::to_string(distMeter_p0x) + "," + std::to_string(distMeter_p0y),
-                        cvPoint(x1 - 100, y2 + 10), 0, 1, class_color, 2);
-            cv::putText(M_display, std::to_string(distMeter_p3x) + "," + std::to_string(distMeter_p3y),
-                        cvPoint(x2 + 10, y2 + 10), 0, 1, class_color, 2);
+            class_color = get_commonLabelColor(cls_color, detObj.classId);
+            cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
         }
       }

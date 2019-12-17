@@ -45,4 +45,3 @@ std::string CamObjRB_topicName;
 std::string CamObjLF_topicName;
 std::string CamObjLB_topicName;
 std::string CamObjBT_topicName;
-
