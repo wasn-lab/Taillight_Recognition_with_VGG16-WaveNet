@@ -354,8 +354,8 @@ int main(int argc, char **argv)
 	//ros::Publisher Publisher03 = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
 	ros::Publisher Publisher[NumOfTopic];
 	Publisher[0] = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
-	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
-	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
+	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
+	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
 	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
 	uint32_t seq = 0;
 
@@ -368,7 +368,7 @@ int main(int argc, char **argv)
 	filter[0].can_id = 0x601;
 	filter[1].can_id = 0x602;
 	filter[2].can_id = 0x603;
-    filter[4].can_id = 0x604;
+    filter[3].can_id = 0x604;
 
     /*
 	filter[3].can_id = 0x3A0;
