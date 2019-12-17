@@ -1,0 +1,8 @@
+<launch>
+        # Node
+        <node name="drivenet_node3" pkg="drivenet" type="drivenet_node3"  output="screen">
+
+        </node>
+
+</launch>
+
