@@ -54,7 +54,7 @@
 /abs_virBB_array
 /marker_array_topic
 
-/adFront
+/radFront
 /radar_point_cloud
 /PathPredictionOutput/radar
 /RadarMarker
@@ -62,7 +62,8 @@
 
 
 /mm_tp_topic
-/nav_path
+/nav_path # Dyna-plan
+/nav_path_astar_final # A-star
 
 /occupancy_grid
 /occupancy_grid_updates
