@@ -38,7 +38,8 @@ struct Point  Geofence::findDirection(){
 
     Point dir;
     Point temp;
-    dir.X = 300;
+    dir.X = 1000;
+    dir.X = 1000;
     for(int i=1;i<this->PathLength.size();i++){
         if(this->PathLength[i] > this->Distance){
             temp.X = this->PathPoints[i].X - this->PathPoints[i-1].X;
