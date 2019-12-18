@@ -202,7 +202,7 @@ int main(int argc, char **argv){
 	#elif defined RADARBOX
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPP);
 	#else
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
 	#endif
 	PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
 
