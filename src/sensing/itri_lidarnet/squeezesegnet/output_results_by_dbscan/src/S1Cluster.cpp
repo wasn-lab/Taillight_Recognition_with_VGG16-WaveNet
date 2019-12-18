@@ -12,7 +12,7 @@ S1Cluster::S1Cluster (boost::shared_ptr<pcl::visualization::PCLVisualizer> input
   viewer = input_viewer;
   viewID = input_viewID;
 
-  dbscan.setEpsilon (0.8);
+  dbscan.setEpsilon (0.7);
   dbscan.setMinpts (2);
 }
 
@@ -41,7 +41,8 @@ S1Cluster::getClusters (bool debug,
     }
   }
 
-  *ptr_cur_cloud = NoiseFilter ().runUniformSampling<PointXYZ> (ptr_cur_cloud, 0.1);
+  //*ptr_cur_cloud = NoiseFilter ().runUniformSampling<PointXYZ> (ptr_cur_cloud, 0.2);
+  *ptr_cur_cloud = VoxelGrid_CUDA ().compute (ptr_cur_cloud, 0.2);
 
 #if ENABLE_DEBUG_MODE == true
   cout << "-------------------------------Part 0 : get cluster_vector " << timer.getTimeSeconds () << "," << ptr_cur_cloud->size () << endl;
@@ -187,7 +188,7 @@ S1Cluster::getClusters (bool debug,
   {
     if (cluster_vector.at (i).cluster_tag == 1)
     {
-      if (cluster_vector.at (i).dx > 10 || cluster_vector.at (i).dy > 10 || cluster_vector.at (i).dz > 4)
+      if (cluster_vector.at (i).dx > 20 || cluster_vector.at (i).dy > 20 || cluster_vector.at (i).dz > 4)
         cluster_vector.at (i).cluster_tag = 0;
 
       if (cluster_vector.at (i).dis_center_origin < 40)
@@ -196,11 +197,14 @@ S1Cluster::getClusters (bool debug,
         if (cluster_vector.at (i).center.y > 3.5 || cluster_vector.at (i).center.y < -3.5)
         {
 
-          if (cluster_vector.at (i).dz < 0.1)
+          if (cluster_vector.at (i).dz < 0.3)
             cluster_vector.at (i).cluster_tag = 0;
 
 //          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
 //            cluster_vector.at (i).cluster_tag = 0;
+
+          if (cluster_vector.at (i).min.z > -1.5)
+            cluster_vector.at (i).cluster_tag = 0;
 
           if (cluster_vector.at (i).max.z < -2.0)
             cluster_vector.at (i).cluster_tag = 0;
