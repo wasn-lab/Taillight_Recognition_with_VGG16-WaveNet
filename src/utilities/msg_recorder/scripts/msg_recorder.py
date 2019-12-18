@@ -302,13 +302,13 @@ class ROSBAG_CALLER:
         else:
             return self.start(_warning)
 
-    def backup(self):
+    def backup(self, reason=""):
         """
         Backup all the files interset with time zone.
 
         Use a deamon thread to complete the work even if the program is killed.
         """
-        _t = threading.Thread(target=self._keep_files_before_and_after)
+        _t = threading.Thread(target=self._keep_files_before_and_after, args=(reason,))
         # _t.daemon = True
         _t.start()
 
@@ -591,7 +591,7 @@ class ROSBAG_CALLER:
         return file_in_zone_list
 
 
-    def _keep_files_before_and_after(self):
+    def _keep_files_before_and_after(self, reason=""):
         """
         To keep 2 files: before and after
 
@@ -672,20 +672,25 @@ class ROSBAG_CALLER:
         file_in_pre_zone_list.sort()
 
         triggered_datetime = datetime.datetime.fromtimestamp(_trigger_timestamp)
-        # triggered_datetime_s = target_date.strftime("%Y-%m-%d-%H-%M-%S")
-        event_str = "\n\n# Triggered at [%s]\n## backup-files:\n" % str(triggered_datetime)
-        for _F in file_in_pre_zone_list:
-            event_str += " - %s\n" % _F
-        event_str += "\n"
-
-        _fh = open(self.output_dir_kept + "backup_history.txt", "a")
-        # _fh.write("\n\n# Triggered at [%s]\n## backup-files:\n" % str(triggered_datetime) )
-        # # _fh.write(str(file_in_pre_zone_list))
+        # # triggered_datetime_s = target_date.strftime("%Y-%m-%d-%H-%M-%S")
+        # event_str = "\n\n# Triggered at [%s]\nReason: %s\n## backup-files:\n" % (str(triggered_datetime), reason )
         # for _F in file_in_pre_zone_list:
-        #     _fh.write(" - %s\n" % _F )
-        # _fh.write("\n")
-        _fh.write( event_str )
-        _fh.close()
+        #     event_str += " - %s\n" % _F
+        # event_str += "\n"
+
+        event_dict = dict()
+        event_dict["timestamp"] = triggered_datetime
+        event_dict["reason"] = reason
+        event_dict["bags"] = file_in_pre_zone_list
+        event_str = "---\n" + yaml.dump(event_dict) + "\n"
+
+        # _fh = open(self.output_dir_kept + "backup_history.txt", "a")
+        # _fh.write( event_str )
+        # _fh.close()
+
+        #
+        with open(self.output_dir_kept + "backup_history.txt", "a") as _fh:
+            _fh.write( event_str )
         #
         # Report by ROS topic
         self._report_event( event_str )
@@ -710,7 +715,7 @@ def _backup_trigger_callback(data):
     The callback function for operation command.
     """
     global _rosbag_caller
-    _rosbag_caller.backup()
+    _rosbag_caller.backup(reason=data.data)
 
 
 
@@ -839,7 +844,7 @@ def main(sys_args):
     #--------------------------------------#
     # Subscriber
     rospy.Subscriber("/REC/record", Bool, _record_cmd_callback)
-    rospy.Subscriber("/REC/req_backup", Empty, _backup_trigger_callback)
+    rospy.Subscriber("/REC/req_backup", String, _backup_trigger_callback)
     # Publisher
     _recorder_running_pub = rospy.Publisher("/REC/is_recording", Bool, queue_size=10, latch=True) #
     _recorder_running_pub.publish(False)
@@ -881,7 +886,7 @@ def main(sys_args):
             elif str_in == 'c': # Cut
                 _rosbag_caller.split(_warning=True)
             elif str_in == 'k': # Keep
-                _rosbag_caller.backup()
+                _rosbag_caller.backup(reason="key-in")
             elif str_in == 'q': # Quit
                 _rosbag_caller.stop(_warning=False)
                 break
