@@ -68,7 +68,11 @@
 /occupancy_grid
 /occupancy_grid_updates
 
-/PathPredictionOutput
+/sensor_fusion
+/PathPredictionOutput # With fusion
+/PathPredictionOutput/lidar # When no fusion available
+/PathPredictionOutput/camera # When no fusion available
+
 /V2X_msg
 
 /tf
