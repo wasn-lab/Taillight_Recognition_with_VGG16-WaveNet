@@ -2,6 +2,6 @@
 #define TYPE_CONVERSION_H_
 
 #include <sstream>
-std::string floatToString(float value);
+std::string floatToString_with_RealPrecision(float value);
 
 #endif /*TYPE_CONVERSION_H_*/

@@ -498,16 +498,17 @@ void* run_yolo(void*)
             int x1 = detObj.camInfo.u;
             int y1 = detObj.camInfo.v;
             float distMeter_p0x = detObj.bPoint.p0.x;
-            float distMeter_p3x = detObj.bPoint.p3.x;
-            float distMeter_p0y = detObj.bPoint.p0.y;
-            float distMeter_p3y = detObj.bPoint.p3.y;
+            // float distMeter_p3x = detObj.bPoint.p3.x;
+            // float distMeter_p0y = detObj.bPoint.p0.y;
+            // float distMeter_p3y = detObj.bPoint.p3.y;
 
-            float centerPoint[2];
-            centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
-            centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
-            float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2));
-            rounding(distance, 1);
-            std::string distance_str = floatToString(distance);
+            // float centerPoint[2];
+            // centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
+            // centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
+            // float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2)); //relative distance
+            float distance = distMeter_p0x; //vertical distance
+            distance = truncateDecimalPrecision(distance, 1);
+            std::string distance_str = floatToString_with_RealPrecision(distance);
 
             class_color = get_commonLabelColor(cls_color, detObj.classId);
             cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
