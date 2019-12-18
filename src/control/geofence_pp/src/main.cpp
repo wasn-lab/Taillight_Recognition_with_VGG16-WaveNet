@@ -179,6 +179,11 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 				//Plot geofence PP
+				Point temp;
+				Point.X = BBox_Geofence.getNearest_X();
+				Point.Y = BBox_Geofence.getNearest_Y();
+				Point.Speed = BBox_Geofence.findDirection()
+				Publish_Marker_PP(temp);
 			}
 			if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back)){
 				//cout << "Collision appears" << endl;
@@ -202,7 +207,7 @@ int main(int argc, char **argv){
 	#elif defined RADARBOX
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPP);
 	#else
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
 	#endif
 	PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
 
