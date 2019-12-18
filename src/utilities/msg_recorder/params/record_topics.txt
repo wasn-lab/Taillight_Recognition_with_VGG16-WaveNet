@@ -61,12 +61,14 @@
 /Geofence_PC
 
 
+
 /mm_tp_topic
 /nav_path # Dyna-plan
 /nav_path_astar_final # A-star
 
 /occupancy_grid
 /occupancy_grid_updates
+/ring_edge_point_cloud
 
 /SensorFusion
 /PathPredictionOutput # With fusion
