@@ -68,6 +68,7 @@
 /occupancy_grid
 /occupancy_grid_updates
 
+/sensor_fusion
 /PathPredictionOutput # With fusion
 /PathPredictionOutput/lidar # When no fusion available
 /PathPredictionOutput/camera # When no fusion available
