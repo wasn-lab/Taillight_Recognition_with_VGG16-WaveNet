@@ -27,6 +27,6 @@ catkin_make \
     -DCATKIN_DEVEL_PREFIX=${devel_dir} \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-    -DCATKIN_BLACKLIST_PACKAGES="$blacklist"
+    -DCATKIN_BLACKLIST_PACKAGES="$blacklist" ${EXTRA_CATKIN_ARGS}
 popd
 
