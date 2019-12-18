@@ -544,7 +544,7 @@ void* run_yolo(void*)
             centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
             centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
             float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2)); //relative distance
-            distance = truncateDecimalPlace(distance, 1);
+            distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
             class_color = get_commonLabelColor(cls_color, detObj.classId);
