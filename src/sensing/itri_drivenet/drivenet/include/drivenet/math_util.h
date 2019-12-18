@@ -3,6 +3,6 @@
 
 #include <cmath>
 
-void rounding(float& num, int index);
+float truncateDecimalPrecision(const float num, int decimal_place);
 
 #endif /*MATHUTIL_H_*/
