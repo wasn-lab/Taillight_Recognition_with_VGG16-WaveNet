@@ -180,6 +180,7 @@ void AstarAvoid::run()
     
     // avoidance mode
     bool found_obstacle = (obstacle_waypoint_index_ >= 0);
+    std::cout << "obstacle_waypoint_index_ : " << obstacle_waypoint_index_ << std::endl;
     bool avoid_velocity = (current_velocity_.ego_speed < avoid_start_velocity_ / 3.6);
 
     // avoid_waypoints_ = base_waypoints_;
@@ -223,7 +224,9 @@ void AstarAvoid::run()
       {
         ROS_INFO("PLANNING -> AVOIDING, Found path");
         state_ = AstarAvoid::STATE::AVOIDING;
-        start_avoid_time = ros::WallTime::now();
+        start_avoid_time = ros::WallTime::now();      
+        
+        std::cout << "end_of_avoid_index : " << end_of_avoid_index << std::endl;
       }
       else
       {
@@ -237,6 +240,7 @@ void AstarAvoid::run()
       avoiding_path_flag.data = 1;
       // ROS_INFO("bool flag data");
       bool reached = (getLocalClosestWaypoint(avoid_waypoints_, current_pose_global_.pose, closest_search_size_) > end_of_avoid_index + 5);
+      std::cout << "end_of_avoid_index : " << end_of_avoid_index << std::endl;
       // ROS_INFO("bool reched");
       if (reached)
       {
@@ -250,6 +254,8 @@ void AstarAvoid::run()
         {
           ROS_INFO("AVOIDING -> STOPPING, Abort avoiding");
           state_ = AstarAvoid::STATE::STOPPING;
+          // ROS_INFO("AVOIDING -> PLANNING, Abort avoiding");
+          // state_ = AstarAvoid::STATE::PLANNING;
         }
       }
       // ROS_INFO("end avoiding");
@@ -282,7 +288,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
 {
   bool found_path = false;
   int closest_waypoint_index = getLocalClosestWaypoint(avoid_waypoints_, current_pose_global_.pose, closest_search_size_);
-  // std::cout << "closest_waypoint_index :" << closest_waypoint_index << std::endl;
+  std::cout << "closest_waypoint_index :" << closest_waypoint_index << std::endl;
   // std::cout << "costmap_.header.frame_id : " << costmap_.header.frame_id << std::endl;
 
   // update goal pose incrementally and execute A* search
@@ -321,6 +327,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
       std::cout << "found path" << std::endl;
       // pub.publish(astar_.getPath());
       end_of_avoid_index = goal_waypoint_index;
+      std::cout << "end_of_avoid_index :: " << end_of_avoid_index << std::endl;
       mergeAvoidWaypoints(astar_.getPath(), end_of_avoid_index);
       if (avoid_waypoints_.waypoints.size() > 0)
       {

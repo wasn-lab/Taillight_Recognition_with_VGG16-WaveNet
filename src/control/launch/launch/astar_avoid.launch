@@ -12,9 +12,9 @@
   <!--arg name="costmap_topic" default="occupancy_grid" /-->
   <arg name="enable_avoidance" default="true" />
   <arg name="avoid_waypoints_velocity" default="10.0" />
-  <arg name="avoid_start_velocity" default="10" /><!--1.8-->
-  <arg name="replan_interval" default="0.0" /><!--2.0-->
-  <arg name="search_waypoints_size" default="80" />
+  <arg name="avoid_start_velocity" default="1.8" /><!--1.8-->
+  <arg name="replan_interval" default="2.0" /><!--2.0-->
+  <arg name="search_waypoints_size" default="60" />
   <arg name="search_waypoints_delta" default="2" />
   <arg name="closest_search_size" default="30" />
 
@@ -22,10 +22,10 @@
   <arg name="use_back" default="false" />
   <arg name="use_potential_heuristic" default="true" />
   <arg name="use_wavefront_heuristic" default="false" />
-  <arg name="time_limit" default="5000.0" /><!--2000-->
+  <arg name="time_limit" default="20000.0" /><!--5000-->
   <arg name="robot_length" default="9.4" /><!--8-->
   <arg name="robot_width" default="4.2" /><!--4.6-->
-  <arg name="robot_base2back" default="3.4" /><!--7.2-->
+  <arg name="robot_base2back" default="3.4" /><!--7.2 3.4-->
   <arg name="minimum_turning_radius" default="10.0" /><!--6.0-->
   <arg name="theta_size" default="48" />
   <arg name="curve_weight" default="1.2" />
