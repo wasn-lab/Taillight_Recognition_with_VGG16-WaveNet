@@ -19,6 +19,6 @@ fi
 
 catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=1
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ${EXTRA_CATKIN_ARGS}
 
 popd

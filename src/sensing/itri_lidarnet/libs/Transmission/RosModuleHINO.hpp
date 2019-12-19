@@ -438,13 +438,19 @@ class RosModuleHINO
         markerArray.markers[i].color.a = 1.0;
         markerArray.markers[i].lifetime = ros::Duration (0.1);
 
-        markerArray.markers[i].points.resize(cluster_info[i].convex_hull.size ());
+        markerArray.markers[i].points.resize(cluster_info[i].convex_hull.size ()+1);
         for (size_t j = 0; j < cluster_info[i].convex_hull.size (); ++j)
         {
           markerArray.markers[i].points[j].x = cluster_info[i].convex_hull.points[j].x;
           markerArray.markers[i].points[j].y = cluster_info[i].convex_hull.points[j].y;
           markerArray.markers[i].points[j].z = cluster_info[i].convex_hull.points[j].z;
+          if(j == (cluster_info[i].convex_hull.size ()-1)){
+            markerArray.markers[i].points[j+1].x = cluster_info[i].convex_hull.points[0].x;
+            markerArray.markers[i].points[j+1].y = cluster_info[i].convex_hull.points[0].y;
+            markerArray.markers[i].points[j+1].z = cluster_info[i].convex_hull.points[0].z;
+          }
         }
+
       }
       LidarDetectionRVIZ_pub.publish (markerArray);
     }

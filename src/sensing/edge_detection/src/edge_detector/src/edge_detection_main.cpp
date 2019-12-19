@@ -72,9 +72,6 @@ static nav_msgs::OccupancyGrid out_occupancy_dense_grid;
 static ros::Publisher ring_edge_pointcloud_publisher;
 static sensor_msgs::PointCloud2 ring_edge_pointcloud_publisher_msg;
 
-static ros::Publisher pub_costmap;
-static grid_map_msgs::GridMap out_gridmap_msg;
-
 static bool is_FT_grid_new, is_FR_grid_new, is_FL_grid_new;
 static bool is_init_merged_map, is_init_FT_map, is_init_FR_map;
 
@@ -128,7 +125,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -138,7 +135,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         *filtered_scan_ptr += *LidAll_cloudPtr;
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -153,7 +150,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
         TOPED.startThread ();
         TOPED.waitThread();
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
 
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
@@ -238,7 +235,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         }
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -334,7 +331,7 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         scopedLock.unlock();
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -384,7 +381,7 @@ void callback_LidarFrontLeft(const sensor_msgs::PointCloud2::ConstPtr& msg)
         is_FL_grid_new = true;
 
         scopedLock.unlock();
-#ifdef PRINT_TIME
+#if PRINT_TIME
         std::chrono::high_resolution_clock::time_point check_ms = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -415,7 +412,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -425,7 +422,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         *filtered_scan_ptr += *LidAll_cloudPtr;
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -440,7 +437,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
         TOPED.startThread ();
         TOPED.waitThread();
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
 
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
@@ -521,7 +518,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         }
 
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -566,11 +563,11 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
                 ring_edge_pointcloud_publisher_msg.header.frame_id = "/base_link";
                 ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
         }
-#ifdef PRINT_TIME
+#if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
-        std::cout << "[Time] Top main function " << fp_ms.count() << "ms\n";
+        std::cout << "[Time] LidarAll main function " << fp_ms.count() << "ms\n";
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
 #endif
 }
@@ -626,7 +623,6 @@ int main(int argc, char **argv)
 
         occupancy_grid_publisher = n.advertise<nav_msgs::OccupancyGrid>("occupancy_grid", 1, true);
         pub_occupancy_dense_grid = n.advertise<nav_msgs::OccupancyGrid>("occupancy_dense_grid", 1, true);
-        pub_costmap= n.advertise<grid_map_msgs::GridMap>("cost_map", 1, true);
 
         ring_edge_pointcloud_publisher = n.advertise<sensor_msgs::PointCloud2>("ring_edge_point_cloud", 1, false);
 

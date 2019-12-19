@@ -5,9 +5,8 @@
 
 #include "UseApproxMVBB.h"
 #include "NoiseFilter.h"
-
+#include "VoxelGrid_CUDA.h"
 #include "DBSCAN_CUDA.h"
-
 
 #define TAG_RAW    -2
 #define TAG_DROP   -1
