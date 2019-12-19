@@ -7,6 +7,7 @@
 using namespace cv;
 class Projector2 {
 private:
+  const float RADIUS = (M_PI / 180);
   //當前的相機內外參
   CalibrateParameters current_parameters_;
   //旋轉矩陣

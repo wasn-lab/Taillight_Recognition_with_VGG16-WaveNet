@@ -104,13 +104,13 @@ void Projector2::initMatrixR() {
   degree[2] = current_parameters_.get_degree_z();
 
   //將角度轉換為弧度並計算sin與cos值
-  float radius = (M_PI / 180);
-  float cos_x = cosf(degree[0] * radius);
-  float sin_x = sinf(degree[0] * radius);
-  float cos_y = cosf(degree[1] * radius);
-  float sin_y = sinf(degree[1] * radius);
-  float cos_z = cosf(degree[2] * radius);
-  float sin_z = sinf(degree[2] * radius);
+ 
+  float cos_x = cosf(degree[0] * RADIUS);
+  float sin_x = sinf(degree[0] * RADIUS);
+  float cos_y = cosf(degree[1] * RADIUS);
+  float sin_y = sinf(degree[1] * RADIUS);
+  float cos_z = cosf(degree[2] * RADIUS);
+  float sin_z = sinf(degree[2] * RADIUS);
 
   // X軸Y軸Z軸各自的旋轉矩陣
   float rx_array[9] = {cos_x, -sin_x, 0, sin_x, cos_x, 0, 0, 0, 1};
