@@ -10,6 +10,16 @@ sudo apt-get install ros-kinetic-image-transport
 sudo apt-get install ros-kinetic-cv-bridge 
 ```
 
+### Compile (Important!!!)
+
+Please choose Release mode.
+
+If not, the module will run slowly.
+
+```
+catkin_make -DCMAKE_BUILD_TYPE=Release
+```
+
 ### How to run
 
 car 1:
