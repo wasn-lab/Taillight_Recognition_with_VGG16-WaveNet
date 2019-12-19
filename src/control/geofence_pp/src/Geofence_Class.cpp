@@ -46,6 +46,7 @@ struct Point  Geofence::findDirection(){
             temp.Y = this->PathPoints[i].Y - this->PathPoints[i-1].Y;
             dir.X = this->PathPoints[i].X;
             dir.Y = this->PathPoints[i].Y;
+            cout << "i: " << i << endl;
             break;
         }
     }
