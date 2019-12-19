@@ -117,5 +117,5 @@ Merge made by the 'recursive' strategy.
 
 #### 要如何啟動merge request的builder做clean build?
 
-為了快速執行完pipeline, builder會在package.xml或cmake檔案（CMakeLists.txt或*.cmake)有改動時才會做clean build,
-故只要任一個cmake檔有改動（如加一個空白行），然後commit上去，builder就會做clean build。
+為了快速執行完pipeline, builder會在package.xml有改動時才會做clean build,
+故只要任一個package.xml檔有改動（如加一個空白行），然後commit上去，builder就會做clean build。

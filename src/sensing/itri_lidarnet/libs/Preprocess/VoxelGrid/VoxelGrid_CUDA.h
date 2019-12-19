@@ -18,8 +18,6 @@ class VoxelGrid_CUDA
     VoxelGrid_CUDA ();
     ~VoxelGrid_CUDA ();
 
-    int
-    getNumberOfAvailableThreads ();
     void
     coutMemoryStatus ();
     bool
@@ -31,6 +29,8 @@ class VoxelGrid_CUDA
              float resolution);
   private:
     static bool hasInitialCUDA;
+    static int  maxThreadsNumber;
+
 };
 
 #endif

@@ -20,6 +20,12 @@
 #include <cv_bridge/cv_bridge.h>
 #include <map>
 
+// 0 front center
+// 1 front left
+// 2 front right
+// 3 tracking front center
+#define CAM_INDEX 3
+
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -35,6 +41,7 @@
 #endif
 
 #define M_PIl 3.141592653589793238462643383279502884L /* pi */
+#define NUM_FEATURES 1174
 
 namespace ped
 {
@@ -55,13 +62,15 @@ public:
   unsigned int buffer_size = 60;
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
-  std::vector<cv::Point> get_openpose_keypoint(cv::Mat input_image);
-  double crossing_predict(double bb_x1, double bb_y1, double bb_x2, double bb_y2, std::vector<cv::Point> keypoint);
-  double* get_triangle_angle(double x1, double y1, double x2, double y2, double x3, double y3);
-  double get_distance2(double x1, double y1, double x2, double y2);
-  double get_angle2(double x1, double y1, double x2, double y2);
-  double predict_rf(cv::Mat input_data);
-  double predict_rf_pose(cv::Mat input_data);
+  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
+  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint);
+  float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
+  float get_distance2(float x1, float y1, float x2, float y2);
+  float get_angle2(float x1, float y1, float x2, float y2);
+  float predict_rf(cv::Mat input_data);
+  float predict_rf_pose(cv::Mat input_data);
+  float get_abs(float input);
+
   cv::dnn::Net net_openpose;
   cv::Ptr<cv::ml::RTrees> rf;
   cv::Ptr<cv::ml::RTrees> rf_pose;
@@ -73,6 +82,10 @@ public:
   bool g_enable = false;
   bool g_trigger = false;
   int count;
+  int cross_threshold = 55; // percentage
+  double scaling_ratio_width = 0.3167;
+  double scaling_ratio_height = 0.3179;
+  int number_keypoints = 25;
 };
 }  // namespace ped
 

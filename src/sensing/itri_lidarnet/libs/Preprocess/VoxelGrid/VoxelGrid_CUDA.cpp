@@ -1,9 +1,11 @@
 #include "VoxelGrid_CUDA.h"
 
 bool VoxelGrid_CUDA::hasInitialCUDA = false;
+int VoxelGrid_CUDA::maxThreadsNumber = 0;
 
 VoxelGrid_CUDA::VoxelGrid_CUDA ()
 {
+
   if (!hasInitialCUDA)
   {
     cudaError_t err = ::cudaSuccess;
@@ -11,35 +13,30 @@ VoxelGrid_CUDA::VoxelGrid_CUDA ()
     if (err != ::cudaSuccess){
       return;
     }
+
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties (&prop, 0);
+
+    if (prop.major == 2)
+    {
+      maxThreadsNumber = prop.maxThreadsPerBlock / 2;
+    }
+    else if (prop.major > 2)
+    {
+      maxThreadsNumber = prop.maxThreadsPerBlock;
+    }
+    else
+    {
+      maxThreadsNumber = 0;
+    }
+
     hasInitialCUDA = true;
   }
+
 }
 
 VoxelGrid_CUDA::~VoxelGrid_CUDA ()
 {
-}
-
-int
-VoxelGrid_CUDA::getNumberOfAvailableThreads ()
-{
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties (&prop, 0);
-
-  int threads = 0;
-  if (prop.major == 2)
-  {
-    threads = prop.maxThreadsPerBlock / 2;
-  }
-  else if (prop.major > 2)
-  {
-    threads = prop.maxThreadsPerBlock;
-  }
-  else
-  {
-    return 0;
-  }
-
-  return threads;
 }
 
 void
@@ -67,21 +64,16 @@ bool
 VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
                               float resolution)
 {
-  cudaError_t err = ::cudaSuccess;
-  err = cudaSetDevice (0);
-  if (err != ::cudaSuccess)
-    return false;
-
+  cudaError_t err;
   gridParameters rgd_params;
   pcl::PointXYZ * d_point_cloud;
   hashElement* d_hashTable = NULL;
   bucket* d_buckets = NULL;
   bool* d_markers;
   bool* h_markers;
-  int threads = getNumberOfAvailableThreads ();
 
   //std::cout << "CUDA code will use " << threads << " device threads" << std::endl;
-  if (threads == 0)
+  if (maxThreadsNumber == 0)
     return false;
 
   err = cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(pcl::PointXYZ));
@@ -118,7 +110,7 @@ VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   if (err != ::cudaSuccess)
     return false;
 
-  err = cudaCalculateGrid (threads, d_point_cloud, d_buckets, d_hashTable, point_cloud.points.size (), rgd_params);
+  err = cudaCalculateGrid (maxThreadsNumber, d_point_cloud, d_buckets, d_hashTable, point_cloud.points.size (), rgd_params);
   if (err != ::cudaSuccess)
     return false;
 
@@ -126,7 +118,7 @@ VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   if (err != ::cudaSuccess)
     return false;
 
-  err = cudaDownSample (threads, d_markers, d_hashTable, d_buckets, rgd_params, point_cloud.points.size ());
+  err = cudaDownSample (maxThreadsNumber, d_markers, d_hashTable, d_buckets, rgd_params, point_cloud.points.size ());
   if (err != ::cudaSuccess)
     return false;
 
@@ -144,7 +136,6 @@ VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   }
 
   //std::cout << "Number of points before down-sampling: " << point_cloud.size() << std::endl;
-
   point_cloud = downsampled_point_cloud;
   //std::cout << "Number of points after down-sampling: " << point_cloud.size() << std::endl;
 
@@ -194,3 +185,4 @@ VoxelGrid_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
 
   return out_cloud;
 }
+

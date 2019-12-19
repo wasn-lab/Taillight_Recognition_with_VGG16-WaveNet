@@ -7,7 +7,7 @@ norm_mean (float* mean_ptr,
            float phi_center)
 {
 
-  if (data_set.compare ("hino"))
+  if (data_set.compare (0, data_set.size()-1, "hino")==0)
   {
     switch (ViewType)
     {
@@ -60,7 +60,17 @@ norm_mean (float* mean_ptr,
         cout << "No matched ViewType found !!!!!!!!!!" << endl;
     }
   }
-  else if (data_set.compare ("kitti"))
+  else if (data_set.compare(0, data_set.size()-1, "b")==0)
+  {
+    float INPUT_MEAN[4][5] = {{0.04, -0.99, 0.08, 2.53, 1.12}, {1.73, 0.08, 0.08, 2.79, 1.95}, {-0.02, 1.84, 0.12, 4.64, 2.08}, {-1.79, 0.19, 0.11, 2.68, 2.00}};
+
+    float phi_range = 90.0;
+    int phi_center_ind = int(phi_center / phi_range) + 1;
+
+    for (size_t i = 0; i < 5; i++)
+      mean_ptr[i] = INPUT_MEAN[phi_center_ind][i];
+  }
+  else if (data_set.compare (0, data_set.size()-1, "kitti")==0)
   {
     float INPUT_MEAN[5] = { 10.88, 0.23, -1.04, 0.21, 12.12 };
 
@@ -88,7 +98,7 @@ norm_std (float* std_ptr,
           float phi_center)
 {
 
-  if (data_set.compare ("hino"))
+  if (data_set.compare (0, data_set.size()-1, "hino")==0)
   {
     switch (ViewType)
     {
@@ -141,7 +151,17 @@ norm_std (float* std_ptr,
         cout << "No matched ViewType found !!!!!!!!!!" << endl;
     }
   }
-  else if (data_set.compare ("kitti"))
+  else if (data_set.compare(0, data_set.size()-1, "b")==0)
+  {
+    float INPUT_STD[4][5] = {{2.03, 3.86, 0.56, 10.09, 4.38}, {5.24, 2.56, 0.77, 9.56, 5.81}, {2.67, 5.05, 0.73, 13.54, 5.69}, {6.18, 2.81, 0.77, 10.18, 6.79}};
+
+    float phi_range = 90.0;
+    int phi_center_ind = int(phi_center / phi_range) + 1;
+
+    for (size_t i = 0; i < 5; i++)
+      std_ptr[i] = INPUT_STD[phi_center_ind][i];
+  }
+  else if (data_set.compare (0, data_set.size()-1, "kitti")==0)
   {
     float INPUT_STD[5] = { 11.47, 6.91, 0.86, 0.16, 12.32 };
 
@@ -158,29 +178,6 @@ norm_std (float* std_ptr,
 
     for (size_t i = 0; i < 5; i++)
       std_ptr[i] = INPUT_STD[phi_center_ind][i];
-  }
-
-}
-
-float
-proj_center (string data_set,
-             int index)
-{
-
-  if (data_set.compare ("hino"))
-  {
-    float CENTER[2] = { -2, -1.4 };   // {x,z}
-    return CENTER[index];
-  }
-  else if (data_set.compare ("kitti"))
-  {
-    float CENTER[2] = { 0, 0 };       // {x,z}
-    return CENTER[index];
-  }
-  else
-  {
-    float CENTER[2] = { -2.5, -0.6 };   // {x,z}, temporaly used for b1 test, wil be reset to {-2.5,-1.4} for letting hino as default
-    return CENTER[index];
   }
 
 }
@@ -247,6 +244,8 @@ TF_inference::TF_inference (string input_data_set,
   SSNspan_config (SPAN_PARA, ViewType, phi_center);
   x_projCenter = proj_center (data_set, 0);
   z_projCenter = proj_center (data_set, 1);
+  theta_UPbound = SSNtheta_config (data_set, 0);
+  theta_range = SSNtheta_config (data_set, 1);
 }
 
 TF_inference::~TF_inference ()
@@ -327,7 +326,7 @@ TF_inference::TF_run (VPointCloud::Ptr release_Cloud,
 {
   stopWatch.reset ();
 
-  VPointCloudXYZID filtered_cloud = sph_proj (release_Cloud, phi_center, SPAN_PARA[0], SPAN_PARA[1]);
+  VPointCloudXYZID filtered_cloud = sph_proj (release_Cloud, phi_center, SPAN_PARA[0], SPAN_PARA[1], theta_UPbound, theta_range);
 
   //-----------------------------------------------------------------------
   int layer_TFnum = 5;
