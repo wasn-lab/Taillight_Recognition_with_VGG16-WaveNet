@@ -73,6 +73,6 @@
     <node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
     
     <!-- target pub node-->
-    <node pkg="target_planner" type="target_planner" name="target_planner"/> <!-- output="screen" /-->
+    <node pkg="target_planner" type="target_planner" name="target_planner" /> <!--output="screen" /-->
 
 </launch>

@@ -12,7 +12,7 @@
 	<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true"  />
 	<node pkg="geofence" type="geofence" name="geofence" output="screen" cwd="node" respawn="true"  />
-	<node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  />
+	<!--node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  /-->
 	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
 		<param name="Path_flag" value="0" type="int"/>
 	</node-->
