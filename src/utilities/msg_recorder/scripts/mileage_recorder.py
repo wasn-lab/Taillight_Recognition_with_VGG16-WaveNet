@@ -73,7 +73,7 @@ def _flag_info_02_CB(data):
     The callback function of vehicle info.
     """
     global is_manual_brake, manual_brake_Q
-    print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
+    # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
 
     # 0: no manual brake, 1: manually braked
     is_manual_brake_now = data.Dspace_Flag07 > 0.5
@@ -137,7 +137,7 @@ def main(sys_args):
     #--------------------------------------#
     # Subscriber
     rospy.Subscriber("/veh_info", VehInfo, _veh_info_CB)
-    rospy.Subscriber("/Flag_Info02", VehInfo, _flag_info_02_CB)
+    rospy.Subscriber("/Flag_Info02", Flag_Info, _flag_info_02_CB)
     # Publisher
     #--------------------------------------#
 
