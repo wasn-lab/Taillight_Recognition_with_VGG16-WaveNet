@@ -1,0 +1,11 @@
+#---------------------#
+start_at_begining:  false # Determin if it's going to start rosbag record when the program begin
+#---------------------#
+
+# I/O setting
+#-----------------------------------#
+output_dir_tmp:     ~/rosbag_files/mileage 
+mileage_name_prefix:    mileage
+#-----------------------------------#
+
+

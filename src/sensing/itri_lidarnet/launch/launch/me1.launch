@@ -1,0 +1,94 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+<arg name="set_group_1" value="/OS1"/>
+<arg name="set_group_2" value="/OS2"/>
+<arg name="set_group_3" value="/OS3"/>
+
+
+<group ns="$(arg set_group_1)">
+	<arg name="os1_hostname" default="192.168.0.221" doc="hostname or IP in dotted decimal form of the sensor"/>
+	<arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
+	<arg name="os1_lidar_port" default="7521" doc="port to which the sensor should send lidar data"/>
+	<arg name="os1_imu_port" default="7501" doc="port to which the sensor should send imu data"/>
+	<arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
+	<arg name="lidar_mode" default="1024x20" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
+	<arg name="metadata" default="" doc="override default metadata file for replays"/>
+	<arg name="frame_id" default="lidar_os1"/>
+
+	<node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" required="true">
+	  <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
+	  <param name="~/replay" value="$(arg replay)"/>
+	  <param name="~/os1_hostname" value="$(arg os1_hostname)"/>
+	  <param name="~/os1_udp_dest" value="$(arg os1_udp_dest)"/>
+	  <param name="~/os1_lidar_port" value="$(arg os1_lidar_port)"/>
+	  <param name="~/os1_imu_port" value="$(arg os1_imu_port)"/>
+	  <param name="~/metadata" value="$(arg metadata)"/>
+	  
+	</node>
+
+	<node pkg="ouster_ros" type="os1_cloud_node" name="os1_cloud_node" output="screen" required="true">
+	  <remap from="$(arg set_group_1)/os1_cloud_node/os1_config" to="$(arg set_group_1)/os1_node/os1_config"/>
+	  <remap from="$(arg set_group_1)/os1_cloud_node/lidar_packets" to="$(arg set_group_1)/os1_node/lidar_packets"/>
+	  <remap from="$(arg set_group_1)/os1_cloud_node/points" to="/LidarOS1"/>
+	  <param name="~/frame_id" value="$(arg frame_id)"/>
+	</node>
+</group>
+
+<group ns="$(arg set_group_2)">
+	<arg name="os1_hostname" default="192.168.0.222" doc="hostname or IP in dotted decimal form of the sensor"/>
+	<arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
+	<arg name="os1_lidar_port" default="7522" doc="port to which the sensor should send lidar data"/>
+	<arg name="os1_imu_port" default="7502" doc="port to which the sensor should send imu data"/>
+	<arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
+	<arg name="lidar_mode" default="1024x20" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
+	<arg name="metadata" default="" doc="override default metadata file for replays"/>
+	<arg name="frame_id" default="lidar_os2"/>
+
+	<node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" required="true">
+	  <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
+	  <param name="~/replay" value="$(arg replay)"/>
+	  <param name="~/os1_hostname" value="$(arg os1_hostname)"/>
+	  <param name="~/os1_udp_dest" value="$(arg os1_udp_dest)"/>
+	  <param name="~/os1_lidar_port" value="$(arg os1_lidar_port)"/>
+	  <param name="~/os1_imu_port" value="$(arg os1_imu_port)"/>
+	  <param name="~/metadata" value="$(arg metadata)"/>
+	</node>
+
+	<node pkg="ouster_ros" type="os1_cloud_node" name="os1_cloud_node" output="screen" required="true">
+	  <remap from="$(arg set_group_2)/os1_cloud_node/os1_config" to="$(arg set_group_2)/os1_node/os1_config"/>
+	  <remap from="$(arg set_group_2)/os1_cloud_node/lidar_packets" to="$(arg set_group_2)/os1_node/lidar_packets"/>
+	  <remap from="$(arg set_group_2)/os1_cloud_node/points" to="/LidarOS2"/>
+	  <param name="~/frame_id" value="$(arg frame_id)"/>
+	</node>
+</group>
+
+<group ns="$(arg set_group_3)">
+	<arg name="os1_hostname" default="192.168.0.223" doc="hostname or IP in dotted decimal form of the sensor"/>
+	<arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
+	<arg name="os1_lidar_port" default="7523" doc="port to which the sensor should send lidar data"/>
+	<arg name="os1_imu_port" default="7503" doc="port to which the sensor should send imu data"/>
+	<arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
+	<arg name="lidar_mode" default="1024x20" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
+	<arg name="metadata" default="" doc="override default metadata file for replays"/>
+	<arg name="frame_id" default="lidar_os3"/>
+
+	<node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" required="true">
+	  <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
+	  <param name="~/replay" value="$(arg replay)"/>
+	  <param name="~/os1_hostname" value="$(arg os1_hostname)"/>
+	  <param name="~/os1_udp_dest" value="$(arg os1_udp_dest)"/>
+	  <param name="~/os1_lidar_port" value="$(arg os1_lidar_port)"/>
+	  <param name="~/os1_imu_port" value="$(arg os1_imu_port)"/>
+	  <param name="~/metadata" value="$(arg metadata)"/>
+	</node>
+
+	<node pkg="ouster_ros" type="os1_cloud_node" name="os1_cloud_node" output="screen" required="true">
+	  <remap from="$(arg set_group_3)/os1_cloud_node/os1_config" to="$(arg set_group_3)/os1_node/os1_config"/>
+	  <remap from="$(arg set_group_3)/os1_cloud_node/lidar_packets" to="$(arg set_group_3)/os1_node/lidar_packets"/>
+	  <remap from="$(arg set_group_3)/os1_cloud_node/points" to="/LidarOS3"/>
+	  <param name="~/frame_id" value="$(arg frame_id)"/>
+	</node>
+</group>
+
+</launch>

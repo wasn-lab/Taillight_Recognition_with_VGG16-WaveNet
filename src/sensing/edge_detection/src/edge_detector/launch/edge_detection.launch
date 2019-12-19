@@ -12,7 +12,7 @@
   <arg name="grid_position_y" default="0"/>
   <arg name="maximum_lidar_height_thres" default="5"/>
   <arg name="minimum_lidar_height_thres" default="-5"/>
-  <arg name="LidarAll_flag" default="true"/>
+  <arg name="LidarAll_flag" default="false"/>
 
   <node pkg="edge_detection" type="edge_detection_node" name="edge_detection" output="screen">
     <param name="theta_sample" value="$(arg theta_sample)"/>
