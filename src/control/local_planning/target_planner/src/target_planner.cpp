@@ -53,7 +53,7 @@ double Look_ahead_S0 = 3;
 double current_velocity_ = 0;
 
 bool current_pose_ini = false;
-bool mmtp_ini = false;
+bool ukfmm_ini = false;
 bool final_path_ini = false;
 bool current_velocity_initialized_ = false;
 
@@ -61,7 +61,7 @@ bool checkInitialized()
 {
   bool initialized = false;
   // check for relay mode
-  initialized = (current_pose_ini && mmtp_ini && final_path_ini);
+  initialized = (current_pose_ini && ukfmm_ini && final_path_ini);
   return initialized;
 }
 
@@ -192,7 +192,7 @@ void ukfmm_callback(const target_planner::UKF_MM_msg::ConstPtr& UKFMMmsg)
   current_pose_ukf.yaw = UKFMMmsg->X_UKF_SLAM[2];
   current_pose_ukf.speed = UKFMMmsg->X_UKF_SLAM[4];
   Look_ahead_time = UKFMMmsg->Look_ahead_time;
-  mmtp_ini = true; 
+  ukfmm_ini = true; 
 }
 
 void final_waypoints_callback(const nav_msgs::Path& SWmsg)
