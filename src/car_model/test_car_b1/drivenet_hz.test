@@ -1,0 +1,11 @@
+<launch>
+    <include file="$(find drivenet)/launch/b1_drivenet_60.launch"/>
+    <include file="$(find drivenet)/launch/b1_drivenet_120_1.launch"/>
+    <include file="$(find drivenet)/launch/b1_drivenet_120_2.launch"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/my_record_2019-11-27-16-36-54.bag" required="true">
+    </node>
+
+    <node pkg="car_model" type="calc_hz.py" name="calc_hz" output="screen" required="true" args="--duration 60">
+    </node>
+</launch>

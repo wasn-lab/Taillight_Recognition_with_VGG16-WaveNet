@@ -1,0 +1,77 @@
+---
+bags:
+- auto_record_2019-12-17-14-50-28_29.bag
+- auto_record_2019-12-17-14-50-55_0.bag
+- auto_record_2019-12-17-14-50-57_1.bag
+- auto_record_2019-12-17-14-50-59_2.bag
+- auto_record_2019-12-17-14-51-01_3.bag
+- auto_record_2019-12-17-14-51-03_4.bag
+reason: key-in
+timestamp: 2019-12-17 14:50:59.761322
+
+---
+bags:
+- auto_record_2019-12-17-14-50-57_1.bag
+- auto_record_2019-12-17-14-50-59_2.bag
+- auto_record_2019-12-17-14-51-01_3.bag
+- auto_record_2019-12-17-14-51-03_4.bag
+- auto_record_2019-12-17-14-51-05_5.bag
+- auto_record_2019-12-17-14-51-07_6.bag
+reason: key-in
+timestamp: 2019-12-17 14:51:04.671280
+
+---
+bags:
+- auto_record_2019-12-17-14-50-59_2.bag
+- auto_record_2019-12-17-14-51-01_3.bag
+- auto_record_2019-12-17-14-51-03_4.bag
+- auto_record_2019-12-17-14-51-05_5.bag
+- auto_record_2019-12-17-14-51-07_6.bag
+- auto_record_2019-12-17-14-51-09_7.bag
+reason: key-in
+timestamp: 2019-12-17 14:51:05.744918
+
+---
+bags:
+- auto_record_2019-12-17-14-51-03_4.bag
+- auto_record_2019-12-17-14-51-05_5.bag
+- auto_record_2019-12-17-14-51-07_6.bag
+- auto_record_2019-12-17-14-51-09_7.bag
+- auto_record_2019-12-17-14-51-11_8.bag
+- auto_record_2019-12-17-14-51-13_9.bag
+reason: key-in
+timestamp: 2019-12-17 14:51:10.306567
+
+---
+bags:
+- auto_record_2019-12-17-14-51-03_4.bag
+- auto_record_2019-12-17-14-51-05_5.bag
+- auto_record_2019-12-17-14-51-07_6.bag
+- auto_record_2019-12-17-14-51-09_7.bag
+- auto_record_2019-12-17-14-51-11_8.bag
+- auto_record_2019-12-17-14-51-13_9.bag
+reason: key-in
+timestamp: 2019-12-17 14:51:09.762465
+
+---
+bags:
+- auto_record_2019-12-17-14-51-03_4.bag
+- auto_record_2019-12-17-14-51-05_5.bag
+- auto_record_2019-12-17-14-51-07_6.bag
+- auto_record_2019-12-17-14-51-09_7.bag
+- auto_record_2019-12-17-14-51-11_8.bag
+- auto_record_2019-12-17-14-51-13_9.bag
+reason: key-in
+timestamp: 2019-12-17 14:51:10.807445
+
+---
+bags:
+- auto_record_2019-12-17-14-51-07_6.bag
+- auto_record_2019-12-17-14-51-09_7.bag
+- auto_record_2019-12-17-14-51-11_8.bag
+- auto_record_2019-12-17-14-51-13_9.bag
+- auto_record_2019-12-17-14-51-15_10.bag
+- auto_record_2019-12-17-14-51-17_11.bag
+reason: key-in
+timestamp: 2019-12-17 14:51:13.479491
+

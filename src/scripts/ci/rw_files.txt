@@ -1,6 +1,5 @@
 .c
 .cc
-.cfg
 .cmake
 .cpp
 .cu
