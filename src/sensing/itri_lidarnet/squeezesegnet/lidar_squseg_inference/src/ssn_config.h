@@ -3,12 +3,13 @@
 
 
 #include <string>
-#include "preprolib_squseg.h"
-#include "tf_utils.hpp"
 #include <boost/filesystem.hpp> 
 #include <pcl/common/time.h>
 #include <ros/ros.h>
 #include <ros/package.h>
+
+#include "preprolib_squseg.h"
+#include "tf_utils.hpp"
 
 
 namespace BFS = boost::filesystem;
@@ -17,8 +18,6 @@ namespace BFS = boost::filesystem;
 void norm_mean(float* mean_ptr,string data_set,char ViewType,float phi_center);
 
 void norm_std(float* std_ptr, string data_set,char ViewType,float phi_center);
-
-float proj_center(string data_set, int index);
 
 vector<float> phi_center_grid(char ViewType);
 
@@ -50,8 +49,10 @@ class TF_inference
 
     float INPUT_MEAN[5], INPUT_STD[5];
     float SPAN_PARA[2];                 // {span, imagewidth}
-    float x_projCenter = 0;
-    float z_projCenter = 0;
+    float x_projCenter = 0.0;
+    float z_projCenter = 0.0;
+    float theta_UPbound = 0.0;
+    float theta_range = 0.0;
 
     pcl::StopWatch stopWatch;
 };

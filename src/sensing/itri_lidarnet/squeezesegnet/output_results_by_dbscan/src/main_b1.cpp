@@ -29,6 +29,14 @@ int heartBeat;
 std::atomic<float> LinearAcc[3];
 
 StopWatch stopWatch;
+std::atomic<uint32_t> latencyTime[2];
+
+void
+callback_Clock (const rosgraph_msgs::Clock& msg)
+{
+  latencyTime[0] = msg.clock.sec;
+  latencyTime[1] = msg.clock.nsec;
+}
 
 void
 callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
@@ -53,7 +61,20 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 
     if (stopWatch.getTimeSeconds () > 0.05)
     {
-      cout << "[DBSCAN]: " << stopWatch.getTimeSeconds () << "s" << " rosTime: " << rosTime << endl << endl;
+      cout << "[DBSCAN]: " << stopWatch.getTimeSeconds () << "s" << endl << endl;
+    }
+
+    double latency = (ros::Time::now () - rosTime).toSec();
+    if (latency > 0 && latency < 3)
+    {
+      cout << "[Latency]: real-time " << latency << endl << endl;
+    }
+    else
+    {
+      latency = (ros::Time (latencyTime[0], latencyTime[1]) - rosTime).toSec();
+      if (latency > 0 && latency < 3){
+        cout << "[Latency]: bag " << latency << endl << endl;
+      }
     }
 
 #if ENABLE_DEBUG_MODE == true
@@ -102,18 +123,19 @@ main (int argc,
   RosModuleB1::initial ("output_results_by_dbscan", argc, argv);
   RosModuleB1::RegisterCallBackSSN (callback_SSN);
   RosModuleB1::RegisterCallBackIMU (callback_IMU);
+  RosModuleB1::RegisterCallBackClock (callback_Clock);
   cout << "[" << ros::this_node::getName () << "] " << "----------------------------startup" << endl;
 
   cout.setf (std::ios_base::fixed, std::ios_base::floatfield);
   cout.precision (3);
 
 #if ENABLE_DEBUG_MODE == true
-  RosModuleHINO::RegisterCallBackLidarAll (callback_LidarAll);
+  RosModuleB1::RegisterCallBackLidarAll (callback_LidarAll);
 
   viewer = boost::shared_ptr<pcl::visualization::PCLVisualizer> (new pcl::visualization::PCLVisualizer ("PCL HDL Cloud"));
   pcl::visualization::Camera cam;
   cam = CompressFunction ().CamPara (7.122, -7.882, 71.702, 0.991, 0.003, 0.135, 15.755, -0.407, 8.052, 7.489, 143.559, 0.857, 0.857, 0.000, 0.000, 332.000,
-                                     1028.000);
+      1028.000);
   viewer->initCameraParameters ();
   viewer->addCoordinateSystem (3.0);  //red:x green:y
   viewer->setBackgroundColor (0, 0, 0);
@@ -121,16 +143,19 @@ main (int argc,
   viewer->setShowFPS (false);
 #endif
 
-  ros::Rate loop_rate (10);
+  ros::AsyncSpinner spinner (2);
+  spinner.start ();
+
+  ros::Rate loop_rate (40);
   while (ros::ok ())
   {
     heartBeat++;
     if (heartBeat > 30)
     {
-      cout << "[DBSCAN]:no input" << endl;
+      cout << "[DBSCAN]:no input " << heartBeat << endl;
+      ros::Rate(1).sleep();
     }
-    ++viewID;
-    ros::spinOnce ();
+    //ros::spinOnce ();
     loop_rate.sleep ();
   }
 

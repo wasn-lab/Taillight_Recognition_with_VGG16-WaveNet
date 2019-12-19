@@ -22,7 +22,7 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     *ptr_cur_cloud = *msg;
     //cout << "[raw data       ]:" << ptr_cur_cloud->size () << endl;
 
-    *ptr_cur_cloud = CuboidFilter ().pass_through_soild<PointXYZI> (ptr_cur_cloud, -50, 50, -10, 10, -5, 0);
+    *ptr_cur_cloud = CuboidFilter ().pass_through_soild<PointXYZI> (ptr_cur_cloud, -50, 50, -25, 25, -5, 0);
     *ptr_cur_cloud = CuboidFilter ().hollow_removal<PointXYZI> (ptr_cur_cloud, -6.6, 0.9, -1.45, 1.45, -5,0);
     //cout << "[pass through   ]:" << ptr_cur_cloud->size () << "," << timer_algorithm_running.getTimeSeconds () << "s" << endl;
 
@@ -84,7 +84,7 @@ main (int argc,
   thread TheadDetection (UI, argc, argv);
 #endif
 
-  ros::Rate loop_rate (10);
+  ros::Rate loop_rate (15);
   while (ros::ok ())
   {
     ros::spinOnce ();
