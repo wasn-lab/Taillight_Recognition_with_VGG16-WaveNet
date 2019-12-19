@@ -30,9 +30,9 @@ enum class common_type_id
   bus,            // 5
   truck           // 6
 };
-
+                                      
 int translate_label(int label);
-cv::Scalar get_labelColor(std::vector<cv::Scalar> colors, int label_id);
-cv::Scalar get_commonLabelColor(std::vector<cv::Scalar> colors, int label_id);
+cv::Scalar get_labelColor(int label_id);
+cv::Scalar get_commonLabelColor(int label_id);
 }
 #endif /*OBJECTLABELUTIL_H_*/
