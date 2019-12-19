@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    #msg
    MM_TP_msg.msg
+   UKF_MM_msg.msg
    #MM_TP_input_msg.msg
  )
 

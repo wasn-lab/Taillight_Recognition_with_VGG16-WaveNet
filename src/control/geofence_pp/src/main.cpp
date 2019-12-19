@@ -50,7 +50,7 @@ static double Heading, SLAM_x, SLAM_y;
 static Geofence BBox_Geofence;
 static double Ego_speed_ms;
 static int PP_Stop=0;
-ros::Publisher PP_geofence;
+ros::Publisher PP_geofence_line;
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
@@ -97,12 +97,12 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	BBox_Geofence.setPath(Position);
 }
 
-void Publish_Marker_Radar(Point temp)
+void Publish_Marker_PP(Point temp)
 { 
 
 	visualization_msgs::Marker line_list;
   	line_list.header.frame_id = "/map";
-  	line_list.header.stamp = ros::Time::now();
+  	//line_list.header.stamp = ros::Time::now();
 	line_list.ns = "PP_line";
     line_list.action = visualization_msgs::Marker::ADD;
     line_list.pose.orientation.w = 1.0;
@@ -120,7 +120,7 @@ void Publish_Marker_Radar(Point temp)
 	p.x = temp.X - 1.5*cos(temp.Speed);
     p.y = temp.Y - 1.5*sin(temp.Speed);
 	line_list.points.push_back(p);	
-	PP_geofence.publish(line_list); 
+	PP_geofence_line.publish(line_list); 
 }
 
 
@@ -202,9 +202,9 @@ int main(int argc, char **argv){
 	#elif defined RADARBOX
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPP);
 	#else
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
 	#endif
-	PP_geofence = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
+	PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
 
 
 	ros::Rate loop_rate(10);
