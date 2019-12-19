@@ -1,12 +1,18 @@
 #!/usr/bin/env python2
 
-from geometry_msgs.msg import Point
-from msgs.msg import DetectedObjectArray
+
 import rospy
+from std_msgs.msg import (
+    Bool,
+)
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
+
+from geometry_msgs.msg import Point
+from msgs.msg import DetectedObjectArray
 from rosgraph_msgs.msg import Clock
 #
+import numpy as np
 import fps_calculator as FPS
 
 BOX_ORDER = [
@@ -46,8 +52,11 @@ class Node:
 
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
+        self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
         # FPS
         self.fps_cal = FPS.FPS()
+        # Depth
+        self.is_showing_depth = True
 
     def run(self):
         rospy.spin()
@@ -55,13 +64,16 @@ class Node:
     def clock_CB(self, msg):
         self.t_clock = msg.clock
 
+    def req_show_depth_CB(self, msg):
+        self.is_showing_depth = msg.data
+
     def text_marker_position(self, bbox):
         point_1 = bbox.p1
         point_2 = bbox.p6
         p = Point()
-        p.x = (point_1.x + point_2.x) * 0.5
+        p.x = (point_1.x + point_2.x) * 0.5 + 2.0
         p.y = (point_1.y + point_2.y) * 0.5
-        p.z = (point_1.z + point_2.z) * 0.5 + 2.0
+        p.z = (point_1.z + point_2.z) * 0.5
         return p
 
     def text_marker_position_origin(self):
@@ -71,21 +83,39 @@ class Node:
         p.z = 2.0
         return p
 
+    def _calculate_depth_bbox(self, bbox):
+        """
+        The depth of a bbox is simply the x value of p0.
+        """
+        return abs(bbox.p0.x)
+
+    def _calculate_distance_bbox(self, bbox):
+        """
+        The distance of a bbox is the Euclidean distance between origin and (p0+p4)/2.
+        """
+        point_1 = np.array( (bbox.p0.x, bbox.p0.y) )
+        point_2 = np.array( (bbox.p4.x, bbox.p4.y) )
+        return (0.5 * np.linalg.norm( (point_1 + point_2) ) )
+
     def detection_callback(self, message):
         current_stamp = rospy.get_rostime()
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
         box_list = MarkerArray()
         delay_list = MarkerArray()
+        box_list.markers.append(self.create_bounding_box_list_marker(1, message.header, message.objects ) )
+        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps ) )
         # idx = 1
         # for i in range(len(message.objects)):
         #     # point = self.text_marker_position(message.objects[i].bPoint)
         #     box_list.markers.append( self.create_bounding_box_marker( idx, message.header, message.objects[i].bPoint) )
         #     # delay_list.markers.append( self.create_delay_text_marker( idx, message.header, point) )
         #     idx += 1
-        box_list.markers.append(self.create_bounding_box_list_marker(1, message.header, message.objects ) )
-        #
-        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps ) )
+        if self.is_showing_depth:
+            idx = 2
+            for i in range(len(message.objects)):
+                box_list.markers.append( self.create_depth_text_marker( idx, message.header, message.objects[i].bPoint, i) )
+                idx += 1
         #
         self.box_mark_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
@@ -170,29 +200,55 @@ class Node:
 
 
     def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None):
+        """
+        Generate a text marker for showing latency and FPS.
+        """
+        # Generate text
+        if len(str(self.delay_prefix)) > 0:
+            text = "[%s] " % str(self.delay_prefix)
+        else:
+            text = ""
+        text += "%.3fms" % ((current_stamp - header.stamp).to_sec() * 1000.0)
+        if not fps is None:
+            text += " fps = %.1f" % fps
+        #
+        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_delay"), scale=2.0 )
+
+    def create_depth_text_marker(self, idx, header, bbox, bbox_id=None):
+        """
+        Generate a text marker for showing latency and FPS.
+        """
+        point = self.text_marker_position( bbox )
+        # depth = self._calculate_depth_bbox( bbox )
+        depth = self._calculate_distance_bbox( bbox )
+        # Generate text
+        if bbox_id is None:
+            text = "D=%.2fm" % ( depth )
+        else:
+            text = "[%d]D=%.2fm" % (bbox_id, depth )
+        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_depth"), scale=2.0 )
+
+
+    def text_marker_prototype(self, idx, header, text, point=Point(), ns="T", scale=2.0):
+        """
+        Generate the prototype of text
+        """
         marker = Marker()
         marker.header.frame_id = header.frame_id
         marker.header.stamp = header.stamp
-        marker.ns = self.inputTopic + "_d"
+        marker.ns = ns
         marker.action = Marker.ADD
         marker.id = idx
         marker.type = Marker.TEXT_VIEW_FACING
         # marker.scale.x = 10.0
         # marker.scale.y = 1.0
-        marker.scale.z = 2.0
+        marker.scale.z = scale
         marker.lifetime = rospy.Duration(1.0)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
         marker.color.a = 1.0
-        # marker.text = "%.3fms" % ((rospy.get_rostime() - header.stamp).to_sec() * 1000.0)
-        if len(str(self.delay_prefix)) > 0:
-            marker.text = "[%s] " % str(self.delay_prefix)
-        else:
-            marker.text = ""
-        marker.text += "%.3fms" % ((current_stamp - header.stamp).to_sec() * 1000.0)
-        if not fps is None:
-            marker.text += " fps = %.1f" % fps
+        marker.text = text
 
         marker.pose.position.x = point.x
         marker.pose.position.y = point.y
@@ -201,7 +257,6 @@ class Node:
         marker.pose.orientation.y = 0.0
         marker.pose.orientation.z = 0.0
         marker.pose.orientation.w = 1.0
-
         return marker
 
 

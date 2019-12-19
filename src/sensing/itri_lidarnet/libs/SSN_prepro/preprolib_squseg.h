@@ -22,8 +22,9 @@ using namespace std;
 
 int getdir(string dir, vector<string> &filenames);
 int ILcomb(string inputname_i, string inputname_l, VPointCloudXYZIL::Ptr cloud_il);
-VPointCloudXYZIDL sph_proj(VPointCloudXYZIL::Ptr cloud_il, const float phi_center, const float phi_range, const float imageWidth);
-VPointCloudXYZID sph_proj(VPointCloud::Ptr cloud_i, const float phi_center, const float phi_range, const float imageWidth);
+VPointCloudXYZIDL sph_proj(VPointCloudXYZIL::Ptr cloud_il, const float phi_center, const float phi_range, const float imageWidth, const float theta_UPbound, const float theta_range);
+VPointCloudXYZID sph_proj(VPointCloud::Ptr cloud_i, const float phi_center, const float phi_range, const float imageWidth, const float theta_UPbound, const float theta_range);
 void SSNspan_config(float *OUT_ptr, const char ViewType, const float phi_center);
-
+float proj_center(string data_set, int index);
+float SSNtheta_config(string data_set, int index);
 #endif
