@@ -40,12 +40,13 @@ struct Point  Geofence::findDirection(){
     Point temp;
     dir.X = 1000;
     dir.X = 1000;
-    for(int i=1;i<this->PathLength.size();i++){
+    for(int i=2;i<this->PathLength.size();i++){
         if(this->PathLength[i] > this->Distance){
             temp.X = this->PathPoints[i].X - this->PathPoints[i-1].X;
             temp.Y = this->PathPoints[i].Y - this->PathPoints[i-1].Y;
             dir.X = this->PathPoints[i].X;
             dir.Y = this->PathPoints[i].Y;
+            cout << "i: " << i << endl;
             break;
         }
     }
