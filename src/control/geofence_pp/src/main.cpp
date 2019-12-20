@@ -110,7 +110,7 @@ void Plot_geofence(Point temp)
 	line_list.id = 1;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
 	line_list.scale.x = 0.1;
-	line_list.color.r = 1.0;
+	line_list.color.b = 1.0;
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
