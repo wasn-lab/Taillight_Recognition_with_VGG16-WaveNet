@@ -97,13 +97,14 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	BBox_Geofence.setPath(Position);
 }
 
-void Publish_Marker_PP(Point temp)
+void Plot_geofence(Point temp)
 { 
 
 	visualization_msgs::Marker line_list;
   	line_list.header.frame_id = "/map";
   	//line_list.header.stamp = ros::Time::now();
 	line_list.ns = "PP_line";
+	line_list.lifetime = ros::Duration(0.5);
     line_list.action = visualization_msgs::Marker::ADD;
     line_list.pose.orientation.w = 1.0;
 	line_list.id = 1;
@@ -142,9 +143,9 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 			if(msg->objects[i].track.is_ready_prediction==1)
 			{
 				Point_temp.X = msg->objects[i].track.forecasts[j].position.x;
-				cout << Point_temp.X << endl;
+				//cout << Point_temp.X << endl;
 				Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
-				cout << Point_temp.Y << endl;
+				//cout << Point_temp.Y << endl;
 				Point_temp.Speed = msg->objects[i].relSpeed;
 				PointCloud_temp.push_back(Point_temp);
 				/*
@@ -185,11 +186,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 				//Plot geofence PP
-				Point temp;
-				temp.X = BBox_Geofence.findDirection().X;
-				temp.Y = BBox_Geofence.findDirection().Y;
-				temp.Speed = BBox_Geofence.findDirection().Speed;
-				Publish_Marker_PP(temp);
+				Plot_geofence(BBox_Geofence.findDirection());
 			}
 			if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back)){
 				//cout << "Collision appears" << endl;

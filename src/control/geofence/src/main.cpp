@@ -55,6 +55,7 @@ static double Heading, SLAM_x, SLAM_y;
 //static uint Deadend_flag;
 static uint avoiding_path_flag;
 ros::Publisher Radar_marker;
+ros::Publisher Geofence_line;
 
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
@@ -206,7 +207,7 @@ void Publish_Marker_Radar(double X, double Y)
     marker.id = 0;
     marker.type = shape;
     marker.action = visualization_msgs::Marker::ADD;
-	marker.lifetime = ros::Duration();
+	marker.lifetime = ros::Duration(0.5);
 
 	marker.pose.position.x = X;
     marker.pose.position.y = Y;
@@ -228,6 +229,33 @@ void Publish_Marker_Radar(double X, double Y)
     marker.color.a = 1.0;
 
     Radar_marker.publish(marker);  
+}
+
+void Plot_geofence(Point temp)
+{ 
+
+	visualization_msgs::Marker line_list;
+  	line_list.header.frame_id = "/map";
+  	//line_list.header.stamp = ros::Time::now();
+	line_list.ns = "PC_line";
+	line_list.lifetime = ros::Duration(0.5);
+    line_list.action = visualization_msgs::Marker::ADD;
+    line_list.pose.orientation.w = 1.0;
+	line_list.id = 1;
+    line_list.type = visualization_msgs::Marker::LINE_LIST;
+	line_list.scale.x = 0.1;
+	line_list.color.g = 1.0;
+  	line_list.color.a = 1.0;
+
+	geometry_msgs::Point p;
+    p.x = temp.X + 1.5*sin(temp.Speed);
+    p.y = temp.Y + 1.5*cos(temp.Speed);
+    p.z = -3.0;
+	line_list.points.push_back(p);
+	p.x = temp.X - 1.5*sin(temp.Speed);
+    p.y = temp.Y - 1.5*cos(temp.Speed);
+	line_list.points.push_back(p);	
+	Geofence_line.publish(line_list); 
 }
 
 
@@ -253,6 +281,7 @@ int main(int argc, char **argv){
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPCloud);
 	#endif
 	Radar_marker = n.advertise<visualization_msgs::Marker>("RadarMarker", 1);
+	Geofence_line = n.advertise<visualization_msgs::Marker>("Geofence_line", 1);
 	ros::Publisher Geofence_PC = n.advertise<std_msgs::Float64>("Geofence_PC", 1);; 
 	ros::Rate loop_rate(20);
 
@@ -298,7 +327,11 @@ int main(int argc, char **argv){
 			nbytes = write(s, &frame, sizeof(struct can_frame));
 			std_msgs::Float64 Geofence_temp;
 			Geofence_temp.data = PCloud_Geofence.getDistance_w();
-			Geofence_PC.publish(Geofence_temp);  
+			Geofence_PC.publish(Geofence_temp);
+
+			Point temp;
+			temp = PCloud_Geofence.findDirection();
+			Plot_geofence(temp);  
 		}
 		else{
 			cerr << "Please initialize all PCloud parameters first" << endl;
@@ -324,14 +357,6 @@ int main(int argc, char **argv){
 			frame.data[7] = (short int)(BBox_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
 			//Publish_Marker(BBox_Geofence.getNearest_X(), BBox_Geofence.getNearest_Y());
-			/*
-			frame.can_id  = 0x599;
-			cout << "Deadend_flag: " << Deadend_flag << " ";
-			frame.data[0] = (short int)(Deadend_flag);
-			frame.data[1] = (short int)(Deadend_flag)>>8;
-			nbytes = write(s, &frame, sizeof(struct can_frame));
-			*/
-			
 		}
 		else{
 			cerr << "Please initialize all BBox parameters first" << endl;
