@@ -20,9 +20,9 @@ set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_normalization.yml"
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_3frames_normalization.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 ca81a33f18d06f6011d206d3ac9b790d
+    MD5 ff1ce2293391cf50f224edc76bf4f022
 )
 catkin_download_test_data(
     ped_models_rf
@@ -93,7 +93,8 @@ include_directories(
 
 set(CPP_FILES
     src/pedestrian_event.cpp
-    src/Get_keypoints_and_predict.cpp
+    src/buffer.cpp
+    src/buffer_node.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})

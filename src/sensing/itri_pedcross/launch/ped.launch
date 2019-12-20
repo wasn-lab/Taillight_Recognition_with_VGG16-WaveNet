@@ -9,7 +9,7 @@
   <rosparam param="input_source">3</rosparam>
 
   <!-- Set max distance(m) to predict pedestrians -->
-  <rosparam param="max_distance">10</rosparam>
+  <rosparam param="max_distance">50</rosparam>
 
   <!-- TPP input/output FPS -->
   <rosparam param="input_fps">5</rosparam>

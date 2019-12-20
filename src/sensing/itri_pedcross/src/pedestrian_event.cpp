@@ -155,8 +155,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
         for (unsigned int i = 0; i < body_part_size; i++)
         {
-          // keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.width / obj_pub.camInfo.width;
-          // keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj.camInfo.width / obj_pub.camInfo.width;
           if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
           {
             count_points++;
@@ -165,13 +163,15 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           }
         }
         if (has_keypoint)
-          obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                                      obj.camInfo.v + obj.camInfo.height, keypoints);
+          obj_pub.crossProbability =
+              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                               obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
         else
         {
           std::vector<cv::Point2f> no_keypoint;
-          obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                                      obj.camInfo.v + obj.camInfo.height, no_keypoint);
+          obj_pub.crossProbability =
+              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                               obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id, msg->header.stamp);
         }
         pedObjs.push_back(obj_pub);
 
@@ -298,7 +298,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 // extract features and pass to random forest model
 // return cross probability
 float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2,
-                                        std::vector<cv::Point2f> keypoint)
+                                        std::vector<cv::Point2f> keypoint, int id, ros::Time time)
 {
   try
   {
@@ -370,11 +370,28 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
           }
         }
       }
+
+      //  Buffer first frame
+      if (buffer.timestamp == ros::Time(0))
+      {
+        buffer.timestamp = time;
+      }
+      //  new frame
+      else if (buffer.timestamp != time)
+      {
+        buffer.timestamp = time;
+        buffer.check_life();
+      }
+      feature = buffer.add(id, feature);
+
+#if USE_GLOG
+      buffer.display();
+#endif
       // Convert vector to array
-      static float feature_arr[NUM_FEATURES];
+      static float feature_arr[FEATURE_NUM * FRAME_NUM];
       std::copy(feature.begin(), feature.end(), feature_arr);
       // Convert array to Mat
-      cv::Mat feature_mat = cv::Mat(1, NUM_FEATURES, CV_32F, feature_arr);
+      cv::Mat feature_mat = cv::Mat(1, FEATURE_NUM * FRAME_NUM, CV_32F, feature_arr);
       // Predict
       float predict_result = predict_rf_pose(feature_mat);
 
@@ -630,7 +647,7 @@ int main(int argc, char** argv)
   system(bash.c_str());
   pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
   pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf.yml"));
-  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_1frames_normalization.yml"));
+  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_3frames_normalization.yml"));
 
   ros::NodeHandle nh;
   pe.chatter_pub =
@@ -646,6 +663,7 @@ int main(int argc, char** argv)
   nh.getParam("/max_distance", pe.max_distance);
 
   pe.imageCache = boost::circular_buffer<std::pair<ros::Time, cv::Mat> >(pe.buffer_size);
+  pe.buffer.initial(FEATURE_NUM, FRAME_NUM, 5);  // 5 is life time
 
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
