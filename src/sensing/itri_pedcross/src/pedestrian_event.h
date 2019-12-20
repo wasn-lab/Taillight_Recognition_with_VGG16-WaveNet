@@ -6,6 +6,7 @@
 #include <ros/callback_queue.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/Image.h>
+#include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
@@ -63,7 +64,7 @@ public:
   float get_angle2(float x1, float y1, float x2, float y2);
   float predict_rf(cv::Mat input_data);
   float predict_rf_pose(cv::Mat input_data);
-  float get_abs(float input);
+  bool too_far(const msgs::BoxPoint box_point);
 
   cv::dnn::Net net_openpose;
   cv::Ptr<cv::ml::RTrees> rf;
@@ -73,17 +74,17 @@ public:
   ros::Publisher box_pub;
   ros::Publisher pose_pub;
   ros::Time total_time;
-  //std::deque<std::pair<ros::Time, cv::Mat> > imageCache;
-  boost::circular_buffer< std::pair<ros::Time, cv::Mat> > imageCache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat> > imageCache;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
-  const int cross_threshold = 55; // percentage
+  const int cross_threshold = 55;  // percentage
   const double scaling_ratio_width = 0.3167;
   const double scaling_ratio_height = 0.3179;
   const int number_keypoints = 25;
   bool show_probability = true;
   int input_source = 0;
+  float max_distance = 50;
 };
 }  // namespace ped
 

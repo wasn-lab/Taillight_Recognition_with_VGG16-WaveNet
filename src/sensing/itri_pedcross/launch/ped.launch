@@ -8,6 +8,9 @@
   <!-- 3: tracking with camera front center -->
   <rosparam param="input_source">3</rosparam>
 
+  <!-- Set max distance(m) to predict pedestrians -->
+  <rosparam param="max_distance">10</rosparam>
+
   <!-- TPP input/output FPS -->
   <rosparam param="input_fps">5</rosparam>
   <rosparam param="output_fps">10</rosparam>
@@ -18,7 +21,7 @@
   <rosparam param="m_lifetime_sec">0</rosparam>
 
   <!-- rviz markers -->
-  <!-- true: show probabiliy -->
+  <!-- true : show probabiliy -->
   <!-- false: not show probability -->
   <rosparam param="show_probability">true</rosparam>
 
