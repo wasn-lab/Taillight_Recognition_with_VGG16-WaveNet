@@ -63,9 +63,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
     std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
-    for (std::vector<msgs::DetectedObject>::const_iterator it = msg->objects.begin(); it != msg->objects.end(); ++it)
+    for (auto const& obj : msg->objects)
     {
-      msgs::DetectedObject obj = *it;
       if (obj.classId == 1)  // 1 for people
       {
         if (too_far(obj.bPoint))
@@ -240,9 +239,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       cv::Rect box;
 
       // draw each pedestrian's bbox and cross probablity
-      for (std::vector<msgs::PedObject>::const_iterator it = msg_pub.objects.begin(); it != msg_pub.objects.end(); ++it)
+      for (auto const& obj : msg_pub.objects)
       {
-        msgs::PedObject obj = *it;
         box.x = obj.camInfo.u;
         box.y = obj.camInfo.v;
         box.width = obj.camInfo.width;
