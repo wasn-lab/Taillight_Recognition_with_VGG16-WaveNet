@@ -21,12 +21,6 @@
 #include <map>
 #include <boost/circular_buffer.hpp>
 
-// 0 front center
-// 1 front left
-// 2 front right
-// 3 tracking front center
-#define CAM_INDEX 3
-
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -89,6 +83,7 @@ public:
   const double scaling_ratio_height = 0.3179;
   const int number_keypoints = 25;
   bool show_probability = true;
+  int input_source = 0;
 };
 }  // namespace ped
 

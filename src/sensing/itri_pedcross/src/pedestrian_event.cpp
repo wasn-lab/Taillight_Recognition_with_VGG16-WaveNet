@@ -255,7 +255,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         if (p >= cross_threshold)
         {
           if (show_probability)
-            probability = "C(" + std::to_string(p / 100.) + "." + std::to_string(p % 100) + ")";
+            probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
           else
             probability = "C";
 
@@ -267,9 +267,9 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           if (show_probability)
           {
             if (p >= 10)
-              probability = "NC(" + std::to_string(p / 100.) + "." + std::to_string(p % 100) + ")";
+              probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
             else
-              probability = "NC(" + std::to_string(p / 100.) + ".0" + std::to_string(p % 100) + ")";
+              probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
           }
           else
             probability = "NC";
@@ -479,30 +479,36 @@ void PedestrianEvent::pedestrian_event()
   // Set custom callback queue
   hb_n.setCallbackQueue(&queue);
 
-#if CAM_INDEX == 0  // front center
-  ros::Subscriber sub = n.subscribe("/CamObjFrontCenter", 1, &PedestrianEvent::chatter_callback,
+  ros::Subscriber sub;
+  ros::Subscriber sub2;
+  if(input_source == 0)
+  {
+    sub = n.subscribe("/CamObjFrontCenter", 1, &PedestrianEvent::chatter_callback,
                                     this);  // /CamObjFrontCenter is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
                                         this);  // /cam/F_center is sub topic
-#endif
-#if CAM_INDEX == 1  // front left
-  ros::Subscriber sub = n.subscribe("/CamObjFrontLeft", 1, &PedestrianEvent::chatter_callback,
+  }
+  else if(input_source == 1)
+  {
+    sub = n.subscribe("/CamObjFrontLeft", 1, &PedestrianEvent::chatter_callback,
                                     this);  // /CamObjFrontLeft is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_left", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/F_left", 1, &PedestrianEvent::cache_image_callback,
                                         this);  // /cam/F_left is sub topic
-#endif
-#if CAM_INDEX == 2  //  front right
-  ros::Subscriber sub = n.subscribe("/CamObjFrontRight", 1, &PedestrianEvent::chatter_callback,
+  }
+  else if (input_source == 2)
+  {
+    sub = n.subscribe("/CamObjFrontRight", 1, &PedestrianEvent::chatter_callback,
                                     this);  // /CamObjFrontRight is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_right", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/F_right", 1, &PedestrianEvent::cache_image_callback,
                                         this);  // /cam/F_right is sub topic
-#endif
-#if CAM_INDEX == 3  //  tracking front center
-  ros::Subscriber sub = n.subscribe("/PathPredictionOutput/camera", 1, &PedestrianEvent::chatter_callback,
+  }
+  else // input_source == 3
+  {
+    sub = n.subscribe("/PathPredictionOutput/camera", 1, &PedestrianEvent::chatter_callback,
                                     this);  // /CamObjFrontRight is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
                                         this);  // /cam/F_right is sub topic
-#endif
+  }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner.reset(new ros::AsyncSpinner(0, &queue));
@@ -613,6 +619,7 @@ int main(int argc, char** argv)
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);
+  nh.getParam("/input_source", pe.input_source);
 
   pe.imageCache  = boost::circular_buffer< std::pair<ros::Time, cv::Mat> > (pe.buffer_size);
 

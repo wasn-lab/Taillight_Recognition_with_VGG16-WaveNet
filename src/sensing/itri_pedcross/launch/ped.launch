@@ -1,12 +1,12 @@
 <!-- -*- mode: XML -*- -->
 
 <launch>
-  <!-- TPP input source -->
-  <!-- 1: /LidarDetection -->
-  <!-- 2: /RadarDetection -->
-  <!-- 3: /DetectedObjectArray/cam60_1 -->
-  <!-- otherwise: /SensorFusion -->
-  <rosparam param="input_source">1</rosparam>
+  <!-- pedcross input source -->
+  <!-- 0: camera front center -->
+  <!-- 1: camera front left -->
+  <!-- 2: camera front right -->
+  <!-- 3: tracking with camera front center -->
+  <rosparam param="input_source">3</rosparam>
 
   <!-- TPP input/output FPS -->
   <rosparam param="input_fps">5</rosparam>
