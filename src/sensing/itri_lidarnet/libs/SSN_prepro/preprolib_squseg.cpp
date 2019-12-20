@@ -95,7 +95,7 @@ int ILcomb(string inputname_i, string inputname_l, VPointCloudXYZIL::Ptr cloud_i
 	
 }
 
-VPointCloudXYZIDL sph_proj(VPointCloudXYZIL::Ptr cloud_il, const float phi_center, const float phi_range, const float imageWidth)
+VPointCloudXYZIDL sph_proj(VPointCloudXYZIL::Ptr cloud_il, const float phi_center, const float phi_range, const float imageWidth, const float theta_UPbound, const float theta_range)
 {
 	// ======== select 90 deg. of front view ========
 	// float phi_range = 90.0;
@@ -105,8 +105,8 @@ VPointCloudXYZIDL sph_proj(VPointCloudXYZIL::Ptr cloud_il, const float phi_cente
 
 	// ======== selection of VOV ========
 	// float theta_range = 2.4-(-24.8);      // for KITTI dataset
-	float theta_range = 41.0;         // self-defined
-	float theta_UPbound = 18;
+	// float theta_range = 41.0;         // self-defined
+	// float theta_UPbound = 18.0;
 	float dtheta = theta_range / (imageHeight - 1);
 	float theta_LOWbound = theta_UPbound - dtheta * (imageHeight - 1);
 
@@ -165,7 +165,7 @@ VPointCloudXYZIDL sph_proj(VPointCloudXYZIL::Ptr cloud_il, const float phi_cente
 	return filtered_cloud;
 }
 
-VPointCloudXYZID sph_proj(VPointCloud::Ptr cloud_i, const float phi_center, const float phi_range, const float imageWidth)
+VPointCloudXYZID sph_proj(VPointCloud::Ptr cloud_i, const float phi_center, const float phi_range, const float imageWidth, const float theta_UPbound, const float theta_range)
 {
 
 	// ======== select 90 deg. of front view ========
@@ -176,8 +176,8 @@ VPointCloudXYZID sph_proj(VPointCloud::Ptr cloud_i, const float phi_center, cons
 
 	// ======== selection of VOV ========
 	// float theta_range = 2.4-(-24.8);      // for KITTI dataset
-	float theta_range = 41.0;         // self-defined
-	float theta_UPbound = 18;
+	// float theta_range = 41.0;         // self-defined
+	// float theta_UPbound = 18;
 	float dtheta = theta_range / (imageHeight - 1);
 	float theta_LOWbound = theta_UPbound - dtheta * (imageHeight - 1);
 
@@ -290,4 +290,60 @@ void SSNspan_config(float *OUT_ptr, const char ViewType, const float phi_center)
 	default:
 		cout << "No matched ViewType found !!!!!!!!!!" << endl;
 	}
+}
+
+float
+proj_center (string data_set,
+             int index)
+{
+
+  if (data_set.compare (0, data_set.size()-1, "hino")==0)
+  {
+    float CENTER[2] = { -2.0, -1.4 };   // {x,z}
+    return CENTER[index];
+  }
+  else if (data_set.compare (0, data_set.size()-1, "b")==0)
+  {
+    float CENTER[2] = { -3.0, -0.6 };       // {x,z}
+    return CENTER[index];
+  }
+  else if (data_set.compare (0, data_set.size()-1, "kitti")==0)
+  {
+    float CENTER[2] = { 0.0, 0.0 };       // {x,z}
+    return CENTER[index];
+  }
+  else
+  {
+    float CENTER[2] = { -2.5, -0.6 };   // {x,z}, temporaly used for b1 test to let hino model as default, wil be reset to {-3.0,-0.6}
+    return CENTER[index];
+  }
+
+}
+
+float
+SSNtheta_config (string data_set,
+             int index)
+{
+
+  if (data_set.compare (0, data_set.size()-1, "hino")==0)
+  {
+    float THETA_PARA[2] = { 18.0, 41.0 };   // {UPbound,range}
+    return THETA_PARA[index];
+  }
+  else if (data_set.compare (0, data_set.size()-1, "b")==0)
+  {
+    float THETA_PARA[2] = { 16.0, 35.0 };       // {UPbound,range}
+    return THETA_PARA[index];
+  }
+  else if (data_set.compare (0, data_set.size()-1, "kitti")==0)
+  {
+    float THETA_PARA[2] = { 2.4, 27.2 };       // {UPbound,range}
+    return THETA_PARA[index];
+  }
+  else
+  {
+    float THETA_PARA[2] = { 18.0, 41.0 };   // {UPbound,range} temporally used para of hino model for demo, will be reset to {16.0, 35.0}
+    return THETA_PARA[index];
+  }
+
 }

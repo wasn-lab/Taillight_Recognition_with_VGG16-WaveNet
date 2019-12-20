@@ -13,7 +13,12 @@ import datetime
 import shutil
 # Args
 import argparse
-
+#-------------------------#
+try:
+    import queue as Queue # Python 3.x
+except:
+    import Queue # Python 2.x
+#-------------------------#
 from std_msgs.msg import (
     Empty,
     Bool,
@@ -37,7 +42,99 @@ def erase_last_lines(n=1, erase=False):
             sys.stdout.write(ERASE_LINE)
 #---------------------------------------------------#
 
+class MOVE_QUEUE:
+    """
+    This is the class for handling the file copying.
+    """
+    def __init__(self, src_dir, dst_dir, num_move_thread=10):
+        """
+        This class is dedicated on doing the following command in an efficient way.
+            --> shutil.copy2( (self.src_dir + file_name), self.dst_dir)
+        - Prevent duplicated copying
+        - Prevent the blocking of copy2() (originally it won't return until the file-copying is done)
+            (x) To prevent the traffic jam that slows down the main recording, we just let it block...
+        """
+        self.src_dir = src_dir
+        self.dst_dir = dst_dir
+        #
+        self.file_Q = Queue.Queue()
+        self.moved_file_list = list()
+        #
+        self.num_move_thread = num_move_thread
+        self._move_thread_list = list()
+        # Start the polling thread
+        self._polling_thread = threading.Thread(target=self._move_file_listener)
+        self._polling_thread.daemon = True # Use daemon to prevent eternal looping
+        self._polling_thread.start()
 
+
+    def add_file(self, file_name):
+        """
+        This is the public function for entering the name of the file to e copied.
+        """
+        self.file_Q.put(file_name)
+
+    def _move_file_worker(self, file_name):
+        """
+        This is the worker for moving file (blocking function)
+        """
+        print("[MoveQ] Moving <%s>." % file_name)
+        # shutil.copy2( (self.src_dir + file_name), self.dst_dir)
+        shutil.move( (self.src_dir + file_name), self.dst_dir)
+        print("[MoveQ] Finishing moving <%s>." % file_name)
+
+    def _remove_idle_threads(self):
+        """
+        Remove idle threads
+        """
+        #--------------------------------#
+        _idx = 0
+        while _idx < len(self._move_thread_list):
+            if not self._move_thread_list[_idx].isAlive():
+                del self._move_thread_list[_idx]
+                # _idx = 0 # Re-start from beginning...
+                # NOTE: the _idx is automatically pointing to the next one
+            else:
+                _idx += 1
+        # print("[MoveQ] Number of thread busying = %d" % len(self._move_thread_list) )
+        #--------------------------------#
+
+    def _move_file_listener(self):
+        """
+        This is the thread worker function for listening the file names from queue.
+        """
+        while True:
+            # Note: this thread will only closed if this program is stopped
+            while not self.file_Q.empty():
+                self._remove_idle_threads()
+                if len(self._move_thread_list) >= self.num_move_thread:
+                    # The pool is full, keep waiting
+                    # print("[MoveQ] Copy thread pool is full, keep waiting.")
+                    break
+                a_file = self.file_Q.get()
+                print("[MoveQ] Get <%s> from list." % a_file)
+                if not a_file in self.moved_file_list:
+                    # The file has not been processed
+                    self.moved_file_list.append(a_file)
+                    # Really copy a file (blocked until finished)
+                    # print("[MoveQ] Copying <%s>." % a_file)
+                    # shutil.copy2( (self.src_dir + a_file), self.dst_dir)
+                    _t = threading.Thread(target=self._move_file_worker, args=(a_file,) )
+                    self._move_thread_list.append(_t)
+                    _t.start()
+                else:
+                    print("[MoveQ] Not to move <%s>." % a_file)
+                    # The file is already in the list, not doing copying
+                    pass
+            #
+            if len(self._move_thread_list) > 0:
+                self._remove_idle_threads()
+                print("[MoveQ] Number of thread busying = %d" % len(self._move_thread_list) )
+            #
+            time.sleep(0.2)
+
+
+#---------------------------------------------------#
 class ROSBAG_CALLER:
     """
     This is the function for handling the rosbag subprocess.
@@ -137,6 +234,16 @@ class ROSBAG_CALLER:
             print("The directry <%s> already exists." % self.output_dir_kept)
             pass
 
+        # Initialize the MOVE_QUEUE
+        self.moveQ = MOVE_QUEUE(self.output_dir_tmp, self.output_dir_kept)
+
+        # File list watcher
+        self.file_hist_list = list()
+        self._file_list_thread = threading.Thread(target=self._file_list_watcher)
+        self._file_list_thread.daemon = True # Use daemon to prevent eternal looping
+        self._file_list_thread.start()
+
+
     def attach_state_sender(self, sender_func):
         """
         This is a public method for binding a "publisher.publish" method
@@ -195,13 +302,13 @@ class ROSBAG_CALLER:
         else:
             return self.start(_warning)
 
-    def backup(self):
+    def backup(self, reason=""):
         """
         Backup all the files interset with time zone.
 
         Use a deamon thread to complete the work even if the program is killed.
         """
-        _t = threading.Thread(target=self._keep_files_before_and_after)
+        _t = threading.Thread(target=self._keep_files_before_and_after, args=(reason,))
         # _t.daemon = True
         _t.start()
 
@@ -282,6 +389,7 @@ class ROSBAG_CALLER:
             cmd_list += ["-a"]
         else:
             cmd_list += self.topic_list
+
         #
         print("")
         print("Executing command: %s" % cmd_list)
@@ -356,13 +464,33 @@ class ROSBAG_CALLER:
 
     # Backing up files
     #----------------------------------------------#
+    def _file_list_watcher(self):
+        """
+        This is the thread worker for listening the file list.
+        """
+        while True:
+            file_list = os.listdir(self.output_dir_tmp)
+            file_list.sort()
+            for i in range(len(file_list)):
+                if file_list[-1-i][-4:] != '.bag':
+                    # active file or other file type
+                    continue
+                # Note that if self.bag_name_prefix is '', then the following is bypassed
+                if file_list[-1-i][:len(self.bag_name_prefix)] != self.bag_name_prefix:
+                    # Not our bag
+                    continue
+                if not file_list[-1-i] in self.file_hist_list:
+                    self.file_hist_list.append( file_list[-1-i] )
+            time.sleep(0.2)
+
     def _get_latest_inactive_bag(self, timestamp=None):
         """
         This is a helper funtion for finding the latest (inactive) bag file.
         """
-        # file_list = dircache.listdir(self.output_dir_tmp) # Python 2.x only
-        file_list = os.listdir(self.output_dir_tmp)
-        file_list.sort() # Sort in ascending order
+        # # file_list = dircache.listdir(self.output_dir_tmp) # Python 2.x only
+        # file_list = os.listdir(self.output_dir_tmp)
+        # file_list.sort() # Sort in ascending order
+        file_list = sorted(self.file_hist_list)
         #
         if timestamp is None:
             target_date = datetime.datetime.now()
@@ -371,7 +499,10 @@ class ROSBAG_CALLER:
         target_date_formate = target_date.strftime("%Y-%m-%d-%H-%M-%S")
         # print('target_date = %s' % str(target_date))
         # print('target_date_formate = %s' % target_date_formate)
-        target_name_prefix_date = self.bag_name_prefix + '_' + target_date_formate
+        if self.bag_name_prefix == "":
+            target_name_prefix_date = target_date_formate
+        else:
+            target_name_prefix_date = self.bag_name_prefix + '_' + target_date_formate
         # print('target_name_prefix_date = %s' % target_name_prefix_date)
         # Seraching
         closest_file_name = None
@@ -382,6 +513,7 @@ class ROSBAG_CALLER:
             if file_list[-1-i][-4:] != '.bag':
                 # active file or other file type
                 continue
+            # Note that if self.bag_name_prefix is '', then the following is bypassed
             if file_list[-1-i][:len(self.bag_name_prefix)] != self.bag_name_prefix:
                 # Not our bag
                 continue
@@ -416,9 +548,10 @@ class ROSBAG_CALLER:
         """
         This is a helper funtion for finding the latest (inactive) bag file.
         """
-        # file_list = dircache.listdir(self.output_dir_tmp) # Python 2.x only
-        file_list = os.listdir(self.output_dir_tmp)
-        file_list.sort() # Sort in ascending order
+        # # file_list = dircache.listdir(self.output_dir_tmp) # Python 2.x only
+        # file_list = os.listdir(self.output_dir_tmp)
+        # file_list.sort() # Sort in ascending order
+        file_list = sorted(self.file_hist_list)
         #
         target_date_start = datetime.datetime.fromtimestamp(timestamp_start)
         if timestamp_end is None:
@@ -429,8 +562,12 @@ class ROSBAG_CALLER:
         target_date_end_formate = target_date_end.strftime("%Y-%m-%d-%H-%M-%S")
         # print('target_date_start_formate = %s' % target_date_start_formate)
         # print('target_date_end_formate = %s' % target_date_end_formate)
-        target_name_prefix_date_start = self.bag_name_prefix + '_' + target_date_start_formate
-        target_name_prefix_date_end = self.bag_name_prefix + '_' + target_date_end_formate
+        if self.bag_name_prefix == "":
+            target_name_prefix_date_start = target_date_start_formate
+            target_name_prefix_date_end = target_date_end_formate
+        else:
+            target_name_prefix_date_start = self.bag_name_prefix + '_' + target_date_start_formate
+            target_name_prefix_date_end = self.bag_name_prefix + '_' + target_date_end_formate
         # print('target_name_prefix_date_start = %s' % target_name_prefix_date_start)
         # print('target_name_prefix_date_end = %s' % target_name_prefix_date_end)
         # Seraching
@@ -454,7 +591,7 @@ class ROSBAG_CALLER:
         return file_in_zone_list
 
 
-    def _keep_files_before_and_after(self):
+    def _keep_files_before_and_after(self, reason=""):
         """
         To keep 2 files: before and after
 
@@ -480,7 +617,8 @@ class ROSBAG_CALLER:
         print("file_in_pre_zone_list = %s" % file_in_pre_zone_list)
         # Bacuk up "a.bag", note tha empty list is allowed
         for _F in file_in_pre_zone_list:
-            shutil.copy2( (self.output_dir_tmp + _F), self.output_dir_kept)
+            # shutil.copy2( (self.output_dir_tmp + _F), self.output_dir_kept)
+            self.moveQ.add_file(_F)
 
         """
         # Start a deamon thread for watching the "b.bag"
@@ -512,13 +650,14 @@ class ROSBAG_CALLER:
             #
             (closest_file_name, is_last) = self._get_latest_inactive_bag(_post_trigger_timestamp)
             if (not closest_file_name is None) and not closest_file_name in file_in_pre_zone_list:
-                shutil.copy2( (self.output_dir_tmp + closest_file_name), self.output_dir_kept)
+                # shutil.copy2( (self.output_dir_tmp + closest_file_name), self.output_dir_kept)
+                self.moveQ.add_file(closest_file_name)
                 file_in_pre_zone_list.append(closest_file_name)
             if not is_last:
                 break
             time.sleep(1.0)
         #
-        # Find all the rest "b.bag" files
+        # Find all the rest "b.bag" files (prevent the leak)
         # Note: most of them had been backuped
         file_in_post_zone_list = self._get_list_of_inactive_bag_in_timezone( _trigger_timestamp, _post_trigger_timestamp)
         print("file_in_post_zone_list = %s" % file_in_post_zone_list)
@@ -526,26 +665,32 @@ class ROSBAG_CALLER:
         for _F in file_in_post_zone_list:
             if not _F in file_in_pre_zone_list:
                 file_in_pre_zone_list.append(_F)
-                shutil.copy2( (self.output_dir_tmp + _F), self.output_dir_kept)
+                # shutil.copy2( (self.output_dir_tmp + _F), self.output_dir_kept)
+                self.moveQ.add_file(_F)
 
         # Write an indication text
         file_in_pre_zone_list.sort()
 
         triggered_datetime = datetime.datetime.fromtimestamp(_trigger_timestamp)
-        # triggered_datetime_s = target_date.strftime("%Y-%m-%d-%H-%M-%S")
-        event_str = "\n\n# Triggered at [%s]\n## backup-files:\n" % str(triggered_datetime)
-        for _F in file_in_pre_zone_list:
-            event_str += " - %s\n" % _F
-        event_str += "\n"
-
-        _fh = open(self.output_dir_kept + "backup_history.txt", "a")
-        # _fh.write("\n\n# Triggered at [%s]\n## backup-files:\n" % str(triggered_datetime) )
-        # # _fh.write(str(file_in_pre_zone_list))
+        # # triggered_datetime_s = target_date.strftime("%Y-%m-%d-%H-%M-%S")
+        # event_str = "\n\n# Triggered at [%s]\nReason: %s\n## backup-files:\n" % (str(triggered_datetime), reason )
         # for _F in file_in_pre_zone_list:
-        #     _fh.write(" - %s\n" % _F )
-        # _fh.write("\n")
-        _fh.write( event_str )
-        _fh.close()
+        #     event_str += " - %s\n" % _F
+        # event_str += "\n"
+
+        event_dict = dict()
+        event_dict["timestamp"] = triggered_datetime
+        event_dict["reason"] = reason
+        event_dict["bags"] = file_in_pre_zone_list
+        event_str = "---\n" + yaml.dump(event_dict) + "\n"
+
+        # _fh = open(self.output_dir_kept + "backup_history.txt", "a")
+        # _fh.write( event_str )
+        # _fh.close()
+
+        #
+        with open(self.output_dir_kept + "backup_history.txt", "a") as _fh:
+            _fh.write( event_str )
         #
         # Report by ROS topic
         self._report_event( event_str )
@@ -570,7 +715,7 @@ def _backup_trigger_callback(data):
     The callback function for operation command.
     """
     global _rosbag_caller
-    _rosbag_caller.backup()
+    _rosbag_caller.backup(reason=data.data)
 
 
 
@@ -699,7 +844,7 @@ def main(sys_args):
     #--------------------------------------#
     # Subscriber
     rospy.Subscriber("/REC/record", Bool, _record_cmd_callback)
-    rospy.Subscriber("/REC/req_backup", Empty, _backup_trigger_callback)
+    rospy.Subscriber("/REC/req_backup", String, _backup_trigger_callback)
     # Publisher
     _recorder_running_pub = rospy.Publisher("/REC/is_recording", Bool, queue_size=10, latch=True) #
     _recorder_running_pub.publish(False)
@@ -741,7 +886,7 @@ def main(sys_args):
             elif str_in == 'c': # Cut
                 _rosbag_caller.split(_warning=True)
             elif str_in == 'k': # Keep
-                _rosbag_caller.backup()
+                _rosbag_caller.backup(reason="key-in")
             elif str_in == 'q': # Quit
                 _rosbag_caller.stop(_warning=False)
                 break
