@@ -46,7 +46,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     cv::Mat matrix;
     for (int i = imageCache.size() - 1; i >= 0; i--)
     {
-      if (imageCache[i].first <= msg->header.stamp)
+      if (imageCache[i].first <= msg->header.stamp || i == 0)
       {
 #if USE_GLOG
         std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << msg->header.stamp << std::endl;
@@ -481,14 +481,14 @@ void PedestrianEvent::pedestrian_event()
 
   ros::Subscriber sub;
   ros::Subscriber sub2;
-  if(input_source == 0)
+  if (input_source == 0)
   {
     sub = n.subscribe("/CamObjFrontCenter", 1, &PedestrianEvent::chatter_callback,
                                     this);  // /CamObjFrontCenter is sub topic
     sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
                                         this);  // /cam/F_center is sub topic
   }
-  else if(input_source == 1)
+  else if (input_source == 1)
   {
     sub = n.subscribe("/CamObjFrontLeft", 1, &PedestrianEvent::chatter_callback,
                                     this);  // /CamObjFrontLeft is sub topic
