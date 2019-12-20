@@ -363,7 +363,7 @@ bool AstarSearch::search()
     // Goal check
     if (isGoal(current_an->x, current_an->y, current_an->theta))
     {
-      // ROS_INFO("Search time: %lf [msec]", (now - begin).toSec() * 1000.0);
+      ROS_INFO("Search time: %lf [msec]", (now - begin).toSec() * 1000.0);
       setPath(top_sn);
       return true;
     }

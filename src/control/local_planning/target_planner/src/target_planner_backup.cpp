@@ -37,7 +37,7 @@ double Look_ahead_S0 = 3;
 double current_velocity_ = 0;
 
 bool current_pose_ini = false;
-bool mmtp_ini = false;
+bool ukfmm_ini = false;
 bool final_path_ini = false;
 bool current_velocity_initialized_ = false;
 
@@ -45,7 +45,7 @@ bool checkInitialized()
 {
   bool initialized = false;
   // check for relay mode
-  initialized = (current_pose_ini && mmtp_ini && final_path_ini);
+  initialized = (current_pose_ini && ukfmm_ini && final_path_ini);
   return initialized;
 }
 
@@ -140,18 +140,17 @@ void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
   current_pose_ini = true;
 }
 
-void mmtp_callback(const target_planner::MM_TP_msg::ConstPtr& MMTPmsg)
+void ukfmm_callback(const target_planner::UKF_MM_msg::ConstPtr& UKFMMmsg)
 {
-  current_pose_ukf.x = MMTPmsg->X_UKF_SLAM[0];
-  current_pose_ukf.y = MMTPmsg->X_UKF_SLAM[1];
+  current_pose_ukf.x = UKFMMmsg->X_UKF_SLAM[0];
+  current_pose_ukf.y = UKFMMmsg->X_UKF_SLAM[1];
   current_pose_ukf.z = current_pose.z;
   current_pose_ukf.roll = current_pose.roll;
   current_pose_ukf.pitch = current_pose.pitch;
-  current_pose_ukf.yaw = MMTPmsg->X_UKF_SLAM[2];
-  current_pose_ukf.speed = MMTPmsg->X_UKF_SLAM[4];
-  Look_ahead_time = MMTPmsg->Look_ahead_time;
-  mmtp_ini = true;
-  
+  current_pose_ukf.yaw = UKFMMmsg->X_UKF_SLAM[2];
+  current_pose_ukf.speed = UKFMMmsg->X_UKF_SLAM[4];
+  Look_ahead_time = UKFMMmsg->Look_ahead_time;
+  ukfmm_ini = true; 
 }
 
 void final_waypoints_callback(const nav_msgs::Path& SWmsg)
@@ -171,7 +170,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "target_planner");
   ros::NodeHandle node;
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, currentposeCallback);
-  ros::Subscriber mmtp_sub = node.subscribe("mm_tp_topic", 1, mmtp_callback);
+  ros::Subscriber ukfmm_sub = node.subscribe("ukf_mm_topic", 1, ukfmm_callback);
   ros::Subscriber safety_waypoints_sub = node.subscribe("nav_path_astar_final", 1, final_waypoints_callback);
   ros::Subscriber velocity_sub = node.subscribe("veh_info",1,currentVelocityCallback);
   target_pub = node.advertise<geometry_msgs::PoseStamped>("target_point",1);
