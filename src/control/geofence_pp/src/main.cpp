@@ -83,18 +83,26 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 	BBox_Geofence.setPath(Position);
 }
 
+
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	double Resolution = 100;
-	for(int i=1;i<msg->poses.size();i++){
+	int size = 50;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+
+	double Resolution = 50;
+	for(int i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
 			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
 			Position.push_back(Pos);
 		}	
 	}
+	PCloud_Geofence.setPath(Position);
 	BBox_Geofence.setPath(Position);
+	Radar_Geofence.setPath(Position);
 }
 
 void Plot_geofence(Point temp)

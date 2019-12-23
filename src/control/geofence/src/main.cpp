@@ -162,7 +162,7 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	int size = 40;
+	int size = 50;
 	if (msg->poses.size()<size){
 		size = msg->poses.size(); 
 	}
