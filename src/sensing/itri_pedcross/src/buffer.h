@@ -4,9 +4,9 @@
 class Buffer
 {
 private:
-  unsigned int feature_num;
-  int frame_num;
-  int life;
+  unsigned int feature_num = 1174;
+  int frame_num = 3;
+  int life = 5;
   BufferNode* first;
   BufferNode* last;
 
