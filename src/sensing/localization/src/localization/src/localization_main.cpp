@@ -31,6 +31,7 @@
 #include <pthread.h>
 #include <sstream>
 #include <string>
+#include <std_msgs/Float64.h>
 
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -109,7 +110,7 @@ static bool south_map_loaded = false;
 
 static bool is_pose_init = 0;
 static int init_key_pose_flag = 0;
-
+static double map_mean_value = 0;
 #if CUDA
 static std::shared_ptr<gpu::GNormalDistributionsTransform> north_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
 static std::shared_ptr<gpu::GNormalDistributionsTransform> south_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
@@ -224,7 +225,9 @@ static bool is_heading_stable_ = true;
 
 static tf::StampedTransform local_transform;
 
+static double find_z_range = 10.0;
 static double traveling_distance = 0.0;
+
 static int points_map_num = 0;
 static double voxel_leaf_size = 0.6;
 static localization::VehInfo sbg;
@@ -402,6 +405,12 @@ static void initializePose(const struct pose &init_pose)
         std::cout << " initial_pose.yaw : " << initial_pose.yaw << std::endl;
 }
 
+void map_mean_value_callback(const std_msgs::Float64 &initial_input) {
+        map_mean_value = static_cast<double>(initial_input.data);
+        std::cout << " map_mean_value : " << map_mean_value << std::endl;
+
+}
+
 void rviz_initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& initial_input) {
 
 
@@ -411,17 +420,17 @@ void rviz_initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::C
         pcl::PointXYZI p_;
         p_.x =rviz_input_pose.x;
         p_.y =rviz_input_pose.y;
-        if (p_.x < 200)
+        if (p_.x < map_mean_value)
         {
                 p_.z = 0;
                 p_.intensity = 1;
-                p_.z = find_z(lidar_map_south, p_, 10.0);
+                p_.z = find_z(lidar_map_south, p_, find_z_range);
         }
-        else if (p_.x > 200)
+        else if (p_.x > map_mean_value)
         {
                 p_.z = 0;
                 p_.intensity = 1;
-                p_.z = find_z(lidar_map_north, p_, 10.0);
+                p_.z = find_z(lidar_map_north, p_, find_z_range);
         }
         rviz_input_pose.z = p_.z + 2.7;   //lidar height
 
@@ -640,17 +649,17 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 pcl::PointXYZI p_;
                 p_.x =current_gnss2local_pose.x;
                 p_.y =current_gnss2local_pose.y;
-                if (p_.x < 200)
+                if (p_.x < map_mean_value)
                 {
                         p_.z = 0;
                         p_.intensity = 1;
-                        p_.z = find_z(lidar_map_south, p_, 10.0);
+                        p_.z = find_z(lidar_map_south, p_, find_z_range);
                 }
-                else if (p_.x > 200)
+                else if (p_.x > map_mean_value)
                 {
                         p_.z = 0;
                         p_.intensity = 1;
-                        p_.z = find_z(lidar_map_north, p_, 10.0);
+                        p_.z = find_z(lidar_map_north, p_, find_z_range);
                 }
 
                 if (is_got_z_)
@@ -737,13 +746,13 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         }
                         pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
 
-                        if (use_ndt_gpu_ == true && current_pose.x > 200)
+                        if (use_ndt_gpu_ == true && current_pose.x > map_mean_value)
                         {
                                 north_gpu_ndt_mapping_ptr->setInputSource(scan_ptr);
 
                         }
 
-                        if (use_ndt_gpu_ == true && current_pose.x < 200)
+                        if (use_ndt_gpu_ == true && current_pose.x < map_mean_value)
                         {
                                 south_gpu_ndt_mapping_ptr->setInputSource(scan_ptr);
 
@@ -767,7 +776,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         Eigen::AngleAxisf init_rotation_z(predict_pose_for_ndt.yaw, Eigen::Vector3f::UnitZ());
                         Eigen::Matrix4f init_guess = (init_translation * init_rotation_z *init_rotation_y * init_rotation_x) *tf_btol;
 
-                        if (use_ndt_gpu_ == true && current_pose.x > 200)
+                        if (use_ndt_gpu_ == true && current_pose.x > map_mean_value)
                         {
                                 align_start = std::chrono::system_clock::now();
                                 north_gpu_ndt_mapping_ptr->align(init_guess);
@@ -783,7 +792,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
                         }
 
-                        if (use_ndt_gpu_ == true && current_pose.x < 200)
+                        if (use_ndt_gpu_ == true && current_pose.x < map_mean_value)
                         {
                                 align_start = std::chrono::system_clock::now();
                                 south_gpu_ndt_mapping_ptr->align(init_guess);
@@ -830,13 +839,13 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 {
 #endif
                 pthread_mutex_lock(&mutex);
-                if (use_ndt_gpu_ == true && current_pose.x > 200)
+                if (use_ndt_gpu_ == true && current_pose.x > map_mean_value)
                 {
                         north_gpu_ndt_ptr->setInputSource(filtered_scan_ptr);
 
                 }
 
-                if (use_ndt_gpu_ == true && current_pose.x < 200)
+                if (use_ndt_gpu_ == true && current_pose.x < map_mean_value)
                 {
                         south_gpu_ndt_ptr->setInputSource(filtered_scan_ptr);
 
@@ -861,7 +870,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                 Eigen::Matrix4f init_guess = (init_translation * init_rotation_z *init_rotation_y * init_rotation_x) *tf_btol;
 
 
-                if (use_ndt_gpu_ == true && current_pose.x > 200)
+                if (use_ndt_gpu_ == true && current_pose.x > map_mean_value)
                 {
                         align_start = std::chrono::system_clock::now();
                         north_gpu_ndt_ptr->align(init_guess);
@@ -875,7 +884,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         trans_probability = north_gpu_ndt_ptr->getTransformationProbability();
                 }
 
-                if (use_ndt_gpu_ == true && current_pose.x < 200)
+                if (use_ndt_gpu_ == true && current_pose.x < map_mean_value)
                 {
                         align_start = std::chrono::system_clock::now();
                         south_gpu_ndt_ptr->align(init_guess);
@@ -1020,7 +1029,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
                         added_pose.pitch = current_pose.pitch;
                         added_pose.yaw = current_pose.yaw;
 
-                        if (use_ndt_gpu_ == true && current_pose.x > 200)
+                        if (use_ndt_gpu_ == true && current_pose.x > map_mean_value)
                         {
                                 // *mapping_trg_ptr += *transformed_filtered_scan_ptr;
                                 *mapping_trg_ptr += new_sub_map;
@@ -1031,7 +1040,7 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
                         }
 
-                        if (use_ndt_gpu_ == true && current_pose.x < 200)
+                        if (use_ndt_gpu_ == true && current_pose.x < map_mean_value)
                         {
                                 // *mapping_trg_ptr += *transformed_filtered_scan_ptr;
                                 *mapping_trg_ptr += new_sub_map;
@@ -1484,6 +1493,7 @@ int main(int argc, char **argv) {
         // Subscribers
         ros::Subscriber LidFrontTopSub =nh.subscribe("LidarFrontTop", 1, callbackLidFrontTop);
         ros::Subscriber subRvizPose = nh.subscribe("/initialpose", 1, rviz_initialpose_callback);
+        ros::Subscriber mapMeaValueSub = nh.subscribe("map_mean_value", 1, map_mean_value_callback);
 
         // ros::Subscriber LidFrontTopSub =nh.subscribe("LidarFrontLeft", 1, callbackLidFrontTop);
 
