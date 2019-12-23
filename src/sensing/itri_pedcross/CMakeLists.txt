@@ -10,12 +10,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
-include_directories("/usr/local/cuda/include")
-link_directories("/usr/local/cuda/lib64") 
-
-include_directories("/opt/ros/kinetic/include")
-link_directories("/opt/ros/kinetic/lib") 
-
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
@@ -52,24 +46,20 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         msgs
+	cv_bridge
+	image_transport
 )
 
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
-  message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
+  message(FATAL_ERROR "libgflags not found. Please run\n ")
 endif ()
 
 find_package(Glog)
 
-find_package(OpenCV 3.4.3 REQUIRED
-             NO_MODULE
-             PATHS /usr/local /opt/ros/kinetic
-             NO_DEFAULT_PATH)
+find_package(OpenCV REQUIRED)
 
-find_package(cv_bridge REQUIRED
-             PATHS /opt/ros/kinetic)
-
-find_package(Eigen3 REQUIRED)
+find_package(OpenPose REQUIRED)
 
 set(TPP_CATKIN_DEPS
     message_runtime
@@ -86,7 +76,12 @@ catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${Eigen3_INCLUDE_DIR}
+	${CUDA_INCLUDE_DIRS}
+	${OpenPose_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+	${CAFFE_INCLUDE_DIRS}
+	${GFLAGS_INCLUDE_DIR} 
+	${GLOG_INCLUDE_DIR} 
         ${PROJECT_BINARY_DIR}/include
 	src/
 )
@@ -95,16 +90,20 @@ set(CPP_FILES
     src/pedestrian_event.cpp
     src/buffer.cpp
     src/buffer_node.cpp
+    src/openpose.cpp
+    src/openpose_flags.cpp
+    src/openpose_ros_io.cpp
+    src/openpose_ros_node.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
         itri_pedcross
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
-        #caffe
-	glog
-        cv_bridge
+	${OpenCV_LIBS}
+	${OpenPose_LIBS}
+	${GFLAGS_LIBRARY} 
+	${GLOG_LIBRARY}
 )
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in

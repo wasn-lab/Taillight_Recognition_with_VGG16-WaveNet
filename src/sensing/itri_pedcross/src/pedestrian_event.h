@@ -23,6 +23,12 @@
 #include <boost/circular_buffer.hpp>
 
 #include <buffer.h>
+#include <openpose.h>
+#include <openpose_ros_io.h>
+#include <openpose_flags.h>
+// C++ std library dependencies
+#include <chrono> // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
+#include <thread> // std::this_thread
 
 #define USE_GLOG 1
 #if USE_GLOG
