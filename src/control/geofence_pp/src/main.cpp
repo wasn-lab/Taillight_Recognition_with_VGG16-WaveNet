@@ -100,9 +100,7 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 			Position.push_back(Pos);
 		}	
 	}
-	PCloud_Geofence.setPath(Position);
 	BBox_Geofence.setPath(Position);
-	Radar_Geofence.setPath(Position);
 }
 
 void Plot_geofence(Point temp)
