@@ -83,33 +83,42 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 	BBox_Geofence.setPath(Position);
 }
 
+
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	double Resolution = 100;
-	for(int i=1;i<msg->poses.size();i++){
+	int size = 50;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+
+	double Resolution = 50;
+	for(int i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
 			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
 			Position.push_back(Pos);
 		}	
 	}
+	PCloud_Geofence.setPath(Position);
 	BBox_Geofence.setPath(Position);
+	Radar_Geofence.setPath(Position);
 }
 
-void Publish_Marker_PP(Point temp)
+void Plot_geofence(Point temp)
 { 
 
 	visualization_msgs::Marker line_list;
   	line_list.header.frame_id = "/map";
   	//line_list.header.stamp = ros::Time::now();
 	line_list.ns = "PP_line";
+	line_list.lifetime = ros::Duration(0.5);
     line_list.action = visualization_msgs::Marker::ADD;
     line_list.pose.orientation.w = 1.0;
 	line_list.id = 1;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
 	line_list.scale.x = 0.1;
-	line_list.color.r = 1.0;
+	line_list.color.b = 1.0;
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
@@ -142,9 +151,9 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 			if(msg->objects[i].track.is_ready_prediction==1)
 			{
 				Point_temp.X = msg->objects[i].track.forecasts[j].position.x;
-				cout << Point_temp.X << endl;
+				//cout << Point_temp.X << endl;
 				Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
-				cout << Point_temp.Y << endl;
+				//cout << Point_temp.Y << endl;
 				Point_temp.Speed = msg->objects[i].relSpeed;
 				PointCloud_temp.push_back(Point_temp);
 				/*
@@ -185,11 +194,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 				//Plot geofence PP
-				Point temp;
-				temp.X = BBox_Geofence.findDirection().X;
-				temp.Y = BBox_Geofence.findDirection().Y;
-				temp.Speed = BBox_Geofence.findDirection().Speed;
-				Publish_Marker_PP(temp);
+				Plot_geofence(BBox_Geofence.findDirection());
 			}
 			if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back)){
 				//cout << "Collision appears" << endl;
