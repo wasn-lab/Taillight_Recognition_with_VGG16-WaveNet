@@ -20,9 +20,9 @@ set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_normalization.yml"
+    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_3frames_normalization.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 ca81a33f18d06f6011d206d3ac9b790d
+    MD5 ff1ce2293391cf50f224edc76bf4f022
 )
 catkin_download_test_data(
     ped_models_rf
@@ -56,22 +56,20 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
-  message(FATAL_ERROR "libgflags not found. Please run\n 
-	apt-get install libgflags-dev")
+  message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
 endif ()
 
 find_package(Glog)
 
 find_package(OpenCV 3.4.3 REQUIRED
-	     NO_MODULE
+             NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
 
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
 
-
-find_package(OpenPose REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 set(TPP_CATKIN_DEPS
     message_runtime
@@ -88,24 +86,22 @@ catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-	${OpenCV_INCLUDE_DIRS}
-	${OpenPose_INCLUDE_DIRS}
+        ${Eigen3_INCLUDE_DIR}
         ${PROJECT_BINARY_DIR}/include
 	src/
 )
 
 set(CPP_FILES
     src/pedestrian_event.cpp
-    src/Get_keypoints_and_predict.cpp
+    src/buffer.cpp
+    src/buffer_node.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
-
 target_link_libraries(
         itri_pedcross
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
-	${OpenPose_LIBRARIES}
         #caffe
 	glog
         cv_bridge

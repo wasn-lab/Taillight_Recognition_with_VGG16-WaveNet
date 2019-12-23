@@ -24,7 +24,7 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   cv_ptr_image->image.copyTo(msg_decode);
 
   // buffer raw image in msg
-  imageCache.push_back({msg->header.stamp, msg_decode});
+  imageCache.push_back({ msg->header.stamp, msg_decode });
 
 #if USE_GLOG
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
@@ -46,7 +46,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     cv::Mat matrix;
     for (int i = imageCache.size() - 1; i >= 0; i--)
     {
-      if (imageCache[i].first <= msg->header.stamp)
+      if (imageCache[i].first <= msg->header.stamp || i == 0)
       {
 #if USE_GLOG
         std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << msg->header.stamp << std::endl;
@@ -63,11 +63,13 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
     std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
-    for (std::vector<msgs::DetectedObject>::const_iterator it = msg->objects.begin(); it != msg->objects.end(); ++it)
+    for (auto const& obj : msg->objects)
     {
-      msgs::DetectedObject obj = *it;
       if (obj.classId == 1)  // 1 for people
       {
+        if (too_far(obj.bPoint))
+          continue;
+
         // set msg infomation
         msgs::PedObject obj_pub;
         obj_pub.header = obj.header;
@@ -153,8 +155,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
         for (unsigned int i = 0; i < body_part_size; i++)
         {
-          // keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.width / obj_pub.camInfo.width;
-          // keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj.camInfo.width / obj_pub.camInfo.width;
           if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
           {
             count_points++;
@@ -163,13 +163,15 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           }
         }
         if (has_keypoint)
-          obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                                      obj.camInfo.v + obj.camInfo.height, keypoints);
+          obj_pub.crossProbability =
+              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                               obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
         else
         {
           std::vector<cv::Point2f> no_keypoint;
-          obj_pub.crossProbability = crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                                      obj.camInfo.v + obj.camInfo.height, no_keypoint);
+          obj_pub.crossProbability =
+              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                               obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id, msg->header.stamp);
         }
         pedObjs.push_back(obj_pub);
 
@@ -237,9 +239,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       cv::Rect box;
 
       // draw each pedestrian's bbox and cross probablity
-      for (std::vector<msgs::PedObject>::const_iterator it = msg_pub.objects.begin(); it != msg_pub.objects.end(); ++it)
+      for (auto const& obj : msg_pub.objects)
       {
-        msgs::PedObject obj = *it;
         box.x = obj.camInfo.u;
         box.y = obj.camInfo.v;
         box.width = obj.camInfo.width;
@@ -255,7 +256,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         if (p >= cross_threshold)
         {
           if (show_probability)
-            probability = "C(" + std::to_string(p / 100.) + "." + std::to_string(p % 100) + ")";
+            probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
           else
             probability = "C";
 
@@ -267,9 +268,9 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           if (show_probability)
           {
             if (p >= 10)
-              probability = "NC(" + std::to_string(p / 100.) + "." + std::to_string(p % 100) + ")";
+              probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
             else
-              probability = "NC(" + std::to_string(p / 100.) + ".0" + std::to_string(p % 100) + ")";
+              probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
           }
           else
             probability = "NC";
@@ -297,7 +298,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 // extract features and pass to random forest model
 // return cross probability
 float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2,
-                                        std::vector<cv::Point2f> keypoint)
+                                        std::vector<cv::Point2f> keypoint, int id, ros::Time time)
 {
   try
   {
@@ -369,11 +370,28 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
           }
         }
       }
+
+      //  Buffer first frame
+      if (buffer.timestamp == ros::Time(0))
+      {
+        buffer.timestamp = time;
+      }
+      //  new frame
+      else if (buffer.timestamp != time)
+      {
+        buffer.timestamp = time;
+        buffer.check_life();
+      }
+      feature = buffer.add(id, feature);
+
+#if USE_GLOG
+      buffer.display();
+#endif
       // Convert vector to array
-      static float feature_arr[NUM_FEATURES];
+      static float feature_arr[FEATURE_NUM * FRAME_NUM];
       std::copy(feature.begin(), feature.end(), feature_arr);
       // Convert array to Mat
-      cv::Mat feature_mat = cv::Mat(1, NUM_FEATURES, CV_32F, feature_arr);
+      cv::Mat feature_mat = cv::Mat(1, FEATURE_NUM * FRAME_NUM, CV_32F, feature_arr);
       // Predict
       float predict_result = predict_rf_pose(feature_mat);
 
@@ -464,6 +482,28 @@ float PedestrianEvent::predict_rf(cv::Mat input_data)
   return p;
 }
 
+bool PedestrianEvent::too_far(const msgs::BoxPoint box_point)
+{
+  if (box_point.p0.x > max_distance)
+    return true;
+  else if (box_point.p1.x > max_distance)
+    return true;
+  else if (box_point.p2.x > max_distance)
+    return true;
+  else if (box_point.p3.x > max_distance)
+    return true;
+  else if (box_point.p4.x > max_distance)
+    return true;
+  else if (box_point.p5.x > max_distance)
+    return true;
+  else if (box_point.p6.x > max_distance)
+    return true;
+  else if (box_point.p7.x > max_distance)
+    return true;
+  else
+    return false;
+}
+
 void PedestrianEvent::pedestrian_event()
 {
   // AsyncSpinner reference:
@@ -479,30 +519,35 @@ void PedestrianEvent::pedestrian_event()
   // Set custom callback queue
   hb_n.setCallbackQueue(&queue);
 
-#if CAM_INDEX == 0  // front center
-  ros::Subscriber sub = n.subscribe("/CamObjFrontCenter", 1, &PedestrianEvent::chatter_callback,
-                                    this);  // /CamObjFrontCenter is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
-                                        this);  // /cam/F_center is sub topic
-#endif
-#if CAM_INDEX == 1  // front left
-  ros::Subscriber sub = n.subscribe("/CamObjFrontLeft", 1, &PedestrianEvent::chatter_callback,
-                                    this);  // /CamObjFrontLeft is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_left", 1, &PedestrianEvent::cache_image_callback,
-                                        this);  // /cam/F_left is sub topic
-#endif
-#if CAM_INDEX == 2  //  front right
-  ros::Subscriber sub = n.subscribe("/CamObjFrontRight", 1, &PedestrianEvent::chatter_callback,
-                                    this);  // /CamObjFrontRight is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_right", 1, &PedestrianEvent::cache_image_callback,
-                                        this);  // /cam/F_right is sub topic
-#endif
-#if CAM_INDEX == 3  //  tracking front center
-  ros::Subscriber sub = n.subscribe("/PathPredictionOutput/camera", 1, &PedestrianEvent::chatter_callback,
-                                    this);  // /CamObjFrontRight is sub topic
-  ros::Subscriber sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
-                                        this);  // /cam/F_right is sub topic
-#endif
+  ros::Subscriber sub;
+  ros::Subscriber sub2;
+  if (input_source == 0)
+  {
+    sub = n.subscribe("/CamObjFrontCenter", 1, &PedestrianEvent::chatter_callback,
+                      this);  // /CamObjFrontCenter is sub topic
+    sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
+                          this);  // /cam/F_center is sub topic
+  }
+  else if (input_source == 1)
+  {
+    sub = n.subscribe("/CamObjFrontLeft", 1, &PedestrianEvent::chatter_callback,
+                      this);  // /CamObjFrontLeft is sub topic
+    sub2 = hb_n.subscribe("/cam/F_left", 1, &PedestrianEvent::cache_image_callback, this);  // /cam/F_left is sub topic
+  }
+  else if (input_source == 2)
+  {
+    sub = n.subscribe("/CamObjFrontRight", 1, &PedestrianEvent::chatter_callback,
+                      this);  // /CamObjFrontRight is sub topic
+    sub2 = hb_n.subscribe("/cam/F_right", 1, &PedestrianEvent::cache_image_callback,
+                          this);  // /cam/F_right is sub topic
+  }
+  else  // input_source == 3
+  {
+    sub = n.subscribe("/PathPredictionOutput/camera", 1, &PedestrianEvent::chatter_callback,
+                      this);  // /CamObjFrontRight is sub topic
+    sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
+                          this);  // /cam/F_right is sub topic
+  }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner.reset(new ros::AsyncSpinner(0, &queue));
@@ -561,7 +606,7 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
     cv::Point maxLoc;
     double prob;
     cv::minMaxLoc(probMap, 0, &prob, 0, &maxLoc);
-    if (prob > 0.005) // confidence
+    if (prob > 0.005)  // confidence
     {
       float x = maxLoc.x / height;
       float y = maxLoc.y / height;
@@ -602,10 +647,11 @@ int main(int argc, char** argv)
   system(bash.c_str());
   pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
   pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf.yml"));
-  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_1frames_normalization.yml"));
+  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_3frames_normalization.yml"));
 
   ros::NodeHandle nh;
-  pe.chatter_pub = nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
+  pe.chatter_pub =
+      nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh3;
@@ -613,8 +659,11 @@ int main(int argc, char** argv)
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);
+  nh.getParam("/input_source", pe.input_source);
+  nh.getParam("/max_distance", pe.max_distance);
 
-  pe.imageCache  = boost::circular_buffer< std::pair<ros::Time, cv::Mat> > (pe.buffer_size);
+  pe.imageCache = boost::circular_buffer<std::pair<ros::Time, cv::Mat> >(pe.buffer_size);
+  pe.buffer.initial(FEATURE_NUM, FRAME_NUM, 5);  // 5 is life time
 
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
