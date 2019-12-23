@@ -41,8 +41,10 @@ std::vector<float> Buffer::add(int id, std::vector<float> feature)
   {
     BufferNode* node_ptr = new BufferNode(id);
 
-    float zero_arr[feature_num * (frame_num - 1)] = { 0 };
+    float* zero_arr;
+    zero_arr = new float[feature_num * (frame_num - 1)];
     feature.insert(feature.begin(), zero_arr, zero_arr + sizeof(zero_arr) / sizeof(zero_arr[0]));
+    delete [] zero_arr;
     node_ptr->data = feature;
     if (first == 0 && last == 0)
     {
