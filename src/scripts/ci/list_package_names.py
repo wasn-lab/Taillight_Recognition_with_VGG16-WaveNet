@@ -33,9 +33,9 @@ def _get_package_name(xml_file):
 def main():
     """Prog entry."""
     xmls = _get_xmls()
-    for xml in xmls:
-        pkg = _get_package_name(xml)
-        # print("{} {}".format(pkg, xml))
+    pkgs = [_get_package_name(xml) for xml in xmls]
+    pkgs.sort()
+    for pkg in pkgs:
         print("{}".format(pkg))
 
 if __name__ == "__main__":
