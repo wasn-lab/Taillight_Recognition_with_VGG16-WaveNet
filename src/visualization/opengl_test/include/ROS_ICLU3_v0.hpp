@@ -61,8 +61,10 @@ enum class MSG_ID{
     //
     GUI_operatio,
     GUI_state,
-    // NUM_TOPICS
+    //
     GUI_screen_out,
+    GUI_fps_out,
+    // NUM_TOPICS
 };
 
 
