@@ -17,6 +17,10 @@ class HZCalculatorNode(object):
 
         rospy.init_node("HZCalculatorNode")
         self.subscriptions = [
+            {"topic": "/cam/F_center",
+             "type": Image,
+             "callback": self._callback,
+             "counts": 0},
             {"topic": "/cam/F_left/detect_image",
              "type": Image,
              "callback": self._callback,
