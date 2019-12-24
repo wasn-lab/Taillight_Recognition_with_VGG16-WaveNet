@@ -280,7 +280,8 @@ int main(int argc, char **argv)
         addr.can_family  = AF_CAN;
         addr.can_ifindex = ifr.ifr_ifindex;
 
-        printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+        // printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+        std::cout << ifname << " at index " << ifr.ifr_ifindex << std::endl;
 
         if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
                 perror("Error in socket bind");
