@@ -41,7 +41,7 @@ if (NOT EXISTS ${POINTS_MAP_DIRS}/total_map.pcd)
 
     file(
     DOWNLOAD
-    	http://nas.itriadv.co:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd    	
+    	http://118.163.54.109:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd    	
     STATUS
         status
     LOG 

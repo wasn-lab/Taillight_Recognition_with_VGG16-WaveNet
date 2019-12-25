@@ -267,7 +267,7 @@ if (NOT EXISTS /usr/local/lib/libtensorflow.so)
         
 	        file(
 	        DOWNLOAD
-	        	http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz ${PATH_SO_LOCAL}/tensorflow.tar.gz
+	        	http://118.163.54.109:8888/Share/ADV/LiDAR_Models/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz ${PATH_SO_LOCAL}/tensorflow.tar.gz
 	        STATUS
 	            status
 	        LOG 
@@ -279,7 +279,7 @@ if (NOT EXISTS /usr/local/lib/libtensorflow.so)
 		
 	        file(
 	        DOWNLOAD
-	            http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/libtensorflow-gpu-linux-aarch64-1.13.1.tar.gz ${PATH_SO_LOCAL}/tensorflow.tar.gz
+	            http://118.163.54.109:8888/Share/ADV/LiDAR_Models/libtensorflow-gpu-linux-aarch64-1.13.1.tar.gz ${PATH_SO_LOCAL}/tensorflow.tar.gz
 	        STATUS
 	            status
 	        LOG 
