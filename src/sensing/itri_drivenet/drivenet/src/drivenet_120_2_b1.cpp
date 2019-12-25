@@ -508,7 +508,7 @@ void* run_yolo(void*)
         pool.push_back(std::async(std::launch::async, run_dist, box, cam_order));
         if (imgResult_publish || display_flag)
         {
-          class_color = get_labelColor(box.label);
+          class_color = get_label_color(box.label);
           cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
         }
       }
@@ -546,7 +546,7 @@ void* run_yolo(void*)
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
-            class_color = get_commonLabelColor(detObj.classId);
+            class_color = get_common_label_color(detObj.classId);
             cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
         }

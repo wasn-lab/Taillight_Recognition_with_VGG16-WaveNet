@@ -36,7 +36,7 @@ int translate_label(int label)
     return static_cast<int>(DriveNet::common_type_id::other);
   }
 }
-cv::Scalar get_labelColor(int label_id)
+cv::Scalar get_label_color(int label_id)
 {
   cv::Scalar class_color;
   if (label_id == static_cast<int>(DriveNet::net_type_id::person))
@@ -53,7 +53,7 @@ cv::Scalar get_labelColor(int label_id)
   return class_color;
 }
 
-cv::Scalar get_commonLabelColor(int label_id)
+cv::Scalar get_common_label_color(int label_id)
 {
   cv::Scalar class_color;
   if (label_id == static_cast<int>(DriveNet::common_type_id::person))
