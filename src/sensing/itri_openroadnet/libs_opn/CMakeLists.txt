@@ -105,7 +105,7 @@ if (NOT EXISTS /usr/local/lib/libtensorflow.so)
         if( ${ARCHITECTURE} STREQUAL "x86_64" )
 
                 file(
-                DOWNLOAD http://nas.itriadv.co:8888/Share/ADV/Hino_git_data/ForLiDAR/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz
+                DOWNLOAD http://118.163.54.109:8888/Share/ADV/Hino_git_data/ForLiDAR/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz
                         ${PATH_SO_LOCAL}/tensorflow.tar.gz
                 STATUS
                     status
@@ -117,7 +117,7 @@ SHOW_PROGRESS
                 elseif(${ARCHITECTURE} STREQUAL "aarch64")
 
                 file(
-                DOWNLOAD http://nas.itriadv.co:8888/Share/ADV/Hino_git_data/ForLiDAR/libtensorflow-gpu-linux-aarch64-1.13.1.tar.gz
+                DOWNLOAD http://118.163.54.109:8888/Share/ADV/Hino_git_data/ForLiDAR/libtensorflow-gpu-linux-aarch64-1.13.1.tar.gz
                          ${PATH_SO_LOCAL}/tensorflow.tar.gz
 #                    http://118.163.54.109:8080/share.cgi?ssid=07319qW&fid=07319qW&filename=libtensorflow-gpu-linux-aarch64-1.13.1.tar.gz&openfolder=forcedownload&ep= ${PATH_SO_LOCAL}/tensorflow.tar.gz
                 STATUS

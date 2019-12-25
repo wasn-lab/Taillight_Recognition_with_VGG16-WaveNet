@@ -20,26 +20,26 @@ set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_normalization.yml"
+    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_normalization.yml"
     DESTINATION ${PED_MODEL_DIR}
     MD5 ca81a33f18d06f6011d206d3ac9b790d
 )
 catkin_download_test_data(
     ped_models_rf
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
+    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
     DESTINATION ${PED_MODEL_DIR}
     MD5 d20e9859ff9ba625e2747578dae99cf2
 )
 catkin_download_test_data(
     ped_models_body25
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
+    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
     DESTINATION ${PED_MODEL_DIR}/body_25
     MD5 78287b57cf85fa89c03f1393d368e5b7
 )
 
 catkin_download_test_data(
     ped_models_body25_txt
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
+    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
     DESTINATION ${PED_MODEL_DIR}/body_25
     MD5 451938635cf007327c3cf235ed483844
 )
