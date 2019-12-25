@@ -1,8 +1,8 @@
 /LidarAll
-# /LidarFrontRight/Raw
-# /LidarFrontLeft/Raw
-# /LidarRearRight/Raw
-# /LidarRearLeft/Raw
+/LidarFrontRight/Raw
+/LidarFrontLeft/Raw
+/LidarRearRight/Raw
+/LidarRearLeft/Raw
 /LidarFrontTop/Raw # For debugging localization
 /LidarDetection
 
@@ -30,15 +30,15 @@
 # /cam/L_rear/detect_image
 # /cam/B_top/detect_image
 
-#/CamObjFrontRight
-#/CamObjFrontCenter
-#/CamObjFrontLeft
-#/CamObjFrontTop
-#/CamObjRightFront
-#/CamObjRightBack
-#/CamObjLeftFront
-#/CamObjLeftBack
-#/CamObjBackTop
+/CamObjFrontRight
+/CamObjFrontCenter
+/CamObjFrontLeft
+/CamObjFrontTop
+/CamObjRightFront
+/CamObjRightBack
+/CamObjLeftFront
+/CamObjLeftBack
+/CamObjBackTop
 
 
 /current_pose
@@ -54,20 +54,27 @@
 /abs_virBB_array
 /marker_array_topic
 
-/adFront
+/radFront
 /radar_point_cloud
 /PathPredictionOutput/radar
 /RadarMarker
 /Geofence_PC
 
 
+
 /mm_tp_topic
-/nav_path
+/nav_path # Dyna-plan
+/nav_path_astar_final # A-star
 
 /occupancy_grid
 /occupancy_grid_updates
+/ring_edge_point_cloud
 
-/PathPredictionOutput
+/SensorFusion
+/PathPredictionOutput # With fusion
+/PathPredictionOutput/lidar # When no fusion available
+/PathPredictionOutput/camera # When no fusion available
+
 /V2X_msg
 
 /tf

@@ -34,11 +34,11 @@ def main():
     """Prog entry"""
     affected_files = _get_affected_files()
     files_trigger_clean_build = _check_package_xml(affected_files)
-    files_trigger_clean_build += _check_cmake(affected_files)
+#    files_trigger_clean_build += _check_cmake(affected_files)
     if files_trigger_clean_build:
         print("Clean build: change in {}".format(" ".join(files_trigger_clean_build)))
     else:
-        print("Dirty build: for no change in package.xml or cmake files.")
+        print("Dirty build: for no change in package.xml.")
 
 if __name__ == "__main__":
     main()

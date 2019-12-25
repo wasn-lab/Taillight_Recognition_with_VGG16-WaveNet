@@ -216,8 +216,10 @@ bool ROS_API::_set_up_topics(){
         ros_interface.add_a_topic( int(MSG_ID::GUI_operatio), "GUI2/operation", int(M_TYPE::GUI2_op), true, 100, 100);
         ros_interface.add_a_topic( int(MSG_ID::GUI_state), "GUI2/state", int(M_TYPE::GUI2_op), false, 100, 1);
 #endif  // __ROS_INTERFACE_VER__
-        // GUI rendered draw 
+        // GUI rendered draw
         ros_interface.add_a_topic( int(MSG_ID::GUI_screen_out), "GUI/screen_out", int(M_TYPE::Image), false, 10, 1);
+        ros_interface.add_a_topic( int(MSG_ID::GUI_fps_out), "GUI/topic_fps_out", int(M_TYPE::String), false, 10, 1);
     }
     //------------------------------------------------//
+    return true;
 }
