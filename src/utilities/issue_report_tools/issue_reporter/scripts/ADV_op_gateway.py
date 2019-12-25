@@ -26,8 +26,8 @@ from std_msgs.msg import (
 
 # States
 #-------------------------#
-var_sdvop_run_state = False
-var_sdvop_sys_ready = False
+var_advop_run_state = False
+var_advop_sys_ready = False
 #-------------------------#
 
 
@@ -86,11 +86,11 @@ def mqtt_char_to_bool(char_in):
 def mqtt_publish_all_states():
     """
     """
-    global var_sdvop_run_state, var_sdvop_sys_ready
+    global var_advop_run_state, var_advop_sys_ready
     if mqtt_client is None:
         return
-    mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(var_sdvop_run_state), qos=2, retain=False)
-    mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(var_sdvop_sys_ready), qos=2, retain=False)
+    mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(var_advop_run_state), qos=2, retain=False)
+    mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(var_advop_sys_ready), qos=2, retain=False)
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -141,9 +141,9 @@ def ros_advop_run_state_CB(msg):
     This is the callback function for run_state.
     ** On receiving this message, bypass to MQTT interface.
     """
-    global var_sdvop_run_state
-    var_sdvop_run_state = msg.data # '1'
-    print("var_sdvop_run_state = %s" % str(var_sdvop_run_state))
+    global var_advop_run_state
+    var_advop_run_state = msg.data # '1'
+    print("var_advop_run_state = %s" % str(var_advop_run_state))
     if mqtt_client is None:
         return
     # Publish
@@ -154,9 +154,9 @@ def ros_advop_sys_ready_CB(msg):
     This is the callback function for sys_ready.
     ** On receiving this message, bypass to MQTT interface.
     """
-    global var_sdvop_sys_ready
-    var_sdvop_sys_ready = msg.data # '1'
-    print("var_sdvop_sys_ready = %s" % str(var_sdvop_sys_ready))
+    global var_advop_sys_ready
+    var_advop_sys_ready = msg.data # '1'
+    print("var_advop_sys_ready = %s" % str(var_advop_sys_ready))
     if mqtt_client is None:
         return
     # Publish

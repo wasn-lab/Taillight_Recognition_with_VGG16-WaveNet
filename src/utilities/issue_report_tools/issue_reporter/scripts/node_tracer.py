@@ -89,6 +89,7 @@ def main(sys_args):
     #--------------------------------------#
     # Subscriber
     # Publisher
+    _node_all_alive_pub = rospy.Publisher("/node_trace/all_alive", Bool, queue_size=1, latch=True) #
     _node_pinged_pub = rospy.Publisher("/node_trace/pinged", String, queue_size=1, latch=True) #
     _node_unpinged_pub = rospy.Publisher("/node_trace/unpinged", String, queue_size=1, latch=True) #
     _node_alive_pub = rospy.Publisher("/node_trace/alive", String, queue_size=1, latch=True) #
@@ -155,6 +156,11 @@ def main(sys_args):
         print("closed =\n%s" % str(node_dict["closed"]) )
         print("untraced =\n%s" % str(node_dict["untraced"]) )
         print("zombi_traced =\n%s" % str(node_dict["zombi_traced"]) )
+        #
+        if len(node_dict["closed"]) > 0:
+            _node_all_alive_pub.publish(False)
+        else:
+            _node_all_alive_pub.publish(True)
         #
         _node_pinged_pub.publish( str(node_dict["pinged"]) )
         _node_unpinged_pub.publish( str(node_dict["unpinged"]) )
