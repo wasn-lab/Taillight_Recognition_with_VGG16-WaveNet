@@ -3,6 +3,7 @@ import random
 import string
 import json
 import threading
+import time
 #
 
 # MQTT
@@ -22,7 +23,11 @@ from std_msgs.msg import (
 )
 #---------------------------#
 
-
+# Timeouts
+#-------------------------#
+timeout_sys_ready = 2.0 # sec.
+timeout_thread_sys_ready = None
+#-------------------------#
 
 # States
 #-------------------------#
@@ -134,6 +139,9 @@ def mqtt_advop_req_run_stop_CB(client, userdata, mqtt_msg):
 #------------------------------------------------------#
 # end MQTT --> ROS
 
+
+
+
 # ROS callbacks
 #------------------------------------------------------------#
 def ros_advop_run_state_CB(msg):
@@ -155,24 +163,37 @@ def ros_advop_sys_ready_CB(msg):
     ** On receiving this message, bypass to MQTT interface.
     """
     global var_advop_sys_ready
+    global timeout_thread_sys_ready
     var_advop_sys_ready = msg.data # '1'
     print("var_advop_sys_ready = %s" % str(var_advop_sys_ready))
     if mqtt_client is None:
         return
     # Publish
     mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(msg.data), qos=2, retain=False)
+    #
+    if not timeout_thread_sys_ready is None:
+        timeout_thread_sys_ready.cancel()
+    timeout_thread_sys_ready = threading.Timer(timeout_sys_ready, _timeout_handle_sys_ready)
+    timeout_thread_sys_ready.start()
 #------------------------------------------------------------#
 # end ROS callbacks
 
 
-
+def _timeout_handle_sys_ready(is_logging=True):
+    """
+    """
+    global var_advop_sys_ready
+    var_advop_sys_ready = False
+    mqtt_publish_all_states()
+    if is_logging: rospy.logwarn("[ADV_op_gateway] Timeout: sys_ready.")
+    print("var_advop_sys_ready = %s" % str(var_advop_sys_ready))
 
 
 def main():
     #
     global mqtt_client
     # ROS
-    rospy.init_node('ADV_op_gateway', anonymous=True)
+    rospy.init_node('ADV_op_gateway', anonymous=False)
     rospy.Subscriber("ADV_op/run_state", Bool, ros_advop_run_state_CB)
     rospy.Subscriber("ADV_op/sys_ready", Bool, ros_advop_sys_ready_CB)
 
@@ -204,7 +225,11 @@ def main():
         mqtt_publish_all_states()
         rate.sleep()
 
-    print("End of ADV_op_gateway")
+    rospy.logwarn("[ADV_op_gateway] The ADV_op_gateway is going to close.")
+    _timeout_handle_sys_ready(False)
+    time.sleep(1.0)
+    print("[ADV_op_gateway] Leave main()")
 
 if __name__ == '__main__':
     main()
+    print("[ADV_op_gateway] Closed.")
