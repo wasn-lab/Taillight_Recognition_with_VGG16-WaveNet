@@ -189,8 +189,8 @@ class Node:
         Generate a text marker for showing latency and FPS.
         """
         point = self.text_marker_position( cPoint )
-        depth = self._calculate_depth_polygon( cPoint )
-        # depth = self._calculate_distance_polygon( cPoint )
+        # depth = self._calculate_depth_polygon( cPoint )
+        depth = self._calculate_distance_polygon( cPoint )
         # Generate text
         if cPoint_id is None:
             text = "D=%.2fm" % ( depth )
