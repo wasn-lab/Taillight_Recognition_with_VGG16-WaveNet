@@ -171,7 +171,11 @@ def main(sys_args):
         #
         rate.sleep()
         # time.sleep(1.0)
-    print("End of main loop.")
+    #
+    rospy.logwarn("[node_tracer] The node_tracer is going to close.")
+    # _node_all_alive_pub.publish(False)
+    time.sleep(0.5)
+    print("[node_tracer] Leave main()")
 
 
 
@@ -182,4 +186,4 @@ if __name__ == '__main__':
         main(sys.argv)
     except rospy.ROSInterruptException:
         pass
-    print("End of node tracer.")
+    print("[node_tracer] Closed.")
