@@ -326,8 +326,17 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // Front center 60 range:
     // x axis: 7 ~ 50 meters
     // y axis: -10 ~ 10 meters
-
-    BoxPass_flag = checkBoxInArea(distEst.camFC60_area, box.x1, box.y2, box.x2, box.y2);
+    int leftCheck = 2;
+    int rightCheck = 2;
+  
+    // BoxPass_flag = checkBoxInArea(distEst.camFC60_area, box.x1, box.y2, box.x2, box.y2);
+    leftCheck = distEst.CheckPointInArea(distEst.camFC60_area, box.x1, box.y2);
+    rightCheck = distEst.CheckPointInArea(distEst.camFC60_area, box.x2, box.y2);
+    if(leftCheck == 0 && rightCheck == 0)
+    {
+      boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
+      detObj.bPoint = boxPoint; 
+    }   
   }
   else if (cam_order == camera::id::left_60)
   {
@@ -389,8 +398,6 @@ void* run_yolo(void*)
 
   cv::Mat M_display;
   cv::Mat M_display_tmp;
-  std::vector<cv::Scalar> cls_color = { cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0),
-                                        cv::Scalar(125, 125, 125) };
   cv::Scalar class_color;
 
   ros::Rate r(30);
@@ -483,7 +490,7 @@ void* run_yolo(void*)
         pool.push_back(std::async(std::launch::async, run_dist, box, cam_order));
         if (imgResult_publish || display_flag)
         {
-          class_color = get_labelColor(cls_color, box.label);
+          class_color = get_label_color(box.label);
           cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
         }
       }
@@ -510,7 +517,7 @@ void* run_yolo(void*)
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
-            class_color = get_commonLabelColor(cls_color, detObj.classId);
+            class_color = get_common_label_color(detObj.classId);
             cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
         }
