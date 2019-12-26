@@ -13,17 +13,54 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
+#include "std_msgs/String.h"
+
 
 boost::mutex mutex_queue;
 boost::mutex mutex_ros;
 std::queue<std::string> q;
 std::queue<std::string> obuQueue;
+std::queue<std::string> vkQueue;
 msgs::DetectedObjectArray detObjArray;
 msgs::LidLLA gps;
 msgs::TaichungVehInfo vehInfo;
+json fps_json_ = {{"key",0}};
 
 const static double PI = 3.14;
 double data[10] = {0};
+const static std::string PLATE = "ITRI-ADV";
+const static int FPS_KEY_LEN = 27;
+const static std::string keys[] = 
+{
+       "FPS_LidarAll", 
+       "FPS_LidarDetection",
+       "FPS_camF_right",
+       "FPS_camF_center",
+       "FPS_camF_left",
+       "FPS_camF_top",
+       "FPS_camR_front",
+       "FPS_camR_rear",
+       "FPS_camL_front",
+       "FPS_camL_rear",
+       "FPS_camB_top",
+       "FPS_CamObjFrontRight",
+       "FPS_CamObjFrontCenter",
+       "FPS_CamObjFrontLeft",
+       "FPS_CamObjFrontTop",
+       "FPS_CamObjRightFront",
+       "FPS_CamObjRightBack",
+       "FPS_CamObjLeftFront",
+       "FPS_CamObjLeftBack",
+       "FPS_CamObjBackTop",
+       "FPS_current_pose",
+       "FPS_veh_info",
+       "FPS_dynamic_path_para",
+       "FPS_Flag_Info01",
+       "FPS_Flag_Info02",
+       "FPS_Flag_Info03",
+       "FPS_V2X_msg",
+};
+
 
 struct pose
 {
@@ -85,6 +122,14 @@ void callback_gnss2local (const geometry_msgs::PoseStamped::ConstPtr& input)
         mutex_ros.unlock ();
 }
 
+void callback_fps(const std_msgs::String::ConstPtr& input)
+{
+  mutex_ros.lock ();
+  std::string jsonString = input->data.c_str();
+  fps_json_ = json::parse(jsonString);
+  mutex_ros.unlock ();
+}
+
 std::string get_msg_type(int id) {
     switch (id) {
 /*
@@ -110,7 +155,7 @@ std::string get_jsonmsg_can (const std::string& type, double *data)
     std::string time_string = log_Time ();
     json J1;
     J1["type"] = type;
-    J1["plate"] = "ITRI-ADV";
+    J1["plate"] = PLATE;
     J1["deviceID"] = "00:00:00:00:00:01";
     J1["dt"] = time_string;
     if (type == "M8.2.adv002"){
@@ -127,7 +172,7 @@ std::string get_jsonmsg_ros (const std::string& type)
     std::string time_string = log_Time ();
     json J1;
     J1["type"] = type;
-    J1["plate"] = "ITRI-ADV";
+    J1["plate"] = PLATE;
     J1["deviceID"] = "00:00:00:00:00:01";
     J1["dt"] = time_string;
     if (type == "M8.2.adv001") {
@@ -195,14 +240,35 @@ std::string get_jsonmsg_to_obu (const std::string& type)
     return J1.dump ();
 }
 
+std::string get_jsonmsg_to_vk_server (const std::string& type)
+{
+    std::string time_string = log_Time ();
+    json J1;
+    if (type == "M8.2.VK004") {
+        J1["type"] = type;
+        J1["deviceid"] = PLATE;
+        J1["receivetime"] = time_string ;
+
+        for(int i = 0; i < FPS_KEY_LEN; i ++ )
+        {
+          std::string key = keys[i];
+          float value = fps_json_.value(key, -1);;
+          J1[key] = value;
+        }
+    }
+    return J1.dump ();
+}
+
 void sendRun (int argc, char ** argv)
 {
     UdpClient UDP_SEV_client;
-    
     UdpClient UDP_SEV_OBU;
+    UdpClient UDP_SEV_VK_client;
 
     UDP_SEV_client.initial ("52.69.10.200", 5570);
     UDP_SEV_OBU.initial ("192.168.1.200", 9999);
+    UDP_SEV_VK_client.initial("140.96.180.120", 8016);
+    
     while (true)
     {
         mutex_queue.lock ();
@@ -216,6 +282,12 @@ void sendRun (int argc, char ** argv)
 	{
             int result =  UDP_SEV_OBU.send_obj_to_server (obuQueue.front());
 	    obuQueue.pop();
+	}        
+
+        while(vkQueue.size() != 0)
+	{
+            int result =  UDP_SEV_VK_client.send_obj_to_server (vkQueue.front());
+	    vkQueue.pop();
 	}        
         mutex_queue.unlock ();
 
@@ -246,7 +318,7 @@ void receiveCanRun (int argc, char ** argv)
 
 void receiveRosRun (int argc, char ** argv)
 {
-    RosModuleTraffic::RegisterCallBack (callback_detObj, callback_gps, callback_veh, callback_gnss2local);
+    RosModuleTraffic::RegisterCallBack (callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps);
     while (ros::ok ())
     {
         mutex_ros.lock ();
@@ -269,6 +341,11 @@ void receiveRosRun (int argc, char ** argv)
             std::string temp_adv009 = get_jsonmsg_to_obu ("M8.2.adv009");
             mutex_queue.lock ();
             obuQueue.push(temp_adv009);
+            mutex_queue.unlock ();
+
+            std::string temp_vk004 = get_jsonmsg_to_vk_server ("M8.2.VK004");
+            mutex_queue.lock ();
+            vkQueue.push(temp_vk004);
             mutex_queue.unlock ();
 
         mutex_ros.unlock ();
