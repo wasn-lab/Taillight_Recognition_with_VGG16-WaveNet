@@ -89,6 +89,7 @@ def main(sys_args):
     #--------------------------------------#
     # Subscriber
     # Publisher
+    _node_all_alive_pub = rospy.Publisher("/node_trace/all_alive", Bool, queue_size=1, latch=True) #
     _node_pinged_pub = rospy.Publisher("/node_trace/pinged", String, queue_size=1, latch=True) #
     _node_unpinged_pub = rospy.Publisher("/node_trace/unpinged", String, queue_size=1, latch=True) #
     _node_alive_pub = rospy.Publisher("/node_trace/alive", String, queue_size=1, latch=True) #
@@ -127,9 +128,11 @@ def main(sys_args):
         node_dict["unpinged"] = unpinged
         #
         node_dict["alive"] = list()
-        node_dict["closed"] = list()
+        # node_dict["closed"] = list()
         node_dict["untraced"] = list()
         node_dict["zombi_traced"] = list()
+        #
+        _closed = list()
         #
         for _nd in pinged:
             if _nd in node_list:
@@ -138,9 +141,14 @@ def main(sys_args):
                 node_dict["untraced"].append(_nd)
         for _nd in node_list:
             if not _nd in pinged:
-                node_dict["closed"].append(_nd)
+                # node_dict["closed"].append(_nd)
+                _closed.append(_nd)
+                if not _nd in node_dict["closed"]:
+                    print("Node <%s> closed." % _nd)
             if _nd in unpinged:
                 node_dict["zombi_traced"].append(_nd)
+        #
+        node_dict["closed"] = _closed
         #
         print("pinged =\n%s" % str(node_dict["pinged"]) )
         print("unpinged =\n%s" % str(node_dict["unpinged"]) )
@@ -148,6 +156,11 @@ def main(sys_args):
         print("closed =\n%s" % str(node_dict["closed"]) )
         print("untraced =\n%s" % str(node_dict["untraced"]) )
         print("zombi_traced =\n%s" % str(node_dict["zombi_traced"]) )
+        #
+        if len(node_dict["closed"]) > 0:
+            _node_all_alive_pub.publish(False)
+        else:
+            _node_all_alive_pub.publish(True)
         #
         _node_pinged_pub.publish( str(node_dict["pinged"]) )
         _node_unpinged_pub.publish( str(node_dict["unpinged"]) )
@@ -158,7 +171,11 @@ def main(sys_args):
         #
         rate.sleep()
         # time.sleep(1.0)
-    print("End of main loop.")
+    #
+    rospy.logwarn("[node_tracer] The node_tracer is going to close.")
+    # _node_all_alive_pub.publish(False)
+    time.sleep(0.5)
+    print("[node_tracer] Leave main()")
 
 
 
@@ -169,4 +186,4 @@ if __name__ == '__main__':
         main(sys.argv)
     except rospy.ROSInterruptException:
         pass
-    print("End of node tracer.")
+    print("[node_tracer] Closed.")
