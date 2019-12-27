@@ -319,7 +319,18 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
 
-    BoxPass_flag = checkBoxInArea(distEst.camFR60_area, box.x1, box.y2, box.x2, box.y2);
+    // BoxPass_flag = checkBoxInArea(distEst.camFR60_area, box.x1, box.y2, box.x2, box.y2);
+
+    int leftCheck = 2;
+    int rightCheck = 2;
+  
+    leftCheck = distEst.CheckPointInArea(distEst.camFR60_area, box.x1, box.y2);
+    rightCheck = distEst.CheckPointInArea(distEst.camFR60_area, box.x2, box.y2);
+    if(leftCheck == 0 && rightCheck == 0)
+    {
+      boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
+      detObj.bPoint = boxPoint; 
+    }   
   }
   else if (cam_order == camera::id::front_60)
   {
@@ -343,8 +354,18 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // Front left 60 range:
     // x axis: 0 - 10 meters
     // y axis: 4 ~ 30 meters
+    int leftCheck = 2;
+    int rightCheck = 2;
 
-    BoxPass_flag = checkBoxInArea(distEst.camFL60_area, box.x1, box.y2, box.x2, box.y2);
+    leftCheck = distEst.CheckPointInArea(distEst.camFL60_area, box.x1, box.y2);
+    rightCheck = distEst.CheckPointInArea(distEst.camFL60_area, box.x2, box.y2);
+    if(leftCheck == 0 && rightCheck == 0)
+    {
+      boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
+      detObj.bPoint = boxPoint; 
+    }  
+
+    // BoxPass_flag = checkBoxInArea(distEst.camFL60_area, box.x1, box.y2, box.x2, box.y2);
     // BoxPass_flag = false;
   }
 
