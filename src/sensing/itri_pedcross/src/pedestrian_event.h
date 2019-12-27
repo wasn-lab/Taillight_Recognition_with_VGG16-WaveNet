@@ -27,8 +27,8 @@
 #include <openpose_ros_io.h>
 #include <openpose_flags.h>
 // C++ std library dependencies
-#include <chrono> // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
-#include <thread> // std::this_thread
+#include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
+#include <thread>  // std::this_thread
 
 #define USE_GLOG 1
 #if USE_GLOG
@@ -75,6 +75,11 @@ public:
   float predict_rf(cv::Mat input_data);
   float predict_rf_pose(cv::Mat input_data);
   bool too_far(const msgs::BoxPoint box_point);
+  std::vector<cv::Point2f> printKeypoints(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr,
+                                          float height);
+  int openPoseROS();
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
+  bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr);
 
   cv::dnn::Net net_openpose;
   cv::Ptr<cv::ml::RTrees> rf;
@@ -84,7 +89,7 @@ public:
   ros::Publisher box_pub;
   ros::Publisher pose_pub;
   ros::Time total_time;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat> > imageCache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
@@ -96,6 +101,7 @@ public:
   int input_source = 0;
   float max_distance = 50;
   Buffer buffer;
+  openpose_ros::OpenPose openPose;
 };
 }  // namespace ped
 

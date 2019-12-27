@@ -590,86 +590,99 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 #endif
 
   std::vector<cv::Point2f> points;
-  points.reserve(number_keypoints);
-
-  cv::Mat input_Blob = cv::dnn::blobFromImage(input_image, 1.0 / 255, cv::Size(input_image.cols, input_image.rows),
-                                              cv::Scalar(0, 0, 0), false, false);
-
-  net_openpose.setInput(input_Blob);
+  points.reserve(number_keypoints * 2);
 
   float height = input_image.rows;
-  cv::Mat output = net_openpose.forward();
-  for (int n = 0; n < number_keypoints; n++)
+
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datumToProcess = createDatum(input_image);
+  bool successfullyEmplaced = openPose.waitAndEmplace(datumToProcess);
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datumProcessed;
+  if (successfullyEmplaced && openPose.waitAndPop(datumProcessed))
   {
-    cv::Mat probMap(output.size[2], output.size[3], CV_32F, output.ptr(0, n));
-    cv::resize(probMap, probMap, cv::Size(input_image.cols, input_image.rows));
-    cv::Point maxLoc;
-    double prob;
-    cv::minMaxLoc(probMap, 0, &prob, 0, &maxLoc);
-    if (prob > 0.005)  // confidence
+    // display(datumProcessed);
+    if (datumProcessed != nullptr && !datumProcessed->empty())
     {
-      float x = maxLoc.x / height;
-      float y = maxLoc.y / height;
-      points.push_back(cv::Point2f(x, y));
-    }
-    else
-    {
-      points.push_back(cv::Point2f(0.0, 0.0));
+      op::opLog("\nKeypoints:");
+      // Accesing each element of the keypoints
+      const auto& poseKeypoints = datumProcessed->at(0)->poseKeypoints;
+      op::opLog("Person pose keypoints:");
+      for (auto person = 0; person < poseKeypoints.getSize(0); person++)
+      {
+        op::opLog("Person " + std::to_string(person) + " (x, y, score):");
+        for (auto bodyPart = 0; bodyPart < poseKeypoints.getSize(1); bodyPart++)
+        {
+          float x = poseKeypoints[{ person, bodyPart, 0 }] / height;
+          float y = poseKeypoints[{ person, bodyPart, 1 }] / height;
+          points.push_back(cv::Point2f(x, y));
+
+          std::string valueToPrint;
+          for (auto xyscore = 0; xyscore < poseKeypoints.getSize(2); xyscore++)
+          {
+            valueToPrint += std::to_string(poseKeypoints[{ person, bodyPart, xyscore }]) + " ";
+          }
+          op::opLog(valueToPrint);
+        }
+      }
     }
   }
+
 #if USE_GLOG
   std::cout << "Openpose time cost: " << ros::Time::now() - timer << std::endl;
 #endif
 
+  for (int i = 0; i < 25; i++)
+    points.push_back(cv::Point2f(0.0, 0.0));
+
   return points;
 }
-}
-int openPoseROS()
+
+bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr)
 {
-    // logging_level
-    op::checkBool(0 <= FLAGS_logging_level && FLAGS_logging_level <= 255, "Wrong logging_level value.",
-              __LINE__, __FUNCTION__, __FILE__);
-    op::ConfigureLog::setPriorityThreshold((op::Priority)FLAGS_logging_level);
-    op::Profiler::setDefaultX(FLAGS_profile_speed);
-
-    op::opLog("Starting pose estimation demo.", op::Priority::High);
-    const auto timerBegin = std::chrono::high_resolution_clock::now();
-
-    openpose_ros::OpenPose openPose;
-
-    op::opLog("Starting thread(s)", op::Priority::High);
-    openPose.start();
-
-    // OpenPose processing
-    openpose_ros::OpenPoseROSIO openPoseROSIO(openPose);
-    
-    ros::spin();
-
-    op::opLog("Stopping thread(s)", op::Priority::High);
-    openPose.stop();
-    openPoseROSIO.stop();
-
-    // Measuring total time
-    const auto now = std::chrono::high_resolution_clock::now();
-    const auto totalTimeSec = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(now-timerBegin).count()
-                            * 1e-9;
-    const auto message = "Real-time pose estimation demo successfully finished. Total time: "
-                       + std::to_string(totalTimeSec) + " seconds.";
-    op::opLog(message, op::Priority::High);
-
-    return 0;
+  // User's displaying/saving/other processing here
+  // datum.cvOutputData: rendered frame with pose or heatmaps
+  // datum.poseKeypoints: Array<float> with the estimated pose
+  char key = ' ';
+  if (datumsPtr != nullptr && !datumsPtr->empty())
+  {
+    cv::imshow("User worker GUI", OP_OP2CVCONSTMAT(datumsPtr->at(0)->cvOutputData));
+    // Display image and sleeps at least 1 ms (it usually sleeps ~5-10 msec to display the image)
+    key = (char)cv::waitKey(1);
+  }
+  else
+    op::opLog("Nullptr or empty datumsPtr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
+  return (key == 27);
 }
 
+std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> PedestrianEvent::createDatum(cv::Mat mat)
+{
+  // Create new datum
+  auto datumsPtr = std::make_shared<std::vector<std::shared_ptr<op::Datum>>>();
+  datumsPtr->emplace_back();
+  auto& datumPtr = datumsPtr->at(0);
+  datumPtr = std::make_shared<op::Datum>();
+
+  // Fill datum
+  datumPtr->cvInputData = OP_CV2OPCONSTMAT(mat);
+
+  return datumsPtr;
+}
+
+int PedestrianEvent::openPoseROS()
+{
+  // logging_level
+  op::checkBool(0 <= FLAGS_logging_level && FLAGS_logging_level <= 255, "Wrong logging_level value.", __LINE__,
+                __FUNCTION__, __FILE__);
+  op::ConfigureLog::setPriorityThreshold((op::Priority)FLAGS_logging_level);
+  op::Profiler::setDefaultX(FLAGS_profile_speed);
+
+  op::opLog("Starting pose estimation thread(s)", op::Priority::High);
+  openPose.start();
+
+  return 0;
+}
+}
 int main(int argc, char** argv)
 {
-// Parsing command line flags
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
-
-    // Initializing ros
-    ros::init(argc, argv, "openpose_ros_node");
-
-    // Running openPoseROS
-    return openPoseROS();
 #if USE_GLOG
   google::InstallFailureSignalHandler();
 #endif
@@ -677,18 +690,15 @@ int main(int argc, char** argv)
   ros::Time start, stop;
   start = ros::Time::now();
   ros::init(argc, argv, "pedestrian_event");
-  // caffe::Caffe::set_mode(caffe::Caffe::GPU);
-  // caffe::Net<float> lenet("models/mpi/pose_deploy_linevec_faster_4_stages.prototxt",caffe::TEST);
-  // lenet.CopyTrainedLayersFrom("models/mpi/pose_iter_160000.caffemodel");
 
   ped::PedestrianEvent pe;
 
-  std::string protoFile = PED_MODEL_DIR + std::string("/body_25/pose_deploy.prototxt");
-  std::string weightsFile = PED_MODEL_DIR + std::string("/body_25/pose_iter_584000.caffemodel");
+  //std::string protoFile = PED_MODEL_DIR + std::string("/body_25/pose_deploy.prototxt");
+  //std::string weightsFile = PED_MODEL_DIR + std::string("/body_25/pose_iter_584000.caffemodel");
 
   std::string bash = PED_MODEL_DIR + std::string("/../download_models.sh");
   system(bash.c_str());
-  pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
+  //pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
   pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf.yml"));
   pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_3frames_normalization.yml"));
 
@@ -705,8 +715,10 @@ int main(int argc, char** argv)
   nh.getParam("/input_source", pe.input_source);
   nh.getParam("/max_distance", pe.max_distance);
 
-  pe.imageCache = boost::circular_buffer<std::pair<ros::Time, cv::Mat> >(pe.buffer_size);
+  pe.imageCache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.buffer.initial(FEATURE_NUM, FRAME_NUM, 5);  // 5 is life time
+
+  pe.openPoseROS();
 
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
@@ -714,5 +726,3 @@ int main(int argc, char** argv)
   pe.run();
   return 0;
 }
-
-

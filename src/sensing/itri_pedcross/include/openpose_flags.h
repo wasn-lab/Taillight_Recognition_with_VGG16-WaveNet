@@ -5,7 +5,7 @@
 #include <gflags/gflags.h>
 // Allow Google Flags in Ubuntu 14
 #ifndef GFLAGS_GFLAGS_H_
-    namespace gflags = google;
+namespace gflags = google;
 #endif
 
 DECLARE_int32(logging_level);

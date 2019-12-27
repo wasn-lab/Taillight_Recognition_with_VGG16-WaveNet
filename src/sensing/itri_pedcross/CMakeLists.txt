@@ -27,14 +27,14 @@ catkin_download_test_data(
 catkin_download_test_data(
     ped_models_body25
     "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
-    DESTINATION ${PED_MODEL_DIR}/body_25
+    DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 78287b57cf85fa89c03f1393d368e5b7
 )
 
 catkin_download_test_data(
     ped_models_body25_txt
     "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
-    DESTINATION ${PED_MODEL_DIR}/body_25
+    DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 451938635cf007327c3cf235ed483844
 )
 
@@ -93,7 +93,6 @@ set(CPP_FILES
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
-    src/openpose_ros_node.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
