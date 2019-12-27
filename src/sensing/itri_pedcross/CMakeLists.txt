@@ -10,12 +10,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
-include_directories("/usr/local/cuda/include")
-link_directories("/usr/local/cuda/lib64") 
-
-include_directories("/opt/ros/kinetic/include")
-link_directories("/opt/ros/kinetic/lib") 
-
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
@@ -33,14 +27,14 @@ catkin_download_test_data(
 catkin_download_test_data(
     ped_models_body25
     "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
-    DESTINATION ${PED_MODEL_DIR}/body_25
+    DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 78287b57cf85fa89c03f1393d368e5b7
 )
 
 catkin_download_test_data(
     ped_models_body25_txt
     "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
-    DESTINATION ${PED_MODEL_DIR}/body_25
+    DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 451938635cf007327c3cf235ed483844
 )
 
@@ -52,15 +46,16 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         msgs
+	cv_bridge
+	image_transport
 )
 
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
-  message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
+  message(FATAL_ERROR "libgflags not found. Please run\n ")
 endif ()
 
 find_package(Glog)
-
 
 find_package(OpenCV
              NO_MODULE
@@ -74,7 +69,7 @@ endif ()
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
 
-find_package(Eigen3 REQUIRED)
+find_package(OpenPose REQUIRED)
 
 set(TPP_CATKIN_DEPS
     message_runtime
@@ -91,7 +86,12 @@ catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${Eigen3_INCLUDE_DIR}
+	${CUDA_INCLUDE_DIRS}
+	${OpenPose_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+	${CAFFE_INCLUDE_DIRS}
+	${GFLAGS_INCLUDE_DIR} 
+	${GLOG_INCLUDE_DIR} 
         ${PROJECT_BINARY_DIR}/include
 	src/
 )
@@ -100,16 +100,19 @@ set(CPP_FILES
     src/pedestrian_event.cpp
     src/buffer.cpp
     src/buffer_node.cpp
+    src/openpose.cpp
+    src/openpose_flags.cpp
+    src/openpose_ros_io.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
         itri_pedcross
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
-        #caffe
-	glog
-        cv_bridge
+	${OpenCV_LIBS}
+	${OpenPose_LIBS}
+	${GFLAGS_LIBRARY} 
+	${GLOG_LIBRARY}
 )
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
