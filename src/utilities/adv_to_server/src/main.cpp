@@ -21,13 +21,17 @@ boost::mutex mutex_ros;
 std::queue<std::string> q;
 std::queue<std::string> obuQueue;
 std::queue<std::string> vkQueue;
+
+std::string time_string_;
+
 msgs::DetectedObjectArray detObjArray;
 msgs::LidLLA gps;
-msgs::TaichungVehInfo vehInfo;
+msgs::VehInfo vehInfo;
 json fps_json_ = {{"key",0}};
 
 const static double PI = 3.14;
 double data[10] = {0};
+ 
 const static std::string PLATE = "ITRI-ADV";
 const static int FPS_KEY_LEN = 27;
 const static std::string keys[] = 
@@ -87,6 +91,18 @@ char* log_Time ()
     return szTime;
 }
 
+char* get_Time (long timsStamp)
+{
+    struct  tm      *ptm;
+    struct  timeb   stTimeb;
+    static  char    szTime[24];
+    time_t rawtime  = (const time_t)timsStamp;
+    ptm = localtime(&rawtime);
+    sprintf(szTime, "%04d-%02d-%02d %02d:%02d:%02d.%03d", ptm->tm_year+1900, ptm->tm_mon+1, ptm->tm_mday, ptm->tm_hour, ptm->tm_min, ptm->tm_sec, stTimeb.millitm);
+    szTime[23] = 0;
+    return szTime;
+}
+
 void callback_detObj (const msgs::DetectedObjectArray& input)
 {
     mutex_ros.lock ();
@@ -101,10 +117,13 @@ void callback_gps (const msgs::LidLLA& input)
     mutex_ros.unlock ();
 }
 
-void callback_veh (const msgs::TaichungVehInfo& input)
+void callback_veh (const msgs::VehInfo& input)
 {
     mutex_ros.lock ();
     vehInfo = input;
+    std_msgs::Header h = input.header;
+    std::cout << "h.stamp: " << h.stamp << std::endl;
+    time_string_ = get_Time(h.stamp.sec);
     mutex_ros.unlock ();
 }
 
@@ -152,12 +171,12 @@ std::string get_msg_type(int id) {
 
 std::string get_jsonmsg_can (const std::string& type, double *data)
 {
-    std::string time_string = log_Time ();
+    //std::string time_string = log_Time ();
     json J1;
     J1["type"] = type;
     J1["plate"] = PLATE;
     J1["deviceID"] = "00:00:00:00:00:01";
-    J1["dt"] = time_string;
+    J1["dt"] = time_string_;
     if (type == "M8.2.adv002"){
         J1["speed"] = data[0];
         J1["front_brake_pressure"] = data[1];
@@ -169,12 +188,12 @@ std::string get_jsonmsg_can (const std::string& type, double *data)
 
 std::string get_jsonmsg_ros (const std::string& type)
 {
-    std::string time_string = log_Time ();
+    //std::string time_string = log_Time ();
     json J1;
     J1["type"] = type;
     J1["plate"] = PLATE;
     J1["deviceID"] = "00:00:00:00:00:01";
-    J1["dt"] = time_string;
+    J1["dt"] = time_string_;
     if (type == "M8.2.adv001") {
         J1["lat"] = gps.lidar_Lat;
         J1["lon"] = gps.lidar_Lon;
@@ -242,12 +261,12 @@ std::string get_jsonmsg_to_obu (const std::string& type)
 
 std::string get_jsonmsg_to_vk_server (const std::string& type)
 {
-    std::string time_string = log_Time ();
+    //std::string time_string = log_Time ();
     json J1;
     if (type == "M8.2.VK004") {
         J1["type"] = type;
         J1["deviceid"] = PLATE;
-        J1["receivetime"] = time_string ;
+        J1["receivetime"] = time_string_ ;
 
         for(int i = 0; i < FPS_KEY_LEN; i ++ )
         {
