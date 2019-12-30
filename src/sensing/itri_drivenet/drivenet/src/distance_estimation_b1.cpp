@@ -172,9 +172,9 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     else
     {
       if (piexl_loc > regionHeight.front())
-        distance = regionHeight.front() - 0.2;
+        distance = regionDist.front() - 0.2;
       else if (piexl_loc < regionHeight.back())
-        distance = regionHeight.back() + 0.2;
+        distance = regionDist.back() + 0.2;
     }
   }
 

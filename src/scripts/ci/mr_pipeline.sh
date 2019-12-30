@@ -29,6 +29,7 @@ set -e
 python src/scripts/ci/check_file_size.py
 python src/scripts/ci/check_locked_file.py
 python src/scripts/ci/check_file_mod.py
+python src/scripts/ci/check_filename.py
 python src/scripts/ci/check_symbolic_link.py
 
 readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)

@@ -20,7 +20,7 @@ catkin_download_test_data(
 )
 catkin_download_test_data(
     ped_models_rf
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
+    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
     DESTINATION ${PED_MODEL_DIR}
     MD5 d20e9859ff9ba625e2747578dae99cf2
 )
