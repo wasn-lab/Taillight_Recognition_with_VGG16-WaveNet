@@ -69,7 +69,12 @@ find_package(OpenCV
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
 
-find_package(OpenPose REQUIRED)
+find_package(OpenPose)
+if(OpenPose_FOUND) 
+  message(STATUS "OpenPose found. Include: " ${OpenPose_INCLUDE_DIRS})
+else()
+  message(FATAL_ERROR "OpenPose not found. Please run \"bash\\ src/sensing/itri_pedcross/install_openpose.sh\".")
+endif()
 
 set(TPP_CATKIN_DEPS
     message_runtime
