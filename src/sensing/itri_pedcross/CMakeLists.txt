@@ -14,26 +14,26 @@ set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_3frames_normalization.yml"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_3frames_normalization.yml"
     DESTINATION ${PED_MODEL_DIR}
     MD5 ff1ce2293391cf50f224edc76bf4f022
 )
 catkin_download_test_data(
     ped_models_rf
-    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
     DESTINATION ${PED_MODEL_DIR}
     MD5 d20e9859ff9ba625e2747578dae99cf2
 )
 catkin_download_test_data(
     ped_models_body25
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
     DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 78287b57cf85fa89c03f1393d368e5b7
 )
 
 catkin_download_test_data(
     ped_models_body25_txt
-    "http://nas.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
     DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 451938635cf007327c3cf235ed483844
 )
@@ -61,10 +61,10 @@ find_package(OpenCV
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
-if (${OpenCV_VERSION} VERSION_LESS "3.4.3")
-  message(STATUS "OpenCV_VERSION=${OpenCV_VERSION} < 3.4.3. Skip building ${PROJECT_NAME}")
-  return()
-endif ()
+#if (${OpenCV_VERSION} VERSION_LESS "3.4.3")
+#  message(STATUS "OpenCV_VERSION=${OpenCV_VERSION} < 3.4.3. Skip building ${PROJECT_NAME}")
+#  return()
+#endif ()
 
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
