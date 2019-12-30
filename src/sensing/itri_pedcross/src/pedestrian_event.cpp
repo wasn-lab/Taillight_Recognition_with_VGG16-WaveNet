@@ -388,10 +388,11 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
       buffer.display();
 #endif
       // Convert vector to array
-      static float feature_arr[FEATURE_NUM * FRAME_NUM];
+      int total_feature_size = feature_num * frame_num;
+      float feature_arr[total_feature_size];
       std::copy(feature.begin(), feature.end(), feature_arr);
       // Convert array to Mat
-      cv::Mat feature_mat = cv::Mat(1, FEATURE_NUM * FRAME_NUM, CV_32F, feature_arr);
+      cv::Mat feature_mat = cv::Mat(1, total_feature_size, CV_32F, feature_arr);
       // Predict
       float predict_result = predict_rf_pose(feature_mat);
 
@@ -484,21 +485,7 @@ float PedestrianEvent::predict_rf(cv::Mat input_data)
 
 bool PedestrianEvent::too_far(const msgs::BoxPoint box_point)
 {
-  if (box_point.p0.x > max_distance)
-    return true;
-  else if (box_point.p1.x > max_distance)
-    return true;
-  else if (box_point.p2.x > max_distance)
-    return true;
-  else if (box_point.p3.x > max_distance)
-    return true;
-  else if (box_point.p4.x > max_distance)
-    return true;
-  else if (box_point.p5.x > max_distance)
-    return true;
-  else if (box_point.p6.x > max_distance)
-    return true;
-  else if (box_point.p7.x > max_distance)
+  if ((box_point.p0.x + box_point.p6.x) / 2 > max_distance)
     return true;
   else
     return false;
@@ -716,7 +703,7 @@ int main(int argc, char** argv)
   nh.getParam("/max_distance", pe.max_distance);
 
   pe.imageCache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
-  pe.buffer.initial(FEATURE_NUM, FRAME_NUM, 5);  // 5 is life time
+  pe.buffer.initial();
 
   pe.openPoseROS();
 

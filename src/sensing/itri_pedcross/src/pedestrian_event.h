@@ -45,8 +45,6 @@
 #endif
 
 #define M_PIl 3.141592653589793238462643383279502884L /* pi */
-#define FEATURE_NUM 1174
-#define FRAME_NUM 3
 
 namespace ped
 {
@@ -102,6 +100,8 @@ public:
   float max_distance = 50;
   Buffer buffer;
   openpose_ros::OpenPose openPose;
+  const int feature_num = 1174;
+  const int frame_num = 3;
 };
 }  // namespace ped
 

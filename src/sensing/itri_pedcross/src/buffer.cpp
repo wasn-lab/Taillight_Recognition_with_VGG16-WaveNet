@@ -1,10 +1,7 @@
 #include <buffer.h>
 
-void Buffer::initial(int x, int y, int z)
+void Buffer::initial()
 {
-  feature_num = x;
-  frame_num = y;
-  life = z;
   first = 0;
   last = 0;
 }
@@ -29,7 +26,10 @@ std::vector<float> Buffer::add(int id, std::vector<float> feature)
     std::vector<float> void_vec;
     return void_vec;
   }
+  // Check if there is data in buffer.
   BufferNode* node_ptr = is_in_the_list(id);
+  // There is data in buffer.
+  // Delete T = t - 3 frame and add T = t frame
   if (node_ptr != 0)
   {
     node_ptr->data.erase(node_ptr->data.begin(), node_ptr->data.begin() + feature_num);
@@ -37,15 +37,20 @@ std::vector<float> Buffer::add(int id, std::vector<float> feature)
     node_ptr->refresh = true;
     return node_ptr->data;
   }
+  // There is no data in buffer.
+  // Add zero vector before T = t frame.
+  // Then add T = t frame to buffer.
   else
   {
     BufferNode* node_ptr = new BufferNode(id);
 
     float* zero_arr;
-    zero_arr = new float[feature_num * (frame_num - 1)]();
+    int other_feature = feature_num * (frame_num - 1);
+    zero_arr = new float[other_feature]();
     feature.insert(feature.begin(), zero_arr, zero_arr + sizeof(zero_arr) / sizeof(zero_arr[0]));
     delete[] zero_arr;
     node_ptr->data = feature;
+    // Add link to other buffer_node
     if (first == 0 && last == 0)
     {
       first = node_ptr;
