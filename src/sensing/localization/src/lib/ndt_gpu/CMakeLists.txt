@@ -85,7 +85,6 @@ if (CUDA_FOUND)
 
     target_link_libraries(ndt_gpu
             ${CUDA_LIBRARIES}
-            ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
             ${PCL_LIBRARIES}
             )
