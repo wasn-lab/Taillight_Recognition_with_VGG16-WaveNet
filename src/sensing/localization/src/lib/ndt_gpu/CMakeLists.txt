@@ -42,7 +42,7 @@ if (CUDA_FOUND)
     #    endif ()
     #endif()
 
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11;--ptxas-options=-v)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
 
     set(SUBSYS_DESC "Point cloud ndt gpu library")
 
