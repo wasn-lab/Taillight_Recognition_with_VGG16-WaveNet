@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(PCL 1.9.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(OpenCV 3 REQUIRED
+find_package(OpenCV REQUIRED
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
