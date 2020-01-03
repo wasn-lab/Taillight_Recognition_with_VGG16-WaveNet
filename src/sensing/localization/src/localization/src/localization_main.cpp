@@ -1400,7 +1400,8 @@ callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr &input)
 
 
         }
-
+        localization_to_veh_pub_msg.header.stamp = current_scan_time;
+        localization_to_veh_pub_msg.header.frame_id = "/base_link";
         localization_to_veh_pub_msg.x = current_pose_2vm.x;
         localization_to_veh_pub_msg.y = current_pose_2vm.y;
         localization_to_veh_pub_msg.heading = current_pose_2vm.yaw;
