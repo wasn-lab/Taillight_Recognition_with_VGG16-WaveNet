@@ -121,9 +121,6 @@ void callback_veh (const msgs::VehInfo& input)
 {
     mutex_ros.lock ();
     vehInfo = input;
-    std_msgs::Header h = input.header;
-    std::cout << "h.stamp: " << h.stamp << std::endl;
-    time_string_ = get_Time(h.stamp.sec);
     mutex_ros.unlock ();
 }
 
@@ -176,7 +173,7 @@ std::string get_jsonmsg_can (const std::string& type, double *data)
     J1["type"] = type;
     J1["plate"] = PLATE;
     J1["deviceID"] = "00:00:00:00:00:01";
-    J1["dt"] = time_string_;
+    J1["dt"] = log_Time();
     if (type == "M8.2.adv002"){
         J1["speed"] = data[0];
         J1["front_brake_pressure"] = data[1];
@@ -193,7 +190,7 @@ std::string get_jsonmsg_ros (const std::string& type)
     J1["type"] = type;
     J1["plate"] = PLATE;
     J1["deviceID"] = "00:00:00:00:00:01";
-    J1["dt"] = time_string_;
+    J1["dt"] = log_Time();
     if (type == "M8.2.adv001") {
         J1["lat"] = gps.lidar_Lat;
         J1["lon"] = gps.lidar_Lon;
@@ -266,7 +263,7 @@ std::string get_jsonmsg_to_vk_server (const std::string& type)
     if (type == "M8.2.VK004") {
         J1["type"] = type;
         J1["deviceid"] = PLATE;
-        J1["receivetime"] = time_string_ ;
+        J1["receivetime"] = log_Time() ;
 
         for(int i = 0; i < FPS_KEY_LEN; i ++ )
         {
