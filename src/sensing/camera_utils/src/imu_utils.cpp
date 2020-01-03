@@ -1,3 +1,4 @@
+#define GLM_ENABLE_EXPERIMENTAL
 #include "imu_utils.h"
 
 namespace imu_distance
