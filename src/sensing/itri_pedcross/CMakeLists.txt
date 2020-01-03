@@ -61,10 +61,17 @@ find_package(OpenCV
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)
-#if (${OpenCV_VERSION} VERSION_LESS "3.4.3")
-#  message(STATUS "OpenCV_VERSION=${OpenCV_VERSION} < 3.4.3. Skip building ${PROJECT_NAME}")
-#  return()
-#endif ()
+
+# workaround for ROS kinetic that always uses built-in opecv-3.3.1
+find_path(LOCAL_OPENCV_CORE
+  NAMES libopencv_core.so.3.4
+  PATHS /usr/local/lib)
+if (NOT LOCAL_OPENCV_CORE)
+  message(STATUS "No local OpenCV >= 3.4. Skip building ${PROJECT_NAME}")
+  return()
+else ()
+  message(STATUS "Found local OpenCV >= 3.4. No skipping ${PROJECT_NAME}")
+endif ()
 
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
