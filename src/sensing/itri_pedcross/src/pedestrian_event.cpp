@@ -302,12 +302,19 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
 {
   try
   {
+    // initialize feature
+    std::vector<float> feature;
+
+    // Add bbox to feature vector
+    float bbox[] = { bb_x1, bb_y1, bb_x2, bb_y2 };
+    feature.insert(feature.end(), bbox, bbox + sizeof(bbox) / sizeof(bbox[0]));
+
     if (!keypoint.empty())
     {
       std::vector<float> keypoints_x;
       std::vector<float> keypoints_y;
 
-      // Get body we need
+      // Get body keypoints we need
       int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
       int body_part_size = sizeof(body_part) / sizeof(*body_part);
       for (int i = 0; i < body_part_size; i++)
@@ -315,18 +322,11 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
         keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
         keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
       }
-      // Calculate the features
-      int keypoints_num = body_part_size;
-      std::vector<float> feature;
-
-      // Add bbox to feature vector
-      float bbox[] = { bb_x1, bb_y1, bb_x2, bb_y2 };
-      feature.insert(feature.end(), bbox, bbox + sizeof(bbox) / sizeof(bbox[0]));
 
       // Calculate x_distance, y_distance, distance, angle
-      for (int m = 0; m < keypoints_num; m++)
+      for (int m = 0; m < body_part_size; m++)
       {
-        for (int n = m + 1; n < keypoints_num; n++)
+        for (int n = m + 1; n < body_part_size; n++)
         {
           float dist_x, dist_y, dist, angle;
           if (keypoints_x[m] != 0.0f && keypoints_y[m] != 0.0f && keypoints_x[n] != 0.0f && keypoints_y[n] != 0.0f)
@@ -348,11 +348,12 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
         }
       }
 
-      for (int m = 0; m < keypoints_num; m++)
+      // Calculate 3 inner angles of each 3 keypoints
+      for (int m = 0; m < body_part_size; m++)
       {
-        for (int n = m + 1; n < keypoints_num; n++)
+        for (int n = m + 1; n < body_part_size; n++)
         {
-          for (int k = n + 1; k < keypoints_num; k++)
+          for (int k = n + 1; k < body_part_size; k++)
           {
             float angle[3] = { 0.0f, 0.0f, 0.0f };
             float* angle_ptr;
@@ -370,42 +371,43 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
           }
         }
       }
+    }
+    else  // if keypoint is empty
+    {
+      float* zero_arr;
+      // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
+      int other_feature = feature_num - 4;
+      zero_arr = new float[other_feature]();
+      feature.insert(feature.begin(), zero_arr, zero_arr + sizeof(zero_arr) / sizeof(zero_arr[0]));
+      delete[] zero_arr;
+    }
 
-      //  Buffer first frame
-      if (buffer.timestamp == ros::Time(0))
-      {
-        buffer.timestamp = time;
-      }
-      //  new frame
-      else if (buffer.timestamp != time)
-      {
-        buffer.timestamp = time;
-        buffer.check_life();
-      }
-      feature = buffer.add(id, feature);
+    //  Buffer first frame
+    if (buffer.timestamp == ros::Time(0))
+    {
+      buffer.timestamp = time;
+    }
+    //  new frame
+    else if (buffer.timestamp != time)
+    {
+      buffer.timestamp = time;
+      buffer.check_life();
+    }
+    feature = buffer.add(id, feature);
 
 #if USE_GLOG
-      buffer.display();
+    buffer.display();
 #endif
-      // Convert vector to array
-      int total_feature_size = feature_num * frame_num;
-      float feature_arr[total_feature_size];
-      std::copy(feature.begin(), feature.end(), feature_arr);
-      // Convert array to Mat
-      cv::Mat feature_mat = cv::Mat(1, total_feature_size, CV_32F, feature_arr);
-      // Predict
-      float predict_result = predict_rf_pose(feature_mat);
+    // Convert vector to array
+    int total_feature_size = feature_num * frame_num;
+    float feature_arr[total_feature_size];
+    std::copy(feature.begin(), feature.end(), feature_arr);
+    // Convert array to Mat
+    cv::Mat feature_mat = cv::Mat(1, total_feature_size, CV_32F, feature_arr);
+    // Predict
+    float predict_result = predict_rf_pose(feature_mat);
 
-      return predict_result;
-    }
-    else
-    {
-      cv::Mat feature_mat = cv::Mat(1, 4, CV_32F, { bb_x1, bb_y1, bb_x2, bb_y2 });
-      // Predict
-      float predict_result = predict_rf(feature_mat);
-
-      return predict_result;
-    }
+    return predict_result;
   }
   catch (const std::exception& e)
   {
@@ -472,6 +474,7 @@ float PedestrianEvent::predict_rf_pose(cv::Mat input_data)
 }
 // use random forest model to predict cross probability
 // return cross probability
+/*
 float PedestrianEvent::predict_rf(cv::Mat input_data)
 {
   float p = rf->predict(input_data);
@@ -481,7 +484,7 @@ float PedestrianEvent::predict_rf(cv::Mat input_data)
 #endif
 
   return p;
-}
+}*/
 
 bool PedestrianEvent::too_far(const msgs::BoxPoint box_point)
 {
@@ -680,12 +683,12 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
 
-  //std::string protoFile = PED_MODEL_DIR + std::string("/body_25/pose_deploy.prototxt");
-  //std::string weightsFile = PED_MODEL_DIR + std::string("/body_25/pose_iter_584000.caffemodel");
+  // std::string protoFile = PED_MODEL_DIR + std::string("/body_25/pose_deploy.prototxt");
+  // std::string weightsFile = PED_MODEL_DIR + std::string("/body_25/pose_iter_584000.caffemodel");
 
   std::string bash = PED_MODEL_DIR + std::string("/../download_models.sh");
   system(bash.c_str());
-  //pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
+  // pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
   pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf.yml"));
   pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_3frames_normalization.yml"));
 

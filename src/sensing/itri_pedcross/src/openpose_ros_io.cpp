@@ -19,7 +19,6 @@ OpenPoseROSIO::OpenPoseROSIO(OpenPose& openPose) : nh_("/openpose_ros_node"), it
   nh_.param("original_video_file_name", original_video_file_name_, std::string(""));
   nh_.param("openpose_video_file_name", openpose_video_file_name_, std::string(""));
   nh_.param("video_fps", video_fps_, 10);
-
 }
 
 void OpenPoseROSIO::stop()
