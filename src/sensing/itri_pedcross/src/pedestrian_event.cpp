@@ -683,13 +683,12 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
 
-  // std::string protoFile = PED_MODEL_DIR + std::string("/body_25/pose_deploy.prototxt");
-  // std::string weightsFile = PED_MODEL_DIR + std::string("/body_25/pose_iter_584000.caffemodel");
-
   std::string bash = PED_MODEL_DIR + std::string("/../download_models.sh");
-  system(bash.c_str());
-  // pe.net_openpose = cv::dnn::readNetFromCaffe(protoFile, weightsFile);
-  pe.rf = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf.yml"));
+  int call_success = system(bash.c_str());
+  if (call_success == -1){
+    std::cout<<"Cannot execute download_models.sh."<<std::endl;
+  }
+
   pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_3frames_normalization.yml"));
 
   ros::NodeHandle nh;
