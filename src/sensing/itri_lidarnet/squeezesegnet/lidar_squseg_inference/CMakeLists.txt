@@ -34,7 +34,7 @@ function(DownloadModle Vehicletype ModelDegree)
 
     file(
     DOWNLOAD
-    	http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/${Vehicletype}/${ModelDegree} ${PATH_MODEL_LOCAL}/SqueezeSegNet/${Vehicletype}/${ModelDegree}    	
+    	http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/${Vehicletype}/${ModelDegree} ${PATH_MODEL_LOCAL}/SqueezeSegNet/${Vehicletype}/${ModelDegree}    	
     STATUS
         status
     LOG 
@@ -80,7 +80,7 @@ endif()
 #    
 #    file(
 #    DOWNLOAD 
-#        http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/hino1/N90deg.pb ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/N90deg_1.pb
+#        http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/hino1/N90deg.pb ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/N90deg_1.pb
 #    STATUS
 #        status
 #    LOG 

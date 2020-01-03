@@ -14,7 +14,7 @@ Follow the instruction [here](https://gitlab.itriadv.co/self_driving_bus/automat
 TensorRT installation file is 831MB. It can be downloaded by the URL below.
 
 ```
-wget "http://nas.itriadv.co:8888/Share/ADV/3rd source code/TensorRT/nv-tensorrt-repo-ubuntu1604-cuda10.0-trt5.0.2.6-ga-20181009_1-1_amd64.deb"
-wget "http://nas.itriadv.co:8888/Share/ADV/3rd source code/TensorRT/TensorRT-Installation-Guide.pdf"
+wget "http://118.163.54.109:8888/Share/ADV/3rd source code/TensorRT/nv-tensorrt-repo-ubuntu1604-cuda10.0-trt5.0.2.6-ga-20181009_1-1_amd64.deb"
+wget "http://118.163.54.109:8888/Share/ADV/3rd source code/TensorRT/TensorRT-Installation-Guide.pdf"
 ```
 Follow TensorRT-Installation-Guide.pdf to install TensorRT.

@@ -88,6 +88,7 @@ namespace MSG{
 
     struct T_PARAMS{
         std::string name;
+        std::string name_no_slash; // Remove "all" the "/" in topic name, for sendind json
         int type; // According to the enum value defined in ROS_INTERFACE class
         bool is_input; // if not, it's output
         size_t ROS_queue; // The lengh of the ROS queue
@@ -102,6 +103,7 @@ namespace MSG{
         //
         T_PARAMS():
             name(""),
+            name_no_slash(""),
             type(-1),
             is_input(false),
             ROS_queue(10),
@@ -122,6 +124,7 @@ namespace MSG{
             std::string to_frame_in=""
         ):
             name(clearTopicName(name_in)),
+            name_no_slash(removeSlashAndClearTopicName(name_in)),
             type(type_in),
             is_input(is_input_in),
             ROS_queue(ROS_queue_in),
@@ -144,6 +147,7 @@ namespace MSG{
             std::string to_frame_in=""
         ):
             name(clearTopicName(name_in)),
+            name_no_slash(removeSlashAndClearTopicName(name_in)),
             type(type_in),
             is_input(is_input_in),
             ROS_queue(ROS_queue_in),
@@ -163,6 +167,11 @@ namespace MSG{
                     std::cout << "Fixed topic name: [" << name_in << "]\n";
                 }// else, the string doesn't need to be fixed
             }// else, the topic is empty, do nothing
+            return name_in;
+        }
+        std::string removeSlashAndClearTopicName(std::string name_in){
+            name_in = clearTopicName(name_in);
+            name_in.erase(std::remove(name_in.begin(), name_in.end(), '/'), name_in.end());
             return name_in;
         }
     };
@@ -219,6 +228,7 @@ public:
     inline bool is_topic_got_frame(const int topic_id){return (_topic_param_list[topic_id].frame_id.size() > 0);}
     inline MSG::T_PARAMS get_topic_param(const int topic_id){ return _topic_param_list[topic_id]; }
     inline std::string get_topic_name(const int topic_id){ return _topic_param_list[topic_id].name; }
+    inline std::string get_topic_name_no_slash(const int topic_id){ return _topic_param_list[topic_id].name_no_slash; }
     inline size_t get_count_of_all_topics(){    return _topic_param_list.size();    }
     inline size_t get_count_of_a_topic_type(MSG::M_TYPE topic_type){    return (_msg_type_2_topic_params[int(topic_type)].size() );  }
 

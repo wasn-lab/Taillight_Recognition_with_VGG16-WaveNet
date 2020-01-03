@@ -218,6 +218,7 @@ bool ROS_API::_set_up_topics(){
 #endif  // __ROS_INTERFACE_VER__
         // GUI rendered draw
         ros_interface.add_a_topic( int(MSG_ID::GUI_screen_out), "GUI/screen_out", int(M_TYPE::Image), false, 10, 1);
+        ros_interface.add_a_topic( int(MSG_ID::GUI_fps_out), "GUI/topic_fps_out", int(M_TYPE::String), false, 10, 1);
     }
     //------------------------------------------------//
     return true;

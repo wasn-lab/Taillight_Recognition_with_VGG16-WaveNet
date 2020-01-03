@@ -750,26 +750,34 @@ def main(sys_args):
     parser.add_argument("-d", "--PARAM_DIR", help="specify the directory of the setting-file and topics-file")
     parser.add_argument("-s", "--SETTING_F", help="specify the filename of the setting-file")
     parser.add_argument("-t", "--TOPICS_F", help="specify the filename of the topics-file")
+    # Decide if the node is running in anonymous mode
+    group_2 = parser.add_mutually_exclusive_group()
+    group_2.add_argument("-na", "--anonymous", action="store_true", help="Run in annonymous mode, the node name will be tailing with time stamp")
+    group_2.add_argument("-ne", "--fix-name", action="store_true", help="Run in fix mode, the node name will be /msg_recorder")
     #---------------------------#
     # _args = parser.parse_args()
     _args, _unknown = parser.parse_known_args()
 
 
+    # Node name mode, note: default is fixed name
+    node_mode_annoymous = _args.anonymous
+    rospy.init_node('msg_recorder', anonymous=node_mode_annoymous)
+    #
+    this_node_name = rospy.get_name()[1:] # Removing the '/'
+    # print("this_node_name = %s" % this_node_name)
+    #
+    if node_mode_annoymous:
+        rospy.logwarn("[REC] Using anonymous node name [%s]" % this_node_name)
+    else:
+        rospy.loginfo("[REC] Using fixed node name [%s]" % this_node_name)
+    #
 
-    #
-    rospy.init_node('msg_recorder', anonymous=True)
-    #
-    _node_name = rospy.get_name()[1:] # Removing the '/'
-    print("_node_name = %s" % _node_name)
-    #
-    rospack = rospkg.RosPack()
-    _pack_path = rospack.get_path('msg_recorder')
-    print("_pack_path = %s" % _pack_path)
     # Loading parameters
     #---------------------------------------------#
     rospack = rospkg.RosPack()
-    pack_path = rospack.get_path('msg_recorder')
-    f_path = _pack_path + "/params/"
+    this_pack_path = rospack.get_path('msg_recorder')
+    print("this_pack_path = %s" % this_pack_path)
+    f_path = this_pack_path + "/params/"
 
     # Manual mode
     f_name_params = "rosbag_setting.yaml"
@@ -857,7 +865,7 @@ def main(sys_args):
 
     # The manager for rosbag record
     #---------------------------------------------#
-    _rosbag_caller = ROSBAG_CALLER(param_dict, _node_name)
+    _rosbag_caller = ROSBAG_CALLER(param_dict, this_node_name)
     _rosbag_caller.attach_state_sender(_recorder_running_pub.publish)
     _rosbag_caller.attach_report_sender(_trigger_event_report_pub.publish)
 
