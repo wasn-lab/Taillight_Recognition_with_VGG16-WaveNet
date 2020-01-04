@@ -2,13 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-
-set(CMAKE_CXX_STANDARD 11)  # -std=c++11
-set(CMAKE_C_STANDARD 11)  # -std=gnu11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
+include(CompilerFlags)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
@@ -50,6 +44,16 @@ find_package(catkin REQUIRED COMPONENTS
 	image_transport
 )
 
+find_package(OpenCV REQUIRED)
+
+find_package(OpenPose)
+if (OpenPose_FOUND)
+  message(Status "Found openpose ${OpenPose_VERSION} in ${OpenPose_DIR}")
+else ()
+  message(Status "No openpose found. Follow install_openpose.sh to install it.")
+  message(Status "Skip building ${PROJECT_NAME}.")
+endif ()
+
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
   message(FATAL_ERROR "libgflags not found. Please run\n ")
@@ -57,7 +61,6 @@ endif ()
 
 find_package(Glog)
 
-find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
 
