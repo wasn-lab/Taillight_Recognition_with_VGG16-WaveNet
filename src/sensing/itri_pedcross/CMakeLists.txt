@@ -46,12 +46,14 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
-find_package(OpenPose)
-if (OpenPose_FOUND)
+find_library(LIBOPENPOSE_SO NAMES libopenpose.so)
+
+if (LIBOPENPOSE_SO)
+  find_package(OpenPose)
   message(Status "Found openpose ${OpenPose_VERSION} in ${OpenPose_DIR}")
 else ()
-  message(Status "No openpose found. Follow install_openpose.sh to install it.")
-  message(Status "Skip building ${PROJECT_NAME}.")
+  message(Status "Openpose not found. Follow install_openpose.sh to install it. Skip building ${PROJECT_NAME}.")
+  return()
 endif ()
 
 find_package(GFlags)
@@ -63,13 +65,6 @@ find_package(Glog)
 
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
-
-find_package(OpenPose)
-if(OpenPose_FOUND) 
-  message(STATUS "OpenPose found. Include: " ${OpenPose_INCLUDE_DIRS})
-else()
-  message(FATAL_ERROR "OpenPose not found. Please run \"bash\\ src/sensing/itri_pedcross/install_openpose.sh\".")
-endif()
 
 set(TPP_CATKIN_DEPS
     message_runtime
