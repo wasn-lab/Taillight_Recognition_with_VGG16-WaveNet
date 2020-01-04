@@ -33,16 +33,15 @@ catkin_download_test_data(
 )
 
 find_package(catkin REQUIRED COMPONENTS
-        message_generation
-        roscpp
-        geometry_msgs
-        tf2_geometry_msgs
-        sensor_msgs
-        std_msgs
-        msgs
-	cv_bridge
-	image_transport
-)
+    message_generation
+    roscpp
+    geometry_msgs
+    tf2_geometry_msgs
+    sensor_msgs
+    std_msgs
+    msgs
+    cv_bridge
+    image_transport)
 
 find_package(OpenCV REQUIRED)
 
@@ -79,16 +78,16 @@ set(TPP_CATKIN_DEPS
 catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
 
 include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
-	${CUDA_INCLUDE_DIRS}
-	${OpenPose_INCLUDE_DIRS}
-	${OpenCV_INCLUDE_DIRS}
-	${CAFFE_INCLUDE_DIRS}
-	${GFLAGS_INCLUDE_DIR} 
-	${GLOG_INCLUDE_DIR} 
-        ${PROJECT_BINARY_DIR}/include
-	src/
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
+    ${OpenPose_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${CAFFE_INCLUDE_DIRS}
+    ${GFLAGS_INCLUDE_DIR}
+    ${GLOG_INCLUDE_DIR}
+    ${PROJECT_BINARY_DIR}/include
+    src/
 )
 
 set(CPP_FILES
@@ -102,13 +101,12 @@ set(CPP_FILES
 
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
-        itri_pedcross
-        ${catkin_LIBRARIES}
-	${OpenCV_LIBS}
-	${OpenPose_LIBS}
-	${GFLAGS_LIBRARY} 
-	${GLOG_LIBRARY}
-)
+    itri_pedcross
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${OpenPose_LIBS}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
