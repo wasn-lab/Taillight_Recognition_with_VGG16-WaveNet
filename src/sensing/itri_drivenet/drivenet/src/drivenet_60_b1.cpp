@@ -351,7 +351,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     right_point[0] = detObj.bPoint.p3.x;
     left_point[1] = detObj.bPoint.p0.y;
     right_point[1] = detObj.bPoint.p3.y;
-    distance = AbsoluteToRelativeDistance(left_point, right_point); //relative distance
+    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
     detObj.distance = distance;
   }
 

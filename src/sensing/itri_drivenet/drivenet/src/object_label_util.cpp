@@ -2,8 +2,8 @@
 
 namespace DriveNet
 {
-const std::vector<cv::Scalar> g_label_colors = {cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0),
-                                    cv::Scalar(125, 125, 125)};
+const std::vector<cv::Scalar> g_label_colors = { cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0),
+                                                 cv::Scalar(125, 125, 125) };
 
 int translate_label(int label)
 {
