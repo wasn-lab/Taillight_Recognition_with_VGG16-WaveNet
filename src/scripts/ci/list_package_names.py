@@ -3,6 +3,7 @@
 List all package names in the repository.
 """
 from __future__ import print_function
+import pprint
 import os
 import io
 import re
@@ -33,9 +34,9 @@ def _get_package_name(xml_file):
 def main():
     """Prog entry."""
     xmls = _get_xmls()
-    for xml in xmls:
-        pkg = _get_package_name(xml)
-        # print("{} {}".format(pkg, xml))
+    pkgs = {_get_package_name(xml):xml for xml in xmls}
+    pprint.pprint(pkgs)
+    for pkg in sorted(pkgs.keys()):
         print("{}".format(pkg))
 
 if __name__ == "__main__":

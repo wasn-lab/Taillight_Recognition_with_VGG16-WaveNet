@@ -2,6 +2,9 @@
 
 namespace DriveNet
 {
+const std::vector<cv::Scalar> g_label_colors = { cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0),
+                                                 cv::Scalar(125, 125, 125) };
+
 int translate_label(int label)
 {
   if (label == static_cast<int>(DriveNet::net_type_id::person))
@@ -33,37 +36,37 @@ int translate_label(int label)
     return static_cast<int>(DriveNet::common_type_id::other);
   }
 }
-cv::Scalar get_labelColor(std::vector<cv::Scalar> colors, int label_id)
+cv::Scalar get_label_color(int label_id)
 {
   cv::Scalar class_color;
   if (label_id == static_cast<int>(DriveNet::net_type_id::person))
-    class_color = colors[0];
+    class_color = g_label_colors[0];
   else if (label_id == static_cast<int>(DriveNet::net_type_id::bicycle) ||
            label_id == static_cast<int>(DriveNet::net_type_id::motorbike))
-    class_color = colors[1];
+    class_color = g_label_colors[1];
   else if (label_id == static_cast<int>(DriveNet::net_type_id::car) ||
            label_id == static_cast<int>(DriveNet::net_type_id::bus) ||
            label_id == static_cast<int>(DriveNet::net_type_id::truck))
-    class_color = colors[2];
+    class_color = g_label_colors[2];
   else
-    class_color = colors[3];
+    class_color = g_label_colors[3];
   return class_color;
 }
 
-cv::Scalar get_commonLabelColor(std::vector<cv::Scalar> colors, int label_id)
+cv::Scalar get_common_label_color(int label_id)
 {
   cv::Scalar class_color;
   if (label_id == static_cast<int>(DriveNet::common_type_id::person))
-    class_color = colors[0];
+    class_color = g_label_colors[0];
   else if (label_id == static_cast<int>(DriveNet::common_type_id::bicycle) ||
            label_id == static_cast<int>(DriveNet::common_type_id::motorbike))
-    class_color = colors[1];
+    class_color = g_label_colors[1];
   else if (label_id == static_cast<int>(DriveNet::common_type_id::car) ||
            label_id == static_cast<int>(DriveNet::common_type_id::bus) ||
            label_id == static_cast<int>(DriveNet::common_type_id::truck))
-    class_color = colors[2];
+    class_color = g_label_colors[2];
   else
-    class_color = colors[3];
+    class_color = g_label_colors[3];
   return class_color;
 }
 };

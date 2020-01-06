@@ -7,6 +7,8 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/LidLLA.h"
 #include "msgs/TaichungVehInfo.h"
+#include "msgs/VehInfo.h"
+#include "std_msgs/String.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/tf.h>
@@ -29,15 +31,18 @@ class RosModuleTraffic
                       void
                       (*cb2) (const msgs::LidLLA&),
                       void
-                      (*cb3) (const msgs::TaichungVehInfo&),
+                      (*cb3) (const msgs::VehInfo&),
                       void
-                      (*cb4) (const geometry_msgs::PoseStamped::ConstPtr&))
+                      (*cb4) (const geometry_msgs::PoseStamped::ConstPtr&),
+                      void
+                      (*cb5) (const std_msgs::String::ConstPtr&))
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
       static ros::Subscriber gps = n.subscribe ("lidar_lla", 1, cb2);
-      static ros::Subscriber vehInfo = n.subscribe ("taichung_veh_info", 1, cb3);
+      static ros::Subscriber vehInfo = n.subscribe ("veh_info", 1, cb3);
       static ros::Subscriber gnss2local_sub = n.subscribe("gnss2local_data", 1, cb4);
+      static ros::Subscriber fps = n.subscribe("/GUI/topic_fps_out", 1, cb5);
     }
 
 };
