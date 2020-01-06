@@ -18,10 +18,12 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 
-// MSG: (ROS std_msgs)
+// MSG: ROS std_msgs
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+// MSG: ROS nav_msgs
+#include <nav_msgs/Path.h>
 
 // MSG: GeoPoseStamped
 #include <geometry_msgs/PoseStamped.h>
