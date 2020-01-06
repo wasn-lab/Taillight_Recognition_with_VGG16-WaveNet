@@ -353,6 +353,8 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
   int leftCheck = 2;
   int rightCheck = 2;
+  float distance = -1;
+  detObj.distance = distance;
 
   if (cam_order == camera::id::top_front_120)
   {
@@ -375,6 +377,25 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   {
     boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
     detObj.bPoint = boxPoint;
+
+    std::vector<float> left_point(2);
+    std::vector<float> right_point(2);
+    if (cam_order == camera::id::top_front_120)
+    {
+      left_point[0] = detObj.bPoint.p0.x;
+      right_point[0] = detObj.bPoint.p3.x;
+      left_point[1] = detObj.bPoint.p0.y;
+      right_point[1] = detObj.bPoint.p3.y;
+    }
+    else if (cam_order == camera::id::top_rear_120)
+    {
+      left_point[0] = detObj.bPoint.p7.x;
+      right_point[0] = detObj.bPoint.p4.x;
+      left_point[1] = detObj.bPoint.p7.y;
+      right_point[1] = detObj.bPoint.p4.y;
+    }
+    distance = AbsoluteToRelativeDistance(left_point, right_point); //relative distance
+    detObj.distance = distance;
   }
 
   camInfo.u = box.x1;
@@ -524,24 +545,7 @@ void* run_yolo(void*)
           {
             int x1 = detObj.camInfo.u;
             int y1 = detObj.camInfo.v;
-            std::vector<float> left_point(2);
-            std::vector<float> right_point(2);
-            if (cam_order == camera::id::top_front_120)
-            {
-              left_point[0] = detObj.bPoint.p0.x;
-              right_point[0] = detObj.bPoint.p3.x;
-              left_point[1] = detObj.bPoint.p0.y;
-              right_point[1] = detObj.bPoint.p3.y;
-            }
-            else if (cam_order == camera::id::top_rear_120)
-            {
-              left_point[0] = detObj.bPoint.p7.x;
-              right_point[0] = detObj.bPoint.p4.x;
-              left_point[1] = detObj.bPoint.p7.y;
-              right_point[1] = detObj.bPoint.p4.y;
-            }
-            float distance = AbsoluteToRelativeDistance(left_point, right_point); //relative distance
-            // float distance = left_point[0]; //vertical distance
+            float distance = detObj.distance;
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
