@@ -11,10 +11,10 @@ EdgeDetection::EdgeDetection () :
 
         grid_min_value_(0.0),
         grid_max_value_(1.0),
-        grid_length_x_(70),
+        grid_length_x_(50),
         grid_length_y_(30),
         grid_resolution_(0.2),
-        grid_position_x_(20),
+        grid_position_x_(10),
         grid_position_y_(0),
         maximum_lidar_height_thres_(5),
         minimum_lidar_height_thres_(-5),

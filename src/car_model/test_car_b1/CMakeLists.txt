@@ -3,7 +3,7 @@ if (CATKIN_ENABLE_TESTING)
   set(TEST_BAG "my_record_2019-11-27-16-36-54.bag")
 
   catkin_download_test_data(${TEST_BAG}
-    "http://nas.itriadv.co:8888/Share/ADV/Rosbag/B1/20191127_in itri_verification/${TEST_BAG}"
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/20191127_in itri_verification/${TEST_BAG}"
     DESTINATION ${Project_SOURCE_DIR}/bags
     MD5 05e196fb30c6e04ffb029a48d788fb8e
   )
