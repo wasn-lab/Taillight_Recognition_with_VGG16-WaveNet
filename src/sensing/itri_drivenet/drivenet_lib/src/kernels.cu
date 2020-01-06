@@ -52,7 +52,7 @@ cudaError_t cudaYoloLayerV3(const void* input, void* output, const uint& batchSi
     dim3 number_of_blocks((gridSize / threads_per_block.x) + 1,
                           (gridSize / threads_per_block.y) + 1,
                           (numBBoxes / threads_per_block.z) + 1);
-    for (int batch = 0; batch < batchSize; ++batch)
+    for (uint batch = 0; batch < batchSize; ++batch)
     {
         gpuYoloLayerV3<<<number_of_blocks, threads_per_block, 0, stream>>>(
             reinterpret_cast<const float*>(input) + (batch * outputSize),

@@ -5,7 +5,8 @@
 namespace DriveNet
 {
 Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferParams& inferParams)
-  : m_EnginePath(networkInfo.enginePath)
+  : m_CudaStream(nullptr)
+  , m_EnginePath(networkInfo.enginePath)
   , m_NetworkType(networkInfo.networkType)
   , m_ConfigFilePath(networkInfo.configFilePath)
   , m_WtsFilePath(networkInfo.wtsFilePath)
@@ -31,7 +32,6 @@ Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferPara
   , m_Engine(nullptr)
   , m_Context(nullptr)
   , m_InputBindingIndex(-1)
-  , m_CudaStream(nullptr)
   , m_PluginFactory(new PluginFactory)
   , m_TinyMaxpoolPaddingFormula(new YoloTinyMaxpoolPaddingFormula)
 {
@@ -372,7 +372,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
     }
   }
 
-  if (weights.size() != weightPtr)
+  if (weights.size() != static_cast<std::vector<float>::size_type>(weightPtr))
   {
     std::cout << "Number of unused weights left : " << weights.size() - weightPtr << std::endl;
     assert(0);
