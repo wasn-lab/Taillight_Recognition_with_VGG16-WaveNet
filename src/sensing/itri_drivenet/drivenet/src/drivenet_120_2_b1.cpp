@@ -545,27 +545,24 @@ void* run_yolo(void*)
           {
             int x1 = detObj.camInfo.u;
             int y1 = detObj.camInfo.v;
-            float distMeter_p0x = 0;//, distMeter_p3x = 0, distMeter_p0y = 0, distMeter_p3y = 0;
+            std::vector<float> left_point(2);
+            std::vector<float> right_point(2);
             if (cam_order == camera::id::top_front_120)
             {
-              distMeter_p0x = detObj.bPoint.p0.x;
-              // distMeter_p3x = detObj.bPoint.p3.x;
-              // distMeter_p0y = detObj.bPoint.p0.y;
-              // distMeter_p3y = detObj.bPoint.p3.y;
+              left_point[0] = detObj.bPoint.p0.x;
+              right_point[0] = detObj.bPoint.p3.x;
+              left_point[1] = detObj.bPoint.p0.y;
+              right_point[1] = detObj.bPoint.p3.y;
             }
             else if (cam_order == camera::id::top_rear_120)
             {
-              distMeter_p0x = detObj.bPoint.p7.x;
-              // distMeter_p3x = detObj.bPoint.p4.x;
-              // distMeter_p0y = detObj.bPoint.p7.y;
-              // distMeter_p3y = detObj.bPoint.p4.y;
+              left_point[0] = detObj.bPoint.p7.x;
+              right_point[0] = detObj.bPoint.p4.x;
+              left_point[1] = detObj.bPoint.p7.y;
+              right_point[1] = detObj.bPoint.p4.y;
             }
-
-            // float centerPoint[2];
-            // centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
-            // centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
-            // float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2)); //relative distance
-            float distance = distMeter_p0x; //vertical distance
+            float distance = AbsoluteToRelativeDistance(left_point, right_point); //relative distance
+            // float distance = left_point[0]; //vertical distance
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 

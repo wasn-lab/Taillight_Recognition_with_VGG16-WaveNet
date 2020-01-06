@@ -704,27 +704,24 @@ void* run_yolo(void*)
           {
             int x1 = detObj.camInfo.u;
             int y1 = detObj.camInfo.v;
-            float distMeter_p0x = 0;//, distMeter_p3x = 0, distMeter_p0y = 0, distMeter_p3y = 0;
+            std::vector<float> left_point(2);
+            std::vector<float> right_point(2);
             if (cam_order == camera::id::top_right_front_120 || cam_order == camera::id::top_right_rear_120)
             {
-              distMeter_p0x = detObj.bPoint.p4.x;
-              // distMeter_p3x = detObj.bPoint.p0.x;
-              // distMeter_p0y = detObj.bPoint.p4.y;
-              // distMeter_p3y = detObj.bPoint.p0.y;
+              left_point[0] = detObj.bPoint.p4.x;
+              right_point[0] = detObj.bPoint.p0.x;
+              left_point[1] = detObj.bPoint.p4.y;
+              right_point[1] = detObj.bPoint.p0.y;
             }
             else if (cam_order == camera::id::top_left_front_120 || cam_order == camera::id::top_left_rear_120)
             {
-              distMeter_p0x = detObj.bPoint.p3.x;
-              // distMeter_p3x = detObj.bPoint.p7.x;
-              // distMeter_p0y = detObj.bPoint.p3.y;
-              // distMeter_p3y = detObj.bPoint.p7.y;
+              left_point[0] = detObj.bPoint.p3.x;
+              right_point[0] = detObj.bPoint.p7.x;
+              left_point[1] = detObj.bPoint.p3.y;
+              right_point[1] = detObj.bPoint.p7.y;
             }
-
-            // float centerPoint[2];
-            // centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
-            // centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
-            // float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2)); //relative distance
-            float distance = distMeter_p0x; //vertical distance
+            float distance = AbsoluteToRelativeDistance(left_point, right_point); //relative distance
+            // float distance = left_point[0]; //vertical distance
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
