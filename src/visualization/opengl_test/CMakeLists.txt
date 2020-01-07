@@ -42,7 +42,6 @@ endif ()
 
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
-
 # Compile external dependencies
 add_subdirectory (external)
 
