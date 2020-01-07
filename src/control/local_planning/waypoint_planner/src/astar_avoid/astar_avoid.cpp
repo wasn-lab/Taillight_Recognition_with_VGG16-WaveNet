@@ -132,7 +132,10 @@ void AstarAvoid::closestWaypointCallback(const std_msgs::Int32& msg)
 
 void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
 {
-  obstacle_waypoint_index_ = msg.data;
+  if (msg.data == -1)
+    obstacle_waypoint_index_ = msg.data;
+  else
+    obstacle_waypoint_index_ = msg.data + 6;
 }
 
 void AstarAvoid::run()
@@ -200,7 +203,6 @@ void AstarAvoid::run()
     {
       avoiding_path_flag.data = 3;
       ROS_INFO("STOPPING");
-      // avoid_waypoints_ = base_waypoints_;
       bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
 
       if (!found_obstacle)
@@ -295,7 +297,8 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
   for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_); i += search_waypoints_delta_)
   {
     // update goal index
-    int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
+    // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
+    int goal_waypoint_index = 40 + i;
     // std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
     if (goal_waypoint_index >= static_cast<int>(avoid_waypoints_.waypoints.size()))
     {
