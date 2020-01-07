@@ -10,7 +10,7 @@ cv::Scalar Color::g_color_green(0, 255, 0, 0);
 cv::Scalar Color::g_color_red(0, 0, 255, 0);
 cv::Scalar Color::g_color_gray(125, 125, 125, 0);
 
-void loadCalibrationMatrix(String yml_filename, Mat& cameraMatrix, Mat& distCoeffs)
+void loadCalibrationMatrix(string yml_filename, Mat& cameraMatrix, Mat& distCoeffs)
 {
   cout << "yml_filename: " << yml_filename << endl;
   int imageWidth, imageHeight;

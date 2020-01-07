@@ -22,9 +22,9 @@ NPPRotater::NPPRotater(const int src_rows, const int src_cols, const int rotatio
   }
   else
   {
-    assert(rotation_degree != 180 && rotation_degree != 90 && rotation_degree != 270 );
+    assert(rotation_degree != 180 && rotation_degree != 90 && rotation_degree != 270);
   }
-  
+
   rotater_impl_.reset(new NPPRotaterImpl(src_rows, src_cols, dst_rows, dst_cols));
 }
 
