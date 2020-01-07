@@ -4,7 +4,7 @@
  */
 
 #ifndef __NPP_ROTATER_DN_H__
-#define __NPP_ROTATER_H__
+#define __NPP_ROTATER_DN_H__
 
 #include <memory>
 #include <opencv2/core/mat.hpp>
