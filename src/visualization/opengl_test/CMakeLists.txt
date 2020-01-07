@@ -35,6 +35,11 @@ if (NOT assimp_FOUND)
   message(FATAL_ERROR "${PACKAGE_NAME} requires libassimp. Try: sudo apt-get install libassimp-dev")
 endif ()
 
+find_package(Bullet)
+if (NOT BULLET_FOUND)
+  message(FATAL_ERROR "${PACKAGE_NAME} requires bullet package. Try: sudo apt-get install libbullet-dev")
+endif ()
+
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
 
