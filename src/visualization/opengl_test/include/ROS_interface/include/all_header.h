@@ -17,6 +17,7 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Quaternion.h>
 
 // MSG: ROS std_msgs
 #include <std_msgs/Bool.h>
