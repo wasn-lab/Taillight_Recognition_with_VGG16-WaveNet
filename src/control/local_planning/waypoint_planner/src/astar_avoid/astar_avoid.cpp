@@ -200,7 +200,6 @@ void AstarAvoid::run()
     {
       avoiding_path_flag.data = 3;
       ROS_INFO("STOPPING");
-      // avoid_waypoints_ = base_waypoints_;
       bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
 
       if (!found_obstacle)
