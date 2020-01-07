@@ -22,7 +22,7 @@ endif()
 message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 
 
-find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 if(OpenCV_FOUND)
   message(STATUS "OpenCV IncludeDir: ${OpenCV_INCLUDE_DIRS}")
   message(STATUS "OpenCV Libararies: ${OpenCV_LIBRARIES}")

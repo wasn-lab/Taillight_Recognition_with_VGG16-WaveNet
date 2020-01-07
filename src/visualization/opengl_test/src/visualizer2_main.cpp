@@ -509,6 +509,7 @@ bool send_fps_ROS(){
     // Send
     ros_api.ros_interface.send_string(int(MSG_ID::GUI_fps_out), json_out);
     //
+    return true;
 }
 
 
