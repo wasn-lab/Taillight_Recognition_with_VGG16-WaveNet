@@ -7,24 +7,15 @@ set(CMAKE_BUILD_TYPE "Release")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
-  message_generation
-  genmsg
   roslib
   tf
+  msgs
 )
 
 ## Find Point Cloud Library 1.8
 find_package(PCL 1.8.1 REQUIRED)
 
-add_message_files(
-  FILES
-  pose.msg
-)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -32,8 +23,8 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   std_msgs
-  message_runtime
-)
+  
+  )
 
 include_directories(
   include

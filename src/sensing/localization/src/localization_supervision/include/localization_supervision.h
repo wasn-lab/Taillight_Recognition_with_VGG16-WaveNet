@@ -20,6 +20,8 @@
 #define POSE_PITCH_THRESHOLD_RADPERS 0.0175*90
 #define POSE_YAW_THRESHOLD_RADPERS 0.0175*90
 
+#include "msgs/Pose.h"
+
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -53,7 +55,7 @@
 #include <visualization_msgs/MarkerArray.h>
 
 #include <visualization_msgs/MarkerArray.h>
-#include <localization_supervision/pose.h>
+
 struct pose
 {
         double x;

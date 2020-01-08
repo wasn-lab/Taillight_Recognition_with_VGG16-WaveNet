@@ -15,7 +15,7 @@ int state_gnss_delay = 1;
 int state_lidar_delay = 2;
 int state_pose_delay = 4;
 int pose_unstable = 8;
-localization_supervision::pose pose_rate_pub_msg;
+msgs::Pose pose_rate_pub_msg;
 std_msgs::Int32 state_msg;
 //3 = gnss+lidar, 5 = gnss + pose, 6 = lidar + pose, 7 = gnss + lidar + pose
 double vx, vy, vz, ax, ay, az, roll_rate, pitch_rate, yaw_rate; //velocity and acc of pose
@@ -146,7 +146,7 @@ int main(int argc, char **argv)
         ros::NodeHandle nh;
         double cnt_exceed = fq/target_fq;
         marker_pub = nh.advertise<visualization_msgs::Marker>("caregiver_markers", 1);
-        pose_rate_pub = nh.advertise<localization_supervision::pose>("pose_rate_supervision", 1);
+        pose_rate_pub = nh.advertise<msgs::Pose>("pose_rate_supervision", 1);
         state_pub = nh.advertise<std_msgs::Int32>("localization_state", 1);
 
 
