@@ -11,7 +11,6 @@ readonly build_dir=build
 readonly devel_dir=devel
 export CC=clang
 export CXX=clang++
-pushd $repo_dir
 
 # clean up the previous build.
 for _dir in ${build_dir} ${devel_dir}; do
@@ -29,5 +28,3 @@ catkin_make \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DENABLE_UNDEFINED_SANITIZER=1 \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" ${EXTRA_CATKIN_ARGS}
-popd
-
