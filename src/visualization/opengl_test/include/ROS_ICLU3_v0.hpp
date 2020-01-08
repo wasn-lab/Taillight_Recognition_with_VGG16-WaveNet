@@ -23,6 +23,7 @@ enum class MSG_ID{
     ego_pose,
     vehicle_info,
     dynamic_path,
+    local_path,
     //
     flag_info_1,
     flag_info_2,

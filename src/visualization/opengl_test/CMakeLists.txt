@@ -161,16 +161,17 @@ set(ALL_RENDER_MODELS
     ${RENDER_MODEL_PATH}rmlv2TagBoundingBox2D.cpp
     ${RENDER_MODEL_PATH}rmlv2TagBoundingBox3D.cpp
     ${RENDER_MODEL_PATH}rmlv2ObjectTracking.cpp
-    ${RENDER_MODEL_PATH}rmlv2PathPlanFake.cpp
+    # ${RENDER_MODEL_PATH}rmlv2PathPlanFake.cpp
     ${RENDER_MODEL_PATH}rmlv2PathPlan_v1.cpp
     ${RENDER_MODEL_PATH}rmlv2SpeedMeter.cpp
     #
-    ${RENDER_MODEL_PATH}rmlv2TrafficLight.cpp
+    # ${RENDER_MODEL_PATH}rmlv2TrafficLight.cpp
     ${RENDER_MODEL_PATH}rmlv2TrafficLightSimple.cpp
     ${RENDER_MODEL_PATH}rmMagicPowder.cpp
     #
     ${RENDER_MODEL_PATH}rmImageArray.cpp
     ${RENDER_MODEL_PATH}rmlv2TrafficLightImage.cpp
+    ${RENDER_MODEL_PATH}rmlv2PathPlan_navPath.cpp
 
 )
 
