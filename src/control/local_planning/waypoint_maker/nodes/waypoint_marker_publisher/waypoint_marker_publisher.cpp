@@ -338,9 +338,9 @@ void createLocalPointMarker_1(const autoware_msgs::Lane& lane_waypoint)
   lane_waypoint_marker.id = 0;
   lane_waypoint_marker.type = visualization_msgs::Marker::SPHERE_LIST;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-  lane_waypoint_marker.scale.x = 2.2;
-  lane_waypoint_marker.scale.y = 2.2;
-  lane_waypoint_marker.scale.z = 2.2;
+  lane_waypoint_marker.scale.x = 3.0;
+  lane_waypoint_marker.scale.y = 3.0;
+  lane_waypoint_marker.scale.z = 3.0;
   lane_waypoint_marker.color.g = 1.0;
   lane_waypoint_marker.color.a = 0.4;
   lane_waypoint_marker.frame_locked = true;
