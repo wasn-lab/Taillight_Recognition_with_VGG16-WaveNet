@@ -3,7 +3,9 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Geofence1
+        - /Geofence1/Status1
       Splitter Ratio: 0.582872927
     Tree Height: 380
   - Class: rviz/Selection
@@ -557,6 +559,14 @@ Visualization Manager:
         local_point_marker: true
         local_point_marker_1: true
         local_waypoint_velocity: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /Geofence_line
+      Name: Geofence
+      Namespaces:
+        PC_line: true
       Queue Size: 100
       Value: true
   Enabled: true
