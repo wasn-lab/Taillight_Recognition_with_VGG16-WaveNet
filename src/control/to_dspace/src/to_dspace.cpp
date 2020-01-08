@@ -16,6 +16,8 @@ const double NumOfID = 5;
 #include <iostream>
 #include <cstdlib>
 #include "ros/ros.h"
+#include "std_msgs/Float64.h"
+#include "std_msgs/Bool.h"
 //#include "std_msgs/String.h"
 
 
@@ -30,7 +32,7 @@ const double NumOfID = 5;
 
 using namespace std;
 
-void chatterCallback(const msgs::DetectedObjectArray::ConstPtr& msg)
+void chatterCallback_01(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
 
 	int s;
@@ -147,12 +149,98 @@ void chatterCallback(const msgs::DetectedObjectArray::ConstPtr& msg)
 
 }
 
+void chatterCallback_02(const std_msgs::Bool::ConstPtr& msg)
+{
+
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x050;
+	frame.data[0] = (short int)(msg->data);
+	frame.data[1] = (short int)(msg->data)>>8;
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	cout << "Driving state: " << msg->data << endl;
+	close(s);
+	
+	//printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+
+}
+
+void chatterCallback_03(const std_msgs::Bool::ConstPtr& msg)
+{
+
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x051;
+	frame.data[0] = (short int)(msg->data);
+	frame.data[1] = (short int)(msg->data)>>8;
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	cout << "System ready: " << msg->data << endl;
+	close(s);
+	
+	//printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+
+}
+
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "dSPACE_subscriber");
   ros::NodeHandle n;
-  ros::Subscriber dSPACE_subscriber = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback);
+  //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
+  ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
+  ros::Subscriber dSPACE_subscriber_03 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_03);
   ros::spin();
   return 0;
 }
