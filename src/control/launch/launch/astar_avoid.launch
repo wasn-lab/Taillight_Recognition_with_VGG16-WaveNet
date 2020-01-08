@@ -6,15 +6,15 @@
 
   <!-- Relay behavior configurations -->
   <arg name="safety_waypoints_size" default="100" />
-  <arg name="update_rate" default="10" />
+  <arg name="update_rate" default="20" /><!--10-->
 
   <!-- Avoidance behavior configurations -->
   <!--arg name="costmap_topic" default="occupancy_grid" /-->
   <arg name="enable_avoidance" default="true" />
-  <arg name="avoid_waypoints_velocity" default="10.0" />
-  <arg name="avoid_start_velocity" default="1.8" /><!--1.8-->
-  <arg name="replan_interval" default="2.0" /><!--2.0-->
-  <arg name="search_waypoints_size" default="60" />
+  <arg name="avoid_waypoints_velocity" default="10.0" /><!--km/hr-->
+  <arg name="avoid_start_velocity" default="10.0" /><!--1.8 km/hr-->
+  <arg name="replan_interval" default="0.2" /><!--2.0-->
+  <arg name="search_waypoints_size" default="42" />
   <arg name="search_waypoints_delta" default="2" />
   <arg name="closest_search_size" default="30" />
 
@@ -22,7 +22,7 @@
   <arg name="use_back" default="false" />
   <arg name="use_potential_heuristic" default="true" />
   <arg name="use_wavefront_heuristic" default="false" />
-  <arg name="time_limit" default="20000.0" /><!--5000-->
+  <arg name="time_limit" default="2000.0" /><!--5000-->
   <arg name="robot_length" default="9.4" /><!--8-->
   <arg name="robot_width" default="4.2" /><!--4.6-->
   <arg name="robot_base2back" default="3.4" /><!--7.2 3.4-->

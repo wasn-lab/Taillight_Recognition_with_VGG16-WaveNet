@@ -254,10 +254,10 @@ void AstarAvoid::run()
         bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
         if (replan)
         {
-          ROS_INFO("AVOIDING -> STOPPING, Abort avoiding");
-          state_ = AstarAvoid::STATE::STOPPING;
-          // ROS_INFO("AVOIDING -> PLANNING, Abort avoiding");
-          // state_ = AstarAvoid::STATE::PLANNING;
+        //   ROS_INFO("AVOIDING -> STOPPING, Abort avoiding");
+        //   state_ = AstarAvoid::STATE::STOPPING;
+          ROS_INFO("AVOIDING -> PLANNING, Abort avoiding");
+          state_ = AstarAvoid::STATE::PLANNING;
         }
       }
       // ROS_INFO("end avoiding");
@@ -298,7 +298,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
   {
     // update goal index
     // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
-    int goal_waypoint_index = 40 + i;
+    int goal_waypoint_index = 38 + i;
     // std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
     if (goal_waypoint_index >= static_cast<int>(avoid_waypoints_.waypoints.size()))
     {
@@ -317,13 +317,13 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
     astar_.initialize(costmap_);
 
     // execute astar search
-    // ros::WallTime start = ros::WallTime::now();
+    ros::WallTime start = ros::WallTime::now();
     found_path = astar_.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
-    // ros::WallTime end = ros::WallTime::now();
+    ros::WallTime end = ros::WallTime::now();
 
     // static ros::Publisher pub = nh_.advertise<nav_msgs::Path>("debug", 1, true);
 
-    // ROS_INFO("Astar planning: %f [s], at index = %d", (end - start).toSec(), goal_waypoint_index);
+    ROS_INFO("Astar planning: %f [s], at index = %d", (end - start).toSec(), goal_waypoint_index);
 
     if (found_path)
     {
