@@ -4,8 +4,12 @@ project(cuda_downsample)
 set(CMAKE_BUILD_TYPE "Release")
 find_package(catkin REQUIRED)
 find_package(PCL 1.5 REQUIRED)
-find_package(CUDA 7.5 REQUIRED)
 
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 catkin_package(
