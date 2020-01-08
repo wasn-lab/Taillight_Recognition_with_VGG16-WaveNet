@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(libs)
-  
+
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11) 
-   
+add_compile_options(-std=c++11)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -13,16 +13,16 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   #std_msgs
   #genmsg
-)                
-                                                                                         
+)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-      
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
-      
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -49,9 +49,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 #file(GLOB SOURCES_MESSAGE *.msg)
 #add_message_files(
-  #${SOURCES_MESSAGE} 
+  #${SOURCES_MESSAGE}
 #)
- 
+
 ## Generate services in the 'srv' folder
 #add_service_files(
   #FILES
@@ -206,7 +206,6 @@ include_directories(
 ##    use define    ##
 ######################
 
-set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES -O2")
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1 " )
@@ -219,7 +218,7 @@ find_package        (VTK REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED) 
+find_package            (PCL 1.8 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
@@ -227,11 +226,11 @@ add_definitions         (${PCL_DEFINITIONS})
 ######################
 ##       CUDA       ##
 ######################
-find_package	        (CUDA REQUIRED) 
+find_package	        (CUDA REQUIRED)
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories     (${CUDA_INCLUDE_DIRS}) 
+include_directories     (${CUDA_INCLUDE_DIRS})
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
-    
+
 ######################
 ##       QT         ##
 ######################
@@ -241,93 +240,39 @@ set                     (QT_FORMS   src/UI/QtViewer.ui)
 QT5_WRAP_CPP            (QT_HEADERS_MOC   ${QT_HEADERS})
 QT5_WRAP_UI             (QT_FORMS_HEADERS ${QT_FORMS})
 ADD_DEFINITIONS         (${QT_DEFINITIONS})
- 
+
 ######################
 ##      OpenCV      ##
 ######################
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
- 
+
 ######################
 ##      Tensorflow  ##
-###################### 
-set(PATH_SO_LOCAL ${CMAKE_CURRENT_SOURCE_DIR}/TensorFlow/Installed)
-EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
-message( STATUS " Your Platform Architecture: ${ARCHITECTURE}" )
-
+######################
 if (NOT EXISTS /usr/local/lib/libtensorflow.so)
+  set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
+  set(TENSORFLOW_INCLUDE_DIRS ${TENSORFLOW_ROOT_DIR}/include/tensorflow/c
+                              ${TENSORFLOW_ROOT_DIR}/include)
+  set(TENSORFLOW_LIBRARIES ${TENSORFLOW_ROOT_DIR}/lib/libtensorflow.so)
 
-	if (NOT EXISTS ${PATH_SO_LOCAL}/lib/libtensorflow.so ) 
-    
-    	message( STATUS " Tensorflow status: not installed, let Wayne help you, wait wait wait downloading (100MB)" )
-    	make_directory(${PATH_SO_LOCAL})
-    
-        if( ${ARCHITECTURE} STREQUAL "x86_64" )
-        
-	        file(
-	        DOWNLOAD
-	        	http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz ${PATH_SO_LOCAL}/tensorflow.tar.gz
-	        STATUS
-	            status
-	        LOG 
-	            log
-	        SHOW_PROGRESS
-	        )
-    
-		elseif(${ARCHITECTURE} STREQUAL "aarch64")
-		
-	        file(
-	        DOWNLOAD
-	            http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/libtensorflow-gpu-linux-aarch64-1.13.1.tar.gz ${PATH_SO_LOCAL}/tensorflow.tar.gz
-	        STATUS
-	            status
-	        LOG 
-	            log
-	        SHOW_PROGRESS
-	        )
-				    
-		endif()
-		
-		list(GET status 0 status_code)
-        list(GET status 1 status_string)
-        
-        if(NOT status_code EQUAL 0)
-        	message(FATAL_ERROR "Error downloading tensorflow lib: ${status_string}" "${log}")
-        else()
-        	execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvzf ${PATH_SO_LOCAL}/tensorflow.tar.gz WORKING_DIRECTORY ${PATH_SO_LOCAL})
-          	file(REMOVE ${PATH_SO_LOCAL}/tensorflow.tar.gz)	
-    	endif()
-  	
-    endif()
-        
-    message( STATUS " Tensorflow status: installed" )
-        
-	include_directories(${PATH_SO_LOCAL}/include/tensorflow/c)
-	link_directories(${PATH_SO_LOCAL}/lib)  
-	   	
-	set(TENSORFLOW_INCLUDES ${PATH_SO_LOCAL}/include ${PATH_SO_LOCAL}/include/tensorflow/c)           
-    	set(TENSORFLOW_LIBRARIES ${PATH_SO_LOCAL}/lib/libtensorflow.so)
-    
+	include_directories(${TENSORFLOW_INCLUDE_DIRS})
+
 else()
-        
 	message( STATUS " Tensorflow status: installed" )
-	
 	include_directories(/usr/local/include/tensorflow/c)
-	link_directories(/usr/local/lib)
-	
-	set(TENSORFLOW_INCLUDES /usr/local/include/tensorflow/c)        
+	set(TENSORFLOW_INCLUDE_DIRS /usr/local/include/tensorflow/c)
 	set(TENSORFLOW_LIBRARIES tensorflow)
-
 endif()
-    
+
 ######################
 ##      catkin      ##
-###################### 
+######################
 catkin_package(
-  INCLUDE_DIRS 
+  INCLUDE_DIRS
   ${SOURCES_INCS}
-  ${TENSORFLOW_INCLUDES}
+  ${TENSORFLOW_INCLUDE_DIRS}
 
   #LIBRARIES beginner_tutorials
   #LIBRARIES ${PROJECT_NAME}
@@ -336,11 +281,11 @@ catkin_package(
   #DEPENDS system_lib
   #message_runtime
   LIBRARIES ${PROJECT_NAME}
-) 
- 
+)
+
 ######################
 ##      libs        ##
 ######################
-file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)            
+file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} cuda ${TENSORFLOW_LIBRARIES})

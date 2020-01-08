@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(CUDA REQUIRED)
-find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 
 
 ## Find Driveworks 2.0

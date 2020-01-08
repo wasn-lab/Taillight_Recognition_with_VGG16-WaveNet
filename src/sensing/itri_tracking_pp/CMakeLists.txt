@@ -28,7 +28,7 @@ if (NOT GFLAGS_FOUND)
   message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
 endif ()
 
-find_package(OpenCV 3 REQUIRED
+find_package(OpenCV REQUIRED
              NO_MODULE
              PATHS /usr/local /opt/ros/kinetic
              NO_DEFAULT_PATH)

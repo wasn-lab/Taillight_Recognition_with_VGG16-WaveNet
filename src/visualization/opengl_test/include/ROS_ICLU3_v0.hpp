@@ -23,6 +23,7 @@ enum class MSG_ID{
     ego_pose,
     vehicle_info,
     dynamic_path,
+    local_path,
     //
     flag_info_1,
     flag_info_2,
@@ -61,8 +62,10 @@ enum class MSG_ID{
     //
     GUI_operatio,
     GUI_state,
-    // NUM_TOPICS
+    //
     GUI_screen_out,
+    GUI_fps_out,
+    // NUM_TOPICS
 };
 
 

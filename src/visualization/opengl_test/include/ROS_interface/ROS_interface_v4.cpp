@@ -233,6 +233,24 @@ void ROS_INTERFACE::_ROS_worker(){
             _publisher_list.push_back( _nh.advertise<std_msgs::String>( _tmp_params.name, _tmp_params.ROS_queue) );
         }
     }
+    // NavPath
+    _msg_type = int(MSG::M_TYPE::NavPath);
+    for (size_t _tid=0; _tid < _msg_type_2_topic_params[_msg_type].size(); ++_tid){
+        MSG::T_PARAMS _tmp_params = _msg_type_2_topic_params[_msg_type][_tid];
+        // SPSC Buffer
+        async_buffer_list[_tmp_params.topic_id].reset( new async_buffer< nav_msgs::Path > (_tmp_params.buffer_length) );
+        //
+        // subs_id, pub_id
+        if (_tmp_params.is_input){
+            // Subscribe
+            _pub_subs_id_list[_tmp_params.topic_id] = _subscriber_list.size();
+            _subscriber_list.push_back( _nh.subscribe<nav_msgs::Path>( _tmp_params.name, _tmp_params.ROS_queue, boost::bind(&ROS_INTERFACE::_NavPath_CB, this, _1, _tmp_params)  ) );
+        }else{
+            // Publish
+            _pub_subs_id_list[_tmp_params.topic_id] = _publisher_list.size();
+            _publisher_list.push_back( _nh.advertise<nav_msgs::Path>( _tmp_params.name, _tmp_params.ROS_queue) );
+        }
+    }
     // GUI2_op
     _msg_type = int(MSG::M_TYPE::GUI2_op);
     for (size_t _tid=0; _tid < _msg_type_2_topic_params[_msg_type].size(); ++_tid){
@@ -856,6 +874,21 @@ bool ROS_INTERFACE::send_string(const int topic_id, const std::string &content_i
     return true;
 }
 //---------------------------------------------------------------//
+
+
+// NavPath
+//---------------------------------------------------------------//
+// input
+void ROS_INTERFACE::_NavPath_CB(const nav_msgs::Path::ConstPtr& msg, const MSG::T_PARAMS & params){
+    // Time
+    TIME_STAMP::Time _time_in(TIME_PARAM::NOW);
+    // put
+    // Note: the "&(*msg)" thing do the following convertion: boost::shared_ptr --> the object --> memory address
+    bool result = async_buffer_list[params.topic_id]->put_void( &(*msg), true, _time_in, false);
+    if (!result){ std::cout << params.name << ": buffer full.\n"; }
+}
+//---------------------------------------------------------------//
+
 
 // GUI2_op
 //---------------------------------------------------------------//

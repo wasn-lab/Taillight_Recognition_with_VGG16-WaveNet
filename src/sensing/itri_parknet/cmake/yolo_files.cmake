@@ -12,14 +12,14 @@ set(OBJECT_NAMES_FILE ${YOLOV3_OBJECT_NAMES_FILE})
 
 catkin_download_test_data(
     parknet_yolov3_weight
-    "http://nas.itriadv.co:8888/Share/ADV/Hino_git_data/parknet/parknet-6k-1007.weight"
+    "http://118.163.54.109:8888/Share/ADV/Hino_git_data/parknet/parknet-6k-1007.weight"
     DESTINATION ${PARKNET_WEIGHTS_DIR}
     MD5 bbb27b477914494942f68f7ad649b59f)
 
 # experiment: use tiny yolo to speed up
 catkin_download_test_data(
     parknet_tiny_yolov3_weight
-    "http://nas.itriadv.co:8888/Share/ADV/Hino_git_data/parknet/parknet-tiny-yolov3-6k.weight"
+    "http://118.163.54.109:8888/Share/ADV/Hino_git_data/parknet/parknet-tiny-yolov3-6k.weight"
     DESTINATION ${PARKNET_WEIGHTS_DIR}
     MD5 340c968505c38723e4f71e5e89835b74)
 
