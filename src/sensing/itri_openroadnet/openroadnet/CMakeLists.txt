@@ -5,6 +5,11 @@ set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,11 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 
-######################
-##       CUDA       ##
-######################
-find_package	        (CUDA REQUIRED)
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 include_directories     (${CUDA_INCLUDE_DIRS})
 set(CUDA_LIBS ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppisu.so
                 ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppig.so
@@ -54,13 +54,17 @@ set(OpenCV_LIBRARIES opencv_core
                      opencv_highgui
                      opencv_dnn
                      opencv_videoio)
-
+set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
+set(TENSORFLOW_INCLUDE_DIRS
+  ${TENSORFLOW_ROOT_DIR}/include
+  ${TENSORFLOW_ROOT_DIR}/include/tensorflow/c)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
-${CUDA_TOOLKIT_INCLUDE}
+  ${CUDA_TOOLKIT_INCLUDE}
+  ${TENSORFLOW_INCLUDE_DIRS}
 )
 
 set(PLUGIN_SOURCES

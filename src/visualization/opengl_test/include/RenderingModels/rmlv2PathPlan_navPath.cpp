@@ -21,7 +21,7 @@ void rmlv2PathPlan_navPath::Init(){
     //
     _sim_time = 15.0f; // sec.
     _granularity = glm::vec2(0.2f, 0.087f); // 20 cm, 5 deg.
-    _max_sim_point = 90;
+    _max_sim_point = 100; // 90;
     // _max_sim_point = int(_sim_time); // 90;
 
     // Section
