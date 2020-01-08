@@ -64,5 +64,3 @@ add_executable(${PROJECT_NAME}_node src/map_pub_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 MESSAGE("Generate ${PROJECT_NAME}")
-
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_node_generate_messages_cpp ${catkin_EXPORTED_TARGETS})

@@ -62,6 +62,7 @@ APPEND_GLOBAL_COMPILER_FLAGS(
     -Wno-deprecated-declarations
     -Wno-comment
     -Wno-unused-parameter
+    -Wno-deprecated-declarations
 #    -Wcast-align
     -Wformat-security
     -Wpointer-arith

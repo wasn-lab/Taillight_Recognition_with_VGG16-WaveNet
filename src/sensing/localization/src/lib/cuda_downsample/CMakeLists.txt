@@ -26,7 +26,7 @@ add_definitions(${PCL_DEFINITIONS})
 #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_50,code=sm_50;-std=c++11; -Xptxas -v")
 
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11;--ptxas-options=-v)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
 
 
 FILE(GLOB_RECURSE CPP_LIST *.cpp)

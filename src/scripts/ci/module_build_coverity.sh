@@ -13,10 +13,7 @@ for _dir in build devel ${coverity_data_dir}; do
         rm -rf $_dir
     fi
 done
-# workaround for openroadnet
-if [[ -d src/sensing/itri_openroadnet/libs_opn/TensorFlow/Installed ]]; then
-  rm -rf src/sensing/itri_openroadnet/libs_opn/TensorFlow/Installed
-fi
+
 blacklist="lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing;dl_data;opengl_test"
 whitelist="itri_tracking_pp;itri_pedcross;drivenet;drivenet_lib;camera_utils;msgs;issue_reporter;msg_recorder;car_model;camera_grabber;itri_parknet;sdb;adv_to_server;detection_viz;sensor_fusion"
 whitelist="${whitelist};libs_opn;openroadnet"
