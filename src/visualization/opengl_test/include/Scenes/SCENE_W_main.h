@@ -546,18 +546,19 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _image_board_ptr->Rotate(glm::vec3(0.0f,0.0f,1.0f), M_PI/6.0);
     // _image_board_ptr->shape.setBoardSizeRatio(0.2f, false);
     _image_board_ptr->shape.setBoardSizePixel(150, false);
-    _image_board_ptr->shape.setBoardPositionCVPixel(-300, 0, 1, ALIGN_X::RIGHT, ALIGN_Y::TOP );
+    // _image_board_ptr->shape.setBoardPositionCVPixel(-300, 0, 1, ALIGN_X::RIGHT, ALIGN_Y::TOP ); // Right side
+    _image_board_ptr->shape.setBoardPositionCVPixel(0, 0, 0, ALIGN_X::LEFT, ALIGN_Y::TOP ); // Left side
     _rm_BaseModel.push_back( _image_board_ptr );
 
 
-
-    // rmlv2SpeedMeter
-    _rm_BaseModel.push_back( std::shared_ptr<rmlv2SpeedMeter>( new rmlv2SpeedMeter(_Assets_path, int(MSG_ID::vehicle_info) ) ) );
+    // Remove the following for backend demo
+    // // rmlv2SpeedMeter
+    // _rm_BaseModel.push_back( std::shared_ptr<rmlv2SpeedMeter>( new rmlv2SpeedMeter(_Assets_path, int(MSG_ID::vehicle_info) ) ) );
+    // //
     //
-
-    // Traffic light (simple)
-    _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightSimple>( new rmlv2TrafficLightSimple(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
-    // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightImage>( new rmlv2TrafficLightImage(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
+    // // Traffic light (simple)
+    // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightSimple>( new rmlv2TrafficLightSimple(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
+    // // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightImage>( new rmlv2TrafficLightImage(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
 
 }
 
