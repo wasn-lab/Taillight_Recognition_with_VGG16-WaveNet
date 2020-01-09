@@ -158,19 +158,8 @@ int npp::resize3(const Npp8u* rawCUDA_, cv::Mat& dst, const double hscale, const
 
   NppStatus result;
 
-  // result = nppiSwapChannels_8u_C3R(rawCUDA_, src_line_steps, src_npp8u_ptr_, src_line_steps, src_size, RGBOrder);  //
-  // RGB to BGR of uint in CUDA
-
-  // result = nppiSwapChannels_8u_C4C3R(rawCUDA_, src_line_steps, src_npp8u_ptr_, src_line_steps, src_size, RGBOrder);
-  // // RGBA to RGB of uint in CUDA
-
-  assert(result == NPP_SUCCESS);
-
   result = nppiResize_8u_C3R(rawCUDA_, src_line_steps, src_size, src_roi, dst_npp8u_ptr_, dst_line_steps, dst_size,
                              dst_roi, interpolation_mode);
-
-  // result = nppiResize_8u_C3R(src_npp8u_ptr_, src_line_steps, src_size, src_roi, dst_npp8u_ptr_, dst_line_steps,
-  //                                     dst_size, dst_roi, interpolation_mode);
 
   assert(result == NPP_SUCCESS);
 
