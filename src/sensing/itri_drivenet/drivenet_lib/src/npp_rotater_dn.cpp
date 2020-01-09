@@ -9,7 +9,7 @@ namespace DriveNet_npp
 {
 NPPRotater::NPPRotater(const int src_rows, const int src_cols, const int rotation_degree)
 {
-  int dst_rows, dst_cols;
+  int dst_rows = 0, dst_cols = 0;
   if (rotation_degree == 90 || rotation_degree == 270)
   {
     dst_cols = src_rows;
@@ -20,6 +20,11 @@ NPPRotater::NPPRotater(const int src_rows, const int src_cols, const int rotatio
     dst_rows = src_rows;
     dst_cols = src_cols;
   }
+  else
+  {
+    assert(rotation_degree != 180 && rotation_degree != 90 && rotation_degree != 270);
+  }
+
   rotater_impl_.reset(new NPPRotaterImpl(src_rows, src_cols, dst_rows, dst_cols));
 }
 

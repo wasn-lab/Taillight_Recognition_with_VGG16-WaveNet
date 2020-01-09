@@ -71,8 +71,8 @@ void leave_main_loop () {
 
 
 // float	aspect;
-float	windows_width = 1200; // 800;
-float   windows_height = 800; // 600;
+float	windows_width = 900; // 1200; // 800;
+float   windows_height = 600; // 800; // 600;
 float	timer_interval = 16.0f;
 
 // test, PBO
@@ -115,8 +115,9 @@ void cv_windows_setup(){
 
 
 
-// AntTwekBar
+// AntTweakBar
 //----------------------------------------------------//
+bool enable_AntTweakBar = false;
 // Shape			m_shape;
 ViewManager		m_camera;
 TwBar			*bar_1_ptr;
@@ -435,7 +436,7 @@ void screen_streaming_step_2(){
 
     // 1
     //-----------------------//
-    period_image.stamp(); period_image.show_msec();
+    // period_image.stamp(); period_image.show_msec();
     //-----------------------//
 
     // Now proccess the old one
@@ -453,24 +454,24 @@ void screen_streaming_step_2(){
 
     // 2
     //-----------------------//
-    period_image.stamp(); period_image.show_msec();
+    // period_image.stamp(); period_image.show_msec();
     //-----------------------//
 
     cv::Mat image_decoded;
     cvtColor(img, image_decoded, CV_BGRA2BGR);
 
-    // 3
+    // 3 (This take a lot of time)
     //-----------------------//
-    period_image.stamp(); period_image.show_msec();
+    // period_image.stamp(); period_image.show_msec();
     //-----------------------//
 
     // Flip
     cv::Mat flipped;
     cv::flip(image_decoded, flipped, 0);
 
-    // 4
+    // 4 (This take a lot of time)
     //-----------------------//
-    period_image.stamp(); period_image.show_msec();
+    // period_image.stamp(); period_image.show_msec();
     //-----------------------//
 
     // Send
@@ -479,7 +480,7 @@ void screen_streaming_step_2(){
 
     // 5
     //-----------------------//
-    period_image.stamp(); period_image.show_msec();
+    // period_image.stamp(); period_image.show_msec();
     //-----------------------//
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -487,6 +488,31 @@ void screen_streaming_step_2(){
 }
 //--------------------------------//
 // end Pack image using double PBOs
+
+
+// Publsh FPS of each topic as a string-type topic, formated in json
+bool send_fps_ROS(){
+
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(1);
+    ss << "{";
+    bool is_first = true;
+    for (int topic_idx = 0; topic_idx < ros_api.ros_interface.get_count_of_all_topics(); ++topic_idx ){
+        if ( ros_api.ros_interface.is_topic_id_valid(topic_idx) && ros_api.ros_interface.is_topic_a_input(topic_idx) ){
+            if (is_first) is_first = false;
+            else ss << ", "; // Put the comma at the head of item to prevent the final comma
+            ss << "\"FPS_" << ros_api.ros_interface.get_topic_name_no_slash(topic_idx) << "\": " << ros_api.fps_list[topic_idx].fps;
+        }
+    }
+    ss << "}";
+
+    std::string json_out = ss.str();
+    // Send
+    ros_api.ros_interface.send_string(int(MSG_ID::GUI_fps_out), json_out);
+    //
+    return true;
+}
+
 
 
 void setupGUI()
@@ -770,6 +796,17 @@ void My_Display()
         m_fps_topic_str[i] = all_header::to_string_p(ros_api.fps_list[i].fps, 1);
     }
 
+    // Publish the fps as json string ROS topic
+    static int pub_fps_count = 0;
+    pub_fps_count++;
+    if (pub_fps_count >= 6){
+        pub_fps_count = 0;
+        // TIME_STAMP::Period period_fps_pub("fps_pub");
+        send_fps_ROS();
+        // period_fps_pub.stamp();  period_fps_pub.show_msec();
+    }
+    //
+
     // m_currentTime = glutGet(GLUT_ELAPSED_TIME);
 	// if (m_currentTime - m_timebase > 1000)
 	// {
@@ -795,8 +832,8 @@ void My_Display()
 
 
     // evaluation
-    TIME_STAMP::Period period_in("part");
-    TIME_STAMP::Period period_all_func("full display");
+    // TIME_STAMP::Period period_in("part");
+    // TIME_STAMP::Period period_all_func("full display");
     //
     // period_frame_pre.stamp();   period_frame_pre.show_msec();   period_frame_pre.show_jitter_usec();
     //
@@ -827,7 +864,8 @@ void My_Display()
     // std::cout << "After Rendering\n";
 
     // Render AntTweeekBar
-    TwDraw();
+    if (enable_AntTweakBar)
+        TwDraw();
 
     //--------------------//
     glutSwapBuffers();
@@ -895,14 +933,9 @@ void My_Timer(int val)
     static int screenshot_count = 0;
     screenshot_count++;
     if (screenshot_count >= 2){
-        // takeScreenshotPNG_openCV();
-        // takeScreenshot_ROSimage();
-        // screen_streaming_step();
         screen_streaming_step_2();
         screenshot_count = 0;
     }
-    // screen_streaming_step();
-    // screen_streaming_step_2();
     //---------------------------//
 
 	glutPostRedisplay();
@@ -958,6 +991,9 @@ void My_Keyboard(unsigned char key, int x, int y)
     else if (key == 't' || key == 'T'){
         // takeScreenshotPNG();
         takeScreenshotPNG_openCV();
+    }else if (key == 'b' || key == 'B'){
+        // Enable AntTweakBar ('B'ar)
+        enable_AntTweakBar = !enable_AntTweakBar;
     }
 
     // Update all_scenes

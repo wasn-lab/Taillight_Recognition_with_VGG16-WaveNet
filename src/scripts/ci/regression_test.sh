@@ -5,7 +5,8 @@ set -e
 if [[ ! -z "$(pgrep rosmaster)" ]]; then
   echo "OK: rosmaster is running."
 else
-  rosmaster --core &
+  echo "ERROR: rosmaster is not running. Contact system admin"
+  exit 1
 fi
 
 readonly repo_dir=$(git rev-parse --show-toplevel)

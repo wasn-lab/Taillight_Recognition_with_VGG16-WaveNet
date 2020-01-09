@@ -8,6 +8,7 @@ set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_parknet/weig
 set(OPENROADNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_openroadnet/openroadnet)
 set(CAMERA_UTILS_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_utils/data)
 set(CAMERA_GRABBER_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_grabber/src/CameraGrabber)
+set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 
 function(download_file)
     cmake_parse_arguments(OPT "" "URL;DESTINATION;MD5" "" ${ARGN})
@@ -41,3 +42,4 @@ include(cmake/camera_grabber.cmake)
 include(cmake/openroadnet_weights.cmake)
 include(cmake/parknet_weights.cmake)
 include(cmake/camera_fov120_distance.cmake)
+include(cmake/libtensorflow_gpu.cmake)
