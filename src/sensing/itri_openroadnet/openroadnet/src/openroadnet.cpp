@@ -193,7 +193,7 @@ msgs::FreeSpaceResult openroadnet::run(cv::Mat mat60)
   OpenRoadNet_Free.current.clear();
   OpenRoadNet_output_pub.freespace.clear();
 
-  for (int len = 0; len < OpenRoadNet_output.size(); len++)
+  for (size_t len = 0; len < OpenRoadNet_output.size(); len++)
   {
     OpenRoadNet_Bound.x = OpenRoadNet_output[len].x;
     OpenRoadNet_Bound.y = OpenRoadNet_output[len].y;
@@ -286,7 +286,7 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
   OpenRoadNet_Free.current.clear();
   OpenRoadNet_output_pub.freespace.clear();
 
-  for (int len = 0; len < OpenRoadNet_output.size(); len++)
+  for (size_t len = 0; len < OpenRoadNet_output.size(); len++)
   {
     OpenRoadNet_Bound.x = OpenRoadNet_output[len].x;
     OpenRoadNet_Bound.y = OpenRoadNet_output[len].y;
@@ -308,7 +308,7 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
 
 void openroadnet::display_result(cv::Mat& video_ptr, std::vector<std::vector<int>> dis_free_)
 {
-  for (int i = 0; i < dis_free_.size(); i++)
+  for (size_t i = 0; i < dis_free_.size(); i++)
   {
     cv::Point start = cv::Point(dis_free_[i - 1][0], dis_free_[i - 1][1]);
     cv::Point end = cv::Point(dis_free_[i][0], dis_free_[i][1]);
