@@ -240,7 +240,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
-  ros::Subscriber dSPACE_subscriber_03 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_03);
+  ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready”", 1, chatterCallback_03);
   ros::spin();
   return 0;
 }
