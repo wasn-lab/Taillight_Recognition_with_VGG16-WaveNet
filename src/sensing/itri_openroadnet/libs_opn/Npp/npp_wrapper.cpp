@@ -147,6 +147,7 @@ int npp::resize3(const Npp8u* rawCUDA_, cv::Mat& dst, const double hscale, const
   const NppiSize src_size = {.width = 1920, .height = 1208 };
   const NppiRect src_roi = {.x = 0, .y = 0, .width = 1920, .height = 1208 };
   const int src_line_steps = 1920 * 3;
+  const int num_src_bytes = 1920 * 1208 * 3;
 
   assert(num_src_bytes > 0);
 
