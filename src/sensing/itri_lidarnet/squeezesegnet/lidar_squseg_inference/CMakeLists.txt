@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_squseg_inference)
 add_compile_options(-std=c++11)
 
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  # needs libs, which needs CUDA
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
@@ -34,7 +41,7 @@ function(DownloadModle Vehicletype ModelDegree)
 
     file(
     DOWNLOAD
-    	http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/${Vehicletype}/${ModelDegree} ${PATH_MODEL_LOCAL}/SqueezeSegNet/${Vehicletype}/${ModelDegree}    	
+    	http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/${Vehicletype}/${ModelDegree} ${PATH_MODEL_LOCAL}/SqueezeSegNet/${Vehicletype}/${ModelDegree}    	
     STATUS
         status
     LOG 
@@ -80,7 +87,7 @@ endif()
 #    
 #    file(
 #    DOWNLOAD 
-#        http://nas.itriadv.co:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/hino1/N90deg.pb ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/N90deg_1.pb
+#        http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet/hino1/N90deg.pb ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/N90deg_1.pb
 #    STATUS
 #        status
 #    LOG 

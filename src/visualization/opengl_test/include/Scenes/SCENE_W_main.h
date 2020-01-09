@@ -86,10 +86,12 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     std::shared_ptr<rmLidarBoundingBox> _box3D_ptr;
     // Bounding box 2D
     std::shared_ptr<rmlv2TagBoundingBox2D> _box2D_ptr;
-    // rmlv2PathPlanFake
-    std::shared_ptr<rmlv2PathPlanFake> _fake_path_ptr;
+    // // rmlv2PathPlanFake
+    // std::shared_ptr<rmlv2PathPlanFake> _fake_path_ptr;
     // rmlv2PathPlan_v1
     std::shared_ptr<rmlv2PathPlan_v1> _planning_path_ptr;
+    // rmlv2PathPlan_navPath
+    std::shared_ptr<rmlv2PathPlan_navPath> _local_path_ptr;
     // rmColorBoard
     std::shared_ptr<rmColorBoard> _color_board_ptr;
 
@@ -220,10 +222,16 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _fake_path_ptr->Translate(glm::vec3(-5.5f, 0.0f, 0.0f));
     // _rm_BaseModel.push_back( _fake_path_ptr );
 
-    // (True) Planning path
-    _planning_path_ptr.reset(   new rmlv2PathPlan_v1(_Assets_path, int(MSG_ID::dynamic_path), "GUI_map" )   );
-    // _planning_path_ptr->Translate(glm::vec3(-5.5f, 0.0f, 0.0f));
-    _rm_BaseModel.push_back( _planning_path_ptr );
+    // // (True) Planning path
+    // _planning_path_ptr.reset(   new rmlv2PathPlan_v1(_Assets_path, int(MSG_ID::dynamic_path), "GUI_map" )   );
+    // // _planning_path_ptr->Translate(glm::vec3(-5.5f, 0.0f, 0.0f));
+    // _rm_BaseModel.push_back( _planning_path_ptr );
+
+    // Local path (A*)
+    _local_path_ptr.reset( new rmlv2PathPlan_navPath(_Assets_path, int(MSG_ID::local_path) ) );
+    // _local_path_ptr->Translate(glm::vec3(-5.5f, 0.0f, 0.0f));
+    _rm_BaseModel.push_back( _local_path_ptr );
+
 
     // Circle
     // _rm_BaseModel.push_back( std::shared_ptr<rmCircle>(new rmCircle(_Assets_path, "GUI_base" ) ) );
@@ -538,25 +546,19 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _image_board_ptr->Rotate(glm::vec3(0.0f,0.0f,1.0f), M_PI/6.0);
     // _image_board_ptr->shape.setBoardSizeRatio(0.2f, false);
     _image_board_ptr->shape.setBoardSizePixel(150, false);
-    _image_board_ptr->shape.setBoardPositionCVPixel(-300, 0, 1, ALIGN_X::RIGHT, ALIGN_Y::TOP );
+    // _image_board_ptr->shape.setBoardPositionCVPixel(-300, 0, 1, ALIGN_X::RIGHT, ALIGN_Y::TOP ); // Right side
+    _image_board_ptr->shape.setBoardPositionCVPixel(0, 0, 0, ALIGN_X::LEFT, ALIGN_Y::TOP ); // Left side
     _rm_BaseModel.push_back( _image_board_ptr );
 
 
-
-    // rmlv2SpeedMeter
-    _rm_BaseModel.push_back( std::shared_ptr<rmlv2SpeedMeter>( new rmlv2SpeedMeter(_Assets_path, int(MSG_ID::vehicle_info) ) ) );
+    // Remove the following for backend demo
+    // // rmlv2SpeedMeter
+    // _rm_BaseModel.push_back( std::shared_ptr<rmlv2SpeedMeter>( new rmlv2SpeedMeter(_Assets_path, int(MSG_ID::vehicle_info) ) ) );
+    // //
     //
-
-    // Traffic light (simple)
+    // // Traffic light (simple)
     // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightSimple>( new rmlv2TrafficLightSimple(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightImage>( new rmlv2TrafficLightImage(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
-
-
-    // // Traffic light
-    // std::shared_ptr<rmlv2TrafficLight> _traffic_light_ptr( new rmlv2TrafficLight(_Assets_path, int(MSG_ID::flag_info_2) ) );
-    // _traffic_light_ptr->setTrafficLightHeightPixel(50);
-    // _traffic_light_ptr->setTrafficLightPositionCVPixel(-200, 0, 1);
-    // _rm_BaseModel.push_back( _traffic_light_ptr );
+    // // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightImage>( new rmlv2TrafficLightImage(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
 
 }
 

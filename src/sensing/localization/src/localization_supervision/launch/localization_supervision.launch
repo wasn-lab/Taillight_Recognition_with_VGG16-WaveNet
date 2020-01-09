@@ -1,0 +1,8 @@
+<!-- -->
+<launch>
+
+  <node pkg="localization_supervision" type="localization_supervision_node" name="localization_supervision" output="screen">
+
+  </node>
+
+</launch>

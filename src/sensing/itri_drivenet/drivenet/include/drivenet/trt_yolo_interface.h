@@ -16,6 +16,7 @@
 #include "boundary_util.h"
 
 using namespace DriveNet;
+
 struct ITRI_Bbox
 {
   int32_t label;

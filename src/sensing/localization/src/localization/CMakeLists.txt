@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(localization)
 add_compile_options(-std=c++11)
-set(CMAKE_BUILD_TYPE "Release")
 
 find_package(PCL 1.8.1 REQUIRED)
 find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs	
@@ -70,9 +74,7 @@ target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 MESSAGE("Generate ${PROJECT_NAME}")
 
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_node_generate_messages_cpp)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_gencfg node_example_generate_messages_cpp)
 
 
 if(CUDA_FOUND)
