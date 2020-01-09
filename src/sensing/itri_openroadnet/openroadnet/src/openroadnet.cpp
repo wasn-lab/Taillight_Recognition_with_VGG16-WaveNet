@@ -157,7 +157,6 @@ msgs::FreeSpaceResult openroadnet::run(cv::Mat mat60)
 
   const auto label =
       static_cast<int*>(TF_TensorData(output_tensor));  // Return a pointer to the underlying data buffer of TF_Tensor*
-  const int label_size = TF_TensorByteSize(output_tensor) / TF_DataTypeSize(TF_TensorType(output_tensor));
 
   uint8_t Result_mat[infer_w][infer_h];
   for (int a = 0; a < infer_w; a++)
@@ -250,7 +249,6 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
 
   const auto label =
       static_cast<int*>(TF_TensorData(output_tensor));  // Return a pointer to the underlying data buffer of TF_Tensor*
-  const int label_size = TF_TensorByteSize(output_tensor) / TF_DataTypeSize(TF_TensorType(output_tensor));
 
   uint8_t Result_mat[infer_w][infer_h];
   for (int a = 0; a < infer_w; a++)
