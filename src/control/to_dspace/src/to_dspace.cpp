@@ -183,7 +183,7 @@ void chatterCallback_02(const std_msgs::Bool::ConstPtr& msg)
 	frame.data[0] = (short int)(msg->data);
 	frame.data[1] = (short int)(msg->data)>>8;
 	nbytes = write(s, &frame, sizeof(struct can_frame));
-	cout << "Driving state: " << msg->data << endl;
+	cout << "Driving state: " << int(msg->data) << endl;
 	close(s);
 	
 	//printf("Wrote %d bytes\n", nbytes);
@@ -225,7 +225,7 @@ void chatterCallback_03(const std_msgs::Bool::ConstPtr& msg)
 	frame.data[0] = (short int)(msg->data);
 	frame.data[1] = (short int)(msg->data)>>8;
 	nbytes = write(s, &frame, sizeof(struct can_frame));
-	cout << "System ready: " << msg->data << endl;
+	cout << "System ready: " << int(msg->data) << endl;
 	close(s);
 	
 	//printf("Wrote %d bytes\n", nbytes);
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
-  ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready”", 1, chatterCallback_03);
+  ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
   ros::spin();
   return 0;
 }
