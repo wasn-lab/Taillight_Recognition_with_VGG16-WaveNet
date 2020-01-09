@@ -15,6 +15,7 @@
 #include <tf/transform_listener.h>
 #include "std_msgs/String.h"
 
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
 
 boost::mutex mutex_queue;
 boost::mutex mutex_ros;
@@ -209,7 +210,7 @@ std::string get_jsonmsg_ros (const std::string& type)
         J1["slam"] = -1;
     	J1["object_list"];
     	int num = 0;
-	for (int i = 0; i < detObjArray.objects.size (); i++)
+	for (size_t i = 0; i < detObjArray.objects.size (); i++)
   	{
 	    json J2;
             J2["object_adv_P0_x"] = detObjArray.objects[i].bPoint.p0.x;
@@ -290,20 +291,23 @@ void sendRun (int argc, char ** argv)
         mutex_queue.lock ();
 	while(q.size() != 0)
 	{
-            int resault =  UDP_SEV_client.send_obj_to_server (q.front());
+            int result =  UDP_SEV_client.send_obj_to_server (q.front());
 	    q.pop();
+      NO_UNUSED_VAR_CHECK(result);
 	}        
        
 	while(obuQueue.size() != 0)
 	{
             int result =  UDP_SEV_OBU.send_obj_to_server (obuQueue.front());
 	    obuQueue.pop();
+      NO_UNUSED_VAR_CHECK(result);
 	}        
 
         while(vkQueue.size() != 0)
 	{
             int result =  UDP_SEV_VK_client.send_obj_to_server (vkQueue.front());
 	    vkQueue.pop();
+      NO_UNUSED_VAR_CHECK(result);
 	}        
         mutex_queue.unlock ();
 
