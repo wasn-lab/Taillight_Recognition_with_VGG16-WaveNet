@@ -1,5 +1,7 @@
 #include "drivenet/image_exception_handling.h"
 
+using namespace cv;
+
 bool CheckMatDataValid(Mat src)
 {
   if (src.empty())

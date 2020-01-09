@@ -54,7 +54,7 @@ $ git push
 ### 挑選 Reviewer
 
 Reviewer需要有maintainer權限，目前有
-@root (austin)
+@Austin.Chen
 @Wayne
 @chtseng
 @hankliu
