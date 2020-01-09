@@ -26,7 +26,7 @@ from opengl_test.msg import * # test
 
 
 # ROS Publishers
-msg_recorder_trigger_pub = rospy.Publisher('/REC/req_backup', Empty, queue_size=10)
+msg_recorder_trigger_pub = rospy.Publisher('/REC/req_backup', String, queue_size=10)
 GUI_cmd_pub = rospy.Publisher('GUI2/operation', GUI2_op, queue_size=10)
 GUI_cmd_pub_seq = 0
 
@@ -101,7 +101,7 @@ def mqtt_REC_req_backup_CB(client, userdata, mqtt_msg):
     ** On receiving this message, bypass to ROS.
     """
     print( 'payload = "%s"' % mqtt_msg.payload )
-    msg_recorder_trigger_pub.publish( Empty() )
+    msg_recorder_trigger_pub.publish( "" )
 #------------------------------------------------------#
 # end MQTT --> ROS
 
@@ -167,7 +167,7 @@ class GUI_GATEWAY(object):
         GUI_cmd_pub_seq += 1
         # Trigger backup
         if ros_msg.record_op == "backup":
-            msg_recorder_trigger_pub.publish( Empty() )
+            msg_recorder_trigger_pub.publish( "" )
         #
 
         # Wait for GUI to response
