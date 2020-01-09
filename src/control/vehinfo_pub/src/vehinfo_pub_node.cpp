@@ -314,7 +314,7 @@ int main(int argc, char **argv)
 
             for (int i =0; i < 7; i++)
             {
-                    nbytes = read(s, &frame, CANFD_MTU);
+                    nbytes = read(s, &frame, sizeof(frame));
                     processFrame(frame, msg);
                     std::cout << "-----------------------------------------------" << std::endl;
             }
