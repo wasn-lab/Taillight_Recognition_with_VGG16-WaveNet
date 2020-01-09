@@ -160,9 +160,9 @@ msgs::FreeSpaceResult openroadnet::run(cv::Mat mat60)
   const int label_size = TF_TensorByteSize(output_tensor) / TF_DataTypeSize(TF_TensorType(output_tensor));
 
   uint8_t Result_mat[infer_w][infer_h];
-  for (size_t a = 0; a < infer_w; a++)
+  for (int a = 0; a < infer_w; a++)
   {
-    for (size_t b = 0; b < infer_h; b++)
+    for (int b = 0; b < infer_h; b++)
     {
       Result_mat[a][b] = label[infer_w * a + b];
     }
@@ -253,9 +253,9 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
   const int label_size = TF_TensorByteSize(output_tensor) / TF_DataTypeSize(TF_TensorType(output_tensor));
 
   uint8_t Result_mat[infer_w][infer_h];
-  for (size_t a = 0; a < infer_w; a++)
+  for (int a = 0; a < infer_w; a++)
   {
-    for (size_t b = 0; b < infer_h; b++)
+    for (int b = 0; b < infer_h; b++)
     {
       Result_mat[a][b] = label[infer_w * a + b];
     }
