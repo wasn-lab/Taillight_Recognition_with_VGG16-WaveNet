@@ -157,12 +157,11 @@ msgs::FreeSpaceResult openroadnet::run(cv::Mat mat60)
 
   const auto label =
       static_cast<int*>(TF_TensorData(output_tensor));  // Return a pointer to the underlying data buffer of TF_Tensor*
-  const int label_size = TF_TensorByteSize(output_tensor) / TF_DataTypeSize(TF_TensorType(output_tensor));
 
   uint8_t Result_mat[infer_w][infer_h];
-  for (size_t a = 0; a < infer_w; a++)
+  for (int a = 0; a < infer_w; a++)
   {
-    for (size_t b = 0; b < infer_h; b++)
+    for (int b = 0; b < infer_h; b++)
     {
       Result_mat[a][b] = label[infer_w * a + b];
     }
@@ -193,7 +192,7 @@ msgs::FreeSpaceResult openroadnet::run(cv::Mat mat60)
   OpenRoadNet_Free.current.clear();
   OpenRoadNet_output_pub.freespace.clear();
 
-  for (int len = 0; len < OpenRoadNet_output.size(); len++)
+  for (size_t len = 0; len < OpenRoadNet_output.size(); len++)
   {
     OpenRoadNet_Bound.x = OpenRoadNet_output[len].x;
     OpenRoadNet_Bound.y = OpenRoadNet_output[len].y;
@@ -250,12 +249,11 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
 
   const auto label =
       static_cast<int*>(TF_TensorData(output_tensor));  // Return a pointer to the underlying data buffer of TF_Tensor*
-  const int label_size = TF_TensorByteSize(output_tensor) / TF_DataTypeSize(TF_TensorType(output_tensor));
 
   uint8_t Result_mat[infer_w][infer_h];
-  for (size_t a = 0; a < infer_w; a++)
+  for (int a = 0; a < infer_w; a++)
   {
-    for (size_t b = 0; b < infer_h; b++)
+    for (int b = 0; b < infer_h; b++)
     {
       Result_mat[a][b] = label[infer_w * a + b];
     }
@@ -286,7 +284,7 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
   OpenRoadNet_Free.current.clear();
   OpenRoadNet_output_pub.freespace.clear();
 
-  for (int len = 0; len < OpenRoadNet_output.size(); len++)
+  for (size_t len = 0; len < OpenRoadNet_output.size(); len++)
   {
     OpenRoadNet_Bound.x = OpenRoadNet_output[len].x;
     OpenRoadNet_Bound.y = OpenRoadNet_output[len].y;
@@ -308,7 +306,7 @@ msgs::FreeSpaceResult openroadnet::run(const Npp8u* rawCUDA)
 
 void openroadnet::display_result(cv::Mat& video_ptr, std::vector<std::vector<int>> dis_free_)
 {
-  for (int i = 0; i < dis_free_.size(); i++)
+  for (size_t i = 0; i < dis_free_.size(); i++)
   {
     cv::Point start = cv::Point(dis_free_[i - 1][0], dis_free_[i - 1][1]);
     cv::Point end = cv::Point(dis_free_[i][0], dis_free_[i][1]);

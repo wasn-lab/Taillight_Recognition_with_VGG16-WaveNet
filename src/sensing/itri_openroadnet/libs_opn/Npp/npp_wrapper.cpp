@@ -147,9 +147,6 @@ int npp::resize3(const Npp8u* rawCUDA_, cv::Mat& dst, const double hscale, const
   const NppiSize src_size = {.width = 1920, .height = 1208 };
   const NppiRect src_roi = {.x = 0, .y = 0, .width = 1920, .height = 1208 };
   const int src_line_steps = 1920 * 3;
-
-  assert(num_src_bytes > 0);
-
   const int dst_rows = hscale;
   const int dst_cols = wscale;
   const int dst_line_steps = dst_cols * 3;
@@ -168,8 +165,6 @@ int npp::resize3(const Npp8u* rawCUDA_, cv::Mat& dst, const double hscale, const
   // // RGBA to RGB of uint in CUDA
 
   assert(result == NPP_SUCCESS);
-
-  // cudaMemcpy(src_npp8u_ptr_, src.data, num_src_bytes, cudaMemcpyHostToDevice);
 
   result = nppiResize_8u_C3R(rawCUDA_, src_line_steps, src_size, src_roi, dst_npp8u_ptr_, dst_line_steps, dst_size,
                              dst_roi, interpolation_mode);
