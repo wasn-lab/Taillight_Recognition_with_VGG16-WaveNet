@@ -233,7 +233,15 @@ def main():
     mqtt_client.message_callback_add(mqtt_advop_req_run_stop_subT, mqtt_advop_req_run_stop_CB)
 
     # Connect
-    mqtt_client.connect(mqtt_broker, 1883, 60)
+    is_connected = False
+    while (not is_connected) and (not rospy.is_shutdown()):
+        try:
+            mqtt_client.connect(mqtt_broker, 1883, 60)
+            is_connected = True
+            rospy.loginfo("[MQTT] Connected to broker.")
+        except:
+            rospy.logwarn("[MQTT] Failed to connect to broker, keep trying.")
+            time.sleep(1.0)
     # Start working
     mqtt_client.loop_start() # This start the actual work on another thread.
 
