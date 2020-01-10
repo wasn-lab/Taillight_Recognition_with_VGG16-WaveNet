@@ -45,6 +45,7 @@ class Node:
         self.delay_prefix = rospy.get_param("~delay_prefix", "")
         self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
+        self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", True)
         self.t_clock = rospy.Time()
 
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
@@ -101,20 +102,32 @@ class Node:
         current_stamp = rospy.get_rostime()
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
+
+        # Clean-up the objects if its distance < 0.0
+        #----------------------------------------------#
+        _objects = None
+        _num_removed_obj = None
+        if self.is_ignoring_empty_obj:
+            _objects = [_obj for _obj in message.objects if _obj.distance >= 0.0]
+            _num_removed_obj = len(message.objects) - len(_objects)
+        else:
+            _objects = message.objects
+        #----------------------------------------------#
+
         box_list = MarkerArray()
         delay_list = MarkerArray()
-        box_list.markers.append(self.create_bounding_box_list_marker(1, message.header, message.objects ) )
-        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps ) )
+        box_list.markers.append(self.create_bounding_box_list_marker(1, message.header, _objects ) )
+        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps, _num_removed_obj ) )
         # idx = 1
-        # for i in range(len(message.objects)):
-        #     # point = self.text_marker_position(message.objects[i].bPoint)
-        #     box_list.markers.append( self.create_bounding_box_marker( idx, message.header, message.objects[i].bPoint) )
+        # for i in range(len(_objects)):
+        #     # point = self.text_marker_position(_objects[i].bPoint)
+        #     box_list.markers.append( self.create_bounding_box_marker( idx, message.header, _objects[i].bPoint) )
         #     # delay_list.markers.append( self.create_delay_text_marker( idx, message.header, point) )
         #     idx += 1
         if self.is_showing_depth:
             idx = 2
-            for i in range(len(message.objects)):
-                box_list.markers.append( self.create_depth_text_marker( idx, message.header, message.objects[i].bPoint, i) )
+            for i in range(len(_objects)):
+                box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].bPoint, i) )
                 idx += 1
         #
         self.box_mark_pub.publish(box_list)
@@ -199,7 +212,7 @@ class Node:
         return marker
 
 
-    def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None):
+    def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None, _num_removed_obj=None):
         """
         Generate a text marker for showing latency and FPS.
         """
@@ -211,6 +224,8 @@ class Node:
         text += "%.3fms" % ((current_stamp - header.stamp).to_sec() * 1000.0)
         if not fps is None:
             text += " fps = %.1f" % fps
+        if not _num_removed_obj is None:
+            text += " -%d objs" % _num_removed_obj
         #
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_delay"), scale=2.0 )
 
