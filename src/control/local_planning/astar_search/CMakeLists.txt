@@ -4,8 +4,6 @@ project(astar_search)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
