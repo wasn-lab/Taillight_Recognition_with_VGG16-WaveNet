@@ -21,6 +21,8 @@ from std_msgs.msg import (
     Empty,
     Bool,
 )
+# msgs
+from msgs.msg import Flag_Info
 #---------------------------#
 
 # Timeouts
@@ -125,7 +127,7 @@ def mqtt_advop_sync_CB(client, userdata, mqtt_msg):
     This is the callback function at receiving sync signal.
     ** On receiving this message, bypass to ROS.
     """
-    print( 'payload = "%s"' % mqtt_msg.payload )
+    print( '[MQTT]<%s> payload = "%s"' % (message.topic, mqtt_msg.payload) )
     ros_advop_sync_pub.publish( Empty() )
     mqtt_publish_all_states()
 
@@ -134,7 +136,7 @@ def mqtt_advop_req_run_stop_CB(client, userdata, mqtt_msg):
     This is the callback function at receiving req_run_stop signal.
     ** On receiving this message, bypass to ROS.
     """
-    print( 'payload = "%s"' % mqtt_msg.payload )
+    print( '[MQTT]<%s> payload = "%s"' % (message.topic, mqtt_msg.payload) )
     ros_advop_req_run_stop_pub.publish( mqtt_char_to_bool(mqtt_msg.payload) ) # "1" or "0"
 #------------------------------------------------------#
 # end MQTT --> ROS
@@ -156,6 +158,21 @@ def ros_advop_run_state_CB(msg):
         return
     # Publish
     mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(msg.data), qos=2, retain=False)
+
+def ros_Flag_02_CB(msg):
+    """
+    This is the callback function for run_state.
+    ** On receiving this message, bypass to MQTT interface.
+    """
+    global var_advop_run_state
+    _run_state = (msg.Dspace_Flag08 > 0.5) # 1 for running, 0 for stopped
+    var_advop_run_state = _run_state
+    # print("var_advop_run_state = %s" % str(var_advop_run_state))
+    rospy.loginfo_throttle(1, "var_advop_run_state = %s" % str(var_advop_run_state))
+    if mqtt_client is None:
+        return
+    # Publish
+    mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(_run_state), qos=2, retain=False)
 
 def ros_advop_sys_ready_CB(msg):
     """
@@ -194,8 +211,14 @@ def main():
     global mqtt_client
     # ROS
     rospy.init_node('ADV_op_gateway', anonymous=False)
+    # ROS subscribers
+    #-----------------------------#
+    # Chose only one of them to receive the run state
     rospy.Subscriber("ADV_op/run_state", Bool, ros_advop_run_state_CB)
+    rospy.Subscriber("Flag_Info02", Flag_Info, ros_Flag_02_CB)
+    #
     rospy.Subscriber("ADV_op/sys_ready", Bool, ros_advop_sys_ready_CB)
+    #-----------------------------#
 
 
     # MQTT
@@ -223,7 +246,11 @@ def main():
     while not rospy.is_shutdown():
         # print("running")
         mqtt_publish_all_states()
-        rate.sleep()
+        try:
+            rate.sleep()
+        except:
+            # For ros time moved backward
+            pass
 
     rospy.logwarn("[ADV_op_gateway] The ADV_op_gateway is going to close.")
     _timeout_handle_sys_ready(False)
