@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     int nbytes, i;
     static struct ifreq ifr;
     static struct sockaddr_ll sll;
-    const char *ifname = "can1";
+    char *ifname = "can1";
     int ifindex;
     int opt;
     int send_one_frame = 0;
@@ -108,6 +108,7 @@ int main(int argc, char **argv)
             x = 0, y = 0, z = 0, speed = 0;
             delphi_radar_parsing(frame[i], &x, &y, &z, &speed);
             point.x = x;
+	    x = x+0.5;    //Align with lidar origin
             point.y = y;
             point.z = z;
             point.speed = speed;
