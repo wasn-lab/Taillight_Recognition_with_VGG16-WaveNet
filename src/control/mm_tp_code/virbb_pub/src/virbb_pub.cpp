@@ -698,8 +698,8 @@ int main( int argc, char **argv )
 	abs_marker_pub = nh.advertise<visualization_msgs::Marker>("marker_topic",1);
 	abs_marker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("marker_array_topic",1);
 	rel_BB_array_pub = nh.advertise<msgs::DetectedObjectArray>("rel_virBB_array",1);
-	abs_PPmarker_pub = nh.advertise<visualization_msgs::Marker>("PPmarker_topic",1);
-	abs_PPmarker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("abs_PPmarker_array",1);
+	abs_PPmarker_pub = nh.advertise<visualization_msgs::Marker>("abs_virPPmarker_topic",1);
+	abs_PPmarker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("abs_virPPmarker_array",1);
 
 	ros::Rate loop_rate(hz);
 	while (ros::ok())

@@ -140,6 +140,8 @@ ClassLiDARPoseCan::poseSendByCAN(const struct MsgSendToCan &input_msg)
     cout << "heading = " << input_msg.heading << endl;
 
     can_counter++;
+
+    return 0;
 }
 
 
@@ -189,6 +191,8 @@ ClassLiDARPoseCan::imuSendByCAN(const struct MsgSendToCan1 &input_msg)
     cout << "[CAN]: wrote " << nbytes << endl;
 
     can_counter1++;
+
+    return 0;
 }
 
 int
@@ -217,4 +221,34 @@ ClassLiDARPoseCan::controlSendByCAN(const struct MsgSendToCan2 &input_msg)
     cout << "[CAN]: wrote " << nbytes << endl;
 
     can_counter1++;
+
+    return 0;
+}
+
+int
+ClassLiDARPoseCan::controlSendByCAN_1(const struct MsgSendToCan3 &input_msg)
+{
+    struct canfd_frame frame;
+    frame.can_id = 0x465;
+    frame.len    = 8;
+    int nbytes = 0;
+
+    frame.data[0] = (int) (input_msg.front_vehicle_target_y * 100 ) & 0xff;
+    frame.data[1] = (int) (input_msg.front_vehicle_target_y * 100 ) >> 8;
+
+    frame.data[2] = (int) (input_msg.rear_vehicle_target_y * 100 ) & 0xff;
+    frame.data[3] = (int) (input_msg.rear_vehicle_target_y * 100 ) >> 8;
+
+    frame.data[4] = 0;
+    frame.data[5] = 0;
+    frame.data[6] = 0;  
+    frame.data[7] = 0;
+
+    nbytes +=  write (s, &frame, required_mtu);
+
+    cout << "[CAN]: wrote " << nbytes << endl;
+
+    can_counter1++;
+
+    return 0;
 }
