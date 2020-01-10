@@ -226,7 +226,12 @@ add_definitions         (${PCL_DEFINITIONS})
 ######################
 ##       CUDA       ##
 ######################
-find_package	        (CUDA REQUIRED)
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 include_directories     (${CUDA_INCLUDE_DIRS})
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")

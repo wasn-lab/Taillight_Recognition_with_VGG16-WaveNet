@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="is_loading_msg_recorder" default="true" />
+  <arg name="is_loading_msg_recorder" default="false" />
 
 
   <node name="GUI_gateway_1" pkg="opengl_test" type="GUI_gateway.py" output="screen">

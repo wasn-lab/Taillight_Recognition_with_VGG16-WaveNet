@@ -11,9 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(CATKIN_DEPENDS roscpp geometry_msgs car_model)
 
 find_package(CUDA)
-
-if (NOT "${CUDA_VERSION_MAJOR}")
-  message(FATAL_ERROR "CUDA not found. Skip building ${PROJECT_NAME}")
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
 

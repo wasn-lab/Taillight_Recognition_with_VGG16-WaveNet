@@ -50,6 +50,11 @@ struct MsgSendToCan2
     int Target_seg_id;
     double Look_ahead_time;
 };
+struct MsgSendToCan3
+{
+    double front_vehicle_target_y;
+    double rear_vehicle_target_y;
+};
 
 using namespace std;
 
@@ -79,6 +84,9 @@ public :
 
     int
     controlSendByCAN(const struct MsgSendToCan2 &input_msg);
+
+    int
+    controlSendByCAN_1(const struct MsgSendToCan3 &input_msg);
 
 };
 
