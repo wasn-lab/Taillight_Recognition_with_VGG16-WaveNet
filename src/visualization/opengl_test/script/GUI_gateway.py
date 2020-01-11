@@ -4,6 +4,7 @@ import string
 import json
 import cherrypy
 import threading
+import time
 #
 
 # MQTT
@@ -26,7 +27,7 @@ from opengl_test.msg import * # test
 
 
 # ROS Publishers
-msg_recorder_trigger_pub = rospy.Publisher('/REC/req_backup', Empty, queue_size=10)
+msg_recorder_trigger_pub = rospy.Publisher('/REC/req_backup', String, queue_size=10)
 GUI_cmd_pub = rospy.Publisher('GUI2/operation', GUI2_op, queue_size=10)
 GUI_cmd_pub_seq = 0
 
@@ -101,7 +102,7 @@ def mqtt_REC_req_backup_CB(client, userdata, mqtt_msg):
     ** On receiving this message, bypass to ROS.
     """
     print( 'payload = "%s"' % mqtt_msg.payload )
-    msg_recorder_trigger_pub.publish( Empty() )
+    msg_recorder_trigger_pub.publish( "" )
 #------------------------------------------------------#
 # end MQTT --> ROS
 
@@ -167,14 +168,14 @@ class GUI_GATEWAY(object):
         GUI_cmd_pub_seq += 1
         # Trigger backup
         if ros_msg.record_op == "backup":
-            msg_recorder_trigger_pub.publish( Empty() )
+            msg_recorder_trigger_pub.publish( "" )
         #
 
         # Wait for GUI to response
         is_received_GUI_state = False
         start_time = rospy.get_rostime()
         wait_timeout = rospy.Duration.from_sec(1.0) # Wait for 1 sec.
-        seq_catch = GUI_state_seq 
+        seq_catch = GUI_state_seq
         while (rospy.get_rostime() - start_time) < wait_timeout:
             rospy.sleep(0.01) # Sleep for 0.01 sec.
             if GUI_state_seq > seq_catch:
@@ -207,7 +208,10 @@ class GUI_GATEWAY(object):
 # Wait for ROS terminating signal to close the HTTP server
 def wait_for_close():
     while not rospy.is_shutdown():
-        rospy.sleep(0.5)
+        try:
+            rospy.sleep(0.5)
+        except:
+            pass
     cherrypy.engine.exit()
 
 def main():
@@ -235,7 +239,15 @@ def main():
 
 
     # Connect
-    mqtt_client.connect(mqtt_broker, 1883, 60)
+    is_connected = False
+    while (not is_connected) and (not rospy.is_shutdown()):
+        try:
+            mqtt_client.connect(mqtt_broker, 1883, 60)
+            is_connected = True
+            rospy.loginfo("[MQTT] Connected to broker.")
+        except:
+            rospy.logwarn("[MQTT] Failed to connect to broker, keep trying.")
+            time.sleep(1.0)
     # Start working
     mqtt_client.loop_start() # This start the actual work on another thread.
 

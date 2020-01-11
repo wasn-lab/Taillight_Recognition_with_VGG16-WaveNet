@@ -79,3 +79,11 @@
 
 /tf
 /tf_static
+
+
+# System-ready check
+/ADV_op/req_run_stop
+/ADV_op/run_state
+/ADV_op/sync
+/ADV_op/sys_ready
+
