@@ -42,12 +42,7 @@ include_directories(
 ######################
 ##       CUDA       ##
 ######################
-find_package(CUDA)
-if (NOT ${CUDA_FOUND})
-  message("CUDA not found. Skip building ${PROJECT_NAME}")
-  return ()
-endif ()
-
+find_package(CUDA REQUIRED)
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 include_directories     (${CUDA_INCLUDE_DIRS})
 set(CUDA_LIBS ${CUDA_TOOLKIT_ROOT_DIR}/lib64/libnppisu.so
