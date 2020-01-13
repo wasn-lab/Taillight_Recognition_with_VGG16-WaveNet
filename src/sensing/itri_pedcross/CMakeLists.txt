@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
-
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
