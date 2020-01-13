@@ -130,6 +130,7 @@ bool ROS_API::_set_up_topics(){
         // Vehicle info
         ros_interface.add_a_topic( int(MSG_ID::vehicle_info), "taichung_veh_info", int(M_TYPE::ITRICarInfoCarA), true, 100, 100, "GUI_base");
         ros_interface.add_a_topic( int(MSG_ID::dynamic_path), "dynamic_path_para", int(M_TYPE::ITRIDynamicPath), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::local_path), "nav_path_astar_final", int(M_TYPE::NavPath), true, 100, 100, "GUI_map");
         // Flag_info
         ros_interface.add_a_topic( int(MSG_ID::flag_info_1), "Flag_Info01", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
         ros_interface.add_a_topic( int(MSG_ID::flag_info_2), "Flag_Info02", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
@@ -166,6 +167,7 @@ bool ROS_API::_set_up_topics(){
         // Vehicle info
         ros_interface.add_a_topic( int(MSG_ID::vehicle_info), "veh_info", int(M_TYPE::ITRICarInfo), true, 100, 100, "GUI_base");
         ros_interface.add_a_topic( int(MSG_ID::dynamic_path), "dynamic_path_para", int(M_TYPE::ITRIDynamicPath), true, 100, 100, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::local_path), "nav_path_astar_final", int(M_TYPE::NavPath), true, 100, 100, "GUI_map");
         // Flag_info
         ros_interface.add_a_topic( int(MSG_ID::flag_info_1), "Flag_Info01", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");
         ros_interface.add_a_topic( int(MSG_ID::flag_info_2), "Flag_Info02", int(M_TYPE::ITRIFlagInfo), true, 100, 100, "GUI_base");

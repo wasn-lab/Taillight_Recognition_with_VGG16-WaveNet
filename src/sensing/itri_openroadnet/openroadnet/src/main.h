@@ -15,14 +15,13 @@
 // ROS msgs
 #include <msgs/FreeSpaceResult.h>
 
-///Opencv
+/// Opencv
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <nppdefs.h>
-
 
 ros::Publisher OpenRoadNet_pub;
 
@@ -38,5 +37,3 @@ ros::Publisher pub;
 
 int count = 0;
 bool display_flag = false;
-
-

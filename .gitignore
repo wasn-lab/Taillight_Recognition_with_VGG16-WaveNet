@@ -41,3 +41,4 @@ src/sensing/camera_utils/data/right_120.json
 src/sensing/itri_pedcross/models/
 src/sensing/itri_pedcross/openpose/
 src/bags/
+src/dl_data/assets/

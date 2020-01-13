@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(DIRECTORY msg
   FILES
   MM_TP_msg.msg
+  UKF_MM_msg.msg
 )
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
