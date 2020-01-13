@@ -44,14 +44,10 @@ find_package(catkin REQUIRED COMPONENTS
     image_transport)
 
 find_package(OpenCV REQUIRED)
+find_package(openpose)
 
-find_library(LIBOPENPOSE_SO NAMES libopenpose.so)
-
-if (LIBOPENPOSE_SO)
-  find_package(OpenPose)
-  message(Status "Found openpose ${OpenPose_VERSION} in ${OpenPose_DIR}")
-else ()
-  message(Status "Openpose not found. Follow install_openpose.sh to install it. Skip building ${PROJECT_NAME}.")
+if (NOT openpose_LIBRARY)
+  message(STATUS "Openpose not found. Follow ${CMAKE_CURRENT_LIST_DIR}/install_openpose.sh to install it. Skip building ${PROJECT_NAME}.")
   return()
 endif ()
 
@@ -81,7 +77,7 @@ include_directories(
     include
     ${catkin_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
-    ${OpenPose_INCLUDE_DIRS}
+    ${openpose_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${CAFFE_INCLUDE_DIRS}
     ${GFLAGS_INCLUDE_DIR}
@@ -104,7 +100,7 @@ target_link_libraries(
     itri_pedcross
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
-    ${OpenPose_LIBS}
+    ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
