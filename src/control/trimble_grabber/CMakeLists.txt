@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(trimble_gps_imu_pub)
-add_compile_options(-std=c++11)
-set(CMAKE_BUILD_TYPE "Release")
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
