@@ -127,7 +127,7 @@ def mqtt_advop_sync_CB(client, userdata, mqtt_msg):
     This is the callback function at receiving sync signal.
     ** On receiving this message, bypass to ROS.
     """
-    print( '[MQTT]<%s> payload = "%s"' % (message.topic, mqtt_msg.payload) )
+    print( '[MQTT]<%s> payload = "%s"' % (mqtt_msg.topic, mqtt_msg.payload) )
     ros_advop_sync_pub.publish( Empty() )
     mqtt_publish_all_states()
 
@@ -136,7 +136,7 @@ def mqtt_advop_req_run_stop_CB(client, userdata, mqtt_msg):
     This is the callback function at receiving req_run_stop signal.
     ** On receiving this message, bypass to ROS.
     """
-    print( '[MQTT]<%s> payload = "%s"' % (message.topic, mqtt_msg.payload) )
+    print( '[MQTT]<%s> payload = "%s"' % (mqtt_msg.topic, mqtt_msg.payload) )
     ros_advop_req_run_stop_pub.publish( mqtt_char_to_bool(mqtt_msg.payload) ) # "1" or "0"
 #------------------------------------------------------#
 # end MQTT --> ROS
