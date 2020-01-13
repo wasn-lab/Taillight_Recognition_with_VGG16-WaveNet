@@ -126,14 +126,14 @@ find_path(openpose_INCLUDE_DIR
                 ENV openpose_ROOT)
 
 set(openpose_LIBRARIES ${openpose_LIBRARY}
-               ${openpose_core_LIBRARY}
-               ${openpose_pose_LIBRARY}
-               ${openpose_face_LIBRARY}
-               ${openpose_hand_LIBRARY}
-               ${openpose_producer_LIBRARY}
-               ${openpose_thread_LIBRARY}
-               ${openpose_utilities_LIBRARY}
-               ${openpose_wrapper_LIBRARY})
+                       ${openpose_core_LIBRARY}
+                       ${openpose_pose_LIBRARY}
+                       ${openpose_face_LIBRARY}
+                       ${openpose_hand_LIBRARY}
+                       ${openpose_producer_LIBRARY}
+                       ${openpose_thread_LIBRARY}
+                       ${openpose_utilities_LIBRARY}
+                       ${openpose_wrapper_LIBRARY})
 
 set(openpose_INCLUDE_DIRS ${openpose_INCLUDE_DIR})
 
