@@ -95,7 +95,6 @@ set(CPP_FILES
     src/openpose_ros_io.cpp
 )
 
-
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
     itri_pedcross
