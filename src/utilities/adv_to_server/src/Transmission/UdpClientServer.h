@@ -21,7 +21,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <errno.h>
-#include <unistd.h> //sleep
+#include <unistd.h>  //sleep
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -35,72 +35,53 @@ using json = nlohmann::json;
 
 class udp_client_server_runtime_error : public std::runtime_error
 {
-  public:
-    udp_client_server_runtime_error (const char *w) :
-        std::runtime_error (w)
-    {
-    }
+public:
+  udp_client_server_runtime_error(const char* w) : std::runtime_error(w)
+  {
+  }
 };
 
 class UdpClient
 {
-  public:
-    UdpClient ();
-    UdpClient (const std::string& addr,
-               int port);
-    ~UdpClient ();
+public:
+  UdpClient();
+  UdpClient(const std::string& addr, int port);
+  ~UdpClient();
 
-    void
-    initial (const std::string& addr,
-             int port);
+  void initial(const std::string& addr, int port);
 
-    int
-    get_socket () const;
-    int
-    get_port () const;
-    std::string
-    get_addr () const;
+  int get_socket() const;
+  int get_port() const;
+  std::string get_addr() const;
 
-    int
-    send (const char *msg,
-          size_t size);
-    int
-    send_obj_to_server (const std::string& str);
+  int send(const char* msg, size_t size);
+  int send_obj_to_server(const std::string& str, bool show);
 
-  private:
-    int f_socket;
-    int f_port;
-    std::string f_addr;
-    struct addrinfo * f_addrinfo;
+private:
+  int f_socket;
+  int f_port;
+  std::string f_addr;
+  struct addrinfo* f_addrinfo;
 };
 
 class UdpServer
 {
-  public:
-    UdpServer (const std::string& addr,
-               int port);
-    ~UdpServer ();
+public:
+  UdpServer(const std::string& addr, int port);
+  ~UdpServer();
 
-    int
-    get_socket () const;
-    int
-    get_port () const;
-    std::string
-    get_addr () const;
+  int get_socket() const;
+  int get_port() const;
+  std::string get_addr() const;
 
-    int
-    recv (char *msg,
-          size_t max_size);
-    int
-    timed_recv (char *msg,
-                size_t max_size,
-                int max_wait_ms);
+  int recv(char* msg, size_t max_size);
+  int timed_recv(char* msg, size_t max_size, int max_wait_ms);
 
-  private:
-    int f_port;
-    std::string f_addr;
-    int f_socket;
-    struct addrinfo * f_addrinfo;
+private:
+  int f_port;
+  std::string f_addr;
+  int f_socket;
+  struct addrinfo* f_addrinfo;
 };
 
 #endif /* UDPCLIENTSERVER_H_ */
