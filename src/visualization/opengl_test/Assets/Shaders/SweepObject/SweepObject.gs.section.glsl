@@ -1,7 +1,10 @@
 #version 410
 
+#define _max_num_vertex_of_curve 100
+#define _max_num_vertex_of_shape 50
+#define _max_verteces_out 100 // 2*_max_num_vertex_of_shape
 layout(lines, invocations = 1) in;
-layout(line_strip, max_vertices = 100) out;
+layout(line_strip, max_vertices = _max_verteces_out) out;
 // layout(line_strip, max_vertices = 100) out;
 
 in int gl_PrimitiveIDIn[];
@@ -10,9 +13,9 @@ out vec4 gsOutColor;
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
 // The list of rotation matrices for direction
-uniform mat4 lookat_matrix[100]; // The size corespond with _max_num_vertex_of_curve
+uniform mat4 lookat_matrix[_max_num_vertex_of_curve]; // The size corespond with _max_num_vertex_of_curve
 // The list of vertex on a cross section
-uniform vec3 section_vertexes[50];
+uniform vec3 section_vertexes[_max_num_vertex_of_shape];
 uniform int _num_vertex_of_shape;
 uniform int shape_mode; // 0 - open-loop, 1 - close-loop
 //

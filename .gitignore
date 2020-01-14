@@ -40,3 +40,4 @@ src/sensing/camera_utils/data/left_120.json
 src/sensing/camera_utils/data/right_120.json
 src/sensing/itri_pedcross/models/
 src/bags/
+src/dl_data/assets/

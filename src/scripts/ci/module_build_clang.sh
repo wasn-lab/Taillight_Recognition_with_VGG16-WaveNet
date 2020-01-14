@@ -16,11 +16,8 @@ for _dir in ${build_dir} ${devel_dir}; do
         rm -rf $_dir
     fi
 done
-# workaround for openroadnet
-if [[ -d src/sensing/itri_openroadnet/libs_opn/TensorFlow/Installed ]]; then
-  rm -rf src/sensing/itri_openroadnet/libs_opn/TensorFlow/Installed
-fi
-blacklist="convex_fusion;lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing;dl_data;libs_opn;openroadnet"
+
+blacklist="output_results_by_dbscan;lidar_squseg_inference;lidars_grabber;libs;lidars_preprocessing;"
 
 catkin_make \
     --build ${build_dir} \
