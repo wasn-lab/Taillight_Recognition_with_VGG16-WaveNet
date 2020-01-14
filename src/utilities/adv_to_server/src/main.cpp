@@ -34,10 +34,10 @@ const static std::string UDP_OBU_ADRR = "192.168.1.200";
 const static int UDP_OBU_PORT = 9999;
 
 //TCP Server on ADV
-const static std::string TCP_ADV_SRV_ADRR = "192.168.1.5";
+const static std::string TCP_ADV_SRV_ADRR = "192.168.1.6";
 const static int TCP_ADV_SRV_PORT = 8765;
 
-const static std::string UDP_ADV_SRV_ADRR = "192.168.1.5";
+const static std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
 const static int UDP_ADV_SRV_PORT = 8766;
 
 // obu traffic signal
