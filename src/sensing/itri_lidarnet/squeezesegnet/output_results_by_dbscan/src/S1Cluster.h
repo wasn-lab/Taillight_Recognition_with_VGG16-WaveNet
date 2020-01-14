@@ -27,7 +27,7 @@ class S1Cluster
 
     CLUSTER_INFO*
     getClusters (bool is_debug,
-                 const PointCloud<PointXYZIL>::ConstPtr inputIL,
+                 const PointCloud<PointXYZIL>::ConstPtr input,
                  int *cluster_number);
 
   private:

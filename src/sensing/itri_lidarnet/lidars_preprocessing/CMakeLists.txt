@@ -4,12 +4,18 @@ project(lidars_preprocessing)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11) 
 
-find_package(CUDA)
+######################
+##       CUDA       ##
+######################
+find_package	        (CUDA) 
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
-
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+include_directories     (${CUDA_INCLUDE_DIRS}) 
+message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+  
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -212,6 +218,7 @@ include_directories(
 ##    use define    ##
 ######################
 
+set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES -DOTHER_STUFF=1")
 
@@ -228,13 +235,6 @@ include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
 
-######################
-##       CUDA       ##
-######################
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories     (${CUDA_INCLUDE_DIRS}) 
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
-   
 ######################
 ##       QT         ##
 ######################

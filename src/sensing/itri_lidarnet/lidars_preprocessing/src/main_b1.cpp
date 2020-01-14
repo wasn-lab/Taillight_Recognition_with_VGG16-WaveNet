@@ -14,6 +14,14 @@
 void
 callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
+  static pcl::uint64_t oldtimestamp;
+  pcl::uint64_t intervaltime = msg->header.stamp - oldtimestamp;
+  if(oldtimestamp!=0 && intervaltime > 100000L && intervaltime < 10000000L) // 100000 = 0.1s
+  {
+    cout << "[lidars_preprocessing]: missing data " << intervaltime << "," << msg->header.stamp <<endl;
+  }
+  oldtimestamp = msg->header.stamp;
+
   if (msg->size () > 100)
   {
     StopWatch stopWatch;
@@ -22,8 +30,8 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     *ptr_cur_cloud = *msg;
     //cout << "[raw data       ]:" << ptr_cur_cloud->size () << endl;
 
-    *ptr_cur_cloud = CuboidFilter ().pass_through_soild<PointXYZI> (ptr_cur_cloud, -50, 50, -25, 25, -5, 0);
-    *ptr_cur_cloud = CuboidFilter ().hollow_removal<PointXYZI> (ptr_cur_cloud, -6.6, 0.9, -1.45, 1.45, -5,0);
+    *ptr_cur_cloud = CuboidFilter ().pass_through_soild<PointXYZI> (ptr_cur_cloud, -50, 50, -25, 25, -5, 1);
+    *ptr_cur_cloud = CuboidFilter ().hollow_removal<PointXYZI> (ptr_cur_cloud, -6.6, 0.9, -1.45, 1.45, -5,1);
     //cout << "[pass through   ]:" << ptr_cur_cloud->size () << "," << timer_algorithm_running.getTimeSeconds () << "s" << endl;
 
     PointCloud<PointXYZI>::Ptr cloud_ground (new PointCloud<PointXYZI>);
@@ -84,11 +92,12 @@ main (int argc,
   thread TheadDetection (UI, argc, argv);
 #endif
 
-  ros::Rate loop_rate (15);
+  ros::AsyncSpinner spinner (1);
+  spinner.start ();
+
   while (ros::ok ())
   {
-    ros::spinOnce ();
-    loop_rate.sleep ();
+    ros::Rate(1).sleep ();
   }
   RosModuleB1::send_ErrorCode (0x0006);
 
