@@ -72,6 +72,8 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 			stop_one = 0;
 		}
 		else {
+			stop_one = 0;
+			stop_two = 0;
 			std::cout << "Bad Input";
 			return;
 		}
