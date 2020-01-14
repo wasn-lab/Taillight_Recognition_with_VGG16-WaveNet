@@ -9,9 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roslib
   msgs
-  libs
   camera_utils
-)                  
+)  
+
+find_package(libs)                
+if (NOT ${libs_FOUND})
+  message("libs not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 catkin_package(
   CATKIN_DEPENDS roscpp rospy msgs
