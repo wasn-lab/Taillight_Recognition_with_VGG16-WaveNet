@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd ../../
-
 find . -type d -exec chmod 775 {} +
 
 find . -type f -iname "*.md" -exec chmod -R  644 {} \;
@@ -18,5 +16,5 @@ find . -type f -iname "*.yml" -exec chmod -R  664 {} \;
 find . -type f -iname "*.cc" -exec chmod -R  664 {} \;
 find . -type f -iname "*.cu" -exec chmod -R  664 {} \;
 find . -type f -iname "*.cuh" -exec chmod -R  664 {} \;
-find . -type f -iname "*.cfg" -exec chmod -R  664 {} \;
+find . -type f -iname "*.cfg" -exec chmod -R  775 {} \;
 find . -type f -iname "*.ui" -exec chmod -R  664 {} \;
