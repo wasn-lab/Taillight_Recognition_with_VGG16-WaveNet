@@ -40,15 +40,6 @@ include_directories(
 )
 
 ######################
-##    use define    ##
-######################
-
-set (CMAKE_VERBOSE_MAKEFILE ON)
-set (CMAKE_BUILD_TYPE Release)
-set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
-set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
-
-######################
 ##       PCL        ##
 ######################
 find_package            (PCL 1.8 REQUIRED) 
