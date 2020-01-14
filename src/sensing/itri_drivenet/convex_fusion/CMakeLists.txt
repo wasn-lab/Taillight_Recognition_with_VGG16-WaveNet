@@ -1,0 +1,76 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(convex_fusion)
+ 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  roslib
+  msgs
+  libs
+  camera_utils
+)                  
+
+catkin_package(
+  CATKIN_DEPENDS roscpp rospy msgs
+)
+
+###########
+## Build ##
+###########
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+include_directories(
+ include
+  ${catkin_INCLUDE_DIRS}
+  ${car_model_BINARY_DIR}/include
+  ${camera_utils_SOURCE_DIR}/include
+)
+
+######################
+##    use define    ##
+######################
+
+set (CMAKE_VERBOSE_MAKEFILE ON)
+set (CMAKE_BUILD_TYPE Release)
+set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
+set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
+
+######################
+##       PCL        ##
+######################
+find_package            (PCL 1.8 REQUIRED) 
+include_directories     (${PCL_INCLUDE_DIRS})
+link_directories        (${PCL_LIBRARY_DIRS})
+add_definitions         (${PCL_DEFINITIONS})
+include_directories     (${CUDA_INCLUDE_DIRS}) 
+message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+   
+######################
+##   Source file    ##
+######################
+file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1.cpp")
+ 
+######################
+##       CUDA       ##
+######################
+find_package	        (CUDA REQUIRED) 
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+ 
+######################
+##     Vehicle      ##
+######################    
+cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS})
+add_dependencies      (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
+target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+qt5_use_modules       (${PROJECT_NAME}_hino Widgets)
+
+cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS})
+add_dependencies      (${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
+target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils)
+qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
