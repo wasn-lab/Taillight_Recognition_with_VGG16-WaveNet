@@ -1,4 +1,4 @@
-#include "convex_fusion_b1.hpp"
+#include "convex_fusion_b1.h"
 #include "VoxelGrid_CUDA.h"
 #include "VoxelFilter_CUDA.h"
 #include "UseApproxMVBB.h"

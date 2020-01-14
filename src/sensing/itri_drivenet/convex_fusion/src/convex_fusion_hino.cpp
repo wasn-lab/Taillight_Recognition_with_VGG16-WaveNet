@@ -1,4 +1,4 @@
-#include "convex_fusion_hino.hpp"
+#include "convex_fusion_hino.h"
 #include "VoxelGrid_CUDA.h"
 #include "VoxelFilter_CUDA.h"
 #include "UseApproxMVBB.h"
