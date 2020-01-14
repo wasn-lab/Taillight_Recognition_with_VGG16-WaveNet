@@ -78,7 +78,11 @@ def main():
         var_advop_sys_ready = var_advop_sys_ready_now
         # Publish ready
         ros_advop_sys_ready_pub.publish(var_advop_sys_ready)
-        rate.sleep()
+        try:
+            rate.sleep()
+        except:
+            # For ros time moved backward
+            pass
     #
     rospy.logwarn("[sys_ready] The sys_ready check is going to close.")
     # ros_advop_sys_ready_pub.publish(False)
