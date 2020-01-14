@@ -2,6 +2,6 @@
 <launch>
 
   <!--node pkg="map_pub" type="map_pub_node" name="map_pub" output="screen" launch-prefix="gnome-terminal --command"></node-->
-  <node pkg="map_pub" type="map_pub_node" name="map_pub" output="screen"></node>
+  <include file="$(find map_pub)/launch/map_pub.launch"></include>
 </launch>
 
