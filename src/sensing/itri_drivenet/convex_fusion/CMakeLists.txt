@@ -33,6 +33,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${libs_SOURCE_DIR}
+  ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
+  ${libs_SOURCE_DIR}/Preprocess/NoiseFilter
+  ${libs_SOURCE_DIR}/BoundingBox/ApproxMVBB
 )
 
 ######################
@@ -76,10 +80,10 @@ set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 ######################    
 cuda_add_executable   (${PROJECT_NAME}_hino src/convex_fusion_hino.cpp ${SOURCES_SRCS})
 add_dependencies      (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda libs)
 qt5_use_modules       (${PROJECT_NAME}_hino Widgets)
 
 cuda_add_executable   (${PROJECT_NAME}_b1 src/convex_fusion_b1.cpp ${SOURCES_SRCS})
 add_dependencies      (${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils)
+target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs)
 qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
