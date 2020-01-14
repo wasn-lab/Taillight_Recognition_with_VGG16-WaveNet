@@ -298,7 +298,8 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
   {
     // update goal index
     // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
-    int goal_waypoint_index = 38 + i;
+    // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i + 8;
+    int goal_waypoint_index = 30 + i;
     // std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
     if (goal_waypoint_index >= static_cast<int>(avoid_waypoints_.waypoints.size()))
     {
