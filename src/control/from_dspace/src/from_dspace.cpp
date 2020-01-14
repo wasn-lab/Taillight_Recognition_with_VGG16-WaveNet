@@ -347,7 +347,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "dSPACE_Info");
+    ros::init(argc, argv, "from_dspace");
     ros::NodeHandle n;
     //ros::Publisher Publisher01 = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
 	//ros::Publisher Publisher02 = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);

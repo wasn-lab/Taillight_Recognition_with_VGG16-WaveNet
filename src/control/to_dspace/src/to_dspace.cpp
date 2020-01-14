@@ -236,7 +236,7 @@ void chatterCallback_03(const std_msgs::Bool::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "dSPACE_subscriber");
+  ros::init(argc, argv, "to_dspace");
   ros::NodeHandle n;
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
