@@ -141,6 +141,8 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   is_legal_dt_ =
       (objs_header_stamp_prev_ > 0 && vel_.init_time(objs_header_stamp_, objs_header_stamp_prev_) == 0) ? true : false;
 
+  dt_ = vel_.get_dt();
+
   KTs_.header_ = objs_header_;
 
   if (is_legal_dt_)
@@ -846,7 +848,6 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
 
 void TPPNode::get_current_ego_data()
 {
-  dt_ = vel_.get_dt();
   ego_x_abs_ = vel_.get_ego_x_abs();
   ego_y_abs_ = vel_.get_ego_y_abs();
   ego_z_abs_ = vel_.get_ego_z_abs();
