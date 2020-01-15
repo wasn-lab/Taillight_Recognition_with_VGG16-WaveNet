@@ -5,11 +5,11 @@ add_compile_options(-std=c++11)
 ######################
 ##       CUDA       ##
 ######################
-find_package	        (CUDA) 
+find_package	        (CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
-endif ()
+endif () 
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 include_directories     (${CUDA_INCLUDE_DIRS}) 
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")

@@ -3,7 +3,7 @@ project(libs)
   
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11) 
-
+     
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -236,6 +236,7 @@ endif ()
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 include_directories     (${CUDA_INCLUDE_DIRS}) 
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+
 ######################
 ##       QT         ##
 ######################

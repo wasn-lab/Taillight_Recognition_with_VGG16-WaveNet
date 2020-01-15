@@ -477,7 +477,7 @@ syncLock_callback ()
                                                             LidarRearRight_Fine_Param[0], LidarRearRight_Fine_Param[1], 
                                                             LidarRearRight_Fine_Param[2], LidarRearRight_Fine_Param[3], 
                                                             LidarRearRight_Fine_Param[4], LidarRearRight_Fine_Param[5]);
-      *cloudPtr_LidarRearRight = CuboidFilter ().hollow_removal<PointXYZI> (cloudPtr_LidarRearRight, 0, 50, -2, 2, -5, 0);
+      *cloudPtr_LidarRearRight = CuboidFilter ().hollow_removal<PointXYZI> (cloudPtr_LidarRearRight, 0, 50, -0.8, 20, -5, 5);
       cloudPtr_LidarRearRight->header.frame_id = "lidar";
       pub_LidarRearRight.publish (*cloudPtr_LidarRearRight);
       checkPubFlag (3);
