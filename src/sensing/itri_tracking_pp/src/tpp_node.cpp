@@ -67,14 +67,9 @@ void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& 
   vel_.set_ego_x_abs(input->pose.position.x);
   vel_.set_ego_y_abs(input->pose.position.y);
 
-  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
-                   input->pose.orientation.w);
-  tf::Matrix3x3 m(q);
-
   double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-
-  vel_.set_ego_heading(yaw);
+  quaternion_to_rpy(roll, pitch, yaw, input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                    input->pose.orientation.w) vel_.set_ego_heading(yaw);
 
 #if DEBUG_DATA_IN
   LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
@@ -93,18 +88,18 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 
 void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
 {
-#if DEBUG_CALLBACK
-  LOG_INFO << "callback_localization() start" << std::endl;
-#endif
+  // #if DEBUG_CALLBACK
+  //   LOG_INFO << "callback_localization() start" << std::endl;
+  // #endif
 
-  vel_.set_ego_x_abs(input->x);
-  vel_.set_ego_y_abs(input->y);
-  vel_.set_ego_heading(input->heading * 0.01745329251f);
+  //   vel_.set_ego_x_abs(input->x);
+  //   vel_.set_ego_y_abs(input->y);
+  //   vel_.set_ego_heading(input->heading * 0.01745329251f);
 
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
-           << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
-#endif
+  // #if DEBUG_DATA_IN
+  //   LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
+  //            << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
+  // #endif
 }
 #endif
 
@@ -125,8 +120,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #if FPS
   clock_t begin_time = clock();
 #endif
-
-  get_current_ego_data();  // sync data
 
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
@@ -846,10 +839,32 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
 }
 #endif
 
-void TPPNode::get_current_ego_data()
+void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
 {
+  geometry_msgs::TransformStamped tf_stamped;
+
+  try
+  {
+    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+
+  vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
+  vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
+
+  double roll, pitch, yaw;
+  quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
+                    tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
+  vel_.set_ego_heading(yaw * 0.01745329251f);
+
   ego_x_abs_ = vel_.get_ego_x_abs();
   ego_y_abs_ = vel_.get_ego_y_abs();
+
+  std::cout << "ego_x_abs_ " << ego_x_abs_ << " ego_y_abs_ " << ego_y_abs_ << std::endl;
+
   ego_z_abs_ = vel_.get_ego_z_abs();
   ego_heading_ = vel_.get_ego_heading();
   ego_dx_abs_ = vel_.get_ego_dx_abs();
@@ -927,6 +942,11 @@ int TPPNode::run()
 
   g_trigger = true;
 
+#if TTC_TEST == 0
+  tf2_ros::Buffer tf_buffer;
+  tf2_ros::TransformListener tf_listener(tf_buffer);
+#endif
+
   ros::Rate loop_rate(output_fps);
 
   while (ros::ok() && !done_with_profiling())
@@ -934,6 +954,13 @@ int TPPNode::run()
 #if DEBUG_CALLBACK
     LOG_INFO << "ROS loop start" << std::endl;
 #endif
+
+    if (!is_legal_dt_)
+    {
+      tf_buffer.clear();
+    }
+
+    get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
 
     if (g_trigger && is_legal_dt_)
     {

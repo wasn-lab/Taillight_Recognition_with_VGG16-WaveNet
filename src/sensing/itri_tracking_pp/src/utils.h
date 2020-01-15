@@ -70,6 +70,9 @@ void set_ColorRGBA(std_msgs::ColorRGBA& out, const std_msgs::ColorRGBA in);
 void set_ColorRGBA(std_msgs::ColorRGBA& c, const float r, const float g, const float b, const float a);
 
 void set_config(const MarkerConfig& in, MarkerConfig& out);
+
+void quaternion_to_rpy(double& roll, double& pitch, double& yaw, const double q_x, const double q_y, const double q_z,
+                       const double q_w);
 }  // namespace tpp
 
 #endif  // __UTILS_H__

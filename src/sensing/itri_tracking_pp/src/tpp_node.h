@@ -135,7 +135,7 @@ private:
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
-  void get_current_ego_data();
+  void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 #if TTC_TEST

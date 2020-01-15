@@ -269,4 +269,13 @@ void set_config(const MarkerConfig& in, MarkerConfig& out)
 
   set_ColorRGBA(out.color, in.color);
 }
+
+void quaternion_to_rpy(double& roll, double& pitch, double& yaw, const double q_x, const double q_y, const double q_z,
+                       const double q_w)
+{
+  tf::Quaternion q(q_x, q_y, q_z, q_w);
+  tf::Matrix3x3 m(q);
+
+  m.getRPY(roll, pitch, yaw);
+}
 }  // namespace tpp
