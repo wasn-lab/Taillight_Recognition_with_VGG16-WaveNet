@@ -1,8 +1,8 @@
 #!/bin/bash
 set -x
 set -e
-export CC=clang
-export CXX=clang++
+export CC=/usr/local/llvm-6.0.0/bin/clang
+export CXX=/usr/local/llvm-6.0.0/bin/clang++
 
 readonly build_type="${build_type:-Release}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
