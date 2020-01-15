@@ -103,11 +103,11 @@ def mqtt_bool_to_char(bool_in):
 def mqtt_char_to_bool(char_in):
     """
     """
-    return (char_in == "1")
+    # return (char_in == "1")
     # Note: Unicode and bytes (ASII) in Python3 can not campare to each other
     # char_in is known to be bytes (ASII) but the following do some general trick for both Python2/3, b"" or u"
     # Simply Compare char_in with both versions of string
-    # return ( (char_in == b"1") or (char_in == u"1") )
+    return ( (char_in == b"1") or (char_in == u"1") )
     # try:
     #     return ( char_in.decode() == u"1" ) # try converting to unicode
     # except:
