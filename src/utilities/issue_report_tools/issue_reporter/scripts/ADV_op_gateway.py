@@ -83,7 +83,7 @@ def _timeout_handle_sys_ready(is_logging=True):
     var_advop_sys_ready = False
     mqtt_publish_all_states()
     if is_logging: rospy.logwarn("[ADV_op_gateway] Timeout: sys_ready was not received within %.1f sec." % float(timeout_sys_ready))
-    print("sys_ready = %s" % str(var_advop_sys_ready))
+    print("[ADV_op_gateway] sys_ready = %s" % str(var_advop_sys_ready))
 
 def set_timer_sys_ready():
     global timeout_thread_sys_ready, timeout_sys_ready
@@ -178,7 +178,7 @@ def ros_advop_run_state_CB(msg):
     """
     global var_advop_run_state
     var_advop_run_state = msg.data # '1'
-    print("run_state = %s" % str(var_advop_run_state))
+    print("[ADV_op_gateway] run_state = %s" % str(var_advop_run_state))
     if mqtt_client is None:
         return
     # Publish
@@ -193,7 +193,7 @@ def ros_Flag_02_CB(msg):
     _run_state = (msg.Dspace_Flag08 > 0.5) # 1 for running, 0 for stopped
     var_advop_run_state = _run_state
     # print("var_advop_run_state = %s" % str(var_advop_run_state))
-    rospy.loginfo_throttle(1, "run_state = %s" % str(var_advop_run_state))
+    rospy.loginfo_throttle(1, "[ADV_op_gateway] run_state = %s" % str(var_advop_run_state))
     if mqtt_client is None:
         return
     # Publish
@@ -206,7 +206,7 @@ def ros_advop_sys_ready_CB(msg):
     """
     global var_advop_sys_ready
     var_advop_sys_ready = msg.data # '1'
-    print("sys_ready = %s" % str(var_advop_sys_ready))
+    print("[ADV_op_gateway] sys_ready = %s" % str(var_advop_sys_ready))
     if mqtt_client is None:
         return
     # Publish
