@@ -858,7 +858,7 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
   double roll, pitch, yaw;
   quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
                     tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
-  vel_.set_ego_heading(yaw * 0.01745329251f);
+  vel_.set_ego_heading(yaw);
 
   ego_x_abs_ = vel_.get_ego_x_abs();
   ego_y_abs_ = vel_.get_ego_y_abs();
