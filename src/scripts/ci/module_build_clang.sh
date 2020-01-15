@@ -18,7 +18,7 @@ for _dir in ${build_dir} ${devel_dir}; do
     fi
 done
 
-blacklist="lidar_squseg_inference;lidars_preprocessing"
+blacklist="lidar_squseg_inference"
 
 catkin_make \
     --build ${build_dir} \
