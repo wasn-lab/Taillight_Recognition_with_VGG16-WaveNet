@@ -1,0 +1,17 @@
+<launch>
+<!-- Global arg ************************************************************ -->
+	<arg name="mode" default="0" />
+
+
+	<group if="$(eval arg('mode') == 0)">
+		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_GTgen"  name="output_results_by_dbscan_GTgen" output="screen" cwd="node" respawn="true"  />
+		<node pkg="pcd_publisher"		type="pcd_publisher"	 	       name="pcd_publisher"                  output="screen" args="/home/itri/self_driving_lidar/input /LidarGT" />
+	</group>
+</launch>
+
+
+
+
+
+
+
