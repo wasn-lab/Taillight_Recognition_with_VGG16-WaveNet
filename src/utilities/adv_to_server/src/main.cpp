@@ -40,6 +40,8 @@ const static int TCP_ADV_SRV_PORT = 8765;
 const static std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
 const static int UDP_ADV_SRV_PORT = 8766;
 
+
+
 // obu traffic signal
 const static std::string TOPIC_TRAFFIC = "/traffic";
 // Server status
@@ -243,8 +245,6 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["bus_stop"] = J2;
 
   VK102Response = J1.dump();
-  std::cout << "=====================================================callbackBusStopInfo: J1 " << VK102Response
-            << std::endl;
   mutex_ros.unlock();
 }
 
@@ -635,6 +635,7 @@ void getServerStatusRun(int argc, char** argv)
   {
     size_t buff_size = 2048;
     char buffer_f[buff_size];
+    memset(buffer_f,0,sizeof(buffer_f));
     TCPClient TCP_VK_client;
     TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
     TCP_VK_client.connectServer();
@@ -653,7 +654,10 @@ void getServerStatusRun(int argc, char** argv)
     }
     catch (std::exception& e)
     {
+      response = "";
       std::cout << "getServerStatus message: " << e.what() << std::endl;
+      // sleep 10 secs
+      boost::this_thread::sleep(boost::posix_time::microseconds(SERVER_STATUS_UPDATE_MICROSECONDS));
       continue;
     }
     int statusCode = J2.at("messageObj").get<json>().at("msgCode").get<int>();
@@ -717,6 +721,7 @@ void VK102callback(std::string request)
   int in_stopid;
   int out_stopid;
   std::string type;
+
   // parsing
   try
   {
@@ -746,7 +751,7 @@ void VK102callback(std::string request)
     return;
   }
 
-  // chek type
+  // check type
   std::string typeExp = "M8.2.VK102";
   if (!typeExp.compare(type) == 0)
   {
@@ -761,6 +766,7 @@ void VK102callback(std::string request)
   {
     std::cout << "check id fail " << std::endl;
     server.send_json(genErrorMsg(422, "bad stop id."));
+    return;
   }
 
   char msg[36];
@@ -769,7 +775,17 @@ void VK102callback(std::string request)
   // 300 millis seconds
   boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
   std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
+  
+  //check response from /BusStop/Info
+  if(VK102Response.empty()){
+    server.send_json(genErrorMsg(201, "No data from /BusStop/Info."));
+    return;
+  }
+
   server.send_json(VK102Response);
+
+  //clear response
+  VK102Response = "";
 }
 
 // start TCP server to receive VK102 reserve bus from backend.
@@ -777,7 +793,7 @@ void tcpServerRun(int argc, char** argv)
 {  
   // set ip and port
   server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-  // server.initial("192.168.43.204",8765);
+  //server.initial("192.168.43.204",8765);
   // listening connection request
   int result = server.start_listening();
   if (result >= 0)
