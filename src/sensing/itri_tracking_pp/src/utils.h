@@ -35,6 +35,7 @@ float kmph_to_mps(const float kmph);
 float mps_to_kmph(const float mps);
 
 void rotate(float a[][2], const unsigned int n, const float radians);
+void rotate_eigen3(float& out_x, float& out_y, const float in_x, const float in_y, const float in_ang_rad);
 void rotate3(float a[][3], const unsigned int n, const float radians);
 
 void translate(float a[][2], const unsigned int n, const float x_pivot, const float y_pivot);

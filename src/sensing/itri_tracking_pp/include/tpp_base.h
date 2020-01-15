@@ -15,6 +15,8 @@
 #include <condition_variable>
 #include <signal.h>
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
 #include <ros/ros.h>

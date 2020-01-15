@@ -863,8 +863,6 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
   ego_x_abs_ = vel_.get_ego_x_abs();
   ego_y_abs_ = vel_.get_ego_y_abs();
 
-  std::cout << "ego_x_abs_ " << ego_x_abs_ << " ego_y_abs_ " << ego_y_abs_ << std::endl;
-
   ego_z_abs_ = vel_.get_ego_z_abs();
   ego_heading_ = vel_.get_ego_heading();
   ego_dx_abs_ = vel_.get_ego_dx_abs();
