@@ -74,9 +74,24 @@ mqtt_advop_sys_ready_pubT = mqtt_msg_topic_namespace + '/sys_ready' #
 #------------------------------------------------------------#
 # end MQTT
 
+# Utilities
+#--------------------------------------------------#
+def _timeout_handle_sys_ready(is_logging=True):
+    """
+    """
+    global var_advop_sys_ready
+    var_advop_sys_ready = False
+    mqtt_publish_all_states()
+    if is_logging: rospy.logwarn("[ADV_op_gateway] Timeout: sys_ready was not received within %.1f sec." % float(timeout_sys_ready))
+    print("sys_ready = %s" % str(var_advop_sys_ready))
 
-
-
+def set_timer_sys_ready():
+    global timeout_thread_sys_ready, timeout_sys_ready
+    if not timeout_thread_sys_ready is None:
+        timeout_thread_sys_ready.cancel()
+    timeout_thread_sys_ready = threading.Timer(timeout_sys_ready, _timeout_handle_sys_ready)
+    timeout_thread_sys_ready.start()
+#--------------------------------------------------#
 
 # MQTT --> ROS
 #------------------------------------------------------#
@@ -89,6 +104,14 @@ def mqtt_char_to_bool(char_in):
     """
     """
     return (char_in == "1")
+    # Note: Unicode and bytes (ASII) in Python3 can not campare to each other
+    # char_in is known to be bytes (ASII) but the following do some general trick for both Python2/3, b"" or u"
+    # Simply Compare char_in with both versions of string
+    # return ( (char_in == b"1") or (char_in == u"1") )
+    # try:
+    #     return ( char_in.decode() == u"1" ) # try converting to unicode
+    # except:
+    #     return ( char_in == u"1" ) # It's already unicode
 
 def mqtt_publish_all_states():
     """
@@ -137,7 +160,9 @@ def mqtt_advop_req_run_stop_CB(client, userdata, mqtt_msg):
     ** On receiving this message, bypass to ROS.
     """
     print( '[MQTT]<%s> payload = "%s"' % (mqtt_msg.topic, mqtt_msg.payload) )
-    ros_advop_req_run_stop_pub.publish( mqtt_char_to_bool(mqtt_msg.payload) ) # "1" or "0"
+    req_run_stop = mqtt_char_to_bool(mqtt_msg.payload)
+    ros_advop_req_run_stop_pub.publish( req_run_stop ) # "1" or "0"
+    print("[MQTT] Request to go" if req_run_stop else "[MQTT] Request to stop")
 #------------------------------------------------------#
 # end MQTT --> ROS
 
@@ -153,7 +178,7 @@ def ros_advop_run_state_CB(msg):
     """
     global var_advop_run_state
     var_advop_run_state = msg.data # '1'
-    print("var_advop_run_state = %s" % str(var_advop_run_state))
+    print("run_state = %s" % str(var_advop_run_state))
     if mqtt_client is None:
         return
     # Publish
@@ -168,7 +193,7 @@ def ros_Flag_02_CB(msg):
     _run_state = (msg.Dspace_Flag08 > 0.5) # 1 for running, 0 for stopped
     var_advop_run_state = _run_state
     # print("var_advop_run_state = %s" % str(var_advop_run_state))
-    rospy.loginfo_throttle(1, "var_advop_run_state = %s" % str(var_advop_run_state))
+    rospy.loginfo_throttle(1, "run_state = %s" % str(var_advop_run_state))
     if mqtt_client is None:
         return
     # Publish
@@ -180,30 +205,19 @@ def ros_advop_sys_ready_CB(msg):
     ** On receiving this message, bypass to MQTT interface.
     """
     global var_advop_sys_ready
-    global timeout_thread_sys_ready
     var_advop_sys_ready = msg.data # '1'
-    print("var_advop_sys_ready = %s" % str(var_advop_sys_ready))
+    print("sys_ready = %s" % str(var_advop_sys_ready))
     if mqtt_client is None:
         return
     # Publish
     mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(msg.data), qos=2, retain=False)
     #
-    if not timeout_thread_sys_ready is None:
-        timeout_thread_sys_ready.cancel()
-    timeout_thread_sys_ready = threading.Timer(timeout_sys_ready, _timeout_handle_sys_ready)
-    timeout_thread_sys_ready.start()
+    set_timer_sys_ready()
 #------------------------------------------------------------#
 # end ROS callbacks
 
 
-def _timeout_handle_sys_ready(is_logging=True):
-    """
-    """
-    global var_advop_sys_ready
-    var_advop_sys_ready = False
-    mqtt_publish_all_states()
-    if is_logging: rospy.logwarn("[ADV_op_gateway] Timeout: sys_ready.")
-    print("var_advop_sys_ready = %s" % str(var_advop_sys_ready))
+
 
 
 def main():
@@ -211,6 +225,10 @@ def main():
     global mqtt_client
     # ROS
     rospy.init_node('ADV_op_gateway', anonymous=False)
+
+    # Start timers
+    set_timer_sys_ready()
+
     # ROS subscribers
     #-----------------------------#
     # Chose only one of them to receive the run state
@@ -249,6 +267,9 @@ def main():
     # Republish states
     mqtt_publish_all_states()
     #-------------------------------------------------------------------#
+
+
+
 
     rate = rospy.Rate(1.0) # Hz
     while not rospy.is_shutdown():

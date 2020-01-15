@@ -33,19 +33,25 @@ def _timeout_handle_alive():
     """
     global var_advop_node_alive
     var_advop_node_alive = False
-    rospy.logwarn("[sys_ready] Timeout: sys_alive.")
+    rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
+
+def set_timer_alive():
+    """
+    """
+    global timeout_thread_alive, timeout_alive
+    if not timeout_thread_alive is None:
+        timeout_thread_alive.cancel()
+    timeout_thread_alive = threading.Timer(timeout_alive, _timeout_handle_alive)
+    timeout_thread_alive.start()
+
 
 # ROS callbacks
 def _node_alive_CB(mag):
     """
     """
     global var_advop_node_alive
-    global timeout_thread_alive
     var_advop_node_alive = mag.data
-    if not timeout_thread_alive is None:
-        timeout_thread_alive.cancel()
-    timeout_thread_alive = threading.Timer(timeout_alive, _timeout_handle_alive)
-    timeout_thread_alive.start()
+    set_timer_alive()
 
 def _REC_is_recording_CB(mag):
     """
@@ -57,9 +63,16 @@ def main():
     global var_advop_node_alive, var_REC_is_recording
     global var_advop_sys_ready
     rospy.init_node('ADV_sys_ready_check', anonymous=False)
-    #
+    print("[sys_ready_check] Node started.")
+
+    # Start timers
+    set_timer_alive()
+
+    # ROS subscribers
+    #-----------------------------#
     rospy.Subscriber("/node_trace/all_alive", Bool, _node_alive_CB)
     rospy.Subscriber("/REC/is_recording", Bool, _REC_is_recording_CB)
+    #-----------------------------#
 
 
     rate = rospy.Rate(1.0) # Hz
