@@ -1,8 +1,8 @@
 #!/bin/bash
 set -x
 set -e
-export CC=clang
-export CXX=clang++
+export CC=/usr/local/llvm-6.0.0/bin/clang
+export CXX=/usr/local/llvm-6.0.0/bin/clang++
 
 readonly build_type="${build_type:-Release}"
 readonly install_prefix="${install_prefix:-/usr/local/itriadv}"
@@ -18,7 +18,7 @@ for _dir in ${build_dir} ${devel_dir}; do
     fi
 done
 
-blacklist="output_results_by_dbscan;lidar_squseg_inference;lidars_grabber;lidars_preprocessing;"
+blacklist="lidar_squseg_inference;lidars_preprocessing"
 
 catkin_make \
     --build ${build_dir} \
