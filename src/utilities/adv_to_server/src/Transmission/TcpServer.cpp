@@ -90,6 +90,8 @@ int TcpServer::wait_and_accept(void (*cb)(string))
         recv(client_socket_fd_int_, buffer, sizeof(buffer), 0);
         cout << "buffer: " << buffer << endl;
         string request = buffer;
+        //reset buffer every time.
+        memset(&buffer,0,sizeof(buffer));
         cb(request);
       }
     }
