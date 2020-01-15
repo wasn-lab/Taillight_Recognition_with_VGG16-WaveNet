@@ -18,7 +18,7 @@ for _dir in ${build_dir} ${devel_dir}; do
     fi
 done
 
-blacklist="output_results_by_dbscan;lidar_squseg_inference;lidars_grabber;libs;lidars_preprocessing;"
+blacklist="output_results_by_dbscan;lidar_squseg_inference;lidars_grabber;lidars_preprocessing;"
 
 catkin_make \
     --build ${build_dir} \
