@@ -14,7 +14,7 @@ roslaunch localization_supervision localization.launch
 ## Output ros msg
 | topic name | data type |
 | --- | --- |
-| /locaization_state | std_msgs::Int32 |
+| /localization_state | std_msgs::Int32 |
 
 ## locaization_state meaning
 | states |  meaning  | WARNING or FATAL |
