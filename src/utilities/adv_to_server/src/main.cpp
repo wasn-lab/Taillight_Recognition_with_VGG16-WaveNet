@@ -271,6 +271,7 @@ void callbackMileage(const std_msgs::String::ConstPtr& input)
   mutex_ros.lock();
   mileJson = input->data.c_str();
   std::cout << "mile info: " << mileJson << std::endl;
+  
   mutex_ros.unlock();
 }
 
@@ -486,7 +487,13 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     }
   }else if (type == "M8.2.VK000")
   {
-    return mileJson;
+    try{
+      json J0 = json::parse(mileJson);
+      J1["mileage_info"] = J0;
+    } catch(std::exception& e)
+   {
+     std::cout << "mileage: " << e.what() << std::endl;
+   }
   }
   return J1.dump();
 }
@@ -502,7 +509,7 @@ void sendRun(int argc, char** argv)
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
-
+  //UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
     mutex_queue.lock();
@@ -636,8 +643,12 @@ void receiveRosRun(int argc, char** argv)
     mutex_queue.unlock();
 
     std::string temp_VK000 = get_jsonmsg_to_vk_server("M8.2.VK000");
+    mutex_queue.lock();
+    vkQueue.push(temp_VK000);
+    mutex_queue.unlock();
 
-    mutex_ros.unlock();
+    mutex_ros.unlock(); 
+
     boost::this_thread::sleep(boost::posix_time::microseconds(ROS_UPDATE_MICROSECONDS));
     ros::spinOnce();
   }
