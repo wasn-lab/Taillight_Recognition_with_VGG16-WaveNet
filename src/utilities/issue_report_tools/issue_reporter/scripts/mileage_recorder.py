@@ -204,7 +204,8 @@ def main(sys_args):
         evet_str = "mileage: %.3f km, speed(filter): %.1f km/hr" % (mileage_km, speed_mps_filtered*3.6)
         evet_str += "\t| " + adv_run_state_2_string(adv_run_state)
         evet_str += "\t| " + brake_state_2_string(brake_state)
-        print(evet_str)
+        # print(evet_str)
+        rospy.loginfo_throttle(1.0, evet_str)
         #
         if not adv_run_Q.empty():
             adv_run_event = adv_run_Q.get()
