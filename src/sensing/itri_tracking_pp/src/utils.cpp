@@ -201,14 +201,17 @@ void transform_point_abs2rel(const float x_abs, const float y_abs, const float z
 {
   float point[1][3] = { { x_abs, y_abs, z_abs } };
   translate3(point, 1, -ego_x_abs, -ego_y_abs, -ego_z_abs);
+
+#if EIGEN3_ROTATION
   rotate_eigen3(x_rel, y_rel, point[0][0], point[0][1], -ego_heading);
+#else
+  rotate3(point, 1, -ego_heading);
+
+  x_rel = point[0][0];
+  y_rel = point[0][1];
+#endif
+
   z_rel = point[0][2];
-
-  // rotate3(point, 1, -ego_heading);
-
-  // x_rel = point[0][0];
-  // y_rel = point[0][1];
-  // z_rel = point[0][2];
 }
 
 void transform_point_rel2abs(const float x_rel, const float y_rel, const float z_rel,  //
@@ -217,8 +220,11 @@ void transform_point_rel2abs(const float x_rel, const float y_rel, const float z
                              const float ego_heading)
 {
   float point[1][3] = { { x_rel, y_rel, z_rel } };
-  // rotate3(point, 1, ego_heading);
+#if EIGEN3_ROTATION
   rotate_eigen3(point[0][0], point[0][1], point[0][0], point[0][1], ego_heading);
+#else
+  rotate3(point, 1, ego_heading);
+#endif
   translate3(point, 1, ego_x_abs, ego_y_abs, ego_z_abs);
 
   x_abs = point[0][0];
@@ -229,27 +235,31 @@ void transform_point_rel2abs(const float x_rel, const float y_rel, const float z
 void transform_vector_abs2rel(const float vx_abs, const float vy_abs, float& vx_rel, float& vy_rel,
                               const float ego_heading)
 {
+#if EIGEN3_ROTATION
   rotate_eigen3(vx_rel, vy_rel, vx_abs, vy_abs, -ego_heading);
+#else
+  float vec[1][2] = { { vx_abs, vy_abs } };
 
-  // float vec[1][2] = { { vx_abs, vy_abs } };
+  rotate(vec, 1, -ego_heading);
 
-  // rotate(vec, 1, -ego_heading);
-
-  // vx_rel = vec[0][0];
-  // vy_rel = vec[0][1];
+  vx_rel = vec[0][0];
+  vy_rel = vec[0][1];
+#endif
 }
 
 void transform_vector_rel2abs(const float vx_rel, const float vy_rel, float& vx_abs, float& vy_abs,
                               const float ego_heading)
 {
+#if EIGEN3_ROTATION
   rotate_eigen3(vx_abs, vy_abs, vx_rel, vy_rel, ego_heading);
+#else
+  float vec[1][2] = { { vx_rel, vy_rel } };
 
-  // float vec[1][2] = { { vx_rel, vy_rel } };
+  rotate(vec, 1, ego_heading);
 
-  // rotate(vec, 1, ego_heading);
-
-  // vx_abs = vec[0][0];
-  // vy_abs = vec[0][1];
+  vx_abs = vec[0][0];
+  vy_abs = vec[0][1];
+#endif
 }
 
 void set_ColorRGBA(std_msgs::ColorRGBA& out, const std_msgs::ColorRGBA in)

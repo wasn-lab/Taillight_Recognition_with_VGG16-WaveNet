@@ -89,6 +89,7 @@
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
 
+#define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
 
 #define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
