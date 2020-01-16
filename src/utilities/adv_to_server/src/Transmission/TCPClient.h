@@ -27,7 +27,7 @@
 class tcp_client_runtime_error : public std::runtime_error
 {
 public:
-  tcp_client_runtime_error(const char* w) : std::runtime_error(w)
+  tcp_client_runtime_error(std::string w) : std::runtime_error(w)
   {
   }
 };

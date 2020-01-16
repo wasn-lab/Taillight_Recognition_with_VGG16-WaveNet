@@ -39,6 +39,7 @@ extern const std::string names[id::num_ids];
 extern const std::string topics[id::num_ids];
 extern const std::string topics_obj[id::num_ids];
 extern const std::string detect_result;
+extern const std::string detect_result_polygon;
 
 // TODO: fill in the following parameters.
 constexpr int raw_image_width = 1920;
