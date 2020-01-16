@@ -209,7 +209,7 @@ def main(sys_args):
         # print(evet_str)
         rospy.loginfo_throttle(1.0, evet_str)
         # Publish status as String
-        text_marker_pub.publish("%.3f km| %.1f km/hr|R: %s|B: %s" % (mileage_km, speed_mps_filtered*3.6, adv_run_state_2_string(adv_run_state), brake_state_2_string(brake_state) ))
+        text_marker_pub.publish("%.3fkm, %.1fkm/h, R: %s, B: %s" % (mileage_km, speed_mps_filtered*3.6, adv_run_state_2_string(adv_run_state), brake_state_2_string(brake_state) ))
         #
         if not adv_run_Q.empty():
             adv_run_event = adv_run_Q.get()
