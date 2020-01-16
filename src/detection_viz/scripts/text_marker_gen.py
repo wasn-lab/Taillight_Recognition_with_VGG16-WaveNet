@@ -81,7 +81,7 @@ class Node:
         """
         # Generate text
         if len(str(self.prefix)) > 0:
-            text = "[%s] " % str(self.prefix)
+            text = "[%s]" % str(self.prefix)
         else:
             text = ""
         text += "[e=%.1fs] %s" % ( elapsed_time.to_sec(), text_in)
