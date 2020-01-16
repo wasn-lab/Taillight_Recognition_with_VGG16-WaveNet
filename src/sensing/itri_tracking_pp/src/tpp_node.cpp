@@ -49,15 +49,6 @@ void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
 #endif
 }
 
-void TPPNode::callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input)
-{
-  vel_.set_ego_speed_kmph(input->data);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
-#endif
-}
-
 void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
@@ -74,6 +65,15 @@ void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& 
 #if DEBUG_DATA_IN
   LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
            << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
+#endif
+}
+
+void TPPNode::callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input)
+{
+  vel_.set_ego_speed_kmph(input->data);
+
+#if DEBUG_DATA_IN
+  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
 #endif
 }
 #else  // TTC_TEST == 0
@@ -250,8 +250,8 @@ void TPPNode::subscribe_and_advertise_topics()
 // Note that we use different NodeHandle here
 #if TTC_TEST
   seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
-  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);
   localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
+  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);  
 #else
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
 #endif
