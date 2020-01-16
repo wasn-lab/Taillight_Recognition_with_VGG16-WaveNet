@@ -34,15 +34,57 @@ from msgs.msg import (
 mileage_km = 0.0
 last_speed_ros_time = None
 speed_mps_filtered = 0.0 # m/sec.
-#
-is_manual_brake = False
+
+# State
+adv_run_state = 0
+brake_state = 0
+
 # Queue
-manual_brake_Q = Queue.Queue()
+adv_run_Q = Queue.Queue()
+brake_Q = Queue.Queue()
 #-------------------#
+
+# Define the string of state
+#--------------------------------#
+# adv_run
+adv_run_state_dict = dict()
+adv_run_state_dict[0] = "Stopped"
+adv_run_state_dict[1] = "Self-driving"
+# Brake
+brake_state_dict = dict()
+brake_state_dict[0] = "Released"
+brake_state_dict[1] = "Auto-braked"
+brake_state_dict[2] = "Anchored" # Stop-brake
+brake_state_dict[3] = "AEB"
+brake_state_dict[4] = "Manual brake"
+#--------------------------------#
+
+#-------------------------------------------#
+def state_2_string(state_dict_in, state_in, str_undefined_state="Undefined state"):
+    if state_in in state_dict_in:
+        return state_dict_in[state_in]
+    else:
+        return str_undefined_state
+#-------------------------------#
+def adv_run_state_2_string(state_in):
+    """
+    """
+    global adv_run_state_dict
+    return state_2_string(adv_run_state_dict, state_in, \
+                str_undefined_state="Undefined adv_run state")
+
+def brake_state_2_string(state_in):
+    """
+    """
+    global brake_state_dict
+    return state_2_string(brake_state_dict, state_in, \
+                str_undefined_state="Undefined brake state")
+#-------------------------------------------#
+
 
 def calculate_mileage(speed_mps):
     """
-    This is the engin for calculating mileage.
+    This is the engine for calculating mileage.
     """
     global mileage_km, last_speed_ros_time, speed_mps_filtered
     #
@@ -61,6 +103,9 @@ def calculate_mileage(speed_mps):
 
 
 
+
+#---------------------------------------------#
+
 def _veh_info_CB(data):
     """
     The callback function of vehicle info.
@@ -72,34 +117,43 @@ def _flag_info_02_CB(data):
     """
     The callback function of vehicle info.
     """
-    global is_manual_brake, manual_brake_Q
+    global adv_run_state, adv_run_Q
+    global brake_state, brake_Q
     # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
 
-    # 0: no manual brake, 1: manually braked
-    is_manual_brake_now = data.Dspace_Flag07 > 0.5
-    if is_manual_brake != is_manual_brake_now:
+    # run state
+    adv_run_state_now = int( round(data.Dspace_Flag08) )
+    if adv_run_state != adv_run_state_now:
         # State change event
         now = rospy.get_rostime()
-        is_manual_brake = is_manual_brake_now
-        manual_brake_Q.put( (is_manual_brake, now) )
-        if is_manual_brake:
-            print("Manually brake!!")
-        else:
-            print("Release manual brake~")
+        adv_run_state = adv_run_state_now
+        adv_run_Q.put( (adv_run_state, now) )
+        # Print to stdout
+        print( adv_run_state_2_string(adv_run_state) )
+
+    # brake state
+    brake_state_now = int( round(data.Dspace_Flag07) )
+    if brake_state != brake_state_now:
+        # State change event
+        now = rospy.get_rostime()
+        brake_state = brake_state_now
+        brake_Q.put( (brake_state, now) )
+        # Print to stdout
+        print( brake_state_2_string(brake_state) )
 
 
 def main(sys_args):
     """
     """
     global mileage_km, speed_mps_filtered
-    global is_manual_brake, manual_brake_Q
+    global brake_state, brake_Q
     #
     rospy.init_node('mileage_recorder', anonymous=False)
 
     # Loading parameters
     #---------------------------------------------#
     rospack = rospkg.RosPack()
-    _pack_path = rospack.get_path('msg_recorder')
+    _pack_path = rospack.get_path('issue_reporter')
     print("_pack_path = %s" % _pack_path)
     f_path = _pack_path + "/params/"
     # Param file name
@@ -148,17 +202,19 @@ def main(sys_args):
     while not rospy.is_shutdown():
         # Do somthing
         evet_str = "mileage: %.3f km, speed(filter): %.1f km/hr" % (mileage_km, speed_mps_filtered*3.6)
-        if is_manual_brake:
-            evet_str += ", manually braked"
-        print(evet_str)
+        evet_str += "\t| " + adv_run_state_2_string(adv_run_state)
+        evet_str += "\t| " + brake_state_2_string(brake_state)
+        # print(evet_str)
+        rospy.loginfo_throttle(1.0, evet_str)
         #
-        if not manual_brake_Q.empty():
-            manual_brake_event = manual_brake_Q.get()
-            # if manual_brake_event[0]:
-            #     print("Manually brake!!")
-            # else:
-            #     print("Release manual brake~")
-
+        if not adv_run_Q.empty():
+            adv_run_event = adv_run_Q.get()
+            # # Print to stdout
+            # print( adv_run_state_2_string(adv_run_state) )
+        if not brake_Q.empty():
+            brake_event = brake_Q.get()
+            # # Print to stdout
+            # print( brake_state_2_string(brake_state) )
         #
         try:
             rate.sleep()
