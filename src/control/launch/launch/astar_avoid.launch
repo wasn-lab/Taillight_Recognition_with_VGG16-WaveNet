@@ -4,6 +4,9 @@
   <!-- Base waypoint pub node-->
   <node pkg="astar_initial" type="astar_initial" name="astar_initial" /> <!--output="screen" /-->
 
+  <!-- Grid map fusion pub node-->
+  <node pkg="occ_grid_fusion" type="occ_grid_fusion" name="occ_grid_fusion" output="screen" />
+
   <!-- Relay behavior configurations -->
   <arg name="safety_waypoints_size" default="100" />
   <arg name="update_rate" default="20" /><!--10-->
