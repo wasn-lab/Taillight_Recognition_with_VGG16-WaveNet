@@ -45,7 +45,7 @@ const static int UDP_ADV_SRV_PORT = 8766;
 // obu traffic signal
 const static std::string TOPIC_TRAFFIC = "/traffic";
 // Server status
-const static std::string TOPIC_SERCER_STATUS = "/serverStatus";
+const static std::string TOPIC_SERCER_STATUS = "/backend/connected";
 // reserve bus
 const static std::string TOPIC_RESERVE = "/reserve/request";
 
@@ -71,7 +71,6 @@ std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
 std::queue<std::string> trafficLightQueue;
-std::queue<std::string> serverStatusQueue;
 
 TcpServer server;
 
@@ -222,7 +221,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   {
     if (stop[i] == 1)
     {
-      stopids.push_back(i + 1001);
+      stopids.push_back(i + 2001);
     }
   }
   json J2;
@@ -564,15 +563,6 @@ void sendROSRun(int argc, char** argv)
     }
     mutex_trafficLight.unlock();
 
-    mutex_serverStatus.lock();
-    while (serverStatusQueue.size() != 0)
-    {
-      std::string status = serverStatusQueue.front();
-      serverStatusQueue.pop();
-      RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, status);
-    }
-    mutex_serverStatus.unlock();
-
     boost::this_thread::sleep(boost::posix_time::microseconds(500000));
     ros::spinOnce();
   }
@@ -631,68 +621,34 @@ void receiveRosRun(int argc, char** argv)
 
 void getServerStatusRun(int argc, char** argv)
 {
-  while (true)
-  {
-    size_t buff_size = 2048;
-    char buffer_f[buff_size];
-    memset(buffer_f,0,sizeof(buffer_f));
-    TCPClient TCP_VK_client;
-    TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
-    TCP_VK_client.connectServer();
-    json J1;
-    J1["type"] = "M8.2.VK005";
-    J1["deviceid"] = "ITRI-ADV";
-    std::string jsonString = J1.dump();
-    const char* msg = jsonString.c_str();
-    TCP_VK_client.sendRequest(msg, strlen(msg));
-    TCP_VK_client.recvResponse(buffer_f, buff_size);
-    std::string response(buffer_f);
-    json J2;
     try
     {
+      size_t buff_size = 2048;
+      char buffer_f[buff_size];
+      memset(buffer_f,0,sizeof(buffer_f));
+      TCPClient TCP_VK_client;
+      TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
+      //TCP_VK_client.initial("192.168.43.24", 8765);
+      TCP_VK_client.connectServer();
+      json J1;
+      J1["type"] = "M8.2.VK005";
+      J1["deviceid"] = "ITRI-ADV";
+      std::string jsonString = J1.dump();
+      const char* msg = jsonString.c_str();
+      TCP_VK_client.sendRequest(msg, strlen(msg));
+      TCP_VK_client.recvResponse(buffer_f, buff_size);
+      std::string response(buffer_f);
+      json J2;
       J2 = json::parse(response);
+      //connect to server success.
+      RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, true);
     }
     catch (std::exception& e)
     {
-      response = "";
       std::cout << "getServerStatus message: " << e.what() << std::endl;
-      // sleep 10 secs
-      boost::this_thread::sleep(boost::posix_time::microseconds(SERVER_STATUS_UPDATE_MICROSECONDS));
-      continue;
-    }
-    int statusCode = J2.at("messageObj").get<json>().at("msgCode").get<int>();
-    std::cout << "code " << statusCode << std::endl;
-    if (statusCode == 200)
-    {
-      std::string datetime = J2.at("bus_data").get<json>().at("datetime").get<std::string>();
-      time_t time_stamp = convertStrToTimeStamp(datetime);
-      long time_long = static_cast<long>(time_stamp);
-      json J3;
-      J3["timestamp"] = time_long;
-      J3["lat"] = J2.at("bus_data").get<json>().at("lat").get<float>();
-      J3["lon"] = J2.at("bus_data").get<json>().at("lng").get<float>();
-      std::string J3str = J3.dump();
-      // std::cout << "J3: " << J3str << std::endl;
-      mutex_serverStatus.lock();
-      serverStatusQueue.push(J3str);
-      mutex_serverStatus.unlock();
-    }
-    else
-    {
-      json J4;
-      J4["timestamp"] = 0;
-      J4["lat"] = 0.0;
-      J4["lon"] = 0.0;
-      std::string J3str = J4.dump();
-      // std::cout << "J3: " << J3str << std::endl;
-      mutex_serverStatus.lock();
-      serverStatusQueue.push(J3str);
-      mutex_serverStatus.unlock();
-    }
-
-    // sleep 10 secs
-    boost::this_thread::sleep(boost::posix_time::microseconds(SERVER_STATUS_UPDATE_MICROSECONDS));
-  }
+      //connect to server fail.
+      RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, false);
+    } 
 }
 
 std::string genErrorMsg(int code, std::string msg)
@@ -799,7 +755,12 @@ void tcpServerRun(int argc, char** argv)
   if (result >= 0)
   {
     // accept and read request and handle request in VK102callback.
-    server.wait_and_accept(VK102callback);
+    try{
+      server.wait_and_accept(VK102callback);
+    } catch( std::exception& e )
+   {
+     server.send_json(genErrorMsg(408, "You should send request in 10 seconds after you connected to ADV."));
+   }
   }
 }
 /*========================= thread runnables end =========================*/

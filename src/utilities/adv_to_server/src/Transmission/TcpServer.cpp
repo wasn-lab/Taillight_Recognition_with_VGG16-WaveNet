@@ -87,7 +87,22 @@ int TcpServer::wait_and_accept(void (*cb)(string))
       if (client_socket_fd_int_ >= 0)
       {
         cout << "start receive data" << endl;
-        recv(client_socket_fd_int_, buffer, sizeof(buffer), 0);
+        struct timeval tv;
+        tv.tv_sec = 10;
+        tv.tv_usec = 0;
+        setsockopt(client_socket_fd_int_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+       
+        auto t1 = std::chrono::high_resolution_clock::now();
+        int rel = recv(client_socket_fd_int_, buffer, sizeof(buffer), 0);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+        std::cout << "read duration " << duration << std::endl;
+        if( rel < 0) 
+        {
+          std::string errorMsg = "runtime exception : recv data Failed. rel: " + std::to_string(rel) ; 
+          throw tcp_server_runtime_error(errorMsg);
+        }
+       
         cout << "buffer: " << buffer << endl;
         string request = buffer;
         //reset buffer every time.
@@ -102,18 +117,10 @@ int TcpServer::wait_and_accept(void (*cb)(string))
 //send data
 int TcpServer::send_json(std::string json)
 {
-  std::string no_data = "Cannot get /BusStop/Info...";
   cout << "json: " << json << endl;
   cout << "send with client fd " << client_socket_fd_int_ << std::endl;
   int rel;
-  if (!json.empty())
-  {
-    rel = send(client_socket_fd_int_, json.c_str(), json.size(), MSG_CONFIRM);
-  }
-  else
-  {
-    rel = send(client_socket_fd_int_, no_data.c_str(), no_data.size(), MSG_CONFIRM);
-  }
+  rel = send(client_socket_fd_int_, json.c_str(), json.size(), MSG_CONFIRM);
   std::cout << "rel " << rel << std::endl;
   close(client_socket_fd_int_);
   return rel;

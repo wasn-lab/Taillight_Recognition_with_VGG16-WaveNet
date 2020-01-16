@@ -75,6 +75,20 @@ void rotate(float a[][2], const unsigned int n, const float radians)
   }
 }
 
+void rotate_eigen3(float& out_x, float& out_y, const float in_x, const float in_y, const float in_ang_rad)
+{
+  Eigen::Vector2f v;
+  v << in_x, in_y;
+
+  Eigen::Rotation2Df t(in_ang_rad);
+  t.toRotationMatrix();
+
+  Eigen::Vector2f rotated_v = t * v;
+
+  out_x = rotated_v(0);
+  out_y = rotated_v(1);
+}
+
 void rotate3(float a[][3], const unsigned int n, const float radians)
 {
   unsigned int i = 0;
@@ -187,10 +201,16 @@ void transform_point_abs2rel(const float x_abs, const float y_abs, const float z
 {
   float point[1][3] = { { x_abs, y_abs, z_abs } };
   translate3(point, 1, -ego_x_abs, -ego_y_abs, -ego_z_abs);
+
+#if EIGEN3_ROTATION
+  rotate_eigen3(x_rel, y_rel, point[0][0], point[0][1], -ego_heading);
+#else
   rotate3(point, 1, -ego_heading);
 
   x_rel = point[0][0];
   y_rel = point[0][1];
+#endif
+
   z_rel = point[0][2];
 }
 
@@ -200,7 +220,11 @@ void transform_point_rel2abs(const float x_rel, const float y_rel, const float z
                              const float ego_heading)
 {
   float point[1][3] = { { x_rel, y_rel, z_rel } };
+#if EIGEN3_ROTATION
+  rotate_eigen3(point[0][0], point[0][1], point[0][0], point[0][1], ego_heading);
+#else
   rotate3(point, 1, ego_heading);
+#endif
   translate3(point, 1, ego_x_abs, ego_y_abs, ego_z_abs);
 
   x_abs = point[0][0];
@@ -211,23 +235,31 @@ void transform_point_rel2abs(const float x_rel, const float y_rel, const float z
 void transform_vector_abs2rel(const float vx_abs, const float vy_abs, float& vx_rel, float& vy_rel,
                               const float ego_heading)
 {
+#if EIGEN3_ROTATION
+  rotate_eigen3(vx_rel, vy_rel, vx_abs, vy_abs, -ego_heading);
+#else
   float vec[1][2] = { { vx_abs, vy_abs } };
 
   rotate(vec, 1, -ego_heading);
 
   vx_rel = vec[0][0];
   vy_rel = vec[0][1];
+#endif
 }
 
 void transform_vector_rel2abs(const float vx_rel, const float vy_rel, float& vx_abs, float& vy_abs,
                               const float ego_heading)
 {
+#if EIGEN3_ROTATION
+  rotate_eigen3(vx_abs, vy_abs, vx_rel, vy_rel, ego_heading);
+#else
   float vec[1][2] = { { vx_rel, vy_rel } };
 
   rotate(vec, 1, ego_heading);
 
   vx_abs = vec[0][0];
   vy_abs = vec[0][1];
+#endif
 }
 
 void set_ColorRGBA(std_msgs::ColorRGBA& out, const std_msgs::ColorRGBA in)
@@ -268,5 +300,14 @@ void set_config(const MarkerConfig& in, MarkerConfig& out)
   out.show_pp = in.show_pp;
 
   set_ColorRGBA(out.color, in.color);
+}
+
+void quaternion_to_rpy(double& roll, double& pitch, double& yaw, const double q_x, const double q_y, const double q_z,
+                       const double q_w)
+{
+  tf::Quaternion q(q_x, q_y, q_z, q_w);
+  tf::Matrix3x3 m(q);
+
+  m.getRPY(roll, pitch, yaw);
 }
 }  // namespace tpp
