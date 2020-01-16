@@ -164,13 +164,14 @@
   </node>
 
   <!-- System status ********************************************************************************** -->
-  <node name="m_system_status" pkg="detection_viz" type="txt_system_status.py" output="screen" clear_params="true">
-      <param name="topic" value="/current_pose"/>
-      <param name="red"   value="0.0"/>
-      <param name="green" value="0.8"/>
-      <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="system"/>
-      <param name="delay_pos_x"  value="9.0"/>
+  <node name="m_system_status" pkg="detection_viz" type="text_marker_gen.py" output="screen" clear_params="true">
+      <param name="topic" value="/test"/>
+      <param name="frame_id" value="lidar"/>
+      <param name="red"   value="0.828"/>
+      <param name="green" value="0.749"/>
+      <param name="blue"  value="0.153"/>
+      <param name="prefix"  value="system"/>
+      <param name="txt_pos_x"  value="9.0"/>
   </node>
 
 
