@@ -9,7 +9,7 @@
   <arg name="update_rate" default="20" /><!--10-->
 
   <!-- Avoidance behavior configurations -->
-  <!--arg name="costmap_topic" default="occupancy_grid" /-->
+  <arg name="costmap_topic" default="occupancy_grid_all" /><!--occupancy_grid-->
   <arg name="enable_avoidance" default="true" />
   <arg name="avoid_waypoints_velocity" default="10.0" /><!--km/hr-->
   <arg name="avoid_start_velocity" default="10.0" /><!--1.8 km/hr-->
@@ -24,7 +24,7 @@
   <arg name="use_wavefront_heuristic" default="false" />
   <arg name="time_limit" default="2000.0" /><!--5000-->
   <arg name="robot_length" default="9.4" /><!--8-->
-  <arg name="robot_width" default="4.2" /><!--4.2-->
+  <arg name="robot_width" default="4.2" /><!--4.6-->
   <arg name="robot_base2back" default="3.4" /><!--7.2 3.4-->
   <arg name="minimum_turning_radius" default="10.0" /><!--6.0-->
   <arg name="theta_size" default="48" />
@@ -41,7 +41,7 @@
     <param name="safety_waypoints_size" value="$(arg safety_waypoints_size)" />
     <param name="update_rate" value="$(arg update_rate)" />
 
-    <!--remap from="costmap" to="$(arg costmap_topic)" /-->
+    <remap from="costmap" to="$(arg costmap_topic)" />
     <param name="enable_avoidance" value="$(arg enable_avoidance)" />
     <param name="search_waypoints_size" value="$(arg search_waypoints_size)" />
     <param name="search_waypoints_delta" value="$(arg search_waypoints_delta)" />
