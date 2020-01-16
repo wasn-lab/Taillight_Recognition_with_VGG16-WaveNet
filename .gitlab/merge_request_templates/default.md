@@ -7,4 +7,11 @@
 
 ## Developer checklist
 
+- [ ] The MR is for a single purpose.
 - [ ] Conforms to [coding sytle](https://gitlab.itriadv.co/self_driving_bus/itriadv/blob/master/docs/coding_style.md)
+
+
+## Developer checklist
+
+- [ ] The MR matches what the description says. No more, no less.
+- [ ] No logic error.

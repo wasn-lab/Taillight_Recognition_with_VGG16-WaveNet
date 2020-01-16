@@ -3,7 +3,6 @@
 
   <arg name="use_rviz_" default="false"/>
 
-  <include file="$(find map_pub)/launch/map_pub.launch"></include>
 
   <node pkg="localization" type="localization_node" name="localization" output="screen">
     <param name="use_rviz_" value="$(arg use_rviz_)"/>

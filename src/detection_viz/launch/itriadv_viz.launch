@@ -24,6 +24,18 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="lidar"/>
       <param name="delay_pos_x"  value="3.0"/>
+      <param name="is_ignoring_empty_obj"  value="false"/>
+  </node>
+
+  <!-- Camera Polygon **************************************************************************** -->
+  <node name="m_CameraDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CameraDetection/polygon"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="cam_poly"/>
+      <param name="delay_pos_x"  value="1.0"/>
+      <param name="is_ignoring_empty_obj"  value="true"/>
   </node>
 
   <!-- Fusion Polygon *************************************************************************** -->
