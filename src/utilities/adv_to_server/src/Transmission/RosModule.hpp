@@ -8,6 +8,7 @@
 #include "msgs/LidLLA.h"
 #include "msgs/VehInfo.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Bool.h"
 #include "msgs/Flag_Info.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -65,15 +66,13 @@ class RosModuleTraffic
     }
 
     static void
-    publishServerStatus(std::string topic, std::string input)
+    publishServerStatus(std::string topic, bool input)
     {
-      std::cout << "publishServerStatus topic " << topic << " , input" << input << std::endl;
+      std::cout << "publishServerStatus topic " << topic << " , input " << input << std::endl;
       ros::NodeHandle n;
       static ros::Publisher server_status_pub = n.advertise<std_msgs::String>(topic, 1000);
-      std_msgs::String msg;
-      std::stringstream ss;
-      ss << input;
-      msg.data = ss.str();
+      std_msgs::Bool msg;
+      msg.data = input;
       server_status_pub.publish(msg);
     }
 
