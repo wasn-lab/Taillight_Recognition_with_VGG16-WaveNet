@@ -85,22 +85,6 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
   LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
 #endif
 }
-
-void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
-{
-  // #if DEBUG_CALLBACK
-  //   LOG_INFO << "callback_localization() start" << std::endl;
-  // #endif
-
-  //   vel_.set_ego_x_abs(input->x);
-  //   vel_.set_ego_y_abs(input->y);
-  //   vel_.set_ego_heading(input->heading * 0.01745329251f);
-
-  // #if DEBUG_DATA_IN
-  //   LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
-  //            << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
-  // #endif
-}
 #endif
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
@@ -270,7 +254,6 @@ void TPPNode::subscribe_and_advertise_topics()
   localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
 #else
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-  localization_sub_ = nh2_.subscribe("localization_to_veh", 1, &TPPNode::callback_localization, this);
 #endif
 
   if (gen_markers_)

@@ -33,7 +33,6 @@
 #include <msgs/DetectedObject.h>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
-#include <msgs/LocalizationToVeh.h>
 
 #define TTC_TEST 0
 #if TTC_TEST
