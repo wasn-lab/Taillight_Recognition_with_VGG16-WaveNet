@@ -959,6 +959,7 @@ int TPPNode::run()
       seq_ = seq_cb_;
 #endif
 
+      // MOT: SORT algorithm
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       compute_velocity_kalman();
 
@@ -971,7 +972,7 @@ int TPPNode::run()
       // Tracking end && PP start ================================================================
 
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-      pp_.main(pp_objs_, ppss, mc_.show_pp);
+      pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
 
 #if FPS_EXTRAPOLATION
       publish_pp_extrapolation(pp_pub_, pp_objs_, box_centers_kalman_rel_, box_centers_kalman_next_rel_);
