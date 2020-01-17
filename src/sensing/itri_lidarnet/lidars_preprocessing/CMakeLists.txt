@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
   #message_generation
   msgs
   libs
+  nodelet
 )                  
                                                                      
 ## System dependencies are found with CMake's conventions
@@ -117,8 +118,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   #INCLUDE_DIRS include
-  #LIBRARIES beginner_tutorials
-  #LIBRARIES ${PROJECT_NAME}
+  LIBRARIES ${PROJECT_NAME}_b1_nodelet
   CATKIN_DEPENDS roscpp rospy msgs
   #std_msgs
   #DEPENDS system_lib
@@ -217,10 +217,10 @@ include_directories(
 ######################
 ##    use define    ##
 ######################
-
 set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_BUILD_TYPE Release)
-set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES -DOTHER_STUFF=1")
+set (CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
+set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
 
 ######################
 ##       VTK        ##
@@ -251,6 +251,7 @@ ADD_DEFINITIONS         (${QT_DEFINITIONS})
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_a1.cpp")
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1.cpp")
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1_nodelet.cpp")
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
  
 ######################
@@ -266,3 +267,11 @@ cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${
 add_dependencies	  (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
 target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
 qt5_use_modules       (${PROJECT_NAME}_hino Widgets)
+
+######################
+##      Nodelet     ##
+######################
+cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} ) 
+add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets) 

@@ -218,7 +218,6 @@ include_directories(
 ######################
 ##    use define    ##
 ######################
-
 set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
@@ -258,6 +257,10 @@ cuda_add_executable   (${PROJECT_NAME}_GTgen src/main_GTgen.cpp ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME}_GTgen msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
 target_link_libraries (${PROJECT_NAME}_GTgen ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
 
+
+######################
+##     Nodelet      ##
+######################
 cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)

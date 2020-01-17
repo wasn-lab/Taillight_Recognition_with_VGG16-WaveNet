@@ -1,0 +1,7 @@
+<library path="liblidars_preprocessing_b1_nodelet">
+  <class name="lidars_preprocessing_b1_nodelet/LidarsNodelet" type="lidars_preprocessing_b1_nodelet::LidarsNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  This is lidars_preprocessing_nodelet.
+  </description>
+  </class>
+</library>

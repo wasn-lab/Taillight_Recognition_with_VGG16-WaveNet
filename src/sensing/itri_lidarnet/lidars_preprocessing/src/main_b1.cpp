@@ -14,6 +14,7 @@
 void
 callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
+#if 0
   static pcl::uint64_t oldtimestamp;
   pcl::uint64_t intervaltime = msg->header.stamp - oldtimestamp;
   if(oldtimestamp!=0 && intervaltime > 100000L && intervaltime < 10000000L) // 100000 = 0.1s
@@ -21,6 +22,7 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     cout << "[lidars_preprocessing]: missing data " << intervaltime << "," << msg->header.stamp <<endl;
   }
   oldtimestamp = msg->header.stamp;
+#endif
 
   if (msg->size () > 100)
   {

@@ -72,6 +72,13 @@ class RosModuleB1
     }
 
     static void
+    RegisterCallBackTimer (void
+    (*cb) (const ros::TimerEvent&), float interval)
+    {
+      static ros::Timer timer = ros::NodeHandle ().createTimer(ros::Duration(interval), cb);
+    }
+
+    static void
     send_ErrorCode (unsigned int error_code)
     {
       static ros::Publisher ErrorCode_pub = ros::NodeHandle ().advertise<msgs::ErrorCode> ("/ErrorCode", 1);

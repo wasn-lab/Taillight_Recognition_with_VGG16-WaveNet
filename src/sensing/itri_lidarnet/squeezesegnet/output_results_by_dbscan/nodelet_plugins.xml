@@ -1,7 +1,7 @@
 <library path="liboutput_results_by_dbscan_b1_nodelet">
-  <class name="example_pkg/MyNodeletClass" type="example_pkg::MyNodeletClass" base_class_type="nodelet::Nodelet">
+  <class name="output_dbscan_nodelet/LidarsNodelet" type="output_dbscan_nodelet::LidarsNodelet" base_class_type="nodelet::Nodelet">
   <description>
-  This is my nodelet.
+  Module with Nodelet
   </description>
   </class>
 </library>
