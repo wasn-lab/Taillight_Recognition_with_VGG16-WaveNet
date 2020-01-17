@@ -163,6 +163,17 @@
       <param name="delay_pos_x"  value="7.0"/>
   </node>
 
+  <!-- System status ********************************************************************************** -->
+  <node name="m_system_status" pkg="detection_viz" type="text_marker_gen.py" output="screen" clear_params="true">
+      <param name="topic" value="/mileage/status_text"/>
+      <param name="frame_id" value="lidar"/>
+      <param name="red"   value="0.9"/>
+      <param name="green" value="0.9"/>
+      <param name="blue"  value="0.2"/>
+      <param name="prefix"  value="system"/>
+      <param name="txt_pos_x"  value="-11.0"/>
+  </node>
+
 
   <!-- LaneNet ********************************************************************************** -->
   <node name="m_Lane_all_cam" pkg="detection_viz" type="marker_lane_curve.py" output="screen" clear_params="true">

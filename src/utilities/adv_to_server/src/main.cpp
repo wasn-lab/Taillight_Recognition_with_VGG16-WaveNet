@@ -221,7 +221,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   {
     if (stop[i] == 1)
     {
-      stopids.push_back(i + 1001);
+      stopids.push_back(i + 2001);
     }
   }
   json J2;

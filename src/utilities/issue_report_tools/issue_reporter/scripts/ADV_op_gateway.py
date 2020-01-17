@@ -191,13 +191,20 @@ def ros_Flag_02_CB(msg):
     """
     global var_advop_run_state
     _run_state = (msg.Dspace_Flag08 > 0.5) # 1 for running, 0 for stopped
+    if var_advop_run_state != _run_state:
+        # State changed
+        # Note: Because Flag_info is published in 100Hz, the Android app will be overloaded.
+        #       To solve this problem, we only publish this message when state changed
+        # Note 2: Even if we don't publish this time, the main loop will publish the state in 1Hz.
+        if not mqtt_client is None:
+            # Publish
+            mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(_run_state), qos=2, retain=False)
+    # Update state
     var_advop_run_state = _run_state
     # print("var_advop_run_state = %s" % str(var_advop_run_state))
     rospy.loginfo_throttle(1, "[ADV_op_gateway] run_state = %s" % str(var_advop_run_state))
-    if mqtt_client is None:
-        return
-    # Publish
-    mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(_run_state), qos=2, retain=False)
+
+
 
 def ros_advop_sys_ready_CB(msg):
     """
