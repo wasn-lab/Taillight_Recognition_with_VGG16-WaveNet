@@ -4,6 +4,7 @@ import string
 import json
 import cherrypy
 import threading
+import time
 #
 
 # MQTT
@@ -174,7 +175,7 @@ class GUI_GATEWAY(object):
         is_received_GUI_state = False
         start_time = rospy.get_rostime()
         wait_timeout = rospy.Duration.from_sec(1.0) # Wait for 1 sec.
-        seq_catch = GUI_state_seq 
+        seq_catch = GUI_state_seq
         while (rospy.get_rostime() - start_time) < wait_timeout:
             rospy.sleep(0.01) # Sleep for 0.01 sec.
             if GUI_state_seq > seq_catch:
@@ -207,7 +208,10 @@ class GUI_GATEWAY(object):
 # Wait for ROS terminating signal to close the HTTP server
 def wait_for_close():
     while not rospy.is_shutdown():
-        rospy.sleep(0.5)
+        try:
+            rospy.sleep(0.5)
+        except:
+            pass
     cherrypy.engine.exit()
 
 def main():
@@ -235,7 +239,15 @@ def main():
 
 
     # Connect
-    mqtt_client.connect(mqtt_broker, 1883, 60)
+    is_connected = False
+    while (not is_connected) and (not rospy.is_shutdown()):
+        try:
+            mqtt_client.connect(mqtt_broker, 1883, 60)
+            is_connected = True
+            rospy.loginfo("[MQTT] Connected to broker.")
+        except:
+            rospy.logwarn("[MQTT] Failed to connect to broker, keep trying.")
+            time.sleep(1.0)
     # Start working
     mqtt_client.loop_start() # This start the actual work on another thread.
 

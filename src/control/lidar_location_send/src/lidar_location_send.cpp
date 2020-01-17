@@ -122,7 +122,7 @@ static void astar_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
         std::cout << "call_back_astar_from IPC" << std::endl;
         std::cout << "FVTY::" << input->pose.position.y << "/" << "seg_id_near::" << seg_id_near_ << "/" << "Target_seg_id::" << Target_seg_id_ << "/" << "Look_ahead_time" << Look_ahead_time_ << std::endl;
         front_vehicle_target_y = input->pose.position.y;
-        MsgSendToCan2 msg_vcu2 {input->pose.position.y , seg_id_near_, Target_seg_id_, Look_ahead_time_};
+        MsgSendToCan2 msg_vcu2 {input->pose.position.y , static_cast<int>(seg_id_near_), static_cast<int>(Target_seg_id_), Look_ahead_time_};
         CLPC.controlSendByCAN(msg_vcu2);
 }
 static void astar_callback_1(const geometry_msgs::PoseStamped::ConstPtr& input)
