@@ -35,7 +35,8 @@ float kmph_to_mps(const float kmph);
 float mps_to_kmph(const float mps);
 
 void rotate(float a[][2], const unsigned int n, const float radians);
-void rotate3(float a[][3], const unsigned int n, const float radians);
+void rotate_eigen3(float& out_x, float& out_y, const float in_x, const float in_y, const float in_ang_rad);
+void rotate3(float a[][3], const unsigned int n, const float radians);  // actually rotate x y only
 
 void translate(float a[][2], const unsigned int n, const float x_pivot, const float y_pivot);
 void translate3(float a[][3], const unsigned int n, const float x_pivot, const float y_pivot, const float z_pivot);
@@ -70,6 +71,9 @@ void set_ColorRGBA(std_msgs::ColorRGBA& out, const std_msgs::ColorRGBA in);
 void set_ColorRGBA(std_msgs::ColorRGBA& c, const float r, const float g, const float b, const float a);
 
 void set_config(const MarkerConfig& in, MarkerConfig& out);
+
+void quaternion_to_rpy(double& roll, double& pitch, double& yaw, const double q_x, const double q_y, const double q_z,
+                       const double q_w);
 }  // namespace tpp
 
 #endif  // __UTILS_H__
