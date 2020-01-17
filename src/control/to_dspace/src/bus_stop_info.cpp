@@ -26,10 +26,10 @@
 using namespace std;
 
 const int bus_number = 8; // 8 stops 
-vector<int> bus_stop_flag(bus_number, 0);;
+vector<int> bus_stop_flag(bus_number, 1);;
 const vector<int> bus_stop_code = {1111,2222,3333,4444};
-ros::NodeHandle n;
-ros::Publisher publisher_01 = n.advertise<std_msgs::String>("/BusStop/Info", 1);;
+
+ros::Publisher publisher_01;
 
 void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 {
@@ -113,7 +113,9 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "bus_stop_info");
+	ros::NodeHandle n;
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
+	publisher_01 = n.advertise<msgs::Flag_Info>("/BusStop/Info", 1);
 	ros::spin();
 	return 0;
 }
