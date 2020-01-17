@@ -2,15 +2,15 @@
 #define CAN_DLC 8;
 #define CAN_INTERFACE_NAME "can1"
 
+#include "ros/ros.h"
+#include "std_msgs/Float64.h"
+#include "std_msgs/Bool.h"
+#include "std_msgs/String.h"
 #include "msgs/Flag_Info.h"
 
 #include "std_msgs/Header.h"
 #include <iostream>
 #include <cstdlib>
-#include "ros/ros.h"
-#include "std_msgs/Float64.h"
-#include "std_msgs/Bool.h"
-#include "std_msgs/String.h"
 #include <vector>
 
 
