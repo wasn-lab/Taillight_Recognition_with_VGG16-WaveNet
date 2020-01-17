@@ -18,9 +18,9 @@ void DistanceEstimation::init(int car_id)
 void DistanceEstimation::initParams()
 {
   // camId: 0 (Front Right)
-  camFR60.regionHeight_x = { -340, -132, 20, 230, 470, 664, 895, 1174, 1418, 1674 };
-  camFR60.regionHeightSlope_x = { 0.182, 0.203, 0.220, 0.253, 0.297, 0.349, 0.439, 0.603, 0.842, 1.661 };
-  camFR60.regionDist_x = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+  camFR60.regionHeight_x = { /*-1313, -1030,*/ -340, -132, 20, 230, 470, 664, 895, 1174, 1418, 1674, 1919 };
+  camFR60.regionHeightSlope_x = { /*0.1355, 0.1396,*/ 0.182, 0.203, 0.220, 0.253, 0.297, 0.349, 0.439, 0.603, 0.842, 1.661, 0};
+  camFR60.regionDist_x = { /*20, 15,*/ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
   camFR60.regionHeight_y = { 1207, 1197 /*5*/,  1171, 1149, 1121, 1108, 1098 /*10*/, 1092, 1091, 1090,
                              1089, 1084 /*15*/, 1083, 1082, 1080, 1073, 1073 /*20*/, 1067, 1072, 1070,
@@ -41,9 +41,9 @@ void DistanceEstimation::initParams()
   camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
   // camId: 2 (Front Left)
-  camFL60.regionHeight_x = { 54, 335, 644, 1022, 1351, 1556, 1758, 1975, 2230, 2429 };
+  camFL60.regionHeight_x = { 0, 54, 335, 644, 1022, 1351, 1556, 1758, 1975, 2230, 2429 };
   camFL60.regionHeightSlope_x = { 24.14, -1.1794, -0.784, -0.4609, -0.3457, -0.3001, -0.2656, -0.2371, -0.21, -0.1928 };
-  camFL60.regionDist_x = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+  camFL60.regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
   camFL60.regionHeight_y = { 1207, 1193 /*5*/, 1144,       1083,       1030, 1000, 975 /*10*/, 953,        933,
                              915,  904,        895 /*15*/, 883,        876,  868,  862,        856 /*20*/, 850,
@@ -117,15 +117,15 @@ void DistanceEstimation::initDetectArea()
   camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
   camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
   camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
-  camFR60_area.RightLinePoint2 = cv::Point(1674, 1207);
+  camFR60_area.RightLinePoint2 = cv::Point(1919, 1207);
 
   camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
   camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
   camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
   camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
 
-  camFL60_area.LeftLinePoint1 = cv::Point(54, 805);
-  camFL60_area.LeftLinePoint2 = cv::Point(54, 1207);
+  camFL60_area.LeftLinePoint1 = cv::Point(0, 805);
+  camFL60_area.LeftLinePoint2 = cv::Point(0, 1207);
   camFL60_area.RightLinePoint1 = cv::Point(1919, 1077);
   camFL60_area.RightLinePoint2 = cv::Point(2429, 1207);
 

@@ -49,15 +49,6 @@ void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
 #endif
 }
 
-void TPPNode::callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input)
-{
-  vel_.set_ego_speed_kmph(input->data);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
-#endif
-}
-
 void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
@@ -67,18 +58,22 @@ void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& 
   vel_.set_ego_x_abs(input->pose.position.x);
   vel_.set_ego_y_abs(input->pose.position.y);
 
-  tf::Quaternion q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
-                   input->pose.orientation.w);
-  tf::Matrix3x3 m(q);
-
   double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-
-  vel_.set_ego_heading(yaw);
+  quaternion_to_rpy(roll, pitch, yaw, input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                    input->pose.orientation.w) vel_.set_ego_heading(yaw);
 
 #if DEBUG_DATA_IN
   LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
            << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
+#endif
+}
+
+void TPPNode::callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input)
+{
+  vel_.set_ego_speed_kmph(input->data);
+
+#if DEBUG_DATA_IN
+  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
 #endif
 }
 #else  // TTC_TEST == 0
@@ -88,22 +83,6 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 
 #if DEBUG_DATA_IN
   LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
-#endif
-}
-
-void TPPNode::callback_localization(const msgs::LocalizationToVeh::ConstPtr& input)
-{
-#if DEBUG_CALLBACK
-  LOG_INFO << "callback_localization() start" << std::endl;
-#endif
-
-  vel_.set_ego_x_abs(input->x);
-  vel_.set_ego_y_abs(input->y);
-  vel_.set_ego_heading(input->heading * 0.01745329251f);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
-           << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
 #endif
 }
 #endif
@@ -126,8 +105,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   clock_t begin_time = clock();
 #endif
 
-  get_current_ego_data();  // sync data
-
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
 
@@ -138,15 +115,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
-  if (objs_header_stamp_prev_ > 0 &&  //
-      vel_.init_time(objs_header_stamp_, objs_header_stamp_prev_) == 0)
-  {
-    is_legal_dt_ = true;
-  }
-  else
-  {
-    is_legal_dt_ = false;
-  }
+  is_legal_dt_ =
+      (objs_header_stamp_prev_ > 0 && vel_.init_time(objs_header_stamp_, objs_header_stamp_prev_) == 0) ? true : false;
+
+  dt_ = vel_.get_dt();
 
   KTs_.header_ = objs_header_;
 
@@ -278,11 +250,10 @@ void TPPNode::subscribe_and_advertise_topics()
 // Note that we use different NodeHandle here
 #if TTC_TEST
   seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
-  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);
   localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
+  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);  
 #else
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-  localization_sub_ = nh2_.subscribe("localization_to_veh", 1, &TPPNode::callback_localization, this);
 #endif
 
   if (gen_markers_)
@@ -851,11 +822,30 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
 }
 #endif
 
-void TPPNode::get_current_ego_data()
+void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
 {
-  dt_ = vel_.get_dt();
+  geometry_msgs::TransformStamped tf_stamped;
+
+  try
+  {
+    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+  }
+
+  vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
+  vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
+
+  double roll, pitch, yaw;
+  quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
+                    tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
+  vel_.set_ego_heading(yaw);
+
   ego_x_abs_ = vel_.get_ego_x_abs();
   ego_y_abs_ = vel_.get_ego_y_abs();
+
   ego_z_abs_ = vel_.get_ego_z_abs();
   ego_heading_ = vel_.get_ego_heading();
   ego_dx_abs_ = vel_.get_ego_dx_abs();
@@ -933,6 +923,11 @@ int TPPNode::run()
 
   g_trigger = true;
 
+#if TTC_TEST == 0
+  tf2_ros::Buffer tf_buffer;
+  tf2_ros::TransformListener tf_listener(tf_buffer);
+#endif
+
   ros::Rate loop_rate(output_fps);
 
   while (ros::ok() && !done_with_profiling())
@@ -940,6 +935,13 @@ int TPPNode::run()
 #if DEBUG_CALLBACK
     LOG_INFO << "ROS loop start" << std::endl;
 #endif
+
+    if (!is_legal_dt_)
+    {
+      tf_buffer.clear();
+    }
+
+    get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
 
     if (g_trigger && is_legal_dt_)
     {
@@ -957,6 +959,7 @@ int TPPNode::run()
       seq_ = seq_cb_;
 #endif
 
+      // MOT: SORT algorithm
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       compute_velocity_kalman();
 
@@ -969,7 +972,7 @@ int TPPNode::run()
       // Tracking end && PP start ================================================================
 
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-      pp_.main(pp_objs_, ppss, mc_.show_pp);
+      pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
 
 #if FPS_EXTRAPOLATION
       publish_pp_extrapolation(pp_pub_, pp_objs_, box_centers_kalman_rel_, box_centers_kalman_next_rel_);
