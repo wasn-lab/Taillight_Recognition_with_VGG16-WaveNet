@@ -30,7 +30,7 @@ var_advop_sys_ready = False
 # ROS publishers
 #-------------------------------#
 ros_advop_sys_ready_pub = rospy.Publisher('/ADV_op/sys_ready', Bool, queue_size=10)
-ros_advop_sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=100)
+sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=100)
 #-------------------------------#
 
 #
@@ -126,6 +126,7 @@ def main():
             _sys_ready_now &= check_dict[check_item]
         #-----------------------------------------------#
         # print("_fail_str = \n%s" % _fail_str)
+        sys_fail_reson_pub.publish(_fail_str)
         # Changing check
         if _sys_ready_now != var_advop_sys_ready:
             if _sys_ready_now:
