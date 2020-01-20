@@ -68,6 +68,7 @@ namespace MSG{
         Bool,
         Int32,
         String,
+        NavPath,
         GUI2_op,
         tfGeoPoseStamped,
         Image,
@@ -418,6 +419,8 @@ private:
     void _Int32_CB(const std_msgs::Int32::ConstPtr& msg, const MSG::T_PARAMS & params);
     // String
     void _String_CB(const std_msgs::String::ConstPtr& msg, const MSG::T_PARAMS & params);
+    // NavPath
+    void _NavPath_CB(const nav_msgs::Path::ConstPtr& msg, const MSG::T_PARAMS & params);
     // bool _String_pub();
     // GUI2_op
     void _GUI2_op_CB(const opengl_test::GUI2_op::ConstPtr& msg, const MSG::T_PARAMS & params);

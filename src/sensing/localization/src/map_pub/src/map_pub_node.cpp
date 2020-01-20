@@ -24,7 +24,7 @@
 #include <pcl/filters/passthrough.h>
 
 #include <sensor_msgs/PointCloud2.h>
-
+#include <std_msgs/Float64.h>
 
 void parseColumns(const std::string &line, std::vector<std::string> *columns)
 {
@@ -40,6 +40,8 @@ ros::Publisher totalMapPointCloudPublisher;
 ros::Publisher northMapPointCloudPublisher;
 ros::Publisher southMapPointCloudPublisher;
 
+static ros::Publisher map_mean_value_publisher;
+static std_msgs::Float64 map_mean_value;
 
 static double voxel_leaf_size = 0.9;
 static double voxel_leaf_size_1 = 1.0;
@@ -65,6 +67,9 @@ main (int argc, char** argv)
         totalMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map", 1, true);
         northMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_north", 1, true);
         southMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_south", 1, true);
+
+        map_mean_value_publisher = nodeHandle.advertise<std_msgs::Float64>("map_mean_value", 1, true);
+        map_mean_value_publisher.publish(crop_value_mean);
 
         sensor_msgs::PointCloud2 total_map_ptcloud;
         sensor_msgs::PointCloud2 total_map_ptcloud_north;

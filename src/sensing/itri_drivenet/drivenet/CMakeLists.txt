@@ -17,8 +17,14 @@ find_package(catkin REQUIRED COMPONENTS
 )
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
-find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
-find_package(CUDA REQUIRED)
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 find_package(TensorRT)
 message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 if (NOT TensorRT_FOUND)

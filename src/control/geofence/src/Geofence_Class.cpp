@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "Geofence_Class.h"
 
-#define BOUNDARY 1.5
+#define BOUNDARY 1.2
 //#define DEBUG
 //#define TEST
 using namespace std;
@@ -14,6 +14,12 @@ using namespace std;
 
 double Geofence::getDistance(){
     return Distance;
+}
+double Geofence::getDistance_w(){
+    return Distance_wide;
+}
+double Geofence::getFarest(){
+    return Farest;
 }
 bool Geofence::getTrigger(){
     return Trigger;
@@ -28,58 +34,44 @@ double Geofence::getNearest_Y(){
     return Nearest_Y;
 }
 
-int Geofence::setPoly(const vector<double> &Xpoly, const vector<double> &Ypoly, int PNumber){
-    if (Xpoly.size()!=(PNumber*2) || Ypoly.size()!=(PNumber*2)){
-        cout << "Number of parameters mismatch." << endl;
-        return 1;
+struct Point  Geofence::findDirection(){
+
+    Point dir;
+    Point temp;
+    dir.X = 300;
+    for(int i=1;i<this->PathLength.size();i++){
+        if(this->PathLength[i] > this->Distance){
+            temp.X = this->PathPoints[i].X - this->PathPoints[i-1].X;
+            temp.Y = this->PathPoints[i].Y - this->PathPoints[i-1].Y;
+            dir.X = this->PathPoints[i].X;
+            dir.Y = this->PathPoints[i].Y;
+            break;
+        }
     }
-    Xpoly_one.clear();
-    Xpoly_two.clear();
-    Ypoly_one.clear();
-    Ypoly_two.clear();
-    for(int i=0;i<PNumber;i++){ 
-        Xpoly_one.push_back(Xpoly[i]);
-        Xpoly_two.push_back(Xpoly[i+PNumber]);
-        Ypoly_one.push_back(Ypoly[i]);
-        Ypoly_two.push_back(Ypoly[i+PNumber]);
-    }
-    #ifdef DEBUG
-        cout << "Xpoly_one["; 
-        for(int i=0;i<PNumber;i++){
-            cout << Xpoly_one[i] ;
-            if(i!=(PNumber-1)){
-                cout << ",";
-            }
-        }
-        cout << "]" << endl;
-        cout << "Xpoly_two["; 
-        for(int i=0;i<PNumber;i++){
-            cout << Xpoly_two[i];
-            if(i!=(PNumber-1)){
-                cout << ",";
-            }
-        }
-        cout << "]" << endl;
-        cout << "Ypoly_one["; 
-        for(int i=0;i<PNumber;i++){
-            cout << Ypoly_one[i];
-            if(i!=(PNumber-1)){
-                cout << ",";
-            }
-        }
-        cout << "]" << endl;
-        cout << "Ypoly_two["; 
-        for(int i=0;i<PNumber;i++){
-            cout << Ypoly_two[i];
-            if(i!=(PNumber-1)){
-                cout << ",";
-            }
-        }
-        cout << "]" << endl;
-    #endif
-    return 0;
+    dir.Speed = acos((temp.X)/sqrt(pow(temp.X,2.0) + pow(temp.Y,2.0)));
+    return dir;
 }
 
+int Geofence::setPath(const vector<Point> &PathPoints){
+	
+    this->PathPoints.clear();
+    this->PathLength.clear();
+    this->PathPoints = PathPoints;
+   
+    for(int i=0;i<PathPoints.size();i++){
+        double Segment;
+        double Length_temp;
+        if(i==0){
+            Length_temp = 0.0; //For first element
+        }
+        else{
+            Segment = sqrt(pow((PathPoints[i].X-PathPoints[i-1].X),2)+pow((PathPoints[i].Y-PathPoints[i-1].Y),2));
+            Length_temp = PathLength[i-1] + Segment;	
+        }
+        this->PathLength.push_back(Length_temp);
+    }
+    return 0;
+}
 
 int Geofence::setPointCloud(const vector<Point> &PointCloud,bool isLocal, double SLAM_x, double SLAM_y, double Heading){
 	this->PointCloud.clear();
@@ -101,59 +93,33 @@ int Geofence::setPointCloud(const vector<Point> &PointCloud,bool isLocal, double
     return 0;
 }
 
+
 int Geofence::Calculator(){
-    double Resolution = 0.001;
     // Check if all information is initialized
-    if(Xpoly_one.size()<1 || Xpoly_two.size()<1 || Ypoly_one.size()<1 || Ypoly_two.size()<1 ){
-        cerr << "Path polynomials not initialized" << endl;
+    if(PathPoints.size()<1){
+        cerr << "Path not initialized" << endl;
         return 1;
     }
     if(PointCloud.size()<1){
         cerr << "PointCloud not initialized" << endl;
         return 1;
     }
-    vector<Point> Position;
-    vector<double> Length;
-    for(double i=0.0;i<1.0;i+=Resolution){ 
-        struct Point Pos;
-        Pos.X = Xpoly_one[0] + Xpoly_one[1]*i +  Xpoly_one[2]*pow(i,2) +  Xpoly_one[3]*pow(i,3) +  Xpoly_one[4]*pow(i,4) +  Xpoly_one[5]*pow(i,5);
-        Pos.Y = Ypoly_one[0] + Ypoly_one[1]*i +  Ypoly_one[2]*pow(i,2) +  Ypoly_one[3]*pow(i,3) +  Ypoly_one[4]*pow(i,4) +  Ypoly_one[5]*pow(i,5);             
-        Position.push_back(Pos);
-    }
-    for(double i=0.0;i<1.0;i+=Resolution){
-        struct Point Pos;
-        Pos.X = Xpoly_two[0] + Xpoly_two[1]*i +  Xpoly_two[2]*pow(i,2) +  Xpoly_two[3]*pow(i,3) +  Xpoly_two[4]*pow(i,4) +  Xpoly_two[5]*pow(i,5);
-        Pos.Y = Ypoly_two[0] + Ypoly_two[1]*i +  Ypoly_two[2]*pow(i,2) +  Ypoly_two[3]*pow(i,3) +  Ypoly_two[4]*pow(i,4) +  Ypoly_two[5]*pow(i,5);
-        Position.push_back(Pos);
-    }
-    for(int i=0;i<Position.size();i++){
-        double Segment;
-        double Length_temp;
-        if(i==0){
-            Length_temp = 0.0; //For first element
-        }
-        else{
-            Segment = sqrt(pow((Position[i].X-Position[i-1].X),2)+pow((Position[i].Y-Position[i-1].Y),2));
-            Length_temp = Length[i-1] + Segment;	
-        }
-        Length.push_back(Length_temp);
-    }
-    #ifdef TEST
-        cout << "Number of path point: " << Position.size() << endl;
-        cout << "Number of path Length: " << Length.size() << endl;
-        cout << "Path length: " << *Length.rbegin() << endl;
-    #endif
-    vector<double> P_Distance(PointCloud.size(),100); //Distance of every pointcloud (default 100)
+
+    vector<double> P_Distance(PointCloud.size(),300); //Distance of every pointcloud (default 100)
+    vector<double> P_Distance_w(PointCloud.size(),300); //Distance of every pointcloud in wider range (default 100)
     for(int i=0;i<PointCloud.size();i++){
-        vector<double> V_Distance(Position.size(),100); // Vertical diatnce to the path
-        for(int j=0;j<Position.size();j++){
-			V_Distance[j] = sqrt(pow(PointCloud[i].X-Position[j].X,2) + pow(PointCloud[i].Y-Position[j].Y,2)) ;    
+        vector<double> V_Distance(PathPoints.size(),300); // Vertical diatnce to the path
+        for(int j=0;j<PathPoints.size();j++){
+			V_Distance[j] = sqrt(pow(PointCloud[i].X-PathPoints[j].X,2) + pow(PointCloud[i].Y-PathPoints[j].Y,2)) ;    
         }
         int minElementIndex = std::min_element(V_Distance.begin(),V_Distance.end()) - V_Distance.begin();
         double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
         if(minElement<BOUNDARY){
-            P_Distance[i] = Length[minElementIndex];      
-        }        
+            P_Distance[i] = PathLength[minElementIndex];      
+        }
+        if(minElement<(BOUNDARY+0.5)){
+            P_Distance_w[i] = PathLength[minElementIndex];      
+        }     
     }
     int minElementIndex = std::min_element(P_Distance.begin(),P_Distance.end()) - P_Distance.begin();
     double minElement = *std::min_element(P_Distance.begin(), P_Distance.end());
@@ -166,10 +132,23 @@ int Geofence::Calculator(){
 	else{
 		Trigger = false;
 		ObjSpeed = 0;
-        Nearest_X = 100;
-        Nearest_Y = 100;
+        Nearest_X = 3000;
+        Nearest_Y = 3000;
 	}
     Distance = minElement;
+
+    minElement = *std::min_element(P_Distance_w.begin(), P_Distance_w.end());
+    Distance_wide = minElement;
+
+    //Calculate farest point
+    for(int i=0;i<P_Distance.size();i++){
+        if(P_Distance[i]>299){
+            P_Distance[i] = -100;
+        }
+    }
+    int maxElementIndex = std::max_element(P_Distance.begin(),P_Distance.end()) - P_Distance.begin();
+    double maxElement = *std::max_element(P_Distance.begin(), P_Distance.end());
+    Farest = maxElement;
     return 0;
 }
 

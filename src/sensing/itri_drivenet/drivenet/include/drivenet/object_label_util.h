@@ -3,6 +3,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "image_preprocessing.h"
 
 namespace DriveNet
 {
@@ -30,7 +31,7 @@ enum class common_type_id
   bus,            // 5
   truck           // 6
 };
-                                      
+
 int translate_label(int label);
 cv::Scalar get_label_color(int label_id);
 cv::Scalar get_common_label_color(int label_id);

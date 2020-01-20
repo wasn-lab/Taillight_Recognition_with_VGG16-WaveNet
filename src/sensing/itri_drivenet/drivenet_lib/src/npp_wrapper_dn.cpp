@@ -20,7 +20,7 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
   const NppiRect src_roi = {.x = 0, .y = 0, .width = src.cols, .height = src.rows };
   const int src_line_steps = src.cols * channel;
   const int num_src_bytes = src.cols * src.rows * channel;
-  Npp8u* src_npp8u_ptr;
+  Npp8u* src_npp8u_ptr = NULL;
   if (channel == 3)
     src_npp8u_ptr = nppiMalloc_8u_C3(src.cols, src.rows, &dummy);
   if (channel == 1)
@@ -37,7 +37,7 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
   const int num_dst_bytes = dst_cols * dst_rows * channel;
   const NppiSize dst_size = {.width = dst_cols, .height = dst_rows };
   const NppiRect dst_roi = {.x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
-  Npp8u* dst_npp8u_ptr;
+  Npp8u* dst_npp8u_ptr = NULL;
   if (channel == 3)
     dst_npp8u_ptr = nppiMalloc_8u_C3(dst_cols, dst_rows, &dummy);
   if (channel == 1)
@@ -48,7 +48,7 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
 
   cudaMemcpy(src_npp8u_ptr, src.data, num_src_bytes, cudaMemcpyHostToDevice);
 
-  NppStatus result;
+  NppStatus result = NPP_ERROR;
   if (channel == 3)
     result = nppiResize_8u_C3R(src_npp8u_ptr, src_line_steps, src_size, src_roi, dst_npp8u_ptr, dst_line_steps,
                                dst_size, dst_roi, interpolation_mode);

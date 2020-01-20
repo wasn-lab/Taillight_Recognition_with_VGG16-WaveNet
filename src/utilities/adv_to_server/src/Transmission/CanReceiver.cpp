@@ -56,7 +56,7 @@ CanReceiver::receive (double *data)
 {
   int nbytes;
   struct can_frame frame;
-  nbytes = read(c_socket, &frame, CANFD_MTU);
+  nbytes = read(c_socket, &frame, sizeof(frame));
   int id = processFrame(data, frame);
   return id;
 }
