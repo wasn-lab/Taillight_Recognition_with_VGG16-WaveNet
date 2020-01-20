@@ -16,15 +16,34 @@ timeout_alive = 1.5 # sec.
 timeout_thread_alive = None
 #-------------------------#
 
+# Definitions
+# Note: smaller is better
+#-------------------------#
+STATE_DEF_dict = dict()
+STATE_DEF_dict["OK"] = 0
+STATE_DEF_dict["WARN"] = 1
+STATE_DEF_dict["ERROR"] = 2
+STATE_DEF_dict["UNKNOWN"] = 3
+# Generate the inverse mapping of the state definitions
+STATE_DEF_dict_inv = dict()
+for key in STATE_DEF_dict:
+    STATE_DEF_dict_inv[ STATE_DEF_dict[key] ] = key
+#-------------------------#
+
+
+# Level setting
+#-------------------------#
+LOGGING_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this level will be displayed
+SYS_FAIL_LEVEL = STATE_DEF_dict["ERROR"] # Greater or equal to this level means the system is failed
+#-------------------------#
+
 # States
 #-------------------------#
 check_dict = dict()
-check_dict["node_alive"] = False
-check_dict["REC_is_recording"] = False
-# var_advop_node_alive = False
-# var_REC_is_recording = False
+check_dict["node_alive"] = STATE_DEF_dict["ERROR"]
+check_dict["REC_is_recording"] = STATE_DEF_dict["ERROR"]
 #
-var_advop_sys_ready = False
+sys_total_status = STATE_DEF_dict["ERROR"]
 #-------------------------#
 
 # ROS publishers
@@ -38,8 +57,9 @@ def _timeout_handle_alive():
     """
     """
     # global var_advop_node_alive
+    global STATE_DEF_dict
     global check_dict
-    check_dict["node_alive"] = False
+    check_dict["node_alive"] = STATE_DEF_dict["ERROR"]
     # var_advop_node_alive = False
     rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
 
@@ -56,45 +76,91 @@ def set_timer_alive():
 # ROS callbacks
 #--------------------------------------#
 # Check if node is alive
-def _node_alive_CB(mag):
-    """
-    """
-    # global var_advop_node_alive
-    global check_dict
-    check_dict["node_alive"] = mag.data
-    # var_advop_node_alive = mag.data
-    set_timer_alive()
+# def _node_alive_CB(msg):
+#     """
+#     """
+#     # global var_advop_node_alive
+#     global check_dict
+#     check_dict["node_alive"] = msg.data
+#     # var_advop_node_alive = msg.data
+#     set_timer_alive()
+#
+# def _REC_is_recording_CB(msg):
+#     """
+#     """
+#     # global var_REC_is_recording
+#     global check_dict
+#     check_dict["REC_is_recording"] = msg.data
+#     # var_REC_is_recording = msg.data
 
-def _REC_is_recording_CB(mag):
+def eva_func_bool(x):
     """
     """
-    # global var_REC_is_recording
+    global STATE_DEF_dict
+    if x == True:
+        return STATE_DEF_dict["OK"]
+    elif x == False:
+        return STATE_DEF_dict["ERROR"]
+    else:
+        return STATE_DEF_dict["UNKNOWN"]
+
+
+def _checker_CB(msg, key, eva_func=eva_func_bool, post_func=None ):
+    """
+    """
     global check_dict
-    check_dict["REC_is_recording"] = mag.data
-    # var_REC_is_recording = mag.data
+    check_dict[key] = eva_func(msg.data)
+    if not post_func is None:
+        post_func()
 #--------------------------------------#
 
 
-def get_fail_string(is_component_good, component_name=""):
+
+
+#--------------------------------------#
+def evaluate_is_logging(status_level):
+    """
+    """
+    global LOGGING_LEVEL
+    return (status_level >= LOGGING_LEVEL)
+
+def evaluate_is_fail(status_level):
+    """
+    """
+    global SYS_FAIL_LEVEL
+    return ( status_level >= SYS_FAIL_LEVEL )
+#
+def evaluate_is_OK(status_level):
+    return (not evaluate_is_fail(status_level))
+#--------------------------------------#
+
+
+def get_fail_string(component_status, component_name=""):
     """
     Input:
-        - is_component_good
+        - component_status
         - component_name
     Output:
         - _fail_str
     """
+    global STATE_DEF_dict, STATE_DEF_dict_inv
     _fail_str = ""
-    if not is_component_good:
-        _fail_str += "<%s> check fail.\n" % component_name
-        rospy.logerr("[sys_ready] %s" % _fail_str )
+    if evaluate_is_logging(component_status):
+        if evaluate_is_fail(component_status):
+            _fail_str += "<%s> check fail.\n" % component_name
+            rospy.logerr("[sys_ready] %s" % _fail_str )
+        else:
+            _fail_str += "<%s> OK, but status = %s.\n" % (component_name, STATE_DEF_dict_inv[component_status] )
+            rospy.logwarn("[sys_ready] %s" % _fail_str )
     return  _fail_str
 
 
 
 def main():
     # global var_advop_node_alive, var_REC_is_recording
+    global STATE_DEF_dict, STATE_DEF_dict_inv
     global check_dict
-    global var_advop_sys_ready
+    global sys_total_status
     rospy.init_node('ADV_sys_ready_check', anonymous=False)
     print("[sys_ready_check] Node started.")
 
@@ -103,8 +169,10 @@ def main():
 
     # ROS subscribers
     #-----------------------------#
-    rospy.Subscriber("/node_trace/all_alive", Bool, _node_alive_CB)
-    rospy.Subscriber("/REC/is_recording", Bool, _REC_is_recording_CB)
+    # Note: The "/all_alive"  topic callback should append a timeout watcher
+    rospy.Subscriber("/node_trace/all_alive", Bool, (lambda msg: _checker_CB(msg, "node_alive", post_func=set_timer_alive) ) )
+    # The following topic can go without timeout watcher (since they are not periodical messages)
+    rospy.Subscriber("/REC/is_recording", Bool, (lambda msg: _checker_CB(msg, "REC_is_recording")))
     #-----------------------------#
 
 
@@ -112,30 +180,25 @@ def main():
     rate = rospy.Rate(1.0) # Hz
     while not rospy.is_shutdown():
         # Ready logic
-        _sys_ready_now = True
+        _sys_status_now = STATE_DEF_dict["OK"]
         _fail_str = ""
         # Check list
         #-----------------------------------------------#
-        # _fail_str += get_fail_string(var_advop_node_alive, "node_alive")
-        # _fail_str += get_fail_string(var_REC_is_recording, "REC_is_recording")
-        # _sys_ready_now &= var_advop_node_alive
-        # _sys_ready_now &= var_REC_is_recording
-
         for check_item in check_dict:
             _fail_str += get_fail_string(check_dict[check_item], check_item)
-            _sys_ready_now &= check_dict[check_item]
+            _sys_status_now = max(_sys_status_now, check_dict[check_item] )
         #-----------------------------------------------#
         # print("_fail_str = \n%s" % _fail_str)
         sys_fail_reson_pub.publish(_fail_str)
         # Changing check
-        if _sys_ready_now != var_advop_sys_ready:
-            if _sys_ready_now:
+        if _sys_status_now != sys_total_status:
+            if evaluate_is_OK(_sys_status_now):
                 rospy.loginfo("[sys_ready] The system is ready.")
             else:
                 rospy.logwarn("[sys_ready] The system is not ready.")
-        var_advop_sys_ready = _sys_ready_now
+        sys_total_status = _sys_status_now
         # Publish ready
-        ros_advop_sys_ready_pub.publish(var_advop_sys_ready)
+        ros_advop_sys_ready_pub.publish( evaluate_is_OK(sys_total_status) )
         try:
             rate.sleep()
         except:
