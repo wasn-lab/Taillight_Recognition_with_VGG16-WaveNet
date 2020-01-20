@@ -168,12 +168,13 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
                                obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
         else
         {
-/*
-          std::vector<cv::Point2f> no_keypoint;
-          obj_pub.crossProbability =
-              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                               obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id, msg->header.stamp);
-*/
+          /*
+                    std::vector<cv::Point2f> no_keypoint;
+                    obj_pub.crossProbability =
+                        crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                                         obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
+             msg->header.stamp);
+          */
         }
         pedObjs.push_back(obj_pub);
 
@@ -287,8 +288,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           box.y = 0;
 
         std::string id_print = "ID: " + std::to_string(obj.track.id);
-        cv::putText(matrix2, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
-                      cv::Scalar(100, 220, 0), 2, 4, 0);
+        cv::putText(matrix2, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+                    4, 0);
       }
 
       // do resize only when computer cannot support
@@ -697,11 +698,13 @@ int main(int argc, char** argv)
 
   std::string bash = PED_MODEL_DIR + std::string("/../download_models.sh");
   int call_success = system(bash.c_str());
-  if (call_success == -1){
-    std::cout<<"Cannot execute download_models.sh."<<std::endl;
+  if (call_success == -1)
+  {
+    std::cout << "Cannot execute download_models.sh." << std::endl;
   }
 
-  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
+  pe.rf_pose =
+      cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
 
   ros::NodeHandle nh;
   pe.chatter_pub =

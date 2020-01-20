@@ -13,8 +13,8 @@ OpenPose::OpenPose()
   , heatMapTypes(op::flagsToHeatMaps(FLAGS_heatmaps_add_parts, FLAGS_heatmaps_add_bkg, FLAGS_heatmaps_add_PAFs))
   , heatMapScaleMode(op::flagsToHeatMapScaleMode(FLAGS_heatmaps_scale))
   , multipleView((FLAGS_3d || FLAGS_3d_views > 1))
-/*  , faceDetector(op::flagsToDetector(FLAGS_face_detector)) */
-/*  , handDetector(op::flagsToDetector(FLAGS_hand_detector)) */
+  /*  , faceDetector(op::flagsToDetector(FLAGS_face_detector)) */
+  /*  , handDetector(op::flagsToDetector(FLAGS_hand_detector)) */
   , enableGoogleLogging(true)
   , opWrapper(op::ThreadManagerMode::Asynchronous)
   , wrapperStructPose(poseMode, netInputSize, outputSize, keypointScaleMode, FLAGS_num_gpu, FLAGS_num_gpu_start,
@@ -25,13 +25,15 @@ OpenPose::OpenPose()
                       (float)FLAGS_render_threshold, FLAGS_number_people_max, FLAGS_maximize_positives, FLAGS_fps_max,
                       op::String(FLAGS_prototxt_path), op::String(FLAGS_caffemodel_path), (float)FLAGS_upsampling_ratio,
                       enableGoogleLogging)
-/*  , wrapperStructFace(FLAGS_face, faceDetector, faceNetInputSize,
-                      op::flagsToRenderMode(FLAGS_face_render, multipleView, FLAGS_render_pose),
-                      (float)FLAGS_face_alpha_pose, (float)FLAGS_face_alpha_heatmap, (float)FLAGS_face_render_threshold)
-  , wrapperStructHand(FLAGS_hand, handDetector, handNetInputSize, FLAGS_hand_scale_number,
-                      (float)FLAGS_hand_scale_range,
-                      op::flagsToRenderMode(FLAGS_hand_render, multipleView, FLAGS_render_pose),
-                      (float)FLAGS_hand_alpha_pose, (float)FLAGS_hand_alpha_heatmap, (float)FLAGS_hand_render_threshold) */
+  /*  , wrapperStructFace(FLAGS_face, faceDetector, faceNetInputSize,
+                        op::flagsToRenderMode(FLAGS_face_render, multipleView, FLAGS_render_pose),
+                        (float)FLAGS_face_alpha_pose, (float)FLAGS_face_alpha_heatmap,
+    (float)FLAGS_face_render_threshold)
+    , wrapperStructHand(FLAGS_hand, handDetector, handNetInputSize, FLAGS_hand_scale_number,
+                        (float)FLAGS_hand_scale_range,
+                        op::flagsToRenderMode(FLAGS_hand_render, multipleView, FLAGS_render_pose),
+                        (float)FLAGS_hand_alpha_pose, (float)FLAGS_hand_alpha_heatmap,
+    (float)FLAGS_hand_render_threshold) */
   , wrapperStructExtra(FLAGS_3d, FLAGS_3d_min_views, FLAGS_identification, FLAGS_tracking, FLAGS_ik_threads)
   , wrapperStructOutput(
         FLAGS_cli_verbose, op::String(FLAGS_write_keypoint), op::stringToDataFormat(FLAGS_write_keypoint_format),
