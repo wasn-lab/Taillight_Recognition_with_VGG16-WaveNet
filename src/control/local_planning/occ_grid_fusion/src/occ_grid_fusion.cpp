@@ -2,12 +2,15 @@
 #include <nav_msgs/OccupancyGrid.h>
 
 ros::Publisher occ_grid_all_pub;
+ros::Publisher occ_grid_all_expand_pub;
 nav_msgs::OccupancyGrid costmap_;
 nav_msgs::OccupancyGrid lidcostmap;
 nav_msgs::OccupancyGrid camcostmap;
 nav_msgs::OccupancyGrid costmap_all;
+nav_msgs::OccupancyGrid costmap_all_expand;
 bool lid_ini = false;
 bool cam_ini = false;
+int expand_size;
 
 void lid_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 {
@@ -23,8 +26,14 @@ void cam_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 
 void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 {
+
+  expand_size = 1;
+  // ros::param::get(ros::this_node::getName()+"/expand_size", expand_size);
+
   costmap_ = costmap;
+  static double resolution = costmap_.info.resolution;
   costmap_all = costmap;
+  costmap_all_expand = costmap;
   nav_msgs::OccupancyGrid lidcostmap_ = costmap;
   if (lid_ini == true)
   {
@@ -56,10 +65,42 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
         continue;
 
       if (lidcost > 0 || camcost > 0)
+      {
         costmap_all.data[og_index] = 100;
+        costmap_all_expand.data[og_index] = 100;
+      }
+
+      if (costmap_all.data[og_index] == 0)
+      {
+        for (int k = -expand_size/resolution ; k < expand_size/resolution ; k++)
+        {
+          int m = i+k;
+          if (m < 0)
+            m = 0;
+          if (m >= height)
+            m = height-1;
+          for (int l = -expand_size/resolution ; l < expand_size/resolution ; l++)
+          {
+            int n = j+l;
+            if (n < 0)
+              n = 0;
+            if (n >= width)
+              n = width-1;
+
+            int og_index_1 = m * width + n;
+            if (costmap_all.data[og_index_1] > 0)
+            {
+              costmap_all_expand.data[og_index] = 50;
+              k = 1/resolution;
+              break;
+            }
+          }
+        }
+      }
     }
   }
   occ_grid_all_pub.publish(costmap_all);
+  occ_grid_all_expand_pub.publish(costmap_all_expand);
   ROS_INFO("Pub costmap_all");
 }
 
@@ -68,11 +109,14 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "occ_grid_fusion");
   ros::NodeHandle node;
 
+
+
   ros::Subscriber occ_grid_sub = node.subscribe("occupancy_grid", 1, occgridCallback);
   ros::Subscriber liddetect_grid_sub = node.subscribe("LidarDetection/grid", 1, lid_occgridCallback);
   ros::Subscriber cameradetect_grid_sub = node.subscribe("CameraDetection/grid", 1, cam_occgridCallback);
 
   occ_grid_all_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_all", 10, true);
+  occ_grid_all_expand_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_all_expand", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
   // { 

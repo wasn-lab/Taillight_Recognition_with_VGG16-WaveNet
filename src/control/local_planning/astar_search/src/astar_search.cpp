@@ -540,7 +540,7 @@ bool AstarSearch::detectCollision(const SimpleNode& sn)
   static double rear = -1.0 * robot_base2back_; // vehicle rear
   static double front = robot_length_ - robot_base2back_; // vehicle front
   static double left = robot_width_ / 2.0; // vehicle left
-  static double right = -1.0 * robot_width_ / 2.0 - 1.0; // vehicle right
+  static double right = -1.0 * robot_width_ / 2.0;// - 1.0; // vehicle right
   static double resolution = costmap_.info.resolution;
 
   // Coordinate of base_link in OccupancyGrid frame

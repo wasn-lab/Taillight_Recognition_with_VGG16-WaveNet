@@ -279,6 +279,7 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
   {
     closet_index = getLocalClosestWaypoint(waypoints_init,rear_pose.pose,search_size_); // rear or front
   }
+  // closet_index = 1400;
   std::cout << "closet_index = " << closet_index << std::endl;
   localpathgen(closet_index);
   basepathgen_pub(closet_index);
