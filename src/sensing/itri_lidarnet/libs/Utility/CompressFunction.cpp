@@ -41,7 +41,6 @@ CompressFunction::CamPara (double A,
   cam.focal[2] = I;
   cam.clip[0] = J;
   cam.clip[1] = K;
-  cam.clip[2] = L;
   cam.fovy = M;
   cam.window_pos[0] = N;
   cam.window_pos[1] = O;

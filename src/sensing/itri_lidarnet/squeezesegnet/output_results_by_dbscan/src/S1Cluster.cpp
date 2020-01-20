@@ -12,8 +12,8 @@ S1Cluster::S1Cluster (boost::shared_ptr<pcl::visualization::PCLVisualizer> input
   viewer = input_viewer;
   viewID = input_viewID;
 
-  dbscan.setEpsilon (0.7);
-  dbscan.setMinpts (2);
+  dbscan.setEpsilon (0.6);
+  dbscan.setMinpts (5);
 }
 
 S1Cluster::~S1Cluster ()
@@ -22,12 +22,16 @@ S1Cluster::~S1Cluster ()
 
 CLUSTER_INFO*
 S1Cluster::getClusters (bool debug,
-                        const PointCloud<PointXYZIL>::ConstPtr inputIL,
+                        const PointCloud<PointXYZIL>::ConstPtr input,
                         int *cluster_number)
 {
   pcl::StopWatch timer;
 
   vector<pcl::PointIndices> vectorCluster;
+
+  PointCloud<PointXYZIL>::Ptr inputIL (new PointCloud<PointXYZIL>);
+  *inputIL = *input;
+  *inputIL = VoxelGrid_CUDA ().compute <PointXYZIL> (inputIL, 0.2);
 
   PointCloud<PointXYZIL>::Ptr ptr_cur_cloud_IL (new PointCloud<PointXYZIL>);
   PointCloud<PointXYZ>::Ptr ptr_cur_cloud (new PointCloud<PointXYZ>);
@@ -41,14 +45,14 @@ S1Cluster::getClusters (bool debug,
     }
   }
 
-  //*ptr_cur_cloud = NoiseFilter ().runUniformSampling<PointXYZ> (ptr_cur_cloud, 0.2);
-  *ptr_cur_cloud = VoxelGrid_CUDA ().compute (ptr_cur_cloud, 0.2);
+  //*ptr_cur_cloud = VoxelGrid_CUDA ().compute <PointXYZ> (ptr_cur_cloud, 0.2);
+
 
 #if ENABLE_DEBUG_MODE == true
   cout << "-------------------------------Part 0 : get cluster_vector " << timer.getTimeSeconds () << "," << ptr_cur_cloud->size () << endl;
 #endif
 
-  dbscan.setInputCloud (ptr_cur_cloud);
+  dbscan.setInputCloud<PointXYZ> (ptr_cur_cloud);
   dbscan.segment (vectorCluster);
 
 #if ENABLE_DEBUG_MODE == true
@@ -86,7 +90,7 @@ S1Cluster::getClusters (bool debug,
 #if ENABLE_DEBUG_MODE == true
   cout << "-------------------------------Part 2 hierarchical feature " << timer.getTimeSeconds () << endl;
 #endif
-
+/*
   for (size_t i = 0; i < vectorCluster.size (); i++)
   {
     if (cluster_vector.at (i).cluster_tag == 1)
@@ -109,7 +113,7 @@ S1Cluster::getClusters (bool debug,
       }
     }
   }
-
+*/
 #if ENABLE_DEBUG_MODE == true
   cout << "-------------------------------Part 3 hierarchical clustering " << timer.getTimeSeconds () << endl;
 #endif
@@ -188,8 +192,8 @@ S1Cluster::getClusters (bool debug,
   {
     if (cluster_vector.at (i).cluster_tag == 1)
     {
-      if (cluster_vector.at (i).dx > 20 || cluster_vector.at (i).dy > 20 || cluster_vector.at (i).dz > 4)
-        cluster_vector.at (i).cluster_tag = 0;
+     // if (cluster_vector.at (i).dx > 20 || cluster_vector.at (i).dy > 20 || cluster_vector.at (i).dz > 4)
+     //   cluster_vector.at (i).cluster_tag = 0;
 
       if (cluster_vector.at (i).dis_center_origin < 40)
       {
@@ -215,53 +219,76 @@ S1Cluster::getClusters (bool debug,
           if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
             cluster_vector.at (i).cluster_tag = 0;
         }
+        
+        // ============== label counting for providing cluster_tag with class types ==================
+        if (cluster_vector.at(i).cluster_tag == 1)
+        {
+          size_t CNT_Person = 0;
+          size_t CNT_Motor = 0;
+          size_t CNT_Car = 0;
+          size_t CNT_Rule = 0;
 
-        /*
-         size_t CNT_Person = 0;
-         size_t CNT_Motor = 0;
-         size_t CNT_Car = 0;
-         size_t CNT_Rule = 0;
+          for (size_t j = 0; j < cluster_vector.at(i).cloud_IL.size(); j++)
+          {
 
-         for (size_t j = 0; j < cluster_vector.at (i).cloud_IL.size (); j++)
-         {
+            switch (cluster_vector.at(i).cloud_IL.points.at(j).label)
+            {
+            case 2:
+              CNT_Person++;
+              break;
+            case 3:
+              CNT_Motor++;
+              break;
+            case 1:
+              CNT_Car++;
+              break;
+            default:
+              CNT_Rule++;
+            }
+            if (j > 100)
+              break;
+          }
 
-         switch (cluster_vector.at (i).cloud_IL.points.at (j).label)
-         {
-         case 2:
-         CNT_Person++;
-         break;
-         case 3:
-         CNT_Motor++;
-         break;
-         case 1:
-         CNT_Car++;
-         break;
-         default:
-         CNT_Rule++;
-         }
-         if (j > 100)
-         break;
-         }
+          size_t CNT_MAX = max(max(CNT_Person, CNT_Motor), max(CNT_Car, CNT_Rule));
 
-         size_t CNT_MAX = (max (CNT_Person, CNT_Motor), max (CNT_Car, CNT_Rule));
+          if (CNT_MAX == CNT_Person)
+          {
+            cluster_vector.at(i).cluster_tag = 1;
+          }
+          else if (CNT_MAX == CNT_Motor)
+          {
+            cluster_vector.at(i).cluster_tag = 2;
+          }
+          else if (CNT_MAX == CNT_Car)
+          {
+            cluster_vector.at(i).cluster_tag = 3;
+          }
+          else
+          { 
+            if (CNT_Person==0 && CNT_Motor==0 && CNT_Car==0)
+            {
+              cluster_vector.at(i).cluster_tag = 4;
+            }
+            else
+            {
+              size_t CNT_2ndMAX = max(max(CNT_Person, CNT_Motor), CNT_Car);
+              
+              if (CNT_2ndMAX == CNT_Person)
+              {
+                cluster_vector.at(i).cluster_tag = 1;
+              }
+              else if (CNT_2ndMAX == CNT_Motor)
+              {
+                cluster_vector.at(i).cluster_tag = 2;
+              }
+              else if (CNT_2ndMAX == CNT_Car)
+              {
+                cluster_vector.at(i).cluster_tag = 3;
+              }
+            }
+          }
 
-         if (CNT_MAX == CNT_Person)
-         {
-         cluster_vector.at (i).cluster_tag = 1;
-         }
-         else if (CNT_MAX == CNT_Motor)
-         {
-         cluster_vector.at (i).cluster_tag = 2;
-         }
-         else if (CNT_MAX == CNT_Car)
-         {
-         cluster_vector.at (i).cluster_tag = 3;
-         }
-         else
-         {
-         cluster_vector.at (i).cluster_tag = 4;
-         }
-         */
+        }
       }
     }
   }

@@ -12,11 +12,11 @@
 #include "S1Cluster/S1Cluster.h"
 #include "S2Track/S2Track.h"
 #include "S3Classify/S3Classify.h"
-#include "Transmission/CanModule.hpp"
 #include "RosModuleA.hpp"
 #include "Transmission/UdpClientServer.h"
 #include "project_to_sphere_image.hpp"
 #include "CompressFunction.h"
+#include "Transmission/CanModuleA.hpp"
 
 boost::mutex mutex_LidFrontTop;
 boost::mutex mutex_LidFrontLeft;
