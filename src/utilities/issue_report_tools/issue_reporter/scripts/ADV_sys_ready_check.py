@@ -56,22 +56,22 @@ def set_timer_alive():
 # ROS callbacks
 #--------------------------------------#
 # Check if node is alive
-def _node_alive_CB(mag):
+def _node_alive_CB(msg):
     """
     """
     # global var_advop_node_alive
     global check_dict
-    check_dict["node_alive"] = mag.data
-    # var_advop_node_alive = mag.data
+    check_dict["node_alive"] = msg.data
+    # var_advop_node_alive = msg.data
     set_timer_alive()
 
-def _REC_is_recording_CB(mag):
+def _REC_is_recording_CB(msg):
     """
     """
     # global var_REC_is_recording
     global check_dict
-    check_dict["REC_is_recording"] = mag.data
-    # var_REC_is_recording = mag.data
+    check_dict["REC_is_recording"] = msg.data
+    # var_REC_is_recording = msg.data
 #--------------------------------------#
 
 
