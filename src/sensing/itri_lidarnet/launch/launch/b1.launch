@@ -1,16 +1,20 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 <!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
-<rosparam param="LidarFrontLeft_Fine_Param">[0.47, 1.09, -1.85, 0.03, -0.04, 1.77]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.54, 1.12, -1.85, 0.03, -0.04, 1.76]</rosparam>
 <rosparam param="LidarFrontRight_Fine_Param">[0.47, -1.07, -1.85, -0.03, -0.05, -1.81]</rosparam>
-<rosparam param="LidarRearLeft_Fine_Param">[-6.36, 1.23, -2.24, 3.14, -3.08, -1.09]</rosparam>
-<rosparam param="LidarRearRight_Fine_Param">[-6.37, -1, -2.28, 0.03, -0.05, -2.05]</rosparam>
+<rosparam param="LidarRearLeft_Fine_Param">[-6.36, 1.1, -2.24, 3.14, -3.08, -1.08]</rosparam>
+<rosparam param="LidarRearRight_Fine_Param">[-6.37, -1.23, -2.28, 0.03, -0.07, -2.03]</rosparam>
+
 <!-- Ros Parameter Backup 
 <rosparam param="LidarFrontLeft_Fine_Param">[0.47, 1.09, -1.85, 0.03, -0.04, 1.77]</rosparam>
 <rosparam param="LidarFrontRight_Fine_Param">[0.41, -1.09, -1.83, -0.02, -0.05, -1.8]</rosparam>
 <rosparam param="LidarRearLeft_Fine_Param">[-6.34, 1.31, -2.19, 3.13, -3.08, -1.09]</rosparam>
 <rosparam param="LidarRearRight_Fine_Param">[-6.37, -0.98, -2.22, 0.05, -0.07, -2.05]</rosparam>
 -->
+
+<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0.46 0 3.46 0 0 0 /base_link  /lidar" />
+
 <!-- Global arg ************************************************************ -->
 	<arg name="mode" default="0" />
 	<arg name="rpm_16" default="1200.0"/>
@@ -23,7 +27,7 @@
 	<group if="$(eval arg('mode') == 0)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
 		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
-		<node pkg="lidar_squseg_inference"      type="squeezeseg_inference"	 	 	name="squseg_inference"    			output="screen" cwd="node" args="hb_tmp X 0 1" />
+		<node pkg="lidar_squseg_inference"      type="lidar_squseg_inference"	 	name="lidar_squseg_inference"    	output="screen" cwd="node" args="hb_tmp X 0 1" />
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
@@ -55,7 +59,7 @@
 
 	<!-- declare arguments with default values -->
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-  	<arg name="device_ip" default="192.168.1.220" />
+  	<arg name="device_ip" default="192.168.0.220" />
 	<arg name="frame_id" default="lidar_front_right" />
  	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
   	<arg name="max_range" default="60.0" />
@@ -110,7 +114,7 @@
 
 	<!-- declare arguments with default values -->
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-  	<arg name="device_ip" default="192.168.1.221" />
+  	<arg name="device_ip" default="192.168.0.221" />
 	<arg name="frame_id" default="lidar_front_left" />
  	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
   	<arg name="max_range" default="60.0" />
@@ -165,7 +169,7 @@
 
 	<!-- declare arguments with default values -->
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-  	<arg name="device_ip" default="192.168.1.222" />
+  	<arg name="device_ip" default="192.168.0.222" />
 	<arg name="frame_id" default="lidar_rear_right" />
  	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
   	<arg name="max_range" default="60.0" />
@@ -220,7 +224,7 @@
 
 	<!-- declare arguments with default values -->
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-  	<arg name="device_ip" default="192.168.1.223" />
+  	<arg name="device_ip" default="192.168.0.223" />
 	<arg name="frame_id" default="lidar_rear_left" />
  	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
   	<arg name="max_range" default="60.0" />
@@ -274,7 +278,7 @@
 	<group ns="LidarFrontTop" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
 		<!-- declare arguments with default values -->
 		<arg name="calibration" default="$(find velodyne_pointcloud)/params/32db.yaml"/>
-		<arg name="device_ip" default="192.168.1.224" />
+		<arg name="device_ip" default="192.168.0.224" />
 		<arg name="frame_id" default="lidar_front_top" />
 		<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
 		<arg name="max_range" default="80.0" />

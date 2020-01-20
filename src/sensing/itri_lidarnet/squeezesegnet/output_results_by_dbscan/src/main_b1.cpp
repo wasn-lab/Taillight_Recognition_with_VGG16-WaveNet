@@ -56,7 +56,7 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     pcl_conversions::fromPCL (msg->header.stamp, rosTime);
     RosModuleB1::Send_LidarResults (cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     RosModuleB1::Send_LidarResultsRVIZ (cur_cluster, cur_cluster_num);
-
+    RosModuleB1::Send_LidarResultsGrid(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     delete[] cur_cluster;
 
     if (stopWatch.getTimeSeconds () > 0.05)
@@ -146,17 +146,15 @@ main (int argc,
   ros::AsyncSpinner spinner (2);
   spinner.start ();
 
-  ros::Rate loop_rate (40);
   while (ros::ok ())
   {
     heartBeat++;
     if (heartBeat > 30)
     {
       cout << "[DBSCAN]:no input " << heartBeat << endl;
-      ros::Rate(1).sleep();
     }
-    //ros::spinOnce ();
-    loop_rate.sleep ();
+
+    ros::Rate(1).sleep ();
   }
 
   cout << "[" << ros::this_node::getName () << "] " << "----------------------------end" << endl;

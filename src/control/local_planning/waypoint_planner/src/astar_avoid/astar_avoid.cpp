@@ -43,8 +43,9 @@ AstarAvoid::AstarAvoid()
   safety_waypoints_pub_ = nh_.advertise<autoware_msgs::Lane>("safety_waypoints", 1, true);
   navpath_astar_pub = nh_.advertise<nav_msgs::Path>("nav_path_astar_final", 1, true); //////////////////////////
   avoiding_flag_pub = nh_.advertise<std_msgs::Int32>("avoiding_path", 1, true); //////////////////////////
-  // costmap_sub_ = nh_.subscribe("costmap", 1, &AstarAvoid::costmapCallback, this);
-  costmap_sub_ = nh_.subscribe("occupancy_grid", 1, &AstarAvoid::costmapCallback, this);
+  costmap_sub_ = nh_.subscribe("costmap", 1, &AstarAvoid::costmapCallback, this);
+  // costmap_sub_ = nh_.subscribe("occupancy_grid", 1, &AstarAvoid::costmapCallback, this);
+  // costmap_sub_ = nh_.subscribe("LidarDetection/grid", 1, &AstarAvoid::costmapCallback, this);
   // current_pose_sub_ = nh_.subscribe("current_pose", 1, &AstarAvoid::currentPoseCallback, this);
   current_pose_sub_ = nh_.subscribe("rear_current_pose", 1, &AstarAvoid::currentPoseCallback, this);
   // current_velocity_sub_ = nh_.subscribe("current_velocity", 1, &AstarAvoid::currentVelocityCallback, this);
@@ -298,6 +299,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
   {
     // update goal index
     // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
+    // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i + 8;
     int goal_waypoint_index = 38 + i;
     // std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
     if (goal_waypoint_index >= static_cast<int>(avoid_waypoints_.waypoints.size()))

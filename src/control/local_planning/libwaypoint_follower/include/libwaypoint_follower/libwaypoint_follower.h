@@ -14,18 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef _LIB_WAYPOINT_FOLLOWER_H_
-#define _LIB_WAYPOINT_FOLLOWER_H_
+#ifndef LIBWAYPOINT_FOLLOWER_LIBWAYPOINT_FOLLOWER_H
+#define LIBWAYPOINT_FOLLOWER_LIBWAYPOINT_FOLLOWER_H
+
+#define EIGEN_MPL2_ONLY
+#include <tf/transform_datatypes.h>
+#include <tf2/utils.h>
 
 // C++ header
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <utility>
+#include <vector>
 
 // ROS header
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include "autoware_msgs/Lane.h"
+
+constexpr double ERROR = 1e-6;
 
 enum class LaneDirection : int
 {

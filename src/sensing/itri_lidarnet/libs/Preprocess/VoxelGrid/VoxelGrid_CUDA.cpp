@@ -5,7 +5,6 @@ int VoxelGrid_CUDA::maxThreadsNumber = 0;
 
 VoxelGrid_CUDA::VoxelGrid_CUDA ()
 {
-
   if (!hasInitialCUDA)
   {
     cudaError_t err = ::cudaSuccess;
@@ -60,31 +59,31 @@ VoxelGrid_CUDA::coutMemoryStatus ()
       << total_db / 1024.0 / 1024.0 << "(MB)" << std::endl;
 }
 
+template <typename PointT>
 bool
-VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
-                              float resolution)
+VoxelGrid_CUDA::run (typename pcl::PointCloud<PointT> &point_cloud,
+     float resolution)
 {
   cudaError_t err;
   gridParameters rgd_params;
-  pcl::PointXYZ * d_point_cloud;
+  PointT * d_point_cloud;
   hashElement* d_hashTable = NULL;
   bucket* d_buckets = NULL;
   bool* d_markers;
   bool* h_markers;
 
-  //std::cout << "CUDA code will use " << threads << " device threads" << std::endl;
   if (maxThreadsNumber == 0)
     return false;
 
-  err = cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(pcl::PointXYZ));
+  err = cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(PointT));
   if (err != ::cudaSuccess)
     return false;
 
-  err = cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(pcl::PointXYZ), cudaMemcpyHostToDevice);
+ err = cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(PointT), cudaMemcpyHostToDevice);
   if (err != ::cudaSuccess)
     return false;
 
-  err = cudaCalculateGridParams (d_point_cloud, point_cloud.points.size (), resolution, resolution, resolution, rgd_params);
+  err = cudaCalculateGridParams<PointT> (d_point_cloud, point_cloud.points.size (), resolution, resolution, resolution, rgd_params);
   if (err != ::cudaSuccess)
     return false;
 
@@ -110,13 +109,14 @@ VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   if (err != ::cudaSuccess)
     return false;
 
-  err = cudaCalculateGrid (maxThreadsNumber, d_point_cloud, d_buckets, d_hashTable, point_cloud.points.size (), rgd_params);
+  err = cudaCalculateGrid<PointT> (maxThreadsNumber, d_point_cloud, d_buckets, d_hashTable, point_cloud.points.size (), rgd_params);
   if (err != ::cudaSuccess)
     return false;
 
   err = cudaMalloc ((void**) &d_markers, point_cloud.points.size () * sizeof(bool));
   if (err != ::cudaSuccess)
     return false;
+
 
   err = cudaDownSample (maxThreadsNumber, d_markers, d_hashTable, d_buckets, rgd_params, point_cloud.points.size ());
   if (err != ::cudaSuccess)
@@ -128,7 +128,7 @@ VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   if (err != ::cudaSuccess)
     return false;
 
-  pcl::PointCloud<pcl::PointXYZ> downsampled_point_cloud;
+  pcl::PointCloud<PointT> downsampled_point_cloud;
   for (size_t i = 0; i < point_cloud.points.size (); i++)
   {
     if (h_markers[i])
@@ -168,16 +168,33 @@ VoxelGrid_CUDA::downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
   //coutMemoryStatus ();
 
   return true;
+
 }
 
-PointCloud<PointXYZ>
-VoxelGrid_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
+template
+bool
+VoxelGrid_CUDA::run (pcl::PointCloud<PointXYZ> &point_cloud,
+                     float resolution);
+
+template
+bool
+VoxelGrid_CUDA::run (pcl::PointCloud<PointXYZI> &point_cloud,
+                     float resolution);
+
+template
+bool
+VoxelGrid_CUDA::run (pcl::PointCloud<PointXYZIL> &point_cloud,
+                     float resolution);
+
+template <typename PointT>
+PointCloud<PointT>
+VoxelGrid_CUDA::compute (typename PointCloud<PointT>::Ptr input,
                          float resolution)
 {
-  PointCloud<PointXYZ> out_cloud;
+  PointCloud<PointT> out_cloud;
   out_cloud = *input;
 
-  if (!VoxelGrid_CUDA::downsampling (out_cloud, resolution))
+  if (!VoxelGrid_CUDA::run <PointT>(out_cloud, resolution))
   {
     cudaDeviceReset ();
     std::cout << "[voxel_grid] NOT SUCCESFULL" << std::endl;
@@ -186,3 +203,17 @@ VoxelGrid_CUDA::compute (PointCloud<PointXYZ>::Ptr input,
   return out_cloud;
 }
 
+template
+PointCloud<PointXYZ>
+VoxelGrid_CUDA::compute (pcl::PointCloud<PointXYZ>::Ptr input,
+                         float resolution);
+
+template
+PointCloud<PointXYZI>
+VoxelGrid_CUDA::compute (pcl::PointCloud<PointXYZI>::Ptr input,
+                         float resolution);
+
+template
+PointCloud<PointXYZIL>
+VoxelGrid_CUDA::compute (pcl::PointCloud<PointXYZIL>::Ptr input,
+                         float resolution);
