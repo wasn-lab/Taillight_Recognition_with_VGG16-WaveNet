@@ -101,9 +101,6 @@ def calculate_mileage(speed_mps):
     mileage_km += (speed_mps_filtered * delta_t)*0.001
     # print("mileage: %f km, speed(filter): %f(%f) km/hr" % (mileage_km, speed_mps*3.6, speed_mps_filtered*3.6) )
 
-
-
-
 #---------------------------------------------#
 
 def _veh_info_CB(data):
@@ -113,12 +110,12 @@ def _veh_info_CB(data):
     # print("ego_speed = %f" % data.ego_speed)
     calculate_mileage( data.ego_speed )
 
+
 def _flag_info_02_CB(data):
     """
     The callback function of vehicle info.
     """
     global adv_run_state, adv_run_Q
-    global brake_state, brake_Q
     # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
 
     # run state
@@ -131,8 +128,16 @@ def _flag_info_02_CB(data):
         # Print to stdout
         print( adv_run_state_2_string(adv_run_state) )
 
+
+def _flag_info_03_CB(data):
+    """
+    The callback function of vehicle info.
+    """
+    global brake_state, brake_Q
+    # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
+
     # brake state
-    brake_state_now = int( round(data.Dspace_Flag07) )
+    brake_state_now = int( round(data.Dspace_Flag05) )
     if brake_state != brake_state_now:
         # State change event
         now = rospy.get_rostime()
@@ -140,6 +145,7 @@ def _flag_info_02_CB(data):
         brake_Q.put( (brake_state, now) )
         # Print to stdout
         print( brake_state_2_string(brake_state) )
+
 
 
 def main(sys_args):
@@ -192,6 +198,7 @@ def main(sys_args):
     # Subscriber
     rospy.Subscriber("/veh_info", VehInfo, _veh_info_CB)
     rospy.Subscriber("/Flag_Info02", Flag_Info, _flag_info_02_CB)
+    rospy.Subscriber("/Flag_Info03", Flag_Info, _flag_info_03_CB)
     # Publisher
     # Publisher
     text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True) #
