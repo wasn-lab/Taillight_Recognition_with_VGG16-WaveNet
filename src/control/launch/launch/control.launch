@@ -4,7 +4,7 @@
 	<node pkg="from_dspace" type="from_dspace" name="from_dspace" output="screen" cwd="node" respawn="true"  />
 	<node pkg="to_dspace" type="to_dspace" name="to_dspace" output="screen" cwd="node" respawn="true"  />
 	<node pkg="trimble_gps_imu_pub" type="trimble_gps_imu_pub_node" name="trimble_gps_imu_pub_node" output="screen" cwd="node" respawn="true"  />
-	<!--node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  /-->
+	<node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidarxyz2lla" type="lidarxyz2lla_node" name="lidarxyz2lla_node" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontpub" name="radfrontpub" output="screen" cwd="node" respawn="true"  />

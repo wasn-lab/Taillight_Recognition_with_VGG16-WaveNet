@@ -1,0 +1,7 @@
+<library path="liblidars_grabber_b1_nodelet">
+  <class name="lidars_grabber_b1_nodelet/LidarsNodelet" type="lidars_grabber_b1_nodelet::LidarsNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  This is my nodelet.
+  </description>
+  </class>
+</library>
