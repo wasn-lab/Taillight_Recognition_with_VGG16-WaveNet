@@ -8,7 +8,7 @@
 //Can setup
 #define CAN_DLC 8;
 #define CAN_CHNNEL "can1"
-const int NumOfReceiveID = 3;
+const int NumOfReceiveID = 4;
 const int NumOfTopic = 3;
 
 #include "msgs/Flag_Info.h"
@@ -357,7 +357,7 @@ int main(int argc, char **argv)
 	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
 	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
 	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
-	uint32_t seq = 0;
+	//uint32_t seq = 0;
 
     int rc;
 	struct can_filter filter[NumOfReceiveID];
@@ -429,6 +429,7 @@ int main(int argc, char **argv)
         for (int i =0; i <NumOfReceiveID; i++)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
+            printf("Wrote %d bytes\n", nbytes);
             ProcessFrame(frame, Publisher, msg123);
         }
         //Publisher[3].publish(msg123);
