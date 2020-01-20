@@ -16,12 +16,12 @@ private:
   const op::Point<int> faceNetInputSize;
   const op::Point<int> handNetInputSize;
   const op::PoseMode poseMode;
+
   const op::PoseModel poseModel;
   const op::ScaleMode keypointScaleMode;
   const std::vector<op::HeatMapType> heatMapTypes;
   const op::ScaleMode heatMapScaleMode;
-  const op::Detector faceDetector;
-  const op::Detector handDetector;
+
   const bool multipleView;
   const bool enableGoogleLogging;
 

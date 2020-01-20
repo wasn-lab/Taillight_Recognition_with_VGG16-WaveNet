@@ -168,10 +168,12 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
                                obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
         else
         {
+/*
           std::vector<cv::Point2f> no_keypoint;
           obj_pub.crossProbability =
               crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
                                obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id, msg->header.stamp);
+*/
         }
         pedObjs.push_back(obj_pub);
 
@@ -278,7 +280,17 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
                       cv::Scalar(100, 220, 0), 2, 4, 0);
         }
+
+        if (box.y >= 22)
+          box.y -= 22;
+        else
+          box.y = 0;
+
+        std::string id_print = "ID: " + std::to_string(obj.track.id);
+        cv::putText(matrix2, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
+                      cv::Scalar(100, 220, 0), 2, 4, 0);
       }
+
       // do resize only when computer cannot support
       // cv::resize(matrix2, matrix2, cv::Size(matrix2.cols / 1, matrix2.rows / 1));
 
@@ -689,7 +701,7 @@ int main(int argc, char** argv)
     std::cout<<"Cannot execute download_models.sh."<<std::endl;
   }
 
-  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_3frames_normalization.yml"));
+  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
 
   ros::NodeHandle nh;
   pe.chatter_pub =

@@ -7,7 +7,7 @@ private:
   // feature vector: 1~4 BBox, 5~316 distance of each two points,
   // 317~1174 inner angle of each three points
   const unsigned int feature_num = 1174;
-  const int frame_num = 3;
+  const int frame_num = 10;
   const int life = 5;
   BufferNode* first;
   BufferNode* last;

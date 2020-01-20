@@ -101,7 +101,7 @@ public:
   Buffer buffer;
   openpose_ros::OpenPose openPose;
   const int feature_num = 1174;
-  const int frame_num = 3;
+  const int frame_num = 10;
 };
 }  // namespace ped
 

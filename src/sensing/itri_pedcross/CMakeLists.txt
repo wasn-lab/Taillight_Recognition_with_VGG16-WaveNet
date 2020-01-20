@@ -8,15 +8,15 @@ set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_3frames_normalization.yml"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_5frames_normalization_15peek.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 ff1ce2293391cf50f224edc76bf4f022
+    MD5 7476d1ba785b806255c7df62e0984249
 )
 catkin_download_test_data(
     ped_models_rf
-    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_10frames_normalization_15peek.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 d20e9859ff9ba625e2747578dae99cf2
+    MD5 c0ec26c803a7d5bcb0b63edb6509bcd4	
 )
 catkin_download_test_data(
     ped_models_body25

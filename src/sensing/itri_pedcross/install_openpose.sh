@@ -1,6 +1,8 @@
 #!/bin/bash
 
 sudo apt-get install protobuf-compiler libatlas-base-dev 
+# openpose version: commit 825f0d0
+# caffe version: commit b5ede48
 wget http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/openpose.tar.gz
 tar zxvf openpose.tar.gz
 cd ./openpose
