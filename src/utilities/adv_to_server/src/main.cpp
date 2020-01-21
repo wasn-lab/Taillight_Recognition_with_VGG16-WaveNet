@@ -407,9 +407,9 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["ArrivedStop"] = 1001;
+    J1["ArrivedStop"] = 2001;
     J1["ArrivedStopStatus"] = 0;
-    J1["route_id"] = 1000;
+    J1["route_id"] = 2000;
     J1["RouteMode"] = 2;
     J1["distance"] = 0.0;
     J1["mainvoltage"] = 0.0;
@@ -448,9 +448,9 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["route_id"] = 1000;
+    J1["route_id"] = 2000;
     J1["RouteMode"] = 2;
-    J1["ArrivedStop"] = 1001;
+    J1["ArrivedStop"] = 2001;
     J1["ArrivedStopStatus"] = 0;
     J1["Signal"] = 1;
     J1["CMS"] = 1;
