@@ -217,6 +217,7 @@ void callback_fps(const std_msgs::String::ConstPtr& input)
 void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 {
   float stop[8];
+  memset(stop,0,sizeof(stop));
   mutex_ros.lock();
   stop[0] = input->Dspace_Flag01;
   stop[1] = input->Dspace_Flag02;
@@ -251,7 +252,11 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["plate"] = PLATE;
   J1["status"] = 0;
   J1["route_id"] = ROUTE_ID;
-  J1["bus_stop"] = J2;
+  if(stopids.size() == 0){
+    J1["bus_stop"] = json::array();
+  }else{
+   J1["bus_stop"] = J2;
+  }
 
   VK102Response = J1.dump();
   mutex_ros.unlock();
@@ -642,9 +647,9 @@ void receiveRosRun(int argc, char** argv)
     vkQueue.push(temp_vk004);
     mutex_queue.unlock();
 
-    std::string temp_VK006 = get_jsonmsg_to_vk_server("M8.2.VK006");
+    /*std::string temp_VK006 = get_jsonmsg_to_vk_server("M8.2.VK006");
     mutex_queue.lock();
-    vkQueue.push(temp_VK006);
+    vkQueue.push(temp_VK006);*/
     mutex_queue.unlock();
 
     mutex_ros.unlock(); 
@@ -690,11 +695,15 @@ std::string genErrorMsg(int code, std::string msg)
 {
   json J1;
   json J2;
+  
   J2["msgInfo"] = msg;
   J2["msgCode"] = code;
   J1["messageObj"] = J2;
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
+  J1["status"] = 0;
+  J1["route_id"] = ROUTE_ID;
+  J1["bus_stops"] = json::array();
   return J1.dump();
 }
 
@@ -712,6 +721,9 @@ void VK102callback(std::string request)
   int in_stopid;
   int out_stopid;
   std::string type;
+
+   //clear response
+  VK102Response = "";
 
   // parsing
   try
@@ -774,9 +786,6 @@ void VK102callback(std::string request)
   }
 
   server.send_json(VK102Response);
-
-  //clear response
-  VK102Response = "";
 }
 
 // start TCP server to receive VK102 reserve bus from backend.
@@ -785,6 +794,7 @@ void tcpServerRun(int argc, char** argv)
   // set ip and port
   server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
   //server.initial("192.168.43.204",8765);
+  //server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();
   if (result >= 0)
