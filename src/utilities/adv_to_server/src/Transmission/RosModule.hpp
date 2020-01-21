@@ -40,7 +40,9 @@ class RosModuleTraffic
                       void
                       (*cb6) (const msgs::Flag_Info::ConstPtr&),
                       void
-                      (*cb7) (const std_msgs::String::ConstPtr&))
+                      (*cb7) (const std_msgs::String::ConstPtr&),
+                      void
+                      (*cb8) (const msgs::Flag_Info::ConstPtr&))
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
@@ -50,6 +52,7 @@ class RosModuleTraffic
       static ros::Subscriber fps = n.subscribe("/GUI/topic_fps_out", 1, cb5);
       static ros::Subscriber busStopInfo = n.subscribe("/BusStop/Info", 1, cb6);
       static ros::Subscriber reverse = n.subscribe("/reserve/request", 1, cb7);
+      static ros::Subscriber next_stop = n.subscribe("/NextStop/Info", 1, cb8);
     }
 
     static void

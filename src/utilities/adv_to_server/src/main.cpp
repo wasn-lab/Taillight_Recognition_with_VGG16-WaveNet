@@ -108,7 +108,16 @@ struct pose
   double yaw;
 };
 
+struct ArriveStop
+{
+  int id;
+  int status;
+};
+
+const static int ROUTE_ID = 2000; 
 pose current_gnss_pose;
+ArriveStop cuttent_arrive_stop;
+
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
@@ -221,7 +230,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   {
     if (stop[i] == 1)
     {
-      stopids.push_back(i + 2001);
+      stopids.push_back(i + ROUTE_ID + 1);
     }
   }
   json J2;
@@ -240,10 +249,19 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
   J1["status"] = 0;
-  J1["route_id"] = 1;
+  J1["route_id"] = ROUTE_ID;
   J1["bus_stop"] = J2;
 
   VK102Response = J1.dump();
+  mutex_ros.unlock();
+}
+
+void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
+{
+  
+  mutex_ros.lock();
+  cuttent_arrive_stop.id = ROUTE_ID +(int) input->Dspace_Flag01 + 1;
+  cuttent_arrive_stop.status = (int) input->Dspace_Flag02;
   mutex_ros.unlock();
 }
 
@@ -388,17 +406,17 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["tirepressure"] = 0.0;
     J1["airpressure"] = 0.0;
     J1["electricity"] = 0.0;
-    J1["steering"] = 0.0;
+    J1["steering"] = data[3];
     J1["milage"] = 0.0;
-    J1["speed"] = 0.0;
+    J1["speed"] = data[0];
     J1["rotate"] = 0.0;
     J1["gear"] = 1;
     J1["handcuffs"] = true;
     J1["Steeringwheel"] = 0.0;
     J1["door"] = true;
     J1["airconditioner"] = true;
-    J1["lat"] = 0.0;
-    J1["lng"] = 0.0;
+    J1["lat"] = gps.lidar_Lat;
+    J1["lng"] = gps.lidar_Lon;
     J1["headlight"] = true;
     J1["wiper"] = true;
     J1["Interiorlight"] = true;
@@ -407,9 +425,9 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["ArrivedStop"] = 2001;
-    J1["ArrivedStopStatus"] = 0;
-    J1["route_id"] = 2000;
+    J1["ArrivedStop"] = cuttent_arrive_stop.id;
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
+    J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
     J1["distance"] = 0.0;
     J1["mainvoltage"] = 0.0;
@@ -429,17 +447,17 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["tirepressure"] = 0.0;
     J1["airpressure"] = 0.0;
     J1["electricity"] = 0.0;
-    J1["steering"] = 0.0;
+    J1["steering"] = data[3];
     J1["milage"] = 0.0;
-    J1["speed"] = 0.0;
+    J1["speed"] = data[0];
     J1["rotate"] = 0.0;
     J1["gear"] = 1;
     J1["handcuffs"] = true;
     J1["Steeringwheel"] = 0.0;
     J1["door"] = true;
     J1["airconditioner"] = true;
-    J1["lat"] = 0.0;
-    J1["lng"] = 0.0;
+    J1["lat"] = gps.lidar_Lat;
+    J1["lng"] = gps.lidar_Lon;
     J1["headlight"] = true;
     J1["wiper"] = true;
     J1["Interiorlight"] = true;
@@ -448,10 +466,10 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["route_id"] = 2000;
+    J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
-    J1["ArrivedStop"] = 2001;
-    J1["ArrivedStopStatus"] = 0;
+    J1["ArrivedStop"] = cuttent_arrive_stop.id;
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
     J1["Signal"] = 1;
     J1["CMS"] = 1;
     J1["setting"] = 1;
@@ -573,7 +591,7 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackReverse);
+                                     callbackBusStopInfo, callbackReverse, callbackNextStop);
   while (ros::ok())
   {
     mutex_ros.lock();
