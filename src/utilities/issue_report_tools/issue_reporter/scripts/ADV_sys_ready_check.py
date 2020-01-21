@@ -21,6 +21,7 @@ timeout_thread_alive = None
 # IMportant note: Use this list to control te components to be checked
 #-------------------------#
 check_list = ["node_alive", "REC_is_recording"]
+# check_list = ["node_alive", "REC_is_recording", "backend_connected"]
 # check_list = ["node_alive", "REC_is_recording", "localization_state"]
 #-------------------------#
 
@@ -238,6 +239,11 @@ def main():
 
     # REC_is_recording
     rospy.Subscriber("/REC/is_recording", Bool, (lambda msg: _checker_CB(msg, "REC_is_recording", is_event_msg=True, is_trigger_REC=False) ) )
+    # backend_connected
+    rospy.Subscriber("/backend/connected ", Bool, (lambda msg: _checker_CB(msg, "backend_connected", is_event_msg=False, is_trigger_REC=False) ) )
+
+
+
     # Localization
     rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=True, code_func=code_func_localization ) ) )
     #-----------------------------#
