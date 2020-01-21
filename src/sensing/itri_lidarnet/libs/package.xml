@@ -31,7 +31,7 @@
   
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
-  
+  <exec_depend>grid_map_ros</exec_depend>
   <!-- run_depend>roscpp</run_depend -->
   <!-- run_depend>rospy</run_depend -->
   <!-- run_depend>std_msgs</run_depend -->

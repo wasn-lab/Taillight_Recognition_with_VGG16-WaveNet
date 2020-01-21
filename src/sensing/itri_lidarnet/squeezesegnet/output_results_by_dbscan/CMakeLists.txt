@@ -4,12 +4,18 @@ project(output_results_by_dbscan)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11) 
 
-find_package(CUDA)
+######################
+##       CUDA       ##
+######################
+find_package	        (CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
-endif ()
-
+endif () 
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+include_directories     (${CUDA_INCLUDE_DIRS}) 
+message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+  
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -22,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
   #message_generation
   msgs
   libs
+  nodelet
 )                 
                                                                            
 ## System dependencies are found with CMake's conventions
@@ -112,7 +119,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   #INCLUDE_DIRS include
   #LIBRARIES beginner_tutorials
-  #LIBRARIES ${PROJECT_NAME}
+  LIBRARIES ${PROJECT_NAME}_b1_nodelet
   CATKIN_DEPENDS roscpp rospy msgs
   #std_msgs
   #DEPENDS system_lib
@@ -211,7 +218,7 @@ include_directories(
 ######################
 ##    use define    ##
 ######################
-
+set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
 set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
@@ -230,17 +237,11 @@ link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
 
 ######################
-##       CUDA       ##
-######################
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories     (${CUDA_INCLUDE_DIRS}) 
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
-
-######################
 ##   Source file    ##
 ######################
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1.cpp")
+list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1_nodelet.cpp")
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_GTgen.cpp")
               
@@ -256,3 +257,10 @@ cuda_add_executable   (${PROJECT_NAME}_GTgen src/main_GTgen.cpp ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME}_GTgen msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
 target_link_libraries (${PROJECT_NAME}_GTgen ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
 
+
+######################
+##     Nodelet      ##
+######################
+cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS})
+add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)

@@ -1,77 +1,79 @@
 #include "VoxelGrid_CUDA.cuh"
 
-
+template <typename PointT>
 struct compareX
 {
     __host__ __device__
     bool
-    operator() (pcl::PointXYZ lp,
-                pcl::PointXYZ rp)
+    operator() (PointT lp,
+                PointT rp)
     {
       return lp.x < rp.x;
     }
 };
 
+template <typename PointT>
 struct compareY
 {
     __host__ __device__
     bool
-    operator() (pcl::PointXYZ lp,
-                pcl::PointXYZ rp)
+    operator() (PointT lp,
+                PointT rp)
     {
       return lp.y < rp.y;
     }
 };
 
+template <typename PointT>
 struct compareZ
 {
     __host__ __device__
     bool
-    operator() (pcl::PointXYZ lp,
-                pcl::PointXYZ rp)
+    operator() (PointT lp,
+                PointT rp)
     {
       return lp.z < rp.z;
     }
 };
 
-cudaError_t cudaCalculateGridParams(pcl::PointXYZ* d_point_cloud, int number_of_points, 
-	float resolution_X, float resolution_Y, float resolution_Z, gridParameters &out_rgd_params)
+template <typename PointT>
+cudaError_t cudaCalculateGridParams(PointT *d_point_cloud, int number_of_points, float resolution_X, float resolution_Y, float resolution_Z, gridParameters &out_rgd_params)
 {
 	cudaError_t err = cudaGetLastError();
 	try
 	{
-		thrust::device_ptr<pcl::PointXYZ> t_cloud(d_point_cloud);
+		thrust::device_ptr<PointT> t_cloud(d_point_cloud);
 		err = cudaGetLastError();
 		if(err != ::cudaSuccess)return err;
 	
-		thrust::pair<thrust::device_ptr<pcl::PointXYZ>,thrust::device_ptr<pcl::PointXYZ> >
-		 minmaxX=thrust::minmax_element(t_cloud,t_cloud+number_of_points,compareX());
+		thrust::pair<thrust::device_ptr<PointT>,thrust::device_ptr<PointT> >
+		 minmaxX=thrust::minmax_element(t_cloud,t_cloud+number_of_points,compareX<PointT>());
 		err = cudaGetLastError();
 		if(err != ::cudaSuccess)return err;
 	
-		thrust::pair<thrust::device_ptr<pcl::PointXYZ>,thrust::device_ptr<pcl::PointXYZ> >
-		 minmaxY=thrust::minmax_element(t_cloud,t_cloud+number_of_points,compareY());
+		thrust::pair<thrust::device_ptr<PointT>,thrust::device_ptr<PointT> >
+		 minmaxY=thrust::minmax_element(t_cloud,t_cloud+number_of_points,compareY<PointT>());
 		err = cudaGetLastError();
 		if(err != ::cudaSuccess)return err;
 	
-		thrust::pair<thrust::device_ptr<pcl::PointXYZ>,thrust::device_ptr<pcl::PointXYZ> >
-		 minmaxZ=thrust::minmax_element(t_cloud,t_cloud+number_of_points,compareZ());
+		thrust::pair<thrust::device_ptr<PointT>,thrust::device_ptr<PointT> >
+		minmaxZ=thrust::minmax_element(t_cloud,t_cloud+number_of_points,compareZ<PointT>());
 		err = cudaGetLastError();
 		if(err != ::cudaSuccess)return err;
 		
-		pcl::PointXYZ minX,maxX,minZ,maxZ,minY,maxY;
+		PointT minX,maxX,minZ,maxZ,minY,maxY;
 
-		err = cudaMemcpy(&minX,minmaxX.first.get(),sizeof(pcl::PointXYZ),cudaMemcpyDeviceToHost);
+		err = cudaMemcpy(&minX,minmaxX.first.get(),sizeof(PointT),cudaMemcpyDeviceToHost);
 		if(err != ::cudaSuccess)return err;
-		err = cudaMemcpy(&maxX,minmaxX.second.get(),sizeof(pcl::PointXYZ),cudaMemcpyDeviceToHost);
+		err = cudaMemcpy(&maxX,minmaxX.second.get(),sizeof(PointT),cudaMemcpyDeviceToHost);
 		if(err != ::cudaSuccess)return err;
-		err = cudaMemcpy(&minZ,minmaxZ.first.get(),sizeof(pcl::PointXYZ),cudaMemcpyDeviceToHost);
+		err = cudaMemcpy(&minZ,minmaxZ.first.get(),sizeof(PointT),cudaMemcpyDeviceToHost);
 		if(err != ::cudaSuccess)return err;
-		err = cudaMemcpy(&maxZ,minmaxZ.second.get(),sizeof(pcl::PointXYZ),cudaMemcpyDeviceToHost);
+		err = cudaMemcpy(&maxZ,minmaxZ.second.get(),sizeof(PointT),cudaMemcpyDeviceToHost);
 		if(err != ::cudaSuccess)return err;
-		err = cudaMemcpy(&minY,minmaxY.first.get(),sizeof(pcl::PointXYZ),cudaMemcpyDeviceToHost);
+		err = cudaMemcpy(&minY,minmaxY.first.get(),sizeof(PointT),cudaMemcpyDeviceToHost);
 		if(err != ::cudaSuccess)return err;
-		err = cudaMemcpy(&maxY,minmaxY.second.get(),sizeof(pcl::PointXYZ),cudaMemcpyDeviceToHost);
+		err = cudaMemcpy(&maxY,minmaxY.second.get(),sizeof(PointT),cudaMemcpyDeviceToHost);
 		if(err != ::cudaSuccess)return err;
 	
 		int number_of_buckets_X=((maxX.x-minX.x)/resolution_X)+1;
@@ -109,6 +111,19 @@ cudaError_t cudaCalculateGridParams(pcl::PointXYZ* d_point_cloud, int number_of_
 	return cudaGetLastError();
 }
 
+template
+cudaError_t cudaCalculateGridParams(pcl::PointXYZ *d_point_cloud, int number_of_points, 
+	float resolution_X, float resolution_Y, float resolution_Z, gridParameters &out_rgd_params);
+	
+template
+cudaError_t cudaCalculateGridParams(pcl::PointXYZI *d_point_cloud, int number_of_points, 
+	float resolution_X, float resolution_Y, float resolution_Z, gridParameters &out_rgd_params);
+
+template
+cudaError_t cudaCalculateGridParams(pcl::PointXYZIL *d_point_cloud, int number_of_points, 
+	float resolution_X, float resolution_Y, float resolution_Z, gridParameters &out_rgd_params);
+
+
 __global__ void kernel_initializeIndByKey(hashElement* d_hashTable, int number_of_points)
 {
 	int ind=blockIdx.x*blockDim.x+threadIdx.x;
@@ -119,7 +134,8 @@ __global__ void kernel_initializeIndByKey(hashElement* d_hashTable, int number_o
 	}
 }
 
-__global__ void kernel_getIndexOfBucketForPoints(pcl::PointXYZ* d_point_cloud, hashElement* d_hashTable, int number_of_points, gridParameters rgd_params)
+template <typename PointT>
+__global__ void kernel_getIndexOfBucketForPoints(PointT *d_point_cloud, hashElement* d_hashTable, int number_of_points, gridParameters rgd_params)
 {
 	int ind=blockIdx.x*blockDim.x+threadIdx.x;
 	if(ind<number_of_points)
@@ -130,6 +146,16 @@ __global__ void kernel_getIndexOfBucketForPoints(pcl::PointXYZ* d_point_cloud, h
 		d_hashTable[ind].index_of_bucket=ix*rgd_params.number_of_buckets_Y*rgd_params.number_of_buckets_Z+iy*rgd_params.number_of_buckets_Z+iz;
 	}
 }
+template
+__global__ void kernel_getIndexOfBucketForPoints(pcl::PointXYZ *d_point_cloud, hashElement* d_hashTable, int number_of_points, gridParameters rgd_params);
+
+template
+__global__ void kernel_getIndexOfBucketForPoints(pcl::PointXYZI *d_point_cloud, hashElement* d_hashTable, int number_of_points, gridParameters rgd_params);
+
+template
+__global__ void kernel_getIndexOfBucketForPoints(pcl::PointXYZIL *d_point_cloud, hashElement* d_hashTable, int number_of_points, gridParameters rgd_params);
+
+
 __global__ void kernel_initializeBuckets(bucket* d_buckets, gridParameters rgd_params)
 {
 	long long int ind=blockIdx.x*blockDim.x+threadIdx.x;
@@ -201,18 +227,23 @@ __global__ void kernel_copyKeys(hashElement* d_hashTable_in, hashElement* d_hash
 	}
 }
 
-cudaError_t cudaCalculateGrid(int threads, pcl::PointXYZ* d_point_cloud, bucket *d_buckets,
-		hashElement *d_hashTable, int number_of_points, gridParameters rgd_params)
+template <typename PointT>
+cudaError_t cudaCalculateGrid(int threads, PointT *d_point_cloud, bucket *d_buckets, hashElement *d_hashTable, int number_of_points, gridParameters rgd_params)
 {
 	cudaError_t err = cudaGetLastError();
-	hashElement* d_temp_hashTable;	cudaMalloc((void**)&d_temp_hashTable,number_of_points*sizeof(hashElement));
+	hashElement* d_temp_hashTable;	
+	cudaMalloc((void**)&d_temp_hashTable,number_of_points*sizeof(hashElement));
 	int blocks=number_of_points/threads + 1;
 
 	kernel_initializeIndByKey<<<blocks,threads>>>(d_temp_hashTable, number_of_points);
-	err = cudaDeviceSynchronize();	if(err != ::cudaSuccess)return err;
+	err = cudaDeviceSynchronize();	
+	if(err != ::cudaSuccess)
+		return err;
 
-	kernel_getIndexOfBucketForPoints<<<blocks,threads>>>(d_point_cloud, d_temp_hashTable, number_of_points, rgd_params);
-	err = cudaDeviceSynchronize();	if(err != ::cudaSuccess)return err;
+	kernel_getIndexOfBucketForPoints<PointT><<<blocks,threads>>>(d_point_cloud, d_temp_hashTable, number_of_points, rgd_params);
+	err = cudaDeviceSynchronize();	
+	if(err != ::cudaSuccess)
+		return err;
 
 	try
 	{
@@ -231,20 +262,38 @@ cudaError_t cudaCalculateGrid(int threads, pcl::PointXYZ* d_point_cloud, bucket 
 	}
 
 	kernel_initializeBuckets<<<rgd_params.number_of_buckets/threads+1,threads>>>(d_buckets,rgd_params);
-	err = cudaDeviceSynchronize();	if(err != ::cudaSuccess)return err;
+	err = cudaDeviceSynchronize();	
+	if(err != ::cudaSuccess)
+		return err;
 
 	kernel_updateBuckets<<<blocks,threads>>>(d_temp_hashTable, d_buckets, rgd_params, number_of_points);
-	err = cudaDeviceSynchronize();	if(err != ::cudaSuccess)return err;
+	err = cudaDeviceSynchronize();	
+	if(err != ::cudaSuccess)
+		return err;
 
 	kernel_countNumberOfPointsForBuckets<<<rgd_params.number_of_buckets/threads+1,threads>>>(d_buckets, rgd_params);
-	err = cudaDeviceSynchronize();	if(err != ::cudaSuccess)return err;
+	err = cudaDeviceSynchronize();	
+	if(err != ::cudaSuccess)
+		return err;
 
 	kernel_copyKeys<<<blocks,threads>>>(d_temp_hashTable, d_hashTable, number_of_points);
-	err = cudaDeviceSynchronize(); if(err != ::cudaSuccess)return err;
+	err = cudaDeviceSynchronize(); 
+	if(err != ::cudaSuccess)
+		return err;
 
 	err = cudaFree(d_temp_hashTable);
 	return err;
 }
+
+template
+cudaError_t cudaCalculateGrid(int threads, pcl::PointXYZ *d_point_cloud, bucket *d_buckets,hashElement *d_hashTable, int number_of_points, gridParameters rgd_params);
+
+template
+cudaError_t cudaCalculateGrid(int threads, pcl::PointXYZI *d_point_cloud, bucket *d_buckets,hashElement *d_hashTable, int number_of_points, gridParameters rgd_params);
+
+template
+cudaError_t cudaCalculateGrid(int threads, pcl::PointXYZIL *d_point_cloud, bucket *d_buckets,hashElement *d_hashTable, int number_of_points, gridParameters rgd_params);
+
 
 __global__ void kernel_setAllPointsToRemove(bool *d_markers, int number_of_points)
 {

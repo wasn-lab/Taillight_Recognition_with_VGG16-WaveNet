@@ -48,6 +48,8 @@ image_transport::Publisher pubImg_120_1;
 sensor_msgs::ImagePtr imgMsg;
 msgs::DetectedObjectArray doa120_0;
 msgs::DetectedObjectArray doa120_1;
+// grid map
+ros::Publisher occupancy_grid_publisher;
 
 int rawimg_w = 1920;
 int rawimg_h = 1208;
@@ -292,6 +294,9 @@ int main(int argc, char** argv)
   pub120_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontTop", 4);
   pub120_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjBackTop", 4);
 
+  // occupancy grid map publisher
+  occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+
   pthread_mutex_init(&mtxInfer, NULL);
   pthread_cond_init(&cndInfer, NULL);
 
@@ -494,6 +499,9 @@ void* run_yolo(void*)
     // publish results
     msgs::DetectedObjectArray doa;
     std::vector<msgs::DetectedObject> vDo;
+    // grid map init
+    grid_map::GridMap costmap_ = cosmapGener.initGridMap();
+
     for (size_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
     {
       std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
@@ -559,6 +567,10 @@ void* run_yolo(void*)
       doa.header.frame_id = "lidar";
       doa.objects = vDo;
 
+      // object To grid map
+      costmap_[cosmapGener.layer_name_] =
+          cosmapGener.makeCostmapFromObjects(costmap_, cosmapGener.layer_name_, 8, doa, false);
+
       if (cam_order == camera::id::top_front_120)
       {
         if (standard_FPS == 1)
@@ -599,6 +611,9 @@ void* run_yolo(void*)
       }
       vDo.clear();
     }
+    // grid map To Occpancy publisher
+    cosmapGener.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher, doa.header);
+
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << " and " << camera::topics[cam_ids_[1]] << " image."
               << std::endl;
 

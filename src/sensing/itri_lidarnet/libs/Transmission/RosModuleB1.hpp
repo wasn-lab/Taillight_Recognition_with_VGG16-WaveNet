@@ -9,17 +9,12 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
 
+#include "../Preprocess/GridMapGen/points_to_costmap.h"
 #include "../UserDefine.h"
 
 class RosModuleB1
 {
   public:
-
-    static ros::Publisher ErrorCode_pub;
-    static ros::Publisher Rviz_pub;
-    static ros::Publisher LidarAllNonGround_pub;
-    static ros::Publisher LidarDetection_pub;
-    static ros::Publisher LidarDetectionRVIZ_pub;
 
     static void
     initial (string nodename,
@@ -27,73 +22,66 @@ class RosModuleB1
              char ** argv)
     {
       ros::init (argc, argv, nodename);
-      ros::NodeHandle n;
-
-      ErrorCode_pub = n.advertise<msgs::ErrorCode> ("/ErrorCode", 1);
-      Rviz_pub = n.advertise<sensor_msgs::PointCloud2> ("/LidarAll/NonGround2", 1);
-      LidarAllNonGround_pub = n.advertise<PointCloud<PointXYZI>> ("/LidarAll/NonGround", 1);
-      LidarDetection_pub = n.advertise<msgs::DetectedObjectArray> ("/LidarDetection", 1);
-      LidarDetectionRVIZ_pub = n.advertise<visualization_msgs::MarkerArray> ("/LidarDetection/polygons", 1);
     }
 
     static void
     RegisterCallBackClock (void
     (*cb1) (const rosgraph_msgs::Clock&))
     {
-      ros::NodeHandle n;
-
-      static ros::Subscriber ClockSub = n.subscribe ("/clock", 1, cb1);
+      static ros::Subscriber ClockSub = ros::NodeHandle ().subscribe ("/clock", 1, cb1);
     }
 
     static void
     RegisterCallBackLidarAll (void
     (*cb1) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
     {
-      ros::NodeHandle n;
-
-      static ros::Subscriber LidarAllSub = n.subscribe ("/LidarAll", 1, cb1);
+      static ros::Subscriber LidarAllSub = ros::NodeHandle ().subscribe ("/LidarAll", 1, cb1);
     }
 
     static void
     RegisterCallBackLidar (void
-                              (*cb1) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb2) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb3) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb4) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
-                              void
-                              (*cb5) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
+                           (*cb1) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb2) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb3) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb4) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&),
+                           void
+                           (*cb5) (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
     {
-      ros::NodeHandle n;
-      static ros::Subscriber LidarFrontRightSub = n.subscribe ("/LidarFrontRight", 1, cb1);
-      static ros::Subscriber LidarFrontLeftSub = n.subscribe ("/LidarFrontLeft", 1, cb2);
-      static ros::Subscriber LidarRearRightSub = n.subscribe ("/LidarRearRight", 1, cb3);
-      static ros::Subscriber LidarRearLeftSub = n.subscribe ("/LidarRearLeft", 1, cb4);
-      static ros::Subscriber LidarFrontTopSub = n.subscribe ("/LidarFrontTop", 1, cb5);
+      static ros::Subscriber LidarFrontRightSub = ros::NodeHandle ().subscribe ("/LidarFrontRight", 1, cb1);
+      static ros::Subscriber LidarFrontLeftSub = ros::NodeHandle ().subscribe ("/LidarFrontLeft", 1, cb2);
+      static ros::Subscriber LidarRearRightSub = ros::NodeHandle ().subscribe ("/LidarRearRight", 1, cb3);
+      static ros::Subscriber LidarRearLeftSub = ros::NodeHandle ().subscribe ("/LidarRearLeft", 1, cb4);
+      static ros::Subscriber LidarFrontTopSub = ros::NodeHandle ().subscribe ("/LidarFrontTop", 1, cb5);
     }
 
     static void
     RegisterCallBackSSN (void
     (*cb) (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr&))
     {
-      ros::NodeHandle n;
-      static ros::Subscriber result_cloud_P0deg = n.subscribe ("/squ_seg/result_cloud", 1, cb);
+      static ros::Subscriber result_cloud_P0deg = ros::NodeHandle ().subscribe ("/squ_seg/result_cloud", 1, cb);
     }
 
     static void
     RegisterCallBackIMU (void
     (*cb) (const sensor_msgs::Imu::ConstPtr&))
     {
-      ros::NodeHandle n;
+      static ros::Subscriber ImuSub = ros::NodeHandle ().subscribe ("/imu/data", 1, cb);
+    }
 
-      static ros::Subscriber ImuSub = n.subscribe ("/imu/data", 1, cb);
+    static void
+    RegisterCallBackTimer (void
+    (*cb) (const ros::TimerEvent&), float interval)
+    {
+      static ros::Timer timer = ros::NodeHandle ().createTimer(ros::Duration(interval), cb);
     }
 
     static void
     send_ErrorCode (unsigned int error_code)
     {
+      static ros::Publisher ErrorCode_pub = ros::NodeHandle ().advertise<msgs::ErrorCode> ("/ErrorCode", 1);
 
       static uint32_t seq;
 
@@ -108,21 +96,11 @@ class RosModuleB1
 
     template <typename PointT>
     static void
-    send_Rviz (const PointCloud<PointT> input)
-    {
-      sensor_msgs::PointCloud2 spR_msg;
-      pcl::toROSMsg (input, spR_msg);
-      spR_msg.header.frame_id = "lidar";
-      spR_msg.header.stamp = ros::Time::now ();
-      Rviz_pub.publish (spR_msg);
-    }
-
-    template <typename PointT>
-    static void
     send_LidarAllNonGround (PointCloud<PointT> input,
                             pcl::uint64_t pcltime,
                             string frameId)
     {
+      static ros::Publisher LidarAllNonGround_pub = ros::NodeHandle ().advertise<PointCloud<PointXYZI>> ("/LidarAll/NonGround", 1);
       input.header.frame_id = frameId;
       input.header.stamp = pcltime;
       LidarAllNonGround_pub.publish (input);
@@ -134,6 +112,7 @@ class RosModuleB1
                        ros::Time rostime,
                        string frameId)
     {
+      static ros::Publisher LidarDetection_pub = ros::NodeHandle ().advertise<msgs::DetectedObjectArray> ("/LidarDetection", 1);
 
       msgs::DetectedObjectArray msgObjArr;
       msgObjArr.header.frame_id = "lidar";
@@ -281,6 +260,8 @@ class RosModuleB1
     Send_LidarResultsRVIZ (CLUSTER_INFO* cluster_info,
                            int cluster_size)
     {
+      static ros::Publisher LidarDetectionRVIZ_pub = ros::NodeHandle ().advertise<visualization_msgs::MarkerArray> ("/LidarDetection/polygons", 1);
+
       visualization_msgs::MarkerArray markerArray;
       markerArray.markers.resize (cluster_size);
 
@@ -291,37 +272,137 @@ class RosModuleB1
         markerArray.markers[i].header.stamp = ros::Time ();
         markerArray.markers[i].id = TrackID++;
         markerArray.markers[i].action = visualization_msgs::Marker::ADD;
-        markerArray.markers[i].type = visualization_msgs::Marker::LINE_STRIP;
+        markerArray.markers[i].type = visualization_msgs::Marker::LINE_LIST;
         markerArray.markers[i].pose.orientation.w = 1.0;
-        markerArray.markers[i].scale.x = 0.1;
-        markerArray.markers[i].color.r = 0.0;
-        markerArray.markers[i].color.g = 1.0;
-        markerArray.markers[i].color.b = 0.0;
-        markerArray.markers[i].color.a = 1.0;
+        markerArray.markers[i].scale.x = 0.05;
+
+        switch (cluster_info[i].cluster_tag)
+        {
+          case 1:
+            markerArray.markers[i].color.r = 0.0;
+            markerArray.markers[i].color.g = 1.0;
+            markerArray.markers[i].color.b = 1.0;
+            markerArray.markers[i].color.a = 1.0;
+            break;
+          case 2:
+            markerArray.markers[i].color.r = 1.0;
+            markerArray.markers[i].color.g = 0.0;
+            markerArray.markers[i].color.b = 1.0;
+            markerArray.markers[i].color.a = 1.0;
+            break;
+          case 3:
+            markerArray.markers[i].color.r = 0.0;
+            markerArray.markers[i].color.g = 1.0;
+            markerArray.markers[i].color.b = 0.0;
+            markerArray.markers[i].color.a = 1.0;
+            break;
+            ;
+          default:
+            markerArray.markers[i].color.r = 1.0;
+            markerArray.markers[i].color.g = 0.0;
+            markerArray.markers[i].color.b = 0.0;
+            markerArray.markers[i].color.a = 1.0;
+        }
+
         markerArray.markers[i].lifetime = ros::Duration (0.1);
 
-        markerArray.markers[i].points.resize(cluster_info[i].convex_hull.size ()+1);
+        // draw a 2D polygon at the botton
         for (size_t j = 0; j < cluster_info[i].convex_hull.size (); ++j)
         {
-          markerArray.markers[i].points[j].x = cluster_info[i].convex_hull.points[j].x;
-          markerArray.markers[i].points[j].y = cluster_info[i].convex_hull.points[j].y;
-          markerArray.markers[i].points[j].z = cluster_info[i].convex_hull.points[j].z;
-          if(j == (cluster_info[i].convex_hull.size ()-1)){
-            markerArray.markers[i].points[j+1].x = cluster_info[i].convex_hull.points[0].x;
-            markerArray.markers[i].points[j+1].y = cluster_info[i].convex_hull.points[0].y;
-            markerArray.markers[i].points[j+1].z = cluster_info[i].convex_hull.points[0].z;
+          geometry_msgs::Point p;
+
+          p.x = cluster_info[i].convex_hull.points[j].x;
+          p.y = cluster_info[i].convex_hull.points[j].y;
+          p.z = cluster_info[i].min.z;
+          markerArray.markers[i].points.push_back (p);
+
+          if (j == cluster_info[i].convex_hull.size () - 1)
+          {
+            p.x = cluster_info[i].convex_hull.points[0].x;
+            p.y = cluster_info[i].convex_hull.points[0].y;
+            p.z = cluster_info[i].min.z;
+            markerArray.markers[i].points.push_back (p);
+          }
+          else
+          {
+            p.x = cluster_info[i].convex_hull.points[j + 1].x;
+            p.y = cluster_info[i].convex_hull.points[j + 1].y;
+            p.z = cluster_info[i].min.z;
+            markerArray.markers[i].points.push_back (p);
           }
         }
+
+#if(true)
+        // draw a 2D polygon at the top
+        for (size_t j = 0; j < cluster_info[i].convex_hull.size (); ++j)
+        {
+          geometry_msgs::Point p;
+
+          p.x = cluster_info[i].convex_hull.points[j].x;
+          p.y = cluster_info[i].convex_hull.points[j].y;
+          p.z = cluster_info[i].max.z;
+          markerArray.markers[i].points.push_back (p);
+
+          if (j == cluster_info[i].convex_hull.size () - 1)
+          {
+            p.x = cluster_info[i].convex_hull.points[0].x;
+            p.y = cluster_info[i].convex_hull.points[0].y;
+            p.z = cluster_info[i].max.z;
+            markerArray.markers[i].points.push_back (p);
+          }
+          else
+          {
+            p.x = cluster_info[i].convex_hull.points[j + 1].x;
+            p.y = cluster_info[i].convex_hull.points[j + 1].y;
+            p.z = cluster_info[i].max.z;
+            markerArray.markers[i].points.push_back (p);
+          }
+        }
+
+        // draw vertical lines of polygon box
+        for (size_t j = 0; j < cluster_info[i].convex_hull.size (); ++j)
+        {
+          geometry_msgs::Point p;
+
+          p.x = cluster_info[i].convex_hull.points[j].x;
+          p.y = cluster_info[i].convex_hull.points[j].y;
+          p.z = cluster_info[i].min.z;
+          markerArray.markers[i].points.push_back (p);
+
+          p.x = cluster_info[i].convex_hull.points[j].x;
+          p.y = cluster_info[i].convex_hull.points[j].y;
+          p.z = cluster_info[i].max.z;
+          markerArray.markers[i].points.push_back (p);
+        }
+#endif
       }
       LidarDetectionRVIZ_pub.publish (markerArray);
     }
 
-};
+    static void
+    Send_LidarResultsGrid (CLUSTER_INFO* cluster_info,
+                           int cluster_size,
+                           ros::Time rostime,
+                           string frameId)
+    {
+      static ros::Publisher gridmap_pub = ros::NodeHandle ().advertise<nav_msgs::OccupancyGrid> ("/LidarDetection/grid", 1);
 
-ros::Publisher RosModuleB1::ErrorCode_pub;
-ros::Publisher RosModuleB1::Rviz_pub;
-ros::Publisher RosModuleB1::LidarAllNonGround_pub;
-ros::Publisher RosModuleB1::LidarDetection_pub;
-ros::Publisher RosModuleB1::LidarDetectionRVIZ_pub;
+      VPointCloudXYZIL::Ptr input_Cloud (new VPointCloudXYZIL);
+      for (int i = 0; i < cluster_size; i++)
+      {
+        if (cluster_info[i].cluster_tag >= 1)
+        {
+          *input_Cloud += cluster_info[i].cloud_IL;
+        }
+      }
+
+      nav_msgs::OccupancyGrid occupancyGrid_msg;
+      grid_map::GridMapRosConverter::toOccupancyGrid (PointsToCostmap ().makeGridMap<PointXYZIL> (input_Cloud), "points_layer", 0, 1, occupancyGrid_msg);
+      occupancyGrid_msg.header.stamp = rostime;
+      occupancyGrid_msg.header.frame_id = frameId;
+      gridmap_pub.publish (occupancyGrid_msg);
+    }
+
+};
 
 #endif // ROSMODULE_H
