@@ -257,7 +257,6 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   mutex_ros.unlock();
 }
 
-<<<<<<< 644f3d0141bf2f6cadc32a6f9446fe2888e3bc16
 void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
 {
   
