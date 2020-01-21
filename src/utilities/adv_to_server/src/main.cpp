@@ -485,7 +485,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
       float value = fps_json_.value(key, -1);
       J1[key] = value;
     }
-  }else if (type == "M8.2.VK000")
+  }else if (type == "M8.2.VK006")
   {
     try{
       json J0 = json::parse(mileJson);
@@ -642,7 +642,7 @@ void receiveRosRun(int argc, char** argv)
     vkQueue.push(temp_vk004);
     mutex_queue.unlock();
 
-    std::string temp_VK000 = get_jsonmsg_to_vk_server("M8.2.VK000");
+    std::string temp_VK000 = get_jsonmsg_to_vk_server("M8.2.VK006");
     mutex_queue.lock();
     vkQueue.push(temp_VK000);
     mutex_queue.unlock();
