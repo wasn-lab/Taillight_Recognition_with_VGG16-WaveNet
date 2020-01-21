@@ -79,6 +79,7 @@ msgs::LidLLA gps;
 msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
+std::string mileJson;
 
 const static double PI = 3.14;
 // can data
@@ -256,6 +257,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   mutex_ros.unlock();
 }
 
+<<<<<<< 644f3d0141bf2f6cadc32a6f9446fe2888e3bc16
 void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
 {
   
@@ -265,11 +267,11 @@ void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
   mutex_ros.unlock();
 }
 
-void callbackReverse(const std_msgs::String::ConstPtr& input)
+void callbackMileage(const std_msgs::String::ConstPtr& input)
 {
   mutex_ros.lock();
-  std::string jsonString = input->data.c_str();
-  std::cout << "reverse " << jsonString << std::endl;
+  mileJson = input->data.c_str();
+  std::cout << "mile info: " << mileJson << std::endl;
   mutex_ros.unlock();
 }
 
@@ -481,9 +483,11 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     {
       std::string key = keys[i];
       float value = fps_json_.value(key, -1);
-      ;
       J1[key] = value;
     }
+  }else if (type == "M8.2.VK000")
+  {
+    return mileJson;
   }
   return J1.dump();
 }
@@ -591,7 +595,8 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackReverse, callbackNextStop);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop);
+
   while (ros::ok())
   {
     mutex_ros.lock();
@@ -630,6 +635,8 @@ void receiveRosRun(int argc, char** argv)
     mutex_queue.lock();
     vkQueue.push(temp_vk004);
     mutex_queue.unlock();
+
+    std::string temp_VK000 = get_jsonmsg_to_vk_server("M8.2.VK000");
 
     mutex_ros.unlock();
     boost::this_thread::sleep(boost::posix_time::microseconds(ROS_UPDATE_MICROSECONDS));
