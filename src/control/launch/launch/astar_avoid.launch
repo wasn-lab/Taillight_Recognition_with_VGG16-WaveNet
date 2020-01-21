@@ -2,17 +2,20 @@
 <launch>
 
   <!-- Base waypoint pub node-->
-  <node pkg="astar_initial" type="astar_initial" name="astar_initial" /> <!--output="screen" /-->
-
+  <node pkg="astar_initial" type="astar_initial" name="astar_initial" output="screen" />
+    
   <!-- Grid map fusion pub node-->
-  <node pkg="occ_grid_fusion" type="occ_grid_fusion" name="occ_grid_fusion" output="screen" />
+  <arg name="expand_size" default="2.4" />
+  <node pkg="occ_grid_fusion" type="occ_grid_fusion" name="occ_grid_fusion" output="screen" >
+    <param name="expand_size" value="$(arg expand_size)"/>
+  </node>
 
   <!-- Relay behavior configurations -->
   <arg name="safety_waypoints_size" default="100" />
   <arg name="update_rate" default="20" /><!--10-->
 
   <!-- Avoidance behavior configurations -->
-  <arg name="costmap_topic" default="occupancy_grid_all" /><!--occupancy_grid-->
+  <arg name="costmap_topic" default="occupancy_grid_all_expand" /><!--occupancy_grid occupancy_grid_all_expand-->
   <arg name="enable_avoidance" default="true" />
   <arg name="avoid_waypoints_velocity" default="10.0" /><!--km/hr-->
   <arg name="avoid_start_velocity" default="10.0" /><!--1.8 km/hr-->
@@ -27,7 +30,7 @@
   <arg name="use_wavefront_heuristic" default="false" />
   <arg name="time_limit" default="2000.0" /><!--5000-->
   <arg name="robot_length" default="9.4" /><!--8-->
-  <arg name="robot_width" default="4.2" /><!--4.6-->
+  <arg name="robot_width" default="2.2" /><!--4.2-->
   <arg name="robot_base2back" default="3.4" /><!--7.2 3.4-->
   <arg name="minimum_turning_radius" default="10.0" /><!--6.0-->
   <arg name="theta_size" default="48" />
@@ -37,7 +40,7 @@
   <arg name="longitudinal_goal_range" default="10.0" />
   <arg name="angle_goal_range" default="20.0" /><!--6.0-->
   <arg name="obstacle_threshold" default="100" />
-  <arg name="potential_weight" default="10.0" />
+  <arg name="potential_weight" default="1000000.0" />
   <arg name="distance_heuristic_weight" default="1.0" />
 
   <node pkg="waypoint_planner" type="astar_avoid" name="astar_avoid" output="screen">
