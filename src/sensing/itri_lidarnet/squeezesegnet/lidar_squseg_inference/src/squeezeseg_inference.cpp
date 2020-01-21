@@ -204,12 +204,12 @@ main (int argc,
 
   // int TF_ERcode = SSN_P0deg.TF_init();
 
-  ros::Rate loop_rate (40);
+  ros::AsyncSpinner spinner (1);
+  spinner.start ();
 
   while (ros::ok ())
   {
-    ros::spinOnce ();
-    loop_rate.sleep ();
+    ros::Rate(1).sleep ();
   }
   
   for(size_t i=0; i < phi_center_all.size(); i++)
