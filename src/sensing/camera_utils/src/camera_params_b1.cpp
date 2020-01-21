@@ -44,6 +44,7 @@ const std::string topics_obj[id::num_ids] = {
 };
 
 const std::string detect_result = "/CameraDetection";
+const std::string detect_result_polygon = "/CameraDetection/polygon";
 
 };  // namespace
 
