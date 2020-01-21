@@ -261,7 +261,7 @@ void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
 {
   
   mutex_ros.lock();
-  cuttent_arrive_stop.id = ROUTE_ID +(int) input->Dspace_Flag01 + 1;
+  cuttent_arrive_stop.id = ROUTE_ID +(int) input->Dspace_Flag01 ;
   cuttent_arrive_stop.status = (int) input->Dspace_Flag02;
   mutex_ros.unlock();
 }
