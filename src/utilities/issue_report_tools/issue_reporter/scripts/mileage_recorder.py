@@ -22,6 +22,7 @@ from std_msgs.msg import (
     Empty,
     Bool,
     String,
+    Int32,
 )
 
 from msgs.msg import (
@@ -43,6 +44,12 @@ brake_state = 0
 adv_run_Q = Queue.Queue()
 brake_Q = Queue.Queue()
 #-------------------#
+
+# ROS publisher
+#-------------------#
+brake_status_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
+#-------------------#
+
 
 # Define the string of state
 #--------------------------------#
@@ -134,6 +141,7 @@ def _flag_info_03_CB(data):
     The callback function of vehicle info.
     """
     global brake_state, brake_Q
+    global brake_status_pub
     # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
 
     # brake state
@@ -145,7 +153,8 @@ def _flag_info_03_CB(data):
         brake_Q.put( (brake_state, now) )
         # Print to stdout
         print( brake_state_2_string(brake_state) )
-
+        # Publish as ROS message
+        brake_status_pub.publish( brake_state )
 
 
 def main(sys_args):
@@ -199,7 +208,6 @@ def main(sys_args):
     rospy.Subscriber("/veh_info", VehInfo, _veh_info_CB)
     rospy.Subscriber("/Flag_Info02", Flag_Info, _flag_info_02_CB)
     rospy.Subscriber("/Flag_Info03", Flag_Info, _flag_info_03_CB)
-    # Publisher
     # Publisher
     text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True) #
     #--------------------------------------#
