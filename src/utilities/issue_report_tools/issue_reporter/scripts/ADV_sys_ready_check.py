@@ -17,12 +17,24 @@ timeout_alive = 1.5 # sec.
 timeout_thread_alive = None
 #-------------------------#
 
-# Check items
-# IMportant note: Use this list to control te components to be checked
+"""
+Check items
+Important note: Use this list to control te components to be checked
+"""
 #-------------------------#
 check_list = ["node_alive", "REC_is_recording"]
-# check_list = ["node_alive", "REC_is_recording", "backend_connected"]
-# check_list = ["node_alive", "REC_is_recording", "localization_state"]
+check_list += ["brake_status", "backend_connected"]
+check_list += ["localization_state"]
+
+"""
+The startup_check_list is a subset of check_list.
+- The status of components in the startup_check_list will defaultly set to "ERROR".
+- For components not listed in the list, the status is set to "OK" by default.
+"""
+startup_check_list = ["node_alive", "REC_is_recording"]
+# The following items will be added for release version
+# startup_check_list += ["backend_connected"] # Will be added for release version
+# startup_check_list += ["localization_state"]
 #-------------------------#
 
 
@@ -55,7 +67,10 @@ REC_BACKUP_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this trigger the
 # Initialize the container for status
 check_dict = dict()
 for key in check_list:
-    check_dict[key] = STATE_DEF_dict["ERROR"]
+    if key in startup_check_list:
+        check_dict[key] = STATE_DEF_dict["ERROR"] # For startup check
+    else:
+        check_dict[key] = STATE_DEF_dict["OK"] # Not checked at startup
 # Conclusion
 sys_total_status = STATE_DEF_dict["ERROR"]
 # ROS message backup
@@ -156,37 +171,62 @@ def status_ros_logging(component_status, _fail_str):
 
 # Get status codes from ROS messages
 #--------------------------------------#
-def code_func_bool(state):
+def code_func_bool(msg):
     """
+    Output: state_code, event_str
     """
     global STATE_DEF_dict
+    state = msg.data
     if state == True:
-        return STATE_DEF_dict["OK"]
+        return STATE_DEF_dict["OK"], ""
     elif state == False:
-        return STATE_DEF_dict["ERROR"]
+        return STATE_DEF_dict["ERROR"], ""
     else:
-        return STATE_DEF_dict["UNKNOWN"]
+        return STATE_DEF_dict["UNKNOWN"], ""
 
-def code_func_localization(state):
+def code_func_localization(msg):
     """
+    Output: state_code, event_str
     """
     global STATE_DEF_dict
+    state = msg.data
     low_gnss_frequency = state & 1
     low_lidar_frequency = state & 2
     low_pose_frequency = state & 4
     pose_unstable = state & 8
     #
-    state = STATE_DEF_dict["OK"]
+    state_code = STATE_DEF_dict["OK"]
     if pose_unstable:
-        state = max(state, STATE_DEF_dict["FATAL"])
+        state_code = max(state_code, STATE_DEF_dict["FATAL"])
     if low_pose_frequency:
-        state = max(state, STATE_DEF_dict["WARN"])
+        state_code = max(state_code, STATE_DEF_dict["WARN"])
     if low_lidar_frequency:
-        state = max(state, STATE_DEF_dict["WARN"])
+        state_code = max(state_code, STATE_DEF_dict["WARN"])
     if low_gnss_frequency:
-        state = max(state, STATE_DEF_dict["WARN"])
-    return state
+        state_code = max(state_code, STATE_DEF_dict["WARN"])
+    return state_code, ""
 
+# Brake
+brake_state_dict = dict()
+brake_state_dict[0] = "Released"
+brake_state_dict[1] = "Auto-braked"
+brake_state_dict[2] = "Anchored" # Stop-brake
+brake_state_dict[3] = "AEB"
+brake_state_dict[4] = "Manual brake"
+def code_func_brake(msg):
+    """
+    Output: state_code, event_str
+    """
+    global STATE_DEF_dict
+    global brake_state_dict
+    state = msg.data
+    print("state = %d" % state)
+    if state >= 3:
+        state_code = STATE_DEF_dict["WARN"] # Note: not to stop self-driving
+    else:
+        state_code = STATE_DEF_dict["OK"]
+    event_str = brake_state_dict[state]
+    return state_code, event_str
 #--------------------------------------#
 
 # ROS callbacks
@@ -196,13 +236,13 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     is_event_msg: True-->event message, False-->state message
     """
     global check_dict, ros_msg_backup
-    _status = code_func(msg.data)
+    _status, _event = code_func(msg)
     check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
     # EVENT trigger REC backup
     if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
         if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
             # Trigger recorder with reason
-            _reason = "%s:%s" % (key, STATE_DEF_dict_inv[_status] )
+            _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event )
             REC_record_backup_pub.publish( _reason )
             # Write some log
             rospy.logwarn("[sys_ready] REC backup<%s>" % _reason )
@@ -242,8 +282,9 @@ def main():
     # backend_connected
     rospy.Subscriber("/backend/connected ", Bool, (lambda msg: _checker_CB(msg, "backend_connected", is_event_msg=False, is_trigger_REC=False) ) )
 
-
-
+    # The following are events (normally not checked at startup)
+    # brake_status
+    rospy.Subscriber("/mileage/brake_status", Int32, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_brake ) ) )
     # Localization
     rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=True, code_func=code_func_localization ) ) )
     #-----------------------------#
