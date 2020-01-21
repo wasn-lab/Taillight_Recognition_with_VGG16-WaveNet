@@ -29,7 +29,7 @@ LiDARStitchingAuto LSA;
 
 mutex syncLock;
 
-bool heartBeat[5] = { false, false, false, false, false }; //{ FrontLeft, FrontRight, RearLeft, RearRight, FrontTop }
+bool heartBeat[5] = { false, false, false, false, false };  //{ FrontLeft, FrontRight, RearLeft, RearRight, FrontTop }
 int heartBeat_times[5] = { 0, 0, 0, 0, 0 };
 int lidarAll_pubFlag = 4;
 
@@ -40,7 +40,6 @@ checkPubFlag (int lidarNum);
 void
 lidarAll_Pub (int lidarNum);
 
-  
 void
 cloud_cb_LidarFrontLeft (const boost::shared_ptr<const sensor_msgs::PointCloud2> &input_cloud)
 {
@@ -73,7 +72,16 @@ cloud_cb_LidarRearRight (const boost::shared_ptr<const sensor_msgs::PointCloud2>
 void
 cloud_cb_LidarFrontTop (const boost::shared_ptr<const sensor_msgs::PointCloud2> &input_cloud)
 {
-  //sensor_msgs::pc2 -> PCLXYZI
+#if 0
+  static ros::Time oldtimestamp;
+  ros::Duration intervaltime = input_cloud->header.stamp - oldtimestamp;
+  if(oldtimestamp.sec != 0 && intervaltime.toSec() > 0.1 && intervaltime.sec < 10)
+  {
+    cout << "[lidars_grabber]: missing data " << intervaltime << "," << input_cloud->header.stamp <<endl;
+  }
+  oldtimestamp = input_cloud->header.stamp;
+#endif
+
   heartBeat[4] = true;
   pcl::fromROSMsg (*input_cloud, *cloudPtr_LidarFrontTop);
   syncLock_callback ();
@@ -110,7 +118,6 @@ lidarAll_Pub (int lidarNum)
       break;
   }
 
-
   *cloudPtr_LidAll = *cloudPtr_LidarFrontLeft;
   *cloudPtr_LidAll += *cloudPtr_LidarFrontRight;
   *cloudPtr_LidAll += *cloudPtr_LidarRearLeft;
@@ -119,18 +126,30 @@ lidarAll_Pub (int lidarNum)
 
   uint64_t avg_time;
   int n = 0;
-  if (cloudPtr_LidarFrontLeft->header.stamp != 0){n+=1;};
-  if (cloudPtr_LidarFrontRight->header.stamp != 0){n+=1;}; 
-  if (cloudPtr_LidarRearLeft->header.stamp != 0){n+=1;}; 
-  if (cloudPtr_LidarRearRight->header.stamp != 0){n+=1;}; 
-  if (cloudPtr_LidarFrontTop->header.stamp != 0){n+=1;};  
-  if (n!=0)
+  if (cloudPtr_LidarFrontLeft->header.stamp != 0)
   {
-    avg_time = (cloudPtr_LidarFrontLeft->header.stamp + 
-                cloudPtr_LidarFrontRight->header.stamp + 
-                cloudPtr_LidarRearLeft->header.stamp + 
-                cloudPtr_LidarRearRight->header.stamp + 
-                cloudPtr_LidarFrontTop->header.stamp)/n;
+    n += 1;
+  };
+  if (cloudPtr_LidarFrontRight->header.stamp != 0)
+  {
+    n += 1;
+  };
+  if (cloudPtr_LidarRearLeft->header.stamp != 0)
+  {
+    n += 1;
+  };
+  if (cloudPtr_LidarRearRight->header.stamp != 0)
+  {
+    n += 1;
+  };
+  if (cloudPtr_LidarFrontTop->header.stamp != 0)
+  {
+    n += 1;
+  };
+  if (n != 0)
+  {
+    avg_time = (cloudPtr_LidarFrontLeft->header.stamp + cloudPtr_LidarFrontRight->header.stamp + cloudPtr_LidarRearLeft->header.stamp
+        + cloudPtr_LidarRearRight->header.stamp + cloudPtr_LidarFrontTop->header.stamp) / n;
   }
   else
   {
@@ -140,34 +159,39 @@ lidarAll_Pub (int lidarNum)
   cloudPtr_LidAll->header.stamp = avg_time;
   pub_LidAll.publish (*cloudPtr_LidAll);
 
-  cloudPtr_LidAll->clear();
-
+  cloudPtr_LidAll->clear ();
 
   // if wall_time - ros_time !> 30 minutes, (not rosbag)
   // clear sensor pc data memory if delay 3sec. 
-  uint64_t now = ros::Time::now().toNSec()/1000ull; //microsec
-  if(!((now - avg_time)>1000000 * 1800)){
+  uint64_t now = ros::Time::now ().toNSec () / 1000ull;  //microsec
+  if (! ( (now - avg_time) > 1000000 * 1800))
+  {
 
-    if((now - cloudPtr_LidarFrontLeft->header.stamp) > 1000000*3){
-      cloudPtr_LidarFrontLeft->clear();
-      cout<< "Front-Left Clear" << endl;
-      };
-    if((now - cloudPtr_LidarFrontRight->header.stamp) > 1000000*3){
-      cloudPtr_LidarFrontRight->clear();
-      cout<< "Front-Right Clear" << endl;
-      };
-    if((now - cloudPtr_LidarRearLeft->header.stamp) > 1000000*3){
-      cloudPtr_LidarRearLeft->clear();
-      cout<< "Rear-Left Clear" << endl;
-      };
-    if((now - cloudPtr_LidarRearRight->header.stamp) > 1000000*3){
-      cloudPtr_LidarRearRight->clear();
-      cout<< "Rear-Right Clear" << endl;
-      };
-    if((now - cloudPtr_LidarFrontTop->header.stamp) > 1000000*3){
-      cloudPtr_LidarFrontTop->clear();
-      cout<< "Top Clear" << endl;
-      };
+    if ( (now - cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 3)
+    {
+      cloudPtr_LidarFrontLeft->clear ();
+      cout << "Front-Left Clear" << endl;
+    };
+    if ( (now - cloudPtr_LidarFrontRight->header.stamp) > 1000000 * 3)
+    {
+      cloudPtr_LidarFrontRight->clear ();
+      cout << "Front-Right Clear" << endl;
+    };
+    if ( (now - cloudPtr_LidarRearLeft->header.stamp) > 1000000 * 3)
+    {
+      cloudPtr_LidarRearLeft->clear ();
+      cout << "Rear-Left Clear" << endl;
+    };
+    if ( (now - cloudPtr_LidarRearRight->header.stamp) > 1000000 * 3)
+    {
+      cloudPtr_LidarRearRight->clear ();
+      cout << "Rear-Right Clear" << endl;
+    };
+    if ( (now - cloudPtr_LidarFrontTop->header.stamp) > 1000000 * 3)
+    {
+      cloudPtr_LidarFrontTop->clear ();
+      cout << "Top Clear" << endl;
+    };
 
   }
 
@@ -253,10 +277,9 @@ syncLock_callback ()
 
       }
 
-      *cloudPtr_LidarFrontLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontLeft,
-                                                            GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1], 
-                                                            GlobalVariable::UI_PARA[2], GlobalVariable::UI_PARA[3], 
-                                                            GlobalVariable::UI_PARA[4], GlobalVariable::UI_PARA[5]);
+      *cloudPtr_LidarFrontLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontLeft, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1],
+                                                                       GlobalVariable::UI_PARA[2], GlobalVariable::UI_PARA[3], GlobalVariable::UI_PARA[4],
+                                                                       GlobalVariable::UI_PARA[5]);
       cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       pub_LidarFrontLeft.publish (*cloudPtr_LidarFrontLeft);
       checkPubFlag (0);
@@ -303,10 +326,9 @@ syncLock_callback ()
 
       }
 
-      *cloudPtr_LidarFrontRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontRight,
-                                                              GlobalVariable::UI_PARA[6], GlobalVariable::UI_PARA[7], 
-                                                              GlobalVariable::UI_PARA[8], GlobalVariable::UI_PARA[9], 
-                                                              GlobalVariable::UI_PARA[10], GlobalVariable::UI_PARA[11]);
+      *cloudPtr_LidarFrontRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontRight, GlobalVariable::UI_PARA[6], GlobalVariable::UI_PARA[7],
+                                                                        GlobalVariable::UI_PARA[8], GlobalVariable::UI_PARA[9], GlobalVariable::UI_PARA[10],
+                                                                        GlobalVariable::UI_PARA[11]);
 
       cloudPtr_LidarFrontRight->header.frame_id = "lidar";
       pub_LidarFrontRight.publish (*cloudPtr_LidarFrontRight);
@@ -355,10 +377,9 @@ syncLock_callback ()
 
       }
 
-      *cloudPtr_LidarRearLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearLeft,
-                                                            GlobalVariable::UI_PARA[12], GlobalVariable::UI_PARA[13], 
-                                                            GlobalVariable::UI_PARA[14], GlobalVariable::UI_PARA[15], 
-                                                            GlobalVariable::UI_PARA[16], GlobalVariable::UI_PARA[17]);
+      *cloudPtr_LidarRearLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearLeft, GlobalVariable::UI_PARA[12], GlobalVariable::UI_PARA[13],
+                                                                      GlobalVariable::UI_PARA[14], GlobalVariable::UI_PARA[15], GlobalVariable::UI_PARA[16],
+                                                                      GlobalVariable::UI_PARA[17]);
       cloudPtr_LidarRearLeft->header.frame_id = "lidar";
       pub_LidarRearLeft.publish (*cloudPtr_LidarRearLeft);
       checkPubFlag (2);
@@ -406,10 +427,9 @@ syncLock_callback ()
 
       }
 
-      *cloudPtr_LidarRearRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearRight,
-                                                            GlobalVariable::UI_PARA[18], GlobalVariable::UI_PARA[19], 
-                                                            GlobalVariable::UI_PARA[20], GlobalVariable::UI_PARA[21], 
-                                                            GlobalVariable::UI_PARA[22], GlobalVariable::UI_PARA[23]);
+      *cloudPtr_LidarRearRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearRight, GlobalVariable::UI_PARA[18], GlobalVariable::UI_PARA[19],
+                                                                       GlobalVariable::UI_PARA[20], GlobalVariable::UI_PARA[21], GlobalVariable::UI_PARA[22],
+                                                                       GlobalVariable::UI_PARA[23]);
       cloudPtr_LidarRearRight->header.frame_id = "lidar";
       pub_LidarRearRight.publish (*cloudPtr_LidarRearRight);
       checkPubFlag (3);
@@ -437,10 +457,9 @@ syncLock_callback ()
     if (heartBeat[0] == true)
     {
       heartBeat[0] = false;
-      *cloudPtr_LidarFrontLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontLeft,
-                                                            LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], 
-                                                            LidarFrontLeft_Fine_Param[2], LidarFrontLeft_Fine_Param[3], 
-                                                            LidarFrontLeft_Fine_Param[4], LidarFrontLeft_Fine_Param[5]);
+      *cloudPtr_LidarFrontLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontLeft, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1],
+                                                                       LidarFrontLeft_Fine_Param[2], LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4],
+                                                                       LidarFrontLeft_Fine_Param[5]);
       cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       pub_LidarFrontLeft.publish (*cloudPtr_LidarFrontLeft);
       checkPubFlag (0);
@@ -449,10 +468,9 @@ syncLock_callback ()
     if (heartBeat[1] == true)
     {
       heartBeat[1] = false;
-      *cloudPtr_LidarFrontRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontRight,
-                                                              LidarFrontRight_Fine_Param[0], LidarFrontRight_Fine_Param[1], 
-                                                              LidarFrontRight_Fine_Param[2], LidarFrontRight_Fine_Param[3],
-                                                              LidarFrontRight_Fine_Param[4], LidarFrontRight_Fine_Param[5]);
+      *cloudPtr_LidarFrontRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontRight, LidarFrontRight_Fine_Param[0], LidarFrontRight_Fine_Param[1],
+                                                                        LidarFrontRight_Fine_Param[2], LidarFrontRight_Fine_Param[3],
+                                                                        LidarFrontRight_Fine_Param[4], LidarFrontRight_Fine_Param[5]);
       cloudPtr_LidarFrontRight->header.frame_id = "lidar";
       pub_LidarFrontRight.publish (*cloudPtr_LidarFrontRight);
       checkPubFlag (1);
@@ -461,10 +479,9 @@ syncLock_callback ()
     if (heartBeat[2] == true)
     {
       heartBeat[2] = false;
-      *cloudPtr_LidarRearLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearLeft,
-                                                            LidarRearLeft_Fine_Param[0], LidarRearLeft_Fine_Param[1], 
-                                                            LidarRearLeft_Fine_Param[2], LidarRearLeft_Fine_Param[3], 
-                                                            LidarRearLeft_Fine_Param[4], LidarRearLeft_Fine_Param[5]);
+      *cloudPtr_LidarRearLeft = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearLeft, LidarRearLeft_Fine_Param[0], LidarRearLeft_Fine_Param[1],
+                                                                      LidarRearLeft_Fine_Param[2], LidarRearLeft_Fine_Param[3], LidarRearLeft_Fine_Param[4],
+                                                                      LidarRearLeft_Fine_Param[5]);
       cloudPtr_LidarRearLeft->header.frame_id = "lidar";
       pub_LidarRearLeft.publish (*cloudPtr_LidarRearLeft);
 
@@ -473,11 +490,10 @@ syncLock_callback ()
     if (heartBeat[3] == true)
     {
       heartBeat[3] = false;
-      *cloudPtr_LidarRearRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearRight,
-                                                            LidarRearRight_Fine_Param[0], LidarRearRight_Fine_Param[1], 
-                                                            LidarRearRight_Fine_Param[2], LidarRearRight_Fine_Param[3], 
-                                                            LidarRearRight_Fine_Param[4], LidarRearRight_Fine_Param[5]);
-      *cloudPtr_LidarRearRight = CuboidFilter ().hollow_removal<PointXYZI> (cloudPtr_LidarRearRight, 0, 50, -2, 2, -5, 0);
+      *cloudPtr_LidarRearRight = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarRearRight, LidarRearRight_Fine_Param[0], LidarRearRight_Fine_Param[1],
+                                                                       LidarRearRight_Fine_Param[2], LidarRearRight_Fine_Param[3], LidarRearRight_Fine_Param[4],
+                                                                       LidarRearRight_Fine_Param[5]);
+      *cloudPtr_LidarRearRight = CuboidFilter ().hollow_removal<PointXYZI> (cloudPtr_LidarRearRight, 0, 50, -0.8, 20, -5, 5);
       cloudPtr_LidarRearRight->header.frame_id = "lidar";
       pub_LidarRearRight.publish (*cloudPtr_LidarRearRight);
       checkPubFlag (3);
@@ -551,28 +567,27 @@ main (int argc,
     n.param ("/LidarRearRight_Fine_Param", LidarRearRight_Fine_Param, vector<double> ());
 
     cout << "STITCHING PARAMETER FIND!" << endl;
-    
-    cout << "LidarFrontLeft is using  " << "[" << LidarFrontLeft_Fine_Param[0] << ", " << LidarFrontLeft_Fine_Param[1] << ", " << LidarFrontLeft_Fine_Param[2] << ", "
-        << LidarFrontLeft_Fine_Param[3] << ", " << LidarFrontLeft_Fine_Param[4] << ", " << LidarFrontLeft_Fine_Param[5] << "]" << endl;
 
-    cout << "LidarFrontRight is using " << "[" << LidarFrontRight_Fine_Param[0] << ", " << LidarFrontRight_Fine_Param[1] << ", " << LidarFrontRight_Fine_Param[2] << ", "
-        << LidarFrontRight_Fine_Param[3] << ", " << LidarFrontRight_Fine_Param[4] << ", " << LidarFrontRight_Fine_Param[5] << "]" << endl;
+    cout << "LidarFrontLeft is using  " << "[" << LidarFrontLeft_Fine_Param[0] << ", " << LidarFrontLeft_Fine_Param[1] << ", " << LidarFrontLeft_Fine_Param[2]
+        << ", " << LidarFrontLeft_Fine_Param[3] << ", " << LidarFrontLeft_Fine_Param[4] << ", " << LidarFrontLeft_Fine_Param[5] << "]" << endl;
 
-    cout << "LidarRearLeft is using " << "[" << LidarRearLeft_Fine_Param[0] << ", " << LidarRearLeft_Fine_Param[1] << ", " << LidarRearLeft_Fine_Param[2] << ", "
-        << LidarRearLeft_Fine_Param[3] << ", " << LidarRearLeft_Fine_Param[4] << ", " << LidarRearLeft_Fine_Param[5] << "]" << endl;
+    cout << "LidarFrontRight is using " << "[" << LidarFrontRight_Fine_Param[0] << ", " << LidarFrontRight_Fine_Param[1] << ", "
+        << LidarFrontRight_Fine_Param[2] << ", " << LidarFrontRight_Fine_Param[3] << ", " << LidarFrontRight_Fine_Param[4] << ", "
+        << LidarFrontRight_Fine_Param[5] << "]" << endl;
 
-    cout << "LidarRearRight is using " << "[" << LidarRearRight_Fine_Param[0] << ", " << LidarRearRight_Fine_Param[1] << ", " << LidarRearRight_Fine_Param[2] << ", "
-        << LidarRearRight_Fine_Param[3] << ", " << LidarRearRight_Fine_Param[4] << ", " << LidarRearRight_Fine_Param[5] << "]" << endl;
+    cout << "LidarRearLeft is using " << "[" << LidarRearLeft_Fine_Param[0] << ", " << LidarRearLeft_Fine_Param[1] << ", " << LidarRearLeft_Fine_Param[2]
+        << ", " << LidarRearLeft_Fine_Param[3] << ", " << LidarRearLeft_Fine_Param[4] << ", " << LidarRearLeft_Fine_Param[5] << "]" << endl;
 
+    cout << "LidarRearRight is using " << "[" << LidarRearRight_Fine_Param[0] << ", " << LidarRearRight_Fine_Param[1] << ", " << LidarRearRight_Fine_Param[2]
+        << ", " << LidarRearRight_Fine_Param[3] << ", " << LidarRearRight_Fine_Param[4] << ", " << LidarRearRight_Fine_Param[5] << "]" << endl;
 
   }
 
-  ros::Subscriber sub_LidarFrontLeft  = n.subscribe<sensor_msgs::PointCloud2> ("/LidarFrontLeft/Raw", 1, cloud_cb_LidarFrontLeft);
+  ros::Subscriber sub_LidarFrontLeft = n.subscribe<sensor_msgs::PointCloud2> ("/LidarFrontLeft/Raw", 1, cloud_cb_LidarFrontLeft);
   ros::Subscriber sub_LidarFrontRight = n.subscribe<sensor_msgs::PointCloud2> ("/LidarFrontRight/Raw", 1, cloud_cb_LidarFrontRight);
-  ros::Subscriber sub_LidarRearLeft   = n.subscribe<sensor_msgs::PointCloud2> ("/LidarRearLeft/Raw", 1, cloud_cb_LidarRearLeft);
-  ros::Subscriber sub_LidarRearRight  = n.subscribe<sensor_msgs::PointCloud2> ("/LidarRearRight/Raw", 1, cloud_cb_LidarRearRight);
-  ros::Subscriber sub_LidarFrontTop   = n.subscribe<sensor_msgs::PointCloud2> ("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
-
+  ros::Subscriber sub_LidarRearLeft = n.subscribe<sensor_msgs::PointCloud2> ("/LidarRearLeft/Raw", 1, cloud_cb_LidarRearLeft);
+  ros::Subscriber sub_LidarRearRight = n.subscribe<sensor_msgs::PointCloud2> ("/LidarRearRight/Raw", 1, cloud_cb_LidarRearRight);
+  ros::Subscriber sub_LidarFrontTop = n.subscribe<sensor_msgs::PointCloud2> ("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
 
   pub_LidarFrontLeft = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarFrontLeft", 1);
   pub_LidarFrontRight = n.advertise<pcl::PointCloud<pcl::PointXYZI> > ("/LidarFrontRight", 1);
@@ -583,12 +598,12 @@ main (int argc,
 
   thread TheadDetection (UI, argc, argv);
 
-  ros::Rate loop_rate(80);//80Hz
-  while(ros::ok()){
-    ros::spinOnce();
-    loop_rate.sleep();
+  ros::Rate loop_rate (80);  //80Hz
+  while (ros::ok ())
+  {
+    ros::spinOnce ();
+    loop_rate.sleep ();
   }
-
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;

@@ -6,6 +6,7 @@
 #include <ros/callback_queue.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/Image.h>
+#include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
@@ -19,12 +20,15 @@
 #include <ped_def.h>
 #include <cv_bridge/cv_bridge.h>
 #include <map>
+#include <boost/circular_buffer.hpp>
 
-// 0 front center
-// 1 front left
-// 2 front right
-// 3 tracking front center
-#define CAM_INDEX 3
+#include <buffer.h>
+#include <openpose.h>
+#include <openpose_ros_io.h>
+#include <openpose_flags.h>
+// C++ std library dependencies
+#include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
+#include <thread>  // std::this_thread
 
 #define USE_GLOG 1
 #if USE_GLOG
@@ -41,7 +45,6 @@
 #endif
 
 #define M_PIl 3.141592653589793238462643383279502884L /* pi */
-#define NUM_FEATURES 1174
 
 namespace ped
 {
@@ -58,18 +61,23 @@ public:
 
   void run();
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  std::deque<std::pair<ros::Time, cv::Mat> > imageCache;
-  unsigned int buffer_size = 60;
+  int buffer_size = 60;
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
   std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
-  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint);
+  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
+                         ros::Time time);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
   float predict_rf(cv::Mat input_data);
   float predict_rf_pose(cv::Mat input_data);
-  float get_abs(float input);
+  bool too_far(const msgs::BoxPoint box_point);
+  std::vector<cv::Point2f> printKeypoints(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr,
+                                          float height);
+  int openPoseROS();
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
+  bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr);
 
   cv::dnn::Net net_openpose;
   cv::Ptr<cv::ml::RTrees> rf;
@@ -79,13 +87,21 @@ public:
   ros::Publisher box_pub;
   ros::Publisher pose_pub;
   ros::Time total_time;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
-  int cross_threshold = 55; // percentage
-  double scaling_ratio_width = 0.3167;
-  double scaling_ratio_height = 0.3179;
-  int number_keypoints = 25;
+  const int cross_threshold = 55;  // percentage
+  const double scaling_ratio_width = 0.3167;
+  const double scaling_ratio_height = 0.3179;
+  const int number_keypoints = 25;
+  bool show_probability = true;
+  int input_source = 0;
+  float max_distance = 50;
+  Buffer buffer;
+  openpose_ros::OpenPose openPose;
+  const int feature_num = 1174;
+  const int frame_num = 10;
 };
 }  // namespace ped
 
