@@ -189,6 +189,7 @@ void AstarSearch::initialize(const nav_msgs::OccupancyGrid& costmap)
       if (use_potential_heuristic_)
       {
         nodes_[i][j][0].hc = cost * potential_weight_;
+        // std::cout << "potential_weight_ : " << cost * potential_weight_ << std::endl;
       }
     }
   }
@@ -409,6 +410,7 @@ bool AstarSearch::search()
         next_gc += nodes_[next_sn.index_y][next_sn.index_x][0].hc;
         next_hc += calcDistance(next_x, next_y, goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) *
                    distance_heuristic_weight_;
+                   std::cout << "---------------------------next_gc : " << next_gc << ", next_hc : " << next_hc << std::endl;
       }
 
       // increase the cost with euclidean distance
