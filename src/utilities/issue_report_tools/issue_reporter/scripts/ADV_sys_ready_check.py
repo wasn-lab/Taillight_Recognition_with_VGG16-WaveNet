@@ -8,6 +8,7 @@ from std_msgs.msg import (
     String,
     Empty,
     Bool,
+    Int32,
 )
 
 # Timeouts
@@ -20,6 +21,8 @@ timeout_thread_alive = None
 # IMportant note: Use this list to control te components to be checked
 #-------------------------#
 check_list = ["node_alive", "REC_is_recording"]
+# check_list = ["node_alive", "REC_is_recording", "backend_connected"]
+# check_list = ["node_alive", "REC_is_recording", "localization_state"]
 #-------------------------#
 
 
@@ -31,7 +34,8 @@ STATE_DEF_dict = dict()
 STATE_DEF_dict["OK"] = 0
 STATE_DEF_dict["WARN"] = 1
 STATE_DEF_dict["ERROR"] = 2
-STATE_DEF_dict["UNKNOWN"] = 3
+STATE_DEF_dict["FATAL"] = 3
+STATE_DEF_dict["UNKNOWN"] = 4
 # Generate the inverse mapping of the state definitions
 STATE_DEF_dict_inv = dict()
 for key in STATE_DEF_dict:
@@ -152,16 +156,37 @@ def status_ros_logging(component_status, _fail_str):
 
 # Get status codes from ROS messages
 #--------------------------------------#
-def code_func_bool(x):
+def code_func_bool(state):
     """
     """
     global STATE_DEF_dict
-    if x == True:
+    if state == True:
         return STATE_DEF_dict["OK"]
-    elif x == False:
+    elif state == False:
         return STATE_DEF_dict["ERROR"]
     else:
         return STATE_DEF_dict["UNKNOWN"]
+
+def code_func_localization(state):
+    """
+    """
+    global STATE_DEF_dict
+    low_gnss_frequency = state & 1
+    low_lidar_frequency = state & 2
+    low_pose_frequency = state & 4
+    pose_unstable = state & 8
+    #
+    state = STATE_DEF_dict["OK"]
+    if pose_unstable:
+        state = max(state, STATE_DEF_dict["FATAL"])
+    if low_pose_frequency:
+        state = max(state, STATE_DEF_dict["WARN"])
+    if low_lidar_frequency:
+        state = max(state, STATE_DEF_dict["WARN"])
+    if low_gnss_frequency:
+        state = max(state, STATE_DEF_dict["WARN"])
+    return state
+
 #--------------------------------------#
 
 # ROS callbacks
@@ -207,10 +232,20 @@ def main():
     # ROS subscribers
     # Note: The key for callback function should match the checklist
     #-----------------------------#
+    # all_alive from node_trace
     # Note: The "/all_alive"  topic callback should append a timeout watcher
     rospy.Subscriber("/node_trace/all_alive", Bool, (lambda msg: _checker_CB(msg, "node_alive", is_event_msg=False, post_func=set_timer_alive) ) )
     # The following topic can go without timeout watcher (since they are not periodical messages)
+
+    # REC_is_recording
     rospy.Subscriber("/REC/is_recording", Bool, (lambda msg: _checker_CB(msg, "REC_is_recording", is_event_msg=True, is_trigger_REC=False) ) )
+    # backend_connected
+    rospy.Subscriber("/backend/connected ", Bool, (lambda msg: _checker_CB(msg, "backend_connected", is_event_msg=False, is_trigger_REC=False) ) )
+
+
+
+    # Localization
+    rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=True, code_func=code_func_localization ) ) )
     #-----------------------------#
 
 
@@ -277,7 +312,7 @@ def main():
     time.sleep(0.5)
     print("[sys_ready] Leave main()")
 
-    
+
 
 if __name__ == '__main__':
     try:
