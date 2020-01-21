@@ -222,7 +222,7 @@ def code_func_brake(msg):
     state = msg.data
     print("state = %d" % state)
     if state >= 3:
-        state_code = STATE_DEF_dict["ERROR"]
+        state_code = STATE_DEF_dict["WARN"] # Note: not to stop self-driving
     else:
         state_code = STATE_DEF_dict["OK"]
     event_str = brake_state_dict[state]
