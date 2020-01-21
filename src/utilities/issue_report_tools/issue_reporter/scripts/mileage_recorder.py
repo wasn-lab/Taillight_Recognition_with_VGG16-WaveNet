@@ -160,7 +160,7 @@ def _flag_info_03_CB(data):
 
 
 #---------------------#
-mileage_json_time_period = 30 # sec.
+mileage_json_time_period = 2 # sec.
 mileage_json_km_period = 1.0 # 1 km
 # Variables
 mileage_json_last_timestamp = int(time.time())
