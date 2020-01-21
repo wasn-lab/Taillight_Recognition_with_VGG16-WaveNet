@@ -35,6 +35,7 @@ for key in STATE_DEF_dict:
 #-------------------------#
 LOGGING_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this level will be displayed
 SYS_FAIL_LEVEL = STATE_DEF_dict["ERROR"] # Greater or equal to this level means the system is failed
+EVENT_TRIGGER_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this trigger the backup of recorder
 #-------------------------#
 
 # States
@@ -52,7 +53,8 @@ ros_advop_sys_ready_pub = rospy.Publisher('/ADV_op/sys_ready', Bool, queue_size=
 sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=100)
 #-------------------------------#
 
-#
+# Timeout timer
+#-------------------------------#
 def _timeout_handle_alive():
     """
     """
@@ -71,52 +73,13 @@ def set_timer_alive():
         timeout_thread_alive.cancel()
     timeout_thread_alive = threading.Timer(timeout_alive, _timeout_handle_alive)
     timeout_thread_alive.start()
-
-
-# ROS callbacks
-#--------------------------------------#
-# Check if node is alive
-# def _node_alive_CB(msg):
-#     """
-#     """
-#     # global var_advop_node_alive
-#     global check_dict
-#     check_dict["node_alive"] = msg.data
-#     # var_advop_node_alive = msg.data
-#     set_timer_alive()
-#
-# def _REC_is_recording_CB(msg):
-#     """
-#     """
-#     # global var_REC_is_recording
-#     global check_dict
-#     check_dict["REC_is_recording"] = msg.data
-#     # var_REC_is_recording = msg.data
-
-def eva_func_bool(x):
-    """
-    """
-    global STATE_DEF_dict
-    if x == True:
-        return STATE_DEF_dict["OK"]
-    elif x == False:
-        return STATE_DEF_dict["ERROR"]
-    else:
-        return STATE_DEF_dict["UNKNOWN"]
-
-
-def _checker_CB(msg, key, eva_func=eva_func_bool, post_func=None ):
-    """
-    """
-    global check_dict
-    check_dict[key] = eva_func(msg.data)
-    if not post_func is None:
-        post_func()
-#--------------------------------------#
+#-------------------------------#
 
 
 
 
+
+# Evaluate the True/False from status code
 #--------------------------------------#
 def evaluate_is_logging(status_level):
     """
@@ -134,12 +97,13 @@ def evaluate_is_OK(status_level):
     return (not evaluate_is_fail(status_level))
 #--------------------------------------#
 
-
-def get_fail_string(component_status, component_name=""):
+# Get and print the logging string
+#--------------------------------------#
+def get_fail_string(component_status, component_key=""):
     """
     Input:
         - component_status
-        - component_name
+        - component_key
     Output:
         - _fail_str
     """
@@ -147,12 +111,43 @@ def get_fail_string(component_status, component_name=""):
     _fail_str = ""
     if evaluate_is_logging(component_status):
         if evaluate_is_fail(component_status):
-            _fail_str += "<%s> check fail.\n" % component_name
+            _fail_str += "<%s> check fail." % (component_key )
             rospy.logerr("[sys_ready] %s" % _fail_str )
+            _fail_str += "\n"
         else:
-            _fail_str += "<%s> OK, but status = %s.\n" % (component_name, STATE_DEF_dict_inv[component_status] )
+            _fail_str += "<%s> OK, but status = %s." % (component_key, STATE_DEF_dict_inv[component_status] )
             rospy.logwarn("[sys_ready] %s" % _fail_str )
+            _fail_str += "\n"
     return  _fail_str
+#--------------------------------------#
+
+
+
+# Get status codes from ROS messages
+#--------------------------------------#
+def code_func_bool(x):
+    """
+    """
+    global STATE_DEF_dict
+    if x == True:
+        return STATE_DEF_dict["OK"]
+    elif x == False:
+        return STATE_DEF_dict["ERROR"]
+    else:
+        return STATE_DEF_dict["UNKNOWN"]
+#--------------------------------------#
+
+# ROS callbacks
+#--------------------------------------#
+def _checker_CB(msg, key, code_func=code_func_bool, post_func=None ):
+    """
+    """
+    global check_dict
+    check_dict[key] = code_func(msg.data)
+    if not post_func is None:
+        post_func() # e.g. "node_alive" should set its timeout timer
+#--------------------------------------#
+
 
 
 
@@ -179,6 +174,7 @@ def main():
 
     rate = rospy.Rate(1.0) # Hz
     while not rospy.is_shutdown():
+        print("---")
         # Ready logic
         _sys_status_now = STATE_DEF_dict["OK"]
         _fail_str = ""
