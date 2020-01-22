@@ -36,6 +36,10 @@ startup_check_list = ["node_alive", "REC_is_recording"]
 # The following items will be added for release version
 # startup_check_list += ["backend_connected"] # Will be added for release version
 # startup_check_list += ["localization_state"]
+
+
+print("check_list = %s" % str(check_list))
+print("startup_check_list = %s" % str(startup_check_list))
 #-------------------------#
 
 
