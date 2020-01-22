@@ -194,7 +194,7 @@ def code_func_localization(msg):
     low_gnss_frequency = (state & 1)
     low_lidar_frequency = (state & 2)
     low_pose_frequency = (state & 4)
-    pose_unstable = (state & 8) 
+    pose_unstable = (state & 8)
     #
     state_code = STATE_DEF_dict["OK"]
     if pose_unstable:
@@ -281,7 +281,7 @@ def main():
     # REC_is_recording
     rospy.Subscriber("/REC/is_recording", Bool, (lambda msg: _checker_CB(msg, "REC_is_recording", is_event_msg=True, is_trigger_REC=False) ) )
     # backend_connected
-    rospy.Subscriber("/backend/connected ", Bool, (lambda msg: _checker_CB(msg, "backend_connected", is_event_msg=False, is_trigger_REC=False) ) )
+    rospy.Subscriber("/backend/connected", Bool, (lambda msg: _checker_CB(msg, "backend_connected", is_event_msg=False, is_trigger_REC=False) ) )
 
     # The following are events (normally not checked at startup)
     # brake_status
