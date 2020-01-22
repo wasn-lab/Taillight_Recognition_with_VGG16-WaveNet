@@ -23,8 +23,9 @@ Important note: Use this list to control te components to be checked
 """
 #-------------------------#
 check_list = ["node_alive", "REC_is_recording"]
-check_list += ["brake_status", "backend_connected"]
-check_list += ["localization_state"]
+check_list += ["brake_status"]
+# check_list += ["backend_connected"]
+# check_list += ["localization_state"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -285,8 +286,8 @@ def main():
     # The following are events (normally not checked at startup)
     # brake_status
     rospy.Subscriber("/mileage/brake_status", Int32, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_brake ) ) )
-    # Localization
-    rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=True, code_func=code_func_localization ) ) )
+    # Localization (in 40 Hz)
+    rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=False, code_func=code_func_localization ) ) )
     #-----------------------------#
 
 
