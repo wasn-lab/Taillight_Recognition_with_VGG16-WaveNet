@@ -2,79 +2,64 @@ cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-
-set(CMAKE_CXX_STANDARD 11)  # -std=c++11
-set(CMAKE_C_STANDARD 11)  # -std=gnu11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
-
-include_directories("/usr/local/cuda/include")
-link_directories("/usr/local/cuda/lib64") 
-
-include_directories("/opt/ros/kinetic/include")
-link_directories("/opt/ros/kinetic/lib") 
+include(CompilerFlags)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
 catkin_download_test_data(
     ped_models_rf_pose
-    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/rf_1frames_normalization.yml"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_5frames_normalization_15peek.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 ca81a33f18d06f6011d206d3ac9b790d
+    MD5 7476d1ba785b806255c7df62e0984249
 )
 catkin_download_test_data(
     ped_models_rf
-    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/rf.yml"
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_10frames_normalization_15peek.yml"
     DESTINATION ${PED_MODEL_DIR}
-    MD5 d20e9859ff9ba625e2747578dae99cf2
+    MD5 c0ec26c803a7d5bcb0b63edb6509bcd4	
 )
 catkin_download_test_data(
     ped_models_body25
-    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
-    DESTINATION ${PED_MODEL_DIR}/body_25
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
+    DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 78287b57cf85fa89c03f1393d368e5b7
 )
 
 catkin_download_test_data(
     ped_models_body25_txt
-    "http://118.163.54.109:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
-    DESTINATION ${PED_MODEL_DIR}/body_25
+    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
+    DESTINATION ${PED_MODEL_DIR}/pose/body_25
     MD5 451938635cf007327c3cf235ed483844
 )
 
 find_package(catkin REQUIRED COMPONENTS
-        message_generation
-        roscpp
-        geometry_msgs
-        tf2_geometry_msgs
-        sensor_msgs
-        std_msgs
-        msgs
-)
+    message_generation
+    roscpp
+    geometry_msgs
+    tf2_geometry_msgs
+    sensor_msgs
+    std_msgs
+    msgs
+    cv_bridge
+    image_transport)
+
+find_package(OpenCV REQUIRED)
+find_package(openpose)
+
+if (NOT openpose_LIBRARY)
+  message(STATUS "Openpose not found. Follow ${CMAKE_CURRENT_LIST_DIR}/install_openpose.sh to install it. Skip building ${PROJECT_NAME}.")
+  return()
+endif ()
 
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
-  message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
+  message(FATAL_ERROR "libgflags not found. Please run\n ")
 endif ()
 
 find_package(Glog)
 
-
-find_package(OpenCV
-             NO_MODULE
-             PATHS /usr/local /opt/ros/kinetic
-             NO_DEFAULT_PATH)
-if (${OpenCV_VERSION} VERSION_LESS "3.4.3")
-  message(STATUS "OpenCV_VERSION=${OpenCV_VERSION} < 3.4.3. Skip building ${PROJECT_NAME}")
-  return()
-endif ()
-
 find_package(cv_bridge REQUIRED
              PATHS /opt/ros/kinetic)
-
-find_package(Eigen3 REQUIRED)
 
 set(TPP_CATKIN_DEPS
     message_runtime
@@ -89,27 +74,36 @@ set(TPP_CATKIN_DEPS
 catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
 
 include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
-        ${Eigen3_INCLUDE_DIR}
-        ${PROJECT_BINARY_DIR}/include
-	src/
+    include
+    ${catkin_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
+    ${openpose_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
+    ${CAFFE_INCLUDE_DIRS}
+    ${GFLAGS_INCLUDE_DIR}
+    ${GLOG_INCLUDE_DIR}
+    ${PROJECT_BINARY_DIR}/include
+    src/
 )
 
 set(CPP_FILES
     src/pedestrian_event.cpp
-    src/Get_keypoints_and_predict.cpp
+    src/buffer.cpp
+    src/buffer_node.cpp
+    src/openpose.cpp
+    src/openpose_flags.cpp
+    src/openpose_ros_io.cpp
 )
+
 
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
-        itri_pedcross
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
-        #caffe
-	glog
-        cv_bridge
-)
+    itri_pedcross
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${openpose_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)

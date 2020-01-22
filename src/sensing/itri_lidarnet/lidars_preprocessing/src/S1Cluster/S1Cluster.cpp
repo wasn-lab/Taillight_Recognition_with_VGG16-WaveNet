@@ -50,7 +50,7 @@ S1Cluster::getClusters (bool debug,
 
   vector<pcl::PointIndices> raw_cluster;
 
-  dbscan.setInputCloud (input);
+  dbscan.setInputCloud<PointXYZ> (input);
   dbscan.segment (raw_cluster);
 
   if (debug)

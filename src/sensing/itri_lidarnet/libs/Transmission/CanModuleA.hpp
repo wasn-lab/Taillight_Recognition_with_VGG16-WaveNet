@@ -1,14 +1,9 @@
 #ifndef CANMODULE_H
 #define CANMODULE_H
 
-#include "../all_header.h"
-
-/* example
- *
- * CanModule::initial ();
- *
- */
-
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <linux/can/error.h>
 
 class CanModule
 {
