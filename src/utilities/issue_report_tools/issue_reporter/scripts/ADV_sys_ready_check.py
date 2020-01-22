@@ -195,10 +195,10 @@ def code_func_localization(msg):
     """
     global STATE_DEF_dict
     state = msg.data
-    low_gnss_frequency = (state & 1)
-    low_lidar_frequency = (state & 2)
-    low_pose_frequency = (state & 4)
-    pose_unstable = (state & 8)
+    low_gnss_frequency = (state & 1) > 0
+    low_lidar_frequency = (state & 2) > 0
+    low_pose_frequency = (state & 4) > 0
+    pose_unstable = (state & 8) > 0
     #
     status_code = STATE_DEF_dict["OK"]
     if pose_unstable:
