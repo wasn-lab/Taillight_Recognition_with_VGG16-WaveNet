@@ -253,9 +253,9 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["status"] = 0;
   J1["route_id"] = ROUTE_ID;
   if(stopids.size() == 0){
-    J1["bus_stop"] = json::array();
+    J1["bus_stops"] = json::array();
   }else{
-   J1["bus_stop"] = J2;
+   J1["bus_stops"] = J2;
   }
 
   VK102Response = J1.dump();
