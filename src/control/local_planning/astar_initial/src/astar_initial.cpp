@@ -297,7 +297,7 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
 void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 {
   int obswaypoints_data = std::ceil(obsdismsg->data);// + wheel_dis);
-  if (obswaypoints_data > 30)
+  if (obswaypoints_data > 30 || obswaypoints_data <= 3.8)
     obswaypoints_data = -1;
   int obswaypoints_data_ = obswaypoints_data;
 
