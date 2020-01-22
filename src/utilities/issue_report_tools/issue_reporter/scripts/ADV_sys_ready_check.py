@@ -191,10 +191,10 @@ def code_func_localization(msg):
     """
     global STATE_DEF_dict
     state = msg.data
-    low_gnss_frequency = state & 1
-    low_lidar_frequency = state & 2
-    low_pose_frequency = state & 4
-    pose_unstable = state & 8
+    low_gnss_frequency = (state & 1)
+    low_lidar_frequency = (state & 2)
+    low_pose_frequency = (state & 4)
+    pose_unstable = (state & 8) 
     #
     state_code = STATE_DEF_dict["OK"]
     if pose_unstable:
@@ -246,7 +246,7 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
             _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event )
             REC_record_backup_pub.publish( _reason )
             # Write some log
-            rospy.logwarn("[sys_ready] REC backup<%s>" % _reason )
+            rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
             # Publish the event message
             #
     #
@@ -286,7 +286,7 @@ def main():
     # The following are events (normally not checked at startup)
     # brake_status
     rospy.Subscriber("/mileage/brake_status", Int32, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_brake ) ) )
-    # Localization (in 40 Hz)
+    # Localization (state published in 40 Hz)
     rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=False, code_func=code_func_localization ) ) )
     #-----------------------------#
 
