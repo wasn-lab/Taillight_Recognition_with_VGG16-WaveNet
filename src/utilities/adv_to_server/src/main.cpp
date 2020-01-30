@@ -647,9 +647,9 @@ void receiveRosRun(int argc, char** argv)
     vkQueue.push(temp_vk004);
     mutex_queue.unlock();
 
-    /*std::string temp_VK006 = get_jsonmsg_to_vk_server("M8.2.VK006");
+    std::string temp_VK006 = get_jsonmsg_to_vk_server("M8.2.VK006");
     mutex_queue.lock();
-    vkQueue.push(temp_VK006);*/
+    vkQueue.push(temp_VK006);
     mutex_queue.unlock();
 
     mutex_ros.unlock(); 
