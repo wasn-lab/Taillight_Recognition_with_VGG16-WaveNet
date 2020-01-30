@@ -11,6 +11,16 @@ from std_msgs.msg import (
     Int32,
 )
 
+"""
+!! Important !!
+
+TODO:
+- Modify the sys_ready check method from a "global dict"
+  to a sliding window method by using Queue.
+  --> To solve the "missing detection" problem.
+
+"""
+
 # Timeouts
 #-------------------------#
 timeout_alive = 1.5 # sec.
