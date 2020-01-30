@@ -41,7 +41,6 @@ public:
 
   void initial(const std::string& addr, int port);
 
-
   int sendRequest(const char* msg, size_t size);
   int recvResponse(char buffer[2048], size_t size);
 
