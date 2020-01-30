@@ -42,7 +42,6 @@
 #define MAX_CONNECTION 1
 using json = nlohmann::json;
 
-
 class tcp_server_runtime_error : public std::runtime_error
 {
 public:
@@ -50,7 +49,6 @@ public:
   {
   }
 };
-
 
 class TcpServer
 {
