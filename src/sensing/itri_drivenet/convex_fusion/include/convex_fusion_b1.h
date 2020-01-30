@@ -102,21 +102,47 @@ class ConvexFusionB1
                         std::string frameId)
     {
       msgs::DetectedObjectArray msgObjArr;
-
+      float min_z = -3;
+      float max_z = -1.5;
       for (int i = 0; i < cluster_size; i++)
       {
         msgs::DetectedObject msgObj;
         msgObj.classId = cluster_info[i].cluster_tag;
-
-        if (cluster_info[i].convex_hull.size () > 0)
+        int convex_hull_size_ = cluster_info[i].convex_hull.size();
+        if (convex_hull_size_ > 0)
         {
-          msgObj.cPoint.lowerAreaPoints.resize (cluster_info[i].convex_hull.size ());
-          for (size_t j = 0; j < cluster_info[i].convex_hull.size (); j++)
+          for (size_t j = 0; j < convex_hull_size_; j++)
           {
-            msgObj.cPoint.lowerAreaPoints[j].x = cluster_info[i].convex_hull[j].x;
-            msgObj.cPoint.lowerAreaPoints[j].y = cluster_info[i].convex_hull[j].y;
-            msgObj.cPoint.lowerAreaPoints[j].z = cluster_info[i].convex_hull[j].z;
+            msgs::PointXYZ p0;
+            p0.x = cluster_info[i].convex_hull[j].x;
+            p0.y = cluster_info[i].convex_hull[j].y;
+            if (cluster_info[i].min.z < min_z) p0.z = min_z;
+            else p0.z = cluster_info[i].min.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(p0);
           }
+          for (size_t j = 0; j < convex_hull_size_; j++)
+          {
+            msgs::PointXYZ p0;
+            p0.x = cluster_info[i].convex_hull[j].x;
+            p0.y = cluster_info[i].convex_hull[j].y;
+            if (cluster_info[i].max.z > max_z) p0.z = max_z;
+            else p0.z = cluster_info[i].max.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(p0);
+          }
+          for (size_t j = 0; j < convex_hull_size_; j++)
+          {
+            msgs::PointXYZ p0;
+            p0.x = cluster_info[i].convex_hull[j].x;
+            p0.y = cluster_info[i].convex_hull[j].y;
+            if (cluster_info[i].min.z < min_z) p0.z = min_z;
+            else p0.z = cluster_info[i].min.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(p0);
+            p0.x = cluster_info[i].convex_hull[j].x;
+            p0.y = cluster_info[i].convex_hull[j].y;
+            if (cluster_info[i].max.z > max_z) p0.z = max_z;
+            else p0.z = cluster_info[i].max.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(p0);
+          }          
 
           msgObj.cPoint.objectHigh = cluster_info[i].dz;
 
