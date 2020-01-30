@@ -89,8 +89,8 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 	frame.can_dlc = CAN_DLC;
 	frame.can_id  = 0x055;
 	for(int i=0;i<8;i++){
-		frame.data[i] = bus_stop_flag[i];
-		cout << "stop" << i << ": " << bus_stop_flag[i] << endl;
+		frame.data[i] = (short int)(bus_stop_flag[i]);
+		cout << "stop" << i << ": " << frame.data[i] << endl;
 	}
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	printf("Wrote %d bytes\n", nbytes);
