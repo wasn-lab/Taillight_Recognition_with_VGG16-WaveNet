@@ -81,7 +81,7 @@ msgs::ConvexPoint CosmapGenerator::makePolygonFromObjectBox(const msgs::Detected
 {
   msgs::ConvexPoint convexPoint_;
   msgs::PointXYZ mid_p0_p3, mid_p0_p4, mid_p3_p7, mid_p4_p7;
-  double expand_polygon_size = 16;  // default value
+  // double expand_polygon_size = 16;  // default value
   std::vector<msgs::PointXYZ> lowerAreaPoints_;
   /// 3D bounding box
   ///   p5------p6
@@ -139,13 +139,13 @@ grid_map::Matrix CosmapGenerator::makeCostmapFromObjects(const grid_map::GridMap
                                                          const bool use_objects_convex_hull)
 {
   grid_map::Matrix gridmap_data = costmap[gridmap_layer_name];
-  for (int i = 0; i < in_objects.objects.size(); i++)
+  for (size_t i = 0; i < in_objects.objects.size(); i++)
   {
     if (in_objects.objects[i].distance >= 0)
     {
       msgs::ConvexPoint convexPoint_;
       convexPoint_ = makePolygonFromObjectBox(in_objects.objects[i]);
-      for (int i = 0; i < convexPoint_.lowerAreaPoints.size(); i++)
+      for (size_t i = 0; i < convexPoint_.lowerAreaPoints.size(); i++)
       {
         grid_map::Index grid_index_ = fetchGridIndexFromPoint(convexPoint_.lowerAreaPoints[i]);
         if (isValidInd(grid_index_))

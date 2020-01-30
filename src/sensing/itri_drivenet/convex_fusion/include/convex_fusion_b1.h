@@ -93,7 +93,7 @@ public:
     {
       msgs::DetectedObject msgObj;
       msgObj.classId = cluster_info[i].cluster_tag;
-      int convex_hull_size_ = cluster_info[i].convex_hull.size();
+      size_t convex_hull_size_ = cluster_info[i].convex_hull.size();
       if (convex_hull_size_ > 0)
       {
         for (size_t j = 0; j < convex_hull_size_; j++)
