@@ -265,7 +265,7 @@ class ROSBAG_CALLER(object):
         To start recording.
         """
         if not self._is_thread_rosbag_valid():
-            self._thread_rosbag = threading.Thread(target=self._rosbag_watcher)
+            self._thread_rosbag = threading.Thread(target=self._rosbag_watcher_worker)
             self._thread_rosbag.start()
             return True
         else:
@@ -286,9 +286,26 @@ class ROSBAG_CALLER(object):
                 print("rosbag is not running, no action.")
             return False
 
+    def split_simple(self, _warning=False):
+        """
+        To stop a record and start a new one
+        """
+        self.stop(_warning)
+        _count = 0
+        _count_max = 1000
+        while self._is_thread_rosbag_valid() and (_count < _count_max):
+            print("Restart waiting count: %d" % _count)
+            _count += 1
+            time.sleep(0.1)
+        if (_count >= _count_max):
+            return False
+        else:
+            return self.start(_warning)
+
     def split(self, _warning=False):
         """
         To stop a record and start a new one
+        without publishing out the status change
         """
         self.stop(_warning)
         _count = 0
@@ -430,17 +447,13 @@ class ROSBAG_CALLER(object):
         #
         return False
     #-------------------------------------#
-
     def _rosbag_watcher(self):
         """
-        This function run as a thread to look after the rosbag process.
+        This function look after the rosbag process.
         """
-        # global _recorder_running_pub
         # The private method to start the process
         self._open_rosbag()
         print("=== Subprocess started.===")
-        self._send_rosbag_state(True)
-        # _recorder_running_pub.publish(True)
         #
         time_start = time.time()
         while self._ps.poll() is None:
@@ -453,8 +466,18 @@ class ROSBAG_CALLER(object):
         result = self._ps.poll()
         print("result = %s" % str(result))
         print("=== Subprocess finished.===")
+
+
+    def _rosbag_watcher_worker(self):
+        """
+        This function run as a thread to look after the rosbag process.
+        """
+        # global _recorder_running_pub
+        self._send_rosbag_state(True)
+        #
+        self._rosbag_watcher()
+        #
         self._send_rosbag_state(False)
-        # _recorder_running_pub.publish(False)
 
         # Clear the handle, indicating that no process is running
         # self._ps = None
