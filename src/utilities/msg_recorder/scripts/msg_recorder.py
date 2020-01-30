@@ -169,6 +169,8 @@ class ROSBAG_CALLER(object):
         self._state_sender_func = None
         self._report_sender_func = None
         #
+        self.restart_req_Q = Queue.Queue(maxsize=1) # The queue for store the restart requests
+        #
         self._last_trigger_timestamp = 0.0
 
         # Parameters for rosbag record with default values
@@ -273,12 +275,23 @@ class ROSBAG_CALLER(object):
                 print("rosbag is already running, no action")
             return False
 
-    def stop(self, _warning=False):
+    def stop(self, _warning=False, is_cleaning_restart_req_Q=True):
         """
         To stop recording
 
         Note: If the stop() is called right after start(), then the rosnode kill might fail (the node is not intialized yet.)
         """
+        if is_cleaning_restart_req_Q:
+            _count = 0
+            while (not self.restart_req_Q.empty()) and _count < 100:
+                try:
+                    req_restart = self.restart_req_Q.get(False)
+                except Queue.Empty:
+                    pass
+                _count += 1
+            if _count >= 100:
+                print("self.restart_req_Q can not be clean for some reason..")
+        #
         if self._is_thread_rosbag_valid() and ( (not self._ps is None) and self._ps.poll() is None): # subprocess is running
             return self._terminate_rosbag(_warning=_warning)
         else:
@@ -307,17 +320,27 @@ class ROSBAG_CALLER(object):
         To stop a record and start a new one
         without publishing out the status change
         """
-        self.stop(_warning)
-        _count = 0
-        _count_max = 1000
-        while self._is_thread_rosbag_valid() and (_count < _count_max):
-            print("Restart waiting count: %d" % _count)
-            _count += 1
-            time.sleep(0.1)
-        if (_count >= _count_max):
+        if not self.restart_req_Q.empty():
+            print("The split command is executing, dropping this one.")
             return False
-        else:
+        # Else, empty
+        if (not self._is_thread_rosbag_valid()):
+            print("The rosbag record is not started, instead of spliting it, start it..")
             return self.start(_warning)
+        # Running
+        try:
+            self.restart_req_Q.put(True, False)
+        except Queue.Full:
+            print("The queue restart_req_Q is full, skip command")
+            return False
+        # Stop, without cleaning the self.restart_req_Q
+        self.stop(_warning, is_cleaning_restart_req_Q=False)
+        print("Waiting for restarting.. (Note: the ROS topic for showing record state is still True)")
+
+        # See if the command has reached the target
+        self.restart_req_Q.join()
+        return True
+
 
     def backup(self, reason=""):
         """
@@ -475,7 +498,18 @@ class ROSBAG_CALLER(object):
         # global _recorder_running_pub
         self._send_rosbag_state(True)
         #
-        self._rosbag_watcher()
+        req_restart = True
+        while req_restart:
+            self._rosbag_watcher()
+            time.sleep(0.2) # Sleep awhile for ros graph to converge
+            try:
+                req_restart = self.restart_req_Q.get(False)
+                print("---Got request for restarting, keep working.")
+                self.restart_req_Q.task_done()
+            except Queue.Empty:
+                req_restart = False
+                print("---The queue restart_req_Q is empty, work completed.")
+
         #
         self._send_rosbag_state(False)
 
@@ -925,6 +959,8 @@ def main(sys_args):
                 pass
         #
         time.sleep(0.5)
+    # Stop
+    _rosbag_caller.stop(_warning=False)
     print("End of main loop.")
 
 
