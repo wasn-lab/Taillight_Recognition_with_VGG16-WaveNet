@@ -42,7 +42,7 @@ def erase_last_lines(n=1, erase=False):
             sys.stdout.write(ERASE_LINE)
 #---------------------------------------------------#
 
-class MOVE_QUEUE:
+class MOVE_QUEUE(object):
     """
     This is the class for handling the file copying.
     """
@@ -135,7 +135,7 @@ class MOVE_QUEUE:
 
 
 #---------------------------------------------------#
-class ROSBAG_CALLER:
+class ROSBAG_CALLER(object):
     """
     This is the function for handling the rosbag subprocess.
     """

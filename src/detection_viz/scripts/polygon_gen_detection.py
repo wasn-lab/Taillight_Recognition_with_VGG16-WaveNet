@@ -51,6 +51,17 @@ class Node:
     def req_show_depth_CB(self, msg):
         self.is_showing_depth = msg.data
 
+    def _increase_point_z(self, pointXYZ_in, high):
+        pointXYZ_out = PointXYZ()
+        pointXYZ_out.x = pointXYZ_in.x
+        pointXYZ_out.y = pointXYZ_in.y
+        pointXYZ_out.z = pointXYZ_in.z + high
+        return pointXYZ_out
+
+    def get_top_area_point_list(self, cPoint):
+        topAreaPoints = [self._increase_point_z(_pointXYZ, cPoint.objectHigh) for _pointXYZ in cPoint.lowerAreaPoints]
+        return topAreaPoints
+
     def text_marker_position(self, cPoint):
         point_1 = cPoint.lowerAreaPoints[0]
         p = Point()
@@ -158,7 +169,7 @@ class Node:
 
         marker.id = idx
         marker.type = Marker.LINE_LIST
-        marker.scale.x = 0.1
+        marker.scale.x = 0.05 # 0.1
         marker.lifetime = rospy.Duration(1.0)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
@@ -168,17 +179,25 @@ class Node:
         marker.points = []
         for _i in range(len(objects)):
             cPoint = objects[_i].cPoint
-            if len(cPoint.lowerAreaPoints) > 0:
-                # for i in range(len(cPoint.lowerAreaPoints)-1):
+
+            num_points = len(cPoint.lowerAreaPoints)
+            if num_points > 0:
+                objectHigh = cPoint.objectHigh
+                # Bottom points
+                marker.points += [ cPoint.lowerAreaPoints[(i-1)//2] for i in range( num_points*2 )  ]
+                #
+                # _point_pre = cPoint.lowerAreaPoints[-1]
+                # for i in range(len(cPoint.lowerAreaPoints)):
+                #     marker.points.append(_point_pre)
                 #     marker.points.append(cPoint.lowerAreaPoints[i])
-                #     marker.points.append(cPoint.lowerAreaPoints[i+1])
-                # marker.points.append(cPoint.lowerAreaPoints[-1])
-                # marker.points.append(cPoint.lowerAreaPoints[0])
-                _point_pre = cPoint.lowerAreaPoints[-1]
-                for i in range(len(cPoint.lowerAreaPoints)):
-                    marker.points.append(_point_pre)
-                    marker.points.append(cPoint.lowerAreaPoints[i])
-                    _point_pre = cPoint.lowerAreaPoints[i]
+                #     _point_pre = cPoint.lowerAreaPoints[i]
+
+                # Top points
+                topAreaPoints = self.get_top_area_point_list(cPoint)
+                marker.points += [ topAreaPoints[(i-1)//2] for i in range( num_points*2 )  ]
+
+                # Edge points
+                marker.points += [cPoint.lowerAreaPoints[i//2] if i%2==0 else topAreaPoints[i//2] for i in range( num_points*2 ) ]
 
         return marker
 

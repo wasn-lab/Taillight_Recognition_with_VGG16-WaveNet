@@ -47,6 +47,8 @@ brake_Q = Queue.Queue()
 
 # ROS publisher
 #-------------------#
+text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True)
+mileage_json_pub = rospy.Publisher("/mileage/relative_mileage", String, queue_size=10, latch=True)
 brake_status_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
 #-------------------#
 
@@ -157,11 +159,54 @@ def _flag_info_03_CB(data):
         brake_status_pub.publish( brake_state )
 
 
+#---------------------#
+mileage_json_time_period = 2 # sec.
+mileage_json_km_period = 1.0 # 1 km
+# Variables
+mileage_json_last_timestamp = int(time.time())
+mileage_json_last_mileage = 0.0
+mileage_json_last_is_self_driving = False
+def publish_mileage(total_mileage_in, is_self_driving=False, is_MINT=False):
+    """
+    """
+    global mileage_json_pub
+    global mileage_json_last_timestamp, mileage_json_last_mileage
+    global mileage_json_last_is_self_driving
+
+    now_sec = int(time.time())
+    if (now_sec - mileage_json_last_timestamp) < mileage_json_time_period:
+        if (total_mileage_in - mileage_json_last_mileage) < mileage_json_km_period:
+            if mileage_json_last_is_self_driving == is_self_driving and (not is_MINT):
+                # Nothing changed
+                return
+    # Mileage reach distance period or time reach time period
+    # Publish mileage as json string
+    #------------------------------------#
+    mileage_data_dict = dict()
+    mileage_data_dict["t_start"] = mileage_json_last_timestamp # Currently, last time
+    mileage_data_dict["t_end"] = now_sec # Now
+    mileage_data_dict["delta_km"] = (total_mileage_in - mileage_json_last_mileage)
+    mileage_data_dict["drive_mode"] = "A" if mileage_json_last_is_self_driving else "M" # Note: use the past status
+    if is_MINT:
+        mileage_data_dict["MINT"] = True
+    #
+    mileage_json_str = json.dumps(mileage_data_dict)
+    mileage_json_pub.publish(mileage_json_str)
+    #------------------------------------#
+    # Update
+    mileage_json_last_timestamp = now_sec
+    mileage_json_last_mileage = total_mileage_in
+    mileage_json_last_is_self_driving = is_self_driving
+
+
+
 def main(sys_args):
     """
     """
+    global text_marker_pub
     global mileage_km, speed_mps_filtered
     global brake_state, brake_Q
+    global adv_run_state, brake_state
     #
     rospy.init_node('mileage_recorder', anonymous=False)
 
@@ -201,15 +246,12 @@ def main(sys_args):
     #---------------------------------------------#
 
 
-
     # Init ROS communication interface
     #--------------------------------------#
     # Subscriber
     rospy.Subscriber("/veh_info", VehInfo, _veh_info_CB)
     rospy.Subscriber("/Flag_Info02", Flag_Info, _flag_info_02_CB)
     rospy.Subscriber("/Flag_Info03", Flag_Info, _flag_info_03_CB)
-    # Publisher
-    text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True) #
     #--------------------------------------#
 
 
@@ -217,7 +259,7 @@ def main(sys_args):
     # Loop for user command via stdin
     rate = rospy.Rate(5.0) # Hz
     while not rospy.is_shutdown():
-        # Do somthing
+        # Logging, publishing information of mileage, speed, run state, and brake status
         evet_str = "mileage: %.3f km, speed(filter): %.1f km/hr" % (mileage_km, speed_mps_filtered*3.6)
         evet_str += "\t| " + adv_run_state_2_string(adv_run_state)
         evet_str += "\t| " + brake_state_2_string(brake_state)
@@ -229,11 +271,19 @@ def main(sys_args):
         if not adv_run_Q.empty():
             adv_run_event = adv_run_Q.get()
             # # Print to stdout
-            # print( adv_run_state_2_string(adv_run_state) )
+            # print( adv_run_state_2_string(adv_run_event[0]) )
+
+        is_MINT = False
         if not brake_Q.empty():
             brake_event = brake_Q.get()
             # # Print to stdout
-            # print( brake_state_2_string(brake_state) )
+            # print( brake_state_2_string(brake_event[0]) )
+            if brake_event[0] == 4:
+                is_MINT = True
+
+        # Publish mileage as json string
+        is_self_driving = (adv_run_state == 1)
+        publish_mileage(mileage_km, is_self_driving=is_self_driving, is_MINT=is_MINT)
         #
         try:
             rate.sleep()

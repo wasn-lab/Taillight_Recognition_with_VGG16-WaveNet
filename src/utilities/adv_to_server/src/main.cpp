@@ -25,7 +25,7 @@ const static int TCP_VK_SRV_PORT = 8015;
 const static std::string UDP_VK_SRV_ADRR = "140.96.180.120";
 const static int UDP_VK_SRV_PORT = 8016;
 
-//aws backend
+// aws backend
 const static std::string UDP_AWS_SRV_ADRR = "52.69.10.200";
 const static int UDP_AWS_SRV_PORT = 5570;
 
@@ -33,14 +33,12 @@ const static int UDP_AWS_SRV_PORT = 5570;
 const static std::string UDP_OBU_ADRR = "192.168.1.200";
 const static int UDP_OBU_PORT = 9999;
 
-//TCP Server on ADV
+// TCP Server on ADV
 const static std::string TCP_ADV_SRV_ADRR = "192.168.1.6";
 const static int TCP_ADV_SRV_PORT = 8765;
 
 const static std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
 const static int UDP_ADV_SRV_PORT = 8766;
-
-
 
 // obu traffic signal
 const static std::string TOPIC_TRAFFIC = "/traffic";
@@ -79,6 +77,7 @@ msgs::LidLLA gps;
 msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
+std::string mileJson;
 
 const static double PI = 3.14;
 // can data
@@ -108,7 +107,15 @@ struct pose
   double yaw;
 };
 
+struct ArriveStop
+{
+  int id;
+  int status;
+};
+
+const static int ROUTE_ID = 2000;
 pose current_gnss_pose;
+ArriveStop cuttent_arrive_stop;
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
@@ -207,6 +214,7 @@ void callback_fps(const std_msgs::String::ConstPtr& input)
 void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 {
   float stop[8];
+  memset(stop, 0, sizeof(stop));
   mutex_ros.lock();
   stop[0] = input->Dspace_Flag01;
   stop[1] = input->Dspace_Flag02;
@@ -221,7 +229,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   {
     if (stop[i] == 1)
     {
-      stopids.push_back(i + 2001);
+      stopids.push_back(i + ROUTE_ID + 1);
     }
   }
   json J2;
@@ -240,18 +248,34 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
   J1["status"] = 0;
-  J1["route_id"] = 1;
-  J1["bus_stop"] = J2;
+  J1["route_id"] = ROUTE_ID;
+  if (stopids.size() == 0)
+  {
+    J1["bus_stops"] = json::array();
+  }
+  else
+  {
+    J1["bus_stops"] = J2;
+  }
 
   VK102Response = J1.dump();
   mutex_ros.unlock();
 }
 
-void callbackReverse(const std_msgs::String::ConstPtr& input)
+void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
 {
   mutex_ros.lock();
-  std::string jsonString = input->data.c_str();
-  std::cout << "reverse " << jsonString << std::endl;
+  cuttent_arrive_stop.id = ROUTE_ID + (int)input->Dspace_Flag01;
+  cuttent_arrive_stop.status = (int)input->Dspace_Flag02;
+  mutex_ros.unlock();
+}
+
+void callbackMileage(const std_msgs::String::ConstPtr& input)
+{
+  mutex_ros.lock();
+  mileJson = input->data.c_str();
+  std::cout << "mile info: " << mileJson << std::endl;
+
   mutex_ros.unlock();
 }
 
@@ -388,17 +412,17 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["tirepressure"] = 0.0;
     J1["airpressure"] = 0.0;
     J1["electricity"] = 0.0;
-    J1["steering"] = 0.0;
+    J1["steering"] = data[3];
     J1["milage"] = 0.0;
-    J1["speed"] = 0.0;
+    J1["speed"] = data[0];
     J1["rotate"] = 0.0;
     J1["gear"] = 1;
     J1["handcuffs"] = true;
     J1["Steeringwheel"] = 0.0;
     J1["door"] = true;
     J1["airconditioner"] = true;
-    J1["lat"] = 0.0;
-    J1["lng"] = 0.0;
+    J1["lat"] = gps.lidar_Lat;
+    J1["lng"] = gps.lidar_Lon;
     J1["headlight"] = true;
     J1["wiper"] = true;
     J1["Interiorlight"] = true;
@@ -407,9 +431,9 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["ArrivedStop"] = 2001;
-    J1["ArrivedStopStatus"] = 0;
-    J1["route_id"] = 2000;
+    J1["ArrivedStop"] = cuttent_arrive_stop.id;
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
+    J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
     J1["distance"] = 0.0;
     J1["mainvoltage"] = 0.0;
@@ -429,17 +453,17 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["tirepressure"] = 0.0;
     J1["airpressure"] = 0.0;
     J1["electricity"] = 0.0;
-    J1["steering"] = 0.0;
+    J1["steering"] = data[3];
     J1["milage"] = 0.0;
-    J1["speed"] = 0.0;
+    J1["speed"] = data[0];
     J1["rotate"] = 0.0;
     J1["gear"] = 1;
     J1["handcuffs"] = true;
     J1["Steeringwheel"] = 0.0;
     J1["door"] = true;
     J1["airconditioner"] = true;
-    J1["lat"] = 0.0;
-    J1["lng"] = 0.0;
+    J1["lat"] = gps.lidar_Lat;
+    J1["lng"] = gps.lidar_Lon;
     J1["headlight"] = true;
     J1["wiper"] = true;
     J1["Interiorlight"] = true;
@@ -448,10 +472,10 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["route_id"] = 2000;
+    J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
-    J1["ArrivedStop"] = 2001;
-    J1["ArrivedStopStatus"] = 0;
+    J1["ArrivedStop"] = cuttent_arrive_stop.id;
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
     J1["Signal"] = 1;
     J1["CMS"] = 1;
     J1["setting"] = 1;
@@ -463,8 +487,19 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     {
       std::string key = keys[i];
       float value = fps_json_.value(key, -1);
-      ;
       J1[key] = value;
+    }
+  }
+  else if (type == "M8.2.VK006")
+  {
+    try
+    {
+      json J0 = json::parse(mileJson);
+      J1["mileage_info"] = J0;
+    }
+    catch (std::exception& e)
+    {
+      std::cout << "mileage: " << e.what() << std::endl;
     }
   }
   return J1.dump();
@@ -481,25 +516,25 @@ void sendRun(int argc, char** argv)
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
-
+  // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
     mutex_queue.lock();
     while (q.size() != 0)
     {
-      UDP_Back_client.send_obj_to_server(q.front(),flag_show_udp_send);
+      UDP_Back_client.send_obj_to_server(q.front(), flag_show_udp_send);
       q.pop();
     }
 
     while (obuQueue.size() != 0)
     {
-      UDP_OBU_client.send_obj_to_server(obuQueue.front(),flag_show_udp_send);
+      UDP_OBU_client.send_obj_to_server(obuQueue.front(), flag_show_udp_send);
       obuQueue.pop();
     }
 
     while (vkQueue.size() != 0)
     {
-      UDP_VK_client.send_obj_to_server(vkQueue.front(),flag_show_udp_send);
+      UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
     mutex_queue.unlock();
@@ -573,7 +608,8 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackReverse);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop);
+
   while (ros::ok())
   {
     mutex_ros.lock();
@@ -613,7 +649,13 @@ void receiveRosRun(int argc, char** argv)
     vkQueue.push(temp_vk004);
     mutex_queue.unlock();
 
+    std::string temp_VK006 = get_jsonmsg_to_vk_server("M8.2.VK006");
+    mutex_queue.lock();
+    vkQueue.push(temp_VK006);
+    mutex_queue.unlock();
+
     mutex_ros.unlock();
+
     boost::this_thread::sleep(boost::posix_time::microseconds(ROS_UPDATE_MICROSECONDS));
     ros::spinOnce();
   }
@@ -621,45 +663,49 @@ void receiveRosRun(int argc, char** argv)
 
 void getServerStatusRun(int argc, char** argv)
 {
-    try
-    {
-      size_t buff_size = 2048;
-      char buffer_f[buff_size];
-      memset(buffer_f,0,sizeof(buffer_f));
-      TCPClient TCP_VK_client;
-      TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
-      //TCP_VK_client.initial("192.168.43.24", 8765);
-      TCP_VK_client.connectServer();
-      json J1;
-      J1["type"] = "M8.2.VK005";
-      J1["deviceid"] = "ITRI-ADV";
-      std::string jsonString = J1.dump();
-      const char* msg = jsonString.c_str();
-      TCP_VK_client.sendRequest(msg, strlen(msg));
-      TCP_VK_client.recvResponse(buffer_f, buff_size);
-      std::string response(buffer_f);
-      json J2;
-      J2 = json::parse(response);
-      //connect to server success.
-      RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, true);
-    }
-    catch (std::exception& e)
-    {
-      std::cout << "getServerStatus message: " << e.what() << std::endl;
-      //connect to server fail.
-      RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, false);
-    } 
+  try
+  {
+    size_t buff_size = 2048;
+    char buffer_f[buff_size];
+    memset(buffer_f, 0, sizeof(buffer_f));
+    TCPClient TCP_VK_client;
+    TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
+    // TCP_VK_client.initial("192.168.43.24", 8765);
+    TCP_VK_client.connectServer();
+    json J1;
+    J1["type"] = "M8.2.VK005";
+    J1["deviceid"] = "ITRI-ADV";
+    std::string jsonString = J1.dump();
+    const char* msg = jsonString.c_str();
+    TCP_VK_client.sendRequest(msg, strlen(msg));
+    TCP_VK_client.recvResponse(buffer_f, buff_size);
+    std::string response(buffer_f);
+    json J2;
+    J2 = json::parse(response);
+    // connect to server success.
+    RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, true);
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "getServerStatus message: " << e.what() << std::endl;
+    // connect to server fail.
+    RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, false);
+  }
 }
 
 std::string genErrorMsg(int code, std::string msg)
 {
   json J1;
   json J2;
+
   J2["msgInfo"] = msg;
   J2["msgCode"] = code;
   J1["messageObj"] = J2;
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
+  J1["status"] = 0;
+  J1["route_id"] = ROUTE_ID;
+  J1["bus_stops"] = json::array();
   return J1.dump();
 }
 
@@ -677,6 +723,9 @@ void VK102callback(std::string request)
   int in_stopid;
   int out_stopid;
   std::string type;
+
+  // clear response
+  VK102Response = "";
 
   // parsing
   try
@@ -731,36 +780,37 @@ void VK102callback(std::string request)
   // 300 millis seconds
   boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
   std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
-  
-  //check response from /BusStop/Info
-  if(VK102Response.empty()){
+
+  // check response from /BusStop/Info
+  if (VK102Response.empty())
+  {
     server.send_json(genErrorMsg(201, "No data from /BusStop/Info."));
     return;
   }
 
   server.send_json(VK102Response);
-
-  //clear response
-  VK102Response = "";
 }
 
 // start TCP server to receive VK102 reserve bus from backend.
 void tcpServerRun(int argc, char** argv)
-{  
+{
   // set ip and port
   server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-  //server.initial("192.168.43.204",8765);
+  // server.initial("192.168.43.204",8765);
+  // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();
   if (result >= 0)
   {
     // accept and read request and handle request in VK102callback.
-    try{
+    try
+    {
       server.wait_and_accept(VK102callback);
-    } catch( std::exception& e )
-   {
-     server.send_json(genErrorMsg(408, "You should send request in 10 seconds after you connected to ADV."));
-   }
+    }
+    catch (std::exception& e)
+    {
+      server.send_json(genErrorMsg(408, "You should send request in 10 seconds after you connected to ADV."));
+    }
   }
 }
 /*========================= thread runnables end =========================*/
@@ -794,7 +844,8 @@ int main(int argc, char** argv)
   boost::thread ThreadSend(sendRun, argc, argv);
 
   /*Start thread for UDP server to receive traffic light infomation from OBU. */
-  if (checkCommand(argc, argv, "-udp_srv")){
+  if (checkCommand(argc, argv, "-udp_srv"))
+  {
     flag_show_udp_send = false;
     boost::thread ThreadUDPreceive(receiveUDPRun, argc, argv);
   }
@@ -809,7 +860,8 @@ int main(int argc, char** argv)
   boost::thread ThreadGetServerStatus(getServerStatusRun, argc, argv);
 
   /*Startr thread for TCP server: Receive VK102*/
-  if (checkCommand(argc, argv, "-tcp_srv")){
+  if (checkCommand(argc, argv, "-tcp_srv"))
+  {
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
