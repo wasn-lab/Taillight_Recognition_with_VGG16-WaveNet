@@ -1,30 +1,4 @@
-#include <iostream>
-#include <cmath>
-#include <mutex>
-#include <omp.h>
-#include <thread>
-
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <sensor_msgs/PointCloud2.h>
-
-#include <pcl/point_types.h>
-#include <pcl/common/time.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl_conversions/pcl_conversions.h>
-
-#include <eigen3/Eigen/Dense>
-
-// #include "preprolib_squseg.h"
-
-#include "ssn_config.h"
-
-// #include "tf_utils.hpp"
-// #include <boost/filesystem.hpp> 
-
-#include "CuboidFilter.h"
-
-#include "squeezeseg_inference_nodelet.cpp"
+#include "squeezeseg_inference_nodelet.h"
 
 // namespace BFS = boost::filesystem;
 

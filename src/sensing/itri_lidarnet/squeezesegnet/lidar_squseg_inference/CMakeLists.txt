@@ -127,7 +127,6 @@ include_directories(
 
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/squeezeseg_inference.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/squeezeseg_inference_nodelet.cpp")
  
 add_executable		  (${PROJECT_NAME} src/squeezeseg_inference.cpp ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -137,6 +136,6 @@ target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 ######################
 ##      Nodelet     ##
 ######################
-cuda_add_library	  (${PROJECT_NAME}_nodelet src/squeezeseg_inference_nodelet.cpp ${SOURCES_SRCS})
+cuda_add_library	  (${PROJECT_NAME}_nodelet ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME}_nodelet ${${PROJECT_NAME}_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
