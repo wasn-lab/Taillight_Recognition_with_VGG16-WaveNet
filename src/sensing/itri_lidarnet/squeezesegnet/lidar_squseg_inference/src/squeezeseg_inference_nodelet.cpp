@@ -83,13 +83,6 @@ namespace ssn_nodelet
          */
       }
 
-    private:
-      bool
-      to_bool (std::string const &s)
-      {
-        return s != "0";
-      }
-
       static void
       callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg)
       {
@@ -187,6 +180,14 @@ namespace ssn_nodelet
           cout << "[SSN]:slow " << stopWatch.getTimeSeconds () << "s" << endl << endl;
         }
       }
+
+    private:
+      bool
+      to_bool (std::string const &s)
+      {
+        return s != "0";
+      }
+      
   };
 
 }
