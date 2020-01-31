@@ -26,8 +26,8 @@
 using namespace std;
 
 const int bus_number = 8; // 8 stops 
-vector<int> bus_stop_flag(bus_number, 1);;
-const vector<int> bus_stop_code = {1111,2222,3333,4444};
+vector<int> bus_stop_flag(bus_number, 0);;
+const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
 
 ros::Publisher publisher_01;
 
@@ -90,7 +90,7 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 	frame.can_id  = 0x055;
 	for(int i=0;i<8;i++){
 		frame.data[i] = (short int)(bus_stop_flag[i]);
-		cout << "stop" << i << ": " << frame.data[i] << endl;
+		cout << "stop" << i << ": " << int(frame.data[i]) << endl;
 	}
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	printf("Wrote %d bytes\n", nbytes);
