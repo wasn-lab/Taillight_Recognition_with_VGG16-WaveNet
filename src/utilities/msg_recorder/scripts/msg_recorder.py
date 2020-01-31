@@ -872,7 +872,7 @@ def main(sys_args):
 
     # Read topic_list file
     #------------------------#
-    topic_list = []
+    topic_list_original = []
     _f = open( (f_path+f_name_topics),'r')
     for _s in _f:
         # Remove the space and '\n'
@@ -882,10 +882,26 @@ def main(sys_args):
         if _idx_comment >= 0: # Do find a '#'
             _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
         if len(_s1) > 0: # Append non-empty string (after stripping)
-            topic_list.append(_s1)
+            topic_list_original.append(_s1)
     _f.close()
+    # Get unique items (remove duplicated items) and sort
+    topic_list = sorted(set(topic_list_original))
+    # print(type(topic_list))
     #------------------------#
 
+    # Count for duplicated elements
+    num_duplicated_topic = len(topic_list_original) - len(topic_list)
+    if num_duplicated_topic > 0:
+        # Let's check which topics are duplicated
+        __unique_topic_list = list()
+        duplicated_topic_list = list()
+        for _tp in topic_list_original:
+            if not _tp in __unique_topic_list:
+                __unique_topic_list.append(_tp)
+            else:
+                duplicated_topic_list.append(_tp)
+        del __unique_topic_list
+        duplicated_topic_list = sorted(set(duplicated_topic_list))
 
     # Print the params
     # print("param_dict = %s" % str(param_dict))
@@ -893,7 +909,13 @@ def main(sys_args):
     print("\n\ntopic_list:\n---------------" )
     for _tp in topic_list:
         print(_tp)
+    print("---------------\nNote: Remove %d duplicated topics." % num_duplicated_topic)
+    if num_duplicated_topic > 0:
+        print("\nDuplicated topics:\n---------------")
+        for _tp in duplicated_topic_list:
+            print(_tp)
     print("---------------\n\n" )
+
 
 
     # Add the 'topics' to param_dict
