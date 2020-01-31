@@ -6,7 +6,7 @@ from visualization_msgs.msg import MarkerArray
 from msgs.msg import PedObjectArray
 from msgs.msg import PedObject
 
-def create_marker(text, position, id = 0 ,duration = 1.0, color=[1.0,1.0,1.0]):
+def create_marker(text, position, id = 0 ,duration = 0.1, color=[1.0,1.0,1.0]):
     marker = Marker()
     marker.header.frame_id = '/base_link' # vehicle center
     marker.id = id
@@ -28,7 +28,7 @@ def create_marker(text, position, id = 0 ,duration = 1.0, color=[1.0,1.0,1.0]):
     return marker 
 
 def pedestrian_marker():
-    pub = rospy.Publisher('pedestrian_marker', MarkerArray, queue_size=10) # pedestrian_marker is TOPIC
+    pub = rospy.Publisher('/PedCross/3D_marker', MarkerArray, queue_size=10) # pedestrian_marker is TOPIC
     rospy.init_node('pedestrian_marker', anonymous=True)
     markerArray = MarkerArray()
     rate = rospy.Rate(10) # 10hz
@@ -71,7 +71,7 @@ def pedestrian_marker_callback_test(data):
 
 #for /CamObjFrontCenter
 def pedestrian_marker_callback_final(data):
-    pub = rospy.Publisher('pedestrian_marker', MarkerArray, queue_size=10) # pedestrian_marker is TOPIC
+    pub = rospy.Publisher('/PedCross/3D_marker', MarkerArray, queue_size=1) # pedestrian_marker is TOPIC
     #rospy.init_node('pedestrian_marker', anonymous=True)
     markerArray = MarkerArray()
     count = 0
@@ -84,7 +84,7 @@ def pedestrian_marker_callback_final(data):
                 prob = "C "+prob
             else:
                 prob = "NC "+prob
-            markerArray.markers.append(create_marker(text=prob,position=element.bPoint.p0,id=count))
+            markerArray.markers.append(create_marker(text=prob,position=element.bPoint.p0,id=element.track.id))
             #the correct one
             #markerArray.markers.append(create_marker(text='C 100%',position=element.bPoint.p0,id=element.fusionSourceId))
             count = count + 1

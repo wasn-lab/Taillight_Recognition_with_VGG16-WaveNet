@@ -29,7 +29,7 @@ def listener_test():
 
 def listener_pedestrian():
     rospy.init_node('node_name')
-    rospy.Subscriber('/PedestrianIntention', PedObjectArray, pedestrian_marker_callback_final)
+    rospy.Subscriber('/PedCross/Pedestrians', PedObjectArray, pedestrian_marker_callback_final)
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
