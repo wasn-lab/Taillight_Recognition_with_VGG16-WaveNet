@@ -864,26 +864,42 @@ def main(sys_args):
 
     # Read param file
     #------------------------#
-    _f = open( (f_path+f_name_params),'r')
-    params_raw = _f.read()
-    _f.close()
+    # _f = open( (f_path+f_name_params),'r')
+    # params_raw = _f.read()
+    # _f.close()
+    # param_dict = yaml.load(params_raw)
+    with open( (f_path+f_name_params),'r') as _f:
+        params_raw = _f.read()
     param_dict = yaml.load(params_raw)
     #------------------------#
 
     # Read topic_list file
     #------------------------#
     topic_list_original = []
-    _f = open( (f_path+f_name_topics),'r')
-    for _s in _f:
-        # Remove the space and '\n'
-        _s1 = _s.rstrip().lstrip()
-        # Deal with coments
-        _idx_comment = _s1.find('#')
-        if _idx_comment >= 0: # Do find a '#'
-            _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
-        if len(_s1) > 0: # Append non-empty string (after stripping)
-            topic_list_original.append(_s1)
-    _f.close()
+    # _f = open( (f_path+f_name_topics),'r')
+    # for _s in _f:
+    #     # Remove the space and '\n'
+    #     _s1 = _s.rstrip().lstrip()
+    #     # Deal with coments
+    #     _idx_comment = _s1.find('#')
+    #     if _idx_comment >= 0: # Do find a '#'
+    #         _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
+    #     if len(_s1) > 0: # Append non-empty string (after stripping)
+    #         topic_list_original.append(_s1)
+    # _f.close()
+    #
+    with open( (f_path+f_name_topics),'r') as _f:
+        for _s in _f:
+            # Remove the space and '\n'
+            _s1 = _s.rstrip().lstrip()
+            # Deal with coments
+            _idx_comment = _s1.find('#')
+            if _idx_comment >= 0: # Do find a '#'
+                _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
+            if len(_s1) > 0: # Append non-empty string (after stripping)
+                topic_list_original.append(_s1)
+        #
+    #
     # Get unique items (remove duplicated items) and sort
     topic_list = sorted(set(topic_list_original))
     # print(type(topic_list))
