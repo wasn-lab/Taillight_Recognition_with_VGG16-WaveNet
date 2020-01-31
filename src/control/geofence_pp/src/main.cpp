@@ -188,7 +188,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 
 			//Plot geofence PP
 
-			if(BBox_Geofence.getDistance()<80&&BBox_Geofence.getDistance()>5){
+			if(BBox_Geofence.getDistance()<80){
 				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 				//Plot geofence PP
