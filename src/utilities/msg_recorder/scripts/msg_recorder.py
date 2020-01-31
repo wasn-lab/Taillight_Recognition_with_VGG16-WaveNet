@@ -925,7 +925,7 @@ def main(sys_args):
     print("\n\ntopic_list:\n---------------" )
     for _tp in topic_list:
         print(_tp)
-    print("---------------\nNote: Remove %d duplicated topics." % num_duplicated_topic)
+    print("---------------\nNote: Removed %d duplicated topics." % num_duplicated_topic)
     if num_duplicated_topic > 0:
         print("\nDuplicated topics:\n---------------")
         for _tp in duplicated_topic_list:
