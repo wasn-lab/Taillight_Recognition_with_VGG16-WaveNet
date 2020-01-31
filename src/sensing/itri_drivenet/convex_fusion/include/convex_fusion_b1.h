@@ -84,7 +84,8 @@ public:
     ErrorCode_pub.publish(objMsg);
   }
 
-  static void Send_CameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size, ros::Time rostime, std::string frameId)
+  static void Send_CameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
+                                 ros::Time rostime, std::string frameId)
   {
     msgs::DetectedObjectArray msgObjArr;
     float min_z = -3;
@@ -94,7 +95,7 @@ public:
       msgs::DetectedObject msgObj;
       msgObj.classId = cluster_info[i].cluster_tag;
       size_t convex_hull_size_ = cluster_info[i].convex_hull.size();
-      if(cluster_info[i].cluster_tag != 0)
+      if (cluster_info[i].cluster_tag != 0)
       {
         if (convex_hull_size_ > 0)
         {
@@ -169,7 +170,7 @@ public:
           p4.z = cluster_info_bbox[i].min.z;
           msgObj.cPoint.lowerAreaPoints.push_back(p4);
           msgObj.cPoint.lowerAreaPoints.push_back(p0);
-          
+
           // top
           p1.x = cluster_info_bbox[i].min.x;
           p1.y = cluster_info_bbox[i].min.y;
@@ -198,11 +199,11 @@ public:
           msgObj.cPoint.lowerAreaPoints.push_back(p3);
           msgObj.cPoint.lowerAreaPoints.push_back(p6);
           msgObj.cPoint.lowerAreaPoints.push_back(p7);
-          msgObj.cPoint.lowerAreaPoints.push_back(p6); 
-          msgObj.cPoint.lowerAreaPoints.push_back(p4); 
-          msgObj.cPoint.lowerAreaPoints.push_back(p5); 
+          msgObj.cPoint.lowerAreaPoints.push_back(p6);
+          msgObj.cPoint.lowerAreaPoints.push_back(p4);
+          msgObj.cPoint.lowerAreaPoints.push_back(p5);
         }
-        
+
         msgObj.cPoint.objectHigh = cluster_info[i].dz;
 
         msgObj.fusionSourceId = 0;

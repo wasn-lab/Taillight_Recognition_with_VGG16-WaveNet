@@ -103,8 +103,10 @@ int main(int argc, char** argv)
       CameraABB[i + CNT].max.x = ObjectFC[i].bPoint.p6.x;
       CameraABB[i + CNT].max.y = ObjectFC[i].bPoint.p6.y;
       CameraABB[i + CNT].max.z = ObjectFC[i].bPoint.p6.z;
-      if (ObjectFC[i].distance < 0) CameraABB[i + CNT].cluster_tag = 0;
-      else CameraABB[i + CNT].cluster_tag = ObjectFC[i].classId;
+      if (ObjectFC[i].distance < 0)
+        CameraABB[i + CNT].cluster_tag = 0;
+      else
+        CameraABB[i + CNT].cluster_tag = ObjectFC[i].classId;
       CameraABB_BBox[i + CNT] = CameraABB[i + CNT];
     }
     CNT += ObjectFC.size();
@@ -117,8 +119,10 @@ int main(int argc, char** argv)
       CameraABB[i + CNT].max.x = ObjectFT[i].bPoint.p6.x;
       CameraABB[i + CNT].max.y = ObjectFT[i].bPoint.p6.y;
       CameraABB[i + CNT].max.z = ObjectFT[i].bPoint.p6.z;
-      if (ObjectFT[i].distance < 0) CameraABB[i + CNT].cluster_tag = 0;
-      else CameraABB[i + CNT].cluster_tag = ObjectFT[i].classId;
+      if (ObjectFT[i].distance < 0)
+        CameraABB[i + CNT].cluster_tag = 0;
+      else
+        CameraABB[i + CNT].cluster_tag = ObjectFT[i].classId;
       CameraABB_BBox[i + CNT] = CameraABB[i + CNT];
     }
     CNT += ObjectFT.size();
@@ -131,8 +135,10 @@ int main(int argc, char** argv)
       CameraABB[i + CNT].max.x = ObjectBT[i].bPoint.p6.x;
       CameraABB[i + CNT].max.y = ObjectBT[i].bPoint.p6.y;
       CameraABB[i + CNT].max.z = ObjectBT[i].bPoint.p6.z;
-      if (ObjectBT[i].distance < 0) CameraABB[i + CNT].cluster_tag = 0;
-      else CameraABB[i + CNT].cluster_tag = ObjectBT[i].classId;
+      if (ObjectBT[i].distance < 0)
+        CameraABB[i + CNT].cluster_tag = 0;
+      else
+        CameraABB[i + CNT].cluster_tag = ObjectBT[i].classId;
       CameraABB_BBox[i + CNT] = CameraABB[i + CNT];
     }
 
