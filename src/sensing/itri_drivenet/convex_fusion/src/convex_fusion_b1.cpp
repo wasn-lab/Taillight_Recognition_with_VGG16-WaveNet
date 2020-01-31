@@ -92,6 +92,7 @@ int main(int argc, char** argv)
     size_t NumberABB = ObjectFC.size() + ObjectFT.size() + ObjectBT.size();
 
     CLUSTER_INFO CameraABB[NumberABB];
+    CLUSTER_INFO CameraABB_BBox[NumberABB];
 
     size_t CNT = 0;
     for (size_t i = 0; i < ObjectFC.size(); i++)
@@ -102,7 +103,9 @@ int main(int argc, char** argv)
       CameraABB[i + CNT].max.x = ObjectFC[i].bPoint.p6.x;
       CameraABB[i + CNT].max.y = ObjectFC[i].bPoint.p6.y;
       CameraABB[i + CNT].max.z = ObjectFC[i].bPoint.p6.z;
-      CameraABB[i + CNT].cluster_tag = ObjectFC[i].classId;
+      if (ObjectFC[i].distance < 0) CameraABB[i + CNT].cluster_tag = 0;
+      else CameraABB[i + CNT].cluster_tag = ObjectFC[i].classId;
+      CameraABB_BBox[i + CNT] = CameraABB[i + CNT];
     }
     CNT += ObjectFC.size();
 
@@ -114,7 +117,9 @@ int main(int argc, char** argv)
       CameraABB[i + CNT].max.x = ObjectFT[i].bPoint.p6.x;
       CameraABB[i + CNT].max.y = ObjectFT[i].bPoint.p6.y;
       CameraABB[i + CNT].max.z = ObjectFT[i].bPoint.p6.z;
-      CameraABB[i + CNT].cluster_tag = ObjectFT[i].classId;
+      if (ObjectFT[i].distance < 0) CameraABB[i + CNT].cluster_tag = 0;
+      else CameraABB[i + CNT].cluster_tag = ObjectFT[i].classId;
+      CameraABB_BBox[i + CNT] = CameraABB[i + CNT];
     }
     CNT += ObjectFT.size();
 
@@ -126,7 +131,9 @@ int main(int argc, char** argv)
       CameraABB[i + CNT].max.x = ObjectBT[i].bPoint.p6.x;
       CameraABB[i + CNT].max.y = ObjectBT[i].bPoint.p6.y;
       CameraABB[i + CNT].max.z = ObjectBT[i].bPoint.p6.z;
-      CameraABB[i + CNT].cluster_tag = ObjectBT[i].classId;
+      if (ObjectBT[i].distance < 0) CameraABB[i + CNT].cluster_tag = 0;
+      else CameraABB[i + CNT].cluster_tag = ObjectBT[i].classId;
+      CameraABB_BBox[i + CNT] = CameraABB[i + CNT];
     }
 
     for (size_t i = 0; i < NumberABB; i++)
@@ -255,8 +262,7 @@ int main(int argc, char** argv)
         bbox2.Compute(CameraABB[i].obb_vertex, CameraABB[i].center, CameraABB[i].min, CameraABB[i].max,
                       CameraABB[i].convex_hull);
       }
-
-      ConvexFusionB1::Send_CameraResults(CameraABB, NumberABB, frame_time, "lidar");
+      ConvexFusionB1::Send_CameraResults(CameraABB, CameraABB_BBox, NumberABB, frame_time, "lidar");
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)
