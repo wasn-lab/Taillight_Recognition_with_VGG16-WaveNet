@@ -30,8 +30,7 @@ with open("./backup_history.txt") as _F:
 #     print("\n")
 
 
-
-def play_bag(file_list, topic_list=None, clock=True, loop=True):
+def play_bag(file_list, topic_list=None, clock=True, loop=True, start_str=None, duration_str=None, rate_str=None):
     """
     """
     # The command
@@ -41,7 +40,13 @@ def play_bag(file_list, topic_list=None, clock=True, loop=True):
         cmd_list += ["--clock"]
     if loop:
         cmd_list += ["-l"]
-    if not topic_list is None:
+    if start_str: # Note: not None or empty string
+        cmd_list += ["-s %s" % start_str]
+    if duration_str:
+        cmd_list += ["-u %s" % duration_str]
+    if rate_str:
+        cmd_list += ["-r %s" % rate_str]
+    if (not topic_list is None):
         # _topic_str = " ".join(topic_list)
         # cmd_list += ["--topics %s" % _topic_str]
         cmd_list += ["--topics"]
@@ -70,7 +75,7 @@ def play_bag(file_list, topic_list=None, clock=True, loop=True):
         _ps.terminate()
         print("Terminating...")
 
-    time.sleep(0.5)
+    time.sleep(0.5) # Wait for subprocess closs
     result = _ps.poll()
     print("result = %s" % str(result))
     print("=== Subprocess finished.===")
@@ -92,7 +97,7 @@ def main():
         txt_input = raw_input
     except NameError:
         txt_input = input
-    # print("")
+    #
     str_in = txt_input("Event id to play:")
     # try:
     #     str_in = txt_input("Event id to play:")
@@ -106,10 +111,14 @@ def main():
     except:
         id_in = None
 
+    s_str_in = txt_input("Start from? (default: 0, unit: sec.)\n")
+    u_str_in = txt_input('Duration? (default: "record-length", unit: sec.)\n')
+    r_str_in = txt_input("Rate? (default: 1, unit: x)\n")
+
     if (not id_in is None) and (id_in >= 0) and (id_in < len(bag_dict_list)):
         #
         file_list = bag_dict_list[id_in]["bags"]
-        play_bag(file_list, topic_list=topic_list, clock=True, loop=True)
+        play_bag(file_list, topic_list=topic_list, clock=True, loop=True,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
     else:
         print("Wrong input type, exit.")
     print("End of main().")
@@ -121,5 +130,5 @@ if __name__ == "__main__":
         main()
     except (KeyboardInterrupt, SystemExit):
         print("Stopping...")
-    time.sleep(0.5)
+        time.sleep(0.5)
     print("End of player.")
