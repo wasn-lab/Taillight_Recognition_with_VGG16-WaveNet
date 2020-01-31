@@ -586,6 +586,22 @@ Visualization Manager:
         /mileage/status_text_T: true
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /CameraDetection/polygon/poly
+      Name: camPoly
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /CameraDetection/polygon/delayTxt
+      Name: camPoly_latency
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -611,16 +627,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 103.225266
+      Distance: 98.829834
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 10.9122314
-        Y: 3.10160255
-        Z: 0.635129094
+        X: 10.6494665
+        Y: 4.99768448
+        Z: 0.634845138
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
