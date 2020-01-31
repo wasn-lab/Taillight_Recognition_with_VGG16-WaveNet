@@ -1,10 +1,16 @@
-
 #ifndef UDPCLIENTSERVER_H_
 #define UDPCLIENTSERVER_H_
 
-#include "../all_header.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netdb.h>
+
 #include "json.hpp"
 
+#include "../UserDefine.h"
+
+using namespace std;
 using json = nlohmann::json;
 
 class udp_client_server_runtime_error : public std::runtime_error

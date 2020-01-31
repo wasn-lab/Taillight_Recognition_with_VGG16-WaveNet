@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libwaypoint_follower)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         rosunit
 )
+
+#find_package(Eigen3 QUIET)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -37,6 +39,7 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(libwaypoint_follower
         include
         ${catkin_INCLUDE_DIRS}
+	#${EIGEN3_INCLUDE_DIR}
 )
 
 add_library(libwaypoint_follower src/libwaypoint_follower.cpp)

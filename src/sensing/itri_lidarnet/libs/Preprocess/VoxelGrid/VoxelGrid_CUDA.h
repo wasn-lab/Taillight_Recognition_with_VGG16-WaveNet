@@ -11,6 +11,7 @@ using namespace std;
 using namespace pcl;
 
 #include "VoxelGrid_CUDA.cuh"
+#include "../../UserDefine.h"
 
 class VoxelGrid_CUDA
 {
@@ -20,13 +21,17 @@ class VoxelGrid_CUDA
 
     void
     coutMemoryStatus ();
-    bool
-    downsampling (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
-                  float resolution);
 
-    PointCloud<PointXYZ>
-    compute (PointCloud<PointXYZ>::Ptr input,
+    template <typename PointT>
+    bool
+    run (typename pcl::PointCloud<PointT> &point_cloud,
+         float resolution);
+
+    template <typename PointT>
+    PointCloud<PointT>
+    compute (typename pcl::PointCloud<PointT>::Ptr input,
              float resolution);
+
   private:
     static bool hasInitialCUDA;
     static int  maxThreadsNumber;

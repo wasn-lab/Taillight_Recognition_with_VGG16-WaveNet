@@ -13,27 +13,22 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
-
 #define CAN_DLC 8;
 
 class CanReceiver
 
 {
-  public:
-    CanReceiver ();
+public:
+  CanReceiver();
 
-    void
-    initial ();
+  void initial();
 
-    void
-    closeSocket ();
+  void closeSocket();
 
-    int
-    receive (double *data);
+  int receive(double* data);
 
-    int
-    processFrame (double *data, const struct can_frame& frame);
+  int processFrame(double* data, const struct can_frame& frame);
 
-  private:
-    int c_socket;
+private:
+  int c_socket;
 };
