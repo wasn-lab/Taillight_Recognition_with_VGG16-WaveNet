@@ -109,12 +109,20 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 	publisher_01.publish(msg_temp);
 }
 
+void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
+{
+	if(msg->Dspace_Flag02==2){
+		bus_stop_flag[int(msg->Dspace_Flag01)-1] = 0;
+	}
+}
+
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "bus_stop_info");
 	ros::NodeHandle n;
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
+	ros::Subscriber subscriber_02 = n.subscribe("/NextStop/Info", 1, chatterCallback_02);
 	publisher_01 = n.advertise<msgs::Flag_Info>("/BusStop/Info", 1);
 	ros::spin();
 	return 0;
