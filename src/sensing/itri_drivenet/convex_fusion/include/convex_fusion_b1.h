@@ -102,45 +102,45 @@ public:
           // bottom
           for (size_t j = 0; j < convex_hull_size; j++)
           {
-            msgs::PointXYZ p0;
-            p0.x = cluster_info[i].convex_hull[j].x;
-            p0.y = cluster_info[i].convex_hull[j].y;
+            msgs::PointXYZ convex_point;
+            convex_point.x = cluster_info[i].convex_hull[j].x;
+            convex_point.y = cluster_info[i].convex_hull[j].y;
             if (cluster_info[i].min.z < min_z)
-              p0.z = min_z;
+              convex_point.z = min_z;
             else
-              p0.z = cluster_info[i].min.z;
-            msgObj.cPoint.lowerAreaPoints.push_back(p0);
+              convex_point.z = cluster_info[i].min.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
           // top
           for (size_t j = 0; j < convex_hull_size; j++)
           {
-            msgs::PointXYZ p0;
-            p0.x = cluster_info[i].convex_hull[j].x;
-            p0.y = cluster_info[i].convex_hull[j].y;
+            msgs::PointXYZ convex_point;
+            convex_point.x = cluster_info[i].convex_hull[j].x;
+            convex_point.y = cluster_info[i].convex_hull[j].y;
             if (cluster_info[i].max.z > max_z)
-              p0.z = max_z;
+              convex_point.z = max_z;
             else
-              p0.z = cluster_info[i].max.z;
-            msgObj.cPoint.lowerAreaPoints.push_back(p0);
+              convex_point.z = cluster_info[i].max.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
           // line
           for (size_t j = 0; j < convex_hull_size; j++)
           {
-            msgs::PointXYZ p0;
-            p0.x = cluster_info[i].convex_hull[j].x;
-            p0.y = cluster_info[i].convex_hull[j].y;
+            msgs::PointXYZ convex_point;
+            convex_point.x = cluster_info[i].convex_hull[j].x;
+            convex_point.y = cluster_info[i].convex_hull[j].y;
             if (cluster_info[i].min.z < min_z)
-              p0.z = min_z;
+              convex_point.z = min_z;
             else
-              p0.z = cluster_info[i].min.z;
-            msgObj.cPoint.lowerAreaPoints.push_back(p0);
-            p0.x = cluster_info[i].convex_hull[j].x;
-            p0.y = cluster_info[i].convex_hull[j].y;
+              convex_point.z = cluster_info[i].min.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
+            convex_point.x = cluster_info[i].convex_hull[j].x;
+            convex_point.y = cluster_info[i].convex_hull[j].y;
             if (cluster_info[i].max.z > max_z)
-              p0.z = max_z;
+              convex_point.z = max_z;
             else
-              p0.z = cluster_info[i].max.z;
-            msgObj.cPoint.lowerAreaPoints.push_back(p0);
+              convex_point.z = cluster_info[i].max.z;
+            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
         }
         else
@@ -149,62 +149,62 @@ public:
           ///   p5------p6
           ///   /|  2   /|
           /// p1-|----p2 |
-          ///  |p4----|-p7
-          ///  |/  1  | /
-          /// p0-----P3
-
-          msgs::PointXYZ p0, p1, p2, p3, p4, p5, p6, p7;
-
+          ///  |p4----|-p7  
+          ///  |/  1  | /   
+          /// p0-----P3   
+           
+          // Use Cartesian coordinate system. min point of bbox is p0, max point of bbox is p6; 
+          msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
           // bottom
-          p0.x = cluster_info_bbox[i].min.x;
-          p0.y = cluster_info_bbox[i].min.y;
-          p0.z = cluster_info_bbox[i].min.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p0);
-          p3.x = cluster_info_bbox[i].min.x;
-          p3.y = cluster_info_bbox[i].max.y;
-          p3.z = cluster_info_bbox[i].min.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p3);
-          p7.x = cluster_info_bbox[i].max.x;
-          p7.y = cluster_info_bbox[i].max.y;
-          p7.z = cluster_info_bbox[i].min.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p7);
-          p4.x = cluster_info_bbox[i].max.x;
-          p4.y = cluster_info_bbox[i].min.y;
-          p4.z = cluster_info_bbox[i].min.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p4);
-          msgObj.cPoint.lowerAreaPoints.push_back(p0);
+          bbox_p0.x = cluster_info_bbox[i].min.x;
+          bbox_p0.y = cluster_info_bbox[i].min.y;
+          bbox_p0.z = cluster_info_bbox[i].min.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
+          bbox_p3.x = cluster_info_bbox[i].min.x;
+          bbox_p3.y = cluster_info_bbox[i].max.y;
+          bbox_p3.z = cluster_info_bbox[i].min.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p3);
+          bbox_p7.x = cluster_info_bbox[i].max.x;
+          bbox_p7.y = cluster_info_bbox[i].max.y;
+          bbox_p7.z = cluster_info_bbox[i].min.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p7);
+          bbox_p4.x = cluster_info_bbox[i].max.x;
+          bbox_p4.y = cluster_info_bbox[i].min.y;
+          bbox_p4.z = cluster_info_bbox[i].min.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
 
           // top
-          p1.x = cluster_info_bbox[i].min.x;
-          p1.y = cluster_info_bbox[i].min.y;
-          p1.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p1);
+          bbox_p1.x = cluster_info_bbox[i].min.x;
+          bbox_p1.y = cluster_info_bbox[i].min.y;
+          bbox_p1.z = cluster_info_bbox[i].max.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p1);
 
-          p2.x = cluster_info_bbox[i].min.x;
-          p2.y = cluster_info_bbox[i].max.y;
-          p2.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p2);
+          bbox_p2.x = cluster_info_bbox[i].min.x;
+          bbox_p2.y = cluster_info_bbox[i].max.y;
+          bbox_p2.z = cluster_info_bbox[i].max.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p2);
 
-          p6.x = cluster_info_bbox[i].max.x;
-          p6.y = cluster_info_bbox[i].max.y;
-          p6.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p6);
+          bbox_p6.x = cluster_info_bbox[i].max.x;
+          bbox_p6.y = cluster_info_bbox[i].max.y;
+          bbox_p6.z = cluster_info_bbox[i].max.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p6);
 
-          p5.x = cluster_info_bbox[i].max.x;
-          p5.y = cluster_info_bbox[i].min.y;
-          p5.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(p5);
-          msgObj.cPoint.lowerAreaPoints.push_back(p1);
+          bbox_p5.x = cluster_info_bbox[i].max.x;
+          bbox_p5.y = cluster_info_bbox[i].min.y;
+          bbox_p5.z = cluster_info_bbox[i].max.z;
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p5);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p1);
 
           // line
-          msgObj.cPoint.lowerAreaPoints.push_back(p0);
-          msgObj.cPoint.lowerAreaPoints.push_back(p2);
-          msgObj.cPoint.lowerAreaPoints.push_back(p3);
-          msgObj.cPoint.lowerAreaPoints.push_back(p6);
-          msgObj.cPoint.lowerAreaPoints.push_back(p7);
-          msgObj.cPoint.lowerAreaPoints.push_back(p6);
-          msgObj.cPoint.lowerAreaPoints.push_back(p4);
-          msgObj.cPoint.lowerAreaPoints.push_back(p5);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p2);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p3);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p6);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p7);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p6);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
+          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p5);
         }
 
         msgObj.cPoint.objectHigh = cluster_info[i].dz;
