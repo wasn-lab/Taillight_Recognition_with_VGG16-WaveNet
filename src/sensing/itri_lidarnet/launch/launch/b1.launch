@@ -58,7 +58,7 @@
 	<group ns="LidarFrontRight" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
 
 	<!-- declare arguments with default values -->
-	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
   	<arg name="device_ip" default="192.168.0.220" />
 	<arg name="frame_id" default="lidar_front_right" />
  	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
@@ -82,7 +82,7 @@
 		<arg name="device_ip" value="$(arg device_ip)"/>
 		<arg name="frame_id" value="$(arg frame_id)"/>
 	    	<arg name="manager" value="$(arg manager)" />
-	    	<arg name="model" value="VLP16"/>
+	    	<arg name="model" value="32C"/>
 	    	<arg name="pcap" value="$(arg pcap)"/>
 	    	<arg name="port" value="$(arg port)"/>
 	    	<arg name="read_fast" value="$(arg read_fast)"/>
@@ -113,7 +113,7 @@
 	<group ns="LidarFrontLeft" if="$(eval arg('mode') != 3 and arg('mode') != 4)">
 
 	<!-- declare arguments with default values -->
-	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
   	<arg name="device_ip" default="192.168.0.221" />
 	<arg name="frame_id" default="lidar_front_left" />
  	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
@@ -137,7 +137,7 @@
 		<arg name="device_ip" value="$(arg device_ip)"/>
 		<arg name="frame_id" value="$(arg frame_id)"/>
 	    	<arg name="manager" value="$(arg manager)" />
-	    	<arg name="model" value="VLP16"/>
+	    	<arg name="model" value="32C"/>
 	    	<arg name="pcap" value="$(arg pcap)"/>
 	    	<arg name="port" value="$(arg port)"/>
 	    	<arg name="read_fast" value="$(arg read_fast)"/>
