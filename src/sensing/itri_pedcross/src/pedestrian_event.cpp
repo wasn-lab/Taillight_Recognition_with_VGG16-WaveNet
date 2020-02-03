@@ -82,6 +82,12 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #if USE_GLOG
         std::cout << "Track ID: " << obj.track.id << std::endl;
 #endif
+
+        // Check object source is camera
+        if(obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0){
+          continue;
+        }
+
         // resize from 1920*1208 to 608*384
         obj_pub.camInfo.u *= scaling_ratio_width;
         obj_pub.camInfo.v *= scaling_ratio_height;
@@ -546,7 +552,7 @@ void PedestrianEvent::pedestrian_event()
   }
   else  // input_source == 3
   {
-    sub = n.subscribe("/PathPredictionOutput/camera", 1, &PedestrianEvent::chatter_callback,
+    sub = n.subscribe("/PathPredictionOutput", 1, &PedestrianEvent::chatter_callback,
                       this);  // /CamObjFrontRight is sub topic
     sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
                           this);  // /cam/F_right is sub topic
