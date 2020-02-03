@@ -61,7 +61,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     cv::Mat matrix2;
     matrix.copyTo(matrix2);
 
-    std::vector<msgs::DetectedObject> pedObjs;
+    std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (auto const& obj : msg->objects)
     {
@@ -71,7 +71,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           continue;
 
         // set msg infomation
-        msgs::DetectedObject obj_pub;
+        msgs::PedObject obj_pub;
         obj_pub.header = obj.header;
         obj_pub.header.frame_id = obj.header.frame_id;
         obj_pub.header.stamp = obj.header.stamp;
@@ -169,7 +169,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           }
         }
         if (has_keypoint)
-          obj_pub.pedInfo.crossProbability =
+          obj_pub.crossProbability =
               crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
                                obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
         else
@@ -237,7 +237,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
     if (!pedObjs.empty())  // do things only when there is pedestrian
     {
-      msgs::DetectedObjectArray msg_pub;
+      msgs::PedObjectArray msg_pub;
 
       msg_pub.header = msg->header;
       msg_pub.header.frame_id = msg->header.frame_id;
@@ -261,7 +261,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           box.y = 0;
 
         std::string probability;
-        int p = 100 * obj.pedInfo.crossProbability;
+        int p = 100 * obj.crossProbability;
         if (p >= cross_threshold)
         {
           if (show_probability)
@@ -714,7 +714,7 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   pe.chatter_pub =
-      nh.advertise<msgs::DetectedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
+      nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh3;

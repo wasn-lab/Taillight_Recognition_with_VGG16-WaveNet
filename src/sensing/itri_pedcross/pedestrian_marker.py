@@ -3,8 +3,8 @@ import rospy
 from std_msgs.msg import String
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
-from msgs.msg import DetectedObjectArray
-from msgs.msg import DetectedObject
+from msgs.msg import PedObjectArray
+from msgs.msg import PedObject
 
 def create_marker(text, position, id = 0 ,duration = 0.1, color=[1.0,1.0,1.0]):
     marker = Marker()
@@ -38,11 +38,11 @@ def pedestrian_marker_callback_final(data):
             #temp. due to no fusion
             point = element.bPoint.p1
             point.z = point.z + 2
-            if element.pedInfo.crossProbability > 0.5: #threshold
-                prob = "C(" + get_two_float(element.pedInfo.crossProbability, 2) + ")"
+            if element.crossProbability > 0.5: #threshold
+                prob = "C(" + get_two_float(element.crossProbability, 2) + ")"
                 markerArray.markers.append(create_marker(text=prob,position=point,id=element.track.id,color=[1.0,0.2,0.0]))
             else:
-                prob = "NC(" + get_two_float(element.pedInfo.crossProbability, 2) + ")"
+                prob = "NC(" + get_two_float(element.crossProbability, 2) + ")"
                 markerArray.markers.append(create_marker(text=prob,position=point,id=element.track.id,color=[0.0,0.9,0.4]))
             #the correct one
     pub.publish(markerArray)
