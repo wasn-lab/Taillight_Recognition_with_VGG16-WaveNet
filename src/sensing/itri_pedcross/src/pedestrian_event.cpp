@@ -84,7 +84,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #endif
 
         // Check object source is camera
-        if(obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0){
+        if (obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0)
+        {
           continue;
         }
 
