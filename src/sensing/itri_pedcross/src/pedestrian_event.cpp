@@ -703,13 +703,6 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
 
-  std::string bash = PED_MODEL_DIR + std::string("/../download_models.sh");
-  int call_success = system(bash.c_str());
-  if (call_success == -1)
-  {
-    std::cout << "Cannot execute download_models.sh." << std::endl;
-  }
-
   pe.rf_pose =
       cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
 
