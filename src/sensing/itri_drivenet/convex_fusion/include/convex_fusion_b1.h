@@ -40,52 +40,52 @@
 class ConvexFusionB1
 {
 public:
-  static ros::Publisher ErrorCode_pub;
-  static ros::Publisher CameraDetection_pub;
+  static ros::Publisher error_code_pub_;
+  static ros::Publisher camera_detection_pub_;
 
   static void initial(std::string nodename, int argc, char** argv)
   {
     ros::init(argc, argv, nodename);
     ros::NodeHandle n;
 
-    ErrorCode_pub = n.advertise<msgs::ErrorCode>("/ErrorCode", 1);
-    CameraDetection_pub = n.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 1);
+    error_code_pub_ = n.advertise<msgs::ErrorCode>("/ErrorCode", 1);
+    camera_detection_pub_ = n.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 1);
   }
 
-  static void RegisterCallBackLidarAllNonGround(void (*cb1)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
+  static void registerCallBackLidarAllNonGround(void (*callback0)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
   {
     ros::NodeHandle n;
 
-    static ros::Subscriber LidarAllNonGroundSub = n.subscribe("/LidarAll/NonGround", 1, cb1);
+    static ros::Subscriber lidarall_nonground_sub = n.subscribe("/LidarAll/NonGround", 1, callback0);
   }
 
-  static void RegisterCallBackCameraDetection(void (*cb1)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*cb2)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*cb3)(const msgs::DetectedObjectArray::ConstPtr&))
+  static void registerCallBackCameraDetection(void (*callback0)(const msgs::DetectedObjectArray::ConstPtr&),
+                                              void (*callback1)(const msgs::DetectedObjectArray::ConstPtr&),
+                                              void (*callback2)(const msgs::DetectedObjectArray::ConstPtr&))
   {
     ros::NodeHandle n;
 
-    static ros::Subscriber CameraFCDetectionSub = n.subscribe(camera::topics_obj[camera::id::front_60], 1, cb1);
-    static ros::Subscriber CameraFTDetectionSub = n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, cb2);
-    static ros::Subscriber CameraBTDetectionSub = n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, cb3);
+    static ros::Subscriber camera0_detection_sub = n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback0);
+    static ros::Subscriber camera1_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback1);
+    static ros::Subscriber camera2_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback2);
   }
 
-  static void send_ErrorCode(unsigned int error_code)
+  static void sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
   {
     static uint32_t seq;
 
     msgs::ErrorCode objMsg;
     objMsg.header.seq = seq++;
     objMsg.header.stamp = ros::Time::now();
-    objMsg.header.frame_id = "lidar";
-    objMsg.module = 2;
+    objMsg.header.frame_id = frame_id;
+    objMsg.module = module_id;
     objMsg.event = error_code;
 
-    ErrorCode_pub.publish(objMsg);
+    error_code_pub_.publish(objMsg);
   }
 
-  static void Send_CameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
-                                 ros::Time rostime, std::string frameId)
+  static void sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
+                                 ros::Time rostime, std::string& frame_id)
   {
     msgs::DetectedObjectArray msgObjArr;
     float min_z = -3;
@@ -94,12 +94,13 @@ public:
     {
       msgs::DetectedObject msgObj;
       msgObj.classId = cluster_info[i].cluster_tag;
-      size_t convex_hull_size_ = cluster_info[i].convex_hull.size();
+      size_t convex_hull_size = cluster_info[i].convex_hull.size();
       if (cluster_info[i].cluster_tag != 0)
       {
-        if (convex_hull_size_ > 0)
+        if (convex_hull_size > 0)
         {
-          for (size_t j = 0; j < convex_hull_size_; j++)
+          // bottom
+          for (size_t j = 0; j < convex_hull_size; j++)
           {
             msgs::PointXYZ p0;
             p0.x = cluster_info[i].convex_hull[j].x;
@@ -110,7 +111,8 @@ public:
               p0.z = cluster_info[i].min.z;
             msgObj.cPoint.lowerAreaPoints.push_back(p0);
           }
-          for (size_t j = 0; j < convex_hull_size_; j++)
+          // top
+          for (size_t j = 0; j < convex_hull_size; j++)
           {
             msgs::PointXYZ p0;
             p0.x = cluster_info[i].convex_hull[j].x;
@@ -121,7 +123,8 @@ public:
               p0.z = cluster_info[i].max.z;
             msgObj.cPoint.lowerAreaPoints.push_back(p0);
           }
-          for (size_t j = 0; j < convex_hull_size_; j++)
+          // line
+          for (size_t j = 0; j < convex_hull_size; j++)
           {
             msgs::PointXYZ p0;
             p0.x = cluster_info[i].convex_hull[j].x;
@@ -213,12 +216,12 @@ public:
       }
     }
     msgObjArr.header.stamp = rostime;
-    msgObjArr.header.frame_id = frameId;
-    CameraDetection_pub.publish(msgObjArr);
+    msgObjArr.header.frame_id = frame_id;
+    camera_detection_pub_.publish(msgObjArr);
   }
 };
 
-ros::Publisher ConvexFusionB1::ErrorCode_pub;
-ros::Publisher ConvexFusionB1::CameraDetection_pub;
+ros::Publisher ConvexFusionB1::error_code_pub_;
+ros::Publisher ConvexFusionB1::camera_detection_pub_;
 
 #endif  // CONVEX_FUSION_B1_H
