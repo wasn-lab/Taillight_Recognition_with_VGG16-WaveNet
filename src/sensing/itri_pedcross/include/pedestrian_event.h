@@ -9,8 +9,7 @@
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
-#include "msgs/PedObject.h"
-#include "msgs/PedObjectArray.h"
+#include "msgs/PedInfo.h"
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include <opencv2/dnn.hpp>
 #include <opencv2/ml.hpp>  // opencv machine learning include file

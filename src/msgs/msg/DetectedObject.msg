@@ -36,3 +36,5 @@ uint16 fusionSourceId
 CamInfo camInfo
 RadarInfo radarInfo
 LidarInfo lidarInfo
+
+PedInfo pedInfo
