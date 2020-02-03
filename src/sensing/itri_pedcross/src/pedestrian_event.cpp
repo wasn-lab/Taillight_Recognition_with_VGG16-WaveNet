@@ -42,30 +42,15 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 // std::cout << "time stamp: " << msg->header.stamp << " buffer size: " << imageCache.size() << std::endl;
 #endif
 
-    // compare and get the raw image when object detected
     cv::Mat matrix;
-    for (int i = imageCache.size() - 1; i >= 0; i--)
-    {
-      if (imageCache[i].first <= msg->header.stamp || i == 0)
-      {
-#if USE_GLOG
-        std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << msg->header.stamp << std::endl;
-#endif
-
-        matrix = imageCache[i].second;
-        break;
-      }
-    }
-
-    // for drawing bbox and keypoints
     cv::Mat matrix2;
-    matrix.copyTo(matrix2);
+    ros::Time frame_timestamp = ros::Time(0);
 
     std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (auto const& obj : msg->objects)
     {
-      if (obj.classId == 1)  // 1 for people
+      if (obj.classId != 1)  // 1 for people
       {
         if (too_far(obj.bPoint))
           continue;
@@ -87,6 +72,27 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         if (obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0)
         {
           continue;
+        }
+
+        // Only first object need to check raw image
+        if (frame_timestamp == ros::Time(0))
+        {
+          // compare and get the raw image
+          for (int i = imageCache.size() - 1; i >= 0; i--)
+          {
+            if (imageCache[i].first <= obj.header.stamp || i == 0)
+            {
+#if USE_GLOG
+              std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << obj.header.stamp << std::endl;
+#endif
+
+              matrix = imageCache[i].second;
+              // for drawing bbox and keypoints
+              matrix.copyTo(matrix2);
+              frame_timestamp = obj.header.stamp;
+              break;
+            }
+          }
         }
 
         // resize from 1920*1208 to 608*384
