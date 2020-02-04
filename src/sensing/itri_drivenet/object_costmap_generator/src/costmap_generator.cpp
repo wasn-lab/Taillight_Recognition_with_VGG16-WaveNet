@@ -1,4 +1,4 @@
-#include "drivenet/costmap_generator.h"
+#include "costmap_generator.h"
 
 // OBJECTS_COSTMAP_LAYER_ = "objects_costmap";
 // BLURRED_OBJECTS_COSTMAP_LAYER_ = "blurred_objects_costmap";
