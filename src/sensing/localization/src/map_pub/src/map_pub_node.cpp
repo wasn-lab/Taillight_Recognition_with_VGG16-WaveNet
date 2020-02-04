@@ -15,6 +15,8 @@
 #include <chrono>
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/transforms.h>
+#include <pcl/common/common.h>
+
 #include <ros/package.h>
 //#include <pcl_conversions/pcl_conversions.h>
 #include "pcl_conversions.h"
@@ -55,11 +57,10 @@ int seq_ = 0;
 int
 main (int argc, char** argv)
 {
-        crop_cord = "x";
-        crop_value_min = -300;
-        crop_value_max = 700;
-        crop_value_mean = (crop_value_min + crop_value_max)/2;
-        crop_value_range = 50;
+
+        pcl::PointXYZI minPt, maxPt;
+
+
 
         ros::init(argc, argv, "map_pub");
         ros::NodeHandle nodeHandle;
@@ -69,7 +70,6 @@ main (int argc, char** argv)
         southMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_south", 1, true);
 
         map_mean_value_publisher = nodeHandle.advertise<std_msgs::Float64>("map_mean_value", 1, true);
-        map_mean_value_publisher.publish(crop_value_mean);
 
         sensor_msgs::PointCloud2 total_map_ptcloud;
         sensor_msgs::PointCloud2 total_map_ptcloud_north;
@@ -162,6 +162,14 @@ main (int argc, char** argv)
                   << " data points"
                   << std::endl;
 
+        pcl::getMinMax3D(*filtered_cloud_total, minPt, maxPt);
+        crop_cord = "x";
+        crop_value_min = minPt.x;
+        crop_value_max = maxPt.x;
+        crop_value_mean = (crop_value_min + crop_value_max)/2;
+        crop_value_range = 50;
+        map_mean_value_publisher.publish(crop_value_mean);
+
         pcl::toROSMsg(*filtered_cloud_total, total_map_ptcloud);
         //total_map_ptcloud.header.stamp = ros::Time::now();
         total_map_ptcloud.header.seq = ++seq_;
@@ -204,6 +212,12 @@ main (int argc, char** argv)
                   << " data points"
                   << std::endl;
 
+        std::cout << "max x: " << maxPt.x << std::endl;
+        std::cout << "max y: " << maxPt.y << std::endl;
+        std::cout << "max z: " << maxPt.z << std::endl;
+        std::cout << "min x: " << minPt.x << std::endl;
+        std::cout << "min y: " << minPt.y << std::endl;
+        std::cout << "min z: " << minPt.z << std::endl;
         ros::spin();
         return 0;
 }

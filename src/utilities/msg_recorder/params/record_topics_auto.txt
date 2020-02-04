@@ -106,4 +106,5 @@
 /mileage/brake_status
 /localization_state
 
-
+# pedcross
+/PedCross/Pedestrians
