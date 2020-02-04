@@ -11,6 +11,7 @@ import yaml, json
 import datetime
 # import dircache # <-- Python2.x only, repalce with os.listdir
 import shutil
+import psutil
 # Args
 import argparse
 #-------------------------#
@@ -41,6 +42,98 @@ def erase_last_lines(n=1, erase=False):
         if erase:
             sys.stdout.write(ERASE_LINE)
 #---------------------------------------------------#
+
+
+
+class DISK_MANAGER(object):
+    """
+    This is the class for watching the disk usage and provide appropriate actions.
+    """
+    def __init__(self, path, freespace_low_threshold_GB=10.0, rm_before_datetime=None):
+        """
+        """
+        self.path = path
+        if self.path[-1] != "/":
+            self.path += "/"
+        #
+        self.freespace_low_threshold_GB = freespace_low_threshold_GB
+        self.rm_before_datetime = rm_before_datetime
+        #
+        self.byte2GB = 1.0/(1024**3)
+        #
+        self.freespace_GB = 0
+        self.get_disk_freespace()
+
+    def get_disk_freespace(self):
+        """
+        """
+        obj_Disk = psutil.disk_usage(self.path)
+        self.freespace_GB = obj_Disk.free * self.byte2GB
+        return self.freespace_GB
+
+    def is_enough_space(self):
+        """
+        """
+        self.get_disk_freespace()
+        return (self.freespace_GB > self.freespace_low_threshold_GB)
+
+    def get_dict_last_modified_datetime(self):
+        """
+        Output:
+        - file_dict: {filename:modified_datetime}
+        """
+        file_list = os.listdir(self.path)
+        # print("file_list = %s" % str(file_list))
+        file_dict = dict()
+        for a_file in file_list:
+            a_file_path = self.path + a_file
+            if os.path.isfile(a_file_path):
+                _mtime = mtime = datetime.datetime.fromtimestamp(os.path.getmtime(a_file_path))
+                file_dict[a_file] = _mtime
+        return file_dict
+
+    def clean_disk(self):
+        """
+        Output:
+            True: Disk cleaned
+            False: The space is still not enough after cleaning
+        """
+        if self.is_enough_space():
+            return True
+        # Else, clean the disk
+        file_dict = self.get_dict_last_modified_datetime()
+        # Put all the files into a priority queue
+        p_Q = Queue.PriorityQueue()
+        for a_file in file_dict:
+            p_Q.put( (file_dict[a_file], a_file) )
+        #
+        # Retrieve from priority queue, first get is the oldest file (according to modification date)
+        print("---")
+        is_enough_space = False
+        while (not p_Q.empty()):
+            file_t = p_Q.get()
+            if not self.rm_before_datetime is None:
+                # Compare with self.rm_before_datetime
+                if file_t[0] >= self.rm_before_datetime:
+                    # Too new to remove. Don't remove it, stop.
+                    print("<%s> is too new to be removed (modified at %s)." % (file_t[1], file_t[0].isoformat() ))
+                    break
+            # Go ahead and remove it
+            a_file_path = self.path + file_t[1]
+            try:
+                os.remove(a_file_path)
+            except OSError as e: # No such file...
+                print(e)
+                break
+            print("<%s> removed (modified at %s)." % (file_t[1], file_t[0].isoformat() ))
+            # Re-check the disk space after removal of a file
+            if self.is_enough_space():
+                is_enough_space = True
+                break
+        # end While for p_Q
+        print("---")
+        return is_enough_space
+
 
 class MOVE_QUEUE(object):
     """
@@ -235,6 +328,22 @@ class ROSBAG_CALLER(object):
         except:
             print("The directry <%s> already exists." % self.output_dir_kept)
             pass
+
+
+
+        # Clean the disk first
+        # NOTE: currently we only do this at start-up
+        print("\n-------\n")
+        # rm_datetime_th = None
+        rm_datetime_th = datetime.datetime.now() - datetime.timedelta(4)
+        print("Remove files before %s if disk space is not enough." % (rm_datetime_th.isoformat()))
+        self.disk_manager = DISK_MANAGER(self.output_dir_tmp, freespace_low_threshold_GB=35, rm_before_datetime=rm_datetime_th)
+        is_disk_cleaned = self.disk_manager.clean_disk()
+        print("Disk Cleaned." if is_disk_cleaned else "Fail to clean the disk")
+        print("Disk space remained: %sGB" % str(self.disk_manager.get_disk_freespace()) )
+        print("\n-------\n")
+
+
 
         # Initialize the MOVE_QUEUE
         self.moveQ = MOVE_QUEUE(self.output_dir_tmp, self.output_dir_kept)
