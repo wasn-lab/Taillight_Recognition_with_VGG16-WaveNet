@@ -403,14 +403,14 @@ bool AstarSearch::search()
       AstarNode* next_an = &nodes_[next_sn.index_y][next_sn.index_x][next_sn.index_theta];
       double next_gc = current_an->gc + move_cost;
       double next_hc = nodes_[next_sn.index_y][next_sn.index_x][0].hc;  // wavefront or distance transform heuristic
-
+      // std::cout << "---------------------------next_gc_0 : " << next_gc << ", next_hc_0 : " << next_hc << std::endl;
       // increase the cost with euclidean distance
       if (use_potential_heuristic_)
       {
         next_gc += nodes_[next_sn.index_y][next_sn.index_x][0].hc;
         next_hc += calcDistance(next_x, next_y, goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) *
                    distance_heuristic_weight_;
-                   std::cout << "---------------------------next_gc : " << next_gc << ", next_hc : " << next_hc << std::endl;
+                   // std::cout << "---------------------------next_gc : " << next_gc << ", next_hc : " << next_hc << std::endl;
       }
 
       // increase the cost with euclidean distance
