@@ -64,10 +64,18 @@ class DISK_MANAGER(object):
         self.freespace_GB = 0
         self.get_disk_freespace()
 
+    def set_rm_before_datetime(rm_before_datetime):
+        """
+        """
+        self.rm_before_datetime = rm_before_datetime
+
     def get_disk_freespace(self):
         """
         """
+        # t1 = time.clock()
         obj_Disk = psutil.disk_usage(self.path)
+        # dt = time.clock() - t1
+        # print("t1 = %s" % str(t1))
         self.freespace_GB = obj_Disk.free * self.byte2GB
         return self.freespace_GB
 
@@ -252,6 +260,10 @@ class ROSBAG_CALLER(object):
         #
         - time_pre_trigger (default: 60.0 sec.): Keep all records since time_pre_trigger
         - time_post_trigger (default: 5.0 sec.): Keep all records before time_post_trigger
+        # Disk operations
+        - is_cleaning_space (default: false): Decide if the space will be cleaned.
+        - freespace_low_threshold_GB (default: 200 GB): If the freespace of the disk is less than this value, the oldest files will be removed (Note: see the "rm_hours_before" also)
+        - rm_hours_before (default: 24): If the file is older than rm_hours_before, the file is allowed to be removed; otherwise, it's not.
         """
         # Variables
         self._thread_rosbag = None
@@ -284,6 +296,11 @@ class ROSBAG_CALLER(object):
         #
         self.time_pre_trigger = param_dict.get('time_pre_trigger', 60.0)
         self.time_post_trigger = param_dict.get('time_post_trigger', 5.0)
+        # Disk operations
+        self.is_cleaning_space = param_dict.get('is_cleaning_space', False)
+        self.freespace_low_threshold_GB = param_dict.get('freespace_low_threshold_GB', 200)
+        self.rm_hours_before = param_dict.get('rm_hours_before', 24)
+
 
         # Add '/' at the end
         if self.output_dir_tmp[-1] != "/":
@@ -335,12 +352,14 @@ class ROSBAG_CALLER(object):
         # NOTE: currently we only do this at start-up
         print("\n-------\n")
         # rm_datetime_th = None
-        rm_datetime_th = datetime.datetime.now() - datetime.timedelta(4)
-        print("Remove files before %s if disk space is not enough." % (rm_datetime_th.isoformat()))
-        self.disk_manager = DISK_MANAGER(self.output_dir_tmp, freespace_low_threshold_GB=35, rm_before_datetime=rm_datetime_th)
-        is_disk_cleaned = self.disk_manager.clean_disk()
-        print("Disk Cleaned." if is_disk_cleaned else "Fail to clean the disk")
-        print("Disk space remained: %sGB" % str(self.disk_manager.get_disk_freespace()) )
+        rm_datetime_th = datetime.datetime.now() - datetime.timedelta(hours=self.rm_hours_before) # ? hours ago
+        self.disk_manager = DISK_MANAGER(self.output_dir_tmp, freespace_low_threshold_GB=self.freespace_low_threshold_GB, rm_before_datetime=rm_datetime_th)
+        #
+        if self.is_cleaning_space:
+            print("Remove files before %s if disk space is less than %s GB." % (rm_datetime_th.isoformat(), str(self.freespace_low_threshold_GB)))
+            is_disk_cleaned = self.disk_manager.clean_disk()
+            print("Disk Cleaned." if is_disk_cleaned else "Fail to clean the disk")
+        print("Disk space remained: %sGB" % str(self.disk_manager.freespace_GB) )
         print("\n-------\n")
 
 
