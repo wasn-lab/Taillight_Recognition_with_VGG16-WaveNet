@@ -48,7 +48,6 @@ private:
   static const int m_MaxYoloLayers = 3;
   int m_LeakyReLUCount = 0;
   int m_YoloLayerCount = 0;
-  nvinfer1::plugin::RegionParameters m_RegionParameters{ m_NumBoxes, m_NumCoords, m_NumClasses, nullptr };
 
   struct INvPluginDeleter
   {
