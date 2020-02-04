@@ -11,6 +11,7 @@ nav_msgs::OccupancyGrid costmap_all_expand;
 bool lid_ini = false;
 bool cam_ini = false;
 double expand_size = 1.0;
+double expand_size_0 = 1.4;
 
 
 void lid_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
@@ -90,6 +91,33 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
             {
               costmap_all_expand.data[og_index] = 50;
               k = int(expand_size/resolution);
+              break;
+            }
+          }
+        }
+      }
+      if (costmap_all_expand.data[og_index] == 50)
+      {
+        for (int o = -int(expand_size_0/resolution) ; o < int(expand_size_0/resolution) ; o++)
+        {
+          int q = i+o;
+          if (q < 0)
+            continue;
+          if (q >= height)
+            continue;
+          for (int p = -int(expand_size_0/resolution) ; p < int(expand_size_0/resolution) ; p++)
+          {
+            int r = j+p;
+            if (r < 0)
+              continue;
+            if (r >= width)
+              continue;
+
+            int og_index_2 = q * width + r;
+            if (costmap_all.data[og_index_2] > 0)
+            {
+              costmap_all_expand.data[og_index] = 75;
+              o = int(expand_size_0/resolution);
               break;
             }
           }
