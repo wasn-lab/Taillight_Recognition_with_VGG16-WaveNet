@@ -10,9 +10,9 @@ using namespace pcl;
 
 mutex g_syncLock;
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-vector<msgs::DetectedObject> g_object0;
-vector<msgs::DetectedObject> g_object1;
-vector<msgs::DetectedObject> g_object2;
+vector<msgs::DetectedObject> g_object_front_60;
+vector<msgs::DetectedObject> g_object_top_front_120;
+vector<msgs::DetectedObject> g_object_top_rear_120;
 size_t g_heartBeat[4];
 ros::Time g_frame_time;
 std::string g_frame_id = "lidar";
@@ -27,32 +27,32 @@ void callback_lidarall_nonground(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr
   // cout<<"Lidar"<<endl;
 }
 
-void callback_camera0(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_camera_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   g_syncLock.lock();
-  g_object0 = msg->objects;
+  g_object_front_60 = msg->objects;
   g_frame_time = msg->header.stamp;
   g_heartBeat[1] = 0;
   g_syncLock.unlock();
-  // cout<<"30"<<endl;
+  // cout<< camera::topics_obj[camera::id::front_60] <<endl;
 }
 
-void callback_camera1(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_camera_top_front_120(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   g_syncLock.lock();
-  g_object1 = msg->objects;
+  g_object_top_front_120 = msg->objects;
   g_heartBeat[2] = 0;
   g_syncLock.unlock();
-  // cout<<"60"<<endl;
+  // cout<< camera::topics_obj[camera::id::top_front_120] <<endl;
 }
 
-void callback_camera2(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_camera_top_rear_120(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   g_syncLock.lock();
-  g_object2 = msg->objects;
+  g_object_top_rear_120 = msg->objects;
   g_heartBeat[3] = 0;
   g_syncLock.unlock();
-  // cout<<"120"<<endl;
+  // cout<< camera::topics_obj[camera::id::top_rear_120] <<endl;
 }
 
 int main(int argc, char** argv)
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
   ConvexFusionB1::initial("convex_fusion", argc, argv);
   ConvexFusionB1::registerCallBackLidarAllNonGround(callback_lidarall_nonground);
-  ConvexFusionB1::registerCallBackCameraDetection(callback_camera0, callback_camera1, callback_camera2);
+  ConvexFusionB1::registerCallBackCameraDetection(callback_camera_front_60, callback_camera_top_front_120, callback_camera_top_rear_120);
 
   ros::Rate loop_rate(10);
   while (ros::ok())
@@ -91,67 +91,67 @@ int main(int argc, char** argv)
 
     //------------------------------------------------------------------------- Camera
 
-    size_t numberABB = g_object0.size() + g_object1.size() + g_object2.size();
+    size_t numberABB = g_object_front_60.size() + g_object_top_front_120.size() + g_object_top_rear_120.size();
 
     CLUSTER_INFO camera_ABB[numberABB];
     CLUSTER_INFO camera_ABB_bbox[numberABB];
 
     size_t cnt = 0;
-    for (size_t i = 0; i < g_object0.size(); i++)
+    for (size_t i = 0; i < g_object_front_60.size(); i++)
     {
-      camera_ABB[i + cnt].min.x = g_object0[i].bPoint.p0.x;
-      camera_ABB[i + cnt].min.y = g_object0[i].bPoint.p0.y;
-      camera_ABB[i + cnt].min.z = g_object0[i].bPoint.p0.z;
-      camera_ABB[i + cnt].max.x = g_object0[i].bPoint.p6.x;
-      camera_ABB[i + cnt].max.y = g_object0[i].bPoint.p6.y;
-      camera_ABB[i + cnt].max.z = g_object0[i].bPoint.p6.z;
-      if (g_object0[i].distance < 0)
+      camera_ABB[i + cnt].min.x = g_object_front_60[i].bPoint.p0.x;
+      camera_ABB[i + cnt].min.y = g_object_front_60[i].bPoint.p0.y;
+      camera_ABB[i + cnt].min.z = g_object_front_60[i].bPoint.p0.z;
+      camera_ABB[i + cnt].max.x = g_object_front_60[i].bPoint.p6.x;
+      camera_ABB[i + cnt].max.y = g_object_front_60[i].bPoint.p6.y;
+      camera_ABB[i + cnt].max.z = g_object_front_60[i].bPoint.p6.z;
+      if (g_object_front_60[i].distance < 0)
       {
         camera_ABB[i + cnt].cluster_tag = 0;
       }
       else
       {
-        camera_ABB[i + cnt].cluster_tag = g_object0[i].classId;
+        camera_ABB[i + cnt].cluster_tag = g_object_front_60[i].classId;
       }
       camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
     }
-    cnt += g_object0.size();
+    cnt += g_object_front_60.size();
 
-    for (size_t i = 0; i < g_object1.size(); i++)
+    for (size_t i = 0; i < g_object_top_front_120.size(); i++)
     {
-      camera_ABB[i + cnt].min.x = g_object1[i].bPoint.p0.x;
-      camera_ABB[i + cnt].min.y = g_object1[i].bPoint.p0.y;
-      camera_ABB[i + cnt].min.z = g_object1[i].bPoint.p0.z;
-      camera_ABB[i + cnt].max.x = g_object1[i].bPoint.p6.x;
-      camera_ABB[i + cnt].max.y = g_object1[i].bPoint.p6.y;
-      camera_ABB[i + cnt].max.z = g_object1[i].bPoint.p6.z;
-      if (g_object1[i].distance < 0)    
+      camera_ABB[i + cnt].min.x = g_object_top_front_120[i].bPoint.p0.x;
+      camera_ABB[i + cnt].min.y = g_object_top_front_120[i].bPoint.p0.y;
+      camera_ABB[i + cnt].min.z = g_object_top_front_120[i].bPoint.p0.z;
+      camera_ABB[i + cnt].max.x = g_object_top_front_120[i].bPoint.p6.x;
+      camera_ABB[i + cnt].max.y = g_object_top_front_120[i].bPoint.p6.y;
+      camera_ABB[i + cnt].max.z = g_object_top_front_120[i].bPoint.p6.z;
+      if (g_object_top_front_120[i].distance < 0)    
       {
         camera_ABB[i + cnt].cluster_tag = 0;
       }
       else
       {
-        camera_ABB[i + cnt].cluster_tag = g_object1[i].classId;
+        camera_ABB[i + cnt].cluster_tag = g_object_top_front_120[i].classId;
       }
       camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
     }
-    cnt += g_object1.size();
+    cnt += g_object_top_front_120.size();
 
-    for (size_t i = 0; i < g_object2.size(); i++)
+    for (size_t i = 0; i < g_object_top_rear_120.size(); i++)
     {
-      camera_ABB[i + cnt].min.x = g_object2[i].bPoint.p0.x;
-      camera_ABB[i + cnt].min.y = g_object2[i].bPoint.p0.y;
-      camera_ABB[i + cnt].min.z = g_object2[i].bPoint.p0.z;
-      camera_ABB[i + cnt].max.x = g_object2[i].bPoint.p6.x;
-      camera_ABB[i + cnt].max.y = g_object2[i].bPoint.p6.y;
-      camera_ABB[i + cnt].max.z = g_object2[i].bPoint.p6.z;
-      if (g_object2[i].distance < 0)
+      camera_ABB[i + cnt].min.x = g_object_top_rear_120[i].bPoint.p0.x;
+      camera_ABB[i + cnt].min.y = g_object_top_rear_120[i].bPoint.p0.y;
+      camera_ABB[i + cnt].min.z = g_object_top_rear_120[i].bPoint.p0.z;
+      camera_ABB[i + cnt].max.x = g_object_top_rear_120[i].bPoint.p6.x;
+      camera_ABB[i + cnt].max.y = g_object_top_rear_120[i].bPoint.p6.y;
+      camera_ABB[i + cnt].max.z = g_object_top_rear_120[i].bPoint.p6.z;
+      if (g_object_top_rear_120[i].distance < 0)
       {
         camera_ABB[i + cnt].cluster_tag = 0;
       }
       else
       {
-        camera_ABB[i + cnt].cluster_tag = g_object2[i].classId;
+        camera_ABB[i + cnt].cluster_tag = g_object_top_rear_120[i].classId;
       }
       camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
     }
@@ -223,9 +223,9 @@ int main(int argc, char** argv)
 
     if (g_heartBeat[1] > CHECKTIMES)
     {
-      g_object0.clear();
+      g_object_front_60.clear();
       g_heartBeat[1] = 0;
-      cout << "[Convex Fusion]: no FC" << endl;
+      cout << "[Convex Fusion]: no " << camera::topics_obj[camera::id::front_60] << endl;
     }
     else
     {
@@ -234,9 +234,9 @@ int main(int argc, char** argv)
 
     if (g_heartBeat[2] > CHECKTIMES)
     {
-      g_object1.clear();
+      g_object_top_front_120.clear();
       g_heartBeat[2] = 0;
-      cout << "[Convex Fusion]: no FT" << endl;
+      cout << "[Convex Fusion]: no " << camera::topics_obj[camera::id::top_front_120] << endl;
     }
     else
     {
@@ -245,9 +245,9 @@ int main(int argc, char** argv)
 
     if (g_heartBeat[3] > CHECKTIMES)
     {
-      g_object2.clear();
+      g_object_top_rear_120.clear();
       g_heartBeat[3] = 0;
-      cout << "[Convex Fusion]: no BT" << endl;
+      cout << "[Convex Fusion]: no " << camera::topics_obj[camera::id::top_rear_120] << endl;
     }
     else
     {

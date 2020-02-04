@@ -52,22 +52,22 @@ public:
     camera_detection_pub_ = n.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 1);
   }
 
-  static void registerCallBackLidarAllNonGround(void (*callback0)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
+  static void registerCallBackLidarAllNonGround(void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
   {
     ros::NodeHandle n;
 
-    static ros::Subscriber lidarall_nonground_sub = n.subscribe("/LidarAll/NonGround", 1, callback0);
+    static ros::Subscriber lidarall_nonground_sub = n.subscribe("/LidarAll/NonGround", 1, callback_nonground);
   }
 
-  static void registerCallBackCameraDetection(void (*callback0)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*callback1)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*callback2)(const msgs::DetectedObjectArray::ConstPtr&))
+  static void registerCallBackCameraDetection(void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
+                                              void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
+                                              void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&))
   {
     ros::NodeHandle n;
 
-    static ros::Subscriber camera0_detection_sub = n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback0);
-    static ros::Subscriber camera1_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback1);
-    static ros::Subscriber camera2_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback2);
+    static ros::Subscriber camera_front_60_detection_sub = n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback_front_60);
+    static ros::Subscriber camera_top_front_120_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback_top_front_120);
+    static ros::Subscriber camera_top_rear_120_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
   }
 
   static void sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
