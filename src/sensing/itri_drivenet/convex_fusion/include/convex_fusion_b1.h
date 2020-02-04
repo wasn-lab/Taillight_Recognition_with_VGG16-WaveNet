@@ -105,10 +105,7 @@ public:
             msgs::PointXYZ convex_point;
             convex_point.x = cluster_info[i].convex_hull[j].x;
             convex_point.y = cluster_info[i].convex_hull[j].y;
-            if (cluster_info[i].min.z < min_z)
-              convex_point.z = min_z;
-            else
-              convex_point.z = cluster_info[i].min.z;
+            convex_point.z = std::min(min_z, cluster_info[i].min.z);
             msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
           // top
@@ -117,10 +114,7 @@ public:
             msgs::PointXYZ convex_point;
             convex_point.x = cluster_info[i].convex_hull[j].x;
             convex_point.y = cluster_info[i].convex_hull[j].y;
-            if (cluster_info[i].max.z > max_z)
-              convex_point.z = max_z;
-            else
-              convex_point.z = cluster_info[i].max.z;
+            convex_point.z = std::max(max_z, cluster_info[i].max.z);
             msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
           // line
@@ -129,17 +123,11 @@ public:
             msgs::PointXYZ convex_point;
             convex_point.x = cluster_info[i].convex_hull[j].x;
             convex_point.y = cluster_info[i].convex_hull[j].y;
-            if (cluster_info[i].min.z < min_z)
-              convex_point.z = min_z;
-            else
-              convex_point.z = cluster_info[i].min.z;
+            convex_point.z = std::min(min_z, cluster_info[i].min.z);
             msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
             convex_point.x = cluster_info[i].convex_hull[j].x;
             convex_point.y = cluster_info[i].convex_hull[j].y;
-            if (cluster_info[i].max.z > max_z)
-              convex_point.z = max_z;
-            else
-              convex_point.z = cluster_info[i].max.z;
+            convex_point.z = std::max(max_z, cluster_info[i].max.z);
             msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
         }
