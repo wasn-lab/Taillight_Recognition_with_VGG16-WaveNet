@@ -5,7 +5,7 @@
   <node pkg="astar_initial" type="astar_initial" name="astar_initial" output="screen" />
     
   <!-- Grid map fusion pub node-->
-  <arg name="expand_size" default="2.2" /><!--2.4-->
+  <arg name="expand_size" default="2.4" /><!--2.4-->
   <node pkg="occ_grid_fusion" type="occ_grid_fusion" name="occ_grid_fusion" output="screen" >
     <param name="expand_size" value="$(arg expand_size)"/>
   </node>
