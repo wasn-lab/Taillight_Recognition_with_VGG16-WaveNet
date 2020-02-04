@@ -9,7 +9,7 @@
 #define CAN_DLC 8;
 #define CAN_CHNNEL "can1"
 const int NumOfReceiveID = 4;
-const int NumOfTopic = 3;
+const int NumOfTopic = 4;
 
 #include "msgs/Flag_Info.h"
 #include "msgs/DynamicPath.h"
@@ -116,7 +116,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 	}
     break;
 
-    case 0x604:
+    case 0x610:
 	{
 	    msgs::Flag_Info msg_temp;
 		msg_temp.Dspace_Flag01 = frame.data[0];
@@ -128,15 +128,8 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 		msg_temp.Dspace_Flag07 = frame.data[6];
 		msg_temp.Dspace_Flag08 = frame.data[7];
 
-	    cout << " Flag01: " << msg_temp.Dspace_Flag01 << endl;
-	    cout << " Flag02: " << msg_temp.Dspace_Flag02 << endl;
-	    cout << " Flag03: " << msg_temp.Dspace_Flag03 << endl;
-	    cout << " Flag04: " << msg_temp.Dspace_Flag04 << endl;
-	    cout << " Flag05: " << msg_temp.Dspace_Flag05 << endl;
-	    cout << " Flag06: " << msg_temp.Dspace_Flag06 << endl;
-	    cout << " Flag07: " << msg_temp.Dspace_Flag07 << endl;
-	    cout << " Flag08: " << msg_temp.Dspace_Flag08 << endl;
-
+	    cout << " Next Stop: " << msg_temp.Dspace_Flag01 << endl;
+	    cout << " Stop status: " << msg_temp.Dspace_Flag02 << endl;
 	    Publisher[3].publish(msg_temp);
 	    return 1;
 	}
@@ -356,6 +349,7 @@ int main(int argc, char **argv)
 	Publisher[0] = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
 	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
 	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
+    Publisher[3] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
 	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
 	//uint32_t seq = 0;
 
@@ -368,7 +362,7 @@ int main(int argc, char **argv)
 	filter[0].can_id = 0x601;
 	filter[1].can_id = 0x602;
 	filter[2].can_id = 0x603;
-    filter[3].can_id = 0x604;
+    filter[3].can_id = 0x610;
 
     /*
 	filter[3].can_id = 0x3A0;
@@ -429,7 +423,7 @@ int main(int argc, char **argv)
         for (int i =0; i <NumOfReceiveID; i++)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
-            printf("Wrote %d bytes\n", nbytes);
+            printf("Read %d bytes\n", nbytes);
             ProcessFrame(frame, Publisher, msg123);
         }
         //Publisher[3].publish(msg123);

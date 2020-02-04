@@ -26,8 +26,8 @@
 using namespace std;
 
 const int bus_number = 8; // 8 stops 
-vector<int> bus_stop_flag(bus_number, 1);;
-const vector<int> bus_stop_code = {1111,2222,3333,4444};
+vector<int> bus_stop_flag(bus_number, 0);;
+const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
 
 ros::Publisher publisher_01;
 
@@ -89,8 +89,8 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 	frame.can_dlc = CAN_DLC;
 	frame.can_id  = 0x055;
 	for(int i=0;i<8;i++){
-		frame.data[i] = bus_stop_flag[i];
-		cout << "stop" << i << ": " << bus_stop_flag[i] << endl;
+		frame.data[i] = (short int)(bus_stop_flag[i]);
+		cout << "stop" << i << ": " << int(frame.data[i]) << endl;
 	}
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	printf("Wrote %d bytes\n", nbytes);
@@ -109,12 +109,20 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 	publisher_01.publish(msg_temp);
 }
 
+void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
+{
+	if(msg->Dspace_Flag02==2){
+		bus_stop_flag[int(msg->Dspace_Flag01)-1] = 0;
+	}
+}
+
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "bus_stop_info");
 	ros::NodeHandle n;
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
+	ros::Subscriber subscriber_02 = n.subscribe("/NextStop/Info", 1, chatterCallback_02);
 	publisher_01 = n.advertise<msgs::Flag_Info>("/BusStop/Info", 1);
 	ros::spin();
 	return 0;

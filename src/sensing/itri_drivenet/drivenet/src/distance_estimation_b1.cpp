@@ -114,7 +114,7 @@ void DistanceEstimation::initShrinkArea()
 
 void DistanceEstimation::initDetectArea()
 {
-  camFR60_area.LeftLinePoint1 = cv::Point(0, 1083);
+  camFR60_area.LeftLinePoint1 = cv::Point(0, 1145);
   camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
   camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
   camFR60_area.RightLinePoint2 = cv::Point(1919, 1207);

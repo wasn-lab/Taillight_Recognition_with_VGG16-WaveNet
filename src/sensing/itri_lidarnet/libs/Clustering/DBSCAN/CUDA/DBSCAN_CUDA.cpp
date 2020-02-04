@@ -41,8 +41,9 @@ DBSCAN_CUDA::~DBSCAN_CUDA ()
 {
 }
 
+template <typename PointT>
 void
-DBSCAN_CUDA::setInputCloud (const PointCloud<PointXYZ>::ConstPtr Input)
+DBSCAN_CUDA::setInputCloud (const typename PointCloud<PointT>::ConstPtr Input)
 {
   dset->load_pcl (Input);
   dbs = boost::make_shared<GDBSCAN> (dset);
@@ -75,3 +76,11 @@ DBSCAN_CUDA::segment (IndicesClusters &index)
     std::cout << "[DBSCAN] no memory" << std::endl;
   }
 }
+
+template
+void
+DBSCAN_CUDA::setInputCloud<PointXYZ> (const PointCloud<PointXYZ>::ConstPtr Input);
+
+template
+void
+DBSCAN_CUDA::setInputCloud<PointXYZIL> (const PointCloud<PointXYZIL>::ConstPtr Input);

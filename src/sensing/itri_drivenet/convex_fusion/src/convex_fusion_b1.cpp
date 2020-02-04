@@ -29,6 +29,7 @@ void callback_CameraFC(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   syncLock.lock();
   ObjectFC = msg->objects;
+  frame_time = msg->header.stamp;
   heartBeat[1] = 0;
   syncLock.unlock();
   // cout<<"30"<<endl;

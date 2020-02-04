@@ -2,6 +2,7 @@
 #define DBSCAN_CUDA_H_
 
 #include "g_dbscan.h"
+#include "../../../UserDefine.h"
 
 class DBSCAN_CUDA
 {
@@ -10,8 +11,9 @@ class DBSCAN_CUDA
     virtual
     ~DBSCAN_CUDA ();
 
+    template <typename PointT>
     void
-    setInputCloud (const PointCloud<PointXYZ>::ConstPtr input);
+    setInputCloud (const typename PointCloud<PointT>::ConstPtr input);
     void
     setEpsilon (const double Epsilon);
     void
