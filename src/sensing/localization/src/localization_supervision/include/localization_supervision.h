@@ -20,6 +20,9 @@
 #define POSE_PITCH_THRESHOLD_RADPERS 0.0175*90
 #define POSE_YAW_THRESHOLD_RADPERS 0.0175*90
 
+#define STABLE_CNT 120
+
+
 #include "msgs/Pose.h"
 
 #include <iostream>
