@@ -571,8 +571,8 @@ void obs_main(int hz)
 
 	// AEB obj
 	id ++;
-	object abs_Obsaeb1_object{0};
-	abs_Obsaeb1_object.sx = read_tmp_a[0];//4.6;
+  object abs_Obsaeb1_object = {};       // Initialize all fields to 0.
+  abs_Obsaeb1_object.sx = read_tmp_a[0];//4.6;
 	abs_Obsaeb1_object.sy = read_tmp_a[1];//1.8;
 	abs_Obsaeb1_object.sz = read_tmp_a[2];//1.5;
 	double dist = read_tmp_a[3];

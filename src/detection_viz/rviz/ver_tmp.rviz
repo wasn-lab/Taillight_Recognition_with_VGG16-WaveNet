@@ -134,6 +134,7 @@ Visualization Manager:
       Name: Lidar_polygon
       Namespaces:
         /LidarDetection: true
+        /LidarDetection_depth: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -150,6 +151,7 @@ Visualization Manager:
       Name: cambbox_FC
       Namespaces:
         /CamObjFrontCenter: true
+        /CamObjFrontCenter_depth: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -158,6 +160,7 @@ Visualization Manager:
       Name: cambbox_FR
       Namespaces:
         /CamObjFrontRight: true
+        /CamObjFrontRight_depth: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -575,6 +578,30 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /mileage/status_text/txt
+      Name: system_status
+      Namespaces:
+        /mileage/status_text_T: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /CameraDetection/polygon/poly
+      Name: camPoly
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /CameraDetection/polygon/delayTxt
+      Name: camPoly_latency
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -600,16 +627,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 65.0081024
+      Distance: 98.829834
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 5.98785353
-        Y: 2.49389386
-        Z: 0.630216479
+        X: 10.6494665
+        Y: 4.99768448
+        Z: 0.634845138
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -618,7 +645,7 @@ Visualization Manager:
       Pitch: 1.56979632
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 3.12540841
+      Yaw: 3.13040853
     Saved: ~
 Window Geometry:
   Displays:

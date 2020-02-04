@@ -19,6 +19,22 @@ this_node_name = "node_tracer"
 
 
 
+def ping_all_listed_nodes(node_list, max_count=1, verbose=False):
+    """
+    """
+    # unique nodes in node_list
+    if verbose:
+        print("Will ping the following nodes: \n"+''.join([" * %s\n"%n for n in node_list]))
+    pinged = []
+    unpinged = []
+    for node in node_list:
+        if rosnode.rosnode_ping(node, max_count=max_count, verbose=verbose):
+            pinged.append(node)
+        else:
+            unpinged.append(node)
+    return pinged, unpinged
+
+
 def main(sys_args):
     global this_node_name
 
@@ -108,19 +124,23 @@ def main(sys_args):
     node_dict["untraced"] = list()
     node_dict["zombi_traced"] = list() # Traced node that was died abruptly without unregistration
     # Loop for ping
-    rate = rospy.Rate(1.0) # 10hz
+    rate = rospy.Rate(1.0) # 1hz
     while not rospy.is_shutdown():
         _t1 = time.clock()
         try:
-            pinged, unpinged = rosnode.rosnode_ping_all(verbose=False)
+            # The roscomm tool, ping all nodes in the node list form master
+            # pinged, unpinged = rosnode.rosnode_ping_all(verbose=False)
+            # Only ping the node in given node_list
+            pinged, unpinged = ping_all_listed_nodes(node_list, verbose=False)
         except:
             print("Error while pinging all node")
             time.sleep(1.0)
             continue
         #
-        _t2 = time.clock()
-        # print("elapse time = %s ms" % str( (_t2 - _t1)*1000.0 ))
-        
+        _delta_t = time.clock() - _t1
+        if _delta_t > 0.5:
+            print("[node_tracer] Ping too slow. Total ping time = %s ms" % str( _delta_t*1000.0 ) )
+
         # Remove this node
         if this_node_name in pinged:
             pinged.remove(this_node_name)
