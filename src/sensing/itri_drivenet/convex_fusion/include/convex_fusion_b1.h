@@ -134,13 +134,13 @@ public:
         else
         {
           /// 3D cube
-          ///   p5------p6
-          ///   /|  2   /|
-          /// p1-|----p2 |   ///      ^
-          ///  |p4----|-p7   ///      | x
-          ///  |/  1  | /    ///  <-- | 
-          /// p0-----P3      ///    y
-           
+          ///   p5------p6   ///             ^
+          ///   /|  2   /|   ///        ^   /
+          /// p1-|----p2 |   ///      z |  /
+          ///  |p4----|-p7   ///        | /  x
+          ///  |/  1  | /    ///   <-----    
+          /// p0-----P3      ///       y
+
           // Use Cartesian coordinate system. min point of bbox is p0, max point of bbox is p6; 
           msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
           // bottom
