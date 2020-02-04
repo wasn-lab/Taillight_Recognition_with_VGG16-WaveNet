@@ -1,5 +1,8 @@
 #include "plugin_factory.h"
 #include "trt_utils.h"
+
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+
 namespace DriveNet
 {
 PluginFactory::PluginFactory() : m_ReorgLayer{ nullptr }, m_RegionLayer{ nullptr }
@@ -85,6 +88,7 @@ YoloLayerV3::YoloLayerV3(const void* data, size_t length)
   read(d, m_GridSize);
   read(d, m_OutputSize);
   assert(d = a + length);
+  NO_UNUSED_VAR_CHECK(a);  // silence -Wunused-variable
 };
 
 YoloLayerV3::YoloLayerV3(const uint& numBoxes, const uint& numClasses, const uint& gridSize)
@@ -149,5 +153,6 @@ void YoloLayerV3::serialize(void* buffer)
   write(d, m_GridSize);
   write(d, m_OutputSize);
   assert(d == a + getSerializationSize());
+  NO_UNUSED_VAR_CHECK(a);  // silence -Wunused-variable
 }
 }
