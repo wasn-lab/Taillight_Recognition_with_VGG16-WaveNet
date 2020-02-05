@@ -4,7 +4,7 @@ set -e
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
 
-readonly cov_build_bin=$(which cov_build)
+readonly cov_build_bin=$(which cov-build)
 if [[ -z "${cov_build_bin}" ]]; then
   echo "Cannot find coverity. Please add cov_build into PATH"
   exit 0
