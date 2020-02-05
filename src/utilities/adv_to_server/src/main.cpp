@@ -791,6 +791,9 @@ void VK103callback(json reqJson)
   
   vector<int> stopids;
   
+  // clear response
+  VK102Response = "";
+ 
   std::cout << "VK103callback reqJson: " << reqJson.dump() << std::endl;
 
   // get data
