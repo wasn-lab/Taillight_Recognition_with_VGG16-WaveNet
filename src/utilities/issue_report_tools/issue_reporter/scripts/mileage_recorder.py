@@ -47,6 +47,7 @@ brake_Q = Queue.Queue()
 
 # ROS publisher
 #-------------------#
+run_state_pub = rospy.Publisher("ADV_op/run_state/republished", Bool, queue_size=10, latch=True)
 text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True)
 mileage_json_pub = rospy.Publisher("/mileage/relative_mileage", String, queue_size=10, latch=True)
 brake_status_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
@@ -136,7 +137,9 @@ def _flag_info_02_CB(data):
         adv_run_Q.put( (adv_run_state, now) )
         # Print to stdout
         print( adv_run_state_2_string(adv_run_state) )
-
+        # Publish as ROS message
+        run_state_pub.publish( (adv_run_state==1) )
+        
 
 def _flag_info_03_CB(data):
     """
