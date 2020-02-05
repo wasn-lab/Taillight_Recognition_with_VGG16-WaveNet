@@ -118,16 +118,16 @@ int UdpClient::send(const char* msg, size_t size)
   return sendto(f_socket, msg, size, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
 }
 
-int UdpClient::send_obj_to_server(const std::string& str, bool show )
+int UdpClient::send_obj_to_server(const std::string& str, bool show)
 {
   std::stringstream stream;
   stream << std::fixed << std::setprecision(2);
   // cout<< str << endl;
   const char* msg = str.c_str();
   size_t msg_length = strlen(msg);
-  if(show)
+  if (show)
   {
-    std::cout << "send to : " + f_addr  + ":" + to_string (f_port) << std::endl;
+    std::cout << "send to : " + f_addr + ":" + to_string(f_port) << std::endl;
     std::cout << "msg : " + str << std::endl;
   }
   int result = sendto(f_socket, msg, msg_length, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);

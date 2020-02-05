@@ -19,6 +19,7 @@
 AstarAvoid::AstarAvoid()
   : nh_()
   , private_nh_("~")
+  , terminate_thread_(false)
   , closest_waypoint_index_(-1)
   , obstacle_waypoint_index_(-1)
   , closest_local_index_(-1)
@@ -27,7 +28,6 @@ AstarAvoid::AstarAvoid()
   , current_velocity_initialized_(false)
   , base_waypoints_initialized_(false)
   , closest_waypoint_initialized_(false)
-  , terminate_thread_(false)
 {
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);

@@ -59,6 +59,7 @@ endmacro()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 APPEND_GLOBAL_COMPILER_FLAGS(
+    -Werror=reorder
     -Wno-deprecated-declarations
     -Wno-comment
     -Wno-unused-parameter
