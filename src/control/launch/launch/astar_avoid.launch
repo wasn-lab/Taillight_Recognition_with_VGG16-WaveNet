@@ -32,7 +32,7 @@
   <arg name="robot_length" default="9.4" /><!--8-->
   <arg name="robot_width" default="2.2" /><!--4.2-->
   <arg name="robot_base2back" default="3.4" /><!--7.2 3.4-->
-  <arg name="minimum_turning_radius" default="8.0" /><!--10.0-->
+  <arg name="minimum_turning_radius" default="10.0" /><!--10.0-->
   <arg name="theta_size" default="48" />
   <arg name="curve_weight" default="1.2" />
   <arg name="reverse_weight" default="2.00" />
