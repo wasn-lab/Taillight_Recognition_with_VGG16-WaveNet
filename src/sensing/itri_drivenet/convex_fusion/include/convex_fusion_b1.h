@@ -133,13 +133,21 @@ public:
         }
         else
         {
-          /// 3D cube
-          ///   p5------p6   ///             ^
-          ///   /|  2   /|   ///        ^   /
-          /// p1-|----p2 |   ///      z |  /
-          ///  |p4----|-p7   ///        | /  x
-          ///  |/  1  | /    ///   <-----    
-          /// p0-----P3      ///       y
+          /// Coordinate system
+          ///           ^          ///             ^
+          ///      ^   /           ///        ^   /
+          ///    z |  /            ///      z |  /
+          ///      | /  y          ///        | /  x
+          ///      ----->          ///   <-----    
+          ///        x             ///       y
+
+          /// cluster_info_bbox    ///  bbox_p0
+          ///   p6------p2         ///   p5------p6
+          ///   /|  2   /|         ///   /|  2   /|
+          /// p5-|----p1 |         /// p1-|----p2 |
+          ///  |p7----|-p3   ->    ///  |p4----|-p7
+          ///  |/  1  | /          ///  |/  1  | /
+          /// p4-----P0            /// p0-----P3
 
           // Use Cartesian coordinate system. min point of bbox is p0, max point of bbox is p6; 
           msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
