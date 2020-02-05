@@ -11,6 +11,7 @@ import yaml, json
 import datetime
 # import dircache # <-- Python2.x only, repalce with os.listdir
 import shutil
+import psutil
 # Args
 import argparse
 #-------------------------#
@@ -41,6 +42,106 @@ def erase_last_lines(n=1, erase=False):
         if erase:
             sys.stdout.write(ERASE_LINE)
 #---------------------------------------------------#
+
+
+
+class DISK_MANAGER(object):
+    """
+    This is the class for watching the disk usage and provide appropriate actions.
+    """
+    def __init__(self, path, freespace_low_threshold_GB=10.0, rm_before_datetime=None):
+        """
+        """
+        self.path = path
+        if self.path[-1] != "/":
+            self.path += "/"
+        #
+        self.freespace_low_threshold_GB = freespace_low_threshold_GB
+        self.rm_before_datetime = rm_before_datetime
+        #
+        self.byte2GB = 1.0/(1024**3)
+        #
+        self.freespace_GB = 0
+        self.get_disk_freespace()
+
+    def set_rm_before_datetime(self, rm_before_datetime):
+        """
+        """
+        self.rm_before_datetime = rm_before_datetime
+
+    def get_disk_freespace(self):
+        """
+        """
+        # t1 = time.clock()
+        obj_Disk = psutil.disk_usage(self.path)
+        # dt = time.clock() - t1
+        # print("t1 = %s" % str(t1))
+        self.freespace_GB = obj_Disk.free * self.byte2GB
+        return self.freespace_GB
+
+    def is_enough_space(self):
+        """
+        """
+        self.get_disk_freespace()
+        return (self.freespace_GB > self.freespace_low_threshold_GB)
+
+    def get_dict_last_modified_datetime(self):
+        """
+        Output:
+        - file_dict: {filename:modified_datetime}
+        """
+        file_list = os.listdir(self.path)
+        # print("file_list = %s" % str(file_list))
+        file_dict = dict()
+        for a_file in file_list:
+            a_file_path = self.path + a_file
+            if os.path.isfile(a_file_path):
+                _mtime = mtime = datetime.datetime.fromtimestamp(os.path.getmtime(a_file_path))
+                file_dict[a_file] = _mtime
+        return file_dict
+
+    def clean_disk(self):
+        """
+        Output:
+            True: Disk cleaned
+            False: The space is still not enough after cleaning
+        """
+        if self.is_enough_space():
+            return True
+        # Else, clean the disk
+        file_dict = self.get_dict_last_modified_datetime()
+        # Put all the files into a priority queue
+        p_Q = Queue.PriorityQueue()
+        for a_file in file_dict:
+            p_Q.put( (file_dict[a_file], a_file) )
+        #
+        # Retrieve from priority queue, first get is the oldest file (according to modification date)
+        print("---")
+        is_enough_space = False
+        while (not p_Q.empty()):
+            file_t = p_Q.get()
+            if not self.rm_before_datetime is None:
+                # Compare with self.rm_before_datetime
+                if file_t[0] >= self.rm_before_datetime:
+                    # Too new to remove. Don't remove it, stop.
+                    print("<%s> is too new to be removed (modified at %s)." % (file_t[1], file_t[0].isoformat() ))
+                    break
+            # Go ahead and remove it
+            a_file_path = self.path + file_t[1]
+            try:
+                os.remove(a_file_path)
+            except OSError as e: # No such file...
+                print(e)
+                break
+            print("<%s> removed (modified at %s)." % (file_t[1], file_t[0].isoformat() ))
+            # Re-check the disk space after removal of a file
+            if self.is_enough_space():
+                is_enough_space = True
+                break
+        # end While for p_Q
+        print("---")
+        return is_enough_space
+
 
 class MOVE_QUEUE(object):
     """
@@ -159,6 +260,10 @@ class ROSBAG_CALLER(object):
         #
         - time_pre_trigger (default: 60.0 sec.): Keep all records since time_pre_trigger
         - time_post_trigger (default: 5.0 sec.): Keep all records before time_post_trigger
+        # Disk operations
+        - is_cleaning_space (default: false): Decide if the space will be cleaned.
+        - freespace_low_threshold_GB (default: 200 GB): If the freespace of the disk is less than this value, the oldest files will be removed (Note: see the "rm_hours_before" also)
+        - rm_hours_before (default: 24): If the file is older than rm_hours_before, the file is allowed to be removed; otherwise, it's not.
         """
         # Variables
         self._thread_rosbag = None
@@ -191,6 +296,11 @@ class ROSBAG_CALLER(object):
         #
         self.time_pre_trigger = param_dict.get('time_pre_trigger', 60.0)
         self.time_post_trigger = param_dict.get('time_post_trigger', 5.0)
+        # Disk operations
+        self.is_cleaning_space = param_dict.get('is_cleaning_space', False)
+        self.freespace_low_threshold_GB = param_dict.get('freespace_low_threshold_GB', 200)
+        self.rm_hours_before = param_dict.get('rm_hours_before', 24)
+
 
         # Add '/' at the end
         if self.output_dir_tmp[-1] != "/":
@@ -220,21 +330,51 @@ class ROSBAG_CALLER(object):
         self.output_dir_kept = os.path.expandvars( os.path.expanduser(self.output_dir_kept) )
         print("self.output_dir_tmp = %s" % self.output_dir_kept)
 
-
         # Creating directories
         try:
-            _out = subprocess.check_output(["mkdir", "-p", self.output_dir_tmp], stderr=subprocess.STDOUT)
+            # _out = subprocess.check_output(["mkdir", "-p", self.output_dir_tmp], stderr=subprocess.STDOUT)
+            os.makedirs(self.output_dir_tmp)
             print("The directory <%s> has been created." % self.output_dir_tmp)
         except:
             print("The directry <%s> already exists." % self.output_dir_tmp)
             pass
 
         try:
-            _out = subprocess.check_output(["mkdir", "-p", self.output_dir_kept], stderr=subprocess.STDOUT)
+            # _out = subprocess.check_output(["mkdir", "-p", self.output_dir_kept], stderr=subprocess.STDOUT)
+            os.makedirs(self.output_dir_kept)
             print("The directory <%s> has been created." % self.output_dir_kept)
         except:
             print("The directry <%s> already exists." % self.output_dir_kept)
             pass
+
+        # Check if the directory/link is indead (link to) a directory
+        #--------------------------------------------------------------#
+        if not os.path.isdir(self.output_dir_tmp):
+            err_str = "The path <%s> is not a directory, check if the disk is mounted." % self.output_dir_tmp
+            print("\n---\nERROR: %s\n---\n"  % err_str)
+            raise Exception(err_str)
+        if not os.path.isdir(self.output_dir_kept):
+            err_str = "The path <%s> is not a directory, check if the disk is mounted." % self.output_dir_kept
+            print("\n---\nERROR: %s\n---\n"  % err_str)
+            raise Exception(err_str)
+        #--------------------------------------------------------------#
+
+
+        # Clean the disk first
+        # NOTE: currently we only do this at start-up
+        print("\n-------\n")
+        # rm_datetime_th = None
+        rm_datetime_th = datetime.datetime.now() - datetime.timedelta(hours=self.rm_hours_before) # ? hours ago
+        self.disk_manager = DISK_MANAGER(self.output_dir_tmp, freespace_low_threshold_GB=self.freespace_low_threshold_GB, rm_before_datetime=rm_datetime_th)
+        #
+        if self.is_cleaning_space:
+            print("Remove files before %s if disk space is less than %s GB." % (rm_datetime_th.isoformat(), str(self.freespace_low_threshold_GB)))
+            is_disk_cleaned = self.disk_manager.clean_disk()
+            print("Disk Cleaned." if is_disk_cleaned else "Fail to clean the disk")
+        print("Disk space remained: %sGB" % str(self.disk_manager.freespace_GB) )
+        print("\n-------\n")
+
+
 
         # Initialize the MOVE_QUEUE
         self.moveQ = MOVE_QUEUE(self.output_dir_tmp, self.output_dir_kept)
@@ -864,28 +1004,60 @@ def main(sys_args):
 
     # Read param file
     #------------------------#
-    _f = open( (f_path+f_name_params),'r')
-    params_raw = _f.read()
-    _f.close()
+    # _f = open( (f_path+f_name_params),'r')
+    # params_raw = _f.read()
+    # _f.close()
+    # param_dict = yaml.load(params_raw)
+    with open( (f_path+f_name_params),'r') as _f:
+        params_raw = _f.read()
     param_dict = yaml.load(params_raw)
     #------------------------#
 
     # Read topic_list file
     #------------------------#
-    topic_list = []
-    _f = open( (f_path+f_name_topics),'r')
-    for _s in _f:
-        # Remove the space and '\n'
-        _s1 = _s.rstrip().lstrip()
-        # Deal with coments
-        _idx_comment = _s1.find('#')
-        if _idx_comment >= 0: # Do find a '#'
-            _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
-        if len(_s1) > 0: # Append non-empty string (after stripping)
-            topic_list.append(_s1)
-    _f.close()
+    topic_list_original = []
+    # _f = open( (f_path+f_name_topics),'r')
+    # for _s in _f:
+    #     # Remove the space and '\n'
+    #     _s1 = _s.rstrip().lstrip()
+    #     # Deal with coments
+    #     _idx_comment = _s1.find('#')
+    #     if _idx_comment >= 0: # Do find a '#'
+    #         _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
+    #     if len(_s1) > 0: # Append non-empty string (after stripping)
+    #         topic_list_original.append(_s1)
+    # _f.close()
+    #
+    with open( (f_path+f_name_topics),'r') as _f:
+        for _s in _f:
+            # Remove the space and '\n'
+            _s1 = _s.rstrip().lstrip()
+            # Deal with coments
+            _idx_comment = _s1.find('#')
+            if _idx_comment >= 0: # Do find a '#'
+                _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
+            if len(_s1) > 0: # Append non-empty string (after stripping)
+                topic_list_original.append(_s1)
+        #
+    #
+    # Get unique items (remove duplicated items) and sort
+    topic_list = sorted(set(topic_list_original))
+    # print(type(topic_list))
     #------------------------#
 
+    # Count for duplicated elements
+    num_duplicated_topic = len(topic_list_original) - len(topic_list)
+    if num_duplicated_topic > 0:
+        # Let's check which topics are duplicated
+        __unique_topic_list = list()
+        duplicated_topic_list = list()
+        for _tp in topic_list_original:
+            if not _tp in __unique_topic_list:
+                __unique_topic_list.append(_tp)
+            else:
+                duplicated_topic_list.append(_tp)
+        del __unique_topic_list
+        duplicated_topic_list = sorted(set(duplicated_topic_list))
 
     # Print the params
     # print("param_dict = %s" % str(param_dict))
@@ -893,7 +1065,13 @@ def main(sys_args):
     print("\n\ntopic_list:\n---------------" )
     for _tp in topic_list:
         print(_tp)
+    print("---------------\nNote: Removed %d duplicated topics." % num_duplicated_topic)
+    if num_duplicated_topic > 0:
+        print("\nDuplicated topics:\n---------------")
+        for _tp in duplicated_topic_list:
+            print(_tp)
     print("---------------\n\n" )
+
 
 
     # Add the 'topics' to param_dict
