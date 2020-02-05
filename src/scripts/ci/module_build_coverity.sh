@@ -3,8 +3,15 @@ set -x
 set -e
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
+
+readonly cov_build_bin=$(which cov_build)
+if [[ -z "${cov_build_bin}" ]]; then
+  echo "Cannot find coverity. Please add cov_build into PATH"
+  exit 0
+fi
+
 readonly coverity_data_dir="coverity_data"
-readonly coverity_root=$(readlink -e $(dirname $(which cov-build))/..)
+readonly coverity_root=$(readlink -e $(dirname ${cov_build_bin})/..)
 pushd $repo_dir
 
 # clean up the previous build.
@@ -24,7 +31,9 @@ for cfg in `ls ${coverity_root}/config/MISRA/*.config`; do
   cov-analyze --disable-default --misra-config ${cfg} --dir coverity_data --strip-path ${repo_dir}/
 done
 
-# cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream master --dir coverity_data --user ${USER_NAME} --password ${USER_PASSWORD}
-#echo "visit http://140.96.109.174:8080 to see the result (project: itriadv, stream: master)"
+if [[ ! -z "${USER_NAME}" && ! -z "${USER_PASSWORD}" ]]; then
+  cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream master --dir coverity_data --user ${USER_NAME} --password ${USER_PASSWORD}
+  echo "visit http://140.96.109.174:8080 to see the result (project: itriadv, stream: master)"
+fi
 
 popd
