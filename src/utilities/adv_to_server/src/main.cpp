@@ -716,6 +716,8 @@ bool checkStopID(int in_stop_id, int out_stop_id)
   return true;
 }
 
+
+
 // response
 void VK102callback(std::string request)
 {
@@ -756,16 +758,6 @@ void VK102callback(std::string request)
     return;
   }
 
-  // check type
-  std::string typeExp = "M8.2.VK102";
-  if (!typeExp.compare(type) == 0)
-  {
-    std::string errMsg = "Wrong API type: " + type;
-    std::cout << errMsg << std::endl;
-    server.send_json(genErrorMsg(400, errMsg));
-    return;
-  }
-
   // check stop id
   if (!checkStopID(in_stopid, out_stopid))
   {
@@ -791,12 +783,102 @@ void VK102callback(std::string request)
   server.send_json(VK102Response);
 }
 
+
+// response
+void VK103callback(json reqJson)
+{
+  using namespace std;
+  
+  vector<int> stopids;
+  
+  std::cout << "VK103callback reqJson: " << reqJson.dump() << std::endl;
+
+  // get data
+  try
+  {
+    stopids = reqJson.at("stopid").get< vector<int> >();
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "VK103callback message: " << e.what() << std::endl;
+    server.send_json(genErrorMsg(400, e.what()));
+    return;
+  }
+
+  string msg ="";
+  for (unsigned int i = 0 ; i < stopids.size(); i++)
+  {
+    if(i + 1 == stopids.size()  ){
+      msg = msg + to_string(stopids[i]);
+    }else {
+      msg = msg + to_string(stopids[i]) + "#";
+    }
+  }
+  cout << "VK103callback msgs for ros: " << msg << endl;
+
+  RosModuleTraffic::publishReserve(TOPIC_RESERVE, msg);
+  // 300 millis seconds
+  boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+  std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
+
+  // check response from /BusStop/Info
+  if (VK102Response.empty())
+  {
+    server.send_json(genErrorMsg(201, "No data from /BusStop/Info."));
+    return;
+  }
+
+  server.send_json(VK102Response);
+}
+
+//route api
+void route(std::string request)
+{
+  using namespace std;
+  string type;
+  json requestJson;
+
+  // parsing
+  try
+  {
+    requestJson = json::parse(request);
+  }
+  catch (exception& e)
+  {
+    cout << "tcp server callback message: " << e.what() << endl;
+    // 400 bad request
+    server.send_json(genErrorMsg(400, e.what()));
+    return;
+  }
+
+  // get type
+  try
+  {
+    type = requestJson.at("type").get<string>();
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "tcp server callback message: " << e.what() << std::endl;
+    server.send_json(genErrorMsg(400, e.what()));
+    return;
+  }
+
+  if ("M8.2.VK102" == type)
+  {
+    VK102callback(request);
+  } else if ("M8.2.VK103" == type)
+  {
+    VK103callback(requestJson);
+  }
+}
+
+
 // start TCP server to receive VK102 reserve bus from backend.
 void tcpServerRun(int argc, char** argv)
 {
   // set ip and port
-  server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-  // server.initial("192.168.43.204",8765);
+  // server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
+   server.initial("192.168.43.204",8765);
   // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();
@@ -805,7 +887,7 @@ void tcpServerRun(int argc, char** argv)
     // accept and read request and handle request in VK102callback.
     try
     {
-      server.wait_and_accept(VK102callback);
+      server.wait_and_accept(route);
     }
     catch (std::exception& e)
     {
