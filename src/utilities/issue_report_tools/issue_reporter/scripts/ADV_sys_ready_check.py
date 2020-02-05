@@ -3,6 +3,12 @@
 import rospy
 import time
 import threading
+#-------------------------#
+try:
+    import queue as Queue # Python 3.x
+except:
+    import Queue # Python 2.x
+#-------------------------#
 from std_msgs.msg import (
     Header,
     String,
@@ -10,6 +16,19 @@ from std_msgs.msg import (
     Bool,
     Int32,
 )
+
+"""
+!! Important !!
+
+TODO:
+- Modify the sys_ready check method from a "writing directly to global dict"
+  to a sliding window method by using Queue.
+  --> To solve the "missing detection" problem.
+- Add a container for saving latest status during this window.
+  In case that there is no event happend during the next window,
+  use theis state (latest state) as current state
+
+"""
 
 # Timeouts
 #-------------------------#
@@ -25,7 +44,7 @@ Important note: Use this list to control te components to be checked
 check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
-# check_list += ["localization_state"]
+check_list += ["localization_state"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -67,15 +86,27 @@ SYS_FAIL_LEVEL = STATE_DEF_dict["ERROR"] # Greater or equal to this level means 
 REC_BACKUP_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this trigger the backup of recorder
 #-------------------------#
 
+
+
 # States
 #-------------------------#
-# Initialize the container for status
+# Initialize the container for status queues
+check_queue = dict()
+for key in check_list:
+    check_queue[key] = Queue.Queue()
+# The container for latest status get from queue
+check_latest_status_dict = dict()
+
+# Initialize the container for "latest statistic status"
+# Note: Initial status solely determin if the item is checked at startup.
+# Important: not to write to this check_dict directly, use queue instead
 check_dict = dict()
 for key in check_list:
     if key in startup_check_list:
         check_dict[key] = STATE_DEF_dict["ERROR"] # For startup check
     else:
         check_dict[key] = STATE_DEF_dict["OK"] # Not checked at startup
+
 # Conclusion
 sys_total_status = STATE_DEF_dict["ERROR"]
 # ROS message backup
@@ -96,8 +127,10 @@ def _timeout_handle_alive():
     """
     # global var_advop_node_alive
     global STATE_DEF_dict
-    global check_dict
-    check_dict["node_alive"] = STATE_DEF_dict["ERROR"]
+    # global check_dict
+    # check_dict["node_alive"] = STATE_DEF_dict["ERROR"] # Abandoned
+    global check_queue
+    check_queue["node_alive"].put(STATE_DEF_dict["ERROR"])
     # var_advop_node_alive = False
     rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
 
@@ -240,9 +273,15 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     """
     is_event_msg: True-->event message, False-->state message
     """
-    global check_dict, ros_msg_backup
+    global ros_msg_backup, check_queue
+    # global ros_msg_backup, check_dict
     _status, _event_str = code_func(msg)
-    check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
+    # check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
+    # Note: key may not in check_dict, this can be an add action.
+    if not key in check_queue:
+        check_queue[key] = Queue.Queue()
+    check_queue[key].put(_status)
+
     # EVENT trigger REC backup
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
@@ -268,7 +307,7 @@ def main():
     # global var_advop_node_alive, var_REC_is_recording
     global STATE_DEF_dict, STATE_DEF_dict_inv
     global check_list # The list of components needs to be checked
-    global check_dict
+    global check_dict, check_queue, check_latest_status_dict
     global sys_total_status
     rospy.init_node('ADV_sys_ready_check', anonymous=False)
     print("[sys_ready_check] Node started.")
@@ -307,10 +346,37 @@ def main():
 
         # Check through check_list
         #-----------------------------------------------#
+        for check_item in check_queue:
+            if check_queue[check_item].empty():
+                # No event happened in this window
+                latest_status = check_latest_status_dict.get(check_item, None)
+                if not latest_status is None:
+                    # There were some events happened in the previous window
+                    check_dict[check_item] = latest_status
+                    check_latest_status_dict[check_item] = None
+            else:
+                # Some events happened in this window
+                num_items = check_queue[check_item].qsize()
+                worst_status = None
+                latest_status = None
+                for idx in range(num_items):
+                    try:
+                        an_item_status = check_queue[check_item].get(False)
+                        if (worst_status is None) or (an_item_status > worst_status):
+                            worst_status = an_item_status
+                        latest_status = an_item_status
+                    except:
+                        print("check_queue[%s] is empty" % check_item)
+                        break
+                if not worst_status is None:
+                    check_dict[check_item] = worst_status
+                check_latest_status_dict[check_item] = latest_status
+
+
         # for check_item in check_dict:
         for check_item in check_list:
             # We consider only the items in the check_list
-            # Note: check_list is included by check_dict
+            # Note: check_list is a subset of check_dict keys
             _fail_str_list.append( get_fail_string(check_dict[check_item], check_item) )
             status_ros_logging(check_dict[check_item], _fail_str_list[-1])
             _sys_status_now = max(_sys_status_now, check_dict[check_item] )

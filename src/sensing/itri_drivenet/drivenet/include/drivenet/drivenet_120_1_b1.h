@@ -10,7 +10,7 @@
 #include "drivenet/image_exception_handling.h"
 #include "drivenet/math_util.h"
 #include "drivenet/type_conversion.h"
-#include "drivenet/costmap_generator.h"
+#include "costmap_generator.h"
 
 #if CAR_MODEL_IS_B1
 const std::vector<int> cam_ids_{
