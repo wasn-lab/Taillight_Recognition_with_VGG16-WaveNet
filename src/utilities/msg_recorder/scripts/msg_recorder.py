@@ -64,7 +64,7 @@ class DISK_MANAGER(object):
         self.freespace_GB = 0
         self.get_disk_freespace()
 
-    def set_rm_before_datetime(rm_before_datetime):
+    def set_rm_before_datetime(self, rm_before_datetime):
         """
         """
         self.rm_before_datetime = rm_before_datetime
