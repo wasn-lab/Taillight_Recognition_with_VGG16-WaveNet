@@ -330,22 +330,34 @@ class ROSBAG_CALLER(object):
         self.output_dir_kept = os.path.expandvars( os.path.expanduser(self.output_dir_kept) )
         print("self.output_dir_tmp = %s" % self.output_dir_kept)
 
-
         # Creating directories
         try:
-            _out = subprocess.check_output(["mkdir", "-p", self.output_dir_tmp], stderr=subprocess.STDOUT)
+            # _out = subprocess.check_output(["mkdir", "-p", self.output_dir_tmp], stderr=subprocess.STDOUT)
+            os.makedirs(self.output_dir_tmp)
             print("The directory <%s> has been created." % self.output_dir_tmp)
         except:
             print("The directry <%s> already exists." % self.output_dir_tmp)
             pass
 
         try:
-            _out = subprocess.check_output(["mkdir", "-p", self.output_dir_kept], stderr=subprocess.STDOUT)
+            # _out = subprocess.check_output(["mkdir", "-p", self.output_dir_kept], stderr=subprocess.STDOUT)
+            os.makedirs(self.output_dir_kept)
             print("The directory <%s> has been created." % self.output_dir_kept)
         except:
             print("The directry <%s> already exists." % self.output_dir_kept)
             pass
 
+        # Check if the directory/link is indead (link to) a directory
+        #--------------------------------------------------------------#
+        if not os.path.isdir(self.output_dir_tmp):
+            err_str = "The path <%s> is not a directory, check if the disk is mounted." % self.output_dir_tmp
+            print("\n---\nERROR: %s\n---\n"  % err_str)
+            raise Exception(err_str)
+        if not os.path.isdir(self.output_dir_kept):
+            err_str = "The path <%s> is not a directory, check if the disk is mounted." % self.output_dir_kept
+            print("\n---\nERROR: %s\n---\n"  % err_str)
+            raise Exception(err_str)
+        #--------------------------------------------------------------#
 
 
         # Clean the disk first
