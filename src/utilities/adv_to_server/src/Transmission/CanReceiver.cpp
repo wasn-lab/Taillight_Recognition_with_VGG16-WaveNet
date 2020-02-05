@@ -1,28 +1,28 @@
 #include "CanReceiver.h"
 using namespace std;
 
-CanReceiver::CanReceiver ()
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+
+CanReceiver::CanReceiver()
 {
- c_socket = -1;
+  c_socket = -1;
 }
 
-void
-CanReceiver::initial ()
+void CanReceiver::initial()
 {
   int rc;
   struct can_filter filter[1];
-/*
-  filter[0].can_id   = 0x350;
+  /*
+    filter[0].can_id   = 0x350;
+    filter[0].can_mask = CAN_SFF_MASK;
+  */
+  filter[0].can_id = 0x351;
   filter[0].can_mask = CAN_SFF_MASK;
-*/
-  filter[0].can_id   = 0x351;
-  filter[0].can_mask = CAN_SFF_MASK;
-
 
   struct sockaddr_can addr;
   struct ifreq ifr;
-  const char *ifname = "can1";
-  if((c_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) 
+  const char* ifname = "can1";
+  if ((c_socket = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");
     return;
@@ -35,49 +35,49 @@ CanReceiver::initial ()
   }
   strcpy(ifr.ifr_name, ifname);
   ioctl(c_socket, SIOCGIFINDEX, &ifr);
-  addr.can_family  = AF_CAN;
+  addr.can_family = AF_CAN;
   addr.can_ifindex = ifr.ifr_ifindex;
 
   printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
 
-  if(bind(c_socket, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+  if (bind(c_socket, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+  {
     perror("Error in socket bind");
   }
 }
 
-void
-CanReceiver::closeSocket ()
+void CanReceiver::closeSocket()
 {
   close(c_socket);
 }
 
-int
-CanReceiver::receive (double *data)
+int CanReceiver::receive(double* data)
 {
   int nbytes;
   struct can_frame frame;
-  nbytes = read(c_socket, &frame, CANFD_MTU);
+  nbytes = read(c_socket, &frame, sizeof(frame));
+  NO_UNUSED_VAR_CHECK(nbytes);
   int id = processFrame(data, frame);
   return id;
 }
 
-int
-CanReceiver::processFrame (double *data, const struct can_frame& frame)
+int CanReceiver::processFrame(double* data, const struct can_frame& frame)
 {
-  switch (frame.can_id) {
-/*
-    case 0x350:
-    {
-      int lat_int;
-      int lon_int;
-      double mutiplier = pow(10.0, -7.0);
-      lat_int = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-      lon_int = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-      data[0] = (double)lat_int * mutiplier;
-      data[1] = (double)lon_int * mutiplier;
-    }
-    break;
-*/
+  switch (frame.can_id)
+  {
+    /*
+        case 0x350:
+        {
+          int lat_int;
+          int lon_int;
+          double mutiplier = pow(10.0, -7.0);
+          lat_int = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
+          lon_int = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
+          data[0] = (double)lat_int * mutiplier;
+          data[1] = (double)lon_int * mutiplier;
+        }
+        break;
+    */
     case 0x351:
     {
       short speed;
@@ -96,7 +96,7 @@ CanReceiver::processFrame (double *data, const struct can_frame& frame)
     }
     break;
     default:
-    break;
+      break;
   }
   int id = frame.can_id;
   return id;

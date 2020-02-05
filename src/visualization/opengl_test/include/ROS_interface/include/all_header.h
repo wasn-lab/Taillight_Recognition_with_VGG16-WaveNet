@@ -17,11 +17,14 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Quaternion.h>
 
-// MSG: (ROS std_msgs)
+// MSG: ROS std_msgs
 #include <std_msgs/Bool.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+// MSG: ROS nav_msgs
+#include <nav_msgs/Path.h>
 
 // MSG: GeoPoseStamped
 #include <geometry_msgs/PoseStamped.h>
@@ -71,8 +74,10 @@
 
 // Others usefull libraries
 #include <sstream>
+#include <iomanip> // For adjusting the precision
 #include <ctime>
 #include <time.h>
+#include <algorithm>
 using namespace cv;
 // The SPSC non-blocking buffer
 // #include <async_buffer.hpp>

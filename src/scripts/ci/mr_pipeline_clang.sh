@@ -11,7 +11,7 @@ echo ${clean_build_status}
 if [[ "${clean_build_status}" =~ "Clean build" ]]; then
   bash src/scripts/ci/module_build_clang.sh
 else
-  catkin_make --build build_clang -DCATKIN_DEVEL_PREFIX=devel_clang
+  catkin_make --build build_clang -DCATKIN_DEVEL_PREFIX=devel_clang ${EXTRA_CATKIN_ARGS}
 fi
 
 popd

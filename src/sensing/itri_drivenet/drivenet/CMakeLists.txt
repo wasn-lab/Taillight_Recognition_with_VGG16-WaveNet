@@ -14,11 +14,18 @@ find_package(catkin REQUIRED COMPONENTS
   car_model
   camera_utils
   drivenet_lib
+  object_costmap_generator
 )
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
-find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
-find_package(CUDA REQUIRED)
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 find_package(TensorRT)
 message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 if (NOT TensorRT_FOUND)
@@ -31,6 +38,7 @@ catkin_package(
 )
 
 set(LIBS drivenet_lib
+         object_costmap_generator
          camera_utils
          ${OpenCV_LIBRARIES}
          nvinfer
@@ -49,6 +57,7 @@ include_directories(
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
   ${DRIVENETLIB_INCLUDE}
+  ${OBJECTCOSTMAPGENERATOR_INCLUDE}
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}

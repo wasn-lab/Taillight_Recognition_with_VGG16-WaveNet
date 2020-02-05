@@ -11,6 +11,7 @@ import yaml, json
 import datetime
 # import dircache # <-- Python2.x only, repalce with os.listdir
 import shutil
+import psutil
 # Args
 import argparse
 #-------------------------#
@@ -42,7 +43,107 @@ def erase_last_lines(n=1, erase=False):
             sys.stdout.write(ERASE_LINE)
 #---------------------------------------------------#
 
-class MOVE_QUEUE:
+
+
+class DISK_MANAGER(object):
+    """
+    This is the class for watching the disk usage and provide appropriate actions.
+    """
+    def __init__(self, path, freespace_low_threshold_GB=10.0, rm_before_datetime=None):
+        """
+        """
+        self.path = path
+        if self.path[-1] != "/":
+            self.path += "/"
+        #
+        self.freespace_low_threshold_GB = freespace_low_threshold_GB
+        self.rm_before_datetime = rm_before_datetime
+        #
+        self.byte2GB = 1.0/(1024**3)
+        #
+        self.freespace_GB = 0
+        self.get_disk_freespace()
+
+    def set_rm_before_datetime(self, rm_before_datetime):
+        """
+        """
+        self.rm_before_datetime = rm_before_datetime
+
+    def get_disk_freespace(self):
+        """
+        """
+        # t1 = time.clock()
+        obj_Disk = psutil.disk_usage(self.path)
+        # dt = time.clock() - t1
+        # print("t1 = %s" % str(t1))
+        self.freespace_GB = obj_Disk.free * self.byte2GB
+        return self.freespace_GB
+
+    def is_enough_space(self):
+        """
+        """
+        self.get_disk_freespace()
+        return (self.freespace_GB > self.freespace_low_threshold_GB)
+
+    def get_dict_last_modified_datetime(self):
+        """
+        Output:
+        - file_dict: {filename:modified_datetime}
+        """
+        file_list = os.listdir(self.path)
+        # print("file_list = %s" % str(file_list))
+        file_dict = dict()
+        for a_file in file_list:
+            a_file_path = self.path + a_file
+            if os.path.isfile(a_file_path):
+                _mtime = mtime = datetime.datetime.fromtimestamp(os.path.getmtime(a_file_path))
+                file_dict[a_file] = _mtime
+        return file_dict
+
+    def clean_disk(self):
+        """
+        Output:
+            True: Disk cleaned
+            False: The space is still not enough after cleaning
+        """
+        if self.is_enough_space():
+            return True
+        # Else, clean the disk
+        file_dict = self.get_dict_last_modified_datetime()
+        # Put all the files into a priority queue
+        p_Q = Queue.PriorityQueue()
+        for a_file in file_dict:
+            p_Q.put( (file_dict[a_file], a_file) )
+        #
+        # Retrieve from priority queue, first get is the oldest file (according to modification date)
+        print("---")
+        is_enough_space = False
+        while (not p_Q.empty()):
+            file_t = p_Q.get()
+            if not self.rm_before_datetime is None:
+                # Compare with self.rm_before_datetime
+                if file_t[0] >= self.rm_before_datetime:
+                    # Too new to remove. Don't remove it, stop.
+                    print("<%s> is too new to be removed (modified at %s)." % (file_t[1], file_t[0].isoformat() ))
+                    break
+            # Go ahead and remove it
+            a_file_path = self.path + file_t[1]
+            try:
+                os.remove(a_file_path)
+            except OSError as e: # No such file...
+                print(e)
+                break
+            print("<%s> removed (modified at %s)." % (file_t[1], file_t[0].isoformat() ))
+            # Re-check the disk space after removal of a file
+            if self.is_enough_space():
+                is_enough_space = True
+                break
+        # end While for p_Q
+        print("---")
+        return is_enough_space
+
+
+class MOVE_QUEUE(object):
     """
     This is the class for handling the file copying.
     """
@@ -135,7 +236,7 @@ class MOVE_QUEUE:
 
 
 #---------------------------------------------------#
-class ROSBAG_CALLER:
+class ROSBAG_CALLER(object):
     """
     This is the function for handling the rosbag subprocess.
     """
@@ -159,6 +260,10 @@ class ROSBAG_CALLER:
         #
         - time_pre_trigger (default: 60.0 sec.): Keep all records since time_pre_trigger
         - time_post_trigger (default: 5.0 sec.): Keep all records before time_post_trigger
+        # Disk operations
+        - is_cleaning_space (default: false): Decide if the space will be cleaned.
+        - freespace_low_threshold_GB (default: 200 GB): If the freespace of the disk is less than this value, the oldest files will be removed (Note: see the "rm_hours_before" also)
+        - rm_hours_before (default: 24): If the file is older than rm_hours_before, the file is allowed to be removed; otherwise, it's not.
         """
         # Variables
         self._thread_rosbag = None
@@ -168,6 +273,8 @@ class ROSBAG_CALLER:
         print("rosbag_node_name = %s" % self.rosbag_node_name)
         self._state_sender_func = None
         self._report_sender_func = None
+        #
+        self.restart_req_Q = Queue.Queue(maxsize=1) # The queue for store the restart requests
         #
         self._last_trigger_timestamp = 0.0
 
@@ -189,6 +296,11 @@ class ROSBAG_CALLER:
         #
         self.time_pre_trigger = param_dict.get('time_pre_trigger', 60.0)
         self.time_post_trigger = param_dict.get('time_post_trigger', 5.0)
+        # Disk operations
+        self.is_cleaning_space = param_dict.get('is_cleaning_space', False)
+        self.freespace_low_threshold_GB = param_dict.get('freespace_low_threshold_GB', 200)
+        self.rm_hours_before = param_dict.get('rm_hours_before', 24)
+
 
         # Add '/' at the end
         if self.output_dir_tmp[-1] != "/":
@@ -218,21 +330,51 @@ class ROSBAG_CALLER:
         self.output_dir_kept = os.path.expandvars( os.path.expanduser(self.output_dir_kept) )
         print("self.output_dir_tmp = %s" % self.output_dir_kept)
 
-
         # Creating directories
         try:
-            _out = subprocess.check_output(["mkdir", "-p", self.output_dir_tmp], stderr=subprocess.STDOUT)
+            # _out = subprocess.check_output(["mkdir", "-p", self.output_dir_tmp], stderr=subprocess.STDOUT)
+            os.makedirs(self.output_dir_tmp)
             print("The directory <%s> has been created." % self.output_dir_tmp)
         except:
             print("The directry <%s> already exists." % self.output_dir_tmp)
             pass
 
         try:
-            _out = subprocess.check_output(["mkdir", "-p", self.output_dir_kept], stderr=subprocess.STDOUT)
+            # _out = subprocess.check_output(["mkdir", "-p", self.output_dir_kept], stderr=subprocess.STDOUT)
+            os.makedirs(self.output_dir_kept)
             print("The directory <%s> has been created." % self.output_dir_kept)
         except:
             print("The directry <%s> already exists." % self.output_dir_kept)
             pass
+
+        # Check if the directory/link is indead (link to) a directory
+        #--------------------------------------------------------------#
+        if not os.path.isdir(self.output_dir_tmp):
+            err_str = "The path <%s> is not a directory, check if the disk is mounted." % self.output_dir_tmp
+            print("\n---\nERROR: %s\n---\n"  % err_str)
+            raise Exception(err_str)
+        if not os.path.isdir(self.output_dir_kept):
+            err_str = "The path <%s> is not a directory, check if the disk is mounted." % self.output_dir_kept
+            print("\n---\nERROR: %s\n---\n"  % err_str)
+            raise Exception(err_str)
+        #--------------------------------------------------------------#
+
+
+        # Clean the disk first
+        # NOTE: currently we only do this at start-up
+        print("\n-------\n")
+        # rm_datetime_th = None
+        rm_datetime_th = datetime.datetime.now() - datetime.timedelta(hours=self.rm_hours_before) # ? hours ago
+        self.disk_manager = DISK_MANAGER(self.output_dir_tmp, freespace_low_threshold_GB=self.freespace_low_threshold_GB, rm_before_datetime=rm_datetime_th)
+        #
+        if self.is_cleaning_space:
+            print("Remove files before %s if disk space is less than %s GB." % (rm_datetime_th.isoformat(), str(self.freespace_low_threshold_GB)))
+            is_disk_cleaned = self.disk_manager.clean_disk()
+            print("Disk Cleaned." if is_disk_cleaned else "Fail to clean the disk")
+        print("Disk space remained: %sGB" % str(self.disk_manager.freespace_GB) )
+        print("\n-------\n")
+
+
 
         # Initialize the MOVE_QUEUE
         self.moveQ = MOVE_QUEUE(self.output_dir_tmp, self.output_dir_kept)
@@ -265,7 +407,7 @@ class ROSBAG_CALLER:
         To start recording.
         """
         if not self._is_thread_rosbag_valid():
-            self._thread_rosbag = threading.Thread(target=self._rosbag_watcher)
+            self._thread_rosbag = threading.Thread(target=self._rosbag_watcher_worker)
             self._thread_rosbag.start()
             return True
         else:
@@ -273,12 +415,23 @@ class ROSBAG_CALLER:
                 print("rosbag is already running, no action")
             return False
 
-    def stop(self, _warning=False):
+    def stop(self, _warning=False, is_cleaning_restart_req_Q=True):
         """
         To stop recording
 
         Note: If the stop() is called right after start(), then the rosnode kill might fail (the node is not intialized yet.)
         """
+        if is_cleaning_restart_req_Q:
+            _count = 0
+            while (not self.restart_req_Q.empty()) and _count < 100:
+                try:
+                    req_restart = self.restart_req_Q.get(False)
+                except Queue.Empty:
+                    pass
+                _count += 1
+            if _count >= 100:
+                print("self.restart_req_Q can not be clean for some reason..")
+        #
         if self._is_thread_rosbag_valid() and ( (not self._ps is None) and self._ps.poll() is None): # subprocess is running
             return self._terminate_rosbag(_warning=_warning)
         else:
@@ -286,7 +439,7 @@ class ROSBAG_CALLER:
                 print("rosbag is not running, no action.")
             return False
 
-    def split(self, _warning=False):
+    def split_simple(self, _warning=False):
         """
         To stop a record and start a new one
         """
@@ -301,6 +454,33 @@ class ROSBAG_CALLER:
             return False
         else:
             return self.start(_warning)
+
+    def split(self, _warning=False):
+        """
+        To stop a record and start a new one
+        without publishing out the status change
+        """
+        if not self.restart_req_Q.empty():
+            print("The split command is executing, dropping this one.")
+            return False
+        # Else, empty
+        if (not self._is_thread_rosbag_valid()):
+            print("The rosbag record is not started, instead of spliting it, start it..")
+            return self.start(_warning)
+        # Running
+        try:
+            self.restart_req_Q.put(True, False)
+        except Queue.Full:
+            print("The queue restart_req_Q is full, skip command")
+            return False
+        # Stop, without cleaning the self.restart_req_Q
+        self.stop(_warning, is_cleaning_restart_req_Q=False)
+        print("Waiting for restarting.. (Note: the ROS topic for showing record state is still True)")
+
+        # See if the command has reached the target
+        self.restart_req_Q.join()
+        return True
+
 
     def backup(self, reason=""):
         """
@@ -430,17 +610,13 @@ class ROSBAG_CALLER:
         #
         return False
     #-------------------------------------#
-
     def _rosbag_watcher(self):
         """
-        This function run as a thread to look after the rosbag process.
+        This function look after the rosbag process.
         """
-        # global _recorder_running_pub
         # The private method to start the process
         self._open_rosbag()
         print("=== Subprocess started.===")
-        self._send_rosbag_state(True)
-        # _recorder_running_pub.publish(True)
         #
         time_start = time.time()
         while self._ps.poll() is None:
@@ -453,8 +629,29 @@ class ROSBAG_CALLER:
         result = self._ps.poll()
         print("result = %s" % str(result))
         print("=== Subprocess finished.===")
+
+
+    def _rosbag_watcher_worker(self):
+        """
+        This function run as a thread to look after the rosbag process.
+        """
+        # global _recorder_running_pub
+        self._send_rosbag_state(True)
+        #
+        req_restart = True
+        while req_restart:
+            self._rosbag_watcher()
+            time.sleep(0.2) # Sleep awhile for ros graph to converge
+            try:
+                req_restart = self.restart_req_Q.get(False)
+                print("---Got request for restarting, keep working.")
+                self.restart_req_Q.task_done()
+            except Queue.Empty:
+                req_restart = False
+                print("---The queue restart_req_Q is empty, work completed.")
+
+        #
         self._send_rosbag_state(False)
-        # _recorder_running_pub.publish(False)
 
         # Clear the handle, indicating that no process is running
         # self._ps = None
@@ -750,26 +947,34 @@ def main(sys_args):
     parser.add_argument("-d", "--PARAM_DIR", help="specify the directory of the setting-file and topics-file")
     parser.add_argument("-s", "--SETTING_F", help="specify the filename of the setting-file")
     parser.add_argument("-t", "--TOPICS_F", help="specify the filename of the topics-file")
+    # Decide if the node is running in anonymous mode
+    group_2 = parser.add_mutually_exclusive_group()
+    group_2.add_argument("-na", "--anonymous", action="store_true", help="Run in annonymous mode, the node name will be tailing with time stamp")
+    group_2.add_argument("-ne", "--fix-name", action="store_true", help="Run in fix mode, the node name will be /msg_recorder")
     #---------------------------#
     # _args = parser.parse_args()
     _args, _unknown = parser.parse_known_args()
 
 
+    # Node name mode, note: default is fixed name
+    node_mode_annoymous = _args.anonymous
+    rospy.init_node('msg_recorder', anonymous=node_mode_annoymous)
+    #
+    this_node_name = rospy.get_name()[1:] # Removing the '/'
+    # print("this_node_name = %s" % this_node_name)
+    #
+    if node_mode_annoymous:
+        rospy.logwarn("[REC] Using anonymous node name [%s]" % this_node_name)
+    else:
+        rospy.loginfo("[REC] Using fixed node name [%s]" % this_node_name)
+    #
 
-    #
-    rospy.init_node('msg_recorder', anonymous=True)
-    #
-    _node_name = rospy.get_name()[1:] # Removing the '/'
-    print("_node_name = %s" % _node_name)
-    #
-    rospack = rospkg.RosPack()
-    _pack_path = rospack.get_path('msg_recorder')
-    print("_pack_path = %s" % _pack_path)
     # Loading parameters
     #---------------------------------------------#
     rospack = rospkg.RosPack()
-    pack_path = rospack.get_path('msg_recorder')
-    f_path = _pack_path + "/params/"
+    this_pack_path = rospack.get_path('msg_recorder')
+    print("this_pack_path = %s" % this_pack_path)
+    f_path = this_pack_path + "/params/"
 
     # Manual mode
     f_name_params = "rosbag_setting.yaml"
@@ -799,28 +1004,60 @@ def main(sys_args):
 
     # Read param file
     #------------------------#
-    _f = open( (f_path+f_name_params),'r')
-    params_raw = _f.read()
-    _f.close()
+    # _f = open( (f_path+f_name_params),'r')
+    # params_raw = _f.read()
+    # _f.close()
+    # param_dict = yaml.load(params_raw)
+    with open( (f_path+f_name_params),'r') as _f:
+        params_raw = _f.read()
     param_dict = yaml.load(params_raw)
     #------------------------#
 
     # Read topic_list file
     #------------------------#
-    topic_list = []
-    _f = open( (f_path+f_name_topics),'r')
-    for _s in _f:
-        # Remove the space and '\n'
-        _s1 = _s.rstrip().lstrip()
-        # Deal with coments
-        _idx_comment = _s1.find('#')
-        if _idx_comment >= 0: # Do find a '#'
-            _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
-        if len(_s1) > 0: # Append non-empty string (after stripping)
-            topic_list.append(_s1)
-    _f.close()
+    topic_list_original = []
+    # _f = open( (f_path+f_name_topics),'r')
+    # for _s in _f:
+    #     # Remove the space and '\n'
+    #     _s1 = _s.rstrip().lstrip()
+    #     # Deal with coments
+    #     _idx_comment = _s1.find('#')
+    #     if _idx_comment >= 0: # Do find a '#'
+    #         _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
+    #     if len(_s1) > 0: # Append non-empty string (after stripping)
+    #         topic_list_original.append(_s1)
+    # _f.close()
+    #
+    with open( (f_path+f_name_topics),'r') as _f:
+        for _s in _f:
+            # Remove the space and '\n'
+            _s1 = _s.rstrip().lstrip()
+            # Deal with coments
+            _idx_comment = _s1.find('#')
+            if _idx_comment >= 0: # Do find a '#'
+                _s1 = _s1[:_idx_comment].rstrip() # Remove the comment parts
+            if len(_s1) > 0: # Append non-empty string (after stripping)
+                topic_list_original.append(_s1)
+        #
+    #
+    # Get unique items (remove duplicated items) and sort
+    topic_list = sorted(set(topic_list_original))
+    # print(type(topic_list))
     #------------------------#
 
+    # Count for duplicated elements
+    num_duplicated_topic = len(topic_list_original) - len(topic_list)
+    if num_duplicated_topic > 0:
+        # Let's check which topics are duplicated
+        __unique_topic_list = list()
+        duplicated_topic_list = list()
+        for _tp in topic_list_original:
+            if not _tp in __unique_topic_list:
+                __unique_topic_list.append(_tp)
+            else:
+                duplicated_topic_list.append(_tp)
+        del __unique_topic_list
+        duplicated_topic_list = sorted(set(duplicated_topic_list))
 
     # Print the params
     # print("param_dict = %s" % str(param_dict))
@@ -828,7 +1065,13 @@ def main(sys_args):
     print("\n\ntopic_list:\n---------------" )
     for _tp in topic_list:
         print(_tp)
+    print("---------------\nNote: Removed %d duplicated topics." % num_duplicated_topic)
+    if num_duplicated_topic > 0:
+        print("\nDuplicated topics:\n---------------")
+        for _tp in duplicated_topic_list:
+            print(_tp)
     print("---------------\n\n" )
+
 
 
     # Add the 'topics' to param_dict
@@ -857,7 +1100,7 @@ def main(sys_args):
 
     # The manager for rosbag record
     #---------------------------------------------#
-    _rosbag_caller = ROSBAG_CALLER(param_dict, _node_name)
+    _rosbag_caller = ROSBAG_CALLER(param_dict, this_node_name)
     _rosbag_caller.attach_state_sender(_recorder_running_pub.publish)
     _rosbag_caller.attach_report_sender(_trigger_event_report_pub.publish)
 
@@ -894,6 +1137,8 @@ def main(sys_args):
                 pass
         #
         time.sleep(0.5)
+    # Stop
+    _rosbag_caller.stop(_warning=False)
     print("End of main loop.")
 
 

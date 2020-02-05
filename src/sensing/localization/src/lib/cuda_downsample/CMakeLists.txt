@@ -4,8 +4,12 @@ project(cuda_downsample)
 set(CMAKE_BUILD_TYPE "Release")
 find_package(catkin REQUIRED)
 find_package(PCL 1.5 REQUIRED)
-find_package(CUDA 7.5 REQUIRED)
 
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 catkin_package(
@@ -26,7 +30,7 @@ add_definitions(${PCL_DEFINITIONS})
 #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_50,code=sm_50;-std=c++11; -Xptxas -v")
 
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11;--ptxas-options=-v)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
 
 
 FILE(GLOB_RECURSE CPP_LIST *.cpp)

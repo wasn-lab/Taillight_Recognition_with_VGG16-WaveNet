@@ -48,6 +48,8 @@ image_transport::Publisher pubImg_120_1;
 sensor_msgs::ImagePtr imgMsg;
 msgs::DetectedObjectArray doa120_0;
 msgs::DetectedObjectArray doa120_1;
+// grid map
+ros::Publisher occupancy_grid_publisher;
 
 int rawimg_w = 1920;
 int rawimg_h = 1208;
@@ -292,6 +294,9 @@ int main(int argc, char** argv)
   pub120_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontTop", 4);
   pub120_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjBackTop", 4);
 
+  // occupancy grid map publisher
+  occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+
   pthread_mutex_init(&mtxInfer, NULL);
   pthread_cond_init(&cndInfer, NULL);
 
@@ -351,28 +356,51 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::BoxPoint boxPoint;
   msgs::CamInfo camInfo;
 
-  bool BoxPass_flag = false;
+  int leftCheck = 2;
+  int rightCheck = 2;
+  float distance = -1;
+  detObj.distance = distance;
+
   if (cam_order == camera::id::top_front_120)
   {
     // Front top 120 range:
     // x axis: 0 ~ 7 meters
     // y axis: -9 ~ 6 meters
-
-    BoxPass_flag = checkBoxInArea(distEst.camFT120_area, box.x1, box.y2, box.x2, box.y2);
+    leftCheck = distEst.CheckPointInArea(distEst.camFT120_area, box.x1, box.y2);
+    rightCheck = distEst.CheckPointInArea(distEst.camFT120_area, box.x2, box.y2);
   }
   else if (cam_order == camera::id::top_rear_120)
   {
     // Back top 120 range:
     // x axis: 8 ~ 20 meters
     // y axis: -3 ~ 3 meters
-
-    BoxPass_flag = checkBoxInArea(distEst.camBT120_area, box.x1, box.y2, box.x2, box.y2);
+    leftCheck = distEst.CheckPointInArea(distEst.camBT120_area, box.x1, box.y2);
+    rightCheck = distEst.CheckPointInArea(distEst.camBT120_area, box.x2, box.y2);
   }
 
-  if (BoxPass_flag)
+  if (leftCheck == 0 && rightCheck == 0)
   {
     boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
     detObj.bPoint = boxPoint;
+
+    std::vector<float> left_point(2);
+    std::vector<float> right_point(2);
+    if (cam_order == camera::id::top_front_120)
+    {
+      left_point[0] = detObj.bPoint.p0.x;
+      right_point[0] = detObj.bPoint.p3.x;
+      left_point[1] = detObj.bPoint.p0.y;
+      right_point[1] = detObj.bPoint.p3.y;
+    }
+    else if (cam_order == camera::id::top_rear_120)
+    {
+      left_point[0] = detObj.bPoint.p7.x;
+      right_point[0] = detObj.bPoint.p4.x;
+      left_point[1] = detObj.bPoint.p7.y;
+      right_point[1] = detObj.bPoint.p4.y;
+    }
+    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+    detObj.distance = distance;
   }
 
   camInfo.u = box.x1;
@@ -417,8 +445,6 @@ void* run_yolo(void*)
 
   cv::Mat M_display;
   cv::Mat M_display_tmp;
-  std::vector<cv::Scalar> cls_color = { cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 0),
-                                        cv::Scalar(125, 125, 125) };
   cv::Scalar class_color;
 
   ros::Rate r(30);
@@ -473,6 +499,9 @@ void* run_yolo(void*)
     // publish results
     msgs::DetectedObjectArray doa;
     std::vector<msgs::DetectedObject> vDo;
+    // grid map init
+    grid_map::GridMap costmap_ = cosmapGener.initGridMap();
+
     for (size_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
     {
       std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
@@ -510,7 +539,7 @@ void* run_yolo(void*)
         pool.push_back(std::async(std::launch::async, run_dist, box, cam_order));
         if (imgResult_publish || display_flag)
         {
-          class_color = get_labelColor(cls_color, box.label);
+          class_color = get_label_color(box.label);
           cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
         }
       }
@@ -524,31 +553,11 @@ void* run_yolo(void*)
           {
             int x1 = detObj.camInfo.u;
             int y1 = detObj.camInfo.v;
-            float distMeter_p0x = 0;//, distMeter_p3x = 0, distMeter_p0y = 0, distMeter_p3y = 0;
-            if (cam_order == camera::id::top_front_120)
-            {
-              distMeter_p0x = detObj.bPoint.p0.x;
-              // distMeter_p3x = detObj.bPoint.p3.x;
-              // distMeter_p0y = detObj.bPoint.p0.y;
-              // distMeter_p3y = detObj.bPoint.p3.y;
-            }
-            else if (cam_order == camera::id::top_rear_120)
-            {
-              distMeter_p0x = detObj.bPoint.p7.x;
-              // distMeter_p3x = detObj.bPoint.p4.x;
-              // distMeter_p0y = detObj.bPoint.p7.y;
-              // distMeter_p3y = detObj.bPoint.p4.y;
-            }
-
-            // float centerPoint[2];
-            // centerPoint[0] = (distMeter_p0x + distMeter_p3x) / 2;
-            // centerPoint[1] = (distMeter_p0y + distMeter_p3y) / 2;
-            // float distance = sqrt(pow(centerPoint[0], 2) + pow(centerPoint[1], 2)); //relative distance
-            float distance = distMeter_p0x; //vertical distance
+            float distance = detObj.distance;
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
-            class_color = get_commonLabelColor(cls_color, detObj.classId);
+            class_color = get_common_label_color(detObj.classId);
             cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
           }
         }
@@ -557,6 +566,10 @@ void* run_yolo(void*)
       doa.header = headers_tmp[ndx];
       doa.header.frame_id = "lidar";
       doa.objects = vDo;
+
+      // object To grid map
+      costmap_[cosmapGener.layer_name_] =
+          cosmapGener.makeCostmapFromObjects(costmap_, cosmapGener.layer_name_, 8, doa, false);
 
       if (cam_order == camera::id::top_front_120)
       {
@@ -598,6 +611,9 @@ void* run_yolo(void*)
       }
       vDo.clear();
     }
+    // grid map To Occpancy publisher
+    cosmapGener.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher, doa.header);
+
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << " and " << camera::topics[cam_ids_[1]] << " image."
               << std::endl;
 

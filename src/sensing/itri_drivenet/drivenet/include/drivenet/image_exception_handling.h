@@ -6,8 +6,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-using namespace cv;
-
-bool CheckMatDataValid(Mat src);
+bool CheckMatDataValid(cv::Mat src);
 
 #endif /*IMAGE_EXCEPTION_HANDLING_H_*/

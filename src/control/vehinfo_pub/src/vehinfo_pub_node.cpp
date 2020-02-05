@@ -280,7 +280,8 @@ int main(int argc, char **argv)
         addr.can_family  = AF_CAN;
         addr.can_ifindex = ifr.ifr_ifindex;
 
-        printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+        // printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+        std::cout << ifname << " at index " << ifr.ifr_ifindex << std::endl;
 
         if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
                 perror("Error in socket bind");
@@ -292,11 +293,11 @@ int main(int argc, char **argv)
 
         /*
            struct can_frame {
-            canid_t can_id;  // 32 bit CAN_ID + EFF/RTR/ERR flags
-            __u8    can_dlc; // frame payload length in byte (0 .. CAN_MAX_DLEN)
-            __u8    __pad;   // padding
-            __u8    __res0;  // reserved / padding
-            __u8    __res1;  // reserved / padding
+            canid_t can_id;  /* 32 bit CAN_ID + EFF/RTR/ERR flags
+            __u8    can_dlc; /* frame payload length in byte (0 .. CAN_MAX_DLEN)
+            __u8    __pad;   /* padding
+            __u8    __res0;  /* reserved / padding
+            __u8    __res1;  /* reserved / padding
             __u8    data[CAN_MAX_DLEN]-+ __attribute__((aligned(8)));
            };
          */
@@ -314,7 +315,7 @@ int main(int argc, char **argv)
 
             for (int i =0; i < 7; i++)
             {
-                    nbytes = read(s, &frame, CANFD_MTU);
+                    nbytes = read(s, &frame, sizeof(frame));
                     processFrame(frame, msg);
                     std::cout << "-----------------------------------------------" << std::endl;
             }

@@ -1,6 +1,8 @@
 #ifndef DATASET_HPP
 #define DATASET_HPP
 
+#include "../../UserDefine.h"
+
 class Dataset : private boost::noncopyable
 {
   public:
@@ -61,6 +63,31 @@ class Dataset : private boost::noncopyable
         col_vector (0) = input->points[i].x;
         col_vector (1) = input->points[i].y;
         col_vector (2) = input->points[i].z;
+
+        _data.at (i) = col_vector;
+      }
+
+    }
+
+    void
+    load_pcl (const PointCloud<PointXYZIL>::ConstPtr input)
+    {
+      _data.clear ();
+      _data.resize (input->size ());
+      _labels.clear ();
+      _labels.resize (input->size ());
+      m_cols = 5;
+      m_rows = input->size ();
+
+      Eigen::VectorXf col_vector (5);
+
+      for (size_t i = 0; i < input->size (); ++i)
+      {
+        col_vector (0) = input->points[i].x;
+        col_vector (1) = input->points[i].y;
+        col_vector (2) = input->points[i].z;
+        col_vector (3) = input->points[i].intensity;
+        col_vector (4) = input->points[i].label;
 
         _data.at (i) = col_vector;
       }

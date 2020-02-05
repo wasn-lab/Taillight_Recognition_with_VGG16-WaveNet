@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <node pkg="issue_reporter" type="node_tracer.py" name="node_tracer" output="screen" />
+    <node pkg="issue_reporter" type="ADV_sys_ready_check.py" name="ADV_sys_ready_check" output="screen" />
+
+    <!--ADV_op gateway-->
+    <node pkg="issue_reporter" type="ADV_op_gateway.py" name="ADV_op_gateway" output="screen" />
+
+    <!--Mileage recorder-->
+    <node pkg="issue_reporter" type="mileage_recorder.py" name="mileage_recorder" output="screen" />
+
+</launch>

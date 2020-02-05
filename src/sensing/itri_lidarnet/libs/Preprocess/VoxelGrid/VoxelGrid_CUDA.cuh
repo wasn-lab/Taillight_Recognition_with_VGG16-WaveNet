@@ -10,6 +10,8 @@
 
 #include <pcl/point_types.h>
 
+#include "../../UserDefine.h"
+
 struct hashElement
 {
     int index_of_point;
@@ -51,17 +53,19 @@ struct compareHashElements
     }
 };
 
+template <typename PointT>
 cudaError_t
-cudaCalculateGridParams (pcl::PointXYZ* d_point_cloud,
+cudaCalculateGridParams (PointT *d_point_cloud,
                          int number_of_points,
                          float resolution_X,
                          float resolution_Y,
                          float resolution_Z,
                          gridParameters &out_rgd_params);
 
+template <typename PointT>
 cudaError_t
 cudaCalculateGrid (int threads,
-                   pcl::PointXYZ* d_point_cloud,
+                   PointT *d_point_cloud,
                    bucket *d_buckets,
                    hashElement *d_hashTable,
                    int number_of_points,

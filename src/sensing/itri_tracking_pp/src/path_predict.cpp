@@ -125,7 +125,9 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
       {
         create_pp_input(track.states[i + track.max_length].estimated_position, data_x, data_y);
 #if DEBUG_PP_TRAJ
-        LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back() << " (abs_coord: " << track.states[i + track.max_length].estimated_position.x << " " <<  track.states[i + track.max_length].estimated_position.y << ")" << std::endl;
+        LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back()
+                 << " (abs_coord: " << track.states[i + track.max_length].estimated_position.x << " "
+                 << track.states[i + track.max_length].estimated_position.y << ")" << std::endl;
 #endif
       }
     }
@@ -133,7 +135,9 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
     {
       create_pp_input(track.states[i].estimated_position, data_x, data_y);
 #if DEBUG_PP_TRAJ
-      LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back() << " (abs_coord: " << track.states[i].estimated_position.x << " " << track.states[i].estimated_position.y << ")" << std::endl;
+      LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back()
+               << " (abs_coord: " << track.states[i].estimated_position.x << " " << track.states[i].estimated_position.y
+               << ")" << std::endl;
 #endif
     }
   }
@@ -490,7 +494,8 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 #if DEBUG_PP_TRAJ
       for (unsigned j = 0; j < num_forecasts_; j++)
       {
-        LOG_INFO << "Traj " << (j + 1) << " " << pp_objs_[i].track.forecasts[j].position.x << " " << pp_objs_[i].track.forecasts[j].position.y << std::endl;
+        LOG_INFO << "Traj " << (j + 1) << " " << pp_objs_[i].track.forecasts[j].position.x << " "
+                 << pp_objs_[i].track.forecasts[j].position.y << std::endl;
       }
 #endif
     }

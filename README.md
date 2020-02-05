@@ -9,7 +9,9 @@ This repository contains the source codes of self-driving car maintained by ITRI
 
 ### How to build
 
-catkin_make
+```sh
+catkin_make -DCMAKE_BUILD_TYPE=Release
+```
 
 Tips: Run ```sudo apt-get install ccache``` to speed up the build process.
 

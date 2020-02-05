@@ -7,6 +7,12 @@ if (COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-attribute=format")
 endif ()
 
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -21,8 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(CUDA REQUIRED)
-find_package(OpenCV 3 REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 
 
 ## Find Driveworks 2.0

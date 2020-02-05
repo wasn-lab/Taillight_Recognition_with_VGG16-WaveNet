@@ -3,9 +3,9 @@
 //
 // Code generated for Simulink model 'MM_TP'.
 //
-// Model version                  : 1.393
+// Model version                  : 1.490
 // Simulink Coder version         : 8.14 (R2018a) 06-Feb-2018
-// C/C++ source code generated on : Mon Nov  4 22:32:09 2019
+// C/C++ source code generated on : Mon Dec  2 10:14:13 2019
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -102,28 +102,28 @@ typedef struct tag_sJCxfmxS8gBOONUZjbjUd9E sJCxfmxS8gBOONUZjbjUd9E;
 #endif                                 //typedef_sJCxfmxS8gBOONUZjbjUd9E
 
 // Custom Type definition for MATLAB Function: '<S2>/Final_Static_Path'
-#ifndef struct_emxArray_real_T_188
-#define struct_emxArray_real_T_188
+#ifndef struct_emxArray_real_T_301
+#define struct_emxArray_real_T_301
 
-struct emxArray_real_T_188
+struct emxArray_real_T_301
 {
-  real_T data[188];
+  real_T data[301];
   int32_T size;
 };
 
-#endif                                 //struct_emxArray_real_T_188
+#endif                                 //struct_emxArray_real_T_301
 
-#ifndef typedef_emxArray_real_T_188
-#define typedef_emxArray_real_T_188
+#ifndef typedef_emxArray_real_T_301
+#define typedef_emxArray_real_T_301
 
-typedef struct emxArray_real_T_188 emxArray_real_T_188;
+typedef struct emxArray_real_T_301 emxArray_real_T_301;
 
-#endif                                 //typedef_emxArray_real_T_188
+#endif                                 //typedef_emxArray_real_T_301
 
 // Block signals and states (default storage) for system '<Root>'
 typedef struct {
-  emxArray_real_T_188 path_out1;       // '<S2>/Final_Static_Path'
-  real_T path_2[188];                  // '<S13>/Dijkstra'
+  emxArray_real_T_301 path_out1;       // '<S2>/Final_Static_Path'
+  real_T path_2[301];                  // '<S13>/Dijkstra'
   real_T UnitDelay1_DSTATE[5];         // '<S3>/Unit Delay1'
   real_T UnitDelay35_DSTATE[4];        // '<S3>/Unit Delay35'
   real_T UnitDelay37_DSTATE[25];       // '<S3>/Unit Delay37'
@@ -134,25 +134,31 @@ typedef struct {
   real_T UnitDelay19_DSTATE[4];        // '<S2>/Unit Delay19'
   real_T UnitDelay15_DSTATE[4];        // '<S2>/Unit Delay15'
   real_T UnitDelay5_DSTATE[22];        // '<S2>/Unit Delay5'
-  real_T xy_ends_POS_data[752];
-  real_T Static_Path_ends_POS_data[1504];
-  real_T Forward_Static_Path_data[754];
+  real_T oi_xy_data[602];
+  real_T xy_ends_POS_data[1204];
+  real_T Static_Path_ends_POS_data[2408];
+  real_T Forward_Static_Path_data[1206];
   real_T Path_RES_0_data[40000];
   real_T Path_RES_0_1[40000];
   real_T Path_RES_1_data[40000];
   real_T ob_distance_data[20000];
   real_T Path_RES_data[80000];
-  real_T Forward_Static_Path_data_m[754];
-  real_T Forward_Static_Path_0_data[4324];
-  real_T path[35344];
-  real_T Static_Path_0[4324];          // '<S2>/Final_Static_Path'
+  real_T Forward_Static_Path_data_m[1206];
+  real_T Forward_Static_Path_0_data[6923];
+  real_T table[602];
+  real_T path[90601];
+  real_T Static_Path_0[6923];          // '<S2>/Final_Static_Path'
   real_T rtb_X_data[20000];
   real_T tmp_data[20000];
   real_T tmp_data_c[20000];
   real_T Path_RES_0_data_k[40000];
+  real_T SEG_GPS_HEAD[602];
   real_T z1_data[20000];
   real_T z1_data_c[20000];
   real_T z1_data_b[20000];
+  real_T xy_ini_data[602];
+  real_T xy_end_data[602];
+  real_T SEG_GPS_HEAD_data[602];
   real_T dist;                         // '<S13>/Dijkstra'
   real_T UnitDelay_DSTATE;             // '<S2>/Unit Delay'
   real_T UnitDelay38_DSTATE;           // '<S3>/Unit Delay38'
@@ -191,17 +197,17 @@ typedef struct {
   //    '<S2>/Constant6'
   //    '<S3>/Constant4'
 
-  real_T pooled2[4324];
+  real_T pooled2[6923];
 
   // Expression: nodes
   //  Referenced by: '<S2>/Constant3'
 
-  real_T Constant3_Value[564];
+  real_T Constant3_Value[903];
 
   // Expression: segments
   //  Referenced by: '<S2>/Constant5'
 
-  real_T Constant5_Value[564];
+  real_T Constant5_Value[903];
 
   // Expression: diag([0.00025,0.00025,0.0000001,1,0.0001])
   //  Referenced by: '<S3>/Unit Delay37'
@@ -255,7 +261,7 @@ typedef struct {
   real_T W_1[6];                       // '<Root>/W_1'
   real_T W_2[3];                       // '<Root>/W_2'
   real_T w_fs;                         // '<Root>/w_fs'
-  real_T Freespace[37500];             // '<Root>/Freespace'
+  real_T Freespace[52500];             // '<Root>/Freespace'
   real_T Freespace_mode;               // '<Root>/Freespace_mode'
   real_T takeover_mag;                 // '<Root>/takeover_mag'
   real_T forward_length_2;             // '<Root>/forward_length_2'
@@ -265,6 +271,8 @@ typedef struct {
   real_T w_off_avoid;                  // '<Root>/w_off_avoid'
   real_T w_off_;                       // '<Root>/w_off_'
   real_T OB_enlarge;                   // '<Root>/OB_enlarge'
+  real_T min_takeoverlength;           // '<Root>/min_takeoverlength'
+  real_T Delay_length;                 // '<Root>/Delay_length'
 } ExtU;
 
 // External outputs (root outports fed by signals with default storage)
@@ -294,6 +302,7 @@ typedef struct {
   real_T J[13];                        // '<Root>/J'
   real_T avoidance_mode;               // '<Root>/avoidance_mode'
   real_T takeoverlength_ind;           // '<Root>/takeoverlength_ind'
+  real_T Deadend_flag;                 // '<Root>/Deadend_flag'
 } ExtY;
 
 // Real-time Model Data Structure
@@ -340,22 +349,28 @@ class MM_DPP_1ModelClass {
   // private member function(s) for subsystem '<Root>'
   real_T sum(const real_T x[10]);
   void invNxN(const real_T x[25], real_T y[25]);
-  void merge(int32_T idx[188], real_T x[188], int32_T offset, int32_T np,
-             int32_T nq, int32_T iwork[188], real_T xwork[188]);
-  void sort(real_T x[188], int32_T idx[188]);
-  void power(const real_T a[188], real_T y[188]);
-  void rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy[376], real_T dist
-                   [188]);
+  void merge(int32_T idx[301], real_T x[301], int32_T offset, int32_T np,
+             int32_T nq, int32_T iwork[301], real_T xwork[301]);
+  void merge_block(int32_T idx[301], real_T x[301], int32_T offset, int32_T n,
+                   int32_T preSortLevel, int32_T iwork[301], real_T xwork[301]);
+  void merge_pow2_block(int32_T idx[301], real_T x[301], int32_T offset);
+  void sort(real_T x[301], int32_T idx[301]);
+  void power(const real_T a[301], real_T y[301]);
+  void rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy[602], real_T dist
+                   [301]);
   real_T rel_dist_xy_c(const real_T ref_xy[2], const real_T pt_xy[2]);
-  void MM(real_T heading, const real_T X_pos[2], const real_T oi_xy[376], const
-          real_T dist_op[188], const real_T Map_data[4324], real_T *seg_id_near,
+  void MM(real_T heading, const real_T X_pos[2], const real_T oi_xy[602], const
+          real_T dist_op[301], const real_T Map_data[6923], real_T *seg_id_near,
           real_T *op_distance, real_T oi_near[2], real_T *note, real_T
           *seg_direction, real_T *head_err, real_T num_lane_direction[4], real_T
           *seg_heading);
+  int32_T nonSingletonDim(const int32_T *x_size);
   void merge_e(int32_T idx_data[], real_T x_data[], int32_T offset, int32_T np,
                int32_T nq, int32_T iwork_data[], real_T xwork_data[]);
-  void merge_block(int32_T idx_data[], real_T x_data[], int32_T n, int32_T
-                   iwork_data[], real_T xwork_data[]);
+  void merge_block_g(int32_T idx_data[], real_T x_data[], int32_T offset,
+                     int32_T n, int32_T preSortLevel, int32_T iwork_data[],
+                     real_T xwork_data[]);
+  void merge_pow2_block_c(int32_T idx_data[], real_T x_data[], int32_T offset);
   void sortIdx(real_T x_data[], int32_T *x_size, int32_T idx_data[], int32_T
                *idx_size);
   void sort_g(real_T x_data[], int32_T *x_size, int32_T idx_data[], int32_T
@@ -399,14 +414,7 @@ class MM_DPP_1ModelClass {
               int32_T y_size[2]);
   void sqrt_l5(real_T x_data[], int32_T x_size[2]);
   real_T mod(real_T x);
-  void point2safetylevel(const real_T X_data[], const int32_T X_size[2], const
-    real_T Y_data[], const int32_T Y_size[2], const real_T Freespace[37500],
-    real_T X_grid_data[], int32_T X_grid_size[2], real_T Y_grid_data[], int32_T
-    Y_grid_size[2], real_T *safety_level);
-  void FreespaceDetectCollision(const real_T Freespace[37500], const real_T XP[6],
-    const real_T YP[6], const real_T Vehicle_state[3], real_T forward_length,
-    real_T safe_range, const real_T Veh_size[2], const real_T Veh_CG[2], real_T *
-    U_c, real_T *safety_level_all, real_T *forward_length_free);
+  real_T FreespaceDetectCollision(real_T forward_length);
   void abs_a(const real_T x[143], real_T y[143]);
   void G2splines_e(real_T xa, real_T ya, real_T thetaa, real_T ka, real_T xb,
                    real_T yb, real_T thetab, real_T kb, real_T path_length,
@@ -417,10 +425,10 @@ class MM_DPP_1ModelClass {
   void sum_hx(const real_T x_data[], const int32_T x_size[2], real_T y_data[],
               int32_T y_size[2]);
   void point2safetylevel_b(const real_T X_data[], const int32_T X_size[2], const
-    real_T Y_data[], const int32_T Y_size[2], const real_T Freespace[37500],
+    real_T Y_data[], const int32_T Y_size[2], const real_T Freespace[52500],
     real_T X_grid_data[], int32_T X_grid_size[2], real_T Y_grid_data[], int32_T
     Y_grid_size[2], real_T *safety_level);
-  void FreespaceDetectCollision_b(const real_T Freespace[37500], const real_T
+  void FreespaceDetectCollision_b(const real_T Freespace[52500], const real_T
     XP[6], const real_T YP[6], const real_T Vehicle_state[3], real_T
     forward_length, real_T safe_range, const real_T Veh_size[2], const real_T
     Veh_CG[2], real_T *U_c, real_T *safety_level_all, real_T
@@ -479,12 +487,13 @@ class MM_DPP_1ModelClass {
 //  '<S20>'  : 'MM_TP/Target_planner/Forward_Seg'
 //  '<S21>'  : 'MM_TP/Target_planner/Forward_Seg1'
 //  '<S22>'  : 'MM_TP/Target_planner/J_fsc_design'
-//  '<S23>'  : 'MM_TP/Target_planner/MATLAB Function2'
-//  '<S24>'  : 'MM_TP/Target_planner/MM'
-//  '<S25>'  : 'MM_TP/Target_planner/Steer_gain_scheduling'
-//  '<S26>'  : 'MM_TP/Target_planner/Target_Point_Decision'
-//  '<S27>'  : 'MM_TP/Target_planner/target_seg_id_search'
-//  '<S28>'  : 'MM_TP/Target_planner/Enabled Subsystem/Dijkstra'
+//  '<S23>'  : 'MM_TP/Target_planner/MATLAB Function'
+//  '<S24>'  : 'MM_TP/Target_planner/MATLAB Function2'
+//  '<S25>'  : 'MM_TP/Target_planner/MM'
+//  '<S26>'  : 'MM_TP/Target_planner/Steer_gain_scheduling'
+//  '<S27>'  : 'MM_TP/Target_planner/Target_Point_Decision'
+//  '<S28>'  : 'MM_TP/Target_planner/target_seg_id_search'
+//  '<S29>'  : 'MM_TP/Target_planner/Enabled Subsystem/Dijkstra'
 
 #endif                                 // RTW_HEADER_MM_TP_h_
 
