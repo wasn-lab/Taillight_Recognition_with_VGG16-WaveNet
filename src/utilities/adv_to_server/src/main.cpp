@@ -49,6 +49,8 @@ const static std::string TOPIC_RESERVE = "/reserve/request";
 
 // wait reserve result: 300ms.
 const static int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
+//reserve waiting timeout: 3 seconds
+const static int RESERVE_WAITING_TIMEOUT = 3 * 1000 * 1000;
 // UDP server udpate from queues freq 100ms
 const static int UDP_SERVER_UPDATE_MICROSECONDS = 100 * 1000;
 // ROS update time: 500ms
@@ -213,6 +215,7 @@ void callback_fps(const std_msgs::String::ConstPtr& input)
 
 void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 {
+  std::cout << "<<<<<<<<<<<<<<<callbackBusStopInfo>>>>>>>>>>>>>>>" << std::endl;
   float stop[8];
   memset(stop, 0, sizeof(stop));
   mutex_ros.lock();
@@ -499,7 +502,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     }
     catch (std::exception& e)
     {
-      std::cout << "mileage: " << e.what() << std::endl;
+      //std::cout << "mileage: " << e.what() << std::endl;
     }
   }
   return J1.dump();
@@ -716,8 +719,6 @@ bool checkStopID(int in_stop_id, int out_stop_id)
   return true;
 }
 
-
-
 // response
 void VK102callback(std::string request)
 {
@@ -770,17 +771,24 @@ void VK102callback(std::string request)
   sprintf(msg, "%d#%d", in_stopid, out_stopid);
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, msg);
   // 300 millis seconds
-  boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
-  std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
+  //boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+  //std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
 
-  // check response from /BusStop/Info
+  /* check response from /BusStop/Info */ 
+  unsigned short retryCount = 0;
+  while ( VK102Response.empty() && (retryCount < RESERVE_WAITING_TIMEOUT / REVERSE_SLEEP_TIME_MICROSECONDS ) )
+  {
+    retryCount ++;
+    boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+  }
+  
+  /* response to server */
   if (VK102Response.empty())
   {
     server.send_json(genErrorMsg(201, "No data from /BusStop/Info."));
-    return;
+  }else {
+    server.send_json(VK102Response);
   }
-
-  server.send_json(VK102Response);
 }
 
 
@@ -821,17 +829,25 @@ void VK103callback(json reqJson)
 
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, msg);
   // 300 millis seconds
-  boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
-  std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
+  //boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+  //std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
 
-  // check response from /BusStop/Info
+  /* check response from /BusStop/Info */ 
+  unsigned short retryCount = 0;
+  while ( VK102Response.empty() && (retryCount < RESERVE_WAITING_TIMEOUT / REVERSE_SLEEP_TIME_MICROSECONDS ) )
+  {
+    retryCount ++;
+    std::cout << "retry: " << retryCount << std::endl;
+    boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+  }
+  
+  /* response to server */
   if (VK102Response.empty())
   {
     server.send_json(genErrorMsg(201, "No data from /BusStop/Info."));
-    return;
+  }else {
+    server.send_json(VK102Response);
   }
-
-  server.send_json(VK102Response);
 }
 
 //route api
@@ -880,8 +896,8 @@ void route(std::string request)
 void tcpServerRun(int argc, char** argv)
 {
   // set ip and port
-  server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-  // server.initial("192.168.43.204",8765);
+  //server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
+   server.initial("192.168.43.204",8765);
   // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();
@@ -903,7 +919,7 @@ void tcpServerRun(int argc, char** argv)
 int main(int argc, char** argv)
 {
   RosModuleTraffic::Initial(argc, argv);
-
+  //RosModuleTraffic::advertisePublisher();
   /*Start thread to receive data from can bus.*/
   if (!checkCommand(argc, argv, "-no_can"))
   {
@@ -950,7 +966,7 @@ int main(int argc, char** argv)
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
-
+  RosModuleTraffic::publishReserve(TOPIC_RESERVE, "");
   /*block main.*/
   while (true)
   {
