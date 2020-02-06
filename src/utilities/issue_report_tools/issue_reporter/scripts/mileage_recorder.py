@@ -139,7 +139,7 @@ def _flag_info_02_CB(data):
         print( adv_run_state_2_string(adv_run_state) )
         # Publish as ROS message
         run_state_pub.publish( (adv_run_state==1) )
-        
+
 
 def _flag_info_03_CB(data):
     """
@@ -209,10 +209,11 @@ def main(sys_args):
     global text_marker_pub
     global mileage_km, speed_mps_filtered
     global brake_state, brake_Q
-    global adv_run_state, brake_state
+    global adv_run_state
     #
     rospy.init_node('mileage_recorder', anonymous=False)
 
+    """
     # Loading parameters
     #---------------------------------------------#
     rospack = rospkg.RosPack()
@@ -247,6 +248,7 @@ def main(sys_args):
         print("The directry <%s> already exists." % output_dir_tmp)
         pass
     #---------------------------------------------#
+    """
 
 
     # Init ROS communication interface
@@ -257,7 +259,11 @@ def main(sys_args):
     rospy.Subscriber("/Flag_Info03", Flag_Info, _flag_info_03_CB)
     #--------------------------------------#
 
-
+    # Publishing intial state
+    #--------------------------------------#
+    run_state_pub.publish( (adv_run_state==1) )
+    brake_status_pub.publish( brake_state )
+    #--------------------------------------#
 
     # Loop for user command via stdin
     rate = rospy.Rate(5.0) # Hz
