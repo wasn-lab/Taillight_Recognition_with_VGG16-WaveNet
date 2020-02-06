@@ -31,7 +31,7 @@ class DELAY_CLOSE(object):
         else:
             self._set_timer_close()
 
-    def output():
+    def output(self):
         """
         """
         return self.state
