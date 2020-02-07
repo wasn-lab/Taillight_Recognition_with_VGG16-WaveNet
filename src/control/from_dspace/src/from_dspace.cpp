@@ -411,7 +411,7 @@ int main(int argc, char **argv)
         return -2;
     }
 
-    ros::Rate rate(200);
+    ros::Rate rate(10);
     while(ros::ok())
     {
     	// For msgs that need more than one CAN_ID
@@ -419,7 +419,6 @@ int main(int argc, char **argv)
         //msg123.header.stamp = ros::Time::now();
         //msg123.header.frame_id = "dynamicpath";
         //msg123.header.seq = seq++;
-        
         for (int i =0; i <NumOfReceiveID; i++)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));

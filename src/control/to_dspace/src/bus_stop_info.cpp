@@ -31,6 +31,39 @@ const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
 
 ros::Publisher publisher_01;
 
+
+
+void send_can(){
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+	const char *ifname = CAN_INTERFACE_NAME;
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0){
+		perror("Error while opening socket");
+	}
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0){
+		perror("Error in socket bind");
+	}
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x055;
+	for(int i=0;i<8;i++){
+		frame.data[i] = (short int)(bus_stop_flag[i]);
+		cout << "stop" << i << ": " << int(frame.data[i]) << endl;
+	}
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+	close(s);
+}
+
+
 void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 {
 
@@ -111,9 +144,11 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 
 void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 {
-	if(msg->Dspace_Flag02==2){
+	if(msg->Dspace_Flag02==2 && bus_stop_flag[int(msg->Dspace_Flag01)-1]==1){
 		bus_stop_flag[int(msg->Dspace_Flag01)-1] = 0;
+		send_can();
 	}
+	
 }
 
 
