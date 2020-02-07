@@ -65,7 +65,8 @@ int main(int argc, char** argv)
 
   convexFusionB1.initial("convex_fusion", argc, argv);
   convexFusionB1.registerCallBackLidarAllNonGround(callback_lidarall_nonground);
-  convexFusionB1.registerCallBackCameraDetection(callback_camera_front_60, callback_camera_top_front_120, callback_camera_top_rear_120);
+  convexFusionB1.registerCallBackCameraDetection(callback_camera_front_60, callback_camera_top_front_120,
+                                                 callback_camera_top_rear_120);
 
   ros::Rate loop_rate(10);
   while (ros::ok())

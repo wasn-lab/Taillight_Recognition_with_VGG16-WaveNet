@@ -43,8 +43,8 @@ public:
 
   void RegisterCallBackLidarAllNonGround(void (*cb1)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&));
   void RegisterCallBackCameraDetection(void (*cb1)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*cb2)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*cb3)(const msgs::DetectedObjectArray::ConstPtr&));
+                                       void (*cb2)(const msgs::DetectedObjectArray::ConstPtr&),
+                                       void (*cb3)(const msgs::DetectedObjectArray::ConstPtr&));
 
   void send_ErrorCode(unsigned int error_code);
 

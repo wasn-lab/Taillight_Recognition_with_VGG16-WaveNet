@@ -54,8 +54,8 @@ public:
   void registerCallBackLidarAllNonGround(void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&));
 
   void registerCallBackCameraDetection(void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
-                                              void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&));
+                                       void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
+                                       void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&));
 
   void sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id);
   void sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,

@@ -17,8 +17,8 @@ void ConvexFusionHino::RegisterCallBackLidarAllNonGround(void (*cb1)(const pcl::
 }
 
 void ConvexFusionHino::RegisterCallBackCameraDetection(void (*cb1)(const msgs::DetectedObjectArray::ConstPtr&),
-                                            void (*cb2)(const msgs::DetectedObjectArray::ConstPtr&),
-                                            void (*cb3)(const msgs::DetectedObjectArray::ConstPtr&))
+                                                       void (*cb2)(const msgs::DetectedObjectArray::ConstPtr&),
+                                                       void (*cb3)(const msgs::DetectedObjectArray::ConstPtr&))
 {
   ros::NodeHandle n;
 
@@ -41,7 +41,8 @@ void ConvexFusionHino::send_ErrorCode(unsigned int error_code)
   ErrorCode_pub.publish(objMsg);
 }
 
-void ConvexFusionHino::Send_CameraResults(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, std::string frameId)
+void ConvexFusionHino::Send_CameraResults(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime,
+                                          std::string frameId)
 {
   msgs::DetectedObjectArray msgObjArr;
 

@@ -10,22 +10,27 @@ void ConvexFusionB1::initial(std::string nodename, int argc, char** argv)
   occupancy_grid_publisher = n.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 }
 
-void ConvexFusionB1::registerCallBackLidarAllNonGround(void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
+void ConvexFusionB1::registerCallBackLidarAllNonGround(
+    void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
 {
   ros::NodeHandle n;
 
   static ros::Subscriber lidarall_nonground_sub = n.subscribe("/LidarAll/NonGround", 1, callback_nonground);
 }
 
-void ConvexFusionB1::registerCallBackCameraDetection(void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
-                                            void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
-                                            void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&))
+void ConvexFusionB1::registerCallBackCameraDetection(
+    void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
+    void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
+    void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&))
 {
   ros::NodeHandle n;
 
-  static ros::Subscriber camera_front_60_detection_sub = n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback_front_60);
-  static ros::Subscriber camera_top_front_120_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback_top_front_120);
-  static ros::Subscriber camera_top_rear_120_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
+  static ros::Subscriber camera_front_60_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback_front_60);
+  static ros::Subscriber camera_top_front_120_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback_top_front_120);
+  static ros::Subscriber camera_top_rear_120_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
 }
 
 void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
@@ -43,7 +48,7 @@ void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_i
 }
 
 void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
-                        ros::Time rostime, std::string& frame_id)
+                                       ros::Time rostime, std::string& frame_id)
 {
   if (g_use_gridmap_publish)
   {
