@@ -133,19 +133,20 @@ msgs::ConvexPoint CosmapGenerator::makePolygonFromObjectBox(const msgs::Detected
   return convexPoint_;
 }
 grid_map::Matrix CosmapGenerator::makeCostmapFromSingleObject(const grid_map::GridMap costmap,
-                                                         const std::string gridmap_layer_name,
-                                                         const double expand_polygon_size,
-                                                         const msgs::DetectedObject object,
-                                                         const bool use_objects_convex_hull)
+                                                              const std::string gridmap_layer_name,
+                                                              const double expand_polygon_size,
+                                                              const msgs::DetectedObject object,
+                                                              const bool use_objects_convex_hull)
 {
   grid_map::Matrix gridmap_data = costmap[gridmap_layer_name];
   msgs::ConvexPoint convexPoint_;
-  if (use_objects_convex_hull) 
+  if (use_objects_convex_hull)
   {
     msgs::ConvexPoint polygonPoint_ = object.cPoint;
     if (polygonPoint_.lowerAreaPoints.size() > 0)
     {
-      convexPoint_.lowerAreaPoints.insert(convexPoint_.lowerAreaPoints.end(), polygonPoint_.lowerAreaPoints.begin(), polygonPoint_.lowerAreaPoints.end());
+      convexPoint_.lowerAreaPoints.insert(convexPoint_.lowerAreaPoints.end(), polygonPoint_.lowerAreaPoints.begin(),
+                                          polygonPoint_.lowerAreaPoints.end());
     }
     else
     {
@@ -154,17 +155,18 @@ grid_map::Matrix CosmapGenerator::makeCostmapFromSingleObject(const grid_map::Gr
   }
   else
   {
-    if (object.distance >= 0) 
+    if (object.distance >= 0)
     {
       msgs::ConvexPoint boxConvexPoint_ = makePolygonFromObjectBox(object);
-      convexPoint_.lowerAreaPoints.insert(convexPoint_.lowerAreaPoints.end(), boxConvexPoint_.lowerAreaPoints.begin(), boxConvexPoint_.lowerAreaPoints.end());
+      convexPoint_.lowerAreaPoints.insert(convexPoint_.lowerAreaPoints.end(), boxConvexPoint_.lowerAreaPoints.begin(),
+                                          boxConvexPoint_.lowerAreaPoints.end());
     }
     else
     {
       return gridmap_data;
     }
   }
-  
+
   for (size_t i = 0; i < convexPoint_.lowerAreaPoints.size(); i++)
   {
     grid_map::Index grid_index_ = fetchGridIndexFromPoint(convexPoint_.lowerAreaPoints[i]);
@@ -187,8 +189,10 @@ grid_map::Matrix CosmapGenerator::makeCostmapFromObjects(const grid_map::GridMap
     if (in_objects.objects[i].distance >= 0)
     {
       msgs::ConvexPoint convexPoint_;
-      if (use_objects_convex_hull) convexPoint_ = in_objects.objects[i].cPoint;
-      else convexPoint_ = makePolygonFromObjectBox(in_objects.objects[i]);
+      if (use_objects_convex_hull)
+        convexPoint_ = in_objects.objects[i].cPoint;
+      else
+        convexPoint_ = makePolygonFromObjectBox(in_objects.objects[i]);
       for (size_t i = 0; i < convexPoint_.lowerAreaPoints.size(); i++)
       {
         grid_map::Index grid_index_ = fetchGridIndexFromPoint(convexPoint_.lowerAreaPoints[i]);

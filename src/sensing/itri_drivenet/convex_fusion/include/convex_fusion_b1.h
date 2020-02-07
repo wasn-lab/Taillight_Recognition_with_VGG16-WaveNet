@@ -92,9 +92,9 @@ public:
   }
 
   void sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
-                                 ros::Time rostime, std::string& frame_id)
+                         ros::Time rostime, std::string& frame_id)
   {
-    if (g_use_gridmap_publish) 
+    if (g_use_gridmap_publish)
     {
       g_costmap_ = g_cosmapGener.initGridMap();
     }
@@ -123,11 +123,11 @@ public:
             msgs::PointXYZ convex_point;
             convex_point.x = cluster_info[i].convex_hull[j].x;
             convex_point.y = cluster_info[i].convex_hull[j].y;
-            convex_point.z = bottom_z; 
+            convex_point.z = bottom_z;
             msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
 
-          if (g_use_gridmap_publish) 
+          if (g_use_gridmap_publish)
           {
             // object To grid map
             g_costmap_[g_cosmapGener.layer_name_] =
@@ -141,7 +141,7 @@ public:
           ///      ^   /           ///        ^   /
           ///    z |  /            ///      z |  /
           ///      | /  y          ///        | /  x
-          ///      ----->          ///   <-----    
+          ///      ----->          ///   <-----
           ///        x             ///       y
 
           /// cluster_info_bbox    ///  bbox_p0
@@ -180,7 +180,7 @@ public:
           msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
           msgObj.bPoint.p4 = bbox_p4;
 
-          if (g_use_gridmap_publish) 
+          if (g_use_gridmap_publish)
           {
             // object To grid map
             g_costmap_[g_cosmapGener.layer_name_] =
@@ -197,7 +197,7 @@ public:
     msgObjArr.header.stamp = rostime;
     msgObjArr.header.frame_id = frame_id;
 
-    if (g_use_gridmap_publish) 
+    if (g_use_gridmap_publish)
     {
       // grid map To Occpancy publisher
       g_cosmapGener.OccupancyMsgPublisher(g_costmap_, occupancy_grid_publisher, msgObjArr.header);

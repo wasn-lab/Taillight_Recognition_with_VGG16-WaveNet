@@ -126,7 +126,7 @@ int main(int argc, char** argv)
       camera_ABB[i + cnt].max.x = g_object_top_front_120[i].bPoint.p6.x;
       camera_ABB[i + cnt].max.y = g_object_top_front_120[i].bPoint.p6.y;
       camera_ABB[i + cnt].max.z = g_object_top_front_120[i].bPoint.p6.z;
-      if (g_object_top_front_120[i].distance < 0)    
+      if (g_object_top_front_120[i].distance < 0)
       {
         camera_ABB[i + cnt].cluster_tag = 0;
       }
@@ -267,10 +267,11 @@ int main(int argc, char** argv)
         {
           if (lidarall_nonground.points[i].x > camera_ABB[j].min.x and
               lidarall_nonground.points[i].x < camera_ABB[j].max.x and
-              lidarall_nonground.points[i].y < camera_ABB[j].min.y and lidarall_nonground.points[i].y > camera_ABB[j].max.y)
+              lidarall_nonground.points[i].y < camera_ABB[j].min.y and
+              lidarall_nonground.points[i].y > camera_ABB[j].max.y)
           {
-            camera_ABB[j].cloud.push_back(
-                PointXYZ(lidarall_nonground.points[i].x, lidarall_nonground.points[i].y, lidarall_nonground.points[i].z));
+            camera_ABB[j].cloud.push_back(PointXYZ(lidarall_nonground.points[i].x, lidarall_nonground.points[i].y,
+                                                   lidarall_nonground.points[i].z));
           }
         }
       }
@@ -281,7 +282,7 @@ int main(int argc, char** argv)
         UseApproxMVBB approxMVBB;
         approxMVBB.setInputCloud(camera_ABB[i].cloud);
         approxMVBB.Compute(camera_ABB[i].obb_vertex, camera_ABB[i].center, camera_ABB[i].min, camera_ABB[i].max,
-                      camera_ABB[i].convex_hull);
+                           camera_ABB[i].convex_hull);
       }
       convexFusionB1.sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
     }
