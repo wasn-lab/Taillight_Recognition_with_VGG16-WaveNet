@@ -40,6 +40,9 @@ public:
   CosmapGenerator();
   ~CosmapGenerator();
   grid_map::GridMap initGridMap();
+  grid_map::Matrix makeCostmapFromSingleObject(const grid_map::GridMap costmap, const std::string gridmap_layer_name,
+                                               const double expand_polygon_size, const msgs::DetectedObject object,
+                                               const bool use_objects_convex_hull);
   grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap costmap, const std::string gridmap_layer_name,
                                           const double expand_polygon_size, const msgs::DetectedObjectArray in_objects,
                                           const bool use_objects_convex_hull);

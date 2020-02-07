@@ -61,10 +61,11 @@ int main(int argc, char** argv)
 
   cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
   cout.precision(3);
+  ConvexFusionB1 convexFusionB1;
 
-  ConvexFusionB1::initial("convex_fusion", argc, argv);
-  ConvexFusionB1::registerCallBackLidarAllNonGround(callback_lidarall_nonground);
-  ConvexFusionB1::registerCallBackCameraDetection(callback_camera_front_60, callback_camera_top_front_120, callback_camera_top_rear_120);
+  convexFusionB1.initial("convex_fusion", argc, argv);
+  convexFusionB1.registerCallBackLidarAllNonGround(callback_lidarall_nonground);
+  convexFusionB1.registerCallBackCameraDetection(callback_camera_front_60, callback_camera_top_front_120, callback_camera_top_rear_120);
 
   ros::Rate loop_rate(10);
   while (ros::ok())
@@ -282,7 +283,7 @@ int main(int argc, char** argv)
         approxMVBB.Compute(camera_ABB[i].obb_vertex, camera_ABB[i].center, camera_ABB[i].min, camera_ABB[i].max,
                       camera_ABB[i].convex_hull);
       }
-      ConvexFusionB1::sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
+      convexFusionB1.sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)
@@ -293,7 +294,7 @@ int main(int argc, char** argv)
     ros::spinOnce();
     loop_rate.sleep();
   }
-  ConvexFusionB1::sendErrorCode(0x0006, g_frame_id, g_module_id);
+  convexFusionB1.sendErrorCode(0x0006, g_frame_id, g_module_id);
 
   cout << "===================== convex_fusion end   =====================" << endl;
   return (0);

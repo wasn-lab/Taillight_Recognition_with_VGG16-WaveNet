@@ -53,8 +53,8 @@ sensor_msgs::ImagePtr imgMsg;
 msgs::DetectedObjectArray doa60_0;
 msgs::DetectedObjectArray doa60_1;
 msgs::DetectedObjectArray doa60_2;
-// grid map
-ros::Publisher occupancy_grid_publisher;
+// // grid map
+// ros::Publisher occupancy_grid_publisher;
 
 int img_w = 1920;
 int img_h = 1208;
@@ -260,8 +260,8 @@ int main(int argc, char** argv)
   pub60_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontCenter", 8);
   pub60_2 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontLeft", 8);
 
-  // occupancy grid map publisher
-  occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+  // // occupancy grid map publisher
+  // occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 
   pthread_mutex_init(&mtxInfer, NULL);
   pthread_cond_init(&cndInfer, NULL);
@@ -459,7 +459,7 @@ void* run_yolo(void*)
     msgs::DetectedObjectArray doa;
     std::vector<msgs::DetectedObject> vDo;
     // grid map init
-    grid_map::GridMap costmap_ = cosmapGener.initGridMap();
+    // grid_map::GridMap costmap_ = cosmapGener.initGridMap();
 
     for (size_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
     {
@@ -526,9 +526,9 @@ void* run_yolo(void*)
       doa.header = headers_tmp[ndx];
       doa.header.frame_id = "lidar";  // mapping to lidar coordinate
       doa.objects = vDo;
-      // object To grid map
-      costmap_[cosmapGener.layer_name_] =
-          cosmapGener.makeCostmapFromObjects(costmap_, cosmapGener.layer_name_, 8, doa, false);
+      // // object To grid map
+      // costmap_[cosmapGener.layer_name_] =
+      //     cosmapGener.makeCostmapFromObjects(costmap_, cosmapGener.layer_name_, 8, doa, false);
 
       if (cam_order == camera::id::right_60)
       {
@@ -590,7 +590,7 @@ void* run_yolo(void*)
       vDo.clear();
     }
     // grid map To Occpancy publisher
-    cosmapGener.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher, doa.header);
+    // cosmapGener.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher, doa.header);
 
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << ", " << camera::topics[cam_ids_[1]] << " and "
               << camera::topics[cam_ids_[2]] << " image." << std::endl;

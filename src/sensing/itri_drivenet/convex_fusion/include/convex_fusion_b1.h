@@ -37,19 +37,26 @@
 #include "UserDefine.h"
 #include "camera_params.h"
 
+#include "costmap_generator.h"
+
 class ConvexFusionB1
 {
 public:
-  static ros::Publisher error_code_pub_;
-  static ros::Publisher camera_detection_pub_;
+  ros::Publisher error_code_pub_;
+  ros::Publisher camera_detection_pub_;
+  ros::Publisher occupancy_grid_publisher;
+  grid_map::GridMap g_costmap_;
+  bool g_use_gridmap_publish = true;
+  CosmapGenerator g_cosmapGener;
 
-  static void initial(std::string nodename, int argc, char** argv)
+  void initial(std::string nodename, int argc, char** argv)
   {
     ros::init(argc, argv, nodename);
     ros::NodeHandle n;
 
     error_code_pub_ = n.advertise<msgs::ErrorCode>("/ErrorCode", 1);
     camera_detection_pub_ = n.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 1);
+    occupancy_grid_publisher = n.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
   }
 
   static void registerCallBackLidarAllNonGround(void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
@@ -70,7 +77,7 @@ public:
     static ros::Subscriber camera_top_rear_120_detection_sub = n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
   }
 
-  static void sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
+  void sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
   {
     static uint32_t seq;
 
@@ -84,51 +91,47 @@ public:
     error_code_pub_.publish(objMsg);
   }
 
-  static void sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
+  void sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
                                  ros::Time rostime, std::string& frame_id)
   {
+    if (g_use_gridmap_publish) 
+    {
+      g_costmap_ = g_cosmapGener.initGridMap();
+    }
+
     msgs::DetectedObjectArray msgObjArr;
     float min_z = -3;
     float max_z = -1.5;
     for (int i = 0; i < cluster_size; i++)
     {
       msgs::DetectedObject msgObj;
+      msgObj.distance = -1;
       msgObj.classId = cluster_info[i].cluster_tag;
       size_t convex_hull_size = cluster_info[i].convex_hull.size();
       if (cluster_info[i].cluster_tag != 0)
       {
         if (convex_hull_size > 0)
         {
+          msgObj.distance = 0;
+          float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
+          float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
+          msgObj.cPoint.objectHigh = top_z - bottom_z;
+
           // bottom
           for (size_t j = 0; j < convex_hull_size; j++)
           {
             msgs::PointXYZ convex_point;
             convex_point.x = cluster_info[i].convex_hull[j].x;
             convex_point.y = cluster_info[i].convex_hull[j].y;
-            convex_point.z = std::min(min_z, cluster_info[i].min.z);
+            convex_point.z = bottom_z; 
             msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
           }
-          // top
-          for (size_t j = 0; j < convex_hull_size; j++)
+
+          if (g_use_gridmap_publish) 
           {
-            msgs::PointXYZ convex_point;
-            convex_point.x = cluster_info[i].convex_hull[j].x;
-            convex_point.y = cluster_info[i].convex_hull[j].y;
-            convex_point.z = std::max(max_z, cluster_info[i].max.z);
-            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
-          }
-          // line
-          for (size_t j = 0; j < convex_hull_size; j++)
-          {
-            msgs::PointXYZ convex_point;
-            convex_point.x = cluster_info[i].convex_hull[j].x;
-            convex_point.y = cluster_info[i].convex_hull[j].y;
-            convex_point.z = std::min(min_z, cluster_info[i].min.z);
-            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
-            convex_point.x = cluster_info[i].convex_hull[j].x;
-            convex_point.y = cluster_info[i].convex_hull[j].y;
-            convex_point.z = std::max(max_z, cluster_info[i].max.z);
-            msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
+            // object To grid map
+            g_costmap_[g_cosmapGener.layer_name_] =
+                g_cosmapGener.makeCostmapFromSingleObject(g_costmap_, g_cosmapGener.layer_name_, 8, msgObj, true);
           }
         }
         else
@@ -149,61 +152,41 @@ public:
           ///  |/  1  | /          ///  |/  1  | /
           /// p4-----P0            /// p0-----P3
 
-          // Use Cartesian coordinate system. min point of bbox is p0, max point of bbox is p6; 
           msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
+          msgObj.distance = 0;
+          float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
+          float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
+          msgObj.cPoint.objectHigh = top_z - bottom_z;
+
           // bottom
           bbox_p0.x = cluster_info_bbox[i].min.x;
           bbox_p0.y = cluster_info_bbox[i].min.y;
-          bbox_p0.z = cluster_info_bbox[i].min.z;
+          bbox_p0.z = bottom_z;
           msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
+          msgObj.bPoint.p0 = bbox_p0;
           bbox_p3.x = cluster_info_bbox[i].min.x;
           bbox_p3.y = cluster_info_bbox[i].max.y;
-          bbox_p3.z = cluster_info_bbox[i].min.z;
+          bbox_p3.z = bottom_z;
           msgObj.cPoint.lowerAreaPoints.push_back(bbox_p3);
+          msgObj.bPoint.p3 = bbox_p3;
           bbox_p7.x = cluster_info_bbox[i].max.x;
           bbox_p7.y = cluster_info_bbox[i].max.y;
-          bbox_p7.z = cluster_info_bbox[i].min.z;
+          bbox_p7.z = bottom_z;
           msgObj.cPoint.lowerAreaPoints.push_back(bbox_p7);
+          msgObj.bPoint.p7 = bbox_p7;
           bbox_p4.x = cluster_info_bbox[i].max.x;
           bbox_p4.y = cluster_info_bbox[i].min.y;
-          bbox_p4.z = cluster_info_bbox[i].min.z;
+          bbox_p4.z = bottom_z;
           msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
+          msgObj.bPoint.p4 = bbox_p4;
 
-          // top
-          bbox_p1.x = cluster_info_bbox[i].min.x;
-          bbox_p1.y = cluster_info_bbox[i].min.y;
-          bbox_p1.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p1);
-
-          bbox_p2.x = cluster_info_bbox[i].min.x;
-          bbox_p2.y = cluster_info_bbox[i].max.y;
-          bbox_p2.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p2);
-
-          bbox_p6.x = cluster_info_bbox[i].max.x;
-          bbox_p6.y = cluster_info_bbox[i].max.y;
-          bbox_p6.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p6);
-
-          bbox_p5.x = cluster_info_bbox[i].max.x;
-          bbox_p5.y = cluster_info_bbox[i].min.y;
-          bbox_p5.z = cluster_info_bbox[i].max.z;
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p5);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p1);
-
-          // line
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p2);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p3);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p6);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p7);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p6);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
-          msgObj.cPoint.lowerAreaPoints.push_back(bbox_p5);
+          if (g_use_gridmap_publish) 
+          {
+            // object To grid map
+            g_costmap_[g_cosmapGener.layer_name_] =
+                g_cosmapGener.makeCostmapFromSingleObject(g_costmap_, g_cosmapGener.layer_name_, 8, msgObj, false);
+          }
         }
-
-        msgObj.cPoint.objectHigh = cluster_info[i].dz;
 
         msgObj.fusionSourceId = 0;
 
@@ -213,11 +196,14 @@ public:
     }
     msgObjArr.header.stamp = rostime;
     msgObjArr.header.frame_id = frame_id;
+
+    if (g_use_gridmap_publish) 
+    {
+      // grid map To Occpancy publisher
+      g_cosmapGener.OccupancyMsgPublisher(g_costmap_, occupancy_grid_publisher, msgObjArr.header);
+    }
     camera_detection_pub_.publish(msgObjArr);
   }
 };
-
-ros::Publisher ConvexFusionB1::error_code_pub_;
-ros::Publisher ConvexFusionB1::camera_detection_pub_;
 
 #endif  // CONVEX_FUSION_B1_H
