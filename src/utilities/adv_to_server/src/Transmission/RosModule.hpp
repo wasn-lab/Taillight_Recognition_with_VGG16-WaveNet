@@ -13,6 +13,8 @@
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/tf.h>
+#include <chrono>
+#include <thread>
 
 class RosModuleTraffic
 {
@@ -89,7 +91,21 @@ class RosModuleTraffic
       std::stringstream ss;
       ss << input;
       msg.data = ss.str();
-      reserve_status_pub.publish(msg);
+      short count = 0;
+      while (count < 30)
+      { 
+        count++;
+        int numOfSub = reserve_status_pub.getNumSubscribers() ;
+        std::cout << "numOfSub = " << numOfSub << std::endl;
+        if(numOfSub > 0) 
+        {
+          std::chrono::duration<int, std::milli> timespan(100);
+          std::this_thread::sleep_for(timespan);
+          reserve_status_pub.publish(msg);
+          return;
+        }
+      }
+      
     }
 
 };
