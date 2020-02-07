@@ -3,6 +3,7 @@
 import rospy
 import time
 import threading
+import SIGNAL_PROCESSING as SP
 #-------------------------#
 try:
     import queue as Queue # Python 3.x
@@ -90,6 +91,9 @@ REC_BACKUP_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this trigger the
 
 # States
 #-------------------------#
+# ADV running state
+advop_run_state = False # Default not running
+
 # Initialize the container for status queues
 check_queue = dict()
 for key in check_list:
@@ -119,6 +123,13 @@ ros_advop_sys_ready_pub = rospy.Publisher('/ADV_op/sys_ready', Bool, queue_size=
 REC_record_backup_pub = rospy.Publisher('/REC/req_backup', String, queue_size=10)
 sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=100)
 #-------------------------------#
+
+# SIGNAL_PROCESSING
+#-------------------------------#
+run_state_delay = SP.DELAY_CLOSE(delay_sec=3.0, init_state=False)
+#-------------------------------#
+
+
 
 # Timeout timer
 #-------------------------------#
@@ -274,6 +285,7 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     is_event_msg: True-->event message, False-->state message
     """
     global ros_msg_backup, check_queue
+    global advop_run_state
     # global ros_msg_backup, check_dict
     _status, _event_str = code_func(msg)
     # check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
@@ -286,18 +298,32 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
-            if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
-                # Trigger recorder with reason
-                _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
-                REC_record_backup_pub.publish( _reason )
-                # Write some log
-                rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
-                # Publish the event message
-                #
+            # if advop_run_state:
+            if run_state_delay.output(): # Note: delayed close
+                # Note: We only trigger record if it's already in self-driving mode and running
+                #       The events during idle is not going to be backed-up.
+                if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+                    # Trigger recorder with reason
+                    _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
+                    REC_record_backup_pub.publish( _reason )
+                    # Write some log
+                    rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
+                    # Publish the event message
+                    #
+            #
+        #
     #
     if not post_func is None:
         post_func() # e.g. "node_alive" should set its timeout timer
     ros_msg_backup[key] = msg
+
+def ADV_op_run_state_CB(msg):
+    """
+    """
+    global advop_run_state
+    advop_run_state = msg.data
+    # Delay close
+    run_state_delay.input(advop_run_state)
 #--------------------------------------#
 
 
@@ -318,6 +344,9 @@ def main():
     # ROS subscribers
     # Note: The key for callback function should match the checklist
     #-----------------------------#
+    # ADV system running state
+    # rospy.Subscriber("ADV_op/run_state", Bool, ADV_op_run_state_CB)
+    rospy.Subscriber("ADV_op/run_state/republished", Bool, ADV_op_run_state_CB)
     # all_alive from node_trace
     # Note: The "/all_alive"  topic callback should append a timeout watcher
     rospy.Subscriber("/node_trace/all_alive", Bool, (lambda msg: _checker_CB(msg, "node_alive", is_event_msg=False, post_func=set_timer_alive) ) )
