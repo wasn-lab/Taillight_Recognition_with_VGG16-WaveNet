@@ -9,7 +9,7 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
 
-#include "../Preprocess/GridMapGen/points_to_costmap.h"
+#include "../ToControl/GridMapGen/points_to_costmap.h"
 #include "../UserDefine.h"
 
 class RosModuleB1
