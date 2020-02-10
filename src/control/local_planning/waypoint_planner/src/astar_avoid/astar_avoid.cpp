@@ -269,7 +269,7 @@ void AstarAvoid::run()
           state_ = AstarAvoid::STATE::PLANNING;
         }
       }
-      else if (obstacle_waypoint_base_index_ == -1)
+      else if (obstacle_waypoint_base_index_ == -1 && current_velocity_.ego_speed < 0.5)
       {
         bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
         if (replan)
