@@ -361,9 +361,9 @@ int main(int argc, char **argv){
 		}
 		
 		if(PCloud_Geofence_original.Calculator()==0){
-			cout << "Origianl path's geofence: " << PCloud_Geofence.getDistance() << endl;
+			cout << "Origianl path's geofence: " << PCloud_Geofence_original.getDistance() << endl;
 			std_msgs::Float64 Geofence_temp;
-			Geofence_temp.data = PCloud_Geofence.getDistance();
+			Geofence_temp.data = PCloud_Geofence_original.getDistance();
 			Geofence_original.publish(Geofence_temp); 
 		}
 		else{
