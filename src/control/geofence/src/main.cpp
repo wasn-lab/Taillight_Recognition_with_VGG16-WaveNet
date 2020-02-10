@@ -156,7 +156,6 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
         Position.push_back(Pos);
     }
 	PCloud_Geofence.setPath(Position);
-	PCloud_Geofence_original.setPath(Position);
 	BBox_Geofence.setPath(Position);
 	Radar_Geofence.setPath(Position);
 }
