@@ -12,6 +12,8 @@ fi
 
 readonly coverity_data_dir="coverity_data"
 readonly coverity_root=$(readlink -e $(dirname ${cov_build_bin})/..)
+readonly cfgs="${coverity_root}/config/MISRA/MISRA_c2004_7.config ${coverity_root}/config/MISRA/MISRA_c2012_7.config ${coverity_root}/config/MISRA/MISRA_cpp2008_7.config
+"
 pushd $repo_dir
 
 # clean up the previous build.
@@ -24,10 +26,10 @@ done
 blacklist="localization;ndt_gpu"
 
 cov-build --dir ${coverity_data_dir} --emit-complementary-info \
-catkin_make -DENABLE_CCACHE=1 -DCATKIN_BLACKLIST_PACKAGES="$blacklist" ${EXTRA_CATKIN_ARGS}
+catkin_make -DENABLE_CCACHE=0 -DCATKIN_BLACKLIST_PACKAGES="$blacklist" ${EXTRA_CATKIN_ARGS} -j`nproc`
 
-cov-analyze -dir coverity_data --strip-path ${repo_dir}/
-for cfg in `ls ${coverity_root}/config/MISRA/*.config`; do
+cov-analyze -dir ${coverity_data_dir} --strip-path ${repo_dir}/
+for cfg in $cfgs; do
   cov-analyze --disable-default --misra-config ${cfg} --dir coverity_data --strip-path ${repo_dir}/
 done
 
