@@ -12,7 +12,6 @@ Int8EntropyCalibrator::Int8EntropyCalibrator(const uint& batchSize, const std::s
   : m_BatchSize(batchSize)
   , m_InputH(inputH)
   , m_InputW(inputW)
-  , m_InputSize(inputSize)
   , m_InputCount(batchSize * inputSize)
   , m_InputBlobName(inputBlobName)
   , m_CalibTableFilePath(calibTableFilePath)
