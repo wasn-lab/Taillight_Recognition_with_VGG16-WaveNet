@@ -3,8 +3,11 @@ import json
 import subprocess
 import time
 import datetime
+from rosbag.bag import Bag
 
-topic_str = "/CamObjBackTop /CamObjFrontCenter /CamObjFrontLeft /CamObjFrontRight /CamObjFrontTop /Flag_Info01 /Flag_Info02 /Flag_Info03 /Geofence_PC /LidarAll /LidarDetection /PathPredictionOutput/radar /RadarMarker /abs_virBB_array /cam/B_top /cam/F_center /cam/F_left /cam/F_right /cam/F_top /cam/L_front /cam/L_rear /cam/R_front /cam/R_rear /clock /current_pose /dynamic_path_para /imu_data /localization_to_veh /marker_array_topic /mm_tp_topic /nav_path /nav_path_astar_final /occupancy_grid /radar_point_cloud /rel_virBB_array /ring_edge_point_cloud /rosout /rosout_agg /tf /veh_info"
+
+
+topic_str = "/ADV_op/req_run_stop /ADV_op/run_state /ADV_op/sync /ADV_op/sys_fail_reason /ADV_op/sys_ready /CamObjBackTop /CamObjFrontCenter /CamObjFrontLeft /CamObjFrontRight /CamObjFrontTop /CamObjLeftBack /CamObjLeftFront /CamObjRightBack /CamObjRightFront /CameraDetection/occupancy_grid /CameraDetection/polygon /Flag_Info01 /Flag_Info02 /Flag_Info03 /Geofence_PC /LidarAll /LidarDetection /LidarDetection/grid /Path /PathPredictionOutput /PathPredictionOutput/camera /PathPredictionOutput/lidar /PathPredictionOutput/radar /PedCross/Pedestrians /REC/is_recording /REC/req_backup /RadarMarker /SensorFusion /V2X_msg /abs_virBB_array /backend/connected /cam/B_top /cam/F_center /cam/F_left /cam/F_right /cam/F_top /cam/L_front /cam/L_rear /cam/R_front /cam/R_rear /current_pose /dynamic_path_para /front_vehicle_target_point /imu_data /local_waypoints_mark /localization_state /localization_to_veh /marker_array_topic /mileage/brake_status /mm_tp_topic /nav_path /nav_path_astar_final /node_trace/all_alive /occupancy_grid /occupancy_grid_all_expand /occupancy_grid_updates /radFront /radar_point_cloud /rear_vehicle_target_point /rel_virBB_array /ring_edge_point_cloud /tf /tf_static /veh_info"
 #
 topic_list = topic_str.split()
 
@@ -64,8 +67,23 @@ def parse_backup_start_timestamp(bag_name):
     #
     return string_to_datetime( bag_name[idx_head:idx_tail] )
 
-
-
+def get_backup_start_timestamp(bag_name):
+    """
+    Input: Fisrt bag name
+    Output: datatime object
+    """
+    info_dict = yaml.load(Bag(bag_name, 'r')._get_yaml_info())
+    start_timestamp = info_dict.get("start", None)
+    start_datetime = None
+    if start_timestamp is None:
+        print("No start time info in bag, try to retrieve the start time by parsing bag name.")
+        start_datetime = parse_backup_start_timestamp(bag_name)
+    else:
+        start_datetime = datetime.datetime.fromtimestamp(start_timestamp)
+    # print("info_dict = \n%s" % str(info_dict))
+    # print('type(info_dict["start"]) = %s' % type(info_dict["start"]))
+    # print(info_dict["start"])
+    return start_datetime
 
 
 def play_bag(file_list, topic_list=None, clock=True, loop=True, start_str=None, duration_str=None, rate_str=None):
@@ -154,9 +172,10 @@ def main():
     if (not id_in is None) and (id_in >= 0) and (id_in < len(bag_dict_list)):
         #
         _d = bag_dict_list[id_in]
-        file_list = _d["bags"]
+        file_list = sorted(_d["bags"])
         # Calculate the relative time
-        start_datetime = parse_backup_start_timestamp( file_list[0] )
+        # start_datetime = parse_backup_start_timestamp( file_list[0] )
+        start_datetime = get_backup_start_timestamp( file_list[0] )
         event_datetime = _d["timestamp"]
         delta_time = event_datetime - start_datetime
         #
@@ -165,10 +184,47 @@ def main():
         print("\n---\nThe event happened at %f sec.\n---" % event_sec)
 
         # Other control items
-        s_str_in = txt_input("Start from? (default: 0, unit: sec.)\n")
-        u_str_in = txt_input('Duration? (default: "record-length", unit: sec.)\n')
+        s_str_in = txt_input('Start from? (default: 0, unit: sec.) ("e5" --> (event time - 5.0 sec))\n')
+        u_str_in = txt_input('Duration? (default: "record-length", unit: sec.) ("e" --> symetric around the event time, event should happen at the middle of playback)\n')
         r_str_in = txt_input("Rate? (default: 1, unit: x)\n")
 
+        s_str_in = s_str_in.strip()
+        u_str_in = u_str_in.strip()
+        r_str_in = r_str_in.strip()
+
+        # Generate the time around event time
+        start_time = 0.0
+        duration = 0.0
+        if len(s_str_in) > 0:
+            if s_str_in[0] == "e":
+                try:
+                    start_time = event_sec - float(s_str_in[1:])
+                except ValueError as e:
+                    print(e)
+                    default_ahead_t = 5.0
+                    print("start_time: No proper time ahead given after 'e', using default value [%f]." % default_ahead_t)
+                    start_time = event_sec - default_ahead_t
+                #
+                if start_time < 0.0:
+                    start_time = 0.0
+                s_str_in = "%f" % start_time
+                print("start_time = %f" % start_time)
+            else: # Normal value, no "e" or other commands
+                try:
+                    start_time = float(s_str_in)
+                except ValueError as e:
+                    print(e)
+                    print("start_time: No proper time given, start from head.")
+                    start_time = 0.0
+            #
+        #
+        if len(u_str_in) > 0 and u_str_in[0] == "e":
+            duration = (event_sec - start_time)*2.0
+            u_str_in = "%f" % duration
+            print("duration = %f" % duration)
+
+        # Indicate the event happend relative time
+        print("\n-------\nNote: Event happend at %.2f sec.\n-------\n" % (event_sec - start_time))
 
         play_bag(file_list, topic_list=topic_list, clock=True, loop=True,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
     else:

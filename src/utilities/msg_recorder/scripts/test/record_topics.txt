@@ -1,0 +1,110 @@
+/LidarAll
+/LidarFrontRight/Raw
+/LidarFrontLeft/Raw
+/LidarRearRight/Raw
+/LidarRearLeft/Raw
+/LidarFrontTop/Raw # For debugging localization
+/LidarDetection
+
+# /points_map
+
+# Raw image
+/cam/F_right
+/cam/F_center
+/cam/F_left
+/cam/F_top
+/cam/R_front
+/cam/R_rear
+/cam/L_front
+/cam/L_rear
+/cam/B_top
+
+# Image with 2D bbox
+# /cam/F_right/detect_image
+# /cam/F_center/detect_image
+# /cam/F_left/detect_image
+# /cam/F_top/detect_image
+# /cam/R_front/detect_image
+# /cam/R_rear/detect_image
+# /cam/L_front/detect_image
+# /cam/L_rear/detect_image
+# /cam/B_top/detect_image
+
+/CamObjFrontRight
+/CamObjFrontCenter
+/CamObjFrontLeft
+/CamObjFrontTop
+/CamObjRightFront
+/CamObjRightBack
+/CamObjLeftFront
+/CamObjLeftBack
+/CamObjBackTop
+# Camera polygon
+/CameraDetection/polygon
+
+/current_pose
+/veh_info
+/localization_to_veh
+/dynamic_path_para
+/imu_data
+/Path
+/Flag_Info01
+/Flag_Info02
+/Flag_Info03
+/rel_virBB_array
+/abs_virBB_array
+/marker_array_topic
+
+/radFront
+/radar_point_cloud
+/PathPredictionOutput/radar
+/RadarMarker
+/Geofence_PC
+
+
+
+/mm_tp_topic
+/nav_path # Dyna-plan
+/nav_path_astar_final # A-star
+
+/occupancy_grid
+/occupancy_grid_updates
+/ring_edge_point_cloud
+
+/SensorFusion
+/PathPredictionOutput # With fusion
+/PathPredictionOutput/lidar # When no fusion available
+/PathPredictionOutput/camera # When no fusion available
+
+/V2X_msg
+
+# Added at 2020/1/31
+/local_waypoints_mark
+/rear_vehicle_target_point
+/front_vehicle_target_point
+/LidarDetection/grid
+/CameraDetection/occupancy_grid
+/occupancy_grid_all_expand
+
+# tf
+/tf
+/tf_static
+
+
+# System-ready check
+/ADV_op/req_run_stop
+/ADV_op/run_state
+/ADV_op/sync
+/ADV_op/sys_ready
+/REC/req_backup
+/ADV_op/sys_fail_reason
+
+# Events/status
+/node_trace/all_alive
+/REC/is_recording
+/backend/connected
+/mileage/brake_status
+/localization_state
+
+# pedcross
+/PedCross/Pedestrians
