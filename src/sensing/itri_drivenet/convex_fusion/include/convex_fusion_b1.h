@@ -44,10 +44,10 @@ class ConvexFusionB1
 public:
   ros::Publisher error_code_pub_;
   ros::Publisher camera_detection_pub_;
-  ros::Publisher occupancy_grid_publisher;
-  grid_map::GridMap g_costmap_;
-  bool g_use_gridmap_publish = true;
-  CosmapGenerator g_cosmapGener;
+  ros::Publisher occupancy_grid_publisher_;
+  grid_map::GridMap costmap_;
+  bool use_gridmap_publish_ = true;
+  CosmapGenerator cosmapGener_;
 
   void initial(std::string nodename, int argc, char** argv);
 

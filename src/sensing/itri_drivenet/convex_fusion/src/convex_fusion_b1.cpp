@@ -7,7 +7,7 @@ void ConvexFusionB1::initial(std::string nodename, int argc, char** argv)
 
   error_code_pub_ = n.advertise<msgs::ErrorCode>("/ErrorCode", 1);
   camera_detection_pub_ = n.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 1);
-  occupancy_grid_publisher = n.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+  occupancy_grid_publisher_ = n.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 }
 
 void ConvexFusionB1::registerCallBackLidarAllNonGround(
@@ -50,9 +50,9 @@ void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_i
 void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
                                        ros::Time rostime, std::string& frame_id)
 {
-  if (g_use_gridmap_publish)
+  if (use_gridmap_publish_)
   {
-    g_costmap_ = g_cosmapGener.initGridMap();
+    costmap_ = cosmapGener_.initGridMap();
   }
 
   msgs::DetectedObjectArray msgObjArr;
@@ -83,11 +83,11 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
           msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
         }
 
-        if (g_use_gridmap_publish)
+        if (use_gridmap_publish_)
         {
           // object To grid map
-          g_costmap_[g_cosmapGener.layer_name_] =
-              g_cosmapGener.makeCostmapFromSingleObject(g_costmap_, g_cosmapGener.layer_name_, 8, msgObj, true);
+          costmap_[cosmapGener_.layer_name_] =
+              cosmapGener_.makeCostmapFromSingleObject(costmap_, cosmapGener_.layer_name_, 8, msgObj, true);
         }
       }
       else
@@ -136,11 +136,11 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
         msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
         msgObj.bPoint.p4 = bbox_p4;
 
-        if (g_use_gridmap_publish)
+        if (use_gridmap_publish_)
         {
           // object To grid map
-          g_costmap_[g_cosmapGener.layer_name_] =
-              g_cosmapGener.makeCostmapFromSingleObject(g_costmap_, g_cosmapGener.layer_name_, 8, msgObj, false);
+          costmap_[cosmapGener_.layer_name_] =
+              cosmapGener_.makeCostmapFromSingleObject(costmap_, cosmapGener_.layer_name_, 8, msgObj, false);
         }
       }
 
@@ -153,10 +153,10 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
   msgObjArr.header.stamp = rostime;
   msgObjArr.header.frame_id = frame_id;
 
-  if (g_use_gridmap_publish)
+  if (use_gridmap_publish_)
   {
     // grid map To Occpancy publisher
-    g_cosmapGener.OccupancyMsgPublisher(g_costmap_, occupancy_grid_publisher, msgObjArr.header);
+    cosmapGener_.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher_, msgObjArr.header);
   }
   camera_detection_pub_.publish(msgObjArr);
 }
