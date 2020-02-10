@@ -35,7 +35,7 @@ void ConvexFusionB1::registerCallBackCameraDetection(
 
 void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
 {
-  static uint32_t seq;
+  static uint32_t seq = 0;
 
   msgs::ErrorCode objMsg;
   objMsg.header.seq = seq++;
