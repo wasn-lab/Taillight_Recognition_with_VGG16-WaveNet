@@ -22,6 +22,7 @@ AstarAvoid::AstarAvoid()
   , terminate_thread_(false)
   , closest_waypoint_index_(-1)
   , obstacle_waypoint_index_(-1)
+  , obstacle_waypoint_base_index_(-1)
   , closest_local_index_(-1)
   , costmap_initialized_(false)
   , current_pose_initialized_(false)
@@ -53,6 +54,7 @@ AstarAvoid::AstarAvoid()
   base_waypoints_sub_ = nh_.subscribe("base_waypoints", 1, &AstarAvoid::baseWaypointsCallback, this);
   closest_waypoint_sub_ = nh_.subscribe("closest_waypoint", 1, &AstarAvoid::closestWaypointCallback, this);
   obstacle_waypoint_sub_ = nh_.subscribe("obstacle_waypoint", 1, &AstarAvoid::obstacleWaypointCallback, this);
+  obstacle_waypoint_base_sub_ = nh_.subscribe("obstacle_waypoint_base", 1, &AstarAvoid::obstacleWaypointbaseCallback, this);
 
   rate_ = new ros::Rate(update_rate_);
 }
@@ -139,6 +141,11 @@ void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
     obstacle_waypoint_index_ = msg.data + 6;
 }
 
+void AstarAvoid::obstacleWaypointbaseCallback(const std_msgs::Int32& msg)
+{
+    obstacle_waypoint_base_index_ = msg.data;
+}
+
 void AstarAvoid::run()
 {
   // check topics
@@ -162,6 +169,7 @@ void AstarAvoid::run()
 
   // reset obstacle index
   obstacle_waypoint_index_ = -1;
+  obstacle_waypoint_base_index_ = -1;
 
   // relaying mode at startup
   state_ = AstarAvoid::STATE::RELAYING;
@@ -259,6 +267,15 @@ void AstarAvoid::run()
         //   state_ = AstarAvoid::STATE::STOPPING;
           ROS_INFO("AVOIDING -> PLANNING, Abort avoiding");
           state_ = AstarAvoid::STATE::PLANNING;
+        }
+      }
+      else if (obstacle_waypoint_base_index_ == -1 && current_velocity_.ego_speed < 0.5)
+      {
+        bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
+        if (replan)
+        {
+          ROS_INFO("AVOIDING -> RELAYING, Obstacle disappers");
+          state_ = AstarAvoid::STATE::RELAYING;
         }
       }
       // ROS_INFO("end avoiding");

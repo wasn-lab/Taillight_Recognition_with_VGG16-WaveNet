@@ -57,6 +57,7 @@ private:
   ros::Publisher safety_waypoints_pub_;
   ros::Publisher navpath_astar_pub;////////////////
   ros::Publisher avoiding_flag_pub;
+  ros::Subscriber obstacle_waypoint_base_sub_;
   ros::Subscriber costmap_sub_;
   ros::Subscriber current_pose_sub_;
   ros::Subscriber current_velocity_sub_;
@@ -92,6 +93,7 @@ private:
   bool found_avoid_path_;
   int closest_waypoint_index_;
   int obstacle_waypoint_index_;
+  int obstacle_waypoint_base_index_;
   int closest_local_index_;
   nav_msgs::OccupancyGrid costmap_;
   autoware_msgs::Lane base_waypoints_;
@@ -117,6 +119,7 @@ private:
   void baseWaypointsCallback(const autoware_msgs::Lane& msg);
   void closestWaypointCallback(const std_msgs::Int32& msg);
   void obstacleWaypointCallback(const std_msgs::Int32& msg);
+  void obstacleWaypointbaseCallback(const std_msgs::Int32& msg);
 
   // functions
   bool checkInitialized();

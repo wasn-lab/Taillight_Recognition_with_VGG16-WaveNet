@@ -1,5 +1,8 @@
 #include <ros/ros.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/Path.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <tf/tf.h>
 
 ros::Publisher occ_grid_all_pub;
 ros::Publisher occ_grid_all_expand_pub;
@@ -13,6 +16,34 @@ bool cam_ini = false;
 double expand_size = 1.0;
 double expand_size_0 = 1.4;
 
+struct pose
+{
+    double x;
+    double y;
+    double z;
+    double roll;
+    double pitch;
+    double yaw;
+    double speed;
+};
+
+pose current_pose;
+
+void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
+{
+  geometry_msgs::PoseStamped pose = CPmsg;
+
+  double roll, pitch, yaw;
+  tf::Quaternion lidar_q(CPmsg.pose.orientation.x, CPmsg.pose.orientation.y, CPmsg.pose.orientation.z,CPmsg.pose.orientation.w);
+  tf::Matrix3x3 lidar_m(lidar_q);
+  lidar_m.getRPY(roll, pitch, yaw);
+
+  current_pose.x = pose.pose.position.x;
+  current_pose.y = pose.pose.position.y;
+  current_pose.roll = roll;
+  current_pose.pitch = pitch;
+  current_pose.yaw = yaw;
+}
 
 void lid_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 {
@@ -24,6 +55,16 @@ void cam_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 {
   camcostmap = costmap;
   cam_ini = true;
+}
+
+void basewaypoints30Callback(const nav_msgs::Path& path)
+{
+  nav_msgs::Path path_vehicle = path;
+  std::cout << "path size : " << path.poses.size() << std::endl;
+  for (int i = 0; i < path.poses.size(); i++)
+  {
+    // std::cout << "path size : " << 
+  }
 }
 
 void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
@@ -140,6 +181,8 @@ int main(int argc, char** argv)
   ros::Subscriber occ_grid_sub = node.subscribe("occupancy_grid", 1, occgridCallback);
   ros::Subscriber liddetect_grid_sub = node.subscribe("LidarDetection/grid", 1, lid_occgridCallback);
   ros::Subscriber cameradetect_grid_sub = node.subscribe("CameraDetection/occupancy_grid", 1, cam_occgridCallback);
+  ros::Subscriber basewaypoints30_sub = node.subscribe("nav_path_astar_base_30", 1, basewaypoints30Callback);
+  ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
 
   occ_grid_all_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_all", 10, true);
   occ_grid_all_expand_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_all_expand", 10, true);
