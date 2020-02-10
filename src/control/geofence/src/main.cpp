@@ -80,7 +80,7 @@ void avoid_path_Callback(const std_msgs::Int32ConstPtr& msg){
 void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg){
 	Point Point_temp;
 	vector<Point> PointCloud_temp;
-	for(int i=0;i<msg->objects.size();i++){
+	for(uint i=0;i<msg->objects.size();i++){
 		Point_temp.X = msg->objects[i].bPoint.p0.x;
 		Point_temp.Y = msg->objects[i].bPoint.p0.y;
 		Point_temp.Speed = msg->objects[i].relSpeed;
@@ -112,7 +112,7 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg){
 void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg){
 	Point Point_temp;
 	vector<Point> PointCloud_temp;
-	for(int i=0;i<msg->objects.size();i++){
+	for(uint i=0;i<msg->objects.size();i++){
 		Point_temp.X = msg->objects[i].bPoint.p0.x;
 		Point_temp.Y = msg->objects[i].bPoint.p0.y;
 		Point_temp.Speed = msg->objects[i].relSpeed;
@@ -165,13 +165,13 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	int size = 50;
+	uint size = 50;
 	if (msg->poses.size()<size){
 		size = msg->poses.size(); 
 	}
 
 	double Resolution = 50;
-	for(int i=1;i<size;i++){
+	for(uint i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
 			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
@@ -187,12 +187,12 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 void astar_original_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	int size = 50;
+	uint size = 50;
 	if (msg->poses.size()<size){
 		size = msg->poses.size(); 
 	}
 	double Resolution = 50;
-	for(int i=1;i<size;i++){
+	for(uint i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
 			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
@@ -294,7 +294,7 @@ int main(int argc, char **argv){
 	ros::NodeHandle n;
 	ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
 	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
-	ros::Subscriber AstarSub_original = n.subscribe("????????", 1, astar_original_callback);// For objects on original path
+	ros::Subscriber AstarSub_original = n.subscribe("nav_path_astar_base_30", 1, astar_original_callback);// For objects on original path
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	//ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
@@ -352,6 +352,7 @@ int main(int argc, char **argv){
 			frame.data[6] = (short int)(PCloud_Geofence.getNearest_Y()*10);
 			frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
 			std_msgs::Float64 Geofence_temp;
 			Geofence_temp.data = PCloud_Geofence.getDistance_w();
 			Geofence_PC.publish(Geofence_temp);
@@ -362,7 +363,6 @@ int main(int argc, char **argv){
 		}
 		
 		if(PCloud_Geofence_original.Calculator()==0){
-			frame.can_id  = 0x590;
 			cout << "Origianl path's geofence: " << PCloud_Geofence.getDistance() << endl;
 			std_msgs::Float64 Geofence_temp;
 			Geofence_temp.data = PCloud_Geofence.getDistance();
@@ -389,6 +389,7 @@ int main(int argc, char **argv){
 			frame.data[6] = (short int)(BBox_Geofence.getNearest_Y()*10);
 			frame.data[7] = (short int)(BBox_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
 			//Publish_Marker(BBox_Geofence.getNearest_X(), BBox_Geofence.getNearest_Y());
 		}
 		else{
@@ -411,6 +412,7 @@ int main(int argc, char **argv){
 			frame.data[6] = (short int)(Radar_Geofence.getNearest_Y()*10);
 			frame.data[7] = (short int)(Radar_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
 			Publish_Marker_Radar(Radar_Geofence.getNearest_X(), Radar_Geofence.getNearest_Y());
 			
 		}
@@ -423,6 +425,7 @@ int main(int argc, char **argv){
 		frame.data[0] = (short int)(avoiding_path_flag);
 		frame.data[1] = (short int)(avoiding_path_flag)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
+		printf("Wrote %d bytes\n", nbytes);
 		cout << "******************************************" << endl;
 		loop_rate.sleep();	
 	}
