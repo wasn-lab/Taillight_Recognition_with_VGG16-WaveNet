@@ -66,69 +66,36 @@ void send_can(){
 
 void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 {
-
-	int s;
-	int nbytes;
-	struct sockaddr_can addr;
-	struct can_frame frame;
-	struct ifreq ifr;
-
-	const char *ifname = CAN_INTERFACE_NAME;
-
-	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
-	{
-		perror("Error while opening socket");
-	}
-
-	strcpy(ifr.ifr_name, ifname);
-	ioctl(s, SIOCGIFINDEX, &ifr);
-
-	addr.can_family  = AF_CAN;
-	addr.can_ifindex = ifr.ifr_ifindex;
-
-	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
-
-	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-	{
-		perror("Error in socket bind");
-	}
-
-	int stop_one = 0;
-	int stop_two = 0;
+	vector<int> stops;
+	int stop_temp = 0;
 	for (char c: msg->data)
 	{
 		if (c >= '0' && c <= '9') {
-			stop_one = stop_one * 10 + (c - '0');
+			stop_temp = stop_temp * 10 + (c - '0');
 		}
 		else if(c == '#'){
-			stop_two = stop_one;
-			stop_one = 0;
+			stops.push_back(stop_temp);
+			stop_temp = 0;
 		}
 		else {
-			stop_one = 0;
-			stop_two = 0;
+			stops.clear();
 			std::cout << "Bad Input";
 			return;
 		}
 	}
-	std::cout << "Add stop: " << stop_two << "," << stop_one << '\n';
+	for(int i:stops){
+		std::cout << "Add stop: " << i << '\n';
+	} 
 
 	for(uint i=0;i<bus_stop_code.size();i++){
-		if(bus_stop_code[i]==stop_one || bus_stop_code[i]==stop_two){
-			bus_stop_flag[i] = 1;
+		for(int j:stops){
+			if(bus_stop_code[i]==j){
+				bus_stop_flag[i] = 1;
+			}
 		}
 	}
-	
-	frame.can_dlc = CAN_DLC;
-	frame.can_id  = 0x055;
-	for(int i=0;i<8;i++){
-		frame.data[i] = (short int)(bus_stop_flag[i]);
-		cout << "stop" << i << ": " << int(frame.data[i]) << endl;
-	}
-	nbytes = write(s, &frame, sizeof(struct can_frame));
-	printf("Wrote %d bytes\n", nbytes);
-	//Close the SocketCAN
-	close(s);
+
+	send_can();
 
 	msgs::Flag_Info msg_temp;
 	msg_temp.Dspace_Flag01 = bus_stop_flag[0];
