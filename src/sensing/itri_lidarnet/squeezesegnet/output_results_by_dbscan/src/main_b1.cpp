@@ -57,6 +57,11 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     RosModuleB1::Send_LidarResults (cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     RosModuleB1::Send_LidarResultsRVIZ (cur_cluster, cur_cluster_num);
     RosModuleB1::Send_LidarResultsGrid(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
+    // auto start_time = chrono::high_resolution_clock::now();
+    RosModuleB1::Send_LidarResultsEdge(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
+    // auto end_time = chrono::high_resolution_clock::now();
+	  // cout << "[EDGE]: " << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << endl;
+
     delete[] cur_cluster;
 
     if (stopWatch.getTimeSeconds () > 0.05)
