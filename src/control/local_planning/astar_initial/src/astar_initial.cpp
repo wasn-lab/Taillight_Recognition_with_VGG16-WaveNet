@@ -241,6 +241,7 @@ void basepathgen_pub_30(int closet_i)
     Dpath.poses.push_back(Dpose);
   }
   NavPath_Pub_30.publish(Dpath);
+  // std::cout << "basepathgen_pub_30_size : " << Dpath.poses.size() << std::endl;
 }
 
 void localpathgen(int closet_i)
@@ -310,6 +311,7 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
   std::cout << "closet_index = " << closet_index << std::endl;
   localpathgen(closet_index);
   basepathgen_pub(closet_index);
+  basepathgen_pub_30(closet_index);
 
   std_msgs::Int32 closetwaypoint;
   closetwaypoint.data = -closet_local_start_i;//closet_index;
@@ -352,7 +354,7 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 {
   int obswaypoints_data_base = std::ceil(obsdismsg_base->data);// + wheel_dis);
-  if (obswaypoints_data_base > 30 || obswaypoints_data_base <= 3.8)
+  if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10) /////////////////////////////////
     obswaypoints_data_base = -1;
   int obswaypoints_data_base_ = 0;
 
@@ -362,7 +364,7 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
   else
     obs_index_base = 0;
 
-  if (obs_index_base > 10) // detect time < 3s //avoid_flag == 0 && 
+  if (obs_index_base > 10)
     obswaypoints_data_base_ = -1;
 
   ///////////////////////////////////////////////////////////////////
