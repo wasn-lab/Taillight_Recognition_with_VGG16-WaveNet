@@ -55,7 +55,7 @@ void send_can(){
 	frame.can_id  = 0x055;
 	for(int i=0;i<8;i++){
 		frame.data[i] = (short int)(bus_stop_flag[i]);
-		cout << "stop" << i << ": " << int(frame.data[i]) << endl;
+		cout << "stop" << i+1 << ": " << int(frame.data[i]) << endl;
 	}
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	printf("Wrote %d bytes\n", nbytes);
@@ -83,6 +83,7 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 			return;
 		}
 	}
+	stops.push_back(stop_temp);
 	for(int i:stops){
 		std::cout << "Add stop: " << i << '\n';
 	} 
