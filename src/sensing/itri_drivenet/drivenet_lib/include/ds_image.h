@@ -23,7 +23,6 @@ private:
 
   int dummy = 0;
   int BGROrder[3];
-  float* dstCudaCHW;
   Npp8u pixelArr[3];
   NppiSize nppSizeNet;
   NppiSize nppSizeResize;

@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iomanip>
 
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+
 namespace DriveNet
 {
 cv::Mat blobFromDsImages(const std::vector<cv::Mat>& inputImages, const int& inputH, const int& inputW)
@@ -431,6 +433,8 @@ nvinfer1::ILayer* netAddConvBNLeaky(int layerIdx, std::map<std::string, std::str
   }
   // all conv_bn_leaky layers assume bias is false
   assert(batchNormalize == true && bias == false);
+  NO_UNUSED_VAR_CHECK(batchNormalize);
+  NO_UNUSED_VAR_CHECK(bias); // silence -Wunused-variable
 
   int filters = std::stoi(block.at("filters"));
   int padding = std::stoi(block.at("pad"));
