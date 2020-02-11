@@ -326,7 +326,7 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
 void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 {
   int obswaypoints_data = std::ceil(obsdismsg->data);// + wheel_dis);
-  std::cout << "obswaypoints_data : " << obswaypoints_data << std::endl;
+  // std::cout << "obswaypoints_data : " << obswaypoints_data << std::endl;
   if (obswaypoints_data > 30 || obswaypoints_data <= 3.8)
     obswaypoints_data = -1;
   int obswaypoints_data_ = obswaypoints_data;
@@ -337,17 +337,19 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
   else
     obs_index = 0;
 
-  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
-    obswaypoints_data_ = -1;
+  // if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
+  //   obswaypoints_data_ = -1;
+  // if (avoid_flag != 0 && obs_index < 4) //
+  //   obswaypoints_data_ = -1;
 
-  if (avoid_flag != 0 && obs_index < 4) //
+  if (obs_index < 4) //
     obswaypoints_data_ = -1;
 
   ///////////////////////////////////////////////////////////////////
 
   // std_msgs::Int32 obswaypoints;
   obswaypoints.data = obswaypoints_data_;
-  std::cout << "obswaypoints.data : " << obswaypoints.data << std::endl;
+  // std::cout << "obswaypoints.data : " << obswaypoints.data << std::endl;
   obstacletwaypoint_pub.publish(obswaypoints);
   pre_obswaypoints_data = obswaypoints_data;
 }
@@ -355,7 +357,7 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 {
   int obswaypoints_data_base = std::ceil(obsdismsg_base->data);// + wheel_dis);
-  std::cout << "obswaypoints_data_base : " << obswaypoints_data_base << std::endl;
+  // std::cout << "obswaypoints_data_base : " << obswaypoints_data_base << std::endl;
   if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10) /////////////////////////////////
     obswaypoints_data_base = -1;
   int obswaypoints_data_base_ = 0;
@@ -373,7 +375,7 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 
   // std_msgs::Int32 obswaypoints;
   obswaypoints_base.data = obswaypoints_data_base_;
-  std::cout << "obswaypoints_base.data : " << obswaypoints_base.data << std::endl;
+  // std::cout << "obswaypoints_base.data : " << obswaypoints_base.data << std::endl;
   obstacletwaypoint_base_pub.publish(obswaypoints_base);
   pre_obswaypoints_data_base = obswaypoints_data_base_;
 }

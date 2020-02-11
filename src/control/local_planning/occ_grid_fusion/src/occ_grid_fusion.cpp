@@ -60,7 +60,7 @@ void cam_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 void basewaypoints30Callback(const nav_msgs::Path& path)
 {
   nav_msgs::Path path_vehicle = path;
-  std::cout << "path size : " << path.poses.size() << std::endl;
+  // std::cout << "path size : " << path.poses.size() << std::endl;
   for (int i = 0; i < path.poses.size(); i++)
   {
     // std::cout << "path size : " << 
@@ -69,7 +69,7 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
 
 void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 {
-  std::cout << "expand_size : " << expand_size << std::endl;
+  // std::cout << "expand_size : " << expand_size << std::endl;
   costmap_ = costmap;
   static double resolution = costmap_.info.resolution;
   costmap_all = costmap;
