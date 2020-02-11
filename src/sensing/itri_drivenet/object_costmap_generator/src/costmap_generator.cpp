@@ -77,7 +77,7 @@ msgs::PointXYZ CosmapGenerator::makeMidpoint(msgs::PointXYZ p1, msgs::PointXYZ p
   return midPoint_;
 }
 
-msgs::ConvexPoint CosmapGenerator::makePolygonFromObjectBox(const msgs::DetectedObject in_objects)
+msgs::ConvexPoint CosmapGenerator::makePolygonFromObjectBox(const msgs::DetectedObject& in_objects)
 {
   msgs::ConvexPoint convexPoint_;
   msgs::PointXYZ mid_p0_p3, mid_p0_p4, mid_p3_p7, mid_p4_p7;
@@ -133,9 +133,9 @@ msgs::ConvexPoint CosmapGenerator::makePolygonFromObjectBox(const msgs::Detected
   return convexPoint_;
 }
 grid_map::Matrix CosmapGenerator::makeCostmapFromSingleObject(const grid_map::GridMap costmap,
-                                                              const std::string gridmap_layer_name,
+                                                              const std::string& gridmap_layer_name,
                                                               const double expand_polygon_size,
-                                                              const msgs::DetectedObject object,
+                                                              const msgs::DetectedObject& object,
                                                               const bool use_objects_convex_hull)
 {
   grid_map::Matrix gridmap_data = costmap[gridmap_layer_name];
@@ -178,9 +178,9 @@ grid_map::Matrix CosmapGenerator::makeCostmapFromSingleObject(const grid_map::Gr
   return gridmap_data;
 }
 grid_map::Matrix CosmapGenerator::makeCostmapFromObjects(const grid_map::GridMap costmap,
-                                                         const std::string gridmap_layer_name,
+                                                         const std::string& gridmap_layer_name,
                                                          const double expand_polygon_size,
-                                                         const msgs::DetectedObjectArray in_objects,
+                                                         const msgs::DetectedObjectArray& in_objects,
                                                          const bool use_objects_convex_hull)
 {
   grid_map::Matrix gridmap_data = costmap[gridmap_layer_name];
@@ -190,9 +190,13 @@ grid_map::Matrix CosmapGenerator::makeCostmapFromObjects(const grid_map::GridMap
     {
       msgs::ConvexPoint convexPoint_;
       if (use_objects_convex_hull)
+      {
         convexPoint_ = in_objects.objects[i].cPoint;
+      }
       else
+      {
         convexPoint_ = makePolygonFromObjectBox(in_objects.objects[i]);
+      }
       for (size_t i = 0; i < convexPoint_.lowerAreaPoints.size(); i++)
       {
         grid_map::Index grid_index_ = fetchGridIndexFromPoint(convexPoint_.lowerAreaPoints[i]);
