@@ -15,7 +15,7 @@ namespace DriveNet
   {                                                                                                                    \
     if (status != 0)                                                                                                   \
     {                                                                                                                  \
-      if (std::strcmp(cudaGetErrorString(status), "no error") != 0)                                                           \
+      if (std::strcmp(cudaGetErrorString(status), "no error") != 0)                                                    \
       {                                                                                                                \
         std::cout << "Cuda failure: status: " << status << std::endl;                                                  \
         std::cout << "Cuda failure: " << cudaGetErrorString(status) << " in file " << __FILE__ << " at line "          \
@@ -48,7 +48,6 @@ private:
   static const int m_MaxYoloLayers = 3;
   int m_LeakyReLUCount = 0;
   int m_YoloLayerCount = 0;
-  nvinfer1::plugin::RegionParameters m_RegionParameters{ m_NumBoxes, m_NumCoords, m_NumClasses, nullptr };
 
   struct INvPluginDeleter
   {

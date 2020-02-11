@@ -47,6 +47,7 @@ brake_Q = Queue.Queue()
 
 # ROS publisher
 #-------------------#
+run_state_pub = rospy.Publisher("ADV_op/run_state/republished", Bool, queue_size=10, latch=True)
 text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True)
 mileage_json_pub = rospy.Publisher("/mileage/relative_mileage", String, queue_size=10, latch=True)
 brake_status_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
@@ -136,6 +137,8 @@ def _flag_info_02_CB(data):
         adv_run_Q.put( (adv_run_state, now) )
         # Print to stdout
         print( adv_run_state_2_string(adv_run_state) )
+        # Publish as ROS message
+        run_state_pub.publish( (adv_run_state==1) )
 
 
 def _flag_info_03_CB(data):
@@ -206,10 +209,11 @@ def main(sys_args):
     global text_marker_pub
     global mileage_km, speed_mps_filtered
     global brake_state, brake_Q
-    global adv_run_state, brake_state
+    global adv_run_state
     #
     rospy.init_node('mileage_recorder', anonymous=False)
 
+    """
     # Loading parameters
     #---------------------------------------------#
     rospack = rospkg.RosPack()
@@ -244,6 +248,7 @@ def main(sys_args):
         print("The directry <%s> already exists." % output_dir_tmp)
         pass
     #---------------------------------------------#
+    """
 
 
     # Init ROS communication interface
@@ -254,7 +259,11 @@ def main(sys_args):
     rospy.Subscriber("/Flag_Info03", Flag_Info, _flag_info_03_CB)
     #--------------------------------------#
 
-
+    # Publishing intial state
+    #--------------------------------------#
+    run_state_pub.publish( (adv_run_state==1) )
+    brake_status_pub.publish( brake_state )
+    #--------------------------------------#
 
     # Loop for user command via stdin
     rate = rospy.Rate(5.0) # Hz

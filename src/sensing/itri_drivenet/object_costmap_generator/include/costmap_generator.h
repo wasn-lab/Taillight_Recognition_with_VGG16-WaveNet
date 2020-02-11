@@ -16,15 +16,15 @@ class CosmapGenerator
 {
 private:
   // grid_map
-  double grid_length_x_;
-  double grid_length_y_;
-  double grid_resolution_;
-  double grid_position_x_;
-  double grid_position_y_;
-  double grid_min_value_;
-  double grid_max_value_;
-  double maximum_lidar_height_thres_;
-  double minimum_lidar_height_thres_;
+  double grid_min_value_ = 0.0;
+  double grid_max_value_ = 0.0;
+  double grid_length_x_ = 0.0;
+  double grid_length_y_ = 0.0;
+  double grid_resolution_ = 0.0;
+  double grid_position_x_ = 0.0;
+  double grid_position_y_ = 0.0;
+  double maximum_lidar_height_thres_ = 0.0;
+  double minimum_lidar_height_thres_ = 0.0;
 
   // functions
   msgs::ConvexPoint makePolygonFromObjectBox(const msgs::DetectedObject in_objects);
