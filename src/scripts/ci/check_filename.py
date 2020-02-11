@@ -32,7 +32,7 @@ def _check_space(affected_files):
 
 def _check_hpp(affected_files):
     fnames_hpp = []
-    for fname in affacted_files:
+    for fname in affected_files:
         if fname.endswith(".hpp"):
             fnames_hpp.append(fname)
     if fnames_hpp:
