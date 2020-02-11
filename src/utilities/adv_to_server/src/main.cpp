@@ -896,8 +896,8 @@ void route(std::string request)
 void tcpServerRun(int argc, char** argv)
 {
   // set ip and port
-  //server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-   server.initial("192.168.43.204",8765);
+  server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
+  // server.initial("192.168.43.204",8765);
   // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();
