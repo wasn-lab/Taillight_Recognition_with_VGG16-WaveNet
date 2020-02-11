@@ -26,8 +26,6 @@ def _check_space(affected_files):
             fnames_with_space.append(fname)
     if fnames_with_space:
         logging.error("File name contains space: %s", " ".join(fnames_with_space))
-    else:
-        print("file name check passed.")
     return len(fnames_with_space)
 
 def _check_hpp(affected_files):
