@@ -18,13 +18,34 @@
 
 using namespace DriveNet;
 
-pthread_t thrdYolo;
-pthread_t thrdInterp;
-pthread_t thrdDisplay;
+/// camera layout
+#if CAR_MODEL_IS_B1
+const std::vector<int> cam_ids_{
+  camera::id::top_right_front_120, camera::id::top_right_rear_120, camera::id::top_left_front_120,
+  camera::id::top_left_rear_120,
+};
+#else
+#error "car model is not well defined"
+#endif
+
+/// class
+DistanceEstimation distEst;
+Yolo_app yoloApp;
+// CosmapGenerator cosmapGener;
+
+/// launch param
+int car_id = 1;
+bool standard_FPS = 0;
+bool display_flag = 0;
+bool input_resize = 1;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
+bool imgResult_publish = 1;
+
+/// function
 void* run_yolo(void*);
 void* run_interp(void*);
 void* run_display(void*);
 
+/// other param
 bool isInferStop;
 bool isInferData;
 bool isInferData_0;
@@ -34,14 +55,15 @@ bool isInferData_3;
 bool isCompressed = false;
 bool isCalibration = false;
 
+/// thread
+pthread_t thrdYolo;
+pthread_t thrdInterp;
+pthread_t thrdDisplay;
 pthread_mutex_t mtxInfer;
 pthread_cond_t cndInfer;
 std::mutex display_mutex;
 
-std::string cam120_0_topicName;
-std::string cam120_1_topicName;
-std::string cam120_2_topicName;
-std::string cam120_3_topicName;
+/// ros publisher/subscriber
 ros::Subscriber cam120_0;
 ros::Subscriber cam120_1;
 ros::Subscriber cam120_2;
@@ -62,41 +84,39 @@ msgs::DetectedObjectArray doa120_3;
 // grid map
 // ros::Publisher occupancy_grid_publisher;
 
+/// image
 int rawimg_w = 1920;
 int rawimg_h = 1208;
 int img_w = 1920;
 int img_h = 1208;
 int img_size = img_w * img_h;
 int rawimg_size = rawimg_w * rawimg_h;
-
 cv::Mat mat120_0;
 cv::Mat mat120_0_resize;
 cv::Mat mat120_0_rect;
 cv::Mat mat120_0_display;
-std::vector<ITRI_Bbox> vBBX120_0;
-
 cv::Mat mat120_1;
 cv::Mat mat120_1_resize;
 cv::Mat mat120_1_rect;
 cv::Mat mat120_1_display;
-std::vector<ITRI_Bbox> vBBX120_1;
-
 cv::Mat mat120_2;
 cv::Mat mat120_2_resize;
 cv::Mat mat120_2_rect;
 cv::Mat mat120_2_display;
-std::vector<ITRI_Bbox> vBBX120_2;
-
 cv::Mat mat120_3;
 cv::Mat mat120_3_resize;
 cv::Mat mat120_3_rect;
 cv::Mat mat120_3_display;
-std::vector<ITRI_Bbox> vBBX120_3;
-
-std::vector<std::vector<ITRI_Bbox>*> vbbx_output;
-
 cv::Mat cameraMatrix, distCoeffs;
 
+/// object
+std::vector<ITRI_Bbox> vBBX120_0;
+std::vector<ITRI_Bbox> vBBX120_1;
+std::vector<ITRI_Bbox> vBBX120_2;
+std::vector<ITRI_Bbox> vBBX120_3;
+std::vector<std::vector<ITRI_Bbox>*> vbbx_output;
+
+/// detection information
 std::vector<cv::Mat*> matSrcs;
 std::vector<uint32_t> matOrder;
 std::vector<std_msgs::Header> headers;
@@ -422,10 +442,10 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/input_resize", input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", imgResult_publish);
 
-  cam120_0_topicName = camera::topics[camera::id::top_right_front_120];
-  cam120_1_topicName = camera::topics[camera::id::top_right_rear_120];
-  cam120_2_topicName = camera::topics[camera::id::top_left_front_120];
-  cam120_3_topicName = camera::topics[camera::id::top_left_rear_120];
+  std::string cam120_0_topicName = camera::topics[camera::id::top_right_front_120];
+  std::string cam120_1_topicName = camera::topics[camera::id::top_right_rear_120];
+  std::string cam120_2_topicName = camera::topics[camera::id::top_left_front_120];
+  std::string cam120_3_topicName = camera::topics[camera::id::top_left_rear_120];
 
   if (isCompressed)
   {
