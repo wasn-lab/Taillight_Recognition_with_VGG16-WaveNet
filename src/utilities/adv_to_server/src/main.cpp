@@ -495,6 +495,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
   }
   else if (type == "M8.2.VK006")
   {
+    // Roger 20200212 [ fix bug: resend the same json
     try
     {
       json J0 = json::parse(mileJson);
@@ -504,6 +505,9 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     {
       //std::cout << "mileage: " << e.what() << std::endl;
     }
+    
+    mileJson = "";
+    // Roger 20200212 ]
   }
   return J1.dump();
 }
@@ -901,6 +905,7 @@ void tcpServerRun(int argc, char** argv)
   // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();
+  
   if (result >= 0)
   {
     // accept and read request and handle request in VK102callback.
