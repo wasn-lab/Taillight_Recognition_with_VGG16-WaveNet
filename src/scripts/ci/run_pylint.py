@@ -7,13 +7,7 @@ import os
 import subprocess
 import sys
 import logging
-
-def _get_affected_files():
-    cmd = ["git", "merge-base", "origin/master", "HEAD"]
-    ref_commit = subprocess.check_output(cmd).strip()
-    cmd = ["git", "diff", "--name-only", ref_commit]
-    output = subprocess.check_output(cmd).decode("utf-8")
-    return [fname.strip() for fname in output.splitlines()]
+from ci_utils import get_affected_files, is_external_package
 
 
 def _run_pylint(affected_files):
@@ -23,6 +17,8 @@ def _run_pylint(affected_files):
         if not os.path.isfile(fname):
             continue
         if not fname.endswith(".py"):
+            continue
+        if is_external_package(fname):
             continue
         cmd = ["pylint", "-E", "--rcfile=" + rc_file, fname]
         print(" ".join(cmd))
@@ -39,7 +35,7 @@ def _run_pylint(affected_files):
 
 def main():
     """Prog entry"""
-    affected_files = _get_affected_files()
+    affected_files = get_affected_files()
     return 1 if _run_pylint(affected_files) > 0 else 0
 
 if __name__ == "__main__":
