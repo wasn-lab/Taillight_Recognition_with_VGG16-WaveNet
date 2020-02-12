@@ -29,12 +29,12 @@ AstarAvoid::AstarAvoid()
   , current_velocity_initialized_(false)
   , base_waypoints_initialized_(false)
   , closest_waypoint_initialized_(false)
-  , avoid_state_sub_initialized_(false)
+  , avoid_state_sub_initialized_(true)
 {
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);
 
-  // private_nh_.param<bool>("enable_avoidance", enable_avoidance_, false);
+  private_nh_.param<bool>("enable_avoidance", enable_avoidance_, false);
   private_nh_.param<double>("avoid_waypoints_velocity", avoid_waypoints_velocity_, 10.0);
   private_nh_.param<double>("avoid_start_velocity", avoid_start_velocity_, 1.8);
   private_nh_.param<double>("replan_interval", replan_interval_, 2.0);
@@ -69,14 +69,14 @@ AstarAvoid::~AstarAvoid()
 
 void AstarAvoid::avoidstatesubCallback(const msgs::Flag_Info& msg)
 {
-  avoid_state_index_ = msg.Dspace_Flag03;
-  std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
-  if (avoid_state_index_ == 1)
-    enable_avoidance_ = true;
-  else
-    enable_avoidance_ = false;
+  // avoid_state_index_ = msg.Dspace_Flag03;
+  // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
+  // if (avoid_state_index_ == 1)
+  //   enable_avoidance_ = true;
+  // else
+  //   enable_avoidance_ = false;
 
-  avoid_state_sub_initialized_ = true;
+  // avoid_state_sub_initialized_ = true;
 }
 
 void AstarAvoid::costmapCallback(const nav_msgs::OccupancyGrid& msg)
@@ -118,8 +118,8 @@ void AstarAvoid::baseWaypointsCallback(const autoware_msgs::Lane& msg)
   if (base_waypoints_initialized_)
   {
     // detect waypoint change by timestamp update
-    ros::Time t1 = prev_base_waypoints.header.stamp;
-    ros::Time t2 = base_waypoints_.header.stamp;
+    // ros::Time t1 = prev_base_waypoints.header.stamp;
+    // ros::Time t2 = base_waypoints_.header.stamp;
     // std::cout << "t1 : " << t1.toSec() << ", t2 : " << t2.toSec() << std::endl;
     // if ((t2 - t1).toSec() > 1e-3)
     // {
@@ -287,16 +287,16 @@ void AstarAvoid::run()
           state_ = AstarAvoid::STATE::PLANNING;
         }
       }
-      // else if (obstacle_waypoint_base_index_ == -1 && current_velocity_.ego_speed < 0.5)
-      // {
-      //   bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
-      //   if (replan)
-      //   {
-      //     ROS_INFO("AVOIDING -> RELAYING, Obstacle disappers");
-      //     state_ = AstarAvoid::STATE::RELAYING;
-      //   }
-      // }
-      // ROS_INFO("end avoiding");
+      else if (obstacle_waypoint_base_index_ == -1 && current_velocity_.ego_speed < 0.5)
+      {
+        bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
+        if (replan)
+        {
+          ROS_INFO("AVOIDING -> RELAYING, Obstacle disappers");
+          state_ = AstarAvoid::STATE::RELAYING;
+        }
+      }
+      ROS_INFO("end avoiding");
     }
     avoiding_flag_pub.publish(avoiding_path_flag);
     reach_goal_pub.publish(reach_goal_flag);

@@ -229,7 +229,7 @@ void basepathgen_pub_30(int closet_i)
   Dpath.header.frame_id = "map";
   Dpose.header.frame_id = "map";
 
-  for (int i = closet_local_start_i; i < 30; i++)
+  for (int i = closet_local_start_i - 3; i < 42; i++)
   {
     int j = i + closet_i;
     if (j >= read_index)
@@ -337,13 +337,14 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
   else
     obs_index = 0;
 
-  // if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
-  //   obswaypoints_data_ = -1;
-  // if (avoid_flag != 0 && obs_index < 4) //
-  //   obswaypoints_data_ = -1;
-
-  if (obs_index < 4) //
+  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
     obswaypoints_data_ = -1;
+  if (avoid_flag != 0 && obs_index < 4) //
+    obswaypoints_data_ = -1;
+
+  // if there has state machine
+  // if (obs_index < 4) //
+  //   obswaypoints_data_ = -1;
 
   ///////////////////////////////////////////////////////////////////
 
