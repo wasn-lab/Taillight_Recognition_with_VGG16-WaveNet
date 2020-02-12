@@ -251,7 +251,7 @@ void TPPNode::subscribe_and_advertise_topics()
 #if TTC_TEST
   seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
   localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
-  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);  
+  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);
 #else
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
 #endif
@@ -614,7 +614,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
       // #18 ppy in 15 ticks (m)
       // #19 ppx in 20 ticks (m)
       // #20 ppy in 20 ticks (m)
-      for (size_t j = 0; j < objs[i].track.forecasts.size(); j = j + 5)
+      for (unsigned int j = 0; j < num_forecasts_; j = j + 5)
       {
         ofs << ", " << objs[i].track.forecasts[j].position.x << ", " << objs[i].track.forecasts[j].position.y;
       }
