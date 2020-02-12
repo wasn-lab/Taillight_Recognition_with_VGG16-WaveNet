@@ -434,7 +434,7 @@ nvinfer1::ILayer* netAddConvBNLeaky(int layerIdx, std::map<std::string, std::str
   // all conv_bn_leaky layers assume bias is false
   assert(batchNormalize == true && bias == false);
   NO_UNUSED_VAR_CHECK(batchNormalize);
-  NO_UNUSED_VAR_CHECK(bias); // silence -Wunused-variable
+  NO_UNUSED_VAR_CHECK(bias);  // silence -Wunused-variable
 
   int filters = std::stoi(block.at("filters"));
   int padding = std::stoi(block.at("pad"));
