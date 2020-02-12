@@ -54,7 +54,7 @@ $ git push
 ### 挑選 Reviewer
 
 Reviewer需要有maintainer權限，目前有
-@root (austin)
+@Austin.Chen
 @Wayne
 @chtseng
 @hankliu
@@ -119,3 +119,19 @@ Merge made by the 'recursive' strategy.
 
 為了快速執行完pipeline, builder會在package.xml有改動時才會做clean build,
 故只要任一個package.xml檔有改動（如加一個空白行），然後commit上去，builder就會做clean build。
+
+#### 要如何把車上修改過的程式傳回桌機並commit回repository?
+
+在特殊情況（如車控）非得要在車上改code並驗証，若要將修改的code傳回來並commit回repo，方法不只一個，
+這裡只列一種：
+```
+# 在車上的電腦把修改存成.patch檔
+$ git diff > my_patch.patch
+$ scp my_patch.patch chtseng@ci.itriadv.co:/tmp  # 把.patch傳回到桌機的/tmp下
+
+# 在桌機：
+$ cd /path/itriadv  # 一定要切回itriadv repo的根目錄
+$ git apply --check /tmp/my_patch.patch  # (Optional) 若程式沒有錯誤訊息則執行下一指令
+$ git apply /tmp/my_patch.patch
+$ git status # 檢查apply後的結果
+```

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_location_send)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(DIRECTORY msg
   FILES
   MM_TP_msg.msg
+  UKF_MM_msg.msg
 )
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

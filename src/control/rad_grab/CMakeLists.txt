@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rad_grab)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
+find_package(PCL)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -36,10 +38,18 @@ catkin_package(CATKIN_DEPENDS
   msgs
 )
 
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
 ###########
 ## Build ##
 ###########
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+
+
+add_executable(radfrontsub_pcloud src/RadFrontSub_PCloud.cpp)
+target_link_libraries(radfrontsub_pcloud ${catkin_LIBRARIES})
+add_dependencies(radfrontsub_pcloud ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(radfrontsub_bbox src/RadFrontSub_BBox.cpp)
 target_link_libraries(radfrontsub_bbox ${catkin_LIBRARIES})

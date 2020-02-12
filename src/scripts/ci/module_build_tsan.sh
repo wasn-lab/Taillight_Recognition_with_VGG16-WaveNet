@@ -9,8 +9,14 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build
 readonly devel_dir=devel
-#export CC=clang
-#export CXX=clang++
+if [[ -f /usr/local/llvm-6.0.0/bin/clang ]]; then
+  export CC=/usr/local/llvm-6.0.0/bin/clang
+  export CXX=/usr/local/llvm-6.0.0/bin/clang++
+else
+  export CC=clang
+  export CXX=clang++
+fi
+
 pushd $repo_dir
 
 # clean up the previous build.
@@ -19,11 +25,8 @@ for _dir in ${build_dir} ${devel_dir}; do
         rm -rf $_dir
     fi
 done
-# workaround for openroadnet
-if [[ -d src/sensing/itri_openroadnet/libs_opn/TensorFlow/Installed ]]; then
-  rm -rf src/sensing/itri_openroadnet/libs_opn/TensorFlow/Installed
-fi
-blacklist="ndt_gpu;convex_fusion;lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing;localization"
+
+blacklist="convex_fusion;lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing"
 
 catkin_make \
     --build ${build_dir} \

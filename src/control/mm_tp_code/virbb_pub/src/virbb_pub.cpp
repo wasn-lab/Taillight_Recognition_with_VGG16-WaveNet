@@ -571,8 +571,8 @@ void obs_main(int hz)
 
 	// AEB obj
 	id ++;
-	object abs_Obsaeb1_object{0};
-	abs_Obsaeb1_object.sx = read_tmp_a[0];//4.6;
+  object abs_Obsaeb1_object = {};       // Initialize all fields to 0.
+  abs_Obsaeb1_object.sx = read_tmp_a[0];//4.6;
 	abs_Obsaeb1_object.sy = read_tmp_a[1];//1.8;
 	abs_Obsaeb1_object.sz = read_tmp_a[2];//1.5;
 	double dist = read_tmp_a[3];
@@ -698,8 +698,8 @@ int main( int argc, char **argv )
 	abs_marker_pub = nh.advertise<visualization_msgs::Marker>("marker_topic",1);
 	abs_marker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("marker_array_topic",1);
 	rel_BB_array_pub = nh.advertise<msgs::DetectedObjectArray>("rel_virBB_array",1);
-	abs_PPmarker_pub = nh.advertise<visualization_msgs::Marker>("PPmarker_topic",1);
-	abs_PPmarker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("abs_PPmarker_array",1);
+	abs_PPmarker_pub = nh.advertise<visualization_msgs::Marker>("abs_virPPmarker_topic",1);
+	abs_PPmarker_array_pub = nh.advertise<visualization_msgs::MarkerArray>("abs_virPPmarker_array",1);
 
 	ros::Rate loop_rate(hz);
 	while (ros::ok())

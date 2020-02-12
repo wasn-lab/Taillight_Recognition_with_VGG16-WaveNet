@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  tf2
+  tf2_ros
 )
 
 ## System dependencies are found with CMake's conventions
@@ -124,6 +126,9 @@ include_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/issue_reporter.cpp
 # )
+
+add_executable(fake_tf_broadcast src/fake_tf_broadcast.cpp)
+target_link_libraries(fake_tf_broadcast ${catkin_LIBRARIES} )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

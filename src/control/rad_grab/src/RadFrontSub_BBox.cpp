@@ -1,7 +1,4 @@
-#include "ros/ros.h"
 #include "std_msgs/Header.h"
-#include "std_msgs/String.h"
-#include "msgs/Rad.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
 #include "msgs/DetectedObject.h"
@@ -12,8 +9,10 @@
 #include "msgs/PointXYZV.h"
 #include "msgs/TrackInfo.h"
 #include "msgs/LocalizationToVeh.h"
-#include <string.h>
+#include "msgs/MMTPInfo.h"
+#include "ros/ros.h"
 #include <visualization_msgs/Marker.h>
+#include "msgs/Rad.h"
 
 #include <stdio.h>
 #include <stdlib.h>

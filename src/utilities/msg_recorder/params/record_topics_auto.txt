@@ -39,7 +39,8 @@
 /CamObjLeftFront
 /CamObjLeftBack
 /CamObjBackTop
-
+# Camera polygon
+/CameraDetection/polygon
 
 /current_pose
 /veh_info
@@ -77,5 +78,33 @@
 
 /V2X_msg
 
+# Added at 2020/1/31
+/local_waypoints_mark
+/rear_vehicle_target_point
+/front_vehicle_target_point
+/LidarDetection/grid
+/CameraDetection/occupancy_grid
+/occupancy_grid_all_expand
+
+# tf
 /tf
 /tf_static
+
+
+# System-ready check
+/ADV_op/req_run_stop
+/ADV_op/run_state
+/ADV_op/sync
+/ADV_op/sys_ready
+/REC/req_backup
+/ADV_op/sys_fail_reason
+
+# Events/status
+/node_trace/all_alive
+/REC/is_recording
+/backend/connected
+/mileage/brake_status
+/localization_state
+
+# pedcross
+/PedCross/Pedestrians

@@ -1,0 +1,7 @@
+<library path="liblidar_squseg_inference_nodelet">
+  <class name="ssn_nodelet/LidarsNodelet" type="ssn_nodelet::LidarsNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  Module with Nodelet
+  </description>
+  </class>
+</library>

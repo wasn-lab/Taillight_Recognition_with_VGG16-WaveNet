@@ -19,6 +19,22 @@ this_node_name = "node_tracer"
 
 
 
+def ping_all_listed_nodes(node_list, max_count=1, verbose=False):
+    """
+    """
+    # unique nodes in node_list
+    if verbose:
+        print("Will ping the following nodes: \n"+''.join([" * %s\n"%n for n in node_list]))
+    pinged = []
+    unpinged = []
+    for node in node_list:
+        if rosnode.rosnode_ping(node, max_count=max_count, verbose=verbose):
+            pinged.append(node)
+        else:
+            unpinged.append(node)
+    return pinged, unpinged
+
+
 def main(sys_args):
     global this_node_name
 
@@ -89,6 +105,7 @@ def main(sys_args):
     #--------------------------------------#
     # Subscriber
     # Publisher
+    _node_all_alive_pub = rospy.Publisher("/node_trace/all_alive", Bool, queue_size=1, latch=True) #
     _node_pinged_pub = rospy.Publisher("/node_trace/pinged", String, queue_size=1, latch=True) #
     _node_unpinged_pub = rospy.Publisher("/node_trace/unpinged", String, queue_size=1, latch=True) #
     _node_alive_pub = rospy.Publisher("/node_trace/alive", String, queue_size=1, latch=True) #
@@ -107,18 +124,23 @@ def main(sys_args):
     node_dict["untraced"] = list()
     node_dict["zombi_traced"] = list() # Traced node that was died abruptly without unregistration
     # Loop for ping
-    rate = rospy.Rate(1.0) # 10hz
+    rate = rospy.Rate(1.0) # 1hz
     while not rospy.is_shutdown():
         _t1 = time.clock()
         try:
-            pinged, unpinged = rosnode.rosnode_ping_all(True)
+            # The roscomm tool, ping all nodes in the node list form master
+            # pinged, unpinged = rosnode.rosnode_ping_all(verbose=False)
+            # Only ping the node in given node_list
+            pinged, unpinged = ping_all_listed_nodes(node_list, verbose=False)
         except:
             print("Error while pinging all node")
             time.sleep(1.0)
             continue
         #
-        _t2 = time.clock()
-        print("elapse time = %s ms" % str( (_t2 - _t1)*1000.0 ))
+        _delta_t = time.clock() - _t1
+        if _delta_t > 0.5:
+            print("[node_tracer] Ping too slow. Total ping time = %s ms" % str( _delta_t*1000.0 ) )
+
         # Remove this node
         if this_node_name in pinged:
             pinged.remove(this_node_name)
@@ -126,28 +148,45 @@ def main(sys_args):
         node_dict["pinged"] = pinged
         node_dict["unpinged"] = unpinged
         #
-        node_dict["alive"] = list()
-        node_dict["closed"] = list()
+        # node_dict["alive"] = list()
+        # node_dict["closed"] = list()
         node_dict["untraced"] = list()
         node_dict["zombi_traced"] = list()
         #
+        _alive = list()
+        _closed = list()
+        #
         for _nd in pinged:
             if _nd in node_list:
-                node_dict["alive"].append(_nd)
+                # node_dict["alive"].append(_nd)
+                _alive.append(_nd)
+                if not _nd in node_dict["alive"]:
+                    print("Node <%s> starts running." % _nd)
             else:
                 node_dict["untraced"].append(_nd)
         for _nd in node_list:
             if not _nd in pinged:
-                node_dict["closed"].append(_nd)
+                # node_dict["closed"].append(_nd)
+                _closed.append(_nd)
+                if not _nd in node_dict["closed"]:
+                    print("Node <%s> closed." % _nd)
             if _nd in unpinged:
                 node_dict["zombi_traced"].append(_nd)
         #
-        print("pinged =\n%s" % str(node_dict["pinged"]) )
-        print("unpinged =\n%s" % str(node_dict["unpinged"]) )
-        print("alive =\n%s" % str(node_dict["alive"]) )
-        print("closed =\n%s" % str(node_dict["closed"]) )
-        print("untraced =\n%s" % str(node_dict["untraced"]) )
-        print("zombi_traced =\n%s" % str(node_dict["zombi_traced"]) )
+        node_dict["alive"] = _alive
+        node_dict["closed"] = _closed
+        #
+        # print("pinged =\n%s" % str(node_dict["pinged"]) )
+        # print("unpinged =\n%s" % str(node_dict["unpinged"]) )
+        # print("alive =\n%s" % str(node_dict["alive"]) )
+        # print("closed =\n%s" % str(node_dict["closed"]) )
+        # print("untraced =\n%s" % str(node_dict["untraced"]) )
+        # print("zombi_traced =\n%s" % str(node_dict["zombi_traced"]) )
+        #
+        if len(node_dict["closed"]) > 0:
+            _node_all_alive_pub.publish(False)
+        else:
+            _node_all_alive_pub.publish(True)
         #
         _node_pinged_pub.publish( str(node_dict["pinged"]) )
         _node_unpinged_pub.publish( str(node_dict["unpinged"]) )
@@ -156,9 +195,17 @@ def main(sys_args):
         _node_untraced_pub.publish( str(node_dict["untraced"]) )
         _node_zombi_traced_pub.publish( str(node_dict["zombi_traced"]) )
         #
-        rate.sleep()
+        try:
+            rate.sleep()
+        except:
+            # For ros time moved backward
+            pass
         # time.sleep(1.0)
-    print("End of main loop.")
+    #
+    rospy.logwarn("[node_tracer] The node_tracer is going to close.")
+    # _node_all_alive_pub.publish(False)
+    time.sleep(0.5)
+    print("[node_tracer] Leave main()")
 
 
 
@@ -169,4 +216,4 @@ if __name__ == '__main__':
         main(sys.argv)
     except rospy.ROSInterruptException:
         pass
-    print("End of node tracer.")
+    print("[node_tracer] Closed.")

@@ -31,7 +31,7 @@ scan-build -o ${output_dir} catkin_make \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DENABLE_CCACHE=0 \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
-    -j6
+    -j6 ${EXTRA_CATKIN_ARGS}
 
 find ${output_dir} -type d -exec chmod 755 {} \;
 find ${output_dir} -type f -exec chmod 644 {} \;

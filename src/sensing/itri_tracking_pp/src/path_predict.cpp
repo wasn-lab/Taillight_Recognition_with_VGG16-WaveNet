@@ -32,9 +32,17 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       }
     }
 
+#if PP_VERTICES_VIA_SPEED
+    pp_objs_[i].track.forecasts.resize(num_forecasts_ * 5);
+#else
     pp_objs_[i].track.forecasts.resize(num_forecasts_);
+#endif
 
+#if PP_VERTICES_VIA_SPEED
+    for (unsigned j = 0; j < num_forecasts_ * 5; j++)
+#else
     for (unsigned j = 0; j < num_forecasts_; j++)
+#endif
     {
       pp_objs_[i].track.forecasts[j].position.x = 0;
       pp_objs_[i].track.forecasts[j].position.y = 0;
@@ -125,7 +133,9 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
       {
         create_pp_input(track.states[i + track.max_length].estimated_position, data_x, data_y);
 #if DEBUG_PP_TRAJ
-        LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back() << " (abs_coord: " << track.states[i + track.max_length].estimated_position.x << " " <<  track.states[i + track.max_length].estimated_position.y << ")" << std::endl;
+        LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back()
+                 << " (abs_coord: " << track.states[i + track.max_length].estimated_position.x << " "
+                 << track.states[i + track.max_length].estimated_position.y << ")" << std::endl;
 #endif
       }
     }
@@ -133,7 +143,9 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
     {
       create_pp_input(track.states[i].estimated_position, data_x, data_y);
 #if DEBUG_PP_TRAJ
-      LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back() << " (abs_coord: " << track.states[i].estimated_position.x << " " << track.states[i].estimated_position.y << ")" << std::endl;
+      LOG_INFO << "Traj " << i << " " << data_x.back() << " " << data_y.back()
+               << " (abs_coord: " << track.states[i].estimated_position.x << " " << track.states[i].estimated_position.y
+               << ")" << std::endl;
 #endif
     }
   }
@@ -485,12 +497,65 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].covariance_yy = pps[j].cov_yy;
         pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
+
+#if PP_VERTICES_VIA_SPEED
+        double roll, pitch, yaw;
+        geometry_msgs::Quaternion q = tf2::toMsg(pps[j].q1);
+        quaternion_to_rpy(roll, pitch, yaw, q.x, q.y, q.z, q.w);
+
+        float scale = pp_objs_[i].absSpeed * (j + 1) / 36.;
+        cv::Mat mag_m(1, 4, CV_32FC1, cv::Scalar(0));
+        float scale1 = scale / 2;
+        float scale2 = scale / 4;
+        mag_m.at<float>(0, 0) = scale1;
+        mag_m.at<float>(0, 1) = scale2;
+        mag_m.at<float>(0, 2) = scale1;
+        mag_m.at<float>(0, 3) = scale2;
+
+        cv::Mat ang_rad(1, 4, CV_32FC1, cv::Scalar(0));
+        double pi_half = M_PI * 0.5;
+        ang_rad.at<float>(0, 0) = yaw;
+        ang_rad.at<float>(0, 1) = ang_rad.at<float>(0, 0) + pi_half;
+        ang_rad.at<float>(0, 2) = ang_rad.at<float>(0, 1) + pi_half;
+        ang_rad.at<float>(0, 3) = ang_rad.at<float>(0, 2) + pi_half;
+
+        cv::Mat x_m(1, 4, CV_32FC1, cv::Scalar(0));
+        cv::Mat y_m(1, 4, CV_32FC1, cv::Scalar(0));
+        cv::polarToCart(mag_m, ang_rad, x_m, y_m, false);
+
+        pps[j].v1.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 0);
+        pps[j].v1.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 0);
+
+        pps[j].v2.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 1);
+        pps[j].v2.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 1);
+
+        pps[j].v3.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 2);
+        pps[j].v3.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 2);
+
+        pps[j].v4.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 3);
+        pps[j].v4.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 3);
+
+        unsigned int k = num_forecasts_ + j * 4;
+
+        pp_objs_[i].track.forecasts[k].position.x = pps[j].v1.x;
+        pp_objs_[i].track.forecasts[k].position.y = pps[j].v1.y;
+
+        pp_objs_[i].track.forecasts[k + 1].position.x = pps[j].v2.x;
+        pp_objs_[i].track.forecasts[k + 1].position.y = pps[j].v2.y;
+
+        pp_objs_[i].track.forecasts[k + 2].position.x = pps[j].v3.x;
+        pp_objs_[i].track.forecasts[k + 2].position.y = pps[j].v3.y;
+
+        pp_objs_[i].track.forecasts[k + 3].position.x = pps[j].v4.x;
+        pp_objs_[i].track.forecasts[k + 3].position.y = pps[j].v4.y;
+#endif
       }
 
 #if DEBUG_PP_TRAJ
       for (unsigned j = 0; j < num_forecasts_; j++)
       {
-        LOG_INFO << "Traj " << (j + 1) << " " << pp_objs_[i].track.forecasts[j].position.x << " " << pp_objs_[i].track.forecasts[j].position.y << std::endl;
+        LOG_INFO << "Traj " << (j + 1) << " " << pp_objs_[i].track.forecasts[j].position.x << " "
+                 << pp_objs_[i].track.forecasts[j].position.y << std::endl;
       }
 #endif
     }
