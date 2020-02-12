@@ -23,6 +23,8 @@ def _check_space(affected_files):
 def _check_hpp(affected_files):
     fnames_hpp = []
     for fname in affected_files:
+        if not os.path.isfile(fname):
+            continue
         if fname.endswith(".hpp"):
             fnames_hpp.append(fname)
     if fnames_hpp:
