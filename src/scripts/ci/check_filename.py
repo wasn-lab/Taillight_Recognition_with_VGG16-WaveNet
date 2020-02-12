@@ -3,18 +3,10 @@
 Check if a merge request contain files whose name contain space.
 """
 from __future__ import print_function
-import subprocess
 import os
 import sys
 import logging
-
-
-def _get_affected_files():
-    cmd = ["git", "merge-base", "origin/master", "HEAD"]
-    ref_commit = subprocess.check_output(cmd).strip()
-    cmd = ["git", "diff", "--name-only", ref_commit]
-    output = subprocess.check_output(cmd).decode("utf-8")
-    return [fname.strip() for fname in output.splitlines()]
+from ci_utils import get_affected_files
 
 
 def _check_space(affected_files):
@@ -39,7 +31,7 @@ def _check_hpp(affected_files):
 
 def main():
     """Prog entry"""
-    affected_files = _get_affected_files()
+    affected_files = get_affected_files()
     return _check_space(affected_files) + _check_hpp(affected_files)
 
 if __name__ == "__main__":
