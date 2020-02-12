@@ -29,7 +29,7 @@ void ConvexFusionHino::RegisterCallBackCameraDetection(void (*cb1)(const msgs::D
 
 void ConvexFusionHino::send_ErrorCode(unsigned int error_code)
 {
-  uint32_t seq = 0;
+  static uint32_t seq;
 
   msgs::ErrorCode objMsg;
   objMsg.header.seq = seq++;
