@@ -5,7 +5,8 @@
 #include <opencv2/opencv.hpp>
 #define _USE_MATH_DEFINES
 using namespace cv;
-class Projector2 {
+class Projector2
+{
 private:
   const float RADIUS = (M_PI / 180);
   //當前的相機內外參

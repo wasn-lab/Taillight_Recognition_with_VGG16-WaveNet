@@ -4,7 +4,8 @@
 
 using namespace std;
 
-class CalibrateParameters {
+class CalibrateParameters
+{
 private:
   double t_x_double_;
   double t_y_double_;
@@ -21,9 +22,8 @@ private:
 public:
   // constructor
   CalibrateParameters();
-  CalibrateParameters(double t_x, double t_y, double t_z, double d_x,
-                      double d_y, double d_z, unsigned int f, unsigned int u,
-                      unsigned int v, string t, string o_t);
+  CalibrateParameters(double t_x, double t_y, double t_z, double d_x, double d_y, double d_z, unsigned int f,
+                      unsigned int u, unsigned int v, string t, string o_t);
   ~CalibrateParameters();
 
   // setter

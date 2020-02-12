@@ -13,8 +13,8 @@ using namespace std::chrono;
 using namespace cv;
 using namespace camera;
 
-void Projector2::multiplyMatrix(const float m[9], const float v[3],
-                                float result[3]) {
+void Projector2::multiplyMatrix(const float m[9], const float v[3], float result[3])
+{
   result[0] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2];
   result[1] = m[3] * v[0] + m[4] * v[1] + m[5] * v[2];
   result[2] = m[6] * v[0] + m[7] * v[1] + m[8] * v[2];
@@ -23,65 +23,58 @@ void Projector2::multiplyMatrix(const float m[9], const float v[3],
 // v1: 3X1矩陣
 // v2: 3X1矩陣
 // result = v1 + v2
-void Projector2::addMatrix(const float v1[3], const float v2[3],
-                           float result[3]) {
+void Projector2::addMatrix(const float v1[3], const float v2[3], float result[3])
+{
   result[0] = v1[0] + v2[0];
   result[1] = v1[1] + v2[1];
   result[2] = v1[2] + v2[2];
 }
 
 //初始化,輸入camera id , 自動設好內外參, 目前只校正好前3個camera
-void Projector2::init(int camera_id) {
-  if (camera_id != front_60 & camera_id != top_front_120 &
-      camera_id != left_60) {
+void Projector2::init(int camera_id)
+{
+  if (camera_id != front_60 & camera_id != top_front_120 & camera_id != left_60)
+  {
     throw std::invalid_argument("這個相機的外參還沒校正好...");
   }
-  switch (camera_id) {
-  case id::front_60:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192,
-                            "/cam/F_center", "/CamObjFrontCenter");
-    break;
-  case id::top_front_120:
-    current_parameters_ =
-        CalibrateParameters(0.0, 0.0, 0.0, 0.0, 35, -0.6, 293, 304, 192,
-                            "/cam/F_top", "/CamObjFrontTop");
-    break;
-  case id::left_60:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.00, 0.0, 0.0, -13, 73, 293, 304, 192,
-                            "/cam/F_left", "/CamObjFrontLeft");
-    break;
-  case id::right_60:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.00, 0.0, 0.0, 0, -80, 579, 304, 192,
-                            "/cam/F_right", "/CamObjFrontRight");
-    break;
-  case id::top_rear_120:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192,
-                            "/cam/B_top", "/CamObjBottomTop");
-    break;
-  case id::top_left_front_120:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192,
-                            "/cam/L_front", "/CamObjLeftFront");
-    break;
-  case id::top_left_rear_120:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192,
-                            "/cam/L_rear", "/CamObjLeftRear");
-    break;
-  case id::top_right_front_120:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192,
-                            "/cam/R_front", "/CamObjRightFront");
-    break;
-  case id::top_right_rear_120:
-    current_parameters_ =
-        CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192,
-                            "/cam/R_rear", "/CamObjRightRear");
-    break;
+  switch (camera_id)
+  {
+    case id::front_60:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/F_center", "/CamObjFrontCenter");
+      break;
+    case id::top_front_120:
+      current_parameters_ =
+          CalibrateParameters(0.0, 0.0, 0.0, 0.0, 35, -0.6, 293, 304, 192, "/cam/F_top", "/CamObjFrontTop");
+      break;
+    case id::left_60:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.00, 0.0, 0.0, -13, 73, 293, 304, 192, "/cam/F_left", "/CamObjFrontLeft");
+      break;
+    case id::right_60:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.00, 0.0, 0.0, 0, -80, 579, 304, 192, "/cam/F_right", "/CamObjFrontRight");
+      break;
+    case id::top_rear_120:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/B_top", "/CamObjBottomTop");
+      break;
+    case id::top_left_front_120:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/L_front", "/CamObjLeftFront");
+      break;
+    case id::top_left_rear_120:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/L_rear", "/CamObjLeftRear");
+      break;
+    case id::top_right_front_120:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/R_front", "/CamObjRightFront");
+      break;
+    case id::top_right_rear_120:
+      current_parameters_ =
+          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/R_rear", "/CamObjRightRear");
+      break;
   }
 
   initMatrixT();
@@ -89,14 +82,16 @@ void Projector2::init(int camera_id) {
   initMatrixK();
 }
 
-void Projector2::initMatrixT() {
+void Projector2::initMatrixT()
+{
   //相機位置相對於光達位置的X軸,Y軸,Z軸平移量
   t_float_array_[0] = current_parameters_.get_t_y();
   t_float_array_[1] = current_parameters_.get_t_z();
   t_float_array_[2] = current_parameters_.get_t_x();
 }
 
-void Projector2::initMatrixR() {
+void Projector2::initMatrixR()
+{
   float degree[3];
   // X軸,Y軸,Z軸的旋轉角度
   degree[0] = current_parameters_.get_degree_x();
@@ -104,7 +99,7 @@ void Projector2::initMatrixR() {
   degree[2] = current_parameters_.get_degree_z();
 
   //將角度轉換為弧度並計算sin與cos值
- 
+
   float cos_x = cosf(degree[0] * RADIUS);
   float sin_x = sinf(degree[0] * RADIUS);
   float cos_y = cosf(degree[1] * RADIUS);
@@ -113,9 +108,9 @@ void Projector2::initMatrixR() {
   float sin_z = sinf(degree[2] * RADIUS);
 
   // X軸Y軸Z軸各自的旋轉矩陣
-  float rx_array[9] = {cos_x, -sin_x, 0, sin_x, cos_x, 0, 0, 0, 1};
-  float ry_array[9] = {1, 0, 0, 0, cos_y, -sin_y, 0, sin_y, cos_y};
-  float rz_array[9] = {cos_z, 0, sin_z, 0, 1, 0, -sin_z, 0, cos_z};
+  float rx_array[9] = { cos_x, -sin_x, 0, sin_x, cos_x, 0, 0, 0, 1 };
+  float ry_array[9] = { 1, 0, 0, 0, cos_y, -sin_y, 0, sin_y, cos_y };
+  float rz_array[9] = { cos_z, 0, sin_z, 0, 1, 0, -sin_z, 0, cos_z };
 
   // X軸Y軸Z軸各自的旋轉矩陣相乘得到整體旋轉矩陣
   cv::Mat rx_mat = cv::Mat(3, 3, CV_32FC1, rx_array);
@@ -127,13 +122,15 @@ void Projector2::initMatrixR() {
   copyMatToFloatArray(r_mat, r_float_array_);
 }
 
-void Projector2::copyMatToFloatArray(cv::Mat mat, float array[9]) {
+void Projector2::copyMatToFloatArray(cv::Mat mat, float array[9])
+{
   std::vector<float> temp_vector(9);
-  temp_vector.assign((float *)mat.data, (float *)mat.data + mat.total());
+  temp_vector.assign((float*)mat.data, (float*)mat.data + mat.total());
   std::copy(temp_vector.begin(), temp_vector.end(), array);
 }
 
-void Projector2::initMatrixK() {
+void Projector2::initMatrixK()
+{
   //焦距(理想針孔照像機 X軸焦距=Y軸焦距）
   k_float_array_[0] = current_parameters_.get_focal_length();
   // skew（理想針孔照像機為0)
@@ -152,7 +149,8 @@ void Projector2::initMatrixK() {
 
 //首先把照相機的3D座標系與光達的3D座標系對齊(step1,step2)
 //再透過針孔成像原理把3D點投影到位於焦距上的平面(step3,step4)
-vector<int> Projector2::project(float x, float y, float z) {
+vector<int> Projector2::project(float x, float y, float z)
+{
   //開始時間
   // steady_clock::time_point start = steady_clock::now();
 
@@ -177,10 +175,13 @@ vector<int> Projector2::project(float x, float y, float z) {
   // step3.camera_xyz_float_再乘上內參K,結果存放在image_point_float_
   multiplyMatrix(k_float_array_, camera_xyz_float_, image_point_float_);
   // step4.除以X
-  if (image_point_float_[2] == 0.00) {
+  if (image_point_float_[2] == 0.00)
+  {
     result[0] = 0;
     result[1] = 0;
-  } else {
+  }
+  else
+  {
     result[0] = image_point_float_[0] / image_point_float_[2];
     result[1] = image_point_float_[1] / image_point_float_[2];
   }
