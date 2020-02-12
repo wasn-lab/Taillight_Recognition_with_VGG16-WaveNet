@@ -3,18 +3,10 @@
 Check if a merge request contains any large file.
 """
 from __future__ import print_function
-import subprocess
 import os
 import sys
 import logging
-
-
-def _get_affected_files():
-    cmd = ["git", "merge-base", "origin/master", "HEAD"]
-    ref_commit = subprocess.check_output(cmd).strip()
-    cmd = ["git", "diff", "--name-only", ref_commit]
-    output = subprocess.check_output(cmd).decode("utf-8")
-    return [fname.strip() for fname in output.splitlines()]
+from ci_utils import get_affected_files
 
 
 def _check_fsize(affected_files):
@@ -32,12 +24,10 @@ def _check_fsize(affected_files):
 
 def main():
     """Prog entry"""
-    affected_files = _get_affected_files()
-    hit_limit = _check_fsize(affected_files)
+    hit_limit = _check_fsize(get_affected_files())
     if hit_limit:
         return 1
-    else:
-        return 0
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())
