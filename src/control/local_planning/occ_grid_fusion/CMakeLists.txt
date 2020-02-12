@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   tf2
   tf2_ros
+  grid_map_ros
 )
 
 ## System dependencies are found with CMake's conventions
