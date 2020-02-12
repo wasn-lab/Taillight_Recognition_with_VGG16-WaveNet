@@ -54,7 +54,7 @@ static Geofence Radar_Geofence;
 static Geofence PCloud_Geofence_original;
 static double Heading, SLAM_x, SLAM_y;
 //static uint Deadend_flag;
-static uint avoiding_path_flag;
+static uint overtake_over_flag;
 ros::Publisher Radar_marker;
 ros::Publisher Geofence_line;
 
@@ -72,8 +72,8 @@ void mm_tp_infoCallback(const msgs::MMTPInfo::ConstPtr& MMTPInfo){
 */
 
 
-void avoid_path_Callback(const std_msgs::Int32ConstPtr& msg){
-	avoiding_path_flag = msg->data;
+void overtake_over_Callback(const std_msgs::Int32::ConstPtr& msg){
+	overtake_over_flag = msg->data;
 }
 
 
@@ -296,7 +296,7 @@ int main(int argc, char **argv){
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	//ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
-	ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, avoid_path_Callback);
+	ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
 	ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 	
 	#ifdef VIRTUAL
@@ -419,9 +419,9 @@ int main(int argc, char **argv){
 		}
 		
 		frame.can_id  = 0x599;
-		cout << "avoiding_path: " << avoiding_path_flag << " ";
-		frame.data[0] = (short int)(avoiding_path_flag);
-		frame.data[1] = (short int)(avoiding_path_flag)>>8;
+		cout << "overtake_over: " << overtake_over_flag << " ";
+		frame.data[0] = (short int)(overtake_over_flag);
+		frame.data[1] = (short int)(overtake_over_flag)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
 		printf("Wrote %d bytes\n", nbytes);
 		cout << "******************************************" << endl;
