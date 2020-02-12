@@ -1,5 +1,9 @@
 cmake_minimum_required (VERSION 3.5.1)
 
+if (NOT ENABLE_GOOGLE_BENCHMARK)
+  return()
+endif ()
+
 foreach(p
     CMP0048 # OK to clear PROJECT_VERSION on project()
     CMP0054 # CMake 3.1
