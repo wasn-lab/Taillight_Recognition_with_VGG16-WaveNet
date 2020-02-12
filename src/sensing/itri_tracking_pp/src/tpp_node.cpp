@@ -244,6 +244,9 @@ void TPPNode::subscribe_and_advertise_topics()
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
+#if TO_GRIDMAP
+  pp_grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("PathPredictionOutput/grid", 2);
+#endif
 
   nh2_.setCallbackQueue(&queue_);
 
@@ -288,7 +291,7 @@ void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& 
 {
   if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
   {
-    std::vector<Point32>().swap(cPoint.lowerAreaPoints);
+    std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
     cPoint.lowerAreaPoints.push_back(bPoint.p0);
     cPoint.lowerAreaPoints.push_back(bPoint.p3);
@@ -311,7 +314,7 @@ void TPPNode::init_velocity(msgs::TrackInfo& track)
   track.relative_velocity.speed = 0;
 }
 
-float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const Point32 obj_rel)
+float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel)
 {
   return compute_scalar_projection_A_onto_B(rel_v_rel.x, rel_v_rel.y, rel_v_rel.z, obj_rel.x, obj_rel.y, obj_rel.z);
 }
@@ -398,7 +401,7 @@ void TPPNode::compute_velocity_kalman()
 #if USE_RADAR_ABS_SPEED == 0
     KTs_.tracks_[i].box_.absSpeed = KTs_.tracks_[i].box_.track.absolute_velocity.speed;  // km/h
 #else
-    Point32 p_abs;
+    MyPoint32 p_abs;
     box_center_.pos.get_point_abs(p_abs);
     KTs_.tracks_[i].box_.absSpeed = compute_radar_absolute_velocity(KTs_.tracks_[i].box_.relSpeed,  //
                                                                     p_abs.x, p_abs.y);
@@ -408,7 +411,7 @@ void TPPNode::compute_velocity_kalman()
 #if USE_RADAR_REL_SPEED
     if (KTs_.tracks_[i].box_.header.frame_id != "RadarFront")
     {
-      Point32 p_rel;
+      MyPoint32 p_rel;
       KTs_.tracks_[i].box_center_.pos.get_point_rel(p_rel);
       Vector3_32 rel_v_rel;
       rel_v_rel.x = KTs_.tracks_[i].box_.track.relative_velocity.x;
@@ -417,7 +420,7 @@ void TPPNode::compute_velocity_kalman()
       KTs_.tracks_[i].box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
     }
 #else
-    Point32 p_rel;
+    MyPoint32 p_rel;
     KTs_.tracks_[i].box_center_.pos.get_point_rel(p_rel);  // m
 
     Vector3_32 rel_v_rel;
@@ -430,9 +433,9 @@ void TPPNode::compute_velocity_kalman()
   }
 }
 
-void TPPNode::push_to_vector(BoxCenter a, std::vector<Point32>& b)
+void TPPNode::push_to_vector(BoxCenter a, std::vector<MyPoint32>& b)
 {
-  Point32 c_rel;
+  MyPoint32 c_rel;
   a.pos.get_point_rel(c_rel);
   b.push_back(c_rel);
 }
@@ -443,10 +446,10 @@ void TPPNode::publish_tracking()
   pp_objs_.reserve(KTs_.tracks_.size());
 
 #if FPS_EXTRAPOLATION
-  std::vector<Point32>().swap(box_centers_kalman_rel_);
+  std::vector<MyPoint32>().swap(box_centers_kalman_rel_);
   box_centers_kalman_rel_.reserve(KTs_.tracks_.size());
 
-  std::vector<Point32>().swap(box_centers_kalman_next_rel_);
+  std::vector<MyPoint32>().swap(box_centers_kalman_next_rel_);
   box_centers_kalman_next_rel_.reserve(KTs_.tracks_.size());
 #endif
 
@@ -724,6 +727,39 @@ void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
 }
 #endif
 
+#if TO_GRIDMAP
+void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs)
+{
+  pcl::PointCloud<pcl::PointXYZ>::Ptr in_points(new pcl::PointCloud<pcl::PointXYZ>);
+
+  for (unsigned i = 0; i < objs.size(); i++)
+  {
+    if (objs[i].track.is_ready_prediction)
+    {
+      for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
+      {
+        pcl::PointCloud<pcl::PointXYZ>::PointType p;
+        p.x = objs[i].track.forecasts[j].position.x;
+        p.y = objs[i].track.forecasts[j].position.y;
+        p.z = 0.f;
+        in_points->push_back(p);
+      }
+    }
+  }
+
+  grid_map::GridMap gridmap;
+  gridmap.setFrameId("base_link");
+  gridmap.setGeometry(grid_map::Length(50, 30), 0.2, grid_map::Position(10, 0));
+  gridmap.add("pp_layer", grid_map::Matrix::Constant(gridmap.getSize()(0), gridmap.getSize()(1), 0.0));
+
+  PointsToCostmap().makeCostmapFromSensorPoints(5, -5, 0.0, 1.0, gridmap, "pp_layer", in_points);
+  nav_msgs::OccupancyGrid occ_grid_msg;
+  grid_map::GridMapRosConverter::toOccupancyGrid(gridmap, "pp_layer", 0, 1, occ_grid_msg);
+  occ_grid_msg.header = objs_header_;
+  pub.publish(occ_grid_msg);
+}
+#endif
+
 void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
@@ -771,7 +807,8 @@ void TPPNode::control_sleep(const double loop_interval)
 
 #if FPS_EXTRAPOLATION
 void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
-                                       std::vector<Point32> box_centers_rel, std::vector<Point32> box_centers_next_rel)
+                                       std::vector<MyPoint32> box_centers_rel,
+                                       std::vector<MyPoint32> box_centers_next_rel)
 {
   float loop_interval = 1.f / output_fps;
   float time_offset = 0.f;
@@ -780,10 +817,10 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
   publish_pp(pub, objs, pub_offset, time_offset);
   control_sleep((double)loop_interval);
 
-  std::vector<Point32> box_pos_diffs;
+  std::vector<MyPoint32> box_pos_diffs;
   box_pos_diffs.reserve(objs.size());
 
-  Point32 box_pos_diff;
+  MyPoint32 box_pos_diff;
 
   float scale = 0.1f * loop_interval;
 
@@ -802,15 +839,15 @@ void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::Det
   {
     for (unsigned int j = 0; j < objs2.size(); j++)
     {
-      objs2[j].bPoint.p0 = add_two_Point32s(objs2[j].bPoint.p0, box_pos_diffs[j]);
-      objs2[j].bPoint.p1 = add_two_Point32s(objs2[j].bPoint.p1, box_pos_diffs[j]);
-      objs2[j].bPoint.p2 = add_two_Point32s(objs2[j].bPoint.p2, box_pos_diffs[j]);
-      objs2[j].bPoint.p3 = add_two_Point32s(objs2[j].bPoint.p3, box_pos_diffs[j]);
+      objs2[j].bPoint.p0 = add_two_MyPoint32s(objs2[j].bPoint.p0, box_pos_diffs[j]);
+      objs2[j].bPoint.p1 = add_two_MyPoint32s(objs2[j].bPoint.p1, box_pos_diffs[j]);
+      objs2[j].bPoint.p2 = add_two_MyPoint32s(objs2[j].bPoint.p2, box_pos_diffs[j]);
+      objs2[j].bPoint.p3 = add_two_MyPoint32s(objs2[j].bPoint.p3, box_pos_diffs[j]);
 
-      objs2[j].bPoint.p4 = add_two_Point32s(objs2[j].bPoint.p4, box_pos_diffs[j]);
-      objs2[j].bPoint.p5 = add_two_Point32s(objs2[j].bPoint.p5, box_pos_diffs[j]);
-      objs2[j].bPoint.p6 = add_two_Point32s(objs2[j].bPoint.p6, box_pos_diffs[j]);
-      objs2[j].bPoint.p7 = add_two_Point32s(objs2[j].bPoint.p7, box_pos_diffs[j]);
+      objs2[j].bPoint.p4 = add_two_MyPoint32s(objs2[j].bPoint.p4, box_pos_diffs[j]);
+      objs2[j].bPoint.p5 = add_two_MyPoint32s(objs2[j].bPoint.p5, box_pos_diffs[j]);
+      objs2[j].bPoint.p6 = add_two_MyPoint32s(objs2[j].bPoint.p6, box_pos_diffs[j]);
+      objs2[j].bPoint.p7 = add_two_MyPoint32s(objs2[j].bPoint.p7, box_pos_diffs[j]);
     }
 
     time_offset += loop_interval;
@@ -969,7 +1006,7 @@ int TPPNode::run()
       mc_.module_pubtime_sec = ros::Time::now().toSec();
 #endif
 
-      // Tracking end && PP start ================================================================
+      // Tracking --> PP =========================================================================
 
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
@@ -978,6 +1015,9 @@ int TPPNode::run()
       publish_pp_extrapolation(pp_pub_, pp_objs_, box_centers_kalman_rel_, box_centers_kalman_next_rel_);
 #else
       publish_pp(pp_pub_, pp_objs_, 0, 0);
+#endif
+#if TO_GRIDMAP
+      publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif
 
       // PP end ==================================================================================

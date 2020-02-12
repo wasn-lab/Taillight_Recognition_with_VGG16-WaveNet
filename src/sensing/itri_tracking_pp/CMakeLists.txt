@@ -18,6 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         msgs
+        pcl_ros
+        grid_map_ros
 )
 
 find_package(Glog)
@@ -43,6 +45,8 @@ set(TPP_CATKIN_DEPS
     sensor_msgs
     std_msgs
     msgs
+    pcl_ros
+    grid_map_ros
 )
 
 catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
@@ -70,6 +74,7 @@ set(SOURCES_SRCS
     src/track_hist.cpp
     src/utils.cpp
     src/velocity.cpp
+    src/points_to_costmap.cpp
 )
 
 add_executable(itri_tracking_pp ${SOURCES_SRCS})

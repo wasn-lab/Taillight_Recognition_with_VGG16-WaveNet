@@ -50,7 +50,7 @@ visualization_msgs::Marker MarkerGen::create_seq_marker(const unsigned int idx, 
   return marker;
 }
 
-geometry_msgs::Point MarkerGen::text_marker_position(const Point32 p1, const Point32 p2, const double z_offset)
+geometry_msgs::Point MarkerGen::text_marker_position(const MyPoint32 p1, const MyPoint32 p2, const double z_offset)
 {
   geometry_msgs::Point p;
   p.x = (p1.x + p2.x) * 0.5;
@@ -78,13 +78,13 @@ visualization_msgs::Marker MarkerGen::create_box_marker(const unsigned int idx, 
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
   set_ColorRGBA(marker.color, mc_.color);
 
-  std::vector<Point32> point_list = { bbox.p0, bbox.p1, bbox.p2, bbox.p3, bbox.p4, bbox.p5, bbox.p6, bbox.p7 };
+  std::vector<MyPoint32> point_list = { bbox.p0, bbox.p1, bbox.p2, bbox.p3, bbox.p4, bbox.p5, bbox.p6, bbox.p7 };
 
   marker.points.reserve(box_order.size());
   for (unsigned i = 0; i < box_order.size(); i++)
   {
     geometry_msgs::Point point_msg;
-    convert_Point32_to_Point(point_msg, point_list[box_order[i]]);
+    convert_MyPoint32_to_Point(point_msg, point_list[box_order[i]]);
     marker.points.push_back(point_msg);
   }
 
@@ -133,11 +133,11 @@ visualization_msgs::Marker MarkerGen::create_polygon_marker(const unsigned int i
     for (unsigned i = 0; i < cPoint.lowerAreaPoints.size(); i++)
     {
       geometry_msgs::Point p;
-      convert_Point32_to_Point(p, cPoint.lowerAreaPoints[i]);
+      convert_MyPoint32_to_Point(p, cPoint.lowerAreaPoints[i]);
       marker.points.push_back(p);
     }
     geometry_msgs::Point p;
-    convert_Point32_to_Point(p, cPoint.lowerAreaPoints[0]);
+    convert_MyPoint32_to_Point(p, cPoint.lowerAreaPoints[0]);
     marker.points.push_back(p);
   }
 

@@ -99,7 +99,7 @@ void PathPredict::normalize_pos(std::vector<long double>& data_x, std::vector<lo
   }
 }
 
-void PathPredict::create_pp_input(const Point32 point, std::vector<long double>& data_x,
+void PathPredict::create_pp_input(const MyPoint32 point, std::vector<long double>& data_x,
                                   std::vector<long double>& data_y)
 {
   float x_abs = point.x;
@@ -436,6 +436,46 @@ void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std:
   }
 }
 
+void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx,
+                              const float abs_speed)
+{
+  double roll, pitch, yaw;
+  geometry_msgs::Quaternion q = tf2::toMsg(pps.q1);
+  quaternion_to_rpy(roll, pitch, yaw, q.x, q.y, q.z, q.w);
+
+  float scale = abs_speed * (pp_idx + 1) / 36.;
+  cv::Mat mag_m(1, 4, CV_32FC1, cv::Scalar(0));
+  float scale1 = scale / 2;
+  float scale2 = scale / 4;
+  mag_m.at<float>(0, 0) = scale1;
+  mag_m.at<float>(0, 1) = scale2;
+  mag_m.at<float>(0, 2) = scale1;
+  mag_m.at<float>(0, 3) = scale2;
+
+  cv::Mat ang_rad(1, 4, CV_32FC1, cv::Scalar(0));
+  double pi_half = M_PI * 0.5;
+  ang_rad.at<float>(0, 0) = yaw;
+  ang_rad.at<float>(0, 1) = ang_rad.at<float>(0, 0) + pi_half;
+  ang_rad.at<float>(0, 2) = ang_rad.at<float>(0, 1) + pi_half;
+  ang_rad.at<float>(0, 3) = ang_rad.at<float>(0, 2) + pi_half;
+
+  cv::Mat x_m(1, 4, CV_32FC1, cv::Scalar(0));
+  cv::Mat y_m(1, 4, CV_32FC1, cv::Scalar(0));
+  cv::polarToCart(mag_m, ang_rad, x_m, y_m, false);
+
+  pps.v1.x = forecast.position.x + x_m.at<float>(0, 0);
+  pps.v1.y = forecast.position.y + y_m.at<float>(0, 0);
+
+  pps.v2.x = forecast.position.x + x_m.at<float>(0, 1);
+  pps.v2.y = forecast.position.y + y_m.at<float>(0, 1);
+
+  pps.v3.x = forecast.position.x + x_m.at<float>(0, 2);
+  pps.v3.y = forecast.position.y + y_m.at<float>(0, 2);
+
+  pps.v4.x = forecast.position.x + x_m.at<float>(0, 3);
+  pps.v4.y = forecast.position.y + y_m.at<float>(0, 3);
+}
+
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
                        const unsigned int show_pp)
 {
@@ -499,41 +539,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
 
 #if PP_VERTICES_VIA_SPEED
-        double roll, pitch, yaw;
-        geometry_msgs::Quaternion q = tf2::toMsg(pps[j].q1);
-        quaternion_to_rpy(roll, pitch, yaw, q.x, q.y, q.z, q.w);
-
-        float scale = pp_objs_[i].absSpeed * (j + 1) / 36.;
-        cv::Mat mag_m(1, 4, CV_32FC1, cv::Scalar(0));
-        float scale1 = scale / 2;
-        float scale2 = scale / 4;
-        mag_m.at<float>(0, 0) = scale1;
-        mag_m.at<float>(0, 1) = scale2;
-        mag_m.at<float>(0, 2) = scale1;
-        mag_m.at<float>(0, 3) = scale2;
-
-        cv::Mat ang_rad(1, 4, CV_32FC1, cv::Scalar(0));
-        double pi_half = M_PI * 0.5;
-        ang_rad.at<float>(0, 0) = yaw;
-        ang_rad.at<float>(0, 1) = ang_rad.at<float>(0, 0) + pi_half;
-        ang_rad.at<float>(0, 2) = ang_rad.at<float>(0, 1) + pi_half;
-        ang_rad.at<float>(0, 3) = ang_rad.at<float>(0, 2) + pi_half;
-
-        cv::Mat x_m(1, 4, CV_32FC1, cv::Scalar(0));
-        cv::Mat y_m(1, 4, CV_32FC1, cv::Scalar(0));
-        cv::polarToCart(mag_m, ang_rad, x_m, y_m, false);
-
-        pps[j].v1.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 0);
-        pps[j].v1.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 0);
-
-        pps[j].v2.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 1);
-        pps[j].v2.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 1);
-
-        pps[j].v3.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 2);
-        pps[j].v3.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 2);
-
-        pps[j].v4.x = pp_objs_[i].track.forecasts[j].position.x + x_m.at<float>(0, 3);
-        pps[j].v4.y = pp_objs_[i].track.forecasts[j].position.y + y_m.at<float>(0, 3);
+        pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].absSpeed);
 
         unsigned int k = num_forecasts_ + j * 4;
 
