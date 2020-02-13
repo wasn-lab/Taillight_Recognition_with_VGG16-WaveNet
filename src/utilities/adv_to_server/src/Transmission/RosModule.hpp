@@ -75,7 +75,7 @@ class RosModuleTraffic
     {
       std::cout << "publishServerStatus topic " << topic << " , input " << input << std::endl;
       ros::NodeHandle n;
-      static ros::Publisher server_status_pub = n.advertise<std_msgs::String>(topic, 1000);
+      static ros::Publisher server_status_pub = n.advertise<std_msgs::Bool>(topic, 1000);
       std_msgs::Bool msg;
       msg.data = input;
       server_status_pub.publish(msg);
