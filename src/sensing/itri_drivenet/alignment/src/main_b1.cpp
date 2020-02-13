@@ -8,7 +8,7 @@
 
 /// package
 #include "camera_params_b1.h"
-//#include "alignment.h"
+#include "alignment.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
