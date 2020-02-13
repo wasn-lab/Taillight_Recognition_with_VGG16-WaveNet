@@ -81,16 +81,16 @@ def check_cpp_global_var_naming(cpp):
     """
     print("Check global variable naming convention: " + cpp)
     for var_decl in [_parse_var_decl(_) for _ in __get_global_var_decls(cpp)]:
-        _var = var_decl["var"]
-        _type = var_decl["decl_type"]
-        _line = var_decl["line"]
-        if _is_global_var_naming(var_decl["var"]):
-            print("PASS: line {}: {} {}".format(_line, _type, _var))
+        _var = var_decl.get("var", "")
+        _type = var_decl.get("decl_type", "")
+        _line = var_decl.get("line", "")
+        if _is_global_var_naming(_var):
+            print("PASS: {} (line: {}, type: {})".format(_var, _line, _type))
         else:
             logging.warning(
                 "FAIL: %s: global variable name is not under_score style "
-                "with starting g_ (line %s, type %s, AST repr: %s)",
-                _var, _line, _type, var_decl["ast_repr"])
+                "with starting g_ (line: %s, type: %s, AST repr: %s)",
+                _var, _line, _type, var_decl.get("ast_repr", ""))
     print("")
 
     return 0
