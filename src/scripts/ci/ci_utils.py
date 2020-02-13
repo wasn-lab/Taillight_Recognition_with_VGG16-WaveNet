@@ -5,7 +5,41 @@ Utility functions for CI scripts
 from functools import lru_cache
 import io
 import subprocess
+import json
+import os
 
+
+@lru_cache(maxsize=0)
+def get_repo_path():
+    """ Return the top-level repo path. """
+    cmd = ["git", "rev-parse", "--show-toplevel"]
+    return subprocess.check_output(cmd).strip().decode("utf-8")
+
+
+@lru_cache(maxsize=0)
+def get_complie_commands():
+    """
+    Return a list of dict {
+        "directory": ...
+        "command": ...
+        "file": ...
+    }
+    """
+    jfile = os.path.join(get_repo_path(), "build_clang", "compile_commands.json")
+    with io.open(jfile, encoding="utf-8") as _fp:
+        jdata = json.loads(_fp.read())
+    return jdata
+
+
+def get_compile_command(cpp):
+    """ Return the compile command for |cpp| """
+    for doc in get_complie_commands():
+        if doc["file"].endswith(cpp):
+            cmd = doc["command"].split()
+            if "ccache" in cmd[0]:
+                cmd = cmd[1:]
+            return cmd
+    return []
 
 @lru_cache(maxsize=0)
 def get_affected_files():
