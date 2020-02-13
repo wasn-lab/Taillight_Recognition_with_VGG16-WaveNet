@@ -23,6 +23,8 @@ __DECL_RE_SAME_LINE = re.compile(
 def __get_global_var_decls(cpp):
     decls = []
     cmd = get_compile_command(cpp)
+    if not cmd:
+        return decls
     if "clang++" not in cmd[0]:
         logging.warning("clang++ is needed for analyzing %s", cpp)
         return 0
