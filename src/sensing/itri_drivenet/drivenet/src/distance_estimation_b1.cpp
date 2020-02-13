@@ -186,7 +186,8 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
       if (piexl_loc > regionHeight.front())
         distance = regionDist.front() - 0.2;
       else if (piexl_loc < regionHeight.back())
-        distance = regionDist.back() + 0.2;
+        distance = 777;
+        // distance = regionDist.back() + 0.2;
     }
   }
 
@@ -960,6 +961,8 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
                                                 Parmas.regionDist_y);
   }
+
+  if(x_distMeter == 777)return p0;
 
   p0.x = x_distMeter + offset_x;
   p0.y = y_distMeter;
