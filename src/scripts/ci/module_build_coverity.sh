@@ -30,8 +30,9 @@ function cleanup {
 
 function commit {
   data_dir=$1
+  stream=$2
   if [[ ! -z "${USER_NAME}" && ! -z "${USER_PASSWORD}" ]]; then
-    cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream master --dir ${data_dir} --user ${USER_NAME} --password ${USER_PASSWORD}
+    cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream ${stream} --dir ${data_dir} --user ${USER_NAME} --password ${USER_PASSWORD}
   fi
 }
 
@@ -48,7 +49,7 @@ cleanup
 cov-build --dir ${coverity_data_blacklist_dir} --emit-complementary-info \
   catkin_make -DENABLE_CCACHE=0 -DCATKIN_WHITELIST_PACKAGES="${blacklist};cuda_downsample" ${EXTRA_CATKIN_ARGS}
 analyze ${coverity_data_blacklist_dir}
-commit ${coverity_data_blacklist_dir}
+commit ${coverity_data_blacklist_dir} master
 
 # build all except blacklisted packages
 # Use this order because most people can see analysis result at the most recent stream.
@@ -56,7 +57,7 @@ cleanup
 cov-build --dir ${coverity_data_dir} --emit-complementary-info \
   catkin_make -DENABLE_CCACHE=0 -DCATKIN_BLACKLIST_PACKAGES="$blacklist" ${EXTRA_CATKIN_ARGS}
 analyze ${coverity_data_dir}
-commit ${coverity_data_dir}
+commit ${coverity_data_dir} localization
 
 echo "visit http://140.96.109.174:8080 to see the result (project: itriadv, stream: master)"
 popd
