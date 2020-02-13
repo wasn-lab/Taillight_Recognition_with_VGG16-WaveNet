@@ -141,16 +141,16 @@ void set_PoseRPY32(PoseRPY32& out, const PoseRPY32 in)
   out.yaw = in.yaw;
 }
 
-void set_Point32(Point32& out, const Point32 in)
+void set_MyPoint32(MyPoint32& out, const MyPoint32 in)
 {
   out.x = in.x;
   out.y = in.y;
   out.z = in.z;
 }
 
-void swap_Point32(Point32& A, Point32& B)
+void swap_MyPoint32(MyPoint32& A, MyPoint32& B)
 {
-  Point32 tmp;
+  MyPoint32 tmp;
 
   tmp.x = A.x;
   tmp.y = A.y;
@@ -165,16 +165,16 @@ void swap_Point32(Point32& A, Point32& B)
   B.z = tmp.z;
 }
 
-void convert_Point32_to_Point(geometry_msgs::Point& out, const Point32 in)
+void convert_MyPoint32_to_Point(geometry_msgs::Point& out, const MyPoint32 in)
 {
   out.x = (double)in.x;
   out.y = (double)in.y;
   out.z = (double)in.z;
 }
 
-Point32 add_two_Point32s(const Point32 A, const Point32 B)
+MyPoint32 add_two_MyPoint32s(const MyPoint32 A, const MyPoint32 B)
 {
-  Point32 C;
+  MyPoint32 C;
   C.x = A.x + B.x;
   C.y = A.y + B.y;
   C.z = A.z + B.z;
