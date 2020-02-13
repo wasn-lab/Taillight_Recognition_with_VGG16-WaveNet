@@ -18,6 +18,7 @@ ros::Publisher occ_grid_wayarea_pub;
 nav_msgs::OccupancyGrid costmap_;
 nav_msgs::OccupancyGrid lidcostmap;
 nav_msgs::OccupancyGrid camcostmap;
+nav_msgs::OccupancyGrid ppcostmap;
 nav_msgs::OccupancyGrid costmap_sensor_all;
 nav_msgs::OccupancyGrid costmap_all;
 nav_msgs::OccupancyGrid costmap_all_expand;
@@ -26,6 +27,7 @@ nav_msgs::OccupancyGrid wayareaoccgridmap;
 bool lid_ini = false;
 bool cam_ini = false;
 bool wayarea_ini = false;
+bool pp_ini = false;
 double expand_size = 1.0;
 double expand_size_0 = 1.4;
 
@@ -101,6 +103,12 @@ void cam_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 {
   camcostmap = costmap;
   cam_ini = true;
+}
+
+void pp_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
+{
+  ppcostmap = costmap;
+  pp_ini = true;
 }
 
 void basewaypoints30Callback(const nav_msgs::Path& path)
@@ -180,6 +188,12 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
   {
     camcostmap_ = camcostmap;
     ROS_INFO("CameraDetection/grid pub");
+  }
+  nav_msgs::OccupancyGrid ppcostmap_ = costmap;
+  if (pp_ini == true)
+  {
+    ppcostmap_ = ppcostmap;
+    ROS_INFO("PathPredictionOutput/grid pub");
   }
   nav_msgs::OccupancyGrid wayareaoccgridmap_ = costmap;
   if (wayarea_ini == true)
@@ -290,6 +304,7 @@ int main(int argc, char** argv)
   ros::Subscriber occ_grid_sub = node.subscribe("occupancy_grid", 1, occgridCallback);
   ros::Subscriber liddetect_grid_sub = node.subscribe("LidarDetection/grid", 1, lid_occgridCallback);
   ros::Subscriber cameradetect_grid_sub = node.subscribe("CameraDetection/occupancy_grid", 1, cam_occgridCallback);
+  ros::Subscriber pp_grid_sub = node.subscribe("PathPredictionOutput/grid", 1, pp_occgridCallback);
   ros::Subscriber basewaypoints30_sub = node.subscribe("nav_path_astar_base_30", 1, basewaypoints30Callback);
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
 
