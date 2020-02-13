@@ -5,7 +5,7 @@
 #include <boost/thread/thread.hpp>
 #include "Transmission/UdpClientServer.h"
 #include "Transmission/CanReceiver.h"
-#include "Transmission/RosModule.hpp"
+#include "Transmission/RosModule.h"
 #include "Transmission/TCPClient.h"
 #include "Transmission/TcpServer.h"
 
