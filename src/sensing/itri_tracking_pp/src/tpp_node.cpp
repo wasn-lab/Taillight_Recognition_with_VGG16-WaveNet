@@ -748,7 +748,7 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
   }
 
   grid_map::GridMap gridmap;
-  gridmap.setFrameId("lidar");
+  gridmap.setFrameId("base_link");
   gridmap.setGeometry(grid_map::Length(50, 30), 0.2, grid_map::Position(10, 0));
   gridmap.add("pp_layer", grid_map::Matrix::Constant(gridmap.getSize()(0), gridmap.getSize()(1), 0.0));
 
