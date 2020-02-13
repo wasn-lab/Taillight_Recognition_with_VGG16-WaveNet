@@ -24,10 +24,13 @@ private:
   int carId = 1;
   Projector2 pj;
 
+
 public:
   void init(int carId);
-  vector<int> run();  
+  vector<int> run(float x, float y, float z);  
   vector<int> out;
+  int imgW, imgH;
+  float groundUpBound, groundLowBound;
   
 };
 
