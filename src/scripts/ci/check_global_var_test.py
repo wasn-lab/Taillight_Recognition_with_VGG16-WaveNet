@@ -32,6 +32,13 @@ class CheckGlobalVarNamingTest(unittest.TestCase):
         self.assertEqual(ret["line"], "54")
         self.assertEqual(ret["decl_type"], "bool")
 
+    def test_parse_var_decl_4(self):
+        decl = "|-VarDecl 0xe1c1740 <line:65:1, col:14> col:14 mutex_serverStatus 'boost::mutex':'boost::mutex' callinit"
+        ret = check_global_var._parse_var_decl(decl)
+        self.assertEqual(ret["var"], "mutex_serverStatus")
+        self.assertEqual(ret["line"], "65")
+        self.assertEqual(ret["decl_type"], "boost::mutex")
+
     def test_is_global_var_naming(self):
         self.assertFalse(check_global_var._is_global_var_naming("distCoeffs"))
         self.assertFalse(check_global_var._is_global_var_naming("rawimg_size"))
