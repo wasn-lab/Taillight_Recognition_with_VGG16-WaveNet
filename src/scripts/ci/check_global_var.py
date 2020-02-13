@@ -32,7 +32,7 @@ def __get_global_var_decls(cpp):
         if "\\\"" in item:
             cmd[idx] = item.replace("\\", "")
     cmd += ["-Xclang", "-ast-dump", "-fno-color-diagnostics"]
-    logging.info(" ".join(cmd))
+    logging.debug(" ".join(cmd))
     try:
         output = subprocess.check_output(cmd).strip().decode("utf-8")
     except subprocess.CalledProcessError:
@@ -79,20 +79,18 @@ def check_cpp_global_var_naming(cpp):
     """
     Use clang-generated ast to find global variable naming violations.
     """
-    print("Check global variable naming convention: " + cpp)
+    logging.info("Check global variable naming convention: %s", cpp)
     for var_decl in [_parse_var_decl(_) for _ in __get_global_var_decls(cpp)]:
         _var = var_decl.get("var", "")
         _type = var_decl.get("decl_type", "")
         _line = var_decl.get("line", "")
         if _is_global_var_naming(_var):
-            print("PASS: {} (line: {}, type: {})".format(_var, _line, _type))
+            logging.info("PASS: %s (line: %s, type: %s)", _var, _line, _type)
         else:
             logging.warning(
                 "FAIL: %s: global variable name is not under_score style "
                 "with starting g_ (line: %s, type: %s, AST repr: %s)",
                 _var, _line, _type, var_decl.get("ast_repr", ""))
-    print("")
-
     return 0
 
 def check_global_var_naming():
@@ -117,4 +115,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     sys.exit(main())
