@@ -37,7 +37,7 @@ private:
 
   geometry_msgs::Point init_Point(const double x, const double y, const double z);
 
-  geometry_msgs::Point text_marker_position(const Point32 p1, const Point32 p2, const double z_offset);
+  geometry_msgs::Point text_marker_position(const MyPoint32 p1, const MyPoint32 p2, const double z_offset);
 
   void set_marker_attr(visualization_msgs::Marker& marker, const geometry_msgs::Point point);
 

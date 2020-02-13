@@ -14,7 +14,7 @@ struct BoxCenter
 {
   unsigned int id;
 
-  Point32Impl pos;
+  MyPoint32Impl pos;
 
   float x_length;
   float y_length;
