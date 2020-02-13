@@ -19,50 +19,50 @@
 bool flag_show_udp_send = true;
 
 // VK APIs backend
-const static std::string TCP_VK_SRV_ADRR = "140.96.180.120";
-const static int TCP_VK_SRV_PORT = 8015;
+const std::string TCP_VK_SRV_ADRR = "140.96.180.120";
+const int TCP_VK_SRV_PORT = 8015;
 
-const static std::string UDP_VK_SRV_ADRR = "140.96.180.120";
-const static int UDP_VK_SRV_PORT = 8016;
+const std::string UDP_VK_SRV_ADRR = "140.96.180.120";
+const int UDP_VK_SRV_PORT = 8016;
 
 // aws backend
-const static std::string UDP_AWS_SRV_ADRR = "52.69.10.200";
-const static int UDP_AWS_SRV_PORT = 5570;
+const std::string UDP_AWS_SRV_ADRR = "52.69.10.200";
+const int UDP_AWS_SRV_PORT = 5570;
 
 // OBU
-const static std::string UDP_OBU_ADRR = "192.168.1.200";
-const static int UDP_OBU_PORT = 9999;
+const std::string UDP_OBU_ADRR = "192.168.1.200";
+const int UDP_OBU_PORT = 9999;
 
 // TCP Server on ADV
-const static std::string TCP_ADV_SRV_ADRR = "192.168.1.6";
-const static int TCP_ADV_SRV_PORT = 8765;
+const std::string TCP_ADV_SRV_ADRR = "192.168.1.6";
+const int TCP_ADV_SRV_PORT = 8765;
 
-const static std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
-const static int UDP_ADV_SRV_PORT = 8766;
+const std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
+const int UDP_ADV_SRV_PORT = 8766;
 
 // obu traffic signal
-const static std::string TOPIC_TRAFFIC = "/traffic";
+const std::string TOPIC_TRAFFIC = "/traffic";
 // Server status
-const static std::string TOPIC_SERCER_STATUS = "/backend/connected";
+const std::string TOPIC_SERCER_STATUS = "/backend/connected";
 // reserve bus
-const static std::string TOPIC_RESERVE = "/reserve/request";
+const std::string TOPIC_RESERVE = "/reserve/request";
 
 // wait reserve result: 300ms.
-const static int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
+const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 //reserve waiting timeout: 3 seconds
-const static int RESERVE_WAITING_TIMEOUT = 3 * 1000 * 1000;
+const int RESERVE_WAITING_TIMEOUT = 3 * 1000 * 1000;
 // UDP server udpate from queues freq 100ms
-const static int UDP_SERVER_UPDATE_MICROSECONDS = 100 * 1000;
+const int UDP_SERVER_UPDATE_MICROSECONDS = 100 * 1000;
 // ROS update time: 500ms
-const static int ROS_UPDATE_MICROSECONDS = 500 * 1000;
+const int ROS_UPDATE_MICROSECONDS = 500 * 1000;
 // server status update time: 10 sec
-const static int SERVER_STATUS_UPDATE_MICROSECONDS = 10 * 1000 * 1000;
+//const int SERVER_STATUS_UPDATE_MICROSECONDS = 10 * 1000 * 1000;
 
 // locks
 boost::mutex mutex_queue;
 boost::mutex mutex_ros;
 boost::mutex mutex_trafficLight;
-boost::mutex mutex_serverStatus;
+//boost::mutex mutex_serverStatus;
 
 // ros queue
 std::queue<std::string> q;
