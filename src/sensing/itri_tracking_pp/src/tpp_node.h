@@ -73,25 +73,24 @@ private:
 
   MarkerGen mg_;
 
-#if TTC_TEST
-  unsigned int seq_ = 0;
-  unsigned int seq_cb_ = 0;
-  ros::Subscriber seq_sub_;
-  void callback_seq(const std_msgs::Int32::ConstPtr& input);
-#endif
-
   ros::Subscriber fusion_sub_;
-  ros::Subscriber localization_sub_;
-  ros::Subscriber ego_speed_kmph_sub_;
-
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
 
 #if TTC_TEST
-  void callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input);
+  unsigned int seq_ = 0;
+  unsigned int seq_cb_ = 0;
+
+  ros::Subscriber seq_sub_;
+  void callback_seq(const std_msgs::Int32::ConstPtr& input);
+
+  ros::Subscriber localization_sub_;
   void callback_localization(const visualization_msgs::Marker::ConstPtr& input);
+
+  ros::Subscriber ego_speed_kmph_sub_;
+  void callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input);
 #else
+  ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
-  void callback_localization(const msgs::LocalizationToVeh::ConstPtr& input);
 #endif
 
   bool is_legal_dt_ = false;
@@ -135,7 +134,7 @@ private:
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
-  void get_current_ego_data();
+  void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 #if TTC_TEST

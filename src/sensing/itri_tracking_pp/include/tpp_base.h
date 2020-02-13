@@ -15,11 +15,14 @@
 #include <condition_variable>
 #include <signal.h>
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
 #include <ros/ros.h>
 #include <ros/spinner.h>
 #include <ros/callback_queue.h>
+#include <tf/tf.h>
 
 // ros msgs
 #include <msgs/PointXYZV.h>
@@ -30,15 +33,17 @@
 #include <msgs/DetectedObject.h>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
-#include <msgs/LocalizationToVeh.h>
 
 #define TTC_TEST 0
 #if TTC_TEST
-#include <tf/tf.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float64.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#else
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/TransformStamped.h>
 #endif
 
 #include <std_msgs/ColorRGBA.h>
@@ -83,6 +88,7 @@
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
 
+#define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
 
 #define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle

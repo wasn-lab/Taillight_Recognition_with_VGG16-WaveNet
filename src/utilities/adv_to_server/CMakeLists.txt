@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(adv_to_server)
 
+
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
@@ -168,7 +169,7 @@ file(GLOB_RECURSE SOURCES_SRCS *.cpp)
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable( adv_to_server src/main.cpp ${SOURCES_SRCS})
+add_executable( adv_to_server src/main.cpp  ${SOURCES_SRCS})
 #add_executable( fps_talker src/talker.cpp)
 add_dependencies(adv_to_server msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #add_dependencies( fps_talker msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})

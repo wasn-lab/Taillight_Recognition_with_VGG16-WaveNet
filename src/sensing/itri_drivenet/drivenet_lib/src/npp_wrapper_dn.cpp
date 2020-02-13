@@ -7,6 +7,8 @@
 #include "nppi_geometry_transforms.h"
 #include "npp.h"
 
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+
 namespace DriveNet_npp
 {
 int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double wscale, const int channel,
@@ -158,6 +160,7 @@ int npp8u_ptr_to_cvmat(const Npp8u* in_npp8u_ptr, const size_t in_num_bytes, cv:
   // TODO: extend to other channels like 1, 4
   assert(in_num_bytes % dim_size == 0);
   assert(channels == 3);
+  NO_UNUSED_VAR_CHECK(channels);  // silence -Wunused-variable
 
   if (!out_img.empty())
   {

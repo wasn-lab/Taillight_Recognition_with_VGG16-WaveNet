@@ -4,12 +4,15 @@
   <!-- Base waypoint pub node-->
   <node pkg="astar_initial" type="astar_initial" name="astar_initial" /> <!--output="screen" /-->
 
+  <!-- Grid map fusion pub node-->
+  <node pkg="occ_grid_fusion" type="occ_grid_fusion" name="occ_grid_fusion" output="screen" />
+
   <!-- Relay behavior configurations -->
   <arg name="safety_waypoints_size" default="100" />
   <arg name="update_rate" default="20" /><!--10-->
 
   <!-- Avoidance behavior configurations -->
-  <!--arg name="costmap_topic" default="occupancy_grid" /-->
+  <arg name="costmap_topic" default="occupancy_grid_all" /><!--occupancy_grid-->
   <arg name="enable_avoidance" default="true" />
   <arg name="avoid_waypoints_velocity" default="10.0" /><!--km/hr-->
   <arg name="avoid_start_velocity" default="10.0" /><!--1.8 km/hr-->
@@ -41,7 +44,7 @@
     <param name="safety_waypoints_size" value="$(arg safety_waypoints_size)" />
     <param name="update_rate" value="$(arg update_rate)" />
 
-    <!--remap from="costmap" to="$(arg costmap_topic)" /-->
+    <remap from="costmap" to="$(arg costmap_topic)" />
     <param name="enable_avoidance" value="$(arg enable_avoidance)" />
     <param name="search_waypoints_size" value="$(arg search_waypoints_size)" />
     <param name="search_waypoints_delta" value="$(arg search_waypoints_delta)" />

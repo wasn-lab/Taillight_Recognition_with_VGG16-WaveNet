@@ -179,7 +179,7 @@ LaneDirection getLaneDirectionByPosition(const autoware_msgs::Lane& current_path
     const geometry_msgs::Pose& prev_pose = current_path.waypoints[i - 1].pose.pose;
     const geometry_msgs::Pose& next_pose = current_path.waypoints[i].pose.pose;
     const double rlt_x = calcRelativeCoordinate(next_pose.position, prev_pose).x;
-    if (fabs(rlt_x) < 1e-3)
+    if (std::fabs(rlt_x) < 1e-3)
     {
       continue;
     }
@@ -193,10 +193,10 @@ LaneDirection getLaneDirectionByPosition(const autoware_msgs::Lane& current_path
 LaneDirection getLaneDirectionByVelocity(const autoware_msgs::Lane& current_path)
 {
   LaneDirection velocity_direction = LaneDirection::Error;
-  for (const auto waypoint : current_path.waypoints)
+  for (const auto& waypoint : current_path.waypoints) //const auto waypoint
   {
     const double& vel = waypoint.twist.twist.linear.x;
-    if (fabs(vel) < 0.01)
+    if (std::fabs(vel) < 0.01)
     {
       continue;
     }
@@ -213,7 +213,9 @@ private:
   double val_min_;
   int idx_min_;
 public:
-  MinIDSearch() : idx_min_(-1), val_min_(DBL_MAX){}
+  MinIDSearch() : val_min_(DBL_MAX), idx_min_(-1)
+  {
+  }
   void update(int index, double v)
   {
     if (v < val_min_)
@@ -238,7 +240,9 @@ int getClosestWaypoint(const autoware_msgs::Lane &current_path, geometry_msgs::P
   if (current_path.waypoints.size() < 2 || getLaneDirection(current_path) == LaneDirection::Error)
     return -1;
   WayPoints wp;
+  // std::cout << "1111111111111111111" << std::endl;
   wp.setPath(current_path);
+  // std::cout << "2222222222222222222" << std::endl;
 
   // search closest candidate within a certain meter
   double search_distance = 5.0;
@@ -246,18 +250,21 @@ int getClosestWaypoint(const autoware_msgs::Lane &current_path, geometry_msgs::P
   MinIDSearch cand_idx, not_cand_idx;
   for (int i = 1; i < wp.getSize(); i++)
   {
-    if (!wp.inDrivingDirection(i, current_pose))
-    {
+    // std::cout << "3333333333333333333" << std::endl;
+    // if (!wp.inDrivingDirection(i, current_pose))
+    // {
       // continue;    
-    }
+    // }
+    // std::cout << "4444444444444444444" << std::endl;
     double distance = getPlaneDistance(wp.getWaypointPosition(i), current_pose.position);
+    // std::cout << "5555555555555555555" << std::endl;
     not_cand_idx.update(i, distance);
     if (distance > search_distance)
       continue;
 
     if (getRelativeAngle(wp.getWaypointPose(i), current_pose) > angle_threshold)
       continue;
-    
+    // std::cout << "6666666666666666666" << std::endl;
     cand_idx.update(i, distance);
     //ROS_INFO(".........................");
   }
@@ -272,9 +279,9 @@ int getClosestWaypoint(const autoware_msgs::Lane &current_path, geometry_msgs::P
 // if there are two points (x1,y1) , (x2,y2), a = "y2-y1, b = "(-1) * x2 - x1" ,c = "(-1) * (y2-y1)x1 + (x2-x1)y1"
 bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c)
 {
-  //(x1, y1) = (start.x, star.y), (x2, y2) = (end.x, end.y)
-  double sub_x = fabs(start.x - end.x);
-  double sub_y = fabs(start.y - end.y);
+  // (x1, y1) = (start.x, star.y), (x2, y2) = (end.x, end.y)
+  double sub_x = std::fabs(start.x - end.x);
+  double sub_y = std::fabs(start.y - end.y);
   double error = pow(10, -5);  // 0.00001
 
   if (sub_x < error && sub_y < error)
@@ -291,7 +298,7 @@ bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, dou
 }
 double getDistanceBetweenLineAndPoint(geometry_msgs::Point point, double a, double b, double c)
 {
-  double d = fabs(a * point.x + b * point.y + c) / sqrt(pow(a, 2) + pow(b, 2));
+  double d = std::fabs(a * point.x + b * point.y + c) / sqrt(pow(a, 2) + pow(b, 2));
 
   return d;
 }

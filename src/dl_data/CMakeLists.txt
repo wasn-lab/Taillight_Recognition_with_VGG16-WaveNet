@@ -10,6 +10,7 @@ set(LIDARNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/sq
 set(CAMERA_UTILS_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_utils/data)
 set(CAMERA_GRABBER_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_grabber/src/CameraGrabber)
 set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
+set(PEDCROSS_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_pedcross/models)
 
 function(download_file)
     cmake_parse_arguments(OPT "" "URL;DESTINATION;MD5" "" ${ARGN})
@@ -45,3 +46,4 @@ include(cmake/parknet_weights.cmake)
 include(cmake/lidarnet_weights.cmake)
 include(cmake/camera_fov120_distance.cmake)
 include(cmake/libtensorflow_gpu.cmake)
+include(cmake/pedcross_models.cmake)

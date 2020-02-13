@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
         rosunit
 )
 
+#find_package(Eigen3 QUIET)
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -37,6 +39,7 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 include_directories(libwaypoint_follower
         include
         ${catkin_INCLUDE_DIRS}
+	#${EIGEN3_INCLUDE_DIR}
 )
 
 add_library(libwaypoint_follower src/libwaypoint_follower.cpp)
