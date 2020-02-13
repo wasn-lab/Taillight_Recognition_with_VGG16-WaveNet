@@ -296,7 +296,7 @@ void AstarAvoid::run()
           state_ = AstarAvoid::STATE::RELAYING;
         }
       }
-      ROS_INFO("end avoiding");
+      // ROS_INFO("end avoiding");
     }
     avoiding_flag_pub.publish(avoiding_path_flag);
     reach_goal_pub.publish(reach_goal_flag);
