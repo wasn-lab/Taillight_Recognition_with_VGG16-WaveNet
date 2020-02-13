@@ -49,7 +49,7 @@ cleanup
 cov-build --dir ${coverity_data_blacklist_dir} --emit-complementary-info \
   catkin_make -DENABLE_CCACHE=0 -DCATKIN_WHITELIST_PACKAGES="${blacklist};cuda_downsample" ${EXTRA_CATKIN_ARGS}
 analyze ${coverity_data_blacklist_dir}
-commit ${coverity_data_blacklist_dir} master
+commit ${coverity_data_blacklist_dir} localization
 
 # build all except blacklisted packages
 # Use this order because most people can see analysis result at the most recent stream.
@@ -57,7 +57,7 @@ cleanup
 cov-build --dir ${coverity_data_dir} --emit-complementary-info \
   catkin_make -DENABLE_CCACHE=0 -DCATKIN_BLACKLIST_PACKAGES="$blacklist" ${EXTRA_CATKIN_ARGS}
 analyze ${coverity_data_dir}
-commit ${coverity_data_dir} localization
+commit ${coverity_data_dir} master
 
 echo "visit http://140.96.109.174:8080 to see the result (project: itriadv, stream: master)"
 popd
