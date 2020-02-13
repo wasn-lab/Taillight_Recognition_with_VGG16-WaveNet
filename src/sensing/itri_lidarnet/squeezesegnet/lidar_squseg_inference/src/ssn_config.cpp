@@ -300,13 +300,15 @@ TF_inference::TF_init ()
   int protobuf_size = 13;
   if (ViewType == 'T' && phi_center == 0)
   {
-    uint8_t config[protobuf_size] = { 0x32, 0x09, 0x09, 0x7b, 0x14, 0xae, 0x47, 0xe1, 0x7a, 0x94, 0x3f, 0x38, 0x01 };
-    TF_SetConfig (options, (void *) config, protobuf_size, status);
+    auto config = std::unique_ptr<uint8_t[]>(
+        new uint8_t[protobuf_size]{ 0x32, 0x09, 0x09, 0x7b, 0x14, 0xae, 0x47, 0xe1, 0x7a, 0x94, 0x3f, 0x38, 0x01 });
+    TF_SetConfig (options, (void *) config.get(), protobuf_size, status);
   }
   else
   {
-    uint8_t config[protobuf_size] = { 0x32, 0x09, 0x09, 0x7b, 0x14, 0xae, 0x47, 0xe1, 0x7a, 0xa4, 0x3f, 0x38, 0x01 };
-    TF_SetConfig (options, (void *) config, protobuf_size, status);
+    auto config = std::unique_ptr<uint8_t[]>(
+        new uint8_t[protobuf_size]{ 0x32, 0x09, 0x09, 0x7b, 0x14, 0xae, 0x47, 0xe1, 0x7a, 0xa4, 0x3f, 0x38, 0x01 });
+    TF_SetConfig (options, (void *) config.get(), protobuf_size, status);
   }
 
   sess = TF_NewSession (graph, options, status);
