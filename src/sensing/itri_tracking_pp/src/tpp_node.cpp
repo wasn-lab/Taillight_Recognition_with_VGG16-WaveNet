@@ -738,7 +738,7 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
     {
       for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
       {
-        pcl::PointCloud<pcl::PointXYZ>::PointType p;
+        pcl::PointXYZ p;
         p.x = objs[i].track.forecasts[j].position.x;
         p.y = objs[i].track.forecasts[j].position.y;
         p.z = 0.f;
@@ -748,11 +748,11 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
   }
 
   grid_map::GridMap gridmap;
-  gridmap.setFrameId("base_link");
+  gridmap.setFrameId("lidar");
   gridmap.setGeometry(grid_map::Length(50, 30), 0.2, grid_map::Position(10, 0));
   gridmap.add("pp_layer", grid_map::Matrix::Constant(gridmap.getSize()(0), gridmap.getSize()(1), 0.0));
 
-  PointsToCostmap().makeCostmapFromSensorPoints(5, -5, 0.0, 1.0, gridmap, "pp_layer", in_points);
+  gridmap["pp_layer"] = PointsToCostmap().makeCostmapFromSensorPoints(5, -5, 0.0, 1.0, gridmap, "pp_layer", in_points);
   nav_msgs::OccupancyGrid occ_grid_msg;
   grid_map::GridMapRosConverter::toOccupancyGrid(gridmap, "pp_layer", 0, 1, occ_grid_msg);
   occ_grid_msg.header = objs_header_;
