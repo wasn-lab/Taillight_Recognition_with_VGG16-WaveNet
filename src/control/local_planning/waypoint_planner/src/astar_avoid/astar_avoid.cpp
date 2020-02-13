@@ -22,12 +22,14 @@ AstarAvoid::AstarAvoid()
   , terminate_thread_(false)
   , closest_waypoint_index_(-1)
   , obstacle_waypoint_index_(-1)
+  , obstacle_waypoint_base_index_(-1)
   , closest_local_index_(-1)
   , costmap_initialized_(false)
   , current_pose_initialized_(false)
   , current_velocity_initialized_(false)
   , base_waypoints_initialized_(false)
   , closest_waypoint_initialized_(false)
+  , avoid_state_sub_initialized_(true)
 {
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);
@@ -43,6 +45,7 @@ AstarAvoid::AstarAvoid()
   safety_waypoints_pub_ = nh_.advertise<autoware_msgs::Lane>("safety_waypoints", 1, true);
   navpath_astar_pub = nh_.advertise<nav_msgs::Path>("nav_path_astar_final", 1, true); //////////////////////////
   avoiding_flag_pub = nh_.advertise<std_msgs::Int32>("avoiding_path", 1, true); //////////////////////////
+  reach_goal_pub = nh_.advertise<std_msgs::Int32>("astar_reach_goal", 1, true); //////////////////////////
   costmap_sub_ = nh_.subscribe("costmap", 1, &AstarAvoid::costmapCallback, this);
   // costmap_sub_ = nh_.subscribe("occupancy_grid", 1, &AstarAvoid::costmapCallback, this);
   // costmap_sub_ = nh_.subscribe("LidarDetection/grid", 1, &AstarAvoid::costmapCallback, this);
@@ -53,6 +56,8 @@ AstarAvoid::AstarAvoid()
   base_waypoints_sub_ = nh_.subscribe("base_waypoints", 1, &AstarAvoid::baseWaypointsCallback, this);
   closest_waypoint_sub_ = nh_.subscribe("closest_waypoint", 1, &AstarAvoid::closestWaypointCallback, this);
   obstacle_waypoint_sub_ = nh_.subscribe("obstacle_waypoint", 1, &AstarAvoid::obstacleWaypointCallback, this);
+  obstacle_waypoint_base_sub_ = nh_.subscribe("obstacle_waypoint_base", 1, &AstarAvoid::obstacleWaypointbaseCallback, this);
+  avoid_state_sub_ = nh_.subscribe("Flag_Info01", 1, &AstarAvoid::avoidstatesubCallback, this);
 
   rate_ = new ros::Rate(update_rate_);
 }
@@ -60,6 +65,18 @@ AstarAvoid::AstarAvoid()
 AstarAvoid::~AstarAvoid()
 {
   publish_thread_.join();
+}
+
+void AstarAvoid::avoidstatesubCallback(const msgs::Flag_Info& msg)
+{
+  // avoid_state_index_ = msg.Dspace_Flag03;
+  // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
+  // if (avoid_state_index_ == 1)
+  //   enable_avoidance_ = true;
+  // else
+  //   enable_avoidance_ = false;
+
+  // avoid_state_sub_initialized_ = true;
 }
 
 void AstarAvoid::costmapCallback(const nav_msgs::OccupancyGrid& msg)
@@ -101,15 +118,15 @@ void AstarAvoid::baseWaypointsCallback(const autoware_msgs::Lane& msg)
   if (base_waypoints_initialized_)
   {
     // detect waypoint change by timestamp update
-    ros::Time t1 = prev_base_waypoints.header.stamp;
-    ros::Time t2 = base_waypoints_.header.stamp;
+    // ros::Time t1 = prev_base_waypoints.header.stamp;
+    // ros::Time t2 = base_waypoints_.header.stamp;
     // std::cout << "t1 : " << t1.toSec() << ", t2 : " << t2.toSec() << std::endl;
-    if ((t2 - t1).toSec() > 1e-3)
-    {
+    // if ((t2 - t1).toSec() > 1e-3)
+    // {
       ROS_INFO("Receive new /base_waypoints, reset waypoint index.");
       closest_local_index_ = -1; // reset local closest waypoint
       prev_base_waypoints = base_waypoints_;
-    }
+    // }
   }
   else
   {
@@ -139,6 +156,11 @@ void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
     obstacle_waypoint_index_ = msg.data + 6;
 }
 
+void AstarAvoid::obstacleWaypointbaseCallback(const std_msgs::Int32& msg)
+{
+    obstacle_waypoint_base_index_ = msg.data;
+}
+
 void AstarAvoid::run()
 {
   // check topics
@@ -162,6 +184,7 @@ void AstarAvoid::run()
 
   // reset obstacle index
   obstacle_waypoint_index_ = -1;
+  obstacle_waypoint_base_index_ = -1;
 
   // relaying mode at startup
   state_ = AstarAvoid::STATE::RELAYING;
@@ -170,9 +193,9 @@ void AstarAvoid::run()
   publish_thread_ = std::thread(&AstarAvoid::publishWaypoints, this);
 
   while (ros::ok())
-  {
-    std_msgs::Int32 avoiding_path_flag;
+  {  
     avoiding_path_flag.data = 0;
+    reach_goal_flag.data = 0;
     ros::spinOnce();
 
     // relay mode
@@ -219,6 +242,7 @@ void AstarAvoid::run()
     }
     else if (state_ == AstarAvoid::STATE::PLANNING)
     {
+      avoid_waypoints_ = base_waypoints_;
       avoiding_path_flag.data = 2;
       ROS_INFO("PLANNING");
       start_plan_time = ros::WallTime::now();
@@ -233,8 +257,9 @@ void AstarAvoid::run()
       }
       else
       {
-        ROS_INFO("PLANNING -> STOPPING, Cannot find path");
-        state_ = AstarAvoid::STATE::STOPPING;
+        ROS_INFO("PLANNING -> PLANNING, Cannot find path");
+        // ROS_INFO("PLANNING -> STOPPING, Cannot find path");
+        // state_ = AstarAvoid::STATE::STOPPING;
       }
     }
     else if (state_ == AstarAvoid::STATE::AVOIDING)
@@ -247,6 +272,7 @@ void AstarAvoid::run()
       // ROS_INFO("bool reched");
       if (reached)
       {
+        reach_goal_flag.data = 1;
         ROS_INFO("AVOIDING -> RELAYING, Reached goal");
         state_ = AstarAvoid::STATE::RELAYING;
       }
@@ -261,9 +287,19 @@ void AstarAvoid::run()
           state_ = AstarAvoid::STATE::PLANNING;
         }
       }
-      // ROS_INFO("end avoiding");
+      else if (obstacle_waypoint_base_index_ == -1 && current_velocity_.ego_speed < 0.5)
+      {
+        bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
+        if (replan)
+        {
+          ROS_INFO("AVOIDING -> RELAYING, Obstacle disappers");
+          state_ = AstarAvoid::STATE::RELAYING;
+        }
+      }
+      ROS_INFO("end avoiding");
     }
     avoiding_flag_pub.publish(avoiding_path_flag);
+    reach_goal_pub.publish(reach_goal_flag);
     rate_->sleep();
   }
 
@@ -275,7 +311,7 @@ bool AstarAvoid::checkInitialized()
   bool initialized = false;
 
   // check for relay mode
-  initialized = (current_pose_initialized_ && closest_waypoint_initialized_ && base_waypoints_initialized_ &&
+  initialized = (current_pose_initialized_ && closest_waypoint_initialized_ && base_waypoints_initialized_ && avoid_state_sub_initialized_ &&
                  (closest_waypoint_index_ >= 0));
 
   // check for avoidance mode, additionally
@@ -300,7 +336,7 @@ bool AstarAvoid::planAvoidWaypoints(int& end_of_avoid_index)
     // update goal index
     // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i;
     // int goal_waypoint_index = closest_waypoint_index + obstacle_waypoint_index_ + i + 8;
-    int goal_waypoint_index = 38 + i;
+    int goal_waypoint_index = closest_waypoint_index + 28 + i;
     // std::cout << "goal_waypoint_index :" << goal_waypoint_index << std::endl;
     if (goal_waypoint_index >= static_cast<int>(avoid_waypoints_.waypoints.size()))
     {
