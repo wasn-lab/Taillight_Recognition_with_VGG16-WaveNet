@@ -11,11 +11,11 @@ import subprocess
 import re
 from ci_utils import get_affected_files, get_compile_command, is_external_package
 __DECL_RE = re.compile(
-    r"\|-VarDecl 0x[0-9a-f]+.* <line:(?P<line_no>\d+).+ used "
+    r"\|-VarDecl 0x[0-9a-f]+.* <line:(?P<line_no>\d+).+ (used )?"
     r"(?P<var_name>[_a-zA-Z][_a-zA-Z0-9]*) "
     r"'(?P<decl_type>[^']+)'.*")
 __DECL_RE_SAME_LINE = re.compile(
-    r"\|-VarDecl 0x[0-9a-f]+.* used "
+    r"\|-VarDecl 0x[0-9a-f]+.* (used )?"
     r"(?P<var_name>[_a-zA-Z][_a-zA-Z0-9]*) "
     r"'(?P<decl_type>[^']+)'.*")
 
