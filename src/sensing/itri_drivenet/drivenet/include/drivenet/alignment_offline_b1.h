@@ -1,6 +1,9 @@
 #ifndef ALIGNMENT_OFFLINE_H_
 #define ALIGNMENT_OFFLINE_H_
 
+#define INIT_COORDINATE_VALUE (0)
+
+
 // ROS message
 #include "ros/ros.h"
 #include <std_msgs/String.h>
@@ -31,6 +34,7 @@ public:
   vector<int> out;
   int imgW, imgH;
   float groundUpBound, groundLowBound;
+  cv::Point3d** spatial_points_;
   
 };
 

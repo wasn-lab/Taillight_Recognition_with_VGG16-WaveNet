@@ -961,14 +961,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
                                                 Parmas.regionDist_y);
   }
 
-  if(x_distMeter == 777)
-  {
-      // p0.x = 0;
-      // p0.y = 0;
-      // p0.z = 0;
-
-    return p0;
-  }
+  if(x_distMeter == 777)return p0;
 
   p0.x = x_distMeter + offset_x;
   p0.y = y_distMeter;
