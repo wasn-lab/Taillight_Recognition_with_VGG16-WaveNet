@@ -190,7 +190,6 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
         // distance = regionDist.back() + 0.2;
     }
   }
-
   return distance;
 }
 
@@ -706,9 +705,9 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     /// p0-----P3            /// p0-----P3
 
     p4 = p0;
-    p4.x = p4.x + obstacle_l;
+    if(p4.x != 0)p4.x = p4.x + obstacle_l;
     p7 = p3;
-    p7.x = p7.x + obstacle_l;
+    if(p7.x != 0)p7.x = p7.x + obstacle_l;
   }
   else if (cam_id == camera::id::right_60)
   {
@@ -962,7 +961,14 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
                                                 Parmas.regionDist_y);
   }
 
-  if(x_distMeter == 777)return p0;
+  if(x_distMeter == 777)
+  {
+      // p0.x = 0;
+      // p0.y = 0;
+      // p0.z = 0;
+
+    return p0;
+  }
 
   p0.x = x_distMeter + offset_x;
   p0.y = y_distMeter;
