@@ -49,6 +49,12 @@ def __get_global_var_decls(cpp):
     return decls
 
 
+def _is_const(_type):
+    if "const " in _type:
+        return True
+    return False
+
+
 def _parse_var_decl(decl):
     ret = {"ast_repr": decl,
            "line": "undetected"}
@@ -63,6 +69,7 @@ def _parse_var_decl(decl):
         return {}
     ret["var"] = match.expand(r"\g<var_name>")
     ret["decl_type"] = match.expand(r"\g<decl_type>")
+    ret["is_const"] = _is_const(ret["decl_type"])
     # ret["actual_type"] = match.expand("\g<actual_type>")
     return ret
 
@@ -84,6 +91,8 @@ def check_cpp_global_var_naming(cpp):
     logging.info("Check global variable naming convention: %s", cpp)
     violations = 0
     for var_decl in [_parse_var_decl(_) for _ in __get_global_var_decls(cpp)]:
+        if var_decl.get("is_const", True):
+            continue
         _var = var_decl.get("var", "")
         _type = var_decl.get("decl_type", "")
         _line = var_decl.get("line", "")
