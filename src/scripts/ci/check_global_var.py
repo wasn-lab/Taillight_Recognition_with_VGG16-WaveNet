@@ -9,7 +9,8 @@ import logging
 import os
 import subprocess
 import re
-from ci_utils import get_affected_files, get_compile_command, is_external_package
+from ci_utils import (get_affected_files, get_compile_command,
+                      is_external_package)
 __DECL_RE = re.compile(
     r"\|-VarDecl 0x[0-9a-f]+.* <line:(?P<line_no>\d+).+ (used )?"
     r"(?P<var_name>[_a-zA-Z][_a-zA-Z0-9]*) "
@@ -48,6 +49,12 @@ def __get_global_var_decls(cpp):
     return decls
 
 
+def _is_const(_type):
+    if "const " in _type:
+        return True
+    return False
+
+
 def _parse_var_decl(decl):
     ret = {"ast_repr": decl,
            "line": "undetected"}
@@ -62,6 +69,7 @@ def _parse_var_decl(decl):
         return {}
     ret["var"] = match.expand(r"\g<var_name>")
     ret["decl_type"] = match.expand(r"\g<decl_type>")
+    ret["is_const"] = _is_const(ret["decl_type"])
     # ret["actual_type"] = match.expand("\g<actual_type>")
     return ret
 
@@ -75,23 +83,29 @@ def _is_global_var_naming(var_name):
 
     return True
 
+
 def check_cpp_global_var_naming(cpp):
     """
     Use clang-generated ast to find global variable naming violations.
     """
     logging.info("Check global variable naming convention: %s", cpp)
+    violations = 0
     for var_decl in [_parse_var_decl(_) for _ in __get_global_var_decls(cpp)]:
+        if var_decl.get("is_const", True):
+            continue
         _var = var_decl.get("var", "")
         _type = var_decl.get("decl_type", "")
         _line = var_decl.get("line", "")
         if _is_global_var_naming(_var):
             logging.info("PASS: %s (line: %s, type: %s)", _var, _line, _type)
         else:
+            violations += 1
             logging.warning(
                 "FAIL: %s: global variable name is not under_score style "
                 "with starting g_ (line: %s, type: %s, AST repr: %s)",
                 _var, _line, _type, var_decl.get("ast_repr", ""))
-    return 0
+    return violations
+
 
 def check_global_var_naming():
     """
@@ -106,7 +120,8 @@ def check_global_var_naming():
         if is_external_package(cpp):
             continue
         num_violations += check_cpp_global_var_naming(cpp)
-    return num_violations
+    logging.info("Number of violations: %d", num_violations)
+    return 0
 
 
 def main():
