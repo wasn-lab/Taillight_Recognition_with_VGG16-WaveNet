@@ -366,14 +366,22 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   if (leftCheck == 0 && rightCheck == 0)
   {
     boxPoint = g_distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
-    detObj.bPoint = boxPoint;
+    
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
-    left_point[0] = detObj.bPoint.p0.x;
-    right_point[0] = detObj.bPoint.p3.x;
-    left_point[1] = detObj.bPoint.p0.y;
-    right_point[1] = detObj.bPoint.p3.y;
-    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+    left_point[0] = boxPoint.p0.x;
+    right_point[0] = boxPoint.p3.x;
+    left_point[1] = boxPoint.p0.y;
+    right_point[1] = boxPoint.p3.y;
+    if(left_point[0] == 0 && left_point[1] == 0)
+    {
+      distance = -1;
+    }
+    else
+    {    
+      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+      detObj.bPoint = boxPoint;
+    }
     detObj.distance = distance;
   }
 
