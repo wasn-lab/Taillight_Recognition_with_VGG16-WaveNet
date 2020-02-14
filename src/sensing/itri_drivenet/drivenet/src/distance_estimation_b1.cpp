@@ -968,7 +968,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     p0.x = 0;
     p0.y = 0;
     p0.z = 0;
-
+  }
     p0.x = x_distMeter + offset_x;
     p0.y = y_distMeter;
     p0.z = Lidar_offset_z;
