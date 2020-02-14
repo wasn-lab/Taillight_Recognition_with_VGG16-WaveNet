@@ -11,6 +11,14 @@ if [[ ! -f ${iwyu_path} ]]; then
   exit 0
 fi
 
+if [[ ! -f /usr/local/llvm-6.0.0/bin/clang ]]; then
+  echo "Cannot find clang 6. Exit."
+  exit 0
+fi
+
+export CC=/usr/local/llvm-6.0.0/bin/clang
+export CXX=/usr/local/llvm-6.0.0/bin/clang++
+
 # clean up the previous build.
 for _dir in build devel; do
     if [[ -d $_dir ]]; then
