@@ -30,30 +30,28 @@ void AlignmentOff::init(int car_id)
       spatial_points_[row][col].z = INIT_COORDINATE_VALUE;
     }
   }
-
 }
 
 vector<int> AlignmentOff::run(float x, float y, float z)
 {
-  return pj.project(x,y,z);
+  return pj.project(x, y, z);
 }
-
 
 // Main
 AlignmentOff al;
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
-  pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);  
+  pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
 
-  for(size_t i = 0; i < LidAll_cloudPtr->size(); i++)
+  for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
-    if(LidAll_cloudPtr->points[i].z > al.groundLowBound && LidAll_cloudPtr->points[i].z < al.groundUpBound
-    && LidAll_cloudPtr->points[i].x > 0)
+    if (LidAll_cloudPtr->points[i].z > al.groundLowBound && LidAll_cloudPtr->points[i].z < al.groundUpBound &&
+        LidAll_cloudPtr->points[i].x > 0)
     {
       al.out = al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
-      if(al.out[0] > 0 && al.out[0] < al.imgW && al.out[1] > 0 && al.out[1] < al.imgH)
+      if (al.out[0] > 0 && al.out[0] < al.imgW && al.out[1] > 0 && al.out[1] < al.imgH)
       {
         al.spatial_points_[al.out[0]][al.out[1]].x = LidAll_cloudPtr->points[i].x;
         al.spatial_points_[al.out[0]][al.out[1]].y = LidAll_cloudPtr->points[i].y;
@@ -73,7 +71,6 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "alignmentOff");
   ros::NodeHandle nh;
   ros::Rate r(10);
-
 
   ros::Subscriber LidarSc;
   LidarSc = nh.subscribe("LidarAll", 1, callback_LidarAll);

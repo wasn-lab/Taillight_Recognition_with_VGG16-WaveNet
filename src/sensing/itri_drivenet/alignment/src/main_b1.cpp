@@ -2,10 +2,10 @@
 #include <iostream>
 
 /// ros
-#include "ros/ros.h" 
+#include "ros/ros.h"
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
-#include <cv_bridge/cv_bridge.h> 
+#include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 
 /// package
@@ -76,27 +76,29 @@ void callback_object_60_1(const msgs::DetectedObjectArray::ConstPtr& msg)
 }
 
 /// similar to above, this is just a backup and testing for printing lidar data ///
-void lidarAllCallback (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
+void lidarAllCallback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   g_syncLock.lock();
-  pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cur_cloud (new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZI>);
   *ptr_cur_cloud = *msg;
   g_lidarall_nonground = *ptr_cur_cloud;
   g_syncLock.unlock();
   // std::cout << "Point cloud size: " << g_lidarall_nonground.size() << std::endl;
-  // std::cout << "Lidar x: " << g_lidarall_nonground.points[0].x << ", y: " << g_lidarall_nonground.points[0].y << ", z: " << g_lidarall_nonground.points[0].z << std::endl;
+  // std::cout << "Lidar x: " << g_lidarall_nonground.points[0].x << ", y: " << g_lidarall_nonground.points[0].y << ",
+  // z: " << g_lidarall_nonground.points[0].z << std::endl;
 }
 
 void drawPointCloudOnImage()
 {
   for (size_t i = 0; i < g_lidarall_nonground.size(); i++)
   {
-    if(g_lidarall_nonground.points[i].x > 0)
+    if (g_lidarall_nonground.points[i].x > 0)
     {
-      // std::cout << "Lidar x: " << g_lidarall_nonground.points[i].x << ", y: " << g_lidarall_nonground.points[i].y << ", z: " << g_lidarall_nonground.points[i].z << std::endl;
+      // std::cout << "Lidar x: " << g_lidarall_nonground.points[i].x << ", y: " << g_lidarall_nonground.points[i].y <<
+      // ", z: " << g_lidarall_nonground.points[i].z << std::endl;
       PixelPosition pixel_position_;
       pixel_position_ = g_alignment.projectPointToPixel(g_lidarall_nonground.points[i]);
-      if(pixel_position_.u >= 0 && pixel_position_.v >= 0)
+      if (pixel_position_.u >= 0 && pixel_position_.v >= 0)
       {
         cv::Point center_point_ = cv::Point(pixel_position_.u, pixel_position_.v);
         cv::circle(g_mat60_1, center_point_, 1, cv::Scalar(0, 255, 0), -1, LINE_8, 0);
@@ -105,55 +107,54 @@ void drawPointCloudOnImage()
     }
   }
 }
-int main (int argc, char **argv)
+int main(int argc, char** argv)
 {
-    std::cout << "===== Alignment startup. =====" << std::endl;
-    ros::init(argc, argv, "Alignment");
-    ros::NodeHandle nh;
+  std::cout << "===== Alignment startup. =====" << std::endl;
+  ros::init(argc, argv, "Alignment");
+  ros::NodeHandle nh;
 
-    /// camera subscriber
-    ros::Subscriber cam60_1;
-    std::string cam60_1_topicName = camera::topics[camera::id::front_60];
-    if (g_isCompressed)
+  /// camera subscriber
+  ros::Subscriber cam60_1;
+  std::string cam60_1_topicName = camera::topics[camera::id::front_60];
+  if (g_isCompressed)
+  {
+    cam60_1 = nh.subscribe(cam60_1_topicName + std::string("/compressed"), 1, callback_60_1_decode);
+  }
+  else
+  {
+    cam60_1 = nh.subscribe(cam60_1_topicName, 1, callback_60_1);
+  }
+  ros::Subscriber cam60_1_detection_sub;
+  std::string cam60_1_object_topicName = camera::topics_obj[camera::id::front_60];
+  cam60_1_detection_sub = nh.subscribe(cam60_1_object_topicName, 1, callback_object_60_1);
+
+  /// lidar subscriber
+  ros::Subscriber lidarall;
+  lidarall = nh.subscribe("/LidarAll", 1, lidarAllCallback);
+
+  /// init
+  g_alignment.projectMatrixInit(camera::id::front_60);
+
+  std::string window_name_cam60_1 = cam60_1_topicName;
+  cv::namedWindow(window_name_cam60_1, cv::WINDOW_NORMAL);
+  cv::resizeWindow(window_name_cam60_1, 480, 360);
+  cv::moveWindow(window_name_cam60_1, 1025, 30);
+
+  ros::Rate loop_rate(30);
+  std::cout << "===== Alignment running... =====" << std::endl;
+  while (ros::ok())
+  {
+    ros::spinOnce();
+    if (!g_mat60_1.empty())
     {
-      cam60_1 = nh.subscribe(cam60_1_topicName + std::string("/compressed"), 1, callback_60_1_decode);
+      g_syncLock.lock();
+      drawPointCloudOnImage();
+      cv::imshow(window_name_cam60_1, g_mat60_1);
+      g_syncLock.unlock();
+      cv::waitKey(1);
     }
-    else
-    {
-      cam60_1 = nh.subscribe(cam60_1_topicName, 1, callback_60_1);
-    }
-    ros::Subscriber cam60_1_detection_sub;
-    std::string cam60_1_object_topicName = camera::topics_obj[camera::id::front_60];
-    cam60_1_detection_sub = nh.subscribe(cam60_1_object_topicName, 1, callback_object_60_1);
-
-    /// lidar subscriber
-    ros::Subscriber lidarall;
-    lidarall = nh.subscribe("/LidarAll", 1, lidarAllCallback);
-
-    /// init
-    g_alignment.projectMatrixInit(camera::id::front_60);
-
-    std::string window_name_cam60_1 = cam60_1_topicName;
-    cv::namedWindow(window_name_cam60_1, cv::WINDOW_NORMAL);
-    cv::resizeWindow(window_name_cam60_1, 480, 360);
-    cv::moveWindow(window_name_cam60_1, 1025, 30);
-
-    ros::Rate loop_rate(30);
-    std::cout << "===== Alignment running... =====" << std::endl;
-    while (ros::ok())
-    {
-        ros::spinOnce();
-        if(!g_mat60_1.empty())
-        {
-          g_syncLock.lock();
-          drawPointCloudOnImage();
-          cv::imshow(window_name_cam60_1, g_mat60_1);
-          g_syncLock.unlock();
-          cv::waitKey(1);
-        }
-        loop_rate.sleep();
-    } 
-    std::cout << "===== Alignment shutdown. =====" << std::endl;
-    return 0;
-
+    loop_rate.sleep();
+  }
+  std::cout << "===== Alignment shutdown. =====" << std::endl;
+  return 0;
 }

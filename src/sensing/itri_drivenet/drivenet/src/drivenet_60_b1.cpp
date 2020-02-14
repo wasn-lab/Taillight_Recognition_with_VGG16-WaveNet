@@ -366,19 +366,19 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   if (leftCheck == 0 && rightCheck == 0)
   {
     boxPoint = g_distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
-    
+
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
     left_point[0] = boxPoint.p0.x;
     right_point[0] = boxPoint.p3.x;
     left_point[1] = boxPoint.p0.y;
     right_point[1] = boxPoint.p3.y;
-    if(left_point[0] == 0 && left_point[1] == 0)
+    if (left_point[0] == 0 && left_point[1] == 0)
     {
       distance = -1;
     }
     else
-    {    
+    {
       distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
       detObj.bPoint = boxPoint;
     }
@@ -654,7 +654,8 @@ void* run_display(void*)
   // cv::Point boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4;
   // boundaryMarker(g_rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4,
   // marker_h_0);
-  boundaryMarker(g_rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4, marker_h_1);
+  boundaryMarker(g_rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4,
+                 marker_h_1);
   // boundaryMarker(g_rawimg_w, boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4,
   // marker_h_2);
 

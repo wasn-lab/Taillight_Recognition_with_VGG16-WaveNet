@@ -3,7 +3,6 @@
 
 #define INIT_COORDINATE_VALUE (0)
 
-
 // ROS message
 #include "ros/ros.h"
 #include <std_msgs/String.h>
@@ -20,22 +19,19 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-
 class AlignmentOff
 {
 private:
   int carId = 1;
   Projector2 pj;
 
-
 public:
   void init(int carId);
-  vector<int> run(float x, float y, float z);  
+  vector<int> run(float x, float y, float z);
   vector<int> out;
   int imgW, imgH;
   float groundUpBound, groundLowBound;
   cv::Point3d** spatial_points_;
-  
 };
 
 #endif /*ALIGNMENT_OFFLINE_H_*/
