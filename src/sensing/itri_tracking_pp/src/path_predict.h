@@ -69,7 +69,7 @@ private:
   void compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y);
   void normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y);
 
-  void create_pp_input(const Point32 point, std::vector<long double>& data_x, std::vector<long double>& data_y);
+  void create_pp_input(const MyPoint32 point, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
   void create_pp_input_main(const msgs::TrackInfo& track, std::vector<long double>& data_x,
                             std::vector<long double>& data_y);
@@ -100,6 +100,8 @@ private:
 
   void confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
                                std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
+
+  void pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx, const float abs_speed);
 };
 }  // namespace tpp
 

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include "Geofence_Class.h"
 
-#define BOUNDARY 1.2
+#define BOUNDARY 1.25
 //#define DEBUG
 //#define TEST
 using namespace std;

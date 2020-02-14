@@ -34,7 +34,7 @@ void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box
   cv::setIdentity(track.kalman_.measurementNoiseCov, cv::Scalar::all(R));
   cv::setIdentity(track.kalman_.errorCovPost, cv::Scalar::all(1.f));
 
-  Point32 p_abs;
+  MyPoint32 p_abs;
   box_center.pos.get_point_abs(p_abs);
 
   track.kalman_.statePost.at<float>(0) = p_abs.x;
@@ -88,7 +88,7 @@ void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPo
 {
   box_center.id = 0;
 
-  Point32 p_rel;
+  MyPoint32 p_rel;
   p_rel.x = 0.5f * (box.p0.x + box.p6.x);
   p_rel.y = 0.5f * (box.p0.y + box.p6.y);
   p_rel.z = 0.5f * (box.p0.z + box.p6.z);
@@ -99,7 +99,7 @@ void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPo
   box_center.pos.transform_rel2abs();
 
 #if DEBUG
-  Point32 p_abs;
+  MyPoint32 p_abs;
   box_center.pos.get_point_abs(p_abs);
   LOG_INFO << "box_center x:" << p_rel.x << " " << p_abs.x << std::endl;
   LOG_INFO << "box_center y:" << p_rel.y << " " << p_abs.y << std::endl;
@@ -145,7 +145,7 @@ void KalmanTrackers::extract_box_centers()
   }
 }
 
-void KalmanTrackers::extract_box_corner(BoxCorner& box_corner, const Point32& corner, const signed char order)
+void KalmanTrackers::extract_box_corner(BoxCorner& box_corner, const MyPoint32& corner, const signed char order)
 {
   float x_rel = corner.x;
   float y_rel = corner.y;
@@ -250,9 +250,9 @@ void KalmanTrackers::update_associated_trackers()
 #if SPEEDUP_KALMAN_VEL_EST
         if (tracks_[j].tracktime_ == 2)
         {
-          Point32 p_abs;
+          MyPoint32 p_abs;
           tracks_[j].box_center_.pos.get_point_abs(p_abs);
-          Point32 p_abs_prev;
+          MyPoint32 p_abs_prev;
           tracks_[j].box_center_prev_.pos.get_point_abs(p_abs_prev);
 
           tracks_[j].kalman_.statePre.at<float>(2) = (p_abs.x - p_abs_prev.x) / dt_;
@@ -262,7 +262,7 @@ void KalmanTrackers::update_associated_trackers()
 
         tracks_[j].box_corners_ = box_corners_of_boxes_[i];
 
-        Point32 p_abs;
+        MyPoint32 p_abs;
         box_centers_[i].pos.get_point_abs(p_abs);
         correct_tracker(tracks_[j], p_abs.x, p_abs.y);
 
@@ -379,7 +379,7 @@ void KalmanTrackers::compute_distance_table()
       float track_range_sed =
           (tracks_[i].tracktime_ <= tracks_[i].warmup_time_) ? TRACK_RANGE_SED_WARMUP : TRACK_RANGE_SED;
 
-      Point32 p_abs;
+      MyPoint32 p_abs;
       box_centers_[j].pos.get_point_abs(p_abs);
       float box_dist_diff = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_abs.x, p_abs.y);
 
@@ -648,7 +648,7 @@ void KalmanTrackers::transform_box_center_kalman_inverse()
     {
       PoseRPY32 anchor_abs = { ego_x_abs_, ego_y_abs_, ego_z_abs_, 0.f, 0.f, ego_heading_ };
 
-      Point32 p_abs;
+      MyPoint32 p_abs;
       p_abs.x = tracks_[i].kalman_.statePost.at<float>(0);
       p_abs.y = tracks_[i].kalman_.statePost.at<float>(1);
       p_abs.z = 0.f;
@@ -660,7 +660,7 @@ void KalmanTrackers::transform_box_center_kalman_inverse()
 
       cv::Mat prediction = tracks_[i].kalman_.predict();
 
-      Point32 p_next_abs;
+      MyPoint32 p_next_abs;
       p_next_abs.x = tracks_[i].kalman_.statePre.at<float>(0);
       p_next_abs.y = tracks_[i].kalman_.statePre.at<float>(1);
       p_next_abs.z = 0.f;
