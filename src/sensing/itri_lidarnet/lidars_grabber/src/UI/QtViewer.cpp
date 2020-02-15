@@ -167,42 +167,42 @@ void QtViewer::on_mode_Bus_clicked()
 void QtViewer::on_Slider_Left_TX_valueChanged(int value)
 {
   ui->LCD_Left_TX->display(value);
-  GlobalVariable::UI_PARA[0] = double(value) / 100;
+  GlobalVariable::UI_PARA[0] = double(value) / 1000;
   ui->Btn_Left_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Left_TY_valueChanged(int value)
 {
   ui->LCD_Left_TY->display(value);
-  GlobalVariable::UI_PARA[1] = double(value) / 100;
+  GlobalVariable::UI_PARA[1] = double(value) / 1000;
   ui->Btn_Left_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Left_TZ_valueChanged(int value)
 {
   ui->LCD_Left_TZ->display(value);
-  GlobalVariable::UI_PARA[2] = double(value) / 100;
+  GlobalVariable::UI_PARA[2] = double(value) / 1000;
   ui->Btn_Left_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Left_RX_valueChanged(int value)
 {
   ui->LCD_Left_RX->display(value);
-  GlobalVariable::UI_PARA[3] = double(value) / 100;
+  GlobalVariable::UI_PARA[3] = double(value) / 1000;
   ui->Btn_Left_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Left_RY_valueChanged(int value)
 {
   ui->LCD_Left_RY->display(value);
-  GlobalVariable::UI_PARA[4] = double(value) / 100;
+  GlobalVariable::UI_PARA[4] = double(value) / 1000;
   ui->Btn_Left_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Left_RZ_valueChanged(int value)
 {
   ui->LCD_Left_RZ->display(value);
-  GlobalVariable::UI_PARA[5] = double(value) / 100;
+  GlobalVariable::UI_PARA[5] = double(value) / 1000;
   ui->Btn_Left_Redo->setEnabled(false);
 }
 
@@ -221,12 +221,12 @@ void QtViewer::on_Btn_Left_Load_clicked()
     ui->LCD_Left_RY->display(LidarLeft_Fine_Param[4]);
     ui->LCD_Left_RZ->display(LidarLeft_Fine_Param[5]);
 
-    ui->Slider_Left_TX->setValue(LidarLeft_Fine_Param[0] * 100);
-    ui->Slider_Left_TY->setValue(LidarLeft_Fine_Param[1] * 100);
-    ui->Slider_Left_TZ->setValue(LidarLeft_Fine_Param[2] * 100);
-    ui->Slider_Left_RX->setValue(LidarLeft_Fine_Param[3] * 100);
-    ui->Slider_Left_RY->setValue(LidarLeft_Fine_Param[4] * 100);
-    ui->Slider_Left_RZ->setValue(LidarLeft_Fine_Param[5] * 100);
+    ui->Slider_Left_TX->setValue(LidarLeft_Fine_Param[0] * 1000);
+    ui->Slider_Left_TY->setValue(LidarLeft_Fine_Param[1] * 1000);
+    ui->Slider_Left_TZ->setValue(LidarLeft_Fine_Param[2] * 1000);
+    ui->Slider_Left_RX->setValue(LidarLeft_Fine_Param[3] * 1000);
+    ui->Slider_Left_RY->setValue(LidarLeft_Fine_Param[4] * 1000);
+    ui->Slider_Left_RZ->setValue(LidarLeft_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[0] = LidarLeft_Fine_Param[0];
     GlobalVariable::UI_PARA[1] = LidarLeft_Fine_Param[1];
@@ -394,42 +394,42 @@ void QtViewer::on_Btn_Left_Save_clicked()
 void QtViewer::on_Slider_Right_TX_valueChanged(int value)
 {
   ui->LCD_Right_TX->display(value);
-  GlobalVariable::UI_PARA[6] = double(value) / 100;
+  GlobalVariable::UI_PARA[6] = double(value) / 1000;
   ui->Btn_Right_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Right_TY_valueChanged(int value)
 {
   ui->LCD_Right_TY->display(value);
-  GlobalVariable::UI_PARA[7] = double(value) / 100;
+  GlobalVariable::UI_PARA[7] = double(value) / 1000;
   ui->Btn_Right_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Right_TZ_valueChanged(int value)
 {
   ui->LCD_Right_TZ->display(value);
-  GlobalVariable::UI_PARA[8] = double(value) / 100;
+  GlobalVariable::UI_PARA[8] = double(value) / 1000;
   ui->Btn_Right_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Right_RX_valueChanged(int value)
 {
   ui->LCD_Right_RX->display(value);
-  GlobalVariable::UI_PARA[9] = double(value) / 100;
+  GlobalVariable::UI_PARA[9] = double(value) / 1000;
   ui->Btn_Right_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Right_RY_valueChanged(int value)
 {
   ui->LCD_Right_RY->display(value);
-  GlobalVariable::UI_PARA[10] = double(value) / 100;
+  GlobalVariable::UI_PARA[10] = double(value) / 1000;
   ui->Btn_Right_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Right_RZ_valueChanged(int value)
 {
   ui->LCD_Right_RZ->display(value);
-  GlobalVariable::UI_PARA[11] = double(value) / 100;
+  GlobalVariable::UI_PARA[11] = double(value) / 1000;
   ui->Btn_Right_Redo->setEnabled(false);
 }
 
@@ -448,12 +448,12 @@ void QtViewer::on_Btn_Right_Load_clicked()
     ui->LCD_Right_RY->display(LidarRight_Fine_Param[4]);
     ui->LCD_Right_RZ->display(LidarRight_Fine_Param[5]);
 
-    ui->Slider_Right_TX->setValue(LidarRight_Fine_Param[0] * 100);
-    ui->Slider_Right_TY->setValue(LidarRight_Fine_Param[1] * 100);
-    ui->Slider_Right_TZ->setValue(LidarRight_Fine_Param[2] * 100);
-    ui->Slider_Right_RX->setValue(LidarRight_Fine_Param[3] * 100);
-    ui->Slider_Right_RY->setValue(LidarRight_Fine_Param[4] * 100);
-    ui->Slider_Right_RZ->setValue(LidarRight_Fine_Param[5] * 100);
+    ui->Slider_Right_TX->setValue(LidarRight_Fine_Param[0] * 1000);
+    ui->Slider_Right_TY->setValue(LidarRight_Fine_Param[1] * 1000);
+    ui->Slider_Right_TZ->setValue(LidarRight_Fine_Param[2] * 1000);
+    ui->Slider_Right_RX->setValue(LidarRight_Fine_Param[3] * 1000);
+    ui->Slider_Right_RY->setValue(LidarRight_Fine_Param[4] * 1000);
+    ui->Slider_Right_RZ->setValue(LidarRight_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[6] = LidarRight_Fine_Param[0];
     GlobalVariable::UI_PARA[7] = LidarRight_Fine_Param[1];
@@ -620,42 +620,42 @@ void QtViewer::on_Btn_Right_Redo_clicked()
 void QtViewer::on_Slider_Front_TX_valueChanged(int value)
 {
   ui->LCD_Front_TX->display(value);
-  GlobalVariable::UI_PARA[12] = double(value) / 100;
+  GlobalVariable::UI_PARA[12] = double(value) / 1000;
   ui->Btn_Front_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Front_TY_valueChanged(int value)
 {
   ui->LCD_Front_TY->display(value);
-  GlobalVariable::UI_PARA[13] = double(value) / 100;
+  GlobalVariable::UI_PARA[13] = double(value) / 1000;
   ui->Btn_Front_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Front_TZ_valueChanged(int value)
 {
   ui->LCD_Front_TZ->display(value);
-  GlobalVariable::UI_PARA[14] = double(value) / 100;
+  GlobalVariable::UI_PARA[14] = double(value) / 1000;
   ui->Btn_Front_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Front_RX_valueChanged(int value)
 {
   ui->LCD_Front_RX->display(value);
-  GlobalVariable::UI_PARA[15] = double(value) / 100;
+  GlobalVariable::UI_PARA[15] = double(value) / 1000;
   ui->Btn_Front_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Front_RY_valueChanged(int value)
 {
   ui->LCD_Front_RY->display(value);
-  GlobalVariable::UI_PARA[16] = double(value) / 100;
+  GlobalVariable::UI_PARA[16] = double(value) / 1000;
   ui->Btn_Front_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_Front_RZ_valueChanged(int value)
 {
   ui->LCD_Front_RZ->display(value);
-  GlobalVariable::UI_PARA[17] = double(value) / 100;
+  GlobalVariable::UI_PARA[17] = double(value) / 1000;
   ui->Btn_Front_Redo->setEnabled(false);
 }
 
@@ -674,12 +674,12 @@ void QtViewer::on_Btn_Front_Load_clicked()
     ui->LCD_Front_RY->display(LidarFront_Fine_Param[4]);
     ui->LCD_Front_RZ->display(LidarFront_Fine_Param[5]);
 
-    ui->Slider_Front_TX->setValue(LidarFront_Fine_Param[0] * 100);
-    ui->Slider_Front_TY->setValue(LidarFront_Fine_Param[1] * 100);
-    ui->Slider_Front_TZ->setValue(LidarFront_Fine_Param[2] * 100);
-    ui->Slider_Front_RX->setValue(LidarFront_Fine_Param[3] * 100);
-    ui->Slider_Front_RY->setValue(LidarFront_Fine_Param[4] * 100);
-    ui->Slider_Front_RZ->setValue(LidarFront_Fine_Param[5] * 100);
+    ui->Slider_Front_TX->setValue(LidarFront_Fine_Param[0] * 1000);
+    ui->Slider_Front_TY->setValue(LidarFront_Fine_Param[1] * 1000);
+    ui->Slider_Front_TZ->setValue(LidarFront_Fine_Param[2] * 1000);
+    ui->Slider_Front_RX->setValue(LidarFront_Fine_Param[3] * 1000);
+    ui->Slider_Front_RY->setValue(LidarFront_Fine_Param[4] * 1000);
+    ui->Slider_Front_RZ->setValue(LidarFront_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[12] = LidarFront_Fine_Param[0];
     GlobalVariable::UI_PARA[13] = LidarFront_Fine_Param[1];
@@ -846,42 +846,42 @@ void QtViewer::on_Btn_Front_Redo_clicked()
 void QtViewer::on_Slider_FrontLeft_TX_valueChanged(int value)
 {
   ui->LCD_FrontLeft_TX->display(value);
-  GlobalVariable::UI_PARA[0] = double(value) / 100;
+  GlobalVariable::UI_PARA[0] = double(value) / 1000;
   ui->Btn_FrontLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontLeft_TY_valueChanged(int value)
 {
   ui->LCD_FrontLeft_TY->display(value);
-  GlobalVariable::UI_PARA[1] = double(value) / 100;
+  GlobalVariable::UI_PARA[1] = double(value) / 1000;
   ui->Btn_FrontLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontLeft_TZ_valueChanged(int value)
 {
   ui->LCD_FrontLeft_TZ->display(value);
-  GlobalVariable::UI_PARA[2] = double(value) / 100;
+  GlobalVariable::UI_PARA[2] = double(value) / 1000;
   ui->Btn_FrontLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontLeft_RX_valueChanged(int value)
 {
   ui->LCD_FrontLeft_RX->display(value);
-  GlobalVariable::UI_PARA[3] = double(value) / 100;
+  GlobalVariable::UI_PARA[3] = double(value) / 1000;
   ui->Btn_FrontLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontLeft_RY_valueChanged(int value)
 {
   ui->LCD_FrontLeft_RY->display(value);
-  GlobalVariable::UI_PARA[4] = double(value) / 100;
+  GlobalVariable::UI_PARA[4] = double(value) / 1000;
   ui->Btn_FrontLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontLeft_RZ_valueChanged(int value)
 {
   ui->LCD_FrontLeft_RZ->display(value);
-  GlobalVariable::UI_PARA[5] = double(value) / 100;
+  GlobalVariable::UI_PARA[5] = double(value) / 1000;
   ui->Btn_FrontLeft_Redo->setEnabled(false);
 }
 void QtViewer::on_Btn_FrontLeft_Load_clicked()
@@ -899,12 +899,12 @@ void QtViewer::on_Btn_FrontLeft_Load_clicked()
     ui->LCD_FrontLeft_RY->display(LidarFrontLeft_Fine_Param[4]);
     ui->LCD_FrontLeft_RZ->display(LidarFrontLeft_Fine_Param[5]);
 
-    ui->Slider_FrontLeft_TX->setValue(LidarFrontLeft_Fine_Param[0] * 100);
-    ui->Slider_FrontLeft_TY->setValue(LidarFrontLeft_Fine_Param[1] * 100);
-    ui->Slider_FrontLeft_TZ->setValue(LidarFrontLeft_Fine_Param[2] * 100);
-    ui->Slider_FrontLeft_RX->setValue(LidarFrontLeft_Fine_Param[3] * 100);
-    ui->Slider_FrontLeft_RY->setValue(LidarFrontLeft_Fine_Param[4] * 100);
-    ui->Slider_FrontLeft_RZ->setValue(LidarFrontLeft_Fine_Param[5] * 100);
+    ui->Slider_FrontLeft_TX->setValue(LidarFrontLeft_Fine_Param[0] * 1000);
+    ui->Slider_FrontLeft_TY->setValue(LidarFrontLeft_Fine_Param[1] * 1000);
+    ui->Slider_FrontLeft_TZ->setValue(LidarFrontLeft_Fine_Param[2] * 1000);
+    ui->Slider_FrontLeft_RX->setValue(LidarFrontLeft_Fine_Param[3] * 1000);
+    ui->Slider_FrontLeft_RY->setValue(LidarFrontLeft_Fine_Param[4] * 1000);
+    ui->Slider_FrontLeft_RZ->setValue(LidarFrontLeft_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[0] = LidarFrontLeft_Fine_Param[0];
     GlobalVariable::UI_PARA[1] = LidarFrontLeft_Fine_Param[1];
@@ -1069,42 +1069,42 @@ void QtViewer::on_Btn_FrontLeft_Redo_clicked()
 void QtViewer::on_Slider_FrontRight_TX_valueChanged(int value)
 {
   ui->LCD_FrontRight_TX->display(value);
-  GlobalVariable::UI_PARA[6] = double(value) / 100;
+  GlobalVariable::UI_PARA[6] = double(value) / 1000;
   ui->Btn_FrontRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontRight_TY_valueChanged(int value)
 {
   ui->LCD_FrontRight_TY->display(value);
-  GlobalVariable::UI_PARA[7] = double(value) / 100;
+  GlobalVariable::UI_PARA[7] = double(value) / 1000;
   ui->Btn_FrontRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontRight_TZ_valueChanged(int value)
 {
   ui->LCD_FrontRight_TZ->display(value);
-  GlobalVariable::UI_PARA[8] = double(value) / 100;
+  GlobalVariable::UI_PARA[8] = double(value) / 1000;
   ui->Btn_FrontRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontRight_RX_valueChanged(int value)
 {
   ui->LCD_FrontRight_RX->display(value);
-  GlobalVariable::UI_PARA[9] = double(value) / 100;
+  GlobalVariable::UI_PARA[9] = double(value) / 1000;
   ui->Btn_FrontRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontRight_RY_valueChanged(int value)
 {
   ui->LCD_FrontRight_RY->display(value);
-  GlobalVariable::UI_PARA[10] = double(value) / 100;
+  GlobalVariable::UI_PARA[10] = double(value) / 1000;
   ui->Btn_FrontRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_FrontRight_RZ_valueChanged(int value)
 {
   ui->LCD_FrontRight_RZ->display(value);
-  GlobalVariable::UI_PARA[11] = double(value) / 100;
+  GlobalVariable::UI_PARA[11] = double(value) / 1000;
   ui->Btn_FrontRight_Redo->setEnabled(false);
 }
 
@@ -1123,12 +1123,12 @@ void QtViewer::on_Btn_FrontRight_Load_clicked()
     ui->LCD_FrontRight_RY->display(LidarFrontRight_Fine_Param[4]);
     ui->LCD_FrontRight_RZ->display(LidarFrontRight_Fine_Param[5]);
 
-    ui->Slider_FrontRight_TX->setValue(LidarFrontRight_Fine_Param[0] * 100);
-    ui->Slider_FrontRight_TY->setValue(LidarFrontRight_Fine_Param[1] * 100);
-    ui->Slider_FrontRight_TZ->setValue(LidarFrontRight_Fine_Param[2] * 100);
-    ui->Slider_FrontRight_RX->setValue(LidarFrontRight_Fine_Param[3] * 100);
-    ui->Slider_FrontRight_RY->setValue(LidarFrontRight_Fine_Param[4] * 100);
-    ui->Slider_FrontRight_RZ->setValue(LidarFrontRight_Fine_Param[5] * 100);
+    ui->Slider_FrontRight_TX->setValue(LidarFrontRight_Fine_Param[0] * 1000);
+    ui->Slider_FrontRight_TY->setValue(LidarFrontRight_Fine_Param[1] * 1000);
+    ui->Slider_FrontRight_TZ->setValue(LidarFrontRight_Fine_Param[2] * 1000);
+    ui->Slider_FrontRight_RX->setValue(LidarFrontRight_Fine_Param[3] * 1000);
+    ui->Slider_FrontRight_RY->setValue(LidarFrontRight_Fine_Param[4] * 1000);
+    ui->Slider_FrontRight_RZ->setValue(LidarFrontRight_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[6] = LidarFrontRight_Fine_Param[0];
     GlobalVariable::UI_PARA[7] = LidarFrontRight_Fine_Param[1];
@@ -1294,42 +1294,42 @@ void QtViewer::on_Btn_FrontRight_Redo_clicked()
 void QtViewer::on_Slider_RearLeft_TX_valueChanged(int value)
 {
   ui->LCD_RearLeft_TX->display(value);
-  GlobalVariable::UI_PARA[12] = double(value) / 100;
+  GlobalVariable::UI_PARA[12] = double(value) / 1000;
   ui->Btn_RearLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearLeft_TY_valueChanged(int value)
 {
   ui->LCD_RearLeft_TY->display(value);
-  GlobalVariable::UI_PARA[13] = double(value) / 100;
+  GlobalVariable::UI_PARA[13] = double(value) / 1000;
   ui->Btn_RearLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearLeft_TZ_valueChanged(int value)
 {
   ui->LCD_RearLeft_TZ->display(value);
-  GlobalVariable::UI_PARA[14] = double(value) / 100;
+  GlobalVariable::UI_PARA[14] = double(value) / 1000;
   ui->Btn_RearLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearLeft_RX_valueChanged(int value)
 {
   ui->LCD_RearLeft_RX->display(value);
-  GlobalVariable::UI_PARA[15] = double(value) / 100;
+  GlobalVariable::UI_PARA[15] = double(value) / 1000;
   ui->Btn_RearLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearLeft_RY_valueChanged(int value)
 {
   ui->LCD_RearLeft_RY->display(value);
-  GlobalVariable::UI_PARA[16] = double(value) / 100;
+  GlobalVariable::UI_PARA[16] = double(value) / 1000;
   ui->Btn_RearLeft_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearLeft_RZ_valueChanged(int value)
 {
   ui->LCD_RearLeft_RZ->display(value);
-  GlobalVariable::UI_PARA[17] = double(value) / 100;
+  GlobalVariable::UI_PARA[17] = double(value) / 1000;
   ui->Btn_RearLeft_Redo->setEnabled(false);
 }
 
@@ -1348,12 +1348,12 @@ void QtViewer::on_Btn_RearLeft_Load_clicked()
     ui->LCD_RearLeft_RY->display(LidarRearLeft_Fine_Param[4]);
     ui->LCD_RearLeft_RZ->display(LidarRearLeft_Fine_Param[5]);
 
-    ui->Slider_RearLeft_TX->setValue(LidarRearLeft_Fine_Param[0] * 100);
-    ui->Slider_RearLeft_TY->setValue(LidarRearLeft_Fine_Param[1] * 100);
-    ui->Slider_RearLeft_TZ->setValue(LidarRearLeft_Fine_Param[2] * 100);
-    ui->Slider_RearLeft_RX->setValue(LidarRearLeft_Fine_Param[3] * 100);
-    ui->Slider_RearLeft_RY->setValue(LidarRearLeft_Fine_Param[4] * 100);
-    ui->Slider_RearLeft_RZ->setValue(LidarRearLeft_Fine_Param[5] * 100);
+    ui->Slider_RearLeft_TX->setValue(LidarRearLeft_Fine_Param[0] * 1000);
+    ui->Slider_RearLeft_TY->setValue(LidarRearLeft_Fine_Param[1] * 1000);
+    ui->Slider_RearLeft_TZ->setValue(LidarRearLeft_Fine_Param[2] * 1000);
+    ui->Slider_RearLeft_RX->setValue(LidarRearLeft_Fine_Param[3] * 1000);
+    ui->Slider_RearLeft_RY->setValue(LidarRearLeft_Fine_Param[4] * 1000);
+    ui->Slider_RearLeft_RZ->setValue(LidarRearLeft_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[12] = LidarRearLeft_Fine_Param[0];
     GlobalVariable::UI_PARA[13] = LidarRearLeft_Fine_Param[1];
@@ -1518,42 +1518,42 @@ void QtViewer::on_Btn_RearLeft_Redo_clicked()
 void QtViewer::on_Slider_RearRight_TX_valueChanged(int value)
 {
   ui->LCD_RearRight_TX->display(value);
-  GlobalVariable::UI_PARA[18] = double(value) / 100;
+  GlobalVariable::UI_PARA[18] = double(value) / 1000;
   ui->Btn_RearRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearRight_TY_valueChanged(int value)
 {
   ui->LCD_RearRight_TY->display(value);
-  GlobalVariable::UI_PARA[19] = double(value) / 100;
+  GlobalVariable::UI_PARA[19] = double(value) / 1000;
   ui->Btn_RearRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearRight_TZ_valueChanged(int value)
 {
   ui->LCD_RearRight_TZ->display(value);
-  GlobalVariable::UI_PARA[20] = double(value) / 100;
+  GlobalVariable::UI_PARA[20] = double(value) / 1000;
   ui->Btn_RearRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearRight_RX_valueChanged(int value)
 {
   ui->LCD_RearRight_RX->display(value);
-  GlobalVariable::UI_PARA[21] = double(value) / 100;
+  GlobalVariable::UI_PARA[21] = double(value) / 1000;
   ui->Btn_RearRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearRight_RY_valueChanged(int value)
 {
   ui->LCD_RearRight_RY->display(value);
-  GlobalVariable::UI_PARA[22] = double(value) / 100;
+  GlobalVariable::UI_PARA[22] = double(value) / 1000;
   ui->Btn_RearRight_Redo->setEnabled(false);
 }
 
 void QtViewer::on_Slider_RearRight_RZ_valueChanged(int value)
 {
   ui->LCD_RearRight_RZ->display(value);
-  GlobalVariable::UI_PARA[23] = double(value) / 100;
+  GlobalVariable::UI_PARA[23] = double(value) / 1000;
   ui->Btn_RearRight_Redo->setEnabled(false);
 }
 
@@ -1572,12 +1572,12 @@ void QtViewer::on_Btn_RearRight_Load_clicked()
     ui->LCD_RearRight_RY->display(LidarRearRight_Fine_Param[4]);
     ui->LCD_RearRight_RZ->display(LidarRearRight_Fine_Param[5]);
 
-    ui->Slider_RearRight_TX->setValue(LidarRearRight_Fine_Param[0] * 100);
-    ui->Slider_RearRight_TY->setValue(LidarRearRight_Fine_Param[1] * 100);
-    ui->Slider_RearRight_TZ->setValue(LidarRearRight_Fine_Param[2] * 100);
-    ui->Slider_RearRight_RX->setValue(LidarRearRight_Fine_Param[3] * 100);
-    ui->Slider_RearRight_RY->setValue(LidarRearRight_Fine_Param[4] * 100);
-    ui->Slider_RearRight_RZ->setValue(LidarRearRight_Fine_Param[5] * 100);
+    ui->Slider_RearRight_TX->setValue(LidarRearRight_Fine_Param[0] * 1000);
+    ui->Slider_RearRight_TY->setValue(LidarRearRight_Fine_Param[1] * 1000);
+    ui->Slider_RearRight_TZ->setValue(LidarRearRight_Fine_Param[2] * 1000);
+    ui->Slider_RearRight_RX->setValue(LidarRearRight_Fine_Param[3] * 1000);
+    ui->Slider_RearRight_RY->setValue(LidarRearRight_Fine_Param[4] * 1000);
+    ui->Slider_RearRight_RZ->setValue(LidarRearRight_Fine_Param[5] * 1000);
 
     GlobalVariable::UI_PARA[18] = LidarRearRight_Fine_Param[0];
     GlobalVariable::UI_PARA[19] = LidarRearRight_Fine_Param[1];

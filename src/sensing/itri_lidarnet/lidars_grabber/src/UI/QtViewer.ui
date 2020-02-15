@@ -189,10 +189,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontLeft_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -205,7 +205,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_TX_3">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -234,10 +234,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontLeft_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -250,7 +250,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_TY_3">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -279,10 +279,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontLeft_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -295,7 +295,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_TZ_3">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -324,10 +324,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontLeft_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -340,7 +340,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_RX_3">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -369,10 +369,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontLeft_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -385,7 +385,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_RY_3">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -414,10 +414,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontLeft_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -430,7 +430,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_RZ_3">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -776,10 +776,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontRight_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -792,7 +792,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_TX_3">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -821,10 +821,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontRight_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -837,7 +837,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_TZ_3">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -866,10 +866,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontRight_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -882,7 +882,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_TY_3">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -929,10 +929,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontRight_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -945,7 +945,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_RX_3">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -1196,10 +1196,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontRight_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1212,7 +1212,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_RY_3">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -1241,10 +1241,10 @@
           <item>
            <widget class="QSlider" name="Slider_FrontRight_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1257,7 +1257,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_RZ_3">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -1537,10 +1537,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearLeft_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1553,7 +1553,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RZ_3">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -1600,10 +1600,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearLeft_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1616,7 +1616,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TY_3">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -1645,10 +1645,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearLeft_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1661,7 +1661,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TZ_3">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -1690,10 +1690,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearLeft_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1706,7 +1706,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RY_3">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -1735,10 +1735,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearLeft_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1751,7 +1751,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TX_3">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -1798,10 +1798,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearLeft_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1814,7 +1814,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RX_3">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -1920,10 +1920,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearRight_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1936,7 +1936,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TZ_4">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -1965,10 +1965,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearRight_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -1981,7 +1981,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RX_4">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -2010,10 +2010,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearRight_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2026,7 +2026,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RZ_4">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -2073,10 +2073,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearRight_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2089,7 +2089,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RY_4">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -2214,10 +2214,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearRight_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2230,7 +2230,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TX_4">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -2409,10 +2409,10 @@
           <item>
            <widget class="QSlider" name="Slider_RearRight_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2425,7 +2425,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TY_4">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -2477,7 +2477,7 @@
         <string>Truck Setting</string>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="Tab_Left">
         <attribute name="title">
@@ -2496,10 +2496,10 @@
           <item>
            <widget class="QSlider" name="Slider_Left_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2512,7 +2512,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_TX">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -2541,10 +2541,10 @@
           <item>
            <widget class="QSlider" name="Slider_Left_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2557,7 +2557,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_TY">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -2586,10 +2586,10 @@
           <item>
            <widget class="QSlider" name="Slider_Left_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2602,7 +2602,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_TZ">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -2631,10 +2631,10 @@
           <item>
            <widget class="QSlider" name="Slider_Left_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2647,7 +2647,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_RX">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -2676,10 +2676,10 @@
           <item>
            <widget class="QSlider" name="Slider_Left_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2692,7 +2692,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_RY">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -2721,10 +2721,10 @@
           <item>
            <widget class="QSlider" name="Slider_Left_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -2737,7 +2737,7 @@
           <item>
            <widget class="QLabel" name="Label_Left_RZ">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -3083,10 +3083,10 @@
           <item>
            <widget class="QSlider" name="Slider_Right_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3099,7 +3099,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_TX">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -3128,10 +3128,10 @@
           <item>
            <widget class="QSlider" name="Slider_Right_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3144,7 +3144,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_TZ">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -3173,10 +3173,10 @@
           <item>
            <widget class="QSlider" name="Slider_Right_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3189,7 +3189,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_TY">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -3236,10 +3236,10 @@
           <item>
            <widget class="QSlider" name="Slider_Right_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3252,7 +3252,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_RX">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -3503,10 +3503,10 @@
           <item>
            <widget class="QSlider" name="Slider_Right_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3519,7 +3519,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_RY">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -3548,10 +3548,10 @@
           <item>
            <widget class="QSlider" name="Slider_Right_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3564,7 +3564,7 @@
           <item>
            <widget class="QLabel" name="Label_Right_RZ">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -3844,10 +3844,10 @@
           <item>
            <widget class="QSlider" name="Slider_Front_RZ">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3860,7 +3860,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RZ">
             <property name="text">
-             <string>RZ(0.01rd)</string>
+             <string>RZ(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -3907,10 +3907,10 @@
           <item>
            <widget class="QSlider" name="Slider_Front_TY">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3923,7 +3923,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TY">
             <property name="text">
-             <string>TY (0.01m)</string>
+             <string>TY (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -3952,10 +3952,10 @@
           <item>
            <widget class="QSlider" name="Slider_Front_TZ">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -3968,7 +3968,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TZ">
             <property name="text">
-             <string>TZ (0.01m)</string>
+             <string>TZ (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -3997,10 +3997,10 @@
           <item>
            <widget class="QSlider" name="Slider_Front_RY">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -4013,7 +4013,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RY">
             <property name="text">
-             <string>RY(0.01rd)</string>
+             <string>RY(0.001rd)</string>
             </property>
            </widget>
           </item>
@@ -4042,10 +4042,10 @@
           <item>
            <widget class="QSlider" name="Slider_Front_TX">
             <property name="minimum">
-             <number>-1000</number>
+             <number>-5000</number>
             </property>
             <property name="maximum">
-             <number>1000</number>
+             <number>5000</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -4058,7 +4058,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_TX">
             <property name="text">
-             <string>TX (0.01m)</string>
+             <string>TX (0.001m)</string>
             </property>
            </widget>
           </item>
@@ -4105,10 +4105,10 @@
           <item>
            <widget class="QSlider" name="Slider_Front_RX">
             <property name="minimum">
-             <number>-1800</number>
+             <number>-3200</number>
             </property>
             <property name="maximum">
-             <number>1800</number>
+             <number>3200</number>
             </property>
             <property name="pageStep">
              <number>1</number>
@@ -4121,7 +4121,7 @@
           <item>
            <widget class="QLabel" name="Label_Front_RX">
             <property name="text">
-             <string>RX(0.01rd)</string>
+             <string>RX(0.001rd)</string>
             </property>
            </widget>
           </item>
