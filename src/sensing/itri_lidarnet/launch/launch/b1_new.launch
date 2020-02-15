@@ -19,7 +19,7 @@ Lidar List:
 <rosparam param="LidarFrontLeft_Fine_Param">[0.47, 1.09, -1.85, 0.03, -0.04, 1.77]</rosparam>
 <rosparam param="LidarFrontRight_Fine_Param">[0.41, -1.09, -1.83, -0.02, -0.05, -1.8]</rosparam>
 <rosparam param="LidarRearLeft_Fine_Param">[-6.34, 1.31, -2.19, 3.13, -3.08, -1.09]</rosparam>
-<rosparam param="LidarRearRight_Fine_Param">[-6.37, -0.98, -2.22, 0.05, -0.07, -2.05]</rosparam>
+<rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 -->
 
 <!-- Global arg ************************************************************ -->
@@ -33,7 +33,7 @@ Lidar List:
 <!-- tf2 ******************************************************************* -->
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0.46 0 3.46 0 0 0 /base_link  /lidar" />
 
-<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+<!-- <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/> -->
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
@@ -319,3 +319,7 @@ Lidar List:
     </group>
 
 </launch>
+
+
+
+

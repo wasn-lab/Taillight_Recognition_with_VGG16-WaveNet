@@ -426,7 +426,7 @@ public:
         if (QtViewer->objectName().isEmpty())
             QtViewer->setObjectName(QStringLiteral("QtViewer"));
         QtViewer->setEnabled(true);
-        QtViewer->resize(682, 433);
+        QtViewer->resize(1052, 433);
         QtViewer->setMinimumSize(QSize(0, 0));
         QtViewer->setMaximumSize(QSize(5000, 5000));
         centralwidget = new QWidget(QtViewer);
@@ -2429,7 +2429,7 @@ public:
 
         retranslateUi(QtViewer);
 
-        tab_Bus->setCurrentIndex(0);
+        tab_Bus->setCurrentIndex(3);
         tab_Truck->setCurrentIndex(2);
 
 
@@ -2466,7 +2466,7 @@ public:
         Label_FrontLeft_Fine_RY->setText(QApplication::translate("QtViewer", "-57.0000", 0));
         label_52->setText(QApplication::translate("QtViewer", "RZ", 0));
         Label_FrontLeft_Fine_RZ->setText(QApplication::translate("QtViewer", "-57.0000", 0));
-        Btn_FrontLeft_Redo->setText(QApplication::translate("QtViewer", "Stitch", 0));
+        Btn_FrontLeft_Redo->setText(QApplication::translate("QtViewer", "AutoStitch", 0));
         Btn_FrontLeft_Save->setText(QApplication::translate("QtViewer", "Save", 0));
         Btn_FrontLeft_Refresh->setText(QApplication::translate("QtViewer", "Refresh", 0));
         Btn_FrontLeft_Load->setText(QApplication::translate("QtViewer", "Load", 0));
@@ -2483,7 +2483,7 @@ public:
         Label_FrontRight_Fine_RY->setText(QApplication::translate("QtViewer", "000.0000", 0));
         label_55->setText(QApplication::translate("QtViewer", "RZ", 0));
         Label_FrontRight_Fine_RZ->setText(QApplication::translate("QtViewer", "000.0000", 0));
-        Btn_FrontRight_Redo->setText(QApplication::translate("QtViewer", "Stitch", 0));
+        Btn_FrontRight_Redo->setText(QApplication::translate("QtViewer", "AutoStitch", 0));
         label_56->setText(QApplication::translate("QtViewer", "TX", 0));
         Label_FrontRight_Fine_TX->setText(QApplication::translate("QtViewer", "000.0000", 0));
         label_57->setText(QApplication::translate("QtViewer", "TY", 0));
@@ -2518,7 +2518,7 @@ public:
         Label_Front_TX_3->setText(QApplication::translate("QtViewer", "TX (0.01m)", 0));
         Label_Front_FineAdj_6->setText(QApplication::translate("QtViewer", "Fine Adjustment Parameter", 0));
         Label_Front_RX_3->setText(QApplication::translate("QtViewer", "RX(0.01rd)", 0));
-        Btn_RearLeft_Redo->setText(QApplication::translate("QtViewer", "Stitch", 0));
+        Btn_RearLeft_Redo->setText(QApplication::translate("QtViewer", "AutoStitch", 0));
         Btn_RearLeft_Save->setText(QApplication::translate("QtViewer", "Save", 0));
         Btn_RearLeft_Refresh->setText(QApplication::translate("QtViewer", "Refresh", 0));
         Btn_RearLeft_Load->setText(QApplication::translate("QtViewer", "Load", 0));
@@ -2526,7 +2526,7 @@ public:
         Label_Front_TZ_4->setText(QApplication::translate("QtViewer", "TZ (0.01m)", 0));
         Label_Front_RX_4->setText(QApplication::translate("QtViewer", "RX(0.01rd)", 0));
         Label_Front_RZ_4->setText(QApplication::translate("QtViewer", "RZ(0.01rd)", 0));
-        Btn_RearRight_Redo->setText(QApplication::translate("QtViewer", "Stitch", 0));
+        Btn_RearRight_Redo->setText(QApplication::translate("QtViewer", "AutoStitch", 0));
         Label_Front_RY_4->setText(QApplication::translate("QtViewer", "RY(0.01rd)", 0));
         label_65->setText(QApplication::translate("QtViewer", "TX", 0));
         Label_RearRight_Fine_TX->setText(QApplication::translate("QtViewer", "000.0000", 0));

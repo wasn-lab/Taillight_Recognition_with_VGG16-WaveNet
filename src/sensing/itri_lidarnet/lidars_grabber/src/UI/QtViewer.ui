@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>682</width>
+    <width>1052</width>
     <height>433</height>
    </rect>
   </property>
@@ -170,7 +170,7 @@
         <string>Truck Setting</string>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>3</number>
        </property>
        <widget class="QWidget" name="Tab_Left_3">
         <attribute name="title">
@@ -701,7 +701,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Stitch</string>
+          <string>AutoStitch</string>
          </property>
         </widget>
         <widget class="QPushButton" name="Btn_FrontLeft_Save">
@@ -1087,7 +1087,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Stitch</string>
+          <string>AutoStitch</string>
          </property>
         </widget>
         <widget class="QWidget" name="horizontalLayoutWidget_62">
@@ -1845,7 +1845,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Stitch</string>
+          <string>AutoStitch</string>
          </property>
         </widget>
         <widget class="QPushButton" name="Btn_RearLeft_Save">
@@ -2057,7 +2057,7 @@
           </font>
          </property>
          <property name="text">
-          <string>Stitch</string>
+          <string>AutoStitch</string>
          </property>
         </widget>
         <widget class="QWidget" name="horizontalLayoutWidget_77">
