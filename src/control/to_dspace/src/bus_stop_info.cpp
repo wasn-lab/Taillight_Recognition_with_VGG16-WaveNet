@@ -26,76 +26,77 @@
 using namespace std;
 
 const int bus_number = 8; // 8 stops 
-vector<int> bus_stop_flag(bus_number, 1);;
-const vector<int> bus_stop_code = {1111,2222,3333,4444};
+vector<int> bus_stop_flag(bus_number, 0);;
+const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
 
 ros::Publisher publisher_01;
 
-void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
-{
 
+
+void send_can(){
 	int s;
 	int nbytes;
 	struct sockaddr_can addr;
 	struct can_frame frame;
 	struct ifreq ifr;
-
 	const char *ifname = CAN_INTERFACE_NAME;
-
-	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
-	{
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0){
 		perror("Error while opening socket");
 	}
-
 	strcpy(ifr.ifr_name, ifname);
 	ioctl(s, SIOCGIFINDEX, &ifr);
-
 	addr.can_family  = AF_CAN;
 	addr.can_ifindex = ifr.ifr_ifindex;
-
 	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
-
-	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-	{
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0){
 		perror("Error in socket bind");
 	}
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x055;
+	for(int i=0;i<8;i++){
+		frame.data[i] = (short int)(bus_stop_flag[i]);
+		cout << "stop" << i+1 << ": " << int(frame.data[i]) << endl;
+	}
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+	close(s);
+}
 
-	int stop_one = 0;
-	int stop_two = 0;
+
+void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
+{
+	vector<int> stops;
+	int stop_temp = 0;
 	for (char c: msg->data)
 	{
 		if (c >= '0' && c <= '9') {
-			stop_one = stop_one * 10 + (c - '0');
+			stop_temp = stop_temp * 10 + (c - '0');
 		}
 		else if(c == '#'){
-			stop_two = stop_one;
-			stop_one = 0;
+			stops.push_back(stop_temp);
+			stop_temp = 0;
 		}
 		else {
-			stop_one = 0;
-			stop_two = 0;
+			stops.clear();
 			std::cout << "Bad Input";
 			return;
 		}
 	}
-	std::cout << "Add stop: " << stop_two << "," << stop_one << '\n';
+	stops.push_back(stop_temp);
+	for(int i:stops){
+		std::cout << "Add stop: " << i << '\n';
+	} 
 
-	for(int i=0;i<bus_stop_code.size();i++){
-		if(bus_stop_code[i]==stop_one || bus_stop_code[i]==stop_two){
-			bus_stop_flag[i] = 1;
+	for(uint i=0;i<bus_stop_code.size();i++){
+		for(int j:stops){
+			if(bus_stop_code[i]==j){
+				bus_stop_flag[i] = 1;
+			}
 		}
 	}
-	
-	frame.can_dlc = CAN_DLC;
-	frame.can_id  = 0x055;
-	for(int i=0;i<8;i++){
-		frame.data[i] = bus_stop_flag[i];
-		cout << "stop" << i << ": " << bus_stop_flag[i] << endl;
-	}
-	nbytes = write(s, &frame, sizeof(struct can_frame));
-	//printf("Wrote %d bytes\n", nbytes);
-	//Close the SocketCAN
-	close(s);
+
+	send_can();
 
 	msgs::Flag_Info msg_temp;
 	msg_temp.Dspace_Flag01 = bus_stop_flag[0];
@@ -109,12 +110,22 @@ void chatterCallback_01(const std_msgs::String::ConstPtr& msg)
 	publisher_01.publish(msg_temp);
 }
 
+void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
+{
+	if(msg->Dspace_Flag02==2 && bus_stop_flag[int(msg->Dspace_Flag01)-1]==1){
+		bus_stop_flag[int(msg->Dspace_Flag01)-1] = 0;
+		send_can();
+	}
+	
+}
+
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "bus_stop_info");
 	ros::NodeHandle n;
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
+	ros::Subscriber subscriber_02 = n.subscribe("/NextStop/Info", 1, chatterCallback_02);
 	publisher_01 = n.advertise<msgs::Flag_Info>("/BusStop/Info", 1);
 	ros::spin();
 	return 0;

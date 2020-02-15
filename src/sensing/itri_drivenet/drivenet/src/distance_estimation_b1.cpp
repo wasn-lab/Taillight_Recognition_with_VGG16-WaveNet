@@ -186,10 +186,10 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
       if (piexl_loc > regionHeight.front())
         distance = regionDist.front() - 0.2;
       else if (piexl_loc < regionHeight.back())
-        distance = regionDist.back() + 0.2;
+        distance = 777;
+      // distance = regionDist.back() + 0.2;
     }
   }
-
   return distance;
 }
 
@@ -705,9 +705,11 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     /// p0-----P3            /// p0-----P3
 
     p4 = p0;
-    p4.x = p4.x + obstacle_l;
+    if (p4.x != 0)
+      p4.x = p4.x + obstacle_l;
     p7 = p3;
-    p7.x = p7.x + obstacle_l;
+    if (p7.x != 0)
+      p7.x = p7.x + obstacle_l;
   }
   else if (cam_id == camera::id::right_60)
   {
@@ -961,9 +963,15 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
                                                 Parmas.regionDist_y);
   }
 
-  p0.x = x_distMeter + offset_x;
-  p0.y = y_distMeter;
-  p0.z = Lidar_offset_z;
+  if (x_distMeter == 777)
+  {
+    p0.x = 0;
+    p0.y = 0;
+    p0.z = 0;
+  }
+    p0.x = x_distMeter + offset_x;
+    p0.y = y_distMeter;
+    p0.z = Lidar_offset_z;
 
-  return p0;
+    return p0;
 }

@@ -579,25 +579,33 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   if (leftCheck == 0 && rightCheck == 0)
   {
     boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
-    detObj.bPoint = boxPoint;
 
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
     if (cam_order == camera::id::top_right_front_120 || cam_order == camera::id::top_right_rear_120)
     {
-      left_point[0] = detObj.bPoint.p4.x;
-      right_point[0] = detObj.bPoint.p0.x;
-      left_point[1] = detObj.bPoint.p4.y;
-      right_point[1] = detObj.bPoint.p0.y;
+      left_point[0] = boxPoint.p4.x;
+      right_point[0] = boxPoint.p0.x;
+      left_point[1] = boxPoint.p4.y;
+      right_point[1] = boxPoint.p0.y;
     }
     else if (cam_order == camera::id::top_left_front_120 || cam_order == camera::id::top_left_rear_120)
     {
-      left_point[0] = detObj.bPoint.p3.x;
-      right_point[0] = detObj.bPoint.p7.x;
-      left_point[1] = detObj.bPoint.p3.y;
-      right_point[1] = detObj.bPoint.p7.y;
+      left_point[0] = boxPoint.p3.x;
+      right_point[0] = boxPoint.p7.x;
+      left_point[1] = boxPoint.p3.y;
+      right_point[1] = boxPoint.p7.y;
     }
-    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+
+    if (left_point[0] == 0 && left_point[1] == 0)
+    {
+      distance = -1;
+    }
+    else
+    {
+      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+      detObj.bPoint = boxPoint;
+    }
     detObj.distance = distance;
   }
 
