@@ -6,6 +6,14 @@ readonly build_type="${build_type:-Release}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
 
+readonly merge_base=$(git merge-base origin/master HEAD)
+readonly affected_files=$(git diff --name-only ${merge_base})
+for fname in ${affected_files}; do
+  if [[ -f ${fname} ]]; then
+    touch ${fname}
+  fi
+done
+
 readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
 echo ${clean_build_status}
 if [[ "${clean_build_status}" =~ "Clean build" ]]; then
