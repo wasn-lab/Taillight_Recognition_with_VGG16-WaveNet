@@ -32,6 +32,14 @@ python src/scripts/ci/check_file_mod.py
 python src/scripts/ci/check_filename.py
 python src/scripts/ci/check_symbolic_link.py
 
+readonly merge_base=$(git merge-base origin/master HEAD)
+readonly affected_files=$(git diff --name-only ${merge_base})
+for fname in ${affected_files}; do
+  if [[ -f ${fname} ]]; then
+    touch ${fname}
+  fi
+done
+
 readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
 echo ${clean_build_status}
 if [[ "${clean_build_status}" =~ "Clean build" ]]; then

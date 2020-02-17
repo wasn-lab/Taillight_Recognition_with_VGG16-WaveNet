@@ -85,7 +85,6 @@ public:
   boost::shared_ptr<ros::AsyncSpinner> g_spinner;
   ros::Publisher chatter_pub;
   ros::Publisher box_pub;
-  ros::Publisher pose_pub;
   ros::Time total_time;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
   bool g_enable = false;
