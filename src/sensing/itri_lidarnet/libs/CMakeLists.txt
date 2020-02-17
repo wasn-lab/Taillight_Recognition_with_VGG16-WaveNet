@@ -207,8 +207,6 @@ include_directories(
 ##    use define    ##
 ######################
 
-set (CMAKE_VERBOSE_MAKEFILE ON)
-set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES -O2")
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1 " )
 

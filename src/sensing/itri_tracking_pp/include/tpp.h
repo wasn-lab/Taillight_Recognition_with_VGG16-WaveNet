@@ -14,7 +14,7 @@ struct BoxCenter
 {
   unsigned int id;
 
-  Point32Impl pos;
+  MyPoint32Impl pos;
 
   float x_length;
   float y_length;
@@ -91,6 +91,13 @@ struct PPLongDouble
 
   tf2::Quaternion q1;  // direction of vector1 of confidence ellipse
   tf2::Quaternion q2;  // direction of vector2 of confidence ellipse
+
+#if PP_VERTICES_VIA_SPEED
+  msgs::PointXY v1;  // vertex1 of confidence ellipse
+  msgs::PointXY v2;  // vertex2 of confidence ellipse
+  msgs::PointXY v3;  // co-vertex1 of confidence ellipse
+  msgs::PointXY v4;  // co-vertex2 of confidence ellipse
+#endif
 };
 }  // namespace tpp
 

@@ -4,16 +4,8 @@ Check if commit files contain symbolic links.
 """
 import sys
 import logging
-import subprocess
 import os
-
-
-def _get_affected_files():
-    cmd = ["git", "merge-base", "origin/master", "HEAD"]
-    ref_commit = subprocess.check_output(cmd).strip()
-    cmd = ["git", "diff", "--name-only", ref_commit]
-    output = subprocess.check_output(cmd).decode("utf-8")
-    return [fname.strip() for fname in output.splitlines()]
+from ci_utils import get_affected_files
 
 
 def _check_symbolic_links(affected_files):
@@ -29,8 +21,7 @@ def _check_symbolic_links(affected_files):
 
 def main():
     """Prog entry"""
-    affected_files = _get_affected_files()
-    return _check_symbolic_links(affected_files)
+    return _check_symbolic_links(get_affected_files())
 
 
 if __name__ == "__main__":
