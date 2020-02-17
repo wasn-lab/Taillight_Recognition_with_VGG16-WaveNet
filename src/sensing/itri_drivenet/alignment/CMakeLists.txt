@@ -32,7 +32,6 @@ if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
 ######################
 ##       PCL        ##
