@@ -27,7 +27,7 @@ find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 ######################
 ##       CUDA       ##
 ######################
-find_package	        (CUDA REQUIRED) 
+find_package(CUDA) 
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
