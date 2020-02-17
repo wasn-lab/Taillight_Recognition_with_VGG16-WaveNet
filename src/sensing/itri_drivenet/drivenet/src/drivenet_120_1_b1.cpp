@@ -56,8 +56,8 @@ bool g_is_compressed = false;
 bool g_is_calibration = false;
 
 /// thread
-pthread_mutex_t g_mtxInfer;
-pthread_cond_t g_cndInfer;
+pthread_mutex_t g_mtx_infer;
+pthread_cond_t g_cnd_infer;
 std::mutex g_display_mutex;
 
 /// ros publisher/subscriber
@@ -137,7 +137,7 @@ void image_init()
 void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::vector<ITRI_Bbox>* vbbx, int dist_w,
                     int dist_h)
 {
-  pthread_mutex_lock(&g_mtxInfer);
+  pthread_mutex_lock(&g_mtx_infer);
 
   bool isPushData = false;
   if (cam_order == camera::id::top_right_front_120 && !g_is_infer_data_0)
@@ -176,9 +176,9 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   if (g_mat_order.size() == g_cam_ids.size())
   {
     g_is_infer_data = true;
-    pthread_cond_signal(&g_cndInfer);
+    pthread_cond_signal(&g_cnd_infer);
   }
-  pthread_mutex_unlock(&g_mtxInfer);
+  pthread_mutex_unlock(&g_mtx_infer);
 
   while (g_is_infer_data)
     usleep(5);
@@ -472,8 +472,8 @@ int main(int argc, char** argv)
   // // occupancy grid map publisher
   // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 
-  pthread_mutex_init(&g_mtxInfer, NULL);
-  pthread_cond_init(&g_cndInfer, NULL);
+  pthread_mutex_init(&g_mtx_infer, NULL);
+  pthread_cond_init(&g_cnd_infer, NULL);
 
   pthread_t thrdYolo, thrdInterp, thrdDisplay;
   pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
@@ -505,7 +505,7 @@ int main(int argc, char** argv)
   if (g_display_flag == 1)
     pthread_join(thrdDisplay, NULL);
 
-  pthread_mutex_destroy(&g_mtxInfer);
+  pthread_mutex_destroy(&g_mtx_infer);
   g_yolo_app.delete_yolo_infer();
   ros::shutdown();
 
@@ -658,10 +658,10 @@ void* run_yolo(void*)
     bool isDataVaild = true;
 
     // waiting for data
-    pthread_mutex_lock(&g_mtxInfer);
+    pthread_mutex_lock(&g_mtx_infer);
     if (!g_is_infer_data)
-      pthread_cond_wait(&g_cndInfer, &g_mtxInfer);
-    pthread_mutex_unlock(&g_mtxInfer);
+      pthread_cond_wait(&g_cnd_infer, &g_mtx_infer);
+    pthread_mutex_unlock(&g_mtx_infer);
 
     // copy data
     for (size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
