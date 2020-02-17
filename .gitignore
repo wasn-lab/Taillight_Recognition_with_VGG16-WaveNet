@@ -22,6 +22,7 @@ gmon.out
 *.aarch64
 *.dgpu
 *.npy
+*.json
 *.pb
 src/sensing/itri_lidarnet/libs/TensorFlow/Installed/
 src/sensing/itri_parknet/weights/

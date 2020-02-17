@@ -293,7 +293,7 @@ int main(int argc, char** argv)
   std::string cfg_file = "/b1_yolo_60.cfg";
   image_init();
   g_yoloApp.init_yolo(pkg_path, cfg_file);
-  g_distEst.init(g_car_id);
+  g_distEst.init(g_car_id, pkg_path);
 
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();

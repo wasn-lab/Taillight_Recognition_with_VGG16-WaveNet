@@ -491,7 +491,7 @@ int main(int argc, char** argv)
   std::string cfg_file = "/b1_yolo_120_1.cfg";
   image_init();
   yoloApp.init_yolo(pkg_path, cfg_file);
-  distEst.init(car_id);
+  distEst.init(car_id, pkg_path);
 
   if (isCalibration)
   {

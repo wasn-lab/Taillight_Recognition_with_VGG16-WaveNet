@@ -1,15 +1,46 @@
 #include "drivenet/distance_estimation_b1.h"
-#include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
-void DistanceEstimation::init(int car_id)
+void DistanceEstimation::init(int car_id, std::string pkgPath)
 {
   carId = car_id;
+
+  // ====== Init distance estimation table by alignment ======
+
+  // FC60
+  std::string FC60Json = pkgPath;
+  FC60Json.append("/data/alignment/FC60_2.json");
+  align_FC60 = new cv::Point3d*[img_h];
+  for (int i = 0; i < img_h; i++)
+  {
+    align_FC60[i] = new cv::Point3d[img_w];
+  }
+  ReadDistanceFromJson(FC60Json, align_FC60, img_h, img_w);
+
+  // // FR60
+  // std::string FR60Json = pkgPath;
+  // FR60Json.append("/data/alignment/FR60_2.json");
+  // align_FR60 = new cv::Point3d*[img_h];
+  // for (int i = 0; i < img_h; i++)
+  // {
+  //   align_FR60[i] = new cv::Point3d[img_w];
+  // }
+  // ReadDistanceFromJson(FR60Json, align_FR60, img_h, img_w);
+
+  // // FL60
+  // std::string FL60Json = pkgPath;
+  // FL60Json.append("/data/alignment/FL60_2.json");
+  // align_FL60 = new cv::Point3d*[img_h];
+  // for (int i = 0; i < img_h; i++)
+  // {
+  //   align_FL60[i] = new cv::Point3d[img_w];
+  // }
+  // ReadDistanceFromJson(FL60Json, align_FL60, img_h, img_w);
 
   initParams();
   initShrinkArea();
   initDetectArea();
+
+
 
   Lidar_offset_x = 0;
   Lidar_offset_y = 0;
@@ -150,6 +181,36 @@ void DistanceEstimation::initDetectArea()
   camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
   camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
   camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
+}
+
+int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols)
+{
+  // dist_in_cm should be malloc by caller.
+  assert(dist_in_cm);
+  for (int i = 0; i < rows; i++)
+  {
+    assert(dist_in_cm[i]);
+  }
+
+  std::ifstream ifs(filename);
+  Json::Reader jreader;
+  Json::Value jdata;
+  jreader.parse(ifs, jdata);
+  std::cout << "Reading json file: " << filename << std::endl;
+
+  for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
+  {
+    auto image_x = jdata[i]["im_x"].asInt();
+    auto image_y = jdata[i]["im_y"].asInt();
+
+    if ((image_y < rows) && (image_x < cols))
+    {
+      dist_in_cm[image_y][image_x].x = jdata[i]["dist_in_cm"][0].asInt();
+      dist_in_cm[image_y][image_x].y = jdata[i]["dist_in_cm"][1].asInt();
+      dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
+    }
+  }
+  return 0;
 }
 
 float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
@@ -878,7 +939,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
   float offset_x = 0;
   int x_loc = y;
   int y_loc = x;
-  int img_h = 1208;
+  // int img_h = 1208;
 
   DisEstiParams Parmas;
 
