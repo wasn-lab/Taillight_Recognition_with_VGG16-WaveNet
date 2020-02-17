@@ -118,7 +118,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       // crop image for openpose
       cv::Mat cropedImage =
           matrix(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
-      // cv::imwrite( "/home/itri457854/frame2.png", cropedImage );
 
       // set size to resize cropped image for openpose
       // max pixel of width or height can only be 368
@@ -158,8 +157,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
       std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
 
-      sensor_msgs::ImageConstPtr msg_pub3 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", cropedImage).toImageMsg();
-      pose_pub.publish(msg_pub3);
       bool has_keypoint = false;
       int count_points = 0;
       int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
@@ -196,7 +193,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj_pub.camInfo.height;
         if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
         {
-          cv::circle(cropedImage, keypoints.at(body_part[i]), 2, cv::Scalar(0, 255, 0));
           cv::Point p = keypoints.at(body_part[i]);
           p.x = obj_pub.camInfo.u + p.x;
           p.y = obj_pub.camInfo.v + p.y;
@@ -313,6 +309,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #if USE_GLOG
     stop = ros::Time::now();
     total_time += stop - start;
+    std::cout << "cost time: " << stop - start << " sec" << std::endl;
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
   }
@@ -714,8 +711,6 @@ int main(int argc, char** argv)
       nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
-  ros::NodeHandle nh3;
-  pe.pose_pub = nh3.advertise<sensor_msgs::Image&>("/PedCross/CroppedBox", 1);  // /PedCross/CroppedBox is pub topic
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);
