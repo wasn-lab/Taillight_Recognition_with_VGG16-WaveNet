@@ -7,6 +7,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath)
   // ====== Init distance estimation table by alignment ======
 
   // FC60
+  /*
   std::string FC60Json = pkgPath;
   FC60Json.append("/data/alignment/FC60_2.json");
   align_FC60 = new cv::Point3d*[img_h];
@@ -15,6 +16,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath)
     align_FC60[i] = new cv::Point3d[img_w];
   }
   ReadDistanceFromJson(FC60Json, align_FC60, img_h, img_w);
+  */
 
   // // FR60
   // std::string FR60Json = pkgPath;
@@ -1013,6 +1015,17 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
                                        Parmas.regionDist_y, img_h);
   }
+
+  // TESTING....
+  // if (cam_id == camera::id::front_60)
+  // {
+  //   p0.x = align_FC60[x_loc][y_loc].x/100;
+  //   p0.y = align_FC60[x_loc][y_loc].y/100;
+  //   p0.z = align_FC60[x_loc][y_loc].z/100;
+  //   // std::cout << p0.x << "," << p0.y << "," << p0.z << std::endl;
+  //   return p0;
+  // }
+  // .............
 
   if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
   {
