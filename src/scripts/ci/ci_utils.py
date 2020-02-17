@@ -41,6 +41,20 @@ def get_compile_command(cpp):
             return cmd
     return []
 
+
+def get_compile_args(cpp):
+    """ Return the compile arguments for |cpp| """
+    cmd = get_compile_command(cpp)
+    if not cmd:
+        return []
+    removes = set()
+    for idx, item in enumerate(cmd):
+        if item == "-o":
+            removes.add(item)
+            removes.add(cmd[idx+1])
+    return [_ for _ in cmd[1:] if _ not in removes]
+
+
 @lru_cache(maxsize=0)
 def get_affected_files():
     """ Return a list of files in the active merge request. """
