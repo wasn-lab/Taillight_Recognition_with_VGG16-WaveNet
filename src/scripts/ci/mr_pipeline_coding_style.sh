@@ -11,5 +11,6 @@ fi
 
 pushd $repo_dir
 python src/scripts/ci/check_global_var.py
+python src/scripts/ci/check_misra_cpp2008_6_4_1.py
 
 popd
