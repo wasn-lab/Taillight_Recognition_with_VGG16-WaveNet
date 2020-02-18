@@ -7,6 +7,7 @@ import io
 import subprocess
 import json
 import os
+import logging
 
 
 @lru_cache(maxsize=0)
