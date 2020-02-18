@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   car_model
   camera_utils
+  drivenet
 )  
 
 catkin_package(
@@ -50,12 +51,14 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${DRIVENET_INCLUDE}
 )
 
 set(LIBS ${OpenCV_LIBRARIES}
          ${CUDA_LIBRARIES}
          ${PCL_LIBRARIES}
-         camera_utils)
+         camera_utils
+         drivenet)
 
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 message(STATUS "LIB_SOURCES: ${LIB_SOURCES}")
