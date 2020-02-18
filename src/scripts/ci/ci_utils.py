@@ -52,6 +52,9 @@ def get_compile_args(cpp):
         if item == "-o":
             removes.add(item)
             removes.add(cmd[idx+1])
+        if item == "-c":
+            removes.add(item)
+            removes.add(cmd[idx+1])
     return [_ for _ in cmd[1:] if _ not in removes]
 
 
