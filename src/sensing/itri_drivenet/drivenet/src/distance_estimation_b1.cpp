@@ -1,5 +1,14 @@
 #include "drivenet/distance_estimation_b1.h"
 
+DistanceEstimation::~DistanceEstimation()
+{
+  for (int i = 0; i < img_h; i++)
+  {
+    delete[] align_FC60[i];
+  }
+  delete[] align_FC60;
+}
+
 void DistanceEstimation::init(int car_id, std::string pkgPath)
 {
   carId = car_id;
@@ -48,14 +57,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath)
   Lidar_offset_y = 0;
 }
 
-void DistanceEstimation::clearMem()
-{
-  for (int i = 0; i < img_h; i++)
-  {
-    delete[] align_FC60[i];
-  }
-  delete[] align_FC60;
-}
+
 
 void DistanceEstimation::initParams()
 {
