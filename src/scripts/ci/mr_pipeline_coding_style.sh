@@ -3,6 +3,7 @@ set -x
 set -e
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
+export PATH=/usr/local/llvm-6.0.0/bin:$PATH
 
 if [[ ! ${repo_dir}/build_clang ]]; then
   echo "Cannot find build_clang directory. Run module_build_clang.sh first"

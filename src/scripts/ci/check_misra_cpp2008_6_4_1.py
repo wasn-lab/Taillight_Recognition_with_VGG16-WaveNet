@@ -22,7 +22,7 @@ def check_misra_cpp2008_6_4_1_by_cpp(cpp):
     logging.info("Check MISRA C++-2008 Rule 6.4.1 for %s", cpp)
     args = get_compile_args(cpp)
     if not args:
-        return
+        return 0
     cmd = ["clang-tidy", cpp,
            "-checks=readability-braces-around-statements",
            "--"] + args
@@ -33,6 +33,8 @@ def check_misra_cpp2008_6_4_1_by_cpp(cpp):
         logging.error("CalledProcessError: %s", " ".join(cmd))
 
     logging.warning(output.decode("utf-8"))
+    return 0
+
 
 def check_misra_cpp2008_6_4_1():
     """
