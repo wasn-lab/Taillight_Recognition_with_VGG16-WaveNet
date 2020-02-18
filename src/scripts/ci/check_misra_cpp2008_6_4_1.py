@@ -25,7 +25,6 @@ def check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix):
         return
     fix = "--fix" if apply_fix else ""
     cmd = ["clang-tidy", cpp, fix,
-           "-checks=-*,readability-braces-around-statements",
            "--"] + args
     logging.info(" ".join(cmd))
     try:
