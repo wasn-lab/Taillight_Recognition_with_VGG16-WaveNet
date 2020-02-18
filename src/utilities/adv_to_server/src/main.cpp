@@ -19,10 +19,10 @@
 bool flag_show_udp_send = true;
 
 // VK APIs backend
-const std::string TCP_VK_SRV_ADRR = "140.96.180.120";
+const std::string TCP_VK_SRV_ADRR = "60.250.196.127";
 const int TCP_VK_SRV_PORT = 8015;
 
-const std::string UDP_VK_SRV_ADRR = "140.96.180.120";
+const std::string UDP_VK_SRV_ADRR = "60.250.196.127";
 const int UDP_VK_SRV_PORT = 8016;
 
 // aws backend
