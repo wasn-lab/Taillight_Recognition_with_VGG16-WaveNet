@@ -1,7 +1,4 @@
 ---
-Checks: "-*,\
-readability-braces-around-statements,\
-"
 # WarningsAsErrors: "*"
 HeaderFilterRegex: '.*/itriadv/src/.*\.h$'
 ...
