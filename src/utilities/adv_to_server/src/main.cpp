@@ -716,19 +716,24 @@ std::string genErrorMsg(int code, std::string msg)
   return J1.dump();
 }
 
-bool checkStopID(int in_stop_id, int out_stop_id)
+/*
+bool checkStopID(unsigned short in_stop_id, unsigned short out_stop_id)
 {
   if ((in_stop_id < 0) | (out_stop_id < 0))
     return false;
   return true;
 }
+*/
 
 // response
 void VK102callback(std::string request)
 {
+  using namespace std;
   json J1;
-  int in_stopid;
-  int out_stopid;
+  unsigned int in_round;
+  unsigned int out_round;
+  unsigned int in_stopid;
+  unsigned int out_stopid;
   std::string type;
 
   // clear response
@@ -753,8 +758,10 @@ void VK102callback(std::string request)
   try
   {
     type = J1.at("type").get<std::string>();
-    in_stopid = J1.at("in_stopid").get<int>();
-    out_stopid = J1.at("out_stopid").get<int>();
+    in_stopid = J1.at("in_stopid").get<unsigned int>();
+    out_stopid = J1.at("out_stopid").get<unsigned int>();
+    in_round = J1.at("in_round").get<unsigned int>();
+    out_round = J1.at("out_round").get<unsigned int>();
   }
   catch (std::exception& e)
   {
@@ -764,16 +771,29 @@ void VK102callback(std::string request)
   }
 
   // check stop id
+  /*
   if (!checkStopID(in_stopid, out_stopid))
   {
     std::cout << "check id fail " << std::endl;
     server.send_json(genErrorMsg(422, "bad stop id."));
     return;
   }
+  */
+  //char msg[36];
+  //sprintf(msg, "%d#%d", in_stopid, out_stopid);
+  msgs::StopInfoArray reserve;
+  msgs::StopInfo in_stop_info;
+  msgs::StopInfo out_stop_info;
+  
+  in_stop_info.round = in_round;
+  in_stop_info.id = in_stopid;
+  out_stop_info.round = out_round;
+  out_stop_info.id = out_stopid;
 
-  char msg[36];
-  sprintf(msg, "%d#%d", in_stopid, out_stopid);
-  RosModuleTraffic::publishReserve(TOPIC_RESERVE, msg);
+  reserve.stops.push_back(in_stop_info);
+  reserve.stops.push_back(out_stop_info);
+  
+  RosModuleTraffic::publishReserve(TOPIC_RESERVE, reserve);
   // 300 millis seconds
   //boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
   //std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
@@ -801,37 +821,36 @@ void VK103callback(json reqJson)
 {
   using namespace std;
   
-  vector<int> stopids;
+  vector<unsigned int> stopids;
   
   // clear response
   VK102Response = "";
  
-  std::cout << "VK103callback reqJson: " << reqJson.dump() << std::endl;
+  cout << "VK103callback reqJson: " << reqJson.dump() << endl;
 
   // get data
   try
   {
-    stopids = reqJson.at("stopid").get< vector<int> >();
+    stopids = reqJson.at("stopid").get< vector<unsigned int> >();
   }
-  catch (std::exception& e)
+  catch (exception& e)
   {
-    std::cout << "VK103callback message: " << e.what() << std::endl;
+    cout << "VK103callback message: " << e.what() << endl;
     server.send_json(genErrorMsg(400, e.what()));
     return;
   }
 
-  string msg ="";
-  for (unsigned int i = 0 ; i < stopids.size(); i++)
+  msgs::StopInfoArray reserve;
+  for (size_t i = 0 ; i < stopids.size(); i++)
   {
-    if(i + 1 == stopids.size()  ){
-      msg = msg + to_string(stopids[i]);
-    }else {
-      msg = msg + to_string(stopids[i]) + "#";
-    }
+    msgs::StopInfo stop;
+    stop.round = 1;
+    stop.id = stopids[i];
+    reserve.stops.push_back(stop);
   }
-  cout << "VK103callback msgs for ros: " << msg << endl;
+  cout << "VK103callback msgs for ros: " <<  endl;
 
-  RosModuleTraffic::publishReserve(TOPIC_RESERVE, msg);
+  RosModuleTraffic::publishReserve(TOPIC_RESERVE, reserve);
   // 300 millis seconds
   //boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
   //std::cout << "wake up, VK102Response: " << VK102Response << std::endl;
@@ -923,6 +942,7 @@ void tcpServerRun(int argc, char** argv)
 
 int main(int argc, char** argv)
 {
+  using namespace std;
   RosModuleTraffic::Initial(argc, argv);
   //RosModuleTraffic::advertisePublisher();
   /*Start thread to receive data from can bus.*/
@@ -971,7 +991,8 @@ int main(int argc, char** argv)
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
-  RosModuleTraffic::publishReserve(TOPIC_RESERVE, "");
+  msgs::StopInfoArray empty;
+  RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);
   /*block main.*/
   while (true)
   {
