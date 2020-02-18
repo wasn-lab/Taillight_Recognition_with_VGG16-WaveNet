@@ -26,7 +26,7 @@ def get_complie_commands():
         "file": ...
     }
     """
-    jfile = os.path.join(get_repo_path(), "build_clang", "compile_commands.json")
+    jfile = os.path.join(get_repo_path(), "build", "compile_commands.json")
     if not os.path.isfile(jfile):
         logging.error("No such file: %s", jfile)
     with io.open(jfile, encoding="utf-8") as _fp:
