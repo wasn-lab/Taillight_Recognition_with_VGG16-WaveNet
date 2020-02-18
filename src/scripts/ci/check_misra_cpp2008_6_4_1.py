@@ -33,7 +33,12 @@ def check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix):
     except subprocess.CalledProcessError:
         logging.error("CalledProcessError: %s", " ".join(cmd))
 
+    if not output:
+        return
     logging.warning(output.decode("utf-8"))
+    logging.info("If Errors arise, run \n"
+                 "    python src/scripts/ci/check_misra_cpp2008_6_4_1.py --fix "
+                 "--cpp %s\nto fix it", cpp)
 
 
 def check_misra_cpp2008_6_4_1(cpp, apply_fix):
@@ -47,9 +52,6 @@ def check_misra_cpp2008_6_4_1(cpp, apply_fix):
     if is_external_package(cpp):
         return 0
     check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix)
-    logging.info("If Errors arise, run \n"
-                 "    python src/scripts/ci/check_misra_cpp2008_6_4_1.py --fix "
-                 "--cpp %s\nto fix it", cpp)
     return 0
 
 
