@@ -38,8 +38,12 @@ def get_compile_command(cpp):
             cmd = doc["command"].split()
             if "ccache" in cmd[0]:
                 cmd = cmd[1:]
-            return cmd
+            return __escape(cmd)
     return []
+
+
+def __escape(cmd):
+    return [_.replace("\\\"", "\"") for _ in cmd]
 
 
 def get_compile_args(cpp):

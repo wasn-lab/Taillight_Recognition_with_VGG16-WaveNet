@@ -28,7 +28,7 @@ class CIUtilTest(unittest.TestCase):
         for arg in args:
             self.assertTrue(not arg.endswith(".o"))
             self.assertTrue(not arg.endswith(cpp))
-
+            self.assertTrue("\\\"" not in arg)
 
 if __name__ == "__main__":
     unittest.main()
