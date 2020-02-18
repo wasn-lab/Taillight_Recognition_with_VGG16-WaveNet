@@ -307,6 +307,7 @@ int main(int argc, char** argv)
 
   pthread_mutex_destroy(&g_mtx_infer);
   g_yolo_app.delete_yolo_infer();
+  g_dist_est.clearMem();
   ros::shutdown();
 
   return 0;
