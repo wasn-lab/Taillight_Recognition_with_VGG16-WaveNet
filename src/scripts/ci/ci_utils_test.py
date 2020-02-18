@@ -11,11 +11,6 @@ class CIUtilTest(unittest.TestCase):
         self.assertTrue(repo.endswith("itriadv"))
 
     def test_get_compile_command(self):
-        cmd = ci_utils.get_compile_command("src/sensing/itri_parknet/src/parknet_node_impl.cpp")
-        self.assertTrue(isinstance(cmd, list))
-        self.assertTrue(len(cmd) > 0)
-
-    def test_get_compile_command(self):
         cpp = "src/sensing/itri_drivenet/drivenet/src/drivenet_120_1_b1.cpp"
         args = ci_utils.get_compile_args(cpp)
         self.assertTrue(isinstance(args, list))
