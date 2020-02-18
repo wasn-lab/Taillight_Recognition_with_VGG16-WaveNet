@@ -14,9 +14,9 @@ if [[ ! ${repo_dir}/build_clang ]]; then
 fi
 
 pushd $repo_dir
-python src/scripts/ci/check_global_var.py
 
 for fname in $affected_files; do
+  python src/scripts/ci/check_global_var.py --cpp $fname
   python src/scripts/ci/check_misra_cpp2008_6_4_1.py --cpp $fname
 done
 
