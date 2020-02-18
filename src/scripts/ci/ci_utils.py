@@ -26,6 +26,8 @@ def get_complie_commands():
     }
     """
     jfile = os.path.join(get_repo_path(), "build_clang", "compile_commands.json")
+    if not os.path.isfile(jfile):
+        logging.error("No such file: %s", jfile)
     with io.open(jfile, encoding="utf-8") as _fp:
         jdata = json.loads(_fp.read())
     return jdata
