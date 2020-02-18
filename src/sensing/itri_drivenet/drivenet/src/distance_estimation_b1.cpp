@@ -7,7 +7,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath)
   // ====== Init distance estimation table by alignment ======
 
   // FC60
-  /*
+  
   std::string FC60Json = pkgPath;
   FC60Json.append("/data/alignment/FC60_2.json");
   align_FC60 = new cv::Point3d*[img_h];
@@ -15,8 +15,8 @@ void DistanceEstimation::init(int car_id, std::string pkgPath)
   {
     align_FC60[i] = new cv::Point3d[img_w];
   }
-  ReadDistanceFromJson(FC60Json, align_FC60, img_h, img_w);
-  */
+  // ReadDistanceFromJson(FC60Json, align_FC60, img_h, img_w);
+  
 
   // // FR60
   // std::string FR60Json = pkgPath;
