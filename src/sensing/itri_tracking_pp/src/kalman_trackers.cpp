@@ -343,8 +343,12 @@ void KalmanTrackers::add_new_trackers()
     bool match = false;
 
     for (unsigned j = 0; j < tracks_.size(); j++)
+    {
       if (objs_[i].track.id == tracks_[j].id_)
+      {
         match = true;
+      }
+    }
 
     if (!match)
     {
@@ -356,7 +360,9 @@ void KalmanTrackers::add_new_trackers()
 void KalmanTrackers::init_objs()
 {
   for (unsigned i = 0; i < objs_.size(); i++)
+  {
     objs_[i].track.id = 0;
+  }
 }
 
 void KalmanTrackers::init_distance_table()
