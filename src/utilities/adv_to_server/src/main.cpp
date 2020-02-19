@@ -20,10 +20,10 @@ bool flag_show_udp_send = true;
 
 // VK APIs backend
 const std::string TCP_VK_SRV_ADRR = "60.250.196.127";
-const int TCP_VK_SRV_PORT = 8015;
+const int TCP_VK_SRV_PORT = 5553;
 
 const std::string UDP_VK_SRV_ADRR = "60.250.196.127";
-const int UDP_VK_SRV_PORT = 8016;
+const int UDP_VK_SRV_PORT = 5554;
 
 // aws backend
 const std::string UDP_AWS_SRV_ADRR = "52.69.10.200";
@@ -113,7 +113,7 @@ struct ArriveStop
 {
   int id; // next stop id
   int status; // stauts
-  int current_round; // current round
+  int round; // current round
 };
 
 const static int ROUTE_ID = 2000;
@@ -271,7 +271,7 @@ void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
   mutex_ros.lock();
   cuttent_arrive_stop.id = ROUTE_ID + (int)input->Dspace_Flag01;
   cuttent_arrive_stop.status = (int)input->Dspace_Flag02;
-  cuttent_arrive_stop.round = (int) input->PX2_Floag01;
+  cuttent_arrive_stop.round = (int) input->PX2_Flag01;
   mutex_ros.unlock();
 }
 
