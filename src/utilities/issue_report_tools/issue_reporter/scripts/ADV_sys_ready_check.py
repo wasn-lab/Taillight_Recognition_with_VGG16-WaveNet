@@ -4,6 +4,7 @@ import rospy
 import time
 import threading
 import SIGNAL_PROCESSING as SP
+import json
 #-------------------------#
 try:
     import queue as Queue # Python 3.x
@@ -46,6 +47,7 @@ check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
 check_list += ["localization_state"]
+check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -56,6 +58,7 @@ startup_check_list = ["node_alive", "REC_is_recording"]
 # The following items will be added for release version
 # startup_check_list += ["backend_connected"] # Will be added for release version
 # startup_check_list += ["localization_state"]
+# startup_check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
 
 
 print("check_list = %s" % str(check_list))
@@ -233,6 +236,31 @@ def code_func_bool(msg):
     else:
         return STATE_DEF_dict["UNKNOWN"], ""
 
+def code_func_event_json(msg):
+    """
+    from ROS std_msgs.String
+    json string:
+    {
+        "module": "yyy"
+        "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN"
+        "event_str": "xxx event of yyy module"
+    }
+    Output: status_code, event_str
+    """
+    json_dict = None
+    try:
+        json_dict = json.loads(msg.data)
+    except json.decoder.JSONDecodeError as e:
+        print(e)
+    if json_dict is None:
+        return STATE_DEF_dict["UNKNOWN"], "wrong json string"
+    # else
+    status_code = STATE_DEF_dict.get(json_dict.get("status", "UNKNOWN"), STATE_DEF_dict["UNKNOWN"] )
+    event_str = json_dict.get("event_str", "")
+    print("json_str = \n%s" % json.dumps(json_dict, indent=4))
+    return status_code, event_str
+
+
 def code_func_localization(msg):
     """
     Output: status_code, event_str
@@ -256,26 +284,26 @@ def code_func_localization(msg):
     return status_code, ""
 
 # Brake
-brake_state_dict = dict()
-brake_state_dict[0] = "Released"
-brake_state_dict[1] = "Auto-braked"
-brake_state_dict[2] = "Anchored" # Stop-brake
-brake_state_dict[3] = "AEB"
-brake_state_dict[4] = "Manual brake"
-def code_func_brake(msg):
-    """
-    Output: status_code, event_str
-    """
-    global STATE_DEF_dict
-    global brake_state_dict
-    state = msg.data
-    print("state = %d" % state)
-    if state >= 3:
-        status_code = STATE_DEF_dict["WARN"] # Note: not to stop self-driving
-    else:
-        status_code = STATE_DEF_dict["OK"]
-    event_str = brake_state_dict[state]
-    return status_code, event_str
+# brake_state_dict = dict()
+# brake_state_dict[0] = "Released"
+# brake_state_dict[1] = "Auto-braked"
+# brake_state_dict[2] = "Anchored" # Stop-brake
+# brake_state_dict[3] = "AEB"
+# brake_state_dict[4] = "Manual brake"
+# def code_func_brake(msg):
+#     """
+#     Output: status_code, event_str
+#     """
+#     global STATE_DEF_dict
+#     global brake_state_dict
+#     state = msg.data
+#     print("state = %d" % state)
+#     if state >= 3:
+#         status_code = STATE_DEF_dict["WARN"] # Note: not to stop self-driving
+#     else:
+#         status_code = STATE_DEF_dict["OK"]
+#     event_str = brake_state_dict[state]
+#     return status_code, event_str
 #--------------------------------------#
 
 # ROS callbacks
@@ -298,11 +326,11 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
-            # if advop_run_state:
-            if run_state_delay.output(): # Note: delayed close
-                # Note: We only trigger record if it's already in self-driving mode and running
-                #       The events during idle is not going to be backed-up.
-                if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+            if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+                # if advop_run_state:
+                if run_state_delay.output(): # Note: delayed close
+                    # Note: We only trigger record if it's already in self-driving mode and running
+                    #       The events during idle is not going to be backed-up.
                     # Trigger recorder with reason
                     _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
                     REC_record_backup_pub.publish( _reason )
@@ -310,6 +338,9 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
                     rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
                     # Publish the event message
                     #
+                else:
+                    print("It's not in self-driving mode, ignore the event.")
+                #
             #
         #
     #
@@ -359,9 +390,14 @@ def main():
 
     # The following are events (normally not checked at startup)
     # brake_status
-    rospy.Subscriber("/mileage/brake_status", Int32, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_brake ) ) )
+    # rospy.Subscriber("/mileage/brake_status", Int32, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_brake ) ) )
+    rospy.Subscriber("/mileage/brake_event", String, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_event_json ) ) )
     # Localization (state published in 40 Hz)
     rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=False, code_func=code_func_localization ) ) )
+    # Module state
+    rospy.Subscriber("/mileage/Xbywire_run", String, (lambda msg: _checker_CB(msg, "Xbywire_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    rospy.Subscriber("/mileage/AEB_run", String, (lambda msg: _checker_CB(msg, "AEB_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    rospy.Subscriber("/mileage/ACC_run", String, (lambda msg: _checker_CB(msg, "ACC_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     #-----------------------------#
 
 
