@@ -54,6 +54,11 @@ private:
   const int img_h = 1208;
   const int img_w = 1920;
 
+  const int img_al_h = 384;
+  const int img_al_w = 608;
+
+  int de_mode = 0;
+
   void initParams();
   void initShrinkArea();
   void initDetectArea();
@@ -71,7 +76,7 @@ private:
 public:
   ~DistanceEstimation();
 
-  void init(int carId, std::string pkgPath);
+  void init(int carId, std::string pkgPath, int mode);
   msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, int cam_id);
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);

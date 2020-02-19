@@ -22,7 +22,7 @@
 #include <jsoncpp/json/json.h>
 
 
-class alignmentOff
+class AlignmentOff
 {
 private:
   int carId = 1;

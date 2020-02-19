@@ -33,6 +33,7 @@ Yolo_app g_yolo_app;
 
 /// launch param
 int g_car_id = 1;
+int g_dist_est_mode = 0;
 bool g_standard_FPS = 0;
 bool g_display_flag = 0;
 bool g_input_resize = 1;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
@@ -246,6 +247,7 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
+  ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
 
   std::string cam60_0_topicName = camera::topics[camera::id::right_60];
   std::string cam60_1_topicName = camera::topics[camera::id::front_60];
@@ -293,7 +295,7 @@ int main(int argc, char** argv)
   std::string cfg_file = "/b1_yolo_60.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
-  g_dist_est.init(g_car_id, pkg_path);
+  g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
 
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();

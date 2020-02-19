@@ -2,30 +2,36 @@
 
 DistanceEstimation::~DistanceEstimation()
 {
-  // for (int i = 0; i < img_h; i++)
-  // {
-  //   delete[] align_FC60[i];
-  // }
-  // delete[] align_FC60;
+  if(de_mode == 1)
+  {
+    for (int i = 0; i < img_h; i++)
+    {
+      delete[] align_FC60[i];
+    }
+    delete[] align_FC60;
+  }
+
 }
 
-void DistanceEstimation::init(int car_id, std::string pkgPath)
+void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
 {
   carId = car_id;
+  de_mode = mode;
 
   // ====== Init distance estimation table by alignment ======
 
   // FC60
-  
-  // std::string FC60Json = pkgPath;
-  // FC60Json.append("/data/alignment/out.json");
-  // align_FC60 = new cv::Point3d*[384];
-  // for (int i = 0; i < 384; i++)
-  // {
-  //   align_FC60[i] = new cv::Point3d[608];
-  // }
-  // ReadDistanceFromJson(FC60Json, align_FC60, 384, 608);
-  
+  if(de_mode == 1)
+  {
+    std::string FC60Json = pkgPath;
+    FC60Json.append("/data/alignment/out.json");
+    align_FC60 = new cv::Point3d*[img_al_h];
+    for (int i = 0; i < img_al_h; i++)
+    {
+      align_FC60[i] = new cv::Point3d[img_al_w];
+    }
+    ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
+  }
 
   // // FR60
   // std::string FR60Json = pkgPath;
@@ -1017,29 +1023,29 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     default:
       return p0;
   }
-
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
+  
+  if(de_mode == 1)
   {
-    if (Parmas.regionDist_x.size() != 0)
-      x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
-    if (Parmas.regionDist_y.size() != 0)
-      y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                       Parmas.regionDist_y, img_h);
+    if (cam_id == camera::id::front_60)
+    {
+      y_loc = (int)((float)y_loc/img_w*img_al_w);
+      x_loc = (int)((float)x_loc/img_h*img_al_h);
+      
+      p0.x = align_FC60[x_loc][y_loc].x/100;
+      p0.y = align_FC60[x_loc][y_loc].y/100;
+      p0.z = align_FC60[x_loc][y_loc].z/100;
+      return p0;
+    }
+  }else{
+    if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
+    {
+      if (Parmas.regionDist_x.size() != 0)
+        x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
+      if (Parmas.regionDist_y.size() != 0)
+        y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
+                                        Parmas.regionDist_y, img_h);
+    }
   }
-
-  // TESTING....
-
-  // if (cam_id == camera::id::front_60)
-  // {
-  //   y_loc = int(y_loc/1920*608);
-  //   x_loc = int(x_loc/1208*384);
-  //   p0.x = align_FC60[x_loc][y_loc].x/100;
-  //   p0.y = align_FC60[x_loc][y_loc].y/100;
-  //   p0.z = align_FC60[x_loc][y_loc].z/100;
-  //   // std::cout << p0.x << "," << p0.y << "," << p0.z << std::endl;
-  //   return p0;
-  // }
-  // .............
 
   if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
   {

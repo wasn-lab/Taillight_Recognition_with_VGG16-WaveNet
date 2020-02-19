@@ -3,7 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-void alignmentOff::init(int car_id)
+void AlignmentOff::init(int car_id)
 {
   carId = car_id;
 
@@ -14,8 +14,8 @@ void alignmentOff::init(int car_id)
 
   imgW = 608;
   imgH = 384;
-  groundUpBound = -2.44;
-  groundLowBound = -2.84;
+  groundUpBound = -2.5;
+  groundLowBound = -3.3;
 
   spatial_points_ = new cv::Point3d*[imgW];
   assert(spatial_points_);
@@ -37,7 +37,7 @@ void alignmentOff::init(int car_id)
   }
 }
 
-bool alignmentOff::is_valid_image_point(const int row, const int col) const
+bool AlignmentOff::is_valid_image_point(const int row, const int col) const
 {
   bool ret = true;
   if ((col < 0) || (col >= imgW) || (row < 0) || (row >= imgH))
@@ -47,12 +47,12 @@ bool alignmentOff::is_valid_image_point(const int row, const int col) const
   return ret;
 }
 
-bool alignmentOff::spatial_point_is_valid(const cv::Point3d& point) const
+bool AlignmentOff::spatial_point_is_valid(const cv::Point3d& point) const
 {
   return (point.x != INIT_COORDINATE_VALUE) || (point.y != INIT_COORDINATE_VALUE) || (point.z != INIT_COORDINATE_VALUE);
 }
 
-bool alignmentOff::spatial_point_is_valid(const int row, const int col) const
+bool AlignmentOff::spatial_point_is_valid(const int row, const int col) const
 {
   if (is_valid_image_point(row, col))
   {
@@ -64,12 +64,12 @@ bool alignmentOff::spatial_point_is_valid(const int row, const int col) const
   }
 }
 
-vector<int> alignmentOff::run(float x, float y, float z)
+vector<int> AlignmentOff::run(float x, float y, float z)
 {
   return pj.project(x, y, z);
 }
 
-bool alignmentOff::search_valid_neighbor(const int row, const int col, cv::Point* valid_neighbor) const
+bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point* valid_neighbor) const
 {
   for (int roffset = -1; roffset <= 1; roffset++)
   {
@@ -95,7 +95,7 @@ bool alignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
   return false;
 }
 
-void alignmentOff::approx_nearest_points_if_necessary()
+void AlignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
   bool done = false;
@@ -158,7 +158,7 @@ void alignmentOff::approx_nearest_points_if_necessary()
   std::cout << " unset_points: " << unset_points.size();
 }
 
-void alignmentOff::dump_distance_in_json() const
+void AlignmentOff::dump_distance_in_json() const
 {
   auto json_string = jsonize_spatial_points(spatial_points_, imgH, imgW);
   std::string filename = "out.json";
@@ -167,7 +167,7 @@ void alignmentOff::dump_distance_in_json() const
   std::cout << "Write to " << filename << std::endl;
 }
 
-std::string alignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, int rows, int cols) const
+std::string AlignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, int rows, int cols) const
 {
   assert(spatial_points);
   assert(spatial_points[0]);
@@ -196,7 +196,7 @@ std::string alignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, i
 }
 
 // Main
-alignmentOff al;
+AlignmentOff g_al;
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
@@ -205,23 +205,23 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
   for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
-    if (LidAll_cloudPtr->points[i].z > al.groundLowBound && LidAll_cloudPtr->points[i].z < al.groundUpBound &&
+    if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
         LidAll_cloudPtr->points[i].x > 0)
     {
-      al.out = al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
-      if (al.out[0] > 0 && al.out[0] < al.imgW && al.out[1] > 0 && al.out[1] < al.imgH)
+      g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
+      if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
       {
-        al.spatial_points_[al.out[1]][al.out[0]].x = LidAll_cloudPtr->points[i].x;
-        al.spatial_points_[al.out[1]][al.out[0]].y = LidAll_cloudPtr->points[i].y;
-        al.spatial_points_[al.out[1]][al.out[0]].z = LidAll_cloudPtr->points[i].z;
+        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x = LidAll_cloudPtr->points[i].x;
+        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y = LidAll_cloudPtr->points[i].y;
+        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z = LidAll_cloudPtr->points[i].z;
 
         // std::cout << LidAll_cloudPtr->points[i].x;
         // std::cout << LidAll_cloudPtr->points[i].y;
         // std::cout << LidAll_cloudPtr->points[i].z << std::endl;
 
-        // std::cout << al.spatial_points_[al.out[1]][al.out[0]].x;
-        // std::cout << al.spatial_points_[al.out[1]][al.out[0]].y;
-        // std::cout << al.spatial_points_[al.out[1]][al.out[0]].z << std::endl;
+        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x;
+        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y;
+        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z << std::endl;
       }
     }
   }
@@ -237,36 +237,36 @@ int main(int argc, char** argv)
   ros::Subscriber LidarSc;
   LidarSc = nh.subscribe("LidarAll", 1, callback_LidarAll);
 
-  al.init(1);
+  g_al.init(1);
 
-  // al.out = al.run(50, 0, -2.5);
-  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+  // g_al.out = g_al.run(50, 0, -2.5);
+  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
 
-  // al.out = al.run(40, 0, -2.5);
-  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+  // g_al.out = g_al.run(40, 0, -2.5);
+  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
 
-  // al.out = al.run(30, 0, -2.5);
-  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+  // g_al.out = g_al.run(30, 0, -2.5);
+  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
 
-  // al.out = al.run(20, 0, -2.5);
-  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+  // g_al.out = g_al.run(20, 0, -2.5);
+  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
 
-  // al.out = al.run(10, 0, -2.5);
-  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+  // g_al.out = g_al.run(10, 0, -2.5);
+  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
 
-  // al.out = al.run(7, 0, -2.5);
+  // g_al.out = g_al.run(7, 0, -2.5);
 
-  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
 
-  // al.out = al.run();
+  // g_al.out = g_al.run();
   while (ros::ok())
   {
     ros::spinOnce();
     r.sleep();
   }
 
-  al.approx_nearest_points_if_necessary();
-  al.dump_distance_in_json();
+  g_al.approx_nearest_points_if_necessary();
+  g_al.dump_distance_in_json();
 
   // ros::spin();
   // return 0;
