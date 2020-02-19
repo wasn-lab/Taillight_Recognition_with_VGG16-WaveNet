@@ -50,7 +50,8 @@ brake_Q = Queue.Queue()
 run_state_pub = rospy.Publisher("ADV_op/run_state/republished", Bool, queue_size=10, latch=True)
 text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10, latch=True)
 mileage_json_pub = rospy.Publisher("/mileage/relative_mileage", String, queue_size=10, latch=True)
-brake_status_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
+# brake_event_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
+brake_event_pub = rospy.Publisher('/mileage/brake_event', String, queue_size=100, latch=True)
 #-------------------#
 
 
@@ -90,6 +91,30 @@ def brake_state_2_string(state_in):
     return state_2_string(brake_state_dict, state_in, \
                 str_undefined_state="Undefined brake state")
 #-------------------------------------------#
+
+
+# Event report: json_str converters
+#--------------------------------#
+def brake_state_2_json(state_in):
+    """
+    Through ROS std_msgs.String
+    json string:
+    {
+        "module": "yyy"
+        "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN"
+        "event_str": "xxx event of yyy module"
+    }
+    Output: json string
+    """
+    json_dict = dict()
+    json_dict["module"] = "brake"
+    if state_in >= 3: # 3 and 4
+        json_dict["status"] = "WARN"
+    else:
+        json_dict["status"] = "OK"
+    json_dict["event_str"] = brake_state_2_string(state_in)
+    return json.dumps(json_dict)
+#--------------------------------#
 
 
 def calculate_mileage(speed_mps):
@@ -146,7 +171,7 @@ def _flag_info_03_CB(data):
     The callback function of vehicle info.
     """
     global brake_state, brake_Q
-    global brake_status_pub
+    global brake_event_pub
     # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
 
     # brake state
@@ -159,7 +184,7 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( brake_state_2_string(brake_state) )
         # Publish as ROS message
-        brake_status_pub.publish( brake_state )
+        brake_event_pub.publish( brake_state_2_json(brake_state) )
 
 
 #---------------------#
@@ -262,7 +287,7 @@ def main(sys_args):
     # Publishing intial state
     #--------------------------------------#
     run_state_pub.publish( (adv_run_state==1) )
-    brake_status_pub.publish( brake_state )
+    brake_event_pub.publish( brake_state_2_json(brake_state) )
     #--------------------------------------#
 
     # Loop for user command via stdin
