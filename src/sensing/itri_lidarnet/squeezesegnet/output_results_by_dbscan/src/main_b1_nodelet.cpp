@@ -4,7 +4,7 @@
 #include "all_header.h"
 #include "VoxelGrid_CUDA.h"
 #include "VoxelFilter_CUDA.h"
-#include "RosModuleB1.hpp"
+#include "RosModuleB1.h"
 #include "S1Cluster.h"
 
 namespace output_dbscan_nodelet
