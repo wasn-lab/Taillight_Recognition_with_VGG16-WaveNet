@@ -61,7 +61,7 @@
   DISALLOW_COPY(TypeName);                                                                                             \
   DISALLOW_ASSIGN(TypeName)
 
-#define Point32 msgs::PointXYZ
+#define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
 #define FPS 0
@@ -90,6 +90,13 @@
 
 #define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
+
+#define PP_VERTICES_VIA_SPEED 1
+
+#if PP_VERTICES_VIA_SPEED
+#define TO_GRIDMAP 1
+#define SHOW_PP_VERTICES 0
+#endif
 
 #define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
 #if USE_RADAR_REL_SPEED
