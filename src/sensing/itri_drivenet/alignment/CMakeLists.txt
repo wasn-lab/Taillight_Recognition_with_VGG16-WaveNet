@@ -12,13 +12,18 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   car_model
   camera_utils
-  drivenet
 )  
 
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp rospy msgs
 )
+
+find_package(drivenet)                
+if (NOT ${drivenet_FOUND})
+  message("libs not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 ######################
 ##      OPENCV      ##
