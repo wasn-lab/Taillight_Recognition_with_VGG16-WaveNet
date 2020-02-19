@@ -63,10 +63,14 @@ void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, con
   for (unsigned i = 0; i < data_x.size(); i++)
   {
     if (data_x[i] < min.x)
+    {
       min.x = data_x[i];
+    }
 
     if (data_y[i] < min.y)
+    {
       min.y = data_y[i];
+    }
   }
 
   PointLD offset;
@@ -154,7 +158,9 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
 long double PathPredict::variance(const std::vector<long double>& samples, const long double mean)
 {
   if (samples.size() < 2)
+  {
     return 0;
+  }
 
   long double variance = 0;
   long double diff = 0;
@@ -177,10 +183,14 @@ long double PathPredict::covariance(const std::vector<long double>& samples_x,
                                     const long double mean_y)
 {
   if (samples_x.size() != samples_y.size())
+  {
     return 0;
+  }
 
   if (samples_x.size() < 2)
+  {
     return 0;
+  }
 
   long double covariance = 0;
   long double diff_x = 0;

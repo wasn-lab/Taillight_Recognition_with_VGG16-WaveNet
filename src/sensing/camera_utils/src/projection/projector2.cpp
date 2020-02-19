@@ -41,7 +41,7 @@ void Projector2::init(int camera_id)
   {
     case id::front_60:
       current_parameters_ =
-          CalibrateParameters(0.0, -1.34, 0.0, 0.0, -11, -0.4, 579, 304, 192, "/cam/F_center", "/CamObjFrontCenter");
+          CalibrateParameters(0.4, 0.3, -1.5, 0.0, -11, -2, 579, 304, 192, "/cam/F_center", "/CamObjFrontCenter");
       break;
     case id::top_front_120:
       current_parameters_ =
@@ -49,11 +49,11 @@ void Projector2::init(int camera_id)
       break;
     case id::left_60:
       current_parameters_ =
-          CalibrateParameters(0.0, -1.00, 0.0, 0.0, -13, 73, 293, 304, 192, "/cam/F_left", "/CamObjFrontLeft");
+          CalibrateParameters(0.3, -0.6, -1.4, 4, -9, 61, 579, 304, 192, "/cam/F_left", "/CamObjFrontLeft");
       break;
     case id::right_60:
       current_parameters_ =
-          CalibrateParameters(0.0, -1.00, 0.0, 0.0, 0, -80, 579, 304, 192, "/cam/F_right", "/CamObjFrontRight");
+          CalibrateParameters(0.4, 0.5, -1.5, -4, -11, -64.41, 579, 304, 192, "/cam/F_right", "/CamObjFrontRight");
       break;
     case id::top_rear_120:
       current_parameters_ =
