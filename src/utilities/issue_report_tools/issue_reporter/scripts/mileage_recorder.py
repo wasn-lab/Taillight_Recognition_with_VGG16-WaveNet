@@ -141,7 +141,7 @@ def module_run_state_2_json(state_in, module_name="module_run"):
         json_dict["status"] = "FATAL"
     else: # 1
         json_dict["status"] = "OK"
-    json_dict["event_str"] = "%s-%s" % (module_name, json_dict["status"])
+    json_dict["event_str"] = "%s-%s" % (module_name, "ON" if state_in >=1 else "OFF" )
     return json.dumps(json_dict)
 #--------------------------------#
 
