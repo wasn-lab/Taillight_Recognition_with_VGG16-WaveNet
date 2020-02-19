@@ -51,9 +51,10 @@
 static Geofence PCloud_Geofence;
 static Geofence BBox_Geofence;
 static Geofence Radar_Geofence;
+static Geofence PCloud_Geofence_original;
 static double Heading, SLAM_x, SLAM_y;
 //static uint Deadend_flag;
-static uint avoiding_path_flag;
+static uint overtake_over_flag;
 ros::Publisher Radar_marker;
 ros::Publisher Geofence_line;
 
@@ -71,14 +72,15 @@ void mm_tp_infoCallback(const msgs::MMTPInfo::ConstPtr& MMTPInfo){
 */
 
 
-void avoid_path_Callback(const std_msgs::Int32ConstPtr& msg){
-	avoiding_path_flag = msg->data;
+void overtake_over_Callback(const std_msgs::Int32::ConstPtr& msg){
+	overtake_over_flag = msg->data;
 }
+
 
 void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg){
 	Point Point_temp;
 	vector<Point> PointCloud_temp;
-	for(int i=0;i<msg->objects.size();i++){
+	for(uint i=0;i<msg->objects.size();i++){
 		Point_temp.X = msg->objects[i].bPoint.p0.x;
 		Point_temp.Y = msg->objects[i].bPoint.p0.y;
 		Point_temp.Speed = msg->objects[i].relSpeed;
@@ -110,7 +112,7 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg){
 void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg){
 	Point Point_temp;
 	vector<Point> PointCloud_temp;
-	for(int i=0;i<msg->objects.size();i++){
+	for(uint i=0;i<msg->objects.size();i++){
 		Point_temp.X = msg->objects[i].bPoint.p0.x;
 		Point_temp.Y = msg->objects[i].bPoint.p0.y;
 		Point_temp.Speed = msg->objects[i].relSpeed;
@@ -162,13 +164,13 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	int size = 50;
+	uint size = 50;
 	if (msg->poses.size()<size){
 		size = msg->poses.size(); 
 	}
 
 	double Resolution = 50;
-	for(int i=1;i<size;i++){
+	for(uint i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
 			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
@@ -179,6 +181,25 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	BBox_Geofence.setPath(Position);
 	Radar_Geofence.setPath(Position);
 }
+
+void astar_original_callback(const nav_msgs::Path::ConstPtr& msg){
+	vector<Point> Position;
+	Point Pos;
+	uint size = 50;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+	double Resolution = 50;
+	for(uint i=1;i<size;i++){
+		for(int j=0;j<Resolution;j++){
+			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
+			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
+			Position.push_back(Pos);
+		}	
+	}
+	PCloud_Geofence_original.setPath(Position);
+}
+
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 { 
@@ -195,6 +216,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 		PointCloud_temp.push_back(Point_temp);               
 	}
 	PCloud_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
+	PCloud_Geofence_original.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
 }
 
 void Publish_Marker_Radar(double X, double Y)
@@ -244,7 +266,7 @@ void Plot_geofence(Point temp)
 	line_list.id = 1;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
 	line_list.scale.x = 0.1;
-	line_list.color.g = 1.0;
+	line_list.color.r = 1.0;
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
@@ -270,11 +292,13 @@ int main(int argc, char **argv){
 	ros::NodeHandle n;
 	ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
 	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
+	ros::Subscriber AstarSub_original = n.subscribe("nav_path_astar_base_30", 1, astar_original_callback);// For objects on original path
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	//ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
-	ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, avoid_path_Callback);
+	ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
 	ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
+	
 	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPCloud);
 	#else
@@ -282,7 +306,8 @@ int main(int argc, char **argv){
 	#endif
 	Radar_marker = n.advertise<visualization_msgs::Marker>("RadarMarker", 1);
 	Geofence_line = n.advertise<visualization_msgs::Marker>("Geofence_line", 1);
-	ros::Publisher Geofence_PC = n.advertise<std_msgs::Float64>("Geofence_PC", 1);; 
+	ros::Publisher Geofence_PC = n.advertise<std_msgs::Float64>("Geofence_PC", 1);
+	ros::Publisher Geofence_original = n.advertise<std_msgs::Float64>("Geofence_original", 1);  
 	ros::Rate loop_rate(20);
 
 	int s;
@@ -325,6 +350,7 @@ int main(int argc, char **argv){
 			frame.data[6] = (short int)(PCloud_Geofence.getNearest_Y()*10);
 			frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
 			std_msgs::Float64 Geofence_temp;
 			Geofence_temp.data = PCloud_Geofence.getDistance_w();
 			Geofence_PC.publish(Geofence_temp);
@@ -334,6 +360,16 @@ int main(int argc, char **argv){
 			cerr << "Please initialize all PCloud parameters first" << endl;
 		}
 		
+		if(PCloud_Geofence_original.Calculator()==0){
+			cout << "Origianl path's geofence: " << PCloud_Geofence_original.getDistance() << endl;
+			std_msgs::Float64 Geofence_temp;
+			Geofence_temp.data = PCloud_Geofence_original.getDistance();
+			Geofence_original.publish(Geofence_temp); 
+		}
+		else{
+			cerr << "Please initialize all PCloud parameters first" << endl;
+		}
+
 		cout << "=========BBox=========" << endl;
 		if(BBox_Geofence.Calculator()==0){
 			frame.can_id  = 0x591;
@@ -342,8 +378,6 @@ int main(int argc, char **argv){
 			cout << "Farest: " <<  setprecision(6) << BBox_Geofence.getFarest() << "\t";
 			cout << "Speed: " << setprecision(6) << BBox_Geofence.getObjSpeed() << endl;
 			cout << "(X,Y): " << "(" << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << ")" << endl;
-			//cout << "Speed: " << PCloud_Geofence.Xpoly_one.size() << "\t" << PCloud_Geofence.Xpoly_two.size() << "\t" << PCloud_Geofence.Ypoly_one.size() << "\t" << PCloud_Geofence.Ypoly_two.size() << endl;
-			//cout << "Pointcloud: " << PCloud_Geofence.PointCloud.size() << endl;
 			frame.data[0] = (short int)(BBox_Geofence.getDistance()*100);
 			frame.data[1] = (short int)(BBox_Geofence.getDistance()*100)>>8;
 			frame.data[2] = (short int)(BBox_Geofence.getObjSpeed()*100);
@@ -353,6 +387,7 @@ int main(int argc, char **argv){
 			frame.data[6] = (short int)(BBox_Geofence.getNearest_Y()*10);
 			frame.data[7] = (short int)(BBox_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
 			//Publish_Marker(BBox_Geofence.getNearest_X(), BBox_Geofence.getNearest_Y());
 		}
 		else{
@@ -366,8 +401,6 @@ int main(int argc, char **argv){
  			cout << "Distance: " <<  setprecision(6) << Radar_Geofence.getDistance() << "\t";
 			cout << "Speed: " << setprecision(6) << Radar_Geofence.getObjSpeed() << endl;
 			cout << "(X,Y): " << "(" << Radar_Geofence.getNearest_X() << "," << Radar_Geofence.getNearest_Y() << ")" << endl << endl;
-			//cout << "Speed: " << PCloud_Geofence.Xpoly_one.size() << "\t" << PCloud_Geofence.Xpoly_two.size() << "\t" << PCloud_Geofence.Ypoly_one.size() << "\t" << PCloud_Geofence.Ypoly_two.size() << endl;
-			//cout << "Pointcloud: " << PCloud_Geofence.PointCloud.size() << endl;
 			frame.data[0] = (short int)(Radar_Geofence.getDistance()*100);
 			frame.data[1] = (short int)(Radar_Geofence.getDistance()*100)>>8;
 			frame.data[2] = (short int)(Radar_Geofence.getObjSpeed()*100);
@@ -377,6 +410,7 @@ int main(int argc, char **argv){
 			frame.data[6] = (short int)(Radar_Geofence.getNearest_Y()*10);
 			frame.data[7] = (short int)(Radar_Geofence.getNearest_Y()*10)>>8;
 			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
 			Publish_Marker_Radar(Radar_Geofence.getNearest_X(), Radar_Geofence.getNearest_Y());
 			
 		}
@@ -385,10 +419,11 @@ int main(int argc, char **argv){
 		}
 		
 		frame.can_id  = 0x599;
-		cout << "avoiding_path: " << avoiding_path_flag << " ";
-		frame.data[0] = (short int)(avoiding_path_flag);
-		frame.data[1] = (short int)(avoiding_path_flag)>>8;
+		cout << "overtake_over: " << overtake_over_flag << " ";
+		frame.data[0] = (short int)(overtake_over_flag);
+		frame.data[1] = (short int)(overtake_over_flag)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
+		printf("Wrote %d bytes\n", nbytes);
 		cout << "******************************************" << endl;
 		loop_rate.sleep();	
 	}

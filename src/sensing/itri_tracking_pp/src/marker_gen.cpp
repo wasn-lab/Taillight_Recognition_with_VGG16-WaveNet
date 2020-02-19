@@ -50,7 +50,7 @@ visualization_msgs::Marker MarkerGen::create_seq_marker(const unsigned int idx, 
   return marker;
 }
 
-geometry_msgs::Point MarkerGen::text_marker_position(const Point32 p1, const Point32 p2, const double z_offset)
+geometry_msgs::Point MarkerGen::text_marker_position(const MyPoint32 p1, const MyPoint32 p2, const double z_offset)
 {
   geometry_msgs::Point p;
   p.x = (p1.x + p2.x) * 0.5;
@@ -78,13 +78,13 @@ visualization_msgs::Marker MarkerGen::create_box_marker(const unsigned int idx, 
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
   set_ColorRGBA(marker.color, mc_.color);
 
-  std::vector<Point32> point_list = { bbox.p0, bbox.p1, bbox.p2, bbox.p3, bbox.p4, bbox.p5, bbox.p6, bbox.p7 };
+  std::vector<MyPoint32> point_list = { bbox.p0, bbox.p1, bbox.p2, bbox.p3, bbox.p4, bbox.p5, bbox.p6, bbox.p7 };
 
   marker.points.reserve(box_order.size());
   for (unsigned i = 0; i < box_order.size(); i++)
   {
     geometry_msgs::Point point_msg;
-    convert_Point32_to_Point(point_msg, point_list[box_order[i]]);
+    convert_MyPoint32_to_Point(point_msg, point_list[box_order[i]]);
     marker.points.push_back(point_msg);
   }
 
@@ -133,11 +133,11 @@ visualization_msgs::Marker MarkerGen::create_polygon_marker(const unsigned int i
     for (unsigned i = 0; i < cPoint.lowerAreaPoints.size(); i++)
     {
       geometry_msgs::Point p;
-      convert_Point32_to_Point(p, cPoint.lowerAreaPoints[i]);
+      convert_MyPoint32_to_Point(p, cPoint.lowerAreaPoints[i]);
       marker.points.push_back(p);
     }
     geometry_msgs::Point p;
-    convert_Point32_to_Point(p, cPoint.lowerAreaPoints[0]);
+    convert_MyPoint32_to_Point(p, cPoint.lowerAreaPoints[0]);
     marker.points.push_back(p);
   }
 
@@ -330,9 +330,9 @@ visualization_msgs::Marker MarkerGen::create_delay_marker(const unsigned int idx
   return marker;
 }
 
-visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, const float x, const float y,
-                                                       std_msgs::Header obj_header, const PPLongDouble pp,
-                                                       const unsigned int forecast_seq, const float abs_speed_kmph)
+visualization_msgs::Marker MarkerGen::create_pp_marker1(const unsigned int idx, const msgs::PointXY pos,
+                                                        std_msgs::Header obj_header, const PPLongDouble pp,
+                                                        const unsigned int forecast_seq, const float abs_speed_kmph)
 {
   visualization_msgs::Marker marker;
 
@@ -341,52 +341,66 @@ visualization_msgs::Marker MarkerGen::create_pp_marker(const unsigned int idx, c
 #else
   marker.header = obj_header;
 #endif
-  marker.ns = "PPOutput_pp";
+  marker.ns = "PPOutput_pp1";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
   marker.type = visualization_msgs::Marker::CYLINDER;
 
-  if (mc_.show_pp == 1)
-  {
-    double scale = abs_speed_kmph * (forecast_seq + 1) / 36.;
-    marker.scale.x = scale;
-    marker.scale.y = scale / 2;
-  }
-  else if (mc_.show_pp >= 2)
-  {
-    marker.scale.x = 0.25;
-    marker.scale.y = 0.25;
-  }
-  else
-  {
-    LOG_INFO << "Error: No show pp but run pp marker scale setting!" << std::endl;
-  }
+  double scale = abs_speed_kmph * (forecast_seq + 1) / 36.;
+  marker.scale.x = scale;
+  marker.scale.y = scale / 2;
   marker.scale.z = 0.1;
 
-  marker.pose.position.x = x;
-  marker.pose.position.y = y;
+  marker.pose.position.x = pos.x;
+  marker.pose.position.y = pos.y;
   marker.pose.position.z = 0.;
 
   marker.pose.orientation = tf2::toMsg(pp.q1);
 
   marker.lifetime = ros::Duration(mc_.lifetime_sec);
-  if (mc_.show_pp == 1)
-  {
-    marker.color.r = 0.8;
-    marker.color.g = 0.9 - forecast_seq * 0.035;
-    marker.color.b = 0.0;
-  }
-  else if (mc_.show_pp >= 2)
-  {
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
-  }
-  else
-  {
-    LOG_INFO << "Error: No show pp but run pp marker color setting!" << std::endl;
-  }
+
+  marker.color.r = 0.8;
+  marker.color.g = 0.9 - forecast_seq * 0.035;
+  marker.color.b = 0.0;
   marker.color.a = 0.3 - forecast_seq * 0.005;
+
+  return marker;
+}
+
+visualization_msgs::Marker MarkerGen::create_pp_marker2(const unsigned int idx, const msgs::PointXY pos,
+                                                        std_msgs::Header obj_header)
+{
+  visualization_msgs::Marker marker;
+
+#if SAME_OBJ_MARKER_HEADER
+  marker.header = header_;
+#else
+  marker.header = obj_header;
+#endif
+  marker.ns = "PPOutput_pp2";
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.id = idx;
+  marker.type = visualization_msgs::Marker::CYLINDER;
+
+  marker.scale.x = 0.3;
+  marker.scale.y = 0.3;
+  marker.scale.z = 0.1;
+
+  marker.pose.position.x = pos.x;
+  marker.pose.position.y = pos.y;
+  marker.pose.position.z = 0.;
+
+  marker.pose.orientation.x = 0;
+  marker.pose.orientation.y = 0;
+  marker.pose.orientation.z = 0;
+  marker.pose.orientation.w = 1;
+
+  marker.lifetime = ros::Duration(mc_.lifetime_sec);
+
+  marker.color.r = 1.0;
+  marker.color.g = 1.0;
+  marker.color.b = 0.0;
+  marker.color.a = 1.0;
 
   return marker;
 }
@@ -484,18 +498,37 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
                                   std::vector<std::vector<PPLongDouble> >& ppss)
 {
   std::vector<visualization_msgs::Marker>().swap(m_pp_.markers);
-  m_pp_.markers.reserve(objs.size() * num_forecasts_);
+#if SHOW_PP_VERTICES
+  m_pp_.markers.reserve(objs.size() * num_forecasts_ * 5);
+#endif
 
   for (unsigned i = 0; i < objs.size(); i++)
   {
     if (objs[i].track.is_ready_prediction)
     {
-      for (int j = objs[i].track.forecasts.size() - 1; j >= 0; j--)
+      for (int j = (int)num_forecasts_ - 1; j >= 0; j--)
       {
-        m_pp_.markers.push_back(create_pp_marker(idx++, objs[i].track.forecasts[j].position.x,
-                                                 objs[i].track.forecasts[j].position.y, objs[i].header, ppss[i][j], j,
-                                                 objs[i].absSpeed));
+        if (mc_.show_pp == 1)
+        {
+          m_pp_.markers.push_back(create_pp_marker1(idx++, objs[i].track.forecasts[j].position, objs[i].header,
+                                                    ppss[i][j], j, objs[i].absSpeed));
+        }
+        else if (mc_.show_pp == 2)
+        {
+          m_pp_.markers.push_back(create_pp_marker2(idx++, objs[i].track.forecasts[j].position, objs[i].header));
+        }
+        else
+        {
+          LOG_INFO << "Error: No show pp!" << std::endl;
+        }
       }
+
+#if SHOW_PP_VERTICES
+      for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
+      {
+        m_pp_.markers.push_back(create_pp_marker2(idx++, objs[i].track.forecasts[j].position, objs[i].header));
+      }
+#endif
     }
   }
 

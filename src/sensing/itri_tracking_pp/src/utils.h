@@ -42,11 +42,11 @@ void translate(float a[][2], const unsigned int n, const float x_pivot, const fl
 void translate3(float a[][3], const unsigned int n, const float x_pivot, const float y_pivot, const float z_pivot);
 
 void set_PoseRPY32(PoseRPY32& out, const PoseRPY32 in);
-void set_Point32(Point32& out, const Point32 in);
+void set_MyPoint32(MyPoint32& out, const MyPoint32 in);
 
-void swap_Point32(Point32& A, Point32& B);
-void convert_Point32_to_Point(geometry_msgs::Point& out, const Point32 in);
-Point32 add_two_Point32s(const Point32 A, const Point32 B);
+void swap_MyPoint32(MyPoint32& A, MyPoint32& B);
+void convert_MyPoint32_to_Point(geometry_msgs::Point& out, const MyPoint32 in);
+MyPoint32 add_two_MyPoint32s(const MyPoint32 A, const MyPoint32 B);
 
 float compute_scalar_projection_A_onto_B(const float Ax, const float Ay, const float Az,  //
                                          const float Bx, const float By, const float Bz);

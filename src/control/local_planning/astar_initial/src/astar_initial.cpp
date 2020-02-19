@@ -16,7 +16,9 @@
 ros::Publisher basepath_pub;
 ros::Publisher closetwaypoint_pub;
 ros::Publisher obstacletwaypoint_pub;
+ros::Publisher obstacletwaypoint_base_pub;
 ros::Publisher NavPath_Pub;
+ros::Publisher NavPath_Pub_30;
 ros::Publisher rearcurrentpose_pub;
 ros::Publisher enable_avoid_pub;
 
@@ -30,6 +32,7 @@ int search_size_ = 30;
 int closet_local_start_i = -10;
 double wheel_dis = 3.8;
 std_msgs::Int32 obswaypoints;
+std_msgs::Int32 obswaypoints_base;
 bool enable_avoid = false;
 bool avoid_flag = 0;
 
@@ -42,7 +45,9 @@ double seg_l[2000] = {};
 int read_index = 0;
 
 int pre_obswaypoints_data = -1;
+int pre_obswaypoints_data_base = -1;
 int obs_index = 0;
+int obs_index_base = 0;
 
 template <int size_readtmp>
 void read_txt(std::string fpname, double (&SEG_ID)[size_readtmp],double (&SEG_X)[size_readtmp],double (&SEG_Y)[size_readtmp],double (&SEG_Z)[size_readtmp],double (&SEG_H)[size_readtmp],double (&SEG_L)[size_readtmp])
@@ -177,7 +182,7 @@ void basepathgen_pub(int closet_i)
   Dpath.header.frame_id = "map";
   Dpose.header.frame_id = "map";
 
-  for (int i = closet_local_start_i; i < 1000; i++)
+  for (int i = closet_local_start_i; i < 1500; i++)
   {
     int j = i + closet_i;
     if (j >= read_index)
@@ -214,6 +219,29 @@ void basepathgen_pub(int closet_i)
   }
   basepath_pub.publish(msg);
   NavPath_Pub.publish(Dpath);
+}
+
+void basepathgen_pub_30(int closet_i)
+{
+  // rviz path
+  nav_msgs::Path Dpath;
+  geometry_msgs::PoseStamped Dpose;
+  Dpath.header.frame_id = "map";
+  Dpose.header.frame_id = "map";
+
+  for (int i = closet_local_start_i - 3; i < 42; i++)
+  {
+    int j = i + closet_i;
+    if (j >= read_index)
+      j = j - read_index;
+    if (j < 0)
+      j = j + read_index;
+
+    Dpose.pose = waypoints_init.waypoints[j].pose.pose;
+    Dpath.poses.push_back(Dpose);
+  }
+  NavPath_Pub_30.publish(Dpath);
+  // std::cout << "basepathgen_pub_30_size : " << Dpath.poses.size() << std::endl;
 }
 
 void localpathgen(int closet_i)
@@ -279,9 +307,11 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
   {
     closet_index = getLocalClosestWaypoint(waypoints_init,rear_pose.pose,search_size_); // rear or front
   }
+  // closet_index = 1400;
   std::cout << "closet_index = " << closet_index << std::endl;
   localpathgen(closet_index);
   basepathgen_pub(closet_index);
+  basepathgen_pub_30(closet_index);
 
   std_msgs::Int32 closetwaypoint;
   closetwaypoint.data = -closet_local_start_i;//closet_index;
@@ -296,7 +326,8 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
 void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 {
   int obswaypoints_data = std::ceil(obsdismsg->data);// + wheel_dis);
-  if (obswaypoints_data > 30)
+  // std::cout << "obswaypoints_data : " << obswaypoints_data << std::endl;
+  if (obswaypoints_data > 30 || obswaypoints_data <= 3.8)
     obswaypoints_data = -1;
   int obswaypoints_data_ = obswaypoints_data;
 
@@ -308,17 +339,46 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
 
   if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
     obswaypoints_data_ = -1;
+  if (avoid_flag != 0 && obs_index < 4) //
+    obswaypoints_data_ = -1;
 
-  // if (avoid_flag != 0 && obs_index < 4) //
+  // if there has state machine
+  // if (obs_index < 4) //
   //   obswaypoints_data_ = -1;
 
   ///////////////////////////////////////////////////////////////////
 
   // std_msgs::Int32 obswaypoints;
   obswaypoints.data = obswaypoints_data_;
-  std::cout << "obswaypoints.data : " << obswaypoints.data << std::endl;
+  // std::cout << "obswaypoints.data : " << obswaypoints.data << std::endl;
   obstacletwaypoint_pub.publish(obswaypoints);
   pre_obswaypoints_data = obswaypoints_data;
+}
+
+void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
+{
+  int obswaypoints_data_base = std::ceil(obsdismsg_base->data);// + wheel_dis);
+  // std::cout << "obswaypoints_data_base : " << obswaypoints_data_base << std::endl;
+  if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10) /////////////////////////////////
+    obswaypoints_data_base = -1;
+  int obswaypoints_data_base_ = 0;
+
+  ///////////////////////////////////////////////////////////////////
+  if (obswaypoints_data_base == -1)
+    obs_index_base += 1;
+  else
+    obs_index_base = 0;
+
+  if (obs_index_base > 10)
+    obswaypoints_data_base_ = -1;
+
+  ///////////////////////////////////////////////////////////////////
+
+  // std_msgs::Int32 obswaypoints;
+  obswaypoints_base.data = obswaypoints_data_base_;
+  // std::cout << "obswaypoints_base.data : " << obswaypoints_base.data << std::endl;
+  obstacletwaypoint_base_pub.publish(obswaypoints_base);
+  pre_obswaypoints_data_base = obswaypoints_data_base_;
 }
 
 void ukfmmCallback(const astar_initial::UKF_MM_msg::ConstPtr& ukfmmmsg)
@@ -348,12 +408,15 @@ int main(int argc, char** argv)
   globalpathinit();
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber obstacle_dis_sub = node.subscribe("Geofence_PC", 1, obsdisCallback);
+  ros::Subscriber obstacle_dis_1_sub = node.subscribe("Geofence_original", 1, obsdisbaseCallback);
   ros::Subscriber ukf_mm_sub = node.subscribe("ukf_mm_topic", 1, ukfmmCallback);
   ros::Subscriber avoiding_flag_sub = node.subscribe("avoiding_path", 1, avoidingflagCallback);
   basepath_pub = node.advertise<autoware_msgs::Lane>("base_waypoints", 10, true);
   closetwaypoint_pub = node.advertise<std_msgs::Int32>("closest_waypoint", 10, true);
   obstacletwaypoint_pub = node.advertise<std_msgs::Int32>("obstacle_waypoint", 10, true);
+  obstacletwaypoint_base_pub = node.advertise<std_msgs::Int32>("obstacle_waypoint_base", 10, true);
   NavPath_Pub = node.advertise<nav_msgs::Path>("nav_path_astar_base", 10, true);
+  NavPath_Pub_30 = node.advertise<nav_msgs::Path>("nav_path_astar_base_30", 10, true);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
   enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);

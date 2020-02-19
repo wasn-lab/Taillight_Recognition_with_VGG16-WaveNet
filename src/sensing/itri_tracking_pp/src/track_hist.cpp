@@ -67,7 +67,9 @@ void TrackHist::set_for_successive_element(const unsigned int tracktime, const f
   head_ = (head_ + 1) % max_len_;
 
   if (len_ < (unsigned short)max_len_)
+  {
     len_++;
+  }
 
   set_state(x, y, estimated_x, estimated_y, estimated_velocity_x, estimated_velocity_y);
 }

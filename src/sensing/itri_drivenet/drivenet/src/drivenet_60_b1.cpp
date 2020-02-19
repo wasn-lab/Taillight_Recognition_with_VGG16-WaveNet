@@ -19,202 +19,217 @@
 
 using namespace DriveNet;
 
-pthread_t thrdYolo;
-pthread_t thrdInterp;
-pthread_t thrdDisplay;
+/// camera layout
+#if CAR_MODEL_IS_B1
+const std::vector<int> cam_ids_{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
+#else
+#error "car model is not well defined"
+#endif
+
+/// class
+DistanceEstimation g_distEst;
+Yolo_app g_yoloApp;
+// CosmapGenerator g_cosmapGener;
+
+/// launch param
+int g_car_id = 1;
+bool g_standard_FPS = 0;
+bool g_display_flag = 0;
+bool g_input_resize = 1;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
+bool g_imgResult_publish = 1;
+
+/// function
 void* run_yolo(void*);
 void* run_interp(void*);
 void* run_display(void*);
 
-bool isInferStop;
-bool isInferData;
-bool isInferData_0;
-bool isInferData_1;
-bool isInferData_2;
-bool isCompressed = false;
+/// other param
+bool g_isInferStop;
+bool g_isInferData;
+bool g_isInferData_0;
+bool g_isInferData_1;
+bool g_isInferData_2;
+bool g_isCompressed = false;
 
-pthread_mutex_t mtxInfer;
-pthread_cond_t cndInfer;
-std::mutex display_mutex;
+/// thread
+pthread_mutex_t g_mtxInfer;
+pthread_cond_t g_cndInfer;
+std::mutex g_display_mutex;
 
-std::string cam60_0_topicName;
-std::string cam60_1_topicName;
-std::string cam60_2_topicName;
-ros::Subscriber cam60_0;
-ros::Subscriber cam60_1;
-ros::Subscriber cam60_2;
-ros::Publisher pub60_0;
-ros::Publisher pub60_1;
-ros::Publisher pub60_2;
-image_transport::Publisher pubImg_60_0;
-image_transport::Publisher pubImg_60_1;
-image_transport::Publisher pubImg_60_2;
-sensor_msgs::ImagePtr imgMsg;
-msgs::DetectedObjectArray doa60_0;
-msgs::DetectedObjectArray doa60_1;
-msgs::DetectedObjectArray doa60_2;
-// grid map
-ros::Publisher occupancy_grid_publisher;
+/// ros publisher/subscriber
+ros::Publisher g_pub60_0;
+ros::Publisher g_pub60_1;
+ros::Publisher g_pub60_2;
+image_transport::Publisher g_pubImg_60_0;
+image_transport::Publisher g_pubImg_60_1;
+image_transport::Publisher g_pubImg_60_2;
+msgs::DetectedObjectArray g_doa60_0;
+msgs::DetectedObjectArray g_doa60_1;
+msgs::DetectedObjectArray g_doa60_2;
+// // grid map
+// ros::Publisher g_occupancy_grid_publisher;
 
-int img_w = 1920;
-int img_h = 1208;
-int rawimg_w = 1920;
-int rawimg_h = 1208;
-int img_size = img_w * img_h;
-int rawimg_size = rawimg_w * rawimg_h;
-cv::Mat mat60_0;
-cv::Mat mat60_0_display;
-std::vector<ITRI_Bbox> vBBX60_0;
+/// image
+int g_img_w = 1920;
+int g_img_h = 1208;
+int g_rawimg_w = 1920;
+int g_rawimg_h = 1208;
+int g_img_size = g_img_w * g_img_h;
+int g_rawimg_size = g_rawimg_w * g_rawimg_h;
+cv::Mat g_mat60_0;
+cv::Mat g_mat60_0_display;
+cv::Mat g_mat60_1;
+cv::Mat g_mat60_1_display;
+cv::Mat g_mat60_2;
+cv::Mat g_mat60_2_display;
 
-cv::Mat mat60_1;
-cv::Mat mat60_1_display;
-std::vector<ITRI_Bbox> vBBX60_1;
+/// object
+std::vector<ITRI_Bbox> g_vBBX60_0;
+std::vector<ITRI_Bbox> g_vBBX60_1;
+std::vector<ITRI_Bbox> g_vBBX60_2;
+std::vector<std::vector<ITRI_Bbox>*> g_vbbx_output;
 
-cv::Mat mat60_2;
-cv::Mat mat60_2_display;
-std::vector<ITRI_Bbox> vBBX60_2;
-
-std::vector<std::vector<ITRI_Bbox>*> vbbx_output;
-
-std::vector<cv::Mat*> matSrcs;
-std::vector<uint32_t> matOrder;
-std::vector<std_msgs::Header> headers;
-std::vector<int> dist_rows;
-std::vector<int> dist_cols;
+/// detection information
+std::vector<cv::Mat*> g_matSrcs;
+std::vector<uint32_t> g_matOrder;
+std::vector<std_msgs::Header> g_headers;
+std::vector<int> g_dist_rows;
+std::vector<int> g_dist_cols;
 
 // Prepare cv::Mat
 void image_init()
 {
-  if (input_resize == 1)
+  if (g_input_resize == 1)
   {
-    img_w = 608;
-    img_h = 384;
+    g_img_w = 608;
+    g_img_h = 384;
   }
-  img_size = img_w * img_h;
+  g_img_size = g_img_w * g_img_h;
 
-  if (display_flag)
+  if (g_display_flag)
   {
-    mat60_0_display = cv::Mat(img_h, img_w, CV_8UC3, cv::Scalar(0));
-    mat60_1_display = cv::Mat(img_h, img_w, CV_8UC3, cv::Scalar(0));
-    mat60_2_display = cv::Mat(img_h, img_w, CV_8UC3, cv::Scalar(0));
+    g_mat60_0_display = cv::Mat(g_img_h, g_img_w, CV_8UC3, cv::Scalar(0));
+    g_mat60_1_display = cv::Mat(g_img_h, g_img_w, CV_8UC3, cv::Scalar(0));
+    g_mat60_2_display = cv::Mat(g_img_h, g_img_w, CV_8UC3, cv::Scalar(0));
   }
 }
 
 void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::vector<ITRI_Bbox>* vbbx, int dist_w,
                     int dist_h)
 {
-  pthread_mutex_lock(&mtxInfer);
+  pthread_mutex_lock(&g_mtxInfer);
 
   bool isPushData = false;
-  if (cam_order == camera::id::right_60 && !isInferData_0)
+  if (cam_order == camera::id::right_60 && !g_isInferData_0)
   {
-    isInferData_0 = true;
+    g_isInferData_0 = true;
     isPushData = true;
   }
-  if (cam_order == camera::id::front_60 && !isInferData_1)
+  if (cam_order == camera::id::front_60 && !g_isInferData_1)
   {
-    isInferData_1 = true;
+    g_isInferData_1 = true;
     isPushData = true;
   }
-  if (cam_order == camera::id::left_60 && !isInferData_2)
+  if (cam_order == camera::id::left_60 && !g_isInferData_2)
   {
-    isInferData_2 = true;
+    g_isInferData_2 = true;
     isPushData = true;
   }
 
   if (isPushData)
   {
-    matSrcs.push_back(mat);
-    matOrder.push_back(cam_order);
-    vbbx_output.push_back(vbbx);
-    headers.push_back(header);
-    dist_cols.push_back(dist_w);
-    dist_rows.push_back(dist_h);
+    g_matSrcs.push_back(mat);
+    g_matOrder.push_back(cam_order);
+    g_vbbx_output.push_back(vbbx);
+    g_headers.push_back(header);
+    g_dist_cols.push_back(dist_w);
+    g_dist_rows.push_back(dist_h);
 
     // std::cout << "Subscribe " <<  camera::topics[cam_ids_[cam_order]] << " image." << std::endl;
   }
 
-  if (matOrder.size() == cam_ids_.size())
+  if (g_matOrder.size() == cam_ids_.size())
   {
-    isInferData = true;
-    pthread_cond_signal(&cndInfer);
+    g_isInferData = true;
+    pthread_cond_signal(&g_cndInfer);
   }
-  pthread_mutex_unlock(&mtxInfer);
+  pthread_mutex_unlock(&g_mtxInfer);
 
-  while (isInferData)
+  while (g_isInferData)
     usleep(5);
 }
 
 void callback_60_0(const sensor_msgs::Image::ConstPtr& msg)
 {
-  if (!isInferData_0)
+  if (!g_isInferData_0)
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    mat60_0 = cv_ptr->image;
+    g_mat60_0 = cv_ptr->image;
     std_msgs::Header h = msg->header;
-    sync_inference(camera::id::right_60, h, &mat60_0, &vBBX60_0, 1920, 1208);
+    sync_inference(camera::id::right_60, h, &g_mat60_0, &g_vBBX60_0, 1920, 1208);
   }
 }
 
 void callback_60_1(const sensor_msgs::Image::ConstPtr& msg)
 {
-  if (!isInferData_1)
+  if (!g_isInferData_1)
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    mat60_1 = cv_ptr->image;
+    g_mat60_1 = cv_ptr->image;
     std_msgs::Header h = msg->header;
-    sync_inference(camera::id::front_60, h, &mat60_1, &vBBX60_1, 1920, 1208);
+    sync_inference(camera::id::front_60, h, &g_mat60_1, &g_vBBX60_1, 1920, 1208);
   }
 }
 
 void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
 {
-  if (!isInferData_2)
+  if (!g_isInferData_2)
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    mat60_2 = cv_ptr->image;
+    g_mat60_2 = cv_ptr->image;
     std_msgs::Header h = msg->header;
-    sync_inference(camera::id::left_60, h, &mat60_2, &vBBX60_2, 1920, 1208);
+    sync_inference(camera::id::left_60, h, &g_mat60_2, &g_vBBX60_2, 1920, 1208);
   }
 }
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
 {
-  if (!isInferData_0)
+  if (!g_isInferData_0)
   {
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_0);
-    sync_inference(camera::id::right_60, compressImg.header, &mat60_0, &vBBX60_0, 1920, 1208);
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat60_0);
+    sync_inference(camera::id::right_60, compressImg.header, &g_mat60_0, &g_vBBX60_0, 1920, 1208);
   }
 }
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
 {
-  if (!isInferData_1)
+  if (!g_isInferData_1)
   {
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_1);
-    sync_inference(camera::id::front_60, compressImg.header, &mat60_1, &vBBX60_1, 1920, 1208);
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat60_1);
+    sync_inference(camera::id::front_60, compressImg.header, &g_mat60_1, &g_vBBX60_1, 1920, 1208);
   }
 }
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
 {
-  if (!isInferData_2)
+  if (!g_isInferData_2)
   {
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(mat60_2);
-    sync_inference(camera::id::left_60, compressImg.header, &mat60_2, &vBBX60_2, 1920, 1208);
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat60_2);
+    sync_inference(camera::id::left_60, compressImg.header, &g_mat60_2, &g_vBBX60_2, 1920, 1208);
   }
 }
 
 void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
 {
+  sensor_msgs::ImagePtr imgMsg;
   imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
   if (cam_order == camera::id::right_60)
-    pubImg_60_0.publish(imgMsg);
+    g_pubImg_60_0.publish(imgMsg);
   else if (cam_order == camera::id::front_60)
-    pubImg_60_1.publish(imgMsg);
+    g_pubImg_60_1.publish(imgMsg);
   else if (cam_order == camera::id::left_60)
-    pubImg_60_2.publish(imgMsg);
+    g_pubImg_60_2.publish(imgMsg);
 }
 
 int main(int argc, char** argv)
@@ -223,20 +238,21 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
-  isInferStop = false;
-  isInferData = false;
+  g_isInferStop = false;
+  g_isInferData = false;
 
-  ros::param::get(ros::this_node::getName() + "/car_id", car_id);
-  ros::param::get(ros::this_node::getName() + "/standard_fps", standard_FPS);
-  ros::param::get(ros::this_node::getName() + "/display", display_flag);
-  ros::param::get(ros::this_node::getName() + "/input_resize", input_resize);
-  ros::param::get(ros::this_node::getName() + "/imgResult_publish", imgResult_publish);
+  ros::param::get(ros::this_node::getName() + "/car_id", g_car_id);
+  ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_FPS);
+  ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
+  ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
+  ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_imgResult_publish);
 
-  cam60_0_topicName = camera::topics[camera::id::right_60];
-  cam60_1_topicName = camera::topics[camera::id::front_60];
-  cam60_2_topicName = camera::topics[camera::id::left_60];
+  std::string cam60_0_topicName = camera::topics[camera::id::right_60];
+  std::string cam60_1_topicName = camera::topics[camera::id::front_60];
+  std::string cam60_2_topicName = camera::topics[camera::id::left_60];
 
-  if (isCompressed)
+  ros::Subscriber cam60_0, cam60_1, cam60_2;
+  if (g_isCompressed)
   {
     cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
     cam60_1 = nh.subscribe(cam60_1_topicName + std::string("/compressed"), 1, callback_60_1_decode);
@@ -249,47 +265,48 @@ int main(int argc, char** argv)
     cam60_2 = nh.subscribe(cam60_2_topicName, 1, callback_60_2);
   }
 
-  if (imgResult_publish)
+  if (g_imgResult_publish)
   {
-    pubImg_60_0 = it.advertise(cam60_0_topicName + std::string("/detect_image"), 1);
-    pubImg_60_1 = it.advertise(cam60_1_topicName + std::string("/detect_image"), 1);
-    pubImg_60_2 = it.advertise(cam60_2_topicName + std::string("/detect_image"), 1);
+    g_pubImg_60_0 = it.advertise(cam60_0_topicName + std::string("/detect_image"), 1);
+    g_pubImg_60_1 = it.advertise(cam60_1_topicName + std::string("/detect_image"), 1);
+    g_pubImg_60_2 = it.advertise(cam60_2_topicName + std::string("/detect_image"), 1);
   }
 
-  pub60_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontRight", 8);
-  pub60_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontCenter", 8);
-  pub60_2 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontLeft", 8);
+  g_pub60_0 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontRight", 8);
+  g_pub60_1 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontCenter", 8);
+  g_pub60_2 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontLeft", 8);
 
-  // occupancy grid map publisher
-  occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+  // // occupancy grid map publisher
+  // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 
-  pthread_mutex_init(&mtxInfer, NULL);
-  pthread_cond_init(&cndInfer, NULL);
+  pthread_mutex_init(&g_mtxInfer, NULL);
+  pthread_cond_init(&g_cndInfer, NULL);
 
+  pthread_t thrdYolo, thrdInterp, thrdDisplay;
   pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
-  if (standard_FPS == 1)
+  if (g_standard_FPS == 1)
     pthread_create(&thrdInterp, NULL, &run_interp, NULL);
-  if (display_flag == 1)
+  if (g_display_flag == 1)
     pthread_create(&thrdDisplay, NULL, &run_display, NULL);
 
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/b1_yolo_60.cfg";
   image_init();
-  yoloApp.init_yolo(pkg_path, cfg_file);
-  distEst.init(car_id);
+  g_yoloApp.init_yolo(pkg_path, cfg_file);
+  g_distEst.init(g_car_id);
 
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();
 
-  isInferStop = true;
+  g_isInferStop = true;
   pthread_join(thrdYolo, NULL);
-  if (standard_FPS == 1)
+  if (g_standard_FPS == 1)
     pthread_join(thrdInterp, NULL);
-  if (display_flag == 1)
+  if (g_display_flag == 1)
     pthread_join(thrdDisplay, NULL);
 
-  pthread_mutex_destroy(&mtxInfer);
-  yoloApp.delete_yolo_infer();
+  pthread_mutex_destroy(&g_mtxInfer);
+  g_yoloApp.delete_yolo_infer();
   ros::shutdown();
 
   return 0;
@@ -299,11 +316,11 @@ void* run_interp(void*)
 {
   std::cout << "run_interp start" << std::endl;
   ros::Rate r(30);
-  while (ros::ok() && !isInferStop)
+  while (ros::ok() && !g_isInferStop)
   {
-    pub60_0.publish(doa60_0);
-    pub60_1.publish(doa60_1);
-    pub60_2.publish(doa60_2);
+    g_pub60_0.publish(g_doa60_0);
+    g_pub60_1.publish(g_doa60_1);
+    g_pub60_2.publish(g_doa60_2);
     r.sleep();
   }
   std::cout << "run_interp close" << std::endl;
@@ -326,29 +343,29 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // Front right 60 range:
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
-    leftCheck = distEst.CheckPointInArea(distEst.camFR60_area, box.x1, box.y2);
-    rightCheck = distEst.CheckPointInArea(distEst.camFR60_area, box.x2, box.y2);
+    leftCheck = g_distEst.CheckPointInArea(g_distEst.camFR60_area, box.x1, box.y2);
+    rightCheck = g_distEst.CheckPointInArea(g_distEst.camFR60_area, box.x2, box.y2);
   }
   else if (cam_order == camera::id::front_60)
   {
     // Front center 60 range:
     // x axis: 7 ~ 50 meters
     // y axis: -10 ~ 10 meters
-    leftCheck = distEst.CheckPointInArea(distEst.camFC60_area, box.x1, box.y2);
-    rightCheck = distEst.CheckPointInArea(distEst.camFC60_area, box.x2, box.y2);
+    leftCheck = g_distEst.CheckPointInArea(g_distEst.camFC60_area, box.x1, box.y2);
+    rightCheck = g_distEst.CheckPointInArea(g_distEst.camFC60_area, box.x2, box.y2);
   }
   else if (cam_order == camera::id::left_60)
   {
     // Front left 60 range:
     // x axis: 0 - 10 meters
     // y axis: 4 ~ 30 meters
-    leftCheck = distEst.CheckPointInArea(distEst.camFL60_area, box.x1, box.y2);
-    rightCheck = distEst.CheckPointInArea(distEst.camFL60_area, box.x2, box.y2);
+    leftCheck = g_distEst.CheckPointInArea(g_distEst.camFL60_area, box.x1, box.y2);
+    rightCheck = g_distEst.CheckPointInArea(g_distEst.camFL60_area, box.x2, box.y2);
   }
 
   if (leftCheck == 0 && rightCheck == 0)
   {
-    boxPoint = distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
+    boxPoint = g_distEst.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
     detObj.bPoint = boxPoint;
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
@@ -375,20 +392,20 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
 void reset_data()
 {
-  matSrcs.clear();
-  headers.clear();
-  matOrder.clear();
-  vBBX60_0.clear();
-  vBBX60_1.clear();
-  vBBX60_2.clear();
-  vbbx_output.clear();
-  dist_cols.clear();
-  dist_rows.clear();
+  g_matSrcs.clear();
+  g_headers.clear();
+  g_matOrder.clear();
+  g_vBBX60_0.clear();
+  g_vBBX60_1.clear();
+  g_vBBX60_2.clear();
+  g_vbbx_output.clear();
+  g_dist_cols.clear();
+  g_dist_rows.clear();
 
-  isInferData = false;
-  isInferData_0 = false;
-  isInferData_1 = false;
-  isInferData_2 = false;
+  g_isInferData = false;
+  g_isInferData_0 = false;
+  g_isInferData_1 = false;
+  g_isInferData_2 = false;
 }
 
 void* run_yolo(void*)
@@ -407,34 +424,34 @@ void* run_yolo(void*)
   cv::Scalar class_color;
 
   ros::Rate r(30);
-  while (ros::ok() && !isInferStop)
+  while (ros::ok() && !g_isInferStop)
   {
     bool isDataVaild = true;
 
     // waiting for data
-    pthread_mutex_lock(&mtxInfer);
-    if (!isInferData)
-      pthread_cond_wait(&cndInfer, &mtxInfer);
-    pthread_mutex_unlock(&mtxInfer);
+    pthread_mutex_lock(&g_mtxInfer);
+    if (!g_isInferData)
+      pthread_cond_wait(&g_cndInfer, &g_mtxInfer);
+    pthread_mutex_unlock(&g_mtxInfer);
 
     // copy data
     for (size_t ndx = 0; ndx < cam_ids_.size(); ndx++)
     {
-      matSrcsRaw_tmp[ndx] = matSrcs[ndx]->clone();
+      matSrcsRaw_tmp[ndx] = g_matSrcs[ndx]->clone();
       matSrcs_tmp.push_back(&matSrcsRaw_tmp[ndx]);
     }
 
-    headers_tmp = headers;
-    vbbx_output_tmp = vbbx_output;
-    matOrder_tmp = matOrder;
-    dist_cols_tmp = dist_cols;
-    dist_rows_tmp = dist_rows;
+    headers_tmp = g_headers;
+    vbbx_output_tmp = g_vbbx_output;
+    matOrder_tmp = g_matOrder;
+    dist_cols_tmp = g_dist_cols;
+    dist_rows_tmp = g_dist_rows;
 
     // reset data
     reset_data();
 
     // check data
-    for (auto& mat : matSrcs)
+    for (auto& mat : g_matSrcs)
       isDataVaild &= CheckMatDataValid(*mat);
     for (auto& mat : matSrcs_tmp)
       isDataVaild &= CheckMatDataValid(*mat);
@@ -447,24 +464,24 @@ void* run_yolo(void*)
     }
 
     // inference
-    if (!input_resize)
-      yoloApp.input_preprocess(matSrcs_tmp);
+    if (!g_input_resize)
+      g_yoloApp.input_preprocess(matSrcs_tmp);
     else
-      yoloApp.input_preprocess(matSrcs_tmp, input_resize, dist_cols_tmp, dist_rows_tmp);
+      g_yoloApp.input_preprocess(matSrcs_tmp, g_input_resize, dist_cols_tmp, dist_rows_tmp);
 
-    yoloApp.inference_yolo();
-    yoloApp.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
+    g_yoloApp.inference_yolo();
+    g_yoloApp.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
 
     // publish results
     msgs::DetectedObjectArray doa;
     std::vector<msgs::DetectedObject> vDo;
     // grid map init
-    grid_map::GridMap costmap_ = cosmapGener.initGridMap();
+    // grid_map::GridMap costmap_ = g_cosmapGener.initGridMap();
 
     for (size_t ndx = 0; ndx < vbbx_output_tmp.size(); ndx++)
     {
       std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[ndx];
-      if (imgResult_publish || display_flag)
+      if (g_imgResult_publish || g_display_flag)
       {
         if (!(*matSrcs_tmp[ndx]).data)
         {
@@ -479,7 +496,7 @@ void* run_yolo(void*)
         }
         try
         {
-          cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(rawimg_w, rawimg_h), 0, 0, 0);
+          cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(g_rawimg_w, g_rawimg_h), 0, 0, 0);
         }
         catch (cv::Exception& e)
         {
@@ -497,7 +514,7 @@ void* run_yolo(void*)
         if (translate_label(box.label) == 0)
           continue;
         pool.push_back(std::async(std::launch::async, run_dist, box, cam_order));
-        if (imgResult_publish || display_flag)
+        if (g_imgResult_publish || g_display_flag)
         {
           class_color = get_label_color(box.label);
           cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
@@ -507,7 +524,7 @@ void* run_yolo(void*)
       {
         detObj = pool[i].get();
         vDo.push_back(detObj);
-        if (display_flag)
+        if (g_display_flag)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {
@@ -526,71 +543,71 @@ void* run_yolo(void*)
       doa.header = headers_tmp[ndx];
       doa.header.frame_id = "lidar";  // mapping to lidar coordinate
       doa.objects = vDo;
-      // object To grid map
-      costmap_[cosmapGener.layer_name_] =
-          cosmapGener.makeCostmapFromObjects(costmap_, cosmapGener.layer_name_, 8, doa, false);
+      // // object To grid map
+      // costmap_[g_cosmapGener.layer_name_] =
+      //     g_cosmapGener.makeCostmapFromObjects(costmap_, g_cosmapGener.layer_name_, 8, doa, false);
 
       if (cam_order == camera::id::right_60)
       {
-        if (standard_FPS == 1)
-          doa60_0 = doa;
+        if (g_standard_FPS == 1)
+          g_doa60_0 = doa;
         else
-          pub60_0.publish(doa);
+          g_pub60_0.publish(doa);
 
-        if (imgResult_publish || display_flag)
+        if (g_imgResult_publish || g_display_flag)
         {
-          display_mutex.lock();
-          mat60_0_display = M_display.clone();
-          display_mutex.unlock();
+          g_display_mutex.lock();
+          g_mat60_0_display = M_display.clone();
+          g_display_mutex.unlock();
 
-          if (imgResult_publish)
+          if (g_imgResult_publish)
           {
-            image_publisher(mat60_0_display, headers_tmp[ndx], cam_order);
+            image_publisher(g_mat60_0_display, headers_tmp[ndx], cam_order);
           }
         }
       }
       else if (cam_order == camera::id::front_60)
       {
-        if (standard_FPS == 1)
-          doa60_1 = doa;
+        if (g_standard_FPS == 1)
+          g_doa60_1 = doa;
         else
-          pub60_1.publish(doa);
+          g_pub60_1.publish(doa);
 
-        if (imgResult_publish || display_flag)
+        if (g_imgResult_publish || g_display_flag)
         {
-          display_mutex.lock();
-          mat60_1_display = M_display.clone();
-          display_mutex.unlock();
+          g_display_mutex.lock();
+          g_mat60_1_display = M_display.clone();
+          g_display_mutex.unlock();
 
-          if (imgResult_publish)
+          if (g_imgResult_publish)
           {
-            image_publisher(mat60_1_display, headers_tmp[ndx], cam_order);
+            image_publisher(g_mat60_1_display, headers_tmp[ndx], cam_order);
           }
         }
       }
       else if (cam_order == camera::id::left_60)
       {
-        if (standard_FPS == 1)
-          doa60_2 = doa;
+        if (g_standard_FPS == 1)
+          g_doa60_2 = doa;
         else
-          pub60_2.publish(doa);
+          g_pub60_2.publish(doa);
 
-        if (imgResult_publish || display_flag)
+        if (g_imgResult_publish || g_display_flag)
         {
-          display_mutex.lock();
-          mat60_2_display = M_display.clone();
-          display_mutex.unlock();
+          g_display_mutex.lock();
+          g_mat60_2_display = M_display.clone();
+          g_display_mutex.unlock();
 
-          if (imgResult_publish)
+          if (g_imgResult_publish)
           {
-            image_publisher(mat60_2_display, headers_tmp[ndx], cam_order);
+            image_publisher(g_mat60_2_display, headers_tmp[ndx], cam_order);
           }
         }
       }
       vDo.clear();
     }
     // grid map To Occpancy publisher
-    cosmapGener.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher, doa.header);
+    // g_cosmapGener.OccupancyMsgPublisher(costmap_, g_occupancy_grid_publisher, doa.header);
 
     std::cout << "Detect " << camera::topics[cam_ids_[0]] << ", " << camera::topics[cam_ids_[1]] << " and "
               << camera::topics[cam_ids_[2]] << " image." << std::endl;
@@ -627,30 +644,30 @@ void* run_display(void*)
   // cv::Point boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4;
   cv::Point boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4;
   // cv::Point boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4;
-  // boundaryMarker(rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4,
+  // boundaryMarker(g_rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4,
   // marker_h_0);
-  boundaryMarker(rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4, marker_h_1);
-  // boundaryMarker(rawimg_w, boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4,
+  boundaryMarker(g_rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4, marker_h_1);
+  // boundaryMarker(g_rawimg_w, boundaryMarker_2_1, boundaryMarker_2_2, boundaryMarker_2_3, boundaryMarker_2_4,
   // marker_h_2);
 
   ros::Rate r(10);
-  while (ros::ok() && !isInferStop)
+  while (ros::ok() && !g_isInferStop)
   {
-    if (mat60_0_display.data || mat60_1_display.data || mat60_2_display.data)
+    if (g_mat60_0_display.data || g_mat60_1_display.data || g_mat60_2_display.data)
     {
-      if (mat60_0_display.cols * mat60_0_display.rows == rawimg_size &&
-          mat60_1_display.cols * mat60_1_display.rows == rawimg_size &&
-          mat60_2_display.cols * mat60_2_display.rows == rawimg_size)
+      if (g_mat60_0_display.cols * g_mat60_0_display.rows == g_rawimg_size &&
+          g_mat60_1_display.cols * g_mat60_1_display.rows == g_rawimg_size &&
+          g_mat60_2_display.cols * g_mat60_2_display.rows == g_rawimg_size)
       {
         try
         {
-          display_mutex.lock();
-          cv::line(mat60_1_display, boundaryMarker_1_1, boundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
-          cv::line(mat60_1_display, boundaryMarker_1_3, boundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
-          cv::imshow("RightSide-60", mat60_0_display);
-          cv::imshow("Center-60", mat60_1_display);
-          cv::imshow("LeftSide-60", mat60_2_display);
-          display_mutex.unlock();
+          g_display_mutex.lock();
+          cv::line(g_mat60_1_display, boundaryMarker_1_1, boundaryMarker_1_2, cv::Scalar(255, 255, 255), 1);
+          cv::line(g_mat60_1_display, boundaryMarker_1_3, boundaryMarker_1_4, cv::Scalar(255, 255, 255), 1);
+          cv::imshow("RightSide-60", g_mat60_0_display);
+          cv::imshow("Center-60", g_mat60_1_display);
+          cv::imshow("LeftSide-60", g_mat60_2_display);
+          g_display_mutex.unlock();
           cv::waitKey(1);
         }
         catch (cv::Exception& e)
