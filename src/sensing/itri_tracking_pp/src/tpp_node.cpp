@@ -476,7 +476,7 @@ void TPPNode::publish_tracking()
 #if FPS_EXTRAPOLATION
         box.track.tracktime = (KTs_.tracks_[i].tracktime_ - 1) * num_publishs_per_loop + 1;
 #else
-        box.track.tracktime = KTs_.tracks_[i].tracktime_;
+    box.track.tracktime = KTs_.tracks_[i].tracktime_;
 #endif
 
         // set max_length
@@ -800,7 +800,9 @@ void TPPNode::control_sleep(const double loop_interval)
 #endif
 
   if (loop_elapsed > 0)
+  {
     this_thread::sleep_for(std::chrono::milliseconds((long int)round(1000 * (loop_interval - loop_elapsed))));
+  }
 
   loop_begin = ros::Time::now().toSec();
 }
