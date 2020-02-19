@@ -50,8 +50,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (auto const& obj : msg->objects)
     {
-      if (obj.classId != 1 || too_far(obj.bPoint))  // 1 for people
+      if (obj.classId != 1 || too_far(obj.bPoint))
+      {  // 1 for people
         continue;
+      }
 
       // set msg infomation
       msgs::PedObject obj_pub;
@@ -167,13 +169,17 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         {
           count_points++;
           if (count_points >= 3)
+          {
             has_keypoint = true;
+          }
         }
       }
       if (has_keypoint)
+      {
         obj_pub.crossProbability =
             crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
                              obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
+      }
       else
       {
         /*
@@ -256,18 +262,26 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         box.height = obj.camInfo.height;
         cv::rectangle(matrix2, box.tl(), box.br(), CV_RGB(0, 255, 0), 1);
         if (box.y >= 10)
+        {
           box.y -= 10;
+        }
         else
+        {
           box.y = 0;
+        }
 
         std::string probability;
         int p = 100 * obj.crossProbability;
         if (p >= cross_threshold)
         {
           if (show_probability)
+          {
             probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+          }
           else
+          {
             probability = "C";
+          }
 
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255),
                       2, 4, 0);
@@ -277,21 +291,31 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           if (show_probability)
           {
             if (p >= 10)
+            {
               probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+            }
             else
+            {
               probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+            }
           }
           else
+          {
             probability = "NC";
+          }
 
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
                       cv::Scalar(100, 220, 0), 2, 4, 0);
         }
 
         if (box.y >= 22)
+        {
           box.y -= 22;
+        }
         else
+        {
           box.y = 0;
+        }
 
         std::string id_print = "ID: " + std::to_string(obj.track.id);
         cv::putText(matrix2, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
@@ -465,11 +489,17 @@ float* PedestrianEvent::get_triangle_angle(float x1, float y1, float x2, float y
   else
   {
     if (std::max(a, std::max(b, c)) == a)
+    {
       angle[2] = M_PI;
+    }
     else if (std::max(a, std::max(b, c)) == b)
+    {
       angle[0] = M_PI;
+    }
     else
+    {
       angle[1] = M_PI;
+    }
   }
   return angle;
 }
@@ -509,9 +539,13 @@ float PedestrianEvent::predict_rf(cv::Mat input_data)
 bool PedestrianEvent::too_far(const msgs::BoxPoint box_point)
 {
   if ((box_point.p0.x + box_point.p6.x) / 2 > max_distance)
+  {
     return true;
+  }
   else
+  {
     return false;
+  }
 }
 
 void PedestrianEvent::pedestrian_event()
@@ -641,7 +675,9 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 #endif
 
   for (int i = 0; i < 25; i++)
+  {
     points.push_back(cv::Point2f(0.0, 0.0));
+  }
 
   return points;
 }
@@ -659,7 +695,9 @@ bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<
     key = (char)cv::waitKey(1);
   }
   else
+  {
     op::opLog("Nullptr or empty datumsPtr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
+  }
   return (key == 27);
 }
 
@@ -690,7 +728,7 @@ int PedestrianEvent::openPoseROS()
 
   return 0;
 }
-}
+}  // namespace ped
 int main(int argc, char** argv)
 {
 #if USE_GLOG
