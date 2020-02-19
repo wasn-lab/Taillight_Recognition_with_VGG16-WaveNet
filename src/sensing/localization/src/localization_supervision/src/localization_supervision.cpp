@@ -20,7 +20,7 @@ int pose_unstable = 8;
 static bool state_gnss_delay_flag = 0;
 static bool state_lidar_delay_flag = 0;
 static bool state_pose_delay_flag = 0;
-static bool pose_unstable_flag = 0;
+static bool pose_unstable_flag = 1;
 
 msgs::Pose pose_rate_pub_msg;
 std_msgs::Int32 state_msg;

@@ -6,33 +6,33 @@
 
 namespace tpp
 {
-class Point32Impl
+class MyPoint32Impl
 {
 public:
-  Point32Impl()
+  MyPoint32Impl()
   {
   }
 
-  ~Point32Impl()
+  ~MyPoint32Impl()
   {
   }
 
-  void set_point_abs(Point32 abs);
-  void set_point_rel(Point32 rel);
+  void set_point_abs(MyPoint32 abs);
+  void set_point_rel(MyPoint32 rel);
   void set_anchor_abs(PoseRPY32 anchor_abs);
 
   void init_point_z();
 
-  void get_point_abs(Point32& abs);
-  void get_point_rel(Point32& rel);
+  void get_point_abs(MyPoint32& abs);
+  void get_point_rel(MyPoint32& rel);
   void get_anchor_abs(PoseRPY32& anchor_abs);
 
   void transform_abs2rel();
   void transform_rel2abs();
 
 private:
-  Point32 abs_;
-  Point32 rel_;
+  MyPoint32 abs_;
+  MyPoint32 rel_;
   PoseRPY32 anchor_abs_;
 
   bool has_abs_ = false;
