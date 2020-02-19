@@ -37,7 +37,7 @@ private:
 
   geometry_msgs::Point init_Point(const double x, const double y, const double z);
 
-  geometry_msgs::Point text_marker_position(const Point32 p1, const Point32 p2, const double z_offset);
+  geometry_msgs::Point text_marker_position(const MyPoint32 p1, const MyPoint32 p2, const double z_offset);
 
   void set_marker_attr(visualization_msgs::Marker& marker, const geometry_msgs::Point point);
 
@@ -73,9 +73,12 @@ private:
   visualization_msgs::Marker create_delay_marker(const unsigned int idx, const geometry_msgs::Point point,
                                                  std_msgs::Header obj_header);
 
-  visualization_msgs::Marker create_pp_marker(const unsigned int idx, const float x, const float y,
-                                              std_msgs::Header obj_header, const PPLongDouble pp,
-                                              const unsigned int forecast_seq, const float abs_speed_kmph);
+  visualization_msgs::Marker create_pp_marker1(const unsigned int idx, const msgs::PointXY pos,
+                                               std_msgs::Header obj_header, const PPLongDouble pp,
+                                               const unsigned int forecast_seq, const float abs_speed_kmph);
+
+  visualization_msgs::Marker create_pp_marker2(const unsigned int idx, const msgs::PointXY pos,
+                                               std_msgs::Header obj_header);
 
   visualization_msgs::Marker create_vel_marker(const unsigned int idx, const geometry_msgs::Point point, const float vx,
                                                const float vy, std_msgs::Header obj_header);

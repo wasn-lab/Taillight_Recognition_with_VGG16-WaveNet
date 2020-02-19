@@ -328,15 +328,23 @@ void Velocity::debug_object_velocity(const float ego_dx, const float ego_dy, con
   LOG_INFO << "dt " << dt / 1000000.0f << " ms" << std::endl;
 
   if (detail)
+  {
     LOG_INFO << "ego_dx " << ego_dx << " box_center: x " << box_center_x << " x_prev " << box_center_x_prev << " dx "
              << box_center_x - box_center_x_prev << std::endl;
+  }
   else
+  {
     LOG_INFO << "ego_dx " << ego_dx << " box_center: dx " << box_center_x - box_center_x_prev << std::endl;
+  }
 
   if (detail)
+  {
     LOG_INFO << "ego_dy " << ego_dy << " box_center: y " << box_center_y << " y_prev " << box_center_y_prev << " dy "
              << box_center_y - box_center_y_prev << std::endl;
+  }
   else
+  {
     LOG_INFO << "ego_dy " << ego_dy << " box_center: dy " << box_center_y - box_center_y_prev << std::endl;
+  }
 }
 }  // namespace tpp

@@ -50,8 +50,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (auto const& obj : msg->objects)
     {
-      if (obj.classId != 1 || too_far(obj.bPoint))  // 1 for people
+      if (obj.classId != 1 || too_far(obj.bPoint))
+      {  // 1 for people
         continue;
+      }
 
       // set msg infomation
       msgs::PedObject obj_pub;
@@ -118,7 +120,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       // crop image for openpose
       cv::Mat cropedImage =
           matrix(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
-      // cv::imwrite( "/home/itri457854/frame2.png", cropedImage );
 
       // set size to resize cropped image for openpose
       // max pixel of width or height can only be 368
@@ -158,8 +159,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
       std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
 
-      sensor_msgs::ImageConstPtr msg_pub3 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", cropedImage).toImageMsg();
-      pose_pub.publish(msg_pub3);
       bool has_keypoint = false;
       int count_points = 0;
       int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
@@ -170,13 +169,17 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         {
           count_points++;
           if (count_points >= 3)
+          {
             has_keypoint = true;
+          }
         }
       }
       if (has_keypoint)
+      {
         obj_pub.crossProbability =
             crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
                              obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
+      }
       else
       {
         /*
@@ -196,7 +199,6 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj_pub.camInfo.height;
         if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
         {
-          cv::circle(cropedImage, keypoints.at(body_part[i]), 2, cv::Scalar(0, 255, 0));
           cv::Point p = keypoints.at(body_part[i]);
           p.x = obj_pub.camInfo.u + p.x;
           p.y = obj_pub.camInfo.v + p.y;
@@ -260,18 +262,26 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         box.height = obj.camInfo.height;
         cv::rectangle(matrix2, box.tl(), box.br(), CV_RGB(0, 255, 0), 1);
         if (box.y >= 10)
+        {
           box.y -= 10;
+        }
         else
+        {
           box.y = 0;
+        }
 
         std::string probability;
         int p = 100 * obj.crossProbability;
         if (p >= cross_threshold)
         {
           if (show_probability)
+          {
             probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+          }
           else
+          {
             probability = "C";
+          }
 
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255),
                       2, 4, 0);
@@ -281,21 +291,31 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           if (show_probability)
           {
             if (p >= 10)
+            {
               probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+            }
             else
+            {
               probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+            }
           }
           else
+          {
             probability = "NC";
+          }
 
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
                       cv::Scalar(100, 220, 0), 2, 4, 0);
         }
 
         if (box.y >= 22)
+        {
           box.y -= 22;
+        }
         else
+        {
           box.y = 0;
+        }
 
         std::string id_print = "ID: " + std::to_string(obj.track.id);
         cv::putText(matrix2, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
@@ -313,6 +333,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #if USE_GLOG
     stop = ros::Time::now();
     total_time += stop - start;
+    std::cout << "cost time: " << stop - start << " sec" << std::endl;
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
   }
@@ -468,11 +489,17 @@ float* PedestrianEvent::get_triangle_angle(float x1, float y1, float x2, float y
   else
   {
     if (std::max(a, std::max(b, c)) == a)
+    {
       angle[2] = M_PI;
+    }
     else if (std::max(a, std::max(b, c)) == b)
+    {
       angle[0] = M_PI;
+    }
     else
+    {
       angle[1] = M_PI;
+    }
   }
   return angle;
 }
@@ -512,9 +539,13 @@ float PedestrianEvent::predict_rf(cv::Mat input_data)
 bool PedestrianEvent::too_far(const msgs::BoxPoint box_point)
 {
   if ((box_point.p0.x + box_point.p6.x) / 2 > max_distance)
+  {
     return true;
+  }
   else
+  {
     return false;
+  }
 }
 
 void PedestrianEvent::pedestrian_event()
@@ -644,7 +675,9 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 #endif
 
   for (int i = 0; i < 25; i++)
+  {
     points.push_back(cv::Point2f(0.0, 0.0));
+  }
 
   return points;
 }
@@ -662,7 +695,9 @@ bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<
     key = (char)cv::waitKey(1);
   }
   else
+  {
     op::opLog("Nullptr or empty datumsPtr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
+  }
   return (key == 27);
 }
 
@@ -693,7 +728,7 @@ int PedestrianEvent::openPoseROS()
 
   return 0;
 }
-}
+}  // namespace ped
 int main(int argc, char** argv)
 {
 #if USE_GLOG
@@ -714,8 +749,6 @@ int main(int argc, char** argv)
       nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
-  ros::NodeHandle nh3;
-  pe.pose_pub = nh3.advertise<sensor_msgs::Image&>("/PedCross/CroppedBox", 1);  // /PedCross/CroppedBox is pub topic
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);
