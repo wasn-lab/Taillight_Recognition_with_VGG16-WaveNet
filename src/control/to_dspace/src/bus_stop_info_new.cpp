@@ -57,12 +57,10 @@ void send_can(){
 	}
 	frame.can_dlc = CAN_DLC;
 	frame.can_id  = 0x055;
-	/*
 	for(int i=0;i<8;i++){
 		frame.data[i] = (short int)(bus_stop_info[0][i]);
-		cout << "stop" << i+1 << ": " << int(frame.data[i]) << endl;
+			cout << "stop" << i+1 << ": " << int(frame.data[i]) << endl;
 	}
-	*/
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	printf("Wrote %d bytes\n", nbytes);
 	//Close the SocketCAN
@@ -78,18 +76,18 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 	unsigned int out_round = msg->stops[1].round; //下車趟次
 	unsigned int out_id = msg->stops[1].id; //下車站點ID
 	*/
-
+	std::cout << "Current round:" << endl;
 	for(uint i=0;i<msg->stops.size();i++){
 		for(uint j=0;j<bus_stop_code.size();j++){
-			if(bus_stop_code[j]==msg->stops[i].id){
+			if(bus_stop_code[j]==msg->stops[i].id && msg->stops[i].round>=round_count){
 				bus_stop_info[msg->stops[i].round-round_count][j] = 1;
 			}
-			std::cout << "stop" << j << ":" << bus_stop_info[0][j] << '\n';
+			std::cout << "stop" << j+1 << ":" << bus_stop_info[0][j] << '\n';
 		}
 	}
+	std::cout << "Next round:" << endl;
 	for(uint j=0;j<bus_stop_code.size();j++){
-		std::cout << "Next round:" << endl;
-		std::cout << "stop" << j << ":" << bus_stop_info[0][j] << '\n';
+		std::cout << "stop" << j+1 << ":" << bus_stop_info[1][j] << '\n';
 	}
 
 	/*
@@ -140,9 +138,9 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 {
 	if(msg->Dspace_Flag02==2 && bus_stop_info[0][int(msg->Dspace_Flag01)-1]==1){
 		bus_stop_info[0][int(msg->Dspace_Flag01)-1] = 0;
-		send_can();
 		double max = *max_element(bus_stop_info[0].begin(), bus_stop_info[0].end());
 		if(max==0){
+			
 			round_count = round_count+1;
 			for(uint i=0;i<(bus_stop_info.size()-1);i++){
 				bus_stop_info[i] = bus_stop_info[i+1];
@@ -150,8 +148,21 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 			for(uint i=0;i<bus_stop_info.back().size();i++){
 				bus_stop_info[bus_stop_info.size()-1][i] = 0;
 			}
+			std::cout << "Change to round: " << round_count << endl;
 		}
+		send_can();
 	}
+	msgs::Flag_Info msg_temp;
+	msg_temp.Dspace_Flag01 = bus_stop_info[0][0];
+	msg_temp.Dspace_Flag02 = bus_stop_info[0][1];
+	msg_temp.Dspace_Flag03 = bus_stop_info[0][2];
+	msg_temp.Dspace_Flag04 = bus_stop_info[0][3];
+	msg_temp.Dspace_Flag05 = bus_stop_info[0][4];
+	msg_temp.Dspace_Flag06 = bus_stop_info[0][5];
+	msg_temp.Dspace_Flag07 = bus_stop_info[0][6];
+	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
+	msg_temp.PX2_Flag01 = round_count;
+	publisher_01.publish(msg_temp);
 }
 
 
