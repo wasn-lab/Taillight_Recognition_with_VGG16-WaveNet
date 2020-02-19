@@ -111,8 +111,9 @@ struct pose
 
 struct ArriveStop
 {
-  int id;
-  int status;
+  int id; // next stop id
+  int status; // stauts
+  int current_round; // current round
 };
 
 const static int ROUTE_ID = 2000;
@@ -270,6 +271,7 @@ void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
   mutex_ros.lock();
   cuttent_arrive_stop.id = ROUTE_ID + (int)input->Dspace_Flag01;
   cuttent_arrive_stop.status = (int)input->Dspace_Flag02;
+  cuttent_arrive_stop.round = (int) input->PX2_Floag01;
   mutex_ros.unlock();
 }
 
@@ -436,6 +438,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ACCpower"] = true;
     J1["ArrivedStop"] = cuttent_arrive_stop.id;
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
+    J1["round"] = cuttent_arrive_stop.round;
     J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
     J1["distance"] = 0.0;
@@ -479,6 +482,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["RouteMode"] = 2;
     J1["ArrivedStop"] = cuttent_arrive_stop.id;
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
+    J1["round"] = cuttent_arrive_stop.round;
     J1["Signal"] = 1;
     J1["CMS"] = 1;
     J1["setting"] = 1;
