@@ -21,7 +21,7 @@ catkin_package(
 
 find_package(drivenet)                
 if (NOT ${drivenet_FOUND})
-  message("libs not found. Skip building ${PROJECT_NAME}")
+  message("drivenet not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
 
@@ -29,6 +29,10 @@ endif ()
 ##      OPENCV      ##
 ######################
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 ######################
 ##       CUDA       ##
@@ -43,11 +47,14 @@ endif ()
 ##       PCL        ##
 ######################
 find_package            (PCL 1.8 REQUIRED) 
+if (NOT ${PCL_FOUND})
+  message("PCL not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
-include_directories     (${CUDA_INCLUDE_DIRS}) 
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+
 
 include_directories(
   include
@@ -56,7 +63,7 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
-  ${DRIVENET_INCLUDE}
+  ${drivenet_SOURCE_DIR}/include
 )
 
 set(LIBS ${OpenCV_LIBRARIES}
