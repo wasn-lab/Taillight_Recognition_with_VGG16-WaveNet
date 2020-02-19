@@ -4,6 +4,7 @@ Check if global variables are comform to coding style:
     1. under_score, and
     2. starts with g_
 """
+import argparse
 import sys
 import logging
 import os
@@ -88,6 +89,12 @@ def check_cpp_global_var_naming(cpp):
     """
     Use clang-generated ast to find global variable naming violations.
     """
+    if not os.path.isfile(cpp):
+        return
+    if not cpp.endswith(".cpp"):
+        return
+    if is_external_package(cpp):
+        return
     logging.info("Check global variable naming convention: %s", cpp)
     violations = 0
     for var_decl in [_parse_var_decl(_) for _ in __get_global_var_decls(cpp)]:
@@ -104,29 +111,16 @@ def check_cpp_global_var_naming(cpp):
                 "FAIL: %s: global variable name is not under_score style "
                 "with starting g_ (line: %s, type: %s, AST repr: %s)",
                 _var, _line, _type, var_decl.get("ast_repr", ""))
-    return violations
-
-
-def check_global_var_naming():
-    """
-    Return the number of naming violations
-    """
-    num_violations = 0
-    for cpp in get_affected_files():
-        if not os.path.isfile(cpp):
-            continue
-        if not cpp.endswith(".cpp"):
-            continue
-        if is_external_package(cpp):
-            continue
-        num_violations += check_cpp_global_var_naming(cpp)
-    logging.info("Number of violations: %d", num_violations)
+    logging.info("Number of violations: %d", violations)
     return 0
 
 
 def main():
     """Prog entry"""
-    return check_global_var_naming()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cpp", required=True)
+    args = parser.parse_args()
+    return check_cpp_global_var_naming(args.cpp)
 
 
 if __name__ == "__main__":
