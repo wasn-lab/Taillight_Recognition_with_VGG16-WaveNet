@@ -3,17 +3,17 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-void AlignmentOff::init(int car_id)
+void alignmentOff::init(int car_id)
 {
   carId = car_id;
 
-  // pj.init(camera::id::front_60);
+  pj.init(camera::id::front_60);
   // pj.init(camera::id::top_front_120);
-  pj.init(camera::id::left_60);
+  // pj.init(camera::id::left_60);
   // pj.init(camera::id::right_60);
 
-  imgW = 1920;
-  imgH = 1208;
+  imgW = 608;
+  imgH = 384;
   groundUpBound = -2.44;
   groundLowBound = -2.84;
 
@@ -37,7 +37,7 @@ void AlignmentOff::init(int car_id)
   }
 }
 
-bool AlignmentOff::is_valid_image_point(const int row, const int col) const
+bool alignmentOff::is_valid_image_point(const int row, const int col) const
 {
   bool ret = true;
   if ((col < 0) || (col >= imgW) || (row < 0) || (row >= imgH))
@@ -47,12 +47,12 @@ bool AlignmentOff::is_valid_image_point(const int row, const int col) const
   return ret;
 }
 
-bool AlignmentOff::spatial_point_is_valid(const cv::Point3d& point) const
+bool alignmentOff::spatial_point_is_valid(const cv::Point3d& point) const
 {
   return (point.x != INIT_COORDINATE_VALUE) || (point.y != INIT_COORDINATE_VALUE) || (point.z != INIT_COORDINATE_VALUE);
 }
 
-bool AlignmentOff::spatial_point_is_valid(const int row, const int col) const
+bool alignmentOff::spatial_point_is_valid(const int row, const int col) const
 {
   if (is_valid_image_point(row, col))
   {
@@ -64,12 +64,12 @@ bool AlignmentOff::spatial_point_is_valid(const int row, const int col) const
   }
 }
 
-vector<int> AlignmentOff::run(float x, float y, float z)
+vector<int> alignmentOff::run(float x, float y, float z)
 {
   return pj.project(x, y, z);
 }
 
-bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point* valid_neighbor) const
+bool alignmentOff::search_valid_neighbor(const int row, const int col, cv::Point* valid_neighbor) const
 {
   for (int roffset = -1; roffset <= 1; roffset++)
   {
@@ -95,7 +95,7 @@ bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
   return false;
 }
 
-void AlignmentOff::approx_nearest_points_if_necessary()
+void alignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
   bool done = false;
@@ -158,7 +158,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
   std::cout << " unset_points: " << unset_points.size();
 }
 
-void AlignmentOff::dump_distance_in_json() const
+void alignmentOff::dump_distance_in_json() const
 {
   auto json_string = jsonize_spatial_points(spatial_points_, imgH, imgW);
   std::string filename = "out.json";
@@ -167,7 +167,7 @@ void AlignmentOff::dump_distance_in_json() const
   std::cout << "Write to " << filename << std::endl;
 }
 
-std::string AlignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, int rows, int cols) const
+std::string alignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, int rows, int cols) const
 {
   assert(spatial_points);
   assert(spatial_points[0]);
@@ -196,7 +196,7 @@ std::string AlignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, i
 }
 
 // Main
-AlignmentOff al;
+alignmentOff al;
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
@@ -238,6 +238,26 @@ int main(int argc, char** argv)
   LidarSc = nh.subscribe("LidarAll", 1, callback_LidarAll);
 
   al.init(1);
+
+  // al.out = al.run(50, 0, -2.5);
+  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+
+  // al.out = al.run(40, 0, -2.5);
+  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+
+  // al.out = al.run(30, 0, -2.5);
+  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+
+  // al.out = al.run(20, 0, -2.5);
+  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+
+  // al.out = al.run(10, 0, -2.5);
+  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+
+  // al.out = al.run(7, 0, -2.5);
+
+  // std::cout << al.out[0] << "," << al.out[1] << std::endl;
+
   // al.out = al.run();
   while (ros::ok())
   {
