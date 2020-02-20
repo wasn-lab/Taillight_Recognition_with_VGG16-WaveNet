@@ -151,10 +151,14 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
     index_range i_index_range;
     i_index_range.min_index = std::ceil(height*(min_y - (-grid_length_y_/2 + grid_position_y_))/grid_length_y_);
     if (i_index_range.min_index < 0)
+    {
       i_index_range.min_index = 0;
+    }
     i_index_range.max_index = std::ceil(height*(max_y - (-grid_length_y_/2 + grid_position_y_))/grid_length_y_);
     if (i_index_range.max_index > height)
+    {
       i_index_range.max_index = height;
+    }
 
     j_index.push_back(i_index_range);
   }
@@ -238,16 +242,24 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
         {
           int m = i+k;
           if (m < 0)
+          {
             continue;
+          }
           if (m >= height)
+          {
             continue;
+          }
           for (int l = -int(expand_size/resolution) ; l < int(expand_size/resolution) ; l++)
           {
             int n = j+l;
             if (n < 0)
+            {
               continue;
+            }
             if (n >= width)
+            {
               continue;
+            }
 
             int og_index_1 = m * width + n;
             if (costmap_sensor_all.data[og_index_1] > 0)
@@ -265,16 +277,24 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
         {
           int q = i+o;
           if (q < 0)
+          {
             continue;
+          }
           if (q >= height)
+          {
             continue;
+          }
           for (int p = -int(expand_size_0/resolution) ; p < int(expand_size_0/resolution) ; p++)
           {
             int r = j+p;
             if (r < 0)
+            {
               continue;
+            }
             if (r >= width)
+            {
               continue;
+            }
 
             int og_index_2 = q * width + r;
             if (costmap_sensor_all.data[og_index_2] > 0)

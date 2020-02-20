@@ -107,7 +107,9 @@ void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, 
     dis_waypoints = std::sqrt((next_pose_x - prev_pose_x)*(next_pose_x - prev_pose_x)+(next_pose_y - prev_pose_y)*(next_pose_y - prev_pose_y));
     dis += dis_waypoints;
     if (dis >= ahead_dis_)
+    {
       break;
+    }
   }
   // std::cout << "index : " << index << std::endl;
   double diff = dis - ahead_dis_;
@@ -159,9 +161,13 @@ void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
   lidar_m.getRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
 
   if (current_pose.yaw < 0)
+  {
     current_pose.yaw = current_pose.yaw + 2*RT_PI;
-  if (current_pose.yaw >= 2*RT_PI)
+  }
+  if (current_pose.yaw >= 2 * RT_PI)
+  {
     current_pose.yaw = current_pose.yaw - 2*RT_PI;
+  }
   current_pose_ini = true;
 }
 
@@ -176,9 +182,13 @@ void rear_currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
   lidar_m.getRPY(rear_current_pose.roll, rear_current_pose.pitch, rear_current_pose.yaw);
 
   if (rear_current_pose.yaw < 0)
+  {
     rear_current_pose.yaw = rear_current_pose.yaw + 2*RT_PI;
-  if (rear_current_pose.yaw >= 2*RT_PI)
+  }
+  if (rear_current_pose.yaw >= 2 * RT_PI)
+  {
     rear_current_pose.yaw = rear_current_pose.yaw - 2*RT_PI;
+  }
   current_pose_ini = true;
 }
 
