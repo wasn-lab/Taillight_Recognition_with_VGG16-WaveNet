@@ -19,6 +19,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(CUDA REQUIRED)
+if (NOT ${CUDA_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 if (CUDA_FOUND)
   message(STATUS "CUDA Include Dir: ${CUDA_INCLUDE_DIRS}")
   message(STATUS "CUDA Libararies: ${CUDA_LIBRARIES}")
@@ -27,6 +32,10 @@ if (CUDA_FOUND)
 endif()
 
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 if(OpenCV_FOUND)
   message(STATUS "OpenCV IncludeDir: ${OpenCV_INCLUDE_DIRS}")
   message(STATUS "OpenCV Libararies: ${OpenCV_LIBRARIES}")
