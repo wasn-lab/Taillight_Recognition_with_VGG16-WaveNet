@@ -1641,8 +1641,10 @@ void processGsofData( char* gsofData )
                                         );
                         }
                         // Terminate the last line if needed.
-                        if (gsofLength %16 != 0)
-                                printf( "\n" );
+                        if (gsofLength % 16 != 0)
+                        {
+                          printf("\n");
+                        }
                 }
 
                 printf( "\n" );
@@ -1700,16 +1702,21 @@ void postGsofData( char * pData, int length )
 
         // If this is the first portion, restart the buffering system.
         if (gsofPageIndex == 0)
-                gsofDataIndex = 0;
+        {
+          gsofDataIndex = 0;
+        }
 
         // Transfer the data bytes in this portion to the global buffer.
-        for (i = 7; i < length-5; ++i)
-                gsofData[ gsofDataIndex++ ] = *pData++;
+        for (i = 7; i < length - 5; ++i)
+        {
+          gsofData[gsofDataIndex++] = *pData++;
+        }
 
         // If this is the last portion in a packet, process the whole packet.
         if (gsofPageIndex == gsofMaxPageIndex)
-                processGsofData(gsofData);
-
+        {
+          processGsofData(gsofData);
+        }
 
 } /* end of postGsofData() */
 
@@ -1730,7 +1737,9 @@ int gc( void )
 
         c = getchar();
         if (c != EOF)
-                return c;
+        {
+          return c;
+        }
 
         printf( "END OF FILE \n" );
         _exit( 0 );

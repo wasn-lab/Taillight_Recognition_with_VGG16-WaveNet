@@ -151,9 +151,13 @@ void AstarAvoid::closestWaypointCallback(const std_msgs::Int32& msg)
 void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
 {
   if (msg.data == -1)
+  {
     obstacle_waypoint_index_ = msg.data;
+  }
   else
+  {
     obstacle_waypoint_index_ = msg.data + 6;
+}
 }
 
 void AstarAvoid::obstacleWaypointbaseCallback(const std_msgs::Int32& msg)
