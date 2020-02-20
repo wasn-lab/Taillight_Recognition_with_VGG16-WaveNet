@@ -144,9 +144,12 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 			double time = (j+1)*0.5;
 			double Range_front = time*Ego_speed_ms;
 			double Range_back = time*Ego_speed_ms-7; // Length of bus = 7m
-			if(Range_back<0) Range_back=0;
-			
-			if(msg->objects[i].track.is_ready_prediction==1)
+      if (Range_back < 0)
+      {
+        Range_back = 0;
+      }
+
+      if(msg->objects[i].track.is_ready_prediction==1)
 			{
 				Point_temp.X = msg->objects[i].track.forecasts[j].position.x;
 				//cout << Point_temp.X << endl;

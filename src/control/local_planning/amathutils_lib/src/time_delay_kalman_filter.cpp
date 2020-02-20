@@ -94,7 +94,9 @@ bool TimeDelayKalmanFilter::updateWithDelay(const Eigen::MatrixXd &y, const Eige
 
   /* update */
   if (!update(y, C_ex, R))
+  {
     return false;
+  }
 
   return true;
 };
