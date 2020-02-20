@@ -39,6 +39,11 @@ speed_mps_filtered = 0.0 # m/sec.
 # State
 adv_run_state = 0
 brake_state = 0
+# Module states
+Xbywire_run_state = 0
+AEB_run_state = 0
+ACC_run_state = 0
+#
 
 # Queue
 adv_run_Q = Queue.Queue()
@@ -52,6 +57,10 @@ text_marker_pub = rospy.Publisher("/mileage/status_text", String, queue_size=10,
 mileage_json_pub = rospy.Publisher("/mileage/relative_mileage", String, queue_size=10, latch=True)
 # brake_event_pub = rospy.Publisher('/mileage/brake_status', Int32, queue_size=100, latch=True)
 brake_event_pub = rospy.Publisher('/mileage/brake_event', String, queue_size=100, latch=True)
+# Module states
+Xbywire_run_event_pub = rospy.Publisher('/mileage/Xbywire_run', String, queue_size=100, latch=True)
+AEB_run_event_pub = rospy.Publisher('/mileage/AEB_run', String, queue_size=100, latch=True)
+ACC_run_event_pub = rospy.Publisher('/mileage/ACC_run', String, queue_size=100, latch=True)
 #-------------------#
 
 
@@ -114,6 +123,26 @@ def brake_state_2_json(state_in):
         json_dict["status"] = "OK"
     json_dict["event_str"] = brake_state_2_string(state_in)
     return json.dumps(json_dict)
+
+def module_run_state_2_json(state_in, module_name="module_run"):
+    """
+    Through ROS std_msgs.String
+    json string:
+    {
+        "module": "yyy"
+        "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN"
+        "event_str": "xxx event of yyy module"
+    }
+    Output: json string
+    """
+    json_dict = dict()
+    json_dict["module"] = module_name
+    if state_in < 1:
+        json_dict["status"] = "FATAL"
+    else: # 1
+        json_dict["status"] = "OK"
+    json_dict["event_str"] = "%s-%s" % (module_name, "ON" if state_in >=1 else "OFF" )
+    return json.dumps(json_dict)
 #--------------------------------#
 
 
@@ -172,6 +201,8 @@ def _flag_info_03_CB(data):
     """
     global brake_state, brake_Q
     global brake_event_pub
+    global Xbywire_run_state, AEB_run_state, ACC_run_state
+    global Xbywire_run_event_pub, AEB_run_event_pub, ACC_run_event_pub
     # print("Dspace_Flag07 = %f" % data.Dspace_Flag07)
 
     # brake state
@@ -185,6 +216,37 @@ def _flag_info_03_CB(data):
         print( brake_state_2_string(brake_state) )
         # Publish as ROS message
         brake_event_pub.publish( brake_state_2_json(brake_state) )
+
+    # Xbywire states
+    Xbywire_run_state_now = int( round(data.Dspace_Flag06) )
+    if Xbywire_run_state != Xbywire_run_state_now:
+        # State change event
+        Xbywire_run_state = Xbywire_run_state_now
+        # Print to stdout
+        print( "Xbywire_run_state = %d" % Xbywire_run_state )
+        # Publish as ROS message
+        Xbywire_run_event_pub.publish( module_run_state_2_json(Xbywire_run_state, module_name="Xbywire") )
+
+    # AEB states
+    AEB_run_state_now = int( round(data.Dspace_Flag07) )
+    if AEB_run_state != AEB_run_state_now:
+        # State change event
+        AEB_run_state = AEB_run_state_now
+        # Print to stdout
+        print( "AEB_run_state = %d" % AEB_run_state )
+        # Publish as ROS message
+        AEB_run_event_pub.publish( module_run_state_2_json(AEB_run_state, module_name="AEB") )
+
+    # ACC states
+    ACC_run_state_now = int( round(data.Dspace_Flag08) )
+    if ACC_run_state != ACC_run_state_now:
+        # State change event
+        ACC_run_state = ACC_run_state_now
+        # Print to stdout
+        print( "ACC_run_state = %d" % ACC_run_state )
+        # Publish as ROS message
+        ACC_run_event_pub.publish( module_run_state_2_json(ACC_run_state, module_name="ACC") )
+
 
 
 #---------------------#

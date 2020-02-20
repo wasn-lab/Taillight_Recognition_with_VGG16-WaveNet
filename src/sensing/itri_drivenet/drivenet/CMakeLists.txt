@@ -20,6 +20,14 @@ set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 
+######################
+##       PCL        ##
+######################
+find_package            (PCL 1.8 REQUIRED) 
+include_directories     (${PCL_INCLUDE_DIRS})
+link_directories        (${PCL_LIBRARY_DIRS})
+add_definitions         (${PCL_DEFINITIONS})
+
 find_package(CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
@@ -41,6 +49,7 @@ set(LIBS drivenet_lib
          object_costmap_generator
          camera_utils
          ${OpenCV_LIBRARIES}
+         ${PCL_LIBRARIES}
          nvinfer
          nvinfer_plugin
          ${CUDA_LIBRARIES}
@@ -70,18 +79,34 @@ link_directories(
   ${OpenCV_LIBRARY_DIRS}
 )
 
+file(GLOB_RECURSE LIB_SOURCES *.cpp)
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_60_b1.cpp" )
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_120_1_b1.cpp" )
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_120_2_b1.cpp" )
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/campub_all.cpp" )
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/alignment_offline_b1.cpp" )
+message(STATUS "Lib_sources: " ${LIB_SOURCES})
+add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
+
 file(GLOB_RECURSE EXCEPTION_SRCS src/exception_handling/*.cpp)
 file(GLOB_RECURSE COMMON_UTILS src/common_utils/*.cpp)
-
-add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/distance_estimation_b1.cpp src/alignment_offline_b1.cpp src/object_label_util.cpp src/boundary_util.cpp src/image_preprocessing.cpp  ${EXCEPTION_SRCS} ${COMMON_UTILS})
-add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/alignment_offline_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp   ${EXCEPTION_SRCS} ${COMMON_UTILS})
-add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/alignment_offline_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp  ${EXCEPTION_SRCS} ${COMMON_UTILS})
+add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp  src/trt_yolo_interface.cpp  src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp src/image_preprocessing.cpp  ${EXCEPTION_SRCS} ${COMMON_UTILS})
+add_executable(${PROJECT_NAME}_node1 src/drivenet_120_1_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp   ${EXCEPTION_SRCS} ${COMMON_UTILS})
+add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp  src/trt_yolo_interface.cpp src/distance_estimation_b1.cpp src/object_label_util.cpp src/boundary_util.cpp  src/image_preprocessing.cpp  ${EXCEPTION_SRCS} ${COMMON_UTILS})
 add_executable(${PROJECT_NAME}_node3 src/campub_all.cpp  ${EXCEPTION_SRCS})
+add_executable(${PROJECT_NAME}_node4 src/alignment_offline_b1.cpp ${EXCEPTION_SRCS} ${COMMON_UTILS})
 
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node3 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_node4 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(${PROJECT_NAME}
+   ${catkin_LIBRARIES}
+   ${LIBS}
+)
 
 target_link_libraries(${PROJECT_NAME}_node
    ${catkin_LIBRARIES}
@@ -99,6 +124,11 @@ target_link_libraries(${PROJECT_NAME}_node2
 )
 
 target_link_libraries(${PROJECT_NAME}_node3
+   ${catkin_LIBRARIES}
+   ${LIBS}
+)
+
+target_link_libraries(${PROJECT_NAME}_node4
    ${catkin_LIBRARIES}
    ${LIBS}
 )

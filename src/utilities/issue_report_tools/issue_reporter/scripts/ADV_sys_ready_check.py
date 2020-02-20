@@ -47,6 +47,7 @@ check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
 check_list += ["localization_state"]
+check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -57,6 +58,7 @@ startup_check_list = ["node_alive", "REC_is_recording"]
 # The following items will be added for release version
 # startup_check_list += ["backend_connected"] # Will be added for release version
 # startup_check_list += ["localization_state"]
+# startup_check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
 
 
 print("check_list = %s" % str(check_list))
@@ -392,6 +394,10 @@ def main():
     rospy.Subscriber("/mileage/brake_event", String, (lambda msg: _checker_CB(msg, "brake_status", is_event_msg=True, code_func=code_func_event_json ) ) )
     # Localization (state published in 40 Hz)
     rospy.Subscriber("/localization_state", Int32, (lambda msg: _checker_CB(msg, "localization_state", is_event_msg=False, code_func=code_func_localization ) ) )
+    # Module state
+    rospy.Subscriber("/mileage/Xbywire_run", String, (lambda msg: _checker_CB(msg, "Xbywire_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    rospy.Subscriber("/mileage/AEB_run", String, (lambda msg: _checker_CB(msg, "AEB_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    rospy.Subscriber("/mileage/ACC_run", String, (lambda msg: _checker_CB(msg, "ACC_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     #-----------------------------#
 
 
