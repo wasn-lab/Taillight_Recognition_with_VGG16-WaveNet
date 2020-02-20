@@ -55,10 +55,12 @@ public:
   ~GPUFrame()
   {
     for (size_t i = 0; i < size; ++i)
+    {
       if (frames_GPU[i] != nullptr)
       {
         cudaFree(frames_GPU[i]);
       }
+    }
     cudaStreamDestroy(st);
   }
 
@@ -73,7 +75,9 @@ private:
   void init(size_t s)
   {
     for (size_t i = 0; i < s; ++i)
+    {
       frames_GPU[i] = nullptr;
+    }
     cudaStreamCreate(&st);
   }
 };

@@ -311,7 +311,9 @@ void openroadnet::display_result(cv::Mat& video_ptr, std::vector<std::vector<int
     cv::Point start = cv::Point(dis_free_[i - 1][0], dis_free_[i - 1][1]);
     cv::Point end = cv::Point(dis_free_[i][0], dis_free_[i][1]);
     if (i == 0)
+    {
       continue;
+    }
     cv::line(video_ptr, start, end, cv::Scalar(0, 0, 255), 3);
   }
 }
