@@ -42,3 +42,5 @@ src/sensing/itri_pedcross/models/
 src/sensing/itri_pedcross/openpose/
 src/bags/
 src/dl_data/assets/
+
+src/sensing/itri_lidarnet/lidars_grabber/src/UI/Makefile
