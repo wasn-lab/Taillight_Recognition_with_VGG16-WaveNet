@@ -83,7 +83,9 @@ int main(int argc, char** argv)
 
   ros::param::get(ros::this_node::getName() + "/display", display_flag);
   if (display_flag)
+  {
     pub = nh.advertise<sensor_msgs::Image>("/OpenRoadNet_img", 1);
+  }
 
   std::string pkg_path = ros::package::getPath("openroadnet");
 
