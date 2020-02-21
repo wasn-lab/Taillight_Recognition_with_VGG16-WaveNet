@@ -72,18 +72,24 @@ void send_can(){
 
 void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 {
-	std::cout << "Current round:" << endl;
-	for(uint i=0;i<msg->stops.size();i++){
-		for(uint j=0;j<bus_stop_code.size();j++){
-			if(bus_stop_code[j]==msg->stops[i].id && msg->stops[i].round>=round_count){
+	
+	for(uint i=0;i<msg->stops.size();i++)
+	{
+		for(uint j=0;j<bus_stop_code.size();j++)
+		{
+			if(bus_stop_code[j]==msg->stops[i].id && msg->stops[i].round>=round_count)
+			{
 				bus_stop_info[msg->stops[i].round-round_count][j] = 1;
 			}
-			std::cout << "stop" << j+1 << ":" << bus_stop_info[0][j] << '\n';
 		}
 	}
+	std::cout << "Current round:" << endl;
+	for(uint i=0;i<bus_stop_code.size();i++){
+		std::cout << "stop" << i+1 << ":" << bus_stop_info[0][i] << '\n';
+	}
 	std::cout << "Next round:" << endl;
-	for(uint j=0;j<bus_stop_code.size();j++){
-		std::cout << "stop" << j+1 << ":" << bus_stop_info[1][j] << '\n';
+	for(uint i=0;i<bus_stop_code.size();i++){
+		std::cout << "stop" << i+1 << ":" << bus_stop_info[1][i] << '\n';
 	}
 	send_can();
 	msgs::Flag_Info msg_temp;
