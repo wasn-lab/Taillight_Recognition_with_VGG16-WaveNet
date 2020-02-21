@@ -6,6 +6,7 @@
 #include "std_msgs/Float64.h"
 #include "std_msgs/Bool.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Int32.h"
 #include "msgs/Flag_Info.h"
 #include "msgs/StopInfoArray.h"
 #include "msgs/StopInfo.h"
@@ -34,6 +35,7 @@ int round_count=1;
 const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
 
 ros::Publisher publisher_01;
+ros::Publisher publisher_02;
 
 
 
@@ -70,12 +72,6 @@ void send_can(){
 
 void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 {
-	/*
-	unsigned int in_round = msg->stops[0].round; //上車趟次
-	unsigned int in_id = msg->stops[0].id; //上車站點ID
-	unsigned int out_round = msg->stops[1].round; //下車趟次
-	unsigned int out_id = msg->stops[1].id; //下車站點ID
-	*/
 	std::cout << "Current round:" << endl;
 	for(uint i=0;i<msg->stops.size();i++){
 		for(uint j=0;j<bus_stop_code.size();j++){
@@ -89,37 +85,6 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 	for(uint j=0;j<bus_stop_code.size();j++){
 		std::cout << "stop" << j+1 << ":" << bus_stop_info[1][j] << '\n';
 	}
-
-	/*
-	for (string s: msg->data)
-	{
-		int temp = 0;
-		int stop_round = 0;
-		int stop_id = 0;
-		for (string c:s)
-		{
-			if (c >= '0' && c <= '9') {
-				temp = temp * 10 + (c - '0');
-			}
-			else if(c == '#'){
-				stop_round = temp;
-				temp = 0;
-			}
-			else {
-				std::cout << "Bad Input";
-				return;
-			}
-		}
-		stop_id = temp;
-		std::cout << "Round: " << stop_round << '\t' << "ID: "<< stop_id <<'\n';
-		for(uint i=0;i<bus_stop_code.size();i++){
-			if(bus_stop_code[i]==stop_id){
-				bus_stop_flag[stop_round-round_count][i] = 1;
-			}
-			std::cout << "stop" << i << ":" << bus_stop_flag[0][i] << '\n';
-		}
-	}
-	*/
 	send_can();
 	msgs::Flag_Info msg_temp;
 	msg_temp.Dspace_Flag01 = bus_stop_info[0][0];
@@ -130,8 +95,10 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 	msg_temp.Dspace_Flag06 = bus_stop_info[0][5];
 	msg_temp.Dspace_Flag07 = bus_stop_info[0][6];
 	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
-	msg_temp.PX2_Flag01 = round_count;
 	publisher_01.publish(msg_temp);
+	std_msgs::Int32 round_temp;
+	round_temp.data = round_count;
+	publisher_02.publish(round_temp); 
 }
 
 void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
@@ -149,6 +116,9 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 				bus_stop_info[bus_stop_info.size()-1][i] = 0;
 			}
 			std::cout << "Change to round: " << round_count << endl;
+			std_msgs::Int32 round_temp;
+			round_temp.data = round_count;
+			publisher_02.publish(round_temp);
 		}
 		send_can();
 	}
@@ -177,6 +147,7 @@ int main(int argc, char **argv)
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
 	ros::Subscriber subscriber_02 = n.subscribe("/NextStop/Info", 1, chatterCallback_02);
 	publisher_01 = n.advertise<msgs::Flag_Info>("/BusStop/Info", 1);
+	publisher_02 = n.advertise<std_msgs::Int32>("/BusStop/Round", 1);
 	ros::spin();
 	return 0;
 }
