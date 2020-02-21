@@ -264,9 +264,13 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     else
     {
       if (piexl_loc > regionHeight.front())
+      {
         distance = regionDist.front() - 0.2;
+      }
       else if (piexl_loc < regionHeight.back())
+      {
         distance = 777;
+      }
       // distance = regionDist.back() + 0.2;
     }
   }
@@ -287,9 +291,13 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
   for (size_t i = 0; i < regionHeight.size(); i++)
   {
     if (regionHeightSlope[i] != 0)
+    {
       regionHeight_new[i] = regionHeight[i] - int((regionHeightSlope[i]) * pixel_loc_x);
+    }
     else
+    {
       regionHeight_new[i] = regionHeight[i];
+    }
   }
 
   for (size_t i = 1; i < regionHeight_new.size(); i++)
@@ -299,7 +307,9 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
       int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
       int regionMeter = regionDist[i - 1] - regionDist[i];
       if (regionpixel != 0)
+      {
         unitLength = float(regionMeter) / float(regionpixel);
+      }
       bias = pixel_loc_y - regionHeight_new[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
@@ -310,7 +320,9 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
       int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
+      {
         unitLength = float(regionMeter) / float(regionpixel);
+      }
       bias = regionHeight_new[i] - pixel_loc_y;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
@@ -347,9 +359,13 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
   {
     int y = img_h - piexl_loc_x;
     if (regionHeightSlope_y[i] != 0)
+    {
       regionHeight_new[i] = regionHeight[i] + int((1 / regionHeightSlope_y[i]) * y);
+    }
     else
+    {
       regionHeight_new[i] = regionHeight[i];
+    }
   }
 
   for (size_t i = 1; i < regionHeight_new.size(); i++)
@@ -359,7 +375,9 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
+      {
         unitLength = float(regionMeter) / float(regionpixel);
+      }
       bias = piexl_loc_y - regionHeight_new[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
@@ -370,7 +388,9 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
+      {
         unitLength = float(regionMeter) / float(regionpixel);
+      }
       bias = regionHeight_new[i] - piexl_loc_y;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
@@ -379,9 +399,13 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
     else
     {
       if (piexl_loc_y < regionHeight_new.front())
+      {
         distance = regionDist.front() + 0.5;
+      }
       else if (piexl_loc_y > regionHeight_new.back())
+      {
         distance = regionDist.back() - 0.5;
+      }
     }
   }
 
@@ -401,11 +425,17 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
            (object_x1 - area.LeftLinePoint2.x) * (area.LeftLinePoint1.y - area.LeftLinePoint2.y);
 
   if (C1 > 0)
+  {
     return point2;
+  }
   else if (C2 < 0)
+  {
     return point1;
+  }
   else
+  {
     return point0;
+}
 }
 
 float DistanceEstimation::RatioDefine(int cam_id, int cls)
@@ -786,10 +816,14 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 
     p4 = p0;
     if (p4.x != 0)
+    {
       p4.x = p4.x + obstacle_l;
+    }
     p7 = p3;
     if (p7.x != 0)
+    {
       p7.x = p7.x + obstacle_l;
+    }
   }
   else if (cam_id == camera::id::right_60)
   {
@@ -1040,21 +1074,29 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
     {
       if (Parmas.regionDist_x.size() != 0)
+      {
         x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
+      }
       if (Parmas.regionDist_y.size() != 0)
+      {
         y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
                                         Parmas.regionDist_y, img_h);
+      }
     }
   }
 
   if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
   {
     if (Parmas.regionDist_x.size() != 0)
+    {
       x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
                                        Parmas.regionDist_x, img_h);
+    }
     if (Parmas.regionDist_y.size() != 0)
+    {
       y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
                                                 Parmas.regionDist_y);
+    }
   }
 
   if (x_distMeter == 777)
