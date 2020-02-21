@@ -26,7 +26,7 @@ for fname in $affected_files; do
 done
 
 for fname in $affected_files; do
-  python run_clang_tidy.py --cpp $fname
+  python src/scripts/ci/run_clang_tidy.py --cpp $fname
 done
 
 popd
