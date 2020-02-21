@@ -25,4 +25,8 @@ for fname in $affected_files; do
   python src/scripts/ci/check_misra_cpp2008_6_4_1.py --cpp $fname
 done
 
+for fname in $affected_files; do
+  python run_clang_tidy.py --cpp $fname
+done
+
 popd
