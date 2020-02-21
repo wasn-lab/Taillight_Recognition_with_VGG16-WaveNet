@@ -291,7 +291,9 @@ extractParallelLine (  const boost::shared_ptr<pcl::PointCloud<PointT> > &input_
                 return true;
         }
         else
-                return false;
+        {
+          return false;
+}
 }
 
 void

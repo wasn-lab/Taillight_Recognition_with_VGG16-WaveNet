@@ -26,7 +26,8 @@ def check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix, build_path):
            cpp]
     try:
         output = subprocess.check_output(cmd)
-        logging.warning(output.decode("utf-8"))
+        if output:
+            logging.warning(output.decode("utf-8"))
     except subprocess.CalledProcessError as _e:
         logging.error("CalledProcessError: %s\n%s",
                       " ".join(_e.cmd), _e.output.decode("utf-8"))
