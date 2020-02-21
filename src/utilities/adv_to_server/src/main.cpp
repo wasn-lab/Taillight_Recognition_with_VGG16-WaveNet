@@ -271,7 +271,7 @@ void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
   mutex_ros.lock();
   cuttent_arrive_stop.id = ROUTE_ID + (int)input->Dspace_Flag01;
   cuttent_arrive_stop.status = (int)input->Dspace_Flag02;
-  cuttent_arrive_stop.round = (int) input->PX2_Flag01;
+  //cuttent_arrive_stop.round = (int) input->PX2_Flag01;
   mutex_ros.unlock();
 }
 
@@ -282,6 +282,11 @@ void callbackMileage(const std_msgs::String::ConstPtr& input)
   std::cout << "mile info: " << mileJson << std::endl;
 
   mutex_ros.unlock();
+}
+
+void callbackRound(const std_msgs::Int32::ConstPtr& input)
+{
+  cuttent_arrive_stop.round = (int) input->data;
 }
 
 std::string get_msg_type(int id)
@@ -619,7 +624,7 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackMileage, callbackNextStop);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound);
 
   while (ros::ok())
   {
