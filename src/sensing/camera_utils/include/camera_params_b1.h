@@ -58,6 +58,12 @@ constexpr int num_yolov3_image_pixels = yolov3_image_width * yolov3_image_height
 constexpr int num_yolov3_image_bytes = yolov3_image_width * yolov3_image_height * 3;
 constexpr int num_yolov3_bytes_per_row_u8 = yolov3_image_width * 3;
 constexpr int num_yolov3_bytes_per_row_f32 = yolov3_image_width * 3 * sizeof(float);
+constexpr int image_width = 608;
+constexpr int image_height = 384;
+constexpr int image_rows = raw_image_height;
+constexpr int image_cols = raw_image_width;
+constexpr int num_image_pixels = image_width * image_height;
+constexpr int num_image_bytes = image_width * image_height * 3;
 
 // Parameters for resizing 1920x1208 to 608x608(yolov3 default size)
 constexpr double image_ratio_on_yolov3 = 608.0 / raw_image_width;

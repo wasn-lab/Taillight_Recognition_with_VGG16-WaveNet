@@ -57,13 +57,16 @@ Int8EntropyCalibrator::~Int8EntropyCalibrator() { NV_CUDA_CHECK(cudaFree(m_Devic
 
 bool Int8EntropyCalibrator::getBatch(void* bindings[], const char* names[], int nbBindings)
 {
-    if (m_ImageIndex + m_BatchSize >= m_ImageList.size()) return false;
+  if (m_ImageIndex + m_BatchSize >= m_ImageList.size())
+  {
+    return false;
+  }
 
-    // Load next batch
-    std::vector<DsImage> dsImages(m_BatchSize);
-    for (uint j = m_ImageIndex; j < m_ImageIndex + m_BatchSize; ++j)
-    {
-        dsImages.at(j - m_ImageIndex) = DsImage(m_ImageList.at(j), m_InputH, m_InputW);
+  // Load next batch
+  std::vector<DsImage> dsImages(m_BatchSize);
+  for (uint j = m_ImageIndex; j < m_ImageIndex + m_BatchSize; ++j)
+  {
+    dsImages.at(j - m_ImageIndex) = DsImage(m_ImageList.at(j), m_InputH, m_InputW);
     }
     m_ImageIndex += m_BatchSize;
 
@@ -84,8 +87,10 @@ const void* Int8EntropyCalibrator::readCalibrationCache(size_t& length)
     std::ifstream input(m_CalibTableFilePath, std::ios::binary);
     input >> std::noskipws;
     if (m_ReadCache && input.good())
-        std::copy(std::istream_iterator<char>(input), std::istream_iterator<char>(),
-                  std::back_inserter(m_CalibrationCache));
+    {
+      std::copy(std::istream_iterator<char>(input), std::istream_iterator<char>(),
+                std::back_inserter(m_CalibrationCache));
+    }
 
     length = m_CalibrationCache.size();
     if (length)

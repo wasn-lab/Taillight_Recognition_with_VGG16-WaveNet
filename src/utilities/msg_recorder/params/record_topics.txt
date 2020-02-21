@@ -103,8 +103,13 @@
 /node_trace/all_alive
 /REC/is_recording
 /backend/connected
-/mileage/brake_status
+# /mileage/brake_status
+/mileage/brake_event
 /localization_state
+# Module run state
+/mileage/Xbywire_run
+/mileage/AEB_run
+/mileage/ACC_run
 
 # pedcross
 /PedCross/Pedestrians
