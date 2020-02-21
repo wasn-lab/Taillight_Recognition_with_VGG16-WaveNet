@@ -77,7 +77,7 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 	{
 		for(uint j=0;j<bus_stop_code.size();j++)
 		{
-			if(bus_stop_code[j]==msg->stops[i].id && msg->stops[i].round>=round_count)
+			if(bus_stop_code[j]==msg->stops[i].id && msg->stops[i].round>=round_count && msg->stops[i].round<(round_count+5))
 			{
 				bus_stop_info[msg->stops[i].round-round_count][j] = 1;
 			}
