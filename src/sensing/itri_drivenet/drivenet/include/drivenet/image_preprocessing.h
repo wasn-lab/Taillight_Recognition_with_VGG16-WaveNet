@@ -14,6 +14,7 @@ public:
   static cv::Scalar g_color_blue;
   static cv::Scalar g_color_red;
   static cv::Scalar g_color_green;
+  static cv::Scalar g_color_yellow;
   static cv::Scalar g_color_gray;
 };
 

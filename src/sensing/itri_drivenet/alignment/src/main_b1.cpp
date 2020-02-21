@@ -10,7 +10,6 @@
 
 /// package
 #include "camera_params.h"
-#include "drivenet/image_preprocessing.h"
 #include "alignment.h"
 
 /// opencv
@@ -25,9 +24,6 @@
 
 /// thread
 #include <mutex>
-
-/// namespace
-using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1
@@ -113,7 +109,9 @@ void drawPointCloudOnImage()
       if (pixel_position_.u >= 0 && pixel_position_.v >= 0)
       {
         cv::Point center_point_ = cv::Point(pixel_position_.u, pixel_position_.v);
-        cv::circle(g_mat_0, center_point_, 1, Color::g_color_green, -1, LINE_8, 0);
+        float distance_x = g_lidarall_nonground.points[i].x;
+        cv::Scalar point_color = g_alignment.getDistColor(distance_x);
+        cv::circle(g_mat_0, center_point_, 1, point_color, -1, LINE_8, 0);
         // std::cout << "Camera u: " << pixel_position_.u << ", v: " << pixel_position_.v << std::endl;
       }
     }
