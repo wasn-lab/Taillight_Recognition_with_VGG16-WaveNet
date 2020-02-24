@@ -37,6 +37,22 @@ scan-build -o ${output_dir} catkin_make \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
     -j6 ${EXTRA_CATKIN_ARGS}
 
+# compress previous output
+pushd ${output_dir}
+readonly today=`date +"%Y-%m-%d"`
+for d in `ls`; do
+  if [[ -f $d ]]; then
+    echo "Skip $d"
+  elif [[ -d $d && "${d}" == "${today}"* ]]; then
+    echo "Do not compress $d"
+  else
+    echo "Compress $d"
+    tar cfJ ${d}.tar.xz $d
+    rm -rf ${d}
+  fi
+done
+popd
+
 find ${output_dir} -type d -exec chmod 755 {} \;
 find ${output_dir} -type f -exec chmod 644 {} \;
 echo "Visit http://ci.itriadv.co/scan_build/ to see the html results (accessible in itri.org.tw only)."
