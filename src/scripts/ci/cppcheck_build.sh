@@ -3,6 +3,9 @@ set -x
 set -e
 
 export PATH=/usr/local/cmake-3.15.5/bin:$PATH
+export PATH=/usr/local/llvm-6.0.0/bin:$PATH
+export CC=clang
+export CXX=clang++
 echo "The script works only for cmake >= 3.10. Your cmake version is:"
 cmake --version
 
