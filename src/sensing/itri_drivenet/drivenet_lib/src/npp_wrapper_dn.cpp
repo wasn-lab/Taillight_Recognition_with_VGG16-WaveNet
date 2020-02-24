@@ -24,9 +24,13 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
   const int num_src_bytes = src.cols * src.rows * channel;
   Npp8u* src_npp8u_ptr = NULL;
   if (channel == 3)
+  {
     src_npp8u_ptr = nppiMalloc_8u_C3(src.cols, src.rows, &dummy);
+  }
   if (channel == 1)
+  {
     src_npp8u_ptr = nppiMalloc_8u_C1(src.cols, src.rows, &dummy);
+  }
 
   assert(src_npp8u_ptr);
   assert(num_src_bytes > 0);
@@ -41,9 +45,13 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
   const NppiRect dst_roi = {.x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
   Npp8u* dst_npp8u_ptr = NULL;
   if (channel == 3)
+  {
     dst_npp8u_ptr = nppiMalloc_8u_C3(dst_cols, dst_rows, &dummy);
+  }
   if (channel == 1)
+  {
     dst_npp8u_ptr = nppiMalloc_8u_C1(dst_cols, dst_rows, &dummy);
+  }
 
   assert(dst_npp8u_ptr);
   assert(num_dst_bytes > 0);
@@ -52,12 +60,16 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
 
   NppStatus result = NPP_ERROR;
   if (channel == 3)
+  {
     result = nppiResize_8u_C3R(src_npp8u_ptr, src_line_steps, src_size, src_roi, dst_npp8u_ptr, dst_line_steps,
                                dst_size, dst_roi, interpolation_mode);
+  }
 
   if (channel == 1)
+  {
     result = nppiResize_8u_C1R(src_npp8u_ptr, src_line_steps, src_size, src_roi, dst_npp8u_ptr, dst_line_steps,
                                dst_size, dst_roi, interpolation_mode);
+  }
 
   assert(result == NPP_SUCCESS);
 
@@ -66,10 +78,14 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
     dst.release();
   }
   if (channel == 3)
+  {
     dst = cv::Mat(dst_rows, dst_cols, CV_8UC3);
+  }
 
   if (channel == 1)
+  {
     dst = cv::Mat(dst_rows, dst_cols, CV_8UC1);
+  }
 
   cudaMemcpy(dst.data, dst_npp8u_ptr, num_dst_bytes, cudaMemcpyDeviceToHost);
   nppiFree(src_npp8u_ptr);

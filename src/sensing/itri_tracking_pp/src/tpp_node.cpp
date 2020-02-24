@@ -131,7 +131,19 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #endif
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
+
+#if INPUT_ALL_CLASS
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
+#else
+    KTs_.objs_.reserve(input->objects.size());
+    for (unsigned i = 0; i < input->objects.size(); i++)
+    {
+      if (input->objects[i].classId >= 1 && input->objects[i].classId <= 3)
+      {
+        KTs_.objs_.push_back(input->objects[i]);
+      }
+    }
+#endif
 
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
@@ -975,7 +987,7 @@ int TPPNode::run()
       clock_t begin_time = clock();
 #endif
 
-      // Tracking start ==========================================================================
+// Tracking start ==========================================================================
 
 #if TTC_TEST
       seq_ = seq_cb_;
@@ -1005,7 +1017,7 @@ int TPPNode::run()
       publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif
 
-      // PP end ==================================================================================
+// PP end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();

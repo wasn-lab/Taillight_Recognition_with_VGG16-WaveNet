@@ -10,14 +10,14 @@ Lidar List:
 
 <launch>
 <!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
-<rosparam param="LidarFrontLeft_Fine_Param">[0.582, -0.867, -1.899, -0.209, 0.209, 0.22]</rosparam>
-<rosparam param="LidarFrontRight_Fine_Param">[-1.536, -0.863, -1.409, -0.22, 0.259, 2.94]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.462, 1.098, -1.858, 0.031, -0.007, 1.783]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[0.512, -1.053, -1.836, -0.025, -0.01, -1.785]</rosparam>
 <rosparam param="LidarRearLeft_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 <rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 
 <!-- Ros Parameter Backup 
-<rosparam param="LidarFrontLeft_Fine_Param">[0.54, 1.12, -1.85, 0.03, -0.04, 1.76]</rosparam>
-<rosparam param="LidarFrontRight_Fine_Param">[0.47, -1.07, -1.85, -0.03, -0.05, -1.81]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.582, -0.867, -1.899, -0.209, 0.209, 0.22]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[-1.536, -0.863, -1.409, -0.22, 0.259, 2.94]</rosparam>
 <rosparam param="LidarRearLeft_Fine_Param">[-6.36, 1.1, -2.24, 3.14, -3.08, -1.08]</rosparam>
 <rosparam param="LidarRearRight_Fine_Param">[-6.37, -1.23, -2.28, 0.03, -0.07, -2.03]</rosparam>
 -->
@@ -26,7 +26,7 @@ Lidar List:
 	<arg name="mode" default="0" />
     <arg name="hardware_enable" default="1" />>
 	<arg name="rpm_set" default="1200.0"/>
-    <rosparam param="LaunchFileName">b1_new.launch</rosparam>
+    <rosparam param="LaunchFileName">b1.launch</rosparam>
 
     <arg name="set_group_1" value="/LidarFrontTop"/>
 	
@@ -319,6 +319,8 @@ Lidar List:
     </group>
 
 </launch>
+
+
 
 
 
