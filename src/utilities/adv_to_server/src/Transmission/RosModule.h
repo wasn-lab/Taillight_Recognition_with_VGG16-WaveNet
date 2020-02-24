@@ -9,6 +9,7 @@
 #include "msgs/VehInfo.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Bool.h"
+#include "std_msgs/Int32.h"
 #include "msgs/Flag_Info.h"
 #include "msgs/StopInfoArray.h"
 #include "msgs/StopInfo.h"
@@ -48,7 +49,9 @@ class RosModuleTraffic
                       void
                       (*cb7) (const std_msgs::String::ConstPtr&),
                       void
-                      (*cb8) (const msgs::Flag_Info::ConstPtr&))
+                      (*cb8) (const msgs::Flag_Info::ConstPtr&),
+                      void
+                      (*cb9) (const std_msgs::Int32::ConstPtr&))
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
@@ -59,6 +62,7 @@ class RosModuleTraffic
       static ros::Subscriber busStopInfo = n.subscribe("/BusStop/Info", 1, cb6);
       static ros::Subscriber reverse = n.subscribe("/mileage/relative_mileage", 1, cb7);
       static ros::Subscriber next_stop = n.subscribe("/NextStop/Info", 1, cb8);
+      static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
     }
 
     static void
