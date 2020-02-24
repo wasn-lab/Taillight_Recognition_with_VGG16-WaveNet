@@ -2,13 +2,12 @@
 set -x
 set -e
 
-if [[ -f /usr/local/llvm-6.0.0/bin/clang ]]; then
-  export CC=/usr/local/llvm-6.0.0/bin/clang
-  export CXX=/usr/local/llvm-6.0.0/bin/clang++
-else
-  export CC=clang
-  export CXX=clang++
+if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
+  export PATH=/usr/local/llvm-6.0.0/bin:$PATH
 fi
+
+export CC=clang
+export CXX=clang++
 
 readonly build_type="${build_type:-Release}"
 readonly install_prefix="${install_prefix:-/usr/local/itriadv}"

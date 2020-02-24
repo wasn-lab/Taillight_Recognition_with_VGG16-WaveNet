@@ -9,12 +9,17 @@
 #include "msgs/VehInfo.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Bool.h"
+#include "std_msgs/Int32.h"
 #include "msgs/Flag_Info.h"
+#include "msgs/StopInfoArray.h"
+#include "msgs/StopInfo.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/tf.h>
 #include <chrono>
 #include <thread>
+
+
 
 class RosModuleTraffic
 {
@@ -44,7 +49,9 @@ class RosModuleTraffic
                       void
                       (*cb7) (const std_msgs::String::ConstPtr&),
                       void
-                      (*cb8) (const msgs::Flag_Info::ConstPtr&))
+                      (*cb8) (const msgs::Flag_Info::ConstPtr&),
+                      void
+                      (*cb9) (const std_msgs::Int32::ConstPtr&))
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
@@ -55,6 +62,7 @@ class RosModuleTraffic
       static ros::Subscriber busStopInfo = n.subscribe("/BusStop/Info", 1, cb6);
       static ros::Subscriber reverse = n.subscribe("/mileage/relative_mileage", 1, cb7);
       static ros::Subscriber next_stop = n.subscribe("/NextStop/Info", 1, cb8);
+      static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
     }
 
     static void
@@ -75,22 +83,18 @@ class RosModuleTraffic
     {
       std::cout << "publishServerStatus topic " << topic << " , input " << input << std::endl;
       ros::NodeHandle n;
-      static ros::Publisher server_status_pub = n.advertise<std_msgs::String>(topic, 1000);
+      static ros::Publisher server_status_pub = n.advertise<std_msgs::Bool>(topic, 1000);
       std_msgs::Bool msg;
       msg.data = input;
       server_status_pub.publish(msg);
     }
 
     static void
-    publishReserve(std::string topic, std::string input)
+    publishReserve(std::string topic, msgs::StopInfoArray msg)
     {
-      std::cout << "publishReserve topic " << topic << " , input" << input << std::endl;
+      std::cout << "publishReserve topic " << topic  << std::endl;
       ros::NodeHandle n;
-      static ros::Publisher reserve_status_pub = n.advertise<std_msgs::String>(topic, 1000);
-      std_msgs::String msg;
-      std::stringstream ss;
-      ss << input;
-      msg.data = ss.str();
+      static ros::Publisher reserve_status_pub = n.advertise<msgs::StopInfoArray>(topic, 1000);
       short count = 0;
       while (count < 30)
       { 
@@ -104,10 +108,8 @@ class RosModuleTraffic
           reserve_status_pub.publish(msg);
           return;
         }
-      }
-      
+      } 
     }
-
 };
 
 #endif // ROSMODULE_H

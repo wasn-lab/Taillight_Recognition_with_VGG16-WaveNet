@@ -9,7 +9,8 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
 
-#include "../Preprocess/GridMapGen/points_to_costmap.h"
+#include "../ToControl/GridMapGen/points_to_costmap.h"
+#include "../ToControl/EdgeDetect/edge_detect.h"
 #include "../UserDefine.h"
 
 class RosModuleB1
@@ -98,7 +99,7 @@ class RosModuleB1
     static void
     send_LidarAllNonGround (PointCloud<PointT> input,
                             pcl::uint64_t pcltime,
-                            string frameId)
+                            const string& frameId)
     {
       static ros::Publisher LidarAllNonGround_pub = ros::NodeHandle ().advertise<PointCloud<PointXYZI>> ("/LidarAll/NonGround", 1);
       input.header.frame_id = frameId;
@@ -110,7 +111,7 @@ class RosModuleB1
     Send_LidarResults (CLUSTER_INFO* cluster_info,
                        int cluster_size,
                        ros::Time rostime,
-                       string frameId)
+                       const string& frameId)
     {
       static ros::Publisher LidarDetection_pub = ros::NodeHandle ().advertise<msgs::DetectedObjectArray> ("/LidarDetection", 1);
 
@@ -383,7 +384,7 @@ class RosModuleB1
     Send_LidarResultsGrid (CLUSTER_INFO* cluster_info,
                            int cluster_size,
                            ros::Time rostime,
-                           string frameId)
+                           const string& frameId)
     {
       static ros::Publisher gridmap_pub = ros::NodeHandle ().advertise<nav_msgs::OccupancyGrid> ("/LidarDetection/grid", 1);
 
@@ -401,6 +402,36 @@ class RosModuleB1
       occupancyGrid_msg.header.stamp = rostime;
       occupancyGrid_msg.header.frame_id = frameId;
       gridmap_pub.publish (occupancyGrid_msg);
+    }
+    
+    static void
+    Send_LidarResultsEdge (CLUSTER_INFO* cluster_info,
+                           int cluster_size,
+                           ros::Time rostime,
+                           const string& frameId)
+    {
+      static ros::Publisher edge_pub = ros::NodeHandle ().advertise<sensor_msgs::PointCloud2> ("/LidarDetection/edge", 1);
+
+      VPointCloudXYZIL::Ptr input_Cloud (new VPointCloudXYZIL);
+      for (int i = 0; i < cluster_size; i++)
+      {
+        if (cluster_info[i].cluster_tag >= 1)
+        {
+          *input_Cloud += cluster_info[i].cloud_IL;
+        }
+      }
+
+      const float theta_sample = 360.0;
+      const float range_low_bound = 0.7;
+      const float range_up_bound = 50.0;
+      
+      VPointCloud contour_cloud = getContour(input_Cloud, theta_sample, range_low_bound, range_up_bound);
+
+      sensor_msgs::PointCloud2 edge_contour_msg;
+      pcl::toROSMsg(contour_cloud,edge_contour_msg);
+      edge_contour_msg.header.stamp = rostime;
+      edge_contour_msg.header.frame_id = frameId;
+      edge_pub.publish (edge_contour_msg);
     }
 
 };

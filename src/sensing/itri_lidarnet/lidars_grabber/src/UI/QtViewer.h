@@ -4,7 +4,6 @@
 #include "../all_header.h"
 #include "../GlobalVariable.h"
 
-
 #include "ui_QtViewer.h"
 
 

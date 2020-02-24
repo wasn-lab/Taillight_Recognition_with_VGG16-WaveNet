@@ -198,7 +198,7 @@ S1Cluster::getClusters (bool debug,
       if (cluster_vector.at (i).dis_center_origin < 40)
       {
 
-        if (cluster_vector.at (i).center.y > 3.5 || cluster_vector.at (i).center.y < -3.5)
+        if (cluster_vector.at (i).center.y > 4.5 || cluster_vector.at (i).center.y < -3.5)
         {
 
           if (cluster_vector.at (i).dz < 0.3)
