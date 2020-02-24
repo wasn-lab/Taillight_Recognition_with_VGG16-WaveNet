@@ -22,10 +22,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/point_cloud_color_handlers.h>
-//#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/common/transforms.h>
 
-//#include "radar1T2R.h"
 #include <string.h>
 //#include <iostream>
 
@@ -43,22 +40,13 @@
 
 /************************************************************************/
 
-#define radar_coordinate_offset_X 1.41
-#define radar_coordinate_offset_Y 0
-#define radar_coordinate_offset_Z 0.875
-
-#define lidar_coordinate_offset_X 0
-#define lidar_coordinate_offset_Y 0
-#define lidar_coordinate_offset_Z 0
-
-#define cam_coordinate_offset_X 0
-#define cam_coordinate_offset_Y 0
-#define cam_coordinate_offset_Z 0
-/************************************************************************/
-
 //#define EnableFusion
 #define EnableLIDAR
 //#define EnableRADAR
+
+#define EnableCAM60_0
+#define EnableCAM60_1
+#define EnableCAM60_2
 
 static const int TOTAL_CB = 1;  // 4;//12;
 
@@ -78,38 +66,13 @@ static const int TOTAL_CB = 1;  // 4;//12;
 */
 
 /************************************************************************/
-double K_Matrix[9] = { 1725, 0, 900, 0, 1500, 920, 0, 0, 1 };
-double t_Vector[3] = { 0, 1.7, 0 };
-double R_Matrix[9] = { 0.999999, 0.000495691, 0.00167342, 0.0017453, -0.284015, -0.958818, 0, 0.95882, -0.284015 };
-
-double temp[3];
-double radar_xyz[3];
-double camera_xyz[3];
-double image_point[3] = { 0 };
-/************************************************************************/
-void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const float z);
-void transform_coordinate_main(msgs::ConvexPoint& cp, const float x, const float y, const float z);
-
-uint32_t dbgPCView;
-pthread_mutex_t mut_dbgPCView;
-pthread_cond_t cnd_dbgPCView;
-pthread_t thrd_dbgPCView;
-void* dbg_drawPointCloud(void* arg);
-
 ros::Publisher pub;
 
-int wait_rad_cam = 0;
 int syncCount = 0;
-;
+
 void sync_callbackThreads();
 pthread_mutex_t callback_mutex;
 pthread_cond_t callback_cond;
-
-cv::Mat InImage;
-cv::Mat InImage2;
-bool isLaneCloudUpdate;
-long long int lid_timestamp[2];
-long long int rad_timestamp[2];
 
 /************************************************************************/
 int drawing_uv[max_det][4];
@@ -148,32 +111,24 @@ int Cam120_1_num = 0;
 int Cam120_2_uv[max_det][4];
 int Cam120_2_num = 0;
 /************************************************************************/
+int Cam60_0_num_cb = 0;
 int Cam60_1_num_cb = 0;
+int Cam60_2_num_cb = 0;
 int radar_num_cb = 0;
 int Lidar_num_cb = 0;
 int Cam30_1_num_cb = 0;
 int Cam120_1_num_cb = 0;
 /************************************************************************/
 msgs::DetectedObjectArray msgRadObj;
-
 msgs::DetectedObjectArray msgLidarObj;
-
 msgs::DetectedObjectArray msgCam60_0_Obj;
-
 msgs::DetectedObjectArray msgCam60_1_Obj;
-
 msgs::DetectedObjectArray msgCam60_2_Obj;
-
 msgs::DetectedObjectArray msgCam30_0_Obj;
-
 msgs::DetectedObjectArray msgCam30_1_Obj;
-
 msgs::DetectedObjectArray msgCam30_2_Obj;
-
 msgs::DetectedObjectArray msgCam120_0_Obj;
-
 msgs::DetectedObjectArray msgCam120_1_Obj;
-
 msgs::DetectedObjectArray msgCam120_2_Obj;
 
 /************************************************************************/
@@ -204,7 +159,9 @@ void decision3DFusion();
 std::vector<msgs::DetectedObject> vDetectedObjectDF;
 std::vector<msgs::DetectedObject> vDetectedObjectRAD;
 std::vector<msgs::DetectedObject> vDetectedObjectLID;
+std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_0;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_1;
+std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_2;
 std::vector<msgs::DetectedObject> vDetectedObjectTemp;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_30_1;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_120_1;
@@ -256,28 +213,39 @@ void MySigintHandler(int sig)
 }
 
 /************************************************************************/
-/*****************************ITRI-DriveNet******************************/
-/************************************************************************/
+
+void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_array,
+                          msgs::DetectedObjectArray& msg_cam_obj, int cam_uv[][4], int& num_objs)
+{
+  std::vector<msgs::DetectedObject> vDetectedObject;
+  vDetectedObject.reserve(cam_obj_array->objects.size());
+
+  for (size_t i = 0; i < cam_obj_array->objects.size(); i++)
+  {
+    if (cam_obj_array->objects[i].distance >= 0)
+    {
+      vDetectedObject.push_back(cam_obj_array->objects[i]);
+    }
+  }
+
+  num_objs = std::min(max_det, (int)vDetectedObject.size());
+
+  for (int i = 0; i < num_objs; i++)
+  {
+    cam_uv[i][0] = vDetectedObject[i].camInfo.u;
+    cam_uv[i][1] = vDetectedObject[i].camInfo.v;
+    cam_uv[i][2] = vDetectedObject[i].camInfo.width;
+    cam_uv[i][3] = vDetectedObject[i].camInfo.height;
+  }
+
+  msg_cam_obj.header = cam_obj_array->header;
+  msg_cam_obj.objects.assign(vDetectedObject.begin(), vDetectedObject.end());
+}
+
 std_msgs::Header cam60_0_Header;
 void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam60_0_ObjArray->objects;
-  msgCam60_0_Obj.header = Cam60_0_ObjArray->header;
-  // printf("Cam60_0_ObjArray->objects.size() = %zu\n",Cam60_0_ObjArray->objects.size());
-
-  Cam60_0_num = Cam60_0_ObjArray->objects.size();
-
-  for (unsigned i = 0; i < Cam60_0_ObjArray->objects.size(); i++)
-  {
-    Cam60_0_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam60_0_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam60_0_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam60_0_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam60_0_Obj = *Cam60_0_ObjArray;  // for fusion
+  callback_camera_main(Cam60_0_ObjArray, msgCam60_0_Obj, Cam60_0_uv, Cam60_0_num_cb);
 
 #ifdef EnableCAM60_0
   sync_callbackThreads();
@@ -288,27 +256,7 @@ void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjA
 std_msgs::Header cam60_1_Header;
 void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  vDetectedObjectCAM_60_1.clear();
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam60_1_ObjArray->objects;
-  msgCam60_1_Obj.header = Cam60_1_ObjArray->header;
-  // printf("Cam60_1_ObjArray->objects.size() = %zu\n",Cam60_1_ObjArray->objects.size());
-
-  if (Cam60_1_ObjArray->objects.size() > max_det)
-    Cam60_1_num_cb = max_det;
-  else
-    Cam60_1_num_cb = Cam60_1_ObjArray->objects.size();
-
-  for (int i = 0; i < Cam60_1_num_cb; i++)
-  {
-    Cam60_1_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam60_1_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam60_1_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam60_1_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam60_1_Obj = *Cam60_1_ObjArray;  // for fusion
+  callback_camera_main(Cam60_1_ObjArray, msgCam60_1_Obj, Cam60_1_uv, Cam60_1_num_cb);
 
 #ifdef EnableCAM60_1
   sync_callbackThreads();
@@ -318,23 +266,7 @@ void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjA
 std_msgs::Header cam60_2_Header;
 void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam60_2_ObjArray->objects;
-  msgCam60_2_Obj.header = Cam60_2_ObjArray->header;
-  // printf("Cam60_2_ObjArray->objects.size() = %zu\n",Cam60_2_ObjArray->objects.size());
-
-  Cam60_2_num = Cam60_2_ObjArray->objects.size();
-
-  for (unsigned i = 0; i < Cam60_2_ObjArray->objects.size(); i++)
-  {
-    Cam60_2_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam60_2_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam60_2_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam60_2_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam60_2_Obj = *Cam60_2_ObjArray;  // for fusion
+  callback_camera_main(Cam60_2_ObjArray, msgCam60_2_Obj, Cam60_2_uv, Cam60_2_num_cb);
 
 #ifdef EnableCAM60_2
   sync_callbackThreads();
@@ -575,10 +507,6 @@ void decisionFusion()
   std::vector<msgs::DetectedObject> vLidar_60_1_Object;
   std::vector<msgs::DetectedObject> vLidar_60_2_Object;
 
-  // std::vector<msgs::DetectedObject> vLidar_120_0_Object;
-  // std::vector<msgs::DetectedObject> vLidar_120_1_Object;
-  // std::vector<msgs::DetectedObject> vLidar_120_2_Object;
-  // std::vector<msgs::DetectedObject> vLidar_others_Object;
   std::vector<msgs::DetectedObject> vLidar_rear_Object;
   std::vector<msgs::DetectedObject> vLidar_frontshort_Object;
 
@@ -599,256 +527,68 @@ void decisionFusion()
 
   for (int j = 0; j < Lidar_num_cb; j++)
   {
-    msgLidarObj.objects[j].header = msgLidarObj.header;  // add timestamp for lidar object
-
-    msgLidarObj.objects[j].bPoint.p0.x = msgLidarObj.objects[j].bPoint.p0.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p0.y = msgLidarObj.objects[j].bPoint.p0.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p0.z = msgLidarObj.objects[j].bPoint.p0.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p1.x = msgLidarObj.objects[j].bPoint.p1.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p1.y = msgLidarObj.objects[j].bPoint.p1.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p1.z = msgLidarObj.objects[j].bPoint.p1.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p2.x = msgLidarObj.objects[j].bPoint.p2.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p2.y = msgLidarObj.objects[j].bPoint.p2.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p2.z = msgLidarObj.objects[j].bPoint.p2.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p3.x = msgLidarObj.objects[j].bPoint.p3.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p3.y = msgLidarObj.objects[j].bPoint.p3.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p3.z = msgLidarObj.objects[j].bPoint.p3.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p4.x = msgLidarObj.objects[j].bPoint.p4.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p4.y = msgLidarObj.objects[j].bPoint.p4.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p4.z = msgLidarObj.objects[j].bPoint.p4.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p5.x = msgLidarObj.objects[j].bPoint.p5.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p5.y = msgLidarObj.objects[j].bPoint.p5.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p5.z = msgLidarObj.objects[j].bPoint.p5.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p6.x = msgLidarObj.objects[j].bPoint.p6.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p6.y = msgLidarObj.objects[j].bPoint.p6.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p6.z = msgLidarObj.objects[j].bPoint.p6.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p7.x = msgLidarObj.objects[j].bPoint.p7.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p7.y = msgLidarObj.objects[j].bPoint.p7.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p7.z = msgLidarObj.objects[j].bPoint.p7.z + lidar_coordinate_offset_Z;
-    transform_coordinate_main(msgLidarObj.objects[j].cPoint, lidar_coordinate_offset_X, lidar_coordinate_offset_Y,
-                              lidar_coordinate_offset_Z);
-
-    // ======>
+    msgLidarObj.objects[j].header = msgLidarObj.header;
     vDetectedObjectLID.push_back(msgLidarObj.objects[j]);
   }
 
   Lidar_num = vDetectedObjectLID.size();
-  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectLID.size());
+  printf("vDetectedObjectLID.size() = %zu \n", vDetectedObjectLID.size());
 
   /************************************************************************/
 
-  /************************************************************************/
   printf("radar_num_cb = %d \n", radar_num_cb);
 
   for (unsigned j = 0; j < msgRadObj.objects.size(); j++)
   {
-    msgRadObj.objects[j].header = msgRadObj.header;  // add timestamp for radar object
-
-    msgRadObj.objects[j].bPoint.p0.x = msgRadObj.objects[j].bPoint.p0.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p0.y = msgRadObj.objects[j].bPoint.p0.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p0.z = msgRadObj.objects[j].bPoint.p0.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p1.x = msgRadObj.objects[j].bPoint.p1.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p1.y = msgRadObj.objects[j].bPoint.p1.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p1.z = msgRadObj.objects[j].bPoint.p1.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p2.x = msgRadObj.objects[j].bPoint.p2.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p2.y = msgRadObj.objects[j].bPoint.p2.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p2.z = msgRadObj.objects[j].bPoint.p2.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p3.x = msgRadObj.objects[j].bPoint.p3.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p3.y = msgRadObj.objects[j].bPoint.p3.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p3.z = msgRadObj.objects[j].bPoint.p3.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p4.x = msgRadObj.objects[j].bPoint.p4.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p4.y = msgRadObj.objects[j].bPoint.p4.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p4.z = msgRadObj.objects[j].bPoint.p4.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p5.x = msgRadObj.objects[j].bPoint.p5.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p5.y = msgRadObj.objects[j].bPoint.p5.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p5.z = msgRadObj.objects[j].bPoint.p5.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p6.x = msgRadObj.objects[j].bPoint.p6.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p6.y = msgRadObj.objects[j].bPoint.p6.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p6.z = msgRadObj.objects[j].bPoint.p6.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p7.x = msgRadObj.objects[j].bPoint.p7.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p7.y = msgRadObj.objects[j].bPoint.p7.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p7.z = msgRadObj.objects[j].bPoint.p7.z + radar_coordinate_offset_Z;
-    /************************************************************************/
-
-    transform_coordinate_main(msgRadObj.objects[j].cPoint, radar_coordinate_offset_X, radar_coordinate_offset_Y,
-                              radar_coordinate_offset_Z);
-
-    /************************************************************************/
-    // ======>
+    msgRadObj.objects[j].header = msgRadObj.header;
     vDetectedObjectRAD.push_back(msgRadObj.objects[j]);
   }
 
   radar_num = vDetectedObjectRAD.size();
   printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectRAD.size());
-  /************************************************************************/
 
   /************************************************************************/
+
   printf("Cam60_1_num_cb = %d \n", Cam60_1_num_cb);
 
   for (int j = 0; j < Cam60_1_num_cb; j++)
   {
-    msgCam60_1_Obj.objects[j].header = msgCam60_1_Obj.header;  // add timestamp for cam60 object
-
-    msgCam60_1_Obj.objects[j].bPoint.p0.x = msgCam60_1_Obj.objects[j].bPoint.p0.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p0.y = msgCam60_1_Obj.objects[j].bPoint.p0.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p0.z = msgCam60_1_Obj.objects[j].bPoint.p0.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p1.x = msgCam60_1_Obj.objects[j].bPoint.p1.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p1.y = msgCam60_1_Obj.objects[j].bPoint.p1.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p1.z = msgCam60_1_Obj.objects[j].bPoint.p1.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p2.x = msgCam60_1_Obj.objects[j].bPoint.p2.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p2.y = msgCam60_1_Obj.objects[j].bPoint.p2.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p2.z = msgCam60_1_Obj.objects[j].bPoint.p2.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p3.x = msgCam60_1_Obj.objects[j].bPoint.p3.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p3.y = msgCam60_1_Obj.objects[j].bPoint.p3.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p3.z = msgCam60_1_Obj.objects[j].bPoint.p3.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p4.x = msgCam60_1_Obj.objects[j].bPoint.p4.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p4.y = msgCam60_1_Obj.objects[j].bPoint.p4.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p4.z = msgCam60_1_Obj.objects[j].bPoint.p4.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p5.x = msgCam60_1_Obj.objects[j].bPoint.p5.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p5.y = msgCam60_1_Obj.objects[j].bPoint.p5.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p5.z = msgCam60_1_Obj.objects[j].bPoint.p5.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p6.x = msgCam60_1_Obj.objects[j].bPoint.p6.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p6.y = msgCam60_1_Obj.objects[j].bPoint.p6.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p6.z = msgCam60_1_Obj.objects[j].bPoint.p6.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p7.x = msgCam60_1_Obj.objects[j].bPoint.p7.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p7.y = msgCam60_1_Obj.objects[j].bPoint.p7.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p7.z = msgCam60_1_Obj.objects[j].bPoint.p7.z + cam_coordinate_offset_Z;
-
-    /************************************************************************/
-
-    transform_coordinate_main(msgCam60_1_Obj.objects[j].cPoint, cam_coordinate_offset_X, cam_coordinate_offset_Y,
-                              cam_coordinate_offset_Z);
-
-    /************************************************************************/
-
-    // ======>
+    msgCam60_1_Obj.objects[j].header = msgCam60_1_Obj.header;
     vDetectedObjectCAM_60_1.push_back(msgCam60_1_Obj.objects[j]);
   }
 
-  Cam60_1_num_cb = 0;  // YF 2019081901
+  Cam60_1_num_cb = 0;
   Cam60_1_num = vDetectedObjectCAM_60_1.size();
   printf("vDetectedObjectCAM_60_1.size() = %zu \n", vDetectedObjectCAM_60_1.size());
-  /************************************************************************/
 
   /************************************************************************/
+
   printf("Cam30_1_num_cb = %d \n", Cam30_1_num_cb);
 
   for (int j = 0; j < Cam30_1_num_cb; j++)
   {
-    msgCam30_1_Obj.objects[j].header = msgCam30_1_Obj.header;  // add timestamp for cam30 object
-
-    msgCam30_1_Obj.objects[j].bPoint.p0.x = msgCam30_1_Obj.objects[j].bPoint.p0.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p0.y = msgCam30_1_Obj.objects[j].bPoint.p0.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p0.z = msgCam30_1_Obj.objects[j].bPoint.p0.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p1.x = msgCam30_1_Obj.objects[j].bPoint.p1.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p1.y = msgCam30_1_Obj.objects[j].bPoint.p1.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p1.z = msgCam30_1_Obj.objects[j].bPoint.p1.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p2.x = msgCam30_1_Obj.objects[j].bPoint.p2.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p2.y = msgCam30_1_Obj.objects[j].bPoint.p2.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p2.z = msgCam30_1_Obj.objects[j].bPoint.p2.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p3.x = msgCam30_1_Obj.objects[j].bPoint.p3.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p3.y = msgCam30_1_Obj.objects[j].bPoint.p3.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p3.z = msgCam30_1_Obj.objects[j].bPoint.p3.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p4.x = msgCam30_1_Obj.objects[j].bPoint.p4.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p4.y = msgCam30_1_Obj.objects[j].bPoint.p4.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p4.z = msgCam30_1_Obj.objects[j].bPoint.p4.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p5.x = msgCam30_1_Obj.objects[j].bPoint.p5.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p5.y = msgCam30_1_Obj.objects[j].bPoint.p5.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p5.z = msgCam30_1_Obj.objects[j].bPoint.p5.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p6.x = msgCam30_1_Obj.objects[j].bPoint.p6.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p6.y = msgCam30_1_Obj.objects[j].bPoint.p6.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p6.z = msgCam30_1_Obj.objects[j].bPoint.p6.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p7.x = msgCam30_1_Obj.objects[j].bPoint.p7.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p7.y = msgCam30_1_Obj.objects[j].bPoint.p7.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p7.z = msgCam30_1_Obj.objects[j].bPoint.p7.z + cam_coordinate_offset_Z;
-
-    transform_coordinate_main(msgCam30_1_Obj.objects[j].cPoint, cam_coordinate_offset_X, cam_coordinate_offset_Y,
-                              cam_coordinate_offset_Z);
-    // ======>
+    msgCam30_1_Obj.objects[j].header = msgCam30_1_Obj.header;
     vDetectedObjectCAM_30_1.push_back(msgCam30_1_Obj.objects[j]);
   }
 
-  Cam30_1_num_cb = 0;  // YF 2019081901
+  Cam30_1_num_cb = 0;
   Cam30_1_num = vDetectedObjectCAM_30_1.size();
   printf("vDetectedObjectCAM_30_1.size() = %zu \n", vDetectedObjectCAM_30_1.size());
-  /************************************************************************/
 
   /************************************************************************/
+
   printf("Cam120_1_num_cb = %d \n", Cam120_1_num_cb);
 
   for (int j = 0; j < Cam120_1_num_cb; j++)
   {
-    msgCam120_1_Obj.objects[j].header = msgCam120_1_Obj.header;  // add timestamp for cam120 object
-
-    msgCam120_1_Obj.objects[j].bPoint.p0.x = msgCam120_1_Obj.objects[j].bPoint.p0.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p0.y = msgCam120_1_Obj.objects[j].bPoint.p0.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p0.z = msgCam120_1_Obj.objects[j].bPoint.p0.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p1.x = msgCam120_1_Obj.objects[j].bPoint.p1.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p1.y = msgCam120_1_Obj.objects[j].bPoint.p1.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p1.z = msgCam120_1_Obj.objects[j].bPoint.p1.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p2.x = msgCam120_1_Obj.objects[j].bPoint.p2.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p2.y = msgCam120_1_Obj.objects[j].bPoint.p2.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p2.z = msgCam120_1_Obj.objects[j].bPoint.p2.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p3.x = msgCam120_1_Obj.objects[j].bPoint.p3.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p3.y = msgCam120_1_Obj.objects[j].bPoint.p3.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p3.z = msgCam120_1_Obj.objects[j].bPoint.p3.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p4.x = msgCam120_1_Obj.objects[j].bPoint.p4.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p4.y = msgCam120_1_Obj.objects[j].bPoint.p4.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p4.z = msgCam120_1_Obj.objects[j].bPoint.p4.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p5.x = msgCam120_1_Obj.objects[j].bPoint.p5.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p5.y = msgCam120_1_Obj.objects[j].bPoint.p5.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p5.z = msgCam120_1_Obj.objects[j].bPoint.p5.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p6.x = msgCam120_1_Obj.objects[j].bPoint.p6.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p6.y = msgCam120_1_Obj.objects[j].bPoint.p6.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p6.z = msgCam120_1_Obj.objects[j].bPoint.p6.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p7.x = msgCam120_1_Obj.objects[j].bPoint.p7.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p7.y = msgCam120_1_Obj.objects[j].bPoint.p7.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p7.z = msgCam120_1_Obj.objects[j].bPoint.p7.z + cam_coordinate_offset_Z;
-
-    transform_coordinate_main(msgCam120_1_Obj.objects[j].cPoint, cam_coordinate_offset_X, cam_coordinate_offset_Y,
-                              cam_coordinate_offset_Z);
-    // ======>
+    msgCam120_1_Obj.objects[j].header = msgCam120_1_Obj.header;
     vDetectedObjectCAM_120_1.push_back(msgCam120_1_Obj.objects[j]);
   }
 
-  Cam120_1_num_cb = 0;  // YF 2019081901
+  Cam120_1_num_cb = 0;
   Cam120_1_num = vDetectedObjectCAM_120_1.size();
   printf("vDetectedObjectCAM_120_1.size() = %zu \n", vDetectedObjectCAM_120_1.size());
+
   /************************************************************************/
 
   for (int j = 0; j < Lidar_num; j++)
@@ -880,17 +620,6 @@ void decisionFusion()
     {
       vLidar_rear_Object.push_back(msgLidarObj.objects[j]);  // rear
     }
-
-    /*
-    if((theta < 150) && (theta > 30))
-     vLidar_120_2_Object.push_back(msgLidarObj.objects[j]);
-
-    if((theta < 60) && (theta > -60))
-     vLidar_120_1_Object.push_back(msgLidarObj.objects[j]);
-
-    if((theta < -30) && (theta > -150))
-     vLidar_120_0_Object.push_back(msgLidarObj.objects[j]);
-    */
   }
 
   /************************************************************************/
@@ -948,9 +677,10 @@ void decision3DFusion()
 {
   /************************************************************************/
   vDetectedObjectDF.clear();
-  vDetectedObjectRAD.clear();
   vDetectedObjectLID.clear();
+  vDetectedObjectCAM_60_0.clear();
   vDetectedObjectCAM_60_1.clear();
+  vDetectedObjectCAM_60_2.clear();
   vDetectedObjectCAM_30_1.clear();
   vDetectedObjectCAM_120_1.clear();
 
@@ -958,298 +688,115 @@ void decision3DFusion()
 
   for (int j = 0; j < Lidar_num_cb; j++)
   {
-    msgLidarObj.objects[j].header = msgLidarObj.header;  // add timestamp for lidar object
-
-    msgLidarObj.objects[j].bPoint.p0.x = msgLidarObj.objects[j].bPoint.p0.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p0.y = msgLidarObj.objects[j].bPoint.p0.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p0.z = msgLidarObj.objects[j].bPoint.p0.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p1.x = msgLidarObj.objects[j].bPoint.p1.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p1.y = msgLidarObj.objects[j].bPoint.p1.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p1.z = msgLidarObj.objects[j].bPoint.p1.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p2.x = msgLidarObj.objects[j].bPoint.p2.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p2.y = msgLidarObj.objects[j].bPoint.p2.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p2.z = msgLidarObj.objects[j].bPoint.p2.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p3.x = msgLidarObj.objects[j].bPoint.p3.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p3.y = msgLidarObj.objects[j].bPoint.p3.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p3.z = msgLidarObj.objects[j].bPoint.p3.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p4.x = msgLidarObj.objects[j].bPoint.p4.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p4.y = msgLidarObj.objects[j].bPoint.p4.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p4.z = msgLidarObj.objects[j].bPoint.p4.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p5.x = msgLidarObj.objects[j].bPoint.p5.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p5.y = msgLidarObj.objects[j].bPoint.p5.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p5.z = msgLidarObj.objects[j].bPoint.p5.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p6.x = msgLidarObj.objects[j].bPoint.p6.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p6.y = msgLidarObj.objects[j].bPoint.p6.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p6.z = msgLidarObj.objects[j].bPoint.p6.z + lidar_coordinate_offset_Z;
-
-    msgLidarObj.objects[j].bPoint.p7.x = msgLidarObj.objects[j].bPoint.p7.x + lidar_coordinate_offset_X;
-    msgLidarObj.objects[j].bPoint.p7.y = msgLidarObj.objects[j].bPoint.p7.y + lidar_coordinate_offset_Y;
-    msgLidarObj.objects[j].bPoint.p7.z = msgLidarObj.objects[j].bPoint.p7.z + lidar_coordinate_offset_Z;
-    transform_coordinate_main(msgLidarObj.objects[j].cPoint, lidar_coordinate_offset_X, lidar_coordinate_offset_Y,
-                              lidar_coordinate_offset_Z);
-    // ======>
+    msgLidarObj.objects[j].header = msgLidarObj.header;
     vDetectedObjectLID.push_back(msgLidarObj.objects[j]);
   }
 
   Lidar_num = vDetectedObjectLID.size();
-  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectLID.size());
+  printf("vDetectedObjectLID.size() = %zu \n", vDetectedObjectLID.size());
 
   /************************************************************************/
-  printf("radar_num_cb = %d \n", radar_num_cb);
 
-  for (unsigned j = 0; j < msgRadObj.objects.size(); j++)
+  printf("Cam60_0_num_cb = %d \n", Cam60_0_num_cb);
+
+  for (int j = 0; j < Cam60_0_num_cb; j++)
   {
-    msgRadObj.objects[j].header = msgRadObj.header;  // add timestamp for radar object
-
-    msgRadObj.objects[j].bPoint.p0.x = msgRadObj.objects[j].bPoint.p0.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p0.y = msgRadObj.objects[j].bPoint.p0.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p0.z = msgRadObj.objects[j].bPoint.p0.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p1.x = msgRadObj.objects[j].bPoint.p1.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p1.y = msgRadObj.objects[j].bPoint.p1.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p1.z = msgRadObj.objects[j].bPoint.p1.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p2.x = msgRadObj.objects[j].bPoint.p2.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p2.y = msgRadObj.objects[j].bPoint.p2.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p2.z = msgRadObj.objects[j].bPoint.p2.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p3.x = msgRadObj.objects[j].bPoint.p3.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p3.y = msgRadObj.objects[j].bPoint.p3.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p3.z = msgRadObj.objects[j].bPoint.p3.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p4.x = msgRadObj.objects[j].bPoint.p4.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p4.y = msgRadObj.objects[j].bPoint.p4.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p4.z = msgRadObj.objects[j].bPoint.p4.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p5.x = msgRadObj.objects[j].bPoint.p5.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p5.y = msgRadObj.objects[j].bPoint.p5.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p5.z = msgRadObj.objects[j].bPoint.p5.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p6.x = msgRadObj.objects[j].bPoint.p6.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p6.y = msgRadObj.objects[j].bPoint.p6.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p6.z = msgRadObj.objects[j].bPoint.p6.z + radar_coordinate_offset_Z;
-
-    msgRadObj.objects[j].bPoint.p7.x = msgRadObj.objects[j].bPoint.p7.x + radar_coordinate_offset_X;
-    msgRadObj.objects[j].bPoint.p7.y = msgRadObj.objects[j].bPoint.p7.y + radar_coordinate_offset_Y;
-    msgRadObj.objects[j].bPoint.p7.z = msgRadObj.objects[j].bPoint.p7.z + radar_coordinate_offset_Z;
-    transform_coordinate_main(msgRadObj.objects[j].cPoint, radar_coordinate_offset_X, radar_coordinate_offset_Y,
-                              radar_coordinate_offset_Z);
-    // ======>
-    vDetectedObjectRAD.push_back(msgRadObj.objects[j]);
+    msgCam60_0_Obj.objects[j].header = msgCam60_0_Obj.header;
+    vDetectedObjectCAM_60_0.push_back(msgCam60_0_Obj.objects[j]);
   }
 
-  radar_num = vDetectedObjectRAD.size();
-  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectRAD.size());
-  /************************************************************************/
+  Cam60_0_num_cb = 0;
+  Cam60_0_num = vDetectedObjectCAM_60_0.size();
+  printf("vDetectedObjectCAM_60_0.size() = %zu \n", vDetectedObjectCAM_60_0.size());
+
   /************************************************************************/
   printf("Cam60_1_num_cb = %d \n", Cam60_1_num_cb);
 
   for (int j = 0; j < Cam60_1_num_cb; j++)
   {
-    msgCam60_1_Obj.objects[j].header = msgCam60_1_Obj.header;  // add timestamp for cam object
-
-    msgCam60_1_Obj.objects[j].bPoint.p0.x = msgCam60_1_Obj.objects[j].bPoint.p0.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p0.y = msgCam60_1_Obj.objects[j].bPoint.p0.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p0.z = msgCam60_1_Obj.objects[j].bPoint.p0.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p1.x = msgCam60_1_Obj.objects[j].bPoint.p1.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p1.y = msgCam60_1_Obj.objects[j].bPoint.p1.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p1.z = msgCam60_1_Obj.objects[j].bPoint.p1.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p2.x = msgCam60_1_Obj.objects[j].bPoint.p2.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p2.y = msgCam60_1_Obj.objects[j].bPoint.p2.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p2.z = msgCam60_1_Obj.objects[j].bPoint.p2.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p3.x = msgCam60_1_Obj.objects[j].bPoint.p3.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p3.y = msgCam60_1_Obj.objects[j].bPoint.p3.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p3.z = msgCam60_1_Obj.objects[j].bPoint.p3.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p4.x = msgCam60_1_Obj.objects[j].bPoint.p4.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p4.y = msgCam60_1_Obj.objects[j].bPoint.p4.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p4.z = msgCam60_1_Obj.objects[j].bPoint.p4.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p5.x = msgCam60_1_Obj.objects[j].bPoint.p5.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p5.y = msgCam60_1_Obj.objects[j].bPoint.p5.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p5.z = msgCam60_1_Obj.objects[j].bPoint.p5.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p6.x = msgCam60_1_Obj.objects[j].bPoint.p6.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p6.y = msgCam60_1_Obj.objects[j].bPoint.p6.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p6.z = msgCam60_1_Obj.objects[j].bPoint.p6.z + cam_coordinate_offset_Z;
-
-    msgCam60_1_Obj.objects[j].bPoint.p7.x = msgCam60_1_Obj.objects[j].bPoint.p7.x + cam_coordinate_offset_X;
-    msgCam60_1_Obj.objects[j].bPoint.p7.y = msgCam60_1_Obj.objects[j].bPoint.p7.y + cam_coordinate_offset_Y;
-    msgCam60_1_Obj.objects[j].bPoint.p7.z = msgCam60_1_Obj.objects[j].bPoint.p7.z + cam_coordinate_offset_Z;
-    transform_coordinate_main(msgCam60_1_Obj.objects[j].cPoint, cam_coordinate_offset_X, cam_coordinate_offset_Y,
-                              cam_coordinate_offset_Z);
-    // ======>
+    msgCam60_1_Obj.objects[j].header = msgCam60_1_Obj.header;
     vDetectedObjectCAM_60_1.push_back(msgCam60_1_Obj.objects[j]);
   }
 
-  Cam60_1_num_cb = 0;  // YF 2019081901
+  Cam60_1_num_cb = 0;
   Cam60_1_num = vDetectedObjectCAM_60_1.size();
   printf("vDetectedObjectCAM_60_1.size() = %zu \n", vDetectedObjectCAM_60_1.size());
+
   /************************************************************************/
+
+  printf("Cam60_2_num_cb = %d \n", Cam60_2_num_cb);
+
+  for (int j = 0; j < Cam60_2_num_cb; j++)
+  {
+    msgCam60_2_Obj.objects[j].header = msgCam60_2_Obj.header;
+    vDetectedObjectCAM_60_2.push_back(msgCam60_2_Obj.objects[j]);
+  }
+
+  Cam60_2_num_cb = 0;
+  Cam60_2_num = vDetectedObjectCAM_60_2.size();
+  printf("vDetectedObjectCAM_60_2.size() = %zu \n", vDetectedObjectCAM_60_2.size());
+
   /************************************************************************/
+
   printf("Cam30_1_num_cb = %d \n", Cam30_1_num_cb);
 
   for (int j = 0; j < Cam30_1_num_cb; j++)
   {
-    msgCam30_1_Obj.objects[j].header = msgCam30_1_Obj.header;  // add timestamp for cam30 object
-
-    msgCam30_1_Obj.objects[j].bPoint.p0.x = msgCam30_1_Obj.objects[j].bPoint.p0.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p0.y = msgCam30_1_Obj.objects[j].bPoint.p0.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p0.z = msgCam30_1_Obj.objects[j].bPoint.p0.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p1.x = msgCam30_1_Obj.objects[j].bPoint.p1.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p1.y = msgCam30_1_Obj.objects[j].bPoint.p1.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p1.z = msgCam30_1_Obj.objects[j].bPoint.p1.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p2.x = msgCam30_1_Obj.objects[j].bPoint.p2.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p2.y = msgCam30_1_Obj.objects[j].bPoint.p2.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p2.z = msgCam30_1_Obj.objects[j].bPoint.p2.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p3.x = msgCam30_1_Obj.objects[j].bPoint.p3.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p3.y = msgCam30_1_Obj.objects[j].bPoint.p3.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p3.z = msgCam30_1_Obj.objects[j].bPoint.p3.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p4.x = msgCam30_1_Obj.objects[j].bPoint.p4.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p4.y = msgCam30_1_Obj.objects[j].bPoint.p4.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p4.z = msgCam30_1_Obj.objects[j].bPoint.p4.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p5.x = msgCam30_1_Obj.objects[j].bPoint.p5.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p5.y = msgCam30_1_Obj.objects[j].bPoint.p5.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p5.z = msgCam30_1_Obj.objects[j].bPoint.p5.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p6.x = msgCam30_1_Obj.objects[j].bPoint.p6.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p6.y = msgCam30_1_Obj.objects[j].bPoint.p6.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p6.z = msgCam30_1_Obj.objects[j].bPoint.p6.z + cam_coordinate_offset_Z;
-
-    msgCam30_1_Obj.objects[j].bPoint.p7.x = msgCam30_1_Obj.objects[j].bPoint.p7.x + cam_coordinate_offset_X;
-    msgCam30_1_Obj.objects[j].bPoint.p7.y = msgCam30_1_Obj.objects[j].bPoint.p7.y + cam_coordinate_offset_Y;
-    msgCam30_1_Obj.objects[j].bPoint.p7.z = msgCam30_1_Obj.objects[j].bPoint.p7.z + cam_coordinate_offset_Z;
-    transform_coordinate_main(msgCam30_1_Obj.objects[j].cPoint, cam_coordinate_offset_X, cam_coordinate_offset_Y,
-                              cam_coordinate_offset_Z);
-    // ======>
+    msgCam30_1_Obj.objects[j].header = msgCam30_1_Obj.header;
     vDetectedObjectCAM_30_1.push_back(msgCam30_1_Obj.objects[j]);
   }
 
-  Cam30_1_num_cb = 0;  // YF 2019081901
+  Cam30_1_num_cb = 0;
   Cam30_1_num = vDetectedObjectCAM_30_1.size();
   printf("vDetectedObjectCAM_30_1.size() = %zu \n", vDetectedObjectCAM_30_1.size());
+
   /************************************************************************/
-  /************************************************************************/
+
   printf("Cam120_1_num_cb = %d \n", Cam120_1_num_cb);
 
   for (int j = 0; j < Cam120_1_num_cb; j++)
   {
-    msgCam120_1_Obj.objects[j].header = msgCam120_1_Obj.header;  // add timestamp for cam120 object
-
-    msgCam120_1_Obj.objects[j].bPoint.p0.x = msgCam120_1_Obj.objects[j].bPoint.p0.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p0.y = msgCam120_1_Obj.objects[j].bPoint.p0.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p0.z = msgCam120_1_Obj.objects[j].bPoint.p0.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p1.x = msgCam120_1_Obj.objects[j].bPoint.p1.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p1.y = msgCam120_1_Obj.objects[j].bPoint.p1.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p1.z = msgCam120_1_Obj.objects[j].bPoint.p1.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p2.x = msgCam120_1_Obj.objects[j].bPoint.p2.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p2.y = msgCam120_1_Obj.objects[j].bPoint.p2.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p2.z = msgCam120_1_Obj.objects[j].bPoint.p2.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p3.x = msgCam120_1_Obj.objects[j].bPoint.p3.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p3.y = msgCam120_1_Obj.objects[j].bPoint.p3.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p3.z = msgCam120_1_Obj.objects[j].bPoint.p3.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p4.x = msgCam120_1_Obj.objects[j].bPoint.p4.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p4.y = msgCam120_1_Obj.objects[j].bPoint.p4.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p4.z = msgCam120_1_Obj.objects[j].bPoint.p4.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p5.x = msgCam120_1_Obj.objects[j].bPoint.p5.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p5.y = msgCam120_1_Obj.objects[j].bPoint.p5.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p5.z = msgCam120_1_Obj.objects[j].bPoint.p5.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p6.x = msgCam120_1_Obj.objects[j].bPoint.p6.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p6.y = msgCam120_1_Obj.objects[j].bPoint.p6.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p6.z = msgCam120_1_Obj.objects[j].bPoint.p6.z + cam_coordinate_offset_Z;
-
-    msgCam120_1_Obj.objects[j].bPoint.p7.x = msgCam120_1_Obj.objects[j].bPoint.p7.x + cam_coordinate_offset_X;
-    msgCam120_1_Obj.objects[j].bPoint.p7.y = msgCam120_1_Obj.objects[j].bPoint.p7.y + cam_coordinate_offset_Y;
-    msgCam120_1_Obj.objects[j].bPoint.p7.z = msgCam120_1_Obj.objects[j].bPoint.p7.z + cam_coordinate_offset_Z;
-    transform_coordinate_main(msgCam120_1_Obj.objects[j].cPoint, cam_coordinate_offset_X, cam_coordinate_offset_Y,
-                              cam_coordinate_offset_Z);
-    // ======>
+    msgCam120_1_Obj.objects[j].header = msgCam120_1_Obj.header;
     vDetectedObjectCAM_120_1.push_back(msgCam120_1_Obj.objects[j]);
   }
 
-  Cam120_1_num_cb = 0;  // YF 2019081901
+  Cam120_1_num_cb = 0;
   Cam120_1_num = vDetectedObjectCAM_120_1.size();
   printf("vDetectedObjectCAM_120_1.size() = %zu \n", vDetectedObjectCAM_120_1.size());
+
   /************************************************************************/
-
-  for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_120_1[j]);
-
-  for (unsigned j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_30_1[j]);
-
-  for (unsigned j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_1[j]);
 
   for (unsigned j = 0; j < vDetectedObjectLID.size(); j++)
-    vDetectedObjectDF.push_back(vDetectedObjectLID[j]);
-
-  int case1 = 0;
-  int case2 = 0;
-  int skipRAD = 0;
-
-  for (unsigned i = 0; i < vDetectedObjectRAD.size(); i++)
   {
-    float p0x, p0y, p6x, p6y;
-
-    p0x = vDetectedObjectRAD[i].bPoint.p0.x;  // min
-    p0y = vDetectedObjectRAD[i].bPoint.p0.y;  // min
-    p6x = vDetectedObjectRAD[i].bPoint.p6.x;  // max
-    p6y = vDetectedObjectRAD[i].bPoint.p6.y;  // max
-
-    for (unsigned j = 0; j < vDetectedObjectLID.size(); j++)
-    {
-      float q0x, q0y, q6x, q6y;
-      q0x = vDetectedObjectLID[j].bPoint.p0.x;  // min
-      q0y = vDetectedObjectLID[j].bPoint.p0.y;  // min
-      q6x = vDetectedObjectLID[j].bPoint.p6.x;  // max
-      q6y = vDetectedObjectLID[j].bPoint.p6.y;  // max
-
-      // Known issues, fixed by below comment
-      case1 = ((p0x < q6x) && (p0x > q0x)) && ((p0y > q6y) && (p0y < q0y));
-      case2 = ((q0x < p6x) && (q0x > p0x)) && ((q0y > p6y) && (q0y < p0y));
-      skipRAD = case1 || case2;
-      // Corrected code
-      //
-      // width_A = p6x - p0x;
-      // width_B = q6x - q0x;
-      // width_AB = std::max(p6x, q6x) - std::min(p0x, q0x);
-      // height_A = p6y - p0y;
-      // height_B = q6y - q0y;
-      // height_AB = std::max(p6y, q6y) - std::min(p0y, q0y);
-      // skipRAD = (width_AB < width_A + width_B && height_AB < height_A + height_B);
-    }
-
-    // printf("###### skipRAD = %d #######\n",skipRAD);
-
-    if (!skipRAD)  // only reserve non-overlap 3D Box from Radar
-      vDetectedObjectDF.push_back(vDetectedObjectRAD[i]);
+    vDetectedObjectDF.push_back(vDetectedObjectLID[j]);
   }
 
-  /************************************************************************/
+  for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
+  {
+    vDetectedObjectDF.push_back(vDetectedObjectCAM_120_1[j]);
+  }
+
+  for (unsigned j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
+  {
+    vDetectedObjectDF.push_back(vDetectedObjectCAM_30_1[j]);
+  }
+
+  for (unsigned j = 0; j < vDetectedObjectCAM_60_0.size(); j++)
+  {
+    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_0[j]);
+  }
+
+  for (unsigned j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
+  {
+    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_1[j]);
+  }
+
+  for (unsigned j = 0; j < vDetectedObjectCAM_60_2.size(); j++)
+  {
+    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_2[j]);
+  }
 
   msgFusionObj.objects = vDetectedObjectDF;
-
   msgFusionObj.header.stamp = msgLidarObj.header.stamp;
   msgFusionObj.header.frame_id = "lidar";
   msgFusionObj.header.seq = seq++;
@@ -1264,6 +811,7 @@ void sync_callbackThreads()
   int tmp;
   cerr << __func__ << ":" << __LINE__ << endl;
   printf("****************************syncCount = %d****************************\n", syncCount);
+
   while (ros::ok())
   {
     pthread_mutex_lock(&callback_mutex);
@@ -1288,11 +836,6 @@ void sync_callbackThreads()
       printf(" case2 \n");
 #endif
 
-      // dbgPCView = 1;
-      // pthread_mutex_lock(&mut_dbgPCView);
-      // pthread_cond_wait(&cnd_dbgPCView, &mut_dbgPCView);
-      // pthread_mutex_unlock(&mut_dbgPCView);
-
       printf("****************************end do_function****************************\n");
       syncCount = 0;
       tmp = pthread_cond_broadcast(&callback_cond);
@@ -1302,42 +845,6 @@ void sync_callbackThreads()
   }
   pthread_mutex_unlock(&callback_mutex);
   cerr << __func__ << ":" << __LINE__ << endl;
-}
-
-void* dbg_drawPointCloud(void* arg)
-{
-  // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
-  // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
-
-  while (true)
-  {
-    if (dbgPCView != 1)
-      continue;
-
-    printf("************dbg_drawPointCloud***********\n");
-    // cv::imshow("BeforeFusion", InImage);
-    // cv::waitKey(1);
-    // cv::imshow("AfterFusion", InImage2);
-    // cv::waitKey(1);
-
-    /*
-                static uint32_t iteration = 0;
-                static std::stringstream ss;
-                ss<< std::setfill('0') << std::setw(6) << iteration << ".jpg";
-                imwrite( (std::string("/home/user/code_hino/radar_fusion_sync/data/")+ss.str()).c_str(), InImage2 );
-                ss.str(std::string());
-                iteration++;
-     */
-
-    // cv::waitKey(1);
-    pthread_mutex_lock(&mut_dbgPCView);
-    dbgPCView = 0;
-    pthread_cond_broadcast(&cnd_dbgPCView);
-    pthread_mutex_unlock(&mut_dbgPCView);
-  }  // end of while(true)
-
-  // cv::destroyWindow("BeforeFusion");
-  // cv::destroyWindow("AfterFusion");
 }
 
 void matrix_vector_multiply_3x3_3d(double m[9], double v[3], double result[3])
@@ -1352,21 +859,6 @@ void vector_add_3d(double v1[3], double v2[3], double result[3])
   result[0] = v1[0] + v2[0];
   result[1] = v1[1] + v2[1];
   result[2] = v1[2] + v2[2];
-}
-
-void transform_coordinate_main(msgs::ConvexPoint& cp, const float x, const float y, const float z)
-{
-  for (unsigned i = 0; i < cp.lowerAreaPoints.size(); i++)
-  {
-    transform_coordinate(cp.lowerAreaPoints[i], x, y, z);
-  }
-}
-
-void transform_coordinate(msgs::PointXYZ& p, const float x, const float y, const float z)
-{
-  p.x += x;
-  p.y += y;
-  p.z += z;
 }
 
 int main(int argc, char** argv)
@@ -1412,8 +904,6 @@ int main(int argc, char** argv)
 
   ros::init(argc, argv, "sensor_fusion");
   ros::NodeHandle nh;
-  // cv::namedWindow("BeforeFusion",CV_WINDOW_NORMAL);
-  // cv::namedWindow("AfterFusion",CV_WINDOW_NORMAL);
 
   // Radar object detection input
   // ros::Subscriber RadarDetectionSub = nh.subscribe("/RadarDetection", 2, RadarDetectionCb);
@@ -1421,7 +911,7 @@ int main(int argc, char** argv)
   // Lidar object detection input
   ros::Subscriber lidar_det_sub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
 
-  // Camera object detection input
+// Camera object detection input
 #if CAMERA_DETECTION == 1
   ros::Subscriber cam_det_sub = nh.subscribe("/CameraDetection", 1, cam60_1_DetectionCb);
 #else
@@ -1436,41 +926,25 @@ int main(int argc, char** argv)
   pthread_mutex_init(&callback_mutex, NULL);
   pthread_cond_init(&callback_cond, NULL);
 
-  dbgPCView = 0;
-  // pthread_mutex_init(&mut_dbgPCView,NULL);
-  // pthread_cond_init(&cnd_dbgPCView,NULL);
-  // pthread_create(&thrd_dbgPCView, NULL, &dbg_drawPointCloud, NULL);
-
-  // ros::spin();
-
-  // fps30
-  // rosPublisher = new ROSPublish();
-  // publisher = std::thread(&ROSPublish::tickFuntion, rosPublisher);
-  // mPublish_cb = ROSPublish::staticPublishCallbackFunction;
-
   signal(SIGINT, MySigintHandler);
 
   ros::MultiThreadedSpinner spinner(TOTAL_CB);
-  spinner.spin();  // spin() will not return until the node has been shutdown
+  spinner.spin();
 
   /*******************************************************/
 
   for (int i = 0; i < 5; i++)
+  {
     free(cam_det[i]);
-
-  for (int i = 0; i < 5; i++)
     free(lid_det[i]);
-
-  for (int i = 0; i < 5; i++)
     free(radar_det[i]);
+  }
 
   for (int i = 0; i < 6; i++)
+  {
     free(bb_det[i]);
-
-  for (int i = 0; i < 6; i++)
     free(bb_det2[i]);
+  }
 
   printf("***********free memory 3**************\n");
-  /******************************************************/
-  return 0;
 }
