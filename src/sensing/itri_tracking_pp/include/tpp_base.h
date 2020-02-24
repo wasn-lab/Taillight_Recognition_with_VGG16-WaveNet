@@ -88,6 +88,8 @@
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
 
+#define INPUT_ALL_CLASS 1
+
 #define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
 
