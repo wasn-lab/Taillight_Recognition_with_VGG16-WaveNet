@@ -611,8 +611,10 @@ namespace pcl
     }
     else
     {
-      if (cloud.points.size () != cloud.width * cloud.height)
+      if (cloud.points.size() != cloud.width * cloud.height)
+      {
         throw std::runtime_error ("The width and height do not match the cloud size!");
+      }
       msg.height = cloud.height;
       msg.width = cloud.width;
     }
@@ -739,13 +741,21 @@ namespace pcl
     }
 
     bool strip = false;
-    for (size_t i = 0; i < cloud1.fields.size (); ++i)
+    for (size_t i = 0; i < cloud1.fields.size(); ++i)
+    {
       if (cloud1.fields[i].name == "_")
+      {
         strip = true;
+      }
+    }
 
-    for (size_t i = 0; i < cloud2.fields.size (); ++i)
+    for (size_t i = 0; i < cloud2.fields.size(); ++i)
+    {
       if (cloud2.fields[i].name == "_")
+      {
         strip = true;
+      }
+    }
 
     if (!strip && cloud1.fields.size () != cloud2.fields.size ())
     {
@@ -761,9 +771,13 @@ namespace pcl
     cloud_out.width = cloud1.width * cloud1.height + cloud2.width * cloud2.height;
     cloud_out.height = 1;
     if (!cloud1.is_dense || !cloud2.is_dense)
+    {
       cloud_out.is_dense = false;
+    }
     else
+    {
       cloud_out.is_dense = true;
+    }
 
     // We need to strip the extra padding fields
     if (strip)
@@ -774,7 +788,9 @@ namespace pcl
       for (size_t j = 0; j < cloud2.fields.size (); ++j)
       {
         if (cloud2.fields[j].name == "_")
+        {
           continue;
+        }
 
         fields2_sizes.push_back (cloud2.fields[j].count * pcl::getFieldSize (cloud2.fields[j].datatype));
         fields2.push_back (cloud2.fields[j]);
@@ -810,8 +826,11 @@ namespace pcl
       for (size_t i = 0; i < cloud1.fields.size (); ++i)
       {
         // We're fine with the special RGB vs RGBA use case
-        if ( (cloud1.fields[i].name == "rgb" && cloud2.fields[i].name == "rgba") || (cloud1.fields[i].name == "rgba" && cloud2.fields[i].name == "rgb"))
+        if ((cloud1.fields[i].name == "rgb" && cloud2.fields[i].name == "rgba") ||
+            (cloud1.fields[i].name == "rgba" && cloud2.fields[i].name == "rgb"))
+        {
           continue;
+        }
         // Otherwise we need to make sure the names are the same
         if (cloud1.fields[i].name != cloud2.fields[i].name)
         {

@@ -1,6 +1,6 @@
 #include "TcpServer.h"
 #include <unistd.h>
-#include "RosModule.hpp"
+#include "RosModule.h"
 using namespace std;
 
 TcpServer::TcpServer()
@@ -61,10 +61,20 @@ int TcpServer::start_listening()
   if (is_bound)
   {
     result = listen(listen_socket_fd_int_, MAX_CONNECTION);
+  }else 
+  {
+    std::string errorMsg = "runtime exception :tcp_server binding fail." ;
+    throw tcp_server_runtime_error(errorMsg);
   }
+
+
   if (result >= 0)
   {
     is_listening = true;
+  }else 
+  {
+    std::string errorMsg = "runtime exception :tcp_server listing fail." ;
+    throw tcp_server_runtime_error(errorMsg);
   }
   return result;
 }
