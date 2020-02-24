@@ -6,6 +6,11 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
+if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
+  export PATH=/usr/local/llvm-6.0.0/bin:$PATH
+fi
+export CC=clang
+export CXX=clang++
 
 if [[ -d /var/www/html/scan_build ]]; then
   readonly output_dir=$(readlink -e /var/www/html/scan_build)
@@ -22,7 +27,6 @@ for _dir in ${build_dir} ${devel_dir}; do
     fi
 done
 blacklist="dl_data"
-#blacklist="dl_data;ndt_gpu;convex_fusion;lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing;localization"
 
 scan-build -o ${output_dir} catkin_make \
     --build ${build_dir} \
