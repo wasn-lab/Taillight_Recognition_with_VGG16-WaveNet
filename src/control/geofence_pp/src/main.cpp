@@ -47,9 +47,10 @@
 #define TRACKINGBOX
 
 static double Heading, SLAM_x, SLAM_y;
-static Geofence BBox_Geofence;
+static Geofence BBox_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop=0;
+static int PP_Distance=100;
 ros::Publisher PP_geofence_line;
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
@@ -120,12 +121,12 @@ void Plot_geofence(Point temp)
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
-    p.x = temp.X + 1.5*sin(temp.Speed);
-    p.y = temp.Y + 1.5*cos(temp.Speed);
+    p.x = temp.X + 1.5*sin(temp.Direction);
+    p.y = temp.Y + 1.5*cos(temp.Direction);
     p.z = -3.0;
 	line_list.points.push_back(p);
-	p.x = temp.X - 1.5*sin(temp.Speed);
-    p.y = temp.Y - 1.5*cos(temp.Speed);
+	p.x = temp.X - 1.5*sin(temp.Direction);
+    p.y = temp.Y - 1.5*cos(temp.Direction);
 	line_list.points.push_back(p);	
 	PP_geofence_line.publish(line_list); 
 }
@@ -134,22 +135,25 @@ void Plot_geofence(Point temp)
 
 void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){	
 	PP_Stop = 0;
-	for(int i=0;i<msg->objects.size();i++){
+	PP_Distance = 100;
+	for(uint i=0;i<msg->objects.size();i++)
+	{
 		//cout << "Start point: " << msg->objects[i].bPoint.p0.x << "," <<  msg->objects[i].bPoint.p0.y << endl;
-		double Center_X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x + msg->objects[i].bPoint.p7.x)/4;
-		double Center_Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y + msg->objects[i].bPoint.p7.y)/4;
-		for(int j=0;j<msg->objects[i].track.forecasts.size();j++){
+		//double Center_X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x + msg->objects[i].bPoint.p7.x)/4;
+		//double Center_Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y + msg->objects[i].bPoint.p7.y)/4;
+		for(uint j=0;j<msg->objects[i].track.forecasts.size();j++)
+		{
 			Point Point_temp;
 			vector<Point> PointCloud_temp;
 			double time = (j+1)*0.5;
 			double Range_front = time*Ego_speed_ms;
 			double Range_back = time*Ego_speed_ms-7; // Length of bus = 7m
-      if (Range_back < 0)
-      {
-        Range_back = 0;
-      }
+			if (Range_back < 0)
+			{
+				Range_back = 0;
+			}
 
-      if(msg->objects[i].track.is_ready_prediction==1)
+			if(msg->objects[i].track.is_ready_prediction==1)
 			{
 				Point_temp.X = msg->objects[i].track.forecasts[j].position.x;
 				//cout << Point_temp.X << endl;
@@ -175,7 +179,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				Point_temp.Speed = msg->objects[i].relSpeed;
 				PointCloud_temp.push_back(Point_temp);
 				*/
-			}
+			}	
 
 			//cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y << endl;
 
@@ -189,18 +193,22 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				return;
 			}
 
-			//Plot geofence PP
-
-			if(BBox_Geofence.getDistance()<80){
+			if(BBox_Geofence.getDistance()<80)
+			{
 				cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 				cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 				//Plot geofence PP
-				Plot_geofence(BBox_Geofence.findDirection());
+				if(BBox_Geofence.getDistance()<PP_Distance)
+				{
+					PP_Distance = BBox_Geofence.getDistance();
+					Plot_geofence(BBox_Geofence.findDirection());
+				}
+				//if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back))
+				{
+					//cout << "Collision appears" << endl;
+					PP_Stop = 1;
+				}
 			}
-			if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back)){
-				//cout << "Collision appears" << endl;
-				PP_Stop = 1;	
-			} 
 		}	
 	}
 }
@@ -257,6 +265,7 @@ int main(int argc, char **argv){
 		frame.data[0] = (short int)(PP_Stop*100);
 		frame.data[1] = (short int)(PP_Stop*100)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
+		printf("Wrote %d bytes\n", nbytes);
 		loop_rate.sleep();	
 	}
 	close(s);
