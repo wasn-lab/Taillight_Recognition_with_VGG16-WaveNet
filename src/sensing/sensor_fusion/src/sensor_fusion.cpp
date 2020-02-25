@@ -79,37 +79,15 @@ std_msgs::Header cam120_0_Header;
 std_msgs::Header cam120_1_Header;
 std_msgs::Header cam120_2_Header;
 /************************************************************************/
-int drawing_uv[max_det][4];
-int drawing_num = 0;
-
-int drawing_uv_cam[max_det][4];
-int drawing_num_cam = 0;
-
-int drawing_uv_lidar[max_det][4];
-int drawing_num_lidar = 0;
-
-int Lidar_uv[max_det][4];
 int Lidar_num = 0;
-
-int Cam60_0_uv[max_det][4];
 int Cam60_0_num = 0;
-int Cam60_1_uv[max_det][4];
 int Cam60_1_num = 0;
-int Cam60_2_uv[max_det][4];
 int Cam60_2_num = 0;
-
-int Cam30_0_uv[max_det][4];
 int Cam30_0_num = 0;
-int Cam30_1_uv[max_det][4];
 int Cam30_1_num = 0;
-int Cam30_2_uv[max_det][4];
 int Cam30_2_num = 0;
-
-int Cam120_0_uv[max_det][4];
 int Cam120_0_num = 0;
-int Cam120_1_uv[max_det][4];
 int Cam120_1_num = 0;
-int Cam120_2_uv[max_det][4];
 int Cam120_2_num = 0;
 /************************************************************************/
 int Lidar_num_cb = 0;
@@ -202,7 +180,7 @@ void MySigintHandler(int sig)
 /************************************************************************/
 
 void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_array,
-                          msgs::DetectedObjectArray& msg_cam_obj, int cam_uv[][4], int& num_objs)
+                          msgs::DetectedObjectArray& msg_cam_obj, int& num_objs)
 {
   std::vector<msgs::DetectedObject> vDetectedObject;
   vDetectedObject.reserve(cam_obj_array->objects.size());
@@ -217,21 +195,13 @@ void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_arr
 
   num_objs = std::min(max_det, (int)vDetectedObject.size());
 
-  for (int i = 0; i < num_objs; i++)
-  {
-    cam_uv[i][0] = vDetectedObject[i].camInfo.u;
-    cam_uv[i][1] = vDetectedObject[i].camInfo.v;
-    cam_uv[i][2] = vDetectedObject[i].camInfo.width;
-    cam_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
   msg_cam_obj.header = cam_obj_array->header;
   msg_cam_obj.objects.assign(vDetectedObject.begin(), vDetectedObject.end());
 }
 
 void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjArray)
 {
-  callback_camera_main(Cam60_0_ObjArray, msgCam60_0_Obj, Cam60_0_uv, Cam60_0_num_cb);
+  callback_camera_main(Cam60_0_ObjArray, msgCam60_0_Obj, Cam60_0_num_cb);
 
 #ifdef EnableCAM60_0
   sync_callbackThreads();
@@ -240,7 +210,7 @@ void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjA
 
 void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjArray)
 {
-  callback_camera_main(Cam60_1_ObjArray, msgCam60_1_Obj, Cam60_1_uv, Cam60_1_num_cb);
+  callback_camera_main(Cam60_1_ObjArray, msgCam60_1_Obj, Cam60_1_num_cb);
 
 #ifdef EnableCAM60_1
   sync_callbackThreads();
@@ -249,7 +219,7 @@ void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjA
 
 void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjArray)
 {
-  callback_camera_main(Cam60_2_ObjArray, msgCam60_2_Obj, Cam60_2_uv, Cam60_2_num_cb);
+  callback_camera_main(Cam60_2_ObjArray, msgCam60_2_Obj, Cam60_2_num_cb);
 
 #ifdef EnableCAM60_2
   sync_callbackThreads();
@@ -258,7 +228,7 @@ void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjA
 
 void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjArray)
 {
-  callback_camera_main(Cam30_0_ObjArray, msgCam30_0_Obj, Cam30_0_uv, Cam30_0_num_cb);
+  callback_camera_main(Cam30_0_ObjArray, msgCam30_0_Obj, Cam30_0_num_cb);
 
 #ifdef EnableCAM30_0
   sync_callbackThreads();
@@ -267,7 +237,7 @@ void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjA
 
 void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjArray)
 {
-  callback_camera_main(Cam30_1_ObjArray, msgCam30_1_Obj, Cam30_1_uv, Cam30_1_num_cb);
+  callback_camera_main(Cam30_1_ObjArray, msgCam30_1_Obj, Cam30_1_num_cb);
 
 #ifdef EnableCAM30_1
   sync_callbackThreads();
@@ -276,7 +246,7 @@ void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjA
 
 void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjArray)
 {
-  callback_camera_main(Cam30_2_ObjArray, msgCam30_2_Obj, Cam30_2_uv, Cam30_2_num_cb);
+  callback_camera_main(Cam30_2_ObjArray, msgCam30_2_Obj, Cam30_2_num_cb);
 
 #ifdef EnableCAM30_2
   sync_callbackThreads();
@@ -285,7 +255,7 @@ void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjA
 
 void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_ObjArray)
 {
-  callback_camera_main(Cam120_0_ObjArray, msgCam120_0_Obj, Cam120_0_uv, Cam120_0_num_cb);
+  callback_camera_main(Cam120_0_ObjArray, msgCam120_0_Obj, Cam120_0_num_cb);
 
 #ifdef EnableCAM120_0
   sync_callbackThreads();
@@ -294,7 +264,7 @@ void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_Ob
 
 void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_ObjArray)
 {
-  callback_camera_main(Cam120_1_ObjArray, msgCam120_1_Obj, Cam120_1_uv, Cam120_1_num_cb);
+  callback_camera_main(Cam120_1_ObjArray, msgCam120_1_Obj, Cam120_1_num_cb);
 
 #ifdef EnableCAM120_1
   sync_callbackThreads();
@@ -303,7 +273,7 @@ void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_Ob
 
 void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_ObjArray)
 {
-  callback_camera_main(Cam120_2_ObjArray, msgCam120_2_Obj, Cam120_2_uv, Cam120_2_num_cb);
+  callback_camera_main(Cam120_2_ObjArray, msgCam120_2_Obj, Cam120_2_num_cb);
 
 #ifdef EnableCAM120_2
   sync_callbackThreads();
