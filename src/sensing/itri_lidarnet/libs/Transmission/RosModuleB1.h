@@ -135,10 +135,10 @@ class RosModuleB1
             case 2:
               msgObj.classId = 2;  //bicycle
               break;
-            case 3:
+            case 4:
               msgObj.classId = 3;  //motobike
               break;
-            case 4:
+            case 3:
               msgObj.classId = 4;  //car
               break;
             case 5:
