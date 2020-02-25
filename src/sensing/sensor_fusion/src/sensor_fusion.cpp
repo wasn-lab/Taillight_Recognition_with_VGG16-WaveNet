@@ -69,7 +69,16 @@ int syncCount = 0;
 void sync_callbackThreads();
 pthread_mutex_t callback_mutex;
 pthread_cond_t callback_cond;
-
+/************************************************************************/
+std_msgs::Header cam60_0_Header;
+std_msgs::Header cam60_1_Header;
+std_msgs::Header cam60_2_Header;
+std_msgs::Header cam30_0_Header;
+std_msgs::Header cam30_1_Header;
+std_msgs::Header cam30_2_Header;
+std_msgs::Header cam120_0_Header;
+std_msgs::Header cam120_1_Header;
+std_msgs::Header cam120_2_Header;
 /************************************************************************/
 int drawing_uv[max_det][4];
 int drawing_num = 0;
@@ -104,12 +113,16 @@ int Cam120_1_num = 0;
 int Cam120_2_uv[max_det][4];
 int Cam120_2_num = 0;
 /************************************************************************/
+int Lidar_num_cb = 0;
 int Cam60_0_num_cb = 0;
 int Cam60_1_num_cb = 0;
 int Cam60_2_num_cb = 0;
-int Lidar_num_cb = 0;
+int Cam30_0_num_cb = 0;
 int Cam30_1_num_cb = 0;
+int Cam30_2_num_cb = 0;
+int Cam120_0_num_cb = 0;
 int Cam120_1_num_cb = 0;
+int Cam120_2_num_cb = 0;
 /************************************************************************/
 msgs::DetectedObjectArray msgLidarObj;
 msgs::DetectedObjectArray msgCam60_0_Obj;
@@ -121,7 +134,6 @@ msgs::DetectedObjectArray msgCam30_2_Obj;
 msgs::DetectedObjectArray msgCam120_0_Obj;
 msgs::DetectedObjectArray msgCam120_1_Obj;
 msgs::DetectedObjectArray msgCam120_2_Obj;
-
 /************************************************************************/
 
 msgs::DetectedObjectArray msgFusionObj;
@@ -219,7 +231,6 @@ void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_arr
   msg_cam_obj.objects.assign(vDetectedObject.begin(), vDetectedObject.end());
 }
 
-std_msgs::Header cam60_0_Header;
 void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjArray)
 {
   callback_camera_main(Cam60_0_ObjArray, msgCam60_0_Obj, Cam60_0_uv, Cam60_0_num_cb);
@@ -229,8 +240,6 @@ void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjA
 #endif
 }
 
-/************************************************************************/
-std_msgs::Header cam60_1_Header;
 void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjArray)
 {
   callback_camera_main(Cam60_1_ObjArray, msgCam60_1_Obj, Cam60_1_uv, Cam60_1_num_cb);
@@ -239,8 +248,7 @@ void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjA
   sync_callbackThreads();
 #endif
 }
-/************************************************************************/
-std_msgs::Header cam60_2_Header;
+
 void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjArray)
 {
   callback_camera_main(Cam60_2_ObjArray, msgCam60_2_Obj, Cam60_2_uv, Cam60_2_num_cb);
@@ -249,158 +257,55 @@ void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjA
   sync_callbackThreads();
 #endif
 }
-/************************************************************************/
-/************************************************************************/
 
-std_msgs::Header cam30_0_Header;
 void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam30_0_ObjArray->objects;
-  msgCam30_0_Obj.header = Cam30_0_ObjArray->header;
-  // printf("Cam30_0_ObjArray->objects.size() = %zu\n",Cam30_0_ObjArray->objects.size());
-
-  Cam30_0_num = Cam30_0_ObjArray->objects.size();
-
-  for (unsigned i = 0; i < Cam30_0_ObjArray->objects.size(); i++)
-  {
-    Cam30_0_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam30_0_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam30_0_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam30_0_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam30_0_Obj = *Cam30_0_ObjArray;  // for fusion
+  callback_camera_main(Cam30_0_ObjArray, msgCam30_0_Obj, Cam30_0_uv, Cam30_0_num_cb);
 
 #ifdef EnableCAM30_0
   sync_callbackThreads();
 #endif
 }
 
-/************************************************************************/
-std_msgs::Header cam30_1_Header;
 void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  vDetectedObjectCAM_30_1.clear();
-  // std::vector<msgs::DetectedObject> vDetectedObject = Cam30_1_ObjArray->objects;
-  msgCam30_1_Obj.header = Cam30_1_ObjArray->header;
-  // printf("Cam30_1_ObjArray->objects.size() = %zu\n",Cam30_1_ObjArray->objects.size());
-
-  if (Cam30_1_ObjArray->objects.size() > max_det)
-    Cam30_1_num_cb = max_det;
-  else
-    Cam30_1_num_cb = Cam30_1_ObjArray->objects.size();
-
-  msgCam30_1_Obj = *Cam30_1_ObjArray;  // for fusion
+  callback_camera_main(Cam30_1_ObjArray, msgCam30_1_Obj, Cam30_1_uv, Cam30_1_num_cb);
 
 #ifdef EnableCAM30_1
   sync_callbackThreads();
 #endif
 }
-/************************************************************************/
-std_msgs::Header cam30_2_Header;
+
 void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam30_2_ObjArray->objects;
-  msgCam30_2_Obj.header = Cam30_2_ObjArray->header;
-  // printf("Cam30_2_ObjArray->objects.size() = %zu\n",Cam30_2_ObjArray->objects.size());
-
-  Cam30_2_num = Cam30_2_ObjArray->objects.size();
-
-  for (unsigned i = 0; i < Cam30_2_ObjArray->objects.size(); i++)
-  {
-    Cam30_2_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam30_2_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam30_2_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam30_2_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam30_2_Obj = *Cam30_2_ObjArray;  // for fusion
+  callback_camera_main(Cam30_2_ObjArray, msgCam30_2_Obj, Cam30_2_uv, Cam30_2_num_cb);
 
 #ifdef EnableCAM30_2
   sync_callbackThreads();
 #endif
 }
 
-/************************************************************************/
-/************************************************************************/
-
-std_msgs::Header cam120_0_Header;
 void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam120_0_ObjArray->objects;
-  msgCam120_0_Obj.header = Cam120_0_ObjArray->header;
-  // printf("Cam120_0_ObjArray->objects.size() = %zu\n",Cam120_0_ObjArray->objects.size());
-
-  Cam120_0_num = Cam120_0_ObjArray->objects.size();
-
-  for (unsigned i = 0; i < Cam120_0_ObjArray->objects.size(); i++)
-  {
-    Cam120_0_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam120_0_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam120_0_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam120_0_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam120_0_Obj = *Cam120_0_ObjArray;  // for fusion
+  callback_camera_main(Cam120_0_ObjArray, msgCam120_0_Obj, Cam120_0_uv, Cam120_0_num_cb);
 
 #ifdef EnableCAM120_0
   sync_callbackThreads();
 #endif
 }
 
-/************************************************************************/
-std_msgs::Header cam120_1_Header;
 void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  vDetectedObjectCAM_120_1.clear();
-  // std::vector<msgs::DetectedObject> vDetectedObject = Cam120_1_ObjArray->objects;
-  msgCam120_1_Obj.header = Cam120_1_ObjArray->header;
-  // printf("Cam120_1_ObjArray->objects.size() = %zu\n",Cam120_1_ObjArray->objects.size());
-
-  Cam120_1_num_cb = Cam120_1_ObjArray->objects.size();
-
-  if (Cam120_1_ObjArray->objects.size() > max_det)
-    Cam120_1_num_cb = max_det;
-  else
-    Cam120_1_num_cb = Cam120_1_ObjArray->objects.size();
-
-  msgCam120_1_Obj = *Cam120_1_ObjArray;  // for fusion
+  callback_camera_main(Cam120_1_ObjArray, msgCam120_1_Obj, Cam120_1_uv, Cam120_1_num_cb);
 
 #ifdef EnableCAM120_1
   sync_callbackThreads();
 #endif
 }
-/************************************************************************/
-std_msgs::Header cam120_2_Header;
+
 void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_ObjArray)
 {
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  std::vector<msgs::DetectedObject> vDetectedObject = Cam120_2_ObjArray->objects;
-  msgCam120_2_Obj.header = Cam120_2_ObjArray->header;
-  // printf("Cam120_2_ObjArray->objects.size() = %zu\n",Cam120_2_ObjArray->objects.size());
-
-  Cam120_2_num = Cam120_2_ObjArray->objects.size();
-
-  for (unsigned i = 0; i < Cam120_2_ObjArray->objects.size(); i++)
-  {
-    Cam120_2_uv[i][0] = vDetectedObject[i].camInfo.u;
-    Cam120_2_uv[i][1] = vDetectedObject[i].camInfo.v;
-    Cam120_2_uv[i][2] = vDetectedObject[i].camInfo.width;
-    Cam120_2_uv[i][3] = vDetectedObject[i].camInfo.height;
-  }
-
-  msgCam120_2_Obj = *Cam120_2_ObjArray;  // for fusion
+  callback_camera_main(Cam120_2_ObjArray, msgCam120_2_Obj, Cam120_2_uv, Cam120_2_num_cb);
 
 #ifdef EnableCAM120_2
   sync_callbackThreads();
