@@ -363,12 +363,12 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
     obs_index = 0;
   }
 
-  if (avoid_flag == 0 && obs_index < 60)
-  {  // detect time < 3s //avoid_flag == 0 &&
+  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 &&
+  {
     obswaypoints_data_ = -1;
   }
   if (avoid_flag != 0 && obs_index < 4)
-  {  //
+  {
     obswaypoints_data_ = -1;
   }
 
@@ -389,8 +389,8 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 {
   int obswaypoints_data_base = std::ceil(obsdismsg_base->data);// + wheel_dis);
   // std::cout << "obswaypoints_data_base : " << obswaypoints_data_base << std::endl;
-  if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10)
-  {  /////////////////////////////////
+  if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10) ///////////////////////
+  {
     obswaypoints_data_base = -1;
   }
   int obswaypoints_data_base_ = 0;
