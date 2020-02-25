@@ -40,18 +40,21 @@ std::vector<double> make_xyz_lut(int W, int H,
     const int n = W * H;
     std::vector<double> xyz = std::vector<double>(3 * n, 0);
 
+    const double twoPI = 2.0 * M_PI;
+    const double D2R = twoPI / 360.0;
+
     for (int icol = 0; icol < W; icol++) {
-        double h_angle_0 = 2.0 * M_PI * icol / W;
+        double h_angle_0 = twoPI * icol / W;
         for (int ipx = 0; ipx < H; ipx++) {
             int ind = 3 * (icol * H + ipx);
             double h_angle =
-                (azimuth_angles.at(ipx) * 2 * M_PI / 360.0) + h_angle_0;
+                (azimuth_angles.at(ipx) * D2R) + h_angle_0;
 
-            xyz[ind + 0] = -std::cos(altitude_angles[ipx] * 2 * M_PI / 360.0) *
+            xyz[ind + 1] = -std::cos(altitude_angles[ipx] * D2R) *
                            std::cos(h_angle);
-            xyz[ind + 1] = std::cos(altitude_angles[ipx] * 2 * M_PI / 360.0) *
+            xyz[ind + 0] = -std::cos(altitude_angles[ipx] * D2R) *
                            std::sin(h_angle);
-            xyz[ind + 2] = std::sin(altitude_angles[ipx] * 2 * M_PI / 360.0);
+            xyz[ind + 2] = std::sin(altitude_angles[ipx] * D2R);
         }
     }
     return xyz;
@@ -60,7 +63,9 @@ std::vector<double> make_xyz_lut(int W, int H,
 std::vector<int> get_px_offset(int lidar_mode) {
     auto repeat = [](int n, const std::vector<int>& v) {
         std::vector<int> res{};
-        for (int i = 0; i < n; i++) res.insert(res.end(), v.begin(), v.end());
+        for (int i = 0; i < n; i++) {
+            res.insert(res.end(), v.begin(), v.end());
+        }
         return res;
     };
 
