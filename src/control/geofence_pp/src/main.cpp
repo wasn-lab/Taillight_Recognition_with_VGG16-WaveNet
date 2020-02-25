@@ -203,7 +203,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 					PP_Distance = BBox_Geofence.getDistance();
 					Plot_geofence(BBox_Geofence.findDirection());
 				}
-				if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back))
+				//if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back))
 				{
 					//cout << "Collision appears" << endl;
 					PP_Stop = 1;
