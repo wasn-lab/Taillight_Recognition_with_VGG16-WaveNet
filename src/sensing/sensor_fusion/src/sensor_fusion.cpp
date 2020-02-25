@@ -37,28 +37,7 @@
 
 #define fSize 9
 
-/************************************************************************/
-
-#define EnableLIDAR
-#define EnableCAM60_0
-#define EnableCAM60_1
-#define EnableCAM60_2
-
 static const int TOTAL_CB = 1;  // 4;//12;
-
-/*
-#define EnableLIDAR
-#define EnableImage
-#define EnableCAM30_0
-#define EnableCAM30_1
-#define EnableCAM30_2
-#define EnableCAM60_0
-#define EnableCAM60_1
-#define EnableCAM60_2
-#define EnableCAM120_0
-#define EnableCAM120_1
-#define EnableCAM120_2
-*/
 
 /************************************************************************/
 ros::Publisher pub;
@@ -175,9 +154,7 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 
   msgLidarObj = *LidarObjArray;
 
-#ifdef EnableLIDAR
   sync_callbackThreads();
-#endif
 }
 
 void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_array,
@@ -196,87 +173,53 @@ void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_arr
 
   msg_cam_obj.header = cam_obj_array->header;
   msg_cam_obj.objects.assign(vDetectedObject.begin(), vDetectedObject.end());
+
+  sync_callbackThreads();
 }
 
 void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjArray)
 {
   callback_camera_main(Cam60_0_ObjArray, msgCam60_0_Obj);
-
-#ifdef EnableCAM60_0
-  sync_callbackThreads();
-#endif
 }
 
 void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjArray)
 {
   callback_camera_main(Cam60_1_ObjArray, msgCam60_1_Obj);
-
-#ifdef EnableCAM60_1
-  sync_callbackThreads();
-#endif
 }
 
 void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjArray)
 {
   callback_camera_main(Cam60_2_ObjArray, msgCam60_2_Obj);
-
-#ifdef EnableCAM60_2
-  sync_callbackThreads();
-#endif
 }
 
 void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjArray)
 {
   callback_camera_main(Cam30_0_ObjArray, msgCam30_0_Obj);
-
-#ifdef EnableCAM30_0
-  sync_callbackThreads();
-#endif
 }
 
 void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjArray)
 {
   callback_camera_main(Cam30_1_ObjArray, msgCam30_1_Obj);
-
-#ifdef EnableCAM30_1
-  sync_callbackThreads();
-#endif
 }
 
 void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjArray)
 {
   callback_camera_main(Cam30_2_ObjArray, msgCam30_2_Obj);
-
-#ifdef EnableCAM30_2
-  sync_callbackThreads();
-#endif
 }
 
 void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_ObjArray)
 {
   callback_camera_main(Cam120_0_ObjArray, msgCam120_0_Obj);
-
-#ifdef EnableCAM120_0
-  sync_callbackThreads();
-#endif
 }
 
 void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_ObjArray)
 {
   callback_camera_main(Cam120_1_ObjArray, msgCam120_1_Obj);
-
-#ifdef EnableCAM120_1
-  sync_callbackThreads();
-#endif
 }
 
 void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_ObjArray)
 {
   callback_camera_main(Cam120_2_ObjArray, msgCam120_2_Obj);
-
-#ifdef EnableCAM120_2
-  sync_callbackThreads();
-#endif
 }
 
 void fuseDetectedObjects()
