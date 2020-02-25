@@ -139,19 +139,11 @@ void MySigintHandler(int sig)
 
 void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 {
-  static std_msgs::Header pre_h;
-
   vDetectedObjectDF.clear();
   vDetectedObjectTemp.clear();
   vDetectedObjectLID.clear();
 
   msgLidarObj.header = LidarObjArray->header;
-
-  if (pre_h.stamp.sec == LidarObjArray->header.stamp.sec && pre_h.stamp.nsec == LidarObjArray->header.stamp.nsec)
-    return;
-  else
-    pre_h = LidarObjArray->header;
-
   msgLidarObj = *LidarObjArray;
 
   sync_callbackThreads();
