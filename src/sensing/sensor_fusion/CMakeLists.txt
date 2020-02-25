@@ -38,7 +38,7 @@ include_directories(
 add_executable(
   ${PROJECT_NAME}
   src/sensor_fusion.cpp
-  src/hungarian/Hungarian.cpp
+  src/Hungarian.cpp
 )
  
 target_link_libraries(
