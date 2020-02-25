@@ -9,6 +9,7 @@
 
 /// util
 #include <camera_params.h>
+#include "drivenet/image_preprocessing.h"
 
 struct PixelPosition
 {
@@ -28,6 +29,7 @@ public:
   ~Alignment();
   void projectMatrixInit(int cam_id);
   PixelPosition projectPointToPixel(pcl::PointXYZI point);
+  cv::Scalar getDistColor(float distance);
 };
 
 #endif

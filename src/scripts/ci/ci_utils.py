@@ -7,6 +7,7 @@ import io
 import subprocess
 import json
 import os
+import logging
 
 
 @lru_cache(maxsize=0)
@@ -26,6 +27,8 @@ def get_complie_commands():
     }
     """
     jfile = os.path.join(get_repo_path(), "build_clang", "compile_commands.json")
+    if not os.path.isfile(jfile):
+        logging.error("No such file: %s", jfile)
     with io.open(jfile, encoding="utf-8") as _fp:
         jdata = json.loads(_fp.read())
     return jdata
@@ -38,8 +41,29 @@ def get_compile_command(cpp):
             cmd = doc["command"].split()
             if "ccache" in cmd[0]:
                 cmd = cmd[1:]
-            return cmd
+            return __escape(cmd)
     return []
+
+
+def __escape(cmd):
+    return [_.replace("\\\"", "\"") for _ in cmd]
+
+
+def get_compile_args(cpp):
+    """ Return the compile arguments for |cpp| """
+    cmd = get_compile_command(cpp)
+    if not cmd:
+        return []
+    removes = set()
+    for idx, item in enumerate(cmd):
+        if item == "-o":
+            removes.add(item)
+            removes.add(cmd[idx+1])
+        if item == "-c":
+            removes.add(item)
+            removes.add(cmd[idx+1])
+    return [_ for _ in cmd[1:] if _ not in removes]
+
 
 @lru_cache(maxsize=0)
 def get_affected_files():

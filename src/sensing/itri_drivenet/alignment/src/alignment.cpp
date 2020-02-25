@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace pcl;
+using namespace DriveNet;
 
 Alignment::Alignment()
 {
@@ -36,4 +37,25 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
     pixel_position_.v = -1;
   }
   return pixel_position_;
+}
+cv::Scalar Alignment::getDistColor(float distance)
+{
+  cv::Scalar color;
+  if (distance >= 0 && distance <= 10)
+  {
+    color = Color::g_color_red;
+  }
+  else if (distance > 10 && distance <= 20)
+  {
+    color = Color::g_color_yellow;
+  }
+  else if (distance > 20 && distance <= 30)
+  {
+    color = Color::g_color_green;          
+  }
+  else
+  {
+    color = Color::g_color_blue;         
+  }
+  return color;
 }

@@ -476,7 +476,7 @@ void TPPNode::publish_tracking()
 #if FPS_EXTRAPOLATION
         box.track.tracktime = (KTs_.tracks_[i].tracktime_ - 1) * num_publishs_per_loop + 1;
 #else
-        box.track.tracktime = KTs_.tracks_[i].tracktime_;
+    box.track.tracktime = KTs_.tracks_[i].tracktime_;
 #endif
 
         // set max_length
@@ -800,7 +800,9 @@ void TPPNode::control_sleep(const double loop_interval)
 #endif
 
   if (loop_elapsed > 0)
+  {
     this_thread::sleep_for(std::chrono::milliseconds((long int)round(1000 * (loop_interval - loop_elapsed))));
+  }
 
   loop_begin = ros::Time::now().toSec();
 }
@@ -896,52 +898,35 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
 
 void TPPNode::set_ros_params()
 {
-  ROSParamsParser par(nh_);
+  std::string domain = "/itri_tracking_pp/";
+  nh_.param<int>(domain + "input_source", in_source_, 0);
 
-  par.get_ros_param_int("input_source", in_source_);
-
-  //-----------------------------------------------
-
-  par.get_ros_param_double("input_fps", input_fps);
-  par.get_ros_param_double("output_fps", output_fps);
+  nh_.param<double>(domain + "input_fps", input_fps, 10.);
+  nh_.param<double>(domain + "output_fps", output_fps, 10.);
   num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 
-  //-----------------------------------------------
-
   double pp_input_shift_m = 0.;
-  par.get_ros_param_double("pp_input_shift_m", pp_input_shift_m);
+  nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);
   pp_.set_input_shift_m((long double)pp_input_shift_m);
 
-  //-----------------------------------------------
+  nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
+  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
 
-  par.get_ros_param_double("m_lifetime_sec", mc_.lifetime_sec);
+  nh_.param<bool>(domain + "gen_markers", gen_markers_, (bool)1);
+  nh_.param<bool>(domain + "show_classid", mc_.show_classid, (bool)0);
+  nh_.param<bool>(domain + "show_tracktime", mc_.show_tracktime, (bool)0);
+  nh_.param<bool>(domain + "show_source", mc_.show_source, (bool)0);
+  nh_.param<bool>(domain + "show_distance", mc_.show_distance, (bool)0);
+  nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, (bool)0);
 
-  if (mc_.lifetime_sec == 0)
-  {
-    mc_.lifetime_sec = 1 / output_fps;
-  }
+  int show_pp_int = 0;
+  nh_.param<int>(domain + "show_pp", show_pp_int, 0);
+  mc_.show_pp = (unsigned int)show_pp_int;
 
-  //-----------------------------------------------
-
-  par.get_ros_param_bool("gen_markers", gen_markers_);
-  par.get_ros_param_bool("show_classid", mc_.show_classid);
-  par.get_ros_param_bool("show_tracktime", mc_.show_tracktime);
-  par.get_ros_param_bool("show_source", mc_.show_source);
-  par.get_ros_param_bool("show_distance", mc_.show_distance);
-  par.get_ros_param_bool("show_absspeed", mc_.show_absspeed);
-  par.get_ros_param_uint("show_pp", mc_.show_pp);
-
-  //-----------------------------------------------
-
-  set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 0.5f, 0.f, 1.f);
+  set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
   set_ColorRGBA(mc_.color_radar_tpp, 0.5f, 0.f, 0.f, 1.f);
   set_ColorRGBA(mc_.color_camera_tpp, 0.5f, 0.5f, 0.5f, 1.f);
   set_ColorRGBA(mc_.color_fusion_tpp, 0.f, 1.f, 1.f, 1.f);
-
-  par.get_ros_param_color("color_lidar_tpp", mc_.color_lidar_tpp);
-  par.get_ros_param_color("color_radar_tpp", mc_.color_radar_tpp);
-  par.get_ros_param_color("color_camera_tpp", mc_.color_camera_tpp);
-  par.get_ros_param_color("color_fusion_tpp", mc_.color_fusion_tpp);
 }
 
 int TPPNode::run()

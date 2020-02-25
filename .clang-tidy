@@ -1,0 +1,4 @@
+---
+# WarningsAsErrors: "*"
+HeaderFilterRegex: '.*/itriadv/src/.*\.h$'
+...

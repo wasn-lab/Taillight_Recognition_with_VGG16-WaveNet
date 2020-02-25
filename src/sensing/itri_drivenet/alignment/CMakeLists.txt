@@ -19,30 +19,42 @@ catkin_package(
   CATKIN_DEPENDS roscpp rospy msgs
 )
 
+find_package(drivenet)                
+if (NOT ${drivenet_FOUND})
+  message("drivenet not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 ######################
 ##      OPENCV      ##
 ######################
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 ######################
 ##       CUDA       ##
 ######################
-find_package	        (CUDA REQUIRED) 
+find_package(CUDA) 
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
 ######################
 ##       PCL        ##
 ######################
 find_package            (PCL 1.8 REQUIRED) 
+if (NOT ${PCL_FOUND})
+  message("PCL not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
-include_directories     (${CUDA_INCLUDE_DIRS}) 
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+
 
 include_directories(
   include
@@ -51,12 +63,14 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${drivenet_SOURCE_DIR}/include
 )
 
 set(LIBS ${OpenCV_LIBRARIES}
          ${CUDA_LIBRARIES}
          ${PCL_LIBRARIES}
-         camera_utils)
+         camera_utils
+         drivenet)
 
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 message(STATUS "LIB_SOURCES: ${LIB_SOURCES}")

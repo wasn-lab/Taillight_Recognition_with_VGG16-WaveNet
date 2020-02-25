@@ -1,19 +1,69 @@
 #include "drivenet/distance_estimation_b1.h"
-#include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
-void DistanceEstimation::init(int car_id)
+DistanceEstimation::~DistanceEstimation()
+{
+  if(de_mode == 1)
+  {
+    for (int i = 0; i < img_h; i++)
+    {
+      delete[] align_FC60[i];
+    }
+    delete[] align_FC60;
+  }
+
+}
+
+void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
 {
   carId = car_id;
+  de_mode = mode;
+
+  // ====== Init distance estimation table by alignment ======
+
+  // FC60
+  if(de_mode == 1)
+  {
+    std::string FC60Json = pkgPath;
+    FC60Json.append("/data/alignment/out.json");
+    align_FC60 = new cv::Point3d*[img_al_h];
+    for (int i = 0; i < img_al_h; i++)
+    {
+      align_FC60[i] = new cv::Point3d[img_al_w];
+    }
+    ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
+  }
+
+  // // FR60
+  // std::string FR60Json = pkgPath;
+  // FR60Json.append("/data/alignment/FR60_2.json");
+  // align_FR60 = new cv::Point3d*[img_h];
+  // for (int i = 0; i < img_h; i++)
+  // {
+  //   align_FR60[i] = new cv::Point3d[img_w];
+  // }
+  // ReadDistanceFromJson(FR60Json, align_FR60, img_h, img_w);
+
+  // // FL60
+  // std::string FL60Json = pkgPath;
+  // FL60Json.append("/data/alignment/FL60_2.json");
+  // align_FL60 = new cv::Point3d*[img_h];
+  // for (int i = 0; i < img_h; i++)
+  // {
+  //   align_FL60[i] = new cv::Point3d[img_w];
+  // }
+  // ReadDistanceFromJson(FL60Json, align_FL60, img_h, img_w);
 
   initParams();
   initShrinkArea();
   initDetectArea();
 
+
+
   Lidar_offset_x = 0;
   Lidar_offset_y = 0;
 }
+
+
 
 void DistanceEstimation::initParams()
 {
@@ -150,6 +200,36 @@ void DistanceEstimation::initDetectArea()
   camBT120_area.LeftLinePoint2 = cv::Point(-1566, 1207);
   camBT120_area.RightLinePoint1 = cv::Point(1400, 143);
   camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
+}
+
+int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols)
+{
+  // dist_in_cm should be malloc by caller.
+  assert(dist_in_cm);
+  for (int i = 0; i < rows; i++)
+  {
+    assert(dist_in_cm[i]);
+  }
+
+  std::ifstream ifs(filename);
+  Json::Reader jreader;
+  Json::Value jdata;
+  jreader.parse(ifs, jdata);
+  std::cout << "Reading json file: " << filename << std::endl;
+
+  for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
+  {
+    auto image_x = jdata[i]["im_x"].asInt();
+    auto image_y = jdata[i]["im_y"].asInt();
+
+    if ((image_y < rows) && (image_x < cols))
+    {
+      dist_in_cm[image_y][image_x].x = jdata[i]["dist_in_cm"][0].asInt();
+      dist_in_cm[image_y][image_x].y = jdata[i]["dist_in_cm"][1].asInt();
+      dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
+    }
+  }
+  return 0;
 }
 
 float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
@@ -878,7 +958,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
   float offset_x = 0;
   int x_loc = y;
   int y_loc = x;
-  int img_h = 1208;
+  // int img_h = 1208;
 
   DisEstiParams Parmas;
 
@@ -943,14 +1023,28 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     default:
       return p0;
   }
-
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
+  
+  if(de_mode == 1)
   {
-    if (Parmas.regionDist_x.size() != 0)
-      x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
-    if (Parmas.regionDist_y.size() != 0)
-      y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                       Parmas.regionDist_y, img_h);
+    if (cam_id == camera::id::front_60)
+    {
+      y_loc = (int)((float)y_loc/img_w*img_al_w);
+      x_loc = (int)((float)x_loc/img_h*img_al_h);
+      
+      p0.x = align_FC60[x_loc][y_loc].x/100;
+      p0.y = align_FC60[x_loc][y_loc].y/100;
+      p0.z = align_FC60[x_loc][y_loc].z/100;
+      return p0;
+    }
+  }else{
+    if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
+    {
+      if (Parmas.regionDist_x.size() != 0)
+        x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
+      if (Parmas.regionDist_y.size() != 0)
+        y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
+                                        Parmas.regionDist_y, img_h);
+    }
   }
 
   if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)

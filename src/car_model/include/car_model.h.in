@@ -3,6 +3,7 @@
 
 #cmakedefine01 CAR_MODEL_IS_A
 #cmakedefine01 CAR_MODEL_IS_B1
+#cmakedefine01 CAR_MODEL_IS_B1_V2
 #cmakedefine01 CAR_MODEL_IS_C
 #cmakedefine01 CAR_MODEL_IS_HINO
 
