@@ -70,17 +70,10 @@ msgs::DetectedObjectArray msgCam120_0_Obj;
 msgs::DetectedObjectArray msgCam120_1_Obj;
 msgs::DetectedObjectArray msgCam120_2_Obj;
 /************************************************************************/
-
 msgs::DetectedObjectArray msgFusionObj;
 ros::Publisher fusion_pub;
 std::thread publisher;
-
-void fuseDetectedObjects();
-
 /************************************************************************/
-/******************put Lidar object to different view *******************/
-/************************************************************************/
-
 std::vector<msgs::DetectedObject> vDetectedObjectDF;
 std::vector<msgs::DetectedObject> vDetectedObjectLID;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_0;
@@ -89,7 +82,7 @@ std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_2;
 std::vector<msgs::DetectedObject> vDetectedObjectTemp;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_30_1;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_120_1;
-
+/************************************************************************/
 msgs::DetectedObjectArray msgLidar_60_0_Obj;
 msgs::DetectedObjectArray msgLidar_60_1_Obj;
 msgs::DetectedObjectArray msgLidar_60_2_Obj;
@@ -102,25 +95,9 @@ msgs::DetectedObjectArray msgLidar_120_2_Obj;
 msgs::DetectedObjectArray msgLidar_others_Obj;
 msgs::DetectedObjectArray msgLidar_rear_Obj;
 msgs::DetectedObjectArray msgLidar_frontshort;
-
 /**************************************************************************/
-int** cam_det;
-int** lid_det;
-
-int total_det;
-int** bb_det;
-int total_det2;
-int** bb_det2;
-/**************************************************************************/
-
 uint32_t seq = 0;
-
-// fps30
-typedef void (*PublishCallbackFunctionPtr)(void*, msgs::DetectedObjectArray&);
-// The callback provided by the client via connectCallback().
-PublishCallbackFunctionPtr mPublish_cb;
 ROSPublish* rosPublisher;
-
 /**************************************************************************/
 
 void MySigintHandler(int sig)
@@ -134,8 +111,6 @@ void MySigintHandler(int sig)
   printf("after join()\n");
   ros::shutdown();
 }
-
-/************************************************************************/
 
 void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 {
@@ -349,45 +324,11 @@ void sync_callbackThreads()
 
 int main(int argc, char** argv)
 {
-  cam_det = new int*[5];
-  for (int i = 0; i < 5; i++)
-  {
-    cam_det[i] = (int*)malloc(sizeof(int) * max_det);
-    memset(cam_det[i], 0, sizeof(int) * max_det);
-  }
-
-  lid_det = new int*[5];
-  for (int i = 0; i < 5; i++)
-  {
-    lid_det[i] = (int*)malloc(sizeof(int) * max_det);
-    memset(lid_det[i], 0, sizeof(int) * max_det);
-  }
-
-  bb_det = new int*[6];
-  for (int i = 0; i < 6; i++)
-  {
-    bb_det[i] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det[i], 0, sizeof(int) * (3 * max_det));
-  }
-
-  // Variables for Fused Detection
-
-  bb_det2 = new int*[6];
-  for (int i = 0; i < 6; i++)
-  {
-    bb_det2[i] = (int*)malloc(sizeof(int) * (3 * max_det));
-    memset(bb_det2[i], 0, sizeof(int) * (3 * max_det));
-  }
-
-  /**************************************************************************/
-
   ros::init(argc, argv, "sensor_fusion");
   ros::NodeHandle nh;
 
-  // Lidar object detection input
   ros::Subscriber lidar_det_sub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
 
-// Camera object detection input
 #if CAMERA_DETECTION == 1
   ros::Subscriber cam_det_sub = nh.subscribe("/CameraDetection", 1, cam60_1_DetectionCb);
 #else
@@ -406,20 +347,4 @@ int main(int argc, char** argv)
 
   ros::MultiThreadedSpinner spinner(TOTAL_CB);
   spinner.spin();
-
-  /*******************************************************/
-
-  for (int i = 0; i < 5; i++)
-  {
-    free(cam_det[i]);
-    free(lid_det[i]);
-  }
-
-  for (int i = 0; i < 6; i++)
-  {
-    free(bb_det[i]);
-    free(bb_det2[i]);
-  }
-
-  printf("***********free memory 3**************\n");
 }
