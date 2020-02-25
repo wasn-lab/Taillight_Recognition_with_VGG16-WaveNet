@@ -357,10 +357,10 @@ void fuseDetectedObjects()
 
   printf("Lidar_num_cb = %d \n", Lidar_num_cb);
 
-  for (int j = 0; j < Lidar_num_cb; j++)
+  for (auto& obj : msgLidarObj.objects)
   {
-    msgLidarObj.objects[j].header = msgLidarObj.header;
-    vDetectedObjectLID.push_back(msgLidarObj.objects[j]);
+    obj.header = msgLidarObj.header;
+    vDetectedObjectLID.push_back(obj);
   }
 
   Lidar_num = vDetectedObjectLID.size();
@@ -370,10 +370,10 @@ void fuseDetectedObjects()
 
   printf("Cam60_0_num_cb = %d \n", Cam60_0_num_cb);
 
-  for (int j = 0; j < Cam60_0_num_cb; j++)
+  for (auto& obj : msgCam60_0_Obj.objects)
   {
-    msgCam60_0_Obj.objects[j].header = msgCam60_0_Obj.header;
-    vDetectedObjectCAM_60_0.push_back(msgCam60_0_Obj.objects[j]);
+    obj.header = msgCam60_0_Obj.header;
+    vDetectedObjectCAM_60_0.push_back(obj);
   }
 
   Cam60_0_num_cb = 0;
@@ -383,10 +383,10 @@ void fuseDetectedObjects()
   /************************************************************************/
   printf("Cam60_1_num_cb = %d \n", Cam60_1_num_cb);
 
-  for (int j = 0; j < Cam60_1_num_cb; j++)
+  for (auto& obj : msgCam60_1_Obj.objects)
   {
-    msgCam60_1_Obj.objects[j].header = msgCam60_1_Obj.header;
-    vDetectedObjectCAM_60_1.push_back(msgCam60_1_Obj.objects[j]);
+    obj.header = msgCam60_1_Obj.header;
+    vDetectedObjectCAM_60_1.push_back(obj);
   }
 
   Cam60_1_num_cb = 0;
@@ -397,10 +397,10 @@ void fuseDetectedObjects()
 
   printf("Cam60_2_num_cb = %d \n", Cam60_2_num_cb);
 
-  for (int j = 0; j < Cam60_2_num_cb; j++)
+  for (auto& obj : msgCam60_2_Obj.objects)
   {
-    msgCam60_2_Obj.objects[j].header = msgCam60_2_Obj.header;
-    vDetectedObjectCAM_60_2.push_back(msgCam60_2_Obj.objects[j]);
+    obj.header = msgCam60_2_Obj.header;
+    vDetectedObjectCAM_60_2.push_back(obj);
   }
 
   Cam60_2_num_cb = 0;
@@ -411,10 +411,10 @@ void fuseDetectedObjects()
 
   printf("Cam30_1_num_cb = %d \n", Cam30_1_num_cb);
 
-  for (int j = 0; j < Cam30_1_num_cb; j++)
+  for (auto& obj : msgCam30_1_Obj.objects)
   {
-    msgCam30_1_Obj.objects[j].header = msgCam30_1_Obj.header;
-    vDetectedObjectCAM_30_1.push_back(msgCam30_1_Obj.objects[j]);
+    obj.header = msgCam30_1_Obj.header;
+    vDetectedObjectCAM_30_1.push_back(obj);
   }
 
   Cam30_1_num_cb = 0;
@@ -425,10 +425,10 @@ void fuseDetectedObjects()
 
   printf("Cam120_1_num_cb = %d \n", Cam120_1_num_cb);
 
-  for (int j = 0; j < Cam120_1_num_cb; j++)
+  for (auto& obj : msgCam120_1_Obj.objects)
   {
-    msgCam120_1_Obj.objects[j].header = msgCam120_1_Obj.header;
-    vDetectedObjectCAM_120_1.push_back(msgCam120_1_Obj.objects[j]);
+    obj.header = msgCam120_1_Obj.header;
+    vDetectedObjectCAM_120_1.push_back(obj);
   }
 
   Cam120_1_num_cb = 0;
@@ -437,34 +437,34 @@ void fuseDetectedObjects()
 
   /************************************************************************/
 
-  for (unsigned j = 0; j < vDetectedObjectLID.size(); j++)
+  for (const auto& obj : vDetectedObjectLID)
   {
-    vDetectedObjectDF.push_back(vDetectedObjectLID[j]);
+    vDetectedObjectDF.push_back(obj);
   }
 
-  for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
+  for (const auto& obj : vDetectedObjectCAM_60_0)
   {
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_120_1[j]);
+    vDetectedObjectDF.push_back(obj);
   }
 
-  for (unsigned j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
+  for (const auto& obj : vDetectedObjectCAM_60_1)
   {
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_30_1[j]);
+    vDetectedObjectDF.push_back(obj);
   }
 
-  for (unsigned j = 0; j < vDetectedObjectCAM_60_0.size(); j++)
+  for (const auto& obj : vDetectedObjectCAM_60_2)
   {
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_0[j]);
+    vDetectedObjectDF.push_back(obj);
   }
 
-  for (unsigned j = 0; j < vDetectedObjectCAM_60_1.size(); j++)
+  for (const auto& obj : vDetectedObjectCAM_30_1)
   {
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_1[j]);
+    vDetectedObjectDF.push_back(obj);
   }
 
-  for (unsigned j = 0; j < vDetectedObjectCAM_60_2.size(); j++)
+  for (const auto& obj : vDetectedObjectCAM_120_1)
   {
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_60_2[j]);
+    vDetectedObjectDF.push_back(obj);
   }
 
   msgFusionObj.objects = vDetectedObjectDF;
