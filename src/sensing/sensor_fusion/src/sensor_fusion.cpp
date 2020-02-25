@@ -13,7 +13,6 @@
 #include "ros/ros.h"
 #include "std_msgs/Header.h"
 #include "std_msgs/String.h"
-#include <msgs/Rad.h>
 #include <msgs/PointXYZV.h>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
@@ -42,8 +41,6 @@
 
 //#define EnableFusion
 #define EnableLIDAR
-//#define EnableRADAR
-
 #define EnableCAM60_0
 #define EnableCAM60_1
 #define EnableCAM60_2
@@ -51,7 +48,6 @@
 static const int TOTAL_CB = 1;  // 4;//12;
 
 /*
-#define EnableRADAR
 #define EnableLIDAR
 #define EnableImage
 #define EnableCAM30_0
@@ -84,9 +80,6 @@ int drawing_num_cam = 0;
 int drawing_uv_lidar[max_det][4];
 int drawing_num_lidar = 0;
 
-int radar_uv[max_det][4];
-int radar_num = 0;
-
 int Lidar_uv[max_det][4];
 int Lidar_num = 0;
 
@@ -114,12 +107,10 @@ int Cam120_2_num = 0;
 int Cam60_0_num_cb = 0;
 int Cam60_1_num_cb = 0;
 int Cam60_2_num_cb = 0;
-int radar_num_cb = 0;
 int Lidar_num_cb = 0;
 int Cam30_1_num_cb = 0;
 int Cam120_1_num_cb = 0;
 /************************************************************************/
-msgs::DetectedObjectArray msgRadObj;
 msgs::DetectedObjectArray msgLidarObj;
 msgs::DetectedObjectArray msgCam60_0_Obj;
 msgs::DetectedObjectArray msgCam60_1_Obj;
@@ -137,18 +128,6 @@ msgs::DetectedObjectArray msgFusionObj;
 ros::Publisher fusion_pub;
 std::thread publisher;
 
-void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray);
-
 void decisionFusion();
 void decision3DFusion();
 
@@ -157,7 +136,6 @@ void decision3DFusion();
 /************************************************************************/
 
 std::vector<msgs::DetectedObject> vDetectedObjectDF;
-std::vector<msgs::DetectedObject> vDetectedObjectRAD;
 std::vector<msgs::DetectedObject> vDetectedObjectLID;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_0;
 std::vector<msgs::DetectedObject> vDetectedObjectCAM_60_1;
@@ -182,7 +160,6 @@ msgs::DetectedObjectArray msgLidar_frontshort;
 /**************************************************************************/
 int** cam_det;
 int** lid_det;
-int** radar_det;
 
 int total_det;
 int** bb_det;
@@ -464,36 +441,6 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 #endif
 }
 
-std_msgs::Header radHeader;
-void RadarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& RadObjArray)
-{
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-
-  vDetectedObjectRAD.clear();
-  std::vector<msgs::DetectedObject> vDetectedObject = RadObjArray->objects;
-
-  msgRadObj.header = RadObjArray->header;
-
-  if (RadObjArray->objects.size() > max_det)
-    radar_num_cb = max_det;
-  else
-    radar_num_cb = RadObjArray->objects.size();
-
-  for (int i = 0; i < radar_num_cb; i++)
-  {
-    radar_uv[i][0] = vDetectedObject[i].radarInfo.imgPoint60.x;
-    radar_uv[i][1] = vDetectedObject[i].radarInfo.imgPoint60.y;
-    radar_uv[i][2] = 50;
-    radar_uv[i][3] = 50;
-  }
-
-  msgRadObj = *RadObjArray;  // for fusion
-
-#ifdef EnableRADAR
-  sync_callbackThreads();
-#endif
-}
-
 void decisionFusion()
 {
   float p0x, p0y, p3x, p3y, cx, cy;
@@ -511,7 +458,6 @@ void decisionFusion()
   std::vector<msgs::DetectedObject> vLidar_frontshort_Object;
 
   vDetectedObjectDF.clear();
-  vDetectedObjectRAD.clear();
   vDetectedObjectLID.clear();
   vDetectedObjectCAM_60_1.clear();
   vDetectedObjectCAM_30_1.clear();
@@ -533,19 +479,6 @@ void decisionFusion()
 
   Lidar_num = vDetectedObjectLID.size();
   printf("vDetectedObjectLID.size() = %zu \n", vDetectedObjectLID.size());
-
-  /************************************************************************/
-
-  printf("radar_num_cb = %d \n", radar_num_cb);
-
-  for (unsigned j = 0; j < msgRadObj.objects.size(); j++)
-  {
-    msgRadObj.objects[j].header = msgRadObj.header;
-    vDetectedObjectRAD.push_back(msgRadObj.objects[j]);
-  }
-
-  radar_num = vDetectedObjectRAD.size();
-  printf("vDetectedObjectRAD.size() = %zu \n", vDetectedObjectRAD.size());
 
   /************************************************************************/
 
@@ -877,13 +810,6 @@ int main(int argc, char** argv)
     memset(lid_det[i], 0, sizeof(int) * max_det);
   }
 
-  radar_det = new int*[5];
-  for (int i = 0; i < 5; i++)
-  {
-    radar_det[i] = (int*)malloc(sizeof(int) * max_det);
-    memset(radar_det[i], 0, sizeof(int) * max_det);
-  }
-
   bb_det = new int*[6];
   for (int i = 0; i < 6; i++)
   {
@@ -904,9 +830,6 @@ int main(int argc, char** argv)
 
   ros::init(argc, argv, "sensor_fusion");
   ros::NodeHandle nh;
-
-  // Radar object detection input
-  // ros::Subscriber RadarDetectionSub = nh.subscribe("/RadarDetection", 2, RadarDetectionCb);
 
   // Lidar object detection input
   ros::Subscriber lidar_det_sub = nh.subscribe("/LidarDetection", 2, LidarDetectionCb);
@@ -937,7 +860,6 @@ int main(int argc, char** argv)
   {
     free(cam_det[i]);
     free(lid_det[i]);
-    free(radar_det[i]);
   }
 
   for (int i = 0; i < 6; i++)
