@@ -267,7 +267,7 @@ S1Cluster::getClusters (bool debug,
           { 
             if (CNT_Person==0 && CNT_Motor==0 && CNT_Car==0)
             {
-              cluster_vector.at(i).cluster_tag = 0;
+              cluster_vector.at(i).cluster_tag = 4;
             }
             else
             {
