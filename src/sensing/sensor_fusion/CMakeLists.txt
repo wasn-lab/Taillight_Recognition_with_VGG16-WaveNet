@@ -19,11 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(PCL 1.9.0 REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(OpenCV REQUIRED
-             NO_MODULE
-             PATHS /usr/local /opt/ros/kinetic
-             NO_DEFAULT_PATH)
 
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 
@@ -40,18 +35,12 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${msgs_INCLUDE_DIRS}
-  ${Eigen3_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
 )
 
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-add_executable(${PROJECT_NAME} src/sensor_fusion.cpp src/ROSPublish.cpp)
+add_executable(${PROJECT_NAME} src/sensor_fusion.cpp)
  
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
 )
 
 add_dependencies(${PROJECT_NAME}
