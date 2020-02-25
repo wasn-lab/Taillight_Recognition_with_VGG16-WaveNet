@@ -347,20 +347,6 @@ void sync_callbackThreads()
   cerr << __func__ << ":" << __LINE__ << endl;
 }
 
-void matrix_vector_multiply_3x3_3d(double m[9], double v[3], double result[3])
-{
-  result[0] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2];
-  result[1] = m[3] * v[0] + m[4] * v[1] + m[5] * v[2];
-  result[2] = m[6] * v[0] + m[7] * v[1] + m[8] * v[2];
-}
-
-void vector_add_3d(double v1[3], double v2[3], double result[3])
-{
-  result[0] = v1[0] + v2[0];
-  result[1] = v1[1] + v2[1];
-  result[2] = v1[2] + v2[2];
-}
-
 int main(int argc, char** argv)
 {
   cam_det = new int*[5];
