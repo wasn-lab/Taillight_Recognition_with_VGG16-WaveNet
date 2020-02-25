@@ -79,17 +79,6 @@ std_msgs::Header cam120_0_Header;
 std_msgs::Header cam120_1_Header;
 std_msgs::Header cam120_2_Header;
 /************************************************************************/
-int Lidar_num = 0;
-int Cam60_0_num = 0;
-int Cam60_1_num = 0;
-int Cam60_2_num = 0;
-int Cam30_0_num = 0;
-int Cam30_1_num = 0;
-int Cam30_2_num = 0;
-int Cam120_0_num = 0;
-int Cam120_1_num = 0;
-int Cam120_2_num = 0;
-/************************************************************************/
 msgs::DetectedObjectArray msgLidarObj;
 msgs::DetectedObjectArray msgCam60_0_Obj;
 msgs::DetectedObjectArray msgCam60_1_Obj;
@@ -298,7 +287,6 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 
 void fuseDetectedObjects()
 {
-  /************************************************************************/
   vDetectedObjectDF.clear();
   vDetectedObjectLID.clear();
   vDetectedObjectCAM_60_0.clear();
@@ -307,13 +295,13 @@ void fuseDetectedObjects()
   vDetectedObjectCAM_30_1.clear();
   vDetectedObjectCAM_120_1.clear();
 
+  /************************************************************************/
+
   for (auto& obj : msgLidarObj.objects)
   {
     obj.header = msgLidarObj.header;
     vDetectedObjectLID.push_back(obj);
   }
-
-  Lidar_num = vDetectedObjectLID.size();
   printf("vDetectedObjectLID.size() = %zu \n", vDetectedObjectLID.size());
 
   /************************************************************************/
@@ -323,8 +311,6 @@ void fuseDetectedObjects()
     obj.header = msgCam60_0_Obj.header;
     vDetectedObjectCAM_60_0.push_back(obj);
   }
-
-  Cam60_0_num = vDetectedObjectCAM_60_0.size();
   printf("vDetectedObjectCAM_60_0.size() = %zu \n", vDetectedObjectCAM_60_0.size());
 
   /************************************************************************/
@@ -334,8 +320,6 @@ void fuseDetectedObjects()
     obj.header = msgCam60_1_Obj.header;
     vDetectedObjectCAM_60_1.push_back(obj);
   }
-
-  Cam60_1_num = vDetectedObjectCAM_60_1.size();
   printf("vDetectedObjectCAM_60_1.size() = %zu \n", vDetectedObjectCAM_60_1.size());
 
   /************************************************************************/
@@ -345,8 +329,6 @@ void fuseDetectedObjects()
     obj.header = msgCam60_2_Obj.header;
     vDetectedObjectCAM_60_2.push_back(obj);
   }
-
-  Cam60_2_num = vDetectedObjectCAM_60_2.size();
   printf("vDetectedObjectCAM_60_2.size() = %zu \n", vDetectedObjectCAM_60_2.size());
 
   /************************************************************************/
@@ -356,8 +338,6 @@ void fuseDetectedObjects()
     obj.header = msgCam30_1_Obj.header;
     vDetectedObjectCAM_30_1.push_back(obj);
   }
-
-  Cam30_1_num = vDetectedObjectCAM_30_1.size();
   printf("vDetectedObjectCAM_30_1.size() = %zu \n", vDetectedObjectCAM_30_1.size());
 
   /************************************************************************/
@@ -367,8 +347,6 @@ void fuseDetectedObjects()
     obj.header = msgCam120_1_Obj.header;
     vDetectedObjectCAM_120_1.push_back(obj);
   }
-
-  Cam120_1_num = vDetectedObjectCAM_120_1.size();
   printf("vDetectedObjectCAM_120_1.size() = %zu \n", vDetectedObjectCAM_120_1.size());
 
   /************************************************************************/
@@ -409,8 +387,6 @@ void fuseDetectedObjects()
   msgFusionObj.header.seq = seq++;
 
   fusion_pub.publish(msgFusionObj);
-
-  /************************************************************************/
 }
 
 void sync_callbackThreads()
