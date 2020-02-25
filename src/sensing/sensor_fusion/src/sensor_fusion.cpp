@@ -139,13 +139,7 @@ void MySigintHandler(int sig)
 
 void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 {
-  vDetectedObjectDF.clear();
-  vDetectedObjectTemp.clear();
-  vDetectedObjectLID.clear();
-
-  msgLidarObj.header = LidarObjArray->header;
   msgLidarObj = *LidarObjArray;
-
   sync_callbackThreads();
 }
 
