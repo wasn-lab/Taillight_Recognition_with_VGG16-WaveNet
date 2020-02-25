@@ -39,7 +39,6 @@
 
 /************************************************************************/
 
-//#define EnableFusion
 #define EnableLIDAR
 #define EnableCAM60_0
 #define EnableCAM60_1
@@ -140,7 +139,6 @@ msgs::DetectedObjectArray msgFusionObj;
 ros::Publisher fusion_pub;
 std::thread publisher;
 
-void decisionFusion();
 void decision3DFusion();
 
 /************************************************************************/
@@ -346,171 +344,6 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 #endif
 }
 
-void decisionFusion()
-{
-  float p0x, p0y, p3x, p3y, cx, cy;
-  float theta;
-
-  std::vector<msgs::DetectedObject> vLidar_30_0_Object;
-  std::vector<msgs::DetectedObject> vLidar_30_1_Object;
-  std::vector<msgs::DetectedObject> vLidar_30_2_Object;
-
-  std::vector<msgs::DetectedObject> vLidar_60_0_Object;
-  std::vector<msgs::DetectedObject> vLidar_60_1_Object;
-  std::vector<msgs::DetectedObject> vLidar_60_2_Object;
-
-  std::vector<msgs::DetectedObject> vLidar_rear_Object;
-  std::vector<msgs::DetectedObject> vLidar_frontshort_Object;
-
-  vDetectedObjectDF.clear();
-  vDetectedObjectLID.clear();
-  vDetectedObjectCAM_60_1.clear();
-  vDetectedObjectCAM_30_1.clear();
-  vDetectedObjectCAM_120_1.clear();
-
-  vLidar_frontshort_Object.clear();
-  vLidar_60_0_Object.clear();
-  vLidar_60_2_Object.clear();
-  vLidar_60_1_Object.clear();
-
-  /************************************************************************/
-  printf("Lidar_num_cb = %d \n", Lidar_num_cb);
-
-  for (int j = 0; j < Lidar_num_cb; j++)
-  {
-    msgLidarObj.objects[j].header = msgLidarObj.header;
-    vDetectedObjectLID.push_back(msgLidarObj.objects[j]);
-  }
-
-  Lidar_num = vDetectedObjectLID.size();
-  printf("vDetectedObjectLID.size() = %zu \n", vDetectedObjectLID.size());
-
-  /************************************************************************/
-
-  printf("Cam60_1_num_cb = %d \n", Cam60_1_num_cb);
-
-  for (int j = 0; j < Cam60_1_num_cb; j++)
-  {
-    msgCam60_1_Obj.objects[j].header = msgCam60_1_Obj.header;
-    vDetectedObjectCAM_60_1.push_back(msgCam60_1_Obj.objects[j]);
-  }
-
-  Cam60_1_num_cb = 0;
-  Cam60_1_num = vDetectedObjectCAM_60_1.size();
-  printf("vDetectedObjectCAM_60_1.size() = %zu \n", vDetectedObjectCAM_60_1.size());
-
-  /************************************************************************/
-
-  printf("Cam30_1_num_cb = %d \n", Cam30_1_num_cb);
-
-  for (int j = 0; j < Cam30_1_num_cb; j++)
-  {
-    msgCam30_1_Obj.objects[j].header = msgCam30_1_Obj.header;
-    vDetectedObjectCAM_30_1.push_back(msgCam30_1_Obj.objects[j]);
-  }
-
-  Cam30_1_num_cb = 0;
-  Cam30_1_num = vDetectedObjectCAM_30_1.size();
-  printf("vDetectedObjectCAM_30_1.size() = %zu \n", vDetectedObjectCAM_30_1.size());
-
-  /************************************************************************/
-
-  printf("Cam120_1_num_cb = %d \n", Cam120_1_num_cb);
-
-  for (int j = 0; j < Cam120_1_num_cb; j++)
-  {
-    msgCam120_1_Obj.objects[j].header = msgCam120_1_Obj.header;
-    vDetectedObjectCAM_120_1.push_back(msgCam120_1_Obj.objects[j]);
-  }
-
-  Cam120_1_num_cb = 0;
-  Cam120_1_num = vDetectedObjectCAM_120_1.size();
-  printf("vDetectedObjectCAM_120_1.size() = %zu \n", vDetectedObjectCAM_120_1.size());
-
-  /************************************************************************/
-
-  for (int j = 0; j < Lidar_num; j++)
-  {
-    if (msgLidarObj.objects[j].bPoint.p0.x > 0)
-    {
-      if (msgLidarObj.objects[j].bPoint.p0.x <= LID_Front_Short)
-        vLidar_frontshort_Object.push_back(msgLidarObj.objects[j]);
-      else
-      {
-        p0x = msgLidarObj.objects[j].bPoint.p0.x;
-        p0y = msgLidarObj.objects[j].bPoint.p0.y;
-        p3x = msgLidarObj.objects[j].bPoint.p3.x;
-        p3y = msgLidarObj.objects[j].bPoint.p3.y;
-        cx = (p0x + p3x) / 2;
-        cy = (p0y + p3y) / 2;
-        theta = atan2(cx, cy * (-1)) * (180 / M_PI);
-        printf("theta :%f\n", theta);
-
-        if (theta > 120)
-          vLidar_60_0_Object.push_back(msgLidarObj.objects[j]);
-        else if (theta < 60)
-          vLidar_60_2_Object.push_back(msgLidarObj.objects[j]);
-        else
-          vLidar_60_1_Object.push_back(msgLidarObj.objects[j]);
-      }
-    }
-    else
-    {
-      vLidar_rear_Object.push_back(msgLidarObj.objects[j]);  // rear
-    }
-  }
-
-  /************************************************************************/
-  msgLidar_30_0_Obj.objects = vLidar_30_0_Object;
-  msgLidar_30_1_Obj.objects = vLidar_30_1_Object;
-  msgLidar_30_2_Obj.objects = vLidar_30_2_Object;
-
-  msgLidar_60_0_Obj.objects = vLidar_60_0_Object;
-  msgLidar_60_1_Obj.objects = vLidar_60_1_Object;
-  msgLidar_60_2_Obj.objects = vLidar_60_2_Object;
-
-  // msgLidar_120_0_Obj.objects = vLidar_120_0_Object;
-  // msgLidar_120_1_Obj.objects = vLidar_120_1_Object;
-  // msgLidar_120_2_Obj.objects = vLidar_120_2_Object;
-
-  msgLidar_rear_Obj.objects = vLidar_rear_Object;
-  msgLidar_frontshort.objects = vLidar_frontshort_Object;
-
-  printf("put Lidar object to different view(total,60_0,60_1,60_2,30_1,rear) :%d,%zu,%zu,%zu,%zu\n", Lidar_num,
-         msgLidar_60_0_Obj.objects.size(), msgLidar_60_1_Obj.objects.size(), msgLidar_60_2_Obj.objects.size(),
-         msgLidar_rear_Obj.objects.size());
-
-  printf("put Lidar object to different view(30_0,30_1,30_2) :%zu,%zu,%zu\n", msgLidar_30_0_Obj.objects.size(),
-         msgLidar_30_1_Obj.objects.size(), msgLidar_30_2_Obj.objects.size());
-
-  printf("put Lidar object to different view(120_0,120_1,120_2) :%zu,%zu,%zu\n", msgLidar_120_0_Obj.objects.size(),
-         msgLidar_120_1_Obj.objects.size(), msgLidar_120_2_Obj.objects.size());
-  /************************************************************************/
-
-  /************************************************************************/
-  for (unsigned j = 0; j < vDetectedObjectCAM_120_1.size(); j++)
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_120_1[j]);
-
-  for (unsigned j = 0; j < vDetectedObjectCAM_30_1.size(); j++)
-    vDetectedObjectDF.push_back(vDetectedObjectCAM_30_1[j]);
-
-  for (unsigned j = 0; j < msgLidar_rear_Obj.objects.size(); j++)
-    vDetectedObjectDF.push_back(msgLidar_rear_Obj.objects[j]);
-
-  for (unsigned j = 0; j < msgLidar_frontshort.objects.size(); j++)
-    vDetectedObjectDF.push_back(msgLidar_frontshort.objects[j]);
-
-  msgFusionObj.objects = vDetectedObjectDF;
-
-  msgFusionObj.header.stamp = msgLidarObj.header.stamp;
-  msgFusionObj.header.frame_id = "lidar";
-  msgFusionObj.header.seq = seq++;
-
-  fusion_pub.publish(msgFusionObj);
-
-  /************************************************************************/
-}
-
 void decision3DFusion()
 {
   /************************************************************************/
@@ -666,13 +499,7 @@ void sync_callbackThreads()
 
       printf("****************************do_function****************************\n");
 
-#ifdef EnableFusion
-      decisionFusion();
-      printf(" case1 \n");
-#else
       decision3DFusion();
-      printf(" case2 \n");
-#endif
 
       printf("****************************end do_function****************************\n");
       syncCount = 0;
