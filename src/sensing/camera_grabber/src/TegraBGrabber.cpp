@@ -95,6 +95,7 @@ bool TegraBGrabber::runPerception()
       }else{
         resizer_.resize(npp8u_ptrs_[i], canvas[i]);
       }
+    }
 
     // end image processing
 
