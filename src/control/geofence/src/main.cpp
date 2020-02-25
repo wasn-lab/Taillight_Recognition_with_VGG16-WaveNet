@@ -355,7 +355,10 @@ int main(int argc, char **argv){
 			std_msgs::Float64 Geofence_temp;
 			Geofence_temp.data = PCloud_Geofence.getDistance_w();
 			Geofence_PC.publish(Geofence_temp);
-			Plot_geofence(PCloud_Geofence.findDirection());  
+			if(PCloud_Geofence.getDistance()<80)
+			{
+				Plot_geofence(PCloud_Geofence.findDirection());  
+			}
 		}
 		else{
 			cerr << "Please initialize all PCloud parameters first" << endl;
