@@ -210,13 +210,13 @@ void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_Ob
 
 void fuseDetectedObjects()
 {
-  vDetectedObjectDF.clear();
-  vDetectedObjectLID.clear();
-  vDetectedObjectCAM_60_0.clear();
-  vDetectedObjectCAM_60_1.clear();
-  vDetectedObjectCAM_60_2.clear();
-  vDetectedObjectCAM_30_1.clear();
-  vDetectedObjectCAM_120_1.clear();
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectDF);
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectLID);
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_60_0);
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_60_1);
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_60_2);
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_30_1);
+  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_120_1);
 
   /************************************************************************/
 
