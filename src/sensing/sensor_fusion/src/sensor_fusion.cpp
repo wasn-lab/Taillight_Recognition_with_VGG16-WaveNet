@@ -23,27 +23,14 @@
 #include <pcl/visualization/point_cloud_color_handlers.h>
 
 #include <string.h>
-//#include <iostream>
 
-// fps30
 #include "ROSPublish.h"
 
 #define CAMERA_DETECTION 0
 
-#define LID_Front_Short 20
-#define BB2BB_distance 4  // 3
-
-#define max_det 64
-
-#define fSize 9
-
-static const int TOTAL_CB = 1;  // 4;//12;
-
 /************************************************************************/
-ros::Publisher pub;
-
+static const int TOTAL_CB = 1;
 int syncCount = 0;
-
 void sync_callbackThreads();
 pthread_mutex_t callback_mutex;
 pthread_cond_t callback_cond;
