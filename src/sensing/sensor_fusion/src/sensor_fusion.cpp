@@ -69,6 +69,7 @@ void sync_callbackThreads();
 pthread_mutex_t callback_mutex;
 pthread_cond_t callback_cond;
 /************************************************************************/
+std_msgs::Header lidarHeader;
 std_msgs::Header cam60_0_Header;
 std_msgs::Header cam60_1_Header;
 std_msgs::Header cam60_2_Header;
@@ -156,6 +157,28 @@ void MySigintHandler(int sig)
 }
 
 /************************************************************************/
+
+void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
+{
+  static std_msgs::Header pre_h;
+
+  vDetectedObjectDF.clear();
+  vDetectedObjectTemp.clear();
+  vDetectedObjectLID.clear();
+
+  msgLidarObj.header = LidarObjArray->header;
+
+  if (pre_h.stamp.sec == LidarObjArray->header.stamp.sec && pre_h.stamp.nsec == LidarObjArray->header.stamp.nsec)
+    return;
+  else
+    pre_h = LidarObjArray->header;
+
+  msgLidarObj = *LidarObjArray;
+
+#ifdef EnableLIDAR
+  sync_callbackThreads();
+#endif
+}
 
 void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_array,
                           msgs::DetectedObjectArray& msg_cam_obj)
@@ -252,35 +275,6 @@ void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_Ob
   callback_camera_main(Cam120_2_ObjArray, msgCam120_2_Obj);
 
 #ifdef EnableCAM120_2
-  sync_callbackThreads();
-#endif
-}
-
-/************************************************************************/
-/*****************************ITRI-DriveNet******************************/
-/************************************************************************/
-
-std_msgs::Header lidarHeader;
-void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
-{
-  // std::cerr << __func__ << ":" << __LINE__ << std::endl;
-  static std_msgs::Header pre_h;
-
-  vDetectedObjectDF.clear();
-  vDetectedObjectTemp.clear();
-  vDetectedObjectLID.clear();
-
-  // std::vector<msgs::DetectedObject> vDetectedObject = LidarObjArray->objects;
-  msgLidarObj.header = LidarObjArray->header;
-
-  if (pre_h.stamp.sec == LidarObjArray->header.stamp.sec && pre_h.stamp.nsec == LidarObjArray->header.stamp.nsec)
-    return;
-  else
-    pre_h = LidarObjArray->header;
-
-  msgLidarObj = *LidarObjArray;  // for fusion
-
-#ifdef EnableLIDAR
   sync_callbackThreads();
 #endif
 }
