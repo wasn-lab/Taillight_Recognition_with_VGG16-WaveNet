@@ -48,10 +48,10 @@
 //#define TRACKINGBOX
 
 
-static Geofence PCloud_Geofence;
-static Geofence BBox_Geofence;
-static Geofence Radar_Geofence;
-static Geofence PCloud_Geofence_original;
+static Geofence PCloud_Geofence(1.2);
+static Geofence BBox_Geofence(1.2);
+static Geofence Radar_Geofence(1.2);
+static Geofence PCloud_Geofence_original(1.2);
 static double Heading, SLAM_x, SLAM_y;
 //static uint Deadend_flag;
 static uint overtake_over_flag;
@@ -271,12 +271,12 @@ void Plot_geofence(Point temp)
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
-    p.x = temp.X + 1.5*sin(temp.Speed);
-    p.y = temp.Y + 1.5*cos(temp.Speed);
+    p.x = temp.X + 1.5*sin(temp.Direction);
+    p.y = temp.Y + 1.5*cos(temp.Direction);
     p.z = -3.0;
 	line_list.points.push_back(p);
-	p.x = temp.X - 1.5*sin(temp.Speed);
-    p.y = temp.Y - 1.5*cos(temp.Speed);
+	p.x = temp.X - 1.5*sin(temp.Direction);
+    p.y = temp.Y - 1.5*cos(temp.Direction);
 	line_list.points.push_back(p);	
 	Geofence_line.publish(line_list); 
 }
