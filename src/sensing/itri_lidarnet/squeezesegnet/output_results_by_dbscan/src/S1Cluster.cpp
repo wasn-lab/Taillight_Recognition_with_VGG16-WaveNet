@@ -207,8 +207,8 @@ S1Cluster::getClusters (bool debug,
 //          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
 //            cluster_vector.at (i).cluster_tag = 0;
 
-          if (cluster_vector.at (i).min.z > -1.5)
-            cluster_vector.at (i).cluster_tag = 0;
+          // if (cluster_vector.at (i).min.z > -1.5)
+          //   cluster_vector.at (i).cluster_tag = 0;
 
           if (cluster_vector.at (i).max.z < -2.0)
             cluster_vector.at (i).cluster_tag = 0;
@@ -216,8 +216,8 @@ S1Cluster::getClusters (bool debug,
         }
         else
         {
-          if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
-            cluster_vector.at (i).cluster_tag = 0;
+          // if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
+          //   cluster_vector.at (i).cluster_tag = 0;
         }
         
         // ============== label counting for providing cluster_tag with class types ==================
