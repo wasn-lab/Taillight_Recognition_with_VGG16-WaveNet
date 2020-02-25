@@ -21,11 +21,11 @@ enum id
   _dummy0,                    // 2
   _dummy1,                    // 3
   top_front_120,              // 4
-  top_right_front_120,        // 5
-  top_right_rear_120,         // 6
+  right_front,                // 5
+  right_rear,                 // 6
   _dummy2,                    // 7
-  top_left_front_120,         // 8
-  top_left_rear_120,          // 9
+  left_front,                 // 8
+  left_rear,                  // 9
   top_rear_120,               // 10
   _dummy3,                    // 11
   num_ids                     // 12

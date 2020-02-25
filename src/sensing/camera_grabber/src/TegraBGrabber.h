@@ -26,6 +26,15 @@ protected:
     camera::id::top_left_rear_120,
     camera::id::top_rear_120
   };
+#elif CAR_MODEL_IS_B1_V2
+  const std::vector<int> cam_ids_{ 
+    camera::id::top_front_120,
+    camera::id::right_front,
+    camera::id::right_rear,
+    camera::id::left_front,
+    camera::id::left_rear,
+    camera::id::top_rear_120
+  };
 #elif CAR_MODEL_IS_HINO
   const std::vector<int> cam_ids_{ camera::id::left_120, camera::id::front_120, camera::id::right_120 };
 #else

@@ -46,7 +46,7 @@ const std::string topics_obj[id::num_ids] = {
 
 const int distortion[id::num_ids] = {
   0, // F_center
-  1, // F_top_far
+  0, // F_top_far
   0, // 
   0, //
   1, // F_top_close
