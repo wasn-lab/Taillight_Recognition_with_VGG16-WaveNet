@@ -139,7 +139,7 @@ msgs::DetectedObjectArray msgFusionObj;
 ros::Publisher fusion_pub;
 std::thread publisher;
 
-void decision3DFusion();
+void fuseDetectedObjects();
 
 /************************************************************************/
 /******************put Lidar object to different view *******************/
@@ -344,7 +344,7 @@ void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& LidarObjArray)
 #endif
 }
 
-void decision3DFusion()
+void fuseDetectedObjects()
 {
   /************************************************************************/
   vDetectedObjectDF.clear();
@@ -499,7 +499,7 @@ void sync_callbackThreads()
 
       printf("****************************do_function****************************\n");
 
-      decision3DFusion();
+      fuseDetectedObjects();
 
       printf("****************************end do_function****************************\n");
       syncCount = 0;
