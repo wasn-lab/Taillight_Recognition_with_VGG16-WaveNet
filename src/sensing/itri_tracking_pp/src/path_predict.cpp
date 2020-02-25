@@ -28,7 +28,10 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       // check enough record of track history for pp
       if (pp_objs_[i].track.head >= (int)(num_pp_input_min_ - 1) || pp_objs_[i].track.is_over_max_length == true)
       {
-        pp_objs_[i].track.is_ready_prediction = true;
+        if (pp_objs_[i].absSpeed > pp_obj_min_kmph_ && pp_objs_[i].absSpeed < pp_obj_max_kmph_)
+        {
+          pp_objs_[i].track.is_ready_prediction = true;
+        }
       }
     }
 
