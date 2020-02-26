@@ -126,35 +126,17 @@ class RosModuleB1
 
           switch (cluster_info[i].cluster_tag)
           {
-            case 0:
-              msgObj.classId = 0;  //unknow
+            case nnClassID::Rule:
+              msgObj.classId = msgClassID::Unknown;   //unknow
               break;
-            case 1:
-              msgObj.classId = 1;  //person
+            case nnClassID::Person:
+              msgObj.classId = msgClassID::Person;    //person
               break;
-            case 2:
-              msgObj.classId = 2;  //bicycle
+            case nnClassID::Motobike:
+              msgObj.classId = msgClassID::Motobike;  //motobike
               break;
-            case 3:
-              msgObj.classId = 3;  //motobike
-              break;
-            case 4:
-              msgObj.classId = 4;  //car
-              break;
-            case 5:
-              msgObj.classId = 5;  //bus
-              break;
-            case 6:
-              msgObj.classId = 6;  //truck
-              break;
-            case 7:
-              msgObj.classId = 7;  //sign
-              break;
-            case 8:
-              msgObj.classId = 8;  //light
-              break;
-            case 9:
-              msgObj.classId = 9;  //park
+            case nnClassID::Car:
+              msgObj.classId = msgClassID::Car;       //car
               break;
           }
 
@@ -279,19 +261,19 @@ class RosModuleB1
 
         switch (cluster_info[i].cluster_tag)
         {
-          case 1:
+          case nnClassID::Person:
             markerArray.markers[i].color.r = 0.0;
             markerArray.markers[i].color.g = 1.0;
             markerArray.markers[i].color.b = 1.0;
             markerArray.markers[i].color.a = 1.0;
             break;
-          case 2:
+          case nnClassID::Motobike:
             markerArray.markers[i].color.r = 1.0;
             markerArray.markers[i].color.g = 0.0;
             markerArray.markers[i].color.b = 1.0;
             markerArray.markers[i].color.a = 1.0;
             break;
-          case 3:
+          case nnClassID::Car:
             markerArray.markers[i].color.r = 0.0;
             markerArray.markers[i].color.g = 1.0;
             markerArray.markers[i].color.b = 0.0;
