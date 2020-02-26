@@ -152,7 +152,7 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   while (g_is_infer_data)
   {
     usleep(5);
-}
+  }
 }
 
 void callback_120_0(const sensor_msgs::Image::ConstPtr& msg)
@@ -277,7 +277,7 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
   else if (cam_order == camera::id::top_rear_120)
   {
     g_pub_img_120_1.publish(imgMsg);
-}
+  }
 }
 
 /// roslaunch drivenet drivenet120.launch
@@ -295,7 +295,7 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
-  ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);  
+  ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
 
   std::string cam120_0_topicName = camera::topics[camera::id::top_front_120];
   std::string cam120_1_topicName = camera::topics[camera::id::top_rear_120];
@@ -711,8 +711,10 @@ void* run_display(void*)
 
   cv::Point boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4;
   cv::Point boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4;
-  boundaryMarker(g_rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4, marker_h_0);
-  boundaryMarker(g_rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4, marker_h_1);
+  boundaryMarker(g_rawimg_w, boundaryMarker_0_1, boundaryMarker_0_2, boundaryMarker_0_3, boundaryMarker_0_4,
+                 marker_h_0);
+  boundaryMarker(g_rawimg_w, boundaryMarker_1_1, boundaryMarker_1_2, boundaryMarker_1_3, boundaryMarker_1_4,
+                 marker_h_1);
 
   ros::Rate r(10);
   while (ros::ok() && !g_is_infer_stop)

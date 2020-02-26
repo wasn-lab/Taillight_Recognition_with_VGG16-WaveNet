@@ -51,11 +51,11 @@ cv::Scalar Alignment::getDistColor(float distance)
   }
   else if (distance > 20 && distance <= 30)
   {
-    color = Color::g_color_green;          
+    color = Color::g_color_green;
   }
   else
   {
-    color = Color::g_color_blue;         
+    color = Color::g_color_blue;
   }
   return color;
 }

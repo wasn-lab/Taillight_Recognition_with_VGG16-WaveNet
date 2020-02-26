@@ -21,7 +21,6 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <jsoncpp/json/json.h>
 
-
 class AlignmentOff
 {
 private:
@@ -36,7 +35,6 @@ public:
   float groundUpBound, groundLowBound;
   cv::Point3d** spatial_points_;
 
-  
   bool is_valid_image_point(const int row, const int col) const;
   bool spatial_point_is_valid(const cv::Point3d& point) const;
   bool spatial_point_is_valid(const int row, const int col) const;
@@ -44,8 +42,6 @@ public:
   bool search_valid_neighbor(const int row, const int col, cv::Point* valid_neighbor) const;
   void dump_distance_in_json() const;
   std::string jsonize_spatial_points(cv::Point3d** spatial_points_, int rows, int cols) const;
-
-
 };
 
 #endif /*ALIGNMENT_OFFLINE_H_*/

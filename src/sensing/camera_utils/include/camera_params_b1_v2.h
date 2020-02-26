@@ -16,19 +16,19 @@ namespace camera
 enum id
 {
   begin = 0,
-  front_60 = begin,           // 0
-  top_front_30,               // 1
-  _dummy0,                    // 2
-  _dummy1,                    // 3
-  top_front_120,              // 4
-  right_front,                // 5
-  right_rear,                 // 6
-  _dummy2,                    // 7
-  left_front,                 // 8
-  left_rear,                  // 9
-  top_rear_120,               // 10
-  _dummy3,                    // 11
-  num_ids                     // 12
+  front_60 = begin,  // 0
+  top_front_30,      // 1
+  _dummy0,           // 2
+  _dummy1,           // 3
+  top_front_120,     // 4
+  right_front,       // 5
+  right_rear,        // 6
+  _dummy2,           // 7
+  left_front,        // 8
+  left_rear,         // 9
+  top_rear_120,      // 10
+  _dummy3,           // 11
+  num_ids            // 12
 };
 
 static_assert(id::begin == 0, "The first camera id is 1");
@@ -85,5 +85,5 @@ static_assert(yolov3_letterbox_visible_height + npp_top_border + npp_top_border 
 constexpr int top_border_608x384 = (yolov3_image_height - 384) / 2;
 constexpr int bottom_border_608x384 = top_border_608x384;
 };      // namespace
-#endif // CAR_MODEL_IS_B1_V2
+#endif  // CAR_MODEL_IS_B1_V2
 #endif  // __CAMERA_PARAMS_B1_V2_H__

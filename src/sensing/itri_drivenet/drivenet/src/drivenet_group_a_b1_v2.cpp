@@ -21,7 +21,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<int> g_cam_ids{ camera::id::front_60, camera::id::top_front_30};
+const std::vector<int> g_cam_ids{ camera::id::front_60, camera::id::top_front_30 };
 #else
 #error "car model is not well defined"
 #endif
@@ -96,13 +96,13 @@ void image_init()
 
   if (g_display_flag)
   {
-    for(size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
+    for (size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
     {
       g_mats_display[ndx] = cv::Mat(g_img_h, g_img_w, CV_8UC3, cv::Scalar(0));
     }
   }
   std_msgs::Header h;
-  for(size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
+  for (size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
   {
     g_is_infer_datas[ndx] = false;
     g_mats[ndx] = cv::Mat(g_img_h, g_img_w, CV_8UC3, cv::Scalar(0));
@@ -120,11 +120,11 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   pthread_mutex_lock(&g_mtx_infer);
 
   bool isPushData = false;
-  if(!g_is_infer_datas[cam_order])
+  if (!g_is_infer_datas[cam_order])
   {
     g_is_infer_datas[cam_order] = true;
     isPushData = true;
-    
+
     if (isPushData)
     {
       g_headers[cam_order] = header;
@@ -133,7 +133,7 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   }
 
   bool is_infer_data = true;
-  for(size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
+  for (size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
   {
     if (!g_is_infer_datas[ndx])
     {
@@ -229,16 +229,18 @@ int main(int argc, char** argv)
   std::vector<std::string> cam_topicNames(g_cam_ids.size());
   std::vector<std::string> bbox_topicNames(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = {callback_cam_0, callback_cam_1};
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = {callback_cam_0_decode, callback_cam_1_decode};
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_0, callback_cam_1 };
+  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_0_decode,
+                                                                             callback_cam_1_decode };
 
-  for(size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_topicNames[cam_order] = camera::topics[g_cam_ids[cam_order]];
     bbox_topicNames[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
     if (g_is_compressed)
     {
-      cam_subs[cam_order] = nh.subscribe(cam_topicNames[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
+      cam_subs[cam_order] =
+          nh.subscribe(cam_topicNames[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
     }
     else
     {
@@ -294,7 +296,7 @@ void* run_interp(void*)
   ros::Rate r(30);
   while (ros::ok() && !g_is_infer_stop)
   {
-    for(size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
       g_bbox_pubs[cam_order].publish(g_doas[cam_order]);
     }
@@ -330,7 +332,7 @@ void reset_data()
 {
   g_is_infer_data = false;
 
-  for(size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
+  for (size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
   {
     g_is_infer_datas[ndx] = false;
     g_bboxs[ndx].clear();
@@ -417,8 +419,8 @@ void* run_yolo(void*)
         }
         else if ((*matSrcs_tmp[cam_order]).cols <= 0 || (*matSrcs_tmp[cam_order]).rows <= 0)
         {
-          std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[cam_order]).cols << ", rows: " << (*matSrcs_tmp[cam_order]).rows
-                    << std::endl;
+          std::cout << "*matSrcs_tmp cols: " << (*matSrcs_tmp[cam_order]).cols
+                    << ", rows: " << (*matSrcs_tmp[cam_order]).rows << std::endl;
           continue;
         }
         try
@@ -472,7 +474,7 @@ void* run_yolo(void*)
       // // object To grid map
       // costmap_[g_cosmap_gener.layer_name_] =
       //     g_cosmap_gener.makeCostmapFromObjects(costmap_, g_cosmap_gener.layer_name_, 8, doa, false);
-      
+
       if (g_standard_FPS == 1)
       {
         g_doas[cam_order] = doa;
@@ -522,7 +524,7 @@ void* run_display(void*)
     window_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
     cv::namedWindow(window_names[cam_order], cv::WINDOW_NORMAL);
     cv::resizeWindow(window_names[cam_order], 480, 360);
-    cv::moveWindow(window_names[cam_order], 545*cam_order, 30);
+    cv::moveWindow(window_names[cam_order], 545 * cam_order, 30);
   }
 
   ros::Rate r(10);

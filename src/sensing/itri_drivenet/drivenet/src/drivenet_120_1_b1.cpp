@@ -184,7 +184,7 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   while (g_is_infer_data)
   {
     usleep(5);
-}
+  }
 }
 
 void callback_120_0(const sensor_msgs::Image::ConstPtr& msg)
@@ -427,7 +427,7 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
   else if (cam_order == camera::id::top_left_rear_120)
   {
     g_pub_img_120_3.publish(imgMsg);
-}
+  }
 }
 
 /// roslaunch drivenet drivenet120.launch
@@ -446,7 +446,6 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
   ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
-  
 
   std::string cam120_0_topicName = camera::topics[camera::id::top_right_front_120];
   std::string cam120_1_topicName = camera::topics[camera::id::top_right_rear_120];

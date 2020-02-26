@@ -22,4 +22,4 @@ TEST(CameraUtilsTest, test_distance_mapper_init)
 
   LOG(INFO) << mat.at<float>(1208 / 2, 1920 / 2);
 }
-#endif // CAR_MODEL_IS_HINO
+#endif  // CAR_MODEL_IS_HINO

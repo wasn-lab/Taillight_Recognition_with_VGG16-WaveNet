@@ -2,7 +2,7 @@
 
 DistanceEstimation::~DistanceEstimation()
 {
-  if(de_mode == 1)
+  if (de_mode == 1)
   {
     for (int i = 0; i < img_h; i++)
     {
@@ -10,7 +10,6 @@ DistanceEstimation::~DistanceEstimation()
     }
     delete[] align_FC60;
   }
-
 }
 
 void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
@@ -21,7 +20,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
   // ====== Init distance estimation table by alignment ======
 
   // FC60
-  if(de_mode == 1)
+  if (de_mode == 1)
   {
     std::string FC60Json = pkgPath;
     FC60Json.append("/data/alignment/out.json");
@@ -57,13 +56,9 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
   initShrinkArea();
   initDetectArea();
 
-
-
   Lidar_offset_x = 0;
   Lidar_offset_y = 0;
 }
-
-
 
 void DistanceEstimation::initParams()
 {
@@ -202,7 +197,8 @@ void DistanceEstimation::initDetectArea()
   camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
 }
 
-int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols)
+int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows,
+                                             const int cols)
 {
   // dist_in_cm should be malloc by caller.
   assert(dist_in_cm);
@@ -435,7 +431,7 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
   else
   {
     return point0;
-}
+  }
 }
 
 float DistanceEstimation::RatioDefine(int cam_id, int cls)
@@ -1057,20 +1053,22 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     default:
       return p0;
   }
-  
-  if(de_mode == 1)
+
+  if (de_mode == 1)
   {
     if (cam_id == camera::id::front_60)
     {
-      y_loc = (int)((float)y_loc/img_w*img_al_w);
-      x_loc = (int)((float)x_loc/img_h*img_al_h);
-      
-      p0.x = align_FC60[x_loc][y_loc].x/100;
-      p0.y = align_FC60[x_loc][y_loc].y/100;
-      p0.z = align_FC60[x_loc][y_loc].z/100;
+      y_loc = (int)((float)y_loc / img_w * img_al_w);
+      x_loc = (int)((float)x_loc / img_h * img_al_h);
+
+      p0.x = align_FC60[x_loc][y_loc].x / 100;
+      p0.y = align_FC60[x_loc][y_loc].y / 100;
+      p0.z = align_FC60[x_loc][y_loc].z / 100;
       return p0;
     }
-  }else{
+  }
+  else
+  {
     if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
     {
       if (Parmas.regionDist_x.size() != 0)
@@ -1080,7 +1078,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       if (Parmas.regionDist_y.size() != 0)
       {
         y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                        Parmas.regionDist_y, img_h);
+                                         Parmas.regionDist_y, img_h);
       }
     }
   }
@@ -1105,9 +1103,9 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     p0.y = 0;
     p0.z = 0;
   }
-    p0.x = x_distMeter + offset_x;
-    p0.y = y_distMeter;
-    p0.z = Lidar_offset_z;
+  p0.x = x_distMeter + offset_x;
+  p0.y = y_distMeter;
+  p0.z = Lidar_offset_z;
 
-    return p0;
+  return p0;
 }

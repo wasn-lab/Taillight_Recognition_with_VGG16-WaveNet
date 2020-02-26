@@ -159,7 +159,7 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   while (g_is_infer_data)
   {
     usleep(5);
-}
+  }
 }
 
 void callback_60_0(const sensor_msgs::Image::ConstPtr& msg)
@@ -238,7 +238,7 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
   else if (cam_order == camera::id::left_60)
   {
     g_pub_img_60_2.publish(imgMsg);
-}
+  }
 }
 
 int main(int argc, char** argv)
