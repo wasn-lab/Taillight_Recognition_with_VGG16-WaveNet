@@ -1,21 +1,10 @@
-#include "ros/ros.h"
-#include "std_msgs/Header.h"
-#include <ros/package.h>
-
-#include <nodelet/nodelet.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-
 #include <iostream>
-#include <boost/thread.hpp>
 #include <pthread.h>
 #include <thread>
 #include <future>
 #include <mutex>
 
-#include "drivenet/drivenet_group_b_b1_v2.h"
-
-#include <msgs/DetectedObjectArray.h>
+#include "drivenet/drivenet_b1_v2.h"
 
 using namespace DriveNet;
 

@@ -1,7 +1,18 @@
-#ifndef DRIVENET_GROUP_C_B1_V2_H_
-#define DRIVENET_GROUP_C_B1_V2_H_
+#ifndef DRIVENET_B1_V2_H_
+#define DRIVENET_B1_V2_H_
 
+///car model
 #include "camera_params.h"  // include camera topic name
+
+/// ros
+#include "ros/ros.h"
+#include "std_msgs/Header.h"
+#include <ros/package.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <msgs/DetectedObjectArray.h>
+
+/// drivenet
 #include "drivenet/trt_yolo_interface.h"
 // #include "drivenet/distance_estimation_b1.h"
 #include "drivenet/boundary_util.h"
@@ -11,4 +22,4 @@
 #include "drivenet/type_conversion.h"
 // #include "costmap_generator.h"
 
-#endif /*DRIVENET_GROUP_C_B1_V2_H_*/
+#endif /*DRIVENET_B1_V2_H_*/
