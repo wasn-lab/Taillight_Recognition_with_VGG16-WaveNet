@@ -409,6 +409,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   camInfo.width = box.x2 - box.x1;
   camInfo.height = box.y2 - box.y1;
   camInfo.prob = box.prob;
+  camInfo.id = translate_label(box.label);
 
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
