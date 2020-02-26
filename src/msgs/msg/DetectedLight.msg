@@ -1,3 +1,3 @@
-uint16 classId
+uint16 color_light
+uint16 direction
 float32 distance
-uint16 lightType

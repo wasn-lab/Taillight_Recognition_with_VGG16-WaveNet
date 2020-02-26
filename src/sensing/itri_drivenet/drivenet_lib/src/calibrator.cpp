@@ -61,8 +61,10 @@ const void* Int8EntropyCalibrator::readCalibrationCache(size_t& length)
   std::ifstream input(m_CalibTableFilePath, std::ios::binary);
   input >> std::noskipws;
   if (m_ReadCache && input.good())
+  {
     std::copy(std::istream_iterator<char>(input), std::istream_iterator<char>(),
               std::back_inserter(m_CalibrationCache));
+  }
 
   length = m_CalibrationCache.size();
   if (length)

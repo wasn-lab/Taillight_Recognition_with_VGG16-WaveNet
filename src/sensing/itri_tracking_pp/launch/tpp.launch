@@ -22,7 +22,7 @@
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
-  <arg name="m_lifetime_sec" default="0" />
+  <arg name="m_lifetime_sec" default="1.0" />
 
   <!-- Rviz markers -->
   <arg name="gen_markers" default="1" />
@@ -36,6 +36,8 @@
   <!--   1: Show pp point w/ confidence ellipse -->
   <!-- >=2: Show pp point w/o confidence ellipse -->
   <arg name="show_pp" default="1" />
+  <arg name="pp_obj_min_kmph" default="3.0" />
+  <arg name="pp_obj_max_kmph" default="50.0" />
 
   <!-- Launch node -->
   <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
@@ -51,5 +53,7 @@
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
     <param name="show_pp" value="$(arg show_pp)" />
+    <param name="pp_obj_min_kmph" value="$(arg pp_obj_min_kmph)" />
+    <param name="pp_obj_max_kmph" value="$(arg pp_obj_max_kmph)" />
   </node>
 </launch>

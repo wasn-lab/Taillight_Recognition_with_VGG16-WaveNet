@@ -1,8 +1,9 @@
-#ifndef DISTANCEESTIMATION_H_
-#define DISTANCEESTIMATION_H_
+#ifndef DISTANCEESTIMATION_B1_H_
+#define DISTANCEESTIMATION_B1_H_
 
 // ROS message
 #include "camera_params.h"  // include camera topic name
+#include "distance_estimation.h"
 #include <msgs/BoxPoint.h>
 #include <msgs/PointXYZ.h>
 #include <opencv2/core/core.hpp>
@@ -12,30 +13,12 @@
 #include <fstream>
 #include <jsoncpp/json/json.h>
 
-struct DisEstiParams
-{
-  std::vector<int> regionHeight_x;
-  std::vector<float> regionDist_x;
-  std::vector<int> regionHeight_y;
-  std::vector<float> regionDist_y;
-  std::vector<float> regionHeightSlope_x;
-  std::vector<float> regionHeightSlope_y;
-};
-
-struct CheckArea
-{
-  cv::Point LeftLinePoint1;
-  cv::Point LeftLinePoint2;
-  cv::Point RightLinePoint1;
-  cv::Point RightLinePoint2;
-};
-
 class DistanceEstimation
 {
 private:
   DisEstiParams camFR60, camFC60, camFL60, camFT120, camRF120, camRB120, camLF120, camLB120, camBT120;
   CheckArea ShrinkArea_camFR60, ShrinkArea_camFT120, ShrinkArea_camBT120;
-  cv::Point3d** align_FC60/*, align_FL60, align_FR60*/;
+  cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
 
   /// camId: 0 = camFR60
   /// camId: 1 = camFC60
@@ -104,4 +87,4 @@ public:
   CheckArea camFR60_area, camFC60_area, camFL60_area, camFT120_area, camBT120_area;
 };
 
-#endif /*DISTANCEESTIMATION_H_*/
+#endif /*DISTANCEESTIMATION_B1_H_*/
