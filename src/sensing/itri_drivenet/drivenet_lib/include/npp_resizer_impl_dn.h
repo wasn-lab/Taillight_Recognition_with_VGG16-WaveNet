@@ -15,10 +15,7 @@ namespace DriveNet_npp
 class NPPResizerImpl
 {
 private:
-  const int src_rows_, src_cols_;
-  const int dst_rows_, dst_cols_;
   const int src_line_steps_, dst_line_steps_;
-  const int num_src_bytes_, num_dst_bytes_;
   NppiSize src_size_, dst_size_;
   NppiRect src_roi_, dst_roi_;
   Npp8u* src_npp8u_ptr_cuda_;
