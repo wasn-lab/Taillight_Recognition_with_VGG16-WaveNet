@@ -66,6 +66,6 @@ if (ENABLE_PARKNET)
   include(cmake/parknet_weights.cmake)
 endif ()
 
-if (CAR_MODEL_IS_HINO AND ENABLE_PARKNET)
+if (CAR_MODEL_IS_HINO)
   include(cmake/camera_fov120_distance.cmake)
 endif ()
