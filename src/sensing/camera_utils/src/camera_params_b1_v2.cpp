@@ -32,19 +32,19 @@ const std::string topics_obj[id::num_ids] = {
   "",
 };
 
-const int distortion[id::num_ids] = {
-  0,  // F_center
-  0,  // F_top_far
-  0,  //
-  0,  //
-  1,  // F_top_close
-  0,  // R_front
-  0,  // R_rear
-  0,  //
-  0,  // L_front
-  0,  // L_rear
-  1,  // B_top
-  0,  //
+const bool distortion[id::num_ids] = {
+  false,  // F_center
+  false,  // F_top_far
+  false,  //
+  false,  //
+  true,  // F_top_close
+  false,  // R_front
+  false,  // R_rear
+  false,  //
+  false,  // L_front
+  false,  // L_rear
+  true,  // B_top
+  false,  //
 };
 
 const std::string detect_result = "/CameraDetection";

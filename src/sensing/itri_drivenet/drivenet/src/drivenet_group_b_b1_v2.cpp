@@ -1,27 +1,16 @@
-#include "ros/ros.h"
-#include "std_msgs/Header.h"
-#include <ros/package.h>
-
-#include <nodelet/nodelet.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-
 #include <iostream>
-#include <boost/thread.hpp>
 #include <pthread.h>
 #include <thread>
 #include <future>
 #include <mutex>
 
-#include "drivenet/drivenet_group_b_b1_v2.h"
-
-#include <msgs/DetectedObjectArray.h>
+#include "drivenet/drivenet_b1_v2.h"
 
 using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<int> g_cam_ids{ camera::id::top_front_120, camera::id::right_front, camera::id::right_rear };
+const std::vector<int> g_cam_ids{ camera::id::top_front_120, camera::id::right_front_60, camera::id::right_rear_60 };
 #else
 #error "car model is not well defined"
 #endif
