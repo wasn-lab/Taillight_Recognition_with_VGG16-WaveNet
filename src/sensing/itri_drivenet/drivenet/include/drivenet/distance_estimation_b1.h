@@ -3,6 +3,7 @@
 
 // ROS message
 #include "camera_params.h"  // include camera topic name
+#include "distance_estimation.h"
 #include <msgs/BoxPoint.h>
 #include <msgs/PointXYZ.h>
 #include <opencv2/core/core.hpp>
@@ -11,24 +12,6 @@
 #include <string>
 #include <fstream>
 #include <jsoncpp/json/json.h>
-
-struct DisEstiParams
-{
-  std::vector<int> regionHeight_x;
-  std::vector<float> regionDist_x;
-  std::vector<int> regionHeight_y;
-  std::vector<float> regionDist_y;
-  std::vector<float> regionHeightSlope_x;
-  std::vector<float> regionHeightSlope_y;
-};
-
-struct CheckArea
-{
-  cv::Point LeftLinePoint1;
-  cv::Point LeftLinePoint2;
-  cv::Point RightLinePoint1;
-  cv::Point RightLinePoint2;
-};
 
 class DistanceEstimation
 {
