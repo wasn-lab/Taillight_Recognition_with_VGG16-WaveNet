@@ -41,6 +41,7 @@ extern const std::string topics_obj[id::num_ids];
 extern const int distortion[id::num_ids];
 extern const std::string detect_result;
 extern const std::string detect_result_polygon;
+extern const std::string detect_result_occupancy_grid;
 
 // TODO: fill in the following parameters.
 constexpr int raw_image_width = 1920;

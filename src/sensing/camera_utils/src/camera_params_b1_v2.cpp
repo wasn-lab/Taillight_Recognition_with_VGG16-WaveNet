@@ -61,6 +61,7 @@ const int distortion[id::num_ids] = {
 
 const std::string detect_result = "/CameraDetection";
 const std::string detect_result_polygon = "/CameraDetection/polygon";
+const std::string detect_result_occupancy_grid = "/CameraDetection/occupancy_grid";
 
 };  // namespace
 
