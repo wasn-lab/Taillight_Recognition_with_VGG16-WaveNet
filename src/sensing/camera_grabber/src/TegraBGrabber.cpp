@@ -88,7 +88,7 @@ bool TegraBGrabber::runPerception()
     {
       npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[cam_ids_[i]]),
                                       camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[i]);
-      if(i == 0 || i == cam_ids_.size() - 1)
+      if(cam_ids_[i] == camera::id::top_front_120 || cam_ids_[i] == camera::id::top_rear_120)
       {
         remapper_.remap(npp8u_ptrs_[i], npp8u_ptrs_distorted_[i]);
         resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);

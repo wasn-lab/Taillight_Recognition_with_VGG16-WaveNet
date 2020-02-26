@@ -16,22 +16,22 @@ namespace camera
 enum id
 {
   begin = 0,
-  front_60 = begin,  // 0
-  top_front_30,      // 1
-  _dummy0,           // 2
-  _dummy1,           // 3
-  top_front_120,     // 4
-  right_front,       // 5
-  right_rear,        // 6
-  _dummy2,           // 7
-  left_front,        // 8
-  left_rear,         // 9
-  top_rear_120,      // 10
-  _dummy3,           // 11
-  num_ids            // 12
+  front_60 = begin,           // 0
+  top_front_30,               // 1
+  _dummy0,                    // 2
+  _dummy1,                    // 3
+  top_front_120,              // 4
+  right_front_60,             // 5
+  right_rear_60,              // 6
+  _dummy2,                    // 7
+  left_front_60,              // 8
+  left_rear_60,               // 9
+  top_rear_120,               // 10
+  _dummy3,                    // 11
+  num_ids                     // 12
 };
 
-static_assert(id::begin == 0, "The first camera id is 1");
+static_assert(id::begin == 0, "The first camera id is 0");
 static_assert(id::front_60 == 0, "The camera id 0 is also front_60");
 static_assert(id::num_ids == 12, "The number of ids is 12");
 
