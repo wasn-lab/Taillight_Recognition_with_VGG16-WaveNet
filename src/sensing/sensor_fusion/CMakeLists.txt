@@ -10,7 +10,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(
+  catkin REQUIRED COMPONENTS
   roscpp
   rospy
   sensor_msgs
@@ -18,12 +19,9 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
 )
 
-find_package(PCL 1.9.0 REQUIRED)
-
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-
 catkin_package(
-  LIBRARIES ${PROJECT_NAME}
+  LIBRARIES
+  ${PROJECT_NAME}
   roscpp 
   rospy 
   sensor_msgs
@@ -37,13 +35,19 @@ include_directories(
   ${msgs_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME} src/sensor_fusion.cpp)
+add_executable(
+  ${PROJECT_NAME}
+  src/sensor_fusion.cpp
+  src/Hungarian.cpp
+)
  
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(
+  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(${PROJECT_NAME}
+add_dependencies(
+  ${PROJECT_NAME}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )

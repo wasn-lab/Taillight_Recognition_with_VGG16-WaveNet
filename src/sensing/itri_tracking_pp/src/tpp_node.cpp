@@ -935,6 +935,14 @@ void TPPNode::set_ros_params()
   nh_.param<int>(domain + "show_pp", show_pp_int, 0);
   mc_.show_pp = (unsigned int)show_pp_int;
 
+  double pp_obj_min_kmph = 0.;
+  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
+  pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
+
+  double pp_obj_max_kmph = 0.;
+  nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
+  pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
+
   set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
   set_ColorRGBA(mc_.color_radar_tpp, 0.5f, 0.f, 0.f, 1.f);
   set_ColorRGBA(mc_.color_camera_tpp, 0.5f, 0.5f, 0.5f, 1.f);
