@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drivenet)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 include(CompilerFlags)
+include(CarModel)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
