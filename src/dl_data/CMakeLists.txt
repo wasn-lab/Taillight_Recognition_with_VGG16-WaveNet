@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 project(dl_data)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+
+find_package(catkin REQUIRED COMPONENTS car_model)
 
 set(DRIVENET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_drivenet/drivenet/data/yolo)
 set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_parknet/weights)
@@ -43,11 +46,26 @@ endfunction()
 
 include(cmake/drivenet_weights.cmake)
 include(cmake/camera_grabber.cmake)
-include(cmake/openroadnet_weights.cmake)
-include(cmake/parknet_weights.cmake)
 include(cmake/lidarnet_weights.cmake)
-include(cmake/camera_fov120_distance.cmake)
 include(cmake/libtensorflow_gpu.cmake)
-include(cmake/pedcross_models.cmake)
-include(cmake/lightnet_weights.cmake)
-include(cmake/lightnet_tainan_weights.cmake)
+
+if (ENABLE_LIGHTNET)
+  include(cmake/lightnet_weights.cmake)
+  include(cmake/lightnet_tainan_weights.cmake)
+endif ()
+
+if (ENABLE_PEDCROSS)
+  include(cmake/pedcross_models.cmake)
+endif ()
+
+if (ENABLE_OPENROADNET)
+  include(cmake/openroadnet_weights.cmake)
+endif ()
+
+if (ENABLE_PARKNET)
+  include(cmake/parknet_weights.cmake)
+endif ()
+
+if (CAR_MODEL_IS_HINO AND ENABLE_PARKNET)
+  include(cmake/camera_fov120_distance.cmake)
+endif ()
