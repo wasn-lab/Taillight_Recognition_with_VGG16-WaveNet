@@ -66,13 +66,57 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
     size_t convex_hull_size = cluster_info[i].convex_hull.size();
     if (cluster_info[i].cluster_tag != 0)
     {
+      msgObj.distance = 0;
+      float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
+      float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
+      msgObj.cPoint.objectHigh = top_z - bottom_z;
+      
+      /// Coordinate system
+      ///           ^          ///             ^
+      ///      ^   /           ///        ^   /
+      ///    z |  /            ///      z |  /
+      ///      | /  y          ///        | /  x
+      ///      ----->          ///   <-----
+      ///        x             ///       y
+
+      /// cluster_info_bbox    ///  bbox_p0
+      ///   p6------p2         ///   p5------p6
+      ///   /|  2   /|         ///   /|  2   /|
+      /// p5-|----p1 |         /// p1-|----p2 |
+      ///  |p7----|-p3   ->    ///  |p4----|-p7
+      ///  |/  1  | /          ///  |/  1  | /
+      /// p4-----P0            /// p0-----P3
+
+      msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
+      /// bottom
+      bbox_p0.x = cluster_info_bbox[i].min.x;
+      bbox_p0.y = cluster_info_bbox[i].min.y;
+      bbox_p0.z = bottom_z;
+      bbox_p3.x = cluster_info_bbox[i].min.x;
+      bbox_p3.y = cluster_info_bbox[i].max.y;
+      bbox_p3.z = bottom_z;
+      bbox_p7.x = cluster_info_bbox[i].max.x;
+      bbox_p7.y = cluster_info_bbox[i].max.y;
+      bbox_p7.z = bottom_z;
+      bbox_p4.x = cluster_info_bbox[i].max.x;
+      bbox_p4.y = cluster_info_bbox[i].min.y;
+      bbox_p4.z = bottom_z;
+      /// top
+      bbox_p1 = bbox_p0;
+      bbox_p1.z = top_z;
+      bbox_p2 = bbox_p3;
+      bbox_p2.z = top_z;
+      bbox_p6 = bbox_p7;
+      bbox_p6.z = top_z;
+      bbox_p5 = bbox_p4;
+      bbox_p5.z = top_z;
+      msgObj.bPoint.p0 = bbox_p0;
+      msgObj.bPoint.p3 = bbox_p3;
+      msgObj.bPoint.p7 = bbox_p7;
+      msgObj.bPoint.p4 = bbox_p4;
+
       if (convex_hull_size > 0)
       {
-        msgObj.distance = 0;
-        float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
-        float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
-        msgObj.cPoint.objectHigh = top_z - bottom_z;
-
         // bottom
         for (size_t j = 0; j < convex_hull_size; j++)
         {
@@ -92,49 +136,11 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
       }
       else
       {
-        /// Coordinate system
-        ///           ^          ///             ^
-        ///      ^   /           ///        ^   /
-        ///    z |  /            ///      z |  /
-        ///      | /  y          ///        | /  x
-        ///      ----->          ///   <-----
-        ///        x             ///       y
-
-        /// cluster_info_bbox    ///  bbox_p0
-        ///   p6------p2         ///   p5------p6
-        ///   /|  2   /|         ///   /|  2   /|
-        /// p5-|----p1 |         /// p1-|----p2 |
-        ///  |p7----|-p3   ->    ///  |p4----|-p7
-        ///  |/  1  | /          ///  |/  1  | /
-        /// p4-----P0            /// p0-----P3
-
-        msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
-        msgObj.distance = 0;
-        float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
-        float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
-        msgObj.cPoint.objectHigh = top_z - bottom_z;
-
         // bottom
-        bbox_p0.x = cluster_info_bbox[i].min.x;
-        bbox_p0.y = cluster_info_bbox[i].min.y;
-        bbox_p0.z = bottom_z;
         msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
-        msgObj.bPoint.p0 = bbox_p0;
-        bbox_p3.x = cluster_info_bbox[i].min.x;
-        bbox_p3.y = cluster_info_bbox[i].max.y;
-        bbox_p3.z = bottom_z;
         msgObj.cPoint.lowerAreaPoints.push_back(bbox_p3);
-        msgObj.bPoint.p3 = bbox_p3;
-        bbox_p7.x = cluster_info_bbox[i].max.x;
-        bbox_p7.y = cluster_info_bbox[i].max.y;
-        bbox_p7.z = bottom_z;
         msgObj.cPoint.lowerAreaPoints.push_back(bbox_p7);
-        msgObj.bPoint.p7 = bbox_p7;
-        bbox_p4.x = cluster_info_bbox[i].max.x;
-        bbox_p4.y = cluster_info_bbox[i].min.y;
-        bbox_p4.z = bottom_z;
         msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
-        msgObj.bPoint.p4 = bbox_p4;
 
         if (use_gridmap_publish_)
         {
@@ -143,6 +149,11 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
               cosmapGener_.makeCostmapFromSingleObject(costmap_, cosmapGener_.layer_name_, 8, msgObj, false);
         }
       }
+
+      msgObj.bPoint.p1 = bbox_p1;
+      msgObj.bPoint.p2 = bbox_p2;
+      msgObj.bPoint.p6 = bbox_p6;
+      msgObj.bPoint.p5 = bbox_p5;
 
       msgObj.fusionSourceId = 0;
 
