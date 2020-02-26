@@ -118,10 +118,12 @@ CUDAH void Matrix::resize(int rows, int cols) {
 }
 
 CUDAH double *Matrix::cellAddr(int row, int col) {
-	if (row >= rows_ || col >= cols_ || row < 0 || col < 0)
-		return NULL;
+  if (row >= rows_ || col >= cols_ || row < 0 || col < 0)
+  {
+    return NULL;
+  }
 
-	return buffer_ + (row * cols_ + col) * offset_;
+  return buffer_ + (row * cols_ + col) * offset_;
 }
 
 CUDAH double *Matrix::cellAddr(int index) {
@@ -170,10 +172,12 @@ CUDAH bool Matrix::operator*=(double val) {
 }
 
 CUDAH bool Matrix::operator/=(double val) {
-	if (val == 0)
-		return false;
+  if (val == 0)
+  {
+    return false;
+  }
 
-	for (int i = 0; i < rows_ * cols_; i++) {
+  for (int i = 0; i < rows_ * cols_; i++) {
 			buffer_[i * offset_] /= val;
 	}
 
@@ -181,10 +185,12 @@ CUDAH bool Matrix::operator/=(double val) {
 }
 
 CUDAH bool Matrix::transpose(Matrix &output) {
-	if (rows_ != output.cols_ || cols_ != output.rows_)
-		return false;
+  if (rows_ != output.cols_ || cols_ != output.rows_)
+  {
+    return false;
+  }
 
-	for (int i = 0; i < rows_; i++) {
+  for (int i = 0; i < rows_; i++) {
 		for (int j = 0; j < cols_; j++) {
 			output(j, i) = buffer_[(i * cols_ + j) * offset_];
 		}
@@ -195,15 +201,21 @@ CUDAH bool Matrix::transpose(Matrix &output) {
 
 //Only applicable for 3x3 matrix or below
 CUDAH bool Matrix::inverse(Matrix &output) {
-	if (rows_ != cols_ || rows_ == 0 || cols_ == 0)
-		return false;
+  if (rows_ != cols_ || rows_ == 0 || cols_ == 0)
+  {
+    return false;
+  }
 
-	if (rows_ == 1) {
-		if (buffer_[0] != 0)
-			output(0, 0) = 1 / buffer_[0];
-		else
-			return false;
-	}
+  if (rows_ == 1) {
+    if (buffer_[0] != 0)
+    {
+      output(0, 0) = 1 / buffer_[0];
+    }
+    else
+    {
+      return false;
+    }
+  }
 
 	if (rows_ == 2) {
 		double det = at(0, 0) * at(1, 1) - at(0, 1) * at(1, 0);
@@ -214,9 +226,12 @@ CUDAH bool Matrix::inverse(Matrix &output) {
 
 			output(1, 0) = - at(1, 0) / det;
 			output(1, 1) = at(0, 0) / det;
-		} else
-			return false;
-	}
+    }
+    else
+    {
+      return false;
+    }
+  }
 
 	if (rows_ == 3) {
 		double det = at(0, 0) * at(1, 1) * at(2, 2) + at(0, 1) * at(1, 2) * at(2, 0) + at(1, 0) * at (2, 1) * at(0, 2)
@@ -235,9 +250,12 @@ CUDAH bool Matrix::inverse(Matrix &output) {
 			output(2, 0) = (at(1, 0) * at(2, 1) - at(1, 1) * at(2, 0)) * idet;
 			output(2, 1) = - (at(0, 0) * at(2, 1) - at(0, 1) * at(2, 0)) * idet;
 			output(2, 2) = (at(0, 0) * at(1, 1) - at(0, 1) * at(1, 0)) * idet;
-		} else
-			return false;
-	}
+    }
+    else
+    {
+      return false;
+    }
+  }
 
 	return true;
 }

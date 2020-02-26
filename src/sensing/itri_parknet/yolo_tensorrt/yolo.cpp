@@ -158,7 +158,9 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
   nvinfer1::Weights divWeights{ nvinfer1::DataType::kFLOAT, nullptr, static_cast<int64_t>(m_InputSize) };
   float* divWt = new float[m_InputSize];
   for (uint w = 0; w < m_InputSize; ++w)
+  {
     divWt[w] = 255.0;
+  }
   divWeights.values = divWt;
   trtWeights.emplace_back(divWeights);
   nvinfer1::IConstantLayer* constDivide = m_Network->addConstant(divDims, divWeights);
@@ -290,7 +292,9 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
       std::cout << "Anchors are being converted to network input resolution i.e. Anchors x " << curRegionTensor.stride
                 << " (stride)" << std::endl;
       for (auto& anchor : curRegionTensor.anchors)
+      {
         anchor *= curRegionTensor.stride;
+      }
       ++outputTensorCount;
     }
     else if (m_configBlocks.at(i).at("type") == "reorg")
@@ -403,7 +407,9 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
 
   std::cout << "Output blob names :" << std::endl;
   for (auto& tensor : m_OutputTensors)
+  {
     std::cout << tensor.blobName << std::endl;
+  }
 
   // Create and cache the engine if not already present
   if (fileExists(m_EnginePath))
@@ -516,9 +522,13 @@ std::vector<std::map<std::string, std::string>> Yolo::parseConfigFile(const std:
   while (getline(file, line))
   {
     if (line.size() == 0)
+    {
       continue;
+    }
     if (line.front() == '#')
+    {
       continue;
+    }
     line = trim(line);
     if (line.front() == '[')
     {
@@ -657,19 +667,29 @@ bool Yolo::verifyYoloEngine()
 void Yolo::destroyNetworkUtils(std::vector<nvinfer1::Weights>& trtWeights)
 {
   if (m_Network)
+  {
     m_Network->destroy();
+  }
   if (m_Engine)
+  {
     m_Engine->destroy();
+  }
   if (m_Builder)
+  {
     m_Builder->destroy();
+  }
   if (m_ModelStream)
+  {
     m_ModelStream->destroy();
+  }
 
   // deallocate the weights
   for (uint i = 0; i < trtWeights.size(); ++i)
   {
     if (trtWeights[i].count > 0)
+    {
       free(const_cast<void*>(trtWeights[i].values));
+    }
   }
 }
 

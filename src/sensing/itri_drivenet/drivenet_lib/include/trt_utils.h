@@ -40,7 +40,9 @@ public:
   {
     // suppress info-level messages
     if (severity == Severity::kINFO)
+    {
       return;
+    }
 
     switch (severity)
     {

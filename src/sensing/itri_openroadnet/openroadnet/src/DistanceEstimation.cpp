@@ -76,7 +76,9 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     else
     {
       if (piexl_loc > regionHeight[0])
+      {
         distance = 6;
+      }
     }
   }
   // printf("piexl_loc: %d,  regionDist: %d, unit: %f, bias: %d, offset: %f\n", piexl_loc, regionDist[i], unitLength,
@@ -128,7 +130,9 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
     {
       int y = img_h - piexl_loc_x;
       if (regionHeightSlope_y[i] != 0)
+      {
         regionHeight_new[i] = regionHeight[i] + int((1 / regionHeightSlope_y[i]) * y);
+      }
       // std::cout <<  "piexl_loc_x: " << piexl_loc_x << ", y: " << y << "pixel location offset: " <<
       // int((1/regionHeightSlope_y[i])*y) << std::endl;
       // std::cout <<  "regionHeight_new" << i << ": " << regionHeight_new[i] << std::endl;
@@ -141,7 +145,9 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
         int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
         int regionMeter = regionDist[i] - regionDist[i - 1];
         if (regionpixel != 0)
+        {
           unitLength = float(regionMeter) / float(regionpixel);
+        }
         bias = piexl_loc_y - regionHeight_new[i];
         offset = unitLength * float(bias);
         distance = regionDist[i] - offset;
@@ -155,7 +161,9 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
         int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
         int regionMeter = regionDist[i] - regionDist[i - 1];
         if (regionpixel != 0)
+        {
           unitLength = float(regionMeter) / float(regionpixel);
+        }
         bias = regionHeight_new[i] - piexl_loc_y;
         offset = unitLength * float(bias);
         distance = regionDist[i] - offset;
@@ -167,9 +175,13 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       else
       {
         if (piexl_loc_y < regionHeight_new[0])
+        {
           distance = 8;
+        }
         else if (piexl_loc_y > regionHeight_new[regionHeight_new.size() - 1])
+        {
           distance = -8;
+        }
       }
     }
   }
@@ -231,9 +243,13 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
   }
 
   if (regionDist_x.size() != 0)
+  {
     x_distMeter = ComputeObjectXDist(x_loc, regionHeight_x, regionDist_x);
+  }
   if (regionDist_y.size() != 0)
+  {
     y_distMeter = ComputeObjectYDist(y_loc, x_loc, regionHeight_y, regionHeightSlope_y, regionDist_y, mode);
+  }
 
   p0.x = x_distMeter + Lidar_offset_x;
   p0.y = y_distMeter;
