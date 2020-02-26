@@ -132,14 +132,10 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
     }
   }
 
-  bool is_infer_data = false;
+  bool is_infer_data = true;
   for(size_t ndx = 0; ndx < g_cam_ids.size(); ndx++)
   {
-    if (g_is_infer_datas[ndx])
-    {
-      is_infer_data = true;
-    }
-    else
+    if (!g_is_infer_datas[ndx])
     {
       is_infer_data = false;
     }
