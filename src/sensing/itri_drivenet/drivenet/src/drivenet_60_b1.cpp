@@ -22,8 +22,6 @@ using namespace DriveNet;
 /// camera layout
 #if CAR_MODEL_IS_B1
 const std::vector<int> g_cam_ids{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
-// #elif CAR_MODEL_IS_B1_V2
-// const std::vector<int> g_cam_ids{ camera::id::front_60, camera::id::top_front_30};
 #else
 #error "car model is not well defined"
 #endif
@@ -281,7 +279,8 @@ int main(int argc, char** argv)
   g_pub60_2 = nh.advertise<msgs::DetectedObjectArray>("/CamObjFrontLeft", 8);
 
   // // occupancy grid map publisher
-  // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+  // std::string occupancy_grid_topicName = camera::detect_result_occupancy_grid;
+  // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>(occupancy_grid_topicName, 1, true);
 
   pthread_mutex_init(&g_mtx_infer, NULL);
   pthread_cond_init(&g_cnd_infer, NULL);

@@ -473,7 +473,8 @@ int main(int argc, char** argv)
   g_pub120_3 = nh.advertise<msgs::DetectedObjectArray>("/CamObjLeftBack", 4);
 
   // // occupancy grid map publisher
-  // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
+  // std::string occupancy_grid_topicName = camera::detect_result_occupancy_grid;
+  // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>(occupancy_grid_topicName, 1, true);
 
   pthread_mutex_init(&g_mtx_infer, NULL);
   pthread_cond_init(&g_cnd_infer, NULL);
