@@ -1,9 +1,15 @@
 #ifndef __CAR_MODEL_H__
 #define __CAR_MODEL_H__
 
+#cmakedefine CAR_MODEL "@CAR_MODEL@"
 #cmakedefine01 CAR_MODEL_IS_B1
 #cmakedefine01 CAR_MODEL_IS_B1_V2
 #cmakedefine01 CAR_MODEL_IS_C
 #cmakedefine01 CAR_MODEL_IS_HINO
+#cmakedefine01 ENABLE_LIGHTNET
+#cmakedefine01 ENABLE_PARKNET
+#cmakedefine01 ENABLE_OPENROADNET
+#cmakedefine01 ENABLE_PEDCROSS
+#cmakedefine01 ENABLE_GOOGLE_BENCHMARK
 
 #endif

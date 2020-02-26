@@ -207,8 +207,8 @@ S1Cluster::getClusters (bool debug,
 //          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
 //            cluster_vector.at (i).cluster_tag = 0;
 
-          if (cluster_vector.at (i).min.z > -1.5)
-            cluster_vector.at (i).cluster_tag = 0;
+          // if (cluster_vector.at (i).min.z > -1.5)
+          //   cluster_vector.at (i).cluster_tag = 0;
 
           if (cluster_vector.at (i).max.z < -2.0)
             cluster_vector.at (i).cluster_tag = 0;
@@ -216,8 +216,8 @@ S1Cluster::getClusters (bool debug,
         }
         else
         {
-          if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
-            cluster_vector.at (i).cluster_tag = 0;
+          // if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
+          //   cluster_vector.at (i).cluster_tag = 0;
         }
         
         // ============== label counting for providing cluster_tag with class types ==================
@@ -233,13 +233,13 @@ S1Cluster::getClusters (bool debug,
 
             switch (cluster_vector.at(i).cloud_IL.points.at(j).label)
             {
-            case 2:
+            case nnClassID::Person:
               CNT_Person++;
               break;
-            case 3:
+            case nnClassID::Motobike:
               CNT_Motor++;
               break;
-            case 1:
+            case nnClassID::Car:
               CNT_Car++;
               break;
             default:
@@ -253,21 +253,21 @@ S1Cluster::getClusters (bool debug,
 
           if (CNT_MAX == CNT_Person)
           {
-            cluster_vector.at(i).cluster_tag = 1;
+            cluster_vector.at(i).cluster_tag = nnClassID::Person;
           }
           else if (CNT_MAX == CNT_Motor)
           {
-            cluster_vector.at(i).cluster_tag = 2;
+            cluster_vector.at(i).cluster_tag = nnClassID::Motobike;
           }
           else if (CNT_MAX == CNT_Car)
           {
-            cluster_vector.at(i).cluster_tag = 3;
+            cluster_vector.at(i).cluster_tag = nnClassID::Car;
           }
           else
           { 
             if (CNT_Person==0 && CNT_Motor==0 && CNT_Car==0)
             {
-              cluster_vector.at(i).cluster_tag = 4;
+              cluster_vector.at(i).cluster_tag = nnClassID::Rule;
             }
             else
             {
@@ -275,15 +275,15 @@ S1Cluster::getClusters (bool debug,
               
               if (CNT_2ndMAX == CNT_Person)
               {
-                cluster_vector.at(i).cluster_tag = 1;
+                cluster_vector.at(i).cluster_tag = nnClassID::Person;
               }
               else if (CNT_2ndMAX == CNT_Motor)
               {
-                cluster_vector.at(i).cluster_tag = 2;
+                cluster_vector.at(i).cluster_tag = nnClassID::Motobike;
               }
               else if (CNT_2ndMAX == CNT_Car)
               {
-                cluster_vector.at(i).cluster_tag = 3;
+                cluster_vector.at(i).cluster_tag = nnClassID::Car;
               }
             }
           }
