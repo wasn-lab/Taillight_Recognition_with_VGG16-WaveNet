@@ -88,6 +88,8 @@ list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/campub_all.cpp" )
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/alignment_offline_b1.cpp" )
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/distance_estimation_b1.cpp" )
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_group_a_b1_v2.cpp" )
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_group_b_b1_v2.cpp" )
+list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_group_c_b1_v2.cpp" )
 message(STATUS "Lib_sources: " ${LIB_SOURCES})
 add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 file(GLOB_RECURSE EXCEPTION_SRCS src/exception_handling/*.cpp)
@@ -107,40 +109,23 @@ if (CAR_MODEL_IS_B1)
   add_dependencies(${PROJECT_NAME}_node3 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_node4 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-  target_link_libraries(${PROJECT_NAME}
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
+  target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node1 ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node2 ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node3 ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node4 ${catkin_LIBRARIES} ${LIBS})
 
-  target_link_libraries(${PROJECT_NAME}_node
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
-
-  target_link_libraries(${PROJECT_NAME}_node1
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
-
-  target_link_libraries(${PROJECT_NAME}_node2
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
-
-  target_link_libraries(${PROJECT_NAME}_node3
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
-
-  target_link_libraries(${PROJECT_NAME}_node4
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
 elseif(CAR_MODEL_IS_B1_V2)
   add_executable(${PROJECT_NAME}_node_a src/drivenet_group_a_b1_v2.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
+  add_executable(${PROJECT_NAME}_node_b src/drivenet_group_b_b1_v2.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
+  add_executable(${PROJECT_NAME}_node_c src/drivenet_group_c_b1_v2.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
+
   add_dependencies(${PROJECT_NAME}_node_a ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-  target_link_libraries(${PROJECT_NAME}_node_a
-     ${catkin_LIBRARIES}
-     ${LIBS}
-  )
+  add_dependencies(${PROJECT_NAME}_node_b ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+  add_dependencies(${PROJECT_NAME}_node_c ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+  target_link_libraries(${PROJECT_NAME}_node_a ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node_b ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_node_c ${catkin_LIBRARIES} ${LIBS})
 endif ()

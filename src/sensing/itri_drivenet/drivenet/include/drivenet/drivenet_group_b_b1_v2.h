@@ -1,5 +1,5 @@
-#ifndef DRIVENET_GROUP_A_B1_V2_H_
-#define DRIVENET_GROUP_A_B1_V2_H_
+#ifndef DRIVENET_GROUP_B_B1_V2_H_
+#define DRIVENET_GROUP_B_B1_V2_H_
 
 #include "camera_params.h"  // include camera topic name
 #include "drivenet/trt_yolo_interface.h"
@@ -11,4 +11,4 @@
 #include "drivenet/type_conversion.h"
 // #include "costmap_generator.h"
 
-#endif /*DRIVENET_GROUP_A_B1_V2_H_*/
+#endif /*DRIVENET_GROUP_B_B1_V2_H_*/
