@@ -121,3 +121,7 @@
 
 # pedcross
 /PedCross/Pedestrians
+
+# Traffic light
+/LightResultOutput
+
