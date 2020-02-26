@@ -1,5 +1,5 @@
-#ifndef DISTANCEESTIMATION_H_
-#define DISTANCEESTIMATION_H_
+#ifndef DISTANCEESTIMATION_B1_H_
+#define DISTANCEESTIMATION_B1_H_
 
 // ROS message
 #include "camera_params.h"  // include camera topic name
@@ -87,4 +87,4 @@ public:
   CheckArea camFR60_area, camFC60_area, camFL60_area, camFT120_area, camBT120_area;
 };
 
-#endif /*DISTANCEESTIMATION_H_*/
+#endif /*DISTANCEESTIMATION_B1_H_*/
