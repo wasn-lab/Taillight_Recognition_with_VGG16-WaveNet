@@ -23,10 +23,12 @@ nav_msgs::Path astar_finalpath_10;
 
 double speed_mps = 0;
 double angular_vz = 0;
-double veh_width = 2.2;
+double veh_width = 2.42;
 double veh_length = 7.0;
 double veh_pose_left = 0.5;
 double veh_pose_front = 0.615;
+double wheel_dis = 3.8;
+double predict_t = 6;
 
 bool astarpath_ini = false;
 bool vehinfo_ini = false;
@@ -119,10 +121,18 @@ void vehpredictpathgen_pub(bool flag)
     {
       if (r > 0.1)
       {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < predict_t * 100; i++)
         {
-          Relpose.pose.position.x = double(i)/100.0;
-          Relpose.pose.position.y = -std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          double theta_t = double(i/100) * yaw_rate;
+          Relpose.pose.position.x = r * std::sin(theta_t);
+          if (theta_t < RT_PI/2.0 || theta_t > 3*RT_PI/2.0)
+          {
+            Relpose.pose.position.y = -std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
+          else
+          {
+            Relpose.pose.position.y = std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
 
@@ -135,10 +145,18 @@ void vehpredictpathgen_pub(bool flag)
       }
       else if (r < -0.1)
       {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < predict_t * 100; i++)
         {
-          Relpose.pose.position.x = double(i)/100.0;
-          Relpose.pose.position.y = std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          double theta_t = double(i/100) * yaw_rate;
+          Relpose.pose.position.x = r * std::sin(theta_t);
+          if (theta_t < RT_PI/2.0 || theta_t > 3*RT_PI/2.0)
+          {
+            Relpose.pose.position.y = std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
+          else
+          {
+            Relpose.pose.position.y = -std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
 
@@ -151,9 +169,9 @@ void vehpredictpathgen_pub(bool flag)
       }
       else
       {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < predict_t * 100; i++)
         {
-          Relpose.pose.position.x = double(i)/100.0;
+          Relpose.pose.position.x = speed_mps * double(i/100);
           Relpose.pose.position.y = 0;
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
@@ -168,9 +186,9 @@ void vehpredictpathgen_pub(bool flag)
     }
     else
     {
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < predict_t * 100; i++)
       {
-        Relpose.pose.position.x = double(i)/100.0;
+        Relpose.pose.position.x = speed_mps * double(i/100);
         Relpose.pose.position.y = 0;
         Relpose.pose.position.z = -3;
         Relpath.poses.push_back(Relpose);
