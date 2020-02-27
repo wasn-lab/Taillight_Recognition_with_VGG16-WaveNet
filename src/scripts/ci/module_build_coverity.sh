@@ -13,9 +13,10 @@ fi
 readonly coverity_data_dir="coverity_data"
 readonly coverity_data_blacklist_dir="coverity_data_blacklist"
 readonly coverity_root=$(readlink -e $(dirname ${cov_build_bin})/..)
-readonly cfgs="${coverity_root}/config/MISRA/MISRA_c2004_7.config
-               ${coverity_root}/config/MISRA/MISRA_c2012_7.config
-               ${coverity_root}/config/MISRA/MISRA_cpp2008_7.config"
+#readonly cfgs="${coverity_root}/config/MISRA/MISRA_c2004_7.config
+#               ${coverity_root}/config/MISRA/MISRA_c2012_7.config
+#               ${coverity_root}/config/MISRA/MISRA_cpp2008_7.config"
+readonly cfgs="${coverity_root}/config/MISRA/MISRA_cpp2008_7.config"
 readonly blacklist="localization;ndt_gpu"
 
 pushd $repo_dir
