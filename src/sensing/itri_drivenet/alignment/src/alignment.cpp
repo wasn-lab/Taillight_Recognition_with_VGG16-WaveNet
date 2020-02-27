@@ -12,7 +12,7 @@ Alignment::~Alignment()
 {
 }
 
-void Alignment::projectMatrixInit(int camera_id)
+void Alignment::projectMatrixInit(camera::id camera_id)
 {
   projector2_.init(camera_id);
 }

@@ -434,7 +434,7 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
   }
 }
 
-float DistanceEstimation::RatioDefine(int cam_id, int cls)
+float DistanceEstimation::RatioDefine(camera::id cam_id, int cls)
 {
   if (cam_id == camera::id::front_60)
   {
@@ -529,7 +529,7 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
   return 1;
 }
 
-int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
+int DistanceEstimation::BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
 {
   // PointsSrc = {class_id, x1, x2, y2};
   // PointsDst = {class_id, x1, x2, y2};
@@ -577,7 +577,7 @@ int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::
 
   return 0;
 }
-msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id)
+msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id)
 {
   msgs::PointXYZ p1, p2, p4, p5, p6, p7;
   msgs::BoxPoint point8;
@@ -737,7 +737,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
 
   return point8;
 }
-msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int class_id, int cam_id)
+msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int class_id, camera::id cam_id)
 {
   msgs::PointXYZ p0, p1, p2, p3, p4, p5, p6, p7;
   msgs::BoxPoint point8;
@@ -981,7 +981,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 
   return point8;
 }
-msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
+msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 {
   msgs::PointXYZ p0;
   float x_distMeter = 0, y_distMeter = 0;

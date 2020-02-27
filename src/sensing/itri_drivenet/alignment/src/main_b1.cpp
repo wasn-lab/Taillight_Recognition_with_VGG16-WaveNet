@@ -27,7 +27,7 @@
 
 /// camera layout
 #if CAR_MODEL_IS_B1
-const std::vector<int> g_cam_ids{ camera::id::front_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_60 };
 #else
 #error "car model is not well defined"
 #endif

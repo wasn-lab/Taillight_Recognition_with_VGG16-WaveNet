@@ -10,7 +10,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<int> g_cam_ids{ camera::id::front_60, camera::id::top_front_30 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_60, camera::id::top_front_30 };
 #else
 #error "car model is not well defined"
 #endif
