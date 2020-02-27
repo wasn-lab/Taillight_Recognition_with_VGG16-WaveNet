@@ -13,12 +13,17 @@ find_package(catkin REQUIRED COMPONENTS
   car_model
   camera_utils
   object_costmap_generator
-  drivenet
 )  
 
 find_package(libs)                
 if (NOT ${libs_FOUND})
   message("libs not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+find_package(drivenet)                
+if (NOT ${drivenet_FOUND})
+  message("drivenet not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
 
