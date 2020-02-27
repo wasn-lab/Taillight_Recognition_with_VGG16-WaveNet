@@ -2,6 +2,7 @@
 #define DRIVENET_B1_V2_H_
 
 ///car model
+#include "fusion_source_id.h"
 #include "camera_params.h"  // include camera topic name
 
 /// ros
