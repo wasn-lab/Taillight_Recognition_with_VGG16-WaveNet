@@ -12,8 +12,8 @@ export CXX=clang++
 readonly build_type="${build_type:-Release}"
 readonly install_prefix="${install_prefix:-/usr/local/itriadv}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
-readonly build_dir=build_clang
-readonly devel_dir=devel_clang
+readonly build_dir="${build_dir:-build_clang}"
+readonly devel_dir="${devel_dir:-devel_clang}"
 pushd $repo_dir
 
 # clean up the previous build.
