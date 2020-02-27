@@ -137,7 +137,9 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   pthread_mutex_unlock(&g_mtx_infer);
 
   while (g_is_infer_data)
+  {
     usleep(5);
+  }
 }
 
 void callback_cam_0(const sensor_msgs::Image::ConstPtr& msg)
@@ -279,9 +281,13 @@ int main(int argc, char** argv)
   pthread_t thrdYolo, thrdInterp, thrdDisplay;
   pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
   if (g_standard_FPS == 1)
+  {
     pthread_create(&thrdInterp, NULL, &run_interp, NULL);
+  }
   if (g_display_flag == 1)
+  {
     pthread_create(&thrdDisplay, NULL, &run_display, NULL);
+  }
 
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/b1_v2_yolo_group_c.cfg";
@@ -295,9 +301,13 @@ int main(int argc, char** argv)
   g_is_infer_stop = true;
   pthread_join(thrdYolo, NULL);
   if (g_standard_FPS == 1)
+  {
     pthread_join(thrdInterp, NULL);
+  }
   if (g_display_flag == 1)
+  {
     pthread_join(thrdDisplay, NULL);
+  }
 
   pthread_mutex_destroy(&g_mtx_infer);
   g_yolo_app.delete_yolo_infer();
@@ -378,7 +388,9 @@ void* run_yolo(void*)
     // waiting for data
     pthread_mutex_lock(&g_mtx_infer);
     if (!g_is_infer_data)
+    {
       pthread_cond_wait(&g_cnd_infer, &g_mtx_infer);
+    }
     pthread_mutex_unlock(&g_mtx_infer);
 
     // check data
@@ -410,10 +422,13 @@ void* run_yolo(void*)
 
     // inference
     if (!g_input_resize)
+    {
       g_yolo_app.input_preprocess(matSrcs_tmp);
+    }
     else
+    {
       g_yolo_app.input_preprocess(matSrcs_tmp, g_input_resize, dist_cols_tmp, dist_rows_tmp);
-
+    }
     g_yolo_app.inference_yolo();
     g_yolo_app.get_yolo_result(&matOrder_tmp, vbbx_output_tmp);
 
@@ -456,7 +471,9 @@ void* run_yolo(void*)
       for (auto const& box : *tmpBBx)
       {
         if (translate_label(box.label) == 0)
+        {
           continue;
+        }
         pool.push_back(std::async(std::launch::async, run_dist, box, cam_order));
         if (g_img_result_publish || g_display_flag)
         {

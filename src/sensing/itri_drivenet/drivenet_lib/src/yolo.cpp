@@ -80,9 +80,13 @@ Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferPara
 Yolo::~Yolo()
 {
   for (auto& tensor : m_OutputTensors)
+  {
     NV_CUDA_CHECK(cudaFreeHost(tensor.hostBuffer));
+  }
   for (auto& deviceBuffer : m_DeviceBuffers)
+  {
     NV_CUDA_CHECK(cudaFree(deviceBuffer));
+  }
   NV_CUDA_CHECK(cudaStreamDestroy(m_CudaStream));
   if (m_Context)
   {
