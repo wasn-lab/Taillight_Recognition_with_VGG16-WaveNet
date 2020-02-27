@@ -21,7 +21,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1
-const std::vector<int> g_cam_ids{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -121,17 +121,17 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   pthread_mutex_lock(&g_mtx_infer);
 
   bool isPushData = false;
-  if (cam_order == camera::id::right_60 && !g_is_infer_data_0)
+  if (g_cam_ids[cam_order] == camera::id::right_60 && !g_is_infer_data_0)
   {
     g_is_infer_data_0 = true;
     isPushData = true;
   }
-  if (cam_order == camera::id::front_60 && !g_is_infer_data_1)
+  if (g_cam_ids[cam_order] == camera::id::front_60 && !g_is_infer_data_1)
   {
     g_is_infer_data_1 = true;
     isPushData = true;
   }
-  if (cam_order == camera::id::left_60 && !g_is_infer_data_2)
+  if (g_cam_ids[cam_order] == camera::id::left_60 && !g_is_infer_data_2)
   {
     g_is_infer_data_2 = true;
     isPushData = true;
@@ -164,61 +164,67 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
 
 void callback_60_0(const sensor_msgs::Image::ConstPtr& msg)
 {
+  int cam_order = 0;
   if (!g_is_infer_data_0)
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     g_mat60_0 = cv_ptr->image;
     std_msgs::Header h = msg->header;
-    sync_inference(camera::id::right_60, h, &g_mat60_0, &g_vbbx60_0, 1920, 1208);
+    sync_inference(cam_order, h, &g_mat60_0, &g_vbbx60_0, 1920, 1208);
   }
 }
 
 void callback_60_1(const sensor_msgs::Image::ConstPtr& msg)
 {
+  int cam_order = 1;
   if (!g_is_infer_data_1)
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     g_mat60_1 = cv_ptr->image;
     std_msgs::Header h = msg->header;
-    sync_inference(camera::id::front_60, h, &g_mat60_1, &g_vbbx60_1, 1920, 1208);
+    sync_inference(cam_order, h, &g_mat60_1, &g_vbbx60_1, 1920, 1208);
   }
 }
 
 void callback_60_2(const sensor_msgs::Image::ConstPtr& msg)
 {
+  int cam_order = 2;
   if (!g_is_infer_data_2)
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     g_mat60_2 = cv_ptr->image;
     std_msgs::Header h = msg->header;
-    sync_inference(camera::id::left_60, h, &g_mat60_2, &g_vbbx60_2, 1920, 1208);
+    sync_inference(cam_order, h, &g_mat60_2, &g_vbbx60_2, 1920, 1208);
   }
 }
 
 void callback_60_0_decode(sensor_msgs::CompressedImage compressImg)
 {
+  int cam_order = 0;
   if (!g_is_infer_data_0)
   {
     cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat60_0);
-    sync_inference(camera::id::right_60, compressImg.header, &g_mat60_0, &g_vbbx60_0, 1920, 1208);
+    sync_inference(cam_order, compressImg.header, &g_mat60_0, &g_vbbx60_0, 1920, 1208);
   }
 }
 
 void callback_60_1_decode(sensor_msgs::CompressedImage compressImg)
 {
+  int cam_order = 1;
   if (!g_is_infer_data_1)
   {
     cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat60_1);
-    sync_inference(camera::id::front_60, compressImg.header, &g_mat60_1, &g_vbbx60_1, 1920, 1208);
+    sync_inference(cam_order, compressImg.header, &g_mat60_1, &g_vbbx60_1, 1920, 1208);
   }
 }
 
 void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
 {
+  int cam_order = 2;
   if (!g_is_infer_data_2)
   {
     cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat60_2);
-    sync_inference(camera::id::left_60, compressImg.header, &g_mat60_2, &g_vbbx60_2, 1920, 1208);
+    sync_inference(cam_order, compressImg.header, &g_mat60_2, &g_vbbx60_2, 1920, 1208);
   }
 }
 
@@ -227,15 +233,15 @@ void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
   sensor_msgs::ImagePtr imgMsg;
   imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
 
-  if (cam_order == camera::id::right_60)
+  if (g_cam_ids[cam_order] == camera::id::right_60)
   {
     g_pub_img_60_0.publish(imgMsg);
   }
-  else if (cam_order == camera::id::front_60)
+  else if (g_cam_ids[cam_order] == camera::id::front_60)
   {
     g_pub_img_60_1.publish(imgMsg);
   }
-  else if (cam_order == camera::id::left_60)
+  else if (g_cam_ids[cam_order] == camera::id::left_60)
   {
     g_pub_img_60_2.publish(imgMsg);
   }
@@ -357,7 +363,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   float distance = -1;
   detObj.distance = distance;
 
-  if (cam_order == camera::id::right_60)
+  if (g_cam_ids[cam_order] == camera::id::right_60)
   {
     // Front right 60 range:
     // x axis: 1 - 10 meters
@@ -365,7 +371,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     leftCheck = g_dist_est.CheckPointInArea(g_dist_est.camFR60_area, box.x1, box.y2);
     rightCheck = g_dist_est.CheckPointInArea(g_dist_est.camFR60_area, box.x2, box.y2);
   }
-  else if (cam_order == camera::id::front_60)
+  else if (g_cam_ids[cam_order] == camera::id::front_60)
   {
     // Front center 60 range:
     // x axis: 7 ~ 50 meters
@@ -373,7 +379,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     leftCheck = g_dist_est.CheckPointInArea(g_dist_est.camFC60_area, box.x1, box.y2);
     rightCheck = g_dist_est.CheckPointInArea(g_dist_est.camFC60_area, box.x2, box.y2);
   }
-  else if (cam_order == camera::id::left_60)
+  else if (g_cam_ids[cam_order] == camera::id::left_60)
   {
     // Front left 60 range:
     // x axis: 0 - 10 meters
@@ -384,7 +390,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
   if (leftCheck == 0 && rightCheck == 0)
   {
-    boxPoint = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, cam_order);
+    boxPoint = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
 
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
@@ -413,7 +419,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
-  detObj.fusionSourceId = 0;
+  detObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return detObj;
 }
@@ -587,7 +593,7 @@ void* run_yolo(void*)
       // costmap_[g_cosmap_gener.layer_name_] =
       //     g_cosmap_gener.makeCostmapFromObjects(costmap_, g_cosmap_gener.layer_name_, 8, doa, false);
 
-      if (cam_order == camera::id::right_60)
+      if (g_cam_ids[cam_order] == camera::id::right_60)
       {
         if (g_standard_FPS == 1)
         {
@@ -610,7 +616,7 @@ void* run_yolo(void*)
           }
         }
       }
-      else if (cam_order == camera::id::front_60)
+      else if (g_cam_ids[cam_order] == camera::id::front_60)
       {
         if (g_standard_FPS == 1)
         {
@@ -633,7 +639,7 @@ void* run_yolo(void*)
           }
         }
       }
-      else if (cam_order == camera::id::left_60)
+      else if (g_cam_ids[cam_order] == camera::id::left_60)
       {
         if (g_standard_FPS == 1)
         {

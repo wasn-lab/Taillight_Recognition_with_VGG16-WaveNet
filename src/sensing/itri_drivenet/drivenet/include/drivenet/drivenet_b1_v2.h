@@ -2,6 +2,7 @@
 #define DRIVENET_B1_V2_H_
 
 ///car model
+#include "fusion_source_id.h"
 #include "camera_params.h"  // include camera topic name
 
 /// ros
@@ -14,7 +15,7 @@
 
 /// drivenet
 #include "drivenet/trt_yolo_interface.h"
-// #include "drivenet/distance_estimation_b1.h"
+#include "drivenet/distance_estimation_b1_v2.h"
 #include "drivenet/boundary_util.h"
 #include "drivenet/object_label_util.h"
 #include "drivenet/image_exception_handling.h"

@@ -27,10 +27,7 @@ Quaternion bOrient
 
 TrackInfo track
 
-# detection source
-# 0: Camera
-# 1: Radar
-# 2: Lidar
+# detection source, see include/fusion_source_id.h for definition.'
 uint16 fusionSourceId
 
 CamInfo camInfo

@@ -1,4 +1,4 @@
-#include "drivenet/distance_estimation_b1.h"
+#include "drivenet/distance_estimation_b1_v2.h"
 
 DistanceEstimation::~DistanceEstimation()
 {
@@ -61,34 +61,8 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
 }
 
 void DistanceEstimation::initParams()
-{
-  // camId: 0 (Front Right)
-  camFR60.regionHeight_x = { /*-1313, -1030,*/ -340,
-                             -132,
-                             20,
-                             230,
-                             470,
-                             664,
-                             895,
-                             1174,
-                             1418,
-                             1674,
-                             1919 };
-  camFR60.regionHeightSlope_x = {
-    /*0.1355, 0.1396,*/ 0.182, 0.203, 0.220, 0.253, 0.297, 0.349, 0.439, 0.603, 0.842, 1.661, 0
-  };
-  camFR60.regionDist_x = { /*20, 15,*/ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
-
-  camFR60.regionHeight_y = { 1207, 1197 /*5*/,  1171, 1149, 1121, 1108, 1098 /*10*/, 1092, 1091, 1090,
-                             1089, 1084 /*15*/, 1083, 1082, 1080, 1073, 1073 /*20*/, 1067, 1072, 1070,
-                             1066, 1063 /*25*/, 1071, 1065, 1078, 1097, 1083 /*30*/ };
-  camFR60.regionHeightSlope_y = { 0,     -0.002 /*5*/, 0.014, 0.034, 0.047, 0.056, 0.064 /*10*/, 0.072, 0.082, 0.091,
-                                  0.096, 0.098 /*15*/, 0.104, 0.107, 0.110, 0.110, 0.113 /*20*/, 0.113, 0.119, 0.120,
-                                  0.120, 0.121 /*25*/, 0.128, 0.127, 0.136, 0.148, 0.142 };
-  camFR60.regionDist_y = { -4,  -5,  -6,  -7,  -8,  -9,  -10, -11, -12, -13, -14, -15, -16, -17,
-                           -18, -19, -20, -21, -22, -23, -24, -25, -26, -27, -28, -29, -30 };
-
-  // camId: 1 (Front Center)
+{ 
+  // camId: 0 (Front Center)
   camFC60.regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
                              1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
   camFC60.regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
@@ -96,22 +70,6 @@ void DistanceEstimation::initParams()
                                   -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
   camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
   camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
-
-  // camId: 2 (Front Left)
-  camFL60.regionHeight_x = { 0, 54, 335, 644, 1022, 1351, 1556, 1758, 1975, 2230, 2429 };
-  camFL60.regionHeightSlope_x = { 24.14, -1.1794, -0.784, -0.4609, -0.3457, -0.3001, -0.2656, -0.2371, -0.21, -0.1928 };
-  camFL60.regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-
-  camFL60.regionHeight_y = { 1207, 1193 /*5*/, 1144,       1083,       1030, 1000, 975 /*10*/, 953,        933,
-                             915,  904,        895 /*15*/, 883,        876,  868,  862,        856 /*20*/, 850,
-                             843,  839,        835,        830 /*25*/, 825,  821,  815,        810,        805 /*30*/ };
-  camFL60.regionHeightSlope_y = {
-    0,      0.002 /*5*/, -0.014,        -0.034,        -0.047, -0.056, -0.064 /*10*/, -0.072,        -0.082,
-    -0.091, -0.096,      -0.098 /*15*/, -0.104,        -0.107, -0.110, -0.110,        -0.113 /*20*/, -0.113,
-    -0.119, -0.120,      -0.120,        -0.121 /*25*/, -0.128, -0.127, -0.136,        -0.139,        -0.142
-  };
-  camFL60.regionDist_y = { 4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
-                           18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };
 
   // camId: 4 (Front Top)
   camFT120.regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
@@ -151,10 +109,10 @@ void DistanceEstimation::initShrinkArea()
 {
   // Area needs to shrink
   // From x 6 - 50 m, y -3 to +3 m.
-  ShrinkArea_camFR60.LeftLinePoint1 = cv::Point(869, 914);
-  ShrinkArea_camFR60.LeftLinePoint2 = cv::Point(0, 1207);
-  ShrinkArea_camFR60.RightLinePoint1 = cv::Point(1097, 914);
-  ShrinkArea_camFR60.RightLinePoint2 = cv::Point(1746, 1207);
+  ShrinkArea_camFC60.LeftLinePoint1 = cv::Point(869, 914);
+  ShrinkArea_camFC60.LeftLinePoint2 = cv::Point(0, 1207);
+  ShrinkArea_camFC60.RightLinePoint1 = cv::Point(1097, 914);
+  ShrinkArea_camFC60.RightLinePoint2 = cv::Point(1746, 1207);
 
   // From x 0 - 7 m, y -2 to +2 m.
   ShrinkArea_camFT120.LeftLinePoint1 = cv::Point(510, 272);
@@ -171,20 +129,10 @@ void DistanceEstimation::initShrinkArea()
 
 void DistanceEstimation::initDetectArea()
 {
-  camFR60_area.LeftLinePoint1 = cv::Point(0, 1145);
-  camFR60_area.LeftLinePoint2 = cv::Point(-340, 1207);
-  camFR60_area.RightLinePoint1 = cv::Point(1919, 810);
-  camFR60_area.RightLinePoint2 = cv::Point(1919, 1207);
-
   camFC60_area.LeftLinePoint1 = cv::Point(636, 914);
   camFC60_area.LeftLinePoint2 = cv::Point(-1817, 1207);
   camFC60_area.RightLinePoint1 = cv::Point(1371, 914);
   camFC60_area.RightLinePoint2 = cv::Point(3801, 1207);
-
-  camFL60_area.LeftLinePoint1 = cv::Point(0, 805);
-  camFL60_area.LeftLinePoint2 = cv::Point(0, 1207);
-  camFL60_area.RightLinePoint1 = cv::Point(1919, 1077);
-  camFL60_area.RightLinePoint2 = cv::Point(2429, 1207);
 
   camFT120_area.LeftLinePoint1 = cv::Point(294, 171);
   camFT120_area.LeftLinePoint2 = cv::Point(-1422, 1207);
@@ -542,8 +490,8 @@ int DistanceEstimation::BoxShrink(camera::id cam_id, std::vector<int> Points_src
 
   if (cam_id == camera::id::front_60)
   {
-    area_id_L = CheckPointInArea(ShrinkArea_camFR60, Points_src[1], Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea_camFR60, Points_src[2], Points_src[3]);
+    area_id_L = CheckPointInArea(ShrinkArea_camFC60, Points_src[1], Points_src[3]);
+    area_id_R = CheckPointInArea(ShrinkArea_camFC60, Points_src[2], Points_src[3]);
   }
   else if (cam_id == camera::id::top_front_120)
   {
@@ -620,8 +568,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
   }
 
   /// 1
-  if (cam_id == camera::id::right_60 || cam_id == camera::id::front_60 || cam_id == camera::id::left_60 ||
-      cam_id == camera::id::top_front_120)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -636,52 +583,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     p7 = p3;
     p7.x = p7.x + obstacle_l;
   }
-  // else if (cam_id == camera::id::top_front_120)
-  // {
-  //     /// Camera Perspective   ///  Spec view
-  //     ///   p6------p2         ///   p5------p6
-  //     ///   /|  2   /|         ///   /|  2   /|
-  //     /// p5-|----p7 |         /// p1-|----p2 |
-  //     ///  |p7----|-p3   ->    ///  |p4----|-p7
-  //     ///  |/  1  | /          ///  |/  1  | /
-  //     /// p4-----P0            /// p0-----P3
 
-  //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-  //     p0_cam = p0;
-  //     p3_cam = p3;
-  //     p4_cam = p0_cam;
-  //     p4_cam.y = p4_cam.y - obstacle_w;
-  //     p7_cam = p3_cam;
-  //     p7_cam.y = p7_cam.y - obstacle_w;
-
-  //     p0 = p4_cam;
-  //     p3 = p0_cam;
-  //     p4 = p7_cam;
-  //     p7 = p3_cam;
-  // }
-  // else if (cam_id == 6)
-  // {
-  //     /// Camera Perspective   ///  Spec view
-  //     ///   p1------p5         ///   p5------p6
-  //     ///   /|  2   /|         ///   /|  2   /|
-  //     /// p2-|----p6 |         /// p1-|----p2 |
-  //     ///  |p0----|-p4   ->    ///  |p4----|-p7
-  //     ///  |/  1  | /          ///  |/  1  | /
-  //     /// p3-----P7            /// p0-----P3
-
-  //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-  //     p0_cam = p0;
-  //     p3_cam = p3;
-  //     p4_cam = p0_cam;
-  //     p4_cam.y = p4_cam.y + obstacle_w;
-  //     p7_cam = p3_cam;
-  //     p7_cam.y = p7_cam.y + obstacle_w;
-
-  //     p0 = p3_cam;
-  //     p3 = p7_cam;
-  //     p4 = p0_cam;
-  //     p7 = p4_cam;
-  // }
   else if (cam_id == camera::id::top_rear_120)
   {
     /// Camera Perspective   ///  Spec view
@@ -787,7 +689,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   }                   // obstacle_l = 7
 
   if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 ||
-      cam_id == camera::id::top_rear_120 /*|| cam_id == 8 || cam_id == 9*/)
+      cam_id == camera::id::top_rear_120)
   {
     std::vector<int> PointsSrc = { class_id, x1, x2, y2 };
     std::vector<int> PointsDst = { class_id, x1, x2, y2 };
@@ -821,112 +723,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
       p7.x = p7.x + obstacle_l;
     }
   }
-  else if (cam_id == camera::id::right_60)
-  {
-    p4 = p0;
-    p0 = p3;
-    p3.y = p3.y - obstacle_l;
-    p7 = p4;
-    p7.y = p7.y - obstacle_l;
-  }
-  else if (cam_id == camera::id::left_60)
-  {
-    p4 = p0;
-    p0 = p3;
-    p3.y = p3.y + obstacle_l;
-    p7 = p4;
-    p7.y = p7.y + obstacle_l;
-  }
 
-  // else if (cam_id == camera::id::top_front_120)
-  // {
-  //     /// Camera Perspective   ///  Spec view
-  //     ///   p6------p2         ///   p5------p6
-  //     ///   /|  2   /|         ///   /|  2   /|
-  //     /// p5-|----p7 |         /// p1-|----p2 |
-  //     ///  |p7----|-p3   ->    ///  |p4----|-p7
-  //     ///  |/  1  | /          ///  |/  1  | /
-  //     /// p4-----P0            /// p0-----P3
-
-  //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-  //     offset_y = Lidar_offset_y;
-
-  //     p0_cam.x = p0.x *(-1);
-  //     p3_cam.x = p3.x *(-1);
-  //     p0_cam.z = p0.y + offset_y;
-  //     p3_cam.z = p3.y + offset_y;
-  //     p0_cam.z = p0.z;
-  //     p3_cam.z = p3.z;
-  //     p4_cam = p0_cam;
-  //     p4_cam.y = p4_cam.y - obstacle_w;
-  //     p7_cam = p3_cam;
-  //     p7_cam.y = p7_cam.y - obstacle_w;
-
-  //     p0 = p4_cam;
-  //     p3 = p0_cam;
-  //     p4 = p7_cam;
-  //     p7 = p3_cam;
-  // }
-  // else if (cam_id == 6)
-  // {
-  //     /// Camera Perspective   ///  Spec view
-  //     ///   p1------p5         ///   p5------p6
-  //     ///   /|  2   /|         ///   /|  2   /|
-  //     /// p2-|----p6 |         /// p1-|----p2 |
-  //     ///  |p0----|-p4   ->    ///  |p4----|-p7
-  //     ///  |/  1  | /          ///  |/  1  | /
-  //     /// p3-----P7            /// p0-----P3
-
-  //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-  //     offset_y = Lidar_offset_y*(-1);
-
-  //     p0_cam.x = p0.x *(-1);
-  //     p3_cam.x = p3.x *(-1);
-  //     p0_cam.z = p0.y + offset_y;
-  //     p3_cam.z = p3.y + offset_y;
-  //     p0_cam.z = p0.z;
-  //     p3_cam.z = p3.z;
-  //     p4_cam = p0_cam;
-  //     p4_cam.y = p4_cam.y + obstacle_w;
-  //     p7_cam = p3_cam;
-  //     p7_cam.y = p7_cam.y + obstacle_w;
-
-  //     p0 = p3_cam;
-  //     p3 = p7_cam;
-  //     p4 = p0_cam;
-  //     p7 = p4_cam;
-  // }
-  // else if (cam_id == 7)
-  // {
-  //     /// Camera Perspective   ///  Spec view
-  //     ///   p2------p1         ///   p5------p6
-  //     ///   /|  2   /|         ///   /|  2   /|
-  //     /// p6-|----p5 |         /// p1-|----p2 |
-  //     ///  |p3----|-p0   ->    ///  |p4----|-p7
-  //     ///  |/  1  | /          ///  |/  1  | /
-  //     /// p7-----P4            /// p0-----P3
-
-  //     msgs::PointXYZ p0_cam, p3_cam, p4_cam, p7_cam;
-
-  //     offset_y = Lidar_offset_y;
-
-  //     p0_cam.x = p0.x *(-1);
-  //     p3_cam.x = p3.x *(-1);
-  //     p0_cam.y = p0.y + offset_y;
-  //     p3_cam.y = p3.y + offset_y;
-  //     p0_cam.z = p0.z;
-  //     p3_cam.z = p3.z;
-
-  //     p4_cam = p0_cam;
-  //     p4_cam.x = p4_cam.x - obstacle_l;
-  //     p7_cam = p3_cam;
-  //     p7_cam.x = p7_cam.x - obstacle_l;
-
-  //     p0 = p7_cam;
-  //     p3 = p4_cam;
-  //     p4 = p3_cam;
-  //     p7 = p0_cam;
-  // }
   else if (cam_id == camera::id::top_rear_120)
   {
     /// Camera Perspective   ///  Spec view
@@ -996,21 +793,15 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 
   switch (cam_id)
   {
-    case camera::id::right_60:
-    {
-      Parmas = camFR60;
-      break;
-    }
-
     case camera::id::front_60:
     {
       Parmas = camFC60;
       break;
     }
 
-    case camera::id::left_60:
+    case camera::id::top_front_30:
     {
-      Parmas = camFL60;
+      Parmas = camFT30;
       break;
     }
 
@@ -1020,25 +811,25 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       break;
     }
 
-    case camera::id::top_right_front_120:
+    case camera::id::right_front_60:
     {
       Parmas = camRF120;
       break;
     }
 
-    case camera::id::top_right_rear_120:
+    case camera::id::right_rear_60:
     {
       Parmas = camRB120;
       break;
     }
 
-    case camera::id::top_left_front_120:
+    case camera::id::left_front_60:
     {
       Parmas = camLF120;
       break;
     }
 
-    case camera::id::top_left_rear_120:
+    case camera::id::left_rear_60:
     {
       Parmas = camLB120;
       break;
@@ -1082,7 +873,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       }
     }
   }
-
+  /*
   if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
   {
     if (Parmas.regionDist_x.size() != 0)
@@ -1096,6 +887,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
                                                 Parmas.regionDist_y);
     }
   }
+  */
 
   if (x_distMeter == 777)
   {

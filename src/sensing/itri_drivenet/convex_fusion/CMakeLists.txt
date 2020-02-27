@@ -35,6 +35,7 @@ include_directories(
  include
   ${catkin_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
+  ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
   ${OBJECTCOSTMAPGENERATOR_INCLUDE}
   ${libs_SOURCE_DIR}

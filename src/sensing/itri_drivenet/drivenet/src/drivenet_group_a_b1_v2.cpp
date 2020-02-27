@@ -10,13 +10,13 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<int> g_cam_ids{ camera::id::front_60, camera::id::top_front_30 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_60, camera::id::top_front_30 };
 #else
 #error "car model is not well defined"
 #endif
 
 /// class
-// DistanceEstimation g_dist_est;
+DistanceEstimation g_dist_est;
 Yolo_app g_yolo_app;
 // CosmapGenerator g_cosmap_gener;
 
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
   std::string cfg_file = "/b1_v2_yolo_group_a.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
-  // g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
+  g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
 
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();
@@ -312,7 +312,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
-  detObj.fusionSourceId = 0;
+  detObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return detObj;
 }
