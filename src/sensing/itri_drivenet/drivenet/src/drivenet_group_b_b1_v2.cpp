@@ -392,7 +392,9 @@ void* run_yolo(void*)
 
     // check data
     for (auto& mat : g_mat_srcs)
+    {
       isDataVaild &= CheckMatDataValid(*mat);
+    }
     if (!isDataVaild)
     {
       reset_data();
