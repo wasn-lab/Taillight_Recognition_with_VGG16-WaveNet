@@ -414,7 +414,7 @@ float DistanceEstimation::RatioDefine(camera::id cam_id, int cls)
         return 1;
     }
   }
-  else if (cam_id == camera::id::top_front_120)
+  else if (cam_id == camera::id::front_top_close_120)
   {
     switch (cls)
     {
@@ -444,7 +444,7 @@ float DistanceEstimation::RatioDefine(camera::id cam_id, int cls)
         return 1;
     }
   }
-  else if (cam_id == camera::id::top_rear_120)
+  else if (cam_id == camera::id::back_top_120)
   {
     switch (cls)
     {
@@ -493,12 +493,12 @@ int DistanceEstimation::BoxShrink(camera::id cam_id, std::vector<int> Points_src
     area_id_L = CheckPointInArea(ShrinkArea_camFC60, Points_src[1], Points_src[3]);
     area_id_R = CheckPointInArea(ShrinkArea_camFC60, Points_src[2], Points_src[3]);
   }
-  else if (cam_id == camera::id::top_front_120)
+  else if (cam_id == camera::id::front_top_close_120)
   {
     area_id_L = CheckPointInArea(ShrinkArea_camFT120, Points_src[1], Points_src[3]);
     area_id_R = CheckPointInArea(ShrinkArea_camFT120, Points_src[2], Points_src[3]);
   }
-  else if (cam_id == camera::id::top_rear_120)
+  else if (cam_id == camera::id::back_top_120)
   {
     area_id_L = CheckPointInArea(ShrinkArea_camBT120, Points_src[1], Points_src[3]);
     area_id_R = CheckPointInArea(ShrinkArea_camBT120, Points_src[2], Points_src[3]);
@@ -568,7 +568,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
   }
 
   /// 1
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -584,7 +584,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
     p7.x = p7.x + obstacle_l;
   }
 
-  else if (cam_id == camera::id::top_rear_120)
+  else if (cam_id == camera::id::back_top_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p2------p1         ///   p5------p6
@@ -688,8 +688,8 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     obstacle_l = 2.5; /*obstacle_w = 2.5;*/
   }                   // obstacle_l = 7
 
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 ||
-      cam_id == camera::id::top_rear_120)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120 ||
+      cam_id == camera::id::back_top_120)
   {
     std::vector<int> PointsSrc = { class_id, x1, x2, y2 };
     std::vector<int> PointsDst = { class_id, x1, x2, y2 };
@@ -702,7 +702,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   p0 = GetPointDist(x1, y2, cam_id);
   p3 = GetPointDist(x2, y2, cam_id);
 
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120)
+  if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -724,7 +724,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     }
   }
 
-  else if (cam_id == camera::id::top_rear_120)
+  else if (cam_id == camera::id::back_top_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p2------p1         ///   p5------p6
@@ -799,13 +799,13 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       break;
     }
 
-    case camera::id::top_front_30:
+    case camera::id::front_top_far_30:
     {
       Parmas = camFT30;
       break;
     }
 
-    case camera::id::top_front_120:
+    case camera::id::front_top_close_120:
     {
       Parmas = camFT120;
       break;
@@ -817,7 +817,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       break;
     }
 
-    case camera::id::right_rear_60:
+    case camera::id::right_back_60:
     {
       Parmas = camRB120;
       break;
@@ -829,13 +829,13 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       break;
     }
 
-    case camera::id::left_rear_60:
+    case camera::id::left_back_60:
     {
       Parmas = camLB120;
       break;
     }
 
-    case camera::id::top_rear_120:
+    case camera::id::back_top_120:
     {
       Parmas = camBT120;
       break;
@@ -860,7 +860,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
   }
   else
   {
-    if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
+    if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
     {
       if (Parmas.regionDist_x.size() != 0)
       {

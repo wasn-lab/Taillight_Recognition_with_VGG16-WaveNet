@@ -17,16 +17,16 @@ enum id
 {
   begin = 0,
   front_60 = begin,           // 0
-  top_front_30,               // 1
+  front_top_far_30,           // 1
   _dummy0,                    // 2
   _dummy1,                    // 3
-  top_front_120,              // 4
+  front_top_close_120,        // 4
   right_front_60,             // 5
-  right_rear_60,              // 6
+  right_back_60,              // 6
   _dummy2,                    // 7
   left_front_60,              // 8
-  left_rear_60,               // 9
-  top_rear_120,               // 10
+  left_back_60,               // 9
+  back_top_120,               // 10
   _dummy3,                    // 11
   num_ids                     // 12
 };
