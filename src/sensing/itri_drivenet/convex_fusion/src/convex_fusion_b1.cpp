@@ -64,7 +64,7 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
     msgObj.distance = -1;
     msgObj.classId = cluster_info[i].cluster_tag;
     size_t convex_hull_size = cluster_info[i].convex_hull.size();
-    if (cluster_info[i].cluster_tag != 0)
+    if (cluster_info[i].cluster_tag != static_cast<int>(DriveNet::common_type_id::other)) // If type is Unknown.
     {
       msgObj.distance = 0;
       float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);

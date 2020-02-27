@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   car_model
   camera_utils
   object_costmap_generator
+  drivenet
 )  
 
 find_package(libs)                
@@ -37,6 +38,7 @@ include_directories(
   ${car_model_BINARY_DIR}/include
   ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${drivenet_SOURCE_DIR}/include
   ${OBJECTCOSTMAPGENERATOR_INCLUDE}
   ${libs_SOURCE_DIR}
   ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
