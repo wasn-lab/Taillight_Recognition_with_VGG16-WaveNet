@@ -9,12 +9,12 @@ namespace camera
 {
 const std::string names[id::num_ids] = {
   // New b1
-  "F_center", "F_top_far", "", "", "F_top_close", "R_front", "R_rear", "", "L_front", "L_rear", "B_top", "",
+  "F_center", "F_top_far", "", "", "F_top_close", "R_front", "R_back", "", "L_front", "L_back", "B_top", "",
 };
 
 const std::string topics[id::num_ids] = {
-  "/cam/F_center", "/cam/F_top_far", "",           "", "/cam/F_top_close", "/cam/R_front", "/cam/R_rear", "",
-  "/cam/L_front",  "/cam/L_rear",    "/cam/B_top", "",
+  "/cam/F_center", "/cam/F_top_far", "",           "", "/cam/F_top_close", "/cam/R_front", "/cam/R_back", "",
+  "/cam/L_front",  "/cam/L_back",    "/cam/B_top", "",
 };
 
 const std::string topics_obj[id::num_ids] = {
