@@ -65,6 +65,7 @@ include_directories(
   include
   ${INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
+  ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
   ${DRIVENETLIB_INCLUDE}
   ${OBJECTCOSTMAPGENERATOR_INCLUDE}

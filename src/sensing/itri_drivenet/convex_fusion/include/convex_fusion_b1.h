@@ -35,6 +35,7 @@
 #include "msgs/ErrorCode.h"
 
 #include "UserDefine.h"
+#include "fusion_source_id.h"
 #include "camera_params.h"
 
 #include "costmap_generator.h"

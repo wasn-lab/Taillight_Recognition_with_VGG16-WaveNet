@@ -155,7 +155,7 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
       msgObj.bPoint.p6 = bbox_p6;
       msgObj.bPoint.p5 = bbox_p5;
 
-      msgObj.fusionSourceId = 0;
+      msgObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
       msgObj.header.stamp = rostime;
       msgObjArr.objects.push_back(msgObj);

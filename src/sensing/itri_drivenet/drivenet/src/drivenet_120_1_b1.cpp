@@ -634,7 +634,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
-  detObj.fusionSourceId = 0;
+  detObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return detObj;
 }
