@@ -16,7 +16,7 @@ const std::vector<int> g_cam_ids{ camera::id::left_front_60, camera::id::left_re
 #endif
 
 /// class
-// DistanceEstimation g_dist_est;
+DistanceEstimation g_dist_est;
 Yolo_app g_yolo_app;
 // CosmapGenerator g_cosmap_gener;
 
@@ -287,7 +287,7 @@ int main(int argc, char** argv)
   std::string cfg_file = "/b1_v2_yolo_group_c.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
-  // g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
+  g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
 
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();

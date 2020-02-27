@@ -14,7 +14,7 @@
 
 /// drivenet
 #include "drivenet/trt_yolo_interface.h"
-// #include "drivenet/distance_estimation_b1.h"
+#include "drivenet/distance_estimation_b1_v2.h"
 #include "drivenet/boundary_util.h"
 #include "drivenet/object_label_util.h"
 #include "drivenet/image_exception_handling.h"
