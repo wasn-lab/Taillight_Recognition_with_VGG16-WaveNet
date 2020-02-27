@@ -1,5 +1,5 @@
-#ifndef __FUSION_SOURCE_H__
-#define __FUSION_SOURCE_H__
+#ifndef __FUSION_SOURCE_ID_H__
+#define __FUSION_SOURCE_ID_H__
 
 namespace sensor_msgs_itri
 {
@@ -16,4 +16,4 @@ static_assert(FusionSourceId::Lidar == 2, "lid");
 
 }  // namespace sensor_msgs_itri
 
-#endif  // __FUSION_SOURCE_H__
+#endif  // __FUSION_SOURCE_ID_H__
