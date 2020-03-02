@@ -335,14 +335,56 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::BoxPoint boxPoint;
   msgs::CamInfo camInfo;
 
+  int lCheck = 2;
+  int rCheck = 2;
   float distance = -1;
   detObj.distance = distance;
+
+  if (g_cam_ids[cam_order] == camera::id::front_top_close_120)
+  {
+    lCheck = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x1, box.y2);
+    rCheck = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x2, box.y2);
+  }
+  else if (g_cam_ids[cam_order] == camera::id::right_front_60)
+  {
+    lCheck = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_front_60], box.x1, box.y2);
+    rCheck = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_front_60], box.x2, box.y2);
+  }
+  else if (g_cam_ids[cam_order] == camera::id::right_back_60)
+  {
+    lCheck = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_back_60], box.x1, box.y2);
+    rCheck = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_back_60], box.x2, box.y2);
+  }
+
+  if (lCheck == 0 && rCheck == 0)
+  {
+    boxPoint = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
+
+    std::vector<float> left_point(2);
+    std::vector<float> right_point(2);
+    left_point[0] = boxPoint.p0.x;
+    right_point[0] = boxPoint.p3.x;
+    left_point[1] = boxPoint.p0.y;
+    right_point[1] = boxPoint.p3.y;
+    if (left_point[0] == 0 && left_point[1] == 0)
+    {
+      distance = -1;
+    }
+    else
+    {
+      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+      detObj.bPoint = boxPoint;
+    }
+    detObj.distance = distance;
+  }
+
 
   camInfo.u = box.x1;
   camInfo.v = box.y1;
   camInfo.width = box.x2 - box.x1;
   camInfo.height = box.y2 - box.y1;
   camInfo.prob = box.prob;
+  camInfo.id = translate_label(box.label);  
 
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
