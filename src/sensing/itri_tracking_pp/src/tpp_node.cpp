@@ -97,10 +97,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   LOG_INFO << "-----------------------------------------" << std::endl;
 #endif
 
-#if FPS_EXTRAPOLATION
-  loop_begin = ros::Time::now().toSec();
-#endif
-
 #if FPS
   clock_t begin_time = clock();
 #endif
@@ -457,14 +453,6 @@ void TPPNode::publish_tracking()
   std::vector<msgs::DetectedObject>().swap(pp_objs_);
   pp_objs_.reserve(KTs_.tracks_.size());
 
-#if FPS_EXTRAPOLATION
-  std::vector<MyPoint32>().swap(box_centers_kalman_rel_);
-  box_centers_kalman_rel_.reserve(KTs_.tracks_.size());
-
-  std::vector<MyPoint32>().swap(box_centers_kalman_next_rel_);
-  box_centers_kalman_next_rel_.reserve(KTs_.tracks_.size());
-#endif
-
   for (unsigned i = 0; i < KTs_.tracks_.size(); i++)
   {
 #if REMOVE_IMPULSE_NOISE
@@ -485,11 +473,7 @@ void TPPNode::publish_tracking()
 
         box.track.id = KTs_.tracks_[i].id_;
 
-#if FPS_EXTRAPOLATION
-        box.track.tracktime = (KTs_.tracks_[i].tracktime_ - 1) * num_publishs_per_loop + 1;
-#else
-    box.track.tracktime = KTs_.tracks_[i].tracktime_;
-#endif
+        box.track.tracktime = KTs_.tracks_[i].tracktime_;
 
         // set max_length
         if (KTs_.tracks_[i].hist_.max_len_ > 0)
@@ -518,11 +502,6 @@ void TPPNode::publish_tracking()
         }
 
         pp_objs_.push_back(box);
-
-#if FPS_EXTRAPOLATION
-        push_to_vector(KTs_.tracks_[i].box_center_kalman_, box_centers_kalman_rel_);
-        push_to_vector(KTs_.tracks_[i].box_center_kalman_next_, box_centers_kalman_next_rel_);
-#endif
 
 #if NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX
       }
@@ -819,60 +798,6 @@ void TPPNode::control_sleep(const double loop_interval)
   loop_begin = ros::Time::now().toSec();
 }
 
-#if FPS_EXTRAPOLATION
-void TPPNode::publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
-                                       std::vector<MyPoint32> box_centers_rel,
-                                       std::vector<MyPoint32> box_centers_next_rel)
-{
-  float loop_interval = 1.f / output_fps;
-  float time_offset = 0.f;
-  unsigned int pub_offset = 0;
-
-  publish_pp(pub, objs, pub_offset, time_offset);
-  control_sleep((double)loop_interval);
-
-  std::vector<MyPoint32> box_pos_diffs;
-  box_pos_diffs.reserve(objs.size());
-
-  MyPoint32 box_pos_diff;
-
-  float scale = 0.1f * loop_interval;
-
-  for (unsigned int i = 0; i < objs.size(); i++)
-  {
-    box_pos_diff.x = scale * (box_centers_next_rel[i].x - box_centers_rel[i].x);
-    box_pos_diff.y = scale * (box_centers_next_rel[i].y - box_centers_rel[i].y);
-    box_pos_diff.z = scale * (box_centers_next_rel[i].z - box_centers_rel[i].z);
-    box_pos_diffs.push_back(box_pos_diff);
-  }
-
-  std::vector<msgs::DetectedObject> objs2;
-  objs2.assign(objs.begin(), objs.end());
-
-  for (unsigned int i = 0; i < num_publishs_per_loop - 1; i++)
-  {
-    for (unsigned int j = 0; j < objs2.size(); j++)
-    {
-      objs2[j].bPoint.p0 = add_two_MyPoint32s(objs2[j].bPoint.p0, box_pos_diffs[j]);
-      objs2[j].bPoint.p1 = add_two_MyPoint32s(objs2[j].bPoint.p1, box_pos_diffs[j]);
-      objs2[j].bPoint.p2 = add_two_MyPoint32s(objs2[j].bPoint.p2, box_pos_diffs[j]);
-      objs2[j].bPoint.p3 = add_two_MyPoint32s(objs2[j].bPoint.p3, box_pos_diffs[j]);
-
-      objs2[j].bPoint.p4 = add_two_MyPoint32s(objs2[j].bPoint.p4, box_pos_diffs[j]);
-      objs2[j].bPoint.p5 = add_two_MyPoint32s(objs2[j].bPoint.p5, box_pos_diffs[j]);
-      objs2[j].bPoint.p6 = add_two_MyPoint32s(objs2[j].bPoint.p6, box_pos_diffs[j]);
-      objs2[j].bPoint.p7 = add_two_MyPoint32s(objs2[j].bPoint.p7, box_pos_diffs[j]);
-    }
-
-    time_offset += loop_interval;
-    pub_offset++;
-
-    publish_pp(pub, objs2, pub_offset, time_offset);
-    control_sleep((double)loop_interval);
-  }
-}
-#endif
-
 void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
 {
   geometry_msgs::TransformStamped tf_stamped;
@@ -1016,11 +941,7 @@ int TPPNode::run()
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
       pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
 
-#if FPS_EXTRAPOLATION
-      publish_pp_extrapolation(pp_pub_, pp_objs_, box_centers_kalman_rel_, box_centers_kalman_next_rel_);
-#else
       publish_pp(pp_pub_, pp_objs_, 0, 0);
-#endif
 #if TO_GRIDMAP
       publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif

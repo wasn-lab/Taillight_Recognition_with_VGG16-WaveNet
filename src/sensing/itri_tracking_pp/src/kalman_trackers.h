@@ -138,10 +138,6 @@ private:
   void set_new_box_corners_of_boxes_relative();
 
   void update_boxes();
-
-#if FPS_EXTRAPOLATION
-  void transform_box_center_kalman_inverse();
-#endif
 };
 }  // namespace tpp
 
