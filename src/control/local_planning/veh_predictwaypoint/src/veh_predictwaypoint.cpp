@@ -23,10 +23,13 @@ nav_msgs::Path astar_finalpath_10;
 
 double speed_mps = 0;
 double angular_vz = 0;
-double veh_width = 2.2;
+double veh_width = 2.42;
 double veh_length = 7.0;
 double veh_pose_left = 0.5;
 double veh_pose_front = 0.615;
+double wheel_dis = 3.8;
+double predict_s = 10 + wheel_dis;
+double Resolution = 50;
 
 bool astarpath_ini = false;
 bool vehinfo_ini = false;
@@ -69,7 +72,7 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
   { 
     double min_value[4] = {100,100,100,100};
     int size = astar_finalpath_10.poses.size();
-    std::cout << "size : " << size << std::endl;
+    // std::cout << "size : " << size << std::endl;
     for (int i = 0; i < 4; i++)
     {
       double V_X = veh_poly.polygon.points[i].x;
@@ -85,12 +88,23 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
         }
       }
     }
-    std::cout << "dddddddddd : " << min_value[3] << std::endl;
+    
     if (min_value[0] > 1.5 && min_value[0] != 100)
     {
       flag = true;
     }
     if (min_value[1] > 1.5 && min_value[1] != 100)
+    {
+      flag = true;
+    }
+    double dis_RR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*(1-veh_pose_left) * veh_width*(1-veh_pose_left)));
+    // std::cout << "dis_RR2RC : " << dis_RR2RC << ", min_value[2] : " << min_value[2] << std::endl;
+    if (min_value[2] > dis_RR2RC + 0.3 && min_value[2] != 100)
+    {
+      flag = true;
+    }
+    double dis_LR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*veh_pose_left * veh_width*veh_pose_left));
+    if (min_value[3] > dis_LR2RC + 0.3 && min_value[3] != 100)
     {
       flag = true;
     }
@@ -108,21 +122,29 @@ void vehpredictpathgen_pub(bool flag)
   // rviz rel path
   nav_msgs::Path Relpath;
   geometry_msgs::PoseStamped Relpose;
-  Relpath.header.frame_id = "base_link";
-  Relpose.header.frame_id = "base_link";
+  Relpath.header.frame_id = "rear_wheel";
+  Relpose.header.frame_id = "rear_wheel";
 
   if (flag && rearcurrentpose_ini && vehinfo_ini && imudata_ini)
   {
     double yaw_rate =  -angular_vz * RT_PI / 180.0;
     double r = speed_mps / yaw_rate;
-    if (yaw_rate > 0.01 || yaw_rate < -0.01)
+    if (yaw_rate > 0.005 || yaw_rate < -0.005)
     {
       if (r > 0.1)
       {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < predict_s * 100; i++)
         {
-          Relpose.pose.position.x = double(i)/100.0;
-          Relpose.pose.position.y = -std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          double theta_t = double(i/100) / r;
+          Relpose.pose.position.x = r * std::sin(theta_t);
+          if (theta_t < RT_PI/2.0 || theta_t > 3*RT_PI/2.0)
+          {
+            Relpose.pose.position.y = -std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
+          else
+          {
+            Relpose.pose.position.y = std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
 
@@ -135,10 +157,18 @@ void vehpredictpathgen_pub(bool flag)
       }
       else if (r < -0.1)
       {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < predict_s * 100; i++)
         {
-          Relpose.pose.position.x = double(i)/100.0;
-          Relpose.pose.position.y = std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          double theta_t = double(i/100) / r;
+          Relpose.pose.position.x = r * std::sin(theta_t);
+          if (theta_t < RT_PI/2.0 || theta_t > 3*RT_PI/2.0)
+          {
+            Relpose.pose.position.y = std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
+          else
+          {
+            Relpose.pose.position.y = -std::sqrt(r*r - Relpose.pose.position.x*Relpose.pose.position.x) + r;
+          }
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
 
@@ -151,9 +181,9 @@ void vehpredictpathgen_pub(bool flag)
       }
       else
       {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < predict_s * 100; i++)
         {
-          Relpose.pose.position.x = double(i)/100.0;
+          Relpose.pose.position.x = double(i/100);
           Relpose.pose.position.y = 0;
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
@@ -168,9 +198,9 @@ void vehpredictpathgen_pub(bool flag)
     }
     else
     {
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < predict_s * 100; i++)
       {
-        Relpose.pose.position.x = double(i)/100.0;
+        Relpose.pose.position.x = double(i/100);
         Relpose.pose.position.y = 0;
         Relpose.pose.position.z = -3;
         Relpath.poses.push_back(Relpose);
@@ -186,15 +216,31 @@ void vehpredictpathgen_pub(bool flag)
     veh_predictpath_pub.publish(Dpath);
     std::cout << "publish" << std::endl;
   }
-  // if (astarpath_ini)
+  // else if (astarpath_ini && vehinfo_ini)
   // {
-  //   for (int i = 0; i < 500; i++)
+  //   double max_i = (speed_mps * predict_t) * Resolution;
+  //   for (int i = 0; i < max_i; i++)
   //   {
   //     Dpose = astar_finalpath_10.poses[i];
   //     Dpath.poses.push_back(Dpose);
   //   }
+  //   std::cout << "55555555555555555555" << std::endl;
   //   veh_predictpath_pub.publish(Dpath);
   // }
+  else
+  {
+    Relpose.pose.position.x = 0;
+    Relpose.pose.position.y = 0;
+    Relpose.pose.position.z = -3;
+    Relpath.poses.push_back(Relpose);
+
+    Dpose.pose.position.x = rear_pose.x + Relpose.pose.position.x;
+    Dpose.pose.position.y = rear_pose.y + Relpose.pose.position.y;
+    Dpose.pose.position.z = rear_pose.z + Relpose.pose.position.z;
+    Dpath.poses.push_back(Dpose);
+  }
+  veh_predictpath_rel_pub.publish(Relpath);
+  veh_predictpath_pub.publish(Dpath);
 }
 
 void RearCurrentPoseCallback(const geometry_msgs::PoseStamped& RCPmsg)
@@ -250,7 +296,7 @@ void RearCurrentPoseCallback(const geometry_msgs::PoseStamped& RCPmsg)
   polygon0.polygon.points.push_back(point0);
   vehbb_pub.publish(polygon0);
 
-  bool outofpathcheck_flag = true;
+  bool outofpathcheck_flag = false;
   outofpathcheck(polygon0,outofpathcheck_flag);
   std::cout << "outofpathcheck_flag : " << outofpathcheck_flag << std::endl;
   vehpredictpathgen_pub(outofpathcheck_flag);
@@ -276,7 +322,6 @@ void astarpathfinalCallback(const nav_msgs::Path& apfmsg)
   geometry_msgs::PoseStamped Dpose;
 
   uint size = apfmsg.poses.size(); 
-  double Resolution = 50;
   for(uint i=1;i<size;i++)
   {
     for(int j=0;j<Resolution;j++)

@@ -1,6 +1,9 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
+  <!--tf rear_wheel-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
+
   <!-- Base waypoint pub node-->
   <node pkg="astar_initial" type="astar_initial" name="astar_initial" output="screen" />
     
@@ -30,7 +33,7 @@
   <arg name="use_wavefront_heuristic" default="false" />
   <arg name="time_limit" default="2000.0" /><!--5000-->
   <arg name="robot_length" default="9.4" /><!--8-->
-  <arg name="robot_width" default="2.2" /><!--4.2-->
+  <arg name="robot_width" default="2.4" /><!--4.2-->
   <arg name="robot_base2back" default="3.4" /><!--7.2 3.4-->
   <arg name="minimum_turning_radius" default="10.0" /><!--10.0-->
   <arg name="theta_size" default="48" />
