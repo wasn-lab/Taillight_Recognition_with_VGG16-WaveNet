@@ -1,7 +1,7 @@
 #include "projector2.h"
 #include <chrono>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
 // m: 3X3矩陣
