@@ -11,7 +11,7 @@ cv::Scalar Color::g_color_red(0, 0, 255, 0);
 cv::Scalar Color::g_color_yellow(51, 255, 255, 0);
 cv::Scalar Color::g_color_gray(125, 125, 125, 0);
 
-void loadCalibrationMatrix(string yml_filename, Mat& cameraMatrix, Mat& distCoeffs)
+void loadCalibrationMatrix(const string& yml_filename, Mat& cameraMatrix, Mat& distCoeffs)
 {
   cout << "yml_filename: " << yml_filename << endl;
   int imageWidth, imageHeight;
@@ -40,7 +40,7 @@ void loadCalibrationMatrix(string yml_filename, Mat& cameraMatrix, Mat& distCoef
 
   fs.release();
 }
-void calibrationImage(const Mat& src, Mat& dst, Mat cameraMatrix, Mat distCoeffs)
+void calibrationImage(const Mat& src, Mat& dst, const Mat& cameraMatrix, const Mat& distCoeffs)
 {
   Mat M_raw = src.clone();
   undistort(M_raw, dst, cameraMatrix, distCoeffs);

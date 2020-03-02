@@ -108,13 +108,13 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
 {
   pthread_mutex_lock(&g_mtx_infer);
 
-  bool isPushData = false;
+  bool is_push_data = false;
   if (!g_is_infer_datas[cam_order])
   {
     g_is_infer_datas[cam_order] = true;
-    isPushData = true;
+    is_push_data = true;
 
-    if (isPushData)
+    if (is_push_data)
     {
       g_headers[cam_order] = header;
       // std::cout << "Subscribe " <<  camera::topics[g_cam_ids[cam_order]] << " image." << std::endl;
@@ -220,7 +220,7 @@ void callback_cam_back_top_120_decode(sensor_msgs::CompressedImage compressImg)
   }
 }
 
-void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
+void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int cam_order)
 {
   sensor_msgs::ImagePtr imgMsg;
   imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();

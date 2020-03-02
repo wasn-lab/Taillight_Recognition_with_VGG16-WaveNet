@@ -120,24 +120,24 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
 {
   pthread_mutex_lock(&g_mtx_infer);
 
-  bool isPushData = false;
+  bool is_push_data = false;
   if (g_cam_ids[cam_order] == camera::id::right_60 && !g_is_infer_data_0)
   {
     g_is_infer_data_0 = true;
-    isPushData = true;
+    is_push_data = true;
   }
   if (g_cam_ids[cam_order] == camera::id::front_60 && !g_is_infer_data_1)
   {
     g_is_infer_data_1 = true;
-    isPushData = true;
+    is_push_data = true;
   }
   if (g_cam_ids[cam_order] == camera::id::left_60 && !g_is_infer_data_2)
   {
     g_is_infer_data_2 = true;
-    isPushData = true;
+    is_push_data = true;
   }
 
-  if (isPushData)
+  if (is_push_data)
   {
     g_mat_srcs.push_back(mat);
     g_mat_order.push_back(cam_order);
@@ -228,7 +228,7 @@ void callback_60_2_decode(sensor_msgs::CompressedImage compressImg)
   }
 }
 
-void image_publisher(cv::Mat image, std_msgs::Header header, int cam_order)
+void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int cam_order)
 {
   sensor_msgs::ImagePtr imgMsg;
   imgMsg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
