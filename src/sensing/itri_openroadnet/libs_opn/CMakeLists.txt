@@ -1,14 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(libs_opn)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-
-include(CarModel)
-if (NOT ENABLE_OPENROADNET)
-  message(STATUS "${PROJECT_NAME} is disabled in car ${CAR_MODEL}")
-  return ()
-endif ()
-
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
 set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
@@ -19,7 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   roslib
-  car_model
+  #std_msgs
+  #genmsg
 )
 
 MACRO(HEADER_DIRECTORIES return_list)

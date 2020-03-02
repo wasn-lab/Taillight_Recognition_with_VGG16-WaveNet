@@ -1,14 +1,22 @@
 cmake_minimum_required (VERSION 3.5.1)
-project (google-benchmark CXX)
 
-find_package(catkin REQUIRED COMPONENTS car_model)
-set(CMAKE_MODULE_PATH ${car_model_DIR})
-
-include(CarModel)
 if (NOT ENABLE_GOOGLE_BENCHMARK)
   return()
 endif ()
 
+foreach(p
+    CMP0048 # OK to clear PROJECT_VERSION on project()
+    CMP0054 # CMake 3.1
+    CMP0056 # export EXE_LINKER_FLAGS to try_run
+    CMP0057 # Support no if() IN_LIST operator
+    CMP0063 # Honor visibility properties for all targets
+    )
+  if(POLICY ${p})
+    cmake_policy(SET ${p} NEW)
+  endif()
+endforeach()
+
+project (benchmark CXX)
 
 option(BENCHMARK_ENABLE_TESTING "Enable testing of the benchmark library." ON)
 option(BENCHMARK_ENABLE_EXCEPTIONS "Enable the use of exceptions in the benchmark library." ON)

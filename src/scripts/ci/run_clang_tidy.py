@@ -17,7 +17,7 @@ def __run_clang_tidy(cpp, apply_fix, build_path):
     fix = "--fix" if apply_fix else ""
     cmd = ["clang-tidy", fix,
            "-p", build_path,
-#           "-checks=-*,readability-braces-around-statements",
+           "-checks=-*,readability-braces-around-statements",
            cpp]
     try:
         output = subprocess.check_output(cmd)
