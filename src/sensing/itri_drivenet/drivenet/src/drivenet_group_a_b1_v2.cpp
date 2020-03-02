@@ -142,7 +142,7 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   }
 }
 
-void callback_cam_0(const sensor_msgs::Image::ConstPtr& msg)
+void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
 {
   int cam_order = 0;
   if (!g_is_infer_datas[cam_order])
@@ -156,7 +156,7 @@ void callback_cam_0(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_1(const sensor_msgs::Image::ConstPtr& msg)
+void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
 {
   int cam_order = 1;
   if (!g_is_infer_datas[cam_order])
@@ -170,7 +170,7 @@ void callback_cam_1(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_0_decode(sensor_msgs::CompressedImage compressImg)
+void callback_cam_front_bottom_60_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 0;
   if (!g_is_infer_datas[cam_order])
@@ -182,7 +182,7 @@ void callback_cam_0_decode(sensor_msgs::CompressedImage compressImg)
   }
 }
 
-void callback_cam_1_decode(sensor_msgs::CompressedImage compressImg)
+void callback_cam_front_top_far_30_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 1;
   if (!g_is_infer_datas[cam_order])
@@ -220,9 +220,8 @@ int main(int argc, char** argv)
   std::vector<std::string> cam_topicNames(g_cam_ids.size());
   std::vector<std::string> bbox_topicNames(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_0, callback_cam_1 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_0_decode,
-                                                                             callback_cam_1_decode };
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60, callback_cam_front_top_far_30 };
+  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_bottom_60_decode, callback_cam_front_top_far_30_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
