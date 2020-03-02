@@ -50,7 +50,7 @@
 
 static Geofence PCloud_Geofence(1.2);
 static Geofence BBox_Geofence(1.2);
-static Geofence Radar_Geofence(1.2);
+static Geofence Radar_Geofence(1.5);
 static Geofence PCloud_Geofence_original(1.2);
 static double Heading, SLAM_x, SLAM_y;
 //static uint Deadend_flag;
