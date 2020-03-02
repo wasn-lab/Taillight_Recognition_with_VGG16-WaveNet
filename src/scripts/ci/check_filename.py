@@ -41,10 +41,28 @@ def _check_hpp(affected_files):
     return len(fnames_hpp)
 
 
+def _check_artifacts(affected_files):
+    violations = []
+    for fname in affected_files:
+        if not os.path.isfile(fname):
+            continue
+        if "CMakeFiles" not in fname:
+            continue
+        if fname.endswith(".o") or fname.endswith(".a"):
+            violations.append(fname)
+    if violations:
+        logging.error("The commit contains files inside CMakeFiles: %s",
+                      " ".join(violations))
+    return len(violations)
+
+
 def main():
     """Prog entry"""
     affected_files = get_affected_files()
-    return _check_space(affected_files) + _check_hpp(affected_files)
+    ret = _check_space(affected_files)
+    ret += _check_hpp(affected_files)
+    ret += _check_artifacts(affected_files)
+    return ret
 
 
 if __name__ == "__main__":

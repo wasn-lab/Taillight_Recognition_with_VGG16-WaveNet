@@ -1,1 +1,3 @@
 src/utilities/google-benchmark
+src/visualization/opengl_test/external
+src/visualization/opengl_test/include/GLM

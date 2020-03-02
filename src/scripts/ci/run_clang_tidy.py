@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 """
-Check if a given file are comform to coding standard MISRA c++-2008 Rule 6.4.1
-Rule 6–4–1 (Required)
-    An if ( condition ) construct shall be followed by
-    a compound statement. The else keyword shall be
-    followed by either a compound statement, or another if
-    statement.
+Call clang-tidy to help review
 """
 import argparse
 import sys
@@ -15,7 +10,7 @@ import subprocess
 from ci_utils import is_external_package
 
 
-def check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix, build_path):
+def __run_clang_tidy(cpp, apply_fix, build_path):
     """
     Use clang-tidy to check Rule 6.4.1.
     """
@@ -43,7 +38,7 @@ def check_misra_cpp2008_6_4_1(cpp, apply_fix, build_path):
         return 0
     if is_external_package(cpp):
         return 0
-    check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix, build_path)
+    __run_clang_tidy(cpp, apply_fix, build_path)
     return 0
 
 

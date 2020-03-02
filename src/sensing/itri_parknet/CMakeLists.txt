@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_parknet)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+
+if (NOT ENABLE_PARKNET)
+  message(STATUS "${PROJECT_NAME} is disabled in car ${CAR_MODEL}")
+  return ()
+endif ()
+
 include(CompilerFlags)
 
 set(CAMERA_TEGRAB_DIR ${Project_SOURCE_DIR}/sensing/camera_tegrab)

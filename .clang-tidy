@@ -1,4 +1,21 @@
 ---
-# WarningsAsErrors: "*"
-HeaderFilterRegex: '.*/itriadv/src/.*\.h$'
+Checks: "-*,\
+bugprone-*,\
+cert-*,\
+clang-analyzer-*,\
+hicpp-*,\
+misc-*,\
+modernize-*,\
+performance-*,\
+readability-*,\
+llvm-namespace-comment,\
+-readability-avoid-const-params-in-decls\
+"
+WarningsAsErrors: "readability-braces-around-statements"
+HeaderFilterRegex: 'itriadv/src/.*\.h$'
+CheckOptions:
+  - key:   readability-identifier-naming.GlobalVariableCase
+    value: 'lower_case'
+  - key:   readability-identifier-naming.GlobalVariablePrefix
+    value: 'g_'
 ...

@@ -131,7 +131,19 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #endif
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
+
+#if INPUT_ALL_CLASS
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
+#else
+    KTs_.objs_.reserve(input->objects.size());
+    for (unsigned i = 0; i < input->objects.size(); i++)
+    {
+      if (input->objects[i].classId >= 1 && input->objects[i].classId <= 3)
+      {
+        KTs_.objs_.push_back(input->objects[i]);
+      }
+    }
+#endif
 
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
@@ -923,6 +935,14 @@ void TPPNode::set_ros_params()
   nh_.param<int>(domain + "show_pp", show_pp_int, 0);
   mc_.show_pp = (unsigned int)show_pp_int;
 
+  double pp_obj_min_kmph = 0.;
+  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
+  pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
+
+  double pp_obj_max_kmph = 0.;
+  nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
+  pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
+
   set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
   set_ColorRGBA(mc_.color_radar_tpp, 0.5f, 0.f, 0.f, 1.f);
   set_ColorRGBA(mc_.color_camera_tpp, 0.5f, 0.5f, 0.5f, 1.f);
@@ -975,7 +995,7 @@ int TPPNode::run()
       clock_t begin_time = clock();
 #endif
 
-      // Tracking start ==========================================================================
+// Tracking start ==========================================================================
 
 #if TTC_TEST
       seq_ = seq_cb_;
@@ -1005,7 +1025,7 @@ int TPPNode::run()
       publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif
 
-      // PP end ==================================================================================
+// PP end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();
