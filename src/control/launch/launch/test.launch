@@ -1,0 +1,10 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+	<node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  />
+		<param name="test123" value="100" type="int"/>
+
+	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
+		<param name="Path_flag" value="0" type="int"/>
+	</node-->
+
+</launch>

@@ -215,7 +215,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 
 
 int main(int argc, char **argv){ 
-
+	
 	ros::init(argc, argv, "Geofence_PP");
 	ros::NodeHandle n;
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
@@ -234,6 +234,13 @@ int main(int argc, char **argv){
 
 	ros::Rate loop_rate(10);
 
+
+	int test123;
+	ros::param::get("test123", test123);
+	cout << "test123: " << test123 << endl;
+
+
+	
 	int s;
 	int nbytes;
 	struct sockaddr_can addr;
