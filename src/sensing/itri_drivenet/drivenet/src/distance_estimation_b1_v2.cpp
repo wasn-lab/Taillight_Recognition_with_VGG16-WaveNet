@@ -795,11 +795,11 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
   int y_loc = x;
   // int img_h = 1208;
 
-  DisEstiParams Parmas;
+  DisEstiParams parmas_;
 
   offset_x = Lidar_offset_x;
 
-  Parmas = params[cam_id];
+  parmas_ = params[cam_id];
 
   if (de_mode == 1)
   {
@@ -818,29 +818,29 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
   {
     if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
     {
-      if (Parmas.regionDist_x.size() != 0)
+      if (!parmas_.regionDist_x.empty())
       {
-        x_distMeter = ComputeObjectXDist(x_loc, Parmas.regionHeight_x, Parmas.regionDist_x);
+        x_distMeter = ComputeObjectXDist(x_loc, parmas_.regionHeight_x, parmas_.regionDist_x);
       }
-      if (Parmas.regionDist_y.size() != 0)
+      if (!parmas_.regionDist_y.empty())
       {
-        y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                         Parmas.regionDist_y, img_h);
+        y_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_y, parmas_.regionHeightSlope_y,
+                                         parmas_.regionDist_y, img_h);
       }
     }
   }
   /*
   if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
   {
-    if (Parmas.regionDist_x.size() != 0)
+    if (parmas_.regionDist_x.size() != 0)
     {
-      x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
-                                       Parmas.regionDist_x, img_h);
+      x_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_x, parmas_.regionHeightSlope_x,
+                                       parmas_.regionDist_x, img_h);
     }
-    if (Parmas.regionDist_y.size() != 0)
+    if (parmas_.regionDist_y.size() != 0)
     {
-      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                                Parmas.regionDist_y);
+      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, parmas_.regionHeight_y, parmas_regionHeightSlope_y,
+                                                parmas_.regionDist_y);
     }
   }
   */
