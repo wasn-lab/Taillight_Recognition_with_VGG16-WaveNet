@@ -18,4 +18,14 @@ CheckOptions:
     value: 'lower_case'
   - key:   readability-identifier-naming.GlobalVariablePrefix
     value: 'g_'
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key:   readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key:   readability-identifier-naming.VariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.ClassMemberSuffix
+    value: '_'
 ...
