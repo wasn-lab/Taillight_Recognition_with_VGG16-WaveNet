@@ -11,7 +11,7 @@ DistanceEstimation::~DistanceEstimation()
     delete[] align_FC60;
   }
 
-  delete[] params;
+  delete[] arr_params;
   delete[] ShrinkArea;
   delete[] area;
 
@@ -57,7 +57,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
   // }
   // ReadDistanceFromJson(FL60Json, align_FL60, img_h, img_w);
 
-  params = new DisEstiParams[camera::id::num_ids];
+  arr_params = new DisEstiParams[camera::id::num_ids];
   ShrinkArea = new CheckArea[camera::id::num_ids];
   area = new CheckArea[camera::id::num_ids];
   initParams();
@@ -71,46 +71,46 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
 void DistanceEstimation::initParams()
 { 
   // camId: 0 (Front Center)
-  params[camera::id::front_bottom_60].regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
+  arr_params[camera::id::front_bottom_60].regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
                              1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
-  params[camera::id::front_bottom_60].regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
-  params[camera::id::front_bottom_60].regionHeightSlope_y = { 0.12,  0.209, 0.27,   0.337,  0.44,   1.02,  3.87,
+  arr_params[camera::id::front_bottom_60].regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  arr_params[camera::id::front_bottom_60].regionHeightSlope_y = { 0.12,  0.209, 0.27,   0.337,  0.44,   1.02,  3.87,
                                   -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
-  params[camera::id::front_bottom_60].regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
-  params[camera::id::front_bottom_60].regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+  arr_params[camera::id::front_bottom_60].regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
+  arr_params[camera::id::front_bottom_60].regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
   // camId: 4 (Front Top)
-  params[camera::id::front_top_close_120].regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
+  arr_params[camera::id::front_top_close_120].regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
                               150,  130,  115, 99,  86,  75,  65,  57,  48,  40,  10 };
-  params[camera::id::front_top_close_120].regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25 };
-  params[camera::id::front_top_close_120].regionHeight_y = { -1422, -1131, -824, -412, 70,   490,  942,  1292,
+  arr_params[camera::id::front_top_close_120].regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25 };
+  arr_params[camera::id::front_top_close_120].regionHeight_y = { -1422, -1131, -824, -412, 70,   490,  942,  1292,
                               1732,  2258,  2641, 3030, 3471, 3619, 3709, 3548 };
-  params[camera::id::front_top_close_120].regionHeightSlope_y = { 0.603, 0.682,   0.784,   1.012,   1.56,    2.908,   48.28,   -4.4615,
+  arr_params[camera::id::front_top_close_120].regionHeightSlope_y = { 0.603, 0.682,   0.784,   1.012,   1.56,    2.908,   48.28,   -4.4615,
                                    -1.8,  -1.0328, -0.7976, -0.6509, -0.5349, -0.5156, -0.5161, -0.5862 };
-  params[camera::id::front_top_close_120].regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9 };
+  arr_params[camera::id::front_top_close_120].regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9 };
 
   // camId: 5 (Right Front)
-  params[camera::id::right_front_60].regionHeight_x = { 1148, 830, 544, 377, 236, 157, 52 };  // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
-  params[camera::id::right_front_60].regionDist_x = { 0, 1, 2, 3, 4, 5, 6 };                  // 5 to 10, 20 to 50m (~5m)
-  params[camera::id::right_front_60].regionHeight_y = { 2507, 1904, 1498, 1032, 637, 357, -80 };  //-2 to 0 to 2(~1m) //Vertical line
-  params[camera::id::right_front_60].regionHeightSlope_y = { -1.2286, -2.4524, -6.000, 21.3529, 4.7308, 3.0297, 1.8171 };
-  params[camera::id::right_front_60].regionDist_y = { -6, -5, -4, -3, -2, -1, -0 };  //-2 to 0 to 2 (~1m)
+  arr_params[camera::id::right_front_60].regionHeight_x = { 1148, 830, 544, 377, 236, 157, 52 };  // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal line
+  arr_params[camera::id::right_front_60].regionDist_x = { 0, 1, 2, 3, 4, 5, 6 };                  // 5 to 10, 20 to 50m (~5m)
+  arr_params[camera::id::right_front_60].regionHeight_y = { 2507, 1904, 1498, 1032, 637, 357, -80 };  //-2 to 0 to 2(~1m) //Vertical line
+  arr_params[camera::id::right_front_60].regionHeightSlope_y = { -1.2286, -2.4524, -6.000, 21.3529, 4.7308, 3.0297, 1.8171 };
+  arr_params[camera::id::right_front_60].regionDist_y = { -6, -5, -4, -3, -2, -1, -0 };  //-2 to 0 to 2 (~1m)
 
   // camId: 6 (Right Back)
-  params[camera::id::right_back_60].regionHeight_x = { 1194, 838, 565, 395, 253, 138, 63, 17 };   // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal
+  arr_params[camera::id::right_back_60].regionHeight_x = { 1194, 838, 565, 395, 253, 138, 63, 17 };   // 5 to 10(~1m), 20 to 50m (~5m) //Horizontal
                                                                          // line
-  params[camera::id::right_back_60].regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7 };                    // 5 to 10, 20 to 50m (~5m)
-  params[camera::id::right_back_60].regionHeight_y = { 2049, 1688, 1209, 714, 217, -114, -738 };  //-2 to 0 to 2(~1m) //Vertical line
-  params[camera::id::right_back_60].regionHeightSlope_y = { -1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539 };
-  params[camera::id::right_back_60].regionDist_y = { -9, -8, -7, -6, -5, -4, -3 };  //-2 to 0 to 2 (~1m)
+  arr_params[camera::id::right_back_60].regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7 };                    // 5 to 10, 20 to 50m (~5m)
+  arr_params[camera::id::right_back_60].regionHeight_y = { 2049, 1688, 1209, 714, 217, -114, -738 };  //-2 to 0 to 2(~1m) //Vertical line
+  arr_params[camera::id::right_back_60].regionHeightSlope_y = { -1.7722, -2.1614, -6.4409, 6.9259, 2.1378, 1.6333, 0.9539 };
+  arr_params[camera::id::right_back_60].regionDist_y = { -9, -8, -7, -6, -5, -4, -3 };  //-2 to 0 to 2 (~1m)
 
   // camId: 10 (Back Top)
-  params[camera::id::back_top_120].regionHeight_x = { 1207, 836, 650, 532, 435, 367, 316, 270, 240, 210, 182, 161, 143 };
-  params[camera::id::back_top_120].regionDist_x = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-  params[camera::id::back_top_120].regionHeight_y = { -1566, -1230, -861, -264, 40, 475, 875, 1370, 1704, 2195, 2439, 2808, 3152 };
-  params[camera::id::back_top_120].regionHeightSlope_y = { 0.536,  0.612,  0.7197, 1.063,   1.372,  2.624, 14.2,
+  arr_params[camera::id::back_top_120].regionHeight_x = { 1207, 836, 650, 532, 435, 367, 316, 270, 240, 210, 182, 161, 143 };
+  arr_params[camera::id::back_top_120].regionDist_x = { 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+  arr_params[camera::id::back_top_120].regionHeight_y = { -1566, -1230, -861, -264, 40, 475, 875, 1370, 1704, 2195, 2439, 2808, 3152 };
+  arr_params[camera::id::back_top_120].regionHeightSlope_y = { 0.536,  0.612,  0.7197, 1.063,   1.372,  2.624, 14.2,
                                    -2.951, -1.727, -1.167, -0.9098, -0.724, -0.608 };
-  params[camera::id::back_top_120].regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 };
+  arr_params[camera::id::back_top_120].regionDist_y = { 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6 };
 }
 
 void DistanceEstimation::initShrinkArea()
@@ -799,7 +799,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 
   offset_x = Lidar_offset_x;
 
-  parmas_ = params[cam_id];
+  parmas_ = arr_params[cam_id];
 
   if (de_mode == 1)
   {

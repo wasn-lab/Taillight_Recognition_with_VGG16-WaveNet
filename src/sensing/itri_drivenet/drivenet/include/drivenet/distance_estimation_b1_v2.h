@@ -16,7 +16,7 @@
 class DistanceEstimation
 {
 private:
-  DisEstiParams* params;
+  DisEstiParams* arr_params;
   CheckArea* ShrinkArea;
   cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
 
