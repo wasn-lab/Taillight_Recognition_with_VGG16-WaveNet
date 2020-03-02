@@ -16,18 +16,9 @@
 class DistanceEstimation
 {
 private:
-  DisEstiParams camFC60, camFT30, camFT120, camRF120, camRB120, camLF120, camLB120, camBT120;
-  CheckArea ShrinkArea_camFC60, ShrinkArea_camFT120, ShrinkArea_camBT120;
+  DisEstiParams* params;
+  CheckArea* ShrinkArea;
   cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
-
-  /// camId: 0 = camFC60
-  /// camId: 1 = camFT30
-  /// camId: 4 = camFT120
-  /// camId: 5 = camRF120
-  /// camId: 6 = camRB120
-  /// camId: 8 = camLF120
-  /// camId: 9 = camLB120
-  /// camId: 10 = camBT120
 
   float Lidar_offset_x = 0;
   float Lidar_offset_y = 0;
@@ -63,7 +54,7 @@ public:
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);
 
-  CheckArea camFC60_area, camFT120_area, camBT120_area;
+  CheckArea* area;
 };
 
 #endif /*DISTANCEESTIMATION_B1_V2_H_*/
