@@ -72,7 +72,7 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
   { 
     double min_value[4] = {100,100,100,100};
     int size = astar_finalpath_10.poses.size();
-    std::cout << "size : " << size << std::endl;
+    // std::cout << "size : " << size << std::endl;
     for (int i = 0; i < 4; i++)
     {
       double V_X = veh_poly.polygon.points[i].x;
@@ -98,7 +98,7 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
       flag = true;
     }
     double dis_RR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*(1-veh_pose_left) * veh_width*(1-veh_pose_left)));
-    std::cout << "dis_RR2RC : " << dis_RR2RC << ", min_value[2] : " << min_value[2] << std::endl;
+    // std::cout << "dis_RR2RC : " << dis_RR2RC << ", min_value[2] : " << min_value[2] << std::endl;
     if (min_value[2] > dis_RR2RC + 0.3 && min_value[2] != 100)
     {
       flag = true;
