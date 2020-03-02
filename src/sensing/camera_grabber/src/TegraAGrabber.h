@@ -20,7 +20,7 @@ protected:
   // TODO: fill in the correct camera id.
   const std::vector<int> cam_ids_{ camera::id::right_60,  camera::id::front_60,  camera::id::left_60 };
 #elif CAR_MODEL_IS_B1_V2
-  const std::vector<int> cam_ids_{ camera::id::front_bottom_60,  camera::id::top_front_30};
+  const std::vector<int> cam_ids_{ camera::id::front_bottom_60,  camera::id::front_top_far_30};
 #elif CAR_MODEL_IS_HINO
   const std::vector<int> cam_ids_{ camera::id::left_60, camera::id::front_60, camera::id::right_60,
                                    camera::id::left_30, camera::id::front_30, camera::id::right_30 };
