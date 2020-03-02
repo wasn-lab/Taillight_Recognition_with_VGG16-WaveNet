@@ -95,8 +95,8 @@ int main(int argc, char** argv)
 
     size_t numberABB = g_object_front_60.size() + g_object_top_front_120.size() + g_object_top_rear_120.size();
 
-    CLUSTER_INFO camera_ABB[numberABB];
-    CLUSTER_INFO camera_ABB_bbox[numberABB];
+    CLUSTER_INFO* camera_ABB = new CLUSTER_INFO[numberABB];
+    CLUSTER_INFO* camera_ABB_bbox = new CLUSTER_INFO[numberABB];
 
     size_t cnt = 0;
     for (size_t i = 0; i < g_object_front_60.size(); i++)
@@ -286,6 +286,9 @@ int main(int argc, char** argv)
                            camera_ABB[i].convex_hull);
       }
       convexFusionB1.sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
+      
+      delete[]camera_ABB;
+      delete[]camera_ABB_bbox;
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)
