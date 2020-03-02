@@ -167,9 +167,9 @@ long double PathPredict::variance(const std::vector<long double>& samples, const
 
   long double variance = 0;
   long double diff = 0;
-  for (unsigned i = 0; i < samples.size(); i++)
+  for (const long double sample : samples)
   {
-    diff = samples[i] - mean;
+    diff = sample - mean;
     variance += std::pow(diff, 2);
   }
 
