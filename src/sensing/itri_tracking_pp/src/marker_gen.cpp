@@ -330,9 +330,10 @@ visualization_msgs::Marker MarkerGen::create_delay_marker(const unsigned int idx
   return marker;
 }
 
-visualization_msgs::Marker MarkerGen::create_pp_marker1(const unsigned int idx, const msgs::PointXY pos,
-                                                        std_msgs::Header obj_header, const PPLongDouble pp,
-                                                        const unsigned int forecast_seq, const float abs_speed_kmph)
+visualization_msgs::Marker MarkerGen::create_pp_marker_ellipse(const unsigned int idx, const msgs::PointXY pos,
+                                                               std_msgs::Header obj_header, const PPLongDouble pp,
+                                                               const unsigned int forecast_seq,
+                                                               const float abs_speed_kmph)
 {
   visualization_msgs::Marker marker;
 
@@ -367,8 +368,8 @@ visualization_msgs::Marker MarkerGen::create_pp_marker1(const unsigned int idx, 
   return marker;
 }
 
-visualization_msgs::Marker MarkerGen::create_pp_marker2(const unsigned int idx, const msgs::PointXY pos,
-                                                        std_msgs::Header obj_header)
+visualization_msgs::Marker MarkerGen::create_pp_marker_point(const unsigned int idx, const msgs::PointXY pos,
+                                                             std_msgs::Header obj_header)
 {
   visualization_msgs::Marker marker;
 
@@ -388,7 +389,7 @@ visualization_msgs::Marker MarkerGen::create_pp_marker2(const unsigned int idx, 
 
   marker.pose.position.x = pos.x;
   marker.pose.position.y = pos.y;
-  marker.pose.position.z = 0.;
+  marker.pose.position.z = 0.1;
 
   marker.pose.orientation.x = 0;
   marker.pose.orientation.y = 0;
@@ -498,9 +499,19 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
                                   std::vector<std::vector<PPLongDouble> >& ppss)
 {
   std::vector<visualization_msgs::Marker>().swap(m_pp_.markers);
-#if SHOW_PP_VERTICES
-  m_pp_.markers.reserve(objs.size() * num_forecasts_ * 5);
-#endif
+
+  if (mc_.show_pp == 1 || mc_.show_pp == 2)
+  {
+    m_pp_.markers.reserve(objs.size() * num_forecasts_);
+  }
+  else if (mc_.show_pp == 3)
+  {
+    m_pp_.markers.reserve(objs.size() * num_forecasts_ * 5);
+  }
+  else
+  {
+    return;
+  }
 
   for (unsigned i = 0; i < objs.size(); i++)
   {
@@ -510,25 +521,22 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
       {
         if (mc_.show_pp == 1)
         {
-          m_pp_.markers.push_back(create_pp_marker1(idx++, objs[i].track.forecasts[j].position, objs[i].header,
-                                                    ppss[i][j], j, objs[i].absSpeed));
+          m_pp_.markers.push_back(create_pp_marker_point(idx++, objs[i].track.forecasts[j].position, objs[i].header));
         }
-        else if (mc_.show_pp == 2)
+        else if (mc_.show_pp == 2 || mc_.show_pp == 3)
         {
-          m_pp_.markers.push_back(create_pp_marker2(idx++, objs[i].track.forecasts[j].position, objs[i].header));
-        }
-        else
-        {
-          LOG_INFO << "Error: No show pp!" << std::endl;
+          m_pp_.markers.push_back(create_pp_marker_ellipse(idx++, objs[i].track.forecasts[j].position, objs[i].header,
+                                                           ppss[i][j], j, objs[i].absSpeed));
         }
       }
 
-#if SHOW_PP_VERTICES
-      for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
+      if (mc_.show_pp == 3)
       {
-        m_pp_.markers.push_back(create_pp_marker2(idx++, objs[i].track.forecasts[j].position, objs[i].header));
+        for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
+        {
+          m_pp_.markers.push_back(create_pp_marker_point(idx++, objs[i].track.forecasts[j].position, objs[i].header));
+        }
       }
-#endif
     }
   }
 

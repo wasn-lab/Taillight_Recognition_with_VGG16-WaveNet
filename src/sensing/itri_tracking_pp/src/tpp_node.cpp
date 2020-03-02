@@ -288,7 +288,7 @@ void TPPNode::subscribe_and_advertise_topics()
     std::string topic5 = topic + "/delay";
     mc_.pub_delay = nh_.advertise<visualization_msgs::MarkerArray>(topic5, 2);
 
-    if (mc_.show_pp > 0)
+    if (mc_.show_pp >= 1 && mc_.show_pp <= 3)
     {
       std::string topic6 = topic + "/pp";
       mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
