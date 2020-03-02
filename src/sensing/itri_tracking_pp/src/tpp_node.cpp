@@ -849,12 +849,12 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
 
-  nh_.param<bool>(domain + "gen_markers", gen_markers_, (bool)1);
-  nh_.param<bool>(domain + "show_classid", mc_.show_classid, (bool)0);
-  nh_.param<bool>(domain + "show_tracktime", mc_.show_tracktime, (bool)0);
-  nh_.param<bool>(domain + "show_source", mc_.show_source, (bool)0);
-  nh_.param<bool>(domain + "show_distance", mc_.show_distance, (bool)0);
-  nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, (bool)0);
+  nh_.param<bool>(domain + "gen_markers", gen_markers_, true);
+  nh_.param<bool>(domain + "show_classid", mc_.show_classid, false);
+  nh_.param<bool>(domain + "show_tracktime", mc_.show_tracktime, false);
+  nh_.param<bool>(domain + "show_source", mc_.show_source, false);
+  nh_.param<bool>(domain + "show_distance", mc_.show_distance, false);
+  nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, false);
 
   int show_pp_int = 0;
   nh_.param<int>(domain + "show_pp", show_pp_int, 0);
