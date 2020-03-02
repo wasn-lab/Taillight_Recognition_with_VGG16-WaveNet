@@ -35,5 +35,5 @@ enum class common_type_id
 int translate_label(int label);
 cv::Scalar get_label_color(int label_id);
 cv::Scalar get_common_label_color(int label_id);
-}
+} // namespace DriveNet
 #endif /*OBJECTLABELUTIL_H_*/

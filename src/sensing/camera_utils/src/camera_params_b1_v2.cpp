@@ -54,6 +54,6 @@ const std::string detect_result = "/CameraDetection";
 const std::string detect_result_polygon = "/CameraDetection/polygon";
 const std::string detect_result_occupancy_grid = "/CameraDetection/occupancy_grid";
 
-};  // namespace
+} // namespace camera
 
 #endif  // CAR_MODEL_IS_B1

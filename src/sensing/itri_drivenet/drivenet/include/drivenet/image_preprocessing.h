@@ -20,5 +20,5 @@ public:
 
 void loadCalibrationMatrix(std::string yml_filename, cv::Mat& cameraMatrix, cv::Mat& distCoeffs);
 void calibrationImage(const cv::Mat& src, cv::Mat& dst, cv::Mat cameraMatrix, cv::Mat distCoeffs);
-}
+} // namespace DriveNet
 #endif /*IMAGE_PREPROCESSING_H_*/

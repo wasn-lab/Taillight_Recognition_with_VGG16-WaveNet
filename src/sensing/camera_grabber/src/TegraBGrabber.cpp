@@ -114,4 +114,4 @@ bool TegraBGrabber::runPerception()
 
   return true;
 }
-}
+} // namespace SensingSubSystem

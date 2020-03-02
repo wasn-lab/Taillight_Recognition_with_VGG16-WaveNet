@@ -64,4 +64,4 @@ void NPPResizerImpl::set_interpolation_mode(NppiInterpolationMode mode)
 {
   interpolation_mode_ = mode;
 }
-}
+} // namespace DriveNet_npp

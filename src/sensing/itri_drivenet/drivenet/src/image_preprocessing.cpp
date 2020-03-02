@@ -45,4 +45,4 @@ void calibrationImage(const Mat& src, Mat& dst, Mat cameraMatrix, Mat distCoeffs
   Mat M_raw = src.clone();
   undistort(M_raw, dst, cameraMatrix, distCoeffs);
 }
-};
+} // namespace DriveNet

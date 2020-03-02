@@ -42,6 +42,6 @@ private:
   ros::NodeHandle n;
   RosImagePubSub ros_image;
 };
-}
+} // namespace SensingSubSystem
 
 #endif

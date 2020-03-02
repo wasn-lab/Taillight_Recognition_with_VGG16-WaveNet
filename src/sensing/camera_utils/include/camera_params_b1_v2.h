@@ -84,6 +84,6 @@ static_assert(yolov3_letterbox_visible_height + npp_top_border + npp_top_border 
 // When input is 608x384
 constexpr int top_border_608x384 = (yolov3_image_height - 384) / 2;
 constexpr int bottom_border_608x384 = top_border_608x384;
-};      // namespace
+} // namespace camera
 #endif  // CAR_MODEL_IS_B1_V2
 #endif  // __CAMERA_PARAMS_B1_V2_H__
