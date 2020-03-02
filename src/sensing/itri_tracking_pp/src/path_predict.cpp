@@ -440,7 +440,7 @@ void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std:
     covariance_matrix(pps[i], data_x, data_y);
   }
 
-  if (show_pp_ > 0)
+  if (show_pp_ >= 1 && show_pp_ <= 3)
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {

@@ -97,7 +97,6 @@
 
 #if PP_VERTICES_VIA_SPEED
 #define TO_GRIDMAP 1
-#define SHOW_PP_VERTICES 0
 #endif
 
 #define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
