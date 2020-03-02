@@ -23,10 +23,10 @@ Yolo_app g_yolo_app;
 /// launch param
 int g_car_id = 1;
 int g_dist_est_mode = 0;
-bool g_standard_FPS = 0;
-bool g_display_flag = 0;
-bool g_input_resize = 1;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
-bool g_img_result_publish = 1;
+bool g_standard_fps = false;
+bool g_display_flag = false;
+bool g_input_resize = true;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
+bool g_img_result_publish = true;
 
 /// function
 void* run_yolo(void*);
@@ -76,7 +76,7 @@ std::vector<int> g_dist_cols(g_cam_ids.size());
 // Prepare cv::Mat
 void image_init()
 {
-  if (g_input_resize == 1)
+  if (g_input_resize)
   {
     g_img_w = camera::image_width;
     g_img_h = camera::image_height;
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
   g_is_infer_data = false;
 
   ros::param::get(ros::this_node::getName() + "/car_id", g_car_id);
-  ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_FPS);
+  ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_fps);
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
@@ -252,11 +252,11 @@ int main(int argc, char** argv)
 
   pthread_t thrdYolo, thrdInterp, thrdDisplay;
   pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
-  if (g_standard_FPS == 1)
+  if (g_standard_fps)
   {
     pthread_create(&thrdInterp, NULL, &run_interp, NULL);
   }
-  if (g_display_flag == 1)
+  if (g_display_flag)
   {
     pthread_create(&thrdDisplay, NULL, &run_display, NULL);
   }
@@ -272,11 +272,11 @@ int main(int argc, char** argv)
 
   g_is_infer_stop = true;
   pthread_join(thrdYolo, NULL);
-  if (g_standard_FPS == 1)
+  if (g_standard_fps)
   {
     pthread_join(thrdInterp, NULL);
   }
-  if (g_display_flag == 1)
+  if (g_display_flag)
   {
     pthread_join(thrdDisplay, NULL);
   }
@@ -329,7 +329,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   if (lCheck == 0 && rCheck == 0)
   {
     boxPoint = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
-
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
     left_point[0] = boxPoint.p0.x;
@@ -344,6 +343,11 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     {
       distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
       detObj.bPoint = boxPoint;
+      std::cout << "===========================" << std::endl;    
+      std::cout << "p0.x: " << boxPoint.p0.x << std::endl;
+      std::cout << "p3.x: " << boxPoint.p3.x << std::endl;
+      std::cout << "p0.y: " << boxPoint.p0.y << std::endl;
+      std::cout << "p3.y: " << boxPoint.p3.y << std::endl;
     }
     detObj.distance = distance;
   }
@@ -519,7 +523,7 @@ void* run_yolo(void*)
       // costmap_[g_cosmap_gener.layer_name_] =
       //     g_cosmap_gener.makeCostmapFromObjects(costmap_, g_cosmap_gener.layer_name_, 8, doa, false);
 
-      if (g_standard_FPS == 1)
+      if (g_standard_fps)
       {
         g_doas[cam_order] = doa;
       }
