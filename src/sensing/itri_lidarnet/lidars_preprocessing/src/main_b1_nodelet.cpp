@@ -2,7 +2,7 @@
 #include <nodelet/nodelet.h>
 
 #include "all_header.h"
-#include "RosModuleB1.hpp"
+#include "RosModuleB1.h"
 #include "CuboidFilter.h"
 #include "VoxelGrid_CUDA.h"
 #include "VoxelFilter_CUDA.h"

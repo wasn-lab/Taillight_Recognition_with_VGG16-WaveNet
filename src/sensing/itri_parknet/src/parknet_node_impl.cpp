@@ -2,7 +2,6 @@
    CREATER: ICL U300
    DATE: Feb, 2019
  */
-
 #include <thread>
 #include <condition_variable>
 #include <fstream>

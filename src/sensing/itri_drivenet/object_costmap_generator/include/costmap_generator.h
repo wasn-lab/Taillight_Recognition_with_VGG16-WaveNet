@@ -27,7 +27,7 @@ private:
   double minimum_lidar_height_thres_ = 0.0;
 
   // functions
-  msgs::ConvexPoint makePolygonFromObjectBox(const msgs::DetectedObject in_objects);
+  msgs::ConvexPoint makePolygonFromObjectBox(const msgs::DetectedObject& in_objects);
   grid_map::Index fetchGridIndexFromPoint(msgs::PointXYZ point);
   bool isValidInd(const grid_map::Index grid_ind);
   msgs::PointXYZ makeMidpoint(msgs::PointXYZ p1, msgs::PointXYZ p2);
@@ -40,8 +40,11 @@ public:
   CosmapGenerator();
   ~CosmapGenerator();
   grid_map::GridMap initGridMap();
-  grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap costmap, const std::string gridmap_layer_name,
-                                          const double expand_polygon_size, const msgs::DetectedObjectArray in_objects,
+  grid_map::Matrix makeCostmapFromSingleObject(const grid_map::GridMap costmap, const std::string& gridmap_layer_name,
+                                               const double expand_polygon_size, const msgs::DetectedObject& object,
+                                               const bool use_objects_convex_hull);
+  grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap costmap, const std::string& gridmap_layer_name,
+                                          const double expand_polygon_size, const msgs::DetectedObjectArray& in_objects,
                                           const bool use_objects_convex_hull);
   void objectMsgToGridMapMsg(const msgs::DetectedObjectArray& in_objects, ros::Publisher gridmap_publisher);
   nav_msgs::OccupancyGrid gridMapToOccupancyMsg(grid_map::GridMap& costmap, std_msgs::Header header);

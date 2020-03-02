@@ -28,13 +28,24 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       // check enough record of track history for pp
       if (pp_objs_[i].track.head >= (int)(num_pp_input_min_ - 1) || pp_objs_[i].track.is_over_max_length == true)
       {
-        pp_objs_[i].track.is_ready_prediction = true;
+        if (pp_objs_[i].absSpeed > pp_obj_min_kmph_ && pp_objs_[i].absSpeed < pp_obj_max_kmph_)
+        {
+          pp_objs_[i].track.is_ready_prediction = true;
+        }
       }
     }
 
+#if PP_VERTICES_VIA_SPEED
+    pp_objs_[i].track.forecasts.resize(num_forecasts_ * 5);
+#else
     pp_objs_[i].track.forecasts.resize(num_forecasts_);
+#endif
 
+#if PP_VERTICES_VIA_SPEED
+    for (unsigned j = 0; j < num_forecasts_ * 5; j++)
+#else
     for (unsigned j = 0; j < num_forecasts_; j++)
+#endif
     {
       pp_objs_[i].track.forecasts[j].position.x = 0;
       pp_objs_[i].track.forecasts[j].position.y = 0;
@@ -55,10 +66,14 @@ void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, con
   for (unsigned i = 0; i < data_x.size(); i++)
   {
     if (data_x[i] < min.x)
+    {
       min.x = data_x[i];
+    }
 
     if (data_y[i] < min.y)
+    {
       min.y = data_y[i];
+    }
   }
 
   PointLD offset;
@@ -91,7 +106,7 @@ void PathPredict::normalize_pos(std::vector<long double>& data_x, std::vector<lo
   }
 }
 
-void PathPredict::create_pp_input(const Point32 point, std::vector<long double>& data_x,
+void PathPredict::create_pp_input(const MyPoint32 point, std::vector<long double>& data_x,
                                   std::vector<long double>& data_y)
 {
   float x_abs = point.x;
@@ -146,7 +161,9 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
 long double PathPredict::variance(const std::vector<long double>& samples, const long double mean)
 {
   if (samples.size() < 2)
+  {
     return 0;
+  }
 
   long double variance = 0;
   long double diff = 0;
@@ -169,10 +186,14 @@ long double PathPredict::covariance(const std::vector<long double>& samples_x,
                                     const long double mean_y)
 {
   if (samples_x.size() != samples_y.size())
+  {
     return 0;
+  }
 
   if (samples_x.size() < 2)
+  {
     return 0;
+  }
 
   long double covariance = 0;
   long double diff_x = 0;
@@ -428,6 +449,46 @@ void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std:
   }
 }
 
+void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx,
+                              const float abs_speed)
+{
+  double roll, pitch, yaw;
+  geometry_msgs::Quaternion q = tf2::toMsg(pps.q1);
+  quaternion_to_rpy(roll, pitch, yaw, q.x, q.y, q.z, q.w);
+
+  float scale = abs_speed * (pp_idx + 1) / 36.;
+  cv::Mat mag_m(1, 4, CV_32FC1, cv::Scalar(0));
+  float scale1 = scale / 2;
+  float scale2 = scale / 4;
+  mag_m.at<float>(0, 0) = scale1;
+  mag_m.at<float>(0, 1) = scale2;
+  mag_m.at<float>(0, 2) = scale1;
+  mag_m.at<float>(0, 3) = scale2;
+
+  cv::Mat ang_rad(1, 4, CV_32FC1, cv::Scalar(0));
+  double pi_half = M_PI * 0.5;
+  ang_rad.at<float>(0, 0) = yaw;
+  ang_rad.at<float>(0, 1) = ang_rad.at<float>(0, 0) + pi_half;
+  ang_rad.at<float>(0, 2) = ang_rad.at<float>(0, 1) + pi_half;
+  ang_rad.at<float>(0, 3) = ang_rad.at<float>(0, 2) + pi_half;
+
+  cv::Mat x_m(1, 4, CV_32FC1, cv::Scalar(0));
+  cv::Mat y_m(1, 4, CV_32FC1, cv::Scalar(0));
+  cv::polarToCart(mag_m, ang_rad, x_m, y_m, false);
+
+  pps.v1.x = forecast.position.x + x_m.at<float>(0, 0);
+  pps.v1.y = forecast.position.y + y_m.at<float>(0, 0);
+
+  pps.v2.x = forecast.position.x + x_m.at<float>(0, 1);
+  pps.v2.y = forecast.position.y + y_m.at<float>(0, 1);
+
+  pps.v3.x = forecast.position.x + x_m.at<float>(0, 2);
+  pps.v3.y = forecast.position.y + y_m.at<float>(0, 2);
+
+  pps.v4.x = forecast.position.x + x_m.at<float>(0, 3);
+  pps.v4.y = forecast.position.y + y_m.at<float>(0, 3);
+}
+
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
                        const unsigned int show_pp)
 {
@@ -489,6 +550,24 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].covariance_yy = pps[j].cov_yy;
         pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
+
+#if PP_VERTICES_VIA_SPEED
+        pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].absSpeed);
+
+        unsigned int k = num_forecasts_ + j * 4;
+
+        pp_objs_[i].track.forecasts[k].position.x = pps[j].v1.x;
+        pp_objs_[i].track.forecasts[k].position.y = pps[j].v1.y;
+
+        pp_objs_[i].track.forecasts[k + 1].position.x = pps[j].v2.x;
+        pp_objs_[i].track.forecasts[k + 1].position.y = pps[j].v2.y;
+
+        pp_objs_[i].track.forecasts[k + 2].position.x = pps[j].v3.x;
+        pp_objs_[i].track.forecasts[k + 2].position.y = pps[j].v3.y;
+
+        pp_objs_[i].track.forecasts[k + 3].position.x = pps[j].v4.x;
+        pp_objs_[i].track.forecasts[k + 3].position.y = pps[j].v4.y;
+#endif
       }
 
 #if DEBUG_PP_TRAJ

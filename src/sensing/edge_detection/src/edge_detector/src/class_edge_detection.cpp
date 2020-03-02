@@ -74,7 +74,10 @@ EdgeDetection::startThread ()
 void
 EdgeDetection::waitThread ()
 {
-        if (mthread_1.joinable()) mthread_1.join();
+  if (mthread_1.joinable())
+  {
+    mthread_1.join();
+  }
 }
 
 

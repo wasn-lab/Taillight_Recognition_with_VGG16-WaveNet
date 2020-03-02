@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   msgs
   camera_utils
+  object_costmap_generator
 )  
 
 find_package(libs)                
@@ -33,6 +34,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${OBJECTCOSTMAPGENERATOR_INCLUDE}
   ${libs_SOURCE_DIR}
   ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
   ${libs_SOURCE_DIR}/Preprocess/NoiseFilter
@@ -48,13 +50,6 @@ link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
 include_directories     (${CUDA_INCLUDE_DIRS}) 
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
-   
-######################
-##   Source file    ##
-######################
-file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/convex_fusion_hino.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/convex_fusion_b1.cpp")
  
 ######################
 ##       CUDA       ##
@@ -68,13 +63,17 @@ set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
  
 ######################
 ##     Vehicle      ##
-######################    
-cuda_add_executable   (${PROJECT_NAME}_hino src/convex_fusion_hino.cpp ${SOURCES_SRCS})
-add_dependencies      (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda libs)
-qt5_use_modules       (${PROJECT_NAME}_hino Widgets)
+######################   
+if (CAR_MODEL_IS_HINO) 
+  cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp src/convex_fusion_hino.cpp)
+  add_dependencies      (${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS}) 
+  target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda libs )
+  qt5_use_modules       (${PROJECT_NAME}_hino Widgets)
+endif()
 
-cuda_add_executable   (${PROJECT_NAME}_b1 src/convex_fusion_b1.cpp ${SOURCES_SRCS})
-add_dependencies      (${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs)
-qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
+if (CAR_MODEL_IS_B1) 
+  cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp src/convex_fusion_b1.cpp)
+  add_dependencies      (${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS}) 
+  target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs object_costmap_generator)
+  qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
+endif()

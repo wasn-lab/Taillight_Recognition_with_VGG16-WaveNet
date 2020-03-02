@@ -2,51 +2,51 @@
 
 namespace tpp
 {
-void Point32Impl::set_point_abs(Point32 abs)
+void MyPoint32Impl::set_point_abs(MyPoint32 abs)
 {
   has_abs_ = true;
-  set_Point32(abs_, abs);
+  set_MyPoint32(abs_, abs);
 }
 
-void Point32Impl::set_point_rel(Point32 rel)
+void MyPoint32Impl::set_point_rel(MyPoint32 rel)
 {
   has_rel_ = true;
-  set_Point32(rel_, rel);
+  set_MyPoint32(rel_, rel);
 }
 
-void Point32Impl::set_anchor_abs(PoseRPY32 anchor_abs)
+void MyPoint32Impl::set_anchor_abs(PoseRPY32 anchor_abs)
 {
   has_anchor_abs_ = true;
   set_PoseRPY32(anchor_abs_, anchor_abs);
 }
 
-void Point32Impl::init_point_z()
+void MyPoint32Impl::init_point_z()
 {
   abs_.z = 0.f;
   rel_.z = 0.f;
 }
 
-void Point32Impl::get_point_abs(Point32& abs)
+void MyPoint32Impl::get_point_abs(MyPoint32& abs)
 {
   if (!has_abs_)
   {
     std::runtime_error("No point_abs_ for return");
   }
 
-  set_Point32(abs, abs_);
+  set_MyPoint32(abs, abs_);
 }
 
-void Point32Impl::get_point_rel(Point32& rel)
+void MyPoint32Impl::get_point_rel(MyPoint32& rel)
 {
   if (!has_rel_)
   {
     std::runtime_error("No point_rel_ for return");
   }
 
-  set_Point32(rel, rel_);
+  set_MyPoint32(rel, rel_);
 }
 
-void Point32Impl::get_anchor_abs(PoseRPY32& anchor_abs)
+void MyPoint32Impl::get_anchor_abs(PoseRPY32& anchor_abs)
 {
   if (!has_anchor_abs_)
   {
@@ -56,7 +56,7 @@ void Point32Impl::get_anchor_abs(PoseRPY32& anchor_abs)
   set_PoseRPY32(anchor_abs, anchor_abs_);
 }
 
-void Point32Impl::transform_abs2rel()
+void MyPoint32Impl::transform_abs2rel()
 {
   if (!has_abs_ || !has_anchor_abs_)
   {
@@ -71,7 +71,7 @@ void Point32Impl::transform_abs2rel()
   has_rel_ = true;
 }
 
-void Point32Impl::transform_rel2abs()
+void MyPoint32Impl::transform_rel2abs()
 {
   if (!has_rel_ || !has_anchor_abs_)
   {
