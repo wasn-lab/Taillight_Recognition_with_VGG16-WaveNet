@@ -9,41 +9,44 @@ namespace camera
 {
 const std::string names[id::num_ids] = {
   // New b1
-  "F_center", "F_top_far", "", "", "F_top_close", "R_front", "R_back", "", "L_front", "L_back", "B_top", "",
+  "front_bottom_60", "front_top_far_30", "", "", 
+  "front_top_close_120", "right_front_60", "right_back_60", "",
+  "left_front_60", "left_back_60", "back_top_120", "",
 };
 
 const std::string topics[id::num_ids] = {
-  "/cam/F_center", "/cam/F_top_far", "",           "", "/cam/F_top_close", "/cam/R_front", "/cam/R_back", "",
-  "/cam/L_front",  "/cam/L_back",    "/cam/B_top", "",
+  "/cam/front_bottom_60", "/cam/front_top_far_30", "", "", 
+  "/cam/front_top_close_120", "/cam/right_front_60", "/cam/right_back_60", "",
+  "/cam/left_front_60",  "/cam/left_back_60",    "/cam/back_top_120", "",
 };
 
 const std::string topics_obj[id::num_ids] = {
-  "/CamObjFrontCenter",
-  "/CamObjFrontTopFar",
+  "/cam_obj/front_bottom_60",
+  "/cam_obj/front_top_far_30",
   "",
   "",
-  "/CamObjFrontTopClose",
-  "/CamObjRightFront",
-  "/CamObjRightBack",
+  "/cam_obj/front_top_close_120",
+  "/cam_obj/right_front_60",
+  "/cam_obj/right_back_60",
   "",
-  "/CamObjLeftFront",
-  "/CamObjLeftBack",
-  "/CamObjBackTop",
+  "/cam_obj/left_front_60",
+  "/cam_obj/left_back_60",
+  "/cam_obj/back_top_120",
   "",
 };
 
 const bool distortion[id::num_ids] = {
-  false,  // F_center
-  false,  // F_top_far
+  false,  // front_bottom_60
+  false,  // front_top_far_30
   false,  //
   false,  //
-  true,  // F_top_close
-  false,  // R_front
-  false,  // R_rear
+  true,   // front_top_close_120
+  false,  // right_front_60
+  false,  // right_back_60
   false,  //
-  false,  // L_front
-  false,  // L_rear
-  true,  // B_top
+  false,  // left_front_60
+  false,  // left_back_60
+  true,   // back_top_120
   false,  //
 };
 

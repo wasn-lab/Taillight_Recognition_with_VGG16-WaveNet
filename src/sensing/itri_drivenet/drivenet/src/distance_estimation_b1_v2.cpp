@@ -71,13 +71,13 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
 void DistanceEstimation::initParams()
 { 
   // camId: 0 (Front Center)
-  params[camera::id::front_60].regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
+  params[camera::id::front_bottom_60].regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
                              1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
-  params[camera::id::front_60].regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
-  params[camera::id::front_60].regionHeightSlope_y = { 0.12,  0.209, 0.27,   0.337,  0.44,   1.02,  3.87,
+  params[camera::id::front_bottom_60].regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  params[camera::id::front_bottom_60].regionHeightSlope_y = { 0.12,  0.209, 0.27,   0.337,  0.44,   1.02,  3.87,
                                   -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
-  params[camera::id::front_60].regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
-  params[camera::id::front_60].regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+  params[camera::id::front_bottom_60].regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
+  params[camera::id::front_bottom_60].regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
   // camId: 4 (Front Top)
   params[camera::id::front_top_close_120].regionHeight_x = { 1207, 1002, 740, 574, 460, 379, 320, 272, 231, 198, 171,
@@ -117,10 +117,10 @@ void DistanceEstimation::initShrinkArea()
 {
   // Area needs to shrink
   // From x 6 - 50 m, y -3 to +3 m.
-  ShrinkArea[camera::id::front_60].LeftLinePoint1 = cv::Point(869, 914);
-  ShrinkArea[camera::id::front_60].LeftLinePoint2 = cv::Point(0, 1207);
-  ShrinkArea[camera::id::front_60].RightLinePoint1 = cv::Point(1097, 914);
-  ShrinkArea[camera::id::front_60].RightLinePoint2 = cv::Point(1746, 1207);
+  ShrinkArea[camera::id::front_bottom_60].LeftLinePoint1 = cv::Point(869, 914);
+  ShrinkArea[camera::id::front_bottom_60].LeftLinePoint2 = cv::Point(0, 1207);
+  ShrinkArea[camera::id::front_bottom_60].RightLinePoint1 = cv::Point(1097, 914);
+  ShrinkArea[camera::id::front_bottom_60].RightLinePoint2 = cv::Point(1746, 1207);
 
   // From x 0 - 7 m, y -2 to +2 m.
   ShrinkArea[camera::id::front_top_close_120].LeftLinePoint1 = cv::Point(510, 272);
@@ -137,10 +137,10 @@ void DistanceEstimation::initShrinkArea()
 
 void DistanceEstimation::initDetectArea()
 {
-  area[camera::id::front_60].LeftLinePoint1 = cv::Point(636, 914);
-  area[camera::id::front_60].LeftLinePoint2 = cv::Point(-1817, 1207);
-  area[camera::id::front_60].RightLinePoint1 = cv::Point(1371, 914);
-  area[camera::id::front_60].RightLinePoint2 = cv::Point(3801, 1207);
+  area[camera::id::front_bottom_60].LeftLinePoint1 = cv::Point(636, 914);
+  area[camera::id::front_bottom_60].LeftLinePoint2 = cv::Point(-1817, 1207);
+  area[camera::id::front_bottom_60].RightLinePoint1 = cv::Point(1371, 914);
+  area[camera::id::front_bottom_60].RightLinePoint2 = cv::Point(3801, 1207);
 
   area[camera::id::front_top_close_120].LeftLinePoint1 = cv::Point(294, 171);
   area[camera::id::front_top_close_120].LeftLinePoint2 = cv::Point(-1422, 1207);
@@ -392,7 +392,7 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
 
 float DistanceEstimation::RatioDefine(camera::id cam_id, int cls)
 {
-  if (cam_id == camera::id::front_60)
+  if (cam_id == camera::id::front_bottom_60)
   {
     switch (cls)
     {
@@ -496,10 +496,10 @@ int DistanceEstimation::BoxShrink(camera::id cam_id, std::vector<int> Points_src
 
   double shrink_ratio;
 
-  if (cam_id == camera::id::front_60)
+  if (cam_id == camera::id::front_bottom_60)
   {
-    area_id_L = CheckPointInArea(ShrinkArea[camera::id::front_60], Points_src[1], Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea[camera::id::front_60], Points_src[2], Points_src[3]);
+    area_id_L = CheckPointInArea(ShrinkArea[camera::id::front_bottom_60], Points_src[1], Points_src[3]);
+    area_id_R = CheckPointInArea(ShrinkArea[camera::id::front_bottom_60], Points_src[2], Points_src[3]);
   }
   else if (cam_id == camera::id::front_top_close_120)
   {
@@ -576,7 +576,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
   }
 
   /// 1
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120)
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -696,7 +696,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     obstacle_l = 2.5; /*obstacle_w = 2.5;*/
   }                   // obstacle_l = 7
 
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120 ||
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 ||
       cam_id == camera::id::back_top_120)
   {
     std::vector<int> PointsSrc = { class_id, x1, x2, y2 };
@@ -710,7 +710,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   p0 = GetPointDist(x1, y2, cam_id);
   p3 = GetPointDist(x2, y2, cam_id);
 
-  if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120)
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -803,7 +803,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 
   if (de_mode == 1)
   {
-    if (cam_id == camera::id::front_60)
+    if (cam_id == camera::id::front_bottom_60)
     {
       y_loc = (int)((float)y_loc / img_w * img_al_w);
       x_loc = (int)((float)x_loc / img_h * img_al_h);
@@ -816,7 +816,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
   }
   else
   {
-    if (cam_id == camera::id::front_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
+    if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
     {
       if (Parmas.regionDist_x.size() != 0)
       {

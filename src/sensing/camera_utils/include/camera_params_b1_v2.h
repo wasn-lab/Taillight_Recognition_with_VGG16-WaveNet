@@ -16,7 +16,7 @@ namespace camera
 enum id
 {
   begin = 0,
-  front_60 = begin,           // 0
+  front_bottom_60 = begin,           // 0
   front_top_far_30,           // 1
   _dummy0,                    // 2
   _dummy1,                    // 3
@@ -32,7 +32,7 @@ enum id
 };
 
 static_assert(id::begin == 0, "The first camera id is 0");
-static_assert(id::front_60 == 0, "The camera id 0 is also front_60");
+static_assert(id::front_bottom_60 == 0, "The camera id 0 is also front_bottom_60");
 static_assert(id::num_ids == 12, "The number of ids is 12");
 
 extern const std::string names[id::num_ids];
