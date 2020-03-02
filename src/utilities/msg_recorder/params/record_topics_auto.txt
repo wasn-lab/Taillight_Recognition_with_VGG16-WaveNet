@@ -9,15 +9,18 @@
 # /points_map
 
 # Raw image
-/cam/F_right
+# /cam/F_right
 /cam/F_center
-/cam/F_left
-/cam/F_top
+# /cam/F_left
+# /cam/F_top
 /cam/R_front
 /cam/R_rear
 /cam/L_front
 /cam/L_rear
 /cam/B_top
+# 
+/cam/F_top_far
+/cam/F_top_close
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -30,15 +33,20 @@
 # /cam/L_rear/detect_image
 # /cam/B_top/detect_image
 
-/CamObjFrontRight
+# /CamObjFrontRight
 /CamObjFrontCenter
-/CamObjFrontLeft
-/CamObjFrontTop
+# /CamObjFrontLeft
+# /CamObjFrontTop
 /CamObjRightFront
 /CamObjRightBack
 /CamObjLeftFront
 /CamObjLeftBack
 /CamObjBackTop
+#
+/CamObjFrontTopFar
+/CamObjFrontTopClose
+
+
 # Camera polygon
 /CameraDetection/polygon
 
@@ -113,3 +121,7 @@
 
 # pedcross
 /PedCross/Pedestrians
+
+# Traffic light
+/LightResultOutput
+
