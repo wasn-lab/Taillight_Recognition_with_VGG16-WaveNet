@@ -1,6 +1,9 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
+  <!--tf rear_wheel-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
+
   <!-- Base waypoint pub node-->
   <node pkg="astar_initial" type="astar_initial" name="astar_initial" output="screen" />
     
