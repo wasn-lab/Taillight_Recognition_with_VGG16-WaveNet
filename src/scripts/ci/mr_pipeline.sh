@@ -32,13 +32,28 @@ python src/scripts/ci/check_file_mod.py
 python src/scripts/ci/check_filename.py
 python src/scripts/ci/check_symbolic_link.py
 
+readonly merge_base=$(git merge-base origin/master HEAD)
+readonly affected_files=$(git diff --name-only ${merge_base})
+for fname in ${affected_files}; do
+  if [[ -f ${fname} ]]; then
+    touch ${fname}
+  fi
+done
+
 readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
 echo ${clean_build_status}
 if [[ "${clean_build_status}" =~ "Clean build" ]]; then
   bash src/scripts/ci/module_build.sh
 else
+  set +e
   catkin_make
+  if [[ ! "$?" == "0" ]]; then
+    set -e
+    echo "Dirty build fails. Try again with clean build."
+    bash src/scripts/ci/module_build.sh
+  fi
 fi
+set -e
 
 set +x
 source devel/setup.bash

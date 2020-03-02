@@ -1,16 +1,6 @@
 Header header
 
-# classification result
-# 0: Unknown
-# 1: Person
-# 2: Bicycle
-# 3: Motobike
-# 4: Car
-# 5: Bus
-# 6: Truck
-# 7: Sign
-# 8: Light
-# 9: Park
+# classification result, see include/detected_object_class_id.h for definitions
 uint16 classId
 
 float32 distance
@@ -27,10 +17,7 @@ Quaternion bOrient
 
 TrackInfo track
 
-# detection source
-# 0: Camera
-# 1: Radar
-# 2: Lidar
+# detection source, see include/fusion_source_id.h for definition.'
 uint16 fusionSourceId
 
 CamInfo camInfo

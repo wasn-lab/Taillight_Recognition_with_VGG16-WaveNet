@@ -43,6 +43,16 @@ public:
     input_shift_m_ = shift_m;
   }
 
+  void set_pp_obj_min_kmph(const double pp_obj_min_kmph)
+  {
+    pp_obj_min_kmph_ = pp_obj_min_kmph;
+  }
+
+  void set_pp_obj_max_kmph(const double pp_obj_max_kmph)
+  {
+    pp_obj_max_kmph_ = pp_obj_max_kmph;
+  }
+
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
@@ -64,12 +74,15 @@ private:
   // warning: near 0 would distord pp results
   long double input_shift_m_ = 0.;
 
+  double pp_obj_min_kmph_ = 0.;
+  double pp_obj_max_kmph_ = 1000.;
+
   float confidence_thr_ = 0.f;
 
   void compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y);
   void normalize_pos(std::vector<long double>& data_x, std::vector<long double>& data_y);
 
-  void create_pp_input(const Point32 point, std::vector<long double>& data_x, std::vector<long double>& data_y);
+  void create_pp_input(const MyPoint32 point, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
   void create_pp_input_main(const msgs::TrackInfo& track, std::vector<long double>& data_x,
                             std::vector<long double>& data_y);
@@ -100,6 +113,8 @@ private:
 
   void confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
                                std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
+
+  void pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx, const float abs_speed);
 };
 }  // namespace tpp
 

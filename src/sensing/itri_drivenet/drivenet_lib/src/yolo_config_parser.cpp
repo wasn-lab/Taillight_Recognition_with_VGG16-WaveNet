@@ -59,10 +59,13 @@ static bool networkTypeValidator(const char* flagName, std::string value)
 {
   if (((FLAGS_network_type) == "yolov2") || ((FLAGS_network_type) == "yolov2-tiny") ||
       ((FLAGS_network_type) == "yolov3") || ((FLAGS_network_type) == "yolov3-tiny"))
+  {
     return true;
-
+  }
   else
+  {
     std::cout << "Invalid value for --" << flagName << ": " << value << std::endl;
+  }
 
   return false;
 }
@@ -70,9 +73,13 @@ static bool networkTypeValidator(const char* flagName, std::string value)
 static bool precisionTypeValidator(const char* flagName, std::string value)
 {
   if ((FLAGS_precision == "kFLOAT") || (FLAGS_precision == "kINT8") || (FLAGS_precision == "kHALF"))
+  {
     return true;
+  }
   else
+  {
     std::cout << "Invalid value for --" << flagName << ": " << value << std::endl;
+  }
   return false;
 }
 
@@ -88,7 +95,9 @@ static bool verifyRequiredFlags()
                                                                        "of '.cfg' format");
   if (!(networkTypeValidator("network_type", FLAGS_network_type) &&
         precisionTypeValidator("precision", FLAGS_precision)))
+  {
     return false;
+  }
 
   return true;
 }
@@ -183,8 +192,10 @@ bool getViewDetections()
 bool getSaveDetections()
 {
   if (FLAGS_save_detections)
+  {
     assert(!isFlagDefault(FLAGS_save_detections_path) && "save_detections path has to be set if save_detections is set "
                                                          "to true");
+  }
   return FLAGS_save_detections;
 }
 
