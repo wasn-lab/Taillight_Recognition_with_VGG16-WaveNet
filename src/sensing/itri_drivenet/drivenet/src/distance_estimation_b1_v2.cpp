@@ -153,7 +153,7 @@ void DistanceEstimation::initDetectArea()
   area[camera::id::back_top_120].RightLinePoint2 = cv::Point(3152, 1207);
 }
 
-int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows,
+int DistanceEstimation::ReadDistanceFromJson(const std::string& filename, cv::Point3d** dist_in_cm, const int rows,
                                              const int cols)
 {
   // dist_in_cm should be malloc by caller.

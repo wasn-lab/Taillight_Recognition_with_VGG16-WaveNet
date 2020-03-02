@@ -36,7 +36,7 @@ private:
   void initShrinkArea();
   void initDetectArea();
 
-  int ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
+  int ReadDistanceFromJson(const std::string& filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
   float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
   float ComputeObjectXDistWithSlope(int piexl_loc_x, int piexl_loc_y, std::vector<int> regionHeight,
                                     std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
