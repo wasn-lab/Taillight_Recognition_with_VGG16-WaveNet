@@ -389,7 +389,7 @@ visualization_msgs::Marker MarkerGen::create_pp_marker_point(const unsigned int 
 
   marker.pose.position.x = pos.x;
   marker.pose.position.y = pos.y;
-  marker.pose.position.z = 0.;
+  marker.pose.position.z = 0.1;
 
   marker.pose.orientation.x = 0;
   marker.pose.orientation.y = 0;
