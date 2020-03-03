@@ -244,4 +244,4 @@ int release_cv_mat_if_necessary(cv::Mat& img)
   return 0;
 }
 
-};  // namespace
+} // namespace camera
