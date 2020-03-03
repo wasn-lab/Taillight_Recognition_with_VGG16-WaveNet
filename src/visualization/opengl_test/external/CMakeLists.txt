@@ -11,6 +11,15 @@ add_definitions(
 	-D_CRT_SECURE_NO_WARNINGS
 )
 
+### GLFW ###
+
+add_subdirectory (glfw-3.1.2)
+
+include_directories(
+	glfw-3.1.2/include/GLFW/
+	glew-1.13.0/include/
+)
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 set(OPENGL_LIBRARY
 	${OPENGL_LIBRARY}
