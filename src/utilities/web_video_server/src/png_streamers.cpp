@@ -1,5 +1,6 @@
 #include "web_video_server/png_streamers.h"
 #include "async_web_server_cpp/http_reply.hpp"
+#include <opencv2/core/version.hpp>
 
 namespace web_video_server
 {
