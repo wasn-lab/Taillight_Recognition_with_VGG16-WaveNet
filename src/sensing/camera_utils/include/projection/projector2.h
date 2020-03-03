@@ -2,6 +2,7 @@
 #define PROJECTOR2_H
 
 #include "parameters.h"
+#include "camera_params_b1.h"
 #include <opencv2/opencv.hpp>
 #define _USE_MATH_DEFINES
 using namespace cv;
@@ -28,7 +29,7 @@ private:
   // static const int CALIBRATE_COMPLETED = F_left;
 
 public:
-  void init(int camera_id);
+  void init(camera::id camera_id);
   vector<int> project(float x, float y, float z);
 };
 #endif

@@ -9,6 +9,8 @@
 
 #if CAR_MODEL_IS_B1
 #include "camera_params_b1.h"
+#elif CAR_MODEL_IS_B1_V2
+#include "camera_params_b1_v2.h"
 #elif CAR_MODEL_IS_HINO
 #include "camera_params_hino.h"
 #elif CAR_MODEL_IS_C
