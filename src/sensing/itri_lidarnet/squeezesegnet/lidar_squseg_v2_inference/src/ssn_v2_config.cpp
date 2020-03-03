@@ -270,7 +270,9 @@ TF_inference::TF_init ()
   string pb_dir = (ros::package::getPath ("lidar_squseg_inference") + "/model/SqueezeSegNet/" + data_set + "/" + phi_center_name + ".pb");
   
   if (! (BFS::exists (pb_dir)))
+  {
     pb_dir = (ros::package::getPath ("lidar_squseg_inference") + "/model/SqueezeSegNet/" + "hino1" + "/" + phi_center_name + ".pb");
+  }
   std::cout << "pb_dir: " <<  pb_dir << std::endl;
   //TF_status status;
   TF_Graph *graph = tf_utils::LoadGraph (pb_dir.c_str ());
