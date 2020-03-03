@@ -15,9 +15,9 @@
 namespace BFS = boost::filesystem;
 
 
-void norm_mean(float* mean_ptr,string data_set,char ViewType,float phi_center);
+void norm_mean(float* mean_ptr, const string& data_set,char ViewType,float phi_center);
 
-void norm_std(float* std_ptr, string data_set,char ViewType,float phi_center);
+void norm_std(float* std_ptr, const string& data_set,char ViewType,float phi_center);
 
 vector<float> phi_center_grid(char ViewType);
 
