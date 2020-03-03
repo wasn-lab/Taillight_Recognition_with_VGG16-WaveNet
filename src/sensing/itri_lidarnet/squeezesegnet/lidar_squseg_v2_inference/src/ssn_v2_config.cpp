@@ -2,7 +2,7 @@
 
 void
 norm_mean (float* mean_ptr,
-           string data_set,
+           const string& data_set,
            char ViewType,
            float phi_center)
 {
@@ -98,7 +98,7 @@ norm_mean (float* mean_ptr,
 
 void
 norm_std (float* std_ptr,
-          string data_set,
+          const string& data_set,
           char ViewType,
           float phi_center)
 {
