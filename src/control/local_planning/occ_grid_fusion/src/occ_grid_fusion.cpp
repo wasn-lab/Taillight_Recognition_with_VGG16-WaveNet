@@ -14,7 +14,9 @@ ros::Publisher occ_grid_all_pub;
 ros::Publisher occ_grid_sensor_all_pub;
 ros::Publisher occ_grid_all_expand_pub;
 ros::Publisher occ_grid_wayarea_pub;
-// ros::Publisher path_vehicle_pub;
+ros::Publisher path_vehicle_pub;
+ros::Publisher path_vehicle_left_pub;
+ros::Publisher path_vehicle_right_pub;
 nav_msgs::OccupancyGrid costmap_;
 nav_msgs::OccupancyGrid lidcostmap;
 nav_msgs::OccupancyGrid camcostmap;
@@ -120,16 +122,92 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
   {
     path_vehicle.poses[i].pose.position.x = (path.poses[i].pose.position.x-current_pose.x)*std::cos(rot_ang) - (path.poses[i].pose.position.y-current_pose.y)*std::sin(rot_ang);
     path_vehicle.poses[i].pose.position.y = (path.poses[i].pose.position.x-current_pose.x)*std::sin(rot_ang) + (path.poses[i].pose.position.y-current_pose.y)*std::cos(rot_ang);
-    // path_vehicle.poses[i].pose.position.z = 0;
+    path_vehicle.poses[i].pose.position.z = -3;
   }
-  // path_vehicle.header.frame_id = "base_link";
-  // path_vehicle.header.stamp = ros::Time::now();
-  // path_vehicle_pub.publish(path_vehicle);
+  path_vehicle.header.frame_id = "base_link";
+  path_vehicle.header.stamp = ros::Time::now();
+  path_vehicle_pub.publish(path_vehicle);
+
+
+
+
+  nav_msgs::Path path_vehicle_left;
+  geometry_msgs::PoseStamped path_vehicle_left_pose;
+  for (int i = 1; i < path_vehicle.poses.size(); i+=3)
+  {
+    double a = path_vehicle.poses[i].pose.position.y - path_vehicle.poses[i-1].pose.position.y;
+    double b = path_vehicle.poses[i-1].pose.position.x - path_vehicle.poses[i].pose.position.x;
+    double dis_ab = std::sqrt(a*a + b*b);
+    double x_c = (path_vehicle.poses[i].pose.position.x + path_vehicle.poses[i-1].pose.position.x) / 2.0;
+    double y_c = (path_vehicle.poses[i].pose.position.y + path_vehicle.poses[i-1].pose.position.y) / 2.0;
+    path_vehicle_left_pose.pose.position.x = a * (-left_waylength)/dis_ab + x_c;
+    path_vehicle_left_pose.pose.position.y = b * (-left_waylength)/dis_ab + y_c;
+    path_vehicle_left_pose.pose.position.z = path_vehicle.poses[i].pose.position.z;
+    path_vehicle_left.poses.push_back(path_vehicle_left_pose);
+  }
+  path_vehicle_left.header.frame_id = "base_link";
+  path_vehicle_left.header.stamp = ros::Time::now();
+  path_vehicle_left_pub.publish(path_vehicle_left);
+
+  nav_msgs::Path path_vehicle_right;
+  geometry_msgs::PoseStamped path_vehicle_right_pose;
+  for (int i = 1; i < path_vehicle.poses.size(); i+=3)
+  {
+    double a = path_vehicle.poses[i].pose.position.y - path_vehicle.poses[i-1].pose.position.y;
+    double b = path_vehicle.poses[i-1].pose.position.x - path_vehicle.poses[i].pose.position.x;
+    double dis_ab = std::sqrt(a*a + b*b);
+    double x_c = (path_vehicle.poses[i].pose.position.x + path_vehicle.poses[i-1].pose.position.x) / 2.0;
+    double y_c = (path_vehicle.poses[i].pose.position.y + path_vehicle.poses[i-1].pose.position.y) / 2.0;
+    path_vehicle_right_pose.pose.position.x = a * right_waylength/dis_ab + x_c;
+    path_vehicle_right_pose.pose.position.y = b * right_waylength/dis_ab + y_c;
+    path_vehicle_right_pose.pose.position.z = path_vehicle.poses[i].pose.position.z;
+    path_vehicle_right.poses.push_back(path_vehicle_right_pose);
+  }
+  path_vehicle_right.header.frame_id = "base_link";
+  path_vehicle_right.header.stamp = ros::Time::now();
+  path_vehicle_right_pub.publish(path_vehicle_right);
+
+
+
+
+
 
   setwayareaoccgridmap();
   int height = wayareaoccgridmap.info.height; // lateral
   int width = wayareaoccgridmap.info.width; // longitude
   std::vector<index_range> j_index;
+  // for (int j = 0; j < width; j++)
+  // {
+  //   double x_j = j*grid_length_x_/width - grid_length_x_/2 + grid_position_x_;
+  //   int min_m = 0;
+  //   double min_value = 100;
+  //   for (int m = 0; m < path_vehicle.poses.size(); m++)
+  //   {
+  //     double m_value = std::fabs(path_vehicle.poses[m].pose.position.x - x_j);
+  //     if (m_value < min_value)
+  //     {
+  //       min_value = m_value;
+  //       min_m = m;
+  //     }
+  //   }
+
+  //   double min_y = path_vehicle.poses[min_m].pose.position.y - right_waylength;
+  //   double max_y = path_vehicle.poses[min_m].pose.position.y + left_waylength;
+    
+  //   index_range i_index_range;
+  //   i_index_range.min_index = std::ceil(height*(min_y - (-grid_length_y_/2 + grid_position_y_))/grid_length_y_);
+  //   if (i_index_range.min_index < 0)
+  //   {
+  //     i_index_range.min_index = 0;
+  //   }
+  //   i_index_range.max_index = std::ceil(height*(max_y - (-grid_length_y_/2 + grid_position_y_))/grid_length_y_);
+  //   if (i_index_range.max_index > height)
+  //   {
+  //     i_index_range.max_index = height;
+  //   }
+
+  //   j_index.push_back(i_index_range);
+  // }
   for (int j = 0; j < width; j++)
   {
     double x_j = j*grid_length_x_/width - grid_length_x_/2 + grid_position_x_;
@@ -332,7 +410,9 @@ int main(int argc, char** argv)
   occ_grid_all_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_all", 10, true);
   occ_grid_all_expand_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_all_expand", 10, true);
   occ_grid_wayarea_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_wayarea", 10, true);
-  // path_vehicle_pub = node.advertise<nav_msgs::Path>("path_vehicle", 10, true);
+  path_vehicle_pub = node.advertise<nav_msgs::Path>("path_vehicle", 10, true);
+  path_vehicle_left_pub = node.advertise<nav_msgs::Path>("path_vehicle_left", 10, true);
+  path_vehicle_right_pub = node.advertise<nav_msgs::Path>("path_vehicle_right", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
   // { 
