@@ -1,274 +1,173 @@
 #include "convex_fusion_b1.h"
-#include "VoxelGrid_CUDA.h"
-#include "VoxelFilter_CUDA.h"
-#include "UseApproxMVBB.h"
 
-using namespace std;
-using namespace pcl;
-
-#define CHECKTIMES 20
-
-mutex syncLock;
-pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-vector<msgs::DetectedObject> ObjectFC;
-vector<msgs::DetectedObject> ObjectFT;
-vector<msgs::DetectedObject> ObjectBT;
-size_t heartBeat[4];
-ros::Time frame_time;
-
-void callback_LidarAllNonGround(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
+void ConvexFusionB1::initial(std::string nodename, int argc, char** argv)
 {
-  syncLock.lock();
-  *ptr_cur_cloud = *msg;
-  heartBeat[0] = 0;
-  syncLock.unlock();
-  // cout<<"Lidar"<<endl;
+  ros::init(argc, argv, nodename);
+  ros::NodeHandle n;
+
+  error_code_pub_ = n.advertise<msgs::ErrorCode>("/ErrorCode", 1);
+  camera_detection_pub_ = n.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 1);
+  occupancy_grid_publisher_ = n.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 }
 
-void callback_CameraFC(const msgs::DetectedObjectArray::ConstPtr& msg)
+void ConvexFusionB1::registerCallBackLidarAllNonGround(
+    void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
 {
-  syncLock.lock();
-  ObjectFC = msg->objects;
-  frame_time = msg->header.stamp;
-  heartBeat[1] = 0;
-  syncLock.unlock();
-  // cout<<"30"<<endl;
+  ros::NodeHandle n;
+
+  static ros::Subscriber lidarall_nonground_sub = n.subscribe("/LidarAll/NonGround", 1, callback_nonground);
 }
 
-void callback_CameraFT(const msgs::DetectedObjectArray::ConstPtr& msg)
+void ConvexFusionB1::registerCallBackCameraDetection(
+    void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
+    void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
+    void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&))
 {
-  syncLock.lock();
-  ObjectFT = msg->objects;
-  heartBeat[2] = 0;
-  syncLock.unlock();
-  // cout<<"60"<<endl;
+  ros::NodeHandle n;
+
+  static ros::Subscriber camera_front_60_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback_front_60);
+  static ros::Subscriber camera_top_front_120_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback_top_front_120);
+  static ros::Subscriber camera_top_rear_120_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
 }
 
-void callback_CameraBT(const msgs::DetectedObjectArray::ConstPtr& msg)
+void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
 {
-  syncLock.lock();
-  ObjectBT = msg->objects;
-  heartBeat[3] = 0;
-  syncLock.unlock();
-  // cout<<"120"<<endl;
+  static uint32_t seq;
+
+  msgs::ErrorCode objMsg;
+  objMsg.header.seq = seq++;
+  objMsg.header.stamp = ros::Time::now();
+  objMsg.header.frame_id = frame_id;
+  objMsg.module = module_id;
+  objMsg.event = error_code;
+
+  error_code_pub_.publish(objMsg);
 }
 
-int main(int argc, char** argv)
+void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
+                                       ros::Time rostime, std::string& frame_id)
 {
-  cout << "===================== convex_fusion startup =====================" << endl;
-
-  cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
-  cout.precision(3);
-
-  ConvexFusionB1::initial("convex_fusion", argc, argv);
-  ConvexFusionB1::RegisterCallBackLidarAllNonGround(callback_LidarAllNonGround);
-  ConvexFusionB1::RegisterCallBackCameraDetection(callback_CameraFC, callback_CameraFT, callback_CameraBT);
-
-  ros::Rate loop_rate(10);
-  while (ros::ok())
+  if (use_gridmap_publish_)
   {
-    StopWatch stopWatch;
+    costmap_ = cosmapGener_.initGridMap();
+  }
 
-    syncLock.lock();
-
-    //------------------------------------------------------------------------- LiDAR
-
-    PointCloud<PointXYZI> LidarAllNonGround;
-    LidarAllNonGround = *ptr_cur_cloud;
-
-    if (heartBeat[0] > CHECKTIMES)
+  msgs::DetectedObjectArray msgObjArr;
+  float min_z = -3;
+  float max_z = -1.5;
+  for (int i = 0; i < cluster_size; i++)
+  {
+    msgs::DetectedObject msgObj;
+    msgObj.distance = -1;
+    msgObj.classId = cluster_info[i].cluster_tag;
+    size_t convex_hull_size = cluster_info[i].convex_hull.size();
+    if (cluster_info[i].cluster_tag != static_cast<int>(DriveNet::common_type_id::other)) // If type is Unknown.
     {
-      LidarAllNonGround.clear();
-      heartBeat[0] = 0;
-      cout << "[Convex Fusion]: no LidarAllNonGroud" << endl;
-    }
-    else
-    {
-      heartBeat[0]++;
-    }
+      msgObj.distance = 0;
+      float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
+      float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
+      msgObj.cPoint.objectHigh = top_z - bottom_z;
+      
+      /// Coordinate system
+      ///           ^          ///             ^
+      ///      ^   /           ///        ^   /
+      ///    z |  /            ///      z |  /
+      ///      | /  y          ///        | /  x
+      ///      ----->          ///   <-----
+      ///        x             ///       y
 
-    //------------------------------------------------------------------------- Camera
+      /// cluster_info_bbox    ///  bbox_p0
+      ///   p6------p2         ///   p5------p6
+      ///   /|  2   /|         ///   /|  2   /|
+      /// p5-|----p1 |         /// p1-|----p2 |
+      ///  |p7----|-p3   ->    ///  |p4----|-p7
+      ///  |/  1  | /          ///  |/  1  | /
+      /// p4-----P0            /// p0-----P3
 
-    size_t NumberABB = ObjectFC.size() + ObjectFT.size() + ObjectBT.size();
+      msgs::PointXYZ bbox_p0, bbox_p1, bbox_p2, bbox_p3, bbox_p4, bbox_p5, bbox_p6, bbox_p7;
+      /// bottom
+      bbox_p0.x = cluster_info_bbox[i].min.x;
+      bbox_p0.y = cluster_info_bbox[i].min.y;
+      bbox_p0.z = bottom_z;
+      bbox_p3.x = cluster_info_bbox[i].min.x;
+      bbox_p3.y = cluster_info_bbox[i].max.y;
+      bbox_p3.z = bottom_z;
+      bbox_p7.x = cluster_info_bbox[i].max.x;
+      bbox_p7.y = cluster_info_bbox[i].max.y;
+      bbox_p7.z = bottom_z;
+      bbox_p4.x = cluster_info_bbox[i].max.x;
+      bbox_p4.y = cluster_info_bbox[i].min.y;
+      bbox_p4.z = bottom_z;
+      /// top
+      bbox_p1 = bbox_p0;
+      bbox_p1.z = top_z;
+      bbox_p2 = bbox_p3;
+      bbox_p2.z = top_z;
+      bbox_p6 = bbox_p7;
+      bbox_p6.z = top_z;
+      bbox_p5 = bbox_p4;
+      bbox_p5.z = top_z;
+      msgObj.bPoint.p0 = bbox_p0;
+      msgObj.bPoint.p3 = bbox_p3;
+      msgObj.bPoint.p7 = bbox_p7;
+      msgObj.bPoint.p4 = bbox_p4;
 
-    CLUSTER_INFO CameraABB[NumberABB];
-
-    size_t CNT = 0;
-    for (size_t i = 0; i < ObjectFC.size(); i++)
-    {
-      CameraABB[i + CNT].min.x = ObjectFC[i].bPoint.p0.x;
-      CameraABB[i + CNT].min.y = ObjectFC[i].bPoint.p0.y;
-      CameraABB[i + CNT].min.z = ObjectFC[i].bPoint.p0.z;
-      CameraABB[i + CNT].max.x = ObjectFC[i].bPoint.p6.x;
-      CameraABB[i + CNT].max.y = ObjectFC[i].bPoint.p6.y;
-      CameraABB[i + CNT].max.z = ObjectFC[i].bPoint.p6.z;
-      CameraABB[i + CNT].cluster_tag = ObjectFC[i].classId;
-    }
-    CNT += ObjectFC.size();
-
-    for (size_t i = 0; i < ObjectFT.size(); i++)
-    {
-      CameraABB[i + CNT].min.x = ObjectFT[i].bPoint.p0.x;
-      CameraABB[i + CNT].min.y = ObjectFT[i].bPoint.p0.y;
-      CameraABB[i + CNT].min.z = ObjectFT[i].bPoint.p0.z;
-      CameraABB[i + CNT].max.x = ObjectFT[i].bPoint.p6.x;
-      CameraABB[i + CNT].max.y = ObjectFT[i].bPoint.p6.y;
-      CameraABB[i + CNT].max.z = ObjectFT[i].bPoint.p6.z;
-      CameraABB[i + CNT].cluster_tag = ObjectFT[i].classId;
-    }
-    CNT += ObjectFT.size();
-
-    for (size_t i = 0; i < ObjectBT.size(); i++)
-    {
-      CameraABB[i + CNT].min.x = ObjectBT[i].bPoint.p0.x;
-      CameraABB[i + CNT].min.y = ObjectBT[i].bPoint.p0.y;
-      CameraABB[i + CNT].min.z = ObjectBT[i].bPoint.p0.z;
-      CameraABB[i + CNT].max.x = ObjectBT[i].bPoint.p6.x;
-      CameraABB[i + CNT].max.y = ObjectBT[i].bPoint.p6.y;
-      CameraABB[i + CNT].max.z = ObjectBT[i].bPoint.p6.z;
-      CameraABB[i + CNT].cluster_tag = ObjectBT[i].classId;
-    }
-
-    for (size_t i = 0; i < NumberABB; i++)
-    {
-      float SCALE = 0;
-
-      switch (CameraABB[i].cluster_tag)
+      if (convex_hull_size > 0)
       {
-        case 0:  // Unknown
-          SCALE = 0;
-          break;
-
-        case 1:  // Person
-          if (CameraABB[i].min.x < 10)
-          {
-            SCALE = 1;
-          }
-          else if (CameraABB[i].min.x >= 10 && CameraABB[i].min.x <= 30)
-          {
-            SCALE = 1.5;
-          }
-          else if (CameraABB[i].min.x > 30)
-          {
-            SCALE = 2;
-          }
-          break;
-
-        case 2:  // Bicycle
-        case 3:  // Motobike
-          if (CameraABB[i].min.x < 15)
-          {
-            SCALE = 0.8;
-          }
-          else if (CameraABB[i].min.x >= 15 && CameraABB[i].min.x <= 30)
-          {
-            SCALE = 1.2;
-          }
-          else if (CameraABB[i].min.x > 30)
-          {
-            SCALE = 1.6;
-          }
-          break;
-
-        case 4:  // Car
-        case 5:  // Bus
-        case 6:  // Truck
-          if (CameraABB[i].min.x < 15)
-          {
-            SCALE = 0.2;
-          }
-          else if (CameraABB[i].min.x >= 15 && CameraABB[i].min.x <= 30)
-          {
-            SCALE = 0.8;
-          }
-          else if (CameraABB[i].min.x > 30)
-          {
-            SCALE = 1.5;
-          }
-          break;
-      }
-
-      CameraABB[i].min.x += -SCALE;
-      CameraABB[i].min.y += +SCALE;
-      CameraABB[i].max.x += +SCALE;
-      CameraABB[i].max.y += -SCALE;
-    }
-
-    if (heartBeat[1] > CHECKTIMES)
-    {
-      ObjectFC.clear();
-      heartBeat[1] = 0;
-      cout << "[Convex Fusion]: no FC" << endl;
-    }
-    else
-    {
-      heartBeat[1]++;
-    }
-
-    if (heartBeat[2] > CHECKTIMES)
-    {
-      ObjectFT.clear();
-      heartBeat[2] = 0;
-      cout << "[Convex Fusion]: no FT" << endl;
-    }
-    else
-    {
-      heartBeat[2]++;
-    }
-
-    if (heartBeat[3] > CHECKTIMES)
-    {
-      ObjectBT.clear();
-      heartBeat[3] = 0;
-      cout << "[Convex Fusion]: no BT" << endl;
-    }
-    else
-    {
-      heartBeat[3]++;
-    }
-
-    //-------------------------------------------------------------------------
-
-    syncLock.unlock();
-
-    if (NumberABB > 0)
-    {
-      for (size_t i = 0; i < LidarAllNonGround.size(); i++)
-      {
-        for (size_t j = 0; j < NumberABB; j++)
+        // bottom
+        for (size_t j = 0; j < convex_hull_size; j++)
         {
-          if (LidarAllNonGround.points[i].x > CameraABB[j].min.x and
-              LidarAllNonGround.points[i].x < CameraABB[j].max.x and
-              LidarAllNonGround.points[i].y < CameraABB[j].min.y and LidarAllNonGround.points[i].y > CameraABB[j].max.y)
-          {
-            CameraABB[j].cloud.push_back(
-                PointXYZ(LidarAllNonGround.points[i].x, LidarAllNonGround.points[i].y, LidarAllNonGround.points[i].z));
-          }
+          msgs::PointXYZ convex_point;
+          convex_point.x = cluster_info[i].convex_hull[j].x;
+          convex_point.y = cluster_info[i].convex_hull[j].y;
+          convex_point.z = bottom_z;
+          msgObj.cPoint.lowerAreaPoints.push_back(convex_point);
+        }
+
+        if (use_gridmap_publish_)
+        {
+          // object To grid map
+          costmap_[cosmapGener_.layer_name_] =
+              cosmapGener_.makeCostmapFromSingleObject(costmap_, cosmapGener_.layer_name_, 8, msgObj, true);
+        }
+      }
+      else
+      {
+        // bottom
+        msgObj.cPoint.lowerAreaPoints.push_back(bbox_p0);
+        msgObj.cPoint.lowerAreaPoints.push_back(bbox_p3);
+        msgObj.cPoint.lowerAreaPoints.push_back(bbox_p7);
+        msgObj.cPoint.lowerAreaPoints.push_back(bbox_p4);
+
+        if (use_gridmap_publish_)
+        {
+          // object To grid map
+          costmap_[cosmapGener_.layer_name_] =
+              cosmapGener_.makeCostmapFromSingleObject(costmap_, cosmapGener_.layer_name_, 8, msgObj, false);
         }
       }
 
-#pragma omp parallel for
-      for (size_t i = 0; i < NumberABB; i++)
-      {
-        UseApproxMVBB bbox2;
-        bbox2.setInputCloud(CameraABB[i].cloud);
-        bbox2.Compute(CameraABB[i].obb_vertex, CameraABB[i].center, CameraABB[i].min, CameraABB[i].max,
-                      CameraABB[i].convex_hull);
-      }
+      msgObj.bPoint.p1 = bbox_p1;
+      msgObj.bPoint.p2 = bbox_p2;
+      msgObj.bPoint.p6 = bbox_p6;
+      msgObj.bPoint.p5 = bbox_p5;
 
-      ConvexFusionB1::Send_CameraResults(CameraABB, NumberABB, frame_time, "lidar");
+      msgObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
+
+      msgObj.header.stamp = rostime;
+      msgObjArr.objects.push_back(msgObj);
     }
-
-    if (stopWatch.getTimeSeconds() > 0.05)
-    {
-      cout << "[Convex Fusion]: too slow " << stopWatch.getTimeSeconds() << "s" << endl << endl;
-    }
-
-    ros::spinOnce();
-    loop_rate.sleep();
   }
-  ConvexFusionB1::send_ErrorCode(0x0006);
+  msgObjArr.header.stamp = rostime;
+  msgObjArr.header.frame_id = frame_id;
 
-  cout << "===================== convex_fusion end   =====================" << endl;
-  return (0);
+  if (use_gridmap_publish_)
+  {
+    // grid map To Occpancy publisher
+    cosmapGener_.OccupancyMsgPublisher(costmap_, occupancy_grid_publisher_, msgObjArr.header);
+  }
+  camera_detection_pub_.publish(msgObjArr);
 }

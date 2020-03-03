@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iomanip>
 
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+
 namespace DriveNet
 {
 cv::Mat blobFromDsImages(const std::vector<cv::Mat>& inputImages, const int& inputH, const int& inputW)
@@ -44,7 +46,9 @@ bool fileExists(const std::string fileName, bool verbose)
   if (!std::experimental::filesystem::exists(std::experimental::filesystem::path(fileName)))
   {
     if (verbose)
+    {
       std::cout << "File does not exist : " << fileName << std::endl;
+    }
     return false;
   }
   return true;
@@ -125,10 +129,13 @@ std::vector<std::string> loadListFromTextFile(const std::string filename)
   while (std::getline(f, line))
   {
     if (line.empty())
+    {
       continue;
-
+    }
     else
+    {
       list.push_back(trim(line));
+    }
   }
 
   return list;
@@ -140,14 +147,20 @@ std::vector<std::string> loadImageList(const std::string filename, const std::st
   for (auto& file : fileList)
   {
     if (fileExists(file, false))
+    {
       continue;
+    }
     else
     {
       std::string prefixed = prefix + file;
       if (fileExists(prefixed, false))
+      {
         file = prefixed;
+      }
       else
+      {
         std::cerr << "WARNING: couldn't find: " << prefixed << " while loading: " << filename << std::endl;
+      }
     }
   }
   return fileList;
@@ -205,10 +218,14 @@ std::vector<BBoxInfo> nonMaximumSuppression(const float nmsThresh, std::vector<B
         keep = overlap <= nmsThresh;
       }
       else
+      {
         break;
+      }
     }
     if (keep)
+    {
       out.push_back(i);
+    }
   }
   return out;
 }
@@ -271,7 +288,9 @@ std::vector<float> loadWeights(const std::string weightsFilePath, const std::str
     assert(file.gcount() == 4);
     weights.push_back(*reinterpret_cast<float*>(floatWeight));
     if (file.peek() == std::istream::traits_type::eof())
+    {
       break;
+    }
   }
   std::cout << "Loading complete!" << std::endl;
   delete[] floatWeight;
@@ -369,9 +388,13 @@ nvinfer1::ILayer* netAddConvLinear(int layerIdx, std::map<std::string, std::stri
   int stride = std::stoi(block.at("stride"));
   int pad;
   if (padding)
+  {
     pad = (kernelSize - 1) / 2;
+  }
   else
+  {
     pad = 0;
+  }
   // load the convolution layer bias
   nvinfer1::Weights convBias{ nvinfer1::DataType::kFLOAT, nullptr, filters };
   float* val = new float[filters];
@@ -431,6 +454,8 @@ nvinfer1::ILayer* netAddConvBNLeaky(int layerIdx, std::map<std::string, std::str
   }
   // all conv_bn_leaky layers assume bias is false
   assert(batchNormalize == true && bias == false);
+  NO_UNUSED_VAR_CHECK(batchNormalize);
+  NO_UNUSED_VAR_CHECK(bias);  // silence -Wunused-variable
 
   int filters = std::stoi(block.at("filters"));
   int padding = std::stoi(block.at("pad"));
@@ -438,9 +463,13 @@ nvinfer1::ILayer* netAddConvBNLeaky(int layerIdx, std::map<std::string, std::str
   int stride = std::stoi(block.at("stride"));
   int pad;
   if (padding)
+  {
     pad = (kernelSize - 1) / 2;
+  }
   else
+  {
     pad = 0;
+  }
 
   /***** CONVOLUTION LAYER *****/
   /*****************************/

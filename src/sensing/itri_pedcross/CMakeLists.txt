@@ -1,36 +1,17 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+
+include(CarModel)
+if (NOT ENABLE_PEDCROSS)
+  message(STATUS "${PROJECT_NAME} is disabled in car ${CAR_MODEL}")
+  return ()
+endif ()
+
 include(CompilerFlags)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
-
-catkin_download_test_data(
-    ped_models_rf_pose
-    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_5frames_normalization_15peek.yml"
-    DESTINATION ${PED_MODEL_DIR}
-    MD5 7476d1ba785b806255c7df62e0984249
-)
-catkin_download_test_data(
-    ped_models_rf
-    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/rf_10frames_normalization_15peek.yml"
-    DESTINATION ${PED_MODEL_DIR}
-    MD5 c0ec26c803a7d5bcb0b63edb6509bcd4	
-)
-catkin_download_test_data(
-    ped_models_body25
-    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_iter_584000.caffemodel"
-    DESTINATION ${PED_MODEL_DIR}/pose/body_25
-    MD5 78287b57cf85fa89c03f1393d368e5b7
-)
-
-catkin_download_test_data(
-    ped_models_body25_txt
-    "http://nas-cht.itriadv.co:8888/Share/ADV/S3_git_data/ped_models/body_25/pose_deploy.prototxt"
-    DESTINATION ${PED_MODEL_DIR}/pose/body_25
-    MD5 451938635cf007327c3cf235ed483844
-)
 
 find_package(catkin REQUIRED COMPONENTS
     message_generation

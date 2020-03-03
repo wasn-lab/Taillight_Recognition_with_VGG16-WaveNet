@@ -25,6 +25,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -34,6 +35,7 @@
 #include "astar_search/astar_search.h"
 
 #include <msgs/VehInfo.h>
+#include <msgs/Flag_Info.h>
 
 class AstarAvoid
 {
@@ -57,13 +59,15 @@ private:
   ros::Publisher safety_waypoints_pub_;
   ros::Publisher navpath_astar_pub;////////////////
   ros::Publisher avoiding_flag_pub;
+  ros::Publisher reach_goal_pub;
+  ros::Subscriber obstacle_waypoint_base_sub_;//////////
   ros::Subscriber costmap_sub_;
   ros::Subscriber current_pose_sub_;
   ros::Subscriber current_velocity_sub_;
   ros::Subscriber base_waypoints_sub_;
   ros::Subscriber closest_waypoint_sub_;
   ros::Subscriber obstacle_waypoint_sub_;
-  ros::Subscriber state_sub_;
+  ros::Subscriber avoid_state_sub_;
   ros::Rate *rate_;
   tf::TransformListener tf_listener_;
 
@@ -78,6 +82,7 @@ private:
   int search_waypoints_size_;       // range of waypoints for incremental search [-]
   int search_waypoints_delta_;      // skipped waypoints for incremental search [-]
   int closest_search_size_;         // search closest waypoint around your car [-]
+  double avoid_state_index_; 
 
   // classes
   AstarSearch astar_;
@@ -92,6 +97,7 @@ private:
   bool found_avoid_path_;
   int closest_waypoint_index_;
   int obstacle_waypoint_index_;
+  int obstacle_waypoint_base_index_;
   int closest_local_index_;
   nav_msgs::OccupancyGrid costmap_;
   autoware_msgs::Lane base_waypoints_;
@@ -102,12 +108,15 @@ private:
   //geometry_msgs::TwistStamped current_velocity_;
   msgs::VehInfo current_velocity_;
   tf::Transform local2costmap_;  // local frame (e.g. velodyne) -> costmap origin
+  std_msgs::Int32 avoiding_path_flag;
+  std_msgs::Int32 reach_goal_flag;
 
   bool costmap_initialized_;
   bool current_pose_initialized_;
   bool current_velocity_initialized_;
   bool base_waypoints_initialized_;
   bool closest_waypoint_initialized_;
+  bool avoid_state_sub_initialized_;
 
   // functions, callback
   void costmapCallback(const nav_msgs::OccupancyGrid& msg);
@@ -117,6 +126,8 @@ private:
   void baseWaypointsCallback(const autoware_msgs::Lane& msg);
   void closestWaypointCallback(const std_msgs::Int32& msg);
   void obstacleWaypointCallback(const std_msgs::Int32& msg);
+  void obstacleWaypointbaseCallback(const std_msgs::Int32& msg);
+  void avoidstatesubCallback(const msgs::Flag_Info& msg);
 
   // functions
   bool checkInitialized();

@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   #vector_map
   astar_search
+  msgs
 )
 
 catkin_package(
@@ -24,6 +25,7 @@ catkin_package(
   libwaypoint_follower
   autoware_msgs
   #vector_map
+  msgs
   astar_search
 )
 

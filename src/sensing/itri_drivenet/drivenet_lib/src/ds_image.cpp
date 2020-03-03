@@ -118,9 +118,13 @@ float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const in
 
   // Additional checks for images with non even dims
   if ((nppSizeNet.width - resizeW) % 2)
+  {
     resizeW--;
+  }
   if ((nppSizeNet.height - resizeH) % 2)
+  {
     resizeH--;
+  }
   assert((nppSizeNet.width - resizeW) % 2 == 0);
   assert((nppSizeNet.height - resizeH) % 2 == 0);
 

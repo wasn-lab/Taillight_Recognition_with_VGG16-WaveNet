@@ -27,7 +27,6 @@ private:
   const uint m_BatchSize;
   const uint m_InputH;
   const uint m_InputW;
-  const uint64_t m_InputSize;
   const uint64_t m_InputCount;
   const std::string m_InputBlobName;
   const std::string m_CalibTableFilePath{ nullptr };
@@ -37,5 +36,5 @@ private:
   std::vector<std::string> m_ImageList;
   std::vector<char> m_CalibrationCache;
 };
-}
+} // namespace DriveNet
 #endif

@@ -41,54 +41,54 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
 ##       Model      ##
 ######################
 
-set(PATH_MODEL_LOCAL ${CMAKE_CURRENT_SOURCE_DIR}/model)
-
-function(DownloadModle Vehicletype ModelDegree)
-
-    file(
-    DOWNLOAD
-    	#http://nas.itriadv.co:8070/Share/ADV/LiDAR_Models/SqueezeSegNet/hino1/N90deg.pb
-		#ftp://user%40Intern1:aaaaaa@nas.itriadv.co/SqueezeSegNet/hino1/N90deg.pb
-    	ftp://Intern1:aaaaaa@nas.itriadv.co:21/SqueezeSegNet/${Vehicletype}/${ModelDegree} ${PATH_MODEL_LOCAL}/SqueezeSegNet/${Vehicletype}/${ModelDegree}    	
-    STATUS
-        status
-    LOG 
-        log
-    SHOW_PROGRESS
-    )
-     
-    list(GET status 0 status_code)
-    list(GET status 1 status_string)
-    
-    if(NOT status_code EQUAL 0)
-    	message(FATAL_ERROR "Error downloading ${Vehicletype} ${ModelDegree} : ${status_string}" "${log}")	
-	endif()
-	
-endfunction()
-
-if (NOT EXISTS ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/P0deg.pb)
-  
-    message( STATUS " you have no HINO model file, let Wayne help you, downloading (12MB)" )
-    make_directory(${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1)
-     
-	DownloadModle("hino1" "N90deg.pb")
-	DownloadModle("hino1" "P0deg.pb")
-	DownloadModle("hino1" "P90deg.pb")
-	DownloadModle("hino1" "P180deg.pb")
-	
-endif()
-
-if (NOT EXISTS ${PATH_MODEL_LOCAL}/SqueezeSegNet/b1/P0deg.pb)
-  
-    message( STATUS " you have no b1 model file, let Wayne help you, downloading (12MB)" )
-    make_directory(${PATH_MODEL_LOCAL}/SqueezeSegNet/b1)
-     
-	DownloadModle("b1" "N90deg.pb")
-	DownloadModle("b1" "P0deg.pb")
-	DownloadModle("b1" "P90deg.pb")
-	DownloadModle("b1" "P180deg.pb")
-
-endif()
+# set(PATH_MODEL_LOCAL ${CMAKE_CURRENT_SOURCE_DIR}/model)
+# 
+# function(DownloadModle Vehicletype ModelDegree)
+# 
+#     file(
+#     DOWNLOAD
+#     	#http://nas.itriadv.co:8070/Share/ADV/LiDAR_Models/SqueezeSegNet/hino1/N90deg.pb
+# 		#ftp://user%40Intern1:aaaaaa@nas.itriadv.co/SqueezeSegNet/hino1/N90deg.pb
+#     	ftp://Intern1:aaaaaa@nas.itriadv.co:21/SqueezeSegNet/${Vehicletype}/${ModelDegree} ${PATH_MODEL_LOCAL}/SqueezeSegNet/${Vehicletype}/${ModelDegree}    	
+#     STATUS
+#         status
+#     LOG 
+#         log
+#     SHOW_PROGRESS
+#     )
+#      
+#     list(GET status 0 status_code)
+#     list(GET status 1 status_string)
+#     
+#     if(NOT status_code EQUAL 0)
+#     	message(FATAL_ERROR "Error downloading ${Vehicletype} ${ModelDegree} : ${status_string}" "${log}")	
+# 	endif()
+# 	
+# endfunction()
+# 
+# if (NOT EXISTS ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/P0deg.pb)
+#   
+#     message( STATUS " you have no HINO model file, let Wayne help you, downloading (12MB)" )
+#     make_directory(${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1)
+#      
+# 	DownloadModle("hino1" "N90deg.pb")
+# 	DownloadModle("hino1" "P0deg.pb")
+# 	DownloadModle("hino1" "P90deg.pb")
+# 	DownloadModle("hino1" "P180deg.pb")
+# 	
+# endif()
+# 
+# if (NOT EXISTS ${PATH_MODEL_LOCAL}/SqueezeSegNet/b1/P0deg.pb)
+#   
+#     message( STATUS " you have no b1 model file, let Wayne help you, downloading (12MB)" )
+#     make_directory(${PATH_MODEL_LOCAL}/SqueezeSegNet/b1)
+#      
+# 	DownloadModle("b1" "N90deg.pb")
+# 	DownloadModle("b1" "P0deg.pb")
+# 	DownloadModle("b1" "P90deg.pb")
+# 	DownloadModle("b1" "P180deg.pb")
+# 
+# endif()
 
 #    message(INFO "check the version of model files, please wait")
 #    file(MD5 ${PATH_MODEL_LOCAL}/SqueezeSegNet/hino1/N90deg.pb CHECKSUMN90)
@@ -127,9 +127,8 @@ include_directories(
 
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/squeezeseg_inference.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/squeezeseg_inference_nodelet.cpp")
  
-add_executable		  (${PROJECT_NAME} src/squeezeseg_inference.cpp ${SOURCES_SRCS})
+add_executable		  (${PROJECT_NAME} EXCLUDE_FROM_ALL src/squeezeseg_inference.cpp ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
@@ -137,6 +136,6 @@ target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 ######################
 ##      Nodelet     ##
 ######################
-cuda_add_library	  (${PROJECT_NAME}_nodelet src/squeezeseg_inference_nodelet.cpp ${SOURCES_SRCS})
+cuda_add_library	  (${PROJECT_NAME}_nodelet ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME}_nodelet ${${PROJECT_NAME}_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)

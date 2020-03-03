@@ -213,7 +213,9 @@ private:
   double val_min_;
   int idx_min_;
 public:
-  MinIDSearch() : idx_min_(-1), val_min_(DBL_MAX){}
+  MinIDSearch() : val_min_(DBL_MAX), idx_min_(-1)
+  {
+  }
   void update(int index, double v)
   {
     if (v < val_min_)

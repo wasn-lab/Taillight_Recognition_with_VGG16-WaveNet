@@ -145,4 +145,22 @@ struct POSE_MAP
 };
 typedef struct POSE_MAP POSE_MAP;
 
+namespace nnClassIDs
+{
+enum nnClassID
+{
+    Car = 1, Person, Motobike, Rule
+};
+}
+typedef nnClassIDs::nnClassID nnClassID;
+
+namespace msgClassIDs
+{
+enum msgClassID
+{
+    Unknown = 0, Person, Bicycle, Motobike, Car, Bus, Truck, Sign, Light, Park
+};
+}
+typedef msgClassIDs::msgClassID msgClassID;
+
 #endif

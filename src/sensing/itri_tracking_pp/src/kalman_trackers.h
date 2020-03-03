@@ -107,7 +107,7 @@ private:
   void extract_box_center(BoxCenter& box_center, const msgs::BoxPoint& box);
   void extract_box_centers();
 
-  void extract_box_corner(BoxCorner& box_corner, const Point32& corner, const signed char order);
+  void extract_box_corner(BoxCorner& box_corner, const MyPoint32& corner, const signed char order);
   void extract_box_corners_of_boxes();
 
   void extract_box_two_axes_of_boxes();
@@ -138,10 +138,6 @@ private:
   void set_new_box_corners_of_boxes_relative();
 
   void update_boxes();
-
-#if FPS_EXTRAPOLATION
-  void transform_box_center_kalman_inverse();
-#endif
 };
 }  // namespace tpp
 

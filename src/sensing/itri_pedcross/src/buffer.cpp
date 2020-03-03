@@ -12,7 +12,9 @@ BufferNode* Buffer::is_in_the_list(int id)
   while (current_node != 0)
   {
     if (current_node->id == id)
+    {
       return current_node;
+    }
     current_node = current_node->next;
   }
   return 0;
@@ -71,13 +73,21 @@ void Buffer::remove(BufferNode* node_ptr)
   if (node_ptr != 0)
   {
     if (first == node_ptr)
+    {
       first = node_ptr->next;
+    }
     if (last == node_ptr)
+    {
       last = node_ptr->previous;
+    }
     if (node_ptr->previous != 0)
+    {
       node_ptr->previous->next = node_ptr->next;
+    }
     if (node_ptr->next != 0)
+    {
       node_ptr->next->previous = node_ptr->previous;
+    }
     delete node_ptr;
   }
 }
@@ -93,7 +103,9 @@ void Buffer::check_life()
       current_node->refresh = false;
     }
     else if (++current_node->idle_time > life)
+    {
       remove(current_node);
+    }
     current_node = current_node->next;
   }
 }

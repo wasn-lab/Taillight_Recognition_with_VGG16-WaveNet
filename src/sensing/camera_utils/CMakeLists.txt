@@ -46,6 +46,7 @@ set(CAMERA_UTILS_SOURCES
   src/camera_utils.cpp
   src/camera_params_hino.cpp
   src/camera_params_b1.cpp
+  src/camera_params_b1_v2.cpp
   src/camera_distance_mapper.cpp
   src/imu_distance.cpp
   src/imu_utils.cpp
@@ -56,7 +57,9 @@ set(CAMERA_UTILS_SOURCES
   src/npp_resizer.cpp
   src/npp_resizer_impl.cpp
   src/npp_rotate.cpp
-  src/npp_utils.cpp)
+  src/npp_utils.cpp
+  src/projection/parameters.cpp
+  src/projection/projector2.cpp)
 
 set(CAMERA_UTILS_LIB_DEPS
   ${OpenCV_LIBS}
@@ -74,8 +77,9 @@ set(CAMERA_UTILS_INCLUDE_DIRS
   ${GLOG_INCLUDE_DIRS}
 	${JSONCPP_INCLUDE_DIR}
   ${car_model_BINARY_DIR}/include
+  ${PROJECT_BINARY_DIR}/include
   ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_BINARY_DIR}/include)
+  ${PROJECT_SOURCE_DIR}/include/projection)
 
 include_directories(${CAMERA_UTILS_INCLUDE_DIRS})
 

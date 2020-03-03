@@ -9,15 +9,18 @@
 # /points_map
 
 # Raw image
-/cam/F_right
+# /cam/F_right
 /cam/F_center
-/cam/F_left
-/cam/F_top
+# /cam/F_left
+# /cam/F_top
 /cam/R_front
 /cam/R_rear
 /cam/L_front
 /cam/L_rear
 /cam/B_top
+# 
+/cam/F_top_far
+/cam/F_top_close
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -30,16 +33,22 @@
 # /cam/L_rear/detect_image
 # /cam/B_top/detect_image
 
-/CamObjFrontRight
+# /CamObjFrontRight
 /CamObjFrontCenter
-/CamObjFrontLeft
-/CamObjFrontTop
+# /CamObjFrontLeft
+# /CamObjFrontTop
 /CamObjRightFront
 /CamObjRightBack
 /CamObjLeftFront
 /CamObjLeftBack
 /CamObjBackTop
+#
+/CamObjFrontTopFar
+/CamObjFrontTopClose
 
+
+# Camera polygon
+/CameraDetection/polygon
 
 /current_pose
 /veh_info
@@ -77,6 +86,15 @@
 
 /V2X_msg
 
+# Added at 2020/1/31
+/local_waypoints_mark
+/rear_vehicle_target_point
+/front_vehicle_target_point
+/LidarDetection/grid
+/CameraDetection/occupancy_grid
+/occupancy_grid_all_expand
+
+# tf
 /tf
 /tf_static
 
@@ -86,4 +104,24 @@
 /ADV_op/run_state
 /ADV_op/sync
 /ADV_op/sys_ready
+/REC/req_backup
+/ADV_op/sys_fail_reason
+
+# Events/status
+/node_trace/all_alive
+/REC/is_recording
+/backend/connected
+# /mileage/brake_status
+/mileage/brake_event
+/localization_state
+# Module run state
+/mileage/Xbywire_run
+/mileage/AEB_run
+/mileage/ACC_run
+
+# pedcross
+/PedCross/Pedestrians
+
+# Traffic light
+/LightResultOutput
 

@@ -7,7 +7,7 @@ import pprint
 import os
 import io
 import re
-REPO_SRC = "/home/chtseng/repo/itriadv/src"
+REPO_SRC = os.path.abspath(os.path.join(__file__, "..", "..", "..", ".."))
 RGX = re.compile(r"\s*<name>(?P<pkg_name>[_\w]+)</name>")
 
 def _get_xmls():

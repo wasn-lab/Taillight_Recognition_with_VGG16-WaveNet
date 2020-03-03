@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <iostream>
 
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+
 namespace DriveNet
 {
 DEFINE_string(network_type, "yolov3", "[REQUIRED] Type of network architecture. Choose from yolov2, yolov2-tiny, "
@@ -57,10 +59,13 @@ static bool networkTypeValidator(const char* flagName, std::string value)
 {
   if (((FLAGS_network_type) == "yolov2") || ((FLAGS_network_type) == "yolov2-tiny") ||
       ((FLAGS_network_type) == "yolov3") || ((FLAGS_network_type) == "yolov3-tiny"))
+  {
     return true;
-
+  }
   else
+  {
     std::cout << "Invalid value for --" << flagName << ": " << value << std::endl;
+  }
 
   return false;
 }
@@ -68,9 +73,13 @@ static bool networkTypeValidator(const char* flagName, std::string value)
 static bool precisionTypeValidator(const char* flagName, std::string value)
 {
   if ((FLAGS_precision == "kFLOAT") || (FLAGS_precision == "kINT8") || (FLAGS_precision == "kHALF"))
+  {
     return true;
+  }
   else
+  {
     std::cout << "Invalid value for --" << flagName << ": " << value << std::endl;
+  }
   return false;
 }
 
@@ -86,7 +95,9 @@ static bool verifyRequiredFlags()
                                                                        "of '.cfg' format");
   if (!(networkTypeValidator("network_type", FLAGS_network_type) &&
         precisionTypeValidator("precision", FLAGS_precision)))
+  {
     return false;
+  }
 
   return true;
 }
@@ -95,6 +106,7 @@ void yoloConfigParserInit(int argc, char** argv, std::string pkg_path)
 {
   gflags::ParseCommandLineFlags(&argc, &argv, false);
   assert(verifyRequiredFlags());
+  NO_UNUSED_VAR_CHECK(verifyRequiredFlags());
   FLAGS_wts_file_path = pkg_path + FLAGS_wts_file_path;
 
   FLAGS_calibration_images_path = isFlagDefault(FLAGS_calibration_images_path) ? "" : FLAGS_calibration_images_path;
@@ -156,6 +168,7 @@ std::string getTestImages()
 {
   size_t extIndex = FLAGS_test_images.find_last_of(".txt");
   assert(extIndex != std::string::npos && "test_images file not recognised. File needs to be of type '.txt' format");
+  NO_UNUSED_VAR_CHECK(extIndex);  // silence -Wunused-variable
   return FLAGS_test_images;
 }
 
@@ -179,8 +192,10 @@ bool getViewDetections()
 bool getSaveDetections()
 {
   if (FLAGS_save_detections)
+  {
     assert(!isFlagDefault(FLAGS_save_detections_path) && "save_detections path has to be set if save_detections is set "
                                                          "to true");
+  }
   return FLAGS_save_detections;
 }
 

@@ -1,6 +1,6 @@
 #include "TcpServer.h"
 #include <unistd.h>
-#include "RosModule.hpp"
+#include "RosModule.h"
 using namespace std;
 
 TcpServer::TcpServer()
@@ -21,14 +21,14 @@ void TcpServer::initial(std::string ip, int port)
     perror("setsockopt failed");
     exit(EXIT_FAILURE);
   }
-  //set ADDRESS FAMILY 
+  // set ADDRESS FAMILY
   server_address_struct_.sin_family = AF_INET;
-  //set ip
+  // set ip
   server_address_struct_.sin_addr.s_addr = inet_addr(ip.c_str());
-  //set port
+  // set port
   server_address_struct_.sin_port = htons(port);
 
-  //bind socket and socket info （family, ip, port）
+  // bind socket and socket info （family, ip, port）
   if (bind(listen_socket_fd_int_, (struct sockaddr*)&server_address_struct_, sizeof(server_address_struct_)) < 0)
   {
     perror("bind failed");
@@ -47,13 +47,13 @@ TcpServer::~TcpServer()
   close(listen_socket_fd_int_);
 }
 
-//get socket id for listening.
+// get socket id for listening.
 int TcpServer::get_socket() const
 {
   return listen_socket_fd_int_;
 }
 
-//start listing,max connect request queue size :MAX_CONNECTION
+// start listing,max connect request queue size :MAX_CONNECTION
 int TcpServer::start_listening()
 {
   int result = -1;
@@ -61,15 +61,25 @@ int TcpServer::start_listening()
   if (is_bound)
   {
     result = listen(listen_socket_fd_int_, MAX_CONNECTION);
+  }else 
+  {
+    std::string errorMsg = "runtime exception :tcp_server binding fail." ;
+    throw tcp_server_runtime_error(errorMsg);
   }
+
+
   if (result >= 0)
   {
     is_listening = true;
+  }else 
+  {
+    std::string errorMsg = "runtime exception :tcp_server listing fail." ;
+    throw tcp_server_runtime_error(errorMsg);
   }
   return result;
 }
 
-//wait connect request and accept and read request data
+// wait connect request and accept and read request data
 int TcpServer::wait_and_accept(void (*cb)(string))
 {
   while (true)
@@ -91,22 +101,22 @@ int TcpServer::wait_and_accept(void (*cb)(string))
         tv.tv_sec = 10;
         tv.tv_usec = 0;
         setsockopt(client_socket_fd_int_, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-       
+
         auto t1 = std::chrono::high_resolution_clock::now();
         int rel = recv(client_socket_fd_int_, buffer, sizeof(buffer), 0);
         auto t2 = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
         std::cout << "read duration " << duration << std::endl;
-        if( rel < 0) 
+        if (rel < 0)
         {
-          std::string errorMsg = "runtime exception : recv data Failed. rel: " + std::to_string(rel) ; 
+          std::string errorMsg = "runtime exception : recv data Failed. rel: " + std::to_string(rel);
           throw tcp_server_runtime_error(errorMsg);
         }
-       
+
         cout << "buffer: " << buffer << endl;
         string request = buffer;
-        //reset buffer every time.
-        memset(&buffer,0,sizeof(buffer));
+        // reset buffer every time.
+        memset(&buffer, 0, sizeof(buffer));
         cb(request);
       }
     }
@@ -114,7 +124,7 @@ int TcpServer::wait_and_accept(void (*cb)(string))
   return 0;
 }
 
-//send data
+// send data
 int TcpServer::send_json(std::string json)
 {
   cout << "json: " << json << endl;

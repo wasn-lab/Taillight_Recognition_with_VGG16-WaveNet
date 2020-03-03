@@ -42,189 +42,201 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 // std::cout << "time stamp: " << msg->header.stamp << " buffer size: " << imageCache.size() << std::endl;
 #endif
 
-    // compare and get the raw image when object detected
     cv::Mat matrix;
-    for (int i = imageCache.size() - 1; i >= 0; i--)
-    {
-      if (imageCache[i].first <= msg->header.stamp || i == 0)
-      {
-#if USE_GLOG
-        std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << msg->header.stamp << std::endl;
-#endif
-
-        matrix = imageCache[i].second;
-        break;
-      }
-    }
-
-    // for drawing bbox and keypoints
     cv::Mat matrix2;
-    matrix.copyTo(matrix2);
+    ros::Time frame_timestamp = ros::Time(0);
 
     std::vector<msgs::PedObject> pedObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     for (auto const& obj : msg->objects)
     {
-      if (obj.classId == 1)  // 1 for people
+      if (obj.classId != 1 || too_far(obj.bPoint))
+      {  // 1 for people
+        continue;
+      }
+
+      // set msg infomation
+      msgs::PedObject obj_pub;
+      obj_pub.header = obj.header;
+      obj_pub.header.frame_id = obj.header.frame_id;
+      obj_pub.header.stamp = obj.header.stamp;
+      obj_pub.classId = obj.classId;
+      obj_pub.camInfo = obj.camInfo;
+      obj_pub.bPoint = obj.bPoint;
+      obj_pub.track.id = obj.track.id;
+#if USE_GLOG
+      std::cout << "Track ID: " << obj.track.id << std::endl;
+#endif
+
+      // Check object source is camera
+      if (obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0)
       {
-        if (too_far(obj.bPoint))
-          continue;
+        continue;
+      }
 
-        // set msg infomation
-        msgs::PedObject obj_pub;
-        obj_pub.header = obj.header;
-        obj_pub.header.frame_id = obj.header.frame_id;
-        obj_pub.header.stamp = obj.header.stamp;
-        obj_pub.classId = obj.classId;
-        obj_pub.camInfo = obj.camInfo;
-        obj_pub.bPoint = obj.bPoint;
-        obj_pub.track.id = obj.track.id;
-#if USE_GLOG
-        std::cout << "Track ID: " << obj.track.id << std::endl;
-#endif
-        // resize from 1920*1208 to 608*384
-        obj_pub.camInfo.u *= scaling_ratio_width;
-        obj_pub.camInfo.v *= scaling_ratio_height;
-        obj_pub.camInfo.width *= scaling_ratio_width;
-        obj_pub.camInfo.height *= scaling_ratio_height;
-
-        // Avoid index out of bounds
-        if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+      // Only first object need to check raw image
+      if (frame_timestamp == ros::Time(0))
+      {
+        // compare and get the raw image
+        for (int i = imageCache.size() - 1; i >= 0; i--)
         {
-          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
-        }
-        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
-        {
-          obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
-        }
-
+          if (imageCache[i].first <= obj.header.stamp || i == 0)
+          {
 #if USE_GLOG
-        std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
-                  << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
-                  << std::endl;
+            std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << obj.header.stamp << std::endl;
 #endif
 
-        // crop image for openpose
-        cv::Mat cropedImage =
-            matrix(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
-        // cv::imwrite( "/home/itri457854/frame2.png", cropedImage );
+            matrix = imageCache[i].second;
+            // for drawing bbox and keypoints
+            matrix.copyTo(matrix2);
+            frame_timestamp = obj.header.stamp;
+            break;
+          }
+        }
+      }
 
-        // set size to resize cropped image for openpose
-        // max pixel of width or height can only be 368
-        int max_pixel = 368;
-        float aspect_ratio = 0.0;
-        int resize_height_to = 0;
-        int resize_width_to = 0;
-        if (cropedImage.cols >= cropedImage.rows)
-        {  // width larger than height
-          if (cropedImage.cols > max_pixel)
-          {
-            resize_width_to = max_pixel;
-          }
-          else
-          {
-            resize_width_to = cropedImage.cols;
-          }
-          resize_width_to = max_pixel;  // force to max pixel
-          aspect_ratio = (float)cropedImage.rows / (float)cropedImage.cols;
-          resize_height_to = int(aspect_ratio * resize_width_to);
+      // resize from 1920*1208 to 608*384
+      obj_pub.camInfo.u *= scaling_ratio_width;
+      obj_pub.camInfo.v *= scaling_ratio_height;
+      obj_pub.camInfo.width *= scaling_ratio_width;
+      obj_pub.camInfo.height *= scaling_ratio_height;
+
+      // Avoid index out of bounds
+      if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+      {
+        obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+      }
+      if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
+      {
+        obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+      }
+
+#if USE_GLOG
+      std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
+                << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
+                << std::endl;
+#endif
+
+      // crop image for openpose
+      cv::Mat cropedImage =
+          matrix(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+
+      // set size to resize cropped image for openpose
+      // max pixel of width or height can only be 368
+      int max_pixel = 368;
+      float aspect_ratio = 0.0;
+      int resize_height_to = 0;
+      int resize_width_to = 0;
+      if (cropedImage.cols >= cropedImage.rows)
+      {  // width larger than height
+        if (cropedImage.cols > max_pixel)
+        {
+          resize_width_to = max_pixel;
         }
         else
-        {  // height larger than width
-          if (cropedImage.rows > max_pixel)
-          {
-            resize_height_to = max_pixel;
-          }
-          else
-          {
-            resize_height_to = cropedImage.rows;
-          }
-          resize_height_to = max_pixel;  // force to max pixel
-          aspect_ratio = (float)cropedImage.cols / (float)cropedImage.rows;
-          resize_width_to = int(aspect_ratio * resize_height_to);
-        }
-        cv::resize(cropedImage, cropedImage, cv::Size(resize_width_to, resize_height_to));
-
-        std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
-
-        sensor_msgs::ImageConstPtr msg_pub3 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", cropedImage).toImageMsg();
-        pose_pub.publish(msg_pub3);
-        bool has_keypoint = false;
-        int count_points = 0;
-        int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-        unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
-        for (unsigned int i = 0; i < body_part_size; i++)
         {
-          if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
-          {
-            count_points++;
-            if (count_points >= 3)
-              has_keypoint = true;
-          }
+          resize_width_to = cropedImage.cols;
         }
-        if (has_keypoint)
-          obj_pub.crossProbability =
-              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                               obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
+        resize_width_to = max_pixel;  // force to max pixel
+        aspect_ratio = (float)cropedImage.rows / (float)cropedImage.cols;
+        resize_height_to = int(aspect_ratio * resize_width_to);
+      }
+      else
+      {  // height larger than width
+        if (cropedImage.rows > max_pixel)
+        {
+          resize_height_to = max_pixel;
+        }
         else
         {
-          /*
-                    std::vector<cv::Point2f> no_keypoint;
-                    obj_pub.crossProbability =
-                        crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                         obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
-             msg->header.stamp);
-          */
+          resize_height_to = cropedImage.rows;
         }
-        pedObjs.push_back(obj_pub);
+        resize_height_to = max_pixel;  // force to max pixel
+        aspect_ratio = (float)cropedImage.cols / (float)cropedImage.rows;
+        resize_width_to = int(aspect_ratio * resize_height_to);
+      }
+      cv::resize(cropedImage, cropedImage, cv::Size(resize_width_to, resize_height_to));
 
-        // draw keypoints on cropped and whole image
-        for (unsigned int i = 0; i < body_part_size; i++)
+      std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
+
+      bool has_keypoint = false;
+      int count_points = 0;
+      int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+      unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
+      for (unsigned int i = 0; i < body_part_size; i++)
+      {
+        if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
         {
-          keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj_pub.camInfo.height;
-          keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj_pub.camInfo.height;
-          if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
+          count_points++;
+          if (count_points >= 3)
           {
-            cv::circle(cropedImage, keypoints.at(body_part[i]), 2, cv::Scalar(0, 255, 0));
-            cv::Point p = keypoints.at(body_part[i]);
-            p.x = obj_pub.camInfo.u + p.x;
-            p.y = obj_pub.camInfo.v + p.y;
-            cv::circle(matrix2, p, 2, cv::Scalar(0, 255, 0), -1);
+            has_keypoint = true;
           }
         }
-        // draw hands
-        int body_part1[7] = { 4, 3, 2, 1, 5, 6, 7 };
-        unsigned int body_part1_size = sizeof(body_part1) / sizeof(*body_part1);
-        for (unsigned int i = 0; i < body_part1_size - 1; i++)
+      }
+      if (has_keypoint)
+      {
+        obj_pub.crossProbability =
+            crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                             obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
+      }
+      else
+      {
+        /*
+                  std::vector<cv::Point2f> no_keypoint;
+                  obj_pub.crossProbability =
+                      crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                                        obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
+            msg->header.stamp);
+        */
+      }
+      pedObjs.push_back(obj_pub);
+
+      // draw keypoints on cropped and whole image
+      for (unsigned int i = 0; i < body_part_size; i++)
+      {
+        keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj_pub.camInfo.height;
+        keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj_pub.camInfo.height;
+        if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
         {
-          if ((keypoints.at(body_part1[i]).x != 0 || keypoints.at(body_part1[i]).y != 0) &&
-              (keypoints.at(body_part1[i + 1]).x != 0 || keypoints.at(body_part1[i + 1]).y != 0))
-          {
-            cv::Point p = keypoints.at(body_part1[i]);
-            p.x = obj_pub.camInfo.u + p.x;
-            p.y = obj_pub.camInfo.v + p.y;
-            cv::Point p2 = keypoints.at(body_part1[i + 1]);
-            p2.x = obj_pub.camInfo.u + p2.x;
-            p2.y = obj_pub.camInfo.v + p2.y;
-            cv::line(matrix2, p, p2, cv::Scalar(0, 0, 255), 1);
-          }
+          cv::Point p = keypoints.at(body_part[i]);
+          p.x = obj_pub.camInfo.u + p.x;
+          p.y = obj_pub.camInfo.v + p.y;
+          cv::circle(matrix2, p, 2, cv::Scalar(0, 255, 0), -1);
         }
-        // draw legs
-        int body_part2[7] = { 11, 10, 9, 1, 12, 13, 14 };
-        unsigned int body_part2_size = sizeof(body_part2) / sizeof(*body_part2);
-        for (unsigned int i = 0; i < body_part2_size - 1; i++)
+      }
+      // draw hands
+      int body_part1[7] = { 4, 3, 2, 1, 5, 6, 7 };
+      unsigned int body_part1_size = sizeof(body_part1) / sizeof(*body_part1);
+      for (unsigned int i = 0; i < body_part1_size - 1; i++)
+      {
+        if ((keypoints.at(body_part1[i]).x != 0 || keypoints.at(body_part1[i]).y != 0) &&
+            (keypoints.at(body_part1[i + 1]).x != 0 || keypoints.at(body_part1[i + 1]).y != 0))
         {
-          if ((keypoints.at(body_part2[i]).x != 0 || keypoints.at(body_part2[i]).y != 0) &&
-              (keypoints.at(body_part2[i + 1]).x != 0 || keypoints.at(body_part2[i + 1]).y != 0))
-          {
-            cv::Point p = keypoints.at(body_part2[i]);
-            p.x = obj_pub.camInfo.u + p.x;
-            p.y = obj_pub.camInfo.v + p.y;
-            cv::Point p2 = keypoints.at(body_part2[i + 1]);
-            p2.x = obj_pub.camInfo.u + p2.x;
-            p2.y = obj_pub.camInfo.v + p2.y;
-            cv::line(matrix2, p, p2, cv::Scalar(255, 0, 255), 1);
-          }
+          cv::Point p = keypoints.at(body_part1[i]);
+          p.x = obj_pub.camInfo.u + p.x;
+          p.y = obj_pub.camInfo.v + p.y;
+          cv::Point p2 = keypoints.at(body_part1[i + 1]);
+          p2.x = obj_pub.camInfo.u + p2.x;
+          p2.y = obj_pub.camInfo.v + p2.y;
+          cv::line(matrix2, p, p2, cv::Scalar(0, 0, 255), 1);
+        }
+      }
+      // draw legs
+      int body_part2[7] = { 11, 10, 9, 1, 12, 13, 14 };
+      unsigned int body_part2_size = sizeof(body_part2) / sizeof(*body_part2);
+      for (unsigned int i = 0; i < body_part2_size - 1; i++)
+      {
+        if ((keypoints.at(body_part2[i]).x != 0 || keypoints.at(body_part2[i]).y != 0) &&
+            (keypoints.at(body_part2[i + 1]).x != 0 || keypoints.at(body_part2[i + 1]).y != 0))
+        {
+          cv::Point p = keypoints.at(body_part2[i]);
+          p.x = obj_pub.camInfo.u + p.x;
+          p.y = obj_pub.camInfo.v + p.y;
+          cv::Point p2 = keypoints.at(body_part2[i + 1]);
+          p2.x = obj_pub.camInfo.u + p2.x;
+          p2.y = obj_pub.camInfo.v + p2.y;
+          cv::line(matrix2, p, p2, cv::Scalar(255, 0, 255), 1);
         }
       }
     }
@@ -250,18 +262,26 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         box.height = obj.camInfo.height;
         cv::rectangle(matrix2, box.tl(), box.br(), CV_RGB(0, 255, 0), 1);
         if (box.y >= 10)
+        {
           box.y -= 10;
+        }
         else
+        {
           box.y = 0;
+        }
 
         std::string probability;
         int p = 100 * obj.crossProbability;
         if (p >= cross_threshold)
         {
           if (show_probability)
+          {
             probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+          }
           else
+          {
             probability = "C";
+          }
 
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255),
                       2, 4, 0);
@@ -271,21 +291,31 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           if (show_probability)
           {
             if (p >= 10)
+            {
               probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+            }
             else
+            {
               probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+            }
           }
           else
+          {
             probability = "NC";
+          }
 
           cv::putText(matrix2, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
                       cv::Scalar(100, 220, 0), 2, 4, 0);
         }
 
         if (box.y >= 22)
+        {
           box.y -= 22;
+        }
         else
+        {
           box.y = 0;
+        }
 
         std::string id_print = "ID: " + std::to_string(obj.track.id);
         cv::putText(matrix2, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
@@ -303,6 +333,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #if USE_GLOG
     stop = ros::Time::now();
     total_time += stop - start;
+    std::cout << "cost time: " << stop - start << " sec" << std::endl;
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
   }
@@ -458,11 +489,17 @@ float* PedestrianEvent::get_triangle_angle(float x1, float y1, float x2, float y
   else
   {
     if (std::max(a, std::max(b, c)) == a)
+    {
       angle[2] = M_PI;
+    }
     else if (std::max(a, std::max(b, c)) == b)
+    {
       angle[0] = M_PI;
+    }
     else
+    {
       angle[1] = M_PI;
+    }
   }
   return angle;
 }
@@ -502,9 +539,13 @@ float PedestrianEvent::predict_rf(cv::Mat input_data)
 bool PedestrianEvent::too_far(const msgs::BoxPoint box_point)
 {
   if ((box_point.p0.x + box_point.p6.x) / 2 > max_distance)
+  {
     return true;
+  }
   else
+  {
     return false;
+  }
 }
 
 void PedestrianEvent::pedestrian_event()
@@ -546,7 +587,7 @@ void PedestrianEvent::pedestrian_event()
   }
   else  // input_source == 3
   {
-    sub = n.subscribe("/PathPredictionOutput/camera", 1, &PedestrianEvent::chatter_callback,
+    sub = n.subscribe("/PathPredictionOutput", 1, &PedestrianEvent::chatter_callback,
                       this);  // /CamObjFrontRight is sub topic
     sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
                           this);  // /cam/F_right is sub topic
@@ -634,7 +675,9 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 #endif
 
   for (int i = 0; i < 25; i++)
+  {
     points.push_back(cv::Point2f(0.0, 0.0));
+  }
 
   return points;
 }
@@ -652,7 +695,9 @@ bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<
     key = (char)cv::waitKey(1);
   }
   else
+  {
     op::opLog("Nullptr or empty datumsPtr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
+  }
   return (key == 27);
 }
 
@@ -683,7 +728,7 @@ int PedestrianEvent::openPoseROS()
 
   return 0;
 }
-}
+}  // namespace ped
 int main(int argc, char** argv)
 {
 #if USE_GLOG
@@ -696,13 +741,6 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
 
-  std::string bash = PED_MODEL_DIR + std::string("/../download_models.sh");
-  int call_success = system(bash.c_str());
-  if (call_success == -1)
-  {
-    std::cout << "Cannot execute download_models.sh." << std::endl;
-  }
-
   pe.rf_pose =
       cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
 
@@ -711,8 +749,6 @@ int main(int argc, char** argv)
       nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
-  ros::NodeHandle nh3;
-  pe.pose_pub = nh3.advertise<sensor_msgs::Image&>("/PedCross/CroppedBox", 1);  // /PedCross/CroppedBox is pub topic
 
   // Get parameters from ROS
   nh.getParam("/show_probability", pe.show_probability);

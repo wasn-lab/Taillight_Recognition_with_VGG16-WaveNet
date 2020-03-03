@@ -9,6 +9,9 @@
 #include "ros_params_parser.h"
 #include "ego_param.h"
 #include "marker_gen.h"
+#if TO_GRIDMAP
+#include "points_to_costmap.h"
+#endif
 #include <visualization_msgs/MarkerArray.h>
 
 #include <fstream>
@@ -43,11 +46,6 @@ private:
   std::vector<msgs::DetectedObject> pp_objs_;
   std::vector<std::vector<PPLongDouble> > ppss;
 
-#if FPS_EXTRAPOLATION
-  std::vector<Point32> box_centers_kalman_rel_;
-  std::vector<Point32> box_centers_kalman_next_rel_;
-#endif
-
 #if VIRTUAL_INPUT
   double gt_x_ = 0.;
   double gt_y_ = 0.;
@@ -70,6 +68,9 @@ private:
   ros::CallbackQueue queue_;
 
   ros::Publisher pp_pub_;
+#if TO_GRIDMAP
+  ros::Publisher pp_grid_pub_;
+#endif
 
   MarkerGen mg_;
 
@@ -114,22 +115,21 @@ private:
 
   // compute DetectedObject.relSpeed:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
-  float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const Point32 obj_rel);
+  float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 
   float compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
                                         const float box_center_y_abs);
 
   void compute_velocity_kalman();
 
-  void push_to_vector(BoxCenter a, std::vector<Point32>& b);
+  void push_to_vector(BoxCenter a, std::vector<MyPoint32>& b);
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
   void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                   const float time_offset);
-#if FPS_EXTRAPOLATION
-  void publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
-                                std::vector<Point32> box_centers_rel, std::vector<Point32> box_centers_next_rel);
+#if TO_GRIDMAP
+  void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs);
 #endif
 
   void set_ros_params();
