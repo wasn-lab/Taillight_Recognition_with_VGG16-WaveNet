@@ -343,11 +343,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     {
       distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
       detObj.bPoint = boxPoint;
-      std::cout << "===========================" << std::endl;    
-      std::cout << "p0.x: " << boxPoint.p0.x << std::endl;
-      std::cout << "p3.x: " << boxPoint.p3.x << std::endl;
-      std::cout << "p0.y: " << boxPoint.p0.y << std::endl;
-      std::cout << "p3.y: " << boxPoint.p3.y << std::endl;
     }
     detObj.distance = distance;
   }
