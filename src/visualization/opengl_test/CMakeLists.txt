@@ -170,12 +170,7 @@ set(ALL_RENDER_MODELS
     ${RENDER_MODEL_PATH}rmImageArray.cpp
     ${RENDER_MODEL_PATH}rmlv2TrafficLightImage.cpp
     ${RENDER_MODEL_PATH}rmlv2PathPlan_navPath.cpp
-
 )
-
-
-
-
 
 # Libraries
 # ROS interfaces
