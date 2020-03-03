@@ -104,7 +104,11 @@ DsImage::DsImage(const std::string& path, const int& inputH, const int& inputW) 
     m_RNG(cv::RNG(unsigned(std::time(0)))),
     m_ImageName(std::experimental::filesystem::path(path).stem().string())
 {
+#if CV_VERSION_MAJOR == 4
+    m_OrigImage = cv::imread(path, cv::IMREAD_COLOR);
+#else
     m_OrigImage = cv::imread(path, CV_LOAD_IMAGE_COLOR);
+#endif
 
     if (!m_OrigImage.data || m_OrigImage.cols <= 0 || m_OrigImage.rows <= 0)
     {
