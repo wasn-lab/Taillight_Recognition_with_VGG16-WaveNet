@@ -167,9 +167,9 @@ long double PathPredict::variance(const std::vector<long double>& samples, const
 
   long double variance = 0;
   long double diff = 0;
-  for (unsigned i = 0; i < samples.size(); i++)
+  for (const long double sample : samples)
   {
-    diff = samples[i] - mean;
+    diff = sample - mean;
     variance += std::pow(diff, 2);
   }
 
@@ -440,7 +440,7 @@ void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std:
     covariance_matrix(pps[i], data_x, data_y);
   }
 
-  if (show_pp_ > 0)
+  if (show_pp_ >= 1 && show_pp_ <= 3)
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {
