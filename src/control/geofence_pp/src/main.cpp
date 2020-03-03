@@ -41,7 +41,7 @@
 #define CAN_INTERFACE_NAME "can1"
 
 // Specify path prediction input type
-int pp_input_type;
+int pp_input_type=0;
 
 static double Heading, SLAM_x, SLAM_y;
 static Geofence BBox_Geofence(1.2);
@@ -223,6 +223,8 @@ int main(int argc, char **argv){
 
 	ros::param::get("pp_input_type", pp_input_type);
 	cout << "pp_input_type: " << pp_input_type << endl;
+	ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
+	/*
 	if(pp_input_type==1)
 	{
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
@@ -231,6 +233,7 @@ int main(int argc, char **argv){
 	{
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
 	}
+	*/
 	
 	ros::Rate loop_rate(10);
 	
