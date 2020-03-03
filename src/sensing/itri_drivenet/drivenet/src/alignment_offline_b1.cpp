@@ -13,14 +13,8 @@ AlignmentOff::AlignmentOff()
 
   pj.init(camId);
 
-  imgW = camera::image_width;
-  imgH = camera::image_height;
-  groundUpBound = -2.5;
-  groundLowBound = -3.3;
-
   spatial_points_ = new cv::Point3d*[imgW];
   assert(spatial_points_);
-  // num_pcd_received_ = 0;
   for (int i = 0; i < imgH; i++)
   {
     spatial_points_[i] = new cv::Point3d[imgW];

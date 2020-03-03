@@ -290,7 +290,7 @@ int main(int argc, char** argv)
   std::string cfg_file = "/b1_v2_yolo_group_b.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
-  g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
+  g_dist_est.init(pkg_path, g_dist_est_mode);
 
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();

@@ -17,13 +17,16 @@ DistanceEstimation::~DistanceEstimation()
 
 }
 
-void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
+DistanceEstimation::DistanceEstimation()
 {
-  carId = car_id;
+  std::cout << "Initialize distance estimation" << std::endl;
+}
+
+void DistanceEstimation::init(std::string pkgPath, int mode)
+{
   de_mode = mode;
 
   // ====== Init distance estimation table by alignment ======
-
   // FC60
   if (de_mode == 1)
   {
@@ -35,37 +38,15 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
-  }
+  }else{
+    arr_params = new DisEstiParams[camera::id::num_ids];
+    ShrinkArea = new CheckArea[camera::id::num_ids];
+    area = new CheckArea[camera::id::num_ids];
+    initParams();
+    initShrinkArea();
+    initDetectArea();
+  } 
 
-  // // FR60
-  // std::string FR60Json = pkgPath;
-  // FR60Json.append("/data/alignment/FR60_2.json");
-  // align_FR60 = new cv::Point3d*[img_h];
-  // for (int i = 0; i < img_h; i++)
-  // {
-  //   align_FR60[i] = new cv::Point3d[img_w];
-  // }
-  // ReadDistanceFromJson(FR60Json, align_FR60, img_h, img_w);
-
-  // // FL60
-  // std::string FL60Json = pkgPath;
-  // FL60Json.append("/data/alignment/FL60_2.json");
-  // align_FL60 = new cv::Point3d*[img_h];
-  // for (int i = 0; i < img_h; i++)
-  // {
-  //   align_FL60[i] = new cv::Point3d[img_w];
-  // }
-  // ReadDistanceFromJson(FL60Json, align_FL60, img_h, img_w);
-
-  arr_params = new DisEstiParams[camera::id::num_ids];
-  ShrinkArea = new CheckArea[camera::id::num_ids];
-  area = new CheckArea[camera::id::num_ids];
-  initParams();
-  initShrinkArea();
-  initDetectArea();
-
-  Lidar_offset_x = 0;
-  Lidar_offset_y = 0;
 }
 
 void DistanceEstimation::initParams()
@@ -790,14 +771,10 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 {
   msgs::PointXYZ p0;
   float x_distMeter = 0, y_distMeter = 0;
-  float offset_x = 0;
   int x_loc = y;
   int y_loc = x;
-  // int img_h = 1208;
 
   DisEstiParams parmas_;
-
-  offset_x = Lidar_offset_x;
 
   parmas_ = arr_params[cam_id];
 
@@ -829,21 +806,6 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       }
     }
   }
-  /*
-  if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
-  {
-    if (parmas_.regionDist_x.size() != 0)
-    {
-      x_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_x, parmas_.regionHeightSlope_x,
-                                       parmas_.regionDist_x, img_h);
-    }
-    if (parmas_.regionDist_y.size() != 0)
-    {
-      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, parmas_.regionHeight_y, parmas_regionHeightSlope_y,
-                                                parmas_.regionDist_y);
-    }
-  }
-  */
 
   if (x_distMeter == 777)
   {
@@ -851,7 +813,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
     p0.y = 0;
     p0.z = 0;
   }
-  p0.x = x_distMeter + offset_x;
+  p0.x = x_distMeter + Lidar_offset_x;
   p0.y = y_distMeter;
   p0.z = Lidar_offset_z;
 
