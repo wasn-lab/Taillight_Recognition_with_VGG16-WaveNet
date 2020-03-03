@@ -36,5 +36,5 @@ private:
   std::vector<std::string> m_ImageList;
   std::vector<char> m_CalibrationCache;
 };
-}
+} // namespace DriveNet
 #endif

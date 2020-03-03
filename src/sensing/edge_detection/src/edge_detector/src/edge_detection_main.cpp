@@ -144,7 +144,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 #endif
 
         *filtered_cloudPtr = hollow_removal (filtered_scan_ptr,-13, 0.7, -2.0, 2.0, -3, 0.5,
-                                             -15, 55, -15, 15, -5, 0.2);
+                                             -15, 55, -15, 15, -5, -0.8);
 
         TOPED.setInputCloud (filtered_cloudPtr);
         TOPED.startThread ();

@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(convex_fusion)
  
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 include(CompilerFlags)
+include(CarModel)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   roslib
   msgs
+  car_model
   camera_utils
   object_costmap_generator
 )  
@@ -16,6 +18,12 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(libs)                
 if (NOT ${libs_FOUND})
   message("libs not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+find_package(drivenet)                
+if (NOT ${drivenet_FOUND})
+  message("drivenet not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
 
@@ -33,7 +41,9 @@ include_directories(
  include
   ${catkin_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
+  ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${drivenet_SOURCE_DIR}/include
   ${OBJECTCOSTMAPGENERATOR_INCLUDE}
   ${libs_SOURCE_DIR}
   ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
