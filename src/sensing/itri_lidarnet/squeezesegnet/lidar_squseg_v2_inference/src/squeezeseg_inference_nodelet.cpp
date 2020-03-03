@@ -47,7 +47,7 @@ ssn_v2_nodelet::LidarsNodelet::onInit()
 
   for (size_t i = 0; i < phi_center_all.size(); i++)
   {
-    SSN_all.push_back(TF_inference(data_set, ViewType, phi_center_all.at(i), pub_type));
+    SSN_all.emplace_back(TF_inference(data_set, ViewType, phi_center_all.at(i), pub_type));
   }
 
   vector<int> TF_ERcode(phi_center_all.size());
@@ -99,7 +99,7 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
     vector<VPointCloudXYZIL::Ptr> result_cloud;
     for (size_t i = 0; i < SSN_all.size(); i++)
     {
-      result_cloud.push_back(VPointCloudXYZIL::Ptr(new VPointCloudXYZIL));
+      result_cloud.emplace_back(VPointCloudXYZIL::Ptr(new VPointCloudXYZIL));
     }
 
       // VPointCloudXYZIL::Ptr result_cloud(new VPointCloudXYZIL);
@@ -108,7 +108,7 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
     vector<thread> mthreads;
     for (size_t i = 0; i < SSN_all.size(); i++)
     {
-      mthreads.push_back(thread(&TF_inference::TF_run, &SSN_all.at(i), release_Cloud, result_cloud.at(i)));
+      mthreads.emplace_back(thread(&TF_inference::TF_run, &SSN_all.at(i), release_Cloud, result_cloud.at(i)));
       // ros::Duration(0.02).sleep();
     }
 
