@@ -272,18 +272,18 @@ int main(int argc, char** argv)
   // std::string occupancy_grid_topicName = camera::detect_result_occupancy_grid;
   // g_occupancy_grid_publisher = nh.advertise<nav_msgs::OccupancyGrid>(occupancy_grid_topicName, 1, true);
 
-  pthread_mutex_init(&g_mtx_infer, NULL);
-  pthread_cond_init(&g_cnd_infer, NULL);
+  pthread_mutex_init(&g_mtx_infer, nullptr);
+  pthread_cond_init(&g_cnd_infer, nullptr);
 
   pthread_t thrdYolo, thrdInterp, thrdDisplay;
-  pthread_create(&thrdYolo, NULL, &run_yolo, NULL);
+  pthread_create(&thrdYolo, nullptr, &run_yolo, nullptr);
   if (g_standard_fps)
   {
-    pthread_create(&thrdInterp, NULL, &run_interp, NULL);
+    pthread_create(&thrdInterp, nullptr, &run_interp, nullptr);
   }
   if (g_display_flag)
   {
-    pthread_create(&thrdDisplay, NULL, &run_display, NULL);
+    pthread_create(&thrdDisplay, nullptr, &run_display, nullptr);
   }
 
   std::string pkg_path = ros::package::getPath("drivenet");
@@ -296,14 +296,14 @@ int main(int argc, char** argv)
   spinner.spin();
 
   g_is_infer_stop = true;
-  pthread_join(thrdYolo, NULL);
+  pthread_join(thrdYolo, nullptr);
   if (g_standard_fps)
   {
-    pthread_join(thrdInterp, NULL);
+    pthread_join(thrdInterp, nullptr);
   }
   if (g_display_flag)
   {
-    pthread_join(thrdDisplay, NULL);
+    pthread_join(thrdDisplay, nullptr);
   }
 
   pthread_mutex_destroy(&g_mtx_infer);
@@ -326,7 +326,7 @@ void* run_interp(void* /*unused*/)
     r.sleep();
   }
   std::cout << "run_interp close" << std::endl;
-  pthread_exit(0);
+  pthread_exit(nullptr);
 }
 
 msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
@@ -585,7 +585,7 @@ void* run_yolo(void* /*unused*/)
     r.sleep();
   }
   std::cout << "run_inference close" << std::endl;
-  pthread_exit(0);
+  pthread_exit(nullptr);
 }
 
 void* run_display(void* /*unused*/)
@@ -628,5 +628,5 @@ void* run_display(void* /*unused*/)
   }
 
   std::cout << "run_display close" << std::endl;
-  pthread_exit(0);
+  pthread_exit(nullptr);
 }
