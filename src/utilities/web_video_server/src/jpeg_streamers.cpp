@@ -97,4 +97,4 @@ void JpegSnapshotStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
   inactive_ = true;
 }
 
-}
+} // namespace web_video_server
