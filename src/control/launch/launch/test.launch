@@ -1,7 +1,13 @@
 <!-- -*- mode: XML -*- -->
+
+
 <launch>
+  	<!-- declare arg to be passed in -->
+	<!-- 0=fusion, 1=lidar, 2=camera -->
+ 	<arg name="pp_input_type" default="0"/>
+ 
 	<node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  />
-		<param name="test123" value="100" type="int"/>
+		<param name="pp_input_type" value="$(arg pp_input_type)" type="int"/>
 
 	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
 		<param name="Path_flag" value="0" type="int"/>
