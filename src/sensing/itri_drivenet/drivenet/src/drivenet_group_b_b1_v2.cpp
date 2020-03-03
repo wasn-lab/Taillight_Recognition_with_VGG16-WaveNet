@@ -29,9 +29,9 @@ bool g_input_resize = true;  // grabber input mode 0: 1920x1208, 1:608x384 yolo 
 bool g_img_result_publish = true;
 
 /// function
-void* run_yolo(void*);
-void* run_interp(void*);
-void* run_display(void*);
+void* run_yolo(void* /*unused*/);
+void* run_interp(void* /*unused*/);
+void* run_display(void* /*unused*/);
 
 /// other param
 bool g_is_infer_stop;
@@ -313,7 +313,7 @@ int main(int argc, char** argv)
   return 0;
 }
 
-void* run_interp(void*)
+void* run_interp(void* /*unused*/)
 {
   std::cout << "run_interp start" << std::endl;
   ros::Rate r(30);
@@ -404,7 +404,7 @@ void reset_data()
   }
 }
 
-void* run_yolo(void*)
+void* run_yolo(void* /*unused*/)
 {
   std::cout << "run_inference start" << std::endl;
   std::vector<std_msgs::Header> headers_tmp;
@@ -588,7 +588,7 @@ void* run_yolo(void*)
   pthread_exit(0);
 }
 
-void* run_display(void*)
+void* run_display(void* /*unused*/)
 {
   std::cout << "run_display start" << std::endl;
 
