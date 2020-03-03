@@ -1,5 +1,5 @@
 #include <cmath>
-#include <assert.h>
+#include <cassert>
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/version.hpp>
@@ -132,11 +132,8 @@ bool has_yolov3_image_size(const cv::Mat& in_img)
   {
     return true;
   }
-  else
-  {
-    VLOG(2) << "Not yolov3 image size: Expected: 608x608, Actual:" << in_img.cols << "x" << in_img.rows;
-    return false;
-  }
+  VLOG(2) << "Not yolov3 image size: Expected: 608x608, Actual:" << in_img.cols << "x" << in_img.rows;
+  return false;
 }
 
 bool has_raw_image_size(const cv::Mat& in_img)
@@ -145,11 +142,8 @@ bool has_raw_image_size(const cv::Mat& in_img)
   {
     return true;
   }
-  else
-  {
-    VLOG(2) << "Not raw image size: Expected: 1920x1208, Actual:" << in_img.cols << "x" << in_img.rows;
-    return false;
-  }
+  VLOG(2) << "Not raw image size: Expected: 1920x1208, Actual:" << in_img.cols << "x" << in_img.rows;
+  return false;
 }
 
 int camera_to_yolov3_xy(const int x, const int y, int* yolov3_x, int* yolov3_y)
@@ -208,17 +202,17 @@ uint32_t calc_cvmat_checksum(const cv::Mat& img)
 uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len)
 {
   const uint32_t p = 16777619;
-  uint32_t hash = (uint32_t)2166136261;
+  auto hash = (uint32_t)2166136261;
   for (size_t i = 0; i < len; i++)
   {
     hash = (hash ^ bytes[i]) * p;
   }
 
-  hash += hash << 13;
-  hash ^= hash >> 7;
-  hash += hash << 3;
-  hash ^= hash >> 17;
-  hash += hash << 5;
+  hash += hash << 13u;
+  hash ^= hash >> 7u;
+  hash += hash << 3u;
+  hash ^= hash >> 17u;
+  hash += hash << 5u;
   return hash;
 }
 
