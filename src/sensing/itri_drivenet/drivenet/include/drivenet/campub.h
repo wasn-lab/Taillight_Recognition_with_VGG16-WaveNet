@@ -8,10 +8,9 @@
 #include "camera_params.h"  // include camera topic name
 
 // Subscriber: 8 cams
-ros::Subscriber CamObjFR;
 ros::Subscriber CamObjFC;
-ros::Subscriber CamObjFL;
-ros::Subscriber CamObjFT;
+ros::Subscriber CamObjFTf;
+ros::Subscriber CamObjFTc;
 
 ros::Subscriber CamObjRF;
 ros::Subscriber CamObjRB;
@@ -26,20 +25,18 @@ ros::Publisher CamObjAll;
 
 std_msgs::Header HeaderAll;
 
-std::vector<msgs::DetectedObject> arrCamObjFR;
 std::vector<msgs::DetectedObject> arrCamObjFC;
-std::vector<msgs::DetectedObject> arrCamObjFL;
-std::vector<msgs::DetectedObject> arrCamObjFT;
+std::vector<msgs::DetectedObject> arrCamObjFTf;
+std::vector<msgs::DetectedObject> arrCamObjFTc;
 std::vector<msgs::DetectedObject> arrCamObjRF;
 std::vector<msgs::DetectedObject> arrCamObjRB;
 std::vector<msgs::DetectedObject> arrCamObjLF;
 std::vector<msgs::DetectedObject> arrCamObjLB;
 std::vector<msgs::DetectedObject> arrCamObjBT;
 
-std::string CamObjFR_topicName;
 std::string CamObjFC_topicName;
-std::string CamObjFL_topicName;
-std::string CamObjFT_topicName;
+std::string CamObjFTf_topicName;
+std::string CamObjFTc_topicName;
 std::string CamObjRF_topicName;
 std::string CamObjRB_topicName;
 std::string CamObjLF_topicName;
