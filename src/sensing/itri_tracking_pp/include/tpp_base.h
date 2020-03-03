@@ -66,7 +66,6 @@
 
 #define FPS 0
 #define ENABLE_PROFILING_MODE 0
-#define FPS_EXTRAPOLATION 0
 
 // virtual input test
 #define VIRTUAL_INPUT 0

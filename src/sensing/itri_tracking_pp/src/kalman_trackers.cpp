@@ -645,41 +645,6 @@ void KalmanTrackers::update_boxes()
   }
 }
 
-#if FPS_EXTRAPOLATION
-void KalmanTrackers::transform_box_center_kalman_inverse()
-{
-  for (unsigned i = 0; i < tracks_.size(); i++)
-  {
-    if (tracks_[i].tracked_)
-    {
-      PoseRPY32 anchor_abs = { ego_x_abs_, ego_y_abs_, ego_z_abs_, 0.f, 0.f, ego_heading_ };
-
-      MyPoint32 p_abs;
-      p_abs.x = tracks_[i].kalman_.statePost.at<float>(0);
-      p_abs.y = tracks_[i].kalman_.statePost.at<float>(1);
-      p_abs.z = 0.f;
-      tracks_[i].box_center_kalman_.pos.set_point_abs(p_abs);
-
-      tracks_[i].box_center_kalman_.pos.set_anchor_abs(anchor_abs);
-      tracks_[i].box_center_kalman_.pos.transform_abs2rel();
-      tracks_[i].box_center_kalman_.pos.init_point_z();
-
-      cv::Mat prediction = tracks_[i].kalman_.predict();
-
-      MyPoint32 p_next_abs;
-      p_next_abs.x = tracks_[i].kalman_.statePre.at<float>(0);
-      p_next_abs.y = tracks_[i].kalman_.statePre.at<float>(1);
-      p_next_abs.z = 0.f;
-      tracks_[i].box_center_kalman_next_.pos.set_point_abs(p_next_abs);
-
-      tracks_[i].box_center_kalman_next_.pos.set_anchor_abs(anchor_abs);
-      tracks_[i].box_center_kalman_next_.pos.transform_abs2rel();
-      tracks_[i].box_center_kalman_next_.pos.init_point_z();
-    }
-  }
-}
-#endif
-
 void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
                                          const float ego_z_abs, const float ego_heading)
 {
@@ -721,10 +686,6 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   set_new_box_corners_of_boxes_absolute();
   set_new_box_corners_of_boxes_relative();
   update_boxes();
-
-#if FPS_EXTRAPOLATION
-  transform_box_center_kalman_inverse();
-#endif
 
   return;
 }
