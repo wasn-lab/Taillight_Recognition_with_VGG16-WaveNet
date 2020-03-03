@@ -30,6 +30,7 @@ double veh_pose_front = 0.615;
 double wheel_dis = 3.8;
 double predict_s = 10 + wheel_dis;
 double Resolution = 50;
+double out_dis = 0.5;
 
 bool astarpath_ini = false;
 bool vehinfo_ini = false;
@@ -89,22 +90,22 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
       }
     }
     
-    if (min_value[0] > 1.5 && min_value[0] != 100)
+    if (min_value[0] > (1.2 + out_dis) && min_value[0] != 100)
     {
       flag = true;
     }
-    if (min_value[1] > 1.5 && min_value[1] != 100)
+    if (min_value[1] > (1.2 + out_dis) && min_value[1] != 100)
     {
       flag = true;
     }
     double dis_RR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*(1-veh_pose_left) * veh_width*(1-veh_pose_left)));
     // std::cout << "dis_RR2RC : " << dis_RR2RC << ", min_value[2] : " << min_value[2] << std::endl;
-    if (min_value[2] > dis_RR2RC + 0.3 && min_value[2] != 100)
+    if (min_value[2] > (dis_RR2RC + out_dis) && min_value[2] != 100)
     {
       flag = true;
     }
     double dis_LR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*veh_pose_left * veh_width*veh_pose_left));
-    if (min_value[3] > dis_LR2RC + 0.3 && min_value[3] != 100)
+    if (min_value[3] > (dis_LR2RC + out_dis) && min_value[3] != 100)
     {
       flag = true;
     }
