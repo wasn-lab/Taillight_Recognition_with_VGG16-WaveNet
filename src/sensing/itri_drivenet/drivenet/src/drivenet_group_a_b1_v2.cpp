@@ -436,7 +436,7 @@ void* run_yolo(void* /*unused*/)
     }
     else
     {
-      g_yolo_app.input_preprocess(matSrcs_tmp, g_input_resize, dist_cols_tmp, dist_rows_tmp);
+      g_yolo_app.input_preprocess(matSrcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp);
     }
 
     g_yolo_app.inference_yolo();
@@ -453,7 +453,7 @@ void* run_yolo(void* /*unused*/)
       std::vector<ITRI_Bbox>* tmpBBx = vbbx_output_tmp[cam_order];
       if (g_img_result_publish || g_display_flag)
       {
-        if (!(*matSrcs_tmp[cam_order]).data)
+        if ((*matSrcs_tmp[cam_order]).data == nullptr)
         {
           std::cout << "Unable to read *matSrcs_tmp : id " << cam_order << "." << std::endl;
           continue;
@@ -575,7 +575,7 @@ void* run_display(void* /*unused*/)
   {
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      if (g_mats_display[cam_order].data)
+      if (g_mats_display[cam_order].data != nullptr)
       {
         if (g_mats_display[cam_order].cols * g_mats_display[cam_order].rows == g_rawimg_size)
         {
