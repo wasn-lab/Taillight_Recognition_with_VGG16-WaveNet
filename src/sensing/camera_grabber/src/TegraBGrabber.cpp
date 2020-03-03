@@ -88,9 +88,15 @@ bool TegraBGrabber::runPerception()
     {
       npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[cam_ids_[i]]),
                                       camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[i]);
-      remapper_.remap(npp8u_ptrs_[i], npp8u_ptrs_distorted_[i]);
-      resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);
+      if(camera::distortion[cam_ids_[i]])
+      {
+        remapper_.remap(npp8u_ptrs_[i], npp8u_ptrs_distorted_[i]);
+        resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);
+      }else{
+        resizer_.resize(npp8u_ptrs_[i], canvas[i]);
+      }
     }
+
     // end image processing
 
     // return camera grabber
@@ -108,4 +114,4 @@ bool TegraBGrabber::runPerception()
 
   return true;
 }
-}
+} // namespace SensingSubSystem

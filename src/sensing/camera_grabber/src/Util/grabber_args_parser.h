@@ -9,6 +9,6 @@ namespace SensingSubSystem
 std::string get_mode();
 int get_expected_fps();
 bool should_feed_608();
-};  // namespace
+} // namespace SensingSubSystem
 
 #endif  //__SENSING_GRABBER_PARSER_H__
