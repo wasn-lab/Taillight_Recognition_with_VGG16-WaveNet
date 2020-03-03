@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/version.hpp>
 #include "npp_resizer.h"
 #include "camera_params.h"
 #include "camera_utils.h"
@@ -186,8 +187,13 @@ bool cvmats_are_equal(const cv::Mat& img1, const cv::Mat& img2)
     return false;
   }
   cv::Mat gray1, gray2, diff;
+#if CV_VERSION_MAJOR == 4
+  cv::cvtColor(img1, gray1, cv::COLOR_BGR2GRAY);
+  cv::cvtColor(img2, gray2, cv::COLOR_BGR2GRAY);
+#else
   cv::cvtColor(img1, gray1, CV_BGR2GRAY);
   cv::cvtColor(img2, gray2, CV_BGR2GRAY);
+#endif
   cv::bitwise_xor(gray1, gray2, diff);
   int nz = cv::countNonZero(diff);
   return nz == 0;
