@@ -1,5 +1,6 @@
 #include "web_video_server/jpeg_streamers.h"
 #include "async_web_server_cpp/http_reply.hpp"
+#include <opencv2/core/version.hpp>
 
 namespace web_video_server
 {
@@ -21,7 +22,11 @@ MjpegStreamer::~MjpegStreamer()
 void MjpegStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
 {
   std::vector<int> encode_params;
+#if CV_VERSION_MAJOR == 4
+  encode_params.push_back(cv::IMWRITE_JPEG_QUALITY);
+#else
   encode_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+#endif
   encode_params.push_back(quality_);
 
   std::vector<uchar> encoded_buffer;
@@ -63,7 +68,11 @@ JpegSnapshotStreamer::~JpegSnapshotStreamer()
 void JpegSnapshotStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
 {
   std::vector<int> encode_params;
+#if CV_VERSION_MAJOR == 4
+  encode_params.push_back(cv::IMWRITE_JPEG_QUALITY);
+#else
   encode_params.push_back(CV_IMWRITE_JPEG_QUALITY);
+#endif
   encode_params.push_back(quality_);
 
   std::vector<uchar> encoded_buffer;
