@@ -3,17 +3,21 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-void AlignmentOff::init(int car_id)
+AlignmentOff::AlignmentOff()
 {
-  carId = car_id;
+  /// camera layout
+  #if CAR_MODEL_IS_B1_V2
+  const camera::id camId = camera::id::front_bottom_60;
+  #elif CAR_MODEL_IS_B1
+  const camera::id camId = camera::id::front_60;  
+  #else
+  #error "car model is not well defined"
+  #endif
 
-  pj.init(camera::id::front_60);
-  // pj.init(camera::id::top_front_120);
-  // pj.init(camera::id::left_60);
-  // pj.init(camera::id::right_60);
+  pj.init(camId);
 
-  imgW = 608;
-  imgH = 384;
+  imgW = camera::image_width;
+  imgH = camera::image_height;
   groundUpBound = -2.5;
   groundLowBound = -3.3;
 
@@ -35,6 +39,15 @@ void AlignmentOff::init(int car_id)
       spatial_points_[row][col].z = INIT_COORDINATE_VALUE;
     }
   }
+}
+
+AlignmentOff::~AlignmentOff()
+{
+  for (int row = 0; row < imgH; row++)
+  {
+    delete[] spatial_points_[row];
+  }
+  delete[] spatial_points_;
 }
 
 bool AlignmentOff::is_valid_image_point(const int row, const int col) const
@@ -237,28 +250,6 @@ int main(int argc, char** argv)
   ros::Subscriber LidarSc;
   LidarSc = nh.subscribe("LidarAll", 1, callback_LidarAll);
 
-  g_al.init(1);
-
-  // g_al.out = g_al.run(50, 0, -2.5);
-  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
-
-  // g_al.out = g_al.run(40, 0, -2.5);
-  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
-
-  // g_al.out = g_al.run(30, 0, -2.5);
-  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
-
-  // g_al.out = g_al.run(20, 0, -2.5);
-  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
-
-  // g_al.out = g_al.run(10, 0, -2.5);
-  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
-
-  // g_al.out = g_al.run(7, 0, -2.5);
-
-  // std::cout << g_al.out[0] << "," << g_al.out[1] << std::endl;
-
-  // g_al.out = g_al.run();
   while (ros::ok())
   {
     ros::spinOnce();
@@ -268,6 +259,4 @@ int main(int argc, char** argv)
   g_al.approx_nearest_points_if_necessary();
   g_al.dump_distance_in_json();
 
-  // ros::spin();
-  // return 0;
 }

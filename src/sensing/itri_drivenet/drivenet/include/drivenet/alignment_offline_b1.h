@@ -24,11 +24,11 @@
 class AlignmentOff
 {
 private:
-  int carId = 1;
   Projector2 pj;
 
 public:
-  void init(int carId);
+  AlignmentOff();
+  ~AlignmentOff();
   vector<int> run(float x, float y, float z);
   vector<int> out;
   int imgW, imgH;
