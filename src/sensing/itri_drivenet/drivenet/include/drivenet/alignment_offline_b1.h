@@ -8,6 +8,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Header.h>
 #include "sensor_msgs/PointCloud2.h"
+#include <vector>
 
 #include "camera_params.h"  // include camera topic name
 #include <msgs/BoxPoint.h>
