@@ -1,5 +1,5 @@
-#ifndef DISTANCEESTIMATION_B1_H_
-#define DISTANCEESTIMATION_B1_H_
+#ifndef DISTANCEESTIMATION_B1_V2_H_
+#define DISTANCEESTIMATION_B1_V2_H_
 
 // ROS message
 #include "camera_params.h"  // include camera topic name
@@ -16,19 +16,9 @@
 class DistanceEstimation
 {
 private:
-  DisEstiParams camFR60, camFC60, camFL60, camFT120, camRF120, camRB120, camLF120, camLB120, camBT120;
-  CheckArea ShrinkArea_camFR60, ShrinkArea_camFT120, ShrinkArea_camBT120;
+  DisEstiParams* arr_params;
+  CheckArea* ShrinkArea;
   cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
-
-  /// camId: 0 = camFR60
-  /// camId: 1 = camFC60
-  /// camId: 2 = camFL60
-  /// camId: 4 = camFT120
-  /// camId: 5 = camRF120
-  /// camId: 6 = camRB120
-  /// camId: 8 = camLF120
-  /// camId: 9 = camLB120
-  /// camId: 10 = camBT120
 
   float Lidar_offset_x = 0;
   float Lidar_offset_y = 0;
@@ -46,9 +36,9 @@ private:
   void initShrinkArea();
   void initDetectArea();
 
-  int ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
+  int ReadDistanceFromJson(const std::string& filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
   float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
-  float ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+  float ComputeObjectXDistWithSlope(int piexl_loc_x, int piexl_loc_y, std::vector<int> regionHeight,
                                     std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
   float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
                            std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
@@ -64,27 +54,7 @@ public:
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);
 
-  /// camId:0
-  // Front right 60 range:
-  // x axis: 7 ~ 50 meters
-  // y axis: -10 ~ 10 meters
-
-  /// camId: 1
-  // Front center 60 range:
-  // x axis: 7 ~ 50 meters
-  // y axis: -10 ~ 10 meters
-
-  /// camId: 4
-  // Front top 120 range:
-  // x axis: 0 ~ 7 meters
-  // y axis: -9 ~ 6 meters
-
-  /// camId: 10
-  // Back top 120 range:
-  // x axis: 8 ~ 20 meters
-  // y axis: -3 ~ 3 meters
-
-  CheckArea camFR60_area, camFC60_area, camFL60_area, camFT120_area, camBT120_area;
+  CheckArea* area;
 };
 
-#endif /*DISTANCEESTIMATION_B1_H_*/
+#endif /*DISTANCEESTIMATION_B1_V2_H_*/

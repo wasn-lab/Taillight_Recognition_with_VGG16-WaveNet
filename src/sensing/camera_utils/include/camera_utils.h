@@ -19,5 +19,5 @@ uint32_t calc_cvmat_checksum(const cv::Mat& img);
 uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len);
 bool is_black_image(const cv::Mat& img);
 int release_cv_mat_if_necessary(cv::Mat& img);
-};      // namespace
+} // namespace camera
 #endif  // __CAMERA_UTILS_H__

@@ -32,6 +32,6 @@ public:
   static const uint32_t S = 4;                                          // RGBA uint8
   static const uint32_t ImageSize = 1920 * 1208 * 4 * sizeof(uint8_t);  // RGBA uint8
 };
-}
+} // namespace SensingSubSystem
 
 #endif
