@@ -162,8 +162,7 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
     // all_pub.publish (all_msg);  // publish to /release_cloud
   }
 
-  //if (stopWatch.getTimeSeconds() > 0.05)
-  if (true)
+  if (stopWatch.getTimeSeconds() > 0.05)
   {
     cout << "[SSN]: " << stopWatch.getTimeSeconds() << "s" << endl << endl;
   }
