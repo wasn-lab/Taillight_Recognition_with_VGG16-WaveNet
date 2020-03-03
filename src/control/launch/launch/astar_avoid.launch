@@ -84,4 +84,7 @@
     <!-- target pub node-->
     <node pkg="target_planner" type="target_planner" name="target_planner" /> <!--output="screen" /-->
 
+    <!-- veh_predictwaypoint pub node-->
+    <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint" /> <!--output="screen" /-->
+
 </launch>

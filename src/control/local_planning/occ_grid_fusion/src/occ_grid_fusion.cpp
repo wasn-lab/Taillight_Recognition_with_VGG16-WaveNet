@@ -115,6 +115,7 @@ void pp_occgridCallback(const nav_msgs::OccupancyGrid& costmap)
 
 void basewaypoints30Callback(const nav_msgs::Path& path)
 {
+  double path_max_x = 0;
   nav_msgs::Path path_vehicle = path;
   // std::cout << "path size : " << path.poses.size() << std::endl;
   double rot_ang = -current_pose.yaw;
@@ -123,6 +124,10 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
     path_vehicle.poses[i].pose.position.x = (path.poses[i].pose.position.x-current_pose.x)*std::cos(rot_ang) - (path.poses[i].pose.position.y-current_pose.y)*std::sin(rot_ang);
     path_vehicle.poses[i].pose.position.y = (path.poses[i].pose.position.x-current_pose.x)*std::sin(rot_ang) + (path.poses[i].pose.position.y-current_pose.y)*std::cos(rot_ang);
     path_vehicle.poses[i].pose.position.z = -3;
+    if (path_vehicle.poses[i].pose.position.x > path_max_x)
+    {
+      path_max_x = path_vehicle.poses[i].pose.position.x;
+    }
   }
   path_vehicle.header.frame_id = "base_link";
   path_vehicle.header.stamp = ros::Time::now();
@@ -133,22 +138,6 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
 
   nav_msgs::Path path_vehicle_left;
   geometry_msgs::PoseStamped path_vehicle_left_pose;
-  for (int i = 1; i < path_vehicle.poses.size(); i+=3)
-  {
-    double a = path_vehicle.poses[i].pose.position.y - path_vehicle.poses[i-1].pose.position.y;
-    double b = path_vehicle.poses[i-1].pose.position.x - path_vehicle.poses[i].pose.position.x;
-    double dis_ab = std::sqrt(a*a + b*b);
-    double x_c = (path_vehicle.poses[i].pose.position.x + path_vehicle.poses[i-1].pose.position.x) / 2.0;
-    double y_c = (path_vehicle.poses[i].pose.position.y + path_vehicle.poses[i-1].pose.position.y) / 2.0;
-    path_vehicle_left_pose.pose.position.x = a * (-left_waylength)/dis_ab + x_c;
-    path_vehicle_left_pose.pose.position.y = b * (-left_waylength)/dis_ab + y_c;
-    path_vehicle_left_pose.pose.position.z = path_vehicle.poses[i].pose.position.z;
-    path_vehicle_left.poses.push_back(path_vehicle_left_pose);
-  }
-  path_vehicle_left.header.frame_id = "base_link";
-  path_vehicle_left.header.stamp = ros::Time::now();
-  path_vehicle_left_pub.publish(path_vehicle_left);
-
   nav_msgs::Path path_vehicle_right;
   geometry_msgs::PoseStamped path_vehicle_right_pose;
   for (int i = 1; i < path_vehicle.poses.size(); i+=3)
@@ -158,14 +147,41 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
     double dis_ab = std::sqrt(a*a + b*b);
     double x_c = (path_vehicle.poses[i].pose.position.x + path_vehicle.poses[i-1].pose.position.x) / 2.0;
     double y_c = (path_vehicle.poses[i].pose.position.y + path_vehicle.poses[i-1].pose.position.y) / 2.0;
+    // left point
+    path_vehicle_left_pose.pose.position.x = a * (-left_waylength)/dis_ab + x_c;
+    path_vehicle_left_pose.pose.position.y = b * (-left_waylength)/dis_ab + y_c;
+    path_vehicle_left_pose.pose.position.z = path_vehicle.poses[i].pose.position.z;
+    path_vehicle_left.poses.push_back(path_vehicle_left_pose);
+    // right point
     path_vehicle_right_pose.pose.position.x = a * right_waylength/dis_ab + x_c;
     path_vehicle_right_pose.pose.position.y = b * right_waylength/dis_ab + y_c;
     path_vehicle_right_pose.pose.position.z = path_vehicle.poses[i].pose.position.z;
     path_vehicle_right.poses.push_back(path_vehicle_right_pose);
   }
+  path_vehicle_left.header.frame_id = "base_link";
+  path_vehicle_left.header.stamp = ros::Time::now();
+  path_vehicle_left_pub.publish(path_vehicle_left);
   path_vehicle_right.header.frame_id = "base_link";
   path_vehicle_right.header.stamp = ros::Time::now();
   path_vehicle_right_pub.publish(path_vehicle_right);
+
+  // nav_msgs::Path path_vehicle_right;
+  // geometry_msgs::PoseStamped path_vehicle_right_pose;
+  // for (int i = 1; i < path_vehicle.poses.size(); i+=3)
+  // {
+  //   double a = path_vehicle.poses[i].pose.position.y - path_vehicle.poses[i-1].pose.position.y;
+  //   double b = path_vehicle.poses[i-1].pose.position.x - path_vehicle.poses[i].pose.position.x;
+  //   double dis_ab = std::sqrt(a*a + b*b);
+  //   double x_c = (path_vehicle.poses[i].pose.position.x + path_vehicle.poses[i-1].pose.position.x) / 2.0;
+  //   double y_c = (path_vehicle.poses[i].pose.position.y + path_vehicle.poses[i-1].pose.position.y) / 2.0;
+  //   path_vehicle_right_pose.pose.position.x = a * right_waylength/dis_ab + x_c;
+  //   path_vehicle_right_pose.pose.position.y = b * right_waylength/dis_ab + y_c;
+  //   path_vehicle_right_pose.pose.position.z = path_vehicle.poses[i].pose.position.z;
+  //   path_vehicle_right.poses.push_back(path_vehicle_right_pose);
+  // }
+  // path_vehicle_right.header.frame_id = "base_link";
+  // path_vehicle_right.header.stamp = ros::Time::now();
+  // path_vehicle_right_pub.publish(path_vehicle_right);
 
 
 
@@ -208,44 +224,58 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
 
   //   j_index.push_back(i_index_range);
   // }
+  // for (int j = 0; j < width; j++)
+  // {
+  //   for (int i = j_index[j].min_index; i < j_index[j].max_index; i++)
+  //   {
+  //     int og_index = i * width + j;
+  //     wayareaoccgridmap.data[og_index] = 0;
+  //   }
+  // }
   for (int j = 0; j < width; j++)
   {
     double x_j = j*grid_length_x_/width - grid_length_x_/2 + grid_position_x_;
-    int min_m = 0;
-    double min_value = 100;
-    for (int m = 0; m < path_vehicle.poses.size(); m++)
+    double x_j_max = x_j + 5;
+    double x_j_min = x_j - 5;
+    if (x_j > path_max_x+5.6)
     {
-      double m_value = std::fabs(path_vehicle.poses[m].pose.position.x - x_j);
-      if (m_value < min_value)
-      {
-        min_value = m_value;
-        min_m = m;
-      }
+      break;
     }
-
-    double min_y = path_vehicle.poses[min_m].pose.position.y - right_waylength;
-    double max_y = path_vehicle.poses[min_m].pose.position.y + left_waylength;
-    
-    index_range i_index_range;
-    i_index_range.min_index = std::ceil(height*(min_y - (-grid_length_y_/2 + grid_position_y_))/grid_length_y_);
-    if (i_index_range.min_index < 0)
-    {
-      i_index_range.min_index = 0;
-    }
-    i_index_range.max_index = std::ceil(height*(max_y - (-grid_length_y_/2 + grid_position_y_))/grid_length_y_);
-    if (i_index_range.max_index > height)
-    {
-      i_index_range.max_index = height;
-    }
-
-    j_index.push_back(i_index_range);
-  }
-  for (int j = 0; j < width; j++)
-  {
-    for (int i = j_index[j].min_index; i < j_index[j].max_index; i++)
+    for (int i = 0; i < height; i++)
     {
       int og_index = i * width + j;
-      wayareaoccgridmap.data[og_index] = 0;
+      double y_i = i*grid_length_y_/height - grid_length_y_/2 + grid_position_y_;
+      for (int k = 0; k < path_vehicle_left.poses.size(); k++)
+      {
+        double left_x_k = path_vehicle_left.poses[k].pose.position.x;
+        double right_x_k = path_vehicle_right.poses[k].pose.position.x;
+        double left_y_k = path_vehicle_left.poses[k].pose.position.y;
+        double right_y_k = path_vehicle_right.poses[k].pose.position.y;
+
+        if (left_x_k < x_j_max && left_x_k > x_j_min)
+        {
+          double path_width = right_waylength + left_waylength;
+          double grid2left = std::sqrt((x_j-left_x_k)*(x_j-left_x_k) + (y_i - left_y_k)*(y_i - left_y_k));
+          double grid2right = std::sqrt((x_j-right_x_k)*(x_j-right_x_k) + (y_i - right_y_k)*(y_i - right_y_k));
+          if (path_width > grid2left && path_width > grid2right)
+          {
+            wayareaoccgridmap.data[og_index] = 0;
+            break;
+          }
+        }
+        else if (right_x_k < x_j_max && right_x_k > x_j_min)
+        {
+          double path_width = right_waylength + left_waylength;
+          double grid2left = std::sqrt((x_j-left_x_k)*(x_j-left_x_k) + (y_i - left_y_k)*(y_i - left_y_k));
+          double grid2right = std::sqrt((x_j-right_x_k)*(x_j-right_x_k) + (y_i - right_y_k)*(y_i - right_y_k));
+          if (path_width > grid2left && path_width > grid2right)
+          {
+            wayareaoccgridmap.data[og_index] = 0;
+            break;
+          }
+        }
+      }
+
     }
   }
   occ_grid_wayarea_pub.publish(wayareaoccgridmap);
