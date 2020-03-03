@@ -3,6 +3,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "detected_object_class_id.h"
 #include "image_preprocessing.h"
 
 namespace DriveNet
@@ -22,18 +23,17 @@ enum class net_type_id
 
 enum class common_type_id
 {
-  begin = 0,
-  other = begin,  // 0
-  person,         // 1
-  bicycle,        // 2
-  motorbike,      // 3
-  car,            // 4
-  bus,            // 5
-  truck           // 6
+  other = sensor_msgs_itri::DetectedObjectClassId::Unknown,      // 0
+  person = sensor_msgs_itri::DetectedObjectClassId::Person,      // 1
+  bicycle = sensor_msgs_itri::DetectedObjectClassId::Bicycle,    // 2
+  motorbike = sensor_msgs_itri::DetectedObjectClassId::Motobike, // 3
+  car = sensor_msgs_itri::DetectedObjectClassId::Car,            // 4
+  bus = sensor_msgs_itri::DetectedObjectClassId::Bus,            // 5
+  truck = sensor_msgs_itri::DetectedObjectClassId::Truck         // 6
 };
 
 int translate_label(int label);
 cv::Scalar get_label_color(int label_id);
 cv::Scalar get_common_label_color(int label_id);
-}
+} // namespace DriveNet
 #endif /*OBJECTLABELUTIL_H_*/

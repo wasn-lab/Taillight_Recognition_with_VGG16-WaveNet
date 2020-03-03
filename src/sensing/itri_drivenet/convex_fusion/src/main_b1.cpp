@@ -95,8 +95,8 @@ int main(int argc, char** argv)
 
     size_t numberABB = g_object_front_60.size() + g_object_top_front_120.size() + g_object_top_rear_120.size();
 
-    CLUSTER_INFO camera_ABB[numberABB];
-    CLUSTER_INFO camera_ABB_bbox[numberABB];
+    CLUSTER_INFO* camera_ABB = new CLUSTER_INFO[numberABB];
+    CLUSTER_INFO* camera_ABB_bbox = new CLUSTER_INFO[numberABB];
 
     size_t cnt = 0;
     for (size_t i = 0; i < g_object_front_60.size(); i++)
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
       camera_ABB[i + cnt].max.z = g_object_front_60[i].bPoint.p6.z;
       if (g_object_front_60[i].distance < 0)
       {
-        camera_ABB[i + cnt].cluster_tag = 0;
+        camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
       }
       else
       {
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
       camera_ABB[i + cnt].max.z = g_object_top_front_120[i].bPoint.p6.z;
       if (g_object_top_front_120[i].distance < 0)
       {
-        camera_ABB[i + cnt].cluster_tag = 0;
+        camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
       }
       else
       {
@@ -149,7 +149,7 @@ int main(int argc, char** argv)
       camera_ABB[i + cnt].max.z = g_object_top_rear_120[i].bPoint.p6.z;
       if (g_object_top_rear_120[i].distance < 0)
       {
-        camera_ABB[i + cnt].cluster_tag = 0;
+        camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
       }
       else
       {
@@ -164,11 +164,11 @@ int main(int argc, char** argv)
 
       switch (camera_ABB[i].cluster_tag)
       {
-        case 0:  // Unknown
+        case static_cast<int>(DriveNet::common_type_id::other):  // Unknown
           scale = 0;
           break;
 
-        case 1:  // Person
+        case static_cast<int>(DriveNet::common_type_id::person):  // Person
           if (camera_ABB[i].min.x < 10)
           {
             scale = 1;
@@ -183,8 +183,8 @@ int main(int argc, char** argv)
           }
           break;
 
-        case 2:  // Bicycle
-        case 3:  // Motobike
+        case static_cast<int>(DriveNet::common_type_id::bicycle):  // Bicycle
+        case static_cast<int>(DriveNet::common_type_id::motorbike):  // Motobike
           if (camera_ABB[i].min.x < 15)
           {
             scale = 0.8;
@@ -199,9 +199,9 @@ int main(int argc, char** argv)
           }
           break;
 
-        case 4:  // Car
-        case 5:  // Bus
-        case 6:  // Truck
+        case static_cast<int>(DriveNet::common_type_id::car):  // Car
+        case static_cast<int>(DriveNet::common_type_id::bus):  // Bus
+        case static_cast<int>(DriveNet::common_type_id::truck):  // Truck
           if (camera_ABB[i].min.x < 15)
           {
             scale = 0.2;
@@ -286,6 +286,9 @@ int main(int argc, char** argv)
                            camera_ABB[i].convex_hull);
       }
       convexFusionB1.sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
+      
+      delete[]camera_ABB;
+      delete[]camera_ABB_bbox;
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)

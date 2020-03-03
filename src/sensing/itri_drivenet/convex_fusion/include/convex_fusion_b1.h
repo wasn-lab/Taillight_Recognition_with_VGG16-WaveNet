@@ -35,7 +35,9 @@
 #include "msgs/ErrorCode.h"
 
 #include "UserDefine.h"
+#include "fusion_source_id.h"
 #include "camera_params.h"
+#include "drivenet/object_label_util.h"
 
 #include "costmap_generator.h"
 
