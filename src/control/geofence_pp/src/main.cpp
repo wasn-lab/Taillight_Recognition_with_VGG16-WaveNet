@@ -40,11 +40,8 @@
 #define CAN_DLC 8
 #define CAN_INTERFACE_NAME "can1"
 
-
-// Specify running mode
-//#define VIRTUAL
-//#define RADARBOX
-#define TRACKINGBOX
+// Specify path prediction input type
+int pp_input_type;
 
 static double Heading, SLAM_x, SLAM_y;
 static Geofence BBox_Geofence(1.2);
@@ -52,6 +49,7 @@ static double Ego_speed_ms;
 static int PP_Stop=0;
 static int PP_Distance=100;
 ros::Publisher PP_geofence_line;
+
 
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
@@ -215,25 +213,27 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 
 
 int main(int argc, char **argv){ 
-
+	
 	ros::init(argc, argv, "Geofence_PP");
 	ros::NodeHandle n;
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	ros::Subscriber VI_sub = n.subscribe("veh_info", 1, VehinfoCallback);
 	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
-	#ifdef VIRTUAL
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPP);
-	#elif defined RADARBOX
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPP);
-	#else
+
+	ros::param::get("pp_input_type", pp_input_type);
+	cout << "pp_input_type: " << pp_input_type << endl;
+	if(pp_input_type==1)
+	{
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallbackPP);
+	}
+	else
+	{
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
-	#endif
-	PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
-
-
+	}
+	
 	ros::Rate loop_rate(10);
-
+	
 	int s;
 	int nbytes;
 	struct sockaddr_can addr;
