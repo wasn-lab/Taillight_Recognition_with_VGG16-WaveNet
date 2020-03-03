@@ -52,5 +52,5 @@ private:
   int m_XOffset;
   int m_YOffset;
 };
-}
+} // namespace DriveNet
 #endif
