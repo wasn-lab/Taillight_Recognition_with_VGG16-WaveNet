@@ -7,8 +7,8 @@
 namespace camera
 {
 int get_undistortion_maps(cv::Mat& mapx, cv::Mat& mapy);
-int fit_yolov3_image_size(const cv::Mat& in_img, cv::Mat& out_img);
-int fit_yolov3_image_size(const cv::Mat& in_img, cv::Mat& yolo3_img, NPPResizer& resizer);
+int fit_yolov3_image_size(const cv::Mat& in_img, cv::Mat& yolov3_img);
+int fit_yolov3_image_size(const cv::Mat& in_img, cv::Mat& yolov3_img, NPPResizer& resizer);
 int scale_yolov3_image_to_raw_size(const cv::Mat& in_img, cv::Mat& scaled_img);
 bool has_yolov3_image_size(const cv::Mat& in_img);
 bool has_raw_image_size(const cv::Mat& in_img);
