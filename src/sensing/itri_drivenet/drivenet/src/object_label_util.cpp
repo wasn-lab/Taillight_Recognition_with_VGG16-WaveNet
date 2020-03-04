@@ -82,4 +82,4 @@ cv::Scalar get_common_label_color(int label_id)
   }
   return class_color;
 }
-};
+} // namespace DriveNet
