@@ -11,10 +11,6 @@
 		type="msg_recorder.py"
 		args="-A --NO_KEY_IN"/>
 
-	<node name="convex_fusion"
-		pkg="convex_fusion"
-		type="convex_fusion_b1"/>
-
 	<include file="$(find detection_viz)/launch/itriadv_viz.launch"/>
 
 </launch>
