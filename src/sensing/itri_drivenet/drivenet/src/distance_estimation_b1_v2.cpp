@@ -31,21 +31,21 @@ void DistanceEstimation::init(std::string pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string FC60Json = pkgPath;
-    FC60Json.append("/data/alignment/out.json");
+    FC60Json.append("/data/alignment/FB60_new.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
-  }else{
+  }
     arr_params = new DisEstiParams[camera::id::num_ids];
     ShrinkArea = new CheckArea[camera::id::num_ids];
     area = new CheckArea[camera::id::num_ids];
     initParams();
     initShrinkArea();
     initDetectArea();
-  } 
+  
 
 }
 
@@ -791,21 +791,20 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       return p0;
     }
   }
-  else
+  
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
   {
-    if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
+    if (!parmas_.regionDist_x.empty())
     {
-      if (!parmas_.regionDist_x.empty())
-      {
-        x_distMeter = ComputeObjectXDist(x_loc, parmas_.regionHeight_x, parmas_.regionDist_x);
-      }
-      if (!parmas_.regionDist_y.empty())
-      {
-        y_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_y, parmas_.regionHeightSlope_y,
-                                         parmas_.regionDist_y, img_h);
-      }
+      x_distMeter = ComputeObjectXDist(x_loc, parmas_.regionHeight_x, parmas_.regionDist_x);
+    }
+    if (!parmas_.regionDist_y.empty())
+    {
+      y_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_y, parmas_.regionHeightSlope_y,
+                                        parmas_.regionDist_y, img_h);
     }
   }
+  
 
   if (x_distMeter == 777)
   {

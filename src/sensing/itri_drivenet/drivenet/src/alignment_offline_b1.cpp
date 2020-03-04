@@ -102,7 +102,24 @@ bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
 void AlignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
+  // Mat tmpa(imgH, imgW, CV_8UC3);
+
   bool done = false;
+
+  // for(int i = 0; i < 50; i++)
+  // {
+  //   for(int j = -10; j < 11; j++)
+  //   {
+  //     out = run((float)i, (float)j, -3);
+
+  //     if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
+  //     {
+  //       spatial_points_[out[1]][out[0]].x = i;
+  //       spatial_points_[out[1]][out[0]].y = j;
+  //       spatial_points_[out[1]][out[0]].z = 0.0;
+  //     }
+  //   }
+  // }
 
   for (int row = 0; row < imgH; row++)
   {
@@ -111,9 +128,20 @@ void AlignmentOff::approx_nearest_points_if_necessary()
       if (!spatial_point_is_valid(row, col))
       {
         unset_points.emplace_back(cv::Point(row, col));
+        // tmpa(imgW, imgH)[0] = 255;
+        // tmpa(imgW, imgH)[1] = 255;
+        // // tmpa(imgW, imgH)[2] = 255;
+        // tmpa.at<Vec3b>(row, col)[0] = 255;
+        // tmpa.at<Vec3b>(row, col)[1] = 255;
+        // tmpa.at<Vec3b>(row, col)[2] = 255;
       }
     }
   }
+
+  // namedWindow("image", 1);
+	// imshow("image", tmpa);
+	// waitKey();
+
   std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
 
   while (!done)
