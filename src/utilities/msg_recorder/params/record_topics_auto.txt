@@ -9,18 +9,27 @@
 # /points_map
 
 # Raw image
+#-- 9-camera version
 # /cam/F_right
-/cam/F_center
+# /cam/F_center
 # /cam/F_left
 # /cam/F_top
-/cam/R_front
-/cam/R_rear
-/cam/L_front
-/cam/L_rear
-/cam/B_top
-# 
-/cam/F_top_far
-/cam/F_top_close
+# /cam/R_front
+# /cam/R_rear
+# /cam/L_front
+# /cam/L_rear
+# /cam/B_top
+
+#-- 8-camera version
+/cam/front_bottom_60
+/cam/front_top_close_120
+/cam/front_top_far_30
+/cam/left_back_60
+/cam/left_front_60
+/cam/right_back_60
+/cam/right_front_60
+/cam/back_top_120
+
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -33,19 +42,28 @@
 # /cam/L_rear/detect_image
 # /cam/B_top/detect_image
 
+# bbox
+#-- 9-camera version
 # /CamObjFrontRight
-/CamObjFrontCenter
+# /CamObjFrontCenter
 # /CamObjFrontLeft
 # /CamObjFrontTop
-/CamObjRightFront
-/CamObjRightBack
-/CamObjLeftFront
-/CamObjLeftBack
-/CamObjBackTop
-#
-/CamObjFrontTopFar
-/CamObjFrontTopClose
+# /CamObjRightFront
+# /CamObjRightBack
+# /CamObjLeftFront
+# /CamObjLeftBack
+# /CamObjBackTop
 
+#-- 8-camera version
+/cam_obj/front_bottom_60
+/cam_obj/front_top_close_120
+/cam_obj/front_top_far_30
+/cam_obj/left_back_60
+/cam_obj/left_front_60
+/cam_obj/right_back_60
+/cam_obj/right_front_60
+/cam_obj/back_top_120
+#
 
 # Camera polygon
 /CameraDetection/polygon
@@ -124,4 +142,3 @@
 
 # Traffic light
 /LightResultOutput
-
