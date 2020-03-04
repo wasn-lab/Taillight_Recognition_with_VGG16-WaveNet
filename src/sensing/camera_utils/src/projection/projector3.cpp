@@ -7,7 +7,11 @@ void Projector3::init(const char* camera_topic_name)
 {
   if(strcmp(camera_topic_name,"/cam/F_center") == 0)
   {
-    readCameraParameters(CAMERA_UTILS_DATA_DIR + "/test_0225_F_center.yml");
+    char* fileName = (char *)"test_0225_F_center.yml";
+    char* filePath = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(fileName) + 1];
+    std::strcpy(filePath,test);
+    std::strcat(filePath,fileName);
+    readCameraParameters(filePath);
   }
   else
   {
