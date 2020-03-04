@@ -47,6 +47,7 @@
 #define TRACKINGBOX
 
 static double Heading, SLAM_x, SLAM_y;
+static double current_x, current_y, current_z;
 static Geofence BBox_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop=0;
@@ -58,6 +59,14 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
 	SLAM_x = LTVmsg->x;
 	SLAM_y = LTVmsg->y;
+}
+
+void CurrentPoseCallback(const geometry_msgs::PoseStamped& msg)
+{
+
+	current_x = msg.pose.position.x;
+	current_y = msg.pose.position.y;
+	current_z = msg.pose.position.z;
 }
 
 void VehinfoCallback(const msgs::VehInfo::ConstPtr& VImsg){
@@ -124,10 +133,11 @@ void Plot_geofence(Point temp)
 	geometry_msgs::Point p;
     p.x = temp.X + 1.5*sin(temp.Direction);
     p.y = temp.Y + 1.5*cos(temp.Direction);
-    p.z = -3.0;
+    p.z = current_z-2.0;
 	line_list.points.push_back(p);
 	p.x = temp.X - 1.5*sin(temp.Direction);
     p.y = temp.Y - 1.5*cos(temp.Direction);
+	p.z = current_z-2.0;
 	line_list.points.push_back(p);	
 	PP_geofence_line.publish(line_list); 
 }
@@ -257,6 +267,7 @@ int main(int argc, char **argv){
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	ros::Subscriber VI_sub = n.subscribe("veh_info", 1, VehinfoCallback);
 	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
+	ros::Subscriber current_pose_sub = n.subscribe("current_pose", 1, CurrentPoseCallback);
 	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPP);
 	#elif defined RADARBOX
