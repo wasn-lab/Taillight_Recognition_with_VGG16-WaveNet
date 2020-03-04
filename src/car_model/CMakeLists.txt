@@ -33,6 +33,7 @@ catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
   CFG_EXTRAS CarModel.cmake
 )
+message("Car model is ${CAR_MODEL}")
 
 configure_file(
     include/car_model.h.in
