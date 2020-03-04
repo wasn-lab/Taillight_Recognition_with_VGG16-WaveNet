@@ -38,22 +38,22 @@ cv::Scalar get_label_color(int label_id)
   cv::Scalar class_color;
   if (label_id == static_cast<int>(DriveNet::net_type_id::person))
   {
-    class_color = Color::g_color_red;
+    class_color = Color::red_;
   }
   else if (label_id == static_cast<int>(DriveNet::net_type_id::bicycle) ||
            label_id == static_cast<int>(DriveNet::net_type_id::motorbike))
   {
-    class_color = Color::g_color_green;
+    class_color = Color::green_;
   }
   else if (label_id == static_cast<int>(DriveNet::net_type_id::car) ||
            label_id == static_cast<int>(DriveNet::net_type_id::bus) ||
            label_id == static_cast<int>(DriveNet::net_type_id::truck))
   {
-    class_color = Color::g_color_blue;
+    class_color = Color::blue_;
   }
   else
   {
-    class_color = Color::g_color_gray;
+    class_color = Color::gray_;
   }
   return class_color;
 }
@@ -63,22 +63,22 @@ cv::Scalar get_common_label_color(int label_id)
   cv::Scalar class_color;
   if (label_id == static_cast<int>(DriveNet::common_type_id::person))
   {
-    class_color = Color::g_color_red;
+    class_color = Color::red_;
   }
   else if (label_id == static_cast<int>(DriveNet::common_type_id::bicycle) ||
            label_id == static_cast<int>(DriveNet::common_type_id::motorbike))
   {
-    class_color = Color::g_color_green;
+    class_color = Color::green_;
   }
   else if (label_id == static_cast<int>(DriveNet::common_type_id::car) ||
            label_id == static_cast<int>(DriveNet::common_type_id::bus) ||
            label_id == static_cast<int>(DriveNet::common_type_id::truck))
   {
-    class_color = Color::g_color_blue;
+    class_color = Color::blue_;
   }
   else
   {
-    class_color = Color::g_color_gray;
+    class_color = Color::gray_;
   }
   return class_color;
 }
