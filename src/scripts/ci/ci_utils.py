@@ -2,7 +2,6 @@
 """
 Utility functions for CI scripts
 """
-from functools import lru_cache
 import io
 import subprocess
 import json
@@ -10,14 +9,12 @@ import os
 import logging
 
 
-@lru_cache(maxsize=0)
 def get_repo_path():
     """ Return the top-level repo path. """
     cmd = ["git", "rev-parse", "--show-toplevel"]
     return subprocess.check_output(cmd).strip().decode("utf-8")
 
 
-@lru_cache(maxsize=0)
 def get_complie_commands():
     """
     Return a list of dict {
@@ -65,7 +62,6 @@ def get_compile_args(cpp):
     return [_ for _ in cmd[1:] if _ not in removes]
 
 
-@lru_cache(maxsize=0)
 def get_affected_files():
     """ Return a list of files in the active merge request. """
     cmd = ["git", "merge-base", "origin/master", "HEAD"]
@@ -75,7 +71,6 @@ def get_affected_files():
     return [fname.strip() for fname in output.splitlines()]
 
 
-@lru_cache(maxsize=0)
 def get_external_pacakges():
     """ Return a list of directories that are external packages. """
     with io.open("src/scripts/ci/external_packages.txt") as _fp:
