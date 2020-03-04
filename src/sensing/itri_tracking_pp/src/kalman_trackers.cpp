@@ -387,32 +387,33 @@ void KalmanTrackers::compute_distance_table()
 
       MyPoint32 p_abs;
       box_centers_[j].pos.get_point_abs(p_abs);
-      float box_dist_diff = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_abs.x, p_abs.y);
+      float cost_box_dist = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_abs.x, p_abs.y);
 
 #if DEBUG_HUNGARIAN_DIST
       LOG_INFO << "i = " << i << " j = " << j << "  box_dist_diff: " << box_dist_diff << std::endl;
 #endif
 
-      if (box_dist_diff > track_range_sed)
+      if (cost_box_dist > track_range_sed)
       {
         continue;
       }
 
-      float dist_to_obj_avg = 0.5f * (tracks_[i].box_center_.dist_to_ego + box_centers_[j].dist_to_ego);
-      float factor_dist_to_obj_avg = std::max((float)(dist_to_obj_avg / UNIT_FACTOR_DIST_TO_OBJ_AVG), 1.f);
+      float box_vol_ratio = std::max(box_centers_[j].area, BOX_VOL_MIN_FOR_RATIO) /
+                            std::max(tracks_[i].box_center_.area, BOX_VOL_MIN_FOR_RATIO);
+      float box_vol_ratio_larger = (box_vol_ratio >= 1.f) ? box_vol_ratio : 1.f / box_vol_ratio;
 
-      float box_vol_same_ratio1 = box_centers_[j].volumn / tracks_[i].box_center_.volumn;
-      float box_vol_same_ratio2 = 1 / box_vol_same_ratio1;
-
-      float box_vol_diff_ratio = 1.f - std::min(box_vol_same_ratio1, box_vol_same_ratio2);
-
-      float factor_box_vol = std::pow(SCALAR_FACTOR_BOX_VOL * box_vol_diff_ratio, 2) / factor_dist_to_obj_avg;
-
-      float factor_final = (1.f - FACTOR_BOX_VOL_PCT) * box_dist_diff + FACTOR_BOX_VOL_PCT * factor_box_vol;
-
-      if (factor_final <= track_range_sed)
+      if (box_vol_ratio_larger > BOX_VOL_RATIO_MAX)
       {
-        distance_table_[i][j] = factor_final;
+        continue;
+      }
+
+      float cost_box_vol_ratio = box_vol_ratio_larger * track_range_sed / BOX_VOL_RATIO_MAX;
+
+      float cost_final = COST_BOX_DIST_W * cost_box_dist + COST_BOX_VOL_RATIO_W * cost_box_vol_ratio;
+
+      if (cost_final <= track_range_sed)
+      {
+        distance_table_[i][j] = cost_final;
       }
 
 #if DEBUG_HUNGARIAN_DIST
@@ -645,41 +646,6 @@ void KalmanTrackers::update_boxes()
   }
 }
 
-#if FPS_EXTRAPOLATION
-void KalmanTrackers::transform_box_center_kalman_inverse()
-{
-  for (unsigned i = 0; i < tracks_.size(); i++)
-  {
-    if (tracks_[i].tracked_)
-    {
-      PoseRPY32 anchor_abs = { ego_x_abs_, ego_y_abs_, ego_z_abs_, 0.f, 0.f, ego_heading_ };
-
-      MyPoint32 p_abs;
-      p_abs.x = tracks_[i].kalman_.statePost.at<float>(0);
-      p_abs.y = tracks_[i].kalman_.statePost.at<float>(1);
-      p_abs.z = 0.f;
-      tracks_[i].box_center_kalman_.pos.set_point_abs(p_abs);
-
-      tracks_[i].box_center_kalman_.pos.set_anchor_abs(anchor_abs);
-      tracks_[i].box_center_kalman_.pos.transform_abs2rel();
-      tracks_[i].box_center_kalman_.pos.init_point_z();
-
-      cv::Mat prediction = tracks_[i].kalman_.predict();
-
-      MyPoint32 p_next_abs;
-      p_next_abs.x = tracks_[i].kalman_.statePre.at<float>(0);
-      p_next_abs.y = tracks_[i].kalman_.statePre.at<float>(1);
-      p_next_abs.z = 0.f;
-      tracks_[i].box_center_kalman_next_.pos.set_point_abs(p_next_abs);
-
-      tracks_[i].box_center_kalman_next_.pos.set_anchor_abs(anchor_abs);
-      tracks_[i].box_center_kalman_next_.pos.transform_abs2rel();
-      tracks_[i].box_center_kalman_next_.pos.init_point_z();
-    }
-  }
-}
-#endif
-
 void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
                                          const float ego_z_abs, const float ego_heading)
 {
@@ -721,10 +687,6 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   set_new_box_corners_of_boxes_absolute();
   set_new_box_corners_of_boxes_relative();
   update_boxes();
-
-#if FPS_EXTRAPOLATION
-  transform_box_center_kalman_inverse();
-#endif
 
   return;
 }

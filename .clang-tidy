@@ -9,6 +9,8 @@ modernize-*,\
 performance-*,\
 readability-*,\
 llvm-namespace-comment,\
+-hicpp-signed-bitwise,\
+-cert-err58-cpp,\
 -readability-avoid-const-params-in-decls\
 "
 WarningsAsErrors: "readability-braces-around-statements"
@@ -28,4 +30,9 @@ CheckOptions:
     value: lower_case
   - key:   readability-identifier-naming.ClassMemberSuffix
     value: '_'
+# Ignore const variables becuase they do not change program state.
+  - key:   readability-identifier-naming.ConstantCase
+    value: 'aNy_CasE'
+  - key:   readability-identifier-naming.ConstexprVariableCase
+    value: 'aNy_CasE'
 ...

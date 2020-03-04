@@ -36,7 +36,7 @@ bool checkBoxInArea(CheckArea areaCheck, int object_x1, int object_y1, int objec
   else
   {
     return false;
-}
+  }
 }
 
 template <typename T1, typename T2>
@@ -49,7 +49,7 @@ void checkValueInRange(T1& value, T2 min, T2 max)
   else if (value > max)
   {
     value = max;
-}
+  }
 }
 template void checkValueInRange<float, int>(float& value, int min, int max);
 

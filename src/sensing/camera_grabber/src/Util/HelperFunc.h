@@ -15,7 +15,7 @@ inline void OpenFileExecption(const std::string& video)
 {
   throw std::logic_error("Can't not open video: " + video);
 }
-}
+} // namespace DEBUG
 
 namespace LOGGER
 {

@@ -91,9 +91,10 @@ private:
 
   static constexpr float BOX_SIZE_TH = 0.3f;
 
-  static constexpr float UNIT_FACTOR_DIST_TO_OBJ_AVG = 10.f;  // 10m
-  static constexpr float SCALAR_FACTOR_BOX_VOL = 7.f;
-  static constexpr float FACTOR_BOX_VOL_PCT = 0.3f;  // PCT: percentage
+  const float BOX_VOL_MIN_FOR_RATIO = 1.f;
+  static constexpr float BOX_VOL_RATIO_MAX = 3.f;
+  static constexpr float COST_BOX_DIST_W = 0.7f;
+  static constexpr float COST_BOX_VOL_RATIO_W = 1.f - COST_BOX_DIST_W;
 
   std::vector<BoxCenter> box_centers_;
   std::vector<std::vector<BoxCorner> > box_corners_of_boxes_;
@@ -138,10 +139,6 @@ private:
   void set_new_box_corners_of_boxes_relative();
 
   void update_boxes();
-
-#if FPS_EXTRAPOLATION
-  void transform_box_center_kalman_inverse();
-#endif
 };
 }  // namespace tpp
 

@@ -1,24 +1,19 @@
 #include "drivenet/campub.h"
 
-void callback_CamObjFR(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
-{
-  arrCamObjFR = DetectMsg->objects;
-}
-
 void callback_CamObjFC(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
   HeaderAll = DetectMsg->header;
   arrCamObjFC = DetectMsg->objects;
 }
 
-void callback_CamObjFL(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
+void callback_CamObjFTf(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjFL = DetectMsg->objects;
+  arrCamObjFTf = DetectMsg->objects;
 }
 
-void callback_CamObjFT(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
+void callback_CamObjFTc(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjFT = DetectMsg->objects;
+  arrCamObjFTc = DetectMsg->objects;
 }
 
 void callback_CamObjRF(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
@@ -50,63 +45,57 @@ void collectRepub()
 {
   // arrCamObjAll = arrCamObjBT + arrCamObjLB;
   msgs::DetectedObjectArray arrCamObjAll;
-  size_t allSize = arrCamObjFR.size() + arrCamObjFC.size() + arrCamObjFL.size() + arrCamObjFT.size() +
+  size_t allSize = arrCamObjFC.size() + arrCamObjFTf.size() + arrCamObjFTc.size() +
                    arrCamObjRF.size() + arrCamObjRB.size() + arrCamObjLF.size() + arrCamObjLB.size() +
                    arrCamObjBT.size();
   arrCamObjAll.objects.reserve(allSize);
   arrCamObjAll.header = HeaderAll;
 
-  for (size_t i = 0; i < arrCamObjFR.size(); i++)
-  {
-    arrCamObjFR[i].camInfo.id = camera::id::right_60;
-    arrCamObjAll.objects.push_back(arrCamObjFR[i]);
-  }
-
   for (size_t i = 0; i < arrCamObjFC.size(); i++)
   {
-    arrCamObjFC[i].camInfo.id = camera::id::front_60;
+    arrCamObjFC[i].camInfo.id = camera::id::front_bottom_60;
     arrCamObjAll.objects.push_back(arrCamObjFC[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjFL.size(); i++)
+  for (size_t i = 0; i < arrCamObjFTf.size(); i++)
   {
-    arrCamObjFL[i].camInfo.id = camera::id::left_60;
-    arrCamObjAll.objects.push_back(arrCamObjFL[i]);
+    arrCamObjFTf[i].camInfo.id = camera::id::front_top_far_30;
+    arrCamObjAll.objects.push_back(arrCamObjFTf[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjFT.size(); i++)
+  for (size_t i = 0; i < arrCamObjFTc.size(); i++)
   {
-    arrCamObjFT[i].camInfo.id = camera::id::top_front_120;
-    arrCamObjAll.objects.push_back(arrCamObjFT[i]);
+    arrCamObjFTc[i].camInfo.id = camera::id::front_top_close_120;
+    arrCamObjAll.objects.push_back(arrCamObjFTc[i]);
   }
 
   for (size_t i = 0; i < arrCamObjRF.size(); i++)
   {
-    arrCamObjRF[i].camInfo.id = camera::id::top_right_front_120;
+    arrCamObjRF[i].camInfo.id = camera::id::right_front_60;
     arrCamObjAll.objects.push_back(arrCamObjRF[i]);
   }
 
   for (size_t i = 0; i < arrCamObjRB.size(); i++)
   {
-    arrCamObjRB[i].camInfo.id = camera::id::top_right_rear_120;
+    arrCamObjRB[i].camInfo.id = camera::id::right_back_60;
     arrCamObjAll.objects.push_back(arrCamObjRB[i]);
   }
 
   for (size_t i = 0; i < arrCamObjLF.size(); i++)
   {
-    arrCamObjLF[i].camInfo.id = camera::id::top_left_front_120;
+    arrCamObjLF[i].camInfo.id = camera::id::left_front_60;
     arrCamObjAll.objects.push_back(arrCamObjLF[i]);
   }
 
   for (size_t i = 0; i < arrCamObjLB.size(); i++)
   {
-    arrCamObjLB[i].camInfo.id = camera::id::top_left_rear_120;
+    arrCamObjLB[i].camInfo.id = camera::id::left_back_60;
     arrCamObjAll.objects.push_back(arrCamObjLB[i]);
   }
 
   for (size_t i = 0; i < arrCamObjBT.size(); i++)
   {
-    arrCamObjBT[i].camInfo.id = camera::id::top_rear_120;
+    arrCamObjBT[i].camInfo.id = camera::id::back_top_120;
     arrCamObjAll.objects.push_back(arrCamObjBT[i]);
   }
 
@@ -123,21 +112,19 @@ int main(int argc, char** argv)
   // cam60_0_topicName = camera::topics[camera::id::right_60];
   // cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
 
-  CamObjFR_topicName = camera::topics_obj[camera::id::right_60];
-  CamObjFC_topicName = camera::topics_obj[camera::id::front_60];
-  CamObjFL_topicName = camera::topics_obj[camera::id::left_60];
-  CamObjFT_topicName = camera::topics_obj[camera::id::top_front_120];
-  CamObjRF_topicName = camera::topics_obj[camera::id::top_right_front_120];
-  CamObjRB_topicName = camera::topics_obj[camera::id::top_right_rear_120];
-  CamObjLF_topicName = camera::topics_obj[camera::id::top_left_front_120];
-  CamObjLB_topicName = camera::topics_obj[camera::id::top_left_rear_120];
-  CamObjBT_topicName = camera::topics_obj[camera::id::top_rear_120];
+  CamObjFC_topicName = camera::topics_obj[camera::id::front_bottom_60];
+  CamObjFTf_topicName = camera::topics_obj[camera::id::front_top_far_30];
+  CamObjFTc_topicName = camera::topics_obj[camera::id::front_top_close_120];
+  CamObjRF_topicName = camera::topics_obj[camera::id::right_front_60];
+  CamObjRB_topicName = camera::topics_obj[camera::id::right_back_60];
+  CamObjLF_topicName = camera::topics_obj[camera::id::left_front_60];
+  CamObjLB_topicName = camera::topics_obj[camera::id::left_back_60];
+  CamObjBT_topicName = camera::topics_obj[camera::id::back_top_120];
 
   // Subscribe msgs
-  CamObjFR = nh.subscribe(CamObjFR_topicName, 1, callback_CamObjFR);
   CamObjFC = nh.subscribe(CamObjFC_topicName, 1, callback_CamObjFC);
-  CamObjFL = nh.subscribe(CamObjFL_topicName, 1, callback_CamObjFL);
-  CamObjFT = nh.subscribe(CamObjFT_topicName, 1, callback_CamObjFT);
+  CamObjFTf = nh.subscribe(CamObjFTf_topicName, 1, callback_CamObjFTf);
+  CamObjFTc = nh.subscribe(CamObjFTc_topicName, 1, callback_CamObjFTc);
   CamObjRF = nh.subscribe(CamObjRF_topicName, 1, callback_CamObjRF);
   CamObjRB = nh.subscribe(CamObjRB_topicName, 1, callback_CamObjRB);
   CamObjLF = nh.subscribe(CamObjLF_topicName, 1, callback_CamObjLF);
