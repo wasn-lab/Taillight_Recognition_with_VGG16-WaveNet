@@ -10,7 +10,7 @@ class TegraBGrabber
 public:
   TegraBGrabber();
   ~TegraBGrabber();
-  void initializeModules();
+  void initializeModules(bool do_resize);
   bool runPerception();
 
 protected:
@@ -52,6 +52,8 @@ private:
   std::vector<Npp8u*> npp8u_ptrs_distorted_;
   NPPResizer resizer_;
   NPPRemapper remapper_;
+  NPPTransformer transformer_;
+  bool _resize;
 
   // ROS publisher
   ros::NodeHandle n;

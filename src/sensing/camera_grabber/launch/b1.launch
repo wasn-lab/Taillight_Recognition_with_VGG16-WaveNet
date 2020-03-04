@@ -7,6 +7,7 @@
     args="
     -mode a
     -expected_fps 20
+    -do_resize 1
     "
     output="screen"
   />
@@ -16,6 +17,7 @@
     args="
     -mode b
     -expected_fps 20
+    -do_resize 1
     "
     output="screen"
   />

@@ -12,7 +12,8 @@ TegraAGrabber::TegraAGrabber()
   , display_(&camera_buffer_)
   , grabber(nullptr)
   , npp8u_ptrs_(cam_ids_.size())
-  , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height, camera::image_width) // 1208,1920 to 384,608
+  , transformer_(camera::raw_image_height, camera::raw_image_width, camera::raw_image_height, camera::raw_image_width)
   , ros_image(n)
 {
   InitParameters();
@@ -40,7 +41,7 @@ TegraAGrabber::~TegraAGrabber()
   }
 }
 
-void TegraAGrabber::initializeModules()
+void TegraAGrabber::initializeModules(bool do_resize)
 {
   for (size_t i = 0; i < cam_ids_.size(); ++i)
   {
@@ -51,7 +52,8 @@ void TegraAGrabber::initializeModules()
   grabber = new MultiGMSLCameraGrabber("001100000000");
   grabber->initializeCameras();
   camera_buffer_.initBuffer();
-
+  _resize = do_resize;
+  
   printf("init done!\n");
 }
 
@@ -78,15 +80,25 @@ bool TegraAGrabber::runPerception()
     // start image processing
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[0]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[0]);
-    resizer_.resize(npp8u_ptrs_[0], canvas[0]);
+    if (_resize){
+        resizer_.resize(npp8u_ptrs_[0], canvas[0]);
+    }else{
+        transformer_.transform(npp8u_ptrs_[0], canvas[0]);
+    }
 
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[1]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[1]);
-    resizer_.resize(npp8u_ptrs_[1], canvas[1]);
+    if (_resize){
+        resizer_.resize(npp8u_ptrs_[1], canvas[1]);
+    }else{
+        transformer_.transform(npp8u_ptrs_[1], canvas[1]);
+    }
 
     // npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
     //                                 camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
-    // resizer_.resize(npp8u_ptrs_[2], canvas[2]);
+    // if (_resize){
+    //     resizer_.resize(npp8u_ptrs_[2], canvas[2]);
+    // }
 
 
     // end image processing

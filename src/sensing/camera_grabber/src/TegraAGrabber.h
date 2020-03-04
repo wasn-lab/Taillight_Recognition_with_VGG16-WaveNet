@@ -11,7 +11,7 @@ class TegraAGrabber
 public:
   TegraAGrabber();
   ~TegraAGrabber();
-  void initializeModules();
+  void initializeModules(bool do_resize);
   bool runPerception();
 
 protected:
@@ -37,6 +37,8 @@ private:
   MultiGMSLCameraGrabber* grabber;
   std::vector<Npp8u*> npp8u_ptrs_;
   NPPResizer resizer_;
+  NPPTransformer transformer_;
+  bool _resize;
 
   // ROS publisher
   ros::NodeHandle n;

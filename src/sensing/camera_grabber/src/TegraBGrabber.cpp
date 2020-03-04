@@ -11,8 +11,9 @@ TegraBGrabber::TegraBGrabber()
   , grabber(nullptr)
   , npp8u_ptrs_(cam_ids_.size())
   , npp8u_ptrs_distorted_(cam_ids_.size())
-  , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height, camera::image_width)  // 1208,1920 to 384,608
   , remapper_(camera::raw_image_height, camera::raw_image_width)
+  , transformer_(camera::raw_image_height, camera::raw_image_width, camera::raw_image_height, camera::raw_image_width)
   , ros_image(n)
 {
   InitParameters();
@@ -42,7 +43,7 @@ TegraBGrabber::~TegraBGrabber()
   }
 }
 
-void TegraBGrabber::initializeModules()
+void TegraBGrabber::initializeModules(bool do_resize)
 {
   for (size_t i = 0; i < cam_ids_.size(); ++i)
   {
@@ -53,6 +54,7 @@ void TegraBGrabber::initializeModules()
   grabber = new MultiGMSLCameraGrabber("000001110111");
   grabber->initializeCameras();
   camera_buffer_.initBuffer();
+  _resize = do_resize;
 
   printf("init done!\n");
 }
@@ -88,12 +90,23 @@ bool TegraBGrabber::runPerception()
     {
       npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[cam_ids_[i]]),
                                       camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[i]);
-      if(camera::distortion[cam_ids_[i]])
-      {
-        remapper_.remap(npp8u_ptrs_[i], npp8u_ptrs_distorted_[i]);
-        resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);
+      if(camera::distortion[cam_ids_[i]]){
+          remapper_.remap(npp8u_ptrs_[i], npp8u_ptrs_distorted_[i]);
+
+          if(_resize){
+              resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);
+          }
+          else{
+              transformer_.transform(npp8u_ptrs_distorted_[i], canvas[i]);
+          }
       }else{
-        resizer_.resize(npp8u_ptrs_[i], canvas[i]);
+
+           if(_resize){
+              resizer_.resize(npp8u_ptrs_[i], canvas[i]);
+          }
+          else{
+              transformer_.transform(npp8u_ptrs_[i], canvas[i]);
+          }
       }
     }
 
