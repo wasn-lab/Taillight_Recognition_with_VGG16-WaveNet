@@ -6,7 +6,7 @@ Panels:
       Expanded:
         - /PP_output1
         - /Geofence1
-        - /PP_line1
+        - /PP_PointCloud1
       Splitter Ratio: 0.582872927
     Tree Height: 150
   - Class: rviz/Selection
@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LidarAll
+    SyncSource: PP_PointCloud
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -342,7 +342,7 @@ Visualization Manager:
           Marker Topic: /PathPredictionOutput/pp
           Name: PP_from_fusion
           Namespaces:
-            {}
+            PPOutput_pp1: true
           Queue Size: 100
           Value: true
       Enabled: true
@@ -555,7 +555,10 @@ Visualization Manager:
       Marker Topic: /local_waypoints_mark
       Name: LocalPath_Marker
       Namespaces:
-        {}
+        local_path_marker: true
+        local_point_marker: true
+        local_point_marker_1: true
+        local_waypoint_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -573,6 +576,36 @@ Visualization Manager:
       Namespaces:
         {}
       Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: -999999
+      Min Color: 0; 0; 0
+      Min Intensity: 999999
+      Name: PP_PointCloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.100000001
+      Style: Flat Squares
+      Topic: /pp_point_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: true
   Enabled: true
   Global Options:
@@ -608,11 +641,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 11.4758978
+      Scale: 18.2718124
       Target Frame: base_link
       Value: TopDownOrtho (rviz)
-      X: 5.13007641
-      Y: 3.55075574
+      X: 0.212572575
+      Y: -4.39336061
     Saved: ~
 Window Geometry:
   Displays:
