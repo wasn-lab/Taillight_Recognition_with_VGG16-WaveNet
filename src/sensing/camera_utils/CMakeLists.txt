@@ -58,7 +58,8 @@ set(CAMERA_UTILS_SOURCES
   src/npp_rotate.cpp
   src/npp_utils.cpp
   src/projection/parameters.cpp
-  src/projection/projector2.cpp)
+  src/projection/projector2.cpp
+  src/projection/projector3.cpp)
 
 set(CAMERA_UTILS_LIB_DEPS
   ${OpenCV_LIBS}
