@@ -3,6 +3,7 @@
 #include <jsoncpp/json/json.h>
 #include <glog/logging.h>
 #include <opencv2/imgproc.hpp>
+#include "car_model.h"
 #include "camera_utils_defs.h"
 #include "camera_utils.h"
 #include "camera_distance_mapper.h"
@@ -15,9 +16,11 @@ CameraDistanceMapper::CameraDistanceMapper(const camera::id cam_id)
 {
   assert(cam_id >= camera::id::begin);
   assert(cam_id <= camera::id::num_ids);
+#if CAR_MODEL_IS_HINO
   // Currently only FOV120 are supported
   assert(cam_id >= camera::id::top_front_120);
   assert(cam_id <= camera::id::top_rear_120);
+#endif
 
   read_dist_from_json();
 }
