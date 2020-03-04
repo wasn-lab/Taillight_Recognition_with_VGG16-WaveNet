@@ -68,71 +68,78 @@
       <param name="delay_pos_x"  value="1.0"/>
   </node>
 
-  <!-- Camera Port A ******************************************************************************** -->
-  <node name="m_Detect_camFB60" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/front_bottom_60"/>
+  <!-- Camera 60 ******************************************************************************** -->
+  <node name="m_Detect_cam60FC" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjFrontCenter"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camFB60"/>
+      <param name="delay_prefix"  value="cam60FC"/>
       <param name="delay_pos_x"  value="-1.0"/>
   </node>
-  <node name="m_Detect_camFTF30" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/front_top_far_30"/>
+  <node name="m_Detect_cam60FL" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjFrontLeft"/>
       <param name="red"   value="1.0"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camFTF30"/>
+      <param name="green" value="0.0"/>
+      <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="cam60FL"/>
       <param name="delay_pos_x"  value="1.0"/>
   </node>
-   <!-- Camera Port B ******************************************************************************** -->
-  <node name="m_Detect_camFTC120" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/front_top_close_120"/>
+  <node name="m_Detect_cam60FR" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjFrontRight"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="0.0"/>
+      <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="cam60FR"/>
+      <param name="delay_pos_x"  value="-3.0"/>
+  </node>
+   <!-- Camera 120 ******************************************************************************** -->
+  <node name="m_Detect_cam120FT" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjFrontTop"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camFTC120"/>
+      <param name="delay_prefix"  value="cam120FT"/>
       <param name="delay_pos_x"  value="-5.0"/>
   </node>
-  <node name="m_Detect_camRF60" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/right_front_60"/>
+  <node name="m_Detect_cam120BT" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjBackTop"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camRF60"/>
+      <param name="delay_prefix"  value="cam120BT"/>
       <param name="delay_pos_x"  value="-7.0"/>
   </node>
-  <node name="m_Detect_camRB60" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/right_back_60"/>
+  <node name="m_Detect_cam120LF" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjLeftFront"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camRB60"/>
+      <param name="delay_prefix"  value="cam120LF"/>
       <param name="delay_pos_x"  value="-9.0"/>
   </node>
-   <!-- Camera Port C ******************************************************************************** -->
-  <node name="m_Detect_camLF60" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/left_front_60"/>
+  <node name="m_Detect_cam120LB" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjLeftBack"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camLF60"/>
+      <param name="delay_prefix"  value="cam120LB"/>
       <param name="delay_pos_x"  value="-11.0"/>
   </node>
-  <node name="m_Detect_camLB60" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/left_back_60"/>
+  <node name="m_Detect_cam120RF" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjRightFront"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camLB60"/>
+      <param name="delay_prefix"  value="cam120RF"/>
       <param name="delay_pos_x"  value="-13.0"/>
   </node>
-  <node name="m_Detect_camBT120" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/cam_obj/back_top_120"/>
+  <node name="m_Detect_cam120RB" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/CamObjRightBack"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="camBT120"/>
+      <param name="delay_prefix"  value="cam120RB"/>
       <param name="delay_pos_x"  value="-15.0"/>
   </node>
 
