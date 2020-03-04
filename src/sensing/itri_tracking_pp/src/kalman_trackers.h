@@ -91,7 +91,7 @@ private:
 
   static constexpr float BOX_SIZE_TH = 0.3f;
 
-  static constexpr float BOX_VOL_MIN_FOR_RATIO = 1.f;
+  const float BOX_VOL_MIN_FOR_RATIO = 1.f;
   static constexpr float BOX_VOL_RATIO_MAX = 3.f;
   static constexpr float COST_BOX_DIST_W = 0.7f;
   static constexpr float COST_BOX_VOL_RATIO_W = 1.f - COST_BOX_DIST_W;
