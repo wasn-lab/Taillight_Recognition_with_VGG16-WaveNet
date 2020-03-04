@@ -60,7 +60,7 @@ std::vector<pcl::visualization::Camera> g_cam;
 std::vector<msgs::DetectedObject> g_object_0;
 
 //////////////////// for camera image
-void callback_cam_0(const sensor_msgs::Image::ConstPtr& msg)
+void callback_cam_Front_60(const sensor_msgs::Image::ConstPtr& msg)
 {
   g_sync_lock_cam.lock();
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -70,7 +70,7 @@ void callback_cam_0(const sensor_msgs::Image::ConstPtr& msg)
 }
 
 //////////////////// for camera image
-void callback_decode_cam_0(sensor_msgs::CompressedImage compressImg)
+void callback_decode_cam_Front_60(sensor_msgs::CompressedImage compressImg)
 {
   g_sync_lock_cam.lock();
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mat_0);
@@ -78,7 +78,7 @@ void callback_decode_cam_0(sensor_msgs::CompressedImage compressImg)
 }
 
 //////////////////// for camera object
-void callback_object_cam_0(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_Front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   g_sync_lock_object.lock();
   g_object_0 = msg->objects;
@@ -138,15 +138,15 @@ int main(int argc, char** argv)
   std::string camera_topicname_cam_0 = camera::topics[g_cam_ids[0]];
   if (g_is_compressed)
   {
-    image_sub_cam_0 = nh.subscribe(camera_topicname_cam_0 + std::string("/compressed"), 1, callback_decode_cam_F60);
+    image_sub_cam_0 = nh.subscribe(camera_topicname_cam_0 + std::string("/compressed"), 1, callback_decode_cam_Front_60);
   }
   else
   {
-    image_sub_cam_0 = nh.subscribe(camera_topicname_cam_0, 1, callback_cam_F60);
+    image_sub_cam_0 = nh.subscribe(camera_topicname_cam_0, 1, callback_cam_Front_60);
   }
   ros::Subscriber object_sub_cam_0;
   std::string object_topicName_cam_0 = camera::topics_obj[g_cam_ids[0]];
-  object_sub_cam_0 = nh.subscribe(object_topicName_cam_0, 1, callback_object_cam_F60);
+  object_sub_cam_0 = nh.subscribe(object_topicName_cam_0, 1, callback_object_cam_Front_60);
 
   /// lidar subscriber
   ros::Subscriber lidarall;
