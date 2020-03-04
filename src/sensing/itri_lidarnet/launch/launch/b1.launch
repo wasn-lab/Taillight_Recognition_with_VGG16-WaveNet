@@ -31,7 +31,7 @@ Lidar List:
     <arg name="set_group_1" value="/LidarFrontTop"/>
 	
 <!-- tf2 ******************************************************************* -->
-<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0.46 0 3.46 0 0 0 /base_link  /lidar" />
+<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0,0,0,-3.1415926,0,0 /base_link  /os1_sensor" />
 
 <!-- <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/> -->
 
