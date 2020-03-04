@@ -12,4 +12,16 @@
 #cmakedefine01 ENABLE_PEDCROSS
 #cmakedefine01 ENABLE_GOOGLE_BENCHMARK
 
+namespace car_model
+{
+enum Id
+{
+  B1,
+  B1_V2,
+  Hino,
+  Num,
+};
+
+}  // namespace car_model
+
 #endif
