@@ -8,7 +8,9 @@ namespace DriveNet
 PluginFactory::PluginFactory() : m_ReorgLayer{ nullptr }, m_RegionLayer{ nullptr }
 {
   for (int i = 0; i < m_MaxLeakyLayers; ++i)
+  {
     m_LeakyReLULayers[i] = nullptr;
+  }
 }
 
 nvinfer1::IPlugin* PluginFactory::createPlugin(const char* layerName, const void* serialData, size_t serialLength)
@@ -155,4 +157,4 @@ void YoloLayerV3::serialize(void* buffer)
   assert(d == a + getSerializationSize());
   NO_UNUSED_VAR_CHECK(a);  // silence -Wunused-variable
 }
-}
+} // namespace DriveNet

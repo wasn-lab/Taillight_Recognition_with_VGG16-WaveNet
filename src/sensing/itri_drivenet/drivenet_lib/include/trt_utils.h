@@ -40,7 +40,9 @@ public:
   {
     // suppress info-level messages
     if (severity == Severity::kINFO)
+    {
       return;
+    }
 
     switch (severity)
     {
@@ -135,5 +137,5 @@ nvinfer1::ILayer* netAddUpsample(int layerIdx, std::map<std::string, std::string
                                  nvinfer1::ITensor* input, nvinfer1::INetworkDefinition* network);
 void printLayerInfo(std::string layerIndex, std::string layerName, std::string layerInput, std::string layerOutput,
                     std::string weightPtr);
-}
+} // namespace DriveNet
 #endif

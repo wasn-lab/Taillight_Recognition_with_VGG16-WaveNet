@@ -30,18 +30,26 @@ bool checkBoxInArea(CheckArea areaCheck, int object_x1, int object_y1, int objec
   // printf("C2:%d, C4:%d, C6:%d, C8:%d\n", C2, C4, C6, C8);
 
   if (C1 < 0 && C3 > 0 && C5 > 0 && C7 < 0 && C2 < 0 && C4 > 0 && C6 > 0 && C8 < 0)
+  {
     return true;
+  }
   else
+  {
     return false;
+  }
 }
 
 template <typename T1, typename T2>
 void checkValueInRange(T1& value, T2 min, T2 max)
 {
   if (value < min)
+  {
     value = min;
+  }
   else if (value > max)
+  {
     value = max;
+  }
 }
 template void checkValueInRange<float, int>(float& value, int min, int max);
 

@@ -10,7 +10,6 @@
 
 /// package
 #include "camera_params.h"
-#include "drivenet/image_preprocessing.h"
 #include "alignment.h"
 
 /// opencv
@@ -26,12 +25,9 @@
 /// thread
 #include <mutex>
 
-/// namespace
-using namespace DriveNet;
-
 /// camera layout
 #if CAR_MODEL_IS_B1
-const std::vector<int> g_cam_ids{ camera::id::front_60};
+const std::vector<camera::id> g_cam_ids{ camera::id::front_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -48,8 +44,8 @@ mutex g_sync_lock_lidar;
 bool g_is_compressed = false;
 
 /// image
-int g_image_w_ = camera::image_width;
-int g_image_h_ = camera::image_height;
+int g_image_w = camera::image_width;
+int g_image_h = camera::image_height;
 cv::Mat g_mat_0;
 cv::Mat g_mat_0_raw;
 
@@ -108,13 +104,15 @@ void drawPointCloudOnImage()
     {
       // std::cout << "Lidar x: " << g_lidarall_nonground.points[i].x << ", y: " << g_lidarall_nonground.points[i].y <<
       // ", z: " << g_lidarall_nonground.points[i].z << std::endl;
-      PixelPosition pixel_position_;
-      pixel_position_ = g_alignment.projectPointToPixel(g_lidarall_nonground.points[i]);
-      if (pixel_position_.u >= 0 && pixel_position_.v >= 0)
+      PixelPosition pixel_position{-1, -1};
+      pixel_position = g_alignment.projectPointToPixel(g_lidarall_nonground.points[i]);
+      if (pixel_position.u >= 0 && pixel_position.v >= 0)
       {
-        cv::Point center_point_ = cv::Point(pixel_position_.u, pixel_position_.v);
-        cv::circle(g_mat_0, center_point_, 1, Color::g_color_green, -1, LINE_8, 0);
-        // std::cout << "Camera u: " << pixel_position_.u << ", v: " << pixel_position_.v << std::endl;
+        cv::Point center_point_ = cv::Point(pixel_position.u, pixel_position.v);
+        float distance_x = g_lidarall_nonground.points[i].x;
+        cv::Scalar point_color = g_alignment.getDistColor(distance_x);
+        cv::circle(g_mat_0, center_point_, 1, point_color, -1, LINE_8, 0);
+        // std::cout << "Camera u: " << pixel_position.u << ", v: " << pixel_position.v << std::endl;
       }
     }
   }

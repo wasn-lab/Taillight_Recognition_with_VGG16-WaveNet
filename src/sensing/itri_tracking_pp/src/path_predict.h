@@ -43,6 +43,16 @@ public:
     input_shift_m_ = shift_m;
   }
 
+  void set_pp_obj_min_kmph(const double pp_obj_min_kmph)
+  {
+    pp_obj_min_kmph_ = pp_obj_min_kmph;
+  }
+
+  void set_pp_obj_max_kmph(const double pp_obj_max_kmph)
+  {
+    pp_obj_max_kmph_ = pp_obj_max_kmph;
+  }
+
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
@@ -63,6 +73,9 @@ private:
   // set input_shift_m_ large enough to ensure all input data and pp points far from (0, 0)
   // warning: near 0 would distord pp results
   long double input_shift_m_ = 0.;
+
+  double pp_obj_min_kmph_ = 0.;
+  double pp_obj_max_kmph_ = 1000.;
 
   float confidence_thr_ = 0.f;
 

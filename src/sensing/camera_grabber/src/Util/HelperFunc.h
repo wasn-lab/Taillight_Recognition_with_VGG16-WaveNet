@@ -15,7 +15,7 @@ inline void OpenFileExecption(const std::string& video)
 {
   throw std::logic_error("Can't not open video: " + video);
 }
-}
+} // namespace DEBUG
 
 namespace LOGGER
 {
@@ -27,6 +27,7 @@ inline void printSpeedInfoSync(float img, float lane, float signal, float drive6
 
   // Apear in Topic mode
   if (noGPU_overhead_count < 0)
+  {
     printf("Camera Enabled 3 front 60 deg, 3 front 30 deg\n"
            "Modules run \"synchronously\":\n"
            "=============================================\n"
@@ -42,7 +43,9 @@ inline void printSpeedInfoSync(float img, float lane, float signal, float drive6
            img, lane, 1000.0f / lane, signal, 1000.0f / signal, drive60, 1000.0f / drive60, drive30, 1000.0f / drive30,
            opn, 1000.0f / opn, all, 1000.0f / all);
   // Apear in demo mode
+  }
   else
+  {
     printf("Camera Enabled 3 front 60 deg, 3 front 30 deg\n"
            "Modules run \"synchronously\":\n"
            "=============================================\n"
@@ -60,5 +63,6 @@ inline void printSpeedInfoSync(float img, float lane, float signal, float drive6
            opn, 1000.0f / opn, noGPU_overhead_count, all, 1000.0f / all);
 }
 }
+}  // namespace LOGGER
 
 #endif
