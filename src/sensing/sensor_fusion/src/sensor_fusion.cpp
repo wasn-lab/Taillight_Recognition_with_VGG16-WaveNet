@@ -10,153 +10,81 @@ void MySigintHandler(int sig)
   }
 }
 
-void LidarDetectionCb(const msgs::DetectedObjectArray::ConstPtr& lidar_obj_array)
+void callback_lidar(const msgs::DetectedObjectArray::ConstPtr& lidar_obj_array)
 {
-  msgLidarObj.header = lidar_obj_array->header;
+  lidar_msg.header = lidar_obj_array->header;
 
-  std::vector<msgs::DetectedObject>().swap(msgLidarObj.objects);
-  msgLidarObj.objects.reserve(lidar_obj_array->objects.size());
+  std::vector<msgs::DetectedObject>().swap(lidar_msg.objects);
+  lidar_msg.objects.reserve(lidar_obj_array->objects.size());
 
   for (const auto& obj : lidar_obj_array->objects)
   {
-    msgLidarObj.objects.push_back(obj);
+    lidar_msg.objects.push_back(obj);
   }
 
   fuseDetectedObjects();
 }
 
-void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& cam_obj_array,
-                          msgs::DetectedObjectArray& msg_cam_obj)
+void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& camera_obj_array,
+                          msgs::DetectedObjectArray& camera_msg)
 {
-  msg_cam_obj.header = cam_obj_array->header;
+  camera_msg.header = camera_obj_array->header;
 
-  std::vector<msgs::DetectedObject>().swap(msg_cam_obj.objects);
-  msg_cam_obj.objects.reserve(cam_obj_array->objects.size());
+  std::vector<msgs::DetectedObject>().swap(camera_msg.objects);
+  camera_msg.objects.reserve(camera_obj_array->objects.size());
 
-  for (const auto& obj : cam_obj_array->objects)
+  for (const auto& obj : camera_obj_array->objects)
   {
     if (obj.distance >= 0)
     {
-      msg_cam_obj.objects.push_back(obj);
+      camera_msg.objects.push_back(obj);
     }
   }
 }
 
-void cam60_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_0_ObjArray)
+void callback_camera(const msgs::DetectedObjectArray::ConstPtr& camera_obj_array)
 {
-  callback_camera_main(Cam60_0_ObjArray, msgCam60_0_Obj);
-}
-
-void cam60_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_1_ObjArray)
-{
-  callback_camera_main(Cam60_1_ObjArray, msgCam60_1_Obj);
-}
-
-void cam60_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam60_2_ObjArray)
-{
-  callback_camera_main(Cam60_2_ObjArray, msgCam60_2_Obj);
-}
-
-void cam30_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_0_ObjArray)
-{
-  callback_camera_main(Cam30_0_ObjArray, msgCam30_0_Obj);
-}
-
-void cam30_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_1_ObjArray)
-{
-  callback_camera_main(Cam30_1_ObjArray, msgCam30_1_Obj);
-}
-
-void cam30_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam30_2_ObjArray)
-{
-  callback_camera_main(Cam30_2_ObjArray, msgCam30_2_Obj);
-}
-
-void cam120_0_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_0_ObjArray)
-{
-  callback_camera_main(Cam120_0_ObjArray, msgCam120_0_Obj);
-}
-
-void cam120_1_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_1_ObjArray)
-{
-  callback_camera_main(Cam120_1_ObjArray, msgCam120_1_Obj);
-}
-
-void cam120_2_DetectionCb(const msgs::DetectedObjectArray::ConstPtr& Cam120_2_ObjArray)
-{
-  callback_camera_main(Cam120_2_ObjArray, msgCam120_2_Obj);
+  callback_camera_main(camera_obj_array, camera_msg);
 }
 
 void fuseDetectedObjects()
 {
   std::cout << "**************** do_fusion ****************" << std::endl;
 
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectDF);
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectLID);
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_60_0);
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_60_1);
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_60_2);
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_30_1);
-  std::vector<msgs::DetectedObject>().swap(vDetectedObjectCAM_120_1);
+  std::vector<msgs::DetectedObject>().swap(lidar_objects);
+  std::vector<msgs::DetectedObject>().swap(camera_objs);
+  std::vector<msgs::DetectedObject>().swap(fusion_objects);
 
   /************************************************************************/
 
-  std::cout << "num_lidar_objs = " << msgLidarObj.objects.size() << std::endl;
+  // Lidar detection
+  std::cout << "num_lidar_objs = " << lidar_msg.objects.size() << std::endl;
 
-  for (const auto& obj : msgLidarObj.objects)
+  for (const auto& obj : lidar_msg.objects)
   {
-    vDetectedObjectDF.push_back(obj);
+    fusion_objects.push_back(obj);
   }
 
   /************************************************************************/
 
-  // CamObjFrontCenter
-  std::cout << "num_cam60_1_objs = " << msgCam60_1_Obj.objects.size() << std::endl;
+  // Camera detection
+  std::cout << "num_camera_objs = " << camera_msg.objects.size() << std::endl;
 
-  init_distance_table(vDetectedObjectDF, msgCam60_1_Obj.objects);
-  associate_data(vDetectedObjectDF, msgCam60_1_Obj.objects);
-
-  /************************************************************************/
-
-  // CamObjFrontRight
-  std::cout << "num_cam60_0_objs = " << msgCam60_0_Obj.objects.size() << std::endl;
-
-  init_distance_table(vDetectedObjectDF, msgCam60_0_Obj.objects);
-  associate_data(vDetectedObjectDF, msgCam60_0_Obj.objects);
+  init_distance_table(fusion_objects, camera_msg.objects);
+  associate_data(fusion_objects, camera_msg.objects);
 
   /************************************************************************/
 
-  // CamObjFrontLeft
-  std::cout << "num_cam60_2_objs = " << msgCam60_2_Obj.objects.size() << std::endl;
+  // Fusion
+  std::cout << "num_fusion_objs = " << fusion_objects.size() << std::endl;
 
-  init_distance_table(vDetectedObjectDF, msgCam60_2_Obj.objects);
-  associate_data(vDetectedObjectDF, msgCam60_2_Obj.objects);
+  fusion_msg.header.stamp = lidar_msg.header.stamp;
+  fusion_msg.header.frame_id = "lidar";
+  fusion_msg.header.seq = seq++;
+  std::vector<msgs::DetectedObject>().swap(fusion_msg.objects);
+  fusion_msg.objects.assign(fusion_objects.begin(), fusion_objects.end());
 
-  /************************************************************************/
-
-  std::cout << "num_cam30_0_objs = " << msgCam30_1_Obj.objects.size() << std::endl;
-
-  init_distance_table(vDetectedObjectDF, msgCam30_1_Obj.objects);
-  associate_data(vDetectedObjectDF, msgCam30_1_Obj.objects);
-
-  /************************************************************************/
-
-  std::cout << "num_cam120_0_objs = " << msgCam120_1_Obj.objects.size() << std::endl;
-
-  init_distance_table(vDetectedObjectDF, msgCam120_1_Obj.objects);
-  associate_data(vDetectedObjectDF, msgCam120_1_Obj.objects);
-
-  /************************************************************************/
-
-  std::cout << "num_total_objs = " << vDetectedObjectDF.size() << std::endl;
-
-  msgFusionObj.header.stamp = msgLidarObj.header.stamp;
-  msgFusionObj.header.frame_id = "lidar";
-  msgFusionObj.header.seq = seq++;
-  std::vector<msgs::DetectedObject>().swap(msgFusionObj.objects);
-  msgFusionObj.objects.assign(vDetectedObjectDF.begin(), vDetectedObjectDF.end());
-
-  fusion_pub.publish(msgFusionObj);
+  fusion_pub.publish(fusion_msg);
 }
 
 void get_obj_center(double& obj_cx, double obj_cy, const msgs::DetectedObject& obj)
@@ -235,11 +163,11 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
   }
 #endif
 
-  HungarianAlgorithm HungAlgo;
+  HungarianAlgorithm hung_algo;
   std::vector<int> assignment;
 
 #if DEBUG
-  double cost = HungAlgo.Solve(cost_mat, assignment);
+  double cost = hung_algo.Solve(cost_mat, assignment);
 
   for (unsigned i = 0; i < cost_mat.size(); i++)
   {
@@ -248,7 +176,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
 
   std::cout << "\ncost: " << cost << std::endl;
 #else
-  HungAlgo.Solve(cost_mat, assignment);
+  hung_algo.Solve(cost_mat, assignment);
 #endif
 
   std::vector<bool> assigned(s2, false);
@@ -285,15 +213,13 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "sensor_fusion");
   ros::NodeHandle nh;
 
-  ros::Subscriber lidar_det_sub = nh.subscribe("/LidarDetection", 1, LidarDetectionCb);
-  // ros::Subscriber cam_F_right_sub = nh.subscribe("/CamObjFrontRight", 1, cam60_0_DetectionCb);
-  ros::Subscriber cam_F_center_sub = nh.subscribe("/CamObjFrontCenter", 1, cam60_1_DetectionCb);
-  // ros::Subscriber cam_F_left_sub = nh.subscribe("/CamObjFrontLeft", 1, cam60_2_DetectionCb);
+  fusion_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 1);
 
-  fusion_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 2);
+  ros::Subscriber lidar_sub = nh.subscribe("LidarDetection", 1, callback_lidar);
+  ros::Subscriber camera_sub = nh.subscribe("CameraDetection", 1, callback_camera);
 
   signal(SIGINT, MySigintHandler);
 
-  ros::MultiThreadedSpinner spinner(4);
+  ros::MultiThreadedSpinner spinner(2);
   spinner.spin();
 }
