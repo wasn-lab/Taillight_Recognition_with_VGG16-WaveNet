@@ -18,7 +18,7 @@ WarningsAsErrors: "readability-braces-around-statements"
 HeaderFilterRegex: 'itriadv/src/.*\.h$'
 CheckOptions:
   - key:   readability-identifier-naming.GlobalVariableCase
-    value: 'lower_case'
+    value: lower_case
   - key:   readability-identifier-naming.GlobalVariablePrefix
     value: 'g_'
   - key:   readability-identifier-naming.ClassCase
@@ -29,7 +29,7 @@ CheckOptions:
     value: '_'
 # Ignore const variables becuase they do not change program state.
   - key:   readability-identifier-naming.ConstantCase
-    value: 'aNy_CasE'
+    value: aNy_CasE
   - key:   readability-identifier-naming.ConstexprVariableCase
-    value: 'aNy_CasE'
+    value: aNy_CasE
 ...
