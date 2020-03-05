@@ -3,7 +3,7 @@
    DATE: Aug, 2019
  */
 
-#include <assert.h>
+#include <cassert>
 #include "opencv2/opencv.hpp"
 #include "glog/logging.h"
 #include "nppi_geometry_transforms.h"
