@@ -1,17 +1,13 @@
 #include "projector3.h"
 #include <opencv2/opencv.hpp>
-#include <string.h>
 #include <camera_utils_defs.h>
 
 void Projector3::init(const char* camera_topic_name)
 {
   if (strcmp(camera_topic_name, "/cam/F_center") == 0)
   {
-    char* fileName = (char*)"test_0225_F_center.yml";
-    char* filePath = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(fileName) + 1];
-    std::strcpy(filePath, CAMERA_UTILS_DATA_DIR);
-    std::strcat(filePath, fileName);
-    readCameraParameters(filePath);
+    std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + "/test_0225_F_center.yml";
+    readCameraParameters(file_path.c_str());
   }
   else
   {
@@ -24,12 +20,12 @@ std::vector<int> Projector3::project(double x, double y, double z)
   std::vector<int> result(2);
   if (!projectionMatrix.empty())
   {
-    std::vector<cv::Point3d> objectPoint;
-    objectPoint.push_back(cv::Point3d(x, y, z));
-    std::vector<cv::Point2d> imagePoint;
-    cv::projectPoints(objectPoint, rotarionVec, translationVec, cameraMat, distCoeff, imagePoint);
-    result[0] = imagePoint[0].x;
-    result[1] = imagePoint[0].y;
+    std::vector<cv::Point3d> object_point;
+    object_point.emplace_back(cv::Point3d(x, y, z));
+    std::vector<cv::Point2d> image_point;
+    cv::projectPoints(object_point, rotarionVec, translationVec, cameraMat, distCoeff, image_point);
+    result[0] = image_point[0].x;
+    result[1] = image_point[0].y;
   }
   else
   {
