@@ -32,4 +32,6 @@ CheckOptions:
     value: aNy_CasE
   - key:   readability-identifier-naming.ConstexprVariableCase
     value: aNy_CasE
+  - key:   readability-identifier-naming.ConstantMemberCase
+    value: aNy_CasE
 ...
