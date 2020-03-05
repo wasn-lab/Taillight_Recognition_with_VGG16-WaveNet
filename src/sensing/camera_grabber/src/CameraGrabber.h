@@ -22,7 +22,6 @@
 #include "npp.h"
 #include "npp_resizer.h"
 #include "npp_remapper.h"
-#include "npp_transformer.h"
 #include "nppdefs.h"
 #include "camera_utils.h"
 #include "camera_params.h"
