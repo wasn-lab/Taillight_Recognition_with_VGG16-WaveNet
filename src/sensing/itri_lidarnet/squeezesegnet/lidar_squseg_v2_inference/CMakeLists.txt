@@ -128,7 +128,7 @@ include_directories(
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/squeezeseg_inference.cpp")
  
-add_executable		  (${PROJECT_NAME} src/squeezeseg_inference.cpp ${SOURCES_SRCS})
+add_executable		  (${PROJECT_NAME} EXCLUDE_FROM_ALL src/squeezeseg_inference.cpp ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
