@@ -10,16 +10,8 @@ CalibrateParameters::CalibrateParameters(double t_x, double t_y, double t_z, dou
   , focal_length_uint_(f)
   , center_point_u_uint_(u)
   , center_point_v_uint_(v)
-  , camera_topic_string_(t)
-  , camera_object_topic_string_(o_t)
-{
-}
-
-CalibrateParameters::CalibrateParameters()
-{
-}
-
-CalibrateParameters::~CalibrateParameters()
+  , camera_topic_string_(std::move(t))
+  , camera_object_topic_string_(std::move(o_t))
 {
 }
 

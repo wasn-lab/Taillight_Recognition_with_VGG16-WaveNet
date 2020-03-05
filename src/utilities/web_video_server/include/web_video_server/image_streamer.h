@@ -86,6 +86,6 @@ public:
   virtual std::string create_viewer(const async_web_server_cpp::HttpRequest &request) = 0;
 };
 
-}
+} // namespace web_video_server
 
 #endif

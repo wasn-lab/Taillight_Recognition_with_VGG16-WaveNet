@@ -2,8 +2,7 @@
 #define BOUNDARYUTIL_H_
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include "drivenet/distance_estimation_b1.h"
+#include "drivenet/distance_estimation.h"
 
 bool checkBoxInArea(CheckArea areaCheck, int object_x1, int object_y1, int object_x2, int object_y2);
 template <typename T1, typename T2>

@@ -1,5 +1,6 @@
 #include "web_video_server/png_streamers.h"
 #include "async_web_server_cpp/http_reply.hpp"
+#include <opencv2/core/version.hpp>
 
 namespace web_video_server
 {
@@ -21,7 +22,11 @@ PngStreamer::~PngStreamer()
 void PngStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
 {
   std::vector<int> encode_params;
+#if CV_VERSION_MAJOR == 4
+  encode_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+#else
   encode_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+#endif
   encode_params.push_back(quality_);
 
   std::vector<uchar> encoded_buffer;
@@ -63,7 +68,11 @@ PngSnapshotStreamer::~PngSnapshotStreamer()
 void PngSnapshotStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
 {
   std::vector<int> encode_params;
+#if CV_VERSION_MAJOR == 4
+  encode_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
+#else
   encode_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+#endif
   encode_params.push_back(quality_);
 
   std::vector<uchar> encoded_buffer;
@@ -88,4 +97,4 @@ void PngSnapshotStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
   inactive_ = true;
 }
 
-}
+} // namespace web_video_server
