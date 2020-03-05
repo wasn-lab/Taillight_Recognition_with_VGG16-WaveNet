@@ -54,6 +54,10 @@ struct Point Geofence::findDirection(){
         }
     }
     temp.Direction = acos((X_bar)/sqrt(pow(X_bar,2.0) + pow(Y_bar,2.0)));
+    if(Y_bar<0)
+    {
+        temp.Direction = -temp.Direction;
+    }
     return temp;
 }
 
