@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 #ifdef read_local_bagfile    
     image_transport::Subscriber sub = it.subscribe("camera/image_raw", 1, imageCallback);
 #else
-    image_transport::Subscriber sub = it.subscribe("/cam/F_center", 1, imageCallback);
+    image_transport::Subscriber sub = it.subscribe("/cam/front_top_far_30", 1, imageCallback);
 #endif
 
     ros::spin();

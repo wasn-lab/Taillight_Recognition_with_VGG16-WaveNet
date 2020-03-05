@@ -32,11 +32,16 @@ function cleanup {
 function commit {
   data_dir=$1
   stream=$2
-  echo "`date`: start commit"
-  if [[ ! -z "${USER_NAME}" && ! -z "${USER_PASSWORD}" ]]; then
-    cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream ${stream} --dir ${data_dir} --user ${USER_NAME} --password ${USER_PASSWORD}
+  day=$(date +"-%d")$
+  if [[ "$day" -ge "8" ]]; then
+    echo "Only commit at the first week of a month to reduce execution."
+  else
+    echo "`date`: start commit"
+    if [[ ! -z "${USER_NAME}" && ! -z "${USER_PASSWORD}" ]]; then
+      cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream ${stream} --dir ${data_dir} --user ${USER_NAME} --password ${USER_PASSWORD}
+    fi
+    echo "`date`: end commit"
   fi
-  echo "`date`: end commit"
 }
 
 function analyze {

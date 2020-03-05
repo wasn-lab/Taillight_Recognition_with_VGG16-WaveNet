@@ -113,5 +113,5 @@ private:
   uint m_GridSize;
   uint64_t m_OutputSize;
 };
-}
+} // namespace DriveNet
 #endif  // __PLUGIN_LAYER_H__

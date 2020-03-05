@@ -46,6 +46,7 @@ set(CAMERA_UTILS_SOURCES
   src/camera_utils.cpp
   src/camera_params_hino.cpp
   src/camera_params_b1.cpp
+  src/camera_params_b1_v2.cpp
   src/camera_distance_mapper.cpp
   src/imu_distance.cpp
   src/imu_utils.cpp
@@ -58,7 +59,8 @@ set(CAMERA_UTILS_SOURCES
   src/npp_rotate.cpp
   src/npp_utils.cpp
   src/projection/parameters.cpp
-  src/projection/projector2.cpp)
+  src/projection/projector2.cpp
+  src/projection/projector3.cpp)
 
 set(CAMERA_UTILS_LIB_DEPS
   ${OpenCV_LIBS}

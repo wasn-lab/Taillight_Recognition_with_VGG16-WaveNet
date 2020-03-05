@@ -30,6 +30,11 @@ private:
 
 public:
   NPPRemapperImpl(const int rows, const int cols);
+  NPPRemapperImpl(NPPRemapperImpl&) = delete;
+  NPPRemapperImpl(NPPRemapperImpl&&) = delete;
+  NPPRemapperImpl& operator=(NPPRemapperImpl&) = delete;
+  NPPRemapperImpl& operator=(NPPRemapperImpl&&) = delete;
+
   ~NPPRemapperImpl();
   int remap(const cv::Mat& src, cv::Mat& dst);
   int remap(const Npp8u* npp8u_ptr_in, cv::Mat& dst);
