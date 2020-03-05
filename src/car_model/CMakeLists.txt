@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(car_model)
 
-set(CAR_MODEL "B1" CACHE STRING "Car model (B1, B1_V2, C, HINO)")
-set_property(CACHE CAR_MODEL PROPERTY STRINGS B1 C B1_V2 HINO)
+set(CAR_MODEL "B1_V2" CACHE STRING "Car model (B1, B1_V2, C, HINO)")
+set_property(CACHE CAR_MODEL PROPERTY STRINGS B1 B1_V2 C HINO)
 
 set(CAR_MODEL_IS_B1 0)
 set(CAR_MODEL_IS_B1_V2 0)
@@ -33,10 +33,19 @@ catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
   CFG_EXTRAS CarModel.cmake
 )
+message("Car model is ${CAR_MODEL}")
 
 configure_file(
     include/car_model.h.in
     ${PROJECT_BINARY_DIR}/include/car_model.h)
+
+configure_file(
+    scripts/car_model.sh.in
+    ${PROJECT_BINARY_DIR}/scripts/car_model.sh)
+
+configure_file(
+    scripts/car_model.py.in
+    ${PROJECT_BINARY_DIR}/scripts/car_model.py)
 
 add_subdirectory(test)
 if (CAR_MODEL_IS_B1)

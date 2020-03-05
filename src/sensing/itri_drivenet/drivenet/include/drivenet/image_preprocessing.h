@@ -11,13 +11,14 @@ namespace DriveNet
 class Color
 {
 public:
-  static cv::Scalar g_color_blue;
-  static cv::Scalar g_color_red;
-  static cv::Scalar g_color_green;
-  static cv::Scalar g_color_gray;
+  static cv::Scalar blue_;
+  static cv::Scalar red_;
+  static cv::Scalar green_;
+  static cv::Scalar yellow_;
+  static cv::Scalar gray_;
 };
 
-void loadCalibrationMatrix(std::string yml_filename, cv::Mat& cameraMatrix, cv::Mat& distCoeffs);
-void calibrationImage(const cv::Mat& src, cv::Mat& dst, cv::Mat cameraMatrix, cv::Mat distCoeffs);
-}
+void loadCalibrationMatrix(const std::string& yml_filename, cv::Mat& cameraMatrix, cv::Mat& distCoeffs);
+void calibrationImage(const cv::Mat& src, cv::Mat& dst, const cv::Mat& cameraMatrix, const cv::Mat& distCoeffs);
+} // namespace DriveNet
 #endif /*IMAGE_PREPROCESSING_H_*/

@@ -2,7 +2,7 @@
    CREATER: ICL U300
    DATE: Aug, 2019
  */
-#include <assert.h>
+#include <cassert>
 #include "glog/logging.h"
 #include "npp_wrapper.h"
 #include "nppi_geometry_transforms.h"
@@ -78,4 +78,4 @@ int rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_degree, const Np
   nppiFree(dst_npp8u_ptr);
   return result;
 }
-};  // namespace
+}  // namespace npp_wrapper

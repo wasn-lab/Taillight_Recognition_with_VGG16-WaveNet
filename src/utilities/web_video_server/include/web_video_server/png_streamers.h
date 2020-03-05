@@ -46,6 +46,6 @@ private:
   int quality_;
 };
 
-}
+} // namespace web_video_server
 
 #endif
