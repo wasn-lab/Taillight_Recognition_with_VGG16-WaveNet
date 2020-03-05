@@ -15,7 +15,7 @@ int main(int argc, char** argv)
   auto mode = SensingSubSystem::get_mode();
 
   // do resize
-  bool do_resize = SensingSubSystem::do_resize();
+  const bool do_resize = SensingSubSystem::do_resize();
 
   if (mode == "a")
   {
