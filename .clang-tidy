@@ -11,6 +11,7 @@ readability-*,\
 llvm-namespace-comment,\
 -hicpp-signed-bitwise,\
 -cert-err58-cpp,\
+-readability-else-after-return,\
 -readability-avoid-const-params-in-decls\
 "
 WarningsAsErrors: "readability-braces-around-statements"
