@@ -128,6 +128,7 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 		}
 		send_can();
 	}
+	/*
 	msgs::Flag_Info msg_temp;
 	msg_temp.Dspace_Flag01 = bus_stop_info[0][0];
 	msg_temp.Dspace_Flag02 = bus_stop_info[0][1];
@@ -139,6 +140,7 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
 	msg_temp.PX2_Flag01 = round_count;
 	publisher_01.publish(msg_temp);
+	*/
 }
 
 

@@ -237,7 +237,7 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
     double x_j = j*grid_length_x_/width - grid_length_x_/2 + grid_position_x_;
     double x_j_max = x_j + 5;
     double x_j_min = x_j - 5;
-    if (x_j > path_max_x+5.6)
+    if (x_j > (path_max_x+left_waylength) && x_j > (path_max_x+right_waylength))
     {
       break;
     }
@@ -255,8 +255,8 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
         if (left_x_k < x_j_max && left_x_k > x_j_min)
         {
           double path_width = right_waylength + left_waylength;
-          double grid2left = std::sqrt((x_j-left_x_k)*(x_j-left_x_k) + (y_i - left_y_k)*(y_i - left_y_k));
-          double grid2right = std::sqrt((x_j-right_x_k)*(x_j-right_x_k) + (y_i - right_y_k)*(y_i - right_y_k));
+          double grid2left = std::sqrt((x_j-left_x_k)*(x_j-left_x_k) + (y_i-left_y_k)*(y_i-left_y_k));
+          double grid2right = std::sqrt((x_j-right_x_k)*(x_j-right_x_k) + (y_i-right_y_k)*(y_i-right_y_k));
           if (path_width > grid2left && path_width > grid2right)
           {
             wayareaoccgridmap.data[og_index] = 0;
@@ -266,8 +266,8 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
         else if (right_x_k < x_j_max && right_x_k > x_j_min)
         {
           double path_width = right_waylength + left_waylength;
-          double grid2left = std::sqrt((x_j-left_x_k)*(x_j-left_x_k) + (y_i - left_y_k)*(y_i - left_y_k));
-          double grid2right = std::sqrt((x_j-right_x_k)*(x_j-right_x_k) + (y_i - right_y_k)*(y_i - right_y_k));
+          double grid2left = std::sqrt((x_j-left_x_k)*(x_j-left_x_k) + (y_i-left_y_k)*(y_i-left_y_k));
+          double grid2right = std::sqrt((x_j-right_x_k)*(x_j-right_x_k) + (y_i-right_y_k)*(y_i-right_y_k));
           if (path_width > grid2left && path_width > grid2right)
           {
             wayareaoccgridmap.data[og_index] = 0;
@@ -288,7 +288,6 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
   // std::cout << "expand_size : " << expand_size << std::endl;
   costmap_ = costmap;
   static double resolution = costmap_.info.resolution;
-  costmap_sensor_all = costmap;
   nav_msgs::OccupancyGrid lidcostmap_ = costmap;
   if (lid_ini == true)
   {
@@ -313,11 +312,14 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
     wayareaoccgridmap_ = wayareaoccgridmap;
     ROS_INFO("wayarea/grid pub");
   }
-  // costmap_all = wayareaoccgridmap_;
-  // costmap_all_expand = wayareaoccgridmap_;
 
+  costmap_sensor_all = costmap;
   costmap_all = costmap;
   costmap_all_expand = costmap;
+
+  // costmap_sensor_all = wayareaoccgridmap_;
+  // costmap_all = wayareaoccgridmap_;
+  // costmap_all_expand = wayareaoccgridmap_;
 
   int height = costmap_.info.height;
   int width = costmap_.info.width;
