@@ -17,6 +17,6 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
            const NppiInterpolationMode interpolation_mode = NPPI_INTER_LINEAR);
 int rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_degree,
            const NppiInterpolationMode interpolation_mode = NPPI_INTER_LINEAR);
-}  // namespace
+}  // namespace npp_wrapper
 
 #endif  // __NPP_WRAPPER_H__

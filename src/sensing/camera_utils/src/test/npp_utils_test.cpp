@@ -10,6 +10,7 @@
 #include "camera_utils_test.h"
 #include "camera_utils.h"
 #include "camera_params.h"
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
 
 namespace npp_wrapper_test
 {
@@ -114,6 +115,7 @@ TEST(NPPWrapperTest, test_blob_from_image)
 
   auto status = nppiConvert_8u32f_C3R(npp8u_ptr, cols * 3, npp32f_ptr_in, cols * 3 * sizeof(float),
                                       {.width = cols, .height = rows });
+  NO_UNUSED_VAR_CHECK(status);
   assert(status == NPP_SUCCESS);
 
   // generate blob data for NN inference.
