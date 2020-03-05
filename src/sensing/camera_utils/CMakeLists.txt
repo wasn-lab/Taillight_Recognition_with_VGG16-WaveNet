@@ -56,7 +56,6 @@ set(CAMERA_UTILS_SOURCES
   src/npp_resize.cpp
   src/npp_resizer.cpp
   src/npp_resizer_impl.cpp
-  src/npp_transformer.cpp
   src/npp_rotate.cpp
   src/npp_utils.cpp
   src/projection/parameters.cpp
