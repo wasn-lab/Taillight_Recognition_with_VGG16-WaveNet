@@ -31,7 +31,7 @@
 #include "ProgramArguments.hpp"
 
 #include <sstream>
-#include <string>
+#include <cstring>
 #include <string.h>
 #include <iostream>
 
