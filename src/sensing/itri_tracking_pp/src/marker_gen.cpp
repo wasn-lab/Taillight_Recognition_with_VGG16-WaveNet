@@ -279,14 +279,13 @@ visualization_msgs::Marker MarkerGen::create_speed_marker(const unsigned int idx
 
   if (mc_.show_absspeed)
   {
-    ss << "rel:";
+    ss << "abs:" << std::setprecision(1) << std::fixed << absspeed << "km/h";
   }
-  ss << std::setprecision(1) << std::fixed << relspeed << "km/h";
-
-  if (mc_.show_absspeed)
+  else
   {
-    ss << std::endl << "abs:" << std::setprecision(1) << std::fixed << absspeed << "km/h";
+    ss << "rel:" << std::setprecision(1) << std::fixed << relspeed << "km/h";
   }
+
   std::string str = ss.str();
   marker.text = str;
 
