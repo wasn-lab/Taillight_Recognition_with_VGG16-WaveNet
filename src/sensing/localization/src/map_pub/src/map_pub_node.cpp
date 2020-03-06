@@ -45,9 +45,9 @@ ros::Publisher southMapPointCloudPublisher;
 static ros::Publisher map_mean_value_publisher;
 static std_msgs::Float64 map_mean_value;
 
-static double voxel_leaf_size = 0.9;
+static double voxel_leaf_size = 0.8;
 static double voxel_leaf_size_1 = 1.0;
-static double voxel_leaf_size_2 = 1.1;
+static double voxel_leaf_size_2 = 1.2;
 
 static std::string crop_cord;
 static double crop_value_min, crop_value_max, crop_value_mean, crop_value_range;
