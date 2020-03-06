@@ -37,6 +37,7 @@ readonly affected_files=$(git diff --name-only ${merge_base})
 for fname in ${affected_files}; do
   if [[ -f ${fname} ]]; then
     touch ${fname}
+    python src/scripts/ci/check_launch.py --file ${fname}
   fi
 done
 
