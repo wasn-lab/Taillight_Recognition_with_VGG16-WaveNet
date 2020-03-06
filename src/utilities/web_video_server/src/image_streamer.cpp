@@ -52,8 +52,10 @@ void ImageTransportImageStreamer::initialize(const cv::Mat &)
 
 void ImageTransportImageStreamer::restreamFrame(double max_age)
 {
-  if (inactive_ || !initialized_ )
+  if (inactive_ || !initialized_)
+  {
     return;
+  }
   try {
     if ( last_frame + ros::Duration(max_age) < ros::Time::now() ) {
       boost::mutex::scoped_lock lock(send_mutex_);
@@ -84,7 +86,9 @@ void ImageTransportImageStreamer::restreamFrame(double max_age)
 void ImageTransportImageStreamer::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 {
   if (inactive_)
+  {
     return;
+  }
 
   cv::Mat img;
   try
@@ -113,9 +117,13 @@ void ImageTransportImageStreamer::imageCallback(const sensor_msgs::ImageConstPtr
     int input_height = img.rows;
 
     if (output_width_ == -1)
+    {
       output_width_ = input_width;
+    }
     if (output_height_ == -1)
+    {
       output_height_ = input_height;
+    }
 
     if (invert_)
     {

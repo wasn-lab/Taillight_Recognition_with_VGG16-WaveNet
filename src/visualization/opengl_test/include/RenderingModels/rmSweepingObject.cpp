@@ -33,10 +33,14 @@ void rmSweepingObject::Init(){
 	_program_ptr.reset( new ShaderProgram() );
     // Load shaders
     _program_ptr->AttachShader(get_full_Shader_path("SweepObject.vs.glsl"), GL_VERTEX_SHADER);
-    if (draw_mode == 1) // Section draw
-        _program_ptr->AttachShader(get_full_Shader_path("SweepObject.gs.section.glsl"), GL_GEOMETRY_SHADER);
+    if (draw_mode == 1)
+    {  // Section draw
+      _program_ptr->AttachShader(get_full_Shader_path("SweepObject.gs.section.glsl"), GL_GEOMETRY_SHADER);
+    }
     else
-        _program_ptr->AttachShader(get_full_Shader_path("SweepObject.gs.glsl"), GL_GEOMETRY_SHADER);
+    {
+      _program_ptr->AttachShader(get_full_Shader_path("SweepObject.gs.glsl"), GL_GEOMETRY_SHADER);
+    }
     _program_ptr->AttachShader(get_full_Shader_path("SweepObject.fs.glsl"), GL_FRAGMENT_SHADER);
     // Link _program_ptr
 	_program_ptr->LinkProgram();
