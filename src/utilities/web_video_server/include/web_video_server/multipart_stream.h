@@ -37,6 +37,6 @@ private:
   std::queue<PendingFooter> pending_footers_;
 };
 
-}
+} // namespace web_video_server
 
 #endif

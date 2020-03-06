@@ -24,6 +24,7 @@ int AR1::compute_params(const std::vector<long double>& xs, long double& beta0, 
   Eigen::Matrix2d m;
   m << 3., sum1, sum1, sum_square1;
   Eigen::Matrix3d inverse;
+  inverse << 0., 0., 0., 0., 0., 0., 0., 0., 0.;
 
   bool is_invertible = false;
   double determinant = 0.;

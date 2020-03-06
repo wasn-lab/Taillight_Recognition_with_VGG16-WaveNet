@@ -69,8 +69,14 @@ DsImage::DsImage(const cv::Mat& m_OrigImage, const int& inputH, const int& input
     m_ScalingFactor = static_cast<float>(resizeH) / static_cast<float>(m_Height);
 
     // Additional checks for images with non even dims
-    if ((inputW - resizeW) % 2) resizeW--;
-    if ((inputH - resizeH) % 2) resizeH--;
+    if ((inputW - resizeW) % 2)
+    {
+      resizeW--;
+    }
+    if ((inputH - resizeH) % 2)
+    {
+      resizeH--;
+    }
     assert((inputW - resizeW) % 2 == 0);
     assert((inputH - resizeH) % 2 == 0);
 
@@ -98,7 +104,11 @@ DsImage::DsImage(const std::string& path, const int& inputH, const int& inputW) 
     m_RNG(cv::RNG(unsigned(std::time(0)))),
     m_ImageName(std::experimental::filesystem::path(path).stem().string())
 {
+#if CV_VERSION_MAJOR == 4
+    m_OrigImage = cv::imread(path, cv::IMREAD_COLOR);
+#else
     m_OrigImage = cv::imread(path, CV_LOAD_IMAGE_COLOR);
+#endif
 
     if (!m_OrigImage.data || m_OrigImage.cols <= 0 || m_OrigImage.rows <= 0)
     {
@@ -123,8 +133,14 @@ DsImage::DsImage(const std::string& path, const int& inputH, const int& inputW) 
     m_ScalingFactor = static_cast<float>(resizeH) / static_cast<float>(m_Height);
 
     // Additional checks for images with non even dims
-    if ((inputW - resizeW) % 2) resizeW--;
-    if ((inputH - resizeH) % 2) resizeH--;
+    if ((inputW - resizeW) % 2)
+    {
+      resizeW--;
+    }
+    if ((inputH - resizeH) % 2)
+    {
+      resizeH--;
+    }
     assert((inputW - resizeW) % 2 == 0);
     assert((inputH - resizeH) % 2 == 0);
 
@@ -176,24 +192,31 @@ void DsImage::saveImageJPEG(const std::string& dirPath) const
 }
 std::string DsImage::exportJson() const
 {
-    if (m_Bboxes.size() == 0) return "";
-    std::stringstream json;
-    json.precision(2);
-    json << std::fixed;
-    for (uint i = 0; i < m_Bboxes.size(); ++i)
+  if (m_Bboxes.size() == 0)
+  {
+    return "";
+  }
+  std::stringstream json;
+  json.precision(2);
+  json << std::fixed;
+  for (uint i = 0; i < m_Bboxes.size(); ++i)
+  {
+    json << "\n{\n";
+    json << "  \"image_id\"         : " << std::stoi(m_ImageName) << ",\n";
+    json << "  \"category_id\"      : " << m_Bboxes.at(i).classId << ",\n";
+    json << "  \"bbox\"             : ";
+    json << "[" << m_Bboxes.at(i).box.x1 << ", " << m_Bboxes.at(i).box.y1 << ", ";
+    json << m_Bboxes.at(i).box.x2 - m_Bboxes.at(i).box.x1 << ", " << m_Bboxes.at(i).box.y2 - m_Bboxes.at(i).box.y1
+         << "],\n";
+    json << "  \"score\"            : " << m_Bboxes.at(i).prob << "\n";
+    if (i != m_Bboxes.size() - 1)
     {
-        json << "\n{\n";
-        json << "  \"image_id\"         : " << std::stoi(m_ImageName) << ",\n";
-        json << "  \"category_id\"      : " << m_Bboxes.at(i).classId << ",\n";
-        json << "  \"bbox\"             : ";
-        json << "[" << m_Bboxes.at(i).box.x1 << ", " << m_Bboxes.at(i).box.y1 << ", ";
-        json << m_Bboxes.at(i).box.x2 - m_Bboxes.at(i).box.x1 << ", "
-             << m_Bboxes.at(i).box.y2 - m_Bboxes.at(i).box.y1 << "],\n";
-        json << "  \"score\"            : " << m_Bboxes.at(i).prob << "\n";
-        if (i != m_Bboxes.size() - 1)
-            json << "},";
-        else
-            json << "}";
+      json << "},";
+    }
+    else
+    {
+      json << "}";
+    }
     }
     return json.str();
 }

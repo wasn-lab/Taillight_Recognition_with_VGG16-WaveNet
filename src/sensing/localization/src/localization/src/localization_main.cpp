@@ -126,7 +126,7 @@ static std::string pcd_name = "sub_map.pcd";
 
 // Default values localization mapping
 static int max_iter = 30;      // Maximum iterations 30 30
-static float ndt_res = 1.4;     // Resolution MAPPING 1.0 2.0
+static float ndt_res = 1.2;     // Resolution MAPPING 1.0 2.0
 static double step_size = 0.1;  // Step size 0.1  0.2
 static double trans_eps = 0.01; // Transformation epsilon  0.01 0.02
 

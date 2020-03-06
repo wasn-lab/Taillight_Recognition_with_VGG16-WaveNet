@@ -12,36 +12,28 @@ import sys
 import logging
 import os
 import subprocess
-from ci_utils import get_compile_args, is_external_package
+from ci_utils import is_external_package
 
 
-def check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix):
+def check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix, build_path):
     """
     Use clang-tidy to check Rule 6.4.1.
     """
-    logging.info("Check MISRA C++-2008 Rule 6.4.1 for %s", cpp)
-    args = get_compile_args(cpp)
-    if not args:
-        return
     fix = "--fix" if apply_fix else ""
-    cmd = ["clang-tidy", cpp, fix,
+    cmd = ["clang-tidy", fix,
+           "-p", build_path,
            "-checks=-*,readability-braces-around-statements",
-           "--"] + args
-    logging.info(" ".join(cmd))
+           cpp]
     try:
         output = subprocess.check_output(cmd)
-    except subprocess.CalledProcessError:
-        logging.error("CalledProcessError: %s", " ".join(cmd))
-
-    if not output:
-        return
-    logging.warning(output.decode("utf-8"))
-    logging.info("If Errors arise, run \n"
-                 "    python src/scripts/ci/check_misra_cpp2008_6_4_1.py --fix "
-                 "--cpp %s\nto fix it", cpp)
+        if output:
+            logging.warning(output.decode("utf-8"))
+    except subprocess.CalledProcessError as _e:
+        logging.error("CalledProcessError: %s\n%s",
+                      " ".join(_e.cmd), _e.output.decode("utf-8"))
 
 
-def check_misra_cpp2008_6_4_1(cpp, apply_fix):
+def check_misra_cpp2008_6_4_1(cpp, apply_fix, build_path):
     """
     Return the number of naming violations
     """
@@ -51,7 +43,7 @@ def check_misra_cpp2008_6_4_1(cpp, apply_fix):
         return 0
     if is_external_package(cpp):
         return 0
-    check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix)
+    check_misra_cpp2008_6_4_1_by_cpp(cpp, apply_fix, build_path)
     return 0
 
 
@@ -60,8 +52,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cpp", required=True)
     parser.add_argument("--fix", action="store_true")
+    parser.add_argument("--build-path", default="build_clang")
     args = parser.parse_args()
-    return check_misra_cpp2008_6_4_1(args.cpp, args.fix)
+    return check_misra_cpp2008_6_4_1(args.cpp, args.fix, args.build_path)
 
 
 if __name__ == "__main__":

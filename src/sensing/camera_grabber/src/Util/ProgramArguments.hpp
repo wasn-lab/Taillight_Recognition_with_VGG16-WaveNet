@@ -32,7 +32,7 @@
 #define SAMPLES_COMMON_PROGRAMARGUMENTS_HPP_
 
 #include <map>
-#include <string>
+#include <cstring>
 #include <vector>
 
 // EXAMPLE USECASE:

@@ -10,12 +10,12 @@ Int8EntropyCalibrator::Int8EntropyCalibrator(const uint& batchSize, const std::s
                                              const uint64_t& inputSize, const uint& inputH, const uint& inputW,
                                              const std::string& inputBlobName)
   : m_BatchSize(batchSize)
-  , m_InputH(inputH)
-  , m_InputW(inputW)
+//  , m_InputH(inputH)
+//  , m_InputW(inputW)
   , m_InputCount(batchSize * inputSize)
   , m_InputBlobName(inputBlobName)
   , m_CalibTableFilePath(calibTableFilePath)
-  , m_ImageIndex(0)
+//  , m_ImageIndex(0)
 {
   if (!fileExists(m_CalibTableFilePath, false))
   {
@@ -61,8 +61,10 @@ const void* Int8EntropyCalibrator::readCalibrationCache(size_t& length)
   std::ifstream input(m_CalibTableFilePath, std::ios::binary);
   input >> std::noskipws;
   if (m_ReadCache && input.good())
+  {
     std::copy(std::istream_iterator<char>(input), std::istream_iterator<char>(),
               std::back_inserter(m_CalibrationCache));
+  }
 
   length = m_CalibrationCache.size();
   if (length)

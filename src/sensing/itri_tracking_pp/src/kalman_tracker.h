@@ -29,11 +29,6 @@ public:
   BoxCenter box_center_;
   BoxCenter box_center_prev_;
 
-#if FPS_EXTRAPOLATION
-  BoxCenter box_center_kalman_;
-  BoxCenter box_center_kalman_next_;
-#endif
-
   std::vector<BoxCorner> box_corners_;
 
   float x_predict_ = 0.f;

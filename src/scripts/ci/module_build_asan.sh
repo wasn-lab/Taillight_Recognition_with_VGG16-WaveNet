@@ -10,13 +10,11 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build
 readonly devel_dir=devel
-if [[ -f /usr/local/llvm-6.0.0/bin/clang ]]; then
-  export CC=/usr/local/llvm-6.0.0/bin/clang
-  export CXX=/usr/local/llvm-6.0.0/bin/clang++
-else
-  export CC=clang
-  export CXX=clang++
+if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
+  export PATH=/usr/local/llvm-6.0.0/bin:$PATH
 fi
+export CC=clang
+export CXX=clang++
 
 pushd $repo_dir
 

@@ -61,7 +61,10 @@ public:
     void log(nvinfer1::ILogger::Severity severity, const char* msg) override
     {
         // suppress info-level messages
-        if (severity == Severity::kINFO) return;
+        if (severity == Severity::kINFO)
+        {
+          return;
+        }
 
         switch (severity)
         {

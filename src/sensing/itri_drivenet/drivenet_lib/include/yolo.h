@@ -181,5 +181,5 @@ private:
   void destroyNetworkUtils(std::vector<nvinfer1::Weights>& trtWeights);
   void writePlanFileToDisk();
 };
-}
+} // namespace DriveNet
 #endif  // _YOLO_H_
