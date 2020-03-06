@@ -46,7 +46,7 @@
 //#define RADARBOX
 #define TRACKINGBOX
 
-static double Heading, SLAM_x, SLAM_y;
+static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
 static Geofence BBox_Geofence(1.2);
 static double Ego_speed_ms;
@@ -59,6 +59,7 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
 	SLAM_x = LTVmsg->x;
 	SLAM_y = LTVmsg->y;
+	SLAM_z = LTVmsg->z;
 }
 
 void CurrentPoseCallback(const geometry_msgs::PoseStamped& msg)
@@ -131,15 +132,16 @@ void Plot_geofence(Point temp)
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
-    p.x = temp.X + 1.5*sin(temp.Direction);
-    p.y = temp.Y + 1.5*cos(temp.Direction);
-    p.z = current_z-2.0;
+    p.x = temp.X + 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y + 1.5*sin(temp.Direction-M_PI/2);
+    p.z = SLAM_z-2.0;
 	line_list.points.push_back(p);
-	p.x = temp.X - 1.5*sin(temp.Direction);
-    p.y = temp.Y - 1.5*cos(temp.Direction);
-	p.z = current_z-2.0;
+	p.x = temp.X - 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y - 1.5*sin(temp.Direction-M_PI/2);
+	p.z = SLAM_z-2.0;
 	line_list.points.push_back(p);	
-	PP_geofence_line.publish(line_list); 
+	PP_geofence_line.publish(line_list);
+	//cout << "============" << temp.Direction << "============" << endl; 
 }
 
 
@@ -236,7 +238,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				if(BBox_Geofence.getDistance()<80)
 				{
 					cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
-					cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
+					//cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 					//Plot geofence PP
 					if(BBox_Geofence.getDistance()<PP_Distance && BBox_Geofence.getDistance()>3.8)
 					{
@@ -245,7 +247,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 					}
 					//if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back))
 					{
-						//cout << "Collision appears" << endl;
+						cout << "Collision appears" << endl;
 						PP_Stop = 1;
 					}
 				}
@@ -319,7 +321,7 @@ int main(int argc, char **argv){
 		frame.data[0] = (short int)(PP_Stop*100);
 		frame.data[1] = (short int)(PP_Stop*100)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
-		printf("Wrote %d bytes\n", nbytes);
+		//printf("Wrote %d bytes\n", nbytes);
 		loop_rate.sleep();	
 	}
 	close(s);

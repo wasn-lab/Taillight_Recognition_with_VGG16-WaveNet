@@ -52,7 +52,7 @@ static Geofence PCloud_Geofence(1.2);
 static Geofence BBox_Geofence(1.2);
 static Geofence Radar_Geofence(1.5);
 static Geofence PCloud_Geofence_original(1.2);
-static double Heading, SLAM_x, SLAM_y;
+static double Heading, SLAM_x, SLAM_y, SLAM_z;
 //static uint Deadend_flag;
 static uint overtake_over_flag;
 ros::Publisher Radar_marker;
@@ -63,6 +63,7 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
 	SLAM_x = LTVmsg->x;
 	SLAM_y = LTVmsg->y;
+	SLAM_z = LTVmsg->z;
 }
 
 /*
@@ -233,7 +234,7 @@ void Publish_Marker_Radar(double X, double Y)
 
 	marker.pose.position.x = X;
     marker.pose.position.y = Y;
-    marker.pose.position.z = -1.0;  // Set pooint to groud in /map frame
+    marker.pose.position.z = SLAM_z-2;  // Set pooint to groud in /map frame
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
@@ -271,12 +272,13 @@ void Plot_geofence(Point temp)
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
-    p.x = temp.X + 1.5*sin(temp.Direction);
-    p.y = temp.Y + 1.5*cos(temp.Direction);
-    p.z = -3.0;
+    p.x = temp.X + 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y + 1.5*sin(temp.Direction-M_PI/2);
+    p.z = SLAM_z-2.0;
 	line_list.points.push_back(p);
-	p.x = temp.X - 1.5*sin(temp.Direction);
-    p.y = temp.Y - 1.5*cos(temp.Direction);
+	p.x = temp.X - 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y - 1.5*sin(temp.Direction-M_PI/2);
+	p.z = SLAM_z-2.0;
 	line_list.points.push_back(p);	
 	Geofence_line.publish(line_list); 
 }

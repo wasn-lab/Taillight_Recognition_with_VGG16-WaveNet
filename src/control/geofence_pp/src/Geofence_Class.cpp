@@ -45,6 +45,7 @@ struct Point Geofence::findDirection(){
     double Y_bar = 1000;
     for(int i=1;i<this->PathLength.size();i++){
         if(this->PathLength[i] > this->Distance){
+        //if(this->PathLength[i] > 10){
             X_bar = this->PathPoints[i].X - this->PathPoints[i-1].X;
             Y_bar = this->PathPoints[i].Y - this->PathPoints[i-1].Y;
             temp.X = this->PathPoints[i].X;
@@ -54,6 +55,11 @@ struct Point Geofence::findDirection(){
         }
     }
     temp.Direction = acos((X_bar)/sqrt(pow(X_bar,2.0) + pow(Y_bar,2.0)));
+    if(Y_bar<0)
+    {
+        temp.Direction = -temp.Direction;
+    }
+    //temp.Direction = asin((X_bar)/sqrt(pow(X_bar,2.0) + pow(Y_bar,2.0)));
     return temp;
 }
 
