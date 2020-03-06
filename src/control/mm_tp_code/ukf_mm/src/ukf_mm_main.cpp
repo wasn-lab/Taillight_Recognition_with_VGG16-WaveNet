@@ -112,8 +112,10 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
 	rtObj.rtU.SLAM_heading = LTVmsg->heading;
 	rtObj.rtU.SLAM_fs = LTVmsg->fitness_score;
 	rtObj.rtU.SLAM_counter++;
-	if (rtObj.rtU.SLAM_counter > 255)
-		rtObj.rtU.SLAM_counter = 0;
+  if (rtObj.rtU.SLAM_counter > 255)
+  {
+    rtObj.rtU.SLAM_counter = 0;
+  }
 }
 
 void VehinfoCallback(const msgs::VehInfo::ConstPtr& VImsg)
@@ -134,16 +136,24 @@ void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
 
 	rtObj.rtU.SLAM_x = current_pose.x;
 	rtObj.rtU.SLAM_y = current_pose.y;
-	if (current_pose.yaw < 0)
-		rtObj.rtU.SLAM_heading = current_pose.yaw + 2*RT_PI;
-	else if (current_pose.yaw >= 2*RT_PI)
-		rtObj.rtU.SLAM_heading = current_pose.yaw - 2*RT_PI;
-	else
-		rtObj.rtU.SLAM_heading = current_pose.yaw;
-	rtObj.rtU.SLAM_fs = 0;
+  if (current_pose.yaw < 0)
+  {
+    rtObj.rtU.SLAM_heading = current_pose.yaw + 2*RT_PI;
+  }
+  else if (current_pose.yaw >= 2 * RT_PI)
+  {
+    rtObj.rtU.SLAM_heading = current_pose.yaw - 2*RT_PI;
+  }
+  else
+  {
+    rtObj.rtU.SLAM_heading = current_pose.yaw;
+  }
+  rtObj.rtU.SLAM_fs = 0;
 	rtObj.rtU.SLAM_counter++;
-	if (rtObj.rtU.SLAM_counter > 255)
-    	rtObj.rtU.SLAM_counter = 0;
+  if (rtObj.rtU.SLAM_counter > 255)
+  {
+    rtObj.rtU.SLAM_counter = 0;
+  }
 }
 
 void imu_data_callback(const sensor_msgs::Imu::ConstPtr& imumsg)
