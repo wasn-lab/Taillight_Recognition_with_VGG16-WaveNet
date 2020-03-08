@@ -22,8 +22,10 @@ Circular_buffer::Circular_buffer(){
 Circular_buffer::Circular_buffer(int n_in){
     n = n_in;
     A.resize(n);
-    for (size_t i=0; i< A.size(); i++)
-        A[i] = 0;
+    for (size_t i = 0; i < A.size(); i++)
+    {
+      A[i] = 0;
+    }
 
     ind = 0;
 }
@@ -31,8 +33,10 @@ Circular_buffer::Circular_buffer(int n_in){
 void Circular_buffer::Init(int n_in){ // Input: buffer size
     n = n_in;
     A.resize(n);
-    for (size_t i=0; i< A.size(); i++)
-        A[i] = 0;
+    for (size_t i = 0; i < A.size(); i++)
+    {
+      A[i] = 0;
+    }
     ind = 0;
 }
 //
@@ -51,9 +55,11 @@ void Circular_buffer::Insert(float x_new){ // Pop the oldest element and push a 
     A[ind] = x_new;
 }
 void Circular_buffer::reset(float val){ // Reset all elements to val
-    for (size_t i = 0; i< A.size(); i++)
-        A[i] = val;
-    ind = 0;
+  for (size_t i = 0; i < A.size(); i++)
+  {
+    A[i] = val;
+  }
+  ind = 0;
 }
 
 // IIR
