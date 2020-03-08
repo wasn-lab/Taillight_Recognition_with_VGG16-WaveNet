@@ -258,9 +258,9 @@ visualization_msgs::Marker MarkerGen::create_pp_marker_ellipse(const unsigned in
   marker.id = idx;
   marker.type = visualization_msgs::Marker::CYLINDER;
 
-  double scale = abs_speed_kmph * (forecast_seq + 1) / 36.;
+  double scale = abs_speed_kmph * (forecast_seq + 1) / 120.;
   marker.scale.x = scale;
-  marker.scale.y = scale / 2;
+  marker.scale.y = scale;
   marker.scale.z = 0.1;
 
   marker.pose.position.x = pos.x;

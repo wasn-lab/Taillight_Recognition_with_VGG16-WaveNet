@@ -501,9 +501,9 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
             << " pitch:" << pitch << " yaw:" << yaw << " absspeed:" << abs_speed << std::endl;
 #endif
 
-  float scale = abs_speed * (pp_idx + 1) / 36.;
-  float scale1 = scale / 3;
-  float scale2 = scale / 5;
+  float scale = abs_speed * (pp_idx + 1) / 200.;
+  float scale1 = scale;
+  float scale2 = scale;
 
   cv::Mat mag_m(1, 4, CV_32FC1, cv::Scalar(0));
   mag_m.at<float>(0, 0) = scale1;
