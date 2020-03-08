@@ -81,7 +81,7 @@ private:
 
   unsigned int trackid_new_ = TRACK_ID_MIN;
 
-  static constexpr float TRACK_RANGE_SED = 9.f;         // 4^2
+  static constexpr float TRACK_RANGE_SED = 9.f;          // 4^2
   static constexpr float TRACK_RANGE_SED_WARMUP = 16.f;  // 5^2
 
   float ego_x_abs_ = 0.f;
