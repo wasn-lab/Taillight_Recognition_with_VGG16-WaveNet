@@ -849,7 +849,7 @@ void TPPNode::set_ros_params()
   mc_.show_pp = (unsigned int)show_pp_int;
 
   double pp_obj_min_kmph = 0.;
-  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
+  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 10.);
   pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
 
   double pp_obj_max_kmph = 0.;
