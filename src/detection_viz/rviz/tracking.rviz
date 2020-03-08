@@ -3,8 +3,7 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /Tracking_output1
+      Expanded: ~
       Splitter Ratio: 0.582872927
     Tree Height: 380
   - Class: rviz/Selection
@@ -128,14 +127,13 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /LidarDetection/poly
       Name: Lidar_polygon
       Namespaces:
-        /LidarDetection: true
-        /LidarDetection_depth: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /LidarDetection/delayTxt
@@ -181,7 +179,7 @@ Visualization Manager:
       Marker Topic: /cam_obj/front_bottom_60/delayTxt
       Name: cambbox_FB60_latency
       Namespaces:
-        /cam_obj/front_bottom_60_delay: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -209,14 +207,6 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /SensorFusion/delayTxt
-      Name: fusion_latency
-      Namespaces:
-        /SensorFusion_d: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /SensorFusion/poly
       Name: fusion_polygon
@@ -224,6 +214,75 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /SensorFusion/delayTxt
+      Name: fusion_latency
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /PathPredictionOutput/poly
+      Name: tracking_polygon
+      Namespaces:
+        /PathPredictionOutput: true
+        /PathPredictionOutput_depth: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /PathPredictionOutput/delayTxt
+      Name: tracking_latency
+      Namespaces:
+        /PathPredictionOutput_d: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/id
+          Name: tracking_id
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /PathPredictionOutput/speed
+          Name: tracking_speed
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/markers
+          Name: tracking_bbox
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+        - Class: rviz/MarkerArray
+          Enabled: false
+          Marker Topic: /PathPredictionOutput/vel
+          Name: tracking_vel2s
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: false
+      Enabled: false
+      Name: tracking_suppliment
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /PathPredictionOutput/pp
+      Name: predicted_path
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
     - Alpha: 0.5
       Cell Size: 10
       Class: rviz/Grid
@@ -242,86 +301,6 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: false
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/MarkerArray
-          Enabled: false
-          Marker Topic: /PathPredictionOutput/markers
-          Name: TPP_fusion_bbox
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: false
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /PathPredictionOutput/polygons
-          Name: TPP_fusion_polygon
-          Namespaces:
-            PPOutput_p: true
-          Queue Size: 100
-          Value: true
-        - Class: rviz/MarkerArray
-          Enabled: false
-          Marker Topic: /PathPredictionOutput/id
-          Name: TPP_fusion_id
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: false
-        - Class: rviz/MarkerArray
-          Enabled: false
-          Marker Topic: /PathPredictionOutput/delay
-          Name: TPP_fusion_delay
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: false
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /PathPredictionOutput/speed
-          Name: TPP_fusion_speed
-          Namespaces:
-            PPOutput_s: true
-          Queue Size: 100
-          Value: true
-        - Class: rviz/MarkerArray
-          Enabled: false
-          Marker Topic: /PathPredictionOutput/vel
-          Name: TPP_fusion_vel2s
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: false
-        - Class: rviz/MarkerArray
-          Enabled: false
-          Marker Topic: /abs_virBB_array/bbox
-          Name: virbb_bbox
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: false
-      Enabled: true
-      Name: Tracking_output
-    - Class: rviz/Group
-      Displays:
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /PathPredictionOutput/lidar/pp
-          Name: PP_from_lidar
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-        - Class: rviz/MarkerArray
-          Enabled: true
-          Marker Topic: /PathPredictionOutput/pp
-          Name: PP_from_fusion
-          Namespaces:
-            {}
-          Queue Size: 100
-          Value: true
-      Enabled: false
-      Name: PP_output
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /PSOutput/markers
@@ -466,13 +445,13 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /marker_array_topic
       Name: VirBB_BBox
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/Polygon
       Color: 85; 255; 255
@@ -553,7 +532,7 @@ Visualization Manager:
       Marker Topic: /Geofence_line
       Name: Geofence
       Namespaces:
-        PC_line: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -561,7 +540,7 @@ Visualization Manager:
       Marker Topic: /mileage/status_text/txt
       Name: MarkerArray
       Namespaces:
-        /mileage/status_text_T: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -592,7 +571,7 @@ Visualization Manager:
       Marker Topic: /PP_geofence_line
       Name: PP_geofence
       Namespaces:
-        PP_line: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
