@@ -28,22 +28,53 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       // check enough record of track history for pp
       if (pp_objs_[i].track.head >= (int)(num_pp_input_min_ - 1) || pp_objs_[i].track.is_over_max_length == true)
       {
-        if (pp_objs_[i].absSpeed > pp_obj_min_kmph_ && pp_objs_[i].absSpeed < pp_obj_max_kmph_)
-        {
-          float box_center_x = (pp_objs_[i].bPoint.p0.x + pp_objs_[i].bPoint.p6.x) / 2;
-          float box_center_y = (pp_objs_[i].bPoint.p0.y + pp_objs_[i].bPoint.p6.y) / 2;
+        pp_objs_[i].track.is_ready_prediction = true;
 
-          if (box_center_x >= pp_allow_x_min_m && box_center_x <= pp_allow_x_max_m)
-          {
-            if (box_center_y >= pp_allow_y_min_m && box_center_y <= pp_allow_y_max_m)
-            {
-#if DEBUG_PP
-              std::cout << "PP_ready" << std::endl;
-#endif
-              pp_objs_[i].track.is_ready_prediction = true;
-            }
-          }
+        if (pp_objs_[i].absSpeed < pp_obj_min_kmph_ && pp_objs_[i].absSpeed > pp_obj_max_kmph_)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
         }
+
+        float box_center_x = (pp_objs_[i].bPoint.p0.x + pp_objs_[i].bPoint.p6.x) / 2;
+        float box_center_y = (pp_objs_[i].bPoint.p0.y + pp_objs_[i].bPoint.p6.y) / 2;
+
+        float box_x_length = std::abs(pp_objs_[i].bPoint.p6.x - pp_objs_[i].bPoint.p0.x);
+        float box_y_length = std::abs(pp_objs_[i].bPoint.p6.y - pp_objs_[i].bPoint.p0.y);
+        float box_z_length = std::abs(pp_objs_[i].bPoint.p6.z - pp_objs_[i].bPoint.p0.z);
+        float box_length_thr_xy = 1.5f;
+        float box_length_thr_z = 0.5f;
+
+        if (box_center_x < pp_allow_x_min_m && box_center_x > pp_allow_x_max_m)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        if (box_center_y < pp_allow_y_min_m && box_center_y > pp_allow_y_max_m)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        if (box_z_length < box_length_thr_z)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        if (!(box_x_length >= box_length_thr_xy || box_y_length >= box_length_thr_xy))
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+#if DEBUG_PP
+        if (pp_objs_[i].track.is_ready_prediction == true)
+        {
+          std::cout << "PP_ready" << std::endl;
+        }
+#endif
       }
     }
 
