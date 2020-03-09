@@ -1,5 +1,5 @@
 #include "rmSweepingObject.h"
-#include <math.h>       /* cos */
+#include <cmath>       /* cos */
 
 
 rmSweepingObject::rmSweepingObject(std::string _path_Assets_in, std::string frame_id_in, int draw_mode_in):

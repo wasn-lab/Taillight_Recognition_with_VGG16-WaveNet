@@ -30,7 +30,7 @@ SOFTWARE.
 #include "nppi_data_exchange_and_initialization.h"
 #include "nppi_arithmetic_and_logical_operations.h"
 #include "cuda_pros_dn.h"
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 
 using namespace DriveNet_npp;
