@@ -2,7 +2,7 @@
    CREATER: ICL U300
    DATE: Aug, 2019
  */
-#include <assert.h>
+#include <cassert>
 #include "npp_wrapper_dn.h"
 #include "nppi_geometry_transforms.h"
 #include "npp.h"

@@ -1,7 +1,7 @@
 #ifndef CIRCULAR_BUFFER_VECTOR_H
 #define CIRCULAR_BUFFER_VECTOR_H
 //
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 
 // using std::vector;

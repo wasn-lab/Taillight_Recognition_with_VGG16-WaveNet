@@ -9,7 +9,7 @@
 // by Cong Ma, 2016
 //
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cfloat>  // for DBL_MAX
 #include <cmath>   // for fabs()
 #include "Hungarian.h"
