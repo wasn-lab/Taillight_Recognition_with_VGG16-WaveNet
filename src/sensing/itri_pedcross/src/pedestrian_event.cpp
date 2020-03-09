@@ -75,7 +75,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       }
 
       ros::Time msgs_timestamp = ros::Time(0);
-      if(obj.header.stamp != ros::Time(0))
+      if (obj.header.stamp != ros::Time(0))
       {
         msgs_timestamp = obj.header.stamp;
       }
@@ -313,8 +313,8 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
         probability = "C";
       }
 
-      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255),
-                  2, 4, 0);
+      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255), 2,
+                  4, 0);
     }
     else
     {
@@ -334,8 +334,8 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
         probability = "NC";
       }
 
-      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/,
-                  cv::Scalar(100, 220, 0), 2, 4, 0);
+      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+                  4, 0);
     }
 
     if (box.y >= 22)
@@ -348,8 +348,8 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
     }
 
     std::string id_print = "ID: " + std::to_string(obj.track.id % 1000);
-    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-                4, 0);
+    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+                0);
   }
   // do resize only when computer cannot support
   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
