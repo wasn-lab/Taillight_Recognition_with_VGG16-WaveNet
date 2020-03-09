@@ -15,10 +15,10 @@ private:
   cv::Mat cameraMat;
   cv::Mat distCoeff;
   cv::Size ImageSize;
-  void readCameraParameters(const char* yml_filename );
+  void readCameraParameters(const char* yml_filename);
 
 public:
-  void init(const char* camera_topic_name);
-  std::vector<int> project(double x, double y, double z);
+  void init(int camera_id);
+  std::vector<int> project(float x, float y, float z);
 };
 #endif

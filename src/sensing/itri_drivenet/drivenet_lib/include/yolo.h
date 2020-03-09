@@ -7,7 +7,7 @@
 
 #include "NvInfer.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 

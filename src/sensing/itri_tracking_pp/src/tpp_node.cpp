@@ -206,48 +206,42 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
 void TPPNode::subscribe_and_advertise_topics()
 {
-  std::string topic;
+  std::string topic = "PathPredictionOutput";
 
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: Lidar" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput/lidar";
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
   else if (in_source_ == 2)
   {
     LOG_INFO << "Input Source: Radar" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput/radar";
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
   else if (in_source_ == 3)
   {
     LOG_INFO << "Input Source: Camera" << std::endl;
     fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput/camera";
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (in_source_ == 4)
   {
     LOG_INFO << "Input Source: Virtual_abs" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else if (in_source_ == 5)
   {
     LOG_INFO << "Input Source: Virtual_rel" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else
   {
     LOG_INFO << "Input Source: Fusion" << std::endl;
     fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
 
@@ -272,17 +266,11 @@ void TPPNode::subscribe_and_advertise_topics()
     std::string topic1 = topic + "/markers";
     mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
 
-    std::string topic2 = topic + "/polygons";
-    mc_.pub_polygon = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
-
     std::string topic3 = topic + "/id";
     mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
 
     std::string topic4 = topic + "/speed";
     mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
-
-    std::string topic5 = topic + "/delay";
-    mc_.pub_delay = nh_.advertise<visualization_msgs::MarkerArray>(topic5, 2);
 
     if (mc_.show_pp >= 1 && mc_.show_pp <= 3)
     {
@@ -861,7 +849,7 @@ void TPPNode::set_ros_params()
   mc_.show_pp = (unsigned int)show_pp_int;
 
   double pp_obj_min_kmph = 0.;
-  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
+  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 10.);
   pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
 
   double pp_obj_max_kmph = 0.;

@@ -7,7 +7,7 @@
 #include "common.h"
 #include "MatrixDevice.h"
 #include "MatrixHost.h"
-#include <float.h>
+#include <cfloat>
 #include <vector>
 
 namespace gpu {

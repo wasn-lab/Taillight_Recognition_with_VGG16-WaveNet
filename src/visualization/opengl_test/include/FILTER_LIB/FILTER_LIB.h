@@ -7,7 +7,7 @@
 #define FILTER_LIB_H
 //
 #include "IIR.h"
-#include <math.h>
+#include <cmath>
 #include <vector>
 
 // using std::vector;

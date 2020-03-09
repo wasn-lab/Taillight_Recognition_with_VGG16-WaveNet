@@ -46,7 +46,7 @@ add_executable(to_dspace src/to_dspace.cpp )
 target_link_libraries(to_dspace ${catkin_LIBRARIES})
 add_dependencies(to_dspace ${catkin_EXPORTED_TARGETS})
 
-add_executable(bus_stop_info src/bus_stop_info.cpp )
+add_executable(bus_stop_info src/bus_stop_info_new.cpp )
 target_link_libraries(bus_stop_info ${catkin_LIBRARIES})
 add_dependencies(bus_stop_info ${catkin_EXPORTED_TARGETS})
 

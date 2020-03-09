@@ -10,7 +10,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <nav_msgs/Path.h>
-#include <math.h>
+#include <cmath>
 #include "astar_initial/UKF_MM_msg.h"
 
 ros::Publisher basepath_pub;
@@ -112,7 +112,9 @@ void globalpathinit()
     double yaw = seg_h[i]*RT_PI/180.0;
     double yaw_ = yaw;
     if (yaw > RT_PI)
+    {
       yaw_ = yaw - 2*RT_PI;
+    }
     tf::Quaternion lane_q;
     lane_q.setRPY( 0, 0, yaw_);
     pointmsg_.pose.pose.orientation.x = lane_q.x();
@@ -155,15 +157,21 @@ int getLocalClosestWaypoint(const autoware_msgs::Lane& waypoints, const geometry
 
     int start_index = prev_index - search_size / 2;
     if (start_index < 0)
+    {
       start_index = start_index + read_index;
+    }
 
     // get closest waypoint in neighborhood waypoints
     closest_local_index_ = start_index + getClosestWaypoint(local_waypoints_, pose);
     // std::cout << "closest_local_index0_ : " << closest_local_index_ << std::endl;
     if (closest_local_index_ >= read_index)
+    {
       closest_local_index_ = closest_local_index_ - read_index;
+    }
     if (closest_local_index_ < 0)
+    {
       closest_local_index_ = closest_local_index_ + read_index;
+    }
   }
   return closest_local_index_;
 }
@@ -186,9 +194,13 @@ void basepathgen_pub(int closet_i)
   {
     int j = i + closet_i;
     if (j >= read_index)
+    {
       j = j - read_index;
+    }
     if (j < 0)
+    {
       j = j + read_index;
+    }
     // pointmsg.pose.pose.position.x = seg_x[j];
     // pointmsg.pose.pose.position.y = seg_y[j];
     // pointmsg.pose.pose.position.z = seg_z[j];
@@ -229,13 +241,17 @@ void basepathgen_pub_30(int closet_i)
   Dpath.header.frame_id = "map";
   Dpose.header.frame_id = "map";
 
-  for (int i = closet_local_start_i - 3; i < 42; i++)
+  for (int i = closet_local_start_i - 3; i < 66; i++)
   {
     int j = i + closet_i;
     if (j >= read_index)
+    {
       j = j - read_index;
+    }
     if (j < 0)
+    {
       j = j + read_index;
+    }
 
     Dpose.pose = waypoints_init.waypoints[j].pose.pose;
     Dpath.poses.push_back(Dpose);
@@ -256,9 +272,13 @@ void localpathgen(int closet_i)
   {
     int j = i + closet_i;
     if (j >= read_index)
+    {
       j = j - read_index;
+    }
     if (j < 0)
+    {
       j = j + read_index;
+    }
     // pointmsg.pose.pose.position.x = seg_x[j];
     // pointmsg.pose.pose.position.y = seg_y[j];
     // pointmsg.pose.pose.position.z = seg_z[j];
@@ -328,21 +348,31 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
   int obswaypoints_data = std::ceil(obsdismsg->data);// + wheel_dis);
   // std::cout << "obswaypoints_data : " << obswaypoints_data << std::endl;
   if (obswaypoints_data > 30 || obswaypoints_data <= 3.8)
+  {
     obswaypoints_data = -1;
+  }
   int obswaypoints_data_ = obswaypoints_data;
 
   ///////////////////////////////////////////////////////////////////
   if (obswaypoints_data <= pre_obswaypoints_data + 1 && obswaypoints_data >= pre_obswaypoints_data)
+  {
     obs_index += 1;
+  }
   else
+  {
     obs_index = 0;
+  }
 
-  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && 
+  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && ///////////////---------------------------------
+  {
     obswaypoints_data_ = -1;
-  if (avoid_flag != 0 && obs_index < 4) //
+  }
+  if (avoid_flag != 0 && obs_index < 4)
+  {
     obswaypoints_data_ = -1;
+  }
 
-  // if there has state machine
+  // if there has state machine ///////////////---------------------------------
   // if (obs_index < 4) //
   //   obswaypoints_data_ = -1;
 
@@ -359,18 +389,26 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 {
   int obswaypoints_data_base = std::ceil(obsdismsg_base->data);// + wheel_dis);
   // std::cout << "obswaypoints_data_base : " << obswaypoints_data_base << std::endl;
-  if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10) /////////////////////////////////
+  if (obswaypoints_data_base > 40 || obswaypoints_data_base <= 10) ///////////////////////
+  {
     obswaypoints_data_base = -1;
+  }
   int obswaypoints_data_base_ = 0;
 
   ///////////////////////////////////////////////////////////////////
   if (obswaypoints_data_base == -1)
+  {
     obs_index_base += 1;
+  }
   else
+  {
     obs_index_base = 0;
+  }
 
   if (obs_index_base > 10)
+  {
     obswaypoints_data_base_ = -1;
+  }
 
   ///////////////////////////////////////////////////////////////////
 
@@ -384,7 +422,9 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 void ukfmmCallback(const astar_initial::UKF_MM_msg::ConstPtr& ukfmmmsg)
 {
   if (ukfmmmsg->seg_id_near > 4 && ukfmmmsg->seg_id_near < 301)
+  {
     enable_avoid = false;
+  }
   else
   {
     enable_avoid = true;
