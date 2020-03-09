@@ -70,18 +70,20 @@ public:
   float predict_rf_pose(cv::Mat input_data);
   bool too_far(const msgs::BoxPoint box_point);
   void draw_pedestrians(cv::Mat matrix);
+  void process_objs(msgs::DetectedObject& obj, cv::Mat matrix, ros::Time timestamp, int num_openpose);
 
   // OpenPose components
   int openPoseROS();
   std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
   bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr);
-  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
-  openpose_ros::OpenPose openPose;
+  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image, int num_openpose);
+  openpose_ros::OpenPose openPose[4];
   cv::dnn::Net net_openpose;
 
   // All buffer components
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
   std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
+  std::vector<msgs::PedObject> pedObjs;
   Buffer buffer;
   int buffer_size = 60;
 

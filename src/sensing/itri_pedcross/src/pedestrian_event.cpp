@@ -42,12 +42,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 // std::cout << "time stamp: " << msg->header.stamp << " buffer size: " << imageCache.size() << std::endl;
 #endif
 
+    // Get raw image
     cv::Mat matrix;
     cv::Mat matrix2;
-    ros::Time frame_timestamp = ros::Time(0);
-
-    std::vector<msgs::PedObject> pedObjs;
-    pedObjs.reserve(msg->objects.end() - msg->objects.begin());
+    ros::Time msgs_timestamp = ros::Time(0);
     for (auto const& obj : msg->objects)
     {
       if (obj.classId != 1 || too_far(obj.bPoint))
@@ -55,26 +53,12 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         continue;
       }
 
-      // set msg infomation
-      msgs::PedObject obj_pub;
-      obj_pub.header = obj.header;
-      obj_pub.header.frame_id = obj.header.frame_id;
-      obj_pub.header.stamp = obj.header.stamp;
-      obj_pub.classId = obj.classId;
-      obj_pub.camInfo = obj.camInfo;
-      obj_pub.bPoint = obj.bPoint;
-      obj_pub.track.id = obj.track.id;
-#if USE_GLOG
-      std::cout << "Track ID: " << obj.track.id << std::endl;
-#endif
-
       // Check object source is camera
-      if (obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0)
+      if (obj.camInfo.u == 0 && obj.camInfo.v == 0)
       {
         continue;
       }
 
-      ros::Time msgs_timestamp = ros::Time(0);
       if (obj.header.stamp != ros::Time(0))
       {
         msgs_timestamp = obj.header.stamp;
@@ -84,126 +68,39 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         msgs_timestamp = msg->header.stamp;
       }
 
-      // Only first object need to check raw image
-      if (frame_timestamp == ros::Time(0))
+      // compare and get the raw image
+      for (int i = imageCache.size() - 1; i >= 0; i--)
       {
-        // compare and get the raw image
-        for (int i = imageCache.size() - 1; i >= 0; i--)
+        if (imageCache[i].first <= msgs_timestamp || i == 0)
         {
-          if (imageCache[i].first <= msgs_timestamp || i == 0)
-          {
 #if USE_GLOG
-            std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << msgs_timestamp << std::endl;
+          std::cout << "GOT CHA !!!!! time: " << imageCache[i].first << " , " << msgs_timestamp << std::endl;
 #endif
-
-            matrix = imageCache[i].second;
-            // for drawing bbox and keypoints
-            matrix.copyTo(matrix2);
-            frame_timestamp = msgs_timestamp;
-            break;
-          }
+          matrix = imageCache[i].second;
+          // for drawing bbox and keypoints
+          matrix.copyTo(matrix2);
+          break;
         }
       }
+    }
 
-      // resize from 1920*1208 to 608*384
-      obj_pub.camInfo.u *= scaling_ratio_width;
-      obj_pub.camInfo.v *= scaling_ratio_height;
-      obj_pub.camInfo.width *= scaling_ratio_width;
-      obj_pub.camInfo.height *= scaling_ratio_height;
+    int num_openpose = 0;
+    pedObjs.reserve(msg->objects.end() - msg->objects.begin());
+    // Start to process each detected object
+    for (auto const& obj : msg->objects)
+    {
+      if (obj.classId != 1 || too_far(obj.bPoint))
+      {  // 1 for people
+        continue;
+      }
 
-      // Avoid index out of bounds
-      if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+      std::thread t(bind(&PedestrianEvent::process_objs, this, obj, matrix, msgs_timestamp, num_openpose));
+      t.join();
+      num_openpose++;
+      if (num_openpose == 4)
       {
-        obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+        num_openpose = 0;
       }
-      if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
-      {
-        obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
-      }
-
-#if USE_GLOG
-      std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
-                << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
-                << std::endl;
-#endif
-
-      // crop image for openpose
-      cv::Mat cropedImage =
-          matrix(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
-
-      // set size to resize cropped image for openpose
-      // max pixel of width or height can only be 368
-      int max_pixel = 368;
-      float aspect_ratio = 0.0;
-      int resize_height_to = 0;
-      int resize_width_to = 0;
-      if (cropedImage.cols >= cropedImage.rows)
-      {  // width larger than height
-        if (cropedImage.cols > max_pixel)
-        {
-          resize_width_to = max_pixel;
-        }
-        else
-        {
-          resize_width_to = cropedImage.cols;
-        }
-        resize_width_to = max_pixel;  // force to max pixel
-        aspect_ratio = (float)cropedImage.rows / (float)cropedImage.cols;
-        resize_height_to = int(aspect_ratio * resize_width_to);
-      }
-      else
-      {  // height larger than width
-        if (cropedImage.rows > max_pixel)
-        {
-          resize_height_to = max_pixel;
-        }
-        else
-        {
-          resize_height_to = cropedImage.rows;
-        }
-        resize_height_to = max_pixel;  // force to max pixel
-        aspect_ratio = (float)cropedImage.cols / (float)cropedImage.rows;
-        resize_width_to = int(aspect_ratio * resize_height_to);
-      }
-      cv::resize(cropedImage, cropedImage, cv::Size(resize_width_to, resize_height_to));
-
-      std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
-
-      bool has_keypoint = false;
-      int count_points = 0;
-      int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-      unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
-      for (unsigned int i = 0; i < body_part_size; i++)
-      {
-        if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
-        {
-          count_points++;
-          if (count_points >= 3)
-          {
-            has_keypoint = true;
-          }
-        }
-      }
-      if (has_keypoint)
-      {
-        obj_pub.crossProbability =
-            crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                             obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp);
-      }
-      else
-      {
-        /*
-                  std::vector<cv::Point2f> no_keypoint;
-                  obj_pub.crossProbability =
-                      crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                        obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
-            msg->header.stamp);
-        */
-      }
-      pedObjs.push_back(obj_pub);
-
-      // buffer for draw function
-      objs_and_keypoints.push_back({ obj_pub, keypoints });
     }
 
     if (!pedObjs.empty())  // do things only when there is pedestrian
@@ -219,6 +116,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       draw_pedestrians(matrix2);
       matrix2 = 0;
     }
+    pedObjs.clear();
 #if USE_GLOG
     stop = ros::Time::now();
     total_time += stop - start;
@@ -226,6 +124,128 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
   }
+}
+
+void PedestrianEvent::process_objs(msgs::DetectedObject& obj, cv::Mat matrix, ros::Time timestamp, int num_openpose)
+{
+  // set msg infomation
+  msgs::PedObject obj_pub;
+  obj_pub.header = obj.header;
+  obj_pub.header.frame_id = obj.header.frame_id;
+  obj_pub.header.stamp = obj.header.stamp;
+  obj_pub.classId = obj.classId;
+  obj_pub.camInfo = obj.camInfo;
+  obj_pub.bPoint = obj.bPoint;
+  obj_pub.track.id = obj.track.id;
+#if USE_GLOG
+  std::cout << "Track ID: " << obj.track.id << std::endl;
+#endif
+
+  // Check object source is camera
+  if (obj_pub.camInfo.u == 0 && obj_pub.camInfo.v == 0)
+  {
+    return;
+  }
+
+  // resize from 1920*1208 to 608*384
+  obj_pub.camInfo.u *= scaling_ratio_width;
+  obj_pub.camInfo.v *= scaling_ratio_height;
+  obj_pub.camInfo.width *= scaling_ratio_width;
+  obj_pub.camInfo.height *= scaling_ratio_height;
+
+  // Avoid index out of bounds
+  if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+  {
+    obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+  }
+  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
+  {
+    obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+  }
+
+#if USE_GLOG
+  std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
+            << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
+            << std::endl;
+#endif
+
+  // crop image for openpose
+  cv::Mat cropedImage =
+      matrix(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+
+  // set size to resize cropped image for openpose
+  // max pixel of width or height can only be 368
+  int max_pixel = 368;
+  float aspect_ratio = 0.0;
+  int resize_height_to = 0;
+  int resize_width_to = 0;
+  if (cropedImage.cols >= cropedImage.rows)
+  {  // width larger than height
+    if (cropedImage.cols > max_pixel)
+    {
+      resize_width_to = max_pixel;
+    }
+    else
+    {
+      resize_width_to = cropedImage.cols;
+    }
+    resize_width_to = max_pixel;  // force to max pixel
+    aspect_ratio = (float)cropedImage.rows / (float)cropedImage.cols;
+    resize_height_to = int(aspect_ratio * resize_width_to);
+  }
+  else
+  {  // height larger than width
+    if (cropedImage.rows > max_pixel)
+    {
+      resize_height_to = max_pixel;
+    }
+    else
+    {
+      resize_height_to = cropedImage.rows;
+    }
+    resize_height_to = max_pixel;  // force to max pixel
+    aspect_ratio = (float)cropedImage.cols / (float)cropedImage.rows;
+    resize_width_to = int(aspect_ratio * resize_height_to);
+  }
+  cv::resize(cropedImage, cropedImage, cv::Size(resize_width_to, resize_height_to));
+
+  std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage, num_openpose);
+
+  bool has_keypoint = false;
+  int count_points = 0;
+  int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+  unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
+  for (unsigned int i = 0; i < body_part_size; i++)
+  {
+    if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
+    {
+      count_points++;
+      if (count_points >= 3)
+      {
+        has_keypoint = true;
+      }
+    }
+  }
+  if (has_keypoint)
+  {
+    obj_pub.crossProbability =
+        crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                          obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, timestamp);
+  }
+  else
+  {
+    /*
+              std::vector<cv::Point2f> no_keypoint;
+              obj_pub.crossProbability =
+                  crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                                    obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
+        msg->header.stamp);
+    */
+  }
+  pedObjs.push_back(obj_pub);
+
+  // buffer for draw function
+  objs_and_keypoints.push_back({ obj_pub, keypoints });
 }
 
 void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
@@ -637,7 +657,7 @@ void PedestrianEvent::pedestrian_event()
 }
 
 // return 25 keypoints detected by openpose
-std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_image)
+std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_image, int num_openpose)
 {
 #if USE_GLOG
   ros::Time timer = ros::Time::now();
@@ -649,9 +669,9 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
   float height = input_image.rows;
 
   std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datumToProcess = createDatum(input_image);
-  bool successfullyEmplaced = openPose.waitAndEmplace(datumToProcess);
+  bool successfullyEmplaced = openPose[num_openpose].waitAndEmplace(datumToProcess);
   std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datumProcessed;
-  if (successfullyEmplaced && openPose.waitAndPop(datumProcessed))
+  if (successfullyEmplaced && openPose[num_openpose].waitAndPop(datumProcessed))
   {
     // display(datumProcessed);
     if (datumProcessed != nullptr && !datumProcessed->empty())
@@ -681,7 +701,7 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
   }
 
 #if USE_GLOG
-  std::cout << "Openpose time cost: " << ros::Time::now() - timer << std::endl;
+  std::cout << "Openpose["<<num_openpose<<"] time cost: " << ros::Time::now() - timer << std::endl;
 #endif
 
   for (int i = 0; i < 25; i++)
@@ -734,7 +754,10 @@ int PedestrianEvent::openPoseROS()
   op::Profiler::setDefaultX(FLAGS_profile_speed);
 
   op::opLog("Starting pose estimation thread(s)", op::Priority::High);
-  openPose.start();
+  for(int i = 0; i < 4; i++)
+  {
+    openPose[i].start();
+  }
 
   return 0;
 }
