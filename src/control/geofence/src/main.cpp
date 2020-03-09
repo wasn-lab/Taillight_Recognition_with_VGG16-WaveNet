@@ -48,11 +48,11 @@
 //#define TRACKINGBOX
 
 
-static Geofence PCloud_Geofence;
-static Geofence BBox_Geofence;
-static Geofence Radar_Geofence;
-static Geofence PCloud_Geofence_original;
-static double Heading, SLAM_x, SLAM_y;
+static Geofence PCloud_Geofence(1.2);
+static Geofence BBox_Geofence(1.2);
+static Geofence Radar_Geofence(1.5);
+static Geofence PCloud_Geofence_original(1.2);
+static double Heading, SLAM_x, SLAM_y, SLAM_z;
 //static uint Deadend_flag;
 static uint overtake_over_flag;
 ros::Publisher Radar_marker;
@@ -63,6 +63,7 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
 	Heading = LTVmsg->heading;
 	SLAM_x = LTVmsg->x;
 	SLAM_y = LTVmsg->y;
+	SLAM_z = LTVmsg->z;
 }
 
 /*
@@ -233,7 +234,7 @@ void Publish_Marker_Radar(double X, double Y)
 
 	marker.pose.position.x = X;
     marker.pose.position.y = Y;
-    marker.pose.position.z = -3.0;  // Set pooint to groud in /map frame
+    marker.pose.position.z = SLAM_z-2;  // Set pooint to groud in /map frame
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
@@ -258,7 +259,7 @@ void Plot_geofence(Point temp)
 
 	visualization_msgs::Marker line_list;
   	line_list.header.frame_id = "/map";
-  	//line_list.header.stamp = ros::Time::now();
+  	line_list.header.stamp = ros::Time::now();
 	line_list.ns = "PC_line";
 	line_list.lifetime = ros::Duration(0.5);
     line_list.action = visualization_msgs::Marker::ADD;
@@ -267,15 +268,17 @@ void Plot_geofence(Point temp)
     line_list.type = visualization_msgs::Marker::LINE_LIST;
 	line_list.scale.x = 0.1;
 	line_list.color.r = 1.0;
+	line_list.color.g = 0.0;
   	line_list.color.a = 1.0;
 
 	geometry_msgs::Point p;
-    p.x = temp.X + 1.5*sin(temp.Speed);
-    p.y = temp.Y + 1.5*cos(temp.Speed);
-    p.z = -3.0;
+    p.x = temp.X + 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y + 1.5*sin(temp.Direction-M_PI/2);
+    p.z = SLAM_z-2.0;
 	line_list.points.push_back(p);
-	p.x = temp.X - 1.5*sin(temp.Speed);
-    p.y = temp.Y - 1.5*cos(temp.Speed);
+	p.x = temp.X - 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y - 1.5*sin(temp.Direction-M_PI/2);
+	p.z = SLAM_z-2.0;
 	line_list.points.push_back(p);	
 	Geofence_line.publish(line_list); 
 }
@@ -296,7 +299,8 @@ int main(int argc, char **argv){
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	//ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
-	ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+	ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
+	//ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
 	ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 	
 	#ifdef VIRTUAL
@@ -354,7 +358,10 @@ int main(int argc, char **argv){
 			std_msgs::Float64 Geofence_temp;
 			Geofence_temp.data = PCloud_Geofence.getDistance_w();
 			Geofence_PC.publish(Geofence_temp);
-			Plot_geofence(PCloud_Geofence.findDirection());  
+			if(PCloud_Geofence.getDistance()<80)
+			{
+				Plot_geofence(PCloud_Geofence.findDirection());  
+			}
 		}
 		else{
 			cerr << "Please initialize all PCloud parameters first" << endl;

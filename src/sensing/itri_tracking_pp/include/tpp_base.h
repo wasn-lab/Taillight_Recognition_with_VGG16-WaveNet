@@ -141,13 +141,11 @@ struct PoseRPY32
 struct MarkerConfig
 {
   ros::Publisher pub_bbox;
-  ros::Publisher pub_polygon;
   ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
   ros::Publisher pub_speed;
-  ros::Publisher pub_delay;
 
   double lifetime_sec = 0.1;
   double module_pubtime_sec = 0.;
