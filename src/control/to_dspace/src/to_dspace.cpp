@@ -13,6 +13,8 @@ const double NumOfID = 5;
 #include "msgs/PointXYZ.h"
 #include "msgs/PointXYZV.h"
 #include "msgs/TrackInfo.h"
+#include "msgs/DetectedLight.h"
+#include "msgs/DetectedLightArray.h"
 #include <iostream>
 #include <cstdlib>
 #include "ros/ros.h"
@@ -143,8 +145,7 @@ void chatterCallback_01(const msgs::DetectedObjectArray::ConstPtr& msg)
 					
 	}
 	close(s);
-	
-	//printf("Wrote %d bytes\n", nbytes);
+	printf("Wrote %d bytes\n", nbytes);
 	//Close the SocketCAN
 
 }
@@ -185,8 +186,7 @@ void chatterCallback_02(const std_msgs::Bool::ConstPtr& msg)
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	cout << "Driving state: " << int(msg->data) << endl;
 	close(s);
-	
-	//printf("Wrote %d bytes\n", nbytes);
+	printf("Wrote %d bytes\n", nbytes);
 	//Close the SocketCAN
 
 }
@@ -227,8 +227,63 @@ void chatterCallback_03(const std_msgs::Bool::ConstPtr& msg)
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	cout << "System ready: " << int(msg->data) << endl;
 	close(s);
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+
+}
+
+void chatterCallback_04(const msgs::DetectedLightArray::ConstPtr& msg)
+{
+	uint color_temp=100;
+	uint direction_temp=100;
+	float distance_temp=2000;
+
+	for(uint i=0;i<msg->lights.size();i++)
+	{
+		if(msg->lights[i].distance<distance_temp)
+		{
+			color_temp = msg->lights[i].color_light;
+			direction_temp = msg->lights[i].direction;
+		}
+	}
+
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
 	
-	//printf("Wrote %d bytes\n", nbytes);
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x061;
+	frame.data[0] = (short int)(color_temp);
+	frame.data[1] = (short int)(color_temp)>>8;
+	frame.data[2] = (short int)(direction_temp);
+	frame.data[3] = (short int)(direction_temp)>>8;
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	cout << "Light sign: " << int(color_temp) << endl;
+	cout << "Direction: " << int(direction_temp) << endl;
+	close(s);
+	printf("Wrote %d bytes\n", nbytes);
 	//Close the SocketCAN
 
 }
@@ -241,6 +296,7 @@ int main(int argc, char **argv)
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
   ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
+  ros::Subscriber dSPACE_subscriber_04 = n.subscribe("LightResultOutput", 1, chatterCallback_04);
   ros::spin();
   return 0;
 }

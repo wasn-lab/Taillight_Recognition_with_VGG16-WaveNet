@@ -9,15 +9,27 @@
 # /points_map
 
 # Raw image
-/cam/F_right
-/cam/F_center
-/cam/F_left
-/cam/F_top
-/cam/R_front
-/cam/R_rear
-/cam/L_front
-/cam/L_rear
-/cam/B_top
+#-- 9-camera version
+# /cam/F_right
+# /cam/F_center
+# /cam/F_left
+# /cam/F_top
+# /cam/R_front
+# /cam/R_rear
+# /cam/L_front
+# /cam/L_rear
+# /cam/B_top
+
+#-- 8-camera version
+/cam/front_bottom_60
+/cam/front_top_close_120
+/cam/front_top_far_30
+/cam/left_back_60
+/cam/left_front_60
+/cam/right_back_60
+/cam/right_front_60
+/cam/back_top_120
+
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -30,15 +42,29 @@
 # /cam/L_rear/detect_image
 # /cam/B_top/detect_image
 
-/CamObjFrontRight
-/CamObjFrontCenter
-/CamObjFrontLeft
-/CamObjFrontTop
-/CamObjRightFront
-/CamObjRightBack
-/CamObjLeftFront
-/CamObjLeftBack
-/CamObjBackTop
+# bbox
+#-- 9-camera version
+# /CamObjFrontRight
+# /CamObjFrontCenter
+# /CamObjFrontLeft
+# /CamObjFrontTop
+# /CamObjRightFront
+# /CamObjRightBack
+# /CamObjLeftFront
+# /CamObjLeftBack
+# /CamObjBackTop
+
+#-- 8-camera version
+/cam_obj/front_bottom_60
+/cam_obj/front_top_close_120
+/cam_obj/front_top_far_30
+/cam_obj/left_back_60
+/cam_obj/left_front_60
+/cam_obj/right_back_60
+/cam_obj/right_front_60
+/cam_obj/back_top_120
+#
+
 # Camera polygon
 /CameraDetection/polygon
 
@@ -47,6 +73,7 @@
 /localization_to_veh
 /dynamic_path_para
 /imu_data
+/imu_data_rad 
 /Path
 /Flag_Info01
 /Flag_Info02
@@ -103,8 +130,16 @@
 /node_trace/all_alive
 /REC/is_recording
 /backend/connected
-/mileage/brake_status
+# /mileage/brake_status
+/mileage/brake_event
 /localization_state
+# Module run state
+/mileage/Xbywire_run
+/mileage/AEB_run
+/mileage/ACC_run
 
 # pedcross
 /PedCross/Pedestrians
+
+# Traffic light
+/LightResultOutput

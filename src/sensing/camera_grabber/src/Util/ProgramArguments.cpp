@@ -31,8 +31,7 @@
 #include "ProgramArguments.hpp"
 
 #include <sstream>
-#include <string>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 std::string ProgramArguments::m_empty("");
@@ -42,7 +41,9 @@ ProgramArguments::ProgramArguments(int argc, const char** argv, const std::vecto
   : ProgramArguments(options)
 {
   if (description)
+  {
     setDescription(description);
+  }
 
   arguments.insert({ "profiling", Option_t("profiling", "1", "Enables/disables sample profiling") });
 
@@ -157,14 +158,18 @@ const std::string& ProgramArguments::get(const char* name) const
     return ProgramArguments::m_empty;
   }
   else
+  {
     return it->second.value;
+  }
 }
 
 bool ProgramArguments::has(const char* name) const
 {
   auto it = arguments.find(name);
   if (it == arguments.end())
+  {
     return false;
+  }
 
   return !it->second.value.empty();
 }
@@ -172,7 +177,9 @@ bool ProgramArguments::has(const char* name) const
 bool ProgramArguments::enabled(const char* name) const
 {
   if (!has(name))
+  {
     return false;
+  }
   return (get(name) == "1" || get(name) == "true");
 }
 
@@ -180,14 +187,18 @@ void ProgramArguments::addOption(const Option_t& newOption)
 {
   auto it = arguments.insert({ newOption.option, newOption });
   if (!it.second)
+  {
     throw std::runtime_error(std::string("ProgramArguments already contains the new option: ") + newOption.option);
+  }
 }
 
 void ProgramArguments::set(const char* option, const char* value)
 {
   auto it = arguments.find(option);
   if (it == arguments.end())
+  {
     throw std::runtime_error(std::string("ProgramArguments: tried to set an option that doesn't exist. ") + option);
+  }
   it->second.value = value;
 }
 
@@ -205,7 +216,9 @@ void ProgramArguments::printHelp() const
   }
 
   if (!m_description.empty())
+  {
     std::cout << m_description << std::endl;
+  }
 
   std::stringstream ss;
 
@@ -214,10 +227,14 @@ void ProgramArguments::printHelp() const
     auto& option = arg.second;
     ss << "--" << option.option << ": ";
     if (option.required)
+    {
       ss << "required, ";
+    }
     ss << "default=" << option.default_value;
     if (!option.help.empty())
+    {
       ss << "\n    " << option.help;
+    }
     ss << "\n";
   }
 
@@ -245,7 +262,9 @@ std::string ProgramArguments::parameterString() const
   for (auto arg : arguments)
   {
     if (!first)
+    {
       list << ",";
+    }
     list << arg.first << "=" << arg.second.value;
     first = false;
   }

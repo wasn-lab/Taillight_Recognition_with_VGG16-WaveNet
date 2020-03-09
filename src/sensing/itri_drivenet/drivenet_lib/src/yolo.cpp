@@ -80,9 +80,13 @@ Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferPara
 Yolo::~Yolo()
 {
   for (auto& tensor : m_OutputTensors)
+  {
     NV_CUDA_CHECK(cudaFreeHost(tensor.hostBuffer));
+  }
   for (auto& deviceBuffer : m_DeviceBuffers)
+  {
     NV_CUDA_CHECK(cudaFree(deviceBuffer));
+  }
   NV_CUDA_CHECK(cudaStreamDestroy(m_CudaStream));
   if (m_Context)
   {
@@ -133,7 +137,9 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
   nvinfer1::Weights divWeights{ nvinfer1::DataType::kFLOAT, nullptr, static_cast<int64_t>(m_InputSize) };
   float* divWt = new float[m_InputSize];
   for (uint w = 0; w < m_InputSize; ++w)
+  {
     divWt[w] = 255.0;
+  }
   divWeights.values = divWt;
   trtWeights.push_back(divWeights);
   nvinfer1::IConstantLayer* constDivide = m_Network->addConstant(divDims, divWeights);
@@ -265,7 +271,9 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
       std::cout << "Anchors are being converted to network input resolution i.e. Anchors x " << curRegionTensor.stride
                 << " (stride)" << std::endl;
       for (auto& anchor : curRegionTensor.anchors)
+      {
         anchor *= curRegionTensor.stride;
+      }
       ++outputTensorCount;
     }
     else if (m_configBlocks.at(i).at("type") == "reorg")
@@ -398,14 +406,18 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
                    "file."
                 << std::endl;
       if (!removeFile(m_EnginePath))
+      {
         assert("Couldn't remove Engine file.");
+      }
       if (m_Engine)
       {
         m_Engine->destroy();
         m_Engine = nullptr;
       }
       if (m_PluginFactory)
+      {
         m_PluginFactory->destroy();
+      }
     }
     else if (!m_Engine)
     {
@@ -417,7 +429,9 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
       std::cout << "Using previously generated plan file located at " << m_EnginePath << std::endl;
       m_Engine = nullptr;
       if (m_PluginFactory)
+      {
         m_PluginFactory->destroy();
+      }
       destroyNetworkUtils(trtWeights);
       return;
     }
@@ -506,9 +520,13 @@ std::vector<std::map<std::string, std::string>> Yolo::parseConfigFile(const std:
   while (getline(file, line))
   {
     if (line.size() == 0)
+    {
       continue;
+    }
     if (line.front() == '#')
+    {
       continue;
+    }
     line = trim(line);
     if (line.front() == '[')
     {
@@ -647,19 +665,29 @@ bool Yolo::verifyYoloEngine()
 void Yolo::destroyNetworkUtils(std::vector<nvinfer1::Weights>& trtWeights)
 {
   if (m_Network)
+  {
     m_Network->destroy();
+  }
   if (m_Engine)
+  {
     m_Engine->destroy();
+  }
   if (m_Builder)
+  {
     m_Builder->destroy();
+  }
   if (m_ModelStream)
+  {
     m_ModelStream->destroy();
+  }
 
   // deallocate the weights
   for (uint i = 0; i < trtWeights.size(); ++i)
   {
     if (trtWeights[i].count > 0)
+    {
       free(const_cast<void*>(trtWeights[i].values));
+    }
   }
 }
 
@@ -682,4 +710,4 @@ void Yolo::writePlanFileToDisk()
 
   std::cout << "Serialized plan file cached at location : " << m_EnginePath << std::endl;
 }
-}
+} // namespace DriveNet

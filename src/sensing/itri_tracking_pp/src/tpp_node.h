@@ -46,11 +46,6 @@ private:
   std::vector<msgs::DetectedObject> pp_objs_;
   std::vector<std::vector<PPLongDouble> > ppss;
 
-#if FPS_EXTRAPOLATION
-  std::vector<MyPoint32> box_centers_kalman_rel_;
-  std::vector<MyPoint32> box_centers_kalman_next_rel_;
-#endif
-
 #if VIRTUAL_INPUT
   double gt_x_ = 0.;
   double gt_y_ = 0.;
@@ -135,10 +130,6 @@ private:
                   const float time_offset);
 #if TO_GRIDMAP
   void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs);
-#endif
-#if FPS_EXTRAPOLATION
-  void publish_pp_extrapolation(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
-                                std::vector<MyPoint32> box_centers_rel, std::vector<MyPoint32> box_centers_next_rel);
 #endif
 
   void set_ros_params();

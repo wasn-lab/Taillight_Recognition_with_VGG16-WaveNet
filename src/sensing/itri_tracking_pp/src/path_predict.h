@@ -43,14 +43,29 @@ public:
     input_shift_m_ = shift_m;
   }
 
+  void set_pp_obj_min_kmph(const double pp_obj_min_kmph)
+  {
+    pp_obj_min_kmph_ = pp_obj_min_kmph;
+  }
+
+  void set_pp_obj_max_kmph(const double pp_obj_max_kmph)
+  {
+    pp_obj_max_kmph_ = pp_obj_max_kmph;
+  }
+
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
   unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
-  const std::size_t num_pp_input_min_ = 6;
+  const std::size_t num_pp_input_min_ = 10;
   const std::size_t num_pp_input_max_ = 20;
+
+  static constexpr float pp_allow_x_min_m = -10.f;
+  static constexpr float pp_allow_x_max_m = 100.f;
+  static constexpr float pp_allow_y_min_m = -30.f;
+  static constexpr float pp_allow_y_max_m = 30.f;
 
   float ego_x_abs_ = 0.f;
   float ego_y_abs_ = 0.f;
@@ -63,6 +78,9 @@ private:
   // set input_shift_m_ large enough to ensure all input data and pp points far from (0, 0)
   // warning: near 0 would distord pp results
   long double input_shift_m_ = 0.;
+
+  double pp_obj_min_kmph_ = 0.;
+  double pp_obj_max_kmph_ = 1000.;
 
   float confidence_thr_ = 0.f;
 

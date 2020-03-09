@@ -12,7 +12,9 @@ TegraAGrabber::TegraAGrabber()
   , display_(&camera_buffer_)
   , grabber(nullptr)
   , npp8u_ptrs_(cam_ids_.size())
-  , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
+             camera::image_width)  // 1208,1920 to 384,608
+  , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
   , ros_image(n)
 {
   InitParameters();
@@ -32,7 +34,7 @@ TegraAGrabber::~TegraAGrabber()
   if (grabber != nullptr)
   {
     delete grabber;
-    printf("grabber DELETED OK!\n");
+    std::cout << "grabber DELETED OK!\n" << std::endl;
   }
   for (size_t i = 0; i < cam_ids_.size(); i++)
   {
@@ -40,19 +42,19 @@ TegraAGrabber::~TegraAGrabber()
   }
 }
 
-void TegraAGrabber::initializeModules()
+void TegraAGrabber::initializeModules(const bool do_resize)
 {
-  for (size_t i = 0; i < cam_ids_.size(); ++i)
+  for (const auto cam_id : cam_ids_)
   {
-    const int cam_id = cam_ids_[i];
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
   }
 
-  grabber = new MultiGMSLCameraGrabber("011100000000");
+  grabber = new MultiGMSLCameraGrabber("001100000000");
   grabber->initializeCameras();
   camera_buffer_.initBuffer();
+  resize_ = do_resize;
 
-  printf("init done!\n");
+  std::cout << "init done!\n" << std::endl;
 }
 
 bool TegraAGrabber::runPerception()
@@ -72,22 +74,39 @@ bool TegraAGrabber::runPerception()
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[1], grabber->getCurrentFrameData(1),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
-    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(2),
-               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    // cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(2),
+    //            MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
     // start image processing
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[0]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[0]);
-    resizer_.resize(npp8u_ptrs_[0], canvas[0]);
+    if (resize_)
+    {
+      resizer_.resize(npp8u_ptrs_[0], canvas[0]);
+    }
+    else
+    {
+      npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[0], num_src_bytes_, canvas[0], camera::raw_image_height,
+                                      camera::raw_image_width);
+    }
 
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[1]),
                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[1]);
-    resizer_.resize(npp8u_ptrs_[1], canvas[1]);
+    if (resize_)
+    {
+      resizer_.resize(npp8u_ptrs_[1], canvas[1]);
+    }
+    else
+    {
+      npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[1], num_src_bytes_, canvas[1], camera::raw_image_height,
+                                      camera::raw_image_width);
+    }
 
-    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
-                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
-    resizer_.resize(npp8u_ptrs_[2], canvas[2]);
-
+    // npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
+    //                                 camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
+    // if (_resize){
+    //     resizer_.resize(npp8u_ptrs_[2], canvas[2]);
+    // }
 
     // end image processing
 
@@ -105,4 +124,4 @@ bool TegraAGrabber::runPerception()
 
   return true;
 }
-}
+}  // namespace SensingSubSystem

@@ -23,6 +23,7 @@ gmon.out
 *.dgpu
 *.npy
 *.pb
+src/sensing/itri_drivenet/drivenet/data/alignment/
 src/sensing/itri_lidarnet/libs/TensorFlow/Installed/
 src/sensing/itri_parknet/weights/
 src/sensing/itri_openroadnet/libs_opn/TensorFlow/so_x86_64/
@@ -42,3 +43,5 @@ src/sensing/itri_pedcross/models/
 src/sensing/itri_pedcross/openpose/
 src/bags/
 src/dl_data/assets/
+
+src/sensing/itri_lidarnet/lidars_grabber/src/UI/Makefile

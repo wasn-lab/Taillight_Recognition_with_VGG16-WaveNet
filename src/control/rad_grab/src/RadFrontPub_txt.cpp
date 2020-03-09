@@ -3,13 +3,13 @@
 #include "std_msgs/String.h"
 #include "msgs/Rad.h"
 #include "msgs/PointXYZV.h"
-#include <string.h>
-#include <math.h>
+#include <cstring>
+#include <cmath>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -132,25 +132,41 @@ void delphi_radar_parsing(uint8_t data[8], float *x, float *y, float *z, float *
 
     sign = data[1] & 0x10;
     if (sign == 0)
-        sign = 1;
+    {
+      sign = 1;
+    }
     else
-        sign = -1;
+    {
+      sign = -1;
+    }
     Angle = ((data[1] & 0x0f) << 5) | (data[2] >> 3);
     if (sign == 1)
-        fAngle = Angle * 0.1;
+    {
+      fAngle = Angle * 0.1;
+    }
     else
-        fAngle = Angle * 0.1 - 51.2;
+    {
+      fAngle = Angle * 0.1 - 51.2;
+    }
 
     sign = data[1] & 0x20;
     if (sign == 0)
-        sign = 1;
+    {
+      sign = 1;
+    }
     else
-        sign = -1;
+    {
+      sign = -1;
+    }
     tmp = ((data[6] & 0x1f) << 8) | data[7];
     if (sign == 1)
-        *speed = tmp * 0.01;
+    {
+      *speed = tmp * 0.01;
+    }
     else
-        *speed = tmp * 0.01 - 81.92;
+    {
+      *speed = tmp * 0.01 - 81.92;
+    }
 
     if (fRange != 0)
     {

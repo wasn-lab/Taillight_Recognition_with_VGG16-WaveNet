@@ -1,6 +1,7 @@
 #ifndef DRIVENET_60_B1_H_
 #define DRIVENET_60_B1_H_
 
+#include "fusion_source_id.h"
 #include "camera_params.h"  // include camera topic name
 #include "drivenet/trt_yolo_interface.h"
 #include "drivenet/distance_estimation_b1.h"

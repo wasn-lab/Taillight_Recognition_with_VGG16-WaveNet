@@ -32,13 +32,13 @@
 #include <nav_msgs/Path.h>
 // #include <jsk_recognition_msgs/PolygonArray.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 
-#include <stddef.h>
-#include <stdio.h>                     // This ert_main.c example uses printf/fflush
+#include <cstddef>
+#include <cstdio>                     // This ert_main.c example uses printf/fflush
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include "MM_TP.h"                     // Model's header file
 #include "rtwtypes.h"
 
@@ -184,10 +184,12 @@ void rt_OneStep(void)
 	std::cout << "Path_flag:" << rtObj.rtU.Path_flag << std::endl;
 	std::cout << "Freespace_mode:" << rtObj.rtU.Freespace_mode << std::endl;
 	std::cout << "VirBB_mode:" << rtObj.rtU.VirBB_mode << std::endl;
-	if (Freespace_mode == 1 || Freespace_mode == 2)
-		std::cout << "safe_range:" << rtObj.rtU.safe_range << std::endl;
+  if (Freespace_mode == 1 || Freespace_mode == 2)
+  {
+    std::cout << "safe_range:" << rtObj.rtU.safe_range << std::endl;
+  }
 
-	// int height = 150;
+  // int height = 150;
 	// int width = 250;
 	// std::cout << "-----------------------------------------"  << std::endl;
 	// std::cout << "height = " << height << std::endl; //150
@@ -358,8 +360,10 @@ void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
 	rtObj.rtU.SLAM_heading = LTVmsg->heading;
 	rtObj.rtU.SLAM_fs = LTVmsg->fitness_score;
 	rtObj.rtU.SLAM_counter++;
-	if (rtObj.rtU.SLAM_counter > 255)
-		rtObj.rtU.SLAM_counter = 0;
+  if (rtObj.rtU.SLAM_counter > 255)
+  {
+    rtObj.rtU.SLAM_counter = 0;
+  }
 }
 
 void VehinfoCallback(const msgs::VehInfo::ConstPtr& VImsg)
@@ -380,18 +384,26 @@ void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
 
 	rtObj.rtU.SLAM_x = current_pose.x;
 	rtObj.rtU.SLAM_y = current_pose.y;
-	if (current_pose.yaw < 0)
-		rtObj.rtU.SLAM_heading = current_pose.yaw + 2*RT_PI;
-	else if (current_pose.yaw >= 2*RT_PI)
-		rtObj.rtU.SLAM_heading = current_pose.yaw - 2*RT_PI;
-	else
-		rtObj.rtU.SLAM_heading = current_pose.yaw;
-	rtObj.rtU.SLAM_fs = 0;
+  if (current_pose.yaw < 0)
+  {
+    rtObj.rtU.SLAM_heading = current_pose.yaw + 2*RT_PI;
+  }
+  else if (current_pose.yaw >= 2 * RT_PI)
+  {
+    rtObj.rtU.SLAM_heading = current_pose.yaw - 2*RT_PI;
+  }
+  else
+  {
+    rtObj.rtU.SLAM_heading = current_pose.yaw;
+  }
+  rtObj.rtU.SLAM_fs = 0;
 	rtObj.rtU.SLAM_counter++;
-	if (rtObj.rtU.SLAM_counter > 255)
-    	rtObj.rtU.SLAM_counter = 0;
+  if (rtObj.rtU.SLAM_counter > 255)
+  {
+    rtObj.rtU.SLAM_counter = 0;
+  }
 
-    path_pose.z = PSmsg->pose.position.z;
+  path_pose.z = PSmsg->pose.position.z;
 }
 
 void imu_data_callback(const sensor_msgs::Imu::ConstPtr& imumsg)

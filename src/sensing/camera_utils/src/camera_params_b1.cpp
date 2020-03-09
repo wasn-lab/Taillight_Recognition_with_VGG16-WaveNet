@@ -24,6 +24,22 @@ const std::string topics_obj[id::num_ids] = {
 
 const std::string detect_result = "/CameraDetection";
 const std::string detect_result_polygon = "/CameraDetection/polygon";
+const std::string detect_result_occupancy_grid = "/CameraDetection/occupancy_grid";
+
+const bool distortion[id::num_ids] = {
+  false,  // F_right
+  false,  // F_center
+  false,  // F_left
+  false,  //
+  true,   // F_top
+  true,   // R_front
+  true,   // R_rear
+  false,  //
+  true,   // L_front
+  true,   // L_rear
+  true,   // B_top
+  false,  //
+};
 
 };  // namespace
 
