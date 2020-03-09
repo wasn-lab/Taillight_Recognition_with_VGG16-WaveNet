@@ -21,7 +21,7 @@ double R[3][3]; // XYZ to ENU R
 double T[3]; // XYZ to ENU T
 double T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3];
 
-int LidXYZ2ENU_siwtch = 1;
+int LidXYZ2ENU_siwtch = 0;
 
 ros::Publisher lidarlla_pub; 
 ros::Subscriber lidarlla_sub ;
@@ -35,7 +35,8 @@ void initial_para()
 	double read_tmp[63];
 	int read_index = 0;
 	std::string fname = ros::package::getPath("lidarxyz2lla");
-	fname += "/data/ITRI_NEW_LidXYZ2ENU_sec.txt";
+	// fname += "/data/ITRI_NEW_LidXYZ2ENU_sec.txt";
+	fname += "/data/Shalun_LidXYZ2ENU.txt";
   	std::cout << fname << std::endl;
 
   	std::ifstream fin;

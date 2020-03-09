@@ -92,7 +92,8 @@ void read_txt(std::string fpname, double (&SEG_ID)[size_readtmp],double (&SEG_X)
 void Ini_obs_bytxt()
 {
   std::string fpname = ros::package::getPath("astar_initial");
-  std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt";
+  std::string fpname_s = fpname + "/data/20200309_waypoints.txt";
+  // std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt";
   read_txt(fpname_s, seg_id, seg_x, seg_y, seg_z, seg_h, seg_l);
 }
 
