@@ -10,15 +10,15 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
   ego_z_abs_ = ego_z_abs;
   ego_heading_ = ego_heading;
 
+#if DEBUG_PP
+  LOG_INFO << "num_pp_input_in_use_ =" << num_pp_input_in_use_ << std::endl;
+#endif
+
   for (unsigned i = 0; i < pp_objs_.size(); i++)
   {
     // bound num_pp_input_in_use_ range
     num_pp_input_in_use_ =
         std::max(std::min(num_pp_input_max_, (std::size_t)pp_objs_[i].track.max_length), num_pp_input_min_);
-
-#if DEBUG_PP
-    LOG_INFO << "num_pp_input_in_use_ =" << num_pp_input_in_use_ << std::endl;
-#endif
 
     pp_objs_[i].track.is_ready_prediction = false;
 
@@ -28,10 +28,53 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       // check enough record of track history for pp
       if (pp_objs_[i].track.head >= (int)(num_pp_input_min_ - 1) || pp_objs_[i].track.is_over_max_length == true)
       {
-        if (pp_objs_[i].absSpeed > pp_obj_min_kmph_ && pp_objs_[i].absSpeed < pp_obj_max_kmph_)
+        pp_objs_[i].track.is_ready_prediction = true;
+
+        if (pp_objs_[i].absSpeed < pp_obj_min_kmph_ && pp_objs_[i].absSpeed > pp_obj_max_kmph_)
         {
-          pp_objs_[i].track.is_ready_prediction = true;
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
         }
+
+        float box_center_x = (pp_objs_[i].bPoint.p0.x + pp_objs_[i].bPoint.p6.x) / 2;
+        float box_center_y = (pp_objs_[i].bPoint.p0.y + pp_objs_[i].bPoint.p6.y) / 2;
+
+        float box_x_length = std::abs(pp_objs_[i].bPoint.p6.x - pp_objs_[i].bPoint.p0.x);
+        float box_y_length = std::abs(pp_objs_[i].bPoint.p6.y - pp_objs_[i].bPoint.p0.y);
+        float box_z_length = std::abs(pp_objs_[i].bPoint.p6.z - pp_objs_[i].bPoint.p0.z);
+        float box_length_thr_xy = 1.5f;
+        float box_length_thr_z = 0.5f;
+
+        if (box_center_x < pp_allow_x_min_m && box_center_x > pp_allow_x_max_m)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        if (box_center_y < pp_allow_y_min_m && box_center_y > pp_allow_y_max_m)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        if (box_z_length < box_length_thr_z)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        if (!(box_x_length >= box_length_thr_xy || box_y_length >= box_length_thr_xy))
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+#if DEBUG_PP
+        if (pp_objs_[i].track.is_ready_prediction == true)
+        {
+          std::cout << "PP_ready" << std::endl;
+        }
+#endif
       }
     }
 
@@ -167,9 +210,9 @@ long double PathPredict::variance(const std::vector<long double>& samples, const
 
   long double variance = 0;
   long double diff = 0;
-  for (unsigned i = 0; i < samples.size(); i++)
+  for (const long double sample : samples)
   {
-    diff = samples[i] - mean;
+    diff = sample - mean;
     variance += std::pow(diff, 2);
   }
 
@@ -318,8 +361,8 @@ int PathPredict::ar1_params_main(PPLongDouble& pp, std::vector<long double>& dat
     return err_y;
   }
 
-  pp.sum_samples_x = 0;
-  pp.sum_samples_y = 0;
+  pp.sum_samples_x = 0.;
+  pp.sum_samples_y = 0.;
 
   for (unsigned i = 0; i < data_x.size(); i++)
   {
@@ -329,6 +372,7 @@ int PathPredict::ar1_params_main(PPLongDouble& pp, std::vector<long double>& dat
 
   pp.observation_x = data_x.back();
   pp.observation_y = data_y.back();
+  covariance_matrix(pp, data_x, data_y);
 
   return 0;
 }
@@ -399,10 +443,19 @@ int PathPredict::predict(std::size_t max_order_, const std::size_t num_forecasts
 
   pps.reserve(num_forecasts_);
 
-  PPLongDouble pp;
-  ar1_params_main(pp, data_x, data_y);
   for (unsigned i = 0; i < num_forecasts_; i++)
   {
+    PPLongDouble pp;
+    int err = ar1_params_main(pp, data_x, data_y);
+
+    if (err > 0)
+    {
+#if DEBUG_PP
+      std::cout << "ar1_params_main() error:" << err << std::endl;
+#endif
+      return err;
+    }
+
     pps.push_back(pp);
   }
 
@@ -427,20 +480,7 @@ void PathPredict::confidence_threshold(const unsigned int confidence_lv)
 void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
                                           std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
 {
-  for (unsigned i = 0; i < num_forecasts_; i++)
-  {
-#if DEBUG_PP
-    LOG_INFO << "Forecast timestep" << i + 1 << std::endl;
-#endif
-
-    if (i > 0)
-    {
-      pps[i] = pps[i - 1];
-    }
-    covariance_matrix(pps[i], data_x, data_y);
-  }
-
-  if (show_pp_ > 0)
+  if (show_pp_ >= 1 && show_pp_ <= 3)
   {
     for (unsigned i = 0; i < num_forecasts_; i++)
     {
@@ -456,10 +496,16 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
   geometry_msgs::Quaternion q = tf2::toMsg(pps.q1);
   quaternion_to_rpy(roll, pitch, yaw, q.x, q.y, q.z, q.w);
 
-  float scale = abs_speed * (pp_idx + 1) / 36.;
+#if DEBUG_PP
+  std::cout << "q.x:" << q.x << " q.y:" << q.y << " q.z:" << q.z << " q.z:" << q.z << " roll:" << roll
+            << " pitch:" << pitch << " yaw:" << yaw << " absspeed:" << abs_speed << std::endl;
+#endif
+
+  float scale = abs_speed * (pp_idx + 1) / 200.;
+  float scale1 = scale;
+  float scale2 = scale;
+
   cv::Mat mag_m(1, 4, CV_32FC1, cv::Scalar(0));
-  float scale1 = scale / 2;
-  float scale2 = scale / 4;
   mag_m.at<float>(0, 0) = scale1;
   mag_m.at<float>(0, 1) = scale2;
   mag_m.at<float>(0, 2) = scale1;
@@ -510,7 +556,18 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 
     std::vector<PPLongDouble> pps;
 
-    if (pp_objs_[i].track.is_ready_prediction)
+    if (!pp_objs_[i].track.is_ready_prediction)
+    {
+      PointLD offset;
+      offset.x = 0.;
+      offset.y = 0.;
+      offset.z = 0.;
+      offsets_.push_back(offset);
+#if DEBUG_PP
+      LOG_INFO << "Require " << num_pp_input_in_use_ << "+ elements in trajectory." << std::endl;
+#endif
+    }
+    else
     {
       std::vector<long double> data_x;
       std::vector<long double> data_y;
@@ -576,12 +633,6 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         LOG_INFO << "Traj " << (j + 1) << " " << pp_objs_[i].track.forecasts[j].position.x << " "
                  << pp_objs_[i].track.forecasts[j].position.y << std::endl;
       }
-#endif
-    }
-    else
-    {
-#if DEBUG
-      LOG_INFO << "Require 4+ elements in trajectory." << std::endl;
 #endif
     }
 

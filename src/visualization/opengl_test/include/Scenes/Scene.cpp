@@ -199,9 +199,11 @@ void Scene::Update(float dt){
 
     // rmBaseModel
 	for (int i = 0; i < _rm_BaseModel.size(); i++){
-        if ( _rm_BaseModel[i]->get_enable())
-		      _rm_BaseModel[i]->Update(dt);
-	}
+    if (_rm_BaseModel[i]->get_enable())
+    {
+      _rm_BaseModel[i]->Update(dt);
+    }
+  }
 }
 void Scene::Update(ROS_INTERFACE &ros_interface){
     //
@@ -235,11 +237,13 @@ void Scene::Update(ROS_INTERFACE &ros_interface){
     // TIME_STAMP::Period period_Update("Update");
     // rmBaseModel
 	for (int i = 0; i < _rm_BaseModel.size(); i++){
-        if ( _rm_BaseModel[i]->get_enable())
-		      _rm_BaseModel[i]->Update(ros_interface);
-        // evaluation
-        // period_Update.stamp(); period_Update.show_usec();
-        //
+    if (_rm_BaseModel[i]->get_enable())
+    {
+      _rm_BaseModel[i]->Update(ros_interface);
+    }
+    // evaluation
+    // period_Update.stamp(); period_Update.show_usec();
+    //
 	}
 }
 void Scene::Update(ROS_API &ros_api){
@@ -281,8 +285,10 @@ void Scene::Update(ROS_API &ros_api){
     // std::cout << "Before update\n";
 	for (int i = 0; i < _rm_BaseModel.size(); i++){
         // std::cout << "Before update mode #" << i << "\n";
-        if ( _rm_BaseModel[i]->get_enable())
-		      _rm_BaseModel[i]->Update(ros_api);
+        if (_rm_BaseModel[i]->get_enable())
+        {
+          _rm_BaseModel[i]->Update(ros_api);
+        }
         // evaluation
         // period_Update.stamp(); period_Update.show_usec();
 	}

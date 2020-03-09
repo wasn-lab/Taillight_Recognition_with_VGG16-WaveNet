@@ -21,10 +21,10 @@ private:
 
 public:
   // constructor
-  CalibrateParameters();
+  CalibrateParameters() = default;
   CalibrateParameters(double t_x, double t_y, double t_z, double d_x, double d_y, double d_z, unsigned int f,
                       unsigned int u, unsigned int v, string t, string o_t);
-  ~CalibrateParameters();
+  ~CalibrateParameters() = default;
 
   // setter
   void set_t_matrix(double x, double y, double z);

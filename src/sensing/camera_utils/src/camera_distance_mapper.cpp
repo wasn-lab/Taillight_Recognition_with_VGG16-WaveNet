@@ -1,8 +1,9 @@
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include <jsoncpp/json/json.h>
 #include <glog/logging.h>
 #include <opencv2/imgproc.hpp>
+#include "car_model.h"
 #include "camera_utils_defs.h"
 #include "camera_utils.h"
 #include "camera_distance_mapper.h"
@@ -15,15 +16,13 @@ CameraDistanceMapper::CameraDistanceMapper(const camera::id cam_id)
 {
   assert(cam_id >= camera::id::begin);
   assert(cam_id <= camera::id::num_ids);
+#if CAR_MODEL_IS_HINO
   // Currently only FOV120 are supported
   assert(cam_id >= camera::id::top_front_120);
   assert(cam_id <= camera::id::top_rear_120);
+#endif
 
   read_dist_from_json();
-}
-
-CameraDistanceMapper::~CameraDistanceMapper()
-{
 }
 
 int CameraDistanceMapper::read_dist_from_json()
@@ -36,18 +35,18 @@ int CameraDistanceMapper::read_dist_from_json()
   Json::Value jdata;
   jreader.parse(ifs, jdata);
 
-  for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
+  for (const auto& doc: jdata)
   {
-    auto image_x = jdata[i]["im_x"].asInt();
-    auto image_y = jdata[i]["im_y"].asInt();
+    auto image_x = doc["im_x"].asInt();
+    auto image_y = doc["im_y"].asInt();
     assert(image_x >= 0);
     assert(image_y >= 0);
 
     if ((image_y < camera::raw_image_rows) && (image_x < camera::raw_image_cols))
     {
-      x_in_meters_ptr_[image_y][image_x] = jdata[i]["dist_in_cm"][0].asInt() / 100.0;
-      y_in_meters_ptr_[image_y][image_x] = jdata[i]["dist_in_cm"][1].asInt() / 100.0;
-      z_in_meters_ptr_[image_y][image_x] = jdata[i]["dist_in_cm"][2].asInt() / 100.0;
+      x_in_meters_ptr_[image_y][image_x] = doc["dist_in_cm"][0].asInt() / 100.0;
+      y_in_meters_ptr_[image_y][image_x] = doc["dist_in_cm"][1].asInt() / 100.0;
+      z_in_meters_ptr_[image_y][image_x] = doc["dist_in_cm"][2].asInt() / 100.0;
     }
   }
   return 0;
@@ -91,17 +90,18 @@ int CameraDistanceMapper::get_distance_raw_1920x1208(const int im_x, const int i
 
 std::string CameraDistanceMapper::get_json_filename()
 {
+  std::string data_dir = CAMERA_UTILS_DATA_DIR;
   std::string json_filenames[] = {
-    CAMERA_UTILS_DATA_DIR "/",  // 0: dummy
-    CAMERA_UTILS_DATA_DIR "/",  // 1: left_60
-    CAMERA_UTILS_DATA_DIR "/",
-    CAMERA_UTILS_DATA_DIR "/",
-    CAMERA_UTILS_DATA_DIR "/left_120.json",   // 4: left_120
-    CAMERA_UTILS_DATA_DIR "/front_120.json",  // 5: front_120
-    CAMERA_UTILS_DATA_DIR "/right_120.json",  // 6: right_120
-    CAMERA_UTILS_DATA_DIR "/",
-    CAMERA_UTILS_DATA_DIR "/",
-    CAMERA_UTILS_DATA_DIR "/",
+    data_dir + "/",  // 0: dummy
+    data_dir + "/",  // 1: left_60
+    data_dir + "/",
+    data_dir + "/",
+    data_dir + "/left_120.json",   // 4: left_120
+    data_dir + "/front_120.json",  // 5: front_120
+    data_dir + "/right_120.json",  // 6: right_120
+    data_dir + "/",
+    data_dir + "/",
+    data_dir + "/",
   };
   return json_filenames[cam_id_];
 }

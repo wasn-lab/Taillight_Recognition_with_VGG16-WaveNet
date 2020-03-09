@@ -32,11 +32,13 @@
   <arg name="show_distance" default="0" />
   <arg name="show_absspeed" default="0" />
 
-  <!-- <=0: No show pp -->
-  <!--   1: Show pp point w/ confidence ellipse -->
-  <!-- >=2: Show pp point w/o confidence ellipse -->
-  <arg name="show_pp" default="1" />
-  <arg name="pp_obj_min_kmph" default="3.0" />
+  <!-- 1: Show pp centers -->
+  <!-- 2: Show pp ellipses -->
+  <!-- 3: Show pp ellipses & ellipse vertices -->
+  <!-- otherwise: No show pp -->
+  <arg name="show_pp" default="2" />
+
+  <arg name="pp_obj_min_kmph" default="10.0" />
   <arg name="pp_obj_max_kmph" default="50.0" />
 
   <!-- Launch node -->

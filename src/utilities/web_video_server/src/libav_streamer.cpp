@@ -11,7 +11,9 @@ namespace web_video_server
 static int ffmpeg_boost_mutex_lock_manager(void **mutex, enum AVLockOp op)
 {
   if (NULL == mutex)
+  {
     return -1;
+  }
 
   switch (op)
   {
@@ -69,7 +71,9 @@ LibavStreamer::LibavStreamer(const async_web_server_cpp::HttpRequest &request,
 LibavStreamer::~LibavStreamer()
 {
   if (codec_context_)
+  {
     avcodec_close(codec_context_);
+  }
   if (frame_)
   {
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
@@ -80,14 +84,20 @@ LibavStreamer::~LibavStreamer()
 #endif
   }
   if (io_buffer_)
+  {
     delete io_buffer_;
+  }
   if (format_context_) {
     if (format_context_->pb)
+    {
       av_free(format_context_->pb);
+    }
     avformat_free_context(format_context_);
   }
   if (sws_context_)
+  {
     sws_freeContext(sws_context_);
+}
 }
 
 // output callback for ffmpeg IO context
@@ -138,10 +148,14 @@ void LibavStreamer::initialize(const cv::Mat &img)
   output_format_->flags |= AVFMT_NOFILE;
 
   // Load codec
-  if (codec_name_.empty()) // use default codec if none specified
+  if (codec_name_.empty())
+  {  // use default codec if none specified
     codec_ = avcodec_find_encoder(output_format_->video_codec);
+  }
   else
+  {
     codec_ = avcodec_find_encoder_by_name(codec_name_.c_str());
+  }
   if (!codec_)
   {
     async_web_server_cpp::HttpReply::stock_reply(async_web_server_cpp::HttpReply::internal_server_error)(request_,
@@ -186,7 +200,9 @@ void LibavStreamer::initialize(const cv::Mat &img)
 
   // Some formats want stream headers to be separate
   if (format_context_->oformat->flags & AVFMT_GLOBALHEADER)
+  {
     codec_context_->flags |= CODEC_FLAG_GLOBAL_HEADER;
+  }
 
   // Open Codec
   if (avcodec_open2(codec_context_, codec_, NULL) < 0)
@@ -327,11 +343,15 @@ void LibavStreamer::sendImage(const cv::Mat &img, const ros::Time &time)
     // Encode video at 1/0.95 to minimize delay
     pkt.pts = (int64_t)(seconds / av_q2d(video_stream_->time_base) * 0.95);
     if (pkt.pts <= 0)
+    {
       pkt.pts = 1;
+    }
     pkt.dts = AV_NOPTS_VALUE;
 
-    if (pkt.flags&AV_PKT_FLAG_KEY)
+    if (pkt.flags & AV_PKT_FLAG_KEY)
+    {
       pkt.flags |= AV_PKT_FLAG_KEY;
+    }
 
     pkt.stream_index = video_stream_->index;
 

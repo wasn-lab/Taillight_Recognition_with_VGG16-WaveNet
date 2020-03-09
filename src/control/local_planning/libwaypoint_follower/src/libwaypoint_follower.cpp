@@ -19,15 +19,21 @@
 int WayPoints::getSize() const
 {
   if (current_waypoints_.waypoints.empty())
+  {
     return 0;
+  }
   else
+  {
     return current_waypoints_.waypoints.size();
+}
 }
 
 double WayPoints::getInterval() const
 {
   if (current_waypoints_.waypoints.empty())
+  {
     return 0;
+  }
 
   // interval between 2 waypoints
   tf::Vector3 v1(current_waypoints_.waypoints[0].pose.pose.position.x,
@@ -42,7 +48,9 @@ geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
 {
   geometry_msgs::Point p;
   if (waypoint > getSize() - 1 || waypoint < 0)
+  {
     return p;
+  }
 
   p = current_waypoints_.waypoints[waypoint].pose.pose.position;
   return p;
@@ -52,7 +60,9 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
 {
   geometry_msgs::Quaternion q;
   if (waypoint > getSize() - 1 || waypoint < 0)
+  {
     return q;
+  }
 
   q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
   return q;
@@ -62,7 +72,9 @@ geometry_msgs::Pose WayPoints::getWaypointPose(int waypoint) const
 {
   geometry_msgs::Pose pose;
   if (waypoint > getSize() - 1 || waypoint < 0)
+  {
     return pose;
+  }
 
   pose = current_waypoints_.waypoints[waypoint].pose.pose;
   return pose;
@@ -71,7 +83,9 @@ geometry_msgs::Pose WayPoints::getWaypointPose(int waypoint) const
 double WayPoints::getWaypointVelocityMPS(int waypoint) const
 {
   if (waypoint > getSize() - 1 || waypoint < 0)
+  {
     return 0;
+  }
 
   return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
 }
@@ -238,7 +252,9 @@ public:
 int getClosestWaypoint(const autoware_msgs::Lane &current_path, geometry_msgs::Pose current_pose)
 {
   if (current_path.waypoints.size() < 2 || getLaneDirection(current_path) == LaneDirection::Error)
+  {
     return -1;
+  }
   WayPoints wp;
   // std::cout << "1111111111111111111" << std::endl;
   wp.setPath(current_path);
@@ -260,10 +276,14 @@ int getClosestWaypoint(const autoware_msgs::Lane &current_path, geometry_msgs::P
     // std::cout << "5555555555555555555" << std::endl;
     not_cand_idx.update(i, distance);
     if (distance > search_distance)
+    {
       continue;
+    }
 
     if (getRelativeAngle(wp.getWaypointPose(i), current_pose) > angle_threshold)
+    {
       continue;
+    }
     // std::cout << "6666666666666666666" << std::endl;
     cand_idx.update(i, distance);
     //ROS_INFO(".........................");
