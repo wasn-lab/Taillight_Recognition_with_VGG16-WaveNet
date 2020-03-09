@@ -3,7 +3,7 @@
 
 #include "yolo.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 

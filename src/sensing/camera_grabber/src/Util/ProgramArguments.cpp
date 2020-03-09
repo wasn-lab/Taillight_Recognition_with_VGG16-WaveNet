@@ -32,7 +32,7 @@
 
 #include <sstream>
 #include <cstring>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 std::string ProgramArguments::m_empty("");
