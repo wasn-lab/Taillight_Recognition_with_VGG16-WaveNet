@@ -38,7 +38,7 @@
   <!-- otherwise: No show pp -->
   <arg name="show_pp" default="2" />
 
-  <arg name="pp_obj_min_kmph" default="3.0" />
+  <arg name="pp_obj_min_kmph" default="10.0" />
   <arg name="pp_obj_max_kmph" default="50.0" />
 
   <!-- Launch node -->

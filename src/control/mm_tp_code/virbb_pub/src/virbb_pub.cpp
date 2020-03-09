@@ -497,10 +497,12 @@ void abs_obs_marker_AEB(object Obsaeb_object, double dist, bool &pushback_flag, 
 		aebobj2msg(Obsaeb_object, pushback_flag, id, BBmsg, marker);
 		pushback_flag = true;
 	}
-	else
-		pushback_flag = false;
+  else
+  {
+    pushback_flag = false;
+  }
 
-	AEBObjTrigger_last = AEBObjTrigger;
+  AEBObjTrigger_last = AEBObjTrigger;
 }
 
 void obs_main(int hz)
@@ -560,16 +562,20 @@ void obs_main(int hz)
 		abs_obs_marker_dynamic(abs_Obsdy1_object, dynamicobj_index, velocity, hz, id, abs_BBmsg, abs_marker);
 		abs2rel(abs_BBmsg,rel_BBmsg);
 		dynamicobj_index ++;
-		if (dynamicobj_index > time_loop*hz)
-			dynamicobj_index = 0; 
-		abs_BBArraymsg.objects.push_back(abs_BBmsg);
+    if (dynamicobj_index > time_loop * hz)
+    {
+      dynamicobj_index = 0;
+    }
+    abs_BBArraymsg.objects.push_back(abs_BBmsg);
 		abs_MAmsg.markers.push_back(abs_marker);
 		rel_BBArraymsg.objects.push_back(rel_BBmsg);
 	}
-	if (DynamicObjTrigger == false)
-		dynamicobj_index = 0;
+  if (DynamicObjTrigger == false)
+  {
+    dynamicobj_index = 0;
+  }
 
-	// AEB obj
+  // AEB obj
 	id ++;
   object abs_Obsaeb1_object = {};       // Initialize all fields to 0.
   abs_Obsaeb1_object.sx = read_tmp_a[0];//4.6;
