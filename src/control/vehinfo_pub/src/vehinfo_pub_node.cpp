@@ -11,10 +11,10 @@
 // #include "vehinfo_pub/VehInfo.h"
 #include "msgs/VehInfo.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 #include <net/if.h>

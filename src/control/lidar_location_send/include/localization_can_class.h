@@ -8,11 +8,11 @@
 #ifndef LOCALIZATION_CAN_CLASS_H_
 #define LOCALIZATION_CAN_CLASS_H_
 
-#include <stdio.h>
+#include <cstdio>
 #include <net/if.h> //struct ifreq
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/types.h>

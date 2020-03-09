@@ -3,13 +3,13 @@
 #include "std_msgs/String.h"
 #include "msgs/Rad.h"
 #include "msgs/PointXYZV.h"
-#include <string.h>
-#include <math.h>
+#include <cstring>
+#include <cmath>
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 
 #include <sys/types.h>
 #include <sys/socket.h>
