@@ -16,13 +16,13 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>  //tf
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 
-#include <stddef.h>
-#include <stdio.h>                     // This ert_main.c example uses printf/fflush
+#include <cstddef>
+#include <cstdio>                     // This ert_main.c example uses printf/fflush
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include "UKF_MM.h"                     // Model's header file
 #include "rtwtypes.h"
 
