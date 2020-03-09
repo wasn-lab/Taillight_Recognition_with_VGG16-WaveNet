@@ -52,8 +52,10 @@ cv::Mat g_mat_0_raw;
 
 /// lidar
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_front_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 boost::shared_ptr<pcl::visualization::PCLVisualizer> g_viewer(new pcl::visualization::PCLVisualizer ("Cloud_Viewer"));
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_lidarall(g_lidarall_ptr, 255, 255, 255);
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_front_60(g_cam_front_60_ptr, 255, 255, 0);
 std::vector<pcl::visualization::Camera> g_cam; 
 
 /// object
@@ -108,6 +110,9 @@ void viewerInitializer()
 
 void drawPointCloudOnImage()
 {
+  pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_front_60_ptr);
+  pcl::PointCloud<pcl::PointXYZI> cam_front_60 = *g_cam_front_60_ptr;
+  int cloud_size = 0;
   for (size_t i = 0; i < g_lidarall_ptr->size(); i++)
   {
     if (g_lidarall_ptr->points[i].x > 0)
@@ -123,9 +128,14 @@ void drawPointCloudOnImage()
         cv::Scalar point_color = g_alignment.getDistColor(distance_x);
         cv::circle(g_mat_0, center_point_, 1, point_color, -1, cv::LINE_8, 0);
         // std::cout << "Camera u: " << pixel_position.u << ", v: " << pixel_position.v << std::endl;
+        /// insert the point
+        cam_front_60.points[cloud_size] = cam_front_60.points[i];
+        cloud_size ++;
       }
     }
   }
+  cam_front_60.resize(cloud_size);
+  *g_cam_front_60_ptr = cam_front_60;
 }
 int main(int argc, char** argv)
 {
@@ -168,6 +178,7 @@ int main(int argc, char** argv)
   while (ros::ok())
   {
     g_viewer->removePointCloud("Cloud viewer");
+    g_viewer->removePointCloud("Front 60 Cloud viewer");
     if (!g_mat_0.empty())
     {
       g_sync_lock_cam.lock();
@@ -175,6 +186,7 @@ int main(int argc, char** argv)
       drawPointCloudOnImage();
       /// draw lidarall
       g_viewer->addPointCloud<pcl::PointXYZI> (g_lidarall_ptr, g_rgb_lidarall, "Cloud viewer");
+      g_viewer->addPointCloud<pcl::PointXYZI> (g_cam_front_60_ptr, g_rgb_cam_front_60, "Front 60 Cloud viewer");
       g_sync_lock_lidar.unlock();
       cv::imshow(window_name_cam_0, g_mat_0);
       g_sync_lock_cam.unlock();
