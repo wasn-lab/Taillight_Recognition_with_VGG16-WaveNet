@@ -11,17 +11,14 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
 #include "msgs/PedObjectArray.h"
+
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include <opencv2/dnn.hpp>
 #include <opencv2/ml.hpp>  // opencv machine learning include file
-#include <opencv2/imgcodecs.hpp>
-// #include <opencv2/gpu/gpu.hpp>
-// #include <caffe/caffe.hpp>
-#include <ped_def.h>
 #include <cv_bridge/cv_bridge.h>
+#include <ped_def.h>
 #include <map>
 #include <boost/circular_buffer.hpp>
-
 #include <buffer.h>
 #include <openpose.h>
 #include <openpose_ros_io.h>
@@ -59,12 +56,11 @@ public:
   {
   }
 
+  // Functions
   void run();
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  int buffer_size = 60;
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
-  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
                          ros::Time time);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
@@ -73,23 +69,36 @@ public:
   float predict_rf(cv::Mat input_data);
   float predict_rf_pose(cv::Mat input_data);
   bool too_far(const msgs::BoxPoint box_point);
-  std::vector<cv::Point2f> printKeypoints(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr,
-                                          float height);
+  void draw_pedestrians(cv::Mat matrix);
+
+  // OpenPose components
   int openPoseROS();
   std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
   bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr);
-
+  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
+  openpose_ros::OpenPose openPose;
   cv::dnn::Net net_openpose;
-  cv::Ptr<cv::ml::RTrees> rf;
-  cv::Ptr<cv::ml::RTrees> rf_pose;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner;
+
+  // All buffer components
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
+  std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
+  Buffer buffer;
+  int buffer_size = 60;
+
+  // ROS components
   ros::Publisher chatter_pub;
   ros::Publisher box_pub;
   ros::Time total_time;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
+
+  // Variables
+  cv::Ptr<cv::ml::RTrees> rf;
+  cv::Ptr<cv::ml::RTrees> rf_pose;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
+
+  // Setup variables
   const int cross_threshold = 55;  // percentage
   const double scaling_ratio_width = 0.3167;
   const double scaling_ratio_height = 0.3179;
@@ -97,8 +106,6 @@ public:
   bool show_probability = true;
   int input_source = 0;
   float max_distance = 50;
-  Buffer buffer;
-  openpose_ros::OpenPose openPose;
   const int feature_num = 1174;
   const int frame_num = 10;
 };

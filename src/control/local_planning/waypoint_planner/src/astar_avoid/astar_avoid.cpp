@@ -29,7 +29,7 @@ AstarAvoid::AstarAvoid()
   , current_velocity_initialized_(false)
   , base_waypoints_initialized_(false)
   , closest_waypoint_initialized_(false)
-  , avoid_state_sub_initialized_(true)
+  , avoid_state_sub_initialized_(true) ///////////////---------------------------------
 {
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);
@@ -67,7 +67,7 @@ AstarAvoid::~AstarAvoid()
   publish_thread_.join();
 }
 
-void AstarAvoid::avoidstatesubCallback(const msgs::Flag_Info& msg)
+void AstarAvoid::avoidstatesubCallback(const msgs::Flag_Info& msg) ///////////////---------------------------------
 {
   // avoid_state_index_ = msg.Dspace_Flag03;
   // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
@@ -151,9 +151,13 @@ void AstarAvoid::closestWaypointCallback(const std_msgs::Int32& msg)
 void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
 {
   if (msg.data == -1)
+  {
     obstacle_waypoint_index_ = msg.data;
+  }
   else
+  {
     obstacle_waypoint_index_ = msg.data + 6;
+}
 }
 
 void AstarAvoid::obstacleWaypointbaseCallback(const std_msgs::Int32& msg)
@@ -296,7 +300,7 @@ void AstarAvoid::run()
           state_ = AstarAvoid::STATE::RELAYING;
         }
       }
-      ROS_INFO("end avoiding");
+      // ROS_INFO("end avoiding");
     }
     avoiding_flag_pub.publish(avoiding_path_flag);
     reach_goal_pub.publish(reach_goal_flag);

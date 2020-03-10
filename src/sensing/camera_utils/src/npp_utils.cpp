@@ -2,7 +2,7 @@
    CREATER: ICL U300
    DATE: Aug, 2019
  */
-#include <assert.h>
+#include <cassert>
 #include "glog/logging.h"
 #include "npp_utils.h"
 #include "npp.h"
@@ -84,4 +84,4 @@ int blob_from_image(const Npp32f* npp32f_ptr_in, const int rows, const int cols,
   assert(status == NPP_SUCCESS);
   return 0;
 }
-};  // namespace
+}  // namespace npp_wrapper

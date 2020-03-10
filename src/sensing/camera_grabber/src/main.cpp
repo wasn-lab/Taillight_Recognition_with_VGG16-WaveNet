@@ -14,12 +14,15 @@ int main(int argc, char** argv)
   // mode selection
   auto mode = SensingSubSystem::get_mode();
 
+  // do resize
+  const bool do_resize = SensingSubSystem::do_resize();
+
   if (mode == "a")
   {
     ros::init(argc, argv, "camera_a_grabber");
     printf("Running Camera a grabber\n");
     SensingSubSystem::TegraAGrabber app;
-    app.initializeModules();
+    app.initializeModules(do_resize);
     return app.runPerception();
   }
   else if (mode == "b")
@@ -27,7 +30,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "camera_b_grabber");
     printf("Running Camera b grabber\n");
     SensingSubSystem::TegraBGrabber app;
-    app.initializeModules();
+    app.initializeModules(do_resize);
     return app.runPerception();
   }
   else

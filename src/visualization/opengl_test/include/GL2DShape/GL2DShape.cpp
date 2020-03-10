@@ -212,7 +212,9 @@ void GL2DShape::updateBoardPosition(){
 void GL2DShape::updateBoardGeo(const glm::ivec2 &viewportsize_in, float aspect_ratio_in){
     _viewport_size = viewportsize_in;
     if (aspect_ratio_in >= 0.0f)
-        board_aspect_ratio = aspect_ratio_in;
+    {
+      board_aspect_ratio = aspect_ratio_in;
+    }
     updateBoardSize(); // Do this first
     if (is_using_cv_pose){
         updateBoardPosition();

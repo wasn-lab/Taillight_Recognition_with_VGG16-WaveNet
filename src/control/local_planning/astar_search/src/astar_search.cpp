@@ -310,7 +310,9 @@ void AstarSearch::poseToIndex(const geometry_msgs::Pose& pose, int* index_x, int
   tf::quaternionMsgToTF(pose2d.orientation, quat);
   double yaw = tf::getYaw(quat);
   if (yaw < 0)
+  {
     yaw += 2.0 * M_PI;
+  }
 
   // Descretize angle
   static double one_angle_range = 2.0 * M_PI / theta_size_;
@@ -381,7 +383,9 @@ bool AstarSearch::search()
 
       // Increase reverse cost
       if (state.back != current_an->back)
+      {
         move_cost *= reverse_weight_;
+      }
 
       // Calculate index of the next state
       SimpleNode next_sn;

@@ -9,7 +9,7 @@
 #include <memory>
 #include <opencv2/core/mat.hpp>
 #include <nppdefs.h>
-#include <assert.h>
+#include <cassert>
 
 namespace DriveNet_npp
 {
