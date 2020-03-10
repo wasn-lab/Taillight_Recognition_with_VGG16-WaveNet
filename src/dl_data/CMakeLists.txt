@@ -2,10 +2,9 @@ cmake_minimum_required(VERSION 3.1)
 project(dl_data)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-#include(CarModel)
+include(CarModel)
 
-#find_package(catkin REQUIRED COMPONENTS car_model)
-find_package(catkin)
+find_package(catkin REQUIRED COMPONENTS car_model)
 
 set(DRIVENET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_drivenet/drivenet/data/yolo)
 set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_parknet/weights)
