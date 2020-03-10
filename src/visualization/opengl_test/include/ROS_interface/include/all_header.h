@@ -76,7 +76,7 @@
 #include <sstream>
 #include <iomanip> // For adjusting the precision
 #include <ctime>
-#include <time.h>
+#include <ctime>
 #include <algorithm>
 using namespace cv;
 // The SPSC non-blocking buffer

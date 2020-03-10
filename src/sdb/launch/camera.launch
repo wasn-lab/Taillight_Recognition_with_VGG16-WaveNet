@@ -1,19 +1,15 @@
 <launch>
 
-	<include file="$(find drivenet)/launch/b1_drivenet_60.launch"/>
+	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_a.launch"/>
 
-	<include file="$(find drivenet)/launch/b1_drivenet_120_1.launch"/>
+	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_b.launch"/>
 	
-	<include file="$(find drivenet)/launch/b1_drivenet_120_2.launch"/>
+	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_c.launch"/>
 
 	<node name="msg_recorder"
 		pkg="msg_recorder"
 		type="msg_recorder.py"
 		args="-A --NO_KEY_IN"/>
-
-	<node name="convex_fusion"
-		pkg="convex_fusion"
-		type="convex_fusion_b1"/>
 
 	<include file="$(find detection_viz)/launch/itriadv_viz.launch"/>
 

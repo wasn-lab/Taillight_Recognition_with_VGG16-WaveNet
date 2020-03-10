@@ -11,8 +11,10 @@ TegraBGrabber::TegraBGrabber()
   , grabber(nullptr)
   , npp8u_ptrs_(cam_ids_.size())
   , npp8u_ptrs_distorted_(cam_ids_.size())
-  , resizer_(camera::raw_image_height, camera::raw_image_width, 384, 608)
+  , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
+             camera::image_width)  // 1208,1920 to 384,608
   , remapper_(camera::raw_image_height, camera::raw_image_width)
+  , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
   , ros_image(n)
 {
   InitParameters();
@@ -33,7 +35,7 @@ TegraBGrabber::~TegraBGrabber()
   if (grabber != nullptr)
   {
     delete grabber;
-    printf("grabber DELETED OK!\n");
+    std::cout << "grabber DELETED OK!\n" << std::endl;
   }
   for (size_t i = 0; i < cam_ids_.size(); i++)
   {
@@ -42,19 +44,19 @@ TegraBGrabber::~TegraBGrabber()
   }
 }
 
-void TegraBGrabber::initializeModules()
+void TegraBGrabber::initializeModules(const bool do_resize)
 {
-  for (size_t i = 0; i < cam_ids_.size(); ++i)
+  for (const auto cam_id : cam_ids_)
   {
-    const int cam_id = cam_ids_[i];
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
   }
 
   grabber = new MultiGMSLCameraGrabber("000001110111");
   grabber->initializeCameras();
   camera_buffer_.initBuffer();
+  resize_ = do_resize;
 
-  printf("init done!\n");
+  std::cout << "init done!\n" << std::endl;
 }
 
 bool TegraBGrabber::runPerception()
@@ -88,12 +90,31 @@ bool TegraBGrabber::runPerception()
     {
       npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[cam_ids_[i]]),
                                       camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[i]);
-      if(camera::distortion[cam_ids_[i]])
+      if (camera::distortion[cam_ids_[i]])
       {
         remapper_.remap(npp8u_ptrs_[i], npp8u_ptrs_distorted_[i]);
-        resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);
-      }else{
-        resizer_.resize(npp8u_ptrs_[i], canvas[i]);
+
+        if (resize_)
+        {
+          resizer_.resize(npp8u_ptrs_distorted_[i], canvas[i]);
+        }
+        else
+        {
+          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[i], num_src_bytes_, canvas[i], camera::raw_image_height,
+                                          camera::raw_image_width);
+        }
+      }
+      else
+      {
+        if (resize_)
+        {
+          resizer_.resize(npp8u_ptrs_[i], canvas[i]);
+        }
+        else
+        {
+          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[i], num_src_bytes_, canvas[i], camera::raw_image_height,
+                                          camera::raw_image_width);
+        }
       }
     }
 
@@ -114,4 +135,4 @@ bool TegraBGrabber::runPerception()
 
   return true;
 }
-} // namespace SensingSubSystem
+}  // namespace SensingSubSystem

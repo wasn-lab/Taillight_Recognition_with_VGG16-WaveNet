@@ -806,8 +806,10 @@ void rmImageArray::RenderText(
 
 
 		/* Skip glyphs that have no pixels */
-		if (!w || !h) // For example: space --> " "
-			continue;
+        if (!w || !h)
+        {  // For example: space --> " "
+          continue;
+        }
 
         /*
         Sequence of index

@@ -32,8 +32,11 @@ public:
   ~AlignmentOff();
   vector<int> run(float x, float y, float z);
   vector<int> out;
-  int imgW, imgH;
-  float groundUpBound, groundLowBound;
+  const int imgW = camera::image_width;
+  const int imgH = camera::image_height;
+  // LiDAR ground is between -2.5m and -3.3m
+  const float groundUpBound = -2.5;
+  const float groundLowBound = -3.3;
   cv::Point3d** spatial_points_;
 
   bool is_valid_image_point(const int row, const int col) const;

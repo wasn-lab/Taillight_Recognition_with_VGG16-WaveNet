@@ -136,6 +136,11 @@ set(ALL_GL_LIBS
   ${GLUT_LIBRARY}
 )
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  # workaround for
+  # /usr/lib/gcc/aarch64-linux-gnu/5/../../../aarch64-linux-gnu/libGL.so: undefined reference to `drmFreeDevices'
+  list(APPEND ALL_GL_LIBS "drm")
+endif()
 
 # Render models
 set(RENDER_MODEL_PATH
@@ -170,12 +175,7 @@ set(ALL_RENDER_MODELS
     ${RENDER_MODEL_PATH}rmImageArray.cpp
     ${RENDER_MODEL_PATH}rmlv2TrafficLightImage.cpp
     ${RENDER_MODEL_PATH}rmlv2PathPlan_navPath.cpp
-
 )
-
-
-
-
 
 # Libraries
 # ROS interfaces
