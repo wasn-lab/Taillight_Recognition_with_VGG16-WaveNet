@@ -32,24 +32,19 @@ function cleanup {
 function commit {
   data_dir=$1
   stream=$2
-  day=$(date +"-%d")$
-  if [[ "$day" -ge "8" ]]; then
-    echo "Only commit at the first week of a month to reduce execution."
-  else
-    echo "`date`: start commit"
-    if [[ ! -z "${USER_NAME}" && ! -z "${USER_PASSWORD}" ]]; then
-      cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream ${stream} --dir ${data_dir} --user ${USER_NAME} --password ${USER_PASSWORD}
-    fi
-    echo "`date`: end commit"
+  echo "`date`: start commit"
+  if [[ ! -z "${USER_NAME}" && ! -z "${USER_PASSWORD}" ]]; then
+    cov-commit-defects --host 140.96.109.174 --dataport 9090 --stream ${stream} --dir ${data_dir} --user ${USER_NAME} --password ${USER_PASSWORD}
   fi
+  echo "`date`: end commit"
 }
 
 function analyze {
   data_dir=$1
   echo "`date`: start analyze"
-  cov-analyze -dir ${data_dir} --strip-path ${repo_dir}/
+  cov-analyze -dir ${data_dir} --strip-path ${repo_dir}/..
   for cfg in $cfgs; do
-    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${repo_dir}/
+    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${repo_dir}/..
   done
   echo "`date`: end analyze"
 }
