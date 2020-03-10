@@ -1,5 +1,5 @@
 #include <buffer_node.h>
-#include <stdio.h>
+#include <cstdio>
 
 class Buffer
 {

@@ -1,6 +1,6 @@
 <launch>
   <arg name="pub_tf" default="true" />
-  <arg name="rviz_config" default="U3_b4" />
+  <arg name="rviz_config" default="U3_b5" />
 
   <!-- rviz ************************************************************************************* -->
   <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/$(arg rviz_config).rviz" />
@@ -46,6 +46,17 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="fusion"/>
       <param name="delay_pos_x"  value="1.0"/>
+  </node>
+
+  <!-- Tracking Polygon ************************************************************************* -->
+  <node name="m_Tracking_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/PathPredictionOutput"/>
+      <param name="red"   value="0.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-3.0"/>
+      <param name="is_tracking_mode"  value="true"/>
   </node>
 
   <!-- virbb bbox ******************************************************************************* -->

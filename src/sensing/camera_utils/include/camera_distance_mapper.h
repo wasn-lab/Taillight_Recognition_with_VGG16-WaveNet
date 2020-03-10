@@ -19,8 +19,12 @@ private:
   int read_dist_from_json();
 
 public:
-  CameraDistanceMapper(const camera::id cam_id);
-  ~CameraDistanceMapper();
+  explicit CameraDistanceMapper(const camera::id cam_id);
+  CameraDistanceMapper(CameraDistanceMapper&) = delete;
+  CameraDistanceMapper(CameraDistanceMapper&&) = delete;
+  CameraDistanceMapper& operator=(CameraDistanceMapper&) = delete;
+  CameraDistanceMapper& operator=(CameraDistanceMapper&&) = delete;
+  ~CameraDistanceMapper() = delete;
   cv::Mat remap_distance_in_undistorted_image();
   int get_distance_raw_1920x1208(const int im_x, const int im_y, float* spatial_x, float* spatial_y,
                                  float* spatial_z) const;

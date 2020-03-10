@@ -1,6 +1,6 @@
-#include <stdio.h>
+#include <cstdio>
 #include <sys/timeb.h>
-#include <time.h>
+#include <ctime>
 #include <queue>
 #include <boost/thread/thread.hpp>
 #include "Transmission/UdpClientServer.h"
