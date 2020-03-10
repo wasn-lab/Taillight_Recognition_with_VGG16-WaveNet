@@ -31,7 +31,7 @@ void DistanceEstimation::init(std::string pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string FC60Json = pkgPath;
-    FC60Json.append("/data/alignment/FB60_new.json");
+    FC60Json.append("/data/alignment/out.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
@@ -51,6 +51,16 @@ void DistanceEstimation::init(std::string pkgPath, int mode)
 
 void DistanceEstimation::initParams()
 { 
+  // camId: 0 (Front Center)
+  // arr_params[camera::id::front_bottom_60].regionHeight_x = {376, 368, 361, 355, 350, 346, 342, 339, 336, 333, 331, 329, 321, 315, 311, 309, 306, 304 };
+
+  // arr_params[camera::id::front_bottom_60].regionHeight_x = {1183, 1158, 1136, 1116, 1101, 1088, 1075, 1066, 1057, 1048, 1041, 1034, 1009, 991, 978, 972, 963, 956 };
+  // arr_params[camera::id::front_bottom_60].regionDist_x = { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  // arr_params[camera::id::front_bottom_60].regionHeightSlope_y = { 0.182,  0.292, 0.345, 0.413,  0.633, 1.176, 100,
+  //                                 -1.25, -0.583, -0.386, -0.292, -0.241, -0.121 };
+  // arr_params[camera::id::front_bottom_60].regionHeight_y = { -729, 16, 199, 385, 600, 808, 1032, 1266, 1522, 1797, 2094, 2220, 2678 };
+  // arr_params[camera::id::front_bottom_60].regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+
   // camId: 0 (Front Center)
   arr_params[camera::id::front_bottom_60].regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
                              1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
