@@ -43,7 +43,10 @@ void MultipartStream::sendPartFooter(const ros::Time &time) {
   pf.timestamp = time;
   pf.contents = str;
   connection_->write(boost::asio::buffer(*str), str);
-  if (max_queue_size_ > 0) pending_footers_.push(pf);
+  if (max_queue_size_ > 0)
+  {
+    pending_footers_.push(pf);
+  }
 }
 
 void MultipartStream::sendPartAndClear(const ros::Time &time, const std::string& type,

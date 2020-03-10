@@ -24,7 +24,9 @@ void RosCompressedStreamer::start() {
 void RosCompressedStreamer::restreamFrame(double max_age)
 {
   if (inactive_ || (last_msg == 0))
+  {
     return;
+  }
 
   if ( last_frame + ros::Duration(max_age) < ros::Time::now() ) {
     boost::mutex::scoped_lock lock(send_mutex_);

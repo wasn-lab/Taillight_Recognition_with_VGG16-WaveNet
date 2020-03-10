@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <math.h>
+#include <cmath>
 
 using namespace std;
  
@@ -10,11 +10,13 @@ struct Point {
     double X;
     double Y;
     double Speed;
+    double Direction;
 };
 
 
 class Geofence{
     public:
+    Geofence(double Bound);
     double getDistance();
     double getDistance_w();
     double getFarest();
@@ -27,7 +29,7 @@ class Geofence{
     int setPointCloud(const vector<Point> &PointCloud,bool isLocal, double SLAM_x, double SLAM_y, double Heading); //Update pointcloud, must set before fist execution of Calcuator
     int setPath(const vector<Point> &PathPoints); //Update Path points in absolute coordibate, must set before fist execution of Calcuator
     int Calculator(); //Calculate geofence by currently set Poly and PointCloud
-    
+
     
 
     private:
@@ -41,5 +43,6 @@ class Geofence{
     double ObjSpeed; //Geofence speed
     double Nearest_X; //Nearest point's (X,Y)
     double Nearest_Y;
+    double Boundary;
     
 };

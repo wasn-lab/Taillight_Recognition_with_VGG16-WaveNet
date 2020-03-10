@@ -1,31 +1,35 @@
 #include "projector3.h"
 #include <opencv2/opencv.hpp>
-#include <string.h>
+#include "camera_params_b1.h"
 #include <camera_utils_defs.h>
+#include <string.h>
 
-void Projector3::init(const char* camera_topic_name)
+void Projector3::init(int camera_id)
 {
-  if (strcmp(camera_topic_name, "/cam/F_center") == 0)
+  char* fileName;
+  char* filePath;
+  switch (camera_id)
   {
-    char* fileName = (char*)"test_0225_F_center.yml";
-    char* filePath = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(fileName) + 1];
-    std::strcpy(filePath, CAMERA_UTILS_DATA_DIR);
-    std::strcat(filePath, fileName);
-    readCameraParameters(filePath);
-  }
-  else
-  {
-    std::cerr << " No match topic name, init failed." << std::endl;
+    case camera::id::front_60:
+      fileName = (char*)"test_0225_F_center.yml";
+      filePath = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(fileName) + 1];
+      std::strcpy(filePath, CAMERA_UTILS_DATA_DIR);
+      std::strcat(filePath, fileName);
+      readCameraParameters(filePath);
+      break;
+    default:
+      std::cerr << " No match camera id, init failed." << std::endl;
+      break;
   }
 }
 
-std::vector<int> Projector3::project(double x, double y, double z)
+std::vector<int> Projector3::project(float x, float y, float z)
 {
   std::vector<int> result(2);
   if (!projectionMatrix.empty())
   {
     std::vector<cv::Point3d> objectPoint;
-    objectPoint.push_back(cv::Point3d(x, y, z));
+    objectPoint.push_back(cv::Point3d((double)x, (double)y, (double)z));
     std::vector<cv::Point2d> imagePoint;
     cv::projectPoints(objectPoint, rotarionVec, translationVec, cameraMat, distCoeff, imagePoint);
     result[0] = imagePoint[0].x;
