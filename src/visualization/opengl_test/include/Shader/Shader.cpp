@@ -19,8 +19,11 @@ void Shader::LoadShader(std::string fileName, int shaderType){
 }
 
 void Shader::Delete(){
-	if (!loaded)return;
-	loaded = false;
+  if (!loaded)
+  {
+    return;
+  }
+  loaded = false;
 	glDeleteShader(id);
 }
 
@@ -59,7 +62,10 @@ void ShaderProgram::LinkProgram(){
 }
 
 void ShaderProgram::UseProgram(){
-	if (linked)glUseProgram(id);
+  if (linked)
+  {
+    glUseProgram(id);
+  }
 }
 void ShaderProgram::CloseProgram(){
     glUseProgram(0); // Use the default shader program (compactble with openGL ver 1.0 commands)
@@ -71,8 +77,11 @@ GLuint ShaderProgram::GetID(){
 }
 
 void ShaderProgram::Delete(){
-	if (!linked)return;
-	linked = false;
+  if (!linked)
+  {
+    return;
+  }
+  linked = false;
 	glDeleteProgram(id);
 }
 // Private methods

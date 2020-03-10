@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <cfloat>  // for DBL_MAX
 #include <cmath>   // for fabs()
 

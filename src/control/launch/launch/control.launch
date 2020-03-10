@@ -1,8 +1,15 @@
 <!-- -*- mode: XML -*- -->
 <launch>
+	<!-- declare arg to be passed in -->
+	<!-- 0=fusion, 1=lidar, 2=camera -->
+ 	<arg name="pp_input_type" default="1"/>
 
+
+
+	<!-- nodes -->
 	<node pkg="from_dspace" type="from_dspace" name="from_dspace" output="screen" cwd="node" respawn="true"  />
 	<node pkg="to_dspace" type="to_dspace" name="to_dspace" output="screen" cwd="node" respawn="true"  />
+	<node pkg="to_dspace" type="bus_stop_info" name="bus_stop_info" output="screen" cwd="node" respawn="true"  />
 	<node pkg="trimble_gps_imu_pub" type="trimble_gps_imu_pub_node" name="trimble_gps_imu_pub_node" output="screen" cwd="node" respawn="true"  />
 	<node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  />
@@ -12,7 +19,8 @@
 	<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true"  />
 	<node pkg="geofence" type="geofence" name="geofence" output="screen" cwd="node" respawn="true"  />
-	<!--node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  /-->
+	<node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  />
+		<param name="pp_input_type" value="$(arg pp_input_type)" type="int"/>
 	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
 		<param name="Path_flag" value="0" type="int"/>
 	</node-->

@@ -7,6 +7,7 @@
     args="
     -mode a
     -expected_fps 30
+    -do_resize=true
     "
     output="screen"
   />

@@ -4,7 +4,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include "common.h"
-#include <float.h>
+#include <cfloat>
 
 namespace gpu {
 

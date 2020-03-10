@@ -18,7 +18,7 @@ public:
   bool tracked_ = false;
 
   unsigned int lost_time_ = 0;
-  static constexpr unsigned int lost_time_max_ = 2;
+  static constexpr unsigned int lost_time_max_ = 1;
   bool lost_ = false;
 
   cv::KalmanFilter kalman_;
