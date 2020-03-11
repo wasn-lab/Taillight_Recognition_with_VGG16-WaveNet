@@ -202,7 +202,7 @@ uint32_t calc_cvmat_checksum(const cv::Mat& img)
 uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len)
 {
   const uint32_t p = 16777619;
-  auto hash = (uint32_t)2166136261;
+  auto hash = static_cast<uint32_t>(2166136261);
   for (size_t i = 0; i < len; i++)
   {
     hash = (hash ^ bytes[i]) * p;
