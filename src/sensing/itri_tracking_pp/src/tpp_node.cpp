@@ -850,12 +850,6 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
     quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
                       tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
     vel_.set_ego_heading(yaw);
-
-    // std::cout << tf_stamped.transform.rotation.x << " " << tf_stamped.transform.rotation.y << " " <<
-    // tf_stamped.transform.rotation.z << " " << tf_stamped.transform.rotation.w << " " << roll << " " << pitch << " "
-    // << yaw << std::endl;
-
-    get_current_ego_data_main();
   }
   else
   {
@@ -863,6 +857,8 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
     vel_.set_ego_y_abs(0.f);
     vel_.set_ego_heading(0.f);
   }
+
+  get_current_ego_data_main();
 }
 
 void TPPNode::set_ros_params()
