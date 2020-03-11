@@ -1,4 +1,4 @@
-#include "alignment.h"
+#include "alignment_v2.h"
 
 using namespace std;
 using namespace pcl;
@@ -6,7 +6,7 @@ using namespace DriveNet;
 
 void Alignment::projectMatrixInit(camera::id cam_id)
 {
-  projector2_.init(cam_id);
+  projector3_.init(cam_id);
 }
 PixelPosition Alignment::projectPointToPixel(PointXYZI point)
 {
@@ -16,7 +16,7 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   vector<int> pixel_position_vect;
   PixelPosition pixel_position{ -1, -1 };
 
-  pixel_position_vect = projector2_.project(x, y, z);
+  pixel_position_vect = projector3_.project(x, y, z);
   pixel_position.u = pixel_position_vect[0];
   pixel_position.v = pixel_position_vect[1];
 
