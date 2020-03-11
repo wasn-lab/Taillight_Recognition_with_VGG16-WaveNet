@@ -66,7 +66,7 @@ pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_right
 std::vector<pcl::visualization::Camera> g_cam;
 
 /// object
-std::vector<std::vector<msgs::DetectedObject>> g_objects;
+std::vector<std::vector<msgs::DetectedObject>> g_objects(g_cam_ids.size());
 
 //////////////////// for camera image
 void callback_cam_front_60(const sensor_msgs::Image::ConstPtr& msg)
