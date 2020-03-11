@@ -1,14 +1,14 @@
 #ifndef __TPP_BASE_H__
 #define __TPP_BASE_H__
 
-#include <cstdio>   // puts
+#include <cstdio>    // puts
 #include <iostream>  // std::cout
 #include <vector>
 #include <iomanip>
 #include <chrono>     // std::chrono
 #include <thread>     // this_thread
 #include <cmath>      // std::tan2
-#include <cmath>     // round
+#include <cmath>      // round
 #include <stdexcept>  // std::runtime_error
 
 #include <mutex>
