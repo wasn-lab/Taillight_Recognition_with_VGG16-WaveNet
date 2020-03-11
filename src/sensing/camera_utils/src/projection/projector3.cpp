@@ -22,7 +22,6 @@ void Projector3::init(int camera_id)
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
   }
-
 }
 
 std::vector<int> Projector3::project(float x, float y, float z)
