@@ -22,7 +22,7 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   float y = point.y;
   float z = point.z;
   vector<int> pixel_position_vect;
-  PixelPosition pixel_position{-1, -1};
+  PixelPosition pixel_position{ -1, -1 };
 
   pixel_position_vect = projector3_.project(x, y, z);
   pixel_position.u = pixel_position_vect[0];

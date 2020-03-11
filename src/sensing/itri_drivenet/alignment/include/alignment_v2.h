@@ -12,7 +12,6 @@
 #include "drivenet/image_preprocessing.h"
 #include <string>
 
-
 struct PixelPosition
 {
   int u;
