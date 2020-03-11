@@ -1,5 +1,6 @@
 #include "projector3.h"
 #include <opencv2/opencv.hpp>
+#include "car_model.h"
 #include "camera_params.h"
 #include <camera_utils_defs.h>
 #include <string.h>
@@ -21,6 +22,7 @@ void Projector3::init(int camera_id)
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
   }
+
 }
 
 std::vector<int> Projector3::project(float x, float y, float z)
