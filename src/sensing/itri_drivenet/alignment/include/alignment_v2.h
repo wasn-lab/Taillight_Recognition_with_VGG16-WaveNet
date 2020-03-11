@@ -26,8 +26,8 @@ private:
   int image_h_ = camera::image_height;
 
 public:
-  Alignment();
-  ~Alignment();
+  Alignment() = default;
+  ~Alignment() = default;
   void projectMatrixInit(camera::id cam_id);
   PixelPosition projectPointToPixel(pcl::PointXYZI point);
   cv::Scalar getDistColor(float distance);

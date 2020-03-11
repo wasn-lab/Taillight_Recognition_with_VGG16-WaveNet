@@ -236,10 +236,10 @@ void drawPointCloudOnImage()
         pixel_position = g_alignments[cam_order].projectPointToPixel(g_lidarall_ptr->points[i]);
         if (pixel_position.u >= 0 && pixel_position.v >= 0)
         {
-          cv::Point center_point_ = cv::Point(pixel_position.u, pixel_position.v);
+          cv::Point center_point = cv::Point(pixel_position.u, pixel_position.v);
           float distance_x = g_lidarall_ptr->points[i].x;
           cv::Scalar point_color = g_alignments[cam_order].getDistColor(distance_x);
-          cv::circle(g_mats[cam_order], center_point_, 1, point_color, -1, cv::LINE_8, 0);
+          cv::circle(g_mats[cam_order], center_point, 1, point_color, -1, cv::LINE_8, 0);
           cam_points[cam_order].points[cloud_sizes[cam_order]] = cam_points[cam_order].points[i];
           cloud_sizes[cam_order]++;
           // std::cout << "Camera u: " << pixel_position.u << ", v: " << pixel_position.v << std::endl;

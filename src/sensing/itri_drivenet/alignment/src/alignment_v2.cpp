@@ -4,17 +4,9 @@ using namespace std;
 using namespace pcl;
 using namespace DriveNet;
 
-Alignment::Alignment()
+void Alignment::projectMatrixInit(camera::id cam_id)
 {
-}
-
-Alignment::~Alignment()
-{
-}
-
-void Alignment::projectMatrixInit(camera::id camera_id)
-{
-  projector3_.init(camera_id);
+  projector3_.init(cam_id);
 }
 PixelPosition Alignment::projectPointToPixel(PointXYZI point)
 {
@@ -38,18 +30,18 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   }
   return pixel_position;
 }
-cv::Scalar Alignment::getDistColor(float distance)
+cv::Scalar Alignment::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
-  if (distance >= 0 && distance <= 10)
+  if (distance_in_meters >= 0 && distance_in_meters <= 10)
   {
     color = Color::red_;
   }
-  else if (distance > 10 && distance <= 20)
+  else if (distance_in_meters > 10 && distance_in_meters <= 20)
   {
     color = Color::yellow_;
   }
-  else if (distance > 20 && distance <= 30)
+  else if (distance_in_meters > 20 && distance_in_meters <= 30)
   {
     color = Color::green_;
   }
