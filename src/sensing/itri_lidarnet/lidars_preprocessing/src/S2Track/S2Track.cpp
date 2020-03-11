@@ -41,7 +41,7 @@ S2Track::update (bool is_debug,
       float dif_dis = geometry::distance (PointXYZ (cluster_info[i].center.x, cluster_info[i].center.y, 0),
                                           PointXYZ (pre_vehicle_table.at (j).center.x, pre_vehicle_table.at (j).center.y, 0));  //the difference of cur center and pre center
       float dif_vol = fabs (cluster_info[i].dis_max_min - pre_vehicle_table.at (j).dis_max_min);
-      float dif_num = abs (cluster_info[i].cloud.size () - pre_vehicle_table.at (j).cloud.size ());
+      float dif_num = abs (int(cluster_info[i].cloud.size ()) - int(pre_vehicle_table.at (j).cloud.size ()));
 
       PointXYZ test_direction (cluster_info[i].center.x - pre_vehicle_table.at (j).center.x, cluster_info[i].center.y - pre_vehicle_table.at (j).center.y, 0);
 
