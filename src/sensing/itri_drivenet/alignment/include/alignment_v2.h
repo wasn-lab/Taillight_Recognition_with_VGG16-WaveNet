@@ -1,15 +1,16 @@
-#ifndef ALIGNMENT_H_
-#define ALIGNMENT_H_
+#ifndef ALIGNMENT_B1_V2_H_
+#define ALIGNMENT_B1_V2_H_
 
 /// pcl
 #include <pcl/point_types.h>
 
 /// projection
-#include <projection/projector2.h>
+#include <projection/projector3.h>
 
 /// util
 #include <camera_params.h>
 #include "drivenet/image_preprocessing.h"
+#include <string>
 
 struct PixelPosition
 {
@@ -20,7 +21,7 @@ struct PixelPosition
 class Alignment
 {
 private:
-  Projector2 projector2_;
+  Projector3 projector3_;
   int image_w_ = camera::image_width;
   int image_h_ = camera::image_height;
 
