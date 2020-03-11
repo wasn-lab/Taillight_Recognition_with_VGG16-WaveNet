@@ -9,7 +9,7 @@ void Projector3::init(int camera_id)
 {
   char* file_name;
   char* file_path;
-  if (CAR_MODEL_IS_B1_V2)
+  #if CAR_MODEL_IS_B1_V2
     switch (camera_id)
     {
       case camera::id::front_bottom_60:
@@ -23,6 +23,7 @@ void Projector3::init(int camera_id)
         std::cerr << " No match camera id, init failed." << std::endl;
         break;
     }
+  #endif
 }
 
 std::vector<int> Projector3::project(float x, float y, float z)
