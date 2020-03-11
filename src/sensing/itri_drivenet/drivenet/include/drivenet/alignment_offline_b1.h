@@ -22,6 +22,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <jsoncpp/json/json.h>
 
+using namespace cv;
+
 class AlignmentOff
 {
 private:

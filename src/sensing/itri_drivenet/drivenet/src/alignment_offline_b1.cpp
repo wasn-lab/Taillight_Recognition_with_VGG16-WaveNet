@@ -102,24 +102,30 @@ bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
 void AlignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
-  // Mat tmpa(imgH, imgW, CV_8UC3);
+  Mat tmpa(imgH, imgW, CV_8UC3);
+  // std::vector<cv::Point> dis_esti_table;
+  
 
   bool done = false;
 
-  // for(int i = 0; i < 50; i++)
-  // {
-  //   for(int j = -10; j < 11; j++)
-  //   {
-  //     out = run((float)i, (float)j, -3);
+  for(int i = 0; i < 50; i++)
+  {
+    for(int j = -10; j < 11; j++)
+    {
+      float tmpz = ((float)i-79)/30;
+      out = run((float)i, (float)j, tmpz);
 
-  //     if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
-  //     {
-  //       spatial_points_[out[1]][out[0]].x = i;
-  //       spatial_points_[out[1]][out[0]].y = j;
-  //       spatial_points_[out[1]][out[0]].z = 0.0;
-  //     }
-  //   }
-  // }
+      if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
+      {
+        std::cout << "2D: x = " << out[0] << ". y = " << out[1] ;
+        std::cout << ", 3D: x = " << i << ". y = " << j << ". z = " << tmpz << std::endl ;
+        
+        spatial_points_[out[1]][out[0]].x = i;
+        spatial_points_[out[1]][out[0]].y = j;
+        spatial_points_[out[1]][out[0]].z = 0.0;
+      }
+    }
+  }
 
   for (int row = 0; row < imgH; row++)
   {
@@ -131,19 +137,19 @@ void AlignmentOff::approx_nearest_points_if_necessary()
         // tmpa(imgW, imgH)[0] = 255;
         // tmpa(imgW, imgH)[1] = 255;
         // // tmpa(imgW, imgH)[2] = 255;
-        // tmpa.at<Vec3b>(row, col)[0] = 255;
-        // tmpa.at<Vec3b>(row, col)[1] = 255;
-        // tmpa.at<Vec3b>(row, col)[2] = 255;
+        tmpa.at<Vec3b>(row, col)[0] = 255;
+        tmpa.at<Vec3b>(row, col)[1] = 255;
+        tmpa.at<Vec3b>(row, col)[2] = 255;
       }
     }
   }
 
-  // namedWindow("image", 1);
-	// imshow("image", tmpa);
-	// waitKey();
+  namedWindow("image", 1);
+	imshow("image", tmpa);
+	waitKey();
 
   std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
-
+  /*
   while (!done)
   {
     int num_approx = 0;
@@ -188,6 +194,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     }
   }
   std::cout << " unset_points: " << unset_points.size();
+  */
 }
 
 void AlignmentOff::dump_distance_in_json() const
