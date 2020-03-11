@@ -16,11 +16,11 @@
 //
 #ifndef RTW_HEADER_MM_TP_h_
 #define RTW_HEADER_MM_TP_h_
-#include <stddef.h>
+#include <cstddef>
 #include "rtwtypes.h"
 #include <cmath>
-#include <math.h>
-#include <string.h>
+#include <cmath>
+#include <cstring>
 #ifndef MM_TP_COMMON_INCLUDES_
 # define MM_TP_COMMON_INCLUDES_
 #include "rtwtypes.h"

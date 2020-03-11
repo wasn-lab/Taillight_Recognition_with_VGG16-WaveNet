@@ -10,7 +10,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <nav_msgs/Path.h>
-#include <math.h>
+#include <cmath>
 #include "astar_initial/UKF_MM_msg.h"
 
 ros::Publisher basepath_pub;

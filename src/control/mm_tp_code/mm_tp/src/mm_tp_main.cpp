@@ -32,13 +32,13 @@
 #include <nav_msgs/Path.h>
 // #include <jsk_recognition_msgs/PolygonArray.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <unistd.h>
 
-#include <stddef.h>
-#include <stdio.h>                     // This ert_main.c example uses printf/fflush
+#include <cstddef>
+#include <cstdio>                     // This ert_main.c example uses printf/fflush
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include "MM_TP.h"                     // Model's header file
 #include "rtwtypes.h"
 

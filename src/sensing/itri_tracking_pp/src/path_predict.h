@@ -64,8 +64,8 @@ private:
 
   static constexpr float pp_allow_x_min_m = -10.f;
   static constexpr float pp_allow_x_max_m = 100.f;
-  static constexpr float pp_allow_y_min_m = -30.f;
-  static constexpr float pp_allow_y_max_m = 30.f;
+  static constexpr float pp_allow_y_min_m = -10.f;
+  static constexpr float pp_allow_y_max_m = 10.f;
 
   float ego_x_abs_ = 0.f;
   float ego_y_abs_ = 0.f;

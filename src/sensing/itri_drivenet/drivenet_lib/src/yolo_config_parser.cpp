@@ -1,6 +1,6 @@
 #include "yolo_config_parser.h"
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 
 #define NO_UNUSED_VAR_CHECK(x) ((void)(x))
