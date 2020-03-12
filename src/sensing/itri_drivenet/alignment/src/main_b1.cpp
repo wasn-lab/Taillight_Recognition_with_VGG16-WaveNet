@@ -373,7 +373,7 @@ int main(int argc, char** argv)
         /// draw lidar on cv viewer
         getPointCloudInImageFOV();
         drawPointCloudOnImages();
-        getPointCloudInBoxFOV();
+        drawBoxOnImages();
         cv::imshow(cam_topic_names[cam_order], g_mats[cam_order]);
       }
       g_sync_lock_objects[cam_order].unlock();
