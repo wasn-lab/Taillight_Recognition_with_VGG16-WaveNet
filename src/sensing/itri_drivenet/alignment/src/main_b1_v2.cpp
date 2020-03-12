@@ -10,7 +10,7 @@
 
 /// package
 #include "camera_params.h"
-#include "alignment_v2.h"
+#include "alignment.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>

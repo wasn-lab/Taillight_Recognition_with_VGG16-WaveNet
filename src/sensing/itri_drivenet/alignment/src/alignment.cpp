@@ -6,8 +6,13 @@ using namespace DriveNet;
 
 void Alignment::projectMatrixInit(camera::id cam_id)
 {
+#if CAR_MODEL_IS_B1
   projector2_.init(cam_id);
+#elif CAR_MODEL_IS_B1_V2
+  projector3_.init(cam_id);
+#endif
 }
+
 PixelPosition Alignment::projectPointToPixel(PointXYZI point)
 {
   float x = point.x;
@@ -16,7 +21,11 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   vector<int> pixel_position_vect;
   PixelPosition pixel_position{ -1, -1 };
 
+#if CAR_MODEL_IS_B1
   pixel_position_vect = projector2_.project(x, y, z);
+#elif CAR_MODEL_IS_B1_V2
+  pixel_position_vect = projector3_.project(x, y, z);
+#endif
   pixel_position.u = pixel_position_vect[0];
   pixel_position.v = pixel_position_vect[1];
 
@@ -30,6 +39,7 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   }
   return pixel_position;
 }
+
 cv::Scalar Alignment::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
