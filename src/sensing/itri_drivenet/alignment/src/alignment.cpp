@@ -39,25 +39,3 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   }
   return pixel_position;
 }
-
-cv::Scalar Alignment::getDistColor(float distance_in_meters)
-{
-  cv::Scalar color;
-  if (distance_in_meters >= 0 && distance_in_meters <= 10)
-  {
-    color = Color::red_;
-  }
-  else if (distance_in_meters > 10 && distance_in_meters <= 20)
-  {
-    color = Color::yellow_;
-  }
-  else if (distance_in_meters > 20 && distance_in_meters <= 30)
-  {
-    color = Color::green_;
-  }
-  else
-  {
-    color = Color::blue_;
-  }
-  return color;
-}

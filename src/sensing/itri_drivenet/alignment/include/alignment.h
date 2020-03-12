@@ -18,12 +18,6 @@
 #error "car model is not well defined"
 #endif
 
-struct PixelPosition
-{
-  int u;
-  int v;
-};
-
 class Alignment
 {
 private:
@@ -42,7 +36,7 @@ public:
   Alignment() = default;
   ~Alignment() = default;
   void projectMatrixInit(camera::id cam_id);
-  PixelPosition projectPointToPixel(pcl::PointXYZI point);
+  DriveNet::PixelPosition projectPointToPixel(pcl::PointXYZI point);
   cv::Scalar getDistColor(float distance);
 };
 

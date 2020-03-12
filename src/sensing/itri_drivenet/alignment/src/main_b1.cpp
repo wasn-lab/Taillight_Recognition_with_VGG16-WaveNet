@@ -11,6 +11,7 @@
 /// package
 #include "camera_params.h"
 #include "alignment.h"
+#include "visualization_util.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -26,6 +27,9 @@
 /// thread
 #include <mutex>
 
+/// namespace
+using namespace DriveNet;
+
 /// camera layout
 #if CAR_MODEL_IS_B1
 const std::vector<camera::id> g_cam_ids{ camera::id::front_60, camera::id::top_front_120, camera::id::left_60,
@@ -36,6 +40,7 @@ const std::vector<camera::id> g_cam_ids{ camera::id::front_60, camera::id::top_f
 
 /// class
 std::vector<Alignment> g_alignments(g_cam_ids.size());
+Visualization g_visualization;
 
 /// thread
 std::vector<std::mutex> g_sync_lock_cams(g_cam_ids.size());
@@ -50,9 +55,8 @@ int g_image_w = camera::image_width;
 int g_image_h = camera::image_height;
 int g_raw_image_w = camera::raw_image_width;
 int g_raw_image_h = camera::raw_image_height;
-float g_scaling_ratio_w = (float)g_image_w / (float)g_raw_image_w;
-float g_scaling_ratio_h = (float)g_image_h / (float)g_raw_image_h;
 std::vector<cv::Mat> g_mats(g_cam_ids.size());
+std::vector<std::vector<PixelPosition>> g_cam_pixels(g_cam_ids.size());
 
 /// lidar
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -220,25 +224,33 @@ void alignmentInitializer()
   }
 }
 
-void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects)
+void drawBoxOnImages()
 {
-  std::vector<cv::Point> cvPoints(2);
-  std::vector<PixelPosition> pixelPositions(2);
-  for (size_t i = 0; i < objects.size(); i++)
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    pixelPositions[0].u = objects[i].camInfo.u;
-    pixelPositions[0].v = objects[i].camInfo.v;
-    pixelPositions[1].u = objects[i].camInfo.u + objects[i].camInfo.width;
-    pixelPositions[1].v = objects[i].camInfo.v + objects[i].camInfo.height;
-
-    cvPoints[0].x = int(pixelPositions[0].u*g_scaling_ratio_w);
-    cvPoints[0].y = int(pixelPositions[0].v*g_scaling_ratio_h);
-    cvPoints[1].x = int(pixelPositions[1].u*g_scaling_ratio_w);
-    cvPoints[1].y = int(pixelPositions[1].v*g_scaling_ratio_h);
-    cv::rectangle(m_src, cvPoints[0], cvPoints[1], cv::Scalar(255, 255, 255), 1, cv::LINE_8);
+    g_visualization.drawBoxOnImage(g_mats[cam_order], g_objects[cam_order]);
   }
 }
-void drawPointCloudOnImage()
+void drawPointCloudOnImages()
+{
+  pcl::PointCloud<pcl::PointXYZI> point_cloud;
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    if(cam_order == 0) point_cloud = *g_cam_front_60_ptr;
+    else if (cam_order == 1) point_cloud = *g_cam_top_front_120_ptr;
+    else if (cam_order == 2) point_cloud = *g_cam_left_60_ptr;
+    else if (cam_order == 3) point_cloud = *g_cam_right_60_ptr;
+
+    for (size_t i = 0; i < point_cloud.size(); i++)
+    {
+      int point_u = g_cam_pixels[cam_order][i].u;
+      int point_v = g_cam_pixels[cam_order][i].v;
+      float point_x = point_cloud[i].x;
+      g_visualization.drawPointCloudOnImage(g_mats[cam_order], point_u, point_v, point_x);
+    }
+  }
+}
+void getPointCloudInImageFOV()
 {
   pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_front_60_ptr);
   pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_top_front_120_ptr);
@@ -258,10 +270,7 @@ void drawPointCloudOnImage()
         pixel_position = g_alignments[cam_order].projectPointToPixel(g_lidarall_ptr->points[i]);
         if (pixel_position.u >= 0 && pixel_position.v >= 0)
         {
-          cv::Point center_point = cv::Point(pixel_position.u, pixel_position.v);
-          float distance_x = g_lidarall_ptr->points[i].x;
-          cv::Scalar point_color = g_alignments[cam_order].getDistColor(distance_x);
-          cv::circle(g_mats[cam_order], center_point, 1, point_color, -1, cv::LINE_8, 0);
+          g_cam_pixels[cam_order].push_back(pixel_position);
           cam_points[cam_order].points[cloud_sizes[cam_order]] = cam_points[cam_order].points[i];
           cloud_sizes[cam_order]++;
           // std::cout << "Camera u: " << pixel_position.u << ", v: " << pixel_position.v << std::endl;
@@ -274,12 +283,19 @@ void drawPointCloudOnImage()
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_points[cam_order].resize(cloud_sizes[cam_order]);
-    drawBoxOnImage(g_mats[cam_order], g_objects[cam_order]);
   }
   *g_cam_front_60_ptr = cam_points[0];
   *g_cam_top_front_120_ptr = cam_points[1];
   *g_cam_left_60_ptr = cam_points[2];
   *g_cam_right_60_ptr = cam_points[3];
+}
+
+void release()
+{
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    g_cam_pixels[cam_order].clear();
+  }
 }
 int main(int argc, char** argv)
 {
@@ -350,8 +366,10 @@ int main(int argc, char** argv)
       g_sync_lock_objects[cam_order].lock();
       if (!g_mats[cam_order].empty())
       {
-        /// draw lidarall on cv viewer
-        drawPointCloudOnImage();
+        /// draw lidar on cv viewer
+        getPointCloudInImageFOV();
+        drawPointCloudOnImages();
+        getPointCloudInBoxFOV();
         cv::imshow(cam_topic_names[cam_order], g_mats[cam_order]);
       }
       g_sync_lock_objects[cam_order].unlock();
@@ -367,6 +385,7 @@ int main(int argc, char** argv)
 
     g_sync_lock_lidar.unlock();  // mutex lidar
     cv::waitKey(1);
+    release();
 
     ros::spinOnce();
     g_viewer->spinOnce();
