@@ -21,10 +21,10 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
     pixelPositions[1].u = objects[i].camInfo.u + objects[i].camInfo.width;
     pixelPositions[1].v = objects[i].camInfo.v + objects[i].camInfo.height;
 
-    cvPoints[0].x = int(pixelPositions[0].u*scaling_ratio_w_);
-    cvPoints[0].y = int(pixelPositions[0].v*scaling_ratio_h_);
-    cvPoints[1].x = int(pixelPositions[1].u*scaling_ratio_w_);
-    cvPoints[1].y = int(pixelPositions[1].v*scaling_ratio_h_);
+    cvPoints[0].x = int(pixelPositions[0].u * scaling_ratio_w_);
+    cvPoints[0].y = int(pixelPositions[0].v * scaling_ratio_h_);
+    cvPoints[1].x = int(pixelPositions[1].u * scaling_ratio_w_);
+    cvPoints[1].y = int(pixelPositions[1].v * scaling_ratio_h_);
     cv::rectangle(m_src, cvPoints[0], cvPoints[1], cv::Scalar(255, 255, 255), 1, cv::LINE_8);
   }
 }

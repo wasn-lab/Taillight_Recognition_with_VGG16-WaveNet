@@ -23,6 +23,7 @@ private:
   int raw_image_h_ = camera::raw_image_height;
   float scaling_ratio_w_ = (float)image_w_ / (float)raw_image_w_;
   float scaling_ratio_h_ = (float)image_h_ / (float)raw_image_h_;
+
 public:
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x);
   void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects);
