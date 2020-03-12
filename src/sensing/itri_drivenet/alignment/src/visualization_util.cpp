@@ -14,12 +14,12 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 {
   std::vector<cv::Point> cvPoints(2);
   std::vector<PixelPosition> pixelPositions(2);
-  for (size_t i = 0; i < objects.size(); i++)
+  for (const auto& obj: objects)
   {
-    pixelPositions[0].u = objects[i].camInfo.u;
-    pixelPositions[0].v = objects[i].camInfo.v;
-    pixelPositions[1].u = objects[i].camInfo.u + objects[i].camInfo.width;
-    pixelPositions[1].v = objects[i].camInfo.v + objects[i].camInfo.height;
+    pixelPositions[0].u = obj.camInfo.u;
+    pixelPositions[0].v = obj.camInfo.v;
+    pixelPositions[1].u = obj.camInfo.u + obj.camInfo.width;
+    pixelPositions[1].v = obj.camInfo.v + obj.camInfo.height;
 
     cvPoints[0].x = int(pixelPositions[0].u * scaling_ratio_w_);
     cvPoints[0].y = int(pixelPositions[0].v * scaling_ratio_h_);

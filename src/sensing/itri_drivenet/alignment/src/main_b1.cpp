@@ -237,14 +237,21 @@ void drawPointCloudOnImages()
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     if (cam_order == 0)
+    {
       point_cloud = *g_cam_front_60_ptr;
+    }
     else if (cam_order == 1)
+    {
       point_cloud = *g_cam_top_front_120_ptr;
+    }
     else if (cam_order == 2)
+    {
       point_cloud = *g_cam_left_60_ptr;
+    }
     else if (cam_order == 3)
+    {
       point_cloud = *g_cam_right_60_ptr;
-
+    }
     for (size_t i = 0; i < point_cloud.size(); i++)
     {
       int point_u = g_cam_pixels[cam_order][i].u;
