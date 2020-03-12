@@ -38,7 +38,7 @@ std::vector<Alignment> g_alignments(g_cam_ids.size());
 
 /// thread
 std::vector<std::mutex> g_sync_lock_cams(g_cam_ids.size());
-std::mutex g_sync_lock_object;
+std::vector<std::mutex> g_sync_lock_objects(g_cam_ids.size());
 std::mutex g_sync_lock_lidar;
 
 /// params
@@ -47,6 +47,10 @@ bool g_is_compressed = false;
 /// image
 int g_image_w = camera::image_width;
 int g_image_h = camera::image_height;
+int g_raw_image_w = camera::raw_image_width;
+int g_raw_image_h = camera::raw_image_height;
+float g_scaling_ratio_w = (float)g_image_w / (float)g_raw_image_w;
+float g_scaling_ratio_h = (float)g_image_h / (float)g_raw_image_h;
 std::vector<cv::Mat> g_mats(g_cam_ids.size());
 
 /// lidar
@@ -88,9 +92,9 @@ void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstP
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_object.lock();
+  g_sync_lock_objects[cam_order].lock();
   g_objects[cam_order] = msg->objects;
-  g_sync_lock_object.unlock();
+  g_sync_lock_objects[cam_order].unlock();
 }
 
 void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
@@ -131,6 +135,25 @@ void alignmentInitializer()
   }
 }
 
+void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects)
+{
+  std::vector<cv::Point> cvPoints(2);
+  std::vector<PixelPosition> pixelPositions(2);
+  for (size_t i = 0; i < objects.size(); i++)
+  {
+    pixelPositions[0].u = objects[i].camInfo.u;
+    pixelPositions[0].v = objects[i].camInfo.v;
+    pixelPositions[1].u = objects[i].camInfo.u + objects[i].camInfo.width;
+    pixelPositions[1].v = objects[i].camInfo.v + objects[i].camInfo.height;
+
+    cvPoints[0].x = int(pixelPositions[0].u*g_scaling_ratio_w);
+    cvPoints[0].y = int(pixelPositions[0].v*g_scaling_ratio_h);
+    cvPoints[1].x = int(pixelPositions[1].u*g_scaling_ratio_w);
+    cvPoints[1].y = int(pixelPositions[1].v*g_scaling_ratio_h);
+    cv::rectangle(m_src, cvPoints[0], cvPoints[1], cv::Scalar(255, 255, 255), 1, cv::LINE_8);
+  }
+}
+
 void drawPointCloudOnImage()
 {
   pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_front_bottom_60_ptr);
@@ -163,6 +186,7 @@ void drawPointCloudOnImage()
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_points[cam_order].resize(cloud_sizes[cam_order]);
+    drawBoxOnImage(g_mats[cam_order], g_objects[cam_order]);
   }
   *g_cam_front_bottom_60_ptr = cam_points[0];
 }
@@ -224,12 +248,14 @@ int main(int argc, char** argv)
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
       g_sync_lock_cams[cam_order].lock();  // mutex camera
+      g_sync_lock_objects[cam_order].lock();
       if (!g_mats[cam_order].empty())
       {
         /// draw lidarall on cv viewer
         drawPointCloudOnImage();
         cv::imshow(cam_topic_names[cam_order], g_mats[cam_order]);
       }
+      g_sync_lock_objects[cam_order].unlock();
       g_sync_lock_cams[cam_order].unlock();  // mutex camera
     }
     /// draw points on pcl viewer
