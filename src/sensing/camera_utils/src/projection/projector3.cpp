@@ -1,26 +1,29 @@
 #include "projector3.h"
 #include <opencv2/opencv.hpp>
-#include "camera_params_b1.h"
+#include "car_model.h"
+#include "camera_params.h"
 #include <camera_utils_defs.h>
 #include <string.h>
 
 void Projector3::init(int camera_id)
 {
-  char* fileName;
-  char* filePath;
-  switch (camera_id)
-  {
-    case camera::id::front_60:
-      fileName = (char*)"test_0225_F_center.yml";
-      filePath = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(fileName) + 1];
-      std::strcpy(filePath, CAMERA_UTILS_DATA_DIR);
-      std::strcat(filePath, fileName);
-      readCameraParameters(filePath);
-      break;
-    default:
-      std::cerr << " No match camera id, init failed." << std::endl;
-      break;
-  }
+  char* file_name;
+  char* file_path;
+  #if CAR_MODEL_IS_B1_V2
+    switch (camera_id)
+    {
+      case camera::id::front_bottom_60:
+        file_name = (char*)"test_0225_F_center.yml";
+        file_path = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(file_name) + 1];
+        std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
+        std::strcat(file_path, file_name);
+        readCameraParameters(file_path);
+        break;
+      default:
+        std::cerr << " No match camera id, init failed." << std::endl;
+        break;
+    }
+  #endif
 }
 
 std::vector<int> Projector3::project(float x, float y, float z)
@@ -28,12 +31,12 @@ std::vector<int> Projector3::project(float x, float y, float z)
   std::vector<int> result(2);
   if (!projectionMatrix.empty())
   {
-    std::vector<cv::Point3d> objectPoint;
-    objectPoint.push_back(cv::Point3d((double)x, (double)y, (double)z));
-    std::vector<cv::Point2d> imagePoint;
-    cv::projectPoints(objectPoint, rotarionVec, translationVec, cameraMat, distCoeff, imagePoint);
-    result[0] = imagePoint[0].x;
-    result[1] = imagePoint[0].y;
+    std::vector<cv::Point3d> object_point;
+    object_point.emplace_back(cv::Point3d((double)x, (double)y, (double)z));
+    std::vector<cv::Point2d> image_point;
+    cv::projectPoints(object_point, rotarionVec, translationVec, cameraMat, distCoeff, image_point);
+    result[0] = image_point[0].x;
+    result[1] = image_point[0].y;
   }
   else
   {
