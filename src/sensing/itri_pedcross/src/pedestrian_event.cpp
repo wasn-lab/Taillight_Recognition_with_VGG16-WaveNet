@@ -69,7 +69,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #endif
 
       // Check object source is camera
-      if (obj_pub.camInfo.u == 0 || obj_pub.camInfo.v == 0)
+      if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
       {
         continue;
       }
@@ -200,6 +200,41 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             msg->header.stamp);
         */
       }
+      obj_pub.facing_direction = get_facing_direction(keypoints);
+/*
+      cv::Point p;
+      p.x = 303;
+      p.y = 275;
+      cv::Point p2;
+      p2.x = 303;
+      p2.y = 383;
+      cv::line(matrix2, p, p2, cv::Scalar(0, 0, 255), 1);
+      cv::Point p3;
+      p3.x = 403;
+      p3.y = 383;
+      cv::line(matrix2, p, p3, cv::Scalar(0, 0, 200), 1);
+      cv::Point p4;
+      p4.x = 503;
+      p4.y = 383;
+      cv::line(matrix2, p, p4, cv::Scalar(0, 0, 155), 1);
+      cv::Point p5;
+      p5.x = 603;
+      p5.y = 383;
+      cv::line(matrix2, p, p5, cv::Scalar(0, 0, 200), 1);
+      cv::Point p6;
+      p6.x = 203;
+      p6.y = 383;
+      cv::line(matrix2, p, p6, cv::Scalar(0, 0, 155), 1);
+      cv::Point p7;
+      p7.x = 103;
+      p7.y = 383;
+      cv::line(matrix2, p, p7, cv::Scalar(0, 0, 200), 1);
+      cv::Point p8;
+      p8.x = 3;
+      p8.y = 383;
+      cv::line(matrix2, p, p8, cv::Scalar(0, 0, 155), 1);
+*/
+      obj_pub.crossProbability = adjust_probability(obj_pub);
       pedObjs.push_back(obj_pub);
 
       // buffer for draw function
@@ -226,6 +261,61 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
   }
+}
+
+float PedestrianEvent::adjust_probability(msgs::PedObject obj)
+{
+  // pedestrian position
+  float x = obj.camInfo.u + obj.camInfo.width * 0.5 ;
+  float y = obj.camInfo.v + obj.camInfo.height;
+  // too far away from car
+  if(y<275)
+  {
+    return obj.crossProbability*0.7;
+  }
+  // pedestrian in danger zone, force determine as Cross
+  if (std::fabs(x-303)<100*(y-275)/108)
+  {
+    if (y >= 310)
+    {
+      return 1;
+    }
+    else
+    {
+      // in danger zone but too far away from car
+      return obj.crossProbability;
+    }
+  }
+  if(x>=383 && std::fabs(x-303)>=300*(y-275)/108 && obj.facing_direction!=0)
+  {
+    return obj.crossProbability*0;
+  }
+  if(x<383 && std::fabs(x-303)>=300*(y-275)/108 && obj.facing_direction!=1)
+  {
+    return obj.crossProbability*0;
+  }
+  // walking into danger zone
+  // at right half of car and not goint right hand side
+  if (x>=383&&obj.facing_direction!=1)
+  {
+    return obj.crossProbability;
+  }
+  // at left half of car and not goint left hand side
+  if (x<383&&obj.facing_direction!=0)
+  {
+    return obj.crossProbability;
+  }
+  // pedestrian walking out from danger zone
+  if (std::fabs(x-303)<200*(y-275)/108)
+  {
+    return obj.crossProbability*0.8;
+  }
+  if (std::fabs(x-303)<300*(y-275)/108)
+  {
+    return obj.crossProbability*0.7;
+  }
+  // std::fabs(x-303)>=300*(y-275)/108
+  return 0;
 }
 
 void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
@@ -357,6 +447,47 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
       box.y = 0;
     }
     // draw face direction
+    if (obj.facing_direction == 0)
+    {
+      // facing left hand side
+      cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (obj.facing_direction == 1)
+    {
+      // facing right hand side
+      cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (obj.facing_direction == 2)
+    {
+      // facing car side
+      cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else
+    {
+      // facing car opposite side
+      cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+  }
+  // do resize only when computer cannot support
+  // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
+
+  // make cv::Mat to sensor_msgs::Image
+  sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
+
+  box_pub.publish(msg_pub2);
+  objs_and_keypoints.clear();
+  matrix = 0;
+}
+
+/**
+ * return 
+ * 0 for facing left
+ * 1 for facing right
+ * 2 for facing car side
+ * 3 for facing car opposite side
+ */
+int PedestrianEvent::get_facing_direction(std::vector<cv::Point2f> keypoints)
+{
     bool look_at_left = false;
     bool look_at_right = false;
     bool only_left_ear = false;
@@ -377,12 +508,12 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
       if (only_left_ear && !only_right_ear)
       {
         // if only left ear
-        look_at_left = true;
+        return 0;
       }
       if (!only_left_ear && only_right_ear)
       {
         // if only right ear
-        look_at_right = true;
+        return 1;
       }
       if (only_left_ear && only_right_ear)
       {
@@ -391,15 +522,13 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
         {
           // if right ear is on the right side of left ear
           // that is facing car opposite side
-          look_at_left = false;
-          look_at_right = false;
+          return 3;
         }
         else
         {
           // if right ear is on the left side of left ear
           // that is facing car side
-          look_at_left = true;
-          look_at_right = true;
+          return 2;
         }
       }
     }
@@ -422,33 +551,25 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
     if (look_at_left && !look_at_right)
     {
       // facing left hand side
-      cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      return 0;
     }
     else if (!look_at_left && look_at_right)
     {
       // facing right hand side
-      cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      return 1;
     }
     else if (look_at_left && look_at_right)
     {
       // facing car side
-      cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      return 2;
     }
     else
     {
       // facing car opposite side
-      cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      return 3;
     }
-  }
-  // do resize only when computer cannot support
-  // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
-
-  // make cv::Mat to sensor_msgs::Image
-  sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
-
-  box_pub.publish(msg_pub2);
-  objs_and_keypoints.clear();
-  matrix = 0;
+    // defalt: facing car opposite side
+    return 3;
 }
 
 bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)

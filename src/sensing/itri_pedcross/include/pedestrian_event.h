@@ -71,6 +71,8 @@ public:
   bool too_far(const msgs::BoxPoint box_point);
   void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
+  float adjust_probability(msgs::PedObject obj);
+  int get_facing_direction(std::vector<cv::Point2f> keypoints);
 
   // OpenPose components
   int openPoseROS();

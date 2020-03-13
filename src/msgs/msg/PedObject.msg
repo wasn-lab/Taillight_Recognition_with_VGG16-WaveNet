@@ -18,3 +18,4 @@ RadarInfo radarInfo
 LidarInfo lidarInfo
 
 float32 crossProbability
+uint16 facing_direction
