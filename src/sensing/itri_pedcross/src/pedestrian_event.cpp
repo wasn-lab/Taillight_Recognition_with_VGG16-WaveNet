@@ -236,13 +236,13 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
     std::vector<cv::Point2f> keypoints = objs_and_keypoints[i].second;
 
     // draw keypoints on raw image
-    int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+    int body_part[17] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
     unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
     for (unsigned int i = 0; i < body_part_size; i++)
     {
       keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.height;
       keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj.camInfo.height;
-      if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
+      if (keypoint_is_detected(keypoints.at(body_part[i])))
       {
         cv::Point p = keypoints.at(body_part[i]);
         p.x = obj.camInfo.u + p.x;
@@ -255,8 +255,7 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
     unsigned int body_part1_size = sizeof(body_part1) / sizeof(*body_part1);
     for (unsigned int i = 0; i < body_part1_size - 1; i++)
     {
-      if ((keypoints.at(body_part1[i]).x != 0 || keypoints.at(body_part1[i]).y != 0) &&
-          (keypoints.at(body_part1[i + 1]).x != 0 || keypoints.at(body_part1[i + 1]).y != 0))
+      if (keypoint_is_detected(keypoints.at(body_part1[i])) && keypoint_is_detected(keypoints.at(body_part1[i + 1])))
       {
         cv::Point p = keypoints.at(body_part1[i]);
         p.x = obj.camInfo.u + p.x;
@@ -272,8 +271,7 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
     unsigned int body_part2_size = sizeof(body_part2) / sizeof(*body_part2);
     for (unsigned int i = 0; i < body_part2_size - 1; i++)
     {
-      if ((keypoints.at(body_part2[i]).x != 0 || keypoints.at(body_part2[i]).y != 0) &&
-          (keypoints.at(body_part2[i + 1]).x != 0 || keypoints.at(body_part2[i + 1]).y != 0))
+      if (keypoint_is_detected(keypoints.at(body_part2[i])) && keypoint_is_detected(keypoints.at(body_part2[i + 1])))
       {
         cv::Point p = keypoints.at(body_part2[i]);
         p.x = obj.camInfo.u + p.x;
@@ -338,18 +336,109 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
                   4, 0);
     }
 
-    if (box.y >= 22)
+    if (box.y >= 25)
     {
-      box.y -= 22;
+      box.y -= 25;
     }
     else
     {
       box.y = 0;
     }
 
-    std::string id_print = "ID: " + std::to_string(obj.track.id % 1000);
+    std::string id_print = "ID:" + std::to_string(obj.track.id % 1000);
     cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
                 0);
+    if (box.y >= 25)
+    {
+      box.y -= 25;
+    }
+    else
+    {
+      box.y = 0;
+    }
+    // draw face direction
+    bool look_at_left = false;
+    bool look_at_right = false;
+    bool only_left_ear = false;
+    bool only_right_ear = false;
+    // if no left eye but left ear is detected
+    if (!keypoint_is_detected(keypoints.at(16)) && keypoint_is_detected(keypoints.at(18)))
+    {
+      only_left_ear = true;
+    }
+    // if no right eye but right ear is detected
+    if (!keypoint_is_detected(keypoints.at(15)) && keypoint_is_detected(keypoints.at(17)))
+    {
+      only_right_ear = true;
+    }
+    // if no eye detected
+    if (only_left_ear || only_right_ear)
+    {
+      if (only_left_ear && !only_right_ear)
+      {
+        // if only left ear
+        look_at_left = true;
+      }
+      if (!only_left_ear && only_right_ear)
+      {
+        // if only right ear
+        look_at_right = true;
+      }
+      if (only_left_ear && only_right_ear)
+      {
+        // if both ears detected
+        if (keypoints.at(17).x > keypoints.at(18).x)
+        {
+          // if right ear is on the right side of left ear
+          // that is facing car opposite side
+          look_at_left = false;
+          look_at_right = false;
+        }
+        else
+        {
+          // if right ear is on the left side of left ear
+          // that is facing car side
+          look_at_left = true;
+          look_at_right = true;
+        }
+      }
+    }
+    else
+    {
+      // if left ear and left eye are detected and left eye is on the left side of left ear
+      if (keypoint_is_detected(keypoints.at(16)) && keypoint_is_detected(keypoints.at(18)) &&
+          keypoints.at(16).x < keypoints.at(18).x)
+      {
+        look_at_left = true;
+      }
+      // if right ear and right eye are detected and right eye is on the right side of right ear
+      if (keypoint_is_detected(keypoints.at(15)) && keypoint_is_detected(keypoints.at(17)) &&
+          keypoints.at(15).x > keypoints.at(17).x)
+      {
+        look_at_right = true;
+      }
+    }
+
+    if (look_at_left && !look_at_right)
+    {
+      // facing left hand side
+      cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (!look_at_left && look_at_right)
+    {
+      // facing right hand side
+      cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (look_at_left && look_at_right)
+    {
+      // facing car side
+      cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else
+    {
+      // facing car opposite side
+      cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
   }
   // do resize only when computer cannot support
   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
@@ -360,6 +449,15 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
   box_pub.publish(msg_pub2);
   objs_and_keypoints.clear();
   matrix = 0;
+}
+
+bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
+{
+  if (keypoint.x > 0 || keypoint.y > 0)
+  {
+    return true;
+  }
+  return false;
 }
 
 // extract features and pass to random forest model

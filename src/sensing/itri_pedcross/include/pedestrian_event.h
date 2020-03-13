@@ -70,6 +70,7 @@ public:
   float predict_rf_pose(cv::Mat input_data);
   bool too_far(const msgs::BoxPoint box_point);
   void draw_pedestrians(cv::Mat matrix);
+  bool keypoint_is_detected(cv::Point2f keypoint);
 
   // OpenPose components
   int openPoseROS();
