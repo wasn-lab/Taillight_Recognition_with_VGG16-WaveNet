@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ################################################
-## Declare ROS messages, services and actions ##
+## Declare ROS messages, services and actions #
 ################################################
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(
