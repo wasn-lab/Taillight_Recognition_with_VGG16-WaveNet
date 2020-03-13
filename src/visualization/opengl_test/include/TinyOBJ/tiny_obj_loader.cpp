@@ -39,14 +39,20 @@ namespace tinyobj {
 
 	// for std::map
 	static inline bool operator<(const vertex_index &a, const vertex_index &b) {
-		if (a.v_idx != b.v_idx)
-			return (a.v_idx < b.v_idx);
-		if (a.vn_idx != b.vn_idx)
-			return (a.vn_idx < b.vn_idx);
-		if (a.vt_idx != b.vt_idx)
-			return (a.vt_idx < b.vt_idx);
+    if (a.v_idx != b.v_idx)
+    {
+      return (a.v_idx < b.v_idx);
+    }
+    if (a.vn_idx != b.vn_idx)
+    {
+      return (a.vn_idx < b.vn_idx);
+    }
+    if (a.vt_idx != b.vt_idx)
+    {
+      return (a.vt_idx < b.vt_idx);
+    }
 
-		return false;
+    return false;
 	}
 
 	struct obj_shape {
@@ -61,11 +67,15 @@ namespace tinyobj {
 
 	// Make index zero-base, and also support relative index.
 	static inline int fixIndex(int idx, int n) {
-		if (idx > 0)
-			return idx - 1;
-		if (idx == 0)
-			return 0;
-		return n + idx; // negative value = relative
+    if (idx > 0)
+    {
+      return idx - 1;
+    }
+    if (idx == 0)
+    {
+      return 0;
+    }
+    return n + idx; // negative value = relative
 	}
 
 	static inline std::string parseString(const char *&token) {
@@ -161,13 +171,17 @@ namespace tinyobj {
 		}
 
 		// We must make sure we actually got something.
-		if (read == 0)
-			goto fail;
-		// We allow numbers of form "#", "###" etc.
-		if (!end_not_reached)
-			goto assemble;
+    if (read == 0)
+    {
+      goto fail;
+    }
+    // We allow numbers of form "#", "###" etc.
+    if (!end_not_reached)
+    {
+      goto assemble;
+    }
 
-		// Read the decimal part.
+    // Read the decimal part.
 		if (*curr == '.') {
 			curr++;
 			read = 1;
@@ -184,10 +198,12 @@ namespace tinyobj {
 			goto assemble;
 		}
 
-		if (!end_not_reached)
-			goto assemble;
+    if (!end_not_reached)
+    {
+      goto assemble;
+    }
 
-		// Read the exponent part.
+    // Read the exponent part.
 		if (*curr == 'e' || *curr == 'E') {
 			curr++;
 			// Figure out if a sign is present and if it is.
@@ -210,9 +226,11 @@ namespace tinyobj {
 				read++;
 			}
 			exponent *= (exp_sign == '+' ? 1 : -1);
-			if (read == 0)
-				goto fail;
-		}
+      if (read == 0)
+      {
+        goto fail;
+      }
+    }
 
 	assemble:
 		*result =
@@ -433,10 +451,12 @@ namespace tinyobj {
 		shape.name = name;
 		shape.mesh.tags.swap(tags);
 
-		if (clearCache)
-			vertexCache.clear();
+    if (clearCache)
+    {
+      vertexCache.clear();
+    }
 
-		return true;
+    return true;
 	}
 
 	void LoadMtl(std::map<std::string, int> &material_map,
@@ -455,13 +475,17 @@ namespace tinyobj {
 
 			// Trim newline '\r\n' or '\n'
 			if (linebuf.size() > 0) {
-				if (linebuf[linebuf.size() - 1] == '\n')
-					linebuf.erase(linebuf.size() - 1);
-			}
+        if (linebuf[linebuf.size() - 1] == '\n')
+        {
+          linebuf.erase(linebuf.size() - 1);
+        }
+      }
 			if (linebuf.size() > 0) {
-				if (linebuf[linebuf.size() - 1] == '\r')
-					linebuf.erase(linebuf.size() - 1);
-			}
+        if (linebuf[linebuf.size() - 1] == '\r')
+        {
+          linebuf.erase(linebuf.size() - 1);
+        }
+      }
 
 			// Skip if empty line.
 			if (linebuf.empty()) {
@@ -473,13 +497,17 @@ namespace tinyobj {
 			token += strspn(token, " \t");
 
 			assert(token);
-			if (token[0] == '\0')
-				continue; // empty line
+      if (token[0] == '\0')
+      {
+        continue;  // empty line
+      }
 
-			if (token[0] == '#')
-				continue; // comment line
+      if (token[0] == '#')
+      {
+        continue;  // comment line
+      }
 
-			// new mtl
+      // new mtl
 			if ((0 == strncmp(token, "newmtl", 6)) && IS_SPACE((token[6]))) {
 				// flush previous material.
 				if (!material.name.empty()) {
@@ -745,13 +773,17 @@ namespace tinyobj {
 
 			// Trim newline '\r\n' or '\n'
 			if (linebuf.size() > 0) {
-				if (linebuf[linebuf.size() - 1] == '\n')
-					linebuf.erase(linebuf.size() - 1);
-			}
+        if (linebuf[linebuf.size() - 1] == '\n')
+        {
+          linebuf.erase(linebuf.size() - 1);
+        }
+      }
 			if (linebuf.size() > 0) {
-				if (linebuf[linebuf.size() - 1] == '\r')
-					linebuf.erase(linebuf.size() - 1);
-			}
+        if (linebuf[linebuf.size() - 1] == '\r')
+        {
+          linebuf.erase(linebuf.size() - 1);
+        }
+      }
 
 			// Skip if empty line.
 			if (linebuf.empty()) {
@@ -763,13 +795,17 @@ namespace tinyobj {
 			token += strspn(token, " \t");
 
 			assert(token);
-			if (token[0] == '\0')
-				continue; // empty line
+      if (token[0] == '\0')
+      {
+        continue;  // empty line
+      }
 
-			if (token[0] == '#')
-				continue; // comment line
+      if (token[0] == '#')
+      {
+        continue;  // comment line
+      }
 
-			// vertex
+      // vertex
 			if (token[0] == 'v' && IS_SPACE((token[1]))) {
 				token += 2;
 				float x, y, z;

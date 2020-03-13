@@ -40,13 +40,13 @@
  */
 
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <sstream>
 #include <fstream>
 
@@ -78,11 +78,13 @@ int ENU2LidXYZ_siwtch = 1;
 double x_LiDAR, y_LiDAR, z_LiDAR, heading_LiDAR;
 double base_lon,base_lat,base_h,T[3],R[3][3],T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3];
 static sensor_msgs::Imu imu_data;
+static sensor_msgs::Imu imu_data_rad;
 static geometry_msgs::PoseStamped gnss_data;
 static geometry_msgs::PoseStamped gnss2local_data;
 
 static tf::Quaternion q_;
 static ros::Publisher imu_pub;
+static ros::Publisher imu_rad_pub;
 static ros::Publisher gnss_pub;
 static ros::Publisher gnss2local_pub;
 
@@ -1383,6 +1385,7 @@ void processINSFullNavigation( int length, char *pData )
 
         q_.setRPY(Roll, Pitch, Heading);
 
+        // raw data
         imu_data.header.stamp = ros::Time::now();
         imu_data.header.frame_id = "map";
         //Qua
@@ -1401,6 +1404,26 @@ void processINSFullNavigation( int length, char *pData )
         imu_data.angular_velocity.y = Angular_rate_Traverse_Y;
         imu_data.angular_velocity.z = Angular_rate_Down_Z;
         imu_pub.publish(imu_data);
+
+        // rad data
+        imu_data_rad.header.stamp = ros::Time::now();
+        imu_data_rad.header.frame_id = "map";
+        //Qua
+        imu_data_rad.orientation.x = q_.x();
+        imu_data_rad.orientation.y = q_.y();
+        imu_data_rad.orientation.z = q_.z();
+        imu_data_rad.orientation.w = q_.w();
+
+        //linear_acceleration
+        imu_data_rad.linear_acceleration.x = Longitudinal_accel_X;
+        imu_data_rad.linear_acceleration.y = Traverse_accel_Y;
+        imu_data_rad.linear_acceleration.z = Down_accel_Z;
+
+        //angular_velocity
+        imu_data_rad.angular_velocity.x = Angular_rate_Long_X * PI/180;
+        imu_data_rad.angular_velocity.y = Angular_rate_Traverse_Y * PI/180;
+        imu_data_rad.angular_velocity.z = Angular_rate_Down_Z * PI/180;
+        imu_rad_pub.publish(imu_data_rad);
 
 }
 
@@ -1641,8 +1664,10 @@ void processGsofData( char* gsofData )
                                         );
                         }
                         // Terminate the last line if needed.
-                        if (gsofLength %16 != 0)
-                                printf( "\n" );
+                        if (gsofLength % 16 != 0)
+                        {
+                          printf("\n");
+                        }
                 }
 
                 printf( "\n" );
@@ -1700,16 +1725,21 @@ void postGsofData( char * pData, int length )
 
         // If this is the first portion, restart the buffering system.
         if (gsofPageIndex == 0)
-                gsofDataIndex = 0;
+        {
+          gsofDataIndex = 0;
+        }
 
         // Transfer the data bytes in this portion to the global buffer.
-        for (i = 7; i < length-5; ++i)
-                gsofData[ gsofDataIndex++ ] = *pData++;
+        for (i = 7; i < length - 5; ++i)
+        {
+          gsofData[gsofDataIndex++] = *pData++;
+        }
 
         // If this is the last portion in a packet, process the whole packet.
         if (gsofPageIndex == gsofMaxPageIndex)
-                processGsofData(gsofData);
-
+        {
+          processGsofData(gsofData);
+        }
 
 } /* end of postGsofData() */
 
@@ -1730,7 +1760,9 @@ int gc( void )
 
         c = getchar();
         if (c != EOF)
-                return c;
+        {
+          return c;
+        }
 
         printf( "END OF FILE \n" );
         _exit( 0 );
@@ -1783,6 +1815,7 @@ int main( int argc, char **argv )
         ros::init(argc, argv, "imu");
         ros::NodeHandle n;
         imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 20);
+        imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);
         gnss_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_data", 20);
         gnss2local_pub = n.advertise<geometry_msgs::PoseStamped>("gnss2local_data", 20);
 

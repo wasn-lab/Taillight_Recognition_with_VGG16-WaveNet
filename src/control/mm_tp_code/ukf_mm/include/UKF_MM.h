@@ -20,10 +20,10 @@
 //
 #ifndef RTW_HEADER_UKF_MM_h_
 #define RTW_HEADER_UKF_MM_h_
-#include <stddef.h>
+#include <cstddef>
 #include "rtwtypes.h"
 #include <cmath>
-#include <string.h>
+#include <cstring>
 #ifndef UKF_MM_COMMON_INCLUDES_
 # define UKF_MM_COMMON_INCLUDES_
 #include "rtwtypes.h"
