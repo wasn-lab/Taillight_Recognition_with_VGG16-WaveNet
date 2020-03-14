@@ -19,7 +19,7 @@
 
   <!-- Avoidance behavior configurations -->
   <arg name="costmap_topic" default="occupancy_grid_all_expand" /><!--occupancy_grid occupancy_grid_all_expand-->
-  <arg name="enable_avoidance" default="true" />
+  <arg name="enable_avoidance" default="false" />
   <arg name="avoid_waypoints_velocity" default="10.0" /><!--km/hr-->
   <arg name="avoid_start_velocity" default="10.0" /><!--1.8 km/hr-->
   <arg name="replan_interval" default="0.2" /><!--2.0-->
