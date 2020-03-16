@@ -94,9 +94,12 @@ list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_group_a_b
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_group_b_b1_v2.cpp" )
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_group_c_b1_v2.cpp" )
 message(STATUS "Lib_sources: " ${LIB_SOURCES})
-add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES})
 file(GLOB_RECURSE EXCEPTION_SRCS src/exception_handling/*.cpp)
 file(GLOB_RECURSE COMMON_UTILS src/common_utils/*.cpp)
+
+cuda_add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${LIBS})
 
 if (CAR_MODEL_IS_B1)
   add_executable(${PROJECT_NAME}_node src/drivenet_60_b1.cpp src/distance_estimation_b1.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
@@ -104,13 +107,11 @@ if (CAR_MODEL_IS_B1)
   add_executable(${PROJECT_NAME}_node2 src/drivenet_120_2_b1.cpp src/distance_estimation_b1.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
   add_executable(${PROJECT_NAME}_node4 src/alignment_offline_b1.cpp ${EXCEPTION_SRCS} ${COMMON_UTILS})
 
-  add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_node1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_node2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_node4 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-  target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${LIBS})
   target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${LIBS})
   target_link_libraries(${PROJECT_NAME}_node1 ${catkin_LIBRARIES} ${LIBS})
   target_link_libraries(${PROJECT_NAME}_node2 ${catkin_LIBRARIES} ${LIBS})
