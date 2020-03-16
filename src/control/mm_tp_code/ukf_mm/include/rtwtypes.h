@@ -3,9 +3,9 @@
 //
 // Code generated for Simulink model 'UKF_MM'.
 //
-// Model version                  : 1.7
+// Model version                  : 1.6
 // Simulink Coder version         : 8.14 (R2018a) 06-Feb-2018
-// C/C++ source code generated on : Sat Mar 14 13:09:41 2020
+// C/C++ source code generated on : Mon Mar  9 14:25:17 2020
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
