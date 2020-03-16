@@ -18,6 +18,12 @@ public:
   static cv::Scalar gray_;
 };
 
+struct PixelPosition
+{
+  int u;
+  int v;
+};
+
 void loadCalibrationMatrix(const std::string& yml_filename, cv::Mat& cameraMatrix, cv::Mat& distCoeffs);
 void calibrationImage(const cv::Mat& src, cv::Mat& dst, const cv::Mat& cameraMatrix, const cv::Mat& distCoeffs);
 } // namespace DriveNet
