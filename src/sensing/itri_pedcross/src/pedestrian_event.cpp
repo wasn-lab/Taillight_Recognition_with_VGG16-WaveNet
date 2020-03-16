@@ -110,7 +110,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       obj_pub.camInfo.v *= scaling_ratio_height;
       obj_pub.camInfo.width *= scaling_ratio_width;
       obj_pub.camInfo.height *= scaling_ratio_height;
-
+      obj_pub.camInfo.v -= 5;
+      obj_pub.camInfo.height += 10;
       // Avoid index out of bounds
       if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
       {
@@ -201,7 +202,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         */
       }
       obj_pub.facing_direction = get_facing_direction(keypoints);
-/*
+      obj_pub.body_direction = get_body_direction(keypoints);
+
       cv::Point p;
       p.x = 303;
       p.y = 275;
@@ -226,14 +228,14 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       p6.y = 383;
       cv::line(matrix2, p, p6, cv::Scalar(0, 0, 155), 1);
       cv::Point p7;
-      p7.x = 103;
+      p7.x = 53;
       p7.y = 383;
       cv::line(matrix2, p, p7, cv::Scalar(0, 0, 200), 1);
       cv::Point p8;
-      p8.x = 3;
+      p8.x = -247;
       p8.y = 383;
       cv::line(matrix2, p, p8, cv::Scalar(0, 0, 155), 1);
-*/
+
       obj_pub.crossProbability = adjust_probability(obj_pub);
       pedObjs.push_back(obj_pub);
 
@@ -286,22 +288,25 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
       return obj.crossProbability;
     }
   }
-  if(x>=383 && std::fabs(x-303)>=300*(y-275)/108 && obj.facing_direction!=0)
+  // at right sidewalk but not walking to left
+  if(x>=303 && std::fabs(x-303)>=300*(y-275)/108 && obj.facing_direction!=0)
   {
-    return obj.crossProbability*0;
+    return 0;
   }
-  if(x<383 && std::fabs(x-303)>=300*(y-275)/108 && obj.facing_direction!=1)
+  // at left sidewalk but not walking to right
+  if(x<303 && std::fabs(x-303)>=550*(y-275)/108 && obj.facing_direction!=1)
   {
-    return obj.crossProbability*0;
+    std::cout<<"at left sidewalk but not walking to right"<<std::endl;
+    return 0;
   }
   // walking into danger zone
   // at right half of car and not goint right hand side
-  if (x>=383&&obj.facing_direction!=1)
+  if (x>=303&&obj.facing_direction!=1)
   {
     return obj.crossProbability;
   }
   // at left half of car and not goint left hand side
-  if (x<383&&obj.facing_direction!=0)
+  if (x<303&&obj.facing_direction!=0)
   {
     return obj.crossProbability;
   }
@@ -310,12 +315,12 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
   {
     return obj.crossProbability*0.8;
   }
-  if (std::fabs(x-303)<300*(y-275)/108)
-  {
-    return obj.crossProbability*0.7;
-  }
+  // if (std::fabs(x-303)<300*(y-275)/108)
+  // {
+    // return obj.crossProbability*0.7;
+  // }
   // std::fabs(x-303)>=300*(y-275)/108
-  return 0;
+  return obj.crossProbability*0.7;
 }
 
 void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
@@ -401,7 +406,7 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
         probability = "C";
       }
 
-      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255), 2,
+      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(0, 50, 255), 2,
                   4, 0);
     }
     else
@@ -422,51 +427,99 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
         probability = "NC";
       }
 
-      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(100, 220, 0), 2,
                   4, 0);
     }
 
-    if (box.y >= 25)
+    if (box.y >= 22)
     {
-      box.y -= 25;
+      box.y -= 22;
     }
     else
     {
       box.y = 0;
     }
 
-    std::string id_print = "ID:" + std::to_string(obj.track.id % 1000);
-    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-                0);
-    if (box.y >= 25)
-    {
-      box.y -= 25;
-    }
-    else
-    {
-      box.y = 0;
-    }
+    std::string id_print = "[" + std::to_string(obj.track.id % 1000) + "]";
+    // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,0);
+    
+    // box.x -= 0;
     // draw face direction
     if (obj.facing_direction == 0)
     {
+      id_print += "<-";
       // facing left hand side
-      cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
     }
     else if (obj.facing_direction == 1)
     {
+      id_print += "->";
       // facing right hand side
-      cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      // cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
     }
     else if (obj.facing_direction == 2)
     {
+      id_print += "O";
       // facing car side
-      cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      // cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else
+    {
+      id_print += "X";
+      // facing car opposite side
+      // cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1, 2,
+                0);
+
+    cv::Rect box2 = box;
+    box.y += 30;
+    box2.y += 30;
+    box2.width = 0;
+    // draw left leg direction
+    if (obj.body_direction/10 == 0)
+    {
+      // facing left hand side
+      cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (obj.body_direction/10 == 1)
+    {
+      // facing right hand side
+      cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (obj.body_direction/10 == 2)
+    {
+      // facing car side
+      cv::putText(matrix, "O", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
     }
     else
     {
       // facing car opposite side
-      cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+      cv::putText(matrix, "X", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
     }
+
+    // draw right leg direction
+    if (obj.body_direction%10 == 0)
+    {
+      // facing left hand side
+      cv::putText(matrix, "<-", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (obj.body_direction%10 == 1)
+    {
+      // facing right hand side
+      cv::putText(matrix, "->", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else if (obj.body_direction%10 == 2)
+    {
+      // facing car side
+      cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+    else
+    {
+      // facing car opposite side
+      cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+    }
+
   }
   // do resize only when computer cannot support
   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
@@ -572,6 +625,62 @@ int PedestrianEvent::get_facing_direction(std::vector<cv::Point2f> keypoints)
     return 3;
 }
 
+
+/**
+ * return 
+ * 0 for facing left
+ * 1 for facing right
+ * 2 for facing car side
+ * 3 for facing car opposite side
+ */
+int PedestrianEvent::get_body_direction(std::vector<cv::Point2f> keypoints)
+{
+  int result = 0;
+  if(keypoint_is_detected(keypoints.at(9)) && keypoint_is_detected(keypoints.at(10)) && keypoint_is_detected(keypoints.at(11)))
+  {
+    if((keypoints.at(9).x + keypoints.at(11).x)/2 - keypoints.at(10).x > 0)
+    {
+      result = 0;
+    }
+    else if(keypoints.at(10).x - (keypoints.at(9).x + keypoints.at(11).x)/2 > 0)
+    {
+      result = 1;
+    }
+    else
+    {
+      result = 2;
+    }
+    
+  }
+  else
+  {
+    result = 3;
+  }
+  
+  if(keypoint_is_detected(keypoints.at(12)) && keypoint_is_detected(keypoints.at(13)) && keypoint_is_detected(keypoints.at(14)))
+  {
+    if((keypoints.at(12).x + keypoints.at(14).x)/2 - keypoints.at(13).x > 0)
+    {
+      result += 0;
+    }
+    else if(keypoints.at(13).x - (keypoints.at(12).x + keypoints.at(14).x)/2 > 0)
+    {
+      result += 10;
+    }
+    else
+    {
+      result += 20;
+    }
+    
+  }
+  else
+  {
+    result += 30;
+  }
+  
+  return result;
+}
+
 bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
 {
   if (keypoint.x > 0 || keypoint.y > 0)
@@ -581,8 +690,11 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
   return false;
 }
 
-// extract features and pass to random forest model
-// return cross probability
+/**
+ * extract features and pass to random forest model
+ * return
+ * cross probability
+ */
 float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2,
                                         std::vector<cv::Point2f> keypoint, int id, ros::Time time)
 {
