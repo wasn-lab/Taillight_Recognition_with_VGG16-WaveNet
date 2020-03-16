@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_parknet)
 
+find_package(catkin REQUIRED COMPONENTS
+    cv_bridge
+    image_transport
+    sensor_msgs
+    std_msgs
+    message_generation
+    msgs
+    car_model
+)
+
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 include(CarModel)
 
@@ -21,15 +31,6 @@ set(PARKNET_CFG_DIR "${CMAKE_CURRENT_LIST_DIR}/cfg")
 set(PARKNET_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
 set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/weights)
 
-find_package(catkin REQUIRED COMPONENTS
-    cv_bridge
-    image_transport
-    sensor_msgs
-    std_msgs
-    message_generation
-    msgs
-    car_model
-)
 
 find_package(TensorRT)
 if (USE_TENSORRT AND NOT TensorRT_FOUND)

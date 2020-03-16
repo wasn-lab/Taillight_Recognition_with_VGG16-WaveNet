@@ -31,9 +31,8 @@
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1
-const std::vector<camera::id> g_cam_ids{ camera::id::front_60, camera::id::top_front_120, camera::id::left_60,
-                                         camera::id::right_60 };
+#if CAR_MODEL_IS_B1_V2
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -45,7 +44,7 @@ Visualization g_visualization;
 /// thread
 std::vector<std::mutex> g_sync_lock_cams(g_cam_ids.size());
 std::vector<std::mutex> g_sync_lock_objects(g_cam_ids.size());
-mutex g_sync_lock_lidar;
+std::mutex g_sync_lock_lidar;
 
 /// params
 bool g_is_compressed = false;
@@ -60,57 +59,20 @@ std::vector<std::vector<PixelPosition>> g_cam_pixels(g_cam_ids.size());
 
 /// lidar
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_front_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_top_front_120_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_left_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_right_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_front_bottom_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 boost::shared_ptr<pcl::visualization::PCLVisualizer> g_viewer(new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_lidarall(g_lidarall_ptr, 255, 255, 255);
-pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_front_60(g_cam_front_60_ptr, 255, 255, 0);
-pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_top_front_120(g_cam_top_front_120_ptr, 255,
-                                                                                         0, 0);
-pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_left_60(g_cam_left_60_ptr, 0, 0, 255);
-pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_right_60(g_cam_right_60_ptr, 0, 0, 255);
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_front_bottom_60(g_cam_front_bottom_60_ptr,
+                                                                                           255, 255, 0);
 std::vector<pcl::visualization::Camera> g_cam;
 
 /// object
 std::vector<std::vector<msgs::DetectedObject>> g_objects(g_cam_ids.size());
 
 //////////////////// for camera image
-void callback_cam_front_60(const sensor_msgs::Image::ConstPtr& msg)
+void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
 {
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_60);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_cams[cam_order].lock();
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-  std_msgs::Header h = msg->header;
-  g_sync_lock_cams[cam_order].unlock();
-}
-void callback_cam_top_front_120(const sensor_msgs::Image::ConstPtr& msg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::top_front_120);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_cams[cam_order].lock();
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-  std_msgs::Header h = msg->header;
-  g_sync_lock_cams[cam_order].unlock();
-}
-
-void callback_cam_left_60(const sensor_msgs::Image::ConstPtr& msg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_60);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_cams[cam_order].lock();
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-  std_msgs::Header h = msg->header;
-  g_sync_lock_cams[cam_order].unlock();
-}
-void callback_cam_right_60(const sensor_msgs::Image::ConstPtr& msg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_60);
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
   g_sync_lock_cams[cam_order].lock();
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -120,33 +82,9 @@ void callback_cam_right_60(const sensor_msgs::Image::ConstPtr& msg)
 }
 
 //////////////////// for camera image
-void callback_cam_decode_front_60(sensor_msgs::CompressedImage compressImg)
+void callback_cam_decode_front_bottom_60(sensor_msgs::CompressedImage compressImg)
 {
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_60);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_cams[cam_order].lock();
-  cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-  g_sync_lock_cams[cam_order].unlock();
-}
-void callback_cam_decode_top_front_120(sensor_msgs::CompressedImage compressImg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::top_front_120);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_cams[cam_order].lock();
-  cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-  g_sync_lock_cams[cam_order].unlock();
-}
-void callback_cam_decode_left_60(sensor_msgs::CompressedImage compressImg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_60);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_cams[cam_order].lock();
-  cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-  g_sync_lock_cams[cam_order].unlock();
-}
-void callback_cam_decode_right_60(sensor_msgs::CompressedImage compressImg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_60);
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
   g_sync_lock_cams[cam_order].lock();
   cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
@@ -154,38 +92,15 @@ void callback_cam_decode_right_60(sensor_msgs::CompressedImage compressImg)
 }
 
 //////////////////// for camera object
-void callback_object_cam_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_60);
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
   g_sync_lock_objects[cam_order].lock();
   g_objects[cam_order] = msg->objects;
   g_sync_lock_objects[cam_order].unlock();
 }
-void callback_object_cam_top_front_120(const msgs::DetectedObjectArray::ConstPtr& msg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::top_front_120);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_objects[cam_order].lock();
-  g_objects[cam_order] = msg->objects;
-  g_sync_lock_objects[cam_order].unlock();
-}
-void callback_object_cam_left_60(const msgs::DetectedObjectArray::ConstPtr& msg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_60);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_objects[cam_order].lock();
-  g_objects[cam_order] = msg->objects;
-  g_sync_lock_objects[cam_order].unlock();
-}
-void callback_object_cam_right_60(const msgs::DetectedObjectArray::ConstPtr& msg)
-{
-  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_60);
-  int cam_order = std::distance(g_cam_ids.begin(), it);
-  g_sync_lock_objects[cam_order].lock();
-  g_objects[cam_order] = msg->objects;
-  g_sync_lock_objects[cam_order].unlock();
-}
+
 void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   g_sync_lock_lidar.lock();
@@ -223,7 +138,6 @@ void alignmentInitializer()
     g_alignments[cam_order].projectMatrixInit(g_cam_ids[cam_order]);
   }
 }
-
 void drawBoxOnImages()
 {
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -238,20 +152,9 @@ void drawPointCloudOnImages()
   {
     if (cam_order == 0)
     {
-      point_cloud = *g_cam_front_60_ptr;
+      point_cloud = *g_cam_front_bottom_60_ptr;
     }
-    else if (cam_order == 1)
-    {
-      point_cloud = *g_cam_top_front_120_ptr;
-    }
-    else if (cam_order == 2)
-    {
-      point_cloud = *g_cam_left_60_ptr;
-    }
-    else if (cam_order == 3)
-    {
-      point_cloud = *g_cam_right_60_ptr;
-    }
+
     for (size_t i = 0; i < point_cloud.size(); i++)
     {
       int point_u = g_cam_pixels[cam_order][i].u;
@@ -261,14 +164,11 @@ void drawPointCloudOnImages()
     }
   }
 }
+
 void getPointCloudInImageFOV()
 {
-  pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_front_60_ptr);
-  pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_top_front_120_ptr);
-  pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_left_60_ptr);
-  pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_right_60_ptr);
-  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points = { *g_cam_front_60_ptr, *g_cam_top_front_120_ptr,
-                                                              *g_cam_left_60_ptr, *g_cam_right_60_ptr };
+  pcl::copyPointCloud(*g_lidarall_ptr, *g_cam_front_bottom_60_ptr);
+  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points = { *g_cam_front_bottom_60_ptr };
   std::vector<int> cloud_sizes(g_cam_ids.size(), 0);
 
   for (size_t i = 0; i < g_lidarall_ptr->size(); i++)
@@ -295,10 +195,7 @@ void getPointCloudInImageFOV()
   {
     cam_points[cam_order].resize(cloud_sizes[cam_order]);
   }
-  *g_cam_front_60_ptr = cam_points[0];
-  *g_cam_top_front_120_ptr = cam_points[1];
-  *g_cam_left_60_ptr = cam_points[2];
-  *g_cam_right_60_ptr = cam_points[3];
+  *g_cam_front_bottom_60_ptr = cam_points[0];
 }
 
 void release()
@@ -308,6 +205,7 @@ void release()
     g_cam_pixels[cam_order].clear();
   }
 }
+
 int main(int argc, char** argv)
 {
   std::cout << "===== Alignment startup. =====" << std::endl;
@@ -319,15 +217,10 @@ int main(int argc, char** argv)
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
   std::vector<ros::Subscriber> object_subs(g_cam_ids.size());
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
-    callback_cam_front_60, callback_cam_top_front_120, callback_cam_left_60, callback_cam_right_60
-  };
-  static void (*f_callbacks_cam_decode[])(
-      sensor_msgs::CompressedImage) = { callback_cam_decode_front_60, callback_cam_decode_top_front_120,
-                                        callback_cam_decode_left_60, callback_cam_decode_right_60 };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60 };
+  static void (*f_callbacks_cam_decode[])(sensor_msgs::CompressedImage) = { callback_cam_decode_front_bottom_60 };
   static void (*f_callbacks_object[])(
-      const msgs::DetectedObjectArray::ConstPtr&) = { callback_object_cam_front_60, callback_object_cam_top_front_120,
-                                                      callback_object_cam_left_60, callback_object_cam_right_60 };
+      const msgs::DetectedObjectArray::ConstPtr&) = { callback_object_cam_front_bottom_60 };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
@@ -365,10 +258,7 @@ int main(int argc, char** argv)
   {
     /// remove points on pcl viewer
     g_viewer->removePointCloud("Cloud viewer");
-    g_viewer->removePointCloud("Front 60 Cloud viewer");
-    g_viewer->removePointCloud("Top Front 120 Cloud viewer");
-    g_viewer->removePointCloud("Left 60 Cloud viewer");
-    g_viewer->removePointCloud("Right 60 Cloud viewer");
+    g_viewer->removePointCloud("Front Bottom 60 Cloud viewer");
 
     g_sync_lock_lidar.lock();  // mutex lidar
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -388,12 +278,8 @@ int main(int argc, char** argv)
     }
     /// draw points on pcl viewer
     g_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr, g_rgb_lidarall, "Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_front_60_ptr, g_rgb_cam_front_60, "Front 60 Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_top_front_120_ptr, g_rgb_cam_top_front_120, "Top Front 120 Cloud "
-                                                                                              "viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_left_60_ptr, g_rgb_cam_left_60, "Left 60 Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_right_60_ptr, g_rgb_cam_right_60, "Right 60 Cloud viewer");
-
+    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_front_bottom_60_ptr, g_rgb_cam_front_bottom_60, "Front Bottom 60 "
+                                                                                                  "Cloud viewer");
     g_sync_lock_lidar.unlock();  // mutex lidar
     cv::waitKey(1);
     release();

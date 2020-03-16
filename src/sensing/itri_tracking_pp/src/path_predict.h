@@ -67,6 +67,9 @@ private:
   static constexpr float pp_allow_y_min_m = -10.f;
   static constexpr float pp_allow_y_max_m = 10.f;
 
+  static constexpr float box_length_thr_xy = 0.7f;
+  static constexpr float box_length_thr_z = 0.5f;
+
   float ego_x_abs_ = 0.f;
   float ego_y_abs_ = 0.f;
   float ego_z_abs_ = 0.f;
