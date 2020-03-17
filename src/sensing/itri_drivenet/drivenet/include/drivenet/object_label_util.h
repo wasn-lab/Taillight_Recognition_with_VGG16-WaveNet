@@ -5,6 +5,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "detected_object_class_id.h"
 #include "image_preprocessing.h"
+#include "camera_params.h"
 
 namespace DriveNet
 {
@@ -32,7 +33,9 @@ enum class common_type_id
   truck = sensor_msgs_itri::DetectedObjectClassId::Truck         // 6
 };
 
+
 int translate_label(int label);
+void transferPixelScaling(std::vector<PixelPosition>& pixel_positions);
 cv::Scalar get_label_color(int label_id);
 cv::Scalar get_common_label_color(int label_id);
 } // namespace DriveNet

@@ -2,6 +2,13 @@
 
 namespace DriveNet
 {
+int image_w_ = camera::image_width;
+int image_h_ = camera::image_height;
+int raw_image_w_ = camera::raw_image_width;
+int raw_image_h_ = camera::raw_image_height;
+float scaling_ratio_w_ = (float)image_w_ / (float)raw_image_w_;
+float scaling_ratio_h_ = (float)image_h_ / (float)raw_image_h_;
+
 int translate_label(int label)
 {
   if (label == static_cast<int>(DriveNet::net_type_id::person))
@@ -82,4 +89,14 @@ cv::Scalar get_common_label_color(int label_id)
   }
   return class_color;
 }
+
+void transferPixelScaling(std::vector<PixelPosition>& pixel_positions)
+{
+  for(auto& positions: pixel_positions)
+  {
+    positions.u = int(positions.u * scaling_ratio_w_);
+    positions.v = int(positions.v * scaling_ratio_h_);
+  }
+}
+
 } // namespace DriveNet

@@ -12,6 +12,7 @@
 #include "camera_params.h"
 #include "alignment.h"
 #include "visualization_util.h"
+#include <drivenet/object_label_util.h>
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -61,9 +62,13 @@ std::vector<std::vector<PixelPosition>> g_cam_pixels(g_cam_ids.size());
 /// lidar
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_front_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_front_60_bbox_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_top_front_120_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_top_front_120_bbox_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_left_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_left_60_bbox_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_right_60_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_cam_right_60_bbox_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 boost::shared_ptr<pcl::visualization::PCLVisualizer> g_viewer(new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_lidarall(g_lidarall_ptr, 255, 255, 255);
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_front_60(g_cam_front_60_ptr, 255, 255, 0);
@@ -71,6 +76,14 @@ pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_top_f
                                                                                          0, 0);
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_left_60(g_cam_left_60_ptr, 0, 0, 255);
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_right_60(g_cam_right_60_ptr, 0, 0, 255);
+// pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_front_60(g_cam_front_60_ptr, 255, 242, 230);
+// pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_top_front_120(g_cam_top_front_120_ptr, 179, 86, 0);
+// pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_left_60(g_cam_left_60_ptr, 255, 163, 77);
+// pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_right_60(g_cam_right_60_ptr, 255, 163, 77);
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_front_60_bbox(g_cam_front_60_bbox_ptr, 255, 255, 255);
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_top_front_120_bbox(g_cam_top_front_120_bbox_ptr, 255, 255, 255);
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_left_60_bbox(g_cam_left_60_bbox_ptr, 255, 255, 255);
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_cam_right_60_bbox(g_cam_right_60_bbox_ptr, 255, 255, 255);
 std::vector<pcl::visualization::Camera> g_cam;
 
 /// object
@@ -301,6 +314,69 @@ void getPointCloudInImageFOV()
   *g_cam_right_60_ptr = cam_points[3];
 }
 
+void getPointCloudInBoxFOV()
+{
+  pcl::copyPointCloud(*g_cam_front_60_ptr, *g_cam_front_60_bbox_ptr);
+  pcl::copyPointCloud(*g_cam_top_front_120_ptr, *g_cam_top_front_120_bbox_ptr);
+  pcl::copyPointCloud(*g_cam_left_60_ptr, *g_cam_left_60_bbox_ptr);
+  pcl::copyPointCloud(*g_cam_right_60_ptr, *g_cam_right_60_bbox_ptr);
+  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points = { *g_cam_front_60_bbox_ptr, *g_cam_top_front_120_bbox_ptr,
+                                                              *g_cam_left_60_bbox_ptr, *g_cam_right_60_bbox_ptr };
+  std::vector<int> cloud_sizes(g_cam_ids.size(), 0);
+  pcl::PointCloud<pcl::PointXYZI> point_cloud;
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    if (cam_order == 0)
+    {
+      point_cloud = *g_cam_front_60_bbox_ptr;
+    }
+    else if (cam_order == 1)
+    {
+      point_cloud = *g_cam_top_front_120_bbox_ptr;
+    }
+    else if (cam_order == 2)
+    {
+      point_cloud = *g_cam_left_60_bbox_ptr;
+    }
+    else if (cam_order == 3)
+    {
+      point_cloud = *g_cam_right_60_bbox_ptr;
+    }
+    for (size_t i = 0; i < point_cloud.points.size(); i++)
+    {
+      bool pass_point = false;
+      for (const auto& obj: g_objects[cam_order])
+      {
+        std::vector<PixelPosition> bbox_positions(2);
+        bbox_positions[0].u = obj.camInfo.u;
+        bbox_positions[0].v = obj.camInfo.v;
+        bbox_positions[1].u = obj.camInfo.u + obj.camInfo.width;
+        bbox_positions[1].v = obj.camInfo.v + obj.camInfo.height;
+        transferPixelScaling(bbox_positions);
+
+        PixelPosition pixel_position{ -1, -1 };
+        pixel_position = g_alignments[cam_order].projectPointToPixel(point_cloud.points[i]);
+        if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v && pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
+        {
+          pass_point = true;
+        }
+      }
+      if (pass_point)
+      {
+        cam_points[cam_order].points[cloud_sizes[cam_order]] = cam_points[cam_order].points[i];
+        cloud_sizes[cam_order]++;
+      }
+    }
+  }
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    cam_points[cam_order].resize(cloud_sizes[cam_order]);
+  }
+  *g_cam_front_60_bbox_ptr = cam_points[0];
+  *g_cam_top_front_120_bbox_ptr = cam_points[1];
+  *g_cam_left_60_bbox_ptr = cam_points[2];
+  *g_cam_right_60_bbox_ptr = cam_points[3];
+}
 void release()
 {
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -364,36 +440,52 @@ int main(int argc, char** argv)
   while (ros::ok())
   {
     /// remove points on pcl viewer
-    g_viewer->removePointCloud("Cloud viewer");
+    // g_viewer->removePointCloud("Cloud viewer");
     g_viewer->removePointCloud("Front 60 Cloud viewer");
     g_viewer->removePointCloud("Top Front 120 Cloud viewer");
     g_viewer->removePointCloud("Left 60 Cloud viewer");
     g_viewer->removePointCloud("Right 60 Cloud viewer");
+    g_viewer->removePointCloud("Front 60 BBox Cloud viewer");
+    g_viewer->removePointCloud("Top Front 120 BBox Cloud viewer");
+    g_viewer->removePointCloud("Left 60 BBox Cloud viewer");
+    g_viewer->removePointCloud("Right 60 BBox Cloud viewer");
 
     g_sync_lock_lidar.lock();  // mutex lidar
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
       g_sync_lock_cams[cam_order].lock();  // mutex camera
       g_sync_lock_objects[cam_order].lock();
+    }
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
       if (!g_mats[cam_order].empty())
       {
         /// draw lidar on cv viewer
         getPointCloudInImageFOV();
+        getPointCloudInBoxFOV();
         drawPointCloudOnImages();
         drawBoxOnImages();
         cv::imshow(cam_topic_names[cam_order], g_mats[cam_order]);
       }
+    }
+    /// draw points on pcl viewer
+    // g_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr, g_rgb_lidarall, "Cloud viewer");
+    // g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_top_front_120_ptr, g_rgb_cam_top_front_120, "Top Front 120 Cloud "
+    //                                                                                           "viewer");
+    // g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_front_60_ptr, g_rgb_cam_front_60, "Front 60 Cloud viewer");
+
+    // g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_left_60_ptr, g_rgb_cam_left_60, "Left 60 Cloud viewer");
+    // g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_right_60_ptr, g_rgb_cam_right_60, "Right 60 Cloud viewer");
+    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_front_60_bbox_ptr, g_rgb_cam_front_60_bbox, "Front 60 BBox Cloud viewer");
+    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_top_front_120_bbox_ptr, g_rgb_cam_top_front_120_bbox, "Top Front 120 BBox Cloud viewer");
+    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_left_60_bbox_ptr, g_rgb_cam_left_60_bbox, "Left 60 BBox Cloud viewer");
+    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_right_60_bbox_ptr, g_rgb_cam_right_60_bbox, "Right 60 BBox Cloud viewer");
+
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
       g_sync_lock_objects[cam_order].unlock();
       g_sync_lock_cams[cam_order].unlock();  // mutex camera
     }
-    /// draw points on pcl viewer
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr, g_rgb_lidarall, "Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_front_60_ptr, g_rgb_cam_front_60, "Front 60 Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_top_front_120_ptr, g_rgb_cam_top_front_120, "Top Front 120 Cloud "
-                                                                                              "viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_left_60_ptr, g_rgb_cam_left_60, "Left 60 Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_right_60_ptr, g_rgb_cam_right_60, "Right 60 Cloud viewer");
-
     g_sync_lock_lidar.unlock();  // mutex lidar
     cv::waitKey(1);
     release();

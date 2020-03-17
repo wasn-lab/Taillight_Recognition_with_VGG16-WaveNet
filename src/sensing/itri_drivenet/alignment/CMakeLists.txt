@@ -63,6 +63,7 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${CUDA_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
+  ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
   ${drivenet_SOURCE_DIR}/include
 )
