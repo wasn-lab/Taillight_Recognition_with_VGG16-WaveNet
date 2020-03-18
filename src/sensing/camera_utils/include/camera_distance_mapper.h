@@ -24,7 +24,7 @@ public:
   CameraDistanceMapper(CameraDistanceMapper&&) = delete;
   CameraDistanceMapper& operator=(CameraDistanceMapper&) = delete;
   CameraDistanceMapper& operator=(CameraDistanceMapper&&) = delete;
-  ~CameraDistanceMapper() = delete;
+  ~CameraDistanceMapper() = default;
   cv::Mat remap_distance_in_undistorted_image();
   int get_distance_raw_1920x1208(const int im_x, const int im_y, float* spatial_x, float* spatial_y,
                                  float* spatial_z) const;

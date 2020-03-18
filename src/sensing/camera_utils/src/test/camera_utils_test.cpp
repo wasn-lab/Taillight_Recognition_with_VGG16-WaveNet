@@ -128,3 +128,12 @@ TEST(CameraUtilsTest, test_cvmats_are_equal)
   cvmat1.at<uchar>(30, 30) = 255;
   EXPECT_FALSE(camera::cvmats_are_equal(cvmat1, cvmat2));
 }
+
+TEST(CameraUtilsTest, test_is_black_image)
+{
+  cv::Mat img(cv::Mat::zeros(8, 16, CV_8UC3));
+  EXPECT_TRUE(camera::is_black_image(img));
+
+  img.at<uint8_t>(1,2) = 1;
+  EXPECT_FALSE(camera::is_black_image(img));
+}

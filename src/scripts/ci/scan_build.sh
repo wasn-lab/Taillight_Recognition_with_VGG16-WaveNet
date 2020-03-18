@@ -34,6 +34,7 @@ scan-build -o ${output_dir} catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DENABLE_CCACHE=0 \
+    -DCAR_MODEL=OMNIBUS \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
     -j6 ${EXTRA_CATKIN_ARGS}
 
