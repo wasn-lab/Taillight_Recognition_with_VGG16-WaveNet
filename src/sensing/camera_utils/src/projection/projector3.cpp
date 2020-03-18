@@ -13,7 +13,7 @@ void Projector3::init(int camera_id)
     switch (camera_id)
     {
       case camera::id::front_bottom_60:
-        file_name = (char*)"/test_0225_F_center.yml";
+        file_name = (char*)"/fix_0310_front_bottom_60.yml";
         file_path = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(file_name) + 1];
         std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
         std::strcat(file_path, file_name);
