@@ -227,27 +227,6 @@ void TPPNode::subscribe_and_advertise_topics()
 #else
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
 #endif
-
-  if (gen_markers_)
-  {
-    std::string topic1 = topic + "/markers";
-    mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
-
-    std::string topic3 = topic + "/id";
-    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
-
-    std::string topic4 = topic + "/speed";
-    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
-
-    if (mc_.show_pp >= 1 && mc_.show_pp <= 3)
-    {
-      std::string topic6 = topic + "/pp";
-      mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
-    }
-
-    std::string topic7 = topic + "/vel";
-    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
-  }
 }
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
@@ -833,7 +812,6 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
 
-  nh_.param<bool>(domain + "gen_markers", gen_markers_, true);
   nh_.param<bool>(domain + "show_classid", mc_.show_classid, false);
   nh_.param<bool>(domain + "show_tracktime", mc_.show_tracktime, false);
   nh_.param<bool>(domain + "show_source", mc_.show_source, false);

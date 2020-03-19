@@ -21,7 +21,6 @@
   <arg name="m_lifetime_sec" default="1.0" />
 
   <!-- Rviz markers -->
-  <arg name="gen_markers" default="1" />
   <arg name="show_classid" default="0" />
   <arg name="show_tracktime" default="0" />
   <arg name="show_source" default="0" />
@@ -44,7 +43,6 @@
     <param name="output_fps" value="$(arg output_fps)" />
     <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
-    <param name="gen_markers" value="$(arg gen_markers)" />
     <param name="show_classid" value="$(arg show_classid)" />
     <param name="show_tracktime" value="$(arg show_tracktime)" />
     <param name="show_source" value="$(arg show_source)" />
