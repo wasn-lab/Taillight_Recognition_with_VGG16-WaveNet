@@ -97,10 +97,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   LOG_INFO << "-----------------------------------------" << std::endl;
 #endif
 
-#if FPS
-  clock_t begin_time = clock();
-#endif
-
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
 
@@ -187,12 +183,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   }
 
   g_trigger = true;
-
-#if FPS
-  clock_t end_time = clock();
-  LOG_INFO << "Running time of callback_fusion(): " << clock_to_milliseconds(end_time - begin_time) << "ms"
-           << std::endl;
-#endif
 }
 
 void TPPNode::subscribe_and_advertise_topics()
@@ -725,10 +715,6 @@ void TPPNode::control_sleep(const double loop_interval)
 {
   loop_elapsed = ros::Time::now().toSec() - loop_begin;
 
-#if FPS
-  LOG_INFO << "Sleep " << loop_interval - loop_elapsed << " seconds" << std::endl;
-#endif
-
   if (loop_elapsed > 0)
   {
     this_thread::sleep_for(std::chrono::milliseconds((long int)round(1000 * (loop_interval - loop_elapsed))));
@@ -878,10 +864,6 @@ int TPPNode::run()
       LOG_INFO << "Tracking main process start" << std::endl;
 #endif
 
-#if FPS
-      clock_t begin_time = clock();
-#endif
-
 // Tracking start ==========================================================================
 
 #if TTC_TEST
@@ -909,12 +891,6 @@ int TPPNode::run()
 #endif
 
 // PP end ==================================================================================
-
-#if FPS
-      clock_t end_time = clock();
-      LOG_INFO << "Running time of Tracking PP main process: " << clock_to_milliseconds(end_time - begin_time) << "ms"
-               << std::endl;
-#endif
 
       g_trigger = false;
     }

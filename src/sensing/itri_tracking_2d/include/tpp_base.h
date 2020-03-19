@@ -63,7 +63,6 @@
 #define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
-#define FPS 0
 #define ENABLE_PROFILING_MODE 0
 
 // virtual input test
