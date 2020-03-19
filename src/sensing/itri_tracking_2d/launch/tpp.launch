@@ -12,12 +12,6 @@
   <arg name="input_fps" default="10.0" />
   <arg name="output_fps" default="10.0" />
 
-  <!-- 1: Show pp centers -->
-  <!-- 2: Show pp ellipses -->
-  <!-- 3: Show pp ellipses & ellipse vertices -->
-  <!-- otherwise: No show pp -->
-  <arg name="show_pp" default="2" />
-
   <!-- Launch node -->
   <node pkg="itri_tracking_2d" type="itri_tracking_2d" name="itri_tracking_2d" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />

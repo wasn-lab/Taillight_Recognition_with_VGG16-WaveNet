@@ -542,10 +542,6 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
   num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
-
-  double pp_input_shift_m = 0.;
-  nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);
-  pp_.set_input_shift_m((long double)pp_input_shift_m);
 }
 
 int TPPNode::run()
