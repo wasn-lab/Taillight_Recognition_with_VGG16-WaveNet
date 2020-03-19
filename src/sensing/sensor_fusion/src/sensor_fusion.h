@@ -7,7 +7,7 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
 
-#include "Hungarian.h"
+#include "hungarian.h"
 
 #define DEBUG 0
 /************************************************************************/
