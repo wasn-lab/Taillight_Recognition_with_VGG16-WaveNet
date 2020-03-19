@@ -163,11 +163,11 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
   }
 #endif
 
-  HungarianAlgorithm hung_algo;
+  Hungarian hun;
   std::vector<int> assignment;
 
 #if DEBUG
-  double cost = hung_algo.Solve(cost_mat, assignment);
+  double cost = hun.solve(cost_mat, assignment);
 
   for (unsigned i = 0; i < cost_mat.size(); i++)
   {
@@ -176,7 +176,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
 
   std::cout << "\ncost: " << cost << std::endl;
 #else
-  hung_algo.Solve(cost_mat, assignment);
+  hun.solve(cost_mat, assignment);
 #endif
 
   std::vector<bool> assigned(s2, false);
