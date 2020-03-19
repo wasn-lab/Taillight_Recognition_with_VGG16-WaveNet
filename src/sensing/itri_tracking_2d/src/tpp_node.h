@@ -48,8 +48,6 @@ private:
   void callback_camera(const msgs::DetectedObjectArray::ConstPtr& input);
 
   bool is_legal_dt_ = false;
-  double loop_begin = 0.;    // seconds
-  double loop_elapsed = 0.;  // seconds
 
   float dt_ = 0.f;
   float ego_x_abs_ = 0.f;
