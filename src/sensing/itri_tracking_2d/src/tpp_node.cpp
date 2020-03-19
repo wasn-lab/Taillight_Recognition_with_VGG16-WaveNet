@@ -163,7 +163,6 @@ void TPPNode::subscribe_and_advertise_topics()
 // Note that we use different NodeHandle here
 #if TTC_TEST
   seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
-  localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
 #endif
 }
 
