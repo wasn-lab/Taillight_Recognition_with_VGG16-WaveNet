@@ -81,12 +81,6 @@ void TPPNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    for (auto& obj : KTs_.objs_)
-    {
-      obj.absSpeed = 0.f;
-      obj.relSpeed = 0.f;
-    }
-
 #if DEBUG_DATA_IN
     for (auto& obj : KTs_.objs_)
       LOG_INFO << "[Object " << i << "] p0 = (" << obj.bPoint.p0.x << ", " << obj.bPoint.p0.y << ", " << obj.bPoint.p0.z
@@ -133,88 +127,6 @@ void TPPNode::init_velocity(msgs::TrackInfo& track)
   track.relative_velocity.y = 0;
   track.relative_velocity.z = 0;
   track.relative_velocity.speed = 0;
-}
-
-float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel)
-{
-  return compute_scalar_projection_A_onto_B(rel_v_rel.x, rel_v_rel.y, rel_v_rel.z, obj_rel.x, obj_rel.y, obj_rel.z);
-}
-
-void TPPNode::compute_velocity_kalman()
-{
-  for (auto& track : KTs_.tracks_)
-  {
-    init_velocity(track.box_.track);
-
-    if (KTs_.get_dt() <= 0)
-    {
-      LOG_INFO << "Warning: dt = " << KTs_.get_dt() << " ! Illegal time input !" << std::endl;
-    }
-    else
-    {
-      // absolute velocity in absolute coordinate
-      float abs_vx_abs = 3.6f * track.kalman_.statePost.at<float>(2);  // km/h
-      float abs_vy_abs = 3.6f * track.kalman_.statePost.at<float>(3);  // km/h
-
-      // compute absolute velocity in relative coordinate (km/h)
-      transform_vector_abs2rel(abs_vx_abs, abs_vy_abs, track.box_.track.absolute_velocity.x,
-                               track.box_.track.absolute_velocity.y, ego_heading_);
-      track.box_.track.absolute_velocity.z = 0.f;  // km/h
-
-      // absolute speed
-      track.box_.track.absolute_velocity.speed =
-          euclidean_distance(track.box_.track.absolute_velocity.x, track.box_.track.absolute_velocity.y);
-
-      // relative velocity in absolute coordinate
-      float rel_vx_abs = abs_vx_abs - ego_velx_abs_kmph_;  // km/h
-      float rel_vy_abs = abs_vy_abs - ego_vely_abs_kmph_;  // km/h
-
-      // compute relative velocity in relative coordinate (km/h)
-      transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, track.box_.track.relative_velocity.x,
-                               track.box_.track.relative_velocity.y, ego_heading_);
-      track.box_.track.relative_velocity.z = 0.f;  // km/h
-
-      // relative speed
-      track.box_.track.relative_velocity.speed =
-          euclidean_distance(track.box_.track.relative_velocity.x, track.box_.track.relative_velocity.y);
-    }
-
-#if DEBUG_VELOCITY
-    LOG_INFO << "[Track ID] " << track.box_.track.id << std::endl;
-
-    LOG_INFO << "relative_velocity on relative coord = ("     //
-             << track.box_.track.relative_velocity.x << ", "  //
-             << track.box_.track.relative_velocity.y << ") "  //
-             << track.box_.track.relative_velocity.speed << " km/h" << std::endl;
-
-    LOG_INFO << "absolute_velocity  on relative coord = ("    //
-             << track.box_.track.absolute_velocity.x << ", "  //
-             << track.box_.track.absolute_velocity.y << ") "  //
-             << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
-#endif
-
-    track.box_.absSpeed = track.box_.track.absolute_velocity.speed;  // km/h
-
-    if (std::isnan(track.box_.absSpeed))
-    {
-      track.box_.absSpeed = 0.f;
-    }
-
-    MyPoint32 p_rel;
-    track.box_center_.pos.get_point_rel(p_rel);  // m
-
-    Vector3_32 rel_v_rel;
-    rel_v_rel.x = track.box_.track.relative_velocity.x;  // km/h
-    rel_v_rel.y = track.box_.track.relative_velocity.y;  // km/h
-    rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
-
-    track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-
-    if (std::isnan(track.box_.relSpeed))
-    {
-      track.box_.relSpeed = 0.f;
-    }
-  }
 }
 
 void TPPNode::push_to_vector(BoxCenter a, std::vector<MyPoint32>& b)

@@ -181,19 +181,6 @@ MyPoint32 add_two_MyPoint32s(const MyPoint32 A, const MyPoint32 B)
   return C;
 }
 
-float compute_scalar_projection_A_onto_B(const float Ax, const float Ay, const float Az,  //
-                                         const float Bx, const float By, const float Bz)
-{
-  if (Bx == 0 && By == 0 && Bz == 0)
-  {
-    return 0;
-  }
-
-  float dot = Ax * Bx + Ay * By + Az * Bz;
-  float unit_vec = euclidean_distance3(Bx, By, Bz);
-  return (float)(dot / unit_vec);
-}
-
 void transform_point_abs2rel(const float x_abs, const float y_abs, const float z_abs,  //
                              float& x_rel, float& y_rel, float& z_rel,                 //
                              const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,

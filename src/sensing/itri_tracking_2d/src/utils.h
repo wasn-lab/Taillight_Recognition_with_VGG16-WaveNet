@@ -48,9 +48,6 @@ void swap_MyPoint32(MyPoint32& A, MyPoint32& B);
 void convert_MyPoint32_to_Point(geometry_msgs::Point& out, const MyPoint32 in);
 MyPoint32 add_two_MyPoint32s(const MyPoint32 A, const MyPoint32 B);
 
-float compute_scalar_projection_A_onto_B(const float Ax, const float Ay, const float Az,  //
-                                         const float Bx, const float By, const float Bz);
-
 void transform_point_abs2rel(const float x_abs, const float y_abs, const float z_abs,  //
                              float& x_rel, float& y_rel, float& z_rel,                 //
                              const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,

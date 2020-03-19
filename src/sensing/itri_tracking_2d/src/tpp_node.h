@@ -70,12 +70,6 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject.relSpeed:
-  // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
-  float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
-
-  void compute_velocity_kalman();
-
   void push_to_vector(BoxCenter a, std::vector<MyPoint32>& b);
   void publish_tracking();
 
