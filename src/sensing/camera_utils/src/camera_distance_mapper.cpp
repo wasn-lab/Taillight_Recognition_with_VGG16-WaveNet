@@ -35,7 +35,7 @@ int CameraDistanceMapper::read_dist_from_json()
   Json::Value jdata;
   jreader.parse(ifs, jdata);
 
-  for (const auto& doc: jdata)
+  for (const auto& doc : jdata)
   {
     auto image_x = doc["im_x"].asInt();
     auto image_y = doc["im_y"].asInt();

@@ -219,11 +219,12 @@ uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len)
 
 bool is_black_image(const cv::Mat& img)
 {
-  if ((img.rows == 0) || (img.cols == 0)) {
+  if ((img.rows == 0) || (img.cols == 0))
+  {
     return false;
   }
   const auto nbytes = img.total() * img.elemSize();
-  std::unique_ptr<uint8_t[]> zeros{new uint8_t[nbytes]};
+  std::unique_ptr<uint8_t[]> zeros{ new uint8_t[nbytes] };
   std::memset(zeros.get(), 0, nbytes);
   return std::memcmp(img.data, zeros.get(), nbytes) == 0;
 }
@@ -237,4 +238,4 @@ int release_cv_mat_if_necessary(cv::Mat& img)
   return 0;
 }
 
-} // namespace camera
+}  // namespace camera
