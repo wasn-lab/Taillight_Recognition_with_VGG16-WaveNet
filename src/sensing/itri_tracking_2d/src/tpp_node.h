@@ -35,9 +35,8 @@ private:
   Velocity vel_;
 
   ros::NodeHandle nh_;
-  ros::NodeHandle nh2_;
 
-  ros::CallbackQueue queue_; // custom callback queue
+  ros::CallbackQueue queue_;  // custom callback queue
 
   ros::Publisher track2d_pub_;
 

@@ -30,8 +30,7 @@ public:
     return dt_;
   }
 
-  void kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
-                           const float ego_heading);
+  void kalman_tracker_main(const long long dt);
 
   float get_Q1()
   {
@@ -103,15 +102,11 @@ private:
 
   void set_time_displacement(const long long dt);
 
-  void set_ego_data(const float ego_x_abs, const float ego_y_abs, const float ego_z_abs, const float ego_heading);
-
   void extract_box_center(BoxCenter& box_center, const msgs::BoxPoint& box);
   void extract_box_centers();
 
   void extract_box_corner(BoxCorner& box_corner, const MyPoint32& corner, const signed char order);
   void extract_box_corners_of_boxes();
-
-  void extract_box_two_axes_of_boxes();
 
   void init_objs();
 
@@ -133,12 +128,6 @@ private:
 
   void increase_track_id();
   void increase_tracktime();
-
-  void set_new_box_corners_absolute(const unsigned int i, const BoxCenter& box_center);
-  void set_new_box_corners_of_boxes_absolute();
-  void set_new_box_corners_of_boxes_relative();
-
-  void update_boxes();
 };
 }  // namespace tpp
 

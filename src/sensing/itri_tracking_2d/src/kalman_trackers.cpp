@@ -34,11 +34,11 @@ void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box
   cv::setIdentity(track.kalman_.measurementNoiseCov, cv::Scalar::all(R));
   cv::setIdentity(track.kalman_.errorCovPost, cv::Scalar::all(1.f));
 
-  MyPoint32 p_abs;
-  box_center.pos.get_point_abs(p_abs);
+  MyPoint32 p_rel;
+  box_center.pos.get_point_rel(p_rel);
 
-  track.kalman_.statePost.at<float>(0) = p_abs.x;
-  track.kalman_.statePost.at<float>(1) = p_abs.y;
+  track.kalman_.statePost.at<float>(0) = p_rel.x;
+  track.kalman_.statePost.at<float>(1) = p_rel.y;
   track.kalman_.statePost.at<float>(2) = 0.f;
   track.kalman_.statePost.at<float>(3) = 0.f;
   track.kalman_.statePost.at<float>(4) = 0.f;
@@ -46,7 +46,7 @@ void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box
 
   track.hist_.header_ = box.header;
 
-  track.hist_.set_for_first_element(track.id_, track.tracktime_, p_abs.x, p_abs.y,                               //
+  track.hist_.set_for_first_element(track.id_, track.tracktime_, p_rel.x, p_rel.y,                               //
                                     track.kalman_.statePost.at<float>(0), track.kalman_.statePost.at<float>(1),  //
                                     track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
 
@@ -75,15 +75,6 @@ void KalmanTrackers::set_time_displacement(const long long dt)
   }
 }
 
-void KalmanTrackers::set_ego_data(const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
-                                  const float ego_heading)
-{
-  ego_x_abs_ = ego_x_abs;
-  ego_y_abs_ = ego_y_abs;
-  ego_z_abs_ = ego_z_abs;
-  ego_heading_ = ego_heading;
-}
-
 void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPoint& box)
 {
   box_center.id = 0;
@@ -94,17 +85,6 @@ void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPo
   p_rel.z = 0.5f * (box.p0.z + box.p6.z);
 
   box_center.pos.set_point_rel(p_rel);
-  PoseRPY32 anchor_abs = { ego_x_abs_, ego_y_abs_, ego_z_abs_, 0.f, 0.f, ego_heading_ };
-  box_center.pos.set_anchor_abs(anchor_abs);
-  box_center.pos.transform_rel2abs();
-
-#if DEBUG
-  MyPoint32 p_abs;
-  box_center.pos.get_point_abs(p_abs);
-  LOG_INFO << "box_center x:" << p_rel.x << " " << p_abs.x << std::endl;
-  LOG_INFO << "box_center y:" << p_rel.y << " " << p_abs.y << std::endl;
-  LOG_INFO << "box_center z:" << p_rel.z << " " << p_abs.z << std::endl;
-#endif
 
   box_center.x_length = euclidean_distance(box.p3.x - box.p0.x, box.p3.y - box.p0.y);
   box_center.y_length = euclidean_distance(box.p4.x - box.p0.x, box.p4.y - box.p0.y);
@@ -115,17 +95,6 @@ void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPo
 
   float volumn_tmp = box_center.area * box_center.z_length;
   assign_value_cannot_zero(box_center.volumn, volumn_tmp);
-
-  float dist_to_ego_tmp = euclidean_distance3(p_rel.x, p_rel.y, p_rel.z);
-  assign_value_cannot_zero(box_center.dist_to_ego, dist_to_ego_tmp);
-
-  box_center.vec1_x_abs = 0.f;
-  box_center.vec1_y_abs = 0.f;
-  box_center.vec1_z_abs = 0.f;
-
-  box_center.vec2_x_abs = 0.f;
-  box_center.vec2_y_abs = 0.f;
-  box_center.vec2_z_abs = 0.f;
 }
 
 void KalmanTrackers::extract_box_centers()
@@ -151,12 +120,6 @@ void KalmanTrackers::extract_box_corner(BoxCorner& box_corner, const MyPoint32& 
   float y_rel = corner.y;
   float z_rel = corner.z;
 
-  float x_abs = 0.f;
-  float y_abs = 0.f;
-  float z_abs = 0.f;
-
-  transform_point_rel2abs(x_rel, y_rel, z_rel, x_abs, y_abs, z_abs, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-
   box_corner.id = 0;
   box_corner.order = order;
 
@@ -164,17 +127,9 @@ void KalmanTrackers::extract_box_corner(BoxCorner& box_corner, const MyPoint32& 
   box_corner.y_rel = y_rel;
   box_corner.z_rel = z_rel;
 
-  box_corner.x_abs = x_abs;
-  box_corner.y_abs = y_abs;
-  box_corner.z_abs = z_abs;
-
   box_corner.new_x_rel = 0.f;
   box_corner.new_y_rel = 0.f;
   box_corner.new_z_rel = 0.f;
-
-  box_corner.new_x_abs = 0.f;
-  box_corner.new_y_abs = 0.f;
-  box_corner.new_z_abs = 0.f;
 }
 
 void KalmanTrackers::extract_box_corners_of_boxes()
@@ -203,20 +158,6 @@ void KalmanTrackers::extract_box_corners_of_boxes()
     box_corners.push_back(box_corner3);
 
     box_corners_of_boxes_.push_back(box_corners);
-  }
-}
-
-void KalmanTrackers::extract_box_two_axes_of_boxes()
-{
-  for (unsigned i = 0; i < objs_.size(); i++)
-  {
-    box_centers_[i].vec1_x_abs = 0.5f * (box_corners_of_boxes_[i][1].x_abs - box_corners_of_boxes_[i][0].x_abs);
-    box_centers_[i].vec1_y_abs = 0.5f * (box_corners_of_boxes_[i][1].y_abs - box_corners_of_boxes_[i][0].y_abs);
-    box_centers_[i].vec1_z_abs = 0.f;
-
-    box_centers_[i].vec2_x_abs = 0.5f * (box_corners_of_boxes_[i][3].x_abs - box_corners_of_boxes_[i][0].x_abs);
-    box_centers_[i].vec2_y_abs = 0.5f * (box_corners_of_boxes_[i][3].y_abs - box_corners_of_boxes_[i][0].y_abs);
-    box_centers_[i].vec2_z_abs = 0.f;
   }
 }
 
@@ -250,28 +191,28 @@ void KalmanTrackers::update_associated_trackers()
 #if SPEEDUP_KALMAN_VEL_EST
         if (tracks_[j].tracktime_ == 2)
         {
-          MyPoint32 p_abs;
-          tracks_[j].box_center_.pos.get_point_abs(p_abs);
-          MyPoint32 p_abs_prev;
-          tracks_[j].box_center_prev_.pos.get_point_abs(p_abs_prev);
+          MyPoint32 p_rel;
+          tracks_[j].box_center_.pos.get_point_rel(p_rel);
+          MyPoint32 p_rel_prev;
+          tracks_[j].box_center_prev_.pos.get_point_rel(p_rel_prev);
 
-          tracks_[j].kalman_.statePre.at<float>(2) = (p_abs.x - p_abs_prev.x) / dt_;
-          tracks_[j].kalman_.statePre.at<float>(3) = (p_abs.y - p_abs_prev.y) / dt_;
+          tracks_[j].kalman_.statePre.at<float>(2) = (p_rel.x - p_rel_prev.x) / dt_;
+          tracks_[j].kalman_.statePre.at<float>(3) = (p_rel.y - p_rel_prev.y) / dt_;
         }
 #endif
 
         tracks_[j].box_corners_ = box_corners_of_boxes_[i];
 
-        MyPoint32 p_abs;
-        box_centers_[i].pos.get_point_abs(p_abs);
-        correct_tracker(tracks_[j], p_abs.x, p_abs.y);
+        MyPoint32 p_rel;
+        box_centers_[i].pos.get_point_rel(p_rel);
+        correct_tracker(tracks_[j], p_rel.x, p_rel.y);
 
         tracks_[j].hist_.header_ = tracks_[j].box_.header;
 
         increase_uint(tracks_[j].tracktime_);
 
         tracks_[j].hist_.set_for_successive_element(
-            tracks_[j].tracktime_, p_abs.x, p_abs.y,                                               //
+            tracks_[j].tracktime_, p_rel.x, p_rel.y,                                               //
             tracks_[j].kalman_.statePost.at<float>(0), tracks_[j].kalman_.statePost.at<float>(1),  //
             tracks_[j].kalman_.statePost.at<float>(2), tracks_[j].kalman_.statePost.at<float>(3));
       }
@@ -385,9 +326,9 @@ void KalmanTrackers::compute_distance_table()
       float track_range_sed =
           (tracks_[i].tracktime_ <= tracks_[i].warmup_time_) ? TRACK_RANGE_SED_WARMUP : TRACK_RANGE_SED;
 
-      MyPoint32 p_abs;
-      box_centers_[j].pos.get_point_abs(p_abs);
-      float cost_box_dist = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_abs.x, p_abs.y);
+      MyPoint32 p_rel;
+      box_centers_[j].pos.get_point_rel(p_rel);
+      float cost_box_dist = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_rel.x, p_rel.y);
 
 #if DEBUG_HUNGARIAN_DIST
       LOG_INFO << "i = " << i << " j = " << j << "  box_dist_diff: " << box_dist_diff << std::endl;
@@ -532,122 +473,7 @@ void KalmanTrackers::increase_tracktime()
   }
 }
 
-void KalmanTrackers::set_new_box_corners_absolute(const unsigned int i, const BoxCenter& box_center)
-{
-  // corner 0: p0
-  tracks_[i].box_corners_[0].new_x_abs =
-      tracks_[i].kalman_.statePost.at<float>(0) - box_center.vec1_x_abs - box_center.vec2_x_abs;
-  tracks_[i].box_corners_[0].new_y_abs =
-      tracks_[i].kalman_.statePost.at<float>(1) - box_center.vec1_y_abs - box_center.vec2_y_abs;
-  tracks_[i].box_corners_[0].new_z_abs = 0.f;
-
-  // corner 1: p3
-  tracks_[i].box_corners_[1].new_x_abs =
-      tracks_[i].kalman_.statePost.at<float>(0) + box_center.vec1_x_abs - box_center.vec2_x_abs;
-  tracks_[i].box_corners_[1].new_y_abs =
-      tracks_[i].kalman_.statePost.at<float>(1) + box_center.vec1_y_abs - box_center.vec2_y_abs;
-  tracks_[i].box_corners_[1].new_z_abs = 0.f;
-
-  // corner 2: p7
-  tracks_[i].box_corners_[2].new_x_abs =
-      tracks_[i].kalman_.statePost.at<float>(0) + box_center.vec1_x_abs + box_center.vec2_x_abs;
-  tracks_[i].box_corners_[2].new_y_abs =
-      tracks_[i].kalman_.statePost.at<float>(1) + box_center.vec1_y_abs + box_center.vec2_y_abs;
-  tracks_[i].box_corners_[2].new_z_abs = 0.f;
-
-  // corner 3: p4
-  tracks_[i].box_corners_[3].new_x_abs =
-      tracks_[i].kalman_.statePost.at<float>(0) - box_center.vec1_x_abs + box_center.vec2_x_abs;
-  tracks_[i].box_corners_[3].new_y_abs =
-      tracks_[i].kalman_.statePost.at<float>(1) - box_center.vec1_y_abs + box_center.vec2_y_abs;
-  tracks_[i].box_corners_[3].new_z_abs = 0.f;
-}
-
-void KalmanTrackers::set_new_box_corners_of_boxes_absolute()
-{
-  for (unsigned i = 0; i < tracks_.size(); i++)
-  {
-    if (tracks_[i].tracked_)
-    {
-#if PREVENT_SHRINK_BBOX
-      float box_size_compare = tracks_[i].box_center_.area / tracks_[i].box_center_prev_.area;
-
-      if (box_size_compare < BOX_SIZE_TH)
-      {
-        set_new_box_corners_absolute(i, tracks_[i].box_center_prev_);
-      }
-      else
-      {
-        set_new_box_corners_absolute(i, tracks_[i].box_center_);
-      }
-#else
-      set_new_box_corners_absolute(i, tracks_[i].box_center_);
-#endif
-    }
-  }
-}
-
-void KalmanTrackers::set_new_box_corners_of_boxes_relative()
-{
-  for (auto& track : tracks_)
-  {
-    if (track.tracked_)
-    {
-      for (unsigned i = 0; i < num_2dbox_corners; i++)
-      {
-        transform_point_abs2rel(track.box_corners_[i].new_x_abs,  //
-                                track.box_corners_[i].new_y_abs,  //
-                                track.box_corners_[i].new_z_abs,  //
-                                track.box_corners_[i].new_x_rel,  //
-                                track.box_corners_[i].new_y_rel,  //
-                                track.box_corners_[i].new_z_rel,  //
-                                ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-
-        track.box_corners_[i].new_z_rel = 0.f;
-      }
-    }
-  }
-}
-
-void KalmanTrackers::update_boxes()
-{
-  for (auto& track : tracks_)
-  {
-    if (track.tracked_)
-    {
-      // corner 0 <--> p0 p1
-      track.box_.bPoint.p0.x = track.box_corners_[0].new_x_rel;
-      track.box_.bPoint.p0.y = track.box_corners_[0].new_y_rel;
-
-      track.box_.bPoint.p1.x = track.box_corners_[0].new_x_rel;
-      track.box_.bPoint.p1.y = track.box_corners_[0].new_y_rel;
-
-      // corner 1 <--> p2 p3
-      track.box_.bPoint.p2.x = track.box_corners_[1].new_x_rel;
-      track.box_.bPoint.p2.y = track.box_corners_[1].new_y_rel;
-
-      track.box_.bPoint.p3.x = track.box_corners_[1].new_x_rel;
-      track.box_.bPoint.p3.y = track.box_corners_[1].new_y_rel;
-
-      // corner 3 <--> p4 p5
-      track.box_.bPoint.p4.x = track.box_corners_[3].new_x_rel;
-      track.box_.bPoint.p4.y = track.box_corners_[3].new_y_rel;
-
-      track.box_.bPoint.p5.x = track.box_corners_[3].new_x_rel;
-      track.box_.bPoint.p5.y = track.box_corners_[3].new_y_rel;
-
-      // corner 2 <--> p6 p7
-      track.box_.bPoint.p6.x = track.box_corners_[2].new_x_rel;
-      track.box_.bPoint.p6.y = track.box_corners_[2].new_y_rel;
-
-      track.box_.bPoint.p7.x = track.box_corners_[2].new_x_rel;
-      track.box_.bPoint.p7.y = track.box_corners_[2].new_y_rel;
-    }
-  }
-}
-
-void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
-                                         const float ego_z_abs, const float ego_heading)
+void KalmanTrackers::kalman_tracker_main(const long long dt)
 {
   if (objs_.size() == 0 && tracks_.size() == 0)
   {
@@ -655,7 +481,6 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   }
 
   // feature extraction: bbox center
-  set_ego_data(ego_x_abs, ego_y_abs, ego_z_abs, ego_heading);
   extract_box_centers();
   extract_box_corners_of_boxes();
   extract_box_two_axes_of_boxes();
@@ -682,11 +507,6 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   mark_lost_trackers();
   delete_lost_trackers();
   add_new_trackers();
-
-  // update bounding boxes
-  set_new_box_corners_of_boxes_absolute();
-  set_new_box_corners_of_boxes_relative();
-  update_boxes();
 
   return;
 }
