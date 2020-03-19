@@ -76,9 +76,6 @@ private:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 
-  float compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
-                                        const float box_center_y_abs);
-
   void compute_velocity_kalman();
 
   void push_to_vector(BoxCenter a, std::vector<MyPoint32>& b);

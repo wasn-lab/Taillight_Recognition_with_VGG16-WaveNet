@@ -91,16 +91,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       obj.relSpeed = 0.f;
     }
 
-#if USE_RADAR_REL_SPEED
-    for (auto& obj : KTs_.objs_)
-    {
-      if (obj.header.frame_id == "RadarFront")
-      {
-        obj.relSpeed = mps_to_kmph(obj.relSpeed);
-      }
-    }
-#endif
-
 #if DEBUG_DATA_IN
     for (auto& obj : KTs_.objs_)
       LOG_INFO << "[Object " << i << "] p0 = (" << obj.bPoint.p0.x << ", " << obj.bPoint.p0.y << ", " << obj.bPoint.p0.z
@@ -156,31 +146,6 @@ float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const 
   return compute_scalar_projection_A_onto_B(rel_v_rel.x, rel_v_rel.y, rel_v_rel.z, obj_rel.x, obj_rel.y, obj_rel.z);
 }
 
-float TPPNode::compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
-                                               const float box_center_y_abs)
-{
-  float ego_vx = ego_speed_kmph_ * std::cos(ego_heading_);
-  float ego_vy = ego_speed_kmph_ * std::sin(ego_heading_);
-
-  float vecx_ego2obj_abs = box_center_x_abs - ego_x_abs_;
-  float vecy_ego2obj_abs = box_center_y_abs - ego_y_abs_;
-
-  float dist_ego2obj_tmp = euclidean_distance(vecx_ego2obj_abs, vecy_ego2obj_abs);
-  float dist_ego2obj = 0;
-  assign_value_cannot_zero(dist_ego2obj, dist_ego2obj_tmp);
-
-  float mul = divide(radar_speed_rel, dist_ego2obj);
-
-  float obj_vx_radar_rel = -vecx_ego2obj_abs * mul;
-  float obj_vy_radar_rel = -vecy_ego2obj_abs * mul;
-
-  float obj_vx_radar_abs = obj_vx_radar_rel + ego_vx;
-  float obj_vy_radar_abs = obj_vy_radar_rel + ego_vy;
-
-  float radar_speed_abs = euclidean_distance(obj_vx_radar_abs, obj_vy_radar_abs);
-  return radar_speed_abs;
-}
-
 void TPPNode::compute_velocity_kalman()
 {
   for (auto& track : KTs_.tracks_)
@@ -234,34 +199,13 @@ void TPPNode::compute_velocity_kalman()
              << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
 #endif
 
-// DetectedObject.absSpeed
-#if USE_RADAR_ABS_SPEED == 0
     track.box_.absSpeed = track.box_.track.absolute_velocity.speed;  // km/h
-#else
-    MyPoint32 p_abs;
-    box_center_.pos.get_point_abs(p_abs);
-    track.box_.absSpeed = compute_radar_absolute_velocity(track.box_.relSpeed,  //
-                                                          p_abs.x, p_abs.y);
-#endif
 
     if (std::isnan(track.box_.absSpeed))
     {
       track.box_.absSpeed = 0.f;
     }
 
-// DetectedObject.relSpeed
-#if USE_RADAR_REL_SPEED
-    if (track.box_.header.frame_id != "RadarFront")
-    {
-      MyPoint32 p_rel;
-      track.box_center_.pos.get_point_rel(p_rel);
-      Vector3_32 rel_v_rel;
-      rel_v_rel.x = track.box_.track.relative_velocity.x;
-      rel_v_rel.y = track.box_.track.relative_velocity.y;
-      rel_v_rel.z = track.box_.track.relative_velocity.z;
-      track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-    }
-#else
     MyPoint32 p_rel;
     track.box_center_.pos.get_point_rel(p_rel);  // m
 
@@ -271,7 +215,6 @@ void TPPNode::compute_velocity_kalman()
     rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
 
     track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-#endif
 
     if (std::isnan(track.box_.relSpeed))
     {
