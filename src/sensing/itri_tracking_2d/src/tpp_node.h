@@ -81,8 +81,6 @@ private:
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
-
-  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 };
 }  // namespace tpp
 
