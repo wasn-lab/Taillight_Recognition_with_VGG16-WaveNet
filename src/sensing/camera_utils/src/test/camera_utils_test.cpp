@@ -134,6 +134,6 @@ TEST(CameraUtilsTest, test_is_black_image)
   cv::Mat img(cv::Mat::zeros(8, 16, CV_8UC3));
   EXPECT_TRUE(camera::is_black_image(img));
 
-  img.at<uint8_t>(1,2) = 1;
+  img.at<uint8_t>(1, 2) = 1;
   EXPECT_FALSE(camera::is_black_image(img));
 }
