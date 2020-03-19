@@ -55,50 +55,6 @@ struct BoxCorner
   float new_y_abs;
   float new_z_abs;
 };
-
-struct PPLongDouble
-{
-  unsigned int id;
-
-  long double beta0_x;
-  long double beta1_x;
-
-  long double beta0_y;
-  long double beta1_y;
-
-  long double sum_samples_x;
-  long double sum_samples_y;
-
-  long double observation_x;
-  long double observation_y;
-
-  long double pos_x;
-  long double pos_y;
-
-  long double mean_x;
-  long double mean_y;
-
-  long double stdev_x;
-  long double stdev_y;
-
-  long double cov_xx;
-  long double cov_yy;
-  long double cov_xy;
-  long double corr_xy;
-
-  float a1;  // length of vector1 of confidence ellipse
-  float a2;  // length of vector2 of confidence ellipse
-
-  tf2::Quaternion q1;  // direction of vector1 of confidence ellipse
-  tf2::Quaternion q2;  // direction of vector2 of confidence ellipse
-
-#if PP_VERTICES_VIA_SPEED
-  msgs::PointXY v1;  // vertex1 of confidence ellipse
-  msgs::PointXY v2;  // vertex2 of confidence ellipse
-  msgs::PointXY v3;  // co-vertex1 of confidence ellipse
-  msgs::PointXY v4;  // co-vertex2 of confidence ellipse
-#endif
-};
 }  // namespace tpp
 
 #endif  // __TPP_H__

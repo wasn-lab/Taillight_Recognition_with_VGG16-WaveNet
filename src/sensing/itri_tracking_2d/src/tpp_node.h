@@ -35,7 +35,6 @@ private:
   std_msgs::Header objs_header_prev_;
 
   std::vector<msgs::DetectedObject> pp_objs_;
-  std::vector<std::vector<PPLongDouble> > ppss;
 
 #if VIRTUAL_INPUT
   double gt_x_ = 0.;
