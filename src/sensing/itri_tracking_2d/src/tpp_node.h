@@ -4,7 +4,6 @@
 #include "tpp.h"
 #include "kalman_trackers.h"
 #include "velocity.h"
-#include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
 
@@ -28,8 +27,7 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = get_in_source();
-  bool use_ego_speed_ = get_ego_speed();
+  int in_source_ = 0;
 
   std_msgs::Header objs_header_;
   std_msgs::Header objs_header_prev_;
