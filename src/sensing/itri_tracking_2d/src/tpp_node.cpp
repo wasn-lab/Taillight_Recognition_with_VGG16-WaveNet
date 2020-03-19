@@ -675,18 +675,6 @@ void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& 
   pub.publish(msg);
 }
 
-void TPPNode::control_sleep(const double loop_interval)
-{
-  loop_elapsed = ros::Time::now().toSec() - loop_begin;
-
-  if (loop_elapsed > 0)
-  {
-    this_thread::sleep_for(std::chrono::milliseconds((long int)round(1000 * (loop_interval - loop_elapsed))));
-  }
-
-  loop_begin = ros::Time::now().toSec();
-}
-
 void TPPNode::get_current_ego_data_main()
 {
   ego_x_abs_ = vel_.get_ego_x_abs();

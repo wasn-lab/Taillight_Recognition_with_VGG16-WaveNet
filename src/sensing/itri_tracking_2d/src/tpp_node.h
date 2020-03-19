@@ -116,7 +116,6 @@ private:
   void push_to_vector(BoxCenter a, std::vector<MyPoint32>& b);
   void publish_tracking();
 
-  void control_sleep(const double loop_interval);
   void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                   const float time_offset);
 
