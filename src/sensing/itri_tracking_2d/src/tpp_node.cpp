@@ -115,12 +115,12 @@ void TPPNode::subscribe_and_advertise_topics()
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
-    fusion_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
   }
   else
   {
     LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
-    fusion_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
+    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
   }
 
   track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
