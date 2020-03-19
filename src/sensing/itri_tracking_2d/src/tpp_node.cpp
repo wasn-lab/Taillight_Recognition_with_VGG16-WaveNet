@@ -3,11 +3,7 @@
 namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
-static double input_fps = 5;    // known callback rate
 static double output_fps = 10;  // expected publish rate
-
-static unsigned int num_publishs_per_loop =
-    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 
 bool g_trigger = false;
 
@@ -536,10 +532,7 @@ void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_2d/";
   nh_.param<int>(domain + "input_source", in_source_, 0);
-
-  nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
-  num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 }
 
 int TPPNode::run()
