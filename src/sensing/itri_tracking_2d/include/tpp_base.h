@@ -37,8 +37,6 @@
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
 
-#include <std_msgs/ColorRGBA.h>
-
 #include <opencv2/highgui/highgui.hpp>
 
 #define DISALLOW_COPY(TypeName) TypeName(const TypeName&) = delete

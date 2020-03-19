@@ -4,7 +4,6 @@
 #include <ctime>
 #include <cmath>
 #include <msgs/PointXYZ.h>
-#include <std_msgs/ColorRGBA.h>
 #include "tpp_base.h"
 
 namespace tpp
