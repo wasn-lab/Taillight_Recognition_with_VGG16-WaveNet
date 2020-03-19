@@ -283,12 +283,6 @@ void TPPNode::publish_tracking()
   }
 }
 
-inline bool test_file_exist(const std::string& name)
-{
-  ifstream f(name.c_str());
-  return f.good();
-}
-
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_2d/";
