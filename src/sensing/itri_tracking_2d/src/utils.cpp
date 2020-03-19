@@ -262,22 +262,6 @@ void transform_vector_rel2abs(const float vx_rel, const float vy_rel, float& vx_
 #endif
 }
 
-void set_ColorRGBA(std_msgs::ColorRGBA& out, const std_msgs::ColorRGBA in)
-{
-  out.r = in.r;
-  out.g = in.g;
-  out.b = in.b;
-  out.a = in.a;
-}
-
-void set_ColorRGBA(std_msgs::ColorRGBA& c, const float r, const float g, const float b, const float a)
-{
-  c.r = r;
-  c.g = g;
-  c.b = b;
-  c.a = a;
-}
-
 void quaternion_to_rpy(double& roll, double& pitch, double& yaw, const double q_x, const double q_y, const double q_z,
                        const double q_w)
 {
