@@ -740,11 +740,6 @@ void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& 
   }
 
   pub.publish(msg);
-
-  if (gen_markers_)
-  {
-    mg_.marker_gen_main(msg.header, objs, mc_, ppss);
-  }
 }
 
 void TPPNode::control_sleep(const double loop_interval)

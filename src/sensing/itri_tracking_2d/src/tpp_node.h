@@ -8,7 +8,6 @@
 #include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
-#include "marker_gen.h"
 #if TO_GRIDMAP
 #include "points_to_costmap.h"
 #endif
