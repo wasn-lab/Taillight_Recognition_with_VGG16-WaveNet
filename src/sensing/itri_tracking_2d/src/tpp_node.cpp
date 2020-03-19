@@ -15,7 +15,7 @@ void signal_handler(int sig)
 {
   if (sig == SIGINT)
   {
-    LOG_INFO << "END ITRI_Tracking_PP" << std::endl;
+    LOG_INFO << "END itri_tracking_2d" << std::endl;
     g_spinner->stop();
     ros::shutdown();
   }
@@ -863,7 +863,7 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
 
 void TPPNode::set_ros_params()
 {
-  std::string domain = "/itri_tracking_pp/";
+  std::string domain = "/itri_tracking_2d/";
   nh_.param<int>(domain + "input_source", in_source_, 0);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
@@ -908,7 +908,7 @@ int TPPNode::run()
 
   subscribe_and_advertise_topics();
 
-  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191111_1500!" << std::endl;
+  LOG_INFO << "itri_tracking_2d is running! ver. 20191111_1500!" << std::endl;
 
   signal(SIGINT, signal_handler);
 

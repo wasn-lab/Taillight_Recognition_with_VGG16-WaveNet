@@ -42,7 +42,7 @@
   <arg name="pp_obj_max_kmph" default="50.0" />
 
   <!-- Launch node -->
-  <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
+  <node pkg="itri_tracking_2d" type="itri_tracking_2d" name="itri_tracking_2d" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />

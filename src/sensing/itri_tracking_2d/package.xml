@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-    <name>itri_tracking_pp</name>
+    <name>itri_tracking_2d</name>
     <version>0.0.0</version>
     <description>ITRI tracking_pp package</description>
     <maintainer email="chinghao.liu@itri.org.tw">Ching-Hao Liu</maintainer>
