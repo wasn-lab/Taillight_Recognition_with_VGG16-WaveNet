@@ -39,13 +39,10 @@ include_directories(
 )
 
 set(SOURCES_SRCS
-  src/ego_param.cpp
   src/kalman_tracker.cpp
   src/kalman_trackers.cpp
   src/main.cpp
   src/point32_impl.cpp
-  src/ros_params_parser.cpp
-  src/simple_kalman.cpp
   src/tpp_node.cpp
   src/track_hist.cpp
   src/utils.cpp

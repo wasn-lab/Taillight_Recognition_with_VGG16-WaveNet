@@ -4,8 +4,6 @@
 #include "tpp.h"
 #include "kalman_trackers.h"
 #include "velocity.h"
-#include "ros_params_parser.h"
-#include "ego_param.h"
 
 #include <fstream>
 
@@ -39,8 +37,7 @@ private:
   ros::NodeHandle nh_;
   ros::NodeHandle nh2_;
 
-  // custom callback queue
-  ros::CallbackQueue queue_;
+  ros::CallbackQueue queue_; // custom callback queue
 
   ros::Publisher track2d_pub_;
 
