@@ -42,7 +42,6 @@ set(SOURCES_SRCS
   src/kalman_tracker.cpp
   src/kalman_trackers.cpp
   src/main.cpp
-  src/point32_impl.cpp
   src/tpp_node.cpp
   src/track_hist.cpp
   src/utils.cpp

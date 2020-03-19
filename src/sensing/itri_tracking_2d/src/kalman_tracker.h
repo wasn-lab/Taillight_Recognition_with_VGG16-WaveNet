@@ -29,8 +29,6 @@ public:
   BoxCenter box_center_;
   BoxCenter box_center_prev_;
 
-  std::vector<BoxCorner> box_corners_;
-
   float x_predict_ = 0.f;
   float y_predict_ = 0.f;
 

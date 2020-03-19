@@ -84,14 +84,23 @@ void TPPNode::subscribe_and_advertise_topics()
     camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_camera, this);
   }
 
-  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("2DTracking", 2);
+  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking2D", 2);
 }
 
 void TPPNode::publish()
 {
+  track2d_obj_array.header = objs_header_;
+
+  // std::cout << track2d_obj_array.header.stamp << std::endl;
+
+  std::vector<msgs::DetectedObject>().swap(track2d_obj_array.objects);
+  track2d_obj_array.objects.reserve(KTs_.tracks_.size());
+
   for (const auto& track : KTs_.tracks_)
   {
     msgs::DetectedObject box = track.box_;
+
+    box.header = objs_header_;
 
     // init max_length, head, is_over_max_length
     box.track.max_length = 10;
@@ -127,7 +136,11 @@ void TPPNode::publish()
     {
       box.track.states[k] = track.hist_.states_[k];
     }
+
+    track2d_obj_array.objects.push_back(box);
   }
+
+  track2d_pub_.publish(track2d_obj_array);
 }
 
 void TPPNode::set_ros_params()
@@ -159,7 +172,7 @@ int TPPNode::run()
   {
     if (g_trigger && is_legal_dt_)
     {
-      KTs_.kalman_tracker_main(dt_); // MOT: SORT algorithm
+      KTs_.kalman_tracker_main(dt_);  // MOT: SORT algorithm
       publish();
 
       g_trigger = false;

@@ -43,10 +43,12 @@ private:
   ros::Subscriber camera_sub_;
   void callback_camera(const msgs::DetectedObjectArray::ConstPtr& input);
 
+  msgs::DetectedObjectArray track2d_obj_array;
+
   bool is_legal_dt_ = false;
 
   float dt_ = 0.f;
-  
+
   void publish();
 
   void set_ros_params();

@@ -33,11 +33,8 @@ void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box
   cv::setIdentity(track.kalman_.measurementNoiseCov, cv::Scalar::all(R));
   cv::setIdentity(track.kalman_.errorCovPost, cv::Scalar::all(1.f));
 
-  MyPoint32 p_rel;
-  box_center.pos.get_point_rel(p_rel);
-
-  track.kalman_.statePost.at<float>(0) = p_rel.x;
-  track.kalman_.statePost.at<float>(1) = p_rel.y;
+  track.kalman_.statePost.at<float>(0) = box_center.x_rel;
+  track.kalman_.statePost.at<float>(1) = box_center.y_rel;
   track.kalman_.statePost.at<float>(2) = 0.f;
   track.kalman_.statePost.at<float>(3) = 0.f;
   track.kalman_.statePost.at<float>(4) = 0.f;
@@ -45,7 +42,7 @@ void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box
 
   track.hist_.header_ = box.header;
 
-  track.hist_.set_for_first_element(track.id_, track.tracktime_, p_rel.x, p_rel.y,                               //
+  track.hist_.set_for_first_element(track.id_, track.tracktime_, box_center.x_rel, box_center.y_rel,             //
                                     track.kalman_.statePost.at<float>(0), track.kalman_.statePost.at<float>(1),  //
                                     track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
 
@@ -77,12 +74,9 @@ void KalmanTrackers::extract_2dbox_center(BoxCenter& box_center, const msgs::Cam
 {
   box_center.id = 0;
 
-  MyPoint32 p_rel;
-  p_rel.x = box.u + box.width * 0.5f;
-  p_rel.y = box.v + box.height * 0.5f;
-  p_rel.z = 0.f;
-
-  box_center.pos.set_point_rel(p_rel);
+  box_center.x_rel = box.u + box.width * 0.5f;
+  box_center.y_rel = box.v + box.height * 0.5f;
+  box_center.z_rel = 0.f;
 
   box_center.x_length = box.width;
   box_center.y_length = box.height;
@@ -95,7 +89,7 @@ void KalmanTrackers::extract_2dbox_center(BoxCenter& box_center, const msgs::Cam
   assign_value_cannot_zero(box_center.volumn, volumn_tmp);
 }
 
-void KalmanTrackers::extract_box_centers()
+void KalmanTrackers::extract_2dbox_centers()
 {
   std::vector<BoxCenter>().swap(box_centers_);
   box_centers_.reserve(objs_.size());
@@ -103,7 +97,7 @@ void KalmanTrackers::extract_box_centers()
   for (unsigned i = 0; i < objs_.size(); i++)
   {
     BoxCenter box_center;
-    extract_box_center(box_center, objs_[i].camInfo);
+    extract_2dbox_center(box_center, objs_[i].camInfo);
     box_centers_.push_back(box_center);
   }
 }
@@ -138,26 +132,21 @@ void KalmanTrackers::update_associated_trackers()
 #if SPEEDUP_KALMAN_VEL_EST
         if (tracks_[j].tracktime_ == 2)
         {
-          MyPoint32 p_rel;
-          tracks_[j].box_center_.pos.get_point_rel(p_rel);
-          MyPoint32 p_rel_prev;
-          tracks_[j].box_center_prev_.pos.get_point_rel(p_rel_prev);
-
-          tracks_[j].kalman_.statePre.at<float>(2) = (p_rel.x - p_rel_prev.x) / dt_;
-          tracks_[j].kalman_.statePre.at<float>(3) = (p_rel.y - p_rel_prev.y) / dt_;
+          tracks_[j].kalman_.statePre.at<float>(2) =
+              (tracks_[j].box_center_.x_rel - tracks_[j].box_center_prev_.x_rel) / dt_;
+          tracks_[j].kalman_.statePre.at<float>(3) =
+              (tracks_[j].box_center_.y_rel - tracks_[j].box_center_prev_.y_rel) / dt_;
         }
 #endif
 
-        MyPoint32 p_rel;
-        box_centers_[i].pos.get_point_rel(p_rel);
-        correct_tracker(tracks_[j], p_rel.x, p_rel.y);
+        correct_tracker(tracks_[j], box_centers_[i].x_rel, box_centers_[i].y_rel);
 
         tracks_[j].hist_.header_ = tracks_[j].box_.header;
 
         increase_uint(tracks_[j].tracktime_);
 
         tracks_[j].hist_.set_for_successive_element(
-            tracks_[j].tracktime_, p_rel.x, p_rel.y,                                               //
+            tracks_[j].tracktime_, box_centers_[i].x_rel, box_centers_[i].y_rel,                   //
             tracks_[j].kalman_.statePost.at<float>(0), tracks_[j].kalman_.statePost.at<float>(1),  //
             tracks_[j].kalman_.statePost.at<float>(2), tracks_[j].kalman_.statePost.at<float>(3));
       }
@@ -259,10 +248,6 @@ void KalmanTrackers::init_distance_table()
 
 void KalmanTrackers::compute_distance_table()
 {
-#if DEBUG_HUNGARIAN_DIST
-  LOG_INFO << "== Hungarian Distance ==" << std::endl;
-#endif
-
   for (unsigned i = 0; i < tracks_.size(); i++)
   {
     for (unsigned j = 0; j < objs_.size(); j++)
@@ -271,13 +256,8 @@ void KalmanTrackers::compute_distance_table()
       float track_range_sed =
           (tracks_[i].tracktime_ <= tracks_[i].warmup_time_) ? TRACK_RANGE_SED_WARMUP : TRACK_RANGE_SED;
 
-      MyPoint32 p_rel;
-      box_centers_[j].pos.get_point_rel(p_rel);
-      float cost_box_dist = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_rel.x, p_rel.y);
-
-#if DEBUG_HUNGARIAN_DIST
-      LOG_INFO << "i = " << i << " j = " << j << "  box_dist_diff: " << box_dist_diff << std::endl;
-#endif
+      float cost_box_dist = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_,
+                                                       box_centers_[j].x_rel, box_centers_[j].y_rel);
 
       if (cost_box_dist > track_range_sed)
       {
@@ -301,16 +281,6 @@ void KalmanTrackers::compute_distance_table()
       {
         distance_table_[i][j] = cost_final;
       }
-
-#if DEBUG_HUNGARIAN_DIST
-      LOG_INFO << "i = " << i << " j = " << j << std::endl;
-      LOG_INFO << "factor_dist_to_obj_avg: " << factor_dist_to_obj_avg << " box_vol_diff_ratio: " << box_vol_diff_ratio
-               << std::endl;
-      LOG_INFO << "box_vol_same_ratio1: " << box_vol_same_ratio1 << " box_vol_same_ratio2: " << box_vol_same_ratio2
-               << std::endl;
-      LOG_INFO << "factor_box_vol: " << factor_box_vol << " factor_final: " << factor_final << std::endl;
-      LOG_INFO << "------------------------------------------------------------" << std::endl;
-#endif
     }
   }
 }
@@ -329,7 +299,7 @@ void KalmanTrackers::associate_data()
     }
   }
 
-#if DEBUG
+#if DEBUG_HUNGARIAN
   LOG_INFO << "cost matrix: " << std::endl;
 
   for (unsigned i = 0; i < costMatrix.size(); i++)
@@ -345,7 +315,7 @@ void KalmanTrackers::associate_data()
   Hungarian hun;
   std::vector<int> assignment;
 
-#if DEBUG
+#if DEBUG_HUNGARIAN
   double cost = hun.solve(costMatrix, assignment);
 
   for (unsigned i = 0; i < costMatrix.size(); i++)
@@ -426,7 +396,7 @@ void KalmanTrackers::kalman_tracker_main(const long long dt)
   }
 
   // feature extraction: bbox center
-  extract_box_centers();
+  extract_2dbox_centers();
 
   // kalman filter: prediction step
   for (unsigned i = 0; i < tracks_.size(); i++)

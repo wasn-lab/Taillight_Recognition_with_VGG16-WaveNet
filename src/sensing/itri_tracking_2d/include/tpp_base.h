@@ -37,9 +37,6 @@
   DISALLOW_COPY(TypeName);                                                                                             \
   DISALLOW_ASSIGN(TypeName)
 
-#define MyPoint32 msgs::PointXYZ
-#define Vector3_32 msgs::PointXYZ
-
 #define ENABLE_PROFILING_MODE 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
@@ -50,10 +47,9 @@
 #define DEBUG_COMPACT 0
 #define DEBUG_DATA_IN 0
 #define DEBUG_VELOCITY 0
-#define DEBUG_HUNGARIAN_DIST 0
-#define DEBUG_CONF_E 0
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
+#define DEBUG_HUNGARIAN 0
 
 #define INPUT_ALL_CLASS 1
 
