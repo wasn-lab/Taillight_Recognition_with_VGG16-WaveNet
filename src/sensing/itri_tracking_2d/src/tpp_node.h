@@ -7,7 +7,6 @@
 #include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
-#include <visualization_msgs/MarkerArray.h>
 
 #include <fstream>
 
@@ -31,8 +30,6 @@ private:
 
   int in_source_ = get_in_source();
   bool use_ego_speed_ = get_ego_speed();
-
-  MarkerConfig mc_;
 
   std_msgs::Header objs_header_;
   std_msgs::Header objs_header_prev_;
@@ -72,9 +69,6 @@ private:
 
   ros::Subscriber seq_sub_;
   void callback_seq(const std_msgs::Int32::ConstPtr& input);
-
-  ros::Subscriber localization_sub_;
-  void callback_localization(const visualization_msgs::Marker::ConstPtr& input);
 #endif
 
   bool is_legal_dt_ = false;

@@ -38,8 +38,6 @@
 #if TTC_TEST
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float64.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
 #else
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
@@ -67,7 +65,6 @@
 
 // virtual input test
 #define VIRTUAL_INPUT 0
-#define SAME_OBJ_MARKER_HEADER 0
 #define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
@@ -129,32 +126,6 @@ struct PoseRPY32
   float roll;
   float pitch;
   float yaw;
-};
-
-struct MarkerConfig
-{
-  ros::Publisher pub_bbox;
-  ros::Publisher pub_pp;
-  ros::Publisher pub_vel;
-
-  ros::Publisher pub_id;
-  ros::Publisher pub_speed;
-
-  double lifetime_sec = 0.1;
-  double module_pubtime_sec = 0.;
-
-  bool show_classid = 0;
-  bool show_tracktime = 0;
-  bool show_source = 0;
-  bool show_distance = 0;
-  bool show_absspeed = 0;  // km/h
-  unsigned int show_pp = 0;
-
-  std_msgs::ColorRGBA color;
-  std_msgs::ColorRGBA color_lidar_tpp;
-  std_msgs::ColorRGBA color_radar_tpp;
-  std_msgs::ColorRGBA color_camera_tpp;
-  std_msgs::ColorRGBA color_fusion_tpp;
 };
 }
 

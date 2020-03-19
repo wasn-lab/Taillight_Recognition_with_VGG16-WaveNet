@@ -48,25 +48,6 @@ void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
   std::cout << "seq_cb_ = " << seq_cb_ << std::endl;
 #endif
 }
-
-void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& input)
-{
-#if DEBUG_CALLBACK
-  LOG_INFO << "callback_localization() start" << std::endl;
-#endif
-
-  vel_.set_ego_x_abs(input->pose.position.x);
-  vel_.set_ego_y_abs(input->pose.position.y);
-
-  double roll, pitch, yaw;
-  quaternion_to_rpy(roll, pitch, yaw, input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
-                    input->pose.orientation.w) vel_.set_ego_heading(yaw);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
-           << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
-#endif
-}
 #endif
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
@@ -168,13 +149,11 @@ void TPPNode::subscribe_and_advertise_topics()
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
     fusion_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
   else
   {
     LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
     fusion_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
@@ -679,19 +658,6 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);
   pp_.set_input_shift_m((long double)pp_input_shift_m);
 
-  nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
-  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
-
-  nh_.param<bool>(domain + "show_classid", mc_.show_classid, false);
-  nh_.param<bool>(domain + "show_tracktime", mc_.show_tracktime, false);
-  nh_.param<bool>(domain + "show_source", mc_.show_source, false);
-  nh_.param<bool>(domain + "show_distance", mc_.show_distance, false);
-  nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, false);
-
-  int show_pp_int = 0;
-  nh_.param<int>(domain + "show_pp", show_pp_int, 0);
-  mc_.show_pp = (unsigned int)show_pp_int;
-
   double pp_obj_min_kmph = 0.;
   nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
   pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
@@ -699,11 +665,6 @@ void TPPNode::set_ros_params()
   double pp_obj_max_kmph = 0.;
   nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
   pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
-
-  set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_radar_tpp, 0.5f, 0.f, 0.f, 1.f);
-  set_ColorRGBA(mc_.color_camera_tpp, 0.5f, 0.5f, 0.5f, 1.f);
-  set_ColorRGBA(mc_.color_fusion_tpp, 0.f, 1.f, 1.f, 1.f);
 }
 
 int TPPNode::run()
@@ -759,10 +720,6 @@ int TPPNode::run()
       compute_velocity_kalman();
 
       publish_tracking();
-
-#if DELAY_TIME
-      mc_.module_pubtime_sec = ros::Time::now().toSec();
-#endif
 
       g_trigger = false;
     }
