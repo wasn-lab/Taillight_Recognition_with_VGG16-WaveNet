@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Hungarian.h: Header file for Class HungarianAlgorithm.
+// Hungarian.h: Header file for Class Hungarian.
 //
 // This is a C++ wrapper with slight modification of a hungarian algorithm implementation by Markus Buehren.
 // The original implementation is a few mex-functions for use in MATLAB, found here:
@@ -17,17 +17,17 @@
 
 using namespace std;
 
-class HungarianAlgorithm
+class Hungarian
 {
 public:
-  HungarianAlgorithm();
-  ~HungarianAlgorithm();
-  double Solve(vector<vector<double> >& DistMatrix, vector<int>& Assignment);
+  Hungarian();
+  ~Hungarian();
+  double solve(vector<vector<double> >& DistMatrix, vector<int>& Assignment);
 
 private:
-  void assignmentoptimal(int* assignment, double* cost, double* distMatrix, int nOfRows, int nOfColumns);
-  void buildassignmentvector(int* assignment, bool* starMatrix, int nOfRows, int nOfColumns);
-  void computeassignmentcost(int* assignment, double* cost, double* distMatrix, int nOfRows);
+  void assignmentOptimal(int* assignment, double* cost, double* distMatrix, int nOfRows, int nOfColumns);
+  void buildAssignmentVector(int* assignment, bool* starMatrix, int nOfRows, int nOfColumns);
+  void computeAssignmentCost(int* assignment, double* cost, double* distMatrix, int nOfRows);
   void step2a(int* assignment, double* distMatrix, bool* starMatrix, bool* newStarMatrix, bool* primeMatrix,
               bool* coveredColumns, bool* coveredRows, int nOfRows, int nOfColumns, int minDim);
   void step2b(int* assignment, double* distMatrix, bool* starMatrix, bool* newStarMatrix, bool* primeMatrix,
