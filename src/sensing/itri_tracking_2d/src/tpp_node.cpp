@@ -63,10 +63,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
 
-#if VIRTUAL_INPUT
-  objs_header_.frame_id = "lidar";
-#endif
-
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
@@ -105,14 +101,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       obj.absSpeed = 0.f;
       obj.relSpeed = 0.f;
     }
-
-#if VIRTUAL_INPUT
-    for (unsigned i = 0; i < KTs_.objs_.size(); i++)
-    {
-      gt_x_ = KTs_.objs_[i].radarInfo.imgPoint60.x;
-      gt_y_ = KTs_.objs_[i].radarInfo.imgPoint60.y;
-    }
-#endif
 
 #if USE_RADAR_REL_SPEED
     for (auto& obj : KTs_.objs_)
@@ -405,10 +393,6 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
     ofs << "#1 time stamp (s), "  //
         << "#2 track id, "        //
         << "#3 dt (s), "          //
-#if VIRTUAL_INPUT
-        << "#4-1 GT bbox center x (m), "  //
-        << "#4-2 GT bbox center y (m), "  //
-#endif
         << "#5-1 input bbox center x (m), "            //
         << "#5-2 input bbox center y (m), "            //
         << "#6-1 kalman-filtered bbox center x (m), "  //
@@ -450,10 +434,6 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
         << obj.track.id << ", "                // #2 track id
         << dt_s.toSec() << ", "                // #3 dt (s)
-#if VIRTUAL_INPUT
-        << gt_x_ << ", "  // #4-1 GT bbox center x (m)
-        << gt_y_ << ", "  // #4-2 GT bbox center y (m)
-#endif
         << obj.lidarInfo.boxCenter.x << ", "                // #5-1 input bbox center x (m)
         << obj.lidarInfo.boxCenter.y << ", "                // #5-2 input bbox center y (m)
         << (obj.bPoint.p0.x + obj.bPoint.p6.x) / 2 << ", "  // #6-1 kalman-filtered bbox center x (m)

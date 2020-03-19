@@ -34,11 +34,6 @@ private:
 
   std::vector<msgs::DetectedObject> pp_objs_;
 
-#if VIRTUAL_INPUT
-  double gt_x_ = 0.;
-  double gt_y_ = 0.;
-#endif
-
   KalmanTrackers KTs_;
 
   EgoParam ego_x_m_;

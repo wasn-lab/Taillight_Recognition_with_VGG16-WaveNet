@@ -64,7 +64,6 @@
 #define ENABLE_PROFILING_MODE 0
 
 // virtual input test
-#define VIRTUAL_INPUT 0
 #define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
