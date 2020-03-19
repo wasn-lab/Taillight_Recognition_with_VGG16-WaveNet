@@ -64,7 +64,6 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  void push_to_vector(BoxCenter a, std::vector<MyPoint32>& b);
   void publish_tracking();
 
   void set_ros_params();

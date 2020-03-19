@@ -129,13 +129,6 @@ void TPPNode::init_velocity(msgs::TrackInfo& track)
   track.relative_velocity.speed = 0;
 }
 
-void TPPNode::push_to_vector(BoxCenter a, std::vector<MyPoint32>& b)
-{
-  MyPoint32 c_rel;
-  a.pos.get_point_rel(c_rel);
-  b.push_back(c_rel);
-}
-
 void TPPNode::publish_tracking()
 {
   for (const auto& track : KTs_.tracks_)
