@@ -34,15 +34,9 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
-#define TTC_TEST 0
-#if TTC_TEST
-#include <std_msgs/Int32.h>
-#include <std_msgs/Float64.h>
-#else
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
-#endif
 
 #include <std_msgs/ColorRGBA.h>
 #include <tf2/LinearMath/Quaternion.h>

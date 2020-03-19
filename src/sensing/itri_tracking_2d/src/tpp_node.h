@@ -55,14 +55,6 @@ private:
   ros::Subscriber fusion_sub_;
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
 
-#if TTC_TEST
-  unsigned int seq_ = 0;
-  unsigned int seq_cb_ = 0;
-
-  ros::Subscriber seq_sub_;
-  void callback_seq(const std_msgs::Int32::ConstPtr& input);
-#endif
-
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
   double loop_elapsed = 0.;  // seconds
@@ -98,10 +90,6 @@ private:
   void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
-#if TTC_TEST
-  float closest_distance_of_obj_pivot(const msgs::DetectedObject& obj);
-  void save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs);
-#endif
 };
 }  // namespace tpp
 

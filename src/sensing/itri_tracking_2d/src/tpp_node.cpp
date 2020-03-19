@@ -39,17 +39,6 @@ static bool done_with_profiling()
 #endif
 }
 
-#if TTC_TEST
-void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
-{
-  seq_cb_ = input->data;
-
-#if DEBUG_DATA_IN
-  std::cout << "seq_cb_ = " << seq_cb_ << std::endl;
-#endif
-}
-#endif
-
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
@@ -147,11 +136,6 @@ void TPPNode::subscribe_and_advertise_topics()
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
 
   nh2_.setCallbackQueue(&queue_);
-
-// Note that we use different NodeHandle here
-#if TTC_TEST
-  seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
-#endif
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)
@@ -481,18 +465,6 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   ofs.close();
 }
 
-#if TTC_TEST
-float TPPNode::closest_distance_of_obj_pivot(const msgs::DetectedObject& obj)
-{
-  float dist_c = euclidean_distance((obj.bPoint.p0.x + obj.bPoint.p6.x) / 2, (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2);
-  float dist_p0 = euclidean_distance(obj.bPoint.p0.x, obj.bPoint.p0.y);
-  float dist_p3 = euclidean_distance(obj.bPoint.p3.x, obj.bPoint.p3.y);
-  float dist_p4 = euclidean_distance(obj.bPoint.p4.x, obj.bPoint.p4.y);
-  float dist_p7 = euclidean_distance(obj.bPoint.p7.x, obj.bPoint.p7.y);
-
-  return std::min(std::min(std::min(std::min(dist_c, dist_p0), dist_p3), dist_p4), dist_p7);
-}
-
 void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
@@ -662,10 +634,8 @@ int TPPNode::run()
 
   g_trigger = true;
 
-#if TTC_TEST == 0
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
-#endif
 
   ros::Rate loop_rate(output_fps);
 
@@ -686,12 +656,6 @@ int TPPNode::run()
 
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;
-#endif
-
-// Tracking start ==========================================================================
-
-#if TTC_TEST
-      seq_ = seq_cb_;
 #endif
 
       // MOT: SORT algorithm
