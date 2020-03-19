@@ -68,25 +68,20 @@ private:
   static constexpr int num_measures_ = 2;
   static constexpr int num_controls_ = 0;
 
-  static constexpr float Q1 = 0.25f;  // 0.5^2
-  static constexpr float Q2 = 0.25f;  // 0.5^2
-  static constexpr float Q3 = 0.09f;  // 0.3^2
-  static constexpr float R = 0.04f;   // 0.2^2: +/-20cm
-  static constexpr float P0 = 0.25f;  // 0.5^2: +/-50cm
+  static constexpr float Q1 = 400.f;  // 20^2
+  static constexpr float Q2 = 100.f;  // 10^2
+  static constexpr float Q3 = 25.f;   // 5^2
+  static constexpr float R = 25.f;    // 5^2: +/-20cm
+  static constexpr float P0 = 100.f;  // 5^2: +/-50cm
 
   static constexpr unsigned int TRACK_ID_MIN = 1;
   static constexpr unsigned int TRACK_ID_MAX = 4294967295;
-  const float TRACK_INVALID = 100.f;  // distance 100m
+  const float TRACK_INVALID = 10000.f;  // distance 10000px
 
   unsigned int trackid_new_ = TRACK_ID_MIN;
 
-  static constexpr float TRACK_RANGE_SED = 9.f;          // 4^2
-  static constexpr float TRACK_RANGE_SED_WARMUP = 16.f;  // 5^2
-
-  float ego_x_abs_ = 0.f;
-  float ego_y_abs_ = 0.f;
-  float ego_z_abs_ = 0.f;
-  float ego_heading_ = 0.f;
+  static constexpr float TRACK_RANGE_SED = 900.f;          // 30^2
+  static constexpr float TRACK_RANGE_SED_WARMUP = 1600.f;  // 40^2
 
   static constexpr float BOX_SIZE_TH = 0.3f;
 
@@ -96,17 +91,13 @@ private:
   static constexpr float COST_BOX_VOL_RATIO_W = 1.f - COST_BOX_DIST_W;
 
   std::vector<BoxCenter> box_centers_;
-  std::vector<std::vector<BoxCorner> > box_corners_of_boxes_;
 
   std::vector<std::vector<float> > distance_table_;
 
   void set_time_displacement(const long long dt);
 
-  void extract_box_center(BoxCenter& box_center, const msgs::BoxPoint& box);
+  void extract_2dbox_center(BoxCenter& box_center, const msgs::CamInfo& box);
   void extract_box_centers();
-
-  void extract_box_corner(BoxCorner& box_corner, const MyPoint32& corner, const signed char order);
-  void extract_box_corners_of_boxes();
 
   void init_objs();
 
@@ -118,7 +109,7 @@ private:
   void give_ids_to_unassociated_objs();
   void correct_duplicate_track_ids();
 
-  void new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center, const std::vector<BoxCorner>& box_corners);
+  void new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center);
   void correct_tracker(KalmanTracker& track, const float x_measure, const float y_measure);
 
   void update_associated_trackers();

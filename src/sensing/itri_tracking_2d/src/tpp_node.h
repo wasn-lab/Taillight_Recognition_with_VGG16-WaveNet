@@ -46,19 +46,8 @@ private:
   bool is_legal_dt_ = false;
 
   float dt_ = 0.f;
-  float ego_x_abs_ = 0.f;
-  float ego_y_abs_ = 0.f;
-  float ego_z_abs_ = 0.f;
-  float ego_heading_ = 0.f;
-  float ego_dx_abs_ = 0.f;
-  float ego_dy_abs_ = 0.f;
-  double ego_speed_kmph_ = 0.;
-  double ego_velx_abs_kmph_ = 0.;
-  double ego_vely_abs_kmph_ = 0.;
-
-  void init_velocity(msgs::TrackInfo& track);
-
-  void publish_tracking();
+  
+  void publish();
 
   void set_ros_params();
   void subscribe_and_advertise_topics();

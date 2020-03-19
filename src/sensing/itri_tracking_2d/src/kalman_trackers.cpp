@@ -2,8 +2,7 @@
 
 namespace tpp
 {
-void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center,
-                                 const std::vector<BoxCorner>& box_corners)
+void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center)
 {
   KalmanTracker track;
 
@@ -51,7 +50,6 @@ void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box
                                     track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
 
   track.box_center_ = box_center;
-  track.box_corners_ = box_corners;
 
   tracks_.push_back(track);
 }
@@ -75,20 +73,20 @@ void KalmanTrackers::set_time_displacement(const long long dt)
   }
 }
 
-void KalmanTrackers::extract_box_center(BoxCenter& box_center, const msgs::BoxPoint& box)
+void KalmanTrackers::extract_2dbox_center(BoxCenter& box_center, const msgs::CamInfo& box)
 {
   box_center.id = 0;
 
   MyPoint32 p_rel;
-  p_rel.x = 0.5f * (box.p0.x + box.p6.x);
-  p_rel.y = 0.5f * (box.p0.y + box.p6.y);
-  p_rel.z = 0.5f * (box.p0.z + box.p6.z);
+  p_rel.x = box.u + box.width * 0.5f;
+  p_rel.y = box.v + box.height * 0.5f;
+  p_rel.z = 0.f;
 
   box_center.pos.set_point_rel(p_rel);
 
-  box_center.x_length = euclidean_distance(box.p3.x - box.p0.x, box.p3.y - box.p0.y);
-  box_center.y_length = euclidean_distance(box.p4.x - box.p0.x, box.p4.y - box.p0.y);
-  box_center.z_length = box.p1.z - box.p0.z;
+  box_center.x_length = box.width;
+  box_center.y_length = box.height;
+  box_center.z_length = 0.f;
 
   float area_tmp = box_center.x_length * box_center.y_length;
   assign_value_cannot_zero(box_center.area, area_tmp);
@@ -105,59 +103,8 @@ void KalmanTrackers::extract_box_centers()
   for (unsigned i = 0; i < objs_.size(); i++)
   {
     BoxCenter box_center;
-    extract_box_center(box_center, objs_[i].bPoint);
+    extract_box_center(box_center, objs_[i].camInfo);
     box_centers_.push_back(box_center);
-
-    objs_[i].lidarInfo.boxCenter.x = (objs_[i].bPoint.p0.x + objs_[i].bPoint.p6.x) / 2;
-    objs_[i].lidarInfo.boxCenter.y = (objs_[i].bPoint.p0.y + objs_[i].bPoint.p6.y) / 2;
-    objs_[i].lidarInfo.boxCenter.z = (objs_[i].bPoint.p0.z + objs_[i].bPoint.p6.z) / 2;
-  }
-}
-
-void KalmanTrackers::extract_box_corner(BoxCorner& box_corner, const MyPoint32& corner, const signed char order)
-{
-  float x_rel = corner.x;
-  float y_rel = corner.y;
-  float z_rel = corner.z;
-
-  box_corner.id = 0;
-  box_corner.order = order;
-
-  box_corner.x_rel = x_rel;
-  box_corner.y_rel = y_rel;
-  box_corner.z_rel = z_rel;
-
-  box_corner.new_x_rel = 0.f;
-  box_corner.new_y_rel = 0.f;
-  box_corner.new_z_rel = 0.f;
-}
-
-void KalmanTrackers::extract_box_corners_of_boxes()
-{
-  std::vector<std::vector<BoxCorner> >().swap(box_corners_of_boxes_);
-  box_corners_of_boxes_.reserve(objs_.size());
-
-  for (unsigned i = 0; i < objs_.size(); i++)
-  {
-    std::vector<BoxCorner> box_corners;
-    box_corners.reserve(num_2dbox_corners);
-
-    BoxCorner box_corner0;
-    BoxCorner box_corner1;
-    BoxCorner box_corner2;
-    BoxCorner box_corner3;
-
-    extract_box_corner(box_corner0, objs_[i].bPoint.p0, 0);
-    extract_box_corner(box_corner1, objs_[i].bPoint.p3, 1);
-    extract_box_corner(box_corner2, objs_[i].bPoint.p7, 2);
-    extract_box_corner(box_corner3, objs_[i].bPoint.p4, 3);
-
-    box_corners.push_back(box_corner0);
-    box_corners.push_back(box_corner1);
-    box_corners.push_back(box_corner2);
-    box_corners.push_back(box_corner3);
-
-    box_corners_of_boxes_.push_back(box_corners);
   }
 }
 
@@ -200,8 +147,6 @@ void KalmanTrackers::update_associated_trackers()
           tracks_[j].kalman_.statePre.at<float>(3) = (p_rel.y - p_rel_prev.y) / dt_;
         }
 #endif
-
-        tracks_[j].box_corners_ = box_corners_of_boxes_[i];
 
         MyPoint32 p_rel;
         box_centers_[i].pos.get_point_rel(p_rel);
@@ -293,7 +238,7 @@ void KalmanTrackers::add_new_trackers()
 
     if (!match)
     {
-      new_tracker(objs_[i], box_centers_[i], box_corners_of_boxes_[i]);
+      new_tracker(objs_[i], box_centers_[i]);
     }
   }
 }
@@ -482,8 +427,6 @@ void KalmanTrackers::kalman_tracker_main(const long long dt)
 
   // feature extraction: bbox center
   extract_box_centers();
-  extract_box_corners_of_boxes();
-  extract_box_two_axes_of_boxes();
 
   // kalman filter: prediction step
   for (unsigned i = 0; i < tracks_.size(); i++)

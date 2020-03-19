@@ -27,12 +27,6 @@ float euclidean_distance(const float a, const float b);
 
 float euclidean_distance3(const float a, const float b, const float c);
 
-// km/h to m/s
-float kmph_to_mps(const float kmph);
-
-// m/s to km/h
-float mps_to_kmph(const float mps);
-
 void set_PoseRPY32(PoseRPY32& out, const PoseRPY32 in);
 void set_MyPoint32(MyPoint32& out, const MyPoint32 in);
 

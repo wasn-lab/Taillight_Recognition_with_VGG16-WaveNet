@@ -45,18 +45,6 @@ float euclidean_distance3(const float a, const float b, const float c)
   return std::sqrt(std::pow(a, 2) + std::pow(b, 2) + std::pow(c, 2));
 }
 
-// km/h to m/s
-float kmph_to_mps(const float kmph)
-{
-  return (0.277778f * kmph);
-}
-
-// m/s to km/h
-float mps_to_kmph(const float mps)
-{
-  return (3.6f * mps);
-}
-
 void set_PoseRPY32(PoseRPY32& out, const PoseRPY32 in)
 {
   out.x = in.x;

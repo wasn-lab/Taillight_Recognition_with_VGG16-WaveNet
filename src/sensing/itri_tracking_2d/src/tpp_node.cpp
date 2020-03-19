@@ -87,7 +87,7 @@ void TPPNode::subscribe_and_advertise_topics()
   track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("2DTracking", 2);
 }
 
-void TPPNode::publish_tracking()
+void TPPNode::publish()
 {
   for (const auto& track : KTs_.tracks_)
   {
@@ -157,20 +157,10 @@ int TPPNode::run()
 
   while (ros::ok() && !done_with_profiling())
   {
-#if DEBUG_CALLBACK
-    LOG_INFO << "ROS loop start" << std::endl;
-#endif
-
     if (g_trigger && is_legal_dt_)
     {
-#if DEBUG
-      LOG_INFO << "Tracking main process start" << std::endl;
-#endif
-
-      // MOT: SORT algorithm
-      KTs_.kalman_tracker_main(dt_);
-
-      publish_tracking();
+      KTs_.kalman_tracker_main(dt_); // MOT: SORT algorithm
+      publish();
 
       g_trigger = false;
     }
