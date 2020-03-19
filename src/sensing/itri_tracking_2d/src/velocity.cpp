@@ -281,29 +281,6 @@ void Velocity::compute_object_absolute_position_displacement()
   obj_dy_abs_ = buf[0][1];  // meter
 }
 
-void Velocity::compute_velocity_core(msgs::PointXYZV& velocity, const float obj_dx, const float obj_dy)
-{
-  velocity.x = (obj_dx * velocity_mul_) / dt_;
-  velocity.y = (obj_dy * velocity_mul_) / dt_;
-  velocity.z = 0;
-  velocity.speed = euclidean_distance(velocity.x, velocity.y);
-}
-
-void Velocity::compute_velocity(msgs::PointXYZV& object_absolute_velocity, msgs::PointXYZV& object_relative_velocity)
-{
-  obj_dx_rel_to_each_ego_ = 0;  // meter
-  obj_dy_rel_to_each_ego_ = 0;  // meter
-
-  compute_object_relative_position_displacement();
-  compute_velocity_core(object_relative_velocity, obj_dx_rel_to_each_ego_, obj_dy_rel_to_each_ego_);
-
-  obj_dx_abs_ = 0;  // meter
-  obj_dy_abs_ = 0;  // meter
-
-  compute_object_absolute_position_displacement();
-  compute_velocity_core(object_absolute_velocity, obj_dx_abs_, obj_dy_abs_);
-}
-
 void Velocity::debug_ego_velocity(const float ego_dx, const float ego_dy, const long long dt)
 {
   float ego_vx = (ego_dx * velocity_mul_) / dt;

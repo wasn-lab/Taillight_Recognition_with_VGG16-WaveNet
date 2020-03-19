@@ -35,8 +35,6 @@ public:
 
   void update_localization();
 
-  void compute_velocity(msgs::PointXYZV& object_absolute_velocity, msgs::PointXYZV& object_relative_velocity);
-
   void debug_ego_velocity(const float ego_dx, const float ego_dy, const long long dt);
 
   void debug_object_velocity(const float ego_dx, const float ego_dy, const float box_center_x, const float box_center_y,
@@ -151,8 +149,6 @@ private:
   float obj_dz_abs_ = 0;
   float obj_dz_rel_to_each_ego_ = 0;
   float obj_dz_rel_to_prev_ego_ = 0;
-
-  void compute_velocity_core(msgs::PointXYZV& velocity, const float obj_dx, const float obj_dy);
 
   void compute_object_relative_position_displacement();
 
