@@ -39,10 +39,10 @@ static bool done_with_profiling()
 #endif
 }
 
-void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
+void TPPNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
-  LOG_INFO << "callback_fusion() start" << std::endl;
+  LOG_INFO << "callback_camera() start" << std::endl;
 #endif
 
 #if DEBUG_COMPACT
@@ -113,12 +113,12 @@ void TPPNode::subscribe_and_advertise_topics()
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
-    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_camera, this);
   }
   else
   {
     LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
-    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
+    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_camera, this);
   }
 
   track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("2DTracking", 2);
@@ -591,7 +591,7 @@ int TPPNode::run()
       g_trigger = false;
     }
 
-    ros::spinOnce();  // Process callback_fusion()
+    ros::spinOnce();  // Process callback_camera()
     loop_rate.sleep();
   }
 

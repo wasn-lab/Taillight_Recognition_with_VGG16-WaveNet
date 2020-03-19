@@ -51,7 +51,7 @@ private:
   ros::Publisher track2d_pub_;
 
   ros::Subscriber camera_sub_;
-  void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
+  void callback_camera(const msgs::DetectedObjectArray::ConstPtr& input);
 
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
