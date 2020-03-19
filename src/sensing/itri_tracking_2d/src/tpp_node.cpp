@@ -607,32 +607,6 @@ void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
 }
 #endif
 
-void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
-                         const float time_offset)
-{
-#if SAVE_OUTPUT_TXT
-  save_output_to_txt(objs);
-#endif
-
-#if TTC_TEST
-  save_ttc_to_csv(objs);
-#endif
-
-  msgs::DetectedObjectArray msg;
-
-  msg.header = objs_header_;
-  msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);
-
-  msg.objects.assign(objs.begin(), objs.end());
-
-  for (auto& obj : msg.objects)
-  {
-    obj.track.tracktime += pub_offset;
-  }
-
-  pub.publish(msg);
-}
-
 void TPPNode::get_current_ego_data_main()
 {
   ego_x_abs_ = vel_.get_ego_x_abs();
@@ -789,15 +763,6 @@ int TPPNode::run()
 #if DELAY_TIME
       mc_.module_pubtime_sec = ros::Time::now().toSec();
 #endif
-
-      // Tracking --> PP =========================================================================
-
-      pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-      pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
-
-      publish_pp(pp_pub_, pp_objs_, 0, 0);
-
-// PP end ==================================================================================
 
       g_trigger = false;
     }
