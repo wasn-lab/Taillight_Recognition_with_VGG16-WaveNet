@@ -197,4 +197,4 @@ vector<int> Projector2::project(float x, float y, float z)
   // start).count() << " 微秒" << std::endl;
   return result;
 }
-#endif // CAR_MODEL_IS_B1
+#endif  // CAR_MODEL_IS_B1
