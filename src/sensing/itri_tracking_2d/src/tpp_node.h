@@ -63,8 +63,6 @@ private:
 
   ros::Publisher pp_pub_;
 
-  MarkerGen mg_;
-
   ros::Subscriber fusion_sub_;
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
 
@@ -107,9 +105,6 @@ private:
 
   void push_to_vector(BoxCenter a, std::vector<MyPoint32>& b);
   void publish_tracking();
-
-  void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
-                  const float time_offset);
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
