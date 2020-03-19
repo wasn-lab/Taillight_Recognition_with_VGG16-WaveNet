@@ -63,8 +63,6 @@
 #define DEBUG_DATA_IN 0
 #define DEBUG_VELOCITY 0
 #define DEBUG_HUNGARIAN_DIST 0
-#define DEBUG_PP 0
-#define DEBUG_PP_TRAJ 0
 #define DEBUG_CONF_E 0
 #define DEBUG_TRACKTIME 0
 #define DELAY_TIME 1
@@ -72,8 +70,6 @@
 #define INPUT_ALL_CLASS 1
 
 #define EIGEN3_ROTATION 1
-
-#define PP_VERTICES_VIA_SPEED 1
 
 #define NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX 0
 // when a tracked bbox shrinks severely in a sudden, replace it with the previous (larger) bbox

@@ -40,8 +40,6 @@ private:
 
   Velocity vel_;
 
-  PathPredict pp_;
-
   ros::NodeHandle nh_;
   ros::NodeHandle nh2_;
 
