@@ -232,9 +232,6 @@ void TPPNode::push_to_vector(BoxCenter a, std::vector<MyPoint32>& b)
 
 void TPPNode::publish_tracking()
 {
-  std::vector<msgs::DetectedObject>().swap(pp_objs_);
-  pp_objs_.reserve(KTs_.tracks_.size());
-
   for (const auto& track : KTs_.tracks_)
   {
 #if REMOVE_IMPULSE_NOISE
@@ -282,8 +279,6 @@ void TPPNode::publish_tracking()
         {
           box.track.states[k] = track.hist_.states_[k];
         }
-
-        pp_objs_.push_back(box);
 
 #if NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX
       }
@@ -551,14 +546,6 @@ void TPPNode::set_ros_params()
   double pp_input_shift_m = 0.;
   nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);
   pp_.set_input_shift_m((long double)pp_input_shift_m);
-
-  double pp_obj_min_kmph = 0.;
-  nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
-  pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
-
-  double pp_obj_max_kmph = 0.;
-  nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
-  pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
 }
 
 int TPPNode::run()

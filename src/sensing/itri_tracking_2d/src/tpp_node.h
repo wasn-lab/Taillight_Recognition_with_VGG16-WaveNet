@@ -32,8 +32,6 @@ private:
   std_msgs::Header objs_header_;
   std_msgs::Header objs_header_prev_;
 
-  std::vector<msgs::DetectedObject> pp_objs_;
-
   KalmanTrackers KTs_;
 
   EgoParam ego_x_m_;

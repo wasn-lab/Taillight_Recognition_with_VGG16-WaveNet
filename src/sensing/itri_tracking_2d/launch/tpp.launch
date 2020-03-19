@@ -21,16 +21,11 @@
   <!-- otherwise: No show pp -->
   <arg name="show_pp" default="2" />
 
-  <arg name="pp_obj_min_kmph" default="3.0" />
-  <arg name="pp_obj_max_kmph" default="50.0" />
-
   <!-- Launch node -->
   <node pkg="itri_tracking_2d" type="itri_tracking_2d" name="itri_tracking_2d" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
     <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />
-    <param name="pp_obj_min_kmph" value="$(arg pp_obj_min_kmph)" />
-    <param name="pp_obj_max_kmph" value="$(arg pp_obj_max_kmph)" />
   </node>
 </launch>
