@@ -828,7 +828,7 @@ int TPPNode::run()
 
   subscribe_and_advertise_topics();
 
-  LOG_INFO << "itri_tracking_2d is running! ver. 20191111_1500!" << std::endl;
+  LOG_INFO << "itri_tracking_2d is running!" << std::endl;
 
   signal(SIGINT, signal_handler);
 
