@@ -88,7 +88,6 @@ private:
 
   bool is_ego_x_firsttime_ = true;
   bool is_ego_y_firsttime_ = true;
-  bool is_ego_heading_firsttime_ = true;
 
   float ego_x_abs_ = 0;
   float ego_x_abs_prev_ = 0;
@@ -116,10 +115,6 @@ private:
   float ego_dz_rel_ = 0;
   float ego_vz_abs_ = 0;
   float ego_vz_rel_ = 0;
-
-  float ego_heading_ = 0;
-  float ego_heading_prev_ = 0;
-  float ego_psi_ = 0;
 
   float ego_yawrate_ = 0;
   float ego_yawrate_prev_ = 0;

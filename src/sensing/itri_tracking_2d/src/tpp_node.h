@@ -34,10 +34,6 @@ private:
 
   KalmanTrackers KTs_;
 
-  EgoParam ego_x_m_;
-  EgoParam ego_y_m_;
-  EgoParam ego_heading_rad_;
-
   Velocity vel_;
 
   ros::NodeHandle nh_;
