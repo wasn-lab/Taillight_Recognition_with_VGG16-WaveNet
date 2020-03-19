@@ -203,9 +203,6 @@ void TPPNode::subscribe_and_advertise_topics()
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
-#if TO_GRIDMAP
-  pp_grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("PathPredictionOutput/grid", 2);
-#endif
 
   nh2_.setCallbackQueue(&queue_);
 
@@ -652,39 +649,6 @@ void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
 }
 #endif
 
-#if TO_GRIDMAP
-void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs)
-{
-  pcl::PointCloud<pcl::PointXYZ>::Ptr in_points(new pcl::PointCloud<pcl::PointXYZ>);
-
-  for (const auto& obj : objs)
-  {
-    if (obj.track.is_ready_prediction)
-    {
-      for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
-      {
-        pcl::PointXYZ p;
-        p.x = obj.track.forecasts[j].position.x;
-        p.y = obj.track.forecasts[j].position.y;
-        p.z = 0.f;
-        in_points->push_back(p);
-      }
-    }
-  }
-
-  grid_map::GridMap gridmap;
-  gridmap.setFrameId("base_link");
-  gridmap.setGeometry(grid_map::Length(50, 30), 0.2, grid_map::Position(10, 0));
-  gridmap.add("pp_layer", grid_map::Matrix::Constant(gridmap.getSize()(0), gridmap.getSize()(1), 0.0));
-
-  gridmap["pp_layer"] = PointsToCostmap().makeCostmapFromSensorPoints(5, -5, 0.0, 1.0, gridmap, "pp_layer", in_points);
-  nav_msgs::OccupancyGrid occ_grid_msg;
-  grid_map::GridMapRosConverter::toOccupancyGrid(gridmap, "pp_layer", 0, 1, occ_grid_msg);
-  occ_grid_msg.header = objs_header_;
-  pub.publish(occ_grid_msg);
-}
-#endif
-
 void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
@@ -886,9 +850,6 @@ int TPPNode::run()
       pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
 
       publish_pp(pp_pub_, pp_objs_, 0, 0);
-#if TO_GRIDMAP
-      publish_pp_grid(pp_grid_pub_, pp_objs_);
-#endif
 
 // PP end ==================================================================================
 

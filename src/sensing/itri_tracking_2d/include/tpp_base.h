@@ -92,10 +92,6 @@
 
 #define PP_VERTICES_VIA_SPEED 1
 
-#if PP_VERTICES_VIA_SPEED
-#define TO_GRIDMAP 1
-#endif
-
 #define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
 #if USE_RADAR_REL_SPEED
 #define USE_RADAR_ABS_SPEED 0  // compute absolute speed from ege speed, ego heading, and radar's relative speed

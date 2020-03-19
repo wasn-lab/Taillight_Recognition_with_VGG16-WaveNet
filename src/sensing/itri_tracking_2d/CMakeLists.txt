@@ -52,7 +52,6 @@ set(SOURCES_SRCS
   src/track_hist.cpp
   src/utils.cpp
   src/velocity.cpp
-  src/points_to_costmap.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES_SRCS})

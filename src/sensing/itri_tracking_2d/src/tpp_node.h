@@ -7,9 +7,6 @@
 #include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
-#if TO_GRIDMAP
-#include "points_to_costmap.h"
-#endif
 #include <visualization_msgs/MarkerArray.h>
 
 #include <fstream>
@@ -65,9 +62,6 @@ private:
   ros::CallbackQueue queue_;
 
   ros::Publisher pp_pub_;
-#if TO_GRIDMAP
-  ros::Publisher pp_grid_pub_;
-#endif
 
   MarkerGen mg_;
 
@@ -125,9 +119,6 @@ private:
   void control_sleep(const double loop_interval);
   void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                   const float time_offset);
-#if TO_GRIDMAP
-  void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs);
-#endif
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
