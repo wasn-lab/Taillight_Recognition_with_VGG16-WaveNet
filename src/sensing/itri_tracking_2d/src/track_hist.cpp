@@ -1,6 +1,6 @@
 #include "track_hist.h"
 
-namespace tpp
+namespace track2d
 {
 void TrackHist::init()
 {
@@ -73,4 +73,4 @@ void TrackHist::set_for_successive_element(const unsigned int tracktime, const f
 
   set_state(x, y, estimated_x, estimated_y, estimated_velocity_x, estimated_velocity_y);
 }
-}  // namespace tpp
+}  // namespace track2d

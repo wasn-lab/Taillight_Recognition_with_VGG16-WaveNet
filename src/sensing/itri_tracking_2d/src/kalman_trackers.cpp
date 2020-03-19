@@ -1,6 +1,6 @@
 #include "kalman_trackers.h"
 
-namespace tpp
+namespace track2d
 {
 void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center)
 {
@@ -423,4 +423,4 @@ void KalmanTrackers::kalman_tracker_main(const long long dt)
 
   return;
 }
-}  // namespace tpp
+}  // namespace track2d

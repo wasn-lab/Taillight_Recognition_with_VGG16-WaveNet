@@ -1,13 +1,13 @@
 #ifndef __VELOCITY_H__
 #define __VELOCITY_H__
 
-#include "tpp.h"
+#include "track2d.h"
 #include <cstdio>  // puts
 #include <iostream>
 #include <cmath>  // sin, cos
 #include "utils.h"
 
-namespace tpp
+namespace track2d
 {
 class Velocity
 {
@@ -34,6 +34,6 @@ private:
   long long time_ = 0;
   long long time_prev_ = 0;
 };
-}  // namespace tpp
+}  // namespace track2d
 
 #endif  // __VELOCITY_H__

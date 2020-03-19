@@ -1,6 +1,6 @@
-#include "tpp_node.h"
+#include "track2d_node.h"
 
-namespace tpp
+namespace track2d
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
 static double output_fps = 10;  // expected publish rate
@@ -35,7 +35,7 @@ static bool done_with_profiling()
 #endif
 }
 
-void TPPNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& input)
+void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& input)
 {
   objs_header_prev_ = objs_header_;
   objs_header_ = input->header;
@@ -71,23 +71,23 @@ void TPPNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& input)
   g_trigger = true;
 }
 
-void TPPNode::subscribe_and_advertise_topics()
+void Track2DNode::subscribe_and_advertise_topics()
 {
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
-    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_camera, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
   }
   else
   {
     LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
-    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_camera, this);
+    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &Track2DNode::callback_camera, this);
   }
 
   track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking2D", 2);
 }
 
-void TPPNode::publish()
+void Track2DNode::publish()
 {
   track2d_obj_array.header = objs_header_;
 
@@ -143,14 +143,14 @@ void TPPNode::publish()
   track2d_pub_.publish(track2d_obj_array);
 }
 
-void TPPNode::set_ros_params()
+void Track2DNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_2d/";
   nh_.param<int>(domain + "input_source", in_source_, 0);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
 }
 
-int TPPNode::run()
+int Track2DNode::run()
 {
   set_ros_params();
 
@@ -184,4 +184,4 @@ int TPPNode::run()
 
   return 0;
 }
-}  // namespace tpp
+}  // namespace track2d

@@ -1,6 +1,6 @@
 #include "kalman_tracker.h"
 
-namespace tpp
+namespace track2d
 {
 void KalmanTracker::predict()
 {
@@ -15,4 +15,4 @@ void KalmanTracker::predict()
   ax_predict_ = prediction.at<float>(4);
   ay_predict_ = prediction.at<float>(5);
 }
-}  // namespace tpp
+}  // namespace track2d

@@ -1,9 +1,9 @@
-#ifndef __TPP_H__
-#define __TPP_H__
+#ifndef __TRACK2D_H__
+#define __TRACK2D_H__
 
-#include "tpp_base.h"
+#include "track2d_base.h"
 
-namespace tpp
+namespace track2d
 {
 constexpr unsigned int num_2dbox_corners = 4;
 
@@ -22,6 +22,6 @@ struct BoxCenter
   float area;
   float volumn;
 };
-}  // namespace tpp
+}  // namespace track2d
 
-#endif  // __TPP_H__
+#endif  // __TRACK2D_H__

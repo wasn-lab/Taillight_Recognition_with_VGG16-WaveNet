@@ -1,5 +1,5 @@
-#ifndef __TPP_BASE_H__
-#define __TPP_BASE_H__
+#ifndef __TRACK2D_BASE_H__
+#define __TRACK2D_BASE_H__
 
 #include <cstdio>    // puts
 #include <iostream>  // std::cout
@@ -19,7 +19,6 @@
 #include <ros/spinner.h>
 #include <ros/callback_queue.h>
 
-// ros msgs
 #include <msgs/PointXYZV.h>
 #include <std_msgs/Header.h>
 #include <msgs/TrackState.h>
@@ -38,20 +37,13 @@
   DISALLOW_ASSIGN(TypeName)
 
 #define ENABLE_PROFILING_MODE 0
-
-#define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
-
-// debug
 #define DEBUG 0
-#define DEBUG_CALLBACK 0
-#define DEBUG_COMPACT 0
-#define DEBUG_DATA_IN 0
-#define DEBUG_VELOCITY 0
+#define DEBUG_TIME 0
 #define DEBUG_TRACKTIME 0
-#define DELAY_TIME 1
 #define DEBUG_HUNGARIAN 0
 
 #define INPUT_ALL_CLASS 1
+#define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
 
 #define O_FIX std::setiosflags(std::ios::fixed)
 #define O_P std::setprecision(8)
@@ -70,18 +62,4 @@
 #define LOG_FATAL std::cout
 #endif
 
-namespace tpp
-{
-struct PoseRPY32
-{
-  float x;
-  float y;
-  float z;
-
-  float roll;
-  float pitch;
-  float yaw;
-};
-}
-
-#endif  // __TPP_BASE_H__
+#endif  // __TRACK2D_BASE_H__

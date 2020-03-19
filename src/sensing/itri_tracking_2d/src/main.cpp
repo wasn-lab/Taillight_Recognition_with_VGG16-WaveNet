@@ -1,4 +1,4 @@
-#include "tpp_node.h"
+#include "track2d_node.h"
 #include <gflags/gflags.h>
 #include <gflags/gflags_gflags.h>
 #if USE_GLOG
@@ -12,8 +12,8 @@ int main(int argc, char** argv)
 #if USE_GLOG
   google::InstallFailureSignalHandler();
 #endif
-  tpp::TPPNode app;
+  track2d::Track2DNode app;
   app.run();
 
   return 0;
-}  // namespace tpp
+}  // namespace track2d

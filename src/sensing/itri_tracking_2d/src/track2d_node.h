@@ -1,29 +1,29 @@
-#ifndef __TPP_NODE_H__
-#define __TPP_NODE_H__
+#ifndef __TRACK2D_NODE_H__
+#define __TRACK2D_NODE_H__
 
-#include "tpp.h"
+#include "track2d.h"
 #include "kalman_trackers.h"
 #include "velocity.h"
 
 #include <fstream>
 
-namespace tpp
+namespace track2d
 {
-class TPPNode
+class Track2DNode
 {
 public:
-  TPPNode()
+  Track2DNode()
   {
   }
 
-  ~TPPNode()
+  ~Track2DNode()
   {
   }
 
   int run();
 
 private:
-  DISALLOW_COPY_AND_ASSIGN(TPPNode);
+  DISALLOW_COPY_AND_ASSIGN(Track2DNode);
 
   int in_source_ = 0;
 
@@ -54,6 +54,6 @@ private:
   void set_ros_params();
   void subscribe_and_advertise_topics();
 };
-}  // namespace tpp
+}  // namespace track2d
 
-#endif  // __TPP_NODE_H__
+#endif  // __TRACK2D_NODE_H__

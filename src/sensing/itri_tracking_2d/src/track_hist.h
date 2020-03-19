@@ -1,12 +1,12 @@
 #ifndef __TRACK_HIST_H__
 #define __TRACK_HIST_H__
 
-#include "tpp.h"
+#include "track2d.h"
 #include <vector>
 #include <msgs/BoxPoint.h>
 #include <msgs/TrackState.h>
 
-namespace tpp
+namespace track2d
 {
 class TrackHist
 {
@@ -50,6 +50,6 @@ private:
   void set_state(const float x, const float y, const float estimated_x, const float estimated_y,
                  const float estimated_velocity_x, const float estimated_velocity_y);
 };
-}  // namespace tpp
+}  // namespace track2d
 
 #endif  // __TRACK_HIST_H__

@@ -1,6 +1,6 @@
 #include "velocity.h"
 
-namespace tpp
+namespace track2d
 {
 long long Velocity::get_dt()
 {
@@ -25,7 +25,7 @@ int Velocity::init_time(const double secs, const double secs_prev)
   }
   else if (dt_ < 0)
   {
-#if DEBUG_COMPACT
+#if DEBUG_TIME
     LOG_INFO << "Warning: dt = " << (dt_ / 1000000.0) << "ms ! Illegal time input !" << std::endl;
 
     LOG_INFO << "time t-1: " << time_prev_ << std::endl;
@@ -35,10 +35,10 @@ int Velocity::init_time(const double secs, const double secs_prev)
     return 1;
   }
 
-#if DEBUG_COMPACT
+#if DEBUG_TIME
   LOG_INFO << "dt = " << (dt_ / 1000000.0) << " ms" << std::endl;
 #endif
 
   return 0;
 }
-}  // namespace tpp
+}  // namespace track2d

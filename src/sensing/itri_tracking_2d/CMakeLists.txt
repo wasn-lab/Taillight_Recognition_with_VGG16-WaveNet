@@ -42,7 +42,7 @@ set(SOURCES_SRCS
   src/kalman_tracker.cpp
   src/kalman_trackers.cpp
   src/main.cpp
-  src/tpp_node.cpp
+  src/track2d_node.cpp
   src/track_hist.cpp
   src/utils.cpp
   src/velocity.cpp

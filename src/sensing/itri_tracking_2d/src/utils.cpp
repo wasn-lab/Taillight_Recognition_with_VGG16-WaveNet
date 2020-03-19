@@ -1,6 +1,6 @@
 #include "utils.h"
 
-namespace tpp
+namespace track2d
 {
 float divide(const float dividend, const float divisor)
 {
@@ -44,4 +44,4 @@ float euclidean_distance3(const float a, const float b, const float c)
 {
   return std::sqrt(std::pow(a, 2) + std::pow(b, 2) + std::pow(c, 2));
 }
-}  // namespace tpp
+}  // namespace track2d

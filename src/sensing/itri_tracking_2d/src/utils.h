@@ -4,9 +4,9 @@
 #include <ctime>
 #include <cmath>
 #include <msgs/PointXYZ.h>
-#include "tpp_base.h"
+#include "track2d_base.h"
 
-namespace tpp
+namespace track2d
 {
 float divide(const float dividend, const float divisor);
 
@@ -26,6 +26,6 @@ float squared_euclidean_distance(const float x1, const float y1, const float x2,
 float euclidean_distance(const float a, const float b);
 
 float euclidean_distance3(const float a, const float b, const float c);
-}  // namespace tpp
+}  // namespace track2d
 
 #endif  // __UTILS_H__

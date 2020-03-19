@@ -1,12 +1,12 @@
 #ifndef __KALMAN_TRACKER_H__
 #define __KALMAN_TRACKER_H__
 
-#include "tpp.h"
+#include "track2d.h"
 #include "track_hist.h"
 #include <msgs/DetectedObject.h>
 #include <opencv2/video/tracking.hpp>
 
-namespace tpp
+namespace track2d
 {
 class KalmanTracker
 {
@@ -51,6 +51,6 @@ public:
 private:
   // DISALLOW_COPY_AND_ASSIGN(KalmanTracker);  // cause build error, root cause unknown
 };
-}  // namespace tpp
+}  // namespace track2d
 
 #endif  // __KALMAN_TRACKER_H__
