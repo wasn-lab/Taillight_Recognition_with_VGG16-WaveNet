@@ -77,12 +77,6 @@ private:
 
   ros::Subscriber localization_sub_;
   void callback_localization(const visualization_msgs::Marker::ConstPtr& input);
-
-  ros::Subscriber ego_speed_kmph_sub_;
-  void callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input);
-#else
-  ros::Subscriber ego_speed_kmph_sub_;
-  void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
 #endif
 
   bool is_legal_dt_ = false;
