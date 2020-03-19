@@ -40,7 +40,6 @@ include_directories(
 )
 
 set(SOURCES_SRCS
-  src/ar1.cpp
   src/ego_param.cpp
   src/kalman_tracker.cpp
   src/kalman_trackers.cpp

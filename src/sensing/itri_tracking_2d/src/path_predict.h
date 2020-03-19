@@ -10,7 +10,6 @@
 #include <numeric>
 
 #include "tpp.h"
-#include "ar1.h"
 #include "utils.h"
 
 namespace tpp
