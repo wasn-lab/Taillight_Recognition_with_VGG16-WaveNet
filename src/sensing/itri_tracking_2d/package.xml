@@ -2,7 +2,7 @@
 <package>
     <name>itri_tracking_2d</name>
     <version>0.0.0</version>
-    <description>ITRI tracking_pp package</description>
+    <description>itri_tracking_2d package</description>
     <maintainer email="chinghao.liu@itri.org.tw">Ching-Hao Liu</maintainer>
     <license>TODO</license>
 
