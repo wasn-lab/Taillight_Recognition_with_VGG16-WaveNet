@@ -62,6 +62,7 @@ class SaveAsVideoNode(object):
         if self.frame_width != width or self.frame_height != height:
             print("Expect image size {}x{}, Got {}x{}".format(
                 self.frame_width, self.frame_height, width, height))
+            img = cv2.resize(img, (self.frame_width, self.frame_height))
         if self.imshow:
             cv2.imshow("image", img)
             cv2.waitKey(1)
@@ -89,7 +90,7 @@ def main():
     parser.add_argument("--frame-height", type=int, default=384)
     parser.add_argument("--fps", type=int, default=20)
     parser.add_argument("--output", "-o", default="out.avi")
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     node = SaveAsVideoNode(args.topic, args.imshow,
                            args.frame_width, args.frame_height,
