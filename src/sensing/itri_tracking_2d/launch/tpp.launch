@@ -12,9 +12,6 @@
   <arg name="input_fps" default="10.0" />
   <arg name="output_fps" default="10.0" />
 
-  <!-- Move PP AR(1) input's origin to (pp_input_shift, pp_input_shift) -->
-  <arg name="pp_input_shift_m" default="150.0" />
-
   <!-- 1: Show pp centers -->
   <!-- 2: Show pp ellipses -->
   <!-- 3: Show pp ellipses & ellipse vertices -->
@@ -26,6 +23,5 @@
     <param name="input_source" value="$(arg input_source)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
-    <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />
   </node>
 </launch>
