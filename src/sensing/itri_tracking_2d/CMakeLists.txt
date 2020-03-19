@@ -44,7 +44,6 @@ set(SOURCES_SRCS
   src/kalman_tracker.cpp
   src/kalman_trackers.cpp
   src/main.cpp
-  src/path_predict.cpp
   src/point32_impl.cpp
   src/ros_params_parser.cpp
   src/simple_kalman.cpp
