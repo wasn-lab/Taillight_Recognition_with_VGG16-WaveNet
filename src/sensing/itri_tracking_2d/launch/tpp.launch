@@ -4,12 +4,8 @@
   <!-- Node parameters -->
 
   <!-- Input source -->
-  <!-- 1: /LidarDetection -->
-  <!-- 2: /RadarDetection -->
-  <!-- 3: /CamObjFrontCenter -->
-  <!-- 4: /abs_virBB_array -->
-  <!-- 5: /rel_virBB_array -->
-  <!-- otherwise: /SensorFusion -->
+  <!-- 1: /CameraDetection/polygon -->
+  <!-- others: /CamObjFrontCenter -->
   <arg name="input_source" default="0" />
 
   <!-- Input/Output FPS -->

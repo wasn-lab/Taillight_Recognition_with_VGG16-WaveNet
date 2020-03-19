@@ -155,21 +155,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (in_source_ == 2)
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "RadFront";
-      }
-    }
-    else
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "lidar";
-      }
-    }
-
 #if USE_RADAR_REL_SPEED
     for (auto& obj : KTs_.objs_)
     {
@@ -216,39 +201,15 @@ void TPPNode::subscribe_and_advertise_topics()
 
   if (in_source_ == 1)
   {
-    LOG_INFO << "Input Source: Lidar" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    fusion_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
-  }
-  else if (in_source_ == 2)
-  {
-    LOG_INFO << "Input Source: Radar" << std::endl;
-    fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
-  }
-  else if (in_source_ == 3)
-  {
-    LOG_INFO << "Input Source: Camera" << std::endl;
-    fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
-  }
-  else if (in_source_ == 4)
-  {
-    LOG_INFO << "Input Source: Virtual_abs" << std::endl;
-    fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
-  }
-  else if (in_source_ == 5)
-  {
-    LOG_INFO << "Input Source: Virtual_rel" << std::endl;
-    fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else
   {
-    LOG_INFO << "Input Source: Fusion" << std::endl;
-    fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
+    LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
+    fusion_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
+    set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
