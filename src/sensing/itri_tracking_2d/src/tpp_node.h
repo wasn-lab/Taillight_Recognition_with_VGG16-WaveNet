@@ -94,8 +94,6 @@ private:
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
 
-  void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
-
   void init_velocity(msgs::TrackInfo& track);
 
   // compute DetectedObject.relSpeed:

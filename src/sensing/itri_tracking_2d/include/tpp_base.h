@@ -88,7 +88,6 @@
 #define INPUT_ALL_CLASS 1
 
 #define EIGEN3_ROTATION 1
-#define FILL_CONVEX_HULL 1
 
 #define PP_VERTICES_VIA_SPEED 1
 
