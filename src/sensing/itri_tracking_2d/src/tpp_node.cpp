@@ -469,65 +469,6 @@ void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
 }
 #endif
 
-void TPPNode::get_current_ego_data_main()
-{
-  ego_x_abs_ = vel_.get_ego_x_abs();
-  ego_y_abs_ = vel_.get_ego_y_abs();
-
-  ego_z_abs_ = vel_.get_ego_z_abs();
-  ego_heading_ = vel_.get_ego_heading();
-  ego_dx_abs_ = vel_.get_ego_dx_abs();
-  ego_dy_abs_ = vel_.get_ego_dy_abs();
-
-  ego_speed_kmph_ = vel_.get_ego_speed_kmph();
-  vel_.ego_velx_vely_kmph_abs();
-  ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
-  ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
-}
-
-void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
-{
-  geometry_msgs::TransformStamped tf_stamped;
-  bool is_warning = false;
-
-  try
-  {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
-  }
-  catch (tf2::TransformException& ex)
-  {
-    ROS_WARN("%s", ex.what());
-    try
-    {
-      tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
-    }
-    catch (tf2::TransformException& ex)
-    {
-      ROS_WARN("%s", ex.what());
-      is_warning = true;
-    }
-  }
-
-  if (!is_warning)
-  {
-    vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
-    vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
-
-    double roll, pitch, yaw;
-    quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
-                      tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
-    vel_.set_ego_heading(yaw);
-  }
-  else
-  {
-    vel_.set_ego_x_abs(0.f);
-    vel_.set_ego_y_abs(0.f);
-    vel_.set_ego_heading(0.f);
-  }
-
-  get_current_ego_data_main();
-}
-
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_2d/";
@@ -551,9 +492,6 @@ int TPPNode::run()
 
   g_trigger = true;
 
-  tf2_ros::Buffer tf_buffer;
-  tf2_ros::TransformListener tf_listener(tf_buffer);
-
   ros::Rate loop_rate(output_fps);
 
   while (ros::ok() && !done_with_profiling())
@@ -562,15 +500,8 @@ int TPPNode::run()
     LOG_INFO << "ROS loop start" << std::endl;
 #endif
 
-    if (!is_legal_dt_)
-    {
-      tf_buffer.clear();
-    }
-
     if (g_trigger && is_legal_dt_)
     {
-      get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
-
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;
 #endif

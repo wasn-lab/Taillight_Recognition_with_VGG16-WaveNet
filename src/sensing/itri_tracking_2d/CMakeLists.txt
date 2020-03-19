@@ -7,7 +7,6 @@ include(CompilerFlags)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  tf2_geometry_msgs
   std_msgs
   msgs
   pcl_ros
