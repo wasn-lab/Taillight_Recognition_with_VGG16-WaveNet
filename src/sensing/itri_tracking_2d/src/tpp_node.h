@@ -48,7 +48,7 @@ private:
   // custom callback queue
   ros::CallbackQueue queue_;
 
-  ros::Publisher pp_pub_;
+  ros::Publisher track2d_pub_;
 
   ros::Subscriber fusion_sub_;
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);

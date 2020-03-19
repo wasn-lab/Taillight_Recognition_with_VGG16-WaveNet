@@ -123,7 +123,7 @@ void TPPNode::subscribe_and_advertise_topics()
     fusion_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
   }
 
-  pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
+  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
 
   nh2_.setCallbackQueue(&queue_);
 }
