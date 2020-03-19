@@ -228,10 +228,6 @@ void TPPNode::publish_tracking()
 {
   for (const auto& track : KTs_.tracks_)
   {
-#if REMOVE_IMPULSE_NOISE
-    if (track.tracked_)
-    {
-#endif  // REMOVE_IMPULSE_NOISE
 #if NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX
       if (track.lost_time_ == 0)
       {
@@ -277,9 +273,6 @@ void TPPNode::publish_tracking()
 #if NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX
       }
 #endif  // NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX
-#if REMOVE_IMPULSE_NOISE
-    }
-#endif  // REMOVE_IMPULSE_NOISE
   }
 }
 

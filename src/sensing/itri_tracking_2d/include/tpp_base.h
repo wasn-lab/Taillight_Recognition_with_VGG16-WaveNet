@@ -75,7 +75,6 @@
 
 #define PP_VERTICES_VIA_SPEED 1
 
-#define REMOVE_IMPULSE_NOISE 0
 #define NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX 0
 // when a tracked bbox shrinks severely in a sudden, replace it with the previous (larger) bbox
 #define PREVENT_SHRINK_BBOX 0
