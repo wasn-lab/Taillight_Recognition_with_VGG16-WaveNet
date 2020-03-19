@@ -110,8 +110,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
 void TPPNode::subscribe_and_advertise_topics()
 {
-  std::string topic = "PathPredictionOutput";
-
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
@@ -123,7 +121,7 @@ void TPPNode::subscribe_and_advertise_topics()
     camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
   }
 
-  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
+  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("2DTracking", 2);
 
   nh2_.setCallbackQueue(&queue_);
 }
