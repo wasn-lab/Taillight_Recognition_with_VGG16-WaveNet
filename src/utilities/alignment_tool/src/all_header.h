@@ -13,6 +13,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+/*
 #include <pcl/console/parse.h>
 #include <pcl/console/print.h>
 #include <pcl/console/time.h>
@@ -41,7 +42,6 @@
 #include <pcl/segmentation/min_cut_segmentation.h>
 #include <pcl/segmentation/region_growing.h>
 #include <pcl/segmentation/sac_segmentation.h>
-
 #include <pcl/features/3dsc.h>
 #include <pcl/features/boundary.h>
 #include <pcl/features/don.h>
@@ -63,7 +63,7 @@
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
 #include <pcl/sample_consensus/sac_model_sphere.h>
-
+*/
 //#include <pcl/tracking/tracking.h>
 //#include <pcl/tracking/particle_filter.h>
 //#include <pcl/tracking/kld_adaptive_particle_filter_omp.h>
