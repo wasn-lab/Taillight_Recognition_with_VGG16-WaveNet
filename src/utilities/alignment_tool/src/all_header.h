@@ -140,7 +140,7 @@
 
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
-#include <rosbag/bag.h>
+//#include <rosbag/bag.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Header.h>
 
