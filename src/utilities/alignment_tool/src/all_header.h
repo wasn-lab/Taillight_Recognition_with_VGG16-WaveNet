@@ -91,7 +91,7 @@
 #include <pcl/ml/svm.h>
 
 //#include <pcl/gpu/containers/device_array.h>
-#include <pcl/gpu/features/features.hpp>
+//#include <pcl/gpu/features/features.hpp>
 //#include <pcl/gpu/surface/convex_hull.h>
 
 #include <boost/asio.hpp>
