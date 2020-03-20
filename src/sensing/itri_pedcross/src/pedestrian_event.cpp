@@ -110,8 +110,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       obj_pub.camInfo.v *= scaling_ratio_height;
       obj_pub.camInfo.width *= scaling_ratio_width;
       obj_pub.camInfo.height *= scaling_ratio_height;
-      obj_pub.camInfo.v -= 5;
-      obj_pub.camInfo.height += 10;
+      // obj_pub.camInfo.v -= 5;
+      // obj_pub.camInfo.height += 10;
       // Avoid index out of bounds
       if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
       {
@@ -202,8 +202,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         */
       }
       obj_pub.facing_direction = get_facing_direction(keypoints);
-      obj_pub.body_direction = get_body_direction(keypoints);
-
+      // obj_pub.body_direction = get_body_direction(keypoints);
+/*
       cv::Point p;
       p.x = 303;
       p.y = 275;
@@ -235,7 +235,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       p8.x = -247;
       p8.y = 383;
       cv::line(matrix2, p, p8, cv::Scalar(0, 0, 155), 1);
-
+*/
       obj_pub.crossProbability = adjust_probability(obj_pub);
       pedObjs.push_back(obj_pub);
 
@@ -908,29 +908,29 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub2;
   if (input_source == 0)
   {
-    sub = n.subscribe("/CamObjFrontCenter", 1, &PedestrianEvent::chatter_callback,
+    sub = n.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::chatter_callback,
                       this);  // /CamObjFrontCenter is sub topic
-    sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_image_callback,
                           this);  // /cam/F_center is sub topic
   }
   else if (input_source == 1)
   {
-    sub = n.subscribe("/CamObjFrontLeft", 1, &PedestrianEvent::chatter_callback,
+    sub = n.subscribe("/cam_obj/left_back_60", 1, &PedestrianEvent::chatter_callback,
                       this);  // /CamObjFrontLeft is sub topic
-    sub2 = hb_n.subscribe("/cam/F_left", 1, &PedestrianEvent::cache_image_callback, this);  // /cam/F_left is sub topic
+    sub2 = hb_n.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_image_callback, this);  // /cam/F_left is sub topic
   }
   else if (input_source == 2)
   {
-    sub = n.subscribe("/CamObjFrontRight", 1, &PedestrianEvent::chatter_callback,
+    sub = n.subscribe("/cam_obj/right_back_60", 1, &PedestrianEvent::chatter_callback,
                       this);  // /CamObjFrontRight is sub topic
-    sub2 = hb_n.subscribe("/cam/F_right", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_image_callback,
                           this);  // /cam/F_right is sub topic
   }
   else  // input_source == 3
   {
     sub = n.subscribe("/PathPredictionOutput", 1, &PedestrianEvent::chatter_callback,
                       this);  // /PathPredictionOutput is sub topic
-    sub2 = hb_n.subscribe("/cam/F_center", 1, &PedestrianEvent::cache_image_callback,
+    sub2 = hb_n.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_image_callback,
                           this);  // /cam/F_right is sub topic
   }
 
