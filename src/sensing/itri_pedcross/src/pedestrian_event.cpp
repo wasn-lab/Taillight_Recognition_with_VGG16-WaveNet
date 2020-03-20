@@ -636,13 +636,13 @@ int PedestrianEvent::get_facing_direction(std::vector<cv::Point2f> keypoints)
 int PedestrianEvent::get_body_direction(std::vector<cv::Point2f> keypoints)
 {
   int result = 0;
-  if(keypoint_is_detected(keypoints.at(9)) && keypoint_is_detected(keypoints.at(10)) && keypoint_is_detected(keypoints.at(11)))
+  if (keypoint_is_detected(keypoints.at(9)) && keypoint_is_detected(keypoints.at(10)) && keypoint_is_detected(keypoints.at(11)))
   {
-    if((keypoints.at(9).x + keypoints.at(11).x)/2 - keypoints.at(10).x > 0)
+    if ((keypoints.at(9).x + keypoints.at(11).x)/2 - keypoints.at(10).x > 0)
     {
       result = 0;
     }
-    else if(keypoints.at(10).x - (keypoints.at(9).x + keypoints.at(11).x)/2 > 0)
+    else if (keypoints.at(10).x - (keypoints.at(9).x + keypoints.at(11).x)/2 > 0)
     {
       result = 1;
     }
@@ -656,14 +656,14 @@ int PedestrianEvent::get_body_direction(std::vector<cv::Point2f> keypoints)
   {
     result = 3;
   }
-  
-  if(keypoint_is_detected(keypoints.at(12)) && keypoint_is_detected(keypoints.at(13)) && keypoint_is_detected(keypoints.at(14)))
+
+  if (keypoint_is_detected(keypoints.at(12)) && keypoint_is_detected(keypoints.at(13)) && keypoint_is_detected(keypoints.at(14)))
   {
-    if((keypoints.at(12).x + keypoints.at(14).x)/2 - keypoints.at(13).x > 0)
+    if ((keypoints.at(12).x + keypoints.at(14).x)/2 - keypoints.at(13).x > 0)
     {
       result += 0;
     }
-    else if(keypoints.at(13).x - (keypoints.at(12).x + keypoints.at(14).x)/2 > 0)
+    else if (keypoints.at(13).x - (keypoints.at(12).x + keypoints.at(14).x)/2 > 0)
     {
       result += 10;
     }
