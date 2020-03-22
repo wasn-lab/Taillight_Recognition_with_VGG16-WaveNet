@@ -13,6 +13,6 @@ void KalmanTracker::predict()
   vy_predict_ = prediction.at<float>(3);
 
   ax_predict_ = prediction.at<float>(4);
-  vy_predict_ = prediction.at<float>(5);
+  ay_predict_ = prediction.at<float>(5);
 }
 }  // namespace tpp
