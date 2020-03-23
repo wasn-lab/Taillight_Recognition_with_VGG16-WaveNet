@@ -27,6 +27,10 @@
 #include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
 #include <thread>  // std::this_thread
 
+#include <tensorflow/c/c_api.h> // TensorFlow C API header.
+#include <scope_guard.hpp>
+#include <tf_utils.hpp>
+
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
