@@ -73,7 +73,7 @@ typedef char U8;
 char gsofData[2048];
 int gsofDataIndex;
 
-int ENU2LidXYZ_siwtch = 0;
+int ENU2LidXYZ_siwtch = 1;
 
 double x_LiDAR, y_LiDAR, z_LiDAR, heading_LiDAR;
 double base_lon,base_lat,base_h,T[3],R[3][3],T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3];
@@ -98,8 +98,8 @@ void initial_para()
         double read_tmp[63];
         int read_index = 0;
         std::string fname = ros::package::getPath("trimble_gps_imu_pub");
-        // fname += "/data/ITRI_NEW_ENU2LidXYZ_sec.txt";
-        fname += "/data/Shalun_ENU2LidXYZ.txt";
+        fname += "/data/ITRI_NEW_ENU2LidXYZ_sec.txt";
+        // fname += "/data/Shalun_ENU2LidXYZ.txt";
         std::cout << fname << std::endl;
 
         std::ifstream fin;

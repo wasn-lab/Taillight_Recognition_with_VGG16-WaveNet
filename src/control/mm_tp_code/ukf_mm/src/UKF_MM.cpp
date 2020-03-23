@@ -1,11 +1,15 @@
 //
+// Academic License - for use in teaching, academic research, and meeting
+// course requirements at degree granting institutions only.  Not for
+// government, commercial, or other organizational use.
+//
 // File: UKF_MM.cpp
 //
 // Code generated for Simulink model 'UKF_MM'.
 //
 // Model version                  : 1.6
 // Simulink Coder version         : 8.14 (R2018a) 06-Feb-2018
-// C/C++ source code generated on : Mon Mar  9 14:25:17 2020
+// C/C++ source code generated on : Thu Dec 19 17:37:22 2019
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
@@ -373,8 +377,8 @@ void UKF_MMModelClass::invNxN(const real_T x[25], real_T y[25])
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void UKF_MMModelClass::merge(int32_T idx[340], real_T x[340], int32_T offset,
-  int32_T np, int32_T nq, int32_T iwork[340], real_T xwork[340])
+void UKF_MMModelClass::merge(int32_T idx[302], real_T x[302], int32_T offset,
+  int32_T np, int32_T nq, int32_T iwork[302], real_T xwork[302])
 {
   int32_T n;
   int32_T q;
@@ -425,8 +429,8 @@ void UKF_MMModelClass::merge(int32_T idx[340], real_T x[340], int32_T offset,
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void UKF_MMModelClass::merge_block(int32_T idx[340], real_T x[340], int32_T
-  offset, int32_T n, int32_T preSortLevel, int32_T iwork[340], real_T xwork[340])
+void UKF_MMModelClass::merge_block(int32_T idx[302], real_T x[302], int32_T
+  offset, int32_T n, int32_T preSortLevel, int32_T iwork[302], real_T xwork[302])
 {
   int32_T bLen;
   int32_T tailOffset;
@@ -459,7 +463,7 @@ void UKF_MMModelClass::merge_block(int32_T idx[340], real_T x[340], int32_T
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void UKF_MMModelClass::merge_pow2_block(int32_T idx[340], real_T x[340], int32_T
+void UKF_MMModelClass::merge_pow2_block(int32_T idx[302], real_T x[302], int32_T
   offset)
 {
   int32_T iwork[256];
@@ -521,10 +525,10 @@ void UKF_MMModelClass::merge_pow2_block(int32_T idx[340], real_T x[340], int32_T
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void UKF_MMModelClass::sort(real_T x[340], int32_T idx[340])
+void UKF_MMModelClass::sort(real_T x[302], int32_T idx[302])
 {
-  int32_T iwork[340];
-  real_T xwork[340];
+  int32_T iwork[302];
+  real_T xwork[302];
   int32_T nNaNs;
   real_T x4[4];
   int16_T idx4[4];
@@ -543,14 +547,14 @@ void UKF_MMModelClass::sort(real_T x[340], int32_T idx[340])
   idx4[2] = 0;
   x4[3] = 0.0;
   idx4[3] = 0;
-  memset(&idx[0], 0, 340U * sizeof(int32_T));
-  memset(&xwork[0], 0, 340U * sizeof(real_T));
+  memset(&idx[0], 0, 302U * sizeof(int32_T));
+  memset(&xwork[0], 0, 302U * sizeof(real_T));
   nNaNs = 0;
   ib = 0;
-  for (m = 0; m < 340; m++) {
+  for (m = 0; m < 302; m++) {
     if (rtIsNaN(x[m])) {
-      idx[339 - nNaNs] = m + 1;
-      xwork[339 - nNaNs] = x[m];
+      idx[301 - nNaNs] = m + 1;
+      xwork[301 - nNaNs] = x[m];
       nNaNs++;
     } else {
       ib++;
@@ -677,8 +681,8 @@ void UKF_MMModelClass::sort(real_T x[340], int32_T idx[340])
       break;
     }
 
-    for (m = 340; m - 339 <= ib; m++) {
-      i1 = perm[m - 340] - 1;
+    for (m = 302; m - 301 <= ib; m++) {
+      i1 = perm[m - 302] - 1;
       i2 = (m - nNaNs) - ib;
       idx[i2] = idx4[i1];
       x[i2] = x4[i1];
@@ -687,69 +691,69 @@ void UKF_MMModelClass::sort(real_T x[340], int32_T idx[340])
 
   m = nNaNs >> 1;
   for (ib = 1; ib <= m; ib++) {
-    i2 = (ib - nNaNs) + 339;
+    i2 = (ib - nNaNs) + 301;
     i1 = idx[i2];
-    idx[i2] = idx[340 - ib];
-    idx[340 - ib] = i1;
-    x[i2] = xwork[340 - ib];
-    x[340 - ib] = xwork[i2];
+    idx[i2] = idx[302 - ib];
+    idx[302 - ib] = i1;
+    x[i2] = xwork[302 - ib];
+    x[302 - ib] = xwork[i2];
   }
 
   if ((nNaNs & 1U) != 0U) {
-    x[(m - nNaNs) + 340] = xwork[(m - nNaNs) + 340];
+    x[(m - nNaNs) + 302] = xwork[(m - nNaNs) + 302];
   }
 
-  memset(&iwork[0], 0, 340U * sizeof(int32_T));
+  memset(&iwork[0], 0, 302U * sizeof(int32_T));
   ib = 2;
-  if (340 - nNaNs > 1) {
-    m = (340 - nNaNs) >> 8;
+  if (302 - nNaNs > 1) {
+    m = (302 - nNaNs) >> 8;
     if (m > 0) {
       for (ib = 1; ib <= m; ib++) {
         merge_pow2_block(idx, x, (ib - 1) << 8);
       }
 
       m <<= 8;
-      ib = 340 - (nNaNs + m);
+      ib = 302 - (nNaNs + m);
       if (ib > 0) {
-        memset(&iwork[0], 0, 340U * sizeof(int32_T));
+        memset(&iwork[0], 0, 302U * sizeof(int32_T));
         merge_block(idx, x, m, ib, 2, iwork, xwork);
       }
 
       ib = 8;
     }
 
-    merge_block(idx, x, 0, 340 - nNaNs, ib, iwork, xwork);
+    merge_block(idx, x, 0, 302 - nNaNs, ib, iwork, xwork);
   }
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
-void UKF_MMModelClass::power(const real_T a[340], real_T y[340])
+void UKF_MMModelClass::power(const real_T a[302], real_T y[302])
 {
   int32_T k;
-  for (k = 0; k < 340; k++) {
+  for (k = 0; k < 302; k++) {
     y[k] = a[k] * a[k];
   }
 }
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
 void UKF_MMModelClass::rel_dist_xy(const real_T ref_xy[2], const real_T pt_xy
-  [680], real_T dist[340])
+  [604], real_T dist[302])
 {
-  real_T pt_xy_0[340];
-  real_T tmp[340];
-  real_T tmp_0[340];
+  real_T pt_xy_0[302];
+  real_T tmp[302];
+  real_T tmp_0[302];
   int32_T k;
-  for (k = 0; k < 340; k++) {
+  for (k = 0; k < 302; k++) {
     pt_xy_0[k] = pt_xy[k] - ref_xy[0];
   }
 
   power(pt_xy_0, tmp);
-  for (k = 0; k < 340; k++) {
-    pt_xy_0[k] = pt_xy[340 + k] - ref_xy[1];
+  for (k = 0; k < 302; k++) {
+    pt_xy_0[k] = pt_xy[302 + k] - ref_xy[1];
   }
 
   power(pt_xy_0, tmp_0);
-  for (k = 0; k < 340; k++) {
+  for (k = 0; k < 302; k++) {
     dist[k] = std::sqrt(tmp[k] + tmp_0[k]);
   }
 }
@@ -767,19 +771,19 @@ real_T UKF_MMModelClass::rel_dist_xy_g(const real_T ref_xy[2], const real_T
 
 // Function for MATLAB Function: '<S3>/SLAM_UKF_MM'
 void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
-  oi_xy[680], const real_T dist_op[340], const real_T Map_data[7820], real_T
+  oi_xy[604], const real_T dist_op[302], const real_T Map_data[6946], real_T
   *seg_id_near, real_T *op_distance, real_T oi_near[2], real_T *note, real_T
   *seg_direction, real_T *head_err, real_T num_lane_direction[4], real_T
   *seg_heading)
 {
   real_T op_distance_n;
   real_T C;
-  int32_T b_index[680];
-  real_T dist_ini[340];
-  real_T dist_end[340];
-  int32_T iidx[340];
-  boolean_T x[340];
-  int16_T ii_data[340];
+  int32_T b_index[604];
+  real_T dist_ini[302];
+  real_T dist_end[302];
+  int32_T iidx[302];
+  boolean_T x[302];
+  int16_T ii_data[302];
   int32_T idx;
   int32_T b_ii;
   boolean_T ex;
@@ -788,39 +792,39 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
   real_T d_a;
   real_T oi_xy_0[2];
   boolean_T exitg1;
-  memcpy(&dist_ini[0], &dist_op[0], 340U * sizeof(real_T));
+  memcpy(&dist_ini[0], &dist_op[0], 302U * sizeof(real_T));
   sort(dist_ini, iidx);
-  for (b_ii = 0; b_ii < 340; b_ii++) {
+  for (b_ii = 0; b_ii < 302; b_ii++) {
     b_index[b_ii] = iidx[b_ii];
-    b_index[b_ii + 340] = 0;
+    b_index[b_ii + 302] = 0;
     rtDW.SEG_GPS_HEAD[b_ii] = Map_data[b_ii];
-    rtDW.SEG_GPS_HEAD[340 + b_ii] = Map_data[2380 + b_ii];
+    rtDW.SEG_GPS_HEAD[302 + b_ii] = Map_data[2114 + b_ii];
   }
 
-  for (idx = 0; idx < 340; idx++) {
-    op_distance_n = Map_data[b_index[idx] + 339] - oi_xy[b_index[idx] - 1];
-    C = Map_data[b_index[idx] + 679] - oi_xy[b_index[idx] + 339];
-    c_a = Map_data[b_index[idx] + 1019] - oi_xy[b_index[idx] - 1];
-    d_a = Map_data[b_index[idx] + 1359] - oi_xy[b_index[idx] + 339];
+  for (idx = 0; idx < 302; idx++) {
+    op_distance_n = Map_data[b_index[idx] + 301] - oi_xy[b_index[idx] - 1];
+    C = Map_data[b_index[idx] + 603] - oi_xy[b_index[idx] + 301];
+    c_a = Map_data[b_index[idx] + 905] - oi_xy[b_index[idx] - 1];
+    d_a = Map_data[b_index[idx] + 1207] - oi_xy[b_index[idx] + 301];
     if (std::sqrt(op_distance_n * op_distance_n + C * C) <= Map_data[b_index[idx]
-        + 2719]) {
-      b_index[340 + idx] = (std::sqrt(c_a * c_a + d_a * d_a) <=
-                            Map_data[b_index[idx] + 2719]);
+        + 2415]) {
+      b_index[302 + idx] = (std::sqrt(c_a * c_a + d_a * d_a) <=
+                            Map_data[b_index[idx] + 2415]);
     } else {
-      b_index[340 + idx] = 0;
+      b_index[302 + idx] = 0;
     }
 
-    x[idx] = (b_index[340 + idx] == 1);
+    x[idx] = (b_index[302 + idx] == 1);
   }
 
   idx = 0;
   b_ii = 1;
   exitg1 = false;
-  while ((!exitg1) && (b_ii < 341)) {
+  while ((!exitg1) && (b_ii < 303)) {
     if (x[b_ii - 1]) {
       idx++;
       ii_data[idx - 1] = (int16_T)b_ii;
-      if (idx >= 340) {
+      if (idx >= 302) {
         exitg1 = true;
       } else {
         b_ii++;
@@ -832,15 +836,15 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
 
   if (1 > idx) {
     *note = 1.0;
-    rel_dist_xy(X_pos, &Map_data[340], dist_ini);
-    rel_dist_xy(X_pos, &Map_data[1020], dist_end);
+    rel_dist_xy(X_pos, &Map_data[302], dist_ini);
+    rel_dist_xy(X_pos, &Map_data[906], dist_end);
     if (!rtIsNaN(dist_ini[0])) {
       idx = 0;
     } else {
       idx = -1;
       b_ii = 2;
       exitg1 = false;
-      while ((!exitg1) && (b_ii < 341)) {
+      while ((!exitg1) && (b_ii < 303)) {
         if (!rtIsNaN(dist_ini[b_ii - 1])) {
           idx = b_ii - 1;
           exitg1 = true;
@@ -855,7 +859,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       idx = 0;
     } else {
       op_distance_n = dist_ini[idx];
-      for (b_ii = idx + 1; b_ii + 1 < 341; b_ii++) {
+      for (b_ii = idx + 1; b_ii + 1 < 303; b_ii++) {
         if (op_distance_n > dist_ini[b_ii]) {
           op_distance_n = dist_ini[b_ii];
           idx = b_ii;
@@ -869,7 +873,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = -1;
       d_k = 2;
       exitg1 = false;
-      while ((!exitg1) && (d_k < 341)) {
+      while ((!exitg1) && (d_k < 303)) {
         if (!rtIsNaN(dist_end[d_k - 1])) {
           b_ii = d_k - 1;
           exitg1 = true;
@@ -884,7 +888,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = 0;
     } else {
       C = dist_end[b_ii];
-      for (d_k = b_ii + 1; d_k + 1 < 341; d_k++) {
+      for (d_k = b_ii + 1; d_k + 1 < 303; d_k++) {
         if (C > dist_end[d_k]) {
           C = dist_end[d_k];
           b_ii = d_k;
@@ -899,36 +903,36 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     *seg_id_near = Map_data[idx];
     *op_distance = dist_op[idx];
     oi_near[0] = oi_xy[idx];
-    oi_near[1] = oi_xy[idx + 340];
-    if ((idx + 1 > 1) && (idx + 1 < 340)) {
+    oi_near[1] = oi_xy[idx + 302];
+    if ((idx + 1 > 1) && (idx + 1 < 302)) {
       oi_xy_0[0] = oi_xy[idx];
-      oi_xy_0[1] = oi_xy[idx + 340];
+      oi_xy_0[1] = oi_xy[idx + 302];
       op_distance_n = rel_dist_xy_g(X_pos, oi_xy_0);
-      oi_xy_0[0] = Map_data[idx + 340];
-      oi_xy_0[1] = Map_data[idx + 680];
+      oi_xy_0[0] = Map_data[idx + 302];
+      oi_xy_0[1] = Map_data[idx + 604];
       if (op_distance_n < rel_dist_xy_g(X_pos, oi_xy_0)) {
-        oi_xy_0[0] = Map_data[idx + 1020];
-        oi_xy_0[1] = Map_data[idx + 1360];
+        oi_xy_0[0] = Map_data[idx + 906];
+        oi_xy_0[1] = Map_data[idx + 1208];
         if (op_distance_n < rel_dist_xy_g(X_pos, oi_xy_0)) {
           *note = 0.0;
         }
       }
     }
 
-    for (b_ii = 0; b_ii < 340; b_ii++) {
+    for (b_ii = 0; b_ii < 302; b_ii++) {
       x[b_ii] = (rtDW.SEG_GPS_HEAD[b_ii] == Map_data[idx]);
     }
 
     idx = -1;
     ex = x[0];
-    for (b_ii = 0; b_ii < 339; b_ii++) {
+    for (b_ii = 0; b_ii < 301; b_ii++) {
       if ((int32_T)ex < (int32_T)x[b_ii + 1]) {
         ex = x[b_ii + 1];
         idx = b_ii;
       }
     }
 
-    *head_err = std::abs(heading - rtDW.SEG_GPS_HEAD[idx + 341]);
+    *head_err = std::abs(heading - rtDW.SEG_GPS_HEAD[idx + 303]);
     if (*head_err <= 0.78539816339744828) {
       *seg_direction = 1.0;
     } else if ((*head_err >= 0.78539816339744828) && (*head_err <= 90.0)) {
@@ -942,21 +946,21 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     *seg_id_near = Map_data[idx];
     *op_distance = dist_op[idx];
     oi_near[0] = oi_xy[idx];
-    oi_near[1] = oi_xy[b_index[ii_data[0] - 1] + 339];
-    for (b_ii = 0; b_ii < 340; b_ii++) {
+    oi_near[1] = oi_xy[b_index[ii_data[0] - 1] + 301];
+    for (b_ii = 0; b_ii < 302; b_ii++) {
       x[b_ii] = (Map_data[b_index[ii_data[0] - 1] - 1] == rtDW.SEG_GPS_HEAD[b_ii]);
     }
 
     idx = -1;
     ex = x[0];
-    for (b_ii = 0; b_ii < 339; b_ii++) {
+    for (b_ii = 0; b_ii < 301; b_ii++) {
       if ((int32_T)ex < (int32_T)x[b_ii + 1]) {
         ex = x[b_ii + 1];
         idx = b_ii;
       }
     }
 
-    *head_err = std::abs(heading - rtDW.SEG_GPS_HEAD[idx + 341]);
+    *head_err = std::abs(heading - rtDW.SEG_GPS_HEAD[idx + 303]);
     if (*head_err <= 0.78539816339744828) {
       *seg_direction = 1.0;
     } else if ((*head_err >= 0.78539816339744828) && (*head_err <= 90.0)) {
@@ -965,15 +969,15 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       *seg_direction = 2.0;
     }
 
-    rel_dist_xy(X_pos, &Map_data[340], dist_ini);
-    rel_dist_xy(X_pos, &Map_data[1020], dist_end);
+    rel_dist_xy(X_pos, &Map_data[302], dist_ini);
+    rel_dist_xy(X_pos, &Map_data[906], dist_end);
     if (!rtIsNaN(dist_ini[0])) {
       idx = 0;
     } else {
       idx = -1;
       b_ii = 2;
       exitg1 = false;
-      while ((!exitg1) && (b_ii < 341)) {
+      while ((!exitg1) && (b_ii < 303)) {
         if (!rtIsNaN(dist_ini[b_ii - 1])) {
           idx = b_ii - 1;
           exitg1 = true;
@@ -988,7 +992,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       idx = 0;
     } else {
       op_distance_n = dist_ini[idx];
-      for (b_ii = idx + 1; b_ii + 1 < 341; b_ii++) {
+      for (b_ii = idx + 1; b_ii + 1 < 303; b_ii++) {
         if (op_distance_n > dist_ini[b_ii]) {
           op_distance_n = dist_ini[b_ii];
           idx = b_ii;
@@ -1002,7 +1006,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = -1;
       d_k = 2;
       exitg1 = false;
-      while ((!exitg1) && (d_k < 341)) {
+      while ((!exitg1) && (d_k < 303)) {
         if (!rtIsNaN(dist_end[d_k - 1])) {
           b_ii = d_k - 1;
           exitg1 = true;
@@ -1017,7 +1021,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       b_ii = 0;
     } else {
       C = dist_end[b_ii];
-      for (d_k = b_ii + 1; d_k + 1 < 341; d_k++) {
+      for (d_k = b_ii + 1; d_k + 1 < 303; d_k++) {
         if (C > dist_end[d_k]) {
           C = dist_end[d_k];
           b_ii = d_k;
@@ -1037,21 +1041,21 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
         idx = b_ii;
       }
 
-      for (b_ii = 0; b_ii < 340; b_ii++) {
+      for (b_ii = 0; b_ii < 302; b_ii++) {
         x[b_ii] = (Map_data[b_index[ii_data[0] - 1] - 1] ==
                    rtDW.SEG_GPS_HEAD[b_ii]);
       }
 
       b_ii = -1;
       ex = x[0];
-      for (d_k = 0; d_k < 339; d_k++) {
+      for (d_k = 0; d_k < 301; d_k++) {
         if ((int32_T)ex < (int32_T)x[d_k + 1]) {
           ex = x[d_k + 1];
           b_ii = d_k;
         }
       }
 
-      *head_err = std::abs(heading - rtDW.SEG_GPS_HEAD[b_ii + 341]);
+      *head_err = std::abs(heading - rtDW.SEG_GPS_HEAD[b_ii + 303]);
       if (*head_err <= 0.78539816339744828) {
         *seg_direction = 1.0;
       } else if ((*head_err >= 0.78539816339744828) && (*head_err <= 90.0)) {
@@ -1063,27 +1067,27 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
       *seg_id_near = Map_data[idx];
       *op_distance = dist_op[idx];
       oi_near[0] = oi_xy[idx];
-      oi_near[1] = oi_xy[idx + 340];
+      oi_near[1] = oi_xy[idx + 302];
     }
   }
 
-  for (b_ii = 0; b_ii < 340; b_ii++) {
-    dist_ini[b_ii] = Map_data[2380 + b_ii] * 3.1415926535897931 / 180.0;
+  for (b_ii = 0; b_ii < 302; b_ii++) {
+    dist_ini[b_ii] = Map_data[2114 + b_ii] * 3.1415926535897931 / 180.0;
     x[b_ii] = (Map_data[b_ii] == *seg_id_near);
   }
 
   idx = 0;
   ex = x[0];
-  for (b_ii = 0; b_ii < 339; b_ii++) {
+  for (b_ii = 0; b_ii < 301; b_ii++) {
     if ((int32_T)ex < (int32_T)x[b_ii + 1]) {
       ex = x[b_ii + 1];
       idx = b_ii + 1;
     }
   }
 
-  op_distance_n = oi_near[1] - Map_data[1700 + idx] * oi_near[0];
-  if (Map_data[1700 + idx] < 0.0) {
-    C = (-Map_data[1700 + idx] * X_pos[0] - op_distance_n) + X_pos[1];
+  op_distance_n = oi_near[1] - Map_data[1510 + idx] * oi_near[0];
+  if (Map_data[1510 + idx] < 0.0) {
+    C = (-Map_data[1510 + idx] * X_pos[0] - op_distance_n) + X_pos[1];
     if (dist_ini[idx] > 4.71238898038469) {
       if (!(dist_ini[idx] < 6.2831853071795862)) {
         C = -C;
@@ -1091,14 +1095,14 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     } else {
       C = -C;
     }
-  } else if (Map_data[1700 + idx] == 0.0) {
+  } else if (Map_data[1510 + idx] == 0.0) {
     if (oi_near[1] < X_pos[1]) {
       C = -1.0;
     } else {
       C = 1.0;
     }
   } else {
-    C = (Map_data[1700 + idx] * X_pos[0] + op_distance_n) - X_pos[1];
+    C = (Map_data[1510 + idx] * X_pos[0] + op_distance_n) - X_pos[1];
     if (dist_ini[idx] > 3.1415926535897931) {
       if (!(dist_ini[idx] < 4.71238898038469)) {
         C = -C;
@@ -1108,7 +1112,7 @@ void UKF_MMModelClass::MM(real_T heading, const real_T X_pos[2], const real_T
     }
   }
 
-  num_lane_direction[0] = Map_data[1700 + idx];
+  num_lane_direction[0] = Map_data[1510 + idx];
   num_lane_direction[1] = op_distance_n;
   num_lane_direction[2] = C;
   if (C < 0.0) {
@@ -1289,10 +1293,10 @@ void UKF_MMModelClass::merge_pow2_block_c(int32_T idx_data[], real_T x_data[],
 void UKF_MMModelClass::sortIdx(real_T x_data[], int32_T *x_size, int32_T
   idx_data[], int32_T *idx_size)
 {
-  int32_T iwork_data[340];
-  real_T xwork_data[340];
+  int32_T iwork_data[302];
+  real_T xwork_data[302];
   int32_T nBlocks;
-  real_T c_x_data[340];
+  real_T c_x_data[302];
   real_T x4[4];
   int16_T idx4[4];
   int32_T ib;
@@ -1536,9 +1540,9 @@ void UKF_MMModelClass::sort_m(real_T x_data[], int32_T *x_size, int32_T
   idx_data[], int32_T *idx_size)
 {
   int32_T dim;
-  real_T vwork_data[340];
+  real_T vwork_data[302];
   int32_T vstride;
-  int32_T iidx_data[340];
+  int32_T iidx_data[302];
   int32_T b;
   int32_T c_k;
   int32_T vwork_size;
@@ -1577,7 +1581,7 @@ void UKF_MMModelClass::sort_m(real_T x_data[], int32_T *x_size, int32_T
 void UKF_MMModelClass::power_j(const real_T a_data[], const int32_T *a_size,
   real_T y_data[], int32_T *y_size)
 {
-  real_T z1_data[340];
+  real_T z1_data[302];
   int32_T loop_ub;
   int16_T a_idx_0;
   a_idx_0 = (int16_T)*a_size;
@@ -1599,7 +1603,7 @@ void UKF_MMModelClass::power_j(const real_T a_data[], const int32_T *a_size,
 void UKF_MMModelClass::power_jm(const real_T a_data[], const int32_T *a_size,
   real_T y_data[], int32_T *y_size)
 {
-  real_T z1_data[340];
+  real_T z1_data[302];
   int32_T loop_ub;
   int16_T a_idx_0;
   a_idx_0 = (int16_T)*a_size;
@@ -1622,9 +1626,9 @@ void UKF_MMModelClass::rel_dist_xy_o(const real_T ref_xy[2], const real_T
   pt_xy_data[], const int32_T pt_xy_size[2], real_T dist_data[], int32_T
   *dist_size)
 {
-  real_T pt_xy_data_0[340];
-  real_T tmp_data[340];
-  real_T tmp_data_0[340];
+  real_T pt_xy_data_0[302];
+  real_T tmp_data[302];
+  real_T tmp_data_0[302];
   int32_T loop_ub;
   int32_T i;
   int32_T pt_xy_size_0;
@@ -1659,15 +1663,15 @@ void UKF_MMModelClass::MM_o(real_T heading, const real_T X_pos[2], const real_T
   real_T *note, real_T *seg_direction, real_T *head_err, real_T
   num_lane_direction[4], real_T *seg_heading)
 {
-  real_T seg_id_data[340];
-  real_T ind_temp_data[340];
+  real_T seg_id_data[302];
+  real_T ind_temp_data[302];
   real_T op_distance_n;
   real_T C;
-  int32_T b_index_data[680];
-  real_T dist_ini_data[340];
-  real_T dist_end_data[340];
-  boolean_T x_data[340];
-  int32_T ii_data[340];
+  int32_T b_index_data[604];
+  real_T dist_ini_data[302];
+  real_T dist_end_data[302];
+  boolean_T x_data[302];
+  int32_T ii_data[302];
   int32_T nx;
   int32_T idx;
   int32_T g_idx;
@@ -2220,24 +2224,24 @@ void UKF_MMModelClass::step()
   real_T K1[4];
   int8_T I[25];
   real_T seg_heading;
-  real_T dist_op_data[340];
+  real_T dist_op_data[302];
   real_T total_length;
   int32_T end_ind_0;
-  real_T Forward_Static_Path_id_0_data[340];
-  int16_T cb_data[340];
-  real_T shortest_distance[340];
-  int8_T settled[340];
-  int16_T pidx_data[340];
-  int16_T zz_data[340];
-  real_T tmp_path_data[340];
-  int16_T nidx_data[340];
-  int16_T c_data[340];
-  int32_T ii_data_0[340];
+  real_T Forward_Static_Path_id_0_data[302];
+  int16_T cb_data[302];
+  real_T shortest_distance[302];
+  int8_T settled[302];
+  int16_T pidx_data[302];
+  int16_T zz_data[302];
+  real_T tmp_path_data[302];
+  int16_T nidx_data[302];
+  int16_T c_data[302];
+  int32_T ii_data_0[302];
   int32_T b_idx;
   int32_T n;
-  boolean_T x_data[340];
-  boolean_T b_x[340];
-  int16_T f_ii_data[340];
+  boolean_T x_data[302];
+  boolean_T b_x[302];
+  int16_T f_ii_data[302];
   real_T rtb_Add;
   real_T rtb_Gain1;
   real_T rtb_Gain_k;
@@ -2271,7 +2275,7 @@ void UKF_MMModelClass::step()
   //   Sum: '<S2>/Sum'
   //   Sum: '<S2>/Sum1'
 
-  rtb_Add = std::abs(1.0 - rtDW.Memory1_PreviousInput) + std::abs(340.0 -
+  rtb_Add = std::abs(1.0 - rtDW.Memory1_PreviousInput) + std::abs(302.0 -
     rtDW.Memory_PreviousInput);
 
   // Outputs for Enabled SubSystem: '<S2>/Enabled Subsystem' incorporates:
@@ -2281,21 +2285,21 @@ void UKF_MMModelClass::step()
     // MATLAB Function: '<S9>/Dijkstra' incorporates:
     //   Constant: '<S2>/Constant7'
 
-    memset(&rtDW.table[0], 0, 680U * sizeof(real_T));
-    for (i = 0; i < 340; i++) {
+    memset(&rtDW.table[0], 0, 604U * sizeof(real_T));
+    for (i = 0; i < 302; i++) {
       shortest_distance[i] = (rtInf);
       settled[i] = 0;
     }
 
-    memset(&rtDW.path[0], 0, 115600U * sizeof(real_T));
+    memset(&rtDW.path[0], 0, 91204U * sizeof(real_T));
     i = 0;
     n = 1;
     exitg1 = false;
-    while ((!exitg1) && (n < 341)) {
+    while ((!exitg1) && (n < 303)) {
       if (rtConstP.Constant3_Value[n - 1] == 1.0) {
         i++;
         ii_data_0[i - 1] = n;
-        if (i >= 340) {
+        if (i >= 302) {
           exitg1 = true;
         } else {
           n++;
@@ -2316,17 +2320,17 @@ void UKF_MMModelClass::step()
     }
 
     shortest_distance[ii_data_0[0] - 1] = 0.0;
-    rtDW.table[ii_data_0[0] + 339] = 0.0;
+    rtDW.table[ii_data_0[0] + 301] = 0.0;
     settled[ii_data_0[0] - 1] = 1;
     rtDW.path[ii_data_0[0] - 1] = 1.0;
     b_idx = 0;
     i = 1;
     exitg1 = false;
-    while ((!exitg1) && (i < 341)) {
-      if (rtConstP.Constant3_Value[i - 1] == 340.0) {
+    while ((!exitg1) && (i < 303)) {
+      if (rtConstP.Constant3_Value[i - 1] == 302.0) {
         b_idx++;
         ii_data_0[b_idx - 1] = i;
-        if (b_idx >= 340) {
+        if (b_idx >= 302) {
           exitg1 = true;
         } else {
           i++;
@@ -2350,16 +2354,16 @@ void UKF_MMModelClass::step()
       exitg2 = 0;
       jj = zz_data[0] - 1;
       if (settled[jj] == 0) {
-        for (ix = 0; ix < 340; ix++) {
-          rtDW.table[ix] = rtDW.table[340 + ix];
+        for (ix = 0; ix < 302; ix++) {
+          rtDW.table[ix] = rtDW.table[302 + ix];
         }
 
-        colj = pidx_data[0] + 339;
+        colj = pidx_data[0] + 301;
         rtDW.table[colj] = 0.0;
         b_idx = 0;
-        for (n = 0; n < 340; n++) {
+        for (n = 0; n < 302; n++) {
           b_x_0 = (rtConstP.Constant3_Value[pidx_data[0] - 1] ==
-                   rtConstP.Constant5_Value[340 + n]);
+                   rtConstP.Constant5_Value[302 + n]);
           if (b_x_0) {
             b_idx++;
           }
@@ -2369,7 +2373,7 @@ void UKF_MMModelClass::step()
 
         b_ix = b_idx;
         b_idx = 0;
-        for (i = 0; i < 340; i++) {
+        for (i = 0; i < 302; i++) {
           if (b_x[i]) {
             c_data[b_idx] = (int16_T)(i + 1);
             b_idx++;
@@ -2377,19 +2381,19 @@ void UKF_MMModelClass::step()
         }
 
         for (end_ind_0 = 0; end_ind_0 < b_ix; end_ind_0++) {
-          for (ix = 0; ix < 340; ix++) {
-            b_x[ix] = (rtConstP.Constant5_Value[c_data[end_ind_0] + 679] ==
+          for (ix = 0; ix < 302; ix++) {
+            b_x[ix] = (rtConstP.Constant5_Value[c_data[end_ind_0] + 603] ==
                        rtConstP.Constant3_Value[ix]);
           }
 
           b_idx = -1;
           i = 1;
           exitg1 = false;
-          while ((!exitg1) && (i < 341)) {
+          while ((!exitg1) && (i < 303)) {
             if (b_x[i - 1]) {
               b_idx++;
               ii_data_0[b_idx] = i;
-              if (b_idx + 1 >= 340) {
+              if (b_idx + 1 >= 302) {
                 exitg1 = true;
               } else {
                 i++;
@@ -2401,27 +2405,27 @@ void UKF_MMModelClass::step()
 
           if (!(settled[ii_data_0[0] - 1] != 0)) {
             rtb_X_state_0[0] = rtConstP.Constant3_Value[colj] -
-              rtConstP.Constant3_Value[ii_data_0[0] + 339];
-            rtb_X_state_0[1] = rtConstP.Constant3_Value[pidx_data[0] + 679] -
-              rtConstP.Constant3_Value[ii_data_0[0] + 679];
+              rtConstP.Constant3_Value[ii_data_0[0] + 301];
+            rtb_X_state_0[1] = rtConstP.Constant3_Value[pidx_data[0] + 603] -
+              rtConstP.Constant3_Value[ii_data_0[0] + 603];
             power_d(rtb_X_state_0, rtb_Oi_near_b);
             ajj = std::sqrt(sum_k(rtb_Oi_near_b));
             if ((rtDW.table[ii_data_0[0] - 1] == 0.0) || (rtDW.table[ii_data_0[0]
                  - 1] > rtDW.table[pidx_data[0] - 1] + ajj)) {
-              rtDW.table[ii_data_0[0] + 339] = rtDW.table[pidx_data[0] - 1] +
+              rtDW.table[ii_data_0[0] + 301] = rtDW.table[pidx_data[0] - 1] +
                 ajj;
-              for (ix = 0; ix < 340; ix++) {
-                b_x[ix] = (rtDW.path[(340 * ix + pidx_data[0]) - 1] != 0.0);
+              for (ix = 0; ix < 302; ix++) {
+                b_x[ix] = (rtDW.path[(302 * ix + pidx_data[0]) - 1] != 0.0);
               }
 
               b_idx = 0;
               i = 1;
               exitg1 = false;
-              while ((!exitg1) && (i < 341)) {
+              while ((!exitg1) && (i < 303)) {
                 if (b_x[i - 1]) {
                   b_idx++;
                   f_ii_data[b_idx - 1] = (int16_T)i;
-                  if (b_idx >= 340) {
+                  if (b_idx >= 302) {
                     exitg1 = true;
                   } else {
                     i++;
@@ -2443,19 +2447,19 @@ void UKF_MMModelClass::step()
               }
 
               for (b_idx = 0; b_idx < n; b_idx++) {
-                tmp_path_data[b_idx] = rtDW.path[((f_ii_data[b_idx] - 1) * 340 +
+                tmp_path_data[b_idx] = rtDW.path[((f_ii_data[b_idx] - 1) * 302 +
                   pidx_data[0]) - 1];
               }
 
               b_idx = ii_data_0[0] - 1;
               for (ix = 0; ix < n; ix++) {
-                rtDW.path[b_idx + 340 * ix] = tmp_path_data[ix];
+                rtDW.path[b_idx + 302 * ix] = tmp_path_data[ix];
               }
 
-              rtDW.path[b_idx + 340 * n] =
-                rtConstP.Constant5_Value[c_data[end_ind_0] + 679];
+              rtDW.path[b_idx + 302 * n] =
+                rtConstP.Constant5_Value[c_data[end_ind_0] + 603];
             } else {
-              rtDW.table[ii_data_0[0] + 339] = rtDW.table[ii_data_0[0] - 1];
+              rtDW.table[ii_data_0[0] + 301] = rtDW.table[ii_data_0[0] - 1];
             }
           }
         }
@@ -2463,11 +2467,11 @@ void UKF_MMModelClass::step()
         b_idx = 0;
         i = 1;
         exitg1 = false;
-        while ((!exitg1) && (i < 341)) {
-          if (rtDW.table[i + 339] != 0.0) {
+        while ((!exitg1) && (i < 303)) {
+          if (rtDW.table[i + 301] != 0.0) {
             b_idx++;
             ii_data_0[b_idx - 1] = i;
-            if (b_idx >= 340) {
+            if (b_idx >= 302) {
               exitg1 = true;
             } else {
               i++;
@@ -2489,28 +2493,28 @@ void UKF_MMModelClass::step()
 
         if (colj <= 2) {
           if (colj == 1) {
-            SLAM_X_out = rtDW.table[ii_data_0[0] + 339];
-          } else if (rtDW.table[ii_data_0[0] + 339] > rtDW.table[ii_data_0[1] +
-                     339]) {
-            SLAM_X_out = rtDW.table[ii_data_0[1] + 339];
-          } else if (rtIsNaN(rtDW.table[ii_data_0[0] + 339])) {
-            if (!rtIsNaN(rtDW.table[ii_data_0[1] + 339])) {
-              SLAM_X_out = rtDW.table[ii_data_0[1] + 339];
+            SLAM_X_out = rtDW.table[ii_data_0[0] + 301];
+          } else if (rtDW.table[ii_data_0[0] + 301] > rtDW.table[ii_data_0[1] +
+                     301]) {
+            SLAM_X_out = rtDW.table[ii_data_0[1] + 301];
+          } else if (rtIsNaN(rtDW.table[ii_data_0[0] + 301])) {
+            if (!rtIsNaN(rtDW.table[ii_data_0[1] + 301])) {
+              SLAM_X_out = rtDW.table[ii_data_0[1] + 301];
             } else {
-              SLAM_X_out = rtDW.table[ii_data_0[0] + 339];
+              SLAM_X_out = rtDW.table[ii_data_0[0] + 301];
             }
           } else {
-            SLAM_X_out = rtDW.table[ii_data_0[0] + 339];
+            SLAM_X_out = rtDW.table[ii_data_0[0] + 301];
           }
         } else {
-          if (!rtIsNaN(rtDW.table[ii_data_0[0] + 339])) {
+          if (!rtIsNaN(rtDW.table[ii_data_0[0] + 301])) {
             b_idx = 1;
           } else {
             b_idx = 0;
             end_ind_0 = 2;
             exitg1 = false;
             while ((!exitg1) && (end_ind_0 <= colj)) {
-              if (!rtIsNaN(rtDW.table[ii_data_0[end_ind_0 - 1] + 339])) {
+              if (!rtIsNaN(rtDW.table[ii_data_0[end_ind_0 - 1] + 301])) {
                 b_idx = end_ind_0;
                 exitg1 = true;
               } else {
@@ -2520,12 +2524,12 @@ void UKF_MMModelClass::step()
           }
 
           if (b_idx == 0) {
-            SLAM_X_out = rtDW.table[ii_data_0[0] + 339];
+            SLAM_X_out = rtDW.table[ii_data_0[0] + 301];
           } else {
-            SLAM_X_out = rtDW.table[ii_data_0[b_idx - 1] + 339];
+            SLAM_X_out = rtDW.table[ii_data_0[b_idx - 1] + 301];
             while (b_idx + 1 <= colj) {
-              if (SLAM_X_out > rtDW.table[ii_data_0[b_idx] + 339]) {
-                SLAM_X_out = rtDW.table[ii_data_0[b_idx] + 339];
+              if (SLAM_X_out > rtDW.table[ii_data_0[b_idx] + 301]) {
+                SLAM_X_out = rtDW.table[ii_data_0[b_idx] + 301];
               }
 
               b_idx++;
@@ -2534,7 +2538,7 @@ void UKF_MMModelClass::step()
         }
 
         for (ix = 0; ix < colj; ix++) {
-          x_data[ix] = (rtDW.table[ii_data_0[ix] + 339] == SLAM_X_out);
+          x_data[ix] = (rtDW.table[ii_data_0[ix] + 301] == SLAM_X_out);
         }
 
         i = 0;
@@ -2570,7 +2574,7 @@ void UKF_MMModelClass::step()
           pidx_data[0] = nidx_data[ii_data_0[0] - 1];
           b_idx = nidx_data[ii_data_0[0] - 1] - 1;
           shortest_distance[b_idx] = rtDW.table[nidx_data[ii_data_0[0] - 1] +
-            339];
+            301];
           settled[b_idx] = 1;
         }
       } else {
@@ -2578,17 +2582,17 @@ void UKF_MMModelClass::step()
       }
     } while (exitg2 == 0);
 
-    for (ix = 0; ix < 340; ix++) {
-      b_x[ix] = (rtDW.path[(340 * ix + zz_data[0]) - 1] != 0.0);
+    for (ix = 0; ix < 302; ix++) {
+      b_x[ix] = (rtDW.path[(302 * ix + zz_data[0]) - 1] != 0.0);
     }
 
     b_idx = 0;
     i = 0;
     exitg1 = false;
-    while ((!exitg1) && (i + 1 < 341)) {
+    while ((!exitg1) && (i + 1 < 303)) {
       if (b_x[i]) {
         b_idx++;
-        if (b_idx >= 340) {
+        if (b_idx >= 302) {
           exitg1 = true;
         } else {
           i++;
@@ -2611,7 +2615,7 @@ void UKF_MMModelClass::step()
     rtDW.dist = shortest_distance[jj];
     rtDW.SFunction_DIMS3_g = n;
     for (jj = 0; jj < n; jj++) {
-      rtDW.path_2[jj] = rtDW.path[(340 * jj + zz_data[0]) - 1];
+      rtDW.path_2[jj] = rtDW.path[(302 * jj + zz_data[0]) - 1];
     }
 
     // End of MATLAB Function: '<S9>/Dijkstra'
@@ -2649,9 +2653,9 @@ void UKF_MMModelClass::step()
 
   rtDW.SFunction_DIMS2_h = rtDW.path_out1.size;
   rtDW.SFunction_DIMS3_f = rtDW.path_out1.size;
-  rtDW.SFunction_DIMS4_f[0] = 340;
+  rtDW.SFunction_DIMS4_f[0] = 302;
   rtDW.SFunction_DIMS4_f[1] = 23;
-  memcpy(&rtDW.Static_Path_0[0], &rtConstP.pooled2[0], 7820U * sizeof(real_T));
+  memcpy(&rtDW.Static_Path_0[0], &rtConstP.pooled2[0], 6946U * sizeof(real_T));
   rtDW.SFunction_DIMS6_c = rtDW.path_out1.size;
 
   // Gain: '<S1>/Gain' incorporates:
@@ -3192,24 +3196,24 @@ void UKF_MMModelClass::step()
   // MATLAB Function: '<S3>/SLAM_UKF_MM' incorporates:
   //   Constant: '<S3>/Constant4'
 
-  for (n = 0; n < 340; n++) {
-    if (rtConstP.pooled2[1700 + n] == (rtInf)) {
-      rtDW.table[n] = rtConstP.pooled2[340 + n];
-      rtDW.table[340 + n] = rtb_X[1];
-    } else if (rtConstP.pooled2[1700 + n] == 0.0) {
+  for (n = 0; n < 302; n++) {
+    if (rtConstP.pooled2[1510 + n] == (rtInf)) {
+      rtDW.table[n] = rtConstP.pooled2[302 + n];
+      rtDW.table[302 + n] = rtb_X[1];
+    } else if (rtConstP.pooled2[1510 + n] == 0.0) {
       rtDW.table[n] = rtb_X[0];
-      rtDW.table[340 + n] = rtConstP.pooled2[680 + n];
+      rtDW.table[302 + n] = rtConstP.pooled2[604 + n];
     } else {
-      rtb_Gain1 = -1.0 / rtConstP.pooled2[1700 + n];
+      rtb_Gain1 = -1.0 / rtConstP.pooled2[1510 + n];
       rtb_Gain_k = rtb_X[1] - rtb_Gain1 * rtb_X[0];
-      ajj = rtConstP.pooled2[1700 + n] - rtb_Gain1;
-      rtDW.table[n] = (rtb_Gain_k - rtConstP.pooled2[2040 + n]) / ajj;
-      rtDW.table[340 + n] = (rtConstP.pooled2[1700 + n] * rtb_Gain_k -
-        rtConstP.pooled2[2040 + n] * rtb_Gain1) / ajj;
+      ajj = rtConstP.pooled2[1510 + n] - rtb_Gain1;
+      rtDW.table[n] = (rtb_Gain_k - rtConstP.pooled2[1812 + n]) / ajj;
+      rtDW.table[302 + n] = (rtConstP.pooled2[1510 + n] * rtb_Gain_k -
+        rtConstP.pooled2[1812 + n] * rtb_Gain1) / ajj;
     }
 
     total_length = rtDW.table[n] - rtb_X[0];
-    y_idx_2 = rtDW.table[340 + n] - rtb_X[1];
+    y_idx_2 = rtDW.table[302 + n] - rtb_X[1];
     shortest_distance[n] = std::sqrt(total_length * total_length + y_idx_2 *
       y_idx_2);
   }
@@ -3541,7 +3545,7 @@ void UKF_MMModelClass::step()
   // Update for Memory: '<S2>/Memory' incorporates:
   //   Constant: '<S2>/Constant8'
 
-  rtDW.Memory_PreviousInput = 340.0;
+  rtDW.Memory_PreviousInput = 302.0;
 
   // MATLAB Function: '<S2>/Final_Static_Path'
   if (rtb_Add > 0.0) {
