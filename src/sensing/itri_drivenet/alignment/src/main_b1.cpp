@@ -13,6 +13,7 @@
 #include "alignment.h"
 #include "visualization_util.h"
 #include <drivenet/object_label_util.h>
+#include "point_preprocessing.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -24,6 +25,8 @@
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/visualization/cloud_viewer.h>
+#include <pcl/common/common.h>
+#include <pcl/filters/conditional_removal.h>
 
 /// thread
 #include <mutex>
@@ -298,11 +301,8 @@ void getPointCloudInImageFOV()
           {
             point_cloud[cam_order][pixel_position.u][pixel_position.v] = g_lidarall_ptr->points[i];
           }
-          // std::cout << "Camera u: " << pixel_position.u << ", v: " << pixel_position.v << std::endl;
         }
       }
-      // std::cout << "Lidar x: " << g_lidarall_ptr->points[i].x << ", y: " << g_lidarall_ptr->points[i].y <<
-      // ", z: " << g_lidarall_ptr->points[i].z << std::endl;
     }
   }
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -332,7 +332,31 @@ void getPointCloudInImageFOV()
   *g_cam_left_60_ptr = cam_points[2];
   *g_cam_right_60_ptr = cam_points[3];
 }
+void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI> cloud_src, int object_class_id, pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointXYZI minPt, maxPt;
 
+  // get the box length of object 
+  pcl::getMinMax3D(cloud_src, minPt, maxPt);
+  object_box bbox;
+  bbox = getDefaultObjectBox(object_class_id);
+
+  // build the condition
+  pcl::ConditionAnd<pcl::PointXYZI>::Ptr range_cond (new pcl::ConditionAnd<pcl::PointXYZI> ());
+  range_cond->addComparison (pcl::FieldComparison<pcl::PointXYZI>::ConstPtr (new pcl::FieldComparison<pcl::PointXYZI> ("x", pcl::ComparisonOps::GT, minPt.x)));
+  range_cond->addComparison (pcl::FieldComparison<pcl::PointXYZI>::ConstPtr (new pcl::FieldComparison<pcl::PointXYZI> ("x", pcl::ComparisonOps::LT, minPt.x + bbox.length)));
+
+  // build the filter
+  pcl::ConditionalRemoval<pcl::PointXYZI> condrem;
+  condrem.setCondition (range_cond);
+  cloud_ptr = cloud_src.makeShared();
+  condrem.setInputCloud (cloud_ptr);
+  condrem.setKeepOrganized (false);
+
+  // apply filter
+  condrem.filter (*cloud_filtered_ptr);
+}
 void getPointCloudInBoxFOV()
 {
   pcl::copyPointCloud(*g_cam_front_60_ptr, *g_cam_front_60_bbox_ptr);
@@ -342,30 +366,34 @@ void getPointCloudInBoxFOV()
   std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points = { *g_cam_front_60_bbox_ptr, *g_cam_top_front_120_bbox_ptr,
                                                               *g_cam_left_60_bbox_ptr, *g_cam_right_60_bbox_ptr };
   std::vector<int> cloud_sizes(g_cam_ids.size(), 0);
-  pcl::PointCloud<pcl::PointXYZI> point_cloud;
+  pcl::PointCloud<pcl::PointXYZI> point_cloud_src;
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+  std::vector<pcl::PointXYZI> point_vector_object;
+  std::vector<pcl::PointXYZI> point_vector_objects;
+
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     if (cam_order == 0)
     {
-      point_cloud = *g_cam_front_60_bbox_ptr;
+      point_cloud_src = *g_cam_front_60_bbox_ptr;
     }
     else if (cam_order == 1)
     {
-      point_cloud = *g_cam_top_front_120_bbox_ptr;
+      point_cloud_src = *g_cam_top_front_120_bbox_ptr;
     }
     else if (cam_order == 2)
     {
-      point_cloud = *g_cam_left_60_bbox_ptr;
+      point_cloud_src = *g_cam_left_60_bbox_ptr;
     }
     else if (cam_order == 3)
     {
-      point_cloud = *g_cam_right_60_bbox_ptr;
+      point_cloud_src = *g_cam_right_60_bbox_ptr;
     }
-    for (size_t i = 0; i < point_cloud.points.size(); i++)
+    for (const auto& obj: g_objects[cam_order])
     {
-      bool pass_point = false;
-      for (const auto& obj: g_objects[cam_order])
+      for (size_t i = 0; i < point_cloud_src.points.size(); i++)
       {
+        // get the 2d box
         std::vector<PixelPosition> bbox_positions(2);
         bbox_positions[0].u = obj.camInfo.u;
         bbox_positions[0].v = obj.camInfo.v;
@@ -373,19 +401,44 @@ void getPointCloudInBoxFOV()
         bbox_positions[1].v = obj.camInfo.v + obj.camInfo.height;
         transferPixelScaling(bbox_positions);
 
+        // get points in the 2d box
         PixelPosition pixel_position{ -1, -1 };
-        pixel_position = g_alignments[cam_order].projectPointToPixel(point_cloud.points[i]);
+        pixel_position = g_alignments[cam_order].projectPointToPixel(point_cloud_src.points[i]);
         if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v && pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
         {
-          pass_point = true;
+          point_vector_object.push_back(point_cloud_src.points[i]);
         }
       }
-      if (pass_point)
+
+      // vector to point cloud
+      pcl::PointCloud<pcl::PointXYZI> point_cloud_object;
+      point_cloud_object.points.resize (point_vector_object.size());
+      for (size_t i = 0; i < point_vector_object.size(); i++)
       {
-        cam_points[cam_order].points[cloud_sizes[cam_order]] = cam_points[cam_order].points[i];
-        cloud_sizes[cam_order]++;
+        point_cloud_object.points[i] = point_vector_object[i];
       }
+      point_vector_object.clear();
+      
+      // get points in the 3d box
+      getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr);
+
+      // point cloud to vector
+      for (const auto& point: cloud_filtered_ptr->points)
+      {
+        point_vector_object.push_back(point);
+      }
+    
+      // Concatenate the points of objects
+      point_vector_objects.insert (point_vector_objects.begin(), point_vector_object.begin(), point_vector_object.end());
+      point_vector_object.clear();
     }
+    removeDuplePoints(point_vector_objects);
+    for (size_t i = 0; i < point_vector_objects.size(); i++)
+    {
+      cam_points[cam_order].points[i] = point_vector_objects[i];
+      cloud_sizes[cam_order]++;      
+    }
+    point_vector_objects.clear();
   }
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
@@ -489,8 +542,7 @@ int main(int argc, char** argv)
     }
     /// draw points on pcl viewer
     // g_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr, g_rgb_lidarall, "Cloud viewer");
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_top_front_120_ptr, g_rgb_cam_top_front_120, "Top Front 120 Cloud "
-                                                                                              "viewer");
+    g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_top_front_120_ptr, g_rgb_cam_top_front_120, "Top Front 120 Cloud viewer");
     g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_front_60_ptr, g_rgb_cam_front_60, "Front 60 Cloud viewer");
 
     g_viewer->addPointCloud<pcl::PointXYZI>(g_cam_left_60_ptr, g_rgb_cam_left_60, "Left 60 Cloud viewer");
