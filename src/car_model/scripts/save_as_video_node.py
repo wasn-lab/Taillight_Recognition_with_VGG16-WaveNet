@@ -46,7 +46,12 @@ class SaveAsVideoNode(object):
         self.vdo = cv2.VideoWriter(self.output_filename,
                                    # cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
                                    # cv2.VideoWriter_fourcc('P', 'I', 'M', '1'),
-                                   cv2.VideoWriter_fourcc('M', 'P', '4', '2'),
+                                   # cv2.VideoWriter_fourcc('M', 'P', '4', '2'),
+                                   # cv2.VideoWriter_fourcc('X','2','6','4'), # No web
+                                   # cv2.VideoWriter_fourcc('X','V','I','D'), # No web
+                                   # cv2.VideoWriter_fourcc('D','I','V','X'), # No web
+                                   # cv2.VideoWriter_fourcc('W','M','V','2'), # No web
+                                   cv2.VideoWriter_fourcc('X','2','6','4'), # No web
                                    self.fps,
                                    (self.frame_width, self.frame_height))
 

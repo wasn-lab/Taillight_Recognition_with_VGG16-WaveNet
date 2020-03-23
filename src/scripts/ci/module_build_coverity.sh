@@ -45,7 +45,7 @@ function analyze {
   echo "`date`: start analyze"
   cov-analyze -dir ${data_dir} --strip-path ${strip_dir}
   for cfg in $cfgs; do
-    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${strip_dir}/..
+    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${strip_dir}
   done
   echo "`date`: end analyze"
 }
