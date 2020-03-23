@@ -46,7 +46,12 @@ class SaveAsVideoNode(object):
         self.vdo = cv2.VideoWriter(self.output_filename,
                                    # cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
                                    # cv2.VideoWriter_fourcc('P', 'I', 'M', '1'),
-                                   cv2.VideoWriter_fourcc('M', 'P', '4', '2'),
+                                   # cv2.VideoWriter_fourcc('M', 'P', '4', '2'),
+                                   # cv2.VideoWriter_fourcc('X','2','6','4'), # No web
+                                   # cv2.VideoWriter_fourcc('X','V','I','D'), # No web
+                                   # cv2.VideoWriter_fourcc('D','I','V','X'), # No web
+                                   # cv2.VideoWriter_fourcc('W','M','V','2'), # No web
+                                   cv2.VideoWriter_fourcc('X','2','6','4'), # No web
                                    self.fps,
                                    (self.frame_width, self.frame_height))
 
@@ -62,6 +67,7 @@ class SaveAsVideoNode(object):
         if self.frame_width != width or self.frame_height != height:
             print("Expect image size {}x{}, Got {}x{}".format(
                 self.frame_width, self.frame_height, width, height))
+            img = cv2.resize(img, (self.frame_width, self.frame_height))
         if self.imshow:
             cv2.imshow("image", img)
             cv2.waitKey(1)
@@ -89,7 +95,7 @@ def main():
     parser.add_argument("--frame-height", type=int, default=384)
     parser.add_argument("--fps", type=int, default=20)
     parser.add_argument("--output", "-o", default="out.avi")
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     node = SaveAsVideoNode(args.topic, args.imshow,
                            args.frame_width, args.frame_height,
