@@ -99,6 +99,7 @@ void initial_para()
         int read_index = 0;
         std::string fname = ros::package::getPath("trimble_gps_imu_pub");
         fname += "/data/ITRI_NEW_ENU2LidXYZ_sec.txt";
+        // fname += "/data/Shalun_ENU2LidXYZ.txt";
         std::cout << fname << std::endl;
 
         std::ifstream fin;

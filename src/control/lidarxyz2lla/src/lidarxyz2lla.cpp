@@ -36,6 +36,7 @@ void initial_para()
 	int read_index = 0;
 	std::string fname = ros::package::getPath("lidarxyz2lla");
 	fname += "/data/ITRI_NEW_LidXYZ2ENU_sec.txt";
+	// fname += "/data/Shalun_LidXYZ2ENU.txt";
   	std::cout << fname << std::endl;
 
   	std::ifstream fin;

@@ -87,13 +87,17 @@ void read_txt(std::string fpname, double (&SEG_ID)[size_readtmp],double (&SEG_X)
       // std::cout << read_index << ":" << SEG_L[read_index] <<std::endl;
       read_index += 1;
     }
+std::cout << "------------" << std::endl;
 }
 
 void Ini_obs_bytxt()
 {
   std::string fpname = ros::package::getPath("astar_initial");
+  // std::string fpname_s = fpname + "/data/20200309_waypoints.txt"; // shalun scenario other
+  // std::string fpname_s = fpname + "/data/20200313_waypoints_busstop.txt"; // shalun scenario bus stop
   std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt";
   read_txt(fpname_s, seg_id, seg_x, seg_y, seg_z, seg_h, seg_l);
+std::cout << "Ini_bytxt" << std::endl;
 }
 
 void globalpathinit()
@@ -173,6 +177,7 @@ int getLocalClosestWaypoint(const autoware_msgs::Lane& waypoints, const geometry
       closest_local_index_ = closest_local_index_ + read_index;
     }
   }
+std::cout << "--------------" << closest_local_index_ << std::endl;
   return closest_local_index_;
 }
 
@@ -257,7 +262,7 @@ void basepathgen_pub_30(int closet_i)
     Dpath.poses.push_back(Dpose);
   }
   NavPath_Pub_30.publish(Dpath);
-  // std::cout << "basepathgen_pub_30_size : " << Dpath.poses.size() << std::endl;
+  //std::cout << "basepathgen_pub_30_size : " << Dpath.poses.size() << std::endl;
 }
 
 void localpathgen(int closet_i)
@@ -332,6 +337,7 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
   localpathgen(closet_index);
   basepathgen_pub(closet_index);
   basepathgen_pub_30(closet_index);
+
 
   std_msgs::Int32 closetwaypoint;
   closetwaypoint.data = -closet_local_start_i;//closet_index;
