@@ -121,8 +121,9 @@ void detection(int argc, char** argv)
     mutex_LidarAll.lock();
     cv::Mat M_MID_temp;
     M_MID.copyTo(M_MID_temp);
+    cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 384), 0, 0, cv::INTER_LINEAR);
     *release_cloud = *LidarAll_cloudPtr;
-    double scaleFactor = M_MID.rows / 384;
+    double scaleFactor = M_MID_temp.rows / 384;
     for (int i = 0; i < release_cloud->size(); i++)
     {
       if (release_cloud->points[i].x > 1)
@@ -131,7 +132,7 @@ void detection(int argc, char** argv)
             (float)release_cloud->points[i].x, (float)release_cloud->points[i].y, (float)release_cloud->points[i].z);
         result[0] = result[0] * scaleFactor;
         result[1] = result[1] * scaleFactor;
-        if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID.cols && result[1] < M_MID.rows)
+        if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
         {
           int red_int_, gre_int_, blu_int_;
           double depths_float_ = (double)release_cloud->points[i].x;
@@ -168,7 +169,7 @@ void detection(int argc, char** argv)
               blu_int_ = 255;
             }
           }
-          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 4, CV_RGB(red_int_, gre_int_, blu_int_), -1, 8, 0);
+          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int_, gre_int_, blu_int_), -1, 8, 0);
         }
       }
     }
