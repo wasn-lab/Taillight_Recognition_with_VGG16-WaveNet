@@ -37,7 +37,6 @@ bool vehinfo_ini = false;
 bool imudata_ini = false;
 bool rearcurrentpose_ini = false;
 
-
 struct BB
 {
   double frontleft_point_x;

@@ -246,7 +246,7 @@ void basepathgen_pub_30(int closet_i)
   Dpath.header.frame_id = "map";
   Dpose.header.frame_id = "map";
 
-  for (int i = closet_local_start_i - 3; i < 66; i++)
+  for (int i = closet_local_start_i - 7; i < 66; i++)
   {
     int j = i + closet_i;
     if (j >= read_index)

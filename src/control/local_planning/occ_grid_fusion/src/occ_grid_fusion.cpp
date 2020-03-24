@@ -314,12 +314,12 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
   }
 
   costmap_sensor_all = costmap;
-  costmap_all = costmap;
-  costmap_all_expand = costmap;
+  // costmap_all = costmap;
+  // costmap_all_expand = costmap;
 
   // costmap_sensor_all = wayareaoccgridmap_;
-  // costmap_all = wayareaoccgridmap_;
-  // costmap_all_expand = wayareaoccgridmap_;
+  costmap_all = wayareaoccgridmap_;
+  costmap_all_expand = wayareaoccgridmap_;
 
   int height = costmap_.info.height;
   int width = costmap_.info.width;
@@ -336,15 +336,15 @@ void occgridCallback(const nav_msgs::OccupancyGrid& costmap)
       int lidcost = lidcostmap_.data[og_index];
       int camcost = camcostmap_.data[og_index];
 
+      if (wayareacost_ > 0)
+        continue;
+
       if (cost_ > 0 || lidcost > 0 || camcost > 0)
       {
         costmap_sensor_all.data[og_index] = 100;
         costmap_all.data[og_index] = 100;
         costmap_all_expand.data[og_index] = 100;
       }
-
-      // if (wayareacost_ > 0)
-      //   continue;
 
       if (costmap_sensor_all.data[og_index] == 0)
       {
