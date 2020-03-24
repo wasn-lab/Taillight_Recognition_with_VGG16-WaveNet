@@ -98,14 +98,17 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
     {
       flag = true;
     }
+    double path_x0 = astar_finalpath_10.poses[0].pose.position.x;
+    double path_y0 = astar_finalpath_10.poses[0].pose.position.y;
+    double dis_RC2Path = std::sqrt((rear_pose.x - path_x0)*(rear_pose.x - path_x0) + (rear_pose.y - path_y0)*(rear_pose.y - path_y0));
     double dis_RR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*(1-veh_pose_left) * veh_width*(1-veh_pose_left)));
     // std::cout << "dis_RR2RC : " << dis_RR2RC << ", min_value[2] : " << min_value[2] << std::endl;
-    if (min_value[2] > (dis_RR2RC + out_dis) && min_value[2] != 100)
+    if (min_value[2] > (dis_RR2RC + dis_RC2Path + out_dis) && min_value[2] != 100)
     {
       flag = true;
     }
     double dis_LR2RC = std::sqrt(((veh_length*(1-veh_pose_front))*(veh_length*(1-veh_pose_front)) + veh_width*veh_pose_left * veh_width*veh_pose_left));
-    if (min_value[3] > (dis_LR2RC + out_dis) && min_value[3] != 100)
+    if (min_value[3] > (dis_LR2RC + dis_RC2Path + out_dis) && min_value[3] != 100)
     {
       flag = true;
     }
