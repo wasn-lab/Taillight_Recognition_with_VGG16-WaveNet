@@ -29,7 +29,7 @@ AstarAvoid::AstarAvoid()
   , current_velocity_initialized_(false)
   , base_waypoints_initialized_(false)
   , closest_waypoint_initialized_(false)
-  , avoid_state_sub_initialized_(true) ///////////////---------------------------------
+  , avoid_state_sub_initialized_(false) ///////////////---------------------------------
 {
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);
@@ -69,14 +69,14 @@ AstarAvoid::~AstarAvoid()
 
 void AstarAvoid::avoidstatesubCallback(const msgs::Flag_Info& msg) ///////////////---------------------------------
 {
-  // avoid_state_index_ = msg.Dspace_Flag03;
-  // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
-  // if (avoid_state_index_ == 1)
-  //   enable_avoidance_ = true;
-  // else
-  //   enable_avoidance_ = false;
+  avoid_state_index_ = msg.Dspace_Flag03;
+  std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
+  if (avoid_state_index_ == 1)
+    enable_avoidance_ = true;
+  else
+    enable_avoidance_ = false;
 
-  // avoid_state_sub_initialized_ = true;
+  avoid_state_sub_initialized_ = true;
 }
 
 void AstarAvoid::costmapCallback(const nav_msgs::OccupancyGrid& msg)
@@ -206,6 +206,7 @@ void AstarAvoid::run()
     if (!enable_avoidance_)
     {
       rate_->sleep();
+      ROS_INFO("Keep Base Waypoints !");
       continue;
     }
     
@@ -223,8 +224,10 @@ void AstarAvoid::run()
       ROS_INFO("RELAYING");
       if (found_obstacle)
       {
-        ROS_INFO("RELAYING -> STOPPING, Decelerate for stopping");
-        state_ = AstarAvoid::STATE::STOPPING;
+        // ROS_INFO("RELAYING -> STOPPING, Decelerate for stopping");
+        // state_ = AstarAvoid::STATE::STOPPING;
+        ROS_INFO("RELAYING -> PLANNING, Start A* planning");
+        state_ = AstarAvoid::STATE::PLANNING;
       }
     }
     else if (state_ == AstarAvoid::STATE::STOPPING)

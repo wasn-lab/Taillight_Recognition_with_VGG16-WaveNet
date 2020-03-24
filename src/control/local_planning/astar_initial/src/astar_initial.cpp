@@ -33,7 +33,7 @@ int closet_local_start_i = -10;
 double wheel_dis = 3.8;
 std_msgs::Int32 obswaypoints;
 std_msgs::Int32 obswaypoints_base;
-bool enable_avoid = false;
+// bool enable_avoid = false;
 bool avoid_flag = 0;
 
 double seg_id[2000] = {};
@@ -97,7 +97,7 @@ void Ini_obs_bytxt()
   // std::string fpname_s = fpname + "/data/20200313_waypoints_busstop.txt"; // shalun scenario bus stop
   std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt";
   read_txt(fpname_s, seg_id, seg_x, seg_y, seg_z, seg_h, seg_l);
-std::cout << "Ini_bytxt" << std::endl;
+  std::cout << "Ini_bytxt" << std::endl;
 }
 
 void globalpathinit()
@@ -177,7 +177,7 @@ int getLocalClosestWaypoint(const autoware_msgs::Lane& waypoints, const geometry
       closest_local_index_ = closest_local_index_ + read_index;
     }
   }
-std::cout << "--------------" << closest_local_index_ << std::endl;
+  // std::cout << "--------------" << closest_local_index_ << std::endl;
   return closest_local_index_;
 }
 
@@ -246,7 +246,7 @@ void basepathgen_pub_30(int closet_i)
   Dpath.header.frame_id = "map";
   Dpose.header.frame_id = "map";
 
-  for (int i = closet_local_start_i - 3; i < 66; i++)
+  for (int i = closet_local_start_i - 7; i < 66; i++)
   {
     int j = i + closet_i;
     if (j >= read_index)
@@ -369,18 +369,18 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
     obs_index = 0;
   }
 
-  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && ///////////////---------------------------------
-  {
-    obswaypoints_data_ = -1;
-  }
-  if (avoid_flag != 0 && obs_index < 4)
-  {
-    obswaypoints_data_ = -1;
-  }
+  // if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && ///////////////---------------------------------
+  // {
+  //   obswaypoints_data_ = -1;
+  // }
+  // if (avoid_flag != 0 && obs_index < 4)
+  // {
+  //   obswaypoints_data_ = -1;
+  // }
 
   // if there has state machine ///////////////---------------------------------
-  // if (obs_index < 4) //
-  //   obswaypoints_data_ = -1;
+  if (obs_index < 4) //
+    obswaypoints_data_ = -1;
 
   ///////////////////////////////////////////////////////////////////
 
@@ -427,18 +427,18 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 
 void ukfmmCallback(const astar_initial::UKF_MM_msg::ConstPtr& ukfmmmsg)
 {
-  if (ukfmmmsg->seg_id_near > 4 && ukfmmmsg->seg_id_near < 301)
-  {
-    enable_avoid = false;
-  }
-  else
-  {
-    enable_avoid = true;
-  }
-  // std::cout << "enable_avoid : " << enable_avoid << std::endl;
-  std_msgs::Bool enable_avoid_;
-  enable_avoid_.data = enable_avoid;
-  enable_avoid_pub.publish(enable_avoid_);
+  // if (ukfmmmsg->seg_id_near > 4 && ukfmmmsg->seg_id_near < 301)
+  // {
+  //   enable_avoid = false;
+  // }
+  // else
+  // {
+  //   enable_avoid = true;
+  // }
+  // // std::cout << "enable_avoid : " << enable_avoid << std::endl;
+  // std_msgs::Bool enable_avoid_;
+  // enable_avoid_.data = enable_avoid;
+  // enable_avoid_pub.publish(enable_avoid_);
 }
 
 void avoidingflagCallback(const std_msgs::Int32::ConstPtr& avoidflagmsg)
@@ -464,7 +464,7 @@ int main(int argc, char** argv)
   NavPath_Pub = node.advertise<nav_msgs::Path>("nav_path_astar_base", 10, true);
   NavPath_Pub_30 = node.advertise<nav_msgs::Path>("nav_path_astar_base_30", 10, true);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
-  enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
+  // enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
   // { 
