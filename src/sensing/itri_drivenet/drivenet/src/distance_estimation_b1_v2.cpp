@@ -20,6 +20,12 @@ DistanceEstimation::~DistanceEstimation()
 DistanceEstimation::DistanceEstimation()
 {
   std::cout << "Initialize distance estimation" << std::endl;
+  arr_params = new DisEstiParams[camera::id::num_ids];
+  ShrinkArea = new CheckArea[camera::id::num_ids];
+  area = new CheckArea[camera::id::num_ids];
+  initParams();
+  initShrinkArea();
+  initDetectArea();
 }
 
 void DistanceEstimation::init(std::string pkgPath, int mode)
@@ -39,14 +45,6 @@ void DistanceEstimation::init(std::string pkgPath, int mode)
     }
     ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
   }
-    arr_params = new DisEstiParams[camera::id::num_ids];
-    ShrinkArea = new CheckArea[camera::id::num_ids];
-    area = new CheckArea[camera::id::num_ids];
-    initParams();
-    initShrinkArea();
-    initDetectArea();
-  
-
 }
 
 void DistanceEstimation::initParams()
@@ -784,9 +782,9 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
   int x_loc = y;
   int y_loc = x;
 
-  DisEstiParams parmas_;
+  DisEstiParams parmas;
 
-  parmas_ = arr_params[cam_id];
+  parmas = arr_params[cam_id];
 
   if (de_mode == 1)
   {
@@ -804,14 +802,14 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
   
   if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
   {
-    if (!parmas_.regionDist_x.empty())
+    if (!parmas.regionDist_x.empty())
     {
-      x_distMeter = ComputeObjectXDist(x_loc, parmas_.regionHeight_x, parmas_.regionDist_x);
+      x_distMeter = ComputeObjectXDist(x_loc, parmas.regionHeight_x, parmas.regionDist_x);
     }
-    if (!parmas_.regionDist_y.empty())
+    if (!parmas.regionDist_y.empty())
     {
-      y_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_y, parmas_.regionHeightSlope_y,
-                                        parmas_.regionDist_y, img_h);
+      y_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas.regionHeight_y, parmas.regionHeightSlope_y,
+                                        parmas.regionDist_y, img_h);
     }
   }
   

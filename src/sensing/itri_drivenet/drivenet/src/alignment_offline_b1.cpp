@@ -145,7 +145,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
 	// cv::waitKey();
 
   std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
-  /*
+  
   while (!done)
   {
     int num_approx = 0;
@@ -190,7 +190,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     }
   }
   std::cout << " unset_points: " << unset_points.size();
-  */
+  
 }
 
 void AlignmentOff::dump_distance_in_json() const
