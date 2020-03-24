@@ -9,15 +9,33 @@ namespace camera
 {
 const std::string names[id::num_ids] = {
   // New b1
-  "front_bottom_60", "front_top_far_30", "", "", 
-  "front_top_close_120", "right_front_60", "right_back_60", "",
-  "left_front_60", "left_back_60", "back_top_120", "",
+  "front_bottom_60",
+  "front_top_far_30",
+  "",
+  "",
+  "front_top_close_120",
+  "right_front_60",
+  "right_back_60",
+  "",
+  "left_front_60",
+  "left_back_60",
+  "back_top_120",
+  "",
 };
 
 const std::string topics[id::num_ids] = {
-  "/cam/front_bottom_60", "/cam/front_top_far_30", "", "", 
-  "/cam/front_top_close_120", "/cam/right_front_60", "/cam/right_back_60", "",
-  "/cam/left_front_60",  "/cam/left_back_60",    "/cam/back_top_120", "",
+  "/cam/front_bottom_60",
+  "/cam/front_top_far_30",
+  "",
+  "",
+  "/cam/front_top_close_120",
+  "/cam/right_front_60",
+  "/cam/right_back_60",
+  "",
+  "/cam/left_front_60",
+  "/cam/left_back_60",
+  "/cam/back_top_120",
+  "",
 };
 
 const std::string topics_obj[id::num_ids] = {
@@ -54,6 +72,6 @@ const std::string detect_result = "/CameraDetection";
 const std::string detect_result_polygon = "/CameraDetection/polygon";
 const std::string detect_result_occupancy_grid = "/CameraDetection/occupancy_grid";
 
-} // namespace camera
+}  // namespace camera
 
 #endif  // CAR_MODEL_IS_B1
