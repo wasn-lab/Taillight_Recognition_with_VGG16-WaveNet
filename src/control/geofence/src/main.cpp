@@ -52,6 +52,7 @@ static Geofence PCloud_Geofence(1.2);
 static Geofence BBox_Geofence(1.2);
 static Geofence Radar_Geofence(1.5);
 static Geofence PCloud_Geofence_original(1.2);
+static Geofence Deviate_Geofence(1.2);
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 //static uint Deadend_flag;
 static uint overtake_over_flag;
@@ -202,6 +203,27 @@ void astar_original_callback(const nav_msgs::Path::ConstPtr& msg){
 }
 
 
+void deviate_path_callback(const nav_msgs::Path::ConstPtr& msg){
+	vector<Point> Position;
+	Point Pos;
+	uint size = 50;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+
+	double Resolution = 50;
+	for(uint i=1;i<size;i++){
+		for(int j=0;j<Resolution;j++){
+			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
+			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
+			Position.push_back(Pos);
+		}	
+	}
+	Deviate_Geofence.setPath(Position);
+}
+
+
+
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 { 
 	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
@@ -218,6 +240,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 	}
 	PCloud_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
 	PCloud_Geofence_original.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
+	Deviate_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
 }
 
 void Publish_Marker_Radar(double X, double Y)
@@ -296,13 +319,15 @@ int main(int argc, char **argv){
 	ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
 	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
 	ros::Subscriber AstarSub_original = n.subscribe("nav_path_astar_base_30", 1, astar_original_callback);// For objects on original path
+	ros::Subscriber deviate_path = n.subscribe("veh_predictpath", 1, deviate_path_callback);
+
 	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
 	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
 	//ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
-	ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
-	//ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+	//ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
+	ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
 	ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
-	
+
 	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPCloud);
 	#else
@@ -374,8 +399,33 @@ int main(int argc, char **argv){
 			Geofence_original.publish(Geofence_temp); 
 		}
 		else{
-			cerr << "Please initialize all PCloud parameters first" << endl;
+			cerr << "Please initialize PCloud original_path parameters first" << endl;
 		}
+		
+		if(Deviate_Geofence.Calculator()==0)
+		{
+			frame.can_id  = 0x593;
+			cout << "Deviate path's geofence: " << Deviate_Geofence.getDistance() << endl;
+			frame.data[0] = (short int)(PCloud_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(PCloud_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(PCloud_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(PCloud_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(PCloud_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(PCloud_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(PCloud_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			if(PCloud_Geofence.getDistance()<80)
+			{
+				Plot_geofence(Deviate_Geofence.findDirection());  
+			}
+		}
+		else{
+			cerr << "Please initialize deviate_path parameters first" << endl;
+		}
+
+
 
 		cout << "=========BBox=========" << endl;
 		if(BBox_Geofence.Calculator()==0){
