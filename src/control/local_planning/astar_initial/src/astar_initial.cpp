@@ -33,7 +33,7 @@ int closet_local_start_i = -10;
 double wheel_dis = 3.8;
 std_msgs::Int32 obswaypoints;
 std_msgs::Int32 obswaypoints_base;
-bool enable_avoid = false;
+// bool enable_avoid = false;
 bool avoid_flag = 0;
 
 double seg_id[2000] = {};
@@ -369,18 +369,18 @@ void obsdisCallback(const std_msgs::Float64::ConstPtr& obsdismsg)
     obs_index = 0;
   }
 
-  if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && ///////////////---------------------------------
-  {
-    obswaypoints_data_ = -1;
-  }
-  if (avoid_flag != 0 && obs_index < 4)
-  {
-    obswaypoints_data_ = -1;
-  }
+  // if (avoid_flag == 0 && obs_index < 60) // detect time < 3s //avoid_flag == 0 && ///////////////---------------------------------
+  // {
+  //   obswaypoints_data_ = -1;
+  // }
+  // if (avoid_flag != 0 && obs_index < 4)
+  // {
+  //   obswaypoints_data_ = -1;
+  // }
 
   // if there has state machine ///////////////---------------------------------
-  // if (obs_index < 4) //
-  //   obswaypoints_data_ = -1;
+  if (obs_index < 4) //
+    obswaypoints_data_ = -1;
 
   ///////////////////////////////////////////////////////////////////
 
@@ -427,18 +427,18 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
 
 void ukfmmCallback(const astar_initial::UKF_MM_msg::ConstPtr& ukfmmmsg)
 {
-  if (ukfmmmsg->seg_id_near > 4 && ukfmmmsg->seg_id_near < 301)
-  {
-    enable_avoid = false;
-  }
-  else
-  {
-    enable_avoid = true;
-  }
-  // std::cout << "enable_avoid : " << enable_avoid << std::endl;
-  std_msgs::Bool enable_avoid_;
-  enable_avoid_.data = enable_avoid;
-  enable_avoid_pub.publish(enable_avoid_);
+  // if (ukfmmmsg->seg_id_near > 4 && ukfmmmsg->seg_id_near < 301)
+  // {
+  //   enable_avoid = false;
+  // }
+  // else
+  // {
+  //   enable_avoid = true;
+  // }
+  // // std::cout << "enable_avoid : " << enable_avoid << std::endl;
+  // std_msgs::Bool enable_avoid_;
+  // enable_avoid_.data = enable_avoid;
+  // enable_avoid_pub.publish(enable_avoid_);
 }
 
 void avoidingflagCallback(const std_msgs::Int32::ConstPtr& avoidflagmsg)
@@ -464,7 +464,7 @@ int main(int argc, char** argv)
   NavPath_Pub = node.advertise<nav_msgs::Path>("nav_path_astar_base", 10, true);
   NavPath_Pub_30 = node.advertise<nav_msgs::Path>("nav_path_astar_base_30", 10, true);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
-  enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
+  // enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
   // { 
