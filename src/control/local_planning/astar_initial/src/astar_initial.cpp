@@ -97,7 +97,7 @@ void Ini_obs_bytxt()
   // std::string fpname_s = fpname + "/data/20200313_waypoints_busstop.txt"; // shalun scenario bus stop
   std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt";
   read_txt(fpname_s, seg_id, seg_x, seg_y, seg_z, seg_h, seg_l);
-std::cout << "Ini_bytxt" << std::endl;
+  std::cout << "Ini_bytxt" << std::endl;
 }
 
 void globalpathinit()
@@ -177,7 +177,7 @@ int getLocalClosestWaypoint(const autoware_msgs::Lane& waypoints, const geometry
       closest_local_index_ = closest_local_index_ + read_index;
     }
   }
-std::cout << "--------------" << closest_local_index_ << std::endl;
+  // std::cout << "--------------" << closest_local_index_ << std::endl;
   return closest_local_index_;
 }
 

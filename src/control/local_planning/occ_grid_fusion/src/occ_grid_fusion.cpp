@@ -183,11 +183,6 @@ void basewaypoints30Callback(const nav_msgs::Path& path)
   // path_vehicle_right.header.stamp = ros::Time::now();
   // path_vehicle_right_pub.publish(path_vehicle_right);
 
-
-
-
-
-
   setwayareaoccgridmap();
   int height = wayareaoccgridmap.info.height; // lateral
   int width = wayareaoccgridmap.info.width; // longitude

@@ -206,6 +206,7 @@ void AstarAvoid::run()
     if (!enable_avoidance_)
     {
       rate_->sleep();
+      ROS_INFO("Keep Base Waypoints !");
       continue;
     }
     
@@ -223,8 +224,10 @@ void AstarAvoid::run()
       ROS_INFO("RELAYING");
       if (found_obstacle)
       {
-        ROS_INFO("RELAYING -> STOPPING, Decelerate for stopping");
-        state_ = AstarAvoid::STATE::STOPPING;
+        // ROS_INFO("RELAYING -> STOPPING, Decelerate for stopping");
+        // state_ = AstarAvoid::STATE::STOPPING;
+        ROS_INFO("RELAYING -> PLANNING, Start A* planning");
+        state_ = AstarAvoid::STATE::PLANNING;
       }
     }
     else if (state_ == AstarAvoid::STATE::STOPPING)
