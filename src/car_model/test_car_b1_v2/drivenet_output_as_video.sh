@@ -1,6 +1,11 @@
 #!/bin/bash
 set -x
 set -e
+readonly today=$(date "+%Y%m%d")
+
+pushd build
+make video_saver -j
+popd
 
 source build/car_model/scripts/car_model.sh
 if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
@@ -9,7 +14,7 @@ if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
 fi
 
 source devel/setup.bash
-export output_dir=/var/www/html/artifacts/$(date "+%Y%m%d")
+export output_dir=/var/www/html/artifacts/${today}
 mkdir -p $output_dir
 chmod 775 $output_dir
 
@@ -23,5 +28,6 @@ done
 popd
 
 cp src/scripts/ci/show_drivenet_videos.html $output_dir
+find $output_dir -type f -exec chmod 644 {} \;
 
-echo "Visit http://ci.itriadv.co/artifacts/${output_dir} to download the results."
+echo "Visit http://ci.itriadv.co/artifacts/${today} to download the results."
