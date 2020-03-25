@@ -1,6 +1,6 @@
 #include <ROS_ICLU3_v0.hpp>
 #include "../external/AntTweakBar-1.16/include/AntTweakBar.h"
-#include <setjmp.h> // For leaving main loop
+#include <csetjmp> // For leaving main loop
 //
 #include "Common.h"
 // #include "ViewManager.h"

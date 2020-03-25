@@ -223,7 +223,7 @@ set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
 ######################
 ##       VTK        ##
 ######################
-find_package        (VTK REQUIRED)
+find_package        (VTK 6.2 REQUIRED)
 
 ######################
 ##       PCL        ##
@@ -273,3 +273,4 @@ cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES
 add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
 qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets) 
+

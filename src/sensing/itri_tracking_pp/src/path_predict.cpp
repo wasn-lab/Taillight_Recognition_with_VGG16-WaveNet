@@ -42,16 +42,14 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         float box_x_length = std::abs(pp_objs_[i].bPoint.p6.x - pp_objs_[i].bPoint.p0.x);
         float box_y_length = std::abs(pp_objs_[i].bPoint.p6.y - pp_objs_[i].bPoint.p0.y);
         float box_z_length = std::abs(pp_objs_[i].bPoint.p6.z - pp_objs_[i].bPoint.p0.z);
-        float box_length_thr_xy = 1.5f;
-        float box_length_thr_z = 0.5f;
 
-        if (box_center_x < pp_allow_x_min_m && box_center_x > pp_allow_x_max_m)
+        if (box_center_x < pp_allow_x_min_m || box_center_x > pp_allow_x_max_m)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;
         }
 
-        if (box_center_y < pp_allow_y_min_m && box_center_y > pp_allow_y_max_m)
+        if (box_center_y < pp_allow_y_min_m || box_center_y > pp_allow_y_max_m)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;

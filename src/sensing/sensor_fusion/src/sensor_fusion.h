@@ -2,12 +2,12 @@
 #define __FUSION_H__
 
 #include <iostream>
-#include <signal.h>
+#include <csignal>
 #include "ros/ros.h"
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
 
-#include "Hungarian.h"
+#include "hungarian.h"
 
 #define DEBUG 0
 /************************************************************************/

@@ -5,7 +5,7 @@
 #include "camera_params_b1.h"
 #include <opencv2/opencv.hpp>
 #define _USE_MATH_DEFINES
-using namespace cv;
+
 class Projector2
 {
 private:

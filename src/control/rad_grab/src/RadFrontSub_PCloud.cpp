@@ -19,7 +19,7 @@
 #include "msgs/PointXYZV.h"
 #include "msgs/TrackInfo.h"
 #include "msgs/LocalizationToVeh.h"
-#include <string.h>
+#include <cstring>
 #include <visualization_msgs/Marker.h>
 
 //For PCL
