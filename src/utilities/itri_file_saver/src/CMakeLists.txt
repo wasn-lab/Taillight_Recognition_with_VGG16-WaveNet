@@ -1,4 +1,4 @@
-set(FILE_SAVER_LIB "file_saver")
+set(FILE_SAVER_LIB "itri_file_saver")
 
 set(FILE_SAVER_LIB_SRCS
     image_saver_node.cpp
