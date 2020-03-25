@@ -34,7 +34,7 @@ double expand_size = 1.0;
 double expand_size_0 = 1.4;
 
 double right_waylength = 2.5;
-double left_waylength = 5.5;
+double left_waylength = 5;
 
 struct pose
 {
