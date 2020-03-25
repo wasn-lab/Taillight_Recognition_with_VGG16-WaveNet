@@ -1,6 +1,4 @@
-#ifndef __IMAGE_SAVER_NODE_IMPL_H__
-#define __IMAGE_SAVER_NODE_IMPL_H__
-
+#pragma once
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -21,5 +19,3 @@ public:
   ~PCDSaverNodeImpl();
   void run();
 };
-
-#endif  // __IMAGE_SAVER_NODE_IMPL_H__

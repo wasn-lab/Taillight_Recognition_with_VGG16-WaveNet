@@ -1,6 +1,4 @@
-#ifndef __ARGS_PARSER_H__
-#define __ARGS_PARSER_H__
-
+#pragma once
 #include <string>
 namespace video_saver
 {
@@ -13,5 +11,3 @@ int get_frame_height();
 double get_frame_rate();
 
 };  // namespace video_saver
-
-#endif  //__ARGS_PARSER_H__
