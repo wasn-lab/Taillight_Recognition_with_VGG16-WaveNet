@@ -79,7 +79,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 file(GLOB_RECURSE SOURCES_SRCS *.cpp)
-add_executable(${PROJECT_NAME} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} ${SOURCES_SRCS})
+add_executable(${PROJECT_NAME} src/subscriber.cpp ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} ${SOURCES_SRCS})
 add_dependencies(${PROJECT_NAME} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${Eigen3_LIBRARIES} )
 
