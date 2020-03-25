@@ -91,59 +91,6 @@ visualization_msgs::Marker MarkerGen::create_box_marker(const unsigned int idx, 
   return marker;
 }
 
-visualization_msgs::Marker MarkerGen::create_polygon_marker(const unsigned int idx, const msgs::ConvexPoint& cPoint,
-                                                            std_msgs::Header obj_header)
-{
-  visualization_msgs::Marker marker;
-
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
-  marker.header = obj_header;
-#endif
-  marker.ns = "PPOutput_p";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.x = 0.0;
-  marker.pose.orientation.y = 0.0;
-  marker.pose.orientation.z = 0.0;
-  marker.pose.orientation.w = 1.0;
-
-  marker.id = idx;
-  marker.type = visualization_msgs::Marker::LINE_STRIP;
-
-  if (cPoint.lowerAreaPoints.size() <= 4)
-  {
-    marker.scale.x = 0.35;
-    marker.scale.y = 0.35;
-    marker.scale.z = 0.7;
-  }
-  else
-  {
-    marker.scale.x = 0.17;
-    marker.scale.y = 0.17;
-    marker.scale.z = 0.4;
-  }
-  marker.lifetime = ros::Duration(mc_.lifetime_sec);
-  set_ColorRGBA(marker.color, mc_.color);
-
-  marker.points.reserve(cPoint.lowerAreaPoints.size());
-
-  if (!cPoint.lowerAreaPoints.empty())
-  {
-    for (const auto pt : cPoint.lowerAreaPoints)
-    {
-      geometry_msgs::Point p;
-      convert_MyPoint32_to_Point(p, pt);
-      marker.points.push_back(p);
-    }
-    geometry_msgs::Point p;
-    convert_MyPoint32_to_Point(p, cPoint.lowerAreaPoints[0]);
-    marker.points.push_back(p);
-  }
-
-  return marker;
-}
-
 std::string MarkerGen::parse_class_id(unsigned int class_id)
 {
   std::string class_name;
@@ -279,51 +226,15 @@ visualization_msgs::Marker MarkerGen::create_speed_marker(const unsigned int idx
 
   if (mc_.show_absspeed)
   {
-    ss << "rel:";
+    ss << "abs:" << std::setprecision(1) << std::fixed << absspeed;
   }
-  ss << std::setprecision(1) << std::fixed << relspeed << "km/h";
-
-  if (mc_.show_absspeed)
+  else
   {
-    ss << std::endl << "abs:" << std::setprecision(1) << std::fixed << absspeed << "km/h";
+    ss << "rel:" << std::setprecision(1) << std::fixed << relspeed;
   }
+
   std::string str = ss.str();
   marker.text = str;
-
-  set_marker_attr(marker, point);
-
-  return marker;
-}
-
-visualization_msgs::Marker MarkerGen::create_delay_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                          std_msgs::Header obj_header)
-{
-  visualization_msgs::Marker marker;
-
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
-  marker.header = obj_header;
-#endif
-  marker.ns = "PPOutput_d";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.id = idx;
-  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-  // marker.scale.x = 10.0;
-  // marker.scale.y = 1.0;
-  marker.scale.z = 1.7;
-
-  std::ostringstream ss;
-  double start_time_sec = header_.stamp.toSec();
-  double delaytime_sec = mc_.module_pubtime_sec - start_time_sec;
-  ss << std::fixed << std::setprecision(1) << delaytime_sec * 1000.0 << "ms";
-  std::string str = ss.str();
-  marker.text = str;
-
-#if DEBUG
-  LOG_INFO << std::fixed << "Start_Time: " << start_time_sec << "  Module_PubTime: " << mc_.module_pubtime_sec
-           << "  Delay_Time: " << delaytime_sec << std::endl;
-#endif
 
   set_marker_attr(marker, point);
 
@@ -347,9 +258,9 @@ visualization_msgs::Marker MarkerGen::create_pp_marker_ellipse(const unsigned in
   marker.id = idx;
   marker.type = visualization_msgs::Marker::CYLINDER;
 
-  double scale = abs_speed_kmph * (forecast_seq + 1) / 36.;
+  double scale = abs_speed_kmph * (forecast_seq + 1) / 120.;
   marker.scale.x = scale;
-  marker.scale.y = scale / 2;
+  marker.scale.y = scale;
   marker.scale.z = 0.1;
 
   marker.pose.position.x = pos.x;
@@ -447,18 +358,15 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
 {
   std::vector<visualization_msgs::Marker>().swap(m_id_.markers);
   std::vector<visualization_msgs::Marker>().swap(m_speed_.markers);
-  std::vector<visualization_msgs::Marker>().swap(m_delay_.markers);
 
   m_id_.markers.reserve(objs.size());
   m_speed_.markers.reserve(objs.size());
-  m_delay_.markers.reserve(objs.size());
 
   for (const auto& obj : objs)
   {
     geometry_msgs::Point point = text_marker_position(obj.bPoint.p1, obj.bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, obj));
     m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.relSpeed, obj.absSpeed));
-    m_delay_.markers.push_back(create_delay_marker(idx++, point, obj.header));
   }
 
   geometry_msgs::Point point_seq = init_Point(-20, 0, 0);
@@ -466,7 +374,6 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
 
   mc_.pub_id.publish(m_id_);
   mc_.pub_speed.publish(m_speed_);
-  mc_.pub_delay.publish(m_delay_);
 }
 
 void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
@@ -480,19 +387,6 @@ void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::De
   }
 
   mc_.pub_bbox.publish(m_box_);
-}
-
-void MarkerGen::process_polygon_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
-{
-  std::vector<visualization_msgs::Marker>().swap(m_polygon_.markers);
-  m_polygon_.markers.reserve(objs.size());
-
-  for (const auto& obj : objs)
-  {
-    m_polygon_.markers.push_back(create_polygon_marker(idx++, obj.cPoint, obj.header));
-  }
-
-  mc_.pub_polygon.publish(m_polygon_);
 }
 
 void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
@@ -568,10 +462,7 @@ void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector
   unsigned int idx = 1;
 
   process_text_marker(idx, objs);
-
   process_box_marker(idx, objs);
-
-  process_polygon_marker(idx, objs);
 
   if (mc_.show_pp > 0)
   {

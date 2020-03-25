@@ -3,9 +3,6 @@ set -x
 set -e
 
 export PATH=/usr/local/cmake-3.15.5/bin:$PATH
-export PATH=/usr/local/llvm-6.0.0/bin:$PATH
-export CC=clang
-export CXX=clang++
 echo "The script works only for cmake >= 3.10. Your cmake version is:"
 cmake --version
 
@@ -23,6 +20,7 @@ done
 catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
+    -DCAR_MODEL=OMNIBUS \
     -DCATKIN_BLACKLIST_PACKAGES="dl_data;localization;opengl_test" \
     -DCMAKE_CXX_CPPCHECK="cppcheck;--template=gcc;--enable=style,warning;--inconclusive;--inline-suppr;--suppressions-list=${repo_dir}/src/scripts/ci/cppcheck_suppression.txt" ${EXTRA_CATKIN_ARGS} ${EXTRA_CATKIN_ARGS}
 popd

@@ -10,31 +10,20 @@ class TegraBGrabber
 public:
   TegraBGrabber();
   ~TegraBGrabber();
-  void initializeModules();
+  void initializeModules(const bool do_resize);
   bool runPerception();
 
 protected:
   void InitParameters();
 
-#if CAR_MODEL_IS_B1
-  // TODO: fill in the correct camera id.
-  const std::vector<int> cam_ids_{ 
-    camera::id::top_front_120,
-    camera::id::top_right_front_120,
-    camera::id::top_right_rear_120,
-    camera::id::top_left_front_120,
-    camera::id::top_left_rear_120,
-    camera::id::top_rear_120
-  };
+#if CAR_MODEL_IS_B1 || CAR_MODEL_IS_OMNIBUS
+  const std::vector<int> cam_ids_{ camera::id::top_front_120,      camera::id::top_right_front_120,
+                                   camera::id::top_right_rear_120, camera::id::top_left_front_120,
+                                   camera::id::top_left_rear_120,  camera::id::top_rear_120 };
 #elif CAR_MODEL_IS_B1_V2
-  const std::vector<int> cam_ids_{ 
-    camera::id::front_top_close_120,
-    camera::id::right_front_60,
-    camera::id::right_back_60,
-    camera::id::left_front_60,
-    camera::id::left_back_60,
-    camera::id::back_top_120
-  };
+  const std::vector<int> cam_ids_{ camera::id::front_top_close_120, camera::id::right_front_60,
+                                   camera::id::right_back_60,       camera::id::left_front_60,
+                                   camera::id::left_back_60,        camera::id::back_top_120 };
 #elif CAR_MODEL_IS_HINO
   const std::vector<int> cam_ids_{ camera::id::left_120, camera::id::front_120, camera::id::right_120 };
 #else
@@ -52,11 +41,13 @@ private:
   std::vector<Npp8u*> npp8u_ptrs_distorted_;
   NPPResizer resizer_;
   NPPRemapper remapper_;
+  int num_src_bytes_;
+  bool resize_;
 
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
 };
-} // namespace SensingSubSystem
+}  // namespace SensingSubSystem
 
 #endif

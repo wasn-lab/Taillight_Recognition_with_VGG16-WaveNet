@@ -1,3 +1,6 @@
+#include "car_model.h"
+
+#if CAR_MODEL_IS_B1
 #include "projector2.h"
 #include <chrono>
 #include <iostream>
@@ -32,7 +35,8 @@ void Projector2::addMatrix(const float v1[3], const float v2[3], float result[3]
 //初始化,輸入camera id , 自動設好內外參, 目前只校正好前3個camera
 void Projector2::init(id camera_id)
 {
-  if (camera_id != id::front_60 && camera_id != id::top_front_120 && camera_id != id::left_60 && camera_id != id::right_60)
+  if (camera_id != id::front_60 && camera_id != id::top_front_120 && camera_id != id::left_60 &&
+      camera_id != id::right_60)
   {
     throw std::invalid_argument("這個相機的外參還沒校正好...");
   }
@@ -193,3 +197,4 @@ vector<int> Projector2::project(float x, float y, float z)
   // start).count() << " 微秒" << std::endl;
   return result;
 }
+#endif  // CAR_MODEL_IS_B1

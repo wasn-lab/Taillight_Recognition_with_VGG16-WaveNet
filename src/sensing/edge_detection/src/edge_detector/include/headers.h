@@ -52,11 +52,11 @@
 #include <arpa/inet.h>
 
 #include <thread>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cstdint>
+#include <cmath>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>

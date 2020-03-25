@@ -4,27 +4,28 @@ using namespace std;
 using namespace pcl;
 using namespace DriveNet;
 
-Alignment::Alignment()
+void Alignment::projectMatrixInit(camera::id cam_id)
 {
+#if CAR_MODEL_IS_B1
+  projector2_.init(cam_id);
+#elif CAR_MODEL_IS_B1_V2
+  projector3_.init(cam_id);
+#endif
 }
 
-Alignment::~Alignment()
-{
-}
-
-void Alignment::projectMatrixInit(camera::id camera_id)
-{
-  projector2_.init(camera_id);
-}
 PixelPosition Alignment::projectPointToPixel(PointXYZI point)
 {
   float x = point.x;
   float y = point.y;
   float z = point.z;
   vector<int> pixel_position_vect;
-  PixelPosition pixel_position{-1, -1};
+  PixelPosition pixel_position{ -1, -1 };
 
+#if CAR_MODEL_IS_B1
   pixel_position_vect = projector2_.project(x, y, z);
+#elif CAR_MODEL_IS_B1_V2
+  pixel_position_vect = projector3_.project(x, y, z);
+#endif
   pixel_position.u = pixel_position_vect[0];
   pixel_position.v = pixel_position_vect[1];
 
@@ -37,25 +38,4 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
     pixel_position.v = -1;
   }
   return pixel_position;
-}
-cv::Scalar Alignment::getDistColor(float distance)
-{
-  cv::Scalar color;
-  if (distance >= 0 && distance <= 10)
-  {
-    color = Color::g_color_red;
-  }
-  else if (distance > 10 && distance <= 20)
-  {
-    color = Color::g_color_yellow;
-  }
-  else if (distance > 20 && distance <= 30)
-  {
-    color = Color::g_color_green;
-  }
-  else
-  {
-    color = Color::g_color_blue;
-  }
-  return color;
 }

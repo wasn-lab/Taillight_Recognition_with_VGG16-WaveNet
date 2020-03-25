@@ -15,10 +15,10 @@
 #include "lidar_location_send/MM_TP_msg.h"
 #include "lidar_location_send/UKF_MM_msg.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 #include <tf/tf.h>

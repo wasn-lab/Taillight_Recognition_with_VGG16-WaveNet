@@ -387,32 +387,33 @@ void KalmanTrackers::compute_distance_table()
 
       MyPoint32 p_abs;
       box_centers_[j].pos.get_point_abs(p_abs);
-      float box_dist_diff = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_abs.x, p_abs.y);
+      float cost_box_dist = squared_euclidean_distance(tracks_[i].x_predict_, tracks_[i].y_predict_, p_abs.x, p_abs.y);
 
 #if DEBUG_HUNGARIAN_DIST
       LOG_INFO << "i = " << i << " j = " << j << "  box_dist_diff: " << box_dist_diff << std::endl;
 #endif
 
-      if (box_dist_diff > track_range_sed)
+      if (cost_box_dist > track_range_sed)
       {
         continue;
       }
 
-      float dist_to_obj_avg = 0.5f * (tracks_[i].box_center_.dist_to_ego + box_centers_[j].dist_to_ego);
-      float factor_dist_to_obj_avg = std::max((float)(dist_to_obj_avg / UNIT_FACTOR_DIST_TO_OBJ_AVG), 1.f);
+      float box_vol_ratio = std::max(box_centers_[j].area, BOX_VOL_MIN_FOR_RATIO) /
+                            std::max(tracks_[i].box_center_.area, BOX_VOL_MIN_FOR_RATIO);
+      float box_vol_ratio_larger = (box_vol_ratio >= 1.f) ? box_vol_ratio : 1.f / box_vol_ratio;
 
-      float box_vol_same_ratio1 = box_centers_[j].volumn / tracks_[i].box_center_.volumn;
-      float box_vol_same_ratio2 = 1 / box_vol_same_ratio1;
-
-      float box_vol_diff_ratio = 1.f - std::min(box_vol_same_ratio1, box_vol_same_ratio2);
-
-      float factor_box_vol = std::pow(SCALAR_FACTOR_BOX_VOL * box_vol_diff_ratio, 2) / factor_dist_to_obj_avg;
-
-      float factor_final = (1.f - FACTOR_BOX_VOL_PCT) * box_dist_diff + FACTOR_BOX_VOL_PCT * factor_box_vol;
-
-      if (factor_final <= track_range_sed)
+      if (box_vol_ratio_larger > BOX_VOL_RATIO_MAX)
       {
-        distance_table_[i][j] = factor_final;
+        continue;
+      }
+
+      float cost_box_vol_ratio = box_vol_ratio_larger * track_range_sed / BOX_VOL_RATIO_MAX;
+
+      float cost_final = COST_BOX_DIST_W * cost_box_dist + COST_BOX_VOL_RATIO_W * cost_box_vol_ratio;
+
+      if (cost_final <= track_range_sed)
+      {
+        distance_table_[i][j] = cost_final;
       }
 
 #if DEBUG_HUNGARIAN_DIST
@@ -455,11 +456,11 @@ void KalmanTrackers::associate_data()
   }
 #endif
 
-  Hungarian HungAlgo;
+  Hungarian hun;
   std::vector<int> assignment;
 
 #if DEBUG
-  double cost = HungAlgo.solve(costMatrix, assignment);
+  double cost = hun.solve(costMatrix, assignment);
 
   for (unsigned i = 0; i < costMatrix.size(); i++)
   {
@@ -468,7 +469,7 @@ void KalmanTrackers::associate_data()
 
   LOG_INFO << "\ncost: " << cost << std::endl;
 #else
-  HungAlgo.solve(costMatrix, assignment);
+  hun.solve(costMatrix, assignment);
 #endif
 
   for (unsigned i = 0; i < tracks_.size(); i++)
@@ -588,21 +589,21 @@ void KalmanTrackers::set_new_box_corners_of_boxes_absolute()
 
 void KalmanTrackers::set_new_box_corners_of_boxes_relative()
 {
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto& track : tracks_)
   {
-    if (tracks_[i].tracked_)
+    if (track.tracked_)
     {
-      for (unsigned j = 0; j < num_2dbox_corners; j++)
+      for (unsigned i = 0; i < num_2dbox_corners; i++)
       {
-        transform_point_abs2rel(tracks_[i].box_corners_[j].new_x_abs,  //
-                                tracks_[i].box_corners_[j].new_y_abs,  //
-                                tracks_[i].box_corners_[j].new_z_abs,  //
-                                tracks_[i].box_corners_[j].new_x_rel,  //
-                                tracks_[i].box_corners_[j].new_y_rel,  //
-                                tracks_[i].box_corners_[j].new_z_rel,  //
+        transform_point_abs2rel(track.box_corners_[i].new_x_abs,  //
+                                track.box_corners_[i].new_y_abs,  //
+                                track.box_corners_[i].new_z_abs,  //
+                                track.box_corners_[i].new_x_rel,  //
+                                track.box_corners_[i].new_y_rel,  //
+                                track.box_corners_[i].new_z_rel,  //
                                 ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
 
-        tracks_[i].box_corners_[j].new_z_rel = 0.f;
+        track.box_corners_[i].new_z_rel = 0.f;
       }
     }
   }
@@ -610,37 +611,37 @@ void KalmanTrackers::set_new_box_corners_of_boxes_relative()
 
 void KalmanTrackers::update_boxes()
 {
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto& track : tracks_)
   {
-    if (tracks_[i].tracked_)
+    if (track.tracked_)
     {
       // corner 0 <--> p0 p1
-      tracks_[i].box_.bPoint.p0.x = tracks_[i].box_corners_[0].new_x_rel;
-      tracks_[i].box_.bPoint.p0.y = tracks_[i].box_corners_[0].new_y_rel;
+      track.box_.bPoint.p0.x = track.box_corners_[0].new_x_rel;
+      track.box_.bPoint.p0.y = track.box_corners_[0].new_y_rel;
 
-      tracks_[i].box_.bPoint.p1.x = tracks_[i].box_corners_[0].new_x_rel;
-      tracks_[i].box_.bPoint.p1.y = tracks_[i].box_corners_[0].new_y_rel;
+      track.box_.bPoint.p1.x = track.box_corners_[0].new_x_rel;
+      track.box_.bPoint.p1.y = track.box_corners_[0].new_y_rel;
 
       // corner 1 <--> p2 p3
-      tracks_[i].box_.bPoint.p2.x = tracks_[i].box_corners_[1].new_x_rel;
-      tracks_[i].box_.bPoint.p2.y = tracks_[i].box_corners_[1].new_y_rel;
+      track.box_.bPoint.p2.x = track.box_corners_[1].new_x_rel;
+      track.box_.bPoint.p2.y = track.box_corners_[1].new_y_rel;
 
-      tracks_[i].box_.bPoint.p3.x = tracks_[i].box_corners_[1].new_x_rel;
-      tracks_[i].box_.bPoint.p3.y = tracks_[i].box_corners_[1].new_y_rel;
+      track.box_.bPoint.p3.x = track.box_corners_[1].new_x_rel;
+      track.box_.bPoint.p3.y = track.box_corners_[1].new_y_rel;
 
       // corner 3 <--> p4 p5
-      tracks_[i].box_.bPoint.p4.x = tracks_[i].box_corners_[3].new_x_rel;
-      tracks_[i].box_.bPoint.p4.y = tracks_[i].box_corners_[3].new_y_rel;
+      track.box_.bPoint.p4.x = track.box_corners_[3].new_x_rel;
+      track.box_.bPoint.p4.y = track.box_corners_[3].new_y_rel;
 
-      tracks_[i].box_.bPoint.p5.x = tracks_[i].box_corners_[3].new_x_rel;
-      tracks_[i].box_.bPoint.p5.y = tracks_[i].box_corners_[3].new_y_rel;
+      track.box_.bPoint.p5.x = track.box_corners_[3].new_x_rel;
+      track.box_.bPoint.p5.y = track.box_corners_[3].new_y_rel;
 
       // corner 2 <--> p6 p7
-      tracks_[i].box_.bPoint.p6.x = tracks_[i].box_corners_[2].new_x_rel;
-      tracks_[i].box_.bPoint.p6.y = tracks_[i].box_corners_[2].new_y_rel;
+      track.box_.bPoint.p6.x = track.box_corners_[2].new_x_rel;
+      track.box_.bPoint.p6.y = track.box_corners_[2].new_y_rel;
 
-      tracks_[i].box_.bPoint.p7.x = tracks_[i].box_corners_[2].new_x_rel;
-      tracks_[i].box_.bPoint.p7.y = tracks_[i].box_corners_[2].new_y_rel;
+      track.box_.bPoint.p7.x = track.box_corners_[2].new_x_rel;
+      track.box_.bPoint.p7.y = track.box_corners_[2].new_y_rel;
     }
   }
 }

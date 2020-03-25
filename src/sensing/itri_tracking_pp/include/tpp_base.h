@@ -1,19 +1,19 @@
 #ifndef __TPP_BASE_H__
 #define __TPP_BASE_H__
 
-#include <stdio.h>   // puts
+#include <cstdio>    // puts
 #include <iostream>  // std::cout
 #include <vector>
 #include <iomanip>
 #include <chrono>     // std::chrono
 #include <thread>     // this_thread
 #include <cmath>      // std::tan2
-#include <math.h>     // round
+#include <cmath>      // round
 #include <stdexcept>  // std::runtime_error
 
 #include <mutex>
 #include <condition_variable>
-#include <signal.h>
+#include <csignal>
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -47,7 +47,6 @@
 #endif
 
 #include <std_msgs/ColorRGBA.h>
-#include <sensor_msgs/Imu.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -141,13 +140,11 @@ struct PoseRPY32
 struct MarkerConfig
 {
   ros::Publisher pub_bbox;
-  ros::Publisher pub_polygon;
   ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
   ros::Publisher pub_speed;
-  ros::Publisher pub_delay;
 
   double lifetime_sec = 0.1;
   double module_pubtime_sec = 0.;

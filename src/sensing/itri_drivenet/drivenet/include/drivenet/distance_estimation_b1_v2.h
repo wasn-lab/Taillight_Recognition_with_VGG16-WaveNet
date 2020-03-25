@@ -23,12 +23,11 @@ private:
   float Lidar_offset_x = 0;
   float Lidar_offset_y = 0;
   float Lidar_offset_z = -3;
-  int carId = 1;
-  const int img_h = 1208;
-  const int img_w = 1920;
+  const int img_h = camera::raw_image_height;
+  const int img_w = camera::raw_image_width;
 
-  const int img_al_h = 384;
-  const int img_al_w = 608;
+  const int img_al_h = camera::image_height;
+  const int img_al_w = camera::image_width;
 
   int de_mode = 0;
 
@@ -47,9 +46,10 @@ private:
   float RatioDefine(camera::id cam_id, int cls);
 
 public:
+  DistanceEstimation();
   ~DistanceEstimation();
 
-  void init(int carId, std::string pkgPath, int mode);
+  void init(std::string pkgPath, int mode);
   msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, camera::id cam_id);
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);

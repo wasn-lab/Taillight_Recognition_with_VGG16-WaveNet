@@ -11,11 +11,17 @@ namespace DriveNet
 class Color
 {
 public:
-  static cv::Scalar g_color_blue;
-  static cv::Scalar g_color_red;
-  static cv::Scalar g_color_green;
-  static cv::Scalar g_color_yellow;
-  static cv::Scalar g_color_gray;
+  static cv::Scalar blue_;
+  static cv::Scalar red_;
+  static cv::Scalar green_;
+  static cv::Scalar yellow_;
+  static cv::Scalar gray_;
+};
+
+struct PixelPosition
+{
+  int u;
+  int v;
 };
 
 void loadCalibrationMatrix(const std::string& yml_filename, cv::Mat& cameraMatrix, cv::Mat& distCoeffs);
