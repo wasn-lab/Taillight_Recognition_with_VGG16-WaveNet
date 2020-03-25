@@ -49,6 +49,7 @@ class Node:
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.t_clock = rospy.Time()
 
+        # Publishers
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
 
