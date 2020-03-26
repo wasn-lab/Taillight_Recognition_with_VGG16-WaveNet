@@ -68,7 +68,7 @@ bool AlignmentOff::spatial_point_is_valid(const int row, const int col) const
   }
 }
 
-vector<int> AlignmentOff::run(float x, float y, float z)
+std::vector<int> AlignmentOff::run(float x, float y, float z)
 {
   return pj.project(x, y, z);
 }
@@ -102,7 +102,29 @@ bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
 void AlignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
+  cv::Mat tmpa(imgH, imgW, CV_8UC3);
+  // std::vector<cv::Point> dis_esti_table;
+
   bool done = false;
+
+  // for(int i = 0; i < 50; i++)
+  // {
+  //   for(int j = -10; j < 11; j++)
+  //   {
+  //     float tmpz = ((float)i-79)/30;
+  //     out = run((float)i, (float)j, tmpz);
+
+  //     if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
+  //     {
+  //       std::cout << "2D: x = " << out[0] << ". y = " << out[1] ;
+  //       std::cout << ", 3D: x = " << i << ". y = " << j << ". z = " << tmpz << std::endl ;
+        
+  //       spatial_points_[out[1]][out[0]].x = i;
+  //       spatial_points_[out[1]][out[0]].y = j;
+  //       spatial_points_[out[1]][out[0]].z = 0.0;
+  //     }
+  //   }
+  // }
 
   for (int row = 0; row < imgH; row++)
   {
@@ -111,11 +133,19 @@ void AlignmentOff::approx_nearest_points_if_necessary()
       if (!spatial_point_is_valid(row, col))
       {
         unset_points.emplace_back(cv::Point(row, col));
+        tmpa.at<cv::Vec3b>(row, col)[0] = 255;
+        tmpa.at<cv::Vec3b>(row, col)[1] = 255;
+        tmpa.at<cv::Vec3b>(row, col)[2] = 255;
       }
     }
   }
-  std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
 
+  cv::namedWindow("image", 1);
+	cv::imshow("image", tmpa);
+	cv::waitKey();
+
+  std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
+  
   while (!done)
   {
     int num_approx = 0;
@@ -160,6 +190,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     }
   }
   std::cout << " unset_points: " << unset_points.size();
+  
 }
 
 void AlignmentOff::dump_distance_in_json() const
@@ -209,8 +240,10 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
   for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
-    if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
-        LidAll_cloudPtr->points[i].x > 0)
+
+    //if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
+      //  LidAll_cloudPtr->points[i].x > 0)
+    if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
     {
       g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
       if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
