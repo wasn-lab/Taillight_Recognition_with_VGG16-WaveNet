@@ -87,7 +87,7 @@ void read_txt(std::string fpname, double (&SEG_ID)[size_readtmp],double (&SEG_X)
       // std::cout << read_index << ":" << SEG_L[read_index] <<std::endl;
       read_index += 1;
     }
-std::cout << "------------" << std::endl;
+  // std::cout << "------------" << std::endl;
 }
 
 void Ini_obs_bytxt()

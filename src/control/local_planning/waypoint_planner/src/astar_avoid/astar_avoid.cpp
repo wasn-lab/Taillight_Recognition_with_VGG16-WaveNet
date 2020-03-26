@@ -206,7 +206,7 @@ void AstarAvoid::run()
     if (!enable_avoidance_)
     {
       rate_->sleep();
-      ROS_INFO("Keep Base Waypoints !");
+      ROS_INFO("Keep Base Waypoints");
       continue;
     }
     
@@ -323,6 +323,35 @@ void AstarAvoid::run()
 bool AstarAvoid::checkInitialized()
 {
   bool initialized = false;
+
+  if (!current_pose_initialized_)
+  {
+    ROS_WARN("Current pose initial fail !");
+  }
+  if (!closest_waypoint_initialized_)
+  {
+    ROS_WARN("Closest waypoint initial fail !");
+  }
+  if (!base_waypoints_initialized_)
+  {
+    ROS_WARN("Base waypoints initial fail !");
+  }
+  if (!avoid_state_sub_initialized_)
+  {
+    ROS_WARN("Avoid state sub initial fail !");
+  }
+  if (closest_waypoint_index_ < 0)
+  {
+    ROS_WARN("Can't find closest waypoint !");
+  }
+  if (!current_velocity_initialized_)
+  {
+    ROS_WARN("Current velocity initial fail !");
+  }
+  if (!costmap_initialized_)
+  {
+    ROS_WARN("Costmap initial fail !");
+  }
 
   // check for relay mode
   initialized = (current_pose_initialized_ && closest_waypoint_initialized_ && base_waypoints_initialized_ && avoid_state_sub_initialized_ &&
