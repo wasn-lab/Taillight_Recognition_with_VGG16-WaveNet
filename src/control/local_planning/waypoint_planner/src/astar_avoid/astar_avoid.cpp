@@ -230,23 +230,23 @@ void AstarAvoid::run()
         state_ = AstarAvoid::STATE::PLANNING;
       }
     }
-    else if (state_ == AstarAvoid::STATE::STOPPING)
-    {
-      avoiding_path_flag.data = 3;
-      ROS_INFO("STOPPING");
-      bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
+    // else if (state_ == AstarAvoid::STATE::STOPPING)
+    // {
+    //   avoiding_path_flag.data = 3;
+    //   ROS_INFO("STOPPING");
+    //   bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
 
-      if (!found_obstacle)
-      {
-        ROS_INFO("STOPPING -> RELAYING, Obstacle disappers");
-        state_ = AstarAvoid::STATE::RELAYING;
-      }
-      else if (replan && avoid_velocity)
-      {
-        ROS_INFO("STOPPING -> PLANNING, Start A* planning");
-        state_ = AstarAvoid::STATE::PLANNING;
-      }
-    }
+    //   if (!found_obstacle)
+    //   {
+    //     ROS_INFO("STOPPING -> RELAYING, Obstacle disappers");
+    //     state_ = AstarAvoid::STATE::RELAYING;
+    //   }
+    //   else if (replan && avoid_velocity)
+    //   {
+    //     ROS_INFO("STOPPING -> PLANNING, Start A* planning");
+    //     state_ = AstarAvoid::STATE::PLANNING;
+    //   }
+    // }
     else if (state_ == AstarAvoid::STATE::PLANNING)
     {
       avoid_waypoints_ = base_waypoints_;
@@ -254,7 +254,13 @@ void AstarAvoid::run()
       ROS_INFO("PLANNING");
       start_plan_time = ros::WallTime::now();
       std::cout << "planning inginging" << std::endl;
-      if (planAvoidWaypoints(end_of_avoid_index))
+      if (!found_obstacle)
+      {
+        reach_goal_flag.data = 1;
+        ROS_INFO("PLANNING -> RELAYING, Obstacle disappers");
+        state_ = AstarAvoid::STATE::RELAYING;
+      }
+      else if (planAvoidWaypoints(end_of_avoid_index))
       {
         ROS_INFO("PLANNING -> AVOIDING, Found path");
         state_ = AstarAvoid::STATE::AVOIDING;
@@ -299,6 +305,7 @@ void AstarAvoid::run()
         bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
         if (replan)
         {
+          reach_goal_flag.data = 1;
           ROS_INFO("AVOIDING -> RELAYING, Obstacle disappers");
           state_ = AstarAvoid::STATE::RELAYING;
         }
