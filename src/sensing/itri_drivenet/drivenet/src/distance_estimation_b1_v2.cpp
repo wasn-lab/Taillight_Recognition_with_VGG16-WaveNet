@@ -693,7 +693,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   {
     std::vector<int> points_src = { class_id, x1, x2, y2 };
     std::vector<int> points_dst = { class_id, x1, x2, y2 };
-    BoxShrink(cam_id, points_src, points_dst);
+    //BoxShrink(cam_id, points_src, points_dst);
     x1 = points_dst[1];
     x2 = points_dst[2];
   }
