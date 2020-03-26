@@ -68,7 +68,7 @@ bool AlignmentOff::spatial_point_is_valid(const int row, const int col) const
   }
 }
 
-vector<int> AlignmentOff::run(float x, float y, float z)
+std::vector<int> AlignmentOff::run(float x, float y, float z)
 {
   return pj.project(x, y, z);
 }
@@ -102,7 +102,7 @@ bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
 void AlignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
-  // cv::Mat tmpa(imgH, imgW, CV_8UC3);
+  cv::Mat tmpa(imgH, imgW, CV_8UC3);
   // std::vector<cv::Point> dis_esti_table;
 
   bool done = false;
@@ -133,16 +133,16 @@ void AlignmentOff::approx_nearest_points_if_necessary()
       if (!spatial_point_is_valid(row, col))
       {
         unset_points.emplace_back(cv::Point(row, col));
-        // tmpa.at<cv::Vec3b>(row, col)[0] = 255;
-        // tmpa.at<cv::Vec3b>(row, col)[1] = 255;
-        // tmpa.at<cv::Vec3b>(row, col)[2] = 255;
+        tmpa.at<cv::Vec3b>(row, col)[0] = 255;
+        tmpa.at<cv::Vec3b>(row, col)[1] = 255;
+        tmpa.at<cv::Vec3b>(row, col)[2] = 255;
       }
     }
   }
 
-  // cv::namedWindow("image", 1);
-	// cv::imshow("image", tmpa);
-	// cv::waitKey();
+  cv::namedWindow("image", 1);
+	cv::imshow("image", tmpa);
+	cv::waitKey();
 
   std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
   
@@ -240,8 +240,10 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
   for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
-    if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
-        LidAll_cloudPtr->points[i].x > 0)
+
+    //if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
+      //  LidAll_cloudPtr->points[i].x > 0)
+    if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
     {
       g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
       if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
