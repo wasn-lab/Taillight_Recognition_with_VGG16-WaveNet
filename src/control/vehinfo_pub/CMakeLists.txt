@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   roslib
   msgs
+  car_model
 )
 ## Generate messages in the 'msg' folder
 #add_message_files(

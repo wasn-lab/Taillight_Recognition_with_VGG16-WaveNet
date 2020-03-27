@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   msgs
+  car_model
 )
 
 ################################################

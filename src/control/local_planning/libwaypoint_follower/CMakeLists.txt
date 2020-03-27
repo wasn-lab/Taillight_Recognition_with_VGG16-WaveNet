@@ -5,11 +5,12 @@ set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        std_msgs
-        geometry_msgs
-        autoware_msgs
-        rosunit
+  roscpp
+  std_msgs
+  geometry_msgs
+  autoware_msgs
+  rosunit
+  car_model
 )
 
 #find_package(Eigen3 QUIET)

@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   geometry_msgs
   autoware_msgs
+  car_model
 )
 
 catkin_package(

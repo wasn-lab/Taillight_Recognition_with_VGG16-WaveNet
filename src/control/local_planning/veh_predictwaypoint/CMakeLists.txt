@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   autoware_msgs
   roslib
+  car_model
 )
 
 ## System dependencies are found with CMake's conventions
