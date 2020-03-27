@@ -26,6 +26,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>msgs</exec_depend>
+  <run_depend>car_model</run_depend>
 
   <export>
   

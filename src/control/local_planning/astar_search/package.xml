@@ -28,6 +28,7 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>autoware_msgs</run_depend>
+  <run_depend>car_model</run_depend>
 
   <export>
   </export>
