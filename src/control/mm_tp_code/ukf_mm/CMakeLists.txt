@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ukf_mm)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -16,7 +12,12 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   msgs
   nav_msgs
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -111,7 +112,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lidarxyz2lla
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime msgs nav_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime msgs nav_msgs car_model
 #  DEPENDS system_lib
 )
 
