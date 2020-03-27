@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_maker)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
-find_package(autoware_msgs REQUIRED)
-
-#find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         #gnss
         roscpp
@@ -19,8 +12,14 @@ find_package(catkin REQUIRED COMPONENTS
         #lane_planner
         autoware_msgs
         #vector_map
+        car_model
         )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
+
+find_package(autoware_msgs REQUIRED)
 find_package(Boost REQUIRED)
 
 catkin_package(
@@ -34,6 +33,7 @@ catkin_package(
         #vector_map
         #lane_planner
         autoware_msgs
+        car_model
 )
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")

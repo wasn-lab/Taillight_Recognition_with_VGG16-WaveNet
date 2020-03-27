@@ -32,6 +32,7 @@
   <run_depend>astar_search</run_depend>
   <run_depend>autoware_health_checker</run_depend>
   <run_depend>msgs</run_depend>
+  <run_depend>car_model</run_depend>
 
   <export>
 
