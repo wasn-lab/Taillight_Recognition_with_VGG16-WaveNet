@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(veh_predictwaypoint)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
 include(CompilerFlags)
 
 ## Find catkin macros and libraries

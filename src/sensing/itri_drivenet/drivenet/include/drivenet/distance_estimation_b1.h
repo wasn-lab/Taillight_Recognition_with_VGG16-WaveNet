@@ -55,6 +55,7 @@ private:
   msgs::PointXYZ GetPointDist(int x, int y, camera::id cam_id);
   int BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
   float RatioDefine(camera::id cam_id, int cls);
+  DisEstiParams CreateFromJson();
 
 public:
   ~DistanceEstimation();

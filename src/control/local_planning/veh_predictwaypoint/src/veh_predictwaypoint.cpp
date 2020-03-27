@@ -6,7 +6,7 @@
 #include <ros/package.h>
 #include <fstream>
 #include <nav_msgs/Path.h>
-#include <math.h>
+#include <cmath>
 #include "msgs/VehInfo.h"
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PolygonStamped.h>

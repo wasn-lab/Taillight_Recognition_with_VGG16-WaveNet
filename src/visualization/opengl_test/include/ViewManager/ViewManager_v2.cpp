@@ -137,9 +137,15 @@ void ViewManager::keyEvents(unsigned char key) {
 		//向前移動。
 	case 'w':
 	case 'W':
-		if (ortho) orthoScale += 0.1;
-		else Translate(vec3(0, 0, 0.02));
-		break;
+    if (ortho)
+    {
+      orthoScale += 0.1;
+    }
+    else
+    {
+      Translate(vec3(0, 0, 0.02));
+    }
+    break;
 
 		//向左移動。
 	case 'a':
@@ -150,9 +156,15 @@ void ViewManager::keyEvents(unsigned char key) {
 		//向後移動。
 	case 's':
 	case 'S':
-		if (ortho) orthoScale -= 0.1;
-		else Translate(vec3(0, 0, -0.02));
-		break;
+    if (ortho)
+    {
+      orthoScale -= 0.1;
+    }
+    else
+    {
+      Translate(vec3(0, 0, -0.02));
+    }
+    break;
 
 		//向右移動。
 	case 'd':

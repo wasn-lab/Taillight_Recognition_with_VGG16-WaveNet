@@ -30,4 +30,5 @@ done
 catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=${iwyu_path} \
+    -DCAR_MODEL=OMNIBUS \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ${EXTRA_CATKIN_ARGS}

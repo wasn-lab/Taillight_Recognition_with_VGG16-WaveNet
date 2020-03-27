@@ -1,0 +1,17 @@
+<launch>
+    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_a.launch"/>
+    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_b.launch"/>
+    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_c.launch"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" required="true" args="$(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag --delay 5">
+    </node>
+
+<node pkg="itri_file_saver" type="video_saver" name="front_bottom_60_saver" output="screen" args="-image_topic /cam/front_bottom_60/detect_image -output_filename $(env output_dir)/front_bottom_60.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="front_top_far_30_saver" output="screen" args="-image_topic /cam/front_top_far_30/detect_image -output_filename $(env output_dir)/front_top_far_30.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="front_top_close_120_saver" output="screen" args="-image_topic /cam/front_top_close_120/detect_image -output_filename $(env output_dir)/front_top_close_120.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="right_front_60_saver" output="screen" args="-image_topic /cam/right_front_60/detect_image -output_filename $(env output_dir)/right_front_60.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="right_back_60_saver" output="screen" args="-image_topic /cam/right_back_60/detect_image -output_filename $(env output_dir)/right_back_60.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="left_front_60_saver" output="screen" args="-image_topic /cam/left_front_60/detect_image -output_filename $(env output_dir)/left_front_60.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="left_back_60_saver" output="screen" args="-image_topic /cam/left_back_60/detect_image -output_filename $(env output_dir)/left_back_60.avi"></node>
+<node pkg="itri_file_saver" type="video_saver" name="back_top_120_saver" output="screen" args="-image_topic /cam/back_top_120/detect_image -output_filename $(env output_dir)/back_top_120.avi"></node>
+</launch>

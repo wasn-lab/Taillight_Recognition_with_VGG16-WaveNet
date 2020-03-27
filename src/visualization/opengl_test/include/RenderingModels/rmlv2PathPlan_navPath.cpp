@@ -1,7 +1,7 @@
 #include "rmlv2PathPlan_navPath.h"
 
 
-#include <math.h>       // ceil
+#include <cmath>       // ceil
 
 
 rmlv2PathPlan_navPath::rmlv2PathPlan_navPath(

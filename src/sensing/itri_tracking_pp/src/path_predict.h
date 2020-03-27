@@ -59,13 +59,16 @@ private:
   unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
-  const std::size_t num_pp_input_min_ = 6;
+  const std::size_t num_pp_input_min_ = 10;
   const std::size_t num_pp_input_max_ = 20;
 
   static constexpr float pp_allow_x_min_m = -10.f;
   static constexpr float pp_allow_x_max_m = 100.f;
-  static constexpr float pp_allow_y_min_m = -30.f;
-  static constexpr float pp_allow_y_max_m = 30.f;
+  static constexpr float pp_allow_y_min_m = -10.f;
+  static constexpr float pp_allow_y_max_m = 10.f;
+
+  static constexpr float box_length_thr_xy = 0.7f;
+  static constexpr float box_length_thr_z = 0.5f;
 
   float ego_x_abs_ = 0.f;
   float ego_y_abs_ = 0.f;

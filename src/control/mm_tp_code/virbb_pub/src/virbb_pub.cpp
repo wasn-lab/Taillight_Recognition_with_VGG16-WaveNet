@@ -7,13 +7,13 @@
 #include "virbb_pub/virbb_pub_obj_trigger.h"
 #include <sstream>
 #include <ros/package.h>
-#include <string.h>
+#include <cstring>
 #include <fstream>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <tf/tf.h>
-#include <math.h>
+#include <cmath>
 #include <geometry_msgs/PolygonStamped.h>
 #include "std_msgs/Header.h"
 #include <vector>
