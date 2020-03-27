@@ -30,4 +30,5 @@
     <run_depend>vector_map</run_depend>
     <run_depend>lane_planner</run_depend>
     <run_depend>autoware_msgs</run_depend>
+    <run_depend>car_model</run_depend>
 </package>

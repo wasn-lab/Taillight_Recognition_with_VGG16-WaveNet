@@ -20,6 +20,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>msgs</run_depend>
   <run_depend>message_generation</run_depend>
+  <run_depend>car_model</run_depend>
 
   <export>
 

@@ -51,6 +51,7 @@
   <run_depend>rospy</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>msgs</run_depend>
+  <run_depend>car_model</run_depend>
 
 <!-- </export> -->
 </package>
