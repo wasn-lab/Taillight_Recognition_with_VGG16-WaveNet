@@ -1,5 +1,4 @@
-#ifndef __IMAGE_SAVER_NODE_IMPL_H__
-#define __IMAGE_SAVER_NODE_IMPL_H__
+#pragma once
 
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
@@ -24,5 +23,3 @@ public:
   ~ImageSaverNodeImpl();
   void run();
 };
-
-#endif  // __IMAGE_SAVER_NODE_IMPL_H__

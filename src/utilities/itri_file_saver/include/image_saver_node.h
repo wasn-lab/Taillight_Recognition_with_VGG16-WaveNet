@@ -1,5 +1,4 @@
-#ifndef __IMAGE_SAVER_NODE_H__
-#define __IMAGE_SAVER_NODE_H__
+#pragma once
 
 #include <memory>
 
@@ -15,5 +14,3 @@ public:
   ~ImageSaverNode();
   void run();
 };
-
-#endif  // __IMAGE_SAVER_NODE_H__
