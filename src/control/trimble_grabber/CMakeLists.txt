@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   roslib
   tf
+  car_model
 )
 
 #generate_messages(

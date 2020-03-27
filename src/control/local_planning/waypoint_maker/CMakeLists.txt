@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
         #lane_planner
         autoware_msgs
         #vector_map
+        car_model
         )
 
 find_package(Boost REQUIRED)

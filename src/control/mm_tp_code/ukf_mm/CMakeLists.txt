@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   msgs
   nav_msgs
+  car_model
 )
 
 ## System dependencies are found with CMake's conventions

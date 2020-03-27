@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         tf
         tf2
+        car_model
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")

@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   #vector_map
   astar_search
   msgs
+  car_model
 )
 
 catkin_package(
