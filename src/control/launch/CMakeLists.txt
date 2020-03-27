@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(control)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -11,6 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
 
   message_generation
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

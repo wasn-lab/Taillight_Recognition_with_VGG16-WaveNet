@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_planner)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -18,6 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 catkin_package(
   CATKIN_DEPENDS

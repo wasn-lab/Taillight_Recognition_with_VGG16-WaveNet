@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(occ_grid_fusion)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -21,6 +17,10 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_ros
   car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libwaypoint_follower)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -12,6 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   rosunit
   car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 #find_package(Eigen3 QUIET)
 

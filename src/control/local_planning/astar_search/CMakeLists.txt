@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(astar_search)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf
@@ -15,6 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 catkin_package(
   INCLUDE_DIRS include

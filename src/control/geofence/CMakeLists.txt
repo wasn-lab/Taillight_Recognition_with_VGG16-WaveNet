@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(geofence)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
-find_package(PCL)
 
 
 ## Find catkin macros and libraries
@@ -20,6 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
   car_model
 )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
+
+find_package(PCL)
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
