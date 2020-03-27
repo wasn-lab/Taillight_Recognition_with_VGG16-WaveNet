@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(amathutils_lib) # autoware math utility
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
 find_package(autoware_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -12,7 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         tf
         tf2
+        car_model
         )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -22,6 +23,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp autoware_msgs
         tf
         tf2
+        car_model
 )
 
 include_directories(amathutils_lib

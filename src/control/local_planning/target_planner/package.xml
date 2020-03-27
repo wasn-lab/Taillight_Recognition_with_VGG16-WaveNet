@@ -56,9 +56,10 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
-<run_depend>tf2</run_depend>
-<run_depend>tf2_ros</run_depend>
-<run_depend>autoware_msgs</run_depend>
+  <run_depend>tf2</run_depend>
+  <run_depend>tf2_ros</run_depend>
+  <run_depend>autoware_msgs</run_depend>
+  <run_depend>car_model</run_depend>
 
 <!-- </export> -->
 </package>

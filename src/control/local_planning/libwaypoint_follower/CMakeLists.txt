@@ -1,16 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libwaypoint_follower)
 
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  std_msgs
+  geometry_msgs
+  autoware_msgs
+  rosunit
+  car_model
+)
+
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
-
-find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        std_msgs
-        geometry_msgs
-        autoware_msgs
-        rosunit
-)
 
 #find_package(Eigen3 QUIET)
 
@@ -22,12 +23,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        INCLUDE_DIRS include
-        LIBRARIES libwaypoint_follower
-        CATKIN_DEPENDS
-        std_msgs
-        geometry_msgs
-        autoware_msgs
+  INCLUDE_DIRS include
+  LIBRARIES libwaypoint_follower
+  CATKIN_DEPENDS std_msgs geometry_msgs autoware_msgs car_model
 )
 
 ###########
