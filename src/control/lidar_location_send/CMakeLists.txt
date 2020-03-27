@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_location_send)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -18,6 +14,11 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
+
 ## Generate messages in the 'msg' folder
 add_message_files(DIRECTORY msg
   FILES

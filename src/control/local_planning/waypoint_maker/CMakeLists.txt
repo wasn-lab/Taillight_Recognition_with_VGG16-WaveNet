@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_maker)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CarModel)
-include(CompilerFlags)
-
-find_package(autoware_msgs REQUIRED)
-
-#find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         #gnss
         roscpp
@@ -22,6 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
         car_model
         )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
+
+find_package(autoware_msgs REQUIRED)
 find_package(Boost REQUIRED)
 
 catkin_package(

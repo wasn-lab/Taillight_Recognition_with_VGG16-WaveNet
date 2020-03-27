@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_msgs)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS
         message_generation
         std_msgs
@@ -12,6 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
         jsk_recognition_msgs
         car_model
         )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 
 ## Generate messages in the 'msg' folder
