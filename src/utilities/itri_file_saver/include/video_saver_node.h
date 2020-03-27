@@ -1,6 +1,4 @@
-#ifndef __VIDEO_SAVER_NODE_H__
-#define __VIDEO_SAVER_NODE_H__
-
+#pragma once
 #include <memory>
 
 class VideoSaverNodeImpl;
@@ -15,5 +13,3 @@ public:
   ~VideoSaverNode();
   void run();
 };
-
-#endif  // __VIDEO_SAVER_NODE_H__

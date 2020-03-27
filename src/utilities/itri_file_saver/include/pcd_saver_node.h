@@ -1,5 +1,4 @@
-#ifndef __PCD_SAVER_NODE_H__
-#define __PCD_SAVER_NODE_H__
+#pragma once
 
 #include <memory>
 
@@ -16,4 +15,3 @@ public:
   void run();
 };
 
-#endif  // __PCD_SAVER_NODE_H__
