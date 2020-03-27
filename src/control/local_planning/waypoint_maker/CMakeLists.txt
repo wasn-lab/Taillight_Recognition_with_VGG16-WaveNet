@@ -35,6 +35,7 @@ catkin_package(
         #vector_map
         #lane_planner
         autoware_msgs
+        car_model
 )
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")

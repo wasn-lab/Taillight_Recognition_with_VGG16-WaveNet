@@ -91,4 +91,5 @@ catkin_package(
         geometry_msgs
         sensor_msgs
         jsk_recognition_msgs
+        car_model
 )

@@ -29,6 +29,7 @@ catkin_package(
   #vector_map
   msgs
   astar_search
+  car_model
 )
 
 include_directories(

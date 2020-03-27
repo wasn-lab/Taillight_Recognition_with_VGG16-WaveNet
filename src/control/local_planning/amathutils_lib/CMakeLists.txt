@@ -23,6 +23,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp autoware_msgs
         tf
         tf2
+        car_model
 )
 
 include_directories(amathutils_lib

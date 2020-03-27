@@ -27,6 +27,7 @@ catkin_package(
   sensor_msgs
   geometry_msgs
   autoware_msgs
+  car_model
 )
 
 include_directories(

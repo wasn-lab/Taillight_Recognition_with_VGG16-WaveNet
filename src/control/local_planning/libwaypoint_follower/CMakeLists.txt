@@ -23,12 +23,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        INCLUDE_DIRS include
-        LIBRARIES libwaypoint_follower
-        CATKIN_DEPENDS
-        std_msgs
-        geometry_msgs
-        autoware_msgs
+  INCLUDE_DIRS include
+  LIBRARIES libwaypoint_follower
+  CATKIN_DEPENDS std_msgs geometry_msgs autoware_msgs car_model
 )
 
 ###########
