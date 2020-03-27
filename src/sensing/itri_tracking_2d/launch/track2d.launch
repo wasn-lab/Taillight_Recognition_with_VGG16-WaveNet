@@ -1,0 +1,19 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- Node parameters -->
+
+  <!-- Input source -->
+  <!-- 1: /CameraDetection/polygon -->
+  <!-- others: /CamObjFrontCenter -->
+  <arg name="input_source" default="0" />
+
+  <!-- Output FPS -->
+  <arg name="output_fps" default="10.0" />
+
+  <!-- Launch node -->
+  <node pkg="itri_tracking_2d" type="itri_tracking_2d" name="itri_tracking_2d" cwd="node" output="screen">
+    <param name="input_source" value="$(arg input_source)" />
+    <param name="output_fps" value="$(arg output_fps)" />
+  </node>
+</launch>

@@ -6,7 +6,7 @@
 #define __CAMERA_PARAMS_HINO_H__
 #include "car_model.h"
 
-#ifdef CAR_MODEL_IS_HINO
+#if CAR_MODEL_IS_HINO
 #include <cmath>
 #include <string>
 

@@ -133,22 +133,28 @@ bool ROS_INTERFACE::load_topics(const std::vector<MSG::T_PARAMS> &topic_param_li
 
 // Really start the ROS thread
 bool ROS_INTERFACE::start(){
-    if (_is_started) return false; // We don't restart it again (which will result in multiple node, actually)
-    // Start the ROS thread, really starting the ROS
-    _thread_list.push_back( std::thread(&ROS_INTERFACE::_ROS_worker, this) );
-    // _is_started = true;
-    TIME_STAMP::Time _sleep_duration(0.2);
-    while(!_is_started){
-        // std::this_thread::sleep_for( std::chrono::milliseconds(200) );
-        _sleep_duration.sleep();
+  if (_is_started)
+  {
+    return false;  // We don't restart it again (which will result in multiple node, actually)
+  }
+  // Start the ROS thread, really starting the ROS
+  _thread_list.push_back(std::thread(&ROS_INTERFACE::_ROS_worker, this));
+  // _is_started = true;
+  TIME_STAMP::Time _sleep_duration(0.2);
+  while (!_is_started)
+  {
+    // std::this_thread::sleep_for( std::chrono::milliseconds(200) );
+    _sleep_duration.sleep();
     }
     return true;
 }
 bool ROS_INTERFACE::is_running(){
-    if (!_is_started)
-        return false;
-    // else
-    return ros::ok();
+  if (!_is_started)
+  {
+    return false;
+  }
+  // else
+  return ros::ok();
 }
 
 // Private methods
@@ -1122,8 +1128,10 @@ std::string ROS_INTERFACE::_addCompressedToTopicName(std::string name_in){
     // Note: we assume that the end of topic name does not contain white-space trail.
     if (found == std::string::npos || found != (name_in.size() - key.size()) ){
         // No "compressed" in topic name
-        if ( name_in.back() != '/' )
-            name_in += "/";
+        if (name_in.back() != '/')
+        {
+          name_in += "/";
+        }
         name_in += "compressed";
         // test
         std::cout << "Fixed topic name (+compressed): [" << name_in << "]\n";

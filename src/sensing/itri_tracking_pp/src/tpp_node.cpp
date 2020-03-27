@@ -141,6 +141,12 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
+    for (auto& obj : KTs_.objs_)
+    {
+      obj.absSpeed = 0.f;
+      obj.relSpeed = 0.f;
+    }
+
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
     {
@@ -206,48 +212,42 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
 void TPPNode::subscribe_and_advertise_topics()
 {
-  std::string topic;
+  std::string topic = "PathPredictionOutput";
 
   if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: Lidar" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput/lidar";
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
   else if (in_source_ == 2)
   {
     LOG_INFO << "Input Source: Radar" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput/radar";
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
   else if (in_source_ == 3)
   {
     LOG_INFO << "Input Source: Camera" << std::endl;
     fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput/camera";
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (in_source_ == 4)
   {
     LOG_INFO << "Input Source: Virtual_abs" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else if (in_source_ == 5)
   {
     LOG_INFO << "Input Source: Virtual_rel" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else
   {
     LOG_INFO << "Input Source: Fusion" << std::endl;
     fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
-    topic = "PathPredictionOutput";
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
 
@@ -272,17 +272,11 @@ void TPPNode::subscribe_and_advertise_topics()
     std::string topic1 = topic + "/markers";
     mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
 
-    std::string topic2 = topic + "/polygons";
-    mc_.pub_polygon = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
-
     std::string topic3 = topic + "/id";
     mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
 
     std::string topic4 = topic + "/speed";
     mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
-
-    std::string topic5 = topic + "/delay";
-    mc_.pub_delay = nh_.advertise<visualization_msgs::MarkerArray>(topic5, 2);
 
     if (mc_.show_pp >= 1 && mc_.show_pp <= 3)
     {
@@ -354,9 +348,9 @@ float TPPNode::compute_radar_absolute_velocity(const float radar_speed_rel, cons
 
 void TPPNode::compute_velocity_kalman()
 {
-  for (unsigned i = 0; i < KTs_.tracks_.size(); i++)
+  for (auto& track : KTs_.tracks_)
   {
-    init_velocity(KTs_.tracks_[i].box_.track);
+    init_velocity(track.box_.track);
 
     if (KTs_.get_dt() <= 0)
     {
@@ -365,79 +359,89 @@ void TPPNode::compute_velocity_kalman()
     else
     {
       // absolute velocity in absolute coordinate
-      float abs_vx_abs = 3.6f * KTs_.tracks_[i].kalman_.statePost.at<float>(2);  // km/h
-      float abs_vy_abs = 3.6f * KTs_.tracks_[i].kalman_.statePost.at<float>(3);  // km/h
+      float abs_vx_abs = 3.6f * track.kalman_.statePost.at<float>(2);  // km/h
+      float abs_vy_abs = 3.6f * track.kalman_.statePost.at<float>(3);  // km/h
 
       // compute absolute velocity in relative coordinate (km/h)
-      transform_vector_abs2rel(abs_vx_abs, abs_vy_abs, KTs_.tracks_[i].box_.track.absolute_velocity.x,
-                               KTs_.tracks_[i].box_.track.absolute_velocity.y, ego_heading_);
-      KTs_.tracks_[i].box_.track.absolute_velocity.z = 0.f;  // km/h
+      transform_vector_abs2rel(abs_vx_abs, abs_vy_abs, track.box_.track.absolute_velocity.x,
+                               track.box_.track.absolute_velocity.y, ego_heading_);
+      track.box_.track.absolute_velocity.z = 0.f;  // km/h
 
       // absolute speed
-      KTs_.tracks_[i].box_.track.absolute_velocity.speed = euclidean_distance(
-          KTs_.tracks_[i].box_.track.absolute_velocity.x, KTs_.tracks_[i].box_.track.absolute_velocity.y);
+      track.box_.track.absolute_velocity.speed =
+          euclidean_distance(track.box_.track.absolute_velocity.x, track.box_.track.absolute_velocity.y);
 
       // relative velocity in absolute coordinate
       float rel_vx_abs = abs_vx_abs - ego_velx_abs_kmph_;  // km/h
       float rel_vy_abs = abs_vy_abs - ego_vely_abs_kmph_;  // km/h
 
       // compute relative velocity in relative coordinate (km/h)
-      transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, KTs_.tracks_[i].box_.track.relative_velocity.x,
-                               KTs_.tracks_[i].box_.track.relative_velocity.y, ego_heading_);
-      KTs_.tracks_[i].box_.track.relative_velocity.z = 0.f;  // km/h
+      transform_vector_abs2rel(rel_vx_abs, rel_vy_abs, track.box_.track.relative_velocity.x,
+                               track.box_.track.relative_velocity.y, ego_heading_);
+      track.box_.track.relative_velocity.z = 0.f;  // km/h
 
       // relative speed
-      KTs_.tracks_[i].box_.track.relative_velocity.speed = euclidean_distance(
-          KTs_.tracks_[i].box_.track.relative_velocity.x, KTs_.tracks_[i].box_.track.relative_velocity.y);
+      track.box_.track.relative_velocity.speed =
+          euclidean_distance(track.box_.track.relative_velocity.x, track.box_.track.relative_velocity.y);
     }
 
 #if DEBUG_VELOCITY
-    LOG_INFO << "[Track ID] " << KTs_.tracks_[i].box_.track.id << std::endl;
+    LOG_INFO << "[Track ID] " << track.box_.track.id << std::endl;
 
-    LOG_INFO << "relative_velocity on relative coord = ("               //
-             << KTs_.tracks_[i].box_.track.relative_velocity.x << ", "  //
-             << KTs_.tracks_[i].box_.track.relative_velocity.y << ") "  //
-             << KTs_.tracks_[i].box_.track.relative_velocity.speed << " km/h" << std::endl;
+    LOG_INFO << "relative_velocity on relative coord = ("     //
+             << track.box_.track.relative_velocity.x << ", "  //
+             << track.box_.track.relative_velocity.y << ") "  //
+             << track.box_.track.relative_velocity.speed << " km/h" << std::endl;
 
-    LOG_INFO << "absolute_velocity  on relative coord = ("              //
-             << KTs_.tracks_[i].box_.track.absolute_velocity.x << ", "  //
-             << KTs_.tracks_[i].box_.track.absolute_velocity.y << ") "  //
-             << KTs_.tracks_[i].box_.track.absolute_velocity.speed << " km/h" << std::endl;
+    LOG_INFO << "absolute_velocity  on relative coord = ("    //
+             << track.box_.track.absolute_velocity.x << ", "  //
+             << track.box_.track.absolute_velocity.y << ") "  //
+             << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
 #endif
 
 // DetectedObject.absSpeed
 #if USE_RADAR_ABS_SPEED == 0
-    KTs_.tracks_[i].box_.absSpeed = KTs_.tracks_[i].box_.track.absolute_velocity.speed;  // km/h
+    track.box_.absSpeed = track.box_.track.absolute_velocity.speed;  // km/h
 #else
     MyPoint32 p_abs;
     box_center_.pos.get_point_abs(p_abs);
-    KTs_.tracks_[i].box_.absSpeed = compute_radar_absolute_velocity(KTs_.tracks_[i].box_.relSpeed,  //
-                                                                    p_abs.x, p_abs.y);
+    track.box_.absSpeed = compute_radar_absolute_velocity(track.box_.relSpeed,  //
+                                                          p_abs.x, p_abs.y);
 #endif
+
+    if (std::isnan(track.box_.absSpeed))
+    {
+      track.box_.absSpeed = 0.f;
+    }
 
 // DetectedObject.relSpeed
 #if USE_RADAR_REL_SPEED
-    if (KTs_.tracks_[i].box_.header.frame_id != "RadarFront")
+    if (track.box_.header.frame_id != "RadarFront")
     {
       MyPoint32 p_rel;
-      KTs_.tracks_[i].box_center_.pos.get_point_rel(p_rel);
+      track.box_center_.pos.get_point_rel(p_rel);
       Vector3_32 rel_v_rel;
-      rel_v_rel.x = KTs_.tracks_[i].box_.track.relative_velocity.x;
-      rel_v_rel.y = KTs_.tracks_[i].box_.track.relative_velocity.y;
-      rel_v_rel.z = KTs_.tracks_[i].box_.track.relative_velocity.z;
-      KTs_.tracks_[i].box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
+      rel_v_rel.x = track.box_.track.relative_velocity.x;
+      rel_v_rel.y = track.box_.track.relative_velocity.y;
+      rel_v_rel.z = track.box_.track.relative_velocity.z;
+      track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
     }
 #else
     MyPoint32 p_rel;
-    KTs_.tracks_[i].box_center_.pos.get_point_rel(p_rel);  // m
+    track.box_center_.pos.get_point_rel(p_rel);  // m
 
     Vector3_32 rel_v_rel;
-    rel_v_rel.x = KTs_.tracks_[i].box_.track.relative_velocity.x;  // km/h
-    rel_v_rel.y = KTs_.tracks_[i].box_.track.relative_velocity.y;  // km/h
-    rel_v_rel.z = KTs_.tracks_[i].box_.track.relative_velocity.z;  // km/h
+    rel_v_rel.x = track.box_.track.relative_velocity.x;  // km/h
+    rel_v_rel.y = track.box_.track.relative_velocity.y;  // km/h
+    rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
 
-    KTs_.tracks_[i].box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
+    track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
 #endif
+
+    if (std::isnan(track.box_.relSpeed))
+    {
+      track.box_.relSpeed = 0.f;
+    }
   }
 }
 
@@ -798,27 +802,8 @@ void TPPNode::control_sleep(const double loop_interval)
   loop_begin = ros::Time::now().toSec();
 }
 
-void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
+void TPPNode::get_current_ego_data_main()
 {
-  geometry_msgs::TransformStamped tf_stamped;
-
-  try
-  {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
-  }
-  catch (tf2::TransformException& ex)
-  {
-    ROS_WARN("%s", ex.what());
-  }
-
-  vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
-  vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
-
-  double roll, pitch, yaw;
-  quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
-                    tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
-  vel_.set_ego_heading(yaw);
-
   ego_x_abs_ = vel_.get_ego_x_abs();
   ego_y_abs_ = vel_.get_ego_y_abs();
 
@@ -831,6 +816,49 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
   vel_.ego_velx_vely_kmph_abs();
   ego_velx_abs_kmph_ = vel_.get_ego_velx_kmph_abs();
   ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
+}
+
+void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
+{
+  geometry_msgs::TransformStamped tf_stamped;
+  bool is_warning = false;
+
+  try
+  {
+    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+    try
+    {
+      tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+    }
+    catch (tf2::TransformException& ex)
+    {
+      ROS_WARN("%s", ex.what());
+      is_warning = true;
+    }
+  }
+
+  if (!is_warning)
+  {
+    vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
+    vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
+
+    double roll, pitch, yaw;
+    quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
+                      tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
+    vel_.set_ego_heading(yaw);
+  }
+  else
+  {
+    vel_.set_ego_x_abs(0.f);
+    vel_.set_ego_y_abs(0.f);
+    vel_.set_ego_heading(0.f);
+  }
+
+  get_current_ego_data_main();
 }
 
 void TPPNode::set_ros_params()
@@ -908,10 +936,10 @@ int TPPNode::run()
       tf_buffer.clear();
     }
 
-    get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
-
     if (g_trigger && is_legal_dt_)
     {
+      get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
+
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;
 #endif

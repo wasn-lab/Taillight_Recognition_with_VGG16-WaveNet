@@ -608,7 +608,7 @@ void* run_yolo(void*)
       {
         detObj = pool[i].get();
         vDo.push_back(detObj);
-        if (g_display_flag)
+        if (g_img_result_publish || g_display_flag)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {

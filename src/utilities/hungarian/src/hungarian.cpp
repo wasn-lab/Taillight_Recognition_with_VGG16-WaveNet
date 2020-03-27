@@ -1,7 +1,19 @@
+///////////////////////////////////////////////////////////////////////////////
+// Hungarian.cpp: Implementation file for Class Hungarian.
+//
+// This is a C++ wrapper with slight modification of a hungarian algorithm implementation by Markus Buehren.
+// The original implementation is a few mex-functions for use in MATLAB, found here:
+// http://www.mathworks.com/matlabcentral/fileexchange/6543-functions-for-the-rectangular-assignment-problem
+//
+// Both this code and the orignal code are published under the BSD license.
+// by Cong Ma, 2016
+//
+
+#include <cstdlib>
+#include <cfloat>  // for DBL_MAX
+#include <cmath>   // for fabs()
 #include "hungarian.h"
 
-namespace tpp
-{
 Hungarian::Hungarian()
 {
 }
@@ -34,7 +46,7 @@ double Hungarian::solve(vector<vector<double> >& DistMatrix, vector<int>& Assign
   }
 
   // call solving function
-  assignment_optimal(assignment, &cost, distMatrixIn, nRows, nCols);
+  assignmentOptimal(assignment, &cost, distMatrixIn, nRows, nCols);
 
   Assignment.clear();
   for (unsigned int r = 0; r < nRows; r++)
@@ -50,7 +62,7 @@ double Hungarian::solve(vector<vector<double> >& DistMatrix, vector<int>& Assign
 //********************************************************//
 // Solve optimal solution for assignment problem using Munkres algorithm, also known as Hungarian Algorithm.
 //********************************************************//
-void Hungarian::assignment_optimal(int* assignment, double* cost, double* distMatrixIn, int nOfRows, int nOfColumns)
+void Hungarian::assignmentOptimal(int* assignment, double* cost, double* distMatrixIn, int nOfRows, int nOfColumns)
 {
   double *distMatrix, *distMatrixTemp, *distMatrixEnd, *columnEnd, value;
   bool *coveredColumns, *coveredRows, *starMatrix, *newStarMatrix, *primeMatrix;
@@ -190,7 +202,7 @@ void Hungarian::assignment_optimal(int* assignment, double* cost, double* distMa
          nOfColumns, minDim);
 
   /* compute cost and remove invalid assignments */
-  compute_assignment_cost(assignment, cost, distMatrixIn, nOfRows);
+  computeAssignmentCost(assignment, cost, distMatrixIn, nOfRows);
 
   /* free allocated memory */
   free(distMatrix);
@@ -204,7 +216,7 @@ void Hungarian::assignment_optimal(int* assignment, double* cost, double* distMa
 }
 
 /********************************************************/
-void Hungarian::build_assignment_vector(int* assignment, bool* starMatrix, int nOfRows, int nOfColumns)
+void Hungarian::buildAssignmentVector(int* assignment, bool* starMatrix, int nOfRows, int nOfColumns)
 {
   int row, col;
 
@@ -226,7 +238,7 @@ void Hungarian::build_assignment_vector(int* assignment, bool* starMatrix, int n
 }
 
 /********************************************************/
-void Hungarian::compute_assignment_cost(int* assignment, double* cost, double* distMatrix, int nOfRows)
+void Hungarian::computeAssignmentCost(int* assignment, double* cost, double* distMatrix, int nOfRows)
 {
   int row, col;
 
@@ -286,7 +298,7 @@ void Hungarian::step2b(int* assignment, double* distMatrix, bool* starMatrix, bo
   if (nOfCoveredColumns == minDim)
   {
     /* algorithm finished */
-    build_assignment_vector(assignment, starMatrix, nOfRows, nOfColumns);
+    buildAssignmentVector(assignment, starMatrix, nOfRows, nOfColumns);
   }
   else
   {
@@ -480,4 +492,3 @@ void Hungarian::step5(int* assignment, double* distMatrix, bool* starMatrix, boo
   step3(assignment, distMatrix, starMatrix, newStarMatrix, primeMatrix, coveredColumns, coveredRows, nOfRows,
         nOfColumns, minDim);
 }
-}  // namespace tpp

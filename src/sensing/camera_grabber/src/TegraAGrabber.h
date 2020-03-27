@@ -16,7 +16,7 @@ public:
 
 protected:
   void InitParameters();
-#if CAR_MODEL_IS_B1
+#if CAR_MODEL_IS_B1 || CAR_MODEL_IS_OMNIBUS
   // TODO: fill in the correct camera id.
   const std::vector<int> cam_ids_{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
 #elif CAR_MODEL_IS_B1_V2

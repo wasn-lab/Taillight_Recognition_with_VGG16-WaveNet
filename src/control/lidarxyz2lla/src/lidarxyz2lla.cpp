@@ -7,7 +7,7 @@
 #include "msgs/LidLLA.h"
 #include <sstream>
 #include <ros/package.h>
-#include <string.h>
+#include <cstring>
 #include <fstream>
 #include <tf/tf.h>
 #include <geometry_msgs/PoseStamped.h>

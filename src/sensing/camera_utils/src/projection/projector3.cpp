@@ -1,27 +1,38 @@
 #include "projector3.h"
 #include <opencv2/opencv.hpp>
+#include "car_model.h"
+#include "camera_params.h"
 #include <camera_utils_defs.h>
+#include <string.h>
 
-void Projector3::init(const char* camera_topic_name)
+void Projector3::init(int camera_id)
 {
-  if (strcmp(camera_topic_name, "/cam/F_center") == 0)
+  char* file_name;
+  char* file_path;
+#if CAR_MODEL_IS_B1_V2
+  switch (camera_id)
   {
-    std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + "/test_0225_F_center.yml";
-    readCameraParameters(file_path.c_str());
+    case camera::id::front_bottom_60:
+      file_name = (char*)"/fix_0310_front_bottom_60.yml";
+      file_path = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(file_name) + 1];
+      std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
+      std::strcat(file_path, file_name);
+      readCameraParameters(file_path);
+      break;
+    default:
+      std::cerr << " No match camera id, init failed." << std::endl;
+      break;
   }
-  else
-  {
-    std::cerr << " No match topic name, init failed." << std::endl;
-  }
+#endif
 }
 
-std::vector<int> Projector3::project(double x, double y, double z)
+std::vector<int> Projector3::project(float x, float y, float z)
 {
   std::vector<int> result(2);
   if (!projectionMatrix.empty())
   {
     std::vector<cv::Point3d> object_point;
-    object_point.emplace_back(cv::Point3d(x, y, z));
+    object_point.emplace_back(cv::Point3d((double)x, (double)y, (double)z));
     std::vector<cv::Point2d> image_point;
     cv::projectPoints(object_point, rotarionVec, translationVec, cameraMat, distCoeff, image_point);
     result[0] = image_point[0].x;

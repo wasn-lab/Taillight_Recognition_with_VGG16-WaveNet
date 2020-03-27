@@ -1,9 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 #include <net/if.h>
 #include <sys/types.h>

@@ -2,7 +2,7 @@
 #define __VELOCITY_H__
 
 #include "tpp.h"
-#include <stdio.h>  // puts
+#include <cstdio>  // puts
 #include <iostream>
 #include <cmath>  // sin, cos
 #include "utils.h"
