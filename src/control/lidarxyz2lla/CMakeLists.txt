@@ -110,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lidarxyz2lla
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime msgs car_model
 #  DEPENDS system_lib
 )
 

@@ -36,6 +36,7 @@ catkin_package(CATKIN_DEPENDS
   std_msgs 
   message_runtime 
   msgs
+  car_model
 )
 
 ###########
