@@ -317,8 +317,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
   if (g_cam_ids[cam_order] == camera::id::front_bottom_60)
   {
-    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x1, box.y2);
-    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x2, box.y2);
+    //l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x1, box.y2);
+    //r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x2, box.y2);
+    l_check = 0;
+    r_check = 0;
   }
   else if (g_cam_ids[cam_order] == camera::id::front_top_far_30)
   {
