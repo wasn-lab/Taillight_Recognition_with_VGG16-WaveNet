@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-
+import copy
 import rospy
 from std_msgs.msg import (
     Bool,
@@ -47,6 +47,7 @@ class Node:
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", True)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
+        self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.t_clock = rospy.Time()
 
         # Publishers
@@ -62,6 +63,7 @@ class Node:
         # Flags
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
+        self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
 
 
     def run(self):
@@ -243,6 +245,10 @@ class Node:
             text += " fps = %.1f" % fps
         if not _num_removed_obj is None:
             text += " -%d objs" % _num_removed_obj
+        # Overwrite the frame_id of the text
+        header_txt = copy.deepcopy(header)
+        if self.is_overwrite_txt_frame_id:
+            header_txt.frame_id = self.txt_frame_id
         #
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_delay"), scale=2.0 )
 
