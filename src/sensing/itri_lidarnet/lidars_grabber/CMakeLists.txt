@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   msgs
+  libs
   nodelet
   car_model
 )

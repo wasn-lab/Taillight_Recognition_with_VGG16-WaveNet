@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   #genmsg
   #message_generation
   msgs
+  libs
   nodelet
   car_model
 )
