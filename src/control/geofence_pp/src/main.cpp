@@ -51,7 +51,7 @@ static double current_x, current_y, current_z;
 static Geofence BBox_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop=0;
-static int PP_Distance=100;
+static int PP_Distance=1000;
 ros::Publisher PP_geofence_line;
 ros::Publisher PPCloud_pub;
 
