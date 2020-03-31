@@ -206,7 +206,7 @@ void AstarAvoid::run()
     if (!enable_avoidance_)
     {
       rate_->sleep();
-      ROS_INFO("Keep Base Waypoints !");
+      ROS_INFO("Keep Base Waypoints");
       continue;
     }
     
@@ -230,23 +230,23 @@ void AstarAvoid::run()
         state_ = AstarAvoid::STATE::PLANNING;
       }
     }
-    else if (state_ == AstarAvoid::STATE::STOPPING)
-    {
-      avoiding_path_flag.data = 3;
-      ROS_INFO("STOPPING");
-      bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
+    // else if (state_ == AstarAvoid::STATE::STOPPING)
+    // {
+    //   avoiding_path_flag.data = 3;
+    //   ROS_INFO("STOPPING");
+    //   bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
 
-      if (!found_obstacle)
-      {
-        ROS_INFO("STOPPING -> RELAYING, Obstacle disappers");
-        state_ = AstarAvoid::STATE::RELAYING;
-      }
-      else if (replan && avoid_velocity)
-      {
-        ROS_INFO("STOPPING -> PLANNING, Start A* planning");
-        state_ = AstarAvoid::STATE::PLANNING;
-      }
-    }
+    //   if (!found_obstacle)
+    //   {
+    //     ROS_INFO("STOPPING -> RELAYING, Obstacle disappers");
+    //     state_ = AstarAvoid::STATE::RELAYING;
+    //   }
+    //   else if (replan && avoid_velocity)
+    //   {
+    //     ROS_INFO("STOPPING -> PLANNING, Start A* planning");
+    //     state_ = AstarAvoid::STATE::PLANNING;
+    //   }
+    // }
     else if (state_ == AstarAvoid::STATE::PLANNING)
     {
       avoid_waypoints_ = base_waypoints_;
@@ -254,7 +254,13 @@ void AstarAvoid::run()
       ROS_INFO("PLANNING");
       start_plan_time = ros::WallTime::now();
       std::cout << "planning inginging" << std::endl;
-      if (planAvoidWaypoints(end_of_avoid_index))
+      if (!found_obstacle)
+      {
+        reach_goal_flag.data = 1;
+        ROS_INFO("PLANNING -> RELAYING, Obstacle disappers");
+        state_ = AstarAvoid::STATE::RELAYING;
+      }
+      else if (planAvoidWaypoints(end_of_avoid_index))
       {
         ROS_INFO("PLANNING -> AVOIDING, Found path");
         state_ = AstarAvoid::STATE::AVOIDING;
@@ -299,6 +305,7 @@ void AstarAvoid::run()
         bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
         if (replan)
         {
+          reach_goal_flag.data = 1;
           ROS_INFO("AVOIDING -> RELAYING, Obstacle disappers");
           state_ = AstarAvoid::STATE::RELAYING;
         }
@@ -316,6 +323,35 @@ void AstarAvoid::run()
 bool AstarAvoid::checkInitialized()
 {
   bool initialized = false;
+
+  if (!current_pose_initialized_)
+  {
+    ROS_WARN("Current pose initial fail !");
+  }
+  if (!closest_waypoint_initialized_)
+  {
+    ROS_WARN("Closest waypoint initial fail !");
+  }
+  if (!base_waypoints_initialized_)
+  {
+    ROS_WARN("Base waypoints initial fail !");
+  }
+  if (!avoid_state_sub_initialized_)
+  {
+    ROS_WARN("Avoid state sub initial fail !");
+  }
+  if (closest_waypoint_index_ < 0)
+  {
+    ROS_WARN("Can't find closest waypoint !");
+  }
+  if (!current_velocity_initialized_)
+  {
+    ROS_WARN("Current velocity initial fail !");
+  }
+  if (!costmap_initialized_)
+  {
+    ROS_WARN("Costmap initial fail !");
+  }
 
   // check for relay mode
   initialized = (current_pose_initialized_ && closest_waypoint_initialized_ && base_waypoints_initialized_ && avoid_state_sub_initialized_ &&
