@@ -217,7 +217,6 @@ include_directories(
 ##    use define    ##
 ######################
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
-set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
 
 ######################
 ##       VTK        ##
