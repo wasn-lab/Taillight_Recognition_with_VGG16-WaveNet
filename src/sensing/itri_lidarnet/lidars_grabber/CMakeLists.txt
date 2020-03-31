@@ -253,18 +253,18 @@ set(SOURCES_SRCS
 ######################
 cuda_add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
 add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 qt5_use_modules 		(${PROJECT_NAME}_b1 Widgets)
 
 if (CAR_MODEL_IS_HINO)
   cuda_add_executable 	(${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
   add_dependencies		(${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
-  target_link_libraries 	(${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+  target_link_libraries 	(${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
   qt5_use_modules 		(${PROJECT_NAME}_hino Widgets)
 
   cuda_add_executable 	(${PROJECT_NAME}_hino_v2 src/main_hino_v2.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
   add_dependencies		(${PROJECT_NAME}_hino_v2 ${catkin_EXPORTED_TARGETS})
-  target_link_libraries 	(${PROJECT_NAME}_hino_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+  target_link_libraries 	(${PROJECT_NAME}_hino_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
   qt5_use_modules 		(${PROJECT_NAME}_hino_v2 Widgets)
 endif()
 
@@ -273,5 +273,5 @@ endif()
 ######################
 cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} )
 add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets)
