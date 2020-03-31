@@ -1,21 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(lidars_grabber)
- 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
 
-######################
-##       CUDA       ##
-######################
-find_package		(CUDA)
-if (NOT ${CUDA_FOUND})
-  message("CUDA not found. Skip building ${PROJECT_NAME}")
-  return ()
-endif () 
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories( ${CUDA_INCLUDE_DIRS}) 
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
-  
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -25,11 +10,28 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   libs
   nodelet
-) 
-           
+  car_model
+)
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
+
+######################
+##       CUDA       ##
+######################
+find_package		(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+include_directories( ${CUDA_INCLUDE_DIRS})
+message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
- 
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -215,7 +217,7 @@ include_directories(
 ######################
 ##    use define    ##
 ######################
-set (CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
+set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
 set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
 
 ######################
@@ -245,35 +247,35 @@ ADD_DEFINITIONS ( ${QT_DEFINITIONS})
 ######################
 ##   Source file    ##
 ######################
-file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1_nodelet.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino_v2.cpp")
+set(SOURCES_SRCS
+  src/GlobalVariable.cpp
+  src/UI/QtViewer.cpp)
 
 
 ######################
 ##      Vehicle     ##
 ######################
 cuda_add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-add_dependencies		(${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
 target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
-qt5_use_modules 		(${PROJECT_NAME}_b1 Widgets) 
+qt5_use_modules 		(${PROJECT_NAME}_b1 Widgets)
 
-cuda_add_executable 	(${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-add_dependencies		(${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
-qt5_use_modules 		(${PROJECT_NAME}_hino Widgets) 
+if (CAR_MODEL_IS_HINO)
+  cuda_add_executable 	(${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
+  add_dependencies		(${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
+  target_link_libraries 	(${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+  qt5_use_modules 		(${PROJECT_NAME}_hino Widgets)
 
-cuda_add_executable 	(${PROJECT_NAME}_hino_v2 src/main_hino_v2.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-add_dependencies		(${PROJECT_NAME}_hino_v2 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_hino_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
-qt5_use_modules 		(${PROJECT_NAME}_hino_v2 Widgets) 
+  cuda_add_executable 	(${PROJECT_NAME}_hino_v2 src/main_hino_v2.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
+  add_dependencies		(${PROJECT_NAME}_hino_v2 ${catkin_EXPORTED_TARGETS})
+  target_link_libraries 	(${PROJECT_NAME}_hino_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+  qt5_use_modules 		(${PROJECT_NAME}_hino_v2 Widgets)
+endif()
 
 ######################
 ##      Nodelet     ##
 ######################
-cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} ) 
-add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} )
+add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
-qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets) 
+qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets)
