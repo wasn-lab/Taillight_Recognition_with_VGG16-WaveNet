@@ -239,19 +239,22 @@ add_definitions         (${PCL_DEFINITIONS})
 set(SOURCES_SRCS src/S1Cluster.cpp)
 
 cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS})
+add_dependencies      (${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 
 if (CAR_MODEL_IS_HINO)
   cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS})
+  add_dependencies      (${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
   target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 endif ()
 
 cuda_add_executable   (${PROJECT_NAME}_GTgen src/main_GTgen.cpp ${SOURCES_SRCS})
+add_dependencies      (${PROJECT_NAME}_GTgen ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_GTgen ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 
 ######################
 ##     Nodelet      ##
 ######################
 cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS})
-add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
