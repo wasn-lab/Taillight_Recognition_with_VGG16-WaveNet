@@ -320,6 +320,8 @@ int main(int argc, char **argv){
 		frame.can_id  = 0x595;
 		frame.data[0] = (short int)(PP_Stop*100);
 		frame.data[1] = (short int)(PP_Stop*100)>>8;
+		frame.data[2] = (short int)(PP_Distance*100);
+		frame.data[3] = (short int)(PP_Distance*100)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
 		//printf("Wrote %d bytes\n", nbytes);
 		loop_rate.sleep();	
