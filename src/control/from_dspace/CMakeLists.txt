@@ -30,8 +30,18 @@ include(CompilerFlags)
 ###########
 ## Build ##
 ###########
-include_directories(${catkin_INCLUDE_DIRS})
 
+
+catkin_package(CATKIN_DEPENDS
+  roscpp 
+  rospy 
+  std_msgs 
+  message_runtime 
+  msgs
+  car_model
+)
+
+include_directories(${catkin_INCLUDE_DIRS})
 
 #add_executable(GUI_Publisher01 src/GUI_Publisher01.cpp )
 #target_link_libraries(GUI_Publisher01 ${catkin_LIBRARIES})
