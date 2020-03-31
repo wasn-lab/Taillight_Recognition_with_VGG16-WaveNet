@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(output_results_by_dbscan)
 
+######################
+##       CUDA       ##
+######################
+find_package	        (CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
+include_directories     (${CUDA_INCLUDE_DIRS})
+message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -17,18 +29,6 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 include(CompilerFlags)
 include(CarModel)
-
-######################
-##       CUDA       ##
-######################
-find_package	        (CUDA)
-if (NOT ${CUDA_FOUND})
-  message("CUDA not found. Skip building ${PROJECT_NAME}")
-  return ()
-endif ()
-set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories     (${CUDA_INCLUDE_DIRS})
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
