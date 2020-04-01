@@ -151,6 +151,8 @@
 /RadFrontPub
 /PP_geofence_line
 /Geofence_line # marker
+/gnss_speed_data
+
 
 
 
