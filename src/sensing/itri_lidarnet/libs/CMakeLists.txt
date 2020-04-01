@@ -213,7 +213,6 @@ include_directories(
 ######################
 
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
-set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1 " )
 
 ######################
 ##       VTK        ##
@@ -304,4 +303,4 @@ catkin_package(
 ######################
 file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
-target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} cuda ${TENSORFLOW_LIBRARIES})
+target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} ${TENSORFLOW_LIBRARIES})
