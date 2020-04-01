@@ -51,39 +51,26 @@ void fuseDetectedObjects()
 {
   std::cout << "**************** do_fusion ****************" << std::endl;
 
-  std::vector<msgs::DetectedObject>().swap(lidar_objects);
-  std::vector<msgs::DetectedObject>().swap(camera_objs);
-  std::vector<msgs::DetectedObject>().swap(fusion_objects);
-
-  /************************************************************************/
-
-  // Lidar detection
-  std::cout << "num_lidar_objs = " << lidar_msg.objects.size() << std::endl;
-
-  for (const auto& obj : lidar_msg.objects)
-  {
-    fusion_objects.push_back(obj);
-  }
-
-  /************************************************************************/
-
-  // Camera detection
-  std::cout << "num_camera_objs = " << camera_msg.objects.size() << std::endl;
-
-  init_distance_table(fusion_objects, camera_msg.objects);
-  associate_data(fusion_objects, camera_msg.objects);
-
-  /************************************************************************/
-
-  // Fusion
-  std::cout << "num_fusion_objs = " << fusion_objects.size() << std::endl;
-
+  fusion_msg.header.seq = ++seq;
   fusion_msg.header.stamp = lidar_msg.header.stamp;
   fusion_msg.header.frame_id = "lidar";
-  fusion_msg.header.seq = seq++;
   std::vector<msgs::DetectedObject>().swap(fusion_msg.objects);
-  fusion_msg.objects.assign(fusion_objects.begin(), fusion_objects.end());
 
+  std::cout << "num_lidar_objs = " << lidar_msg.objects.size() << std::endl;
+  std::cout << "num_camera_objs = " << camera_msg.objects.size() << std::endl;
+
+  if (!lidar_msg.objects.empty())
+  {
+    for (const auto& obj : lidar_msg.objects)
+    {
+      fusion_msg.objects.push_back(obj);
+    }
+    // Data association via Hungarian algo
+    init_distance_table(fusion_msg.objects, camera_msg.objects);
+    associate_data(fusion_msg.objects, camera_msg.objects);
+  }
+
+  std::cout << "num_fusion_objs = " << fusion_msg.objects.size() << std::endl;
   fusion_pub.publish(fusion_msg);
 }
 
