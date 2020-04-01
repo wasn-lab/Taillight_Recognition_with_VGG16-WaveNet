@@ -6,7 +6,7 @@
 #define __CAMERA_PARAMS_B1_V2_H__
 
 #include "car_model.h"
-#ifdef CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2
 #include <cmath>
 #include <string>
 

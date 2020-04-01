@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import copy
 import rospy
 
 from visualization_msgs.msg import Marker
@@ -27,6 +28,7 @@ class Node:
         self.delay_prefix = rospy.get_param("~delay_prefix", "")
         self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
+        self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.t_clock = rospy.Time()
         #
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
@@ -35,6 +37,8 @@ class Node:
         self.detection_sub = rospy.Subscriber(self.inputTopic, PoseStamped, self.detection_callback)
         # FPS
         self.fps_cal = FPS.FPS()
+        # Flags
+        self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
 
     def run(self):
         rospy.spin()
@@ -68,9 +72,16 @@ class Node:
 
 
     def create_delay_text_marker(self, idx, header, current_stamp, point, fps=None):
+        # Overwrite the frame_id of the text
+        header_txt = copy.deepcopy(header)
+        if self.is_overwrite_txt_frame_id:
+            header_txt.frame_id = self.txt_frame_id
+        else:
+            header_txt.frame_id = "lidar"
+        #
         marker = Marker()
-        marker.header.frame_id = "lidar" # header.frame_id
-        marker.header.stamp = header.stamp
+        marker.header.frame_id = header_txt.frame_id
+        marker.header.stamp = header_txt.stamp
         marker.ns = self.inputTopic + "_d"
         marker.action = Marker.ADD
         marker.id = idx
@@ -83,12 +94,12 @@ class Node:
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
         marker.color.a = 1.0
-        # marker.text = "%.3fms" % ((rospy.get_rostime() - header.stamp).to_sec() * 1000.0)
+        # marker.text = "%.3fms" % ((rospy.get_rostime() - header_txt.stamp).to_sec() * 1000.0)
         if len(str(self.delay_prefix)) > 0:
             marker.text = "[%s] " % str(self.delay_prefix)
         else:
             marker.text = ""
-        marker.text += "%.3fms" % ((current_stamp - header.stamp).to_sec() * 1000.0)
+        marker.text += "%.3fms" % ((current_stamp - header_txt.stamp).to_sec() * 1000.0)
         if not fps is None:
             marker.text += " fps = %.1f" % fps
 
