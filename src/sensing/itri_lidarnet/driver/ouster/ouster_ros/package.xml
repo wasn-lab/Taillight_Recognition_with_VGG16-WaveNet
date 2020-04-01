@@ -19,6 +19,7 @@
   <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>ouster_client</build_depend>
   <build_depend>ouster_viz</build_depend>
+  <build_depend>car_model</build_depend>
 
 
   <exec_depend>roscpp</exec_depend>
@@ -30,6 +31,7 @@
   <exec_depend>pcl_conversions</exec_depend>
   <exec_depend>ouster_client</exec_depend>
   <exec_depend>ouster_viz</exec_depend>
+  <exec_depend>car_model</exec_depend>
 
   <export></export>
 </package>
