@@ -42,8 +42,10 @@ callback_GT (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
   frameId = msg->header.frame_id;
   *cloudPtr_GT = pcdExtract_allLabelObj(msg);
 
-  if(cloudPtr_GT->size() > 0)
+  if (cloudPtr_GT->size() > 0)
+  {
     havecloud_cnt++;
+  }
   cout << "files having labeled clouds: " << havecloud_cnt << endl;
 
   mutex_SSN.unlock ();
@@ -94,7 +96,9 @@ class ObjectsDetectionHINO
       mutex_cluster.lock ();
 
       if (cur_cluster != NULL)
+      {
         delete[] cur_cluster;
+      }
 
       cur_cluster = S1cluster.getClusters (ENABLE_DEBUG_MODE, release_cloud, &cur_cluster_num);
 
@@ -104,7 +108,9 @@ class ObjectsDetectionHINO
       pcl_conversions::fromPCL (pclTime, rosTime);
 
       if (cur_cluster != NULL)
+      {
         RosModuleHINO::Send_LidarResults (cur_cluster, cur_cluster_num, rosTime, frameId);
+      }
 
       if (stopWatch.getTimeSeconds () > 0.05)
       {
