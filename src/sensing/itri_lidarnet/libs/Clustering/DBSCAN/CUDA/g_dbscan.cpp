@@ -6,7 +6,9 @@ has_nonzero (std::vector<int>& v)
   for (size_t i = 0; i < v.size (); ++i)
   {
     if (v[i] > 0)
+    {
       return true;
+    }
   }
   return false;
 }
@@ -143,10 +145,14 @@ GDBSCAN::fit (float eps,
   // second value of Va, and has an offset related to the degree of the vertex.
 
   size_t Ea_size;
-  if (h_Va0.size () >= 1)
+  if (h_Va0.size() >= 1)
+  {
     Ea_size = static_cast<size_t> (h_Va0[h_Va0.size () - 1] + h_Va1[h_Va1.size () - 1]) * sizeof(int);
+  }
   else
+  {
     Ea_size = 0;
+  }
   //std::cout << "Allocating " << Ea_size << " bytes for Ea "<< h_Va0[h_Va0.size() - 1] << "+" << h_Va1[h_Va1.size() - 1];
 
   if (d_Ea)
@@ -232,9 +238,13 @@ GDBSCAN::predict (IndicesClusters &index)
   for (size_t i = 0; i < m_dset->rows (); ++i)
   {
     if (visited[i])
+    {
       continue;
+    }
     if (!core[i])
+    {
       continue;
+    }
 
     visited[i] = true;
     labels[i] = cluster_id;

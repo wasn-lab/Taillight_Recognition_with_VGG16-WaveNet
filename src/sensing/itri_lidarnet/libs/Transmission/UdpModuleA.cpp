@@ -119,9 +119,10 @@ int
 UdpClient::send_obj_to_vcu (CLUSTER_INFO* cluster_info,
                             int cluster_size)
 {
-
   if (cluster_size > 20)
+  {
     cluster_size = 20;
+  }
 
   int NUM = 25;
   char data[cluster_size * NUM];

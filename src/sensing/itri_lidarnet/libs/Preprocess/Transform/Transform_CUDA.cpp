@@ -49,35 +49,49 @@ Transform_CUDA::removePointsInsideSphere (pcl::PointCloud<pcl::PointXYZ> &point_
   cudaError_t err = ::cudaSuccess;
   err = cudaSetDevice (0);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(pcl::PointXYZ));
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(pcl::PointXYZ), cudaMemcpyHostToDevice);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaMalloc ((void**) &d_markers, point_cloud.points.size () * sizeof(bool));
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaRemovePointsInsideSphere (maxThreadsNumber, d_point_cloud, d_markers, point_cloud.points.size (), sphere_radius);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   h_markers = (bool *) malloc (point_cloud.points.size () * sizeof(bool));
 
   err = cudaMemcpy (h_markers, d_markers, point_cloud.points.size () * sizeof(bool), cudaMemcpyDeviceToHost);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   pcl::PointCloud<pcl::PointXYZ> new_point_cloud;
   for (size_t i = 0; i < point_cloud.points.size (); i++)
   {
     if (h_markers[i])
+    {
       new_point_cloud.push_back (point_cloud[i]);
+    }
   }
 
   std::cout << "Number of points before removing points: " << point_cloud.size () << std::endl;
@@ -89,12 +103,16 @@ Transform_CUDA::removePointsInsideSphere (pcl::PointCloud<pcl::PointXYZ> &point_
   err = cudaFree (d_markers);
   d_markers = NULL;
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaFree (d_point_cloud);
   d_point_cloud = NULL;
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   return true;
 }
@@ -128,29 +146,47 @@ Transform_CUDA::run (typename pcl::PointCloud<PointT> &point_cloud,
   h_m[14] = matrix.matrix () (2, 3);
   h_m[15] = matrix.matrix () (3, 3);
 
-  if (cudaMalloc ((void**) &d_m, 16 * sizeof(float)) != ::cudaSuccess)
+  if (cudaMalloc((void**)&d_m, 16 * sizeof(float)) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaMemcpy (d_m, h_m, 16 * sizeof(float), cudaMemcpyHostToDevice) != ::cudaSuccess)
+  if (cudaMemcpy(d_m, h_m, 16 * sizeof(float), cudaMemcpyHostToDevice) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(PointT)) != ::cudaSuccess)
+  if (cudaMalloc((void**)&d_point_cloud, point_cloud.points.size() * sizeof(PointT)) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(PointT), cudaMemcpyHostToDevice) != ::cudaSuccess)
+  if (cudaMemcpy(d_point_cloud, point_cloud.points.data(), point_cloud.points.size() * sizeof(PointT),
+                 cudaMemcpyHostToDevice) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaTransformPoints<PointT> (maxThreadsNumber, d_point_cloud, point_cloud.points.size (), d_m) != ::cudaSuccess)
+  if (cudaTransformPoints<PointT>(maxThreadsNumber, d_point_cloud, point_cloud.points.size(), d_m) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaMemcpy (point_cloud.points.data (), d_point_cloud, point_cloud.points.size () * sizeof(PointT), cudaMemcpyDeviceToHost) != ::cudaSuccess)
+  if (cudaMemcpy(point_cloud.points.data(), d_point_cloud, point_cloud.points.size() * sizeof(PointT),
+                 cudaMemcpyDeviceToHost) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaFree (d_m) != ::cudaSuccess)
+  if (cudaFree(d_m) != ::cudaSuccess)
+  {
     return false;
+  }
 
-  if (cudaFree (d_point_cloud) != ::cudaSuccess)
+  if (cudaFree(d_point_cloud) != ::cudaSuccess)
+  {
     return false;
+  }
 
   d_point_cloud = NULL;
 

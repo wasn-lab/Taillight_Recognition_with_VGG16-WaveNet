@@ -20,10 +20,6 @@ msgs::DetectedObjectArray lidar_msg;
 msgs::DetectedObjectArray camera_msg;
 msgs::DetectedObjectArray fusion_msg;
 /************************************************************************/
-std::vector<msgs::DetectedObject> lidar_objects;
-std::vector<msgs::DetectedObject> camera_objs;
-std::vector<msgs::DetectedObject> fusion_objects;
-/************************************************************************/
 void callback_lidar(const msgs::DetectedObjectArray::ConstPtr& lidar_obj_array);
 void callback_camera_main(const msgs::DetectedObjectArray::ConstPtr& camera_obj_array,
                           msgs::DetectedObjectArray& camera_msg);

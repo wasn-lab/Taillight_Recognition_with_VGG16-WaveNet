@@ -42,7 +42,9 @@ S4FlowDetect::update (bool is_debug,
       pcl::PointXYZ pt (cluster_info[i].cloud.points[j].x, cluster_info[i].cloud.points[j].y, cluster_info[i].cloud.points[j].z);
       result_point_into |= ! (pt.x < pt_min.x || pt.y < pt_min.y || pt.z < pt_min.z || pt.x > pt_max.x || pt.y > pt_max.y || pt.z > pt_max.z);
       if (result_point_into)
+      {
         break;
+      }
     }
 
     if (result_point_into && pcl::geometry::distance (pcl::PointXYZ (0, 0, 0), cluster_info[i].velocity) > 1.5)
@@ -73,11 +75,17 @@ S4FlowDetect::update (bool is_debug,
       if (flag)
       {
         if (cluster_info[i].cluster_tag == 2)
+        {
           counter[0]++;
+        }
         if (cluster_info[i].cluster_tag == 3)
+        {
           counter[1]++;
+        }
         if (cluster_info[i].cluster_tag == 4)
+        {
           counter[2]++;
+        }
       }
       result_has_detected = true;
     }

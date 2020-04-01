@@ -12,9 +12,11 @@ int getdir(string dir, vector<string> &filenames)
 
 	while ((dirp = readdir(dp)) != NULL)
 	{
-		if (string(dirp->d_name).compare(".") != 0 && string(dirp->d_name).compare("..") != 0)
-			filenames.push_back(string(dirp->d_name));
-	}
+    if (string(dirp->d_name).compare(".") != 0 && string(dirp->d_name).compare("..") != 0)
+    {
+      filenames.push_back(string(dirp->d_name));
+    }
+  }
 	closedir(dp);
 	return 0;
 }
@@ -249,10 +251,12 @@ void SSNspan_config(float *OUT_ptr, const char ViewType, const float phi_center)
 	case 'X':
 	{
 		const float SPAN_PARA[2] = {90, 512};            // {span, imagewidth}
-		for(size_t i = 0; i < int(sizeof(SPAN_PARA)/sizeof(float)); i++)
-			OUT_ptr[i] = SPAN_PARA[i];
+    for (size_t i = 0; i < int(sizeof(SPAN_PARA) / sizeof(float)); i++)
+    {
+      OUT_ptr[i] = SPAN_PARA[i];
+    }
 
-		break;
+    break;
 	}
 	case 'T':
 	{
@@ -282,10 +286,12 @@ void SSNspan_config(float *OUT_ptr, const char ViewType, const float phi_center)
 			cout << "No matched phi_center found !!!!!!!!!!" << endl;
 		}
 
-		for (size_t i = 0; i < int(sizeof(SPAN_PARA[0])/sizeof(float)); i++)
-			OUT_ptr[i] = SPAN_PARA[phi_center_ind][i];
+    for (size_t i = 0; i < int(sizeof(SPAN_PARA[0]) / sizeof(float)); i++)
+    {
+      OUT_ptr[i] = SPAN_PARA[phi_center_ind][i];
+    }
 
-		break;
+    break;
 	}	
 	default:
 		cout << "No matched ViewType found !!!!!!!!!!" << endl;

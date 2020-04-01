@@ -65,4 +65,4 @@ target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 ######################
 cuda_add_library	  (${PROJECT_NAME}_nodelet ${SOURCES_SRCS})
 add_dependencies	  (${PROJECT_NAME}_nodelet ${${PROJECT_NAME}_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries (${PROJECT_NAME}_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+target_link_libraries (${PROJECT_NAME}_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})

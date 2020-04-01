@@ -44,7 +44,7 @@ DBSCAN_VPTree::segment (IndicesClusters &index)
 #pragma omp parallel for
     for (size_t i = 0; i < dbs->get_labels ().size (); i++)  //scan all points
     {
-      if (dbs->get_labels ().at (i) >= 0)
+      if (dbs->get_labels().at(i) >= 0)
 #pragma omp critical
       {
         buff[dbs->get_labels ().at (i)].indices.push_back (i);
