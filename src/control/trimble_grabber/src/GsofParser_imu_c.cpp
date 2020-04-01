@@ -54,6 +54,7 @@
 //ros
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Float64.h>
 #include <ros/package.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
@@ -87,6 +88,7 @@ static ros::Publisher imu_pub;
 static ros::Publisher imu_rad_pub;
 static ros::Publisher gnss_pub;
 static ros::Publisher gnss2local_pub;
+static ros::Publisher gnss_speed_pub;
 
 
 int close(int fd);
@@ -1349,6 +1351,10 @@ void processINSFullNavigation( int length, char *pData )
         printf( " \n " );
         printf( " -------------------------------------End INS Type 49------------------------- \n ");
 
+        std_msgs::Float64 Speed;
+        Speed.data = Total_Speed;
+        gnss_speed_pub.publish(Speed);
+
         tf::Quaternion gnss_q;
 
         gnss_data.header.stamp = ros::Time::now();
@@ -1819,6 +1825,7 @@ int main( int argc, char **argv )
         imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);
         gnss_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_data", 20);
         gnss2local_pub = n.advertise<geometry_msgs::PoseStamped>("gnss2local_data", 20);
+        gnss_speed_pub = n.advertise<std_msgs::Float64>("gnss_speed_data", 20);
 
         int server_fd, ret;
         struct sockaddr_in ser_addr;
