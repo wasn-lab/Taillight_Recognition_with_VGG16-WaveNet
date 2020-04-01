@@ -2,7 +2,7 @@
 
 DistanceEstimation::~DistanceEstimation()
 {
-  if(de_mode == 1)
+  if (de_mode == 1)
   {
     for (int i = 0; i < img_h; i++)
     {
@@ -10,7 +10,6 @@ DistanceEstimation::~DistanceEstimation()
     }
     delete[] align_FC60;
   }
-
 }
 
 void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
@@ -21,7 +20,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
   // ====== Init distance estimation table by alignment ======
 
   // FC60
-  if(de_mode == 1)
+  if (de_mode == 1)
   {
     std::string FC60Json = pkgPath;
     FC60Json.append("/data/alignment/out.json");
@@ -31,6 +30,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
+    CreateFromJson();
   }
 
   // // FR60
@@ -57,13 +57,9 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
   initShrinkArea();
   initDetectArea();
 
-
-
   Lidar_offset_x = 0;
   Lidar_offset_y = 0;
 }
-
-
 
 void DistanceEstimation::initParams()
 {
@@ -101,6 +97,14 @@ void DistanceEstimation::initParams()
                                   -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
   camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
   camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+
+  // camFC60.regionHeight_x = { 1207, 1189, 1151, 1123,       1097 /*10*/, 1079, 1063, 1050, 1041, 1028, 1022,
+  //                             1012, 1006,  1000,  997 /*20*/, 975,         962,  953,  943,  940,  928 /*50*/ };
+  // camFC60.regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  // camFC60.regionHeightSlope_y = { 0.1099,  0.2326, 0.2941,   0.4,  0.625,   1.4286,  5,
+  //                                 -0.9091, -0.5, -0.333, -0.2564, -0.2083, -0.11 };
+  // camFC60.regionHeight_y = { -1951, -461, -174, 115, 407, 692, 976, 1266, 1547, 1832, 2119, 2403, 3780 };
+  // camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
   // camId: 2 (Front Left)
   camFL60.regionHeight_x = { 0, 54, 335, 644, 1022, 1351, 1556, 1758, 1975, 2230, 2429 };
@@ -202,7 +206,8 @@ void DistanceEstimation::initDetectArea()
   camBT120_area.RightLinePoint2 = cv::Point(3152, 1207);
 }
 
-int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols)
+int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows,
+                                             const int cols)
 {
   // dist_in_cm should be malloc by caller.
   assert(dist_in_cm);
@@ -230,6 +235,12 @@ int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d**
     }
   }
   return 0;
+}
+
+DisEstiParams DistanceEstimation::CreateFromJson()
+{
+  DisEstiParams tmpParmas;
+  return tmpParmas;
 }
 
 float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
@@ -435,10 +446,10 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
   else
   {
     return point0;
-}
+  }
 }
 
-float DistanceEstimation::RatioDefine(int cam_id, int cls)
+float DistanceEstimation::RatioDefine(camera::id cam_id, int cls)
 {
   if (cam_id == camera::id::front_60)
   {
@@ -533,7 +544,7 @@ float DistanceEstimation::RatioDefine(int cam_id, int cls)
   return 1;
 }
 
-int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
+int DistanceEstimation::BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst)
 {
   // PointsSrc = {class_id, x1, x2, y2};
   // PointsDst = {class_id, x1, x2, y2};
@@ -581,7 +592,7 @@ int DistanceEstimation::BoxShrink(int cam_id, std::vector<int> Points_src, std::
 
   return 0;
 }
-msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, int cam_id)
+msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id)
 {
   msgs::PointXYZ p1, p2, p4, p5, p6, p7;
   msgs::BoxPoint point8;
@@ -741,7 +752,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p
 
   return point8;
 }
-msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int class_id, int cam_id)
+msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int class_id, camera::id cam_id)
 {
   msgs::PointXYZ p0, p1, p2, p3, p4, p5, p6, p7;
   msgs::BoxPoint point8;
@@ -985,7 +996,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 
   return point8;
 }
-msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
+msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 {
   msgs::PointXYZ p0;
   float x_distMeter = 0, y_distMeter = 0;
@@ -1057,20 +1068,22 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     default:
       return p0;
   }
-  
-  if(de_mode == 1)
+
+  if (de_mode == 1)
   {
     if (cam_id == camera::id::front_60)
     {
-      y_loc = (int)((float)y_loc/img_w*img_al_w);
-      x_loc = (int)((float)x_loc/img_h*img_al_h);
-      
-      p0.x = align_FC60[x_loc][y_loc].x/100;
-      p0.y = align_FC60[x_loc][y_loc].y/100;
-      p0.z = align_FC60[x_loc][y_loc].z/100;
+      y_loc = (int)((float)y_loc / img_w * img_al_w);
+      x_loc = (int)((float)x_loc / img_h * img_al_h);
+
+      p0.x = align_FC60[x_loc][y_loc].x / 100;
+      p0.y = align_FC60[x_loc][y_loc].y / 100;
+      p0.z = align_FC60[x_loc][y_loc].z / 100;
       return p0;
     }
-  }else{
+  }
+  else
+  {
     if (cam_id == camera::id::front_60 || cam_id == camera::id::top_front_120 || cam_id == camera::id::top_rear_120)
     {
       if (Parmas.regionDist_x.size() != 0)
@@ -1080,7 +1093,7 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
       if (Parmas.regionDist_y.size() != 0)
       {
         y_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                        Parmas.regionDist_y, img_h);
+                                         Parmas.regionDist_y, img_h);
       }
     }
   }
@@ -1105,9 +1118,9 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, int cam_id)
     p0.y = 0;
     p0.z = 0;
   }
-    p0.x = x_distMeter + offset_x;
-    p0.y = y_distMeter;
-    p0.z = Lidar_offset_z;
+  p0.x = x_distMeter + offset_x;
+  p0.y = y_distMeter;
+  p0.z = Lidar_offset_z;
 
-    return p0;
+  return p0;
 }

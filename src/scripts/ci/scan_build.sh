@@ -6,6 +6,11 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
+if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
+  export PATH=/usr/local/llvm-6.0.0/bin:$PATH
+fi
+export CC=clang
+export CXX=clang++
 
 if [[ -d /var/www/html/scan_build ]]; then
   readonly output_dir=$(readlink -e /var/www/html/scan_build)
@@ -22,7 +27,6 @@ for _dir in ${build_dir} ${devel_dir}; do
     fi
 done
 blacklist="dl_data"
-#blacklist="dl_data;ndt_gpu;convex_fusion;lidar;output_results_by_dbscan;lidar_squseg_inference;ouster_driver;velodyne_laserscan;velodyne;velodyne_msgs;velodyne_driver;velodyne_pointcloud;lidars_grabber;libs;lidars_preprocessing;localization"
 
 scan-build -o ${output_dir} catkin_make \
     --build ${build_dir} \
@@ -30,8 +34,25 @@ scan-build -o ${output_dir} catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DENABLE_CCACHE=0 \
+    -DCAR_MODEL=OMNIBUS \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
     -j6 ${EXTRA_CATKIN_ARGS}
+
+# compress previous output
+pushd ${output_dir}
+readonly today=`date +"%Y-%m-%d"`
+for d in `ls`; do
+  if [[ -f $d ]]; then
+    echo "Skip $d"
+  elif [[ -d $d && "${d}" == "${today}"* ]]; then
+    echo "Do not compress $d"
+  else
+    echo "Compress $d"
+    tar cfJ ${d}.tar.xz $d
+    rm -rf ${d}
+  fi
+done
+popd
 
 find ${output_dir} -type d -exec chmod 755 {} \;
 find ${output_dir} -type f -exec chmod 644 {} \;

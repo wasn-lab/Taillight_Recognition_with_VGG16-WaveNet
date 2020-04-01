@@ -1,4 +1,37 @@
 ---
+Checks: "-*,\
+bugprone-*,\
+cert-*,\
+clang-analyzer-*,\
+hicpp-*,\
+misc-*,\
+modernize-*,\
+performance-*,\
+readability-*,\
+llvm-namespace-comment,\
+-hicpp-signed-bitwise,\
+-cert-err58-cpp,\
+-readability-else-after-return,\
+-readability-avoid-const-params-in-decls\
+"
 WarningsAsErrors: "readability-braces-around-statements"
-HeaderFilterRegex: '.*/itriadv/src/.*\.h$'
+HeaderFilterRegex: 'itriadv/src/.*\.h$'
+CheckOptions:
+  - key:   readability-identifier-naming.GlobalVariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.GlobalVariablePrefix
+    value: 'g_'
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.VariableCase
+    value: lower_case
+  - key:   readability-identifier-naming.ClassMemberSuffix
+    value: '_'
+# Ignore const variables becuase they do not change program state.
+  - key:   readability-identifier-naming.ConstantCase
+    value: aNy_CasE
+  - key:   readability-identifier-naming.ConstexprVariableCase
+    value: aNy_CasE
+  - key:   readability-identifier-naming.ConstantMemberCase
+    value: aNy_CasE
 ...

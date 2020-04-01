@@ -210,9 +210,15 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
+set(link_libs ${PCL_LIBRARIES})
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  # workaround for
+  # /usr/lib/gcc/aarch64-linux-gnu/5/../../../aarch64-linux-gnu/libGL.so: undefined reference to `drmFreeDevices'
+  list(APPEND link_libs "drm")
+endif()
 
 add_executable(${PROJECT_NAME}_node src/edge_detection_main.cpp src/class_edge_detection.cpp src/edge_detection_tools.cpp)
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${link_libs})
 MESSAGE("Generate ${PROJECT_NAME}_node")
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp )
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})

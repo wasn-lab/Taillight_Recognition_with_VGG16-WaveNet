@@ -648,26 +648,44 @@ void SCENE_W_main::perSceneROSTopicEvent(ROS_API &ros_api){
     res_data.gui_name = ros_api.gui_name;
     // cam_motion_mode
     if (camera_view_mode == 0)
-        res_data.cam_view_mode = "close";
+    {
+      res_data.cam_view_mode = "close";
+    }
     else if (camera_view_mode == 1)
-        res_data.cam_view_mode = "over";
+    {
+      res_data.cam_view_mode = "over";
+    }
     else if (camera_view_mode == 2)
-        res_data.cam_view_mode = "bird";
+    {
+      res_data.cam_view_mode = "bird";
+    }
     // cam_motion_mode
     if (camera_motion_mode == 0)
-        res_data.cam_motion_mode = "follow";
+    {
+      res_data.cam_motion_mode = "follow";
+    }
     else if (camera_motion_mode == 1)
-        res_data.cam_motion_mode = "static";
+    {
+      res_data.cam_motion_mode = "static";
+    }
     // image3D
     if (is_enable_image3D)
-        res_data.image3D = "on";
+    {
+      res_data.image3D = "on";
+    }
     else
-        res_data.image3D = "off";
+    {
+      res_data.image3D = "off";
+    }
     // image_surr
     if (_layout_mode == 0)
-        res_data.image_surr = "on";
+    {
+      res_data.image_surr = "on";
+    }
     else
-        res_data.image_surr = "off";
+    {
+      res_data.image_surr = "off";
+    }
     //----------------------------------------//
     //
     ros_api.ros_interface.send_GUI2_op( int(MSG_ID::GUI_operatio), res_data);

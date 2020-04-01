@@ -40,5 +40,43 @@ download_file(
     DESTINATION "${LIDARNET_WEIGHTS_DIR}/SqueezeSegNet/b1/P180deg.pb"
     MD5 264d4c18620853a1c4377e4a2cf3e8ac)
 
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/N90deg.pb"
+    DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/N90deg.pb"
+    MD5 31d1e2ff56aa0d7f67f06d033e423794)
 
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P0deg.pb"
+    DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P0deg.pb"
+    MD5 391b26bf8e434381e785d4b031f1190e)
+
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P90deg.pb"
+    DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P90deg.pb"
+    MD5 a554c98d041a112dfa9fa14e425e2c6e)
+
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P180deg.pb"
+    DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P180deg.pb"
+    MD5 1abcf546c2456c43e67c9070b55f14f0)
+
+#download_file(
+#    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/N90deg.pb"
+#    DESTINATION "${LIDARNET_WEIGHTS_DIR}/SqueezeSegNet/b1/N90deg.pb"
+#    MD5 31d1e2ff56aa0d7f67f06d033e423794)
+
+#download_file(
+#    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P0deg.pb"
+#    DESTINATION "${LIDARNET_WEIGHTS_DIR}/SqueezeSegNet/b1/P0deg.pb"
+#    MD5 391b26bf8e434381e785d4b031f1190e)
+
+#download_file(
+#    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P90deg.pb"
+#    DESTINATION "${LIDARNET_WEIGHTS_DIR}/SqueezeSegNet/b1/P90deg.pb"
+#    MD5 a554c98d041a112dfa9fa14e425e2c6e)
+
+#download_file(
+#    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P180deg.pb"
+#    DESTINATION "${LIDARNET_WEIGHTS_DIR}/SqueezeSegNet/b1/P180deg.pb"
+#    MD5 1abcf546c2456c43e67c9070b55f14f0)
 

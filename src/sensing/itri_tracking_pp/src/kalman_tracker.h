@@ -18,7 +18,7 @@ public:
   bool tracked_ = false;
 
   unsigned int lost_time_ = 0;
-  static constexpr unsigned int lost_time_max_ = 2;
+  static constexpr unsigned int lost_time_max_ = 1;
   bool lost_ = false;
 
   cv::KalmanFilter kalman_;
@@ -28,11 +28,6 @@ public:
 
   BoxCenter box_center_;
   BoxCenter box_center_prev_;
-
-#if FPS_EXTRAPOLATION
-  BoxCenter box_center_kalman_;
-  BoxCenter box_center_kalman_next_;
-#endif
 
   std::vector<BoxCorner> box_corners_;
 

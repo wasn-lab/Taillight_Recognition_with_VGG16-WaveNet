@@ -36,13 +36,17 @@ struct atlas {
         FT_Library ft;
         // All functions return a value different than 0 whenever an error occurred
         if (FT_Init_FreeType(&ft))
-            std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        {
+          std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+        }
         // Load font as face
         FT_Face face;
         // if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
         if (FT_New_Face(ft, "/usr/share/fonts/truetype/freefont/FreeSans.ttf", 0, &face))
-        // if (FT_New_Face(ft, "FreeSans.ttf", 0, &face))
-            std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        {
+          // if (FT_New_Face(ft, "FreeSans.ttf", 0, &face))
+          std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+        }
         //-----------------------------------------//
         Init(face, font_size_in);
         // Destroy FreeType once we're finished
@@ -783,8 +787,10 @@ void rmText3D_v2::RenderText(
 
 
 		/* Skip glyphs that have no pixels */
-		if (!w || !h) // For example: space --> " "
-			continue;
+        if (!w || !h)
+        {  // For example: space --> " "
+          continue;
+        }
 
         /*
         Sequence of index

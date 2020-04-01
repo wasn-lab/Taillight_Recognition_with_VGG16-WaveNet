@@ -3,7 +3,7 @@
 
 #include "yolo.h"
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -18,5 +18,5 @@ private:
   std::vector<BBoxInfo> decodeTensor(const int imageIdx, const int imageH, const int imageW,
                                      const TensorInfo& tensor) override;
 };
-}
+} // namespace DriveNet
 #endif  // _YOLO_V3_

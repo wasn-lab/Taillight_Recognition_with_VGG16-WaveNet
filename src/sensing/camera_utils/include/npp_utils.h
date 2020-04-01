@@ -16,6 +16,6 @@ int npp8u_ptr_to_cvmat(const Npp8u* in_npp8u_ptr, const size_t in_num_bytes, cv:
                        const int cols);
 int npp8u_ptr_c4_to_c3(const Npp8u* npp8u_ptr_c4, const int rows, const int cols, Npp8u* npp8u_ptr_c3);
 int blob_from_image(const Npp32f* npp32f_ptr_in, const int rows, const int cols, Npp32f* npp32f_ptr_out);
-}  // namespace
+}  // namespace npp_wrapper
 
 #endif  // __NPP_UTILS_H__

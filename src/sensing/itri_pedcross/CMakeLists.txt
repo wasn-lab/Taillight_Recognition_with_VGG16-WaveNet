@@ -1,7 +1,14 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+
+include(CarModel)
+if (NOT ENABLE_PEDCROSS)
+  message(STATUS "${PROJECT_NAME} is disabled in car ${CAR_MODEL}")
+  return ()
+endif ()
+
 include(CompilerFlags)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)

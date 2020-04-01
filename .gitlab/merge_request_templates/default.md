@@ -8,6 +8,7 @@
 ## Developer checklist
 
 - [ ] The MR is for a single purpose.
+- [ ] The MR is verified and it works as expected.
 - [ ] Conforms to [coding sytle](https://gitlab.itriadv.co/self_driving_bus/itriadv/blob/master/docs/coding_style.md)
 
 ## Reviewer checklist

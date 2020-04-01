@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_planner)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -14,7 +11,13 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   #vector_map
   astar_search
+  msgs
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -24,7 +27,9 @@ catkin_package(
   libwaypoint_follower
   autoware_msgs
   #vector_map
+  msgs
   astar_search
+  car_model
 )
 
 include_directories(

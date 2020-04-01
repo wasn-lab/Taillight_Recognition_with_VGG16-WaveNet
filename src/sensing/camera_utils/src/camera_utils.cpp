@@ -1,7 +1,9 @@
 #include <cmath>
-#include <assert.h>
+#include <cassert>
+#include <memory>
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/version.hpp>
 #include "npp_resizer.h"
 #include "camera_params.h"
 #include "camera_utils.h"
@@ -131,11 +133,8 @@ bool has_yolov3_image_size(const cv::Mat& in_img)
   {
     return true;
   }
-  else
-  {
-    VLOG(2) << "Not yolov3 image size: Expected: 608x608, Actual:" << in_img.cols << "x" << in_img.rows;
-    return false;
-  }
+  VLOG(2) << "Not yolov3 image size: Expected: 608x608, Actual:" << in_img.cols << "x" << in_img.rows;
+  return false;
 }
 
 bool has_raw_image_size(const cv::Mat& in_img)
@@ -144,11 +143,8 @@ bool has_raw_image_size(const cv::Mat& in_img)
   {
     return true;
   }
-  else
-  {
-    VLOG(2) << "Not raw image size: Expected: 1920x1208, Actual:" << in_img.cols << "x" << in_img.rows;
-    return false;
-  }
+  VLOG(2) << "Not raw image size: Expected: 1920x1208, Actual:" << in_img.cols << "x" << in_img.rows;
+  return false;
 }
 
 int camera_to_yolov3_xy(const int x, const int y, int* yolov3_x, int* yolov3_y)
@@ -186,8 +182,13 @@ bool cvmats_are_equal(const cv::Mat& img1, const cv::Mat& img2)
     return false;
   }
   cv::Mat gray1, gray2, diff;
+#if CV_VERSION_MAJOR == 4
+  cv::cvtColor(img1, gray1, cv::COLOR_BGR2GRAY);
+  cv::cvtColor(img2, gray2, cv::COLOR_BGR2GRAY);
+#else
   cv::cvtColor(img1, gray1, CV_BGR2GRAY);
   cv::cvtColor(img2, gray2, CV_BGR2GRAY);
+#endif
   cv::bitwise_xor(gray1, gray2, diff);
   int nz = cv::countNonZero(diff);
   return nz == 0;
@@ -202,31 +203,30 @@ uint32_t calc_cvmat_checksum(const cv::Mat& img)
 uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len)
 {
   const uint32_t p = 16777619;
-  uint32_t hash = (uint32_t)2166136261;
+  auto hash = static_cast<uint32_t>(2166136261);
   for (size_t i = 0; i < len; i++)
   {
     hash = (hash ^ bytes[i]) * p;
   }
 
-  hash += hash << 13;
-  hash ^= hash >> 7;
-  hash += hash << 3;
-  hash ^= hash >> 17;
-  hash += hash << 5;
+  hash += hash << 13u;
+  hash ^= hash >> 7u;
+  hash += hash << 3u;
+  hash ^= hash >> 17u;
+  hash += hash << 5u;
   return hash;
 }
 
 bool is_black_image(const cv::Mat& img)
 {
-  unsigned char* data = img.data;
-  for (size_t i = 0, nbytes = img.total() * img.elemSize(); i < nbytes; i++)
+  if ((img.rows == 0) || (img.cols == 0))
   {
-    if (data[i] != 0)
-    {
-      return false;
-    }
+    return false;
   }
-  return true;
+  const auto nbytes = img.total() * img.elemSize();
+  std::unique_ptr<uint8_t[]> zeros{ new uint8_t[nbytes] };
+  std::memset(zeros.get(), 0, nbytes);
+  return std::memcmp(img.data, zeros.get(), nbytes) == 0;
 }
 
 int release_cv_mat_if_necessary(cv::Mat& img)
@@ -238,4 +238,4 @@ int release_cv_mat_if_necessary(cv::Mat& img)
   return 0;
 }
 
-};  // namespace
+}  // namespace camera

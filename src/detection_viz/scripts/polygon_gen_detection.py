@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 
+import copy
 import rospy
 from std_msgs.msg import (
     Bool,
@@ -29,18 +30,24 @@ class Node:
         self.delay_pos_x = rospy.get_param("~delay_pos_x", 3.0)
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
+        self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
+        self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.t_clock = rospy.Time()
 
+        # Publishers
         self.polygon_pub = rospy.Publisher(self.inputTopic + "/poly", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
 
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
+        self.is_showing_track_id_sub = rospy.Subscriber("/d_viz/req_show_track_id", Bool, self.req_show_track_id_CB)
         # FPS
         self.fps_cal = FPS.FPS()
-        # Depth
+        # Flags
         self.is_showing_depth = True
+        self.is_showing_track_id = self.is_tracking_mode
+        self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
 
     def run(self):
         rospy.spin()
@@ -50,6 +57,9 @@ class Node:
 
     def req_show_depth_CB(self, msg):
         self.is_showing_depth = msg.data
+
+    def req_show_track_id_CB(self, msg):
+        self.is_showing_track_id = msg.data
 
     def _increase_point_z(self, pointXYZ_in, high):
         pointXYZ_out = PointXYZ()
@@ -124,11 +134,21 @@ class Node:
         #     # point = self.text_marker_position(_objects[i].cPoint)
         #     box_list.markers.append(self.create_polygon(message.header, _objects[i].cPoint, idx))
         #     idx += 1
-        if self.is_showing_depth:
-            idx = 2
-            for i in range(len(_objects)):
-                box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].cPoint, i) )
-                idx += 1
+        idx = 2
+        if self.is_tracking_mode:
+            if self.is_showing_track_id:
+                for i in range(len(_objects)):
+                    obj_id = _objects[i].track.id
+                    box_list.markers.append( self.create_tracking_text_marker( idx, message.header, _objects[i].cPoint, obj_id) )
+                    idx += 1
+        else:
+            if self.is_showing_depth:
+                for i in range(len(_objects)):
+                    # Decide the source of id
+                    obj_id = _objects[i].track.id if self.is_showing_track_id else i
+                    box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].cPoint, obj_id) )
+                    idx += 1
+
         #
         self.polygon_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
@@ -215,12 +235,16 @@ class Node:
             text += " fps = %.1f" % fps
         if not _num_removed_obj is None:
             text += " -%d objs" % _num_removed_obj
+        # Overwrite the frame_id of the text
+        header_txt = copy.deepcopy(header)
+        if self.is_overwrite_txt_frame_id:
+            header_txt.frame_id = self.txt_frame_id
         #
-        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_d"), scale=2.0 )
+        return self.text_marker_prototype(idx, header_txt, text, point=point, ns=(self.inputTopic + "_d"), scale=2.0 )
 
     def create_depth_text_marker(self, idx, header, cPoint, cPoint_id=None):
         """
-        Generate a text marker for showing latency and FPS.
+        Generate a text marker for showing depth/distance of object
         """
         point = self.text_marker_position( cPoint )
         # depth = self._calculate_depth_polygon( cPoint )
@@ -233,6 +257,15 @@ class Node:
         scale = 1.0
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_depth"), scale=scale )
 
+    def create_tracking_text_marker(self, idx, header, cPoint, cPoint_id=None):
+        """
+        Generate a text marker for showing tracking info.
+        """
+        point = self.text_marker_position( cPoint )
+        # Generate text
+        text = "<%s>" % str(cPoint_id )
+        scale = 1.0
+        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_tracking"), scale=scale )
 
     def text_marker_prototype(self, idx, header, text, point=Point(), ns="T", scale=2.0):
         """

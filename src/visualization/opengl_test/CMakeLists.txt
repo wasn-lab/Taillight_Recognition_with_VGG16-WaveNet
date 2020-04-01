@@ -31,13 +31,10 @@ find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(assimp)
-if (NOT assimp_FOUND)
-  message(FATAL_ERROR "${PACKAGE_NAME} requires libassimp. Try: sudo apt-get install libassimp-dev")
-endif ()
-
+find_package(GLEW)
 find_package(Bullet)
-if (NOT BULLET_FOUND)
-  message(FATAL_ERROR "${PACKAGE_NAME} requires bullet package. Try: sudo apt-get install libbullet-dev")
+if ((NOT assimp_FOUND) OR (NOT BULLET_FOUND) OR (NOT GLEW_FOUND))
+  message(FATAL_ERROR "${PACKAGE_NAME} requires libassimp/bullet/glew. Try:\n  sudo apt-get install libassimp-dev libbullet-dev libglew-dev")
 endif ()
 
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
@@ -113,8 +110,9 @@ include_directories(
     #
 	external/AntTweakBar-1.16/include/
 	# external/glfw-3.1.2/include/
+  ${GLEW_INCLUDE_DIRS}
 	external/glm-0.9.7.1/
-	external/glew-1.13.0/include/
+	# external/glew-1.13.0/include/
 	# external/assimp-3.0.1270/include/
 	# external/bullet-2.81-rev2613/src/
 	.
@@ -134,10 +132,15 @@ add_definitions(${PCL_DEFINITIONS})
 set(ALL_GL_LIBS
 	${OPENGL_LIBRARY}
 	# glfw
-	GLEW_1130
-    ${GLUT_LIBRARY}
+  ${GLEW_LIBRARIES}
+  ${GLUT_LIBRARY}
 )
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  # workaround for
+  # /usr/lib/gcc/aarch64-linux-gnu/5/../../../aarch64-linux-gnu/libGL.so: undefined reference to `drmFreeDevices'
+  list(APPEND ALL_GL_LIBS "drm")
+endif()
 
 # Render models
 set(RENDER_MODEL_PATH
@@ -172,12 +175,7 @@ set(ALL_RENDER_MODELS
     ${RENDER_MODEL_PATH}rmImageArray.cpp
     ${RENDER_MODEL_PATH}rmlv2TrafficLightImage.cpp
     ${RENDER_MODEL_PATH}rmlv2PathPlan_navPath.cpp
-
 )
-
-
-
-
 
 # Libraries
 # ROS interfaces

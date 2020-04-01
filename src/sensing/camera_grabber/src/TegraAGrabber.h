@@ -11,14 +11,16 @@ class TegraAGrabber
 public:
   TegraAGrabber();
   ~TegraAGrabber();
-  void initializeModules();
+  void initializeModules(const bool do_resize);
   bool runPerception();
 
 protected:
   void InitParameters();
-#if CAR_MODEL_IS_B1
+#if CAR_MODEL_IS_B1 || CAR_MODEL_IS_OMNIBUS
   // TODO: fill in the correct camera id.
-  const std::vector<int> cam_ids_{ camera::id::right_60,  camera::id::front_60,  camera::id::left_60 };
+  const std::vector<int> cam_ids_{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
+#elif CAR_MODEL_IS_B1_V2
+  const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30 };
 #elif CAR_MODEL_IS_HINO
   const std::vector<int> cam_ids_{ camera::id::left_60, camera::id::front_60, camera::id::right_60,
                                    camera::id::left_30, camera::id::front_30, camera::id::right_30 };
@@ -35,11 +37,13 @@ private:
   MultiGMSLCameraGrabber* grabber;
   std::vector<Npp8u*> npp8u_ptrs_;
   NPPResizer resizer_;
+  int num_src_bytes_;
+  bool resize_;
 
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
 };
-}
+}  // namespace SensingSubSystem
 
 #endif

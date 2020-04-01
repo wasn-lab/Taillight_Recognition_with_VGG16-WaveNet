@@ -40,7 +40,9 @@ double find_angle(const geometry_msgs::Point &_from, const geometry_msgs::Point 
 {
   double _angle = std::atan2(_to.y - _from.y, _to.x - _from.x);
   if (_angle < 0.0)
+  {
     _angle = _angle + 2 * M_PI;
+  }
 
   return _angle * 360 / (2 * M_PI);
 }
@@ -54,9 +56,13 @@ bool isIntersectLine(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Po
   const double td = (_l1_p1.x - _l1_p2.x) * (_l2_p2.y - _l1_p1.y) + (_l1_p1.y - _l1_p2.y) * (_l1_p1.x - _l2_p2.x);
 
   if (tc * td < 0 && ta * tb < 0)
+  {
     return true;
+  }
   else
+  {
     return false;
+}
 }
 
 /*

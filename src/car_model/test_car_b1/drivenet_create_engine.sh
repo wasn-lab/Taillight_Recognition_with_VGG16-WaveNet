@@ -1,6 +1,12 @@
 #!/bin/bash
 # For generating drivenet tensorRT engine files.
 set -x
+
+source build/car_model/scripts/car_model.sh
+if [[ "${CAR_MODEL}" != "B1" ]]; then
+  echo "This script is for B1 only."
+  exit 0
+fi
 source devel/setup.bash
 
 find src/sensing/itri_drivenet -name "*.engine" -exec rm {} \;

@@ -31,8 +31,7 @@
 #include "ProgramArguments.hpp"
 
 #include <sstream>
-#include <string>
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
 std::string ProgramArguments::m_empty("");
@@ -161,7 +160,7 @@ const std::string& ProgramArguments::get(const char* name) const
   else
   {
     return it->second.value;
-}
+  }
 }
 
 bool ProgramArguments::has(const char* name) const
@@ -190,7 +189,7 @@ void ProgramArguments::addOption(const Option_t& newOption)
   if (!it.second)
   {
     throw std::runtime_error(std::string("ProgramArguments already contains the new option: ") + newOption.option);
-}
+  }
 }
 
 void ProgramArguments::set(const char* option, const char* value)

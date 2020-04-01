@@ -1,118 +1,143 @@
 #include "drivenet/campub.h"
 
-void callback_CamObjFR(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
-{
-  arrCamObjFR = DetectMsg->objects;
-}
+// Subscriber: 8 cams
+ros::Subscriber g_cam_obj_fc;
+ros::Subscriber g_cam_obj_ft_f;
+ros::Subscriber g_cam_obj_ft_c;
+
+ros::Subscriber g_cam_obj_rf;
+ros::Subscriber g_cam_obj_rb;
+
+ros::Subscriber g_cam_obj_lf;
+ros::Subscriber g_cam_obj_lb;
+
+ros::Subscriber g_cam_obj_bt;
+
+// Publisher: 1, represent all cams
+ros::Publisher g_cam_obj_all;
+
+std_msgs::Header g_header_all;
+
+std::vector<msgs::DetectedObject> g_arr_cam_obj_fc;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_ft_f;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_ft_c;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_rf;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_rb;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_lf;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_lb;
+std::vector<msgs::DetectedObject> g_arr_cam_obj_bt;
+
+std::string g_cam_obj_fc_topic_name;
+std::string g_cam_obj_ft_f_topic_name;
+std::string g_cam_obj_ft_c_topic_name;
+std::string g_cam_obj_rf_topic_name;
+std::string g_cam_obj_rb_topic_name;
+std::string g_cam_obj_lf_topic_name;
+std::string g_cam_obj_lb_topic_name;
+std::string g_cam_obj_bt_topic_name;
 
 void callback_CamObjFC(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  HeaderAll = DetectMsg->header;
-  arrCamObjFC = DetectMsg->objects;
+  g_header_all = DetectMsg->header;
+  g_arr_cam_obj_fc = DetectMsg->objects;
 }
 
-void callback_CamObjFL(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
+void callback_CamObjFTf(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjFL = DetectMsg->objects;
+  g_arr_cam_obj_ft_f = DetectMsg->objects;
 }
 
-void callback_CamObjFT(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
+void callback_CamObjFTc(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjFT = DetectMsg->objects;
+  g_arr_cam_obj_ft_c = DetectMsg->objects;
 }
 
 void callback_CamObjRF(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjRF = DetectMsg->objects;
+  g_arr_cam_obj_rf = DetectMsg->objects;
 }
 
 void callback_CamObjRB(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjRB = DetectMsg->objects;
+  g_arr_cam_obj_rb = DetectMsg->objects;
 }
 
 void callback_CamObjLF(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjLF = DetectMsg->objects;
+  g_arr_cam_obj_lf = DetectMsg->objects;
 }
 
 void callback_CamObjLB(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjLB = DetectMsg->objects;
+  g_arr_cam_obj_lb = DetectMsg->objects;
 }
 
 void callback_CamObjBT(const msgs::DetectedObjectArray::ConstPtr& DetectMsg)
 {
-  arrCamObjBT = DetectMsg->objects;
+  g_arr_cam_obj_bt = DetectMsg->objects;
 }
 
 void collectRepub()
 {
   // arrCamObjAll = arrCamObjBT + arrCamObjLB;
-  msgs::DetectedObjectArray arrCamObjAll;
-  size_t allSize = arrCamObjFR.size() + arrCamObjFC.size() + arrCamObjFL.size() + arrCamObjFT.size() +
-                   arrCamObjRF.size() + arrCamObjRB.size() + arrCamObjLF.size() + arrCamObjLB.size() +
-                   arrCamObjBT.size();
-  arrCamObjAll.objects.reserve(allSize);
-  arrCamObjAll.header = HeaderAll;
+  msgs::DetectedObjectArray arr_cam_obj_all;
+  size_t all_size = g_arr_cam_obj_fc.size() + g_arr_cam_obj_ft_f.size() + g_arr_cam_obj_ft_c.size() +
+                   g_arr_cam_obj_rf.size() + g_arr_cam_obj_rb.size() + g_arr_cam_obj_lf.size() + g_arr_cam_obj_lb.size() +
+                   g_arr_cam_obj_bt.size();
+  arr_cam_obj_all.objects.reserve(all_size);
+  arr_cam_obj_all.header = g_header_all;
 
-  for (size_t i = 0; i < arrCamObjFR.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_fc.size(); i++)
   {
-    arrCamObjFR[i].camInfo.id = camera::id::right_60;
-    arrCamObjAll.objects.push_back(arrCamObjFR[i]);
+    g_arr_cam_obj_fc[i].camInfo.id = camera::id::front_bottom_60;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_fc[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjFC.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_ft_f.size(); i++)
   {
-    arrCamObjFC[i].camInfo.id = camera::id::front_60;
-    arrCamObjAll.objects.push_back(arrCamObjFC[i]);
+    g_arr_cam_obj_ft_f[i].camInfo.id = camera::id::front_top_far_30;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_ft_f[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjFL.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_ft_c.size(); i++)
   {
-    arrCamObjFL[i].camInfo.id = camera::id::left_60;
-    arrCamObjAll.objects.push_back(arrCamObjFL[i]);
+    g_arr_cam_obj_ft_c[i].camInfo.id = camera::id::front_top_close_120;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_ft_c[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjFT.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_rf.size(); i++)
   {
-    arrCamObjFT[i].camInfo.id = camera::id::top_front_120;
-    arrCamObjAll.objects.push_back(arrCamObjFT[i]);
+    g_arr_cam_obj_rf[i].camInfo.id = camera::id::right_front_60;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_rf[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjRF.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_rb.size(); i++)
   {
-    arrCamObjRF[i].camInfo.id = camera::id::top_right_front_120;
-    arrCamObjAll.objects.push_back(arrCamObjRF[i]);
+    g_arr_cam_obj_rb[i].camInfo.id = camera::id::right_back_60;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_rb[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjRB.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_lf.size(); i++)
   {
-    arrCamObjRB[i].camInfo.id = camera::id::top_right_rear_120;
-    arrCamObjAll.objects.push_back(arrCamObjRB[i]);
+    g_arr_cam_obj_lf[i].camInfo.id = camera::id::left_front_60;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_lf[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjLF.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_lb.size(); i++)
   {
-    arrCamObjLF[i].camInfo.id = camera::id::top_left_front_120;
-    arrCamObjAll.objects.push_back(arrCamObjLF[i]);
+    g_arr_cam_obj_lb[i].camInfo.id = camera::id::left_back_60;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_lb[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjLB.size(); i++)
+  for (size_t i = 0; i < g_arr_cam_obj_bt.size(); i++)
   {
-    arrCamObjLB[i].camInfo.id = camera::id::top_left_rear_120;
-    arrCamObjAll.objects.push_back(arrCamObjLB[i]);
+    g_arr_cam_obj_bt[i].camInfo.id = camera::id::back_top_120;
+    arr_cam_obj_all.objects.push_back(g_arr_cam_obj_bt[i]);
   }
 
-  for (size_t i = 0; i < arrCamObjBT.size(); i++)
-  {
-    arrCamObjBT[i].camInfo.id = camera::id::top_rear_120;
-    arrCamObjAll.objects.push_back(arrCamObjBT[i]);
-  }
+  ROS_INFO_STREAM("HEADER: " << arr_cam_obj_all.header);
 
-  ROS_INFO_STREAM("HEADER: " << arrCamObjAll.header);
-
-  CamObjAll.publish(arrCamObjAll);
+  g_cam_obj_all.publish(arr_cam_obj_all);
 }
 
 int main(int argc, char** argv)
@@ -123,28 +148,26 @@ int main(int argc, char** argv)
   // cam60_0_topicName = camera::topics[camera::id::right_60];
   // cam60_0 = nh.subscribe(cam60_0_topicName + std::string("/compressed"), 1, callback_60_0_decode);
 
-  CamObjFR_topicName = camera::topics_obj[camera::id::right_60];
-  CamObjFC_topicName = camera::topics_obj[camera::id::front_60];
-  CamObjFL_topicName = camera::topics_obj[camera::id::left_60];
-  CamObjFT_topicName = camera::topics_obj[camera::id::top_front_120];
-  CamObjRF_topicName = camera::topics_obj[camera::id::top_right_front_120];
-  CamObjRB_topicName = camera::topics_obj[camera::id::top_right_rear_120];
-  CamObjLF_topicName = camera::topics_obj[camera::id::top_left_front_120];
-  CamObjLB_topicName = camera::topics_obj[camera::id::top_left_rear_120];
-  CamObjBT_topicName = camera::topics_obj[camera::id::top_rear_120];
+  g_cam_obj_fc_topic_name = camera::topics_obj[camera::id::front_bottom_60];
+  g_cam_obj_ft_f_topic_name = camera::topics_obj[camera::id::front_top_far_30];
+  g_cam_obj_ft_c_topic_name = camera::topics_obj[camera::id::front_top_close_120];
+  g_cam_obj_rf_topic_name = camera::topics_obj[camera::id::right_front_60];
+  g_cam_obj_rb_topic_name = camera::topics_obj[camera::id::right_back_60];
+  g_cam_obj_lf_topic_name = camera::topics_obj[camera::id::left_front_60];
+  g_cam_obj_lb_topic_name = camera::topics_obj[camera::id::left_back_60];
+  g_cam_obj_bt_topic_name = camera::topics_obj[camera::id::back_top_120];
 
   // Subscribe msgs
-  CamObjFR = nh.subscribe(CamObjFR_topicName, 1, callback_CamObjFR);
-  CamObjFC = nh.subscribe(CamObjFC_topicName, 1, callback_CamObjFC);
-  CamObjFL = nh.subscribe(CamObjFL_topicName, 1, callback_CamObjFL);
-  CamObjFT = nh.subscribe(CamObjFT_topicName, 1, callback_CamObjFT);
-  CamObjRF = nh.subscribe(CamObjRF_topicName, 1, callback_CamObjRF);
-  CamObjRB = nh.subscribe(CamObjRB_topicName, 1, callback_CamObjRB);
-  CamObjLF = nh.subscribe(CamObjLF_topicName, 1, callback_CamObjLF);
-  CamObjLB = nh.subscribe(CamObjLB_topicName, 1, callback_CamObjLB);
-  CamObjBT = nh.subscribe(CamObjBT_topicName, 1, callback_CamObjBT);
+  g_cam_obj_fc = nh.subscribe(g_cam_obj_fc_topic_name, 1, callback_CamObjFC);
+  g_cam_obj_ft_f = nh.subscribe(g_cam_obj_ft_f_topic_name, 1, callback_CamObjFTf);
+  g_cam_obj_ft_c = nh.subscribe(g_cam_obj_ft_c_topic_name, 1, callback_CamObjFTc);
+  g_cam_obj_rf = nh.subscribe(g_cam_obj_rf_topic_name, 1, callback_CamObjRF);
+  g_cam_obj_rb = nh.subscribe(g_cam_obj_rb_topic_name, 1, callback_CamObjRB);
+  g_cam_obj_lf = nh.subscribe(g_cam_obj_lf_topic_name, 1, callback_CamObjLF);
+  g_cam_obj_lb = nh.subscribe(g_cam_obj_lb_topic_name, 1, callback_CamObjLB);
+  g_cam_obj_bt = nh.subscribe(g_cam_obj_bt_topic_name, 1, callback_CamObjBT);
 
-  CamObjAll = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
+  g_cam_obj_all = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
 
   ros::Rate loop_rate(30);
 
