@@ -73,19 +73,28 @@ VoxelGrid_CUDA::run (typename pcl::PointCloud<PointT> &point_cloud,
   bool* h_markers;
 
   if (maxThreadsNumber == 0)
+  {
     return false;
+  }
 
   err = cudaMalloc ((void**) &d_point_cloud, point_cloud.points.size () * sizeof(PointT));
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
- err = cudaMemcpy (d_point_cloud, point_cloud.points.data (), point_cloud.points.size () * sizeof(PointT), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(d_point_cloud, point_cloud.points.data(), point_cloud.points.size() * sizeof(PointT),
+                   cudaMemcpyHostToDevice);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaCalculateGridParams<PointT> (d_point_cloud, point_cloud.points.size (), resolution, resolution, resolution, rgd_params);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   //std::cout << "regular grid parameters:" << std::endl;
   //std::cout << "bounding_box_min_X: " << rgd_params.bounding_box_min_X << std::endl;
@@ -103,36 +112,49 @@ VoxelGrid_CUDA::run (typename pcl::PointCloud<PointT> &point_cloud,
 
   err = cudaMalloc ((void**) &d_hashTable, point_cloud.points.size () * sizeof(hashElement));
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaMalloc ((void**) &d_buckets, rgd_params.number_of_buckets * sizeof(bucket));
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaCalculateGrid<PointT> (maxThreadsNumber, d_point_cloud, d_buckets, d_hashTable, point_cloud.points.size (), rgd_params);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaMalloc ((void**) &d_markers, point_cloud.points.size () * sizeof(bool));
   if (err != ::cudaSuccess)
+  {
     return false;
-
+  }
 
   err = cudaDownSample (maxThreadsNumber, d_markers, d_hashTable, d_buckets, rgd_params, point_cloud.points.size ());
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   h_markers = (bool *) malloc (point_cloud.points.size () * sizeof(bool));
 
   err = cudaMemcpy (h_markers, d_markers, point_cloud.points.size () * sizeof(bool), cudaMemcpyDeviceToHost);
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   pcl::PointCloud<PointT> downsampled_point_cloud;
   for (size_t i = 0; i < point_cloud.points.size (); i++)
   {
     if (h_markers[i])
+    {
       downsampled_point_cloud.push_back (point_cloud[i]);
+    }
   }
 
   //std::cout << "Number of points before down-sampling: " << point_cloud.size() << std::endl;
@@ -147,22 +169,30 @@ VoxelGrid_CUDA::run (typename pcl::PointCloud<PointT> &point_cloud,
   err = cudaFree (d_point_cloud);
   d_point_cloud = NULL;
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaFree (d_hashTable);
   d_hashTable = NULL;
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaFree (d_buckets);
   d_buckets = NULL;
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   err = cudaFree (d_markers);
   d_markers = NULL;
   if (err != ::cudaSuccess)
+  {
     return false;
+  }
 
   //std::cout << "After cudaFree" << std::endl;
   //coutMemoryStatus ();
