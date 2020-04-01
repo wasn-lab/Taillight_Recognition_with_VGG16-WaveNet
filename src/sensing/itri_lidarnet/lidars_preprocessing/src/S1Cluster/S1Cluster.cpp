@@ -202,22 +202,14 @@ S1Cluster::getClusters (bool debug,
       //constrain : too small or thin objects
       if (cluster_vector.at(i).dz < 0.8)
       {
-        {
-          {
             cluster_vector.at(i).cluster_tag = 0;
-          }
-        }
       }
 
       //constrain : too big
       if (cluster_vector.at(i).dis_max_min > 15 || cluster_vector.at(i).dx > 15 || cluster_vector.at(i).dy > 15 ||
           cluster_vector.at(i).dz > 3)
       {
-        {
-          {
             cluster_vector.at(i).cluster_tag = 0;
-          }
-        }
       }
 
       //      //constrain : small size noise
