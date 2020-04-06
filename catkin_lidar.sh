@@ -1,3 +1,3 @@
 #!/bin/bash
 
-catkin_make -DCMAKE_BUILD_TYPE=Release -DCATKIN_WHITELIST_PACKAGES="ouster_client;ouster_ros;ouster_viz;velodyne;velodyne_driver;velodyne_laserscan;velodyne_msgs;velodyne_pointcloud;lidar;libs;lidars_grabber;lidars_preprocessing;scripts;lidar_squseg_inference;output_results_by_dbscan;msgs;dl_data;car_model"
+catkin_make -DCMAKE_BUILD_TYPE=Release -DCATKIN_WHITELIST_PACKAGES="ouster_client;ouster_ros;ouster_viz;velodyne;velodyne_driver;velodyne_laserscan;velodyne_msgs;velodyne_pointcloud;lidar;libs;lidars_grabber;lidars_preprocessing;scripts;lidar_squseg_inference;lidar_squseg_v2_inference;output_results_by_dbscan;msgs;dl_data;car_model"

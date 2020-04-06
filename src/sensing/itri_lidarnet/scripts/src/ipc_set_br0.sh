@@ -1,6 +1,6 @@
 #!/bin/bash
+sudo apt install -y bridge-utils
 sudo ifdown -a
-
 
 # enter ifconfig info
 ls /sys/class/net/
@@ -26,10 +26,11 @@ sudo bash -c "echo 'address 192.168.0.1' >> /etc/network/interfaces"
 sudo bash -c "echo 'netmask 255.255.255.0' >> /etc/network/interfaces"
 sudo bash -c "echo 'network 192.168.0.1' >> /etc/network/interfaces"
 sudo bash -c "echo 'broadcast 255.255.255.255' >> /etc/network/interfaces"
-sudo bash -c "echo 'gateway 192.168.0.1' >> /etc/network/interfaces"
+sudo bash -c "echo 'gateway 192.168.0.2' >> /etc/network/interfaces"
 sudo bash -c "echo 'dns-nameservers 8.8.8.8 8.8.4.4' >> /etc/network/interfaces"
 sudo bash -c "echo 'dns-search localdomain.local' >> /etc/network/interfaces"
 sudo bash -c "echo 'bridge_ports $line' >> /etc/network/interfaces"
 
 
 sudo ifup -a
+sudo ifup --ignore-errors br0
