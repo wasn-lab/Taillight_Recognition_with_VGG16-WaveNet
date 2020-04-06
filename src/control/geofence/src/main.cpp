@@ -404,7 +404,7 @@ int main(int argc, char **argv){
 		if(Deviate_Geofence.Calculator()==0)
 		{
 			frame.can_id  = 0x593;
-			cout << "Deviate path's geofence: " << Deviate_Geofence.getDistance() << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ " << endl;
+			cout << "Deviate path's geofence: " << Deviate_Geofence.getDistance() << endl;
 			frame.data[0] = (short int)(Deviate_Geofence.getDistance()*100);
 			frame.data[1] = (short int)(Deviate_Geofence.getDistance()*100)>>8;
 			frame.data[2] = (short int)(Deviate_Geofence.getObjSpeed()*100);
