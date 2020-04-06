@@ -1,5 +1,6 @@
 #include <cmath>
 #include <cassert>
+#include <memory>
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/version.hpp>
@@ -202,7 +203,7 @@ uint32_t calc_cvmat_checksum(const cv::Mat& img)
 uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len)
 {
   const uint32_t p = 16777619;
-  auto hash = (uint32_t)2166136261;
+  auto hash = static_cast<uint32_t>(2166136261);
   for (size_t i = 0; i < len; i++)
   {
     hash = (hash ^ bytes[i]) * p;
@@ -218,15 +219,14 @@ uint32_t calc_bytes_checksum(const unsigned char* bytes, size_t len)
 
 bool is_black_image(const cv::Mat& img)
 {
-  unsigned char* data = img.data;
-  for (size_t i = 0, nbytes = img.total() * img.elemSize(); i < nbytes; i++)
+  if ((img.rows == 0) || (img.cols == 0))
   {
-    if (data[i] != 0)
-    {
-      return false;
-    }
+    return false;
   }
-  return true;
+  const auto nbytes = img.total() * img.elemSize();
+  std::unique_ptr<uint8_t[]> zeros{ new uint8_t[nbytes] };
+  std::memset(zeros.get(), 0, nbytes);
+  return std::memcmp(img.data, zeros.get(), nbytes) == 0;
 }
 
 int release_cv_mat_if_necessary(cv::Mat& img)
@@ -238,4 +238,4 @@ int release_cv_mat_if_necessary(cv::Mat& img)
   return 0;
 }
 
-} // namespace camera
+}  // namespace camera
