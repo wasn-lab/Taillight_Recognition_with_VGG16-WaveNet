@@ -37,7 +37,7 @@ void DistanceEstimation::init(std::string pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string fc60_json = pkgPath;
-    fc60_json.append("/data/alignment/out.json");
+    fc60_json.append("/data/alignment/fm60_0325.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
@@ -170,6 +170,9 @@ int DistanceEstimation::ReadDistanceFromJson(const std::string& filename, cv::Po
       dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
     }
   }
+
+  std::cout << "Done reading file. " << std::endl;
+  
   return 0;
 }
 
@@ -690,7 +693,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   {
     std::vector<int> points_src = { class_id, x1, x2, y2 };
     std::vector<int> points_dst = { class_id, x1, x2, y2 };
-    BoxShrink(cam_id, points_src, points_dst);
+    //BoxShrink(cam_id, points_src, points_dst);
     x1 = points_dst[1];
     x2 = points_dst[2];
   }
