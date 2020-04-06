@@ -137,9 +137,9 @@ void vehpredictpathgen_pub(bool flag)
     {
       if (r > 0.1)
       {
-        for (int i = 0; i < predict_s * 100; i++)
+        for (int i = 0; i < predict_s * 10; i++)
         {
-          double theta_t = double(i/100) / r;
+          double theta_t = double(i/10) / r;
           Relpose.pose.position.x = r * std::sin(theta_t);
           if (theta_t < RT_PI/2.0 || theta_t > 3*RT_PI/2.0)
           {
@@ -161,9 +161,9 @@ void vehpredictpathgen_pub(bool flag)
       }
       else if (r < -0.1)
       {
-        for (int i = 0; i < predict_s * 100; i++)
+        for (int i = 0; i < predict_s * 10; i++)
         {
-          double theta_t = double(i/100) / r;
+          double theta_t = double(i/10) / r;
           Relpose.pose.position.x = r * std::sin(theta_t);
           if (theta_t < RT_PI/2.0 || theta_t > 3*RT_PI/2.0)
           {
@@ -185,9 +185,9 @@ void vehpredictpathgen_pub(bool flag)
       }
       else
       {
-        for (int i = 0; i < predict_s * 100; i++)
+        for (int i = 0; i < predict_s * 10; i++)
         {
-          Relpose.pose.position.x = double(i/100);
+          Relpose.pose.position.x = double(i/10);
           Relpose.pose.position.y = 0;
           Relpose.pose.position.z = -3;
           Relpath.poses.push_back(Relpose);
@@ -202,9 +202,9 @@ void vehpredictpathgen_pub(bool flag)
     }
     else
     {
-      for (int i = 0; i < predict_s * 100; i++)
+      for (int i = 0; i < predict_s * 10; i++)
       {
-        Relpose.pose.position.x = double(i/100);
+        Relpose.pose.position.x = double(i/10);
         Relpose.pose.position.y = 0;
         Relpose.pose.position.z = -3;
         Relpath.poses.push_back(Relpose);
