@@ -2,8 +2,7 @@
 #define EDGE_DETECT_H
 
 #include "../../UserDefine.h"
-#include <math.h>
-
+#include <cmath>
 using namespace pcl;
 
 pcl::PointCloud<PointXYZI> 

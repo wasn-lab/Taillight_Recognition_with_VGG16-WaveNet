@@ -10,7 +10,7 @@
 #include <sstream>
 #include <sys/types.h>
 #include <dirent.h>
-#include <errno.h>
+#include <cerrno>
 #include <string>
 #include "../UserDefine.h"
 
