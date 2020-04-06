@@ -40,7 +40,7 @@
 #define PCL_SVM_WRAPPER_HPP_
 
 #include "SvmWrapperModify.h"
-#include <assert.h>
+#include <cassert>
 #include <fstream>
 
 template <typename T>
