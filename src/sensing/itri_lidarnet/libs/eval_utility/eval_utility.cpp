@@ -28,9 +28,11 @@ VPointCloudXYZIL pcdExtract_byClass(VPointCloudXYZIL::Ptr cloud_il, int class_in
 
 	for (size_t i = 0; i < cloud_il->points.size(); ++i)
 	{
-		if (cloud_il->points.at(i).label == class_index)
-			pcdExtract.points.push_back(cloud_il->points.at(i));
-	}
+    if (cloud_il->points.at(i).label == class_index)
+    {
+      pcdExtract.points.push_back(cloud_il->points.at(i));
+    }
+  }
 
 	return pcdExtract;
 }
@@ -43,9 +45,11 @@ VPointCloudXYZIL pcdExtract_allLabelObj(VPointCloudXYZIL::ConstPtr cloud_il)
 
 	for (size_t i = 0; i < cloud_il->points.size(); ++i)
 	{
-		if (cloud_il->points.at(i).label > 0)
-			pcdExtract.points.push_back(cloud_il->points.at(i));
-	}
+    if (cloud_il->points.at(i).label > 0)
+    {
+      pcdExtract.points.push_back(cloud_il->points.at(i));
+    }
+  }
 
 	return pcdExtract;
 }
@@ -83,18 +87,25 @@ void pointcloudEval::IOUcal_pointwise(int class_index)
 
 	GTnonInter_cnt = GT_extract.points.size() - intersect_cnt;
 	PDnonInter_cnt = PD_extract.points.size() - intersect_cnt;
-	
-	if(GT_extract.points.size()==0)
-		GT_cloudExist = false;
 
-	if(PD_extract.points.size()==0)
-		PD_cloudExist = false;
+  if (GT_extract.points.size() == 0)
+  {
+    GT_cloudExist = false;
+  }
 
-	if(GT_extract.points.size()==0 && PD_extract.points.size()==0)
-		iou = 0;
-	else
-		iou = intersect_cnt/(intersect_cnt+GTnonInter_cnt+PDnonInter_cnt);
-		
+  if (PD_extract.points.size() == 0)
+  {
+    PD_cloudExist = false;
+  }
+
+  if (GT_extract.points.size() == 0 && PD_extract.points.size() == 0)
+  {
+    iou = 0;
+  }
+  else
+  {
+    iou = intersect_cnt/(intersect_cnt+GTnonInter_cnt+PDnonInter_cnt);
+  }
 }
 
 

@@ -39,7 +39,9 @@ create_node (unsigned int index)
 {
   node_t *n = (node_t *) calloc (1, sizeof(node_t));
   if (n == NULL)
+  {
     perror ("[DBSCAN] Failed to allocate node.");
+  }
   else
   {
     n->index = index;
@@ -141,7 +143,9 @@ spread (unsigned int index,
 {
   epsilon_neighbours_t *spread = get_epsilon_neighbours (index, points, num_points, epsilon);
   if (spread == NULL)
+  {
     return FAILURE;
+  }
   if (spread->num_members >= minpts)
   {
     node_t *n = spread->head;
