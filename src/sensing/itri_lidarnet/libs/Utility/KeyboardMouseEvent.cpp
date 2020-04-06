@@ -117,8 +117,10 @@ KeyboardMouseEvent::keyboardCallback (const pcl::visualization::KeyboardEvent &e
   {
     static int num2 = 0;
     struct stat buf;
-    while (stat ( (to_string (num2) + ".pcd").c_str (), &buf) == 0)
+    while (stat((to_string(num2) + ".pcd").c_str(), &buf) == 0)
+    {
       num2++;
+    }
 
     pcl::io::savePCDFileASCII (to_string (num2) + ".pcd", cloud_save_to_pcd);
 
@@ -146,9 +148,13 @@ KeyboardMouseEvent::keyboardCallback (const pcl::visualization::KeyboardEvent &e
   if (event.getKeySym () == "d" && event.keyDown ())  // User: stop stream
   {
     if (pause_state)
+    {
       pause_state = false;
+    }
     else
+    {
       pause_state = true;
+    }
     cout << "[INFO]: stop stream" << pause_state << endl;
   }
 
