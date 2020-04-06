@@ -10,25 +10,19 @@ using namespace pcl;
 
 class DBSCAN
 {
-  public:
-    DBSCAN ();
-    virtual
-    ~DBSCAN ();
+public:
+  DBSCAN();
+  virtual ~DBSCAN();
 
-    void
-    setInputCloud (const PointCloud<PointXYZ>::ConstPtr input);
-    void
-    setEpsilon (const double Epsilon);
-    void
-    setMinpts (const unsigned int MinPts);
-    void
-    segment (IndicesClusters &clusters);
+  void setInputCloud(const PointCloud<PointXYZ>::ConstPtr input);
+  void setEpsilon(const double Epsilon);
+  void setMinpts(const unsigned int MinPts);
+  void segment(IndicesClusters& clusters);
 
-  private:
-    PointCloud<PointXYZ>::ConstPtr input;
-    double epsilon;
-    unsigned int minpts;
-
+private:
+  PointCloud<PointXYZ>::ConstPtr input;
+  double epsilon;
+  unsigned int minpts;
 };
 
 #endif /* DBSCAN_H_ */

@@ -67,7 +67,7 @@ public:
 
   /// \brief run
   template <typename PointT>
-  grid_map::GridMap makeGridMap (const typename pcl::PointCloud<PointT>::Ptr& input);
+  grid_map::GridMap makeGridMap(const typename pcl::PointCloud<PointT>::Ptr& input);
 
 private:
   friend class TestClass;
@@ -100,8 +100,8 @@ private:
   /// \param[in] in_sensor_points: subscribed pointcloud
   /// \param[out] grid-x-length x grid-y-length size grid stuffed with point's height in corresponding grid cell
   template <typename PointT>
-  std::vector<std::vector<std::vector<double>>>
-  assignPoints2GridCell(const grid_map::GridMap& gridmap, const typename pcl::PointCloud<PointT>::Ptr& in_sensor_points);
+  std::vector<std::vector<std::vector<double>>> assignPoints2GridCell(
+      const grid_map::GridMap& gridmap, const typename pcl::PointCloud<PointT>::Ptr& in_sensor_points);
 
   /// \brief calculate costmap from subscribed pointcloud
   /// \param[in] maximum_height_thres: Maximum height threshold for pointcloud data
