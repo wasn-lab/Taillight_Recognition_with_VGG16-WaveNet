@@ -5,9 +5,9 @@
 //                      STD
 // =============================================
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 #include <stdexcept>
 
 #include <iostream>
@@ -20,16 +20,16 @@
 #include <functional>
 #include <algorithm>
 #include <atomic>
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h> //sleep
 #include <omp.h>
 #include <mutex>
 
-#include <time.h>
+#include <ctime>
 #include <ctime>
 
-#include <limits.h>
-#include <math.h>
+#include <climits>
+#include <cmath>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
