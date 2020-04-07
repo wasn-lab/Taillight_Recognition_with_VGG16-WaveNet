@@ -93,8 +93,8 @@ int main(int argc, char** argv)
     size_t numberABB = object_front_bottom_60.size();
     if (numberABB > 0)
     {
-      CLUSTER_INFO* camera_ABB = new CLUSTER_INFO[numberABB];
-      CLUSTER_INFO* camera_ABB_bbox = new CLUSTER_INFO[numberABB];
+      std::unique_ptr<CLUSTER_INFO[]> camera_ABB(new CLUSTER_INFO[numberABB]);
+      std::unique_ptr<CLUSTER_INFO[]> camera_ABB_bbox(new CLUSTER_INFO[numberABB]);
 
       size_t cnt = 0;
       for (size_t i = 0; i < object_front_bottom_60.size(); i++)
@@ -204,10 +204,7 @@ int main(int argc, char** argv)
         approxMVBB.Compute(camera_ABB[i].obb_vertex, camera_ABB[i].center, camera_ABB[i].min, camera_ABB[i].max,
                            camera_ABB[i].convex_hull);
       }
-      convexFusionB1V2.sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
-      
-      delete[]camera_ABB;
-      delete[]camera_ABB_bbox;
+      convexFusionB1V2.sendCameraResults(camera_ABB.get(), camera_ABB_bbox.get(), numberABB, g_frame_time, g_frame_id);
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)
