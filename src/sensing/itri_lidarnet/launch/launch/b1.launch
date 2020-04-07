@@ -32,7 +32,7 @@ Lidar List:
 <!-- tf2 ******************************************************************* -->
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
-<!-- <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/> -->
+<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
@@ -120,7 +120,6 @@ Lidar List:
 	  </include>
 	</group>
 
-
 <!-- ************ Front-Left: MR32 ************ -->
 	<group ns="LidarFrontLeft" if="$(eval arg('hardware_enable') != 0)">
 
@@ -207,6 +206,7 @@ Lidar List:
             <param name="~/frame_id" value="$(arg frame_id)"/>
         </node>
     </group>
+
 
 </launch>
 
