@@ -29,6 +29,8 @@ LiDARStitchingAuto LSA;
 
 mutex syncLock;
 
+StopWatch stopWatch;
+
 bool heartBeat[5] = { false, false, false, false, false };  //{ FrontLeft, FrontRight, RearLeft, RearRight, FrontTop }
 int heartBeat_times[5] = { 0, 0, 0, 0, 0 };
 int lidarAll_pubFlag = 4;
@@ -148,10 +150,20 @@ void lidarAll_Pub(int lidarNum)
     avg_time = 0;
   }
 
-  cloudPtr_LidAll->header.stamp = avg_time;
-  pub_LidAll.publish(*cloudPtr_LidAll);
+#if ENABLE_DEBUG_MODE == true
+  cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontTop->header.stamp;
+  cout << "[Dvr->Gbr]" << (ros::Time::now().toNSec() / 1000ull - cloudPtr_LidAll->header.stamp) / 1000 << endl;
 
+  if (stopWatch.getTimeSeconds() > 0.0001)
+  {
+    cout << "[GRABBER]: " << stopWatch.getTimeSeconds() << "s" << endl;
+  }
+#endif
+
+  pub_LidAll.publish(*cloudPtr_LidAll);
   cloudPtr_LidAll->clear();
+
+  stopWatch.reset();
 
   // if wall_time - ros_time !> 30 minutes, (not rosbag)
   // clear sensor pc data memory if delay 3sec.
@@ -201,7 +213,7 @@ void checkPubFlag(int lidarNum)
   else if (lidarAll_pubFlag != lidarNum && heartBeat_times[lidarNum] > 3)
   {
     lidarAll_pubFlag = lidarNum;
-    // cout << "[PubFlag]: " << lidarNum << endl;
+    cout << "[PubFlag]: " << lidarNum << endl;
     lidarAll_Pub(lidarNum);
     heartBeat_times[0] = 0;
     heartBeat_times[1] = 0;
@@ -461,7 +473,6 @@ void syncLock_callback()
           LidarRearLeft_Fine_Param[3], LidarRearLeft_Fine_Param[4], LidarRearLeft_Fine_Param[5]);
       cloudPtr_LidarRearLeft->header.frame_id = "lidar";
       pub_LidarRearLeft.publish(*cloudPtr_LidarRearLeft);
-
       checkPubFlag(2);
     }
     if (heartBeat[3] == true)
@@ -582,7 +593,6 @@ int main(int argc, char** argv)
   pub_LidAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
 
   thread TheadDetection(UI, argc, argv);
-
   ros::Rate loop_rate(80);  // 80Hz
   while (ros::ok())
   {
