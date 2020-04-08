@@ -125,45 +125,61 @@ S2Track::update (bool is_debug,
     {
       the_best_index = index_dis;
       if (is_debug)
-        viewer->addText3D ("C", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+      {
+        viewer->addText3D("C", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+      }
     }
     else if (lock_dis < 2.5 && (index_dis == index_vol))
     {
       the_best_index = index_vol;
       if (is_debug)
-        viewer->addText3D ("D", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+      {
+        viewer->addText3D("D", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+      }
     }
     else if (lock_dis < 3.0 && (index_dis == index_num))
     {
       the_best_index = index_num;
       if (is_debug)
-        viewer->addText3D ("E", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+      {
+        viewer->addText3D("E", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+      }
     }
     else if (lock_factor < 3.0)
     {
       the_best_index = index_factor;
       if (is_debug)
-        viewer->addText3D ("A", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+      {
+        viewer->addText3D("A", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+      }
     }
     else if (lock_factor2 <= 3.0)
     {
       the_best_index = index_factor2;
       if (is_debug)
-        viewer->addText3D ("B", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+      {
+        viewer->addText3D("B", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+      }
     }
     else
     {
       if (lock_dis == 99999)
       {
         if (is_debug)
-          viewer->addText3D ("-", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+        {
+          viewer->addText3D("-", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+        }
         else if (is_debug)
-          viewer->addText3D (to_string ((int) lock_dis), cluster_info[i].center, 2, 1, 1, 1, to_string (*viewID), 0);
+        {
+          viewer->addText3D(to_string((int)lock_dis), cluster_info[i].center, 2, 1, 1, 1, to_string(*viewID), 0);
+        }
       }
       else
       {
         if (is_debug)
-          viewer->addText3D ("*", cluster_info[i].center, 1, 1, 1, 1, to_string (*viewID), 0);
+        {
+          viewer->addText3D("*", cluster_info[i].center, 1, 1, 1, 1, to_string(*viewID), 0);
+        }
       }
     }
     ++*viewID;
@@ -201,7 +217,9 @@ S2Track::update (bool is_debug,
     }
 
     if (tracking_id_count > 256)
+    {
       tracking_id_count = 0;
+    }
 
     if (is_debug)
     {

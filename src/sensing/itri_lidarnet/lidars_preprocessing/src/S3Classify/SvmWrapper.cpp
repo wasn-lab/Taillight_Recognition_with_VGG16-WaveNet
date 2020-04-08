@@ -184,10 +184,14 @@ SvmWrapper::calculate (CLUSTER_INFO *single_cluster_info)
             if (classification_result.at (i).size () == 3)
             {
               single_cluster_info->confidence = classification_result.at (i).at (1) * 100;
-              if (classification_result.at (i).at (0) == 1)
+              if (classification_result.at(i).at(0) == 1)
+              {
                 return true;
+              }
               else
+              {
                 return false;
+              }
             }
             else
             {
