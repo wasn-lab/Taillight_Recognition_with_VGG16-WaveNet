@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+    <name>itri_tracking_2d</name>
+    <version>0.0.0</version>
+    <description>itri_tracking_2d package</description>
+    <maintainer email="chinghao.liu@itri.org.tw">Ching-Hao Liu</maintainer>
+    <license>TODO</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+    
+    <build_depend>roscpp</build_depend>
+    <build_depend>geometry_msgs</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>msgs</build_depend>
+    <build_depend>pcl_ros</build_depend>
+    <build_depend>grid_map_ros</build_depend>
+
+    <run_depend>roscpp</run_depend>
+    <run_depend>geometry_msgs</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>msgs</run_depend>
+    <run_depend>pcl_ros</run_depend>
+    <run_depend>grid_map_ros</run_depend>
+
+    <export>
+    </export>
+</package>
