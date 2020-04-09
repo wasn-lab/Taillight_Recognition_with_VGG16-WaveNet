@@ -40,7 +40,7 @@
 #define PCL_SVM_WRAPPER_HPP_
 
 #include "SvmWrapperModify.h"
-#include <assert.h>
+#include <cassert>
 #include <fstream>
 
 template <typename T>
@@ -48,9 +48,13 @@ inline T
 module (T a)
 {
   if (a > 0)
+  {
     return a;
+  }
   else
+  {
     return -a;
+  }
 }
 
 char*
@@ -58,8 +62,10 @@ pcl::SVM::readline (FILE *input)
 {
   int len;
 
-  if (fgets (line_, max_line_len_, input) == NULL)
+  if (fgets(line_, max_line_len_, input) == NULL)
+  {
     return NULL;
+  }
 
   // Find the endline. If not found extend the max_line_len_
   while (strrchr (line_, '\n') == NULL)
@@ -69,8 +75,10 @@ pcl::SVM::readline (FILE *input)
     len = int (strlen (line_));
 
     // if the new read part of the string is unavailable, break the while
-    if (fgets (line_ + len, max_line_len_ - len, input) == NULL)
+    if (fgets(line_ + len, max_line_len_ - len, input) == NULL)
+    {
       break;
+    }
   }
 
   return line_;
@@ -118,8 +126,12 @@ pcl::SVMTrain::doCrossValidation ()
   else
   {
     for (i = 0; i < prob_.l; i++)
+    {
       if (target[i] == prob_.y[i])
+      {
         ++total_correct;
+      }
+    }
 
     pcl::console::print_info (" - Cross Validation Accuracy = ");
     pcl::console::print_value ("%g%%\n", 100.0 * total_correct / prob_.l);
@@ -134,10 +146,16 @@ pcl::SVMTrain::scaleFactors (std::vector<SVMData> training_set,
 {
   int max = 0;
 
-  for (size_t i = 0; i < training_set.size (); i++)
-    for (size_t j = 0; j < training_set[i].SV.size (); j++)
+  for (size_t i = 0; i < training_set.size(); i++)
+  {
+    for (size_t j = 0; j < training_set[i].SV.size(); j++)
+    {
       if (training_set[i].SV[j].idx > max)
+      {
         max = training_set[i].SV[j].idx;  // max number of features
+      }
+    }
+  }
 
   max += 1;
 
@@ -151,16 +169,19 @@ pcl::SVMTrain::scaleFactors (std::vector<SVMData> training_set,
     scaling.obj[i].value = 0;
   }
 
-  for (size_t i = 0; i < training_set.size (); i++)
-    for (size_t j = 0; j < training_set[i].SV.size (); j++)
+  for (size_t i = 0; i < training_set.size(); i++)
+  {
+    for (size_t j = 0; j < training_set[i].SV.size(); j++)
+    {
       // save scaling factor finding the maximum value
-      if (module (training_set[i].SV[j].value) > scaling.obj[training_set[i].SV[j].idx].value)
+      if (module(training_set[i].SV[j].value) > scaling.obj[training_set[i].SV[j].idx].value)
       {
         scaling.obj[training_set[i].SV[j].idx].index = 1;
-        scaling.obj[training_set[i].SV[j].idx].value = module (training_set[i].SV[j].value);
+        scaling.obj[training_set[i].SV[j].idx].value = module(training_set[i].SV[j].value);
       }
-}
-;
+    }
+  }
+};
 
 void
 pcl::SVM::adaptLibSVMToInput (std::vector<SVMData> &training_set,
@@ -174,7 +195,9 @@ pcl::SVM::adaptLibSVMToInput (std::vector<SVMData> &training_set,
     int j = 0;
 
     if (labelled_training_set_)
+    {
       parent.label = prob.y[i];
+    }
 
     while (prob.x[i][j].index != -1)  // -1 means the end of problem entry list
     {
@@ -221,21 +244,29 @@ pcl::SVM::adaptInputToLibSVM (std::vector<SVMData> training_set,
       labelled_training_set_ = 1;
     }
     else
-    labelled_training_set_ = 0;
+    {
+      labelled_training_set_ = 0;
+    }
 
     prob.x[i] = Malloc (struct svm_node, training_set[i].SV.size() + 1);
 
     int k = 0;
 
     for (size_t j = 0; j < training_set[i].SV.size(); j++)
-    if (training_set[i].SV[j].idx != -1 && pcl_isfinite (training_set[i].SV[j].value))
     {
-      prob.x[i][k].index = training_set[i].SV[j].idx;
-      if (training_set[i].SV[j].idx < scaling_.max && scaling_.obj[ training_set[i].SV[j].idx ].index == 1)
-      prob.x[i][k].value = training_set[i].SV[j].value / scaling_.obj[ training_set[i].SV[j].idx ].value;
-      else
-      prob.x[i][k].value = training_set[i].SV[j].value;
-      k++;
+      if (training_set[i].SV[j].idx != -1 && pcl_isfinite(training_set[i].SV[j].value))
+      {
+        prob.x[i][k].index = training_set[i].SV[j].idx;
+        if (training_set[i].SV[j].idx < scaling_.max && scaling_.obj[training_set[i].SV[j].idx].index == 1)
+        {
+          prob.x[i][k].value = training_set[i].SV[j].value / scaling_.obj[training_set[i].SV[j].idx].value;
+        }
+        else
+        {
+          prob.x[i][k].value = training_set[i].SV[j].value;
+        }
+        k++;
+      }
     }
 
     prob.x[i][k].index = -1;
@@ -261,7 +292,9 @@ pcl::SVMTrain::trainClassifier ()
   // initialize gamma parameter
 
   if (param_.gamma == 0 && scaling_.max > 0)
+  {
     param_.gamma = 1.0 / scaling_.max;
+  }
 
   if (error_msg)
   {
@@ -326,8 +359,10 @@ pcl::SVM::loadProblem (const char *filename,
       // split the next element
       p = strtok (NULL, " \t");
 
-      if (p == NULL || *p == '\n')  // check '\n' as ' ' may be after the last feature
+      if (p == NULL || *p == '\n')
+      {  // check '\n' as ' ' may be after the last feature
         break;
+      }
 
       ++elements;
     }
@@ -363,15 +398,19 @@ pcl::SVM::loadProblem (const char *filename,
 
       if (pch == NULL)
       {
-        if (label == NULL)  // empty line
-          exitInputError (i + 1);
+        if (label == NULL)
+        {  // empty line
+          exitInputError(i + 1);
+        }
 
         labelled_training_set_ = 1;
 
         prob.y[i] = strtod (label, &endptr);
 
         if (endptr == label || *endptr != '\0')
-          exitInputError (i + 1);
+        {
+          exitInputError(i + 1);
+        }
 
         //idx = strtok(NULL,":"); // indice
       }
@@ -391,14 +430,20 @@ pcl::SVM::loadProblem (const char *filename,
     while (1)
     {
       if (k++ == 0 && isUnlabelled)
-        idx = strtok (line_, ": \t\n");
+      {
+        idx = strtok(line_, ": \t\n");
+      }
       else
-        idx = strtok (NULL, ":");  // indice
+      {
+        idx = strtok(NULL, ":");  // indice
+      }
 
       val = strtok (NULL, " \t");  // valore
 
       if (val == NULL)
+      {
         break;  // exit with the last element
+      }
 
       //std::cout << idx << ":" << val<< " ";
       errno = 0;
@@ -406,16 +451,22 @@ pcl::SVM::loadProblem (const char *filename,
       x_space_[j].index = int (strtol (idx, &endptr, 10));
 
       if (endptr == idx || errno != 0 || *endptr != '\0' || x_space_[j].index <= inst_max_index)
-        exitInputError (i + 1);
+      {
+        exitInputError(i + 1);
+      }
       else
+      {
         inst_max_index = x_space_[j].index;
+      }
 
       errno = 0;
 
       x_space_[j].value = strtod (val, &endptr);
 
-      if (endptr == val || errno != 0 || (*endptr != '\0' && !isspace (*endptr)))
-        exitInputError (i + 1);
+      if (endptr == val || errno != 0 || (*endptr != '\0' && !isspace(*endptr)))
+      {
+        exitInputError(i + 1);
+      }
 
       ++j;
 
@@ -423,29 +474,36 @@ pcl::SVM::loadProblem (const char *filename,
 
     //std::cout <<"\n";
     if (inst_max_index > max_index)
+    {
       max_index = inst_max_index;
+    }
 
     x_space_[j++].index = -1;
   }
 
   if (param_.gamma == 0 && max_index > 0)
+  {
     param_.gamma = 1.0 / max_index;
+  }
 
   if (param_.kernel_type == PRECOMPUTED)
+  {
     for (i = 0; i < prob.l; i++)
     {
       if (prob.x[i][0].index != 0)
       {
-        PCL_ERROR("[pcl::%s] Wrong input format: first column must be 0:sample_serial_number.\n", getClassName ().c_str ());
+        PCL_ERROR("[pcl::%s] Wrong input format: first column must be 0:sample_serial_number.\n",
+                  getClassName().c_str());
         return 0;
       }
 
-      if (int (prob.x[i][0].value) <= 0 || int (prob.x[i][0].value) > max_index)
+      if (int(prob.x[i][0].value) <= 0 || int(prob.x[i][0].value) > max_index)
       {
-        PCL_ERROR("[pcl::%s] Wrong input format: sample_serial_number out of range.\n", getClassName ().c_str ());
+        PCL_ERROR("[pcl::%s] Wrong input format: sample_serial_number out of range.\n", getClassName().c_str());
         return 0;
       }
     }
+  }
   fclose (fp);
 
   return 1;
@@ -490,8 +548,10 @@ pcl::SVM::loadProblemITRI (string input,
       // split the next element
       p = strtok (NULL, " \t");
 
-      if (p == NULL || *p == '\n')  // check '\n' as ' ' may be after the last feature
+      if (p == NULL || *p == '\n')
+      {  // check '\n' as ' ' may be after the last feature
         break;
+      }
 
       ++elements;
     }
@@ -527,15 +587,19 @@ pcl::SVM::loadProblemITRI (string input,
 
       if (pch == NULL)
       {
-        if (label == NULL)  // empty line
-          exitInputError (i + 1);
+        if (label == NULL)
+        {  // empty line
+          exitInputError(i + 1);
+        }
 
         labelled_training_set_ = 1;
 
         prob.y[i] = strtod (label, &endptr);
 
         if (endptr == label || *endptr != '\0')
-          exitInputError (i + 1);
+        {
+          exitInputError(i + 1);
+        }
 
         //idx = strtok(NULL,":"); // indice
       }
@@ -555,14 +619,20 @@ pcl::SVM::loadProblemITRI (string input,
     while (1)
     {
       if (k++ == 0 && isUnlabelled)
-        idx = strtok (line_, ": \t\n");
+      {
+        idx = strtok(line_, ": \t\n");
+      }
       else
-        idx = strtok (NULL, ":");  // indice
+      {
+        idx = strtok(NULL, ":");  // indice
+      }
 
       val = strtok (NULL, " \t");  // valore
 
       if (val == NULL)
+      {
         break;  // exit with the last element
+      }
 
       //std::cout << idx << ":" << val<< " ";
       errno = 0;
@@ -570,16 +640,22 @@ pcl::SVM::loadProblemITRI (string input,
       x_space_[j].index = int (strtol (idx, &endptr, 10));
 
       if (endptr == idx || errno != 0 || *endptr != '\0' || x_space_[j].index <= inst_max_index)
-        exitInputError (i + 1);
+      {
+        exitInputError(i + 1);
+      }
       else
+      {
         inst_max_index = x_space_[j].index;
+      }
 
       errno = 0;
 
       x_space_[j].value = strtod (val, &endptr);
 
-      if (endptr == val || errno != 0 || (*endptr != '\0' && !isspace (*endptr)))
-        exitInputError (i + 1);
+      if (endptr == val || errno != 0 || (*endptr != '\0' && !isspace(*endptr)))
+      {
+        exitInputError(i + 1);
+      }
 
       ++j;
 
@@ -587,29 +663,36 @@ pcl::SVM::loadProblemITRI (string input,
 
     //std::cout <<"\n";
     if (inst_max_index > max_index)
+    {
       max_index = inst_max_index;
+    }
 
     x_space_[j++].index = -1;
   }
 
   if (param_.gamma == 0 && max_index > 0)
+  {
     param_.gamma = 1.0 / max_index;
+  }
 
   if (param_.kernel_type == PRECOMPUTED)
+  {
     for (i = 0; i < prob.l; i++)
     {
       if (prob.x[i][0].index != 0)
       {
-        PCL_ERROR("[pcl::%s] Wrong input format: first column must be 0:sample_serial_number.\n", getClassName ().c_str ());
+        PCL_ERROR("[pcl::%s] Wrong input format: first column must be 0:sample_serial_number.\n",
+                  getClassName().c_str());
         return 0;
       }
 
-      if (int (prob.x[i][0].value) <= 0 || int (prob.x[i][0].value) > max_index)
+      if (int(prob.x[i][0].value) <= 0 || int(prob.x[i][0].value) > max_index)
       {
-        PCL_ERROR("[pcl::%s] Wrong input format: sample_serial_number out of range.\n", getClassName ().c_str ());
+        PCL_ERROR("[pcl::%s] Wrong input format: sample_serial_number out of range.\n", getClassName().c_str());
         return 0;
       }
     }
+  }
 
   fclose (fp);
 
@@ -639,9 +722,13 @@ pcl::SVM::saveProblem (const char *filename,
       myfile << training_set_[j].label << " ";
     }
 
-    for (size_t i = 0; i < training_set_[j].SV.size (); i++)
+    for (size_t i = 0; i < training_set_[j].SV.size(); i++)
+    {
       if (pcl_isfinite(training_set_[j].SV[i].value))
+      {
         myfile << training_set_[j].SV[i].idx << ":" << training_set_[j].SV[i].value << " ";
+      }
+    }
 
     myfile << "\n";
   }
@@ -676,7 +763,9 @@ pcl::SVM::saveProblemNorm (const char *filename,
   for (int j = 0; j < prob_.l; j++)
   {
     if (labelled)
+    {
       myfile << prob_.y[j] << " ";
+    }
 
     // for (int i=0; i < nFeatures+2; i++)
     int i = 0;
@@ -721,7 +810,9 @@ pcl::SVMClassify::loadClassifierModel (const char *filename)
   int i = 0;
 
   while (model_.scaling[i].index != -1)
+  {
     i++;
+  }
 
   scaling_.max = i;
 
@@ -759,8 +850,12 @@ pcl::SVMClassify::classificationTest ()
   }
   else
   {
-    if (svm_check_probability_model (&model_) != 0)
-      PCL_WARN("[pcl::%s::classificationTest] Classifier model supports probability estimates, but disabled in prediction.\n", getClassName ().c_str ());
+    if (svm_check_probability_model(&model_) != 0)
+    {
+      PCL_WARN("[pcl::%s::classificationTest] Classifier model supports probability estimates, but disabled in "
+               "prediction.\n",
+               getClassName().c_str());
+    }
   }
 
   int correct = 0;
@@ -779,9 +874,11 @@ pcl::SVMClassify::classificationTest ()
   if (predict_probability_)
   {
     if (svm_type == NU_SVR || svm_type == EPSILON_SVR)
-      PCL_WARN(
-          "[pcl::%s::classificationTest] Prob. model for test data: target value = predicted value + z,\nz: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g\n",
-          getClassName ().c_str (), svm_get_svr_probability (&model_));
+    {
+      PCL_WARN("[pcl::%s::classificationTest] Prob. model for test data: target value = predicted value + z,\nz: "
+               "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g\n",
+               getClassName().c_str(), svm_get_svr_probability(&model_));
+    }
     else
     {
       prob_estimates = static_cast<double *> (malloc (nr_class * sizeof(double)));
@@ -818,7 +915,9 @@ pcl::SVMClassify::classificationTest ()
     }
 
     if (predict_label == target_label)
+    {
       ++correct;
+    }
 
     error += (predict_label - target_label) * (predict_label - target_label);
     sump += predict_label;
@@ -847,7 +946,9 @@ pcl::SVMClassify::classificationTest ()
   }
 
   if (predict_probability_)
-    free (prob_estimates);
+  {
+    free(prob_estimates);
+  }
 
   return true;
 }
@@ -877,8 +978,12 @@ pcl::SVMClassify::classification ()
   }
   else
   {
-    if (svm_check_probability_model (&model_) != 0)
-      PCL_WARN("[pcl::%s::classification] Classifier model supports probability estimates, but disabled in prediction.\n", getClassName ().c_str ());
+    if (svm_check_probability_model(&model_) != 0)
+    {
+      PCL_WARN("[pcl::%s::classification] Classifier model supports probability estimates, but disabled in "
+               "prediction.\n",
+               getClassName().c_str());
+    }
   }
 
   //int correct = 0;
@@ -895,9 +1000,11 @@ pcl::SVMClassify::classification ()
   if (predict_probability_)
   {
     if (svm_type == NU_SVR || svm_type == EPSILON_SVR)
-      PCL_WARN(
-          "[pcl::%s::classificationTest] Prob. model for test data: target value = predicted value + z,\nz: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g\n",
-          getClassName ().c_str (), svm_get_svr_probability (&model_));
+    {
+      PCL_WARN("[pcl::%s::classificationTest] Prob. model for test data: target value = predicted value + z,\nz: "
+               "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g\n",
+               getClassName().c_str(), svm_get_svr_probability(&model_));
+    }
     else
     {
       prob_estimates = static_cast<double *> (malloc (nr_class * sizeof(double)));
@@ -936,7 +1043,9 @@ pcl::SVMClassify::classification ()
   }
 
   if (predict_probability_)
-    free (prob_estimates);
+  {
+    free(prob_estimates);
+  }
 
   return (true);
 }
@@ -962,8 +1071,12 @@ pcl::SVMClassify::classification (pcl::SVMData in)
   }
   else
   {
-    if (svm_check_probability_model (&model_) != 0)
-      PCL_WARN("[pcl::%s::classification] Classifier model supports probability estimates, but disabled in prediction.\n", getClassName ().c_str ());
+    if (svm_check_probability_model(&model_) != 0)
+    {
+      PCL_WARN("[pcl::%s::classification] Classifier model supports probability estimates, but disabled in "
+               "prediction.\n",
+               getClassName().c_str());
+    }
   }
 
   int svm_type = svm_get_svm_type (&model_);
@@ -982,9 +1095,13 @@ pcl::SVMClassify::classification (pcl::SVMData in)
     buff[i].index = in.SV[i].idx;
 
     if (in.SV[i].idx < scaling_.max && scaling_.obj[in.SV[i].idx].index == 1)
+    {
       buff[i].value = in.SV[i].value / scaling_.obj[in.SV[i].idx].value;
+    }
     else
+    {
       buff[i].value = in.SV[i].value;
+    }
   }
 
   buff[i].index = -1;
@@ -995,9 +1112,11 @@ pcl::SVMClassify::classification (pcl::SVMData in)
   if (predict_probability_)
   {
     if (svm_type == NU_SVR || svm_type == EPSILON_SVR)
-      PCL_WARN(
-          "[pcl::%s::classification] Prob. model for test data: target value = predicted value + z,\nz: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g\n",
-          getClassName ().c_str (), svm_get_svr_probability (&model_));
+    {
+      PCL_WARN("[pcl::%s::classification] Prob. model for test data: target value = predicted value + z,\nz: "
+               "Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=%g\n",
+               getClassName().c_str(), svm_get_svr_probability(&model_));
+    }
     else
     {
       prob_estimates = static_cast<double *> (malloc (nr_class * sizeof(double)));
@@ -1025,7 +1144,9 @@ pcl::SVMClassify::classification (pcl::SVMData in)
   }
 
   if (predict_probability_)
-    free (prob_estimates);
+  {
+    free(prob_estimates);
+  }
 
   free (buff);
 
@@ -1046,10 +1167,14 @@ pcl::SVMClassify::scaleProblem (svm_problem &input,
     while (1)
     {
       if (input.x[i][j].index == -1)
+      {
         break;
+      }
 
       if (input.x[i][j].index < scaling.max && scaling.obj[input.x[i][j].index].index == 1)
+      {
         input.x[i][j].value = input.x[i][j].value / scaling.obj[input.x[i][j].index].value;
+      }
 
       j++;
     }
@@ -1074,15 +1199,19 @@ pcl::SVMClassify::saveClassificationResult (const char *filename)
     output << "labels ";
 
     for (int j = 0; j < nr_class; j++)
+    {
       output << labels[j] << " ";
+    }
 
     output << "\n";
   }
 
   for (size_t i = 0; i < prediction_.size (); i++)
   {
-    for (size_t j = 0; j < prediction_[i].size (); j++)
+    for (size_t j = 0; j < prediction_[i].size(); j++)
+    {
       output << prediction_[i][j] << " ";
+    }
 
     output << "\n";
   }
