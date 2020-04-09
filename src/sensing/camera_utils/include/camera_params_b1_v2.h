@@ -67,6 +67,12 @@ constexpr int image_cols = raw_image_width;
 constexpr int num_image_pixels = image_width * image_height;
 constexpr int num_image_bytes = image_width * image_height * 3;
 
+// Parameters for crop image in grabber
+constexpr int image_crop_width = 1920;
+constexpr int image_crop_height = 314;
+constexpr int image_crop_xstart = 0;
+constexpr int image_crop_ystart = 692;
+
 // Parameters for resizing 1920x1208 to 608x608(yolov3 default size)
 constexpr double image_ratio_on_yolov3 = 608.0 / raw_image_width;
 constexpr double inv_image_ratio_on_yolov3 = raw_image_width / 608.0;

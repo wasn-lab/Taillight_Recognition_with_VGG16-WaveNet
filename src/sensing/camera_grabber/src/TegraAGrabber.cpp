@@ -107,16 +107,16 @@ bool TegraAGrabber::runPerception()
      if (resize_){
          //resizer_.resize(npp8u_ptrs_[2], canvas[2]);
 int dummy;
-Npp8u* aDst = nppiMalloc_8u_C3(camera::raw_image_width, 314, &dummy);
+Npp8u* aDst = nppiMalloc_8u_C3(camera::image_crop_width, camera::image_crop_height, &dummy);
 
-Npp8u* const aSrc = npp8u_ptrs_[2] + camera::raw_image_cols * 3*692+0 ;
+Npp8u* const aSrc = npp8u_ptrs_[2] + camera::raw_image_cols * 3*camera::image_crop_ystart+camera::image_crop_xstart ;
 	
 
   	nppiCopy_8u_C3R(aSrc,  camera::raw_image_cols * 3, aDst,  camera::raw_image_cols * 3,
-                                   {.width = camera::raw_image_cols, .height = 314 });
+                                   {.width = camera::image_crop_width, .height = camera::image_crop_height });
 
-npp_wrapper::npp8u_ptr_to_cvmat(aDst, 314 * camera::raw_image_width * 3, canvas[2], 314,
-                                      camera::raw_image_width);
+npp_wrapper::npp8u_ptr_to_cvmat(aDst, camera::image_crop_height * camera::image_crop_width * 3, canvas[2], camera::image_crop_height,
+                                      camera::image_crop_width);
 nppiFree(aDst);
      }
 else
