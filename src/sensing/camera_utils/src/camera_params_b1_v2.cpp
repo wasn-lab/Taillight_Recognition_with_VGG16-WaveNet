@@ -4,7 +4,7 @@ DATE: Oct, 2019
 */
 #include "camera_params.h"
 
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
 namespace camera
 {
 const std::string names[id::num_ids] = {
