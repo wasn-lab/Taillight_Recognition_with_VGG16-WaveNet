@@ -23,7 +23,7 @@ Lidar List:
 -->
 
 <!-- Global arg ************************************************************ -->
-	<rosparam param="debug_output">false</rosparam>
+	<rosparam param="debug_output">true</rosparam>
 	<arg name="mode" default="0" />
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
     <arg name="hardware_enable" default="1" />>
