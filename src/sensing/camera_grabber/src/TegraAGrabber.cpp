@@ -74,8 +74,8 @@ bool TegraAGrabber::runPerception()
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[1], grabber->getCurrentFrameData(1),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
-    // cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(2),
-    //            MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[2], grabber->getCurrentFrameData(0),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
     // start image processing
     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[0]),
@@ -102,11 +102,28 @@ bool TegraAGrabber::runPerception()
                                       camera::raw_image_width);
     }
 
-    // npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
-    //                                 camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
-    // if (_resize){
-    //     resizer_.resize(npp8u_ptrs_[2], canvas[2]);
-    // }
+     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
+                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
+     if (resize_){
+         //resizer_.resize(npp8u_ptrs_[2], canvas[2]);
+int dummy;
+Npp8u* aDst = nppiMalloc_8u_C3(camera::raw_image_width, 314, &dummy);
+
+Npp8u* const aSrc = npp8u_ptrs_[2] + camera::raw_image_cols * 3*692+0 ;
+	
+
+  	nppiCopy_8u_C3R(aSrc,  camera::raw_image_cols * 3, aDst,  camera::raw_image_cols * 3,
+                                   {.width = camera::raw_image_cols, .height = 314 });
+
+npp_wrapper::npp8u_ptr_to_cvmat(aDst, 314 * camera::raw_image_width * 3, canvas[2], 314,
+                                      camera::raw_image_width);
+nppiFree(aDst);
+     }
+else
+    {
+      npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[2], num_src_bytes_, canvas[2], camera::raw_image_height,
+                                      camera::raw_image_width);
+    }
 
     // end image processing
 

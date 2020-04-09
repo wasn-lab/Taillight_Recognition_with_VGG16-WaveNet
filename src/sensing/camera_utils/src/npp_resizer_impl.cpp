@@ -3,7 +3,7 @@
    DATE: Aug, 2019
  */
 
-#include <assert.h>
+#include <cassert>
 #include "opencv2/opencv.hpp"
 #include "glog/logging.h"
 #include "nppi_geometry_transforms.h"
@@ -11,6 +11,7 @@
 #include "npp_resizer_impl.h"
 #include "camera_params.h"
 #include "camera_utils.h"
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
 
 // Only accepts images of 3 channels(RGB) and each color is unsigned char.
 NPPResizerImpl::NPPResizerImpl(const int src_rows, const int src_cols, const double row_scale_factor,
@@ -102,6 +103,7 @@ int NPPResizerImpl::resize_to_letterbox_yolov3(const Npp8u* npp8u_ptr_in, cv::Ma
 
   NppStatus result = nppiResize_8u_C3R(npp8u_ptr_in, src_line_steps_, src_size_, src_roi_, npp8u_ptr_cuda_608x384_,
                                        dst_line_steps_, temp_size, temp_roi, interpolation_mode_);
+  NO_UNUSED_VAR_CHECK(result);
   assert(result == NPP_SUCCESS);
 
   const Npp8u border_rgb_color[] = { 0, 0, 0, 0 };
@@ -127,10 +129,11 @@ int NPPResizerImpl::resize_to_letterbox_yolov3(const Npp8u* npp8u_ptr_in, Npp8u*
   (void)(result);  // Suppress -Wunused-but-set-variable
   assert(result == NPP_SUCCESS);
 
-  const Npp8u border_rgb_color[] = { 0, 0, 0, 0 };
+  const Npp8u border_rgb_color[3] = { 0, 0, 0 };
   result = nppiCopyConstBorder_8u_C3R(npp8u_ptr_cuda_608x384_, dst_line_steps_, temp_size, dst_npp8u_ptr_cuda_,
                                       dst_line_steps_, dst_size_, camera::npp_top_border,
                                       /*nLeftBorderWidth*/ 0, border_rgb_color);
+  NO_UNUSED_VAR_CHECK(result);
   assert(result == NPP_SUCCESS);
   cudaMemcpyAsync(npp8u_ptr_out, dst_npp8u_ptr_cuda_, num_dst_bytes_, cudaMemcpyDeviceToDevice, cudaStreamPerThread);
   return 0;

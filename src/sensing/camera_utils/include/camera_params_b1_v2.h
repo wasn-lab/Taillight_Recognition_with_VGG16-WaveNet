@@ -6,7 +6,7 @@
 #define __CAMERA_PARAMS_B1_V2_H__
 
 #include "car_model.h"
-#ifdef CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2
 #include <cmath>
 #include <string>
 
@@ -18,7 +18,7 @@ enum id
   begin = 0,
   front_bottom_60 = begin,  // 0
   front_top_far_30,         // 1
-  _dummy0,                  // 2  // NOLINT
+  front_bottom_60_crop,     // 2
   _dummy1,                  // 3  // NOLINT
   front_top_close_120,      // 4
   right_front_60,           // 5
