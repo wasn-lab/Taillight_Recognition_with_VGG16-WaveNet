@@ -47,7 +47,9 @@ check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
 check_list += ["localization_state"]
-check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
+check_list += ["Xbywire_run"]
+# check_list += ["AEB_run"]
+check_list += [ "ACC_run"]
 
 """
 The startup_check_list is a subset of check_list.
