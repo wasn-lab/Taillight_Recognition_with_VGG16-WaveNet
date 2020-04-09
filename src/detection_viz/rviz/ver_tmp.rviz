@@ -148,10 +148,11 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /CamObjFrontCenter/bbox
+      Marker Topic: /cam_obj/front_bottom_60/bbox
       Name: cambbox_FC
       Namespaces:
-        {}
+        /cam_obj/front_bottom_60: true
+        /cam_obj/front_bottom_60_depth: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -196,10 +197,10 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /CamObjFrontCenter/delayTxt
+      Marker Topic: /cam_obj/front_bottom_60/delayTxt
       Name: cambbox_FC_latency
       Namespaces:
-        {}
+        /cam_obj/front_bottom_60_delay: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -627,16 +628,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 98.829834
+      Distance: 75.5042572
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 10.6494665
-        Y: 4.99768448
-        Z: 0.634845138
+        X: 12.7518702
+        Y: 1.92309737
+        Z: 2.93352151
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
@@ -645,7 +646,7 @@ Visualization Manager:
       Pitch: 1.56979632
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 3.13040853
+      Yaw: 3.15040731
     Saved: ~
 Window Geometry:
   Displays:
