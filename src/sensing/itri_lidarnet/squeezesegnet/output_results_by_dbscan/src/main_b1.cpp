@@ -4,14 +4,12 @@
 #include "RosModuleB1.h"
 #include "S1Cluster.h"
 
+
+
 #if ENABLE_DEBUG_MODE == true
-
 #include "CompressFunction.h"
-
 mutex mutex_LidarAll;
-
 pcl::PointCloud<PointXYZI>::Ptr cloudPtr_LidarAll (new pcl::PointCloud<PointXYZI>);
-
 void
 callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
@@ -19,7 +17,6 @@ callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
   *cloudPtr_LidarAll = *msg;
   mutex_LidarAll.unlock ();
 }
-
 #endif
 
 boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
@@ -31,6 +28,8 @@ std::atomic<float> LinearAcc[3];
 StopWatch stopWatch;
 std::atomic<uint32_t> latencyTime[2];
 
+bool debug_output = false;
+
 void
 callback_Clock (const rosgraph_msgs::Clock& msg)
 {
@@ -41,6 +40,13 @@ callback_Clock (const rosgraph_msgs::Clock& msg)
 void
 callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 {
+  if (debug_output)
+  {
+    ros::Time rosTime;
+    pcl_conversions::fromPCL (msg->header.stamp, rosTime);
+    cout << "[Top->DB]: " << ( ros::Time::now () - rosTime).toSec() *1000 << "ms" << endl;
+  }
+
   heartBeat = 0;
 
   stopWatch.reset ();
@@ -54,6 +60,7 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 
     ros::Time rosTime;
     pcl_conversions::fromPCL (msg->header.stamp, rosTime);
+
     RosModuleB1::Send_LidarResults (cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     RosModuleB1::Send_LidarResultsRVIZ (cur_cluster, cur_cluster_num);
     RosModuleB1::Send_LidarResultsGrid(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
@@ -64,15 +71,15 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 
     delete[] cur_cluster;
 
-    if (stopWatch.getTimeSeconds () > 0.05)
+    if (debug_output)
     {
-      cout << "[DBSCAN]: " << stopWatch.getTimeSeconds () << "s" << endl << endl;
+        cout << "[DBScan]: " << stopWatch.getTimeSeconds () << "s" << endl ;
     }
 
     double latency = (ros::Time::now () - rosTime).toSec();
     if (latency > 0 && latency < 3)
     {
-      cout << "[Latency]: real-time " << latency << endl << endl;
+      cout << "[Latency]: " << latency << endl << endl;
     }
     else
     {
@@ -82,8 +89,8 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
       }
     }
 
-#if ENABLE_DEBUG_MODE == true
 
+#if ENABLE_DEBUG_MODE == true
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_lidarAll (new pcl::PointCloud<pcl::PointXYZI>);
 
     mutex_LidarAll.lock ();
@@ -125,11 +132,14 @@ int
 main (int argc,
       char ** argv)
 {
+  
   RosModuleB1::initial ("output_results_by_dbscan", argc, argv);
   RosModuleB1::RegisterCallBackSSN (callback_SSN);
   RosModuleB1::RegisterCallBackIMU (callback_IMU);
   RosModuleB1::RegisterCallBackClock (callback_Clock);
   cout << "[" << ros::this_node::getName () << "] " << "----------------------------startup" << endl;
+
+  ros::param::get("/debug_output", debug_output);
 
   cout.setf (std::ios_base::fixed, std::ios_base::floatfield);
   cout.precision (3);

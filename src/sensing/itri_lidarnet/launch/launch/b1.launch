@@ -23,6 +23,7 @@ Lidar List:
 -->
 
 <!-- Global arg ************************************************************ -->
+	<rosparam param="debug_output">false</rosparam>
 	<arg name="mode" default="0" />
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
     <arg name="hardware_enable" default="1" />>
@@ -32,13 +33,15 @@ Lidar List:
 <!-- tf2 ******************************************************************* -->
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
-<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+<!-- MPS ******************************************************************* -->
+<!-- <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/> -->
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
 		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
-		<node pkg="lidar_squseg_v2_inference"   type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"   	output="screen" cwd="node" args="b1 X 0 1" />
+		<node pkg="lidar_squseg_inference"   type="lidar_squseg_inference"	name="lidar_squseg_inference"   	output="screen" cwd="node" args="b1 X 0 1" />
+		<!-- <node pkg="lidar_squseg_v2_inference"   type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"   	output="screen" cwd="node" args="b1 X 0 1" /> -->
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
