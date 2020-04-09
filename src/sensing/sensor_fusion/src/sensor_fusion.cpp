@@ -174,13 +174,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
     {
       if (cost_mat[i][assignment[i]] < FUSE_RANGE_SED)
       {
-        objs1[i].camInfo.u = objs2[assignment[i]].camInfo.u;
-        objs1[i].camInfo.v = objs2[assignment[i]].camInfo.v;
-        objs1[i].camInfo.width = objs2[assignment[i]].camInfo.width;
-        objs1[i].camInfo.height = objs2[assignment[i]].camInfo.height;
-        objs1[i].camInfo.id = objs2[assignment[i]].camInfo.id;
-        objs1[i].camInfo.prob = objs2[assignment[i]].camInfo.prob;
-
+        objs1[i].camInfo = objs2[assignment[i]].camInfo;
         assigned[assignment[i]] = true;
       }
     }
