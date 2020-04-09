@@ -10,6 +10,7 @@
 #include "hungarian.h"
 
 #define DEBUG 0
+#define OBJCLASS_SOURCE 1  // 0: lidar; 1: camera
 /************************************************************************/
 ros::Subscriber lidar_sub;
 ros::Subscriber camera_sub;

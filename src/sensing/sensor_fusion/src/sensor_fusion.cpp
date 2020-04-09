@@ -174,6 +174,9 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
     {
       if (cost_mat[i][assignment[i]] < FUSE_RANGE_SED)
       {
+#if OBJCLASS_SOURCE == 1  // use camera obj class
+        objs1[i].classId = objs2[assignment[i]].classId;
+#endif
         objs1[i].camInfo = objs2[assignment[i]].camInfo;
         assigned[assignment[i]] = true;
       }
