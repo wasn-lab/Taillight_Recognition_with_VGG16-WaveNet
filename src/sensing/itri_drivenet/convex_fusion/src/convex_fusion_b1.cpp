@@ -1,6 +1,6 @@
 #include "convex_fusion_b1.h"
 
-void ConvexFusionB1::initial(std::string nodename, int argc, char** argv)
+void ConvexFusionB1::initial(const std::string& nodename, int argc, char** argv)
 {
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
@@ -33,7 +33,7 @@ void ConvexFusionB1::registerCallBackCameraDetection(
       n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
 }
 
-void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
+void ConvexFusionB1::sendErrorCode(unsigned int error_code, const std::string& frame_id, int module_id)
 {
   static uint32_t seq;
 
@@ -48,7 +48,7 @@ void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_i
 }
 
 void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
-                                       ros::Time rostime, std::string& frame_id)
+                                       ros::Time rostime, const std::string& frame_id)
 {
   if (use_gridmap_publish_)
   {
