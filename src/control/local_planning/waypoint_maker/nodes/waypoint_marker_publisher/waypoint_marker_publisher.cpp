@@ -393,13 +393,17 @@ void lightCallback(const autoware_msgs::TrafficLightConstPtr& msg)
 void receiveAutoDetection(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   if (!g_config_manual_detection)
+  {
     lightCallback(msg);
+}
 }
 
 void receiveManualDetection(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   if (g_config_manual_detection)
+  {
     lightCallback(msg);
+}
 }
 
 // void configParameter(const autoware_config_msgs::ConfigLaneStopConstPtr& msg)
@@ -421,7 +425,9 @@ void finalCallback(const autoware_msgs::LaneConstPtr& msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)
+  {
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
+  }
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
   createLocalPointMarker_1(*msg);

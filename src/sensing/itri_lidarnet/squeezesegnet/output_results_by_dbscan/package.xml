@@ -8,7 +8,7 @@
   <url type="website">https://www.itri.org.tw</url>
   <author email="wyang@itri.org.tw">Wayne Yang</author>
   <maintainer email="wyang@itri.org.tw">Wayne Yang</maintainer>
-  
+
   <!-- Use buildtool_depend for build tool packages: -->
   <buildtool_depend>catkin</buildtool_depend>
 
@@ -17,13 +17,14 @@
   <build_depend>rospy</build_depend>
   <build_depend>msgs</build_depend>
   <build_depend>nodelet</build_depend>
+  <build_depend>car_model</build_depend>
 
   <!-- Use run_depend for packages you need at runtime: -->
   <!-- <run_depend>message_runtime</run_depend> -->
-  
+
   <!-- Use test_depend for packages you need only for testing: -->
   <!-- <test_depend>gtest</test_depend> -->
-  
+
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>msgs</build_export_depend>
@@ -32,6 +33,7 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>msgs</exec_depend>
   <exec_depend>nodelet</exec_depend>
+  <exec_depend>car_model</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

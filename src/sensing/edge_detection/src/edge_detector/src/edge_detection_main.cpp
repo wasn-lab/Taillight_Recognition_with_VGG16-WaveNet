@@ -21,8 +21,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <mutex>
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include <pthread.h>
 #include <boost/thread/recursive_mutex.hpp>
 

@@ -62,9 +62,13 @@ namespace pcl
       isValid ()
       {
         if (this->l > 0)
+        {
           return true;
+        }
         else
+        {
           return false;
+        }
       }
   };
 
@@ -216,7 +220,9 @@ namespace pcl
         svm_destroy_param (&param_);  // delete parameters
 
         if (scaling_.max > 0)
-          free (scaling_.obj);  // delete scaling factors
+        {
+          free(scaling_.obj);  // delete scaling factors
+        }
 
         // delete the problem
         if (prob_.l > 0)
@@ -235,7 +241,9 @@ namespace pcl
         svm_get_labels (&model_, labels_);
 
         for (int j = 0; j < nr_class; j++)
-          labels.push_back (labels_[j]);
+        {
+          labels.push_back(labels_[j]);
+        }
 
         free (labels_);
       }
@@ -334,7 +342,9 @@ namespace pcl
       ~SVMTrain ()
       {
         if (model_.l > 0)
-          svm_free_model_content (&model_);
+        {
+          svm_free_model_content(&model_);
+        }
       }
 
       /*      * \brief Change default training parameters (pcl::SVMParam).*/
@@ -396,9 +406,13 @@ namespace pcl
         debug_ = in;
 
         if (in)
-          svm_set_print_string_function (NULL);
+        {
+          svm_set_print_string_function(NULL);
+        }
         else
-          svm_set_print_string_function (&printNull);
+        {
+          svm_set_print_string_function(&printNull);
+        }
       }
       ;
 
@@ -474,7 +488,9 @@ namespace pcl
       ~SVMClassify ()
       {
         if (!model_extern_copied_ && model_.l > 0)
-          svm_free_model_content (&model_);
+        {
+          svm_free_model_content(&model_);
+        }
       }
 
       /*
@@ -568,7 +584,9 @@ namespace pcl
         int i = 0;
 
         while (model_.scaling[i].index != -1)
+        {
           i++;
+        }
 
         scaling_.max = i;
         scaling_.obj = Malloc(struct svm_node, i + 1);

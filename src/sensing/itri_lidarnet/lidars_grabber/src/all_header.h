@@ -1,9 +1,9 @@
 #ifndef ALL_HEADER_H_
 #define ALL_HEADER_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
@@ -14,7 +14,7 @@
 #include <thread>
 #include <unistd.h> //sleep
 #include <functional>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include <condition_variable>
 

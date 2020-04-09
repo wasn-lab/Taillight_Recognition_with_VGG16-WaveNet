@@ -6,10 +6,7 @@
 //                      STD
 // =============================================
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdexcept>
+#include <cstdio>
 
 #include <iostream>
 #include <sstream>
@@ -22,23 +19,17 @@
 #include <chrono>
 #include <functional>
 #include <algorithm>
-#include <errno.h>
-#include <unistd.h> //sleep
+#include <cerrno>
 #include <omp.h>
 #include <mutex>
 
-#include <time.h>
 #include <ctime>
 
 
 
 
 
-#include <limits.h>
-#include <math.h>
-
-
-#include <Eigen/Core>
+#include <climits>
 #include <Eigen/Geometry>
 
 //#include <pcap.h>

@@ -73,6 +73,7 @@
 /localization_to_veh
 /dynamic_path_para
 /imu_data
+/imu_data_rad 
 /Path
 /Flag_Info01
 /Flag_Info02
@@ -101,6 +102,9 @@
 /PathPredictionOutput # With fusion
 /PathPredictionOutput/lidar # When no fusion available
 /PathPredictionOutput/camera # When no fusion available
+# test: pp marker for RVIZ (should be removed in the future)
+/PathPredictionOutput/pp
+/PathPredictionOutput/lidar/pp
 
 /V2X_msg
 
@@ -142,3 +146,13 @@
 
 # Traffic light
 /LightResultOutput
+
+#
+/RadFront
+/PP_geofence_line
+/Geofence_line # marker
+/gnss_speed_data
+
+
+
+

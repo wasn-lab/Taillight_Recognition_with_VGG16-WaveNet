@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(output_results_by_dbscan)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11) 
-
 ######################
 ##       CUDA       ##
 ######################
@@ -11,14 +8,11 @@ find_package	        (CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
-endif () 
+endif ()
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories     (${CUDA_INCLUDE_DIRS}) 
+include_directories     (${CUDA_INCLUDE_DIRS})
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
-  
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -29,16 +23,21 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   libs
   nodelet
-)                 
-                                                                           
+  car_model
+)
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-      
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
-      
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -65,9 +64,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 #file(GLOB SOURCES_MESSAGE *.msg)
 #add_message_files(
-  #${SOURCES_MESSAGE} 
+  #${SOURCES_MESSAGE}
 #)
- 
+
 ## Generate services in the 'srv' folder
 #add_service_files(
   #FILES
@@ -218,8 +217,7 @@ include_directories(
 ######################
 ##    use define    ##
 ######################
-set (CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES")
-set (CMAKE_CXX_FLAGS 	 "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1" )
+set (CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
 
 ######################
 ##       VTK        ##
@@ -229,7 +227,7 @@ find_package        (VTK REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED) 
+find_package            (PCL 1.8 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
@@ -237,28 +235,25 @@ add_definitions         (${PCL_DEFINITIONS})
 ######################
 ##   Source file    ##
 ######################
-file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_b1_nodelet.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_hino.cpp")
-list(REMOVE_ITEM SOURCES_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/main_GTgen.cpp")
-              
+set(SOURCES_SRCS src/S1Cluster.cpp)
+
 cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS})
-add_dependencies	  (${PROJECT_NAME}_b1 msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
-              
-cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS})
-add_dependencies	  (${PROJECT_NAME}_hino msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+add_dependencies      (${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
+target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+
+if (CAR_MODEL_IS_HINO)
+  cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS})
+  add_dependencies      (${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
+  target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+endif ()
 
 cuda_add_executable   (${PROJECT_NAME}_GTgen src/main_GTgen.cpp ${SOURCES_SRCS})
-add_dependencies	  (${PROJECT_NAME}_GTgen msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS}) 
-target_link_libraries (${PROJECT_NAME}_GTgen ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
-
+add_dependencies      (${PROJECT_NAME}_GTgen ${catkin_EXPORTED_TARGETS})
+target_link_libraries (${PROJECT_NAME}_GTgen ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 
 ######################
 ##     Nodelet      ##
 ######################
 cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS})
-add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda)
+add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})

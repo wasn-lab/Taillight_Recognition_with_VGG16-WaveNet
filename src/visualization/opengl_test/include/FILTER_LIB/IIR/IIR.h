@@ -1,7 +1,7 @@
 #ifndef IIR_H
 #define IIR_H
 //
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 
 

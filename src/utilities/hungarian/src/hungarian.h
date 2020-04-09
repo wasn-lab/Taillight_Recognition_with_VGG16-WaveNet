@@ -1,18 +1,22 @@
-#ifndef __HUNGARIAN_H__
-#define __HUNGARIAN_H__
+///////////////////////////////////////////////////////////////////////////////
+// Hungarian.h: Header file for Class Hungarian.
+//
+// This is a C++ wrapper with slight modification of a hungarian algorithm implementation by Markus Buehren.
+// The original implementation is a few mex-functions for use in MATLAB, found here:
+// http://www.mathworks.com/matlabcentral/fileexchange/6543-functions-for-the-rectangular-assignment-problem
+//
+// Both this code and the orignal code are published under the BSD license.
+// by Cong Ma, 2016
+//
 
-#include "tpp.h"
+#ifndef HUNGARIAN_H
+#define HUNGARIAN_H
+
 #include <iostream>
 #include <vector>
 
-#include <stdlib.h>
-#include <cfloat>  // for DBL_MAX
-#include <cmath>   // for fabs()
-
 using namespace std;
 
-namespace tpp
-{
 class Hungarian
 {
 public:
@@ -21,11 +25,9 @@ public:
   double solve(vector<vector<double> >& DistMatrix, vector<int>& Assignment);
 
 private:
-  DISALLOW_COPY_AND_ASSIGN(Hungarian);
-
-  void assignment_optimal(int* assignment, double* cost, double* distMatrix, int nOfRows, int nOfColumns);
-  void build_assignment_vector(int* assignment, bool* starMatrix, int nOfRows, int nOfColumns);
-  void compute_assignment_cost(int* assignment, double* cost, double* distMatrix, int nOfRows);
+  void assignmentOptimal(int* assignment, double* cost, double* distMatrix, int nOfRows, int nOfColumns);
+  void buildAssignmentVector(int* assignment, bool* starMatrix, int nOfRows, int nOfColumns);
+  void computeAssignmentCost(int* assignment, double* cost, double* distMatrix, int nOfRows);
   void step2a(int* assignment, double* distMatrix, bool* starMatrix, bool* newStarMatrix, bool* primeMatrix,
               bool* coveredColumns, bool* coveredRows, int nOfRows, int nOfColumns, int minDim);
   void step2b(int* assignment, double* distMatrix, bool* starMatrix, bool* newStarMatrix, bool* primeMatrix,
@@ -37,6 +39,5 @@ private:
   void step5(int* assignment, double* distMatrix, bool* starMatrix, bool* newStarMatrix, bool* primeMatrix,
              bool* coveredColumns, bool* coveredRows, int nOfRows, int nOfColumns, int minDim);
 };
-}  // namespace tpp
 
-#endif  // __HUNGARIAN_H__
+#endif
