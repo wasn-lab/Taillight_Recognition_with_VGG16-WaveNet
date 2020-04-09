@@ -24,8 +24,8 @@ const std::string names[id::num_ids] = {
 };
 
 const std::string topics[id::num_ids] = {
-  "/cam/F_center",
-  "/cam/F_top_far",
+  "/cam/front_bottom_60",
+  "/cam/front_top_far_30",
   "/cam/front_bottom_60_crop",
   "",
   "/cam/front_top_close_120",
