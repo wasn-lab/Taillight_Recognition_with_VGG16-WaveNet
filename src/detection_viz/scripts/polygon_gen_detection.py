@@ -33,21 +33,20 @@ class Node:
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.t_clock = rospy.Time()
-
-        # Publishers
-        self.polygon_pub = rospy.Publisher(self.inputTopic + "/poly", MarkerArray, queue_size=1)
-        self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
-
-        # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
-        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
-        self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
-        self.is_showing_track_id_sub = rospy.Subscriber("/d_viz/req_show_track_id", Bool, self.req_show_track_id_CB)
         # FPS
         self.fps_cal = FPS.FPS()
         # Flags
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
         self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
+        #------------------------#
+        # Publishers
+        self.polygon_pub = rospy.Publisher(self.inputTopic + "/poly", MarkerArray, queue_size=1)
+        self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
+        # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
+        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
+        self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
+        self.is_showing_track_id_sub = rospy.Subscriber("/d_viz/req_show_track_id", Bool, self.req_show_track_id_CB)
 
     def run(self):
         rospy.spin()
@@ -146,7 +145,8 @@ class Node:
                 for i in range(len(_objects)):
                     # Decide the source of id
                     obj_id = _objects[i].track.id if self.is_showing_track_id else i
-                    box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].cPoint, obj_id) )
+                    prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
+                    box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].cPoint, obj_id, prob=prob_) )
                     idx += 1
 
         #
@@ -242,7 +242,7 @@ class Node:
         #
         return self.text_marker_prototype(idx, header_txt, text, point=point, ns=(self.inputTopic + "_d"), scale=2.0 )
 
-    def create_depth_text_marker(self, idx, header, cPoint, cPoint_id=None):
+    def create_depth_text_marker(self, idx, header, cPoint, cPoint_id=None, prob=None):
         """
         Generate a text marker for showing depth/distance of object
         """
@@ -254,6 +254,8 @@ class Node:
             text = "D=%.2fm" % ( depth )
         else:
             text = "[%d]D=%.2fm" % (cPoint_id, depth )
+        if prob is not None:
+            text += ",P=%.2f" % prob
         scale = 1.0
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_depth"), scale=scale )
 
