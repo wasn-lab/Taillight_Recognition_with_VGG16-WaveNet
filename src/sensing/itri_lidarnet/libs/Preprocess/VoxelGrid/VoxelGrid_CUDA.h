@@ -15,27 +15,21 @@ using namespace pcl;
 
 class VoxelGrid_CUDA
 {
-  public:
-    VoxelGrid_CUDA ();
-    ~VoxelGrid_CUDA ();
+public:
+  VoxelGrid_CUDA();
+  ~VoxelGrid_CUDA();
 
-    void
-    coutMemoryStatus ();
+  void coutMemoryStatus();
 
-    template <typename PointT>
-    bool
-    run (typename pcl::PointCloud<PointT> &point_cloud,
-         float resolution);
+  template <typename PointT>
+  bool run(typename pcl::PointCloud<PointT>& point_cloud, float resolution);
 
-    template <typename PointT>
-    PointCloud<PointT>
-    compute (typename pcl::PointCloud<PointT>::Ptr input,
-             float resolution);
+  template <typename PointT>
+  PointCloud<PointT> compute(typename pcl::PointCloud<PointT>::Ptr input, float resolution);
 
-  private:
-    static bool hasInitialCUDA;
-    static int  maxThreadsNumber;
-
+private:
+  static bool hasInitialCUDA;
+  static int maxThreadsNumber;
 };
 
 #endif

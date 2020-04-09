@@ -20,6 +20,12 @@ DistanceEstimation::~DistanceEstimation()
 DistanceEstimation::DistanceEstimation()
 {
   std::cout << "Initialize distance estimation" << std::endl;
+  arr_params = new DisEstiParams[camera::id::num_ids];
+  ShrinkArea = new CheckArea[camera::id::num_ids];
+  area = new CheckArea[camera::id::num_ids];
+  initParams();
+  initShrinkArea();
+  initDetectArea();
 }
 
 void DistanceEstimation::init(std::string pkgPath, int mode)
@@ -30,27 +36,29 @@ void DistanceEstimation::init(std::string pkgPath, int mode)
   // FC60
   if (de_mode == 1)
   {
-    std::string FC60Json = pkgPath;
-    FC60Json.append("/data/alignment/out.json");
+    std::string fc60_json = pkgPath;
+    fc60_json.append("/data/alignment/fm60_0325.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
-    ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
-  }else{
-    arr_params = new DisEstiParams[camera::id::num_ids];
-    ShrinkArea = new CheckArea[camera::id::num_ids];
-    area = new CheckArea[camera::id::num_ids];
-    initParams();
-    initShrinkArea();
-    initDetectArea();
-  } 
-
+    ReadDistanceFromJson(fc60_json, align_FC60, img_al_h, img_al_w);
+  }
 }
 
 void DistanceEstimation::initParams()
 { 
+  // camId: 0 (Front Center)
+  // arr_params[camera::id::front_bottom_60].regionHeight_x = {376, 368, 361, 355, 350, 346, 342, 339, 336, 333, 331, 329, 321, 315, 311, 309, 306, 304 };
+
+  // arr_params[camera::id::front_bottom_60].regionHeight_x = {1183, 1158, 1136, 1116, 1101, 1088, 1075, 1066, 1057, 1048, 1041, 1034, 1009, 991, 978, 972, 963, 956 };
+  // arr_params[camera::id::front_bottom_60].regionDist_x = { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  // arr_params[camera::id::front_bottom_60].regionHeightSlope_y = { 0.182,  0.292, 0.345, 0.413,  0.633, 1.176, 100,
+  //                                 -1.25, -0.583, -0.386, -0.292, -0.241, -0.121 };
+  // arr_params[camera::id::front_bottom_60].regionHeight_y = { -729, 16, 199, 385, 600, 808, 1032, 1266, 1522, 1797, 2094, 2220, 2678 };
+  // arr_params[camera::id::front_bottom_60].regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+
   // camId: 0 (Front Center)
   arr_params[camera::id::front_bottom_60].regionHeight_x = { 1207, 1181, 1141, 1110,       1086 /*10*/, 1070, 1052, 1039, 1028, 1019, 1009,
                              1003, 996,  991,  985 /*20*/, 960,         946,  934,  926,  919,  914 /*50*/ };
@@ -162,6 +170,9 @@ int DistanceEstimation::ReadDistanceFromJson(const std::string& filename, cv::Po
       dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
     }
   }
+
+  std::cout << "Done reading file. " << std::endl;
+  
   return 0;
 }
 
@@ -169,7 +180,7 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
                                              std::vector<float> regionDist)
 {
   float distance = -1;
-  float unitLength = 0.0;
+  float unit_length = 0.0;
   int bias = 0;
   float offset = 0.0;
   for (size_t i = 1; i < regionHeight.size(); i++)
@@ -177,20 +188,20 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
     if (piexl_loc >= regionHeight[i] && piexl_loc <= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i - 1] - regionHeight[i];
-      int regionMeter = regionDist[i] - regionDist[i - 1];
-      unitLength = float(regionMeter) / float(regionpixel);
+      int region_meter = regionDist[i] - regionDist[i - 1];
+      unit_length = float(region_meter) / float(regionpixel);
       bias = piexl_loc - regionHeight[i];
-      offset = unitLength * float(bias);
+      offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else if (piexl_loc <= regionHeight[i] && piexl_loc >= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i] - regionHeight[i - 1];
-      int regionMeter = regionDist[i] - regionDist[i - 1];
-      unitLength = float(regionMeter) / float(regionpixel);
+      int region_meter = regionDist[i] - regionDist[i - 1];
+      unit_length = float(region_meter) / float(regionpixel);
       bias = regionHeight[i] - piexl_loc;
-      offset = unitLength * float(bias);
+      offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
@@ -215,59 +226,59 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
                                                       std::vector<float> regionDist)
 {
   float distance = -1;
-  float unitLength = 0.0;
+  float unit_length = 0.0;
   int bias = 0;
   float offset = 0.0;
 
-  std::vector<int> regionHeight_new = regionHeight;
+  std::vector<int> region_height_new = regionHeight;
 
   for (size_t i = 0; i < regionHeight.size(); i++)
   {
     if (regionHeightSlope[i] != 0)
     {
-      regionHeight_new[i] = regionHeight[i] - int((regionHeightSlope[i]) * pixel_loc_x);
+      region_height_new[i] = regionHeight[i] - int((regionHeightSlope[i]) * pixel_loc_x);
     }
     else
     {
-      regionHeight_new[i] = regionHeight[i];
+      region_height_new[i] = regionHeight[i];
     }
   }
 
-  for (size_t i = 1; i < regionHeight_new.size(); i++)
+  for (size_t i = 1; i < region_height_new.size(); i++)
   {
-    if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i - 1])
+    if (pixel_loc_y >= region_height_new[i] && pixel_loc_y <= region_height_new[i - 1])
     {
-      int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
-      int regionMeter = regionDist[i - 1] - regionDist[i];
+      int regionpixel = region_height_new[i - 1] - region_height_new[i];
+      int region_meter = regionDist[i - 1] - regionDist[i];
       if (regionpixel != 0)
       {
-        unitLength = float(regionMeter) / float(regionpixel);
+        unit_length = float(region_meter) / float(regionpixel);
       }
-      bias = pixel_loc_y - regionHeight_new[i];
-      offset = unitLength * float(bias);
+      bias = pixel_loc_y - region_height_new[i];
+      offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (pixel_loc_y <= regionHeight_new[i] && pixel_loc_y >= regionHeight_new[i - 1])
+    else if (pixel_loc_y <= region_height_new[i] && pixel_loc_y >= region_height_new[i - 1])
     {
-      int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
-      int regionMeter = regionDist[i] - regionDist[i - 1];
+      int regionpixel = region_height_new[i] - region_height_new[i - 1];
+      int region_meter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
       {
-        unitLength = float(regionMeter) / float(regionpixel);
+        unit_length = float(region_meter) / float(regionpixel);
       }
-      bias = regionHeight_new[i] - pixel_loc_y;
-      offset = unitLength * float(bias);
+      bias = region_height_new[i] - pixel_loc_y;
+      offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (pixel_loc_y > regionHeight_new.front())
+      if (pixel_loc_y > region_height_new.front())
       {
         distance = regionDist.front() + 0.5;
       }
-      else if (pixel_loc_y < regionHeight_new.back())
+      else if (pixel_loc_y < region_height_new.back())
       {
         distance = regionDist.back() - 0.5;
       }
@@ -277,65 +288,65 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
   return distance;
 }
 
-float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+float DistanceEstimation::ComputeObjectYDist(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                                              std::vector<float> regionHeightSlope_y, std::vector<float> regionDist,
                                              int img_h)
 {
   float distance = -1;
-  float unitLength = 0.0;
+  float unit_length = 0.0;
   int bias = 0;
   float offset = 0.0;
 
-  std::vector<int> regionHeight_new = regionHeight;
+  std::vector<int> region_height_new = regionHeight;
 
   for (size_t i = 0; i < regionHeight.size(); i++)
   {
-    int y = img_h - piexl_loc_x;
+    int y = img_h - pixel_loc_x;
     if (regionHeightSlope_y[i] != 0)
     {
-      regionHeight_new[i] = regionHeight[i] + int((1 / regionHeightSlope_y[i]) * y);
+      region_height_new[i] = regionHeight[i] + int((1 / regionHeightSlope_y[i]) * y);
     }
     else
     {
-      regionHeight_new[i] = regionHeight[i];
+      region_height_new[i] = regionHeight[i];
     }
   }
 
-  for (size_t i = 1; i < regionHeight_new.size(); i++)
+  for (size_t i = 1; i < region_height_new.size(); i++)
   {
-    if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i - 1])
+    if (pixel_loc_y >= region_height_new[i] && pixel_loc_y <= region_height_new[i - 1])
     {
-      int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
-      int regionMeter = regionDist[i] - regionDist[i - 1];
+      int regionpixel = region_height_new[i - 1] - region_height_new[i];
+      int region_meter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
       {
-        unitLength = float(regionMeter) / float(regionpixel);
+        unit_length = float(region_meter) / float(regionpixel);
       }
-      bias = piexl_loc_y - regionHeight_new[i];
-      offset = unitLength * float(bias);
+      bias = pixel_loc_y - region_height_new[i];
+      offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (piexl_loc_y <= regionHeight_new[i] && piexl_loc_y >= regionHeight_new[i - 1])
+    else if (pixel_loc_y <= region_height_new[i] && pixel_loc_y >= region_height_new[i - 1])
     {
-      int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
-      int regionMeter = regionDist[i] - regionDist[i - 1];
+      int regionpixel = region_height_new[i] - region_height_new[i - 1];
+      int region_meter = regionDist[i] - regionDist[i - 1];
       if (regionpixel != 0)
       {
-        unitLength = float(regionMeter) / float(regionpixel);
+        unit_length = float(region_meter) / float(regionpixel);
       }
-      bias = regionHeight_new[i] - piexl_loc_y;
-      offset = unitLength * float(bias);
+      bias = region_height_new[i] - pixel_loc_y;
+      offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (piexl_loc_y < regionHeight_new.front())
+      if (pixel_loc_y < region_height_new.front())
       {
         distance = regionDist.front() + 0.5;
       }
-      else if (piexl_loc_y > regionHeight_new.back())
+      else if (pixel_loc_y > region_height_new.back())
       {
         distance = regionDist.back() - 0.5;
       }
@@ -351,17 +362,17 @@ int DistanceEstimation::CheckPointInArea(CheckArea area, int object_x1, int obje
   int point1 = 1;
   int point2 = 2;
   /// right
-  int C1 = (area.RightLinePoint1.x - area.RightLinePoint2.x) * (object_y2 - area.RightLinePoint2.y) -
+  int c1 = (area.RightLinePoint1.x - area.RightLinePoint2.x) * (object_y2 - area.RightLinePoint2.y) -
            (object_x1 - area.RightLinePoint2.x) * (area.RightLinePoint1.y - area.RightLinePoint2.y);
   /// left
-  int C2 = (area.LeftLinePoint1.x - area.LeftLinePoint2.x) * (object_y2 - area.LeftLinePoint2.y) -
+  int c2 = (area.LeftLinePoint1.x - area.LeftLinePoint2.x) * (object_y2 - area.LeftLinePoint2.y) -
            (object_x1 - area.LeftLinePoint2.x) * (area.LeftLinePoint1.y - area.LeftLinePoint2.y);
 
-  if (C1 > 0)
+  if (c1 > 0)
   {
     return point2;
   }
-  else if (C2 < 0)
+  else if (c2 < 0)
   {
     return point1;
   }
@@ -472,39 +483,39 @@ int DistanceEstimation::BoxShrink(camera::id cam_id, std::vector<int> Points_src
   // PointsDst = {class_id, x1, x2, y2};
 
   // int edge_left, edge_right;
-  int area_id_R = 1;  // 1: left, 2:right
-  int area_id_L = 1;  // 1: left, 2:right
+  int area_id_r = 1;  // 1: left, 2:right
+  int area_id_l = 1;  // 1: left, 2:right
 
   double shrink_ratio;
 
   if (cam_id == camera::id::front_bottom_60)
   {
-    area_id_L = CheckPointInArea(ShrinkArea[camera::id::front_bottom_60], Points_src[1], Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea[camera::id::front_bottom_60], Points_src[2], Points_src[3]);
+    area_id_l = CheckPointInArea(ShrinkArea[camera::id::front_bottom_60], Points_src[1], Points_src[3]);
+    area_id_r = CheckPointInArea(ShrinkArea[camera::id::front_bottom_60], Points_src[2], Points_src[3]);
   }
   else if (cam_id == camera::id::front_top_close_120)
   {
-    area_id_L = CheckPointInArea(ShrinkArea[camera::id::front_top_close_120], Points_src[1], Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea[camera::id::front_top_close_120], Points_src[2], Points_src[3]);
+    area_id_l = CheckPointInArea(ShrinkArea[camera::id::front_top_close_120], Points_src[1], Points_src[3]);
+    area_id_r = CheckPointInArea(ShrinkArea[camera::id::front_top_close_120], Points_src[2], Points_src[3]);
   }
   else if (cam_id == camera::id::back_top_120)
   {
-    area_id_L = CheckPointInArea(ShrinkArea[camera::id::back_top_120], Points_src[1], Points_src[3]);
-    area_id_R = CheckPointInArea(ShrinkArea[camera::id::back_top_120], Points_src[2], Points_src[3]);
+    area_id_l = CheckPointInArea(ShrinkArea[camera::id::back_top_120], Points_src[1], Points_src[3]);
+    area_id_r = CheckPointInArea(ShrinkArea[camera::id::back_top_120], Points_src[2], Points_src[3]);
   }
 
   shrink_ratio = RatioDefine(cam_id, Points_src[0]);
 
   // Shrink box when one of x1, x2 is in area and another is not in the area.
-  if (area_id_L != area_id_R)
+  if (area_id_l != area_id_r)
   {
-    if (area_id_L == 1 && area_id_R == 0)
+    if (area_id_l == 1 && area_id_r == 0)
     {
       // Keep x1 and shrink right
       Points_dst[1] = Points_src[1];
       Points_dst[2] = Points_src[1] + (Points_src[2] - Points_src[1]) * shrink_ratio;
     }
-    if (area_id_L == 0 && area_id_R == 2)
+    if (area_id_l == 0 && area_id_r == 2)
     {
       // Keep x2 and shrink left
       Points_dst[1] = Points_src[2] - (Points_src[2] - Points_src[1]) * shrink_ratio;
@@ -680,11 +691,11 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 ||
       cam_id == camera::id::back_top_120)
   {
-    std::vector<int> PointsSrc = { class_id, x1, x2, y2 };
-    std::vector<int> PointsDst = { class_id, x1, x2, y2 };
-    BoxShrink(cam_id, PointsSrc, PointsDst);
-    x1 = PointsDst[1];
-    x2 = PointsDst[2];
+    std::vector<int> points_src = { class_id, x1, x2, y2 };
+    std::vector<int> points_dst = { class_id, x1, x2, y2 };
+    //BoxShrink(cam_id, points_src, points_dst);
+    x1 = points_dst[1];
+    x2 = points_dst[2];
   }
 
   /// 1
@@ -770,13 +781,13 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 {
   msgs::PointXYZ p0;
-  float x_distMeter = 0, y_distMeter = 0;
+  float x_dist_meter = 0, y_dist_meter = 0;
   int x_loc = y;
   int y_loc = x;
 
-  DisEstiParams parmas_;
+  DisEstiParams parmas;
 
-  parmas_ = arr_params[cam_id];
+  parmas = arr_params[cam_id];
 
   if (de_mode == 1)
   {
@@ -791,30 +802,29 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       return p0;
     }
   }
-  else
+  
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
   {
-    if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 || cam_id == camera::id::back_top_120)
+    if (!parmas.regionDist_x.empty())
     {
-      if (!parmas_.regionDist_x.empty())
-      {
-        x_distMeter = ComputeObjectXDist(x_loc, parmas_.regionHeight_x, parmas_.regionDist_x);
-      }
-      if (!parmas_.regionDist_y.empty())
-      {
-        y_distMeter = ComputeObjectYDist(y_loc, x_loc, parmas_.regionHeight_y, parmas_.regionHeightSlope_y,
-                                         parmas_.regionDist_y, img_h);
-      }
+      x_dist_meter = ComputeObjectXDist(x_loc, parmas.regionHeight_x, parmas.regionDist_x);
+    }
+    if (!parmas.regionDist_y.empty())
+    {
+      y_dist_meter = ComputeObjectYDist(y_loc, x_loc, parmas.regionHeight_y, parmas.regionHeightSlope_y,
+                                        parmas.regionDist_y, img_h);
     }
   }
+  
 
-  if (x_distMeter == 777)
+  if (x_dist_meter == 777)
   {
     p0.x = 0;
     p0.y = 0;
     p0.z = 0;
   }
-  p0.x = x_distMeter + Lidar_offset_x;
-  p0.y = y_distMeter;
+  p0.x = x_dist_meter + Lidar_offset_x;
+  p0.y = y_dist_meter;
   p0.z = Lidar_offset_z;
 
   return p0;

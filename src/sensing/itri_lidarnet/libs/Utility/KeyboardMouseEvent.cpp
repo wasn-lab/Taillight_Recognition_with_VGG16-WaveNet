@@ -1,67 +1,59 @@
 #include "KeyboardMouseEvent.h"
 
-KeyboardMouseEvent::KeyboardMouseEvent(){
+KeyboardMouseEvent::KeyboardMouseEvent()
+{
 }
 
-KeyboardMouseEvent::~KeyboardMouseEvent(){
+KeyboardMouseEvent::~KeyboardMouseEvent()
+{
 }
 
-void
-KeyboardMouseEvent::setCloudToPCD (PointCloud<PointXYZ> input)
+void KeyboardMouseEvent::setCloudToPCD(PointCloud<PointXYZ> input)
 {
   cloud_save_to_pcd = input;
 }
 
-bool
-KeyboardMouseEvent::getPauseState ()
+bool KeyboardMouseEvent::getPauseState()
 {
   return pause_state;
 }
 
-bool
-KeyboardMouseEvent::getResultState ()
+bool KeyboardMouseEvent::getResultState()
 {
   return result_mode_state;
 }
 
-bool
-KeyboardMouseEvent::getCHState ()
+bool KeyboardMouseEvent::getCHState()
 {
-	return ch_mode_state;
+  return ch_mode_state;
 }
 
-
-bool
-KeyboardMouseEvent::getBBoxState ()
+bool KeyboardMouseEvent::getBBoxState()
 {
-	return bbox_mode_state;
+  return bbox_mode_state;
 }
 
-bool
-KeyboardMouseEvent::getLidarAllState ()
+bool KeyboardMouseEvent::getLidarAllState()
 {
-	return lidar_all_state;
+  return lidar_all_state;
 }
 
-void
-KeyboardMouseEvent::mouseCallback (const pcl::visualization::MouseEvent &event,
-                      void* viewer_void)
+void KeyboardMouseEvent::mouseCallback(const pcl::visualization::MouseEvent& event, void* viewer_void)
 {
-  //pcl::visualization::PCLVisualizer *viewer = static_cast<pcl::visualization::PCLVisualizer *> (viewer_void);
-  if (event.getButton () == pcl::visualization::MouseEvent::LeftButton && event.getType () == pcl::visualization::MouseEvent::MouseButtonRelease)
+  // pcl::visualization::PCLVisualizer *viewer = static_cast<pcl::visualization::PCLVisualizer *> (viewer_void);
+  if (event.getButton() == pcl::visualization::MouseEvent::LeftButton &&
+      event.getType() == pcl::visualization::MouseEvent::MouseButtonRelease)
   {
-    //char str[512];
-    //viewer->addText ("clicked here", event.getX (), event.getY (), str);
+    // char str[512];
+    // viewer->addText ("clicked here", event.getX (), event.getY (), str);
   }
 }
 
-void
-KeyboardMouseEvent::keyboardCallback (const pcl::visualization::KeyboardEvent &event,
-                         void* viewer_void)
+void KeyboardMouseEvent::keyboardCallback(const pcl::visualization::KeyboardEvent& event, void* viewer_void)
 {
-  pcl::visualization::PCLVisualizer *viewer = static_cast<pcl::visualization::PCLVisualizer *> (viewer_void);
-  
-  if (event.getKeySym () == "a" && event.keyDown ())    // switch mode to showing result point cloud only
+  pcl::visualization::PCLVisualizer* viewer = static_cast<pcl::visualization::PCLVisualizer*>(viewer_void);
+
+  if (event.getKeySym() == "a" && event.keyDown())  // switch mode to showing result point cloud only
   {
     if (result_mode_state)
     {
@@ -74,100 +66,116 @@ KeyboardMouseEvent::keyboardCallback (const pcl::visualization::KeyboardEvent &e
       cout << "[INFO]: change display mode to output results only" << endl;
     }
   }
-  if (event.getKeySym () == "t" && event.keyDown ())    // switch mode to showing bounding box or convex hull
+  if (event.getKeySym() == "t" && event.keyDown())  // switch mode to showing bounding box or convex hull
   {
     if (ch_mode_state)
     {
-    	ch_mode_state = false;
-    	cout << "[INFO]: shut down the convexhull showing" << endl;
+      ch_mode_state = false;
+      cout << "[INFO]: shut down the convexhull showing" << endl;
     }
     else
     {
-    	ch_mode_state = true;
-    	cout << "[INFO]: showing convex hull" << endl;
+      ch_mode_state = true;
+      cout << "[INFO]: showing convex hull" << endl;
     }
   }
-  if (event.getKeySym () == "y" && event.keyDown ())
+  if (event.getKeySym() == "y" && event.keyDown())
   {
-	  if (bbox_mode_state)
-	  {
-		  bbox_mode_state = false;
-		  cout << "[INFO]: shut down the bounding box showing" << endl;
-	  }
-	  else
-	  {
-		  bbox_mode_state = true;
-		  cout << "[INFO]: showing bounding boxes" << endl;
-	  }
+    if (bbox_mode_state)
+    {
+      bbox_mode_state = false;
+      cout << "[INFO]: shut down the bounding box showing" << endl;
+    }
+    else
+    {
+      bbox_mode_state = true;
+      cout << "[INFO]: showing bounding boxes" << endl;
+    }
   }
-  if (event.getKeySym () == "k" && event.keyDown ())
+  if (event.getKeySym() == "k" && event.keyDown())
   {
-  	if (lidar_all_state)
-		{
-  		lidar_all_state = false;
-			cout << "[INFO]: showing 4 Lidars respectively" << endl;
-		}
-		else
-		{
-			lidar_all_state = true;
-			cout << "[INFO]: showing /LidarAll" << endl;
-		}
+    if (lidar_all_state)
+    {
+      lidar_all_state = false;
+      cout << "[INFO]: showing 4 Lidars respectively" << endl;
+    }
+    else
+    {
+      lidar_all_state = true;
+      cout << "[INFO]: showing /LidarAll" << endl;
+    }
   }
-  if (event.getKeySym () == "s" && event.keyDown ())   // save normal PCD
+  if (event.getKeySym() == "s" && event.keyDown())  // save normal PCD
   {
     static int num2 = 0;
     struct stat buf;
-    while (stat ( (to_string (num2) + ".pcd").c_str (), &buf) == 0)
+    while (stat((to_string(num2) + ".pcd").c_str(), &buf) == 0)
+    {
       num2++;
+    }
 
-    pcl::io::savePCDFileASCII (to_string (num2) + ".pcd", cloud_save_to_pcd);
+    pcl::io::savePCDFileASCII(to_string(num2) + ".pcd", cloud_save_to_pcd);
 
     cout << "[INFO]: output PCD file" << endl;
     num2++;
   }
 
-  if (event.getKeySym () == "b" && event.keyDown ())  // save Stitching PCD
+  if (event.getKeySym() == "b" && event.keyDown())  // save Stitching PCD
   {
     struct stat buf;
-    if (stat ("StitchingBackground.pcd", &buf) == 0)
+    if (stat("StitchingBackground.pcd", &buf) == 0)
     {
       PointCloud<PointXYZ> background_cloud;
-      pcl::io::loadPCDFile<PointXYZ> ("StitchingBackground.pcd", background_cloud);
+      pcl::io::loadPCDFile<PointXYZ>("StitchingBackground.pcd", background_cloud);
       background_cloud = background_cloud + cloud_save_to_pcd;
-      pcl::io::savePCDFileASCII ("StitchingBackground.pcd", background_cloud);
+      pcl::io::savePCDFileASCII("StitchingBackground.pcd", background_cloud);
     }
     else
     {
-      pcl::io::savePCDFileASCII ("StitchingBackground.pcd", cloud_save_to_pcd);
+      pcl::io::savePCDFileASCII("StitchingBackground.pcd", cloud_save_to_pcd);
     }
     cout << "[INFO]: output Stitching Background file" << endl;
   }
 
-  if (event.getKeySym () == "d" && event.keyDown ())  // User: stop stream
+  if (event.getKeySym() == "d" && event.keyDown())  // User: stop stream
   {
     if (pause_state)
+    {
       pause_state = false;
+    }
     else
+    {
       pause_state = true;
+    }
     cout << "[INFO]: stop stream" << pause_state << endl;
   }
 
-  if (event.getKeySym () == "x" && event.keyDown ())  // print cam para
+  if (event.getKeySym() == "x" && event.keyDown())  // print cam para
   {
     vector<pcl::visualization::Camera> cam;
-    viewer->getCameras (cam);
+    viewer->getCameras(cam);
 
-    cout << "Camera Auto Code: " << endl << "cam.pos[0]=" << cam[0].pos[0] << ";cam.pos[1]=" << cam[0].pos[1] << ";cam.pos[2]=" << cam[0].pos[2] << ";" << endl
-        << "cam.view[0]=" << cam[0].view[0] << ";cam.view[1]=" << cam[0].view[1] << ";cam.view[2]=" << cam[0].view[2] << ";" << endl << "cam.focal[0]="
-        << cam[0].focal[0] << ";cam.focal[1]=" << cam[0].focal[1] << ";cam.focal[2]=" << cam[0].focal[2] << ";" << endl << "cam.clip[0]=" << cam[0].clip[0]
-        << ";cam.clip[1]=" << cam[0].clip[1] << ";cam.clip[2]=" << cam[0].clip[2] << ";" << endl << "cam.fovy=" << cam[0].fovy << ";" << endl
-        << "cam.window_pos[0]=" << cam[0].window_pos[0] << ";cam.window_pos[1]=" << cam[0].window_pos[1] << ";" << endl << "cam.window_size[0]="
-        << cam[0].window_size[0] << ";cam.window_size[1]=" << cam[0].window_size[1] << ";" << endl << endl;
+    cout << "Camera Auto Code: " << endl
+         << "cam.pos[0]=" << cam[0].pos[0] << ";cam.pos[1]=" << cam[0].pos[1] << ";cam.pos[2]=" << cam[0].pos[2] << ";"
+         << endl
+         << "cam.view[0]=" << cam[0].view[0] << ";cam.view[1]=" << cam[0].view[1] << ";cam.view[2]=" << cam[0].view[2]
+         << ";" << endl
+         << "cam.focal[0]=" << cam[0].focal[0] << ";cam.focal[1]=" << cam[0].focal[1]
+         << ";cam.focal[2]=" << cam[0].focal[2] << ";" << endl
+         << "cam.clip[0]=" << cam[0].clip[0] << ";cam.clip[1]=" << cam[0].clip[1] << ";cam.clip[2]=" << cam[0].clip[2]
+         << ";" << endl
+         << "cam.fovy=" << cam[0].fovy << ";" << endl
+         << "cam.window_pos[0]=" << cam[0].window_pos[0] << ";cam.window_pos[1]=" << cam[0].window_pos[1] << ";" << endl
+         << "cam.window_size[0]=" << cam[0].window_size[0] << ";cam.window_size[1]=" << cam[0].window_size[1] << ";"
+         << endl
+         << endl;
 
-    cout << "Camera Auto Code: " << endl << "cam = CamPara(" << cam[0].pos[0] << "," << cam[0].pos[1] << "," << cam[0].pos[2] << "," << cam[0].view[0] << ","
-        << cam[0].view[1] << "," << cam[0].view[2] << "," << cam[0].focal[0] << "," << cam[0].focal[1] << "," << cam[0].focal[2] << "," << cam[0].clip[0] << ","
-        << cam[0].clip[1] << "," << cam[0].clip[2] << "," << cam[0].fovy << "," << cam[0].window_pos[0] << "," << cam[0].window_pos[1] << ","
-        << cam[0].window_size[0] << "," << cam[0].window_size[1] << ");" << endl;
+    cout << "Camera Auto Code: " << endl
+         << "cam = CamPara(" << cam[0].pos[0] << "," << cam[0].pos[1] << "," << cam[0].pos[2] << "," << cam[0].view[0]
+         << "," << cam[0].view[1] << "," << cam[0].view[2] << "," << cam[0].focal[0] << "," << cam[0].focal[1] << ","
+         << cam[0].focal[2] << "," << cam[0].clip[0] << "," << cam[0].clip[1] << "," << cam[0].clip[2] << ","
+         << cam[0].fovy << "," << cam[0].window_pos[0] << "," << cam[0].window_pos[1] << "," << cam[0].window_size[0]
+         << "," << cam[0].window_size[1] << ");" << endl;
   }
 }
 
