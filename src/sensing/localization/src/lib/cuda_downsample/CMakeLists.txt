@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(cuda_downsample) 
+project(cuda_downsample)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
@@ -19,24 +19,22 @@ catkin_package(
     INCLUDE_DIRS include                        #The exported include paths
     LIBRARIES cuda_downsample                      #The exported libraries from the project
 )
-include_directories(include
-${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/
-
-)
+include_directories(
+  include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample)
 
 include_directories(${PCL_INCLUDE_DIRS})
-include_directories     (${CUDA_INCLUDE_DIRS}) 
+include_directories(${CUDA_INCLUDE_DIRS})
 
 add_definitions(${PCL_DEFINITIONS})
 
 find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 
 FILE(GLOB_RECURSE CPP_LIST *.cpp)
 FILE(GLOB_RECURSE CU_LIST *.cu)
-FILE(GLOB_RECURSE H_LIST ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/*.h 
-			${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/*.cuh)
+FILE(GLOB_RECURSE H_LIST ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/*.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/*.cuh)
 
 
 MESSAGE(STATUS "cpp list: ${CPP_LIST}")
@@ -44,12 +42,12 @@ MESSAGE(STATUS "cu list: ${CU_LIST}")
 MESSAGE(STATUS "h list: ${H_LIST}")
 
 
-cuda_add_library(${PROJECT_NAME} 	
-	${CPP_LIST}
-	${CU_LIST}
+cuda_add_library(${PROJECT_NAME}
+  ${CPP_LIST}
+  ${CU_LIST}
 )
 target_link_libraries(cuda_downsample
-	${PCL_LIBRARIES}
+  ${PCL_LIBRARIES}
         ${CUDA_LIBRARIES}
 )
 

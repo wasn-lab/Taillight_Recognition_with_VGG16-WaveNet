@@ -45,12 +45,10 @@ include_directories(
  include
   ${catkin_INCLUDE_DIRS}
 )
- 
+
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 ######################
 ##       VTK        ##
@@ -60,7 +58,7 @@ find_package        (VTK 6.2 REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED) 
+find_package            (PCL 1.8 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})

@@ -10,7 +10,7 @@ endif ()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  std_msgs	
+  std_msgs
   message_generation
   genmsg
   roslib
@@ -24,7 +24,6 @@ set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
 find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 add_message_files(
   FILES
@@ -46,8 +45,8 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS 
-  roscpp 
+  CATKIN_DEPENDS
+  roscpp
   std_msgs
   ndt_gpu
   cuda_downsample
@@ -68,8 +67,8 @@ add_definitions(${PCL_DEFINITIONS})
 
 
 
-add_executable(${PROJECT_NAME}_node 
-		src/localization_main.cpp 
+add_executable(${PROJECT_NAME}_node
+    src/localization_main.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})

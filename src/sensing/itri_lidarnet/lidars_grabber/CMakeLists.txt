@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(lidars_grabber)
 
-find_package		(CUDA)
+find_package(CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
@@ -217,7 +217,6 @@ include_directories(
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
 
 find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 ######################
 ##       VTK        ##

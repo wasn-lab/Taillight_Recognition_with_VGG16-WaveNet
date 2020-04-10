@@ -21,7 +21,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/
 include_directories(${PCL_INCLUDE_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_50,code=sm_50;-std=c++11; -Xptxas -v")
 

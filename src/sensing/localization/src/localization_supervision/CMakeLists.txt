@@ -15,8 +15,6 @@ include(CompilerFlags)
 ## Find Point Cloud Library 1.8
 find_package(PCL 1.8.1 REQUIRED)
 find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
-
 
 catkin_package(
   INCLUDE_DIRS include
@@ -24,7 +22,6 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   std_msgs
-  
   )
 
 include_directories(
@@ -42,5 +39,3 @@ target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_node_generate_messages_cpp)
 MESSAGE("Generate ${PROJECT_NAME}")
-
-

@@ -16,7 +16,6 @@ include(CompilerFlags)
 find_package(PCL 1.8.1 REQUIRED)
 
 find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 generate_messages(
   DEPENDENCIES
@@ -39,10 +38,10 @@ if (NOT EXISTS ${POINTS_MAP_DIRS}/total_map.pcd)
 
     file(
     DOWNLOAD
-    	http://118.163.54.109:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd    	
+      http://118.163.54.109:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd
     STATUS
         status
-    LOG 
+    LOG
         log
     SHOW_PROGRESS
     )
