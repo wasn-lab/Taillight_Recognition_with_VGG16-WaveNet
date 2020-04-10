@@ -6,6 +6,10 @@
 #include <ros/callback_queue.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/Image.h>
+#include <tf/tf.h>
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <nav_msgs/Path.h>
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
@@ -62,6 +66,7 @@ public:
 
   // Functions
   void run();
+  void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
@@ -88,7 +93,8 @@ public:
   cv::dnn::Net net_openpose;
 
   // All buffer components
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> imageCache;
+  std::vector<geometry_msgs::PoseStamped> nav_path;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
   std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
   Buffer buffer;
   int buffer_size = 60;
@@ -96,12 +102,15 @@ public:
   // ROS components
   ros::Publisher chatter_pub;
   ros::Publisher box_pub;
+  ros::Publisher alert_pub;
   ros::Time total_time;
+  tf2_ros::Buffer tfBuffer;
 
   // Variables
   cv::Ptr<cv::ml::RTrees> rf;
   cv::Ptr<cv::ml::RTrees> rf_pose;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_1;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
   bool g_enable = false;
   bool g_trigger = false;
   int count;

@@ -81,8 +81,8 @@ set(CPP_FILES
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
-    src/tf_utils.cpp
-    src/Predict_test.cpp
+    #src/tf_utils.cpp
+    #src/Predict_test.cpp
 )
 
 
