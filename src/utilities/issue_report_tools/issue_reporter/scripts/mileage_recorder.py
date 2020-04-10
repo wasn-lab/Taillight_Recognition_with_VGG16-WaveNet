@@ -40,9 +40,9 @@ speed_mps_filtered = 0.0 # m/sec.
 adv_run_state = 0
 brake_state = 0
 # Module states
-Xbywire_run_state = 0
-AEB_run_state = 0
-ACC_run_state = 0
+Xbywire_run_state = None # 0
+AEB_run_state = None # 0
+ACC_run_state = None # 0
 #
 
 # Queue
