@@ -540,6 +540,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
 
     // Top-level top-centered back image (dynamic) <-- "Rear-sight mirror"
+/*
     _image_board_ptr.reset(new rmImageBoard(_Assets_path, int(MSG_ID::camera_rear_center), false, true, true) );
     _image_board_ptr->alpha = 0.9;
     _image_board_ptr->color_transform = glm::vec4(1.0f);
@@ -550,7 +551,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _image_board_ptr->shape.setBoardPositionCVPixel(-300, 0, 1, ALIGN_X::RIGHT, ALIGN_Y::TOP ); // Right side
     _image_board_ptr->shape.setBoardPositionCVPixel(0, 0, 0, ALIGN_X::LEFT, ALIGN_Y::TOP ); // Left side
     _rm_BaseModel.push_back( _image_board_ptr );
-
+*/
 
     // Remove the following for backend demo
     // // rmlv2SpeedMeter
