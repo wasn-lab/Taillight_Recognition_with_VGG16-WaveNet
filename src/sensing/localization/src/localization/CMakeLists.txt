@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(localization)
-add_compile_options(-std=c++11)
 
 find_package(PCL 1.8.1 REQUIRED)
 find_package(CUDA)
@@ -21,7 +20,11 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
 )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
+find_package(Eigen3)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 add_message_files(
   FILES

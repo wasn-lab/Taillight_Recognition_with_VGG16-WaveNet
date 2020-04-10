@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(localization_supervision)
-add_compile_options(-std=c++11)
-set(CMAKE_BUILD_TYPE "Release")
-
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -12,9 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
 )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
 ## Find Point Cloud Library 1.8
 find_package(PCL 1.8.1 REQUIRED)
-
+find_package(Eigen3)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 
 catkin_package(
