@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-add_compile_options(-std=c++11)
 project(cuda_downsample) 
-set(CMAKE_BUILD_TYPE "Release")
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
 find_package(catkin REQUIRED)
 find_package(PCL 1.5 REQUIRED)
 
@@ -27,10 +29,8 @@ include_directories     (${CUDA_INCLUDE_DIRS})
 
 add_definitions(${PCL_DEFINITIONS})
 
-#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_50,code=sm_50;-std=c++11; -Xptxas -v")
-
-
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
+find_package(Eigen3)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 
 FILE(GLOB_RECURSE CPP_LIST *.cpp)
