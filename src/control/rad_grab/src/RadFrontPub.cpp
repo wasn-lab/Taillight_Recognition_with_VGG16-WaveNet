@@ -113,6 +113,7 @@ int main(int argc, char **argv)
             point.z = z;
             point.speed = speed;
             rad.radPoint.push_back(point);
+	    printf("radPoint(x, y, z, speed)=(%8.4f, %8.4f, %8.4f, %8.4f)", point.x, point.y, point.z, point.speed);
 	    ROS_INFO("radPoint(x, y, z, speed)=(%8.4f, %8.4f, %8.4f, %8.4f)", point.x, point.y, point.z, point.speed);
             
         }
@@ -125,14 +126,24 @@ int main(int argc, char **argv)
     return 0;
 }
 
+void print_radar_raw(struct can_frame frame)
+{
+  std::cout << "~~~~~~~~~~~~~~~~\n" << std::endl;
+	printf("%02x\n", frame.can_id);
+  for(int i =0 ; i< 8;i++)
+  {
+    printf("%02x", frame.data[i]);
+  }
+}
+
 void delphi_radar_parsing(struct can_frame frame, float *x, float *y, float *z, float *speed)
 {
     unsigned int Range, Angle, tmp;
     float fRange, fAngle;
     int i, sign;
-
     if ((frame.can_id >= 0x500) && (frame.can_id <= 0x53f))
     {
+    		print_radar_raw(frame);
         Range = ((frame.data[2] & 0x07) << 8) | frame.data[3];
         fRange = Range * 0.1;
 
