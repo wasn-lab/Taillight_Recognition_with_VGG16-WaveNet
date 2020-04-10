@@ -1,5 +1,5 @@
-#ifndef CONVEX_FUSION_B1_H
-#define CONVEX_FUSION_B1_H
+#ifndef CONVEX_FUSION_B1_V2_H
+#define CONVEX_FUSION_B1_V2_H
 
 // =============================================
 //                      STD
@@ -41,7 +41,7 @@
 
 #include "costmap_generator.h"
 
-class ConvexFusionB1
+class ConvexFusionB1V2
 {
 public:
   ros::Publisher error_code_pub_;
@@ -55,13 +55,11 @@ public:
 
   void registerCallBackLidarAllNonGround(void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&));
 
-  void registerCallBackCameraDetection(void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
-                                       void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
-                                       void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&));
+  void registerCallBackCameraDetection(void (*callback_front_bottom_60)(const msgs::DetectedObjectArray::ConstPtr&));
 
   void sendErrorCode(unsigned int error_code, const std::string& frame_id, int module_id);
   void sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
                          ros::Time rostime, const std::string& frame_id);
 };
 
-#endif  // CONVEX_FUSION_B1_H
+#endif  // CONVEX_FUSION_B1_V2_H

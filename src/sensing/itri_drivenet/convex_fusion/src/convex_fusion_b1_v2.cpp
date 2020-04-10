@@ -1,6 +1,6 @@
-#include "convex_fusion_b1.h"
+#include "convex_fusion_b1_v2.h"
 
-void ConvexFusionB1::initial(const std::string& nodename, int argc, char** argv)
+void ConvexFusionB1V2::initial(const std::string& nodename, int argc, char** argv)
 {
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
@@ -10,7 +10,7 @@ void ConvexFusionB1::initial(const std::string& nodename, int argc, char** argv)
   occupancy_grid_publisher_ = n.advertise<nav_msgs::OccupancyGrid>("/CameraDetection/occupancy_grid", 1, true);
 }
 
-void ConvexFusionB1::registerCallBackLidarAllNonGround(
+void ConvexFusionB1V2::registerCallBackLidarAllNonGround(
     void (*callback_nonground)(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr&))
 {
   ros::NodeHandle n;
@@ -18,22 +18,16 @@ void ConvexFusionB1::registerCallBackLidarAllNonGround(
   static ros::Subscriber lidarall_nonground_sub = n.subscribe("/LidarAll/NonGround", 1, callback_nonground);
 }
 
-void ConvexFusionB1::registerCallBackCameraDetection(
-    void (*callback_front_60)(const msgs::DetectedObjectArray::ConstPtr&),
-    void (*callback_top_front_120)(const msgs::DetectedObjectArray::ConstPtr&),
-    void (*callback_top_rear_120)(const msgs::DetectedObjectArray::ConstPtr&))
+void ConvexFusionB1V2::registerCallBackCameraDetection(
+    void (*callback_front_bottom_60)(const msgs::DetectedObjectArray::ConstPtr&))
 {
   ros::NodeHandle n;
 
-  static ros::Subscriber camera_front_60_detection_sub =
-      n.subscribe(camera::topics_obj[camera::id::front_60], 1, callback_front_60);
-  static ros::Subscriber camera_top_front_120_detection_sub =
-      n.subscribe(camera::topics_obj[camera::id::top_front_120], 1, callback_top_front_120);
-  static ros::Subscriber camera_top_rear_120_detection_sub =
-      n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
+  static ros::Subscriber camera_front_bottom_60_detection_sub =
+      n.subscribe(camera::topics_obj[camera::id::front_bottom_60], 1, callback_front_bottom_60);
 }
 
-void ConvexFusionB1::sendErrorCode(unsigned int error_code, const std::string& frame_id, int module_id)
+void ConvexFusionB1V2::sendErrorCode(unsigned int error_code, const std::string& frame_id, int module_id)
 {
   static uint32_t seq;
 
@@ -47,7 +41,7 @@ void ConvexFusionB1::sendErrorCode(unsigned int error_code, const std::string& f
   error_code_pub_.publish(objMsg);
 }
 
-void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
+void ConvexFusionB1V2::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
                                        ros::Time rostime, const std::string& frame_id)
 {
   if (use_gridmap_publish_)
