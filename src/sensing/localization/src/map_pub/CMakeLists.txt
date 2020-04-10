@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_pub)
+add_compile_options(-std=c++11)
+set(CMAKE_BUILD_TYPE "Release")
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endif()
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -9,14 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 ## Find Point Cloud Library 1.8
 find_package(PCL 1.8.1 REQUIRED)
 
-find_package(Eigen3)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EIGEN3_DEFINITIONS}")
 
 generate_messages(
   DEPENDENCIES
