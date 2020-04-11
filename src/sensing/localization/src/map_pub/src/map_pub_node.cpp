@@ -168,7 +168,9 @@ main (int argc, char** argv)
         crop_value_max = maxPt.x;
         crop_value_mean = (crop_value_min + crop_value_max)/2;
         crop_value_range = 50;
-        map_mean_value_publisher.publish(crop_value_mean);
+        std_msgs::Float64 msg;
+        msg.data = crop_value_mean;
+        map_mean_value_publisher.publish(msg);
 
         pcl::toROSMsg(*filtered_cloud_total, total_map_ptcloud);
         //total_map_ptcloud.header.stamp = ros::Time::now();
