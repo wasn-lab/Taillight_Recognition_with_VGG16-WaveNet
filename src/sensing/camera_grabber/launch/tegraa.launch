@@ -8,6 +8,7 @@
     -mode a
     -expected_fps 30
     -do_resize=true
+    -do_crop=true
     "
     output="screen"
   />

@@ -13,6 +13,11 @@ include(CompilerFlags)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
+set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
+set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
+set(TENSORFLOW_LIBRARIES tensorflow)
+message("TF found: ${TENSORFLOW_LIBRARIES}")
+
 find_package(catkin REQUIRED COMPONENTS
     message_generation
     roscpp
@@ -64,8 +69,10 @@ include_directories(
     ${GFLAGS_INCLUDE_DIR}
     ${GLOG_INCLUDE_DIR}
     ${PROJECT_BINARY_DIR}/include
+    ${TENSORFLOW_INCLUDE_DIR}
     src/
 )
+link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
 set(CPP_FILES
     src/pedestrian_event.cpp
@@ -74,6 +81,8 @@ set(CPP_FILES
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
+    #src/tf_utils.cpp
+    #src/Predict_test.cpp
 )
 
 
@@ -84,7 +93,8 @@ target_link_libraries(
     ${OpenCV_LIBS}
     ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
-    ${GLOG_LIBRARY})
+    ${GLOG_LIBRARY}
+    ${TENSORFLOW_LIBRARIES})
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)

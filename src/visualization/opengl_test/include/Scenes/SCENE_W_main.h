@@ -146,6 +146,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     */
 
     // Grid ground, local
+
     _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_base_footprint", "GUI_base_footprint" ) );
     _rmGrid_ptr->set_grid_param(5.0, 5.0, 10, 10, 0.0f, true, glm::vec3(0.5f,0.5f,0.5f));
     _rm_BaseModel.push_back( _rmGrid_ptr );
@@ -560,6 +561,12 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightSimple>( new rmlv2TrafficLightSimple(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
     // // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightImage>( new rmlv2TrafficLightImage(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
 
+ //Roger disable 3d image
+ for (size_t i=0; i < enable_ctr_id_list_image.size(); ++i){
+            auto _ptr = &(_rm_BaseModel[ enable_ctr_id_list_image[i] ]);
+            // (*_ptr)->set_enable( !((*_ptr)->get_enable()) );
+            (*_ptr)->set_enable( false );
+ }
 }
 
 

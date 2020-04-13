@@ -6,29 +6,24 @@
 
 class DBSCAN_CUDA
 {
-  public:
-    DBSCAN_CUDA ();
-    virtual
-    ~DBSCAN_CUDA ();
+public:
+  DBSCAN_CUDA();
+  virtual ~DBSCAN_CUDA();
 
-    template <typename PointT>
-    void
-    setInputCloud (const typename PointCloud<PointT>::ConstPtr input);
-    void
-    setEpsilon (const double Epsilon);
-    void
-    setMinpts (const unsigned int MinPts);
-    void
-    segment (IndicesClusters &clusters);
+  template <typename PointT>
+  void setInputCloud(const typename PointCloud<PointT>::ConstPtr input);
+  void setEpsilon(const double Epsilon);
+  void setMinpts(const unsigned int MinPts);
+  void segment(IndicesClusters& clusters);
 
-  private:
-    static bool hasInitialCUDA;
-    static int  maxThreadsNumber;
+private:
+  static bool hasInitialCUDA;
+  static int maxThreadsNumber;
 
-    double epsilon;
-    unsigned int minpts;
-    Dataset::Ptr dset;
-    GDBSCAN::Ptr dbs;
+  double epsilon;
+  unsigned int minpts;
+  Dataset::Ptr dset;
+  GDBSCAN::Ptr dbs;
 };
 
 #endif /* DBSCAN_CUDA_H_ */

@@ -13,47 +13,32 @@ using namespace pcl;
 
 class KeyboardMouseEvent
 {
-  public:
-    KeyboardMouseEvent ();
-    ~KeyboardMouseEvent ();
+public:
+  KeyboardMouseEvent();
+  ~KeyboardMouseEvent();
 
-    static void
-    setCloudToPCD (PointCloud<PointXYZ> input);
+  static void setCloudToPCD(PointCloud<PointXYZ> input);
 
-    static bool
-    getPauseState ();
-    
-    static bool
-    getResultState ();
+  static bool getPauseState();
 
-    static bool
-		getCHState ();
+  static bool getResultState();
 
-    static bool
-		getBBoxState ();
+  static bool getCHState();
 
-    static bool
-		getLidarAllState ();
+  static bool getBBoxState();
 
-    static void
-    mouseCallback (const visualization::MouseEvent &event,
-                          void* viewer_void);
-    static void
-    keyboardCallback (const visualization::KeyboardEvent &event,
-                             void* viewer_void);
+  static bool getLidarAllState();
 
-  private:
+  static void mouseCallback(const visualization::MouseEvent& event, void* viewer_void);
+  static void keyboardCallback(const visualization::KeyboardEvent& event, void* viewer_void);
 
-    static PointCloud<PointXYZ> cloud_save_to_pcd;
-    static bool pause_state;
-    static bool result_mode_state;
-    static bool ch_mode_state;
-    static bool bbox_mode_state;
-    static bool lidar_all_state;
-
+private:
+  static PointCloud<PointXYZ> cloud_save_to_pcd;
+  static bool pause_state;
+  static bool result_mode_state;
+  static bool ch_mode_state;
+  static bool bbox_mode_state;
+  static bool lidar_all_state;
 };
-
-
-
 
 #endif
