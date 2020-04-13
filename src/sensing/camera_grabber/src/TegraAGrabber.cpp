@@ -133,7 +133,10 @@ else
     // return camera grabber
     grabber->returnCameraFrame();
     int cam_count = cam_ids_.size();
-    if(!crop_)cam_count=cam_ids_.size()-1;
+    if(!crop_)
+    {
+      cam_count=cam_ids_.size()-1;
+    }
     for (size_t i = 0; i < cam_count; ++i)
     {
       ros_image.send_image_rgb(cam_ids_[i], canvas[i]);
