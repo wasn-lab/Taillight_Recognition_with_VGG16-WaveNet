@@ -52,15 +52,19 @@ main (int argc,
 
   // =============== Tensorflow ==================
   vector<float> phi_center_all = phi_center_grid(ViewType);
-  
-  for(size_t i=0; i < phi_center_all.size(); i++)
+
+  for (size_t i = 0; i < phi_center_all.size(); i++)
+  {
     SSN_all.push_back(TF_inference(data_set,ViewType,phi_center_all.at(i),pub_type));
+  }
 
   // SSN_P0deg = TF_inference(data_set,ViewType,phi_center,pub_type);
 
   vector<int> TF_ERcode(phi_center_all.size());
-  for(size_t i=0; i < phi_center_all.size(); i++)
+  for (size_t i = 0; i < phi_center_all.size(); i++)
+  {
     TF_ERcode.at(i) = SSN_all.at(i).TF_init();
+  }
 
   // int TF_ERcode = SSN_P0deg.TF_init();
 
@@ -71,9 +75,11 @@ main (int argc,
   {
     ros::Rate(1).sleep ();
   }
-  
-  for(size_t i=0; i < phi_center_all.size(); i++)
+
+  for (size_t i = 0; i < phi_center_all.size(); i++)
+  {
     SSN_all.at(i).TF_quit();
+  }
 
   // SSN_P0deg.TF_quit();
 

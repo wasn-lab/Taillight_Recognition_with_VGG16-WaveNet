@@ -1,22 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(velodyne_laserscan)
 
-# Set minimum C++ standard to C++11
-if (NOT "${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}")
-  message(STATUS "Changing CXX_STANDARD from C++98 to C++11")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif ("${CMAKE_CXX_STANDARD_COMPUTED_DEFAULT}" STREQUAL "98")
-  message(STATUS "Changing CXX_STANDARD from C++98 to C++11")
-  set(CMAKE_CXX_STANDARD 11)
-endif()
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   nodelet
   sensor_msgs
   dynamic_reconfigure
   roslint
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
 
 generate_dynamic_reconfigure_options(
   cfg/VelodyneLaserScan.cfg

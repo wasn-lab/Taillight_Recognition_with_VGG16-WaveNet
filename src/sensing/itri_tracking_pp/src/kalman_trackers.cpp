@@ -456,11 +456,11 @@ void KalmanTrackers::associate_data()
   }
 #endif
 
-  Hungarian HungAlgo;
+  Hungarian hun;
   std::vector<int> assignment;
 
 #if DEBUG
-  double cost = HungAlgo.solve(costMatrix, assignment);
+  double cost = hun.solve(costMatrix, assignment);
 
   for (unsigned i = 0; i < costMatrix.size(); i++)
   {
@@ -469,7 +469,7 @@ void KalmanTrackers::associate_data()
 
   LOG_INFO << "\ncost: " << cost << std::endl;
 #else
-  HungAlgo.solve(costMatrix, assignment);
+  hun.solve(costMatrix, assignment);
 #endif
 
   for (unsigned i = 0; i < tracks_.size(); i++)

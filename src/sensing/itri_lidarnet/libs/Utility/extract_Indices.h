@@ -9,20 +9,10 @@
 using namespace pcl;
 
 template <typename PointT>
-void
-extract_Indices (const typename PointCloud<PointT>::ConstPtr input_cloud,
-                 const pcl::PointIndicesConstPtr input_Indices,
-                 PointCloud<PointT> &output_inlier,
-                 PointCloud<PointT> &output_outlier);
+void extract_Indices(const typename PointCloud<PointT>::ConstPtr input_cloud,
+                     const pcl::PointIndicesConstPtr input_Indices, PointCloud<PointT>& output_inlier,
+                     PointCloud<PointT>& output_outlier);
 
-
-
-
-PointCloud<PointXYZ>
-project_inlier (PointCloud<PointXYZ>::Ptr input,
-                float a,
-                float b,
-                float c,
-                float d);
+PointCloud<PointXYZ> project_inlier(PointCloud<PointXYZ>::Ptr input, float a, float b, float c, float d);
 
 #endif
