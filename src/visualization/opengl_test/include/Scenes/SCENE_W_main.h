@@ -166,11 +166,11 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     // Map
     pc_ptr_1.reset(new rmPointCloud(_Assets_path, int(MSG_ID::point_cloud_map)) );
-    pc_ptr_1->set_color(glm::vec3(0.68627451f, 0.0f, 0.76862745f));
+    pc_ptr_1->set_color(glm::vec3(1.0f));
     _rm_BaseModel.push_back( pc_ptr_1 );
     // Raw data
     pc_ptr_1.reset(new rmPointCloud(_Assets_path, int(MSG_ID::point_cloud_raw)) );
-    pc_ptr_1->set_color(glm::vec3(1.0f));
+    pc_ptr_1->set_color(glm::vec3(1.0f, 1.0f, 0.0f));
     _rm_BaseModel.push_back( pc_ptr_1 );
 
 
