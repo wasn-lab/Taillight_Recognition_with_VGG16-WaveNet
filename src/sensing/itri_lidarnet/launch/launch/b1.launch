@@ -24,9 +24,9 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
 	<arg name="mode" default="0" />
-	<rosparam param="LaunchFileName">b1.launch</rosparam>
     <arg name="hardware_enable" default="1" />>
 	<arg name="rpm_set" default="1200.0"/>
+	<rosparam param="LaunchFileName">b1.launch</rosparam>
     <arg name="set_group_1" value="/LidarFrontTop"/>
 	
 <!-- tf2 ******************************************************************* -->
@@ -284,8 +284,6 @@ Lidar List:
 	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
 	  </include>
 	</group>
-
-
 
 <!-- ************ Front-Top: Ouster64 ************ -->
     <group ns="$(arg set_group_1)" if="$(eval arg('hardware_enable') != 0)">
