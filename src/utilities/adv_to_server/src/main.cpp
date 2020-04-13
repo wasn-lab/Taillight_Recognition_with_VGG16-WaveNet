@@ -46,6 +46,9 @@ const std::string TOPIC_TRAFFIC = "/traffic";
 const std::string TOPIC_SERCER_STATUS = "/backend/connected";
 // reserve bus
 const std::string TOPIC_RESERVE = "/reserve/request";
+// route 
+const std::string TOPIC_ROUTE = "/reserve/route";
+
 
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
@@ -918,6 +921,43 @@ void VK103callback(json reqJson)
   }
 }
 
+void VK104callback(json reqJson)
+{
+   using namespace std;
+   
+   cout << "VK104callback reqJson: " << reqJson.dump() << endl;
+   int routeID = 0;
+   string routePath = "";
+   vector<unsigned int> stopids;
+   
+
+   // get data
+  try
+  {
+    routeID = reqJson.at("routeid").get<int>();
+    routePath = reqJson.at("routepath").get<string>(); 
+    stopids = reqJson.at("stopid").get< vector<unsigned int> >();
+  }
+  catch (exception& e)
+  {
+    cout << "VK104callback message: " << e.what() << endl;
+    server.send_json(genErrorMsg(400, e.what()));
+    return;
+  }
+ 
+   msgs::RouteInfo routeInfo;
+   routeInfo.routeid = routeID;
+   routeInfo.route_path = routePath;
+   for (size_t i = 0 ; i < stopids.size(); i++)
+   {
+     msgs::StopInfo stop;
+     stop.round = 1;
+     stop.id = stopids[i];
+     routeInfo.stops.push_back(stop);
+   }
+   RosModuleTraffic::publishRoute(TOPIC_ROUTE, routeInfo);
+}
+
 //route api
 void route(std::string request)
 {
@@ -956,6 +996,9 @@ void route(std::string request)
   } else if ("M8.2.VK103" == type)
   {
     VK103callback(requestJson);
+  } else if ("M8.2.VK104" == type)
+  {
+    VK104callback(requestJson);
   }
 }
 
