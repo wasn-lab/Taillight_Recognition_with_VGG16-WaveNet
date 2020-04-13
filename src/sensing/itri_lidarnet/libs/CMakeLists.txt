@@ -301,6 +301,51 @@ catkin_package(
 ######################
 ##      libs        ##
 ######################
-file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)
+set(SOURCES_SRCS
+  BoundingBox/ApproxMVBB/Core/AABB.cpp
+  BoundingBox/ApproxMVBB/Core/Common/MyMatrixTypeDefs.cpp
+  BoundingBox/ApproxMVBB/Core/ConvexHull2D.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/EstimateDiameter.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/alloc.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/rand.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/util.cpp
+  BoundingBox/ApproxMVBB/Core/GeometryPredicates/Predicates.cpp
+  BoundingBox/ApproxMVBB/Core/GeometryPredicates/PredicatesInit.cpp
+  BoundingBox/ApproxMVBB/Core/MinAreaRectangle.cpp
+  BoundingBox/ApproxMVBB/Core/OOBB.cpp
+  BoundingBox/ApproxMVBB/Core/ProjectedPointSet.cpp
+  BoundingBox/ApproxMVBB/Core/RandomGenerators.cpp
+  BoundingBox/ApproxMVBB/UseApproxMVBB.cpp
+  BoundingBox/LShape/LShape.cpp
+  BoundingBox/PCA/PCA.cpp
+  Clustering/DBSCAN/CUDA/DBSCAN_CUDA.cpp
+  Clustering/DBSCAN/CUDA/g_dbscan.cpp
+  Clustering/DBSCAN/Common/DBSCAN.cpp
+  Clustering/DBSCAN/VPTree/DBSCAN_VPTree.cpp
+  Matching/NDT/LiDARStitchingAuto.cpp
+  Matching/NDT/ndt_omp/gicp_omp.cpp
+  Matching/NDT/ndt_omp/ndt_omp.cpp
+  Matching/NDT/ndt_omp/voxel_grid_covariance_omp.cpp
+  Preprocess/GroundFilter/PlaneGroundFilter.cpp
+  Preprocess/GroundFilter/RayGroundFilter.cpp
+  Preprocess/NoiseFilter/NoiseFilter.cpp
+  Preprocess/NoiseFilter/VoxelFilter_CUDA.cpp
+  Preprocess/SpatialFilter/CuboidFilter.cpp
+  Preprocess/Transform/Transform_CUDA.cpp
+  Preprocess/VoxelGrid/VoxelGrid_CUDA.cpp
+  SSN_prepro/preprolib_squseg.cpp
+  TensorFlow/tf_utils.cpp
+  ToControl/EdgeDetect/edge_detect.cpp
+  ToControl/GridMapGen/points_to_costmap.cpp
+  TrafficFlow/S4FlowDetect.cpp
+  Transmission/UdpModuleA.cpp
+  Utility/CompressFunction.cpp
+  Utility/KeyboardMouseEvent.cpp
+  Utility/extract_Indices.cpp
+  eval_utility/eval_utility.cpp
+  Clustering/DBSCAN/CUDA/g_dbscan.cu
+  Preprocess/Transform/Transform_CUDA.cu
+  Preprocess/VoxelGrid/VoxelGrid_CUDA.cu)
+
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} ${TENSORFLOW_LIBRARIES})
