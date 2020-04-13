@@ -16,13 +16,14 @@ int main(int argc, char** argv)
 
   // do resize
   const bool do_resize = SensingSubSystem::do_resize();
+  const bool do_crop = SensingSubSystem::do_crop();
 
   if (mode == "a")
   {
     ros::init(argc, argv, "camera_a_grabber");
     printf("Running Camera a grabber\n");
     SensingSubSystem::TegraAGrabber app;
-    app.initializeModules(do_resize);
+    app.initializeModules(do_resize, do_crop);
     return app.runPerception();
   }
   else if (mode == "b")
