@@ -27,7 +27,7 @@ Lidar List:
     <arg name="hardware_enable" default="1" />>
 	<arg name="rpm_set" default="1200.0"/>
     <rosparam param="LaunchFileName">b1.launch</rosparam>
-    
+
     <arg name="set_group_1" value="/LidarFrontTop"/>
 	
 <!-- tf2 ******************************************************************* -->
