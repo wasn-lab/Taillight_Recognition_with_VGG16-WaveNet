@@ -58,13 +58,16 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 }
 void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
-  if (debug_output) 
-  {
-    cout << "[Top->Gbr]: " << (ros::Time::now().toNSec() / 1000ull - cloudPtr_LidarFrontTop->header.stamp) / 1000 << "ms" << endl;
-  }
-
   heartBeat[4] = true;
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontTop);
+
+  if (debug_output) 
+  {
+    ros::Time rosTime;
+    pcl_conversions::fromPCL(cloudPtr_LidarFrontTop->header.stamp, rosTime);
+    cout << "[Top->Gbr]: " << (ros::Time::now() - rosTime).toSec()*1000 << "ms" << endl;
+    stopWatch.reset();
+  }
   syncLock_callback();
 }
 
@@ -126,7 +129,6 @@ void lidarAll_Pub(int lidarNum)
   { 
       cout << "[Grabber]: " << stopWatch.getTimeSeconds() << "s" << endl;
   }
-  stopWatch.reset();
 
   // if wall_time - ros_time !> 30 minutes, (not rosbag)
   // clear sensor pc data memory if delay 3sec.
@@ -159,19 +161,15 @@ void checkPubFlag(int lidarNum)
     lidarAll_Pub(lidarNum);
     heartBeat_times[0] = 0;
     heartBeat_times[1] = 0;
-    heartBeat_times[2] = 0;
-    heartBeat_times[3] = 0;
     heartBeat_times[4] = 0;
   }
   else if (lidarAll_pubFlag != lidarNum && heartBeat_times[lidarNum] > 3)
   {
     lidarAll_pubFlag = lidarNum;
-    cout << "[PubFlag]: " << lidarNum << endl;
+    cout << "[PubFlag Change!]: " << lidarNum << endl;
     lidarAll_Pub(lidarNum);
     heartBeat_times[0] = 0;
     heartBeat_times[1] = 0;
-    heartBeat_times[2] = 0;
-    heartBeat_times[3] = 0;
     heartBeat_times[4] = 0;
   }
   else
@@ -391,7 +389,6 @@ int main(int argc, char** argv)
   // subscriber
   ros::Subscriber sub_LidarFrontLeft  = n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw", 1, cloud_cb_LidarFrontLeft);
   ros::Subscriber sub_LidarFrontRight = n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw", 1, cloud_cb_LidarFrontRight);
-  
   ros::Subscriber sub_LidarFrontTop   =  n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
 
   // publisher
@@ -402,13 +399,16 @@ int main(int argc, char** argv)
 
   thread TheadDetection(UI, argc, argv);
   
-  // ros
-  ros::Rate loop_rate(80);  // 80Hz
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
+  //ros
+  ros::MultiThreadedSpinner s(3);
+  ros::spin(s);
+
+  // ros::Rate loop_rate(80);  // 80Hz
+  // while (ros::ok())
+  // {
+  //   ros::spinOnce();
+  //   loop_rate.sleep();
+  // }
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;

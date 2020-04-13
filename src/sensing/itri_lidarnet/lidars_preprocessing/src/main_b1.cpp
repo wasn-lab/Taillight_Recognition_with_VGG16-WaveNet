@@ -12,10 +12,12 @@
 #endif
 
 bool debug_output = false;
+StopWatch stopWatch;
 
 void 
 callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
+
 #if 0
   static pcl::uint64_t oldtimestamp;
   pcl::uint64_t intervaltime = msg->header.stamp - oldtimestamp;
@@ -28,13 +30,13 @@ callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 
   if (msg->size() > 100)
   {
-    StopWatch stopWatch;
 
     if (debug_output)
     {
       ros::Time rosTime;
       pcl_conversions::fromPCL(msg->header.stamp, rosTime);
-      cout << "[Top->Pre]: " << (ros::Time::now() - rosTime).toSec()*1000 << "ms" << endl;
+      cout << "[All->Pre]: " << (ros::Time::now() - rosTime).toSec()*1000 << "ms" << endl;
+      stopWatch.reset ();
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZI>);
@@ -64,6 +66,7 @@ callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     if (debug_output)
     {
       cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << "s" << endl;
+      
     }
   }
 }

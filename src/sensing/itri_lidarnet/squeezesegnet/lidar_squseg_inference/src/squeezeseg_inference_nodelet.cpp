@@ -17,6 +17,7 @@ string ssn_nodelet::GET_hybrid_detect;
 
 vector<TF_inference> ssn_nodelet::SSN_all;
 
+StopWatch stopWatch;
 
 void
 ssn_nodelet::LidarsNodelet::onInit()
@@ -67,15 +68,6 @@ void
 ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   // cout << "TensorFlow Version: " << TF_Version() << endl;
-  
-  if (debug_output)
-  { 
-    ros::Time rosTime;
-    pcl_conversions::fromPCL (msg->header.stamp, rosTime);
-    cout << "[Top->SSN]: " << (ros::Time::now () - rosTime).toSec() *1000 << "ms"  << endl;
-  }
-  
-  pcl::StopWatch stopWatch;
 
   VPointCloud::Ptr release_Cloud(new VPointCloud);
 
@@ -83,6 +75,14 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
 
   if (release_Cloud->size() > 100)
   {
+    if (debug_output)
+    { 
+      ros::Time rosTime;
+      pcl_conversions::fromPCL (msg->header.stamp, rosTime);
+      cout << "[All->SSN]: " << (ros::Time::now () - rosTime).toSec() *1000 << "ms"  << endl;
+      stopWatch.reset ();
+    }
+    
     //   ===============  temporally enable part of rule-based code for ensuring front-view detection
     //   ==========================
     VPointCloud::Ptr select_Cloud(new VPointCloud);
@@ -155,6 +155,12 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
     nn_pub.publish(*result_cloud_all);
     result_cloud_all->clear();
 
+    if (debug_output)
+    {
+        cout << "[SSN]: " << stopWatch.getTimeSeconds() << "s" << endl;
+    } 
+
+
     // ======== following comment used for debugging of subscription ========
     // sensor_msgs::PointCloud2 all_msg;
     // pcl::toROSMsg (*release_Cloud, all_msg);
@@ -164,10 +170,7 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
     // all_pub.publish (all_msg);  // publish to /release_cloud
   }
 
-  if (debug_output)
-  {
-      cout << "[SSN]: " << stopWatch.getTimeSeconds() << "s" << endl;
-  } 
+
 }
 
 bool

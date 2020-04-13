@@ -40,20 +40,18 @@ callback_Clock (const rosgraph_msgs::Clock& msg)
 void
 callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 {
-  if (debug_output)
-  {
-    ros::Time rosTime;
-    pcl_conversions::fromPCL (msg->header.stamp, rosTime);
-    cout << "[Top->DB]: " << ( ros::Time::now () - rosTime).toSec() *1000 << "ms" << endl;
-  }
 
   heartBeat = 0;
 
-  stopWatch.reset ();
-
   if (msg->size () > 0 && fabs (LinearAcc[0]) < 1.7)
   {
-    stopWatch.reset ();
+    if (debug_output)
+    {
+      ros::Time rosTime;
+      pcl_conversions::fromPCL (msg->header.stamp, rosTime);
+      cout << "[All->DB]: " << ( ros::Time::now () - rosTime).toSec() *1000 << "ms" << endl;
+      stopWatch.reset ();
+    }
 
     int cur_cluster_num = 0;
     CLUSTER_INFO* cur_cluster = S1Cluster (viewer, &viewID).getClusters (ENABLE_DEBUG_MODE, msg, &cur_cluster_num);
@@ -68,8 +66,8 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     RosModuleB1::Send_LidarResultsEdge(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     // auto end_time = chrono::high_resolution_clock::now();
 	  // cout << "[EDGE]: " << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << endl;
-
     delete[] cur_cluster;
+    
 
     if (debug_output)
     {
