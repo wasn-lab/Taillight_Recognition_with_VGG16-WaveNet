@@ -28,35 +28,43 @@
 #include <cstring>
 #include <fstream>
 
-
-
-namespace {
-
-static void DeallocateBuffer(void* data, size_t) {
+namespace
+{
+static void DeallocateBuffer(void* data, size_t)
+{
   std::free(data);
 }
 
-static TF_Buffer* ReadBufferFromFile(const char* file) {
+static TF_Buffer* ReadBufferFromFile(const char* file)
+{
   std::ifstream f(file, std::ios::binary);
-  SCOPE_EXIT{ f.close(); };
-  if (f.fail() || !f.is_open()) {
+  SCOPE_EXIT
+  {
+    f.close();
+  };
+  if (f.fail() || !f.is_open())
+  {
     return nullptr;
   }
 
-  if (f.seekg(0, std::ios::end).fail()) {
+  if (f.seekg(0, std::ios::end).fail())
+  {
     return nullptr;
   }
   auto fsize = f.tellg();
-  if (f.seekg(0, std::ios::beg).fail()) {
+  if (f.seekg(0, std::ios::beg).fail())
+  {
     return nullptr;
   }
 
-  if (fsize <= 0) {
+  if (fsize <= 0)
+  {
     return nullptr;
   }
 
   auto data = static_cast<char*>(std::malloc(fsize));
-  if (f.read(data, fsize).fail()) {
+  if (f.read(data, fsize).fail())
+  {
     return nullptr;
   }
 
@@ -68,9 +76,10 @@ static TF_Buffer* ReadBufferFromFile(const char* file) {
   return buf;
 }
 
-TF_Tensor* ScalarStringTensor(const char* str, TF_Status* status) {
+TF_Tensor* ScalarStringTensor(const char* str, TF_Status* status)
+{
   auto str_len = std::strlen(str);
-  auto nbytes = 8 + TF_StringEncodedSize(str_len); // 8 extra bytes - for start_offset.
+  auto nbytes = 8 + TF_StringEncodedSize(str_len);  // 8 extra bytes - for start_offset.
   auto tensor = TF_AllocateTensor(TF_STRING, nullptr, 0, nbytes);
   auto data = static_cast<char*>(TF_TensorData(tensor));
   std::memset(data, 0, 8);
@@ -78,22 +87,31 @@ TF_Tensor* ScalarStringTensor(const char* str, TF_Status* status) {
   return tensor;
 }
 
-}; // namespace tf_utils::
+};  // namespace tf_utils::
 
-TF_Graph* tf_utils::LoadGraph(const char* graph_path, const char* checkpoint_prefix, TF_Status* status) {
-  if (graph_path == nullptr) {
+TF_Graph* tf_utils::LoadGraph(const char* graph_path, const char* checkpoint_prefix, TF_Status* status)
+{
+  if (graph_path == nullptr)
+  {
     return nullptr;
   }
 
   auto buffer = ReadBufferFromFile(graph_path);
-  if (buffer == nullptr) {
+  if (buffer == nullptr)
+  {
     return nullptr;
   }
 
-  MAKE_SCOPE_EXIT(delete_status){ TF_DeleteStatus(status); };
-  if (status == nullptr) {
+  MAKE_SCOPE_EXIT(delete_status)
+  {
+    TF_DeleteStatus(status);
+  };
+  if (status == nullptr)
+  {
     status = TF_NewStatus();
-  } else {
+  }
+  else
+  {
     delete_status.dismiss();
   }
 
@@ -104,42 +122,53 @@ TF_Graph* tf_utils::LoadGraph(const char* graph_path, const char* checkpoint_pre
   TF_DeleteImportGraphDefOptions(opts);
   TF_DeleteBuffer(buffer);
 
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteGraph(graph);
     return nullptr;
   }
 
-  if (checkpoint_prefix == nullptr) {
+  if (checkpoint_prefix == nullptr)
+  {
     return graph;
   }
 
   auto checkpoint_tensor = ScalarStringTensor(checkpoint_prefix, status);
-  SCOPE_EXIT{ DeleteTensor(checkpoint_tensor); };
-  if (TF_GetCode(status) != TF_OK) {
+  SCOPE_EXIT
+  {
+    DeleteTensor(checkpoint_tensor);
+  };
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteGraph(graph);
     return nullptr;
   }
 
-  auto input = TF_Output{TF_GraphOperationByName(graph, "save/Const"), 0};
+  auto input = TF_Output{ TF_GraphOperationByName(graph, "save/Const"), 0 };
   auto restore_op = TF_GraphOperationByName(graph, "save/restore_all");
 
   auto session = CreateSession(graph);
-  SCOPE_EXIT{ DeleteSession(session); };
-  if (session == nullptr) {
+  SCOPE_EXIT
+  {
+    DeleteSession(session);
+  };
+  if (session == nullptr)
+  {
     DeleteGraph(graph);
     return nullptr;
   }
 
   TF_SessionRun(session,
-                nullptr, // Run options.
-                &input, &checkpoint_tensor, 1, // Input tensors, input tensor values, number of inputs.
-                nullptr, nullptr, 0, // Output tensors, output tensor values, number of outputs.
-                &restore_op, 1, // Target operations, number of targets.
-                nullptr, // Run metadata.
-                status // Output status.
-  );
+                nullptr,                        // Run options.
+                &input, &checkpoint_tensor, 1,  // Input tensors, input tensor values, number of inputs.
+                nullptr, nullptr, 0,            // Output tensors, output tensor values, number of outputs.
+                &restore_op, 1,                 // Target operations, number of targets.
+                nullptr,                        // Run metadata.
+                status                          // Output status.
+                );
 
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteGraph(graph);
     return nullptr;
   }
@@ -147,37 +176,55 @@ TF_Graph* tf_utils::LoadGraph(const char* graph_path, const char* checkpoint_pre
   return graph;
 }
 
-TF_Graph* tf_utils::LoadGraph(const char* graph_path, TF_Status* status) {
+TF_Graph* tf_utils::LoadGraph(const char* graph_path, TF_Status* status)
+{
   return tf_utils::LoadGraph(graph_path, nullptr, status);
 }
 
-void tf_utils::DeleteGraph(TF_Graph* graph) {
-  if (graph != nullptr) {
+void tf_utils::DeleteGraph(TF_Graph* graph)
+{
+  if (graph != nullptr)
+  {
     TF_DeleteGraph(graph);
   }
 }
 
-TF_Session* tf_utils::CreateSession(TF_Graph* graph, TF_SessionOptions* options, TF_Status* status) {
-  if (graph == nullptr) {
+TF_Session* tf_utils::CreateSession(TF_Graph* graph, TF_SessionOptions* options, TF_Status* status)
+{
+  if (graph == nullptr)
+  {
     return nullptr;
   }
 
-  MAKE_SCOPE_EXIT(delete_status){ TF_DeleteStatus(status); };
-  if (status == nullptr) {
+  MAKE_SCOPE_EXIT(delete_status)
+  {
+    TF_DeleteStatus(status);
+  };
+  if (status == nullptr)
+  {
     status = TF_NewStatus();
-  } else {
+  }
+  else
+  {
     delete_status.dismiss();
   }
 
-  MAKE_SCOPE_EXIT(delete_options){ DeleteSessionOptions(options);};
-  if (options == nullptr) {
+  MAKE_SCOPE_EXIT(delete_options)
+  {
+    DeleteSessionOptions(options);
+  };
+  if (options == nullptr)
+  {
     options = TF_NewSessionOptions();
-  } else {
+  }
+  else
+  {
     delete_options.dismiss();
   }
 
   auto session = TF_NewSession(graph, options, status);
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteSession(session);
     return nullptr;
   }
@@ -185,128 +232,165 @@ TF_Session* tf_utils::CreateSession(TF_Graph* graph, TF_SessionOptions* options,
   return session;
 }
 
-TF_Session* tf_utils::CreateSession(TF_Graph* graph, TF_Status* status) {
+TF_Session* tf_utils::CreateSession(TF_Graph* graph, TF_Status* status)
+{
   return tf_utils::CreateSession(graph, nullptr, status);
 }
 
-TF_Code tf_utils::DeleteSession(TF_Session* session, TF_Status* status) {
-  if (session == nullptr) {
+TF_Code tf_utils::DeleteSession(TF_Session* session, TF_Status* status)
+{
+  if (session == nullptr)
+  {
     return TF_INVALID_ARGUMENT;
   }
 
-  MAKE_SCOPE_EXIT(delete_status){ TF_DeleteStatus(status); };
-  if (status == nullptr) {
+  MAKE_SCOPE_EXIT(delete_status)
+  {
+    TF_DeleteStatus(status);
+  };
+  if (status == nullptr)
+  {
     status = TF_NewStatus();
-  } else {
+  }
+  else
+  {
     delete_status.dismiss();
   }
 
   TF_CloseSession(session, status);
-  if (TF_GetCode(status) != TF_OK) {
-    SCOPE_EXIT{ TF_CloseSession(session, status); };
-    SCOPE_EXIT{ TF_DeleteSession(session, status); };
+  if (TF_GetCode(status) != TF_OK)
+  {
+    SCOPE_EXIT
+    {
+      TF_CloseSession(session, status);
+    };
+    SCOPE_EXIT
+    {
+      TF_DeleteSession(session, status);
+    };
     return TF_GetCode(status);
   }
 
   TF_DeleteSession(session, status);
-  if (TF_GetCode(status) != TF_OK) {
-    SCOPE_EXIT{ TF_DeleteSession(session, status); };
+  if (TF_GetCode(status) != TF_OK)
+  {
+    SCOPE_EXIT
+    {
+      TF_DeleteSession(session, status);
+    };
     return TF_GetCode(status);
   }
 
   return TF_OK;
 }
 
-TF_Code tf_utils::RunSession(TF_Session* session,
-                   const TF_Output* inputs, TF_Tensor* const* input_tensors, std::size_t ninputs,
-                   const TF_Output* outputs, TF_Tensor** output_tensors, std::size_t noutputs,
-                   TF_Status* status) {
-  if (session == nullptr ||
-      inputs == nullptr || input_tensors == nullptr ||
-      outputs == nullptr || output_tensors == nullptr) {
+TF_Code tf_utils::RunSession(TF_Session* session, const TF_Output* inputs, TF_Tensor* const* input_tensors,
+                             std::size_t ninputs, const TF_Output* outputs, TF_Tensor** output_tensors,
+                             std::size_t noutputs, TF_Status* status)
+{
+  if (session == nullptr || inputs == nullptr || input_tensors == nullptr || outputs == nullptr ||
+      output_tensors == nullptr)
+  {
     return TF_INVALID_ARGUMENT;
   }
 
-  MAKE_SCOPE_EXIT(delete_status){ TF_DeleteStatus(status); };
-  if (status == nullptr) {
+  MAKE_SCOPE_EXIT(delete_status)
+  {
+    TF_DeleteStatus(status);
+  };
+  if (status == nullptr)
+  {
     status = TF_NewStatus();
-  } else {
+  }
+  else
+  {
     delete_status.dismiss();
   }
 
-
-  TF_SessionRun(session,
-                nullptr, // Run options.
-                inputs, input_tensors, static_cast<int>(ninputs), // Input tensors, input tensor values, number of inputs.
-                outputs, output_tensors, static_cast<int>(noutputs), // Output tensors, output tensor values, number of outputs.
-                nullptr, 0, // Target operations, number of targets.
-                nullptr, // Run metadata.
-                status // Output status.
-  );
+  TF_SessionRun(
+      session,
+      nullptr,                                              // Run options.
+      inputs, input_tensors, static_cast<int>(ninputs),     // Input tensors, input tensor values, number of inputs.
+      outputs, output_tensors, static_cast<int>(noutputs),  // Output tensors, output tensor values, number of outputs.
+      nullptr, 0,                                           // Target operations, number of targets.
+      nullptr,                                              // Run metadata.
+      status                                                // Output status.
+      );
 
   return TF_GetCode(status);
 }
 
-TF_Code tf_utils::RunSession(TF_Session* session,
-                   const std::vector<TF_Output>& inputs, const std::vector<TF_Tensor*>& input_tensors,
-                   const std::vector<TF_Output>& outputs, std::vector<TF_Tensor*>& output_tensors,
-                   TF_Status* status) {
-  return RunSession(session,
-                    inputs.data(), input_tensors.data(), input_tensors.size(),
-                    outputs.data(), output_tensors.data(), output_tensors.size(),
-                    status);
+TF_Code tf_utils::RunSession(TF_Session* session, const std::vector<TF_Output>& inputs,
+                             const std::vector<TF_Tensor*>& input_tensors, const std::vector<TF_Output>& outputs,
+                             std::vector<TF_Tensor*>& output_tensors, TF_Status* status)
+{
+  return RunSession(session, inputs.data(), input_tensors.data(), input_tensors.size(), outputs.data(),
+                    output_tensors.data(), output_tensors.size(), status);
 }
 
-TF_Tensor* tf_utils::CreateEmptyTensor(TF_DataType data_type, const std::int64_t* dims, std::size_t num_dims, std::size_t len) {
-  if (dims == nullptr) {
+TF_Tensor* tf_utils::CreateEmptyTensor(TF_DataType data_type, const std::int64_t* dims, std::size_t num_dims,
+                                       std::size_t len)
+{
+  if (dims == nullptr)
+  {
     return nullptr;
   }
 
   return TF_AllocateTensor(data_type, dims, static_cast<int>(num_dims), len);
 }
 
-TF_Tensor* tf_utils::CreateEmptyTensor(TF_DataType data_type, const std::vector<std::int64_t>& dims, std::size_t len) {
+TF_Tensor* tf_utils::CreateEmptyTensor(TF_DataType data_type, const std::vector<std::int64_t>& dims, std::size_t len)
+{
   return CreateEmptyTensor(data_type, dims.data(), dims.size(), len);
 }
 
-TF_Tensor* tf_utils::CreateTensor(TF_DataType data_type,
-                        const std::int64_t* dims, std::size_t num_dims,
-                        const void* data, std::size_t len) {
+TF_Tensor* tf_utils::CreateTensor(TF_DataType data_type, const std::int64_t* dims, std::size_t num_dims,
+                                  const void* data, std::size_t len)
+{
   auto tensor = CreateEmptyTensor(data_type, dims, num_dims, len);
-  if (tensor == nullptr) {
+  if (tensor == nullptr)
+  {
     return nullptr;
   }
 
   auto tensor_data = TF_TensorData(tensor);
-  if (tensor_data == nullptr) {
+  if (tensor_data == nullptr)
+  {
     DeleteTensor(tensor);
     return nullptr;
   }
 
   len = std::min(len, TF_TensorByteSize(tensor));
-  if (data != nullptr && len != 0) {
+  if (data != nullptr && len != 0)
+  {
     std::memcpy(tensor_data, data, len);
   }
 
   return tensor;
 }
 
-void tf_utils::DeleteTensor(TF_Tensor* tensor) {
-  if (tensor != nullptr) {
+void tf_utils::DeleteTensor(TF_Tensor* tensor)
+{
+  if (tensor != nullptr)
+  {
     TF_DeleteTensor(tensor);
   }
 }
 
-void tf_utils::DeleteTensors(const std::vector<TF_Tensor*>& tensors) {
-  for (auto& t : tensors) {
+void tf_utils::DeleteTensors(const std::vector<TF_Tensor*>& tensors)
+{
+  for (auto& t : tensors)
+  {
     DeleteTensor(t);
   }
 }
 
-bool tf_utils::SetTensorData(TF_Tensor* tensor, const void* data, std::size_t len) {
+bool tf_utils::SetTensorData(TF_Tensor* tensor, const void* data, std::size_t len)
+{
   auto tensor_data = TF_TensorData(tensor);
   len = std::min(len, TF_TensorByteSize(tensor));
-  if (tensor_data != nullptr && data != nullptr && len != 0) {
+  if (tensor_data != nullptr && data != nullptr && len != 0)
+  {
     std::memcpy(tensor_data, data, len);
     return true;
   }
@@ -314,42 +398,57 @@ bool tf_utils::SetTensorData(TF_Tensor* tensor, const void* data, std::size_t le
   return false;
 }
 
-std::vector<std::int64_t> tf_utils::GetTensorShape(TF_Graph* graph, const TF_Output& output) {
+std::vector<std::int64_t> tf_utils::GetTensorShape(TF_Graph* graph, const TF_Output& output)
+{
   auto status = TF_NewStatus();
-  SCOPE_EXIT{ TF_DeleteStatus(status); };
+  SCOPE_EXIT
+  {
+    TF_DeleteStatus(status);
+  };
 
   auto num_dims = TF_GraphGetTensorNumDims(graph, output, status);
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     return {};
   }
 
   std::vector<std::int64_t> result(num_dims);
   TF_GraphGetTensorShape(graph, output, result.data(), num_dims, status);
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     return {};
   }
 
   return result;
 }
 
-std::vector<std::vector<std::int64_t>> tf_utils::GetTensorsShape(TF_Graph* graph, const std::vector<TF_Output>& outputs) {
+std::vector<std::vector<std::int64_t>> tf_utils::GetTensorsShape(TF_Graph* graph, const std::vector<TF_Output>& outputs)
+{
   std::vector<std::vector<std::int64_t>> result;
   result.reserve(outputs.size());
 
-  for (const auto& o : outputs) {
+  for (const auto& o : outputs)
+  {
     result.push_back(GetTensorShape(graph, o));
   }
 
   return result;
 }
 
-TF_SessionOptions* tf_utils::CreateSessionOptions(double gpu_memory_fraction, TF_Status* status) {
+TF_SessionOptions* tf_utils::CreateSessionOptions(double gpu_memory_fraction, TF_Status* status)
+{
   // See https://github.com/Neargye/hello_tf_c_api/issues/21 for details.
 
-  MAKE_SCOPE_EXIT(delete_status){ TF_DeleteStatus(status); };
-  if (status == nullptr) {
+  MAKE_SCOPE_EXIT(delete_status)
+  {
+    TF_DeleteStatus(status);
+  };
+  if (status == nullptr)
+  {
     status = TF_NewStatus();
-  } else {
+  }
+  else
+  {
     delete_status.dismiss();
   }
 
@@ -360,19 +459,22 @@ TF_SessionOptions* tf_utils::CreateSessionOptions(double gpu_memory_fraction, TF
   // config.gpu_options.allow_growth = True
   // config.gpu_options.per_process_gpu_memory_fraction = percentage
   // Create a byte-array for the serialized ProtoConfig, set the mandatory bytes (first three and last four)
-  std::array<std::uint8_t, 15> config = {{0x32, 0xb, 0x9, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x20, 0x1, 0x38, 0x1}};
+  std::array<std::uint8_t, 15> config = { { 0x32, 0xb, 0x9, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x20, 0x1,
+                                            0x38, 0x1 } };
 
   // Convert the desired percentage into a byte-array.
   auto bytes = reinterpret_cast<std::uint8_t*>(&gpu_memory_fraction);
 
   // Put it to the config byte-array, from 3 to 10:
-  for (std::size_t i = 0; i < sizeof(gpu_memory_fraction); ++i) {
+  for (std::size_t i = 0; i < sizeof(gpu_memory_fraction); ++i)
+  {
     config[i + 3] = bytes[i];
   }
 
   TF_SetConfig(options, config.data(), config.size(), status);
 
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteSessionOptions(options);
     return nullptr;
   }
@@ -380,21 +482,30 @@ TF_SessionOptions* tf_utils::CreateSessionOptions(double gpu_memory_fraction, TF
   return options;
 }
 
-TF_SessionOptions* tf_utils::CreateSessionOptions(std::uint8_t intra_op_parallelism_threads, std::uint8_t inter_op_parallelism_threads, TF_Status* status) {
+TF_SessionOptions* tf_utils::CreateSessionOptions(std::uint8_t intra_op_parallelism_threads,
+                                                  std::uint8_t inter_op_parallelism_threads, TF_Status* status)
+{
   // See https://github.com/tensorflow/tensorflow/issues/13853 for details.
 
-  MAKE_SCOPE_EXIT(delete_status){ TF_DeleteStatus(status); };
-  if (status == nullptr) {
+  MAKE_SCOPE_EXIT(delete_status)
+  {
+    TF_DeleteStatus(status);
+  };
+  if (status == nullptr)
+  {
     status = TF_NewStatus();
-  } else {
+  }
+  else
+  {
     delete_status.dismiss();
   }
 
   auto options = TF_NewSessionOptions();
-  std::array<std::uint8_t, 4> config = {{0x10, intra_op_parallelism_threads, 0x28, inter_op_parallelism_threads}};
+  std::array<std::uint8_t, 4> config = { { 0x10, intra_op_parallelism_threads, 0x28, inter_op_parallelism_threads } };
   TF_SetConfig(options, config.data(), config.size(), status);
 
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteSessionOptions(options);
     return nullptr;
   }
@@ -402,14 +513,18 @@ TF_SessionOptions* tf_utils::CreateSessionOptions(std::uint8_t intra_op_parallel
   return options;
 }
 
-void tf_utils::DeleteSessionOptions(TF_SessionOptions* options) {
-  if (options != nullptr) {
+void tf_utils::DeleteSessionOptions(TF_SessionOptions* options)
+{
+  if (options != nullptr)
+  {
     TF_DeleteSessionOptions(options);
   }
 }
 
-const char* DataTypeToString(TF_DataType data_type) {
-  switch (data_type) {
+const char* DataTypeToString(TF_DataType data_type)
+{
+  switch (data_type)
+  {
     case TF_FLOAT:
       return "TF_FLOAT";
     case TF_DOUBLE:
@@ -461,8 +576,10 @@ const char* DataTypeToString(TF_DataType data_type) {
   }
 }
 
-const char* CodeToString(TF_Code code) {
-  switch (code) {
+const char* CodeToString(TF_Code code)
+{
+  switch (code)
+  {
     case TF_OK:
       return "TF_OK";
     case TF_CANCELLED:
@@ -502,4 +619,4 @@ const char* CodeToString(TF_Code code) {
   }
 }
 
- // namespace tf_utils
+// namespace tf_utils
