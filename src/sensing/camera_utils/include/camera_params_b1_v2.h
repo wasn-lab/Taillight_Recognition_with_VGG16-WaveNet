@@ -6,7 +6,7 @@
 #define __CAMERA_PARAMS_B1_V2_H__
 
 #include "car_model.h"
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
 #include <cmath>
 #include <string>
 
@@ -18,7 +18,7 @@ enum id
   begin = 0,
   front_bottom_60 = begin,  // 0
   front_top_far_30,         // 1
-  _dummy0,                  // 2  // NOLINT
+  front_bottom_60_crop,     // 2
   _dummy1,                  // 3  // NOLINT
   front_top_close_120,      // 4
   right_front_60,           // 5
@@ -66,6 +66,12 @@ constexpr int image_rows = raw_image_height;
 constexpr int image_cols = raw_image_width;
 constexpr int num_image_pixels = image_width * image_height;
 constexpr int num_image_bytes = image_width * image_height * 3;
+
+// Parameters for crop image in grabber
+constexpr int image_crop_width = 1920;
+constexpr int image_crop_height = 314;
+constexpr int image_crop_xstart = 0;
+constexpr int image_crop_ystart = 692;
 
 // Parameters for resizing 1920x1208 to 608x608(yolov3 default size)
 constexpr double image_ratio_on_yolov3 = 608.0 / raw_image_width;

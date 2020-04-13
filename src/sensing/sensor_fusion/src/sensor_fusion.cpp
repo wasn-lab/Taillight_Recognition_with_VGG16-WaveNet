@@ -121,6 +121,33 @@ void init_distance_table(std::vector<msgs::DetectedObject>& objs1, std::vector<m
   }
 }
 
+void fuseObjClass(uint16_t obj1_class, const size_t obj1_id, const std::string obj1_source, const uint16_t obj2_class,
+                  const size_t obj2_id, const std::string obj2_source)
+{
+#if DEBUG_OBJCLASS == 1
+  if (fusion_objclass_source == 0)  // camera
+  {
+    std::cout << "obj_class: " << obj2_source << "_" << obj2_id << " = " << obj2_class << "(V); " << obj1_source << "_"
+              << obj1_id << " = " << obj1_class;
+  }
+  else if (fusion_objclass_source == 1)  // lidar
+  {
+    std::cout << "obj_class: " << obj2_source << "_" << obj2_id << " = " << obj2_class << "; " << obj1_source << "_"
+              << obj1_id << " = " << obj1_class << "(V)";
+  }
+  else
+  {
+    std::cerr << "Error: Undefined fusion_objclass_source!" << std::endl;
+  }
+#endif
+
+  obj1_class = (fusion_objclass_source == 0) ? obj2_class : obj1_class;
+
+#if DEBUG_OBJCLASS == 1
+  std::cout << "; fusion: " << obj1_class << std::endl;
+#endif
+}
+
 void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::DetectedObject>& objs2)
 {
   size_t s1 = objs1.size();
@@ -137,7 +164,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
     }
   }
 
-#if DEBUG
+#if DEBUG_HUNGARIAN
   std::cout << "cost matrix: " << std::endl;
 
   for (unsigned i = 0; i < cost_mat.size(); i++)
@@ -153,7 +180,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
   Hungarian hun;
   std::vector<int> assignment;
 
-#if DEBUG
+#if DEBUG_HUNGARIAN
   double cost = hun.solve(cost_mat, assignment);
 
   for (unsigned i = 0; i < cost_mat.size(); i++)
@@ -174,13 +201,8 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
     {
       if (cost_mat[i][assignment[i]] < FUSE_RANGE_SED)
       {
-        objs1[i].camInfo.u = objs2[assignment[i]].camInfo.u;
-        objs1[i].camInfo.v = objs2[assignment[i]].camInfo.v;
-        objs1[i].camInfo.width = objs2[assignment[i]].camInfo.width;
-        objs1[i].camInfo.height = objs2[assignment[i]].camInfo.height;
-        objs1[i].camInfo.id = objs2[assignment[i]].camInfo.id;
-        objs1[i].camInfo.prob = objs2[assignment[i]].camInfo.prob;
-
+        fuseObjClass(objs1[i].classId, i, "lidar", objs2[assignment[i]].classId, assignment[i], "camera");
+        objs1[i].camInfo = objs2[assignment[i]].camInfo;
         assigned[assignment[i]] = true;
       }
     }
