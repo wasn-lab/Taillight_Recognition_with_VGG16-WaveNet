@@ -198,19 +198,17 @@ S1Cluster::getClusters (bool debug,
       if (cluster_vector.at (i).dis_center_origin < 40)
       {
 
-        if (cluster_vector.at (i).center.y > 4.5 || cluster_vector.at (i).center.y < -3.5)
-        {
-          if (cluster_vector.at(i).dz < 0.3)
-          {
-            cluster_vector.at(i).cluster_tag = 0;
-          }
+//         if (cluster_vector.at (i).center.y > 4.5 || cluster_vector.at (i).center.y < -3.5)
+//         {
 
-          //          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at
-          //          (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
-          //            cluster_vector.at (i).cluster_tag = 0;
+//           if (cluster_vector.at (i).dz < 0.3)
+//             cluster_vector.at (i).cluster_tag = 0;
 
-          // if (cluster_vector.at (i).min.z > -1.5)
-          //   cluster_vector.at (i).cluster_tag = 0;
+// //          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
+// //            cluster_vector.at (i).cluster_tag = 0;
+
+//           // if (cluster_vector.at (i).min.z > -1.5)
+//           //   cluster_vector.at (i).cluster_tag = 0;
 
           if (cluster_vector.at(i).max.z < -2.0)
           {
