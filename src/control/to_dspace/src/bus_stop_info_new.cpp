@@ -92,6 +92,7 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 		std::cout << "stop" << i+1 << ":" << bus_stop_info[1][i] << '\n';
 	}
 	send_can();
+	/*
 	msgs::Flag_Info msg_temp;
 	msg_temp.Dspace_Flag01 = bus_stop_info[0][0];
 	msg_temp.Dspace_Flag02 = bus_stop_info[0][1];
@@ -102,6 +103,7 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 	msg_temp.Dspace_Flag07 = bus_stop_info[0][6];
 	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
 	publisher_01.publish(msg_temp);
+	*/
 	std_msgs::Int32 round_temp;
 	round_temp.data = round_count;
 	publisher_02.publish(round_temp); 
@@ -128,7 +130,7 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 		}
 		send_can();
 	}
-	/*
+	
 	msgs::Flag_Info msg_temp;
 	msg_temp.Dspace_Flag01 = bus_stop_info[0][0];
 	msg_temp.Dspace_Flag02 = bus_stop_info[0][1];
@@ -140,7 +142,7 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
 	msg_temp.PX2_Flag01 = round_count;
 	publisher_01.publish(msg_temp);
-	*/
+	
 }
 
 
