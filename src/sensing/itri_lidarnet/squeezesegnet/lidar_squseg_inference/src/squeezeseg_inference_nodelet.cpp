@@ -4,11 +4,13 @@
 ros::Publisher ssn_nodelet::nn_pub;
 ros::Subscriber ssn_nodelet::LidarAllSub;
 
+bool ssn_nodelet::debug_output;
+
 string ssn_nodelet::data_set;
 char ssn_nodelet::ViewType;
 int ssn_nodelet::pub_type;
 bool ssn_nodelet::hybrid_detect;
-bool ssn_nodelet::debug_output;
+
 
 string ssn_nodelet::GET_data_set;
 string ssn_nodelet::GET_ViewType;

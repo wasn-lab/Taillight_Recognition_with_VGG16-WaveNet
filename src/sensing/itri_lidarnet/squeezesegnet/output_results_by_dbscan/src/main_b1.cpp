@@ -26,9 +26,10 @@ int heartBeat;
 std::atomic<float> LinearAcc[3];
 
 StopWatch stopWatch;
+bool debug_output = false;
 std::atomic<uint32_t> latencyTime[2];
 
-bool debug_output = false;
+
 
 void
 callback_Clock (const rosgraph_msgs::Clock& msg)
@@ -77,7 +78,7 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     double latency = (ros::Time::now () - rosTime).toSec();
     if (latency > 0 && latency < 3)
     {
-      cout << "[Latency]: " << latency << endl << endl;
+      cout << "[Latency]: real-time " << latency << endl << endl;
     }
     else
     {

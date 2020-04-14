@@ -95,8 +95,6 @@ void lidarAll_Pub(int lidarNum)
 
   *cloudPtr_LidAll = *cloudPtr_LidarFrontLeft;
   *cloudPtr_LidAll += *cloudPtr_LidarFrontRight;
-  *cloudPtr_LidAll += *cloudPtr_LidarRearLeft;
-  *cloudPtr_LidAll += *cloudPtr_LidarRearRight;
   *cloudPtr_LidAll += *cloudPtr_LidarFrontTop;
 
   uint64_t avg_time;
@@ -121,7 +119,6 @@ void lidarAll_Pub(int lidarNum)
   
   // LidarALL time is publish time not Top time
   pcl_conversions::toPCL(ros::Time::now(), cloudPtr_LidAll->header.stamp);
-
   pub_LidAll.publish(*cloudPtr_LidAll);
   cloudPtr_LidAll->clear();
   
@@ -400,15 +397,15 @@ int main(int argc, char** argv)
   thread TheadDetection(UI, argc, argv);
   
   //ros
-  ros::MultiThreadedSpinner s(3);
-  ros::spin(s);
+  // ros::MultiThreadedSpinner s(3);
+  // ros::spin(s);
 
-  // ros::Rate loop_rate(80);  // 80Hz
-  // while (ros::ok())
-  // {
-  //   ros::spinOnce();
-  //   loop_rate.sleep();
-  // }
+  ros::Rate loop_rate(80);  // 80Hz
+  while (ros::ok())
+  {
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;

@@ -3,8 +3,8 @@
 Lidar List:
 * LidarFrontRight:         MR32, 192.168.0.220
 * LidarFrontLeft:          MR32, 192.168.0.221     
-* LidarRearRight:         VLP16, 192.168.0.222
-* LidarRearLeft:          VLP16, 192.168.0.223
+* LidarRearRight:         VLP16, 192.168.0.222 not in use
+* LidarRearLeft:          VLP16, 192.168.0.223 not in use
 * LidarFrontTop(base): Ouster64, 192.168.0.224
 -->
 
@@ -23,6 +23,7 @@ Lidar List:
 -->
 
 <!-- Global arg ************************************************************ -->
+	<rosparam param="debug_output">true</rosparam>
 	<arg name="mode" default="0" />
 	<arg name="rpm_set" default="1200.0"/>
 	<arg name="hardware_enable" default="1" />
@@ -30,7 +31,7 @@ Lidar List:
 	<rosparam param="LaunchFileName">b1_nodelet.launch</rosparam>
 
 <!-- SSN arg *************************************************************** -->
-	<rosparam param="SSN_DataSet">hb_tmp</rosparam>
+	<rosparam param="SSN_DataSet">b1</rosparam>
 	<rosparam param="SSN_ViewType">X</rosparam>
 	<rosparam param="SSN_PubType">"0"</rosparam>
 	<rosparam param="SSN_Hybrid_Detect">"1"</rosparam>
@@ -39,7 +40,7 @@ Lidar List:
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
 <!-- MPS ******************************************************************* -->
-<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+<!-- <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/> -->
  
 
 <!-- NODELET *************************************************************** -->
@@ -52,12 +53,13 @@ Lidar List:
 	<!-- Preprocessing Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="LidarsPreprocessingB1_Nodelet" args="load lidars_preprocessing_b1_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	
 	
-	<!-- SSN Nodelet -->
+	<!-- SSN Nodelet 
 	<node pkg="nodelet" type="nodelet" name="SSN_Nodelet" args="load ssn_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	
-
-	<!-- SSN v2 Nodelet
-	<node pkg="nodelet" type="nodelet" name="SSN_v2_Nodelet" args="load ssn_v2_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
 	-->
+	<!-- SSN v2 Nodelet -->
+	<node pkg="nodelet" type="nodelet" name="SSN_v2_Nodelet" args="load ssn_v2_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
+	
+	
 	<!-- DBScan Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="OutputDBScan_Nodelet" args="load output_dbscan_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
 
