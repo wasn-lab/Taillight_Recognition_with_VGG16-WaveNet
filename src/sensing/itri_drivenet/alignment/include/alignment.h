@@ -31,7 +31,7 @@ private:
 
   int image_w_ = camera::image_width;
   int image_h_ = camera::image_height;
-  
+
 public:
   Alignment() = default;
   ~Alignment() = default;

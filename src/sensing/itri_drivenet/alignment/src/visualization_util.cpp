@@ -14,7 +14,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 {
   std::vector<cv::Point> cv_points(2);
   std::vector<PixelPosition> pixel_positions(2);
-  for (const auto& obj: objects)
+  for (const auto& obj : objects)
   {
     pixel_positions[0].u = obj.camInfo.u;
     pixel_positions[0].v = obj.camInfo.v;
@@ -35,19 +35,19 @@ cv::Scalar Visualization::getDistColor(float distance_in_meters)
   cv::Scalar color;
   if (distance_in_meters >= 0 && distance_in_meters <= 10)
   {
-    color = Color::red_;
+    color = CvColor::red_;
   }
   else if (distance_in_meters > 10 && distance_in_meters <= 20)
   {
-    color = Color::yellow_;
+    color = CvColor::yellow_;
   }
   else if (distance_in_meters > 20 && distance_in_meters <= 30)
   {
-    color = Color::green_;
+    color = CvColor::green_;
   }
   else
   {
-    color = Color::blue_;
+    color = CvColor::blue_;
   }
   return color;
 }
