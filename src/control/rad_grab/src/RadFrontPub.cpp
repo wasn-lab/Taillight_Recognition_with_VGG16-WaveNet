@@ -142,7 +142,7 @@ void delphi_radar_parsing(struct can_frame frame, float *x, float *y, float *z, 
     int i, sign;
     if ((frame.can_id >= 0x500) && (frame.can_id <= 0x53f))
     {
-    	//print_radar_raw(frame);
+    	  //print_radar_raw(frame);
         Range = ((frame.data[2] & 0x07) << 8) | frame.data[3];
         fRange = Range * 0.1;
 
@@ -186,13 +186,13 @@ void delphi_radar_parsing(struct can_frame frame, float *x, float *y, float *z, 
 
         if (fRange != 0)
         {
-            printf("\n[%04X] %02X %02X %02X %02X %02X %02X %02X %02X \n", frame.can_id, frame.data[0], frame.data[1], frame.data[2], frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
-            printf("fRange = %4.1f  ,fAngle = %4.1f \n", fRange, fAngle);
             *x = fRange * cos(fAngle / 180 * M_PI) - 0.4;
             *y = fRange * sin(fAngle / 180 * M_PI);
             *z = 0.9;
-            printf("x : %f, y : %f, speed : %f\n", &x, &y, &speed) ;
-            printf("Coming : %d, change : %d, width : %d, mode : %d", frame.data[0] & 0x01, (frame.data[0] & 0x02) >> 1, ((frame.data[4] & 0x3C) >> 2), ((frame.data[6] & 0xC0) >> 6));
+            printf("[%04X] %02X %02X %02X %02X %02X %02X %02X %02X \n", frame.can_id, frame.data[0], frame.data[1], frame.data[2], frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
+            printf("       x : %f, y : %f, speed : %f\n", &x, &y, &speed) ;
+            printf("       fRange = %4.1f  ,fAngle = %4.1f \n", fRange, fAngle);
+            printf("       Coming : %d, change : %d, width : %d, mode : %d\n", frame.data[0] & 0x01, (frame.data[0] & 0x02) >> 1, ((frame.data[4] & 0x3C) >> 2), ((frame.data[6] & 0xC0) >> 6));
         }
     }
 }
