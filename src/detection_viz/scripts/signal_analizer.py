@@ -7,30 +7,49 @@ from timeit import default_timer as timer
 import time
 import json
 
-class SIGNAL_ANALYZER:
+class SIGNAL_ANALYZER(object):
 
-    def __init__(self, signal_name="signal_analysis", th_abnormally_high=1.0):
+    def __init__(self, signal_name="signal_analysis", event_publisher=None):
         #
         self.name = signal_name
 
         # states
         self.value = None
         self.value_avg = None
-        #
         self.stamp_start = timer()
         self.stamp_last = self.stamp_start
 
         # Parameters
         self.alpha = 2*np.pi*0.1 # 0.1 Hz
-        self.th_abnormally_high = th_abnormally_high
-        #
-        self.event_str_dict = dict()
-        self.event_str_dict[0] = "abnormally high"
+
+        self.event_publisher = event_publisher
 
         #
-        self.event_publisher = None
+        self.checker_func_list = []
+        self.checker_func_list.append(self.sample_check_func)
+        # self.event_str_dict = dict()
 
-    def event_2_json(self, event_code):
+    def _filter(self, value_in):
+        """
+        This is a adaptive low pass filter for obtaining the average of the signal.
+        """
+        stamp_now = timer()
+        delta_T = stamp_now - self.stamp_last
+        #---------------------------#
+        # Update the parameter of LPF
+        adT = self.alpha * delta_T
+        if adT > 1.0:
+            adT = 1.0
+        elif adT < 0.0:
+            adT = 0.0
+        # Update
+        #---------------------------#
+        self.value_avg += adT * (value_in - self.value_avg)
+        self.value = value_in
+        self.stamp_last = stamp_now
+
+
+    def _event_2_json(self, status, event_str):
         """
         Through ROS std_msgs.String
         json string:
@@ -43,45 +62,53 @@ class SIGNAL_ANALYZER:
         """
         json_dict = dict()
         json_dict["module"] = self.name
-        json_dict["status"] = "WARN"
-        json_dict["event_str"] = self.event_str_dict[event_code]
+        json_dict["status"] = status
+        json_dict["event_str"] = event_str
         return json.dumps(json_dict)
 
+    def publish_event(self, status, event_str):
+        """
+        This is the publisher for event.
+        """
+        event_json = self._event_2_json(status, event_str)
+        print(event_json)
+        if self.event_publisher:
+            self.event_publisher.publish( event_json )
+
+    #
     def update(self, value_in):
         """
         """
-        stamp_now = timer()
-        delta_T = stamp_now - self.stamp_last
-        #---------------------------#
+        # Initialization
         if self.value is None:
             self.value = value_in
         if self.value_avg is None:
             self.value_avg = value_in
-        #
-        delta_value_short = value_in - self.value
-        delta_value_long = value_in - self.value_avg
-        # Check 1
-        if delta_value_long > self.th_abnormally_high:
-            event_json = self.event_2_json(0)
-            print(event_json)
-            if self.event_publisher:
-                self.event_publisher.publish( event_json )
-        #
-        adT = self.alpha * delta_T
-        if adT > 1.0:
-            adT = 1.0
-        elif adT < 0.0:
-            adT = 0.0
-        # Update the average
-        self.value_avg += adT * (value_in - self.value_avg)
-        #---------------------------#
-        self.value = value_in
-        self.stamp_last = stamp_now
+        # check_func
+        for _check_func in self.checker_func_list:
+            _check_func(value_in)
+        # Update stored value
+        #--------------------#
+        self._filter(value_in)
 
+    def sample_check_func(self, value_in):
+        """
+        """
+        delta_value = value_in - self.value_avg
+        if delta_value > 0.0:
+            print("Hey")
+            self.publish_event("WARN", "abnormally high")
+
+class SIGNAL_ANALYZER_TEST(SIGNAL_ANALYZER):
+    pass
 
 
 if __name__ == "__main__":
-    sig_analyzer = SIGNAL_ANALYZER()
+    # sig_analyzer = SIGNAL_ANALYZER()
+    sig_analyzer = SIGNAL_ANALYZER_TEST()
     while True:
-        sig_analyzer.update( np.random.rand() )
+        value =  np.random.rand()
+        print("value = %f" % value)
+        sig_analyzer.update( value )
+        print("value_avg = %f" % sig_analyzer.value_avg)
         time.sleep(0.3)
