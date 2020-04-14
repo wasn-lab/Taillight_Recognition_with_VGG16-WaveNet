@@ -18,3 +18,8 @@ RadarInfo radarInfo
 LidarInfo lidarInfo
 
 float32 crossProbability
+uint16 facing_direction
+uint16 body_direction
+
+sensor_msgs/Image cropped_image
+Keypoint[] keypoints
