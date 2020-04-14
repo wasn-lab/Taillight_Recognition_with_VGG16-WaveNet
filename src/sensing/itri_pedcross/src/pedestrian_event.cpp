@@ -324,6 +324,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
           alert_obj.track.forecasts.reserve(20);
           obj_pub.track.forecasts.reserve(20);
+          alert_obj.track.is_ready_prediction = 1;
+          obj_pub.track.is_ready_prediction = 1;
           for (int i = 0; i < 20; i++)
           {
             msgs::PathPrediction pp;
