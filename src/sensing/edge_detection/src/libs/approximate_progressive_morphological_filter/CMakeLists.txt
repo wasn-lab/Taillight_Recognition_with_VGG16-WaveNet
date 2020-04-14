@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-add_compile_options(-std=c++11)
-project(approximate_progressive_morphological_filter) 
+project(approximate_progressive_morphological_filter)
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
 
 find_package(catkin REQUIRED)
 find_package(PCL)
@@ -17,14 +20,15 @@ ${CMAKE_CURRENT_SOURCE_DIR}/include/cuda_downsample/
 )
 include_directories(${PCL_INCLUDE_DIRS})
 add_definitions(${PCL_DEFINITIONS})
+find_package(Eigen3)
 
 #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_50,code=sm_50;-std=c++11; -Xptxas -v")
 
 
 FILE(GLOB_RECURSE CPP_LIST *.cpp)
 #FILE(GLOB_RECURSE CU_LIST *.cu)
-FILE(GLOB_RECURSE H_LIST ${CMAKE_CURRENT_SOURCE_DIR}/include/approximate_progressive_morphological_filter/*.h 
-			${CMAKE_CURRENT_SOURCE_DIR}/include/approximate_progressive_morphological_filter/*.hpp)
+FILE(GLOB_RECURSE H_LIST ${CMAKE_CURRENT_SOURCE_DIR}/include/approximate_progressive_morphological_filter/*.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/approximate_progressive_morphological_filter/*.hpp)
 
 
 MESSAGE(STATUS "===================cpp list: ${CPP_LIST}")
@@ -32,11 +36,11 @@ MESSAGE(STATUS "===================cpp list: ${CPP_LIST}")
 MESSAGE(STATUS "===================h list: ${H_LIST}")
 
 
-add_library(${PROJECT_NAME} 	
-	${CPP_LIST}
+add_library(${PROJECT_NAME}
+  ${CPP_LIST}
 )
 target_link_libraries(approximate_progressive_morphological_filter
-	${PCL_LIBRARIES}
+  ${PCL_LIBRARIES}
         ${CUDA_LIBRARIES}
 )
 
