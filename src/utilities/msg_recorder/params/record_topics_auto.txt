@@ -22,6 +22,7 @@
 
 #-- 8-camera version
 /cam/front_bottom_60
+/cam/front_bottom_60_crop
 /cam/front_top_close_120
 /cam/front_top_far_30
 /cam/left_back_60
@@ -141,9 +142,6 @@
 /mileage/AEB_run
 /mileage/ACC_run
 
-# pedcross
-/PedCross/Pedestrians
-
 # Traffic light
 /LightResultOutput
 
@@ -154,6 +152,12 @@
 /gnss_speed_data
 /gnss2local_data
 
+
+# Pedcross
+/PedCross/Alert
+/PedCross/Pedestrians
+/PedCross/3D_marker
+/Tracking2D
 
 
 
