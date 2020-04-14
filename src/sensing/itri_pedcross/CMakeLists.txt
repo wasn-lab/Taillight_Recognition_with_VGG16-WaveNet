@@ -85,7 +85,6 @@ set(CPP_FILES
     #src/Predict_test.cpp
 )
 
-
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
     itri_pedcross
