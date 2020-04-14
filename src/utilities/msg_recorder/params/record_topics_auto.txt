@@ -142,9 +142,6 @@
 /mileage/AEB_run
 /mileage/ACC_run
 
-# pedcross
-/PedCross/Pedestrians
-
 # Traffic light
 /LightResultOutput
 
@@ -155,6 +152,12 @@
 /gnss_speed_data
 /gnss2local_data
 
+
+# Pedcross
+/PedCross/Alert
+/PedCross/Pedestrians
+/PedCross/3D_marker
+/Tracking2D
 
 
 
