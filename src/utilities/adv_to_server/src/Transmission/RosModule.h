@@ -127,7 +127,7 @@ class RosModuleTraffic
       { 
         count++;
         int numOfSub = route_pub.getNumSubscribers() ;
-        std::cout << "numOfSub = " << numOfSub << std::endl;
+        //std::cout << "numOfSub = " << numOfSub << std::endl;
         if(numOfSub > 0) 
         {
           std::chrono::duration<int, std::milli> timespan(100);
