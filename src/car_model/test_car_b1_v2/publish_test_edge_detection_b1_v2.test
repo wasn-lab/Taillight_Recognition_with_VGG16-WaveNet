@@ -1,0 +1,20 @@
+<launch>
+    <include file="$(find lidar)/launch/b1.launch">
+      <arg name="hardware_enable" value="0" />
+    </include>
+    <include file="$(find edge_detection)/launch/edge_detection.launch" />
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-03-10-10-48-39_41.bag" required="true"/>
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /occupancy_grid
+                  timeout: 15
+                  negative: False
+                - name: /ring_edge_point_cloud
+                  timeout: 15
+                  negative: False
+        </rosparam>
+    </test>
+</launch>

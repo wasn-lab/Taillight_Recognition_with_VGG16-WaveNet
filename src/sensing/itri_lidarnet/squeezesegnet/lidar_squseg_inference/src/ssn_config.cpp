@@ -20,7 +20,9 @@ norm_mean (float* mean_ptr,
         int phi_center_ind = int (phi_center / phi_range) + 1;
 
         for (size_t i = 0; i < 5; i++)
+        {
           mean_ptr[i] = INPUT_MEAN[phi_center_ind][i];
+        }
 
         break;
       }
@@ -52,7 +54,9 @@ norm_mean (float* mean_ptr,
         }
 
         for (size_t i = 0; i < 5; i++)
+        {
           mean_ptr[i] = INPUT_MEAN[phi_center_ind][i];
+        }
 
         break;
       }
@@ -68,14 +72,18 @@ norm_mean (float* mean_ptr,
     int phi_center_ind = int(phi_center / phi_range) + 1;
 
     for (size_t i = 0; i < 5; i++)
+    {
       mean_ptr[i] = INPUT_MEAN[phi_center_ind][i];
+    }
   }
   else if (data_set.compare (0, data_set.size()-1, "kitti")==0)
   {
     float INPUT_MEAN[5] = { 10.88, 0.23, -1.04, 0.21, 12.12 };
 
     for (size_t i = 0; i < 5; i++)
+    {
       mean_ptr[i] = INPUT_MEAN[i];
+    }
   }
   else
   {
@@ -86,7 +94,9 @@ norm_mean (float* mean_ptr,
     int phi_center_ind = int (phi_center / phi_range) + 1;
 
     for (size_t i = 0; i < 5; i++)
+    {
       mean_ptr[i] = INPUT_MEAN[phi_center_ind][i];
+    }
   }
 
 }
@@ -111,7 +121,9 @@ norm_std (float* std_ptr,
         int phi_center_ind = int (phi_center / phi_range) + 1;
 
         for (size_t i = 0; i < 5; i++)
+        {
           std_ptr[i] = INPUT_STD[phi_center_ind][i];
+        }
 
         break;
       }
@@ -143,7 +155,9 @@ norm_std (float* std_ptr,
         }
 
         for (size_t i = 0; i < 5; i++)
+        {
           std_ptr[i] = INPUT_STD[phi_center_ind][i];
+        }
 
         break;
       }
@@ -159,14 +173,18 @@ norm_std (float* std_ptr,
     int phi_center_ind = int(phi_center / phi_range) + 1;
 
     for (size_t i = 0; i < 5; i++)
+    {
       std_ptr[i] = INPUT_STD[phi_center_ind][i];
+    }
   }
   else if (data_set.compare (0, data_set.size()-1, "kitti")==0)
   {
     float INPUT_STD[5] = { 11.47, 6.91, 0.86, 0.16, 12.32 };
 
     for (size_t i = 0; i < 5; i++)
+    {
       std_ptr[i] = INPUT_STD[i];
+    }
   }
   else
   {
@@ -177,7 +195,9 @@ norm_std (float* std_ptr,
     int phi_center_ind = int (phi_center / phi_range) + 1;
 
     for (size_t i = 0; i < 5; i++)
+    {
       std_ptr[i] = INPUT_STD[phi_center_ind][i];
+    }
   }
 
 }
@@ -259,8 +279,11 @@ TF_inference::TF_init ()
   // ======== load graph ========
   string pb_dir = (ros::package::getPath ("lidar_squseg_inference") + "/model/SqueezeSegNet/" + data_set + "/" + phi_center_name + ".pb");
 
-  if (! (BFS::exists (pb_dir)))
-    pb_dir = (ros::package::getPath ("lidar_squseg_inference") + "/model/SqueezeSegNet/" + "hino1" + "/" + phi_center_name + ".pb");
+  if (!(BFS::exists(pb_dir)))
+  {
+    pb_dir = (ros::package::getPath("lidar_squseg_inference") + "/model/SqueezeSegNet/" + "hino1" + "/" +
+              phi_center_name + ".pb");
+  }
 
   TF_Graph *graph = tf_utils::LoadGraph (pb_dir.c_str ());
   if (graph == nullptr)
@@ -424,8 +447,10 @@ TF_inference::TF_run (VPointCloud::Ptr release_Cloud,
     }
   }
 
-  for (size_t i = 0; i < input_tensors.size (); i++)
-    tf_utils::DeleteTensor (input_tensors[i]);
+  for (size_t i = 0; i < input_tensors.size(); i++)
+  {
+    tf_utils::DeleteTensor(input_tensors[i]);
+  }
 
   tf_utils::DeleteTensor (output_tensor);
 

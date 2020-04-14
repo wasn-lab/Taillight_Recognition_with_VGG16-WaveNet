@@ -14,28 +14,18 @@ using namespace pcl;
 
 class NoiseFilter
 {
-  public:
-    NoiseFilter ();
-    ~NoiseFilter ();
+public:
+  NoiseFilter();
+  ~NoiseFilter();
 
-    template <typename PointT>
-    PointCloud<PointT>
-    runUniformSampling (const typename PointCloud<PointT>::Ptr input,
-                      float model_ss);
+  template <typename PointT>
+  PointCloud<PointT> runUniformSampling(const typename PointCloud<PointT>::Ptr input, float model_ss);
 
-    PointCloud<PointXYZ>
-    runRandomSampling (PointCloud<PointXYZ>::Ptr input,
-                     float model_ss);
+  PointCloud<PointXYZ> runRandomSampling(PointCloud<PointXYZ>::Ptr input, float model_ss);
 
-    PointCloud<PointXYZ>
-    runStatisticalOutlierRemoval (PointCloud<PointXYZ>::Ptr input,
-                                 int MeanK,
-                                 double StddevMulThresh);
+  PointCloud<PointXYZ> runStatisticalOutlierRemoval(PointCloud<PointXYZ>::Ptr input, int MeanK, double StddevMulThresh);
 
-    PointCloud<PointXYZ>
-    runRadiusOutlierRemoval (PointCloud<PointXYZ>::Ptr input,
-                            double radius,
-                            int min_pts);
+  PointCloud<PointXYZ> runRadiusOutlierRemoval(PointCloud<PointXYZ>::Ptr input, double radius, int min_pts);
 };
 
 #endif
