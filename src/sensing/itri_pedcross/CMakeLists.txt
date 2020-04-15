@@ -85,7 +85,6 @@ set(CPP_FILES
     #src/Predict_test.cpp
 )
 
-
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
     itri_pedcross
@@ -98,3 +97,4 @@ target_link_libraries(
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
+
