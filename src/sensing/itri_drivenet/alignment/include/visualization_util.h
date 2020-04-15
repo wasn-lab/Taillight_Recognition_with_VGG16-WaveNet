@@ -23,7 +23,7 @@ private:
 
 public:
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x);
-  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects);
+  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects);
   cv::Scalar getDistColor(float distance_in_meters);
 };
 

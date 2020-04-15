@@ -51,7 +51,8 @@ Visualization g_visualization;
 std::vector<std::mutex> g_sync_lock_cams(g_cam_ids.size());
 std::mutex g_sync_lock_cams_process;
 std::vector<std::mutex> g_sync_lock_objects(g_cam_ids.size());
-mutex g_sync_lock_lidar;
+mutex g_sync_lock_lidar_raw;
+mutex g_sync_lock_lidar_process;
 std::mutex g_sync_lock_cams_points;
 std::mutex g_sync_lock_objects_points;
 
@@ -217,9 +218,9 @@ void callback_object_cam_right_60(const msgs::DetectedObjectArray::ConstPtr& msg
 }
 void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
-  g_sync_lock_lidar.lock();
+  g_sync_lock_lidar_raw.lock();
   *g_lidarall_ptr = *msg;
-  g_sync_lock_lidar.unlock();
+  g_sync_lock_lidar_raw.unlock();
   // std::cout << "Point cloud size: " << g_lidarall_ptr->size() << std::endl;
   // std::cout << "Lidar x: " << g_lidarall_ptr->points[0].x << ", y: " << g_lidarall_ptr->points[0].y << ", z: " <<
   // g_lidarall_ptr->points[0].z << std::endl;
@@ -292,7 +293,7 @@ void alignmentInitializer()
   }
 }
 
-void drawBoxOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<msgs::DetectedObject>> objects)
+void drawBoxOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<msgs::DetectedObject>>& objects)
 {
   // std::cout << "===== drawBoxOnImages... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < mats.size(); cam_order++)
@@ -411,7 +412,7 @@ void getPointCloudInImageFOV(pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr,
   }
 }
 
-void getPointCloudInBoxFOV(std::vector<std::vector<msgs::DetectedObject>> objects,
+void getPointCloudInBoxFOV(std::vector<std::vector<msgs::DetectedObject>>& objects,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr)
 {
@@ -501,7 +502,7 @@ void getPointCloudInBoxFOV(std::vector<std::vector<msgs::DetectedObject>> object
 }
 
 template <typename T>
-void release(std::vector<T> input_vector)
+void release(std::vector<T>& input_vector)
 {
   for (size_t index = 0; index < input_vector.size(); index++)
   {
@@ -517,7 +518,7 @@ void displayLidarData()
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cams_points_ptr.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_points_ptr(g_cams_bbox_points_ptr.size());
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_lidarall(g_lidarall_ptr, 0, 255, 255);
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_lidarall(g_lidarall_ptr_process, 0, 255, 255);
   std::vector<pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>> rgb_cams_points;
   std::vector<pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>> rgb_cams_bbox_points;
   std::vector<int> viewports{ 1, 2 };
@@ -543,20 +544,20 @@ void displayLidarData()
     }
 
     /// draw points on pcl viewer
-    // pcl_viewer->addPointCloud<pcl::PointXYZI>(lidarall_ptr, rgb_lidarall, "Cloud viewer", viewports[0]);
-    g_sync_lock_cams_points.lock();     // mutex camera points
-    g_sync_lock_objects_points.lock();  // mutex camera object points
+    // g_sync_lock_lidar_process.lock();
+    // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer", viewports[0]);
+    // g_sync_lock_lidar_process.unlock();
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      // pcl::copyPointCloud(*g_cams_points_ptr[cam_order], *cams_points_ptr[cam_order]);
+      g_sync_lock_cams_points.lock();     // mutex camera points
       pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_points_ptr[cam_order], rgb_cams_points[cam_order],
                                                 g_cam_topic_names[cam_order], viewports[0]);
+      g_sync_lock_cams_points.unlock();     // mutex camera points
+      g_sync_lock_objects_points.lock();  // mutex camera object points
       pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_bbox_points_ptr[cam_order], rgb_cams_bbox_points[cam_order],
                                                 g_bbox_topic_names[cam_order], viewports[1]);
+      g_sync_lock_objects_points.unlock();  // mutex camera object points
     }
-    g_sync_lock_objects_points.unlock();  // mutex camera points
-    g_sync_lock_cams_points.unlock();     // mutex camera object points
-
     pcl_viewer->spinOnce();
     loop_rate.sleep();
   }
@@ -571,16 +572,15 @@ void displayCameraData()
   ros::Rate loop_rate(10);
   while (ros::ok())
   {
-    g_sync_lock_cams_process.lock();  // mutex camera
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
       if (!g_mats_preocess[cam_order].empty())
       {
+        g_sync_lock_cams_process.lock();  // mutex camera
         cv::imshow(g_cam_topic_names[cam_order], g_mats_preocess[cam_order]);
+        g_sync_lock_cams_process.unlock();  // mutex camera
       }
     }
-    g_sync_lock_cams_process.unlock();  // mutex camera
-
     cv::waitKey(1);
     loop_rate.sleep();
   }
@@ -610,26 +610,28 @@ void runInference()
     /// copy camera data
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      g_sync_lock_objects[cam_order].lock();  // mutex object
       g_sync_lock_cams[cam_order].lock();     // mutex camera
       cam_mats[cam_order] = g_mats[cam_order].clone();
       if (cam_mats[cam_order].empty())
       {
         is_mat_empty[cam_order] = true;
       }
+      g_sync_lock_cams[cam_order].unlock();     // mutex camera
+    }
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
+      g_sync_lock_objects[cam_order].lock();  // mutex object
     }
     objects = g_objects;
     is_object_update = g_is_object_update;
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      g_sync_lock_cams[cam_order].unlock();     // mutex camera
       g_sync_lock_objects[cam_order].unlock();  // mutex object
-    }
-
+    }    
     /// copy lidar data
-    g_sync_lock_lidar.lock();  // mutex lidar
+    g_sync_lock_lidar_raw.lock();  // mutex lidar
     pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
-    g_sync_lock_lidar.unlock();  // mutex lidar
+    g_sync_lock_lidar_raw.unlock();  // mutex lidar
 
     /// check object message
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -643,9 +645,6 @@ void runInference()
     if (g_lidarall_ptr->size() > 0)
     {
       /// get results
-      g_sync_lock_cams_points.lock();     // mutex camera points
-      g_sync_lock_objects_points.lock();  // mutex camera object points
-
       getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
       getPointCloudInBoxFOV(objects, cams_points_ptr, cams_bbox_points_ptr);
 
@@ -653,24 +652,29 @@ void runInference()
       drawPointCloudOnImages(cam_mats, cam_pixels, cams_points_ptr);
       drawBoxOnImages(cam_mats, objects);
 
-      g_sync_lock_cams_points.unlock();     // mutex camera points
-      g_sync_lock_objects_points.unlock();  // mutex camera object points
-
       /// prepare point cloud visualization
+      g_sync_lock_lidar_process.lock();
       pcl::copyPointCloud(*lidarall_ptr, *g_lidarall_ptr_process);
+      g_sync_lock_lidar_process.unlock();
+
       for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
-      {
+      {      
+        g_sync_lock_cams_points.lock();     // mutex camera points
         pcl::copyPointCloud(*cams_points_ptr[cam_order], *g_cams_points_ptr[cam_order]);
+        g_sync_lock_cams_points.unlock();     // mutex camera points
+
+        g_sync_lock_objects_points.lock();  // mutex camera object points
         pcl::copyPointCloud(*cams_bbox_points_ptr[cam_order], *g_cams_bbox_points_ptr[cam_order]);
+        g_sync_lock_objects_points.unlock();  // mutex camera object points
       }
 
       /// prepare image visualization
-      g_sync_lock_cams_process.lock();  // mutex camera
       for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
       {
+        g_sync_lock_cams_process.lock();  // mutex camera
         g_mats_preocess[cam_order] = cam_mats[cam_order].clone();
+        g_sync_lock_cams_process.unlock();  // mutex camera
       }
-      g_sync_lock_cams_process.unlock();  // mutex camera
 
       release(cam_pixels);
     }

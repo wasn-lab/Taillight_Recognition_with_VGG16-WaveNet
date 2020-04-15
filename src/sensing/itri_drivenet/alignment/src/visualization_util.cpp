@@ -10,7 +10,7 @@ void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point
   cv::circle(m_src, center_point, 1, point_color, -1, cv::LINE_8, 0);
 }
 
-void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects)
+void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects)
 {
   std::vector<cv::Point> cv_points(2);
   std::vector<PixelPosition> pixel_positions(2);
@@ -26,7 +26,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
     cv_points[0].y = pixel_positions[0].v;
     cv_points[1].x = pixel_positions[1].u;
     cv_points[1].y = pixel_positions[1].v;
-    cv::rectangle(m_src, cv_points[0], cv_points[1], cv::Scalar(255, 255, 255), 1, cv::LINE_8);
+    cv::rectangle(m_src, cv_points[0], cv_points[1], CvColor::white_, 1, cv::LINE_8);
   }
 }
 

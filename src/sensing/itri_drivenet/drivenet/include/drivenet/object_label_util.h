@@ -33,6 +33,17 @@ enum class common_type_id
   truck = sensor_msgs_itri::DetectedObjectClassId::Truck         // 6
 };
 
+
+///         front view
+///          *-------*\ 
+///         /|      /|  height
+///        *-|----*  |  
+///      --|-*----|- */
+/// length |/     | /
+///     ---*------* 
+///        \     /
+///         width
+
 struct object_box
 {
   float width;

@@ -2,12 +2,12 @@
 
 namespace DriveNet
 {
-int image_w_ = camera::image_width;
-int image_h_ = camera::image_height;
-int raw_image_w_ = camera::raw_image_width;
-int raw_image_h_ = camera::raw_image_height;
-float scaling_ratio_w_ = (float)image_w_ / (float)raw_image_w_;
-float scaling_ratio_h_ = (float)image_h_ / (float)raw_image_h_;
+int g_image_w = camera::image_width;
+int g_image_h_ = camera::image_height;
+int g_raw_image_w_ = camera::raw_image_width;
+int g_raw_image_h_ = camera::raw_image_height;
+float g_scaling_ratio_w_ = (float)g_image_w / (float)g_raw_image_w_;
+float g_scaling_ratio_h_ = (float)g_image_h_ / (float)g_raw_image_h_;
 
 int translate_label(int label)
 {
@@ -94,14 +94,14 @@ void transferPixelScaling(std::vector<PixelPosition>& pixel_positions)
 {
   for(auto& positions: pixel_positions)
   {
-    positions.u = int(positions.u * scaling_ratio_w_);
-    positions.v = int(positions.v * scaling_ratio_h_);
+    positions.u = int(positions.u * g_scaling_ratio_w_);
+    positions.v = int(positions.v * g_scaling_ratio_h_);
   }
 }
 
 object_box getDefaultObjectBox(int label_id)
 {
-  object_box bbox;
+  object_box bbox{};
   if (label_id == static_cast<int>(DriveNet::common_type_id::person))
   {
     bbox.width = 0.6;
