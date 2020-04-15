@@ -14,4 +14,11 @@ if (CATKIN_ENABLE_TESTING)
     DESTINATION ${Project_SOURCE_DIR}/bags
     MD5 e2ff37c83b2e95aebeff9b192cf88c64
   )
+
+  set(TEST_BAG "localization_raw_2020-04-13-17-45-48_0.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 16ef3be30e7e2d06b1119021abdff31a
+  )
 endif()
