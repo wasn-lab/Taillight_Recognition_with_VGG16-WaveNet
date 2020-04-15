@@ -11,7 +11,7 @@
 using namespace pcl;
 
 #include "../dataset.hpp"
-#include "dbscan_vp.hpp"
+#include "dbscan_vp.h"
 
 class DBSCAN_VPTree
 {
