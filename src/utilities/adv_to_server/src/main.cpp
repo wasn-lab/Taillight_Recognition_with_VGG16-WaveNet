@@ -116,10 +116,20 @@ struct ArriveStop
   int round; // current round
 };
 
+struct IMU
+{
+  double Gx;
+  double Gy;
+  double Gz;
+  double Gyrox;
+  double Gyroy;
+  double Gyroz;
+};
+
 const static int ROUTE_ID = 2000;
 pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
-
+IMU imu;
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
 {
@@ -311,6 +321,16 @@ std::string get_msg_type(int id)
   return "";
 }
 
+void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
+{
+  imu.Gx = input->linear_acceleration.x;
+  imu.Gy = input->linear_acceleration.y;
+  imu.Gz = input->linear_acceleration.z;
+  imu.Gyrox = input->angular_velocity.x;
+  imu.Gyroy = input->angular_velocity.y;
+  imu.Gyroz = input->angular_velocity.z;
+}
+
 /*========================= ROS callbacks end =========================*/
 
 /*========================= json parsers begin =========================*/
@@ -446,6 +466,14 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["round"] = cuttent_arrive_stop.round;
     J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
+    J1["Gx"] = imu.Gx;
+    J1["Gy"] = imu.Gy;
+    J1["Gz"] = imu.Gz;
+    J1["Gyrox"] = imu.Gyrox;
+    J1["Gyroy"] = imu.Gyroy;
+    J1["Gyroz"] = imu.Gyroz;
+    J1["accelerator"] = 0.0;
+    J1["brake_pedal"] = 0.0;
     J1["distance"] = 0.0;
     J1["mainvoltage"] = 0.0;
     J1["maxvoltage"] = 0.0;
@@ -485,6 +513,14 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ACCpower"] = true;
     J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
+    J1["Gx"] = imu.Gx;
+    J1["Gy"] = imu.Gy;
+    J1["Gz"] = imu.Gz;
+    J1["Gyrox"] = imu.Gyrox;
+    J1["Gyroy"] = imu.Gyroy;
+    J1["Gyroz"] = imu.Gyroz;
+    J1["accelerator"] = 0.0;
+    J1["brake_pedal"] = 0.0;
     J1["ArrivedStop"] = cuttent_arrive_stop.id;
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
     J1["round"] = cuttent_arrive_stop.round;
@@ -624,7 +660,7 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU);
 
   while (ros::ok())
   {
