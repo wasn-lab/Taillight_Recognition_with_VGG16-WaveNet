@@ -2,12 +2,12 @@
 
 namespace DriveNet
 {
-int g_image_w = camera::image_width;
-int g_image_h_ = camera::image_height;
-int g_raw_image_w_ = camera::raw_image_width;
-int g_raw_image_h_ = camera::raw_image_height;
-float g_scaling_ratio_w_ = (float)g_image_w / (float)g_raw_image_w_;
-float g_scaling_ratio_h_ = (float)g_image_h_ / (float)g_raw_image_h_;
+const int g_image_w = camera::image_width;
+const int g_image_h = camera::image_height;
+const int g_raw_image_w = camera::raw_image_width;
+const int g_raw_image_h = camera::raw_image_height;
+const float g_scaling_ratio_w = (float)g_image_w / (float)g_raw_image_w;
+const float g_scaling_ratio_h = (float)g_image_h / (float)g_raw_image_h;
 
 int translate_label(int label)
 {
@@ -94,8 +94,8 @@ void transferPixelScaling(std::vector<PixelPosition>& pixel_positions)
 {
   for(auto& positions: pixel_positions)
   {
-    positions.u = int(positions.u * g_scaling_ratio_w_);
-    positions.v = int(positions.v * g_scaling_ratio_h_);
+    positions.u = int(positions.u * g_scaling_ratio_w);
+    positions.v = int(positions.v * g_scaling_ratio_h);
   }
 }
 
