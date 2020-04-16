@@ -13,6 +13,7 @@
 #include "msgs/Flag_Info.h"
 #include "msgs/StopInfoArray.h"
 #include "msgs/StopInfo.h"
+#include "msgs/RouteInfo.h"
 #include "sensor_msgs/Imu.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -110,6 +111,28 @@ class RosModuleTraffic
           std::chrono::duration<int, std::milli> timespan(100);
           std::this_thread::sleep_for(timespan);
           reserve_status_pub.publish(msg);
+          return;
+        }
+      } 
+    }
+
+    static void
+    publishRoute(std::string topic, msgs::RouteInfo msg)
+    {
+      std::cout << "publishReserve topic " << topic  << std::endl;
+      ros::NodeHandle n;
+      static ros::Publisher route_pub = n.advertise<msgs::RouteInfo>(topic, 1000);
+      short count = 0;
+      while (count < 30)
+      { 
+        count++;
+        int numOfSub = route_pub.getNumSubscribers() ;
+        //std::cout << "numOfSub = " << numOfSub << std::endl;
+        if(numOfSub > 0) 
+        {
+          std::chrono::duration<int, std::milli> timespan(100);
+          std::this_thread::sleep_for(timespan);
+          route_pub.publish(msg);
           return;
         }
       } 
