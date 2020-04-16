@@ -46,6 +46,9 @@ const std::string TOPIC_TRAFFIC = "/traffic";
 const std::string TOPIC_SERCER_STATUS = "/backend/connected";
 // reserve bus
 const std::string TOPIC_RESERVE = "/reserve/request";
+// route 
+const std::string TOPIC_ROUTE = "/reserve/route";
+
 
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
@@ -80,6 +83,8 @@ msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
 std::string mileJson;
+msgs::RouteInfo route_info;
+std::string board_list="00000000";
 
 const static double PI = 3.14;
 // can data
@@ -116,10 +121,20 @@ struct ArriveStop
   int round; // current round
 };
 
+struct IMU
+{
+  double Gx;
+  double Gy;
+  double Gz;
+  double Gyrox;
+  double Gyroy;
+  double Gyroz;
+};
+
 const static int ROUTE_ID = 2000;
 pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
-
+IMU imu;
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
 {
@@ -216,7 +231,8 @@ void callback_fps(const std_msgs::String::ConstPtr& input)
 
 void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 {
-  std::cout << "<<<<<<<<<<<<<<<callbackBusStopInfo>>>>>>>>>>>>>>>" << std::endl;
+  //std::cout << "<<<<<<<<<<<<<<<callbackBusStopInfo>>>>>>>>>>>>>>>" << std::endl;
+  board_list = "";
   float stop[8];
   memset(stop, 0, sizeof(stop));
   mutex_ros.lock();
@@ -234,6 +250,9 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
     if (stop[i] == 1)
     {
       stopids.push_back(i + ROUTE_ID + 1);
+      board_list += "1";
+    }else{
+      board_list += "0";
     }
   }
   json J2;
@@ -309,6 +328,16 @@ std::string get_msg_type(int id)
       break;
   }
   return "";
+}
+
+void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
+{
+  imu.Gx = input->linear_acceleration.x;
+  imu.Gy = input->linear_acceleration.y;
+  imu.Gz = input->linear_acceleration.z;
+  imu.Gyrox = input->angular_velocity.x;
+  imu.Gyroy = input->angular_velocity.y;
+  imu.Gyroz = input->angular_velocity.z;
 }
 
 /*========================= ROS callbacks end =========================*/
@@ -446,6 +475,14 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["round"] = cuttent_arrive_stop.round;
     J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
+    J1["Gx"] = imu.Gx;
+    J1["Gy"] = imu.Gy;
+    J1["Gz"] = imu.Gz;
+    J1["Gyrox"] = imu.Gyrox;
+    J1["Gyroy"] = imu.Gyroy;
+    J1["Gyroz"] = imu.Gyroz;
+    J1["accelerator"] = 0.0;
+    J1["brake_pedal"] = 0.0;
     J1["distance"] = 0.0;
     J1["mainvoltage"] = 0.0;
     J1["maxvoltage"] = 0.0;
@@ -457,6 +494,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["Signal"] = 1;
     J1["CMS"] = 1;
     J1["setting"] = 1;
+    J1["board_list"] = board_list;
   }
   else if (type == "M8.2.VK002")
   {
@@ -485,6 +523,14 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ACCpower"] = true;
     J1["route_id"] = ROUTE_ID;
     J1["RouteMode"] = 2;
+    J1["Gx"] = imu.Gx;
+    J1["Gy"] = imu.Gy;
+    J1["Gz"] = imu.Gz;
+    J1["Gyrox"] = imu.Gyrox;
+    J1["Gyroy"] = imu.Gyroy;
+    J1["Gyroz"] = imu.Gyroz;
+    J1["accelerator"] = 0.0;
+    J1["brake_pedal"] = 0.0;
     J1["ArrivedStop"] = cuttent_arrive_stop.id;
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
     J1["round"] = cuttent_arrive_stop.round;
@@ -492,6 +538,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["CMS"] = 1;
     J1["setting"] = 1;
     J1["EExit"] = true;
+    J1["board_list"] = board_list;
   }
   else if (type == "M8.2.VK004")
   {
@@ -610,9 +657,13 @@ void sendROSRun(int argc, char** argv)
     {
       std::string trafficMsg = trafficLightQueue.front();
       trafficLightQueue.pop();
+      //send traffic light
       RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, trafficMsg);
     }
     mutex_trafficLight.unlock();
+    
+    //send route info
+    RosModuleTraffic::publishRoute(TOPIC_ROUTE, route_info);
 
     boost::this_thread::sleep(boost::posix_time::microseconds(500000));
     ros::spinOnce();
@@ -624,7 +675,7 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU);
 
   while (ros::ok())
   {
@@ -707,6 +758,18 @@ void getServerStatusRun(int argc, char** argv)
     // connect to server fail.
     RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, false);
   }
+}
+
+std::string genResMsg(int status)
+{
+  json J1;
+  json J2;
+
+  J2["msgInfo"] = "Success";
+  J2["msgCode"] = 200;
+  J1["messageObj"] = J2;
+  J1["status"] = status;
+  return J1.dump();
 }
 
 std::string genErrorMsg(int code, std::string msg)
@@ -882,6 +945,58 @@ void VK103callback(json reqJson)
   }
 }
 
+void VK104callback(json reqJson)
+{
+   using namespace std;
+   
+   cout << "VK104callback reqJson: " << reqJson.dump() << endl;
+   int routeID = 0;
+   string routePath = "";
+   vector<unsigned int> stopids;
+   
+
+   // get data
+   try
+   {
+     routeID = reqJson.at("routeid").get<int>();
+     routePath = reqJson.at("routepath").get<string>(); 
+     stopids = reqJson.at("stopid").get< vector<unsigned int> >();
+   }
+   catch (exception& e)
+   {
+     cout << "VK104callback message: " << e.what() << endl;
+     server.send_json(genResMsg(0));
+     return;
+   }
+ 
+   route_info.routeid = routeID;
+   route_info.route_path = routePath;
+   route_info.stops.clear();
+   for (size_t i = 0 ; i < stopids.size(); i++)
+   {
+     msgs::StopInfo stop;
+     stop.round = 1;
+     stop.id = stopids[i];
+     route_info.stops.push_back(stop);
+   }
+
+    /* check response from /BusStop/Info */ 
+   unsigned short retryCount = 0;
+   while ( VK102Response.empty() && (retryCount < RESERVE_WAITING_TIMEOUT / REVERSE_SLEEP_TIME_MICROSECONDS ) )
+   {
+     retryCount ++;
+     boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+   }
+  
+   /* response to server */
+   if (VK102Response.empty())
+   {
+     server.send_json(genResMsg(0));
+   }else {
+     server.send_json(genResMsg(1));
+   }
+}
+
 //route api
 void route(std::string request)
 {
@@ -920,6 +1035,9 @@ void route(std::string request)
   } else if ("M8.2.VK103" == type)
   {
     VK103callback(requestJson);
+  } else if ("M8.2.VK104" == type)
+  {
+    VK104callback(requestJson);
   }
 }
 
@@ -929,7 +1047,7 @@ void tcpServerRun(int argc, char** argv)
 {
   // set ip and port
   server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-  // server.initial("192.168.43.204",8765);
+  //server.initial("192.168.43.204",8765);
   // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();

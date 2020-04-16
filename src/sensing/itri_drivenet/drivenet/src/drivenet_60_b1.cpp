@@ -368,8 +368,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     // Front right 60 range:
     // x axis: 1 - 10 meters
     // y axis: -5 ~ -30 meters
-    leftCheck = g_dist_est.CheckPointInArea(g_dist_est.camFR60_area, box.x1, box.y2);
-    rightCheck = g_dist_est.CheckPointInArea(g_dist_est.camFR60_area, box.x2, box.y2);
+    // leftCheck = g_dist_est.CheckPointInArea(g_dist_est.camFR60_area, box.x1, box.y2);
+    // rightCheck = g_dist_est.CheckPointInArea(g_dist_est.camFR60_area, box.x2, box.y2);
+    leftCheck = 0;
+    rightCheck = 0;
   }
   else if (g_cam_ids[cam_order] == camera::id::front_60)
   {
@@ -570,7 +572,7 @@ void* run_yolo(void*)
       {
         detObj = pool[i].get();
         vDo.push_back(detObj);
-        if (g_display_flag)
+        if (g_img_result_publish || g_display_flag)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {

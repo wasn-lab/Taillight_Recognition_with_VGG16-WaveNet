@@ -198,27 +198,28 @@ S1Cluster::getClusters (bool debug,
       if (cluster_vector.at (i).dis_center_origin < 40)
       {
 
-        if (cluster_vector.at (i).center.y > 4.5 || cluster_vector.at (i).center.y < -3.5)
-        {
+//         if (cluster_vector.at (i).center.y > 4.5 || cluster_vector.at (i).center.y < -3.5)
+//         {
 
-          if (cluster_vector.at (i).dz < 0.3)
-            cluster_vector.at (i).cluster_tag = 0;
+//           if (cluster_vector.at (i).dz < 0.3)
+//             cluster_vector.at (i).cluster_tag = 0;
 
-//          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
-//            cluster_vector.at (i).cluster_tag = 0;
+// //          if (cluster_vector.at (i).min.z > -2.4 && cluster_vector.at (i).center.x > 0 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2))   //-1.3
+// //            cluster_vector.at (i).cluster_tag = 0;
 
-          // if (cluster_vector.at (i).min.z > -1.5)
-          //   cluster_vector.at (i).cluster_tag = 0;
+//           // if (cluster_vector.at (i).min.z > -1.5)
+//           //   cluster_vector.at (i).cluster_tag = 0;
 
-          if (cluster_vector.at (i).max.z < -2.0)
-            cluster_vector.at (i).cluster_tag = 0;
-
-        }
-        else
-        {
-          // if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
-          //   cluster_vector.at (i).cluster_tag = 0;
-        }
+        //   if (cluster_vector.at(i).max.z < -2.0)
+        //   {
+        //     cluster_vector.at(i).cluster_tag = 0;
+        //   }
+        // }
+        // else
+        // {
+        //   // if (cluster_vector.at (i).max.z < -1.9 && cluster_vector.at (i).dy > 0.4)
+        //   //   cluster_vector.at (i).cluster_tag = 0;
+        // }
         
         // ============== label counting for providing cluster_tag with class types ==================
         if (cluster_vector.at(i).cluster_tag == 1)
@@ -246,7 +247,9 @@ S1Cluster::getClusters (bool debug,
               CNT_Rule++;
             }
             if (j > 100)
+            {
               break;
+            }
           }
 
           size_t CNT_MAX = max(max(CNT_Person, CNT_Motor), max(CNT_Car, CNT_Rule));

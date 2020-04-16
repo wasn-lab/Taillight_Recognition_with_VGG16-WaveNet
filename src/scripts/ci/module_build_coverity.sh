@@ -3,6 +3,7 @@ set -x
 set -e
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
+readonly strip_dir=$(readlink -e ${repo_dir}/..)
 
 readonly cov_build_bin=$(which cov-build)
 if [[ -z "${cov_build_bin}" ]]; then
@@ -42,9 +43,9 @@ function commit {
 function analyze {
   data_dir=$1
   echo "`date`: start analyze"
-  cov-analyze -dir ${data_dir} --strip-path ${repo_dir}/..
+  cov-analyze -dir ${data_dir} --strip-path ${strip_dir}
   for cfg in $cfgs; do
-    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${repo_dir}/..
+    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${strip_dir}
   done
   echo "`date`: end analyze"
 }

@@ -9,21 +9,21 @@ void Projector3::init(int camera_id)
 {
   char* file_name;
   char* file_path;
-  #if CAR_MODEL_IS_B1_V2
-    switch (camera_id)
-    {
-      case camera::id::front_bottom_60:
-        file_name = (char*)"test_0225_F_center.yml";
-        file_path = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(file_name) + 1];
-        std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
-        std::strcat(file_path, file_name);
-        readCameraParameters(file_path);
-        break;
-      default:
-        std::cerr << " No match camera id, init failed." << std::endl;
-        break;
-    }
-  #endif
+#if CAR_MODEL_IS_B1_V2
+  switch (camera_id)
+  {
+    case camera::id::front_bottom_60:
+      file_name = (char*)"/fix_0310_front_bottom_60.yml";
+      file_path = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(file_name) + 1];
+      std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
+      std::strcat(file_path, file_name);
+      readCameraParameters(file_path);
+      break;
+    default:
+      std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+  }
+#endif
 }
 
 std::vector<int> Projector3::project(float x, float y, float z)

@@ -47,7 +47,9 @@ check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
 check_list += ["localization_state"]
-check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
+check_list += ["Xbywire_run"]
+# check_list += ["AEB_run"]
+check_list += [ "ACC_run"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -59,6 +61,15 @@ startup_check_list = ["node_alive", "REC_is_recording"]
 # startup_check_list += ["backend_connected"] # Will be added for release version
 # startup_check_list += ["localization_state"]
 # startup_check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
+
+# Debug mode
+#------------------------#
+is_debugging = False
+if is_debugging:
+    check_list = ["node_alive", "REC_is_recording"]
+    check_list += ["localization_state"]
+    startup_check_list = ["node_alive", "REC_is_recording"]
+#------------------------#
 
 
 print("check_list = %s" % str(check_list))
@@ -98,9 +109,9 @@ REC_BACKUP_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this trigger the
 advop_run_state = False # Default not running
 
 # Initialize the container for status queues
-check_queue = dict()
+check_queue_dict = dict()
 for key in check_list:
-    check_queue[key] = Queue.Queue()
+    check_queue_dict[key] = Queue.Queue()
 # The container for latest status get from queue
 check_latest_status_dict = dict()
 
@@ -143,8 +154,8 @@ def _timeout_handle_alive():
     global STATE_DEF_dict
     # global check_dict
     # check_dict["node_alive"] = STATE_DEF_dict["ERROR"] # Abandoned
-    global check_queue
-    check_queue["node_alive"].put(STATE_DEF_dict["ERROR"])
+    global check_queue_dict
+    check_queue_dict["node_alive"].put(STATE_DEF_dict["ERROR"])
     # var_advop_node_alive = False
     rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
 
@@ -273,15 +284,20 @@ def code_func_localization(msg):
     pose_unstable = (state & 8) > 0
     #
     status_code = STATE_DEF_dict["OK"]
+    event_str = ""
     if pose_unstable:
         status_code = max(status_code, STATE_DEF_dict["FATAL"])
+        event_str += "pose_unstable "
     if low_pose_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
+        event_str += "low_pose_frequency "
     if low_lidar_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
+        event_str += "low_lidar_frequency "
     if low_gnss_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
-    return status_code, ""
+        event_str += "low_gnss_frequency "
+    return status_code, event_str
 
 # Brake
 # brake_state_dict = dict()
@@ -312,34 +328,36 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     """
     is_event_msg: True-->event message, False-->state message
     """
-    global ros_msg_backup, check_queue
+    global ros_msg_backup, check_queue_dict
     global advop_run_state
     # global ros_msg_backup, check_dict
     _status, _event_str = code_func(msg)
     # check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
     # Note: key may not in check_dict, this can be an add action.
-    if not key in check_queue:
-        check_queue[key] = Queue.Queue()
-    check_queue[key].put(_status)
+    if not key in check_queue_dict:
+        check_queue_dict[key] = Queue.Queue()
+    check_queue_dict[key].put(_status)
 
     # EVENT trigger REC backup
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
             if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+                # Trigger recorder with reason
+                _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
                 # if advop_run_state:
                 if run_state_delay.output(): # Note: delayed close
                     # Note: We only trigger record if it's already in self-driving mode and running
                     #       The events during idle is not going to be backed-up.
-                    # Trigger recorder with reason
-                    _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
+
                     REC_record_backup_pub.publish( _reason )
                     # Write some log
                     rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
                     # Publish the event message
                     #
                 else:
-                    print("It's not in self-driving mode, ignore the event.")
+                    rospy.logwarn("[sys_ready] It's not in self-driving mode, ignore the event:<%s>" % _reason )
+                    # print("It's not in self-driving mode, ignore the event.")
                 #
             #
         #
@@ -364,7 +382,7 @@ def main():
     # global var_advop_node_alive, var_REC_is_recording
     global STATE_DEF_dict, STATE_DEF_dict_inv
     global check_list # The list of components needs to be checked
-    global check_dict, check_queue, check_latest_status_dict
+    global check_dict, check_queue_dict, check_latest_status_dict
     global sys_total_status
     rospy.init_node('ADV_sys_ready_check', anonymous=False)
     print("[sys_ready_check] Node started.")
@@ -411,8 +429,8 @@ def main():
 
         # Check through check_list
         #-----------------------------------------------#
-        for check_item in check_queue:
-            if check_queue[check_item].empty():
+        for check_item in check_queue_dict:
+            if check_queue_dict[check_item].empty():
                 # No event happened in this window
                 latest_status = check_latest_status_dict.get(check_item, None)
                 if not latest_status is None:
@@ -421,21 +439,22 @@ def main():
                     check_latest_status_dict[check_item] = None
             else:
                 # Some events happened in this window
-                num_items = check_queue[check_item].qsize()
+                num_items = check_queue_dict[check_item].qsize()
                 worst_status = None
                 latest_status = None
                 for idx in range(num_items):
                     try:
-                        an_item_status = check_queue[check_item].get(False)
+                        an_item_status = check_queue_dict[check_item].get(False)
                         if (worst_status is None) or (an_item_status > worst_status):
                             worst_status = an_item_status
                         latest_status = an_item_status
                     except:
-                        print("check_queue[%s] is empty" % check_item)
+                        print("check_queue_dict[%s] is empty" % check_item)
                         break
                 if not worst_status is None:
                     check_dict[check_item] = worst_status
-                check_latest_status_dict[check_item] = latest_status
+                # else, keep the previous status
+                check_latest_status_dict[check_item] = latest_status # Note: this can be None
 
 
         # for check_item in check_dict:

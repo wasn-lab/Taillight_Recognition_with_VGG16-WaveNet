@@ -16,4 +16,6 @@
   <depend>roscpp</depend>
   <depend>rosunit</depend>
   <depend>std_msgs</depend>
+  <depend>car_model</depend>
+
 </package>

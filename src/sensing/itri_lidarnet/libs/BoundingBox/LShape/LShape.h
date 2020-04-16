@@ -7,7 +7,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/common/common.h> //getMinMax3D
+#include <pcl/common/common.h>  //getMinMax3D
 #include <pcl/common/centroid.h>
 #include <pcl/common/transforms.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
@@ -21,57 +21,37 @@
 
 class LShape
 {
-  public:
-    LShape ();
-    virtual
-    ~LShape ();
+public:
+  LShape();
+  virtual ~LShape();
 
-    void
-    setInputCloud (const pcl::PointCloud<pcl::PointXYZ> input);
+  void setInputCloud(const pcl::PointCloud<pcl::PointXYZ> input);
 
-    void
-    Compute (std::vector<pcl::PointXYZ> &out_cube,
-             pcl::PointXYZ &out_centroid,
-             pcl::PointXYZ &out_minPoint,
-             pcl::PointXYZ &out_maxPoint);
-  private:
-    pcl::PointCloud<pcl::PointXYZ> cloud_3d;
+  void Compute(std::vector<pcl::PointXYZ>& out_cube, pcl::PointXYZ& out_centroid, pcl::PointXYZ& out_minPoint,
+               pcl::PointXYZ& out_maxPoint);
 
-    float sensor_height_;
-    int random_points_;
-    float slope_dist_thres_;
-    int num_points_thres_;
+private:
+  pcl::PointCloud<pcl::PointXYZ> cloud_3d;
 
-    float roi_m_;
-    float pic_scale_;
+  float sensor_height_;
+  int random_points_;
+  float slope_dist_thres_;
+  int num_points_thres_;
 
-    void
-    getPointsInPointcloudFrame (cv::Point2f rect_points[],
-                                std::vector<cv::Point2f>& pointcloud_frame_points,
-                                const cv::Point& offset_point);
+  float roi_m_;
+  float pic_scale_;
 
-    void
-    updateCpFromPoints (const std::vector<cv::Point2f>& pointcloud_frame_points,
-                                double&PoseX,
-                                double&PoseY,
-                                double&PoseZ);
+  void getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_frame_points,
+                                  const cv::Point& offset_point);
 
-    void
-    toRightAngleBBox (std::vector<cv::Point2f>& pointcloud_frame_points);
+  void updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_frame_points, double& PoseX, double& PoseY,
+                          double& PoseZ);
 
+  void toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_frame_points);
 
-
-    void
-    updateDimentionAndEstimatedAngle (const std::vector<cv::Point2f>& pointcloud_frame_points,
-                                              double&PoseOX,
-                                              double&PoseOY,
-                                              double&PoseOZ,
-                                              double&PoseOW,
-                                              double&DimX,
-                                              double&DimY,
-                                              double&DimZ,
-                                              double&Yaw);
-
+  void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pointcloud_frame_points, double& PoseOX,
+                                        double& PoseOY, double& PoseOZ, double& PoseOW, double& DimX, double& DimY,
+                                        double& DimZ, double& Yaw);
 };
 
 #endif

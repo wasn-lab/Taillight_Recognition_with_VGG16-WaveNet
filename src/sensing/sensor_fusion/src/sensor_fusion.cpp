@@ -51,39 +51,26 @@ void fuseDetectedObjects()
 {
   std::cout << "**************** do_fusion ****************" << std::endl;
 
-  std::vector<msgs::DetectedObject>().swap(lidar_objects);
-  std::vector<msgs::DetectedObject>().swap(camera_objs);
-  std::vector<msgs::DetectedObject>().swap(fusion_objects);
-
-  /************************************************************************/
-
-  // Lidar detection
-  std::cout << "num_lidar_objs = " << lidar_msg.objects.size() << std::endl;
-
-  for (const auto& obj : lidar_msg.objects)
-  {
-    fusion_objects.push_back(obj);
-  }
-
-  /************************************************************************/
-
-  // Camera detection
-  std::cout << "num_camera_objs = " << camera_msg.objects.size() << std::endl;
-
-  init_distance_table(fusion_objects, camera_msg.objects);
-  associate_data(fusion_objects, camera_msg.objects);
-
-  /************************************************************************/
-
-  // Fusion
-  std::cout << "num_fusion_objs = " << fusion_objects.size() << std::endl;
-
+  fusion_msg.header.seq = ++seq;
   fusion_msg.header.stamp = lidar_msg.header.stamp;
   fusion_msg.header.frame_id = "lidar";
-  fusion_msg.header.seq = seq++;
   std::vector<msgs::DetectedObject>().swap(fusion_msg.objects);
-  fusion_msg.objects.assign(fusion_objects.begin(), fusion_objects.end());
 
+  std::cout << "num_lidar_objs = " << lidar_msg.objects.size() << std::endl;
+  std::cout << "num_camera_objs = " << camera_msg.objects.size() << std::endl;
+
+  if (!lidar_msg.objects.empty())
+  {
+    for (const auto& obj : lidar_msg.objects)
+    {
+      fusion_msg.objects.push_back(obj);
+    }
+    // Data association via Hungarian algo
+    init_distance_table(fusion_msg.objects, camera_msg.objects);
+    associate_data(fusion_msg.objects, camera_msg.objects);
+  }
+
+  std::cout << "num_fusion_objs = " << fusion_msg.objects.size() << std::endl;
   fusion_pub.publish(fusion_msg);
 }
 
@@ -134,6 +121,33 @@ void init_distance_table(std::vector<msgs::DetectedObject>& objs1, std::vector<m
   }
 }
 
+void fuseObjClass(uint16_t obj1_class, const size_t obj1_id, const std::string obj1_source, const uint16_t obj2_class,
+                  const size_t obj2_id, const std::string obj2_source)
+{
+#if DEBUG_OBJCLASS == 1
+  if (fusion_objclass_source == 0)  // camera
+  {
+    std::cout << "obj_class: " << obj2_source << "_" << obj2_id << " = " << obj2_class << "(V); " << obj1_source << "_"
+              << obj1_id << " = " << obj1_class;
+  }
+  else if (fusion_objclass_source == 1)  // lidar
+  {
+    std::cout << "obj_class: " << obj2_source << "_" << obj2_id << " = " << obj2_class << "; " << obj1_source << "_"
+              << obj1_id << " = " << obj1_class << "(V)";
+  }
+  else
+  {
+    std::cerr << "Error: Undefined fusion_objclass_source!" << std::endl;
+  }
+#endif
+
+  obj1_class = (fusion_objclass_source == 0) ? obj2_class : obj1_class;
+
+#if DEBUG_OBJCLASS == 1
+  std::cout << "; fusion: " << obj1_class << std::endl;
+#endif
+}
+
 void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::DetectedObject>& objs2)
 {
   size_t s1 = objs1.size();
@@ -150,7 +164,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
     }
   }
 
-#if DEBUG
+#if DEBUG_HUNGARIAN
   std::cout << "cost matrix: " << std::endl;
 
   for (unsigned i = 0; i < cost_mat.size(); i++)
@@ -163,11 +177,11 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
   }
 #endif
 
-  HungarianAlgorithm hung_algo;
+  Hungarian hun;
   std::vector<int> assignment;
 
-#if DEBUG
-  double cost = hung_algo.Solve(cost_mat, assignment);
+#if DEBUG_HUNGARIAN
+  double cost = hun.solve(cost_mat, assignment);
 
   for (unsigned i = 0; i < cost_mat.size(); i++)
   {
@@ -176,7 +190,7 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
 
   std::cout << "\ncost: " << cost << std::endl;
 #else
-  hung_algo.Solve(cost_mat, assignment);
+  hun.solve(cost_mat, assignment);
 #endif
 
   std::vector<bool> assigned(s2, false);
@@ -187,13 +201,8 @@ void associate_data(std::vector<msgs::DetectedObject>& objs1, std::vector<msgs::
     {
       if (cost_mat[i][assignment[i]] < FUSE_RANGE_SED)
       {
-        objs1[i].camInfo.u = objs2[assignment[i]].camInfo.u;
-        objs1[i].camInfo.v = objs2[assignment[i]].camInfo.v;
-        objs1[i].camInfo.width = objs2[assignment[i]].camInfo.width;
-        objs1[i].camInfo.height = objs2[assignment[i]].camInfo.height;
-        objs1[i].camInfo.id = objs2[assignment[i]].camInfo.id;
-        objs1[i].camInfo.prob = objs2[assignment[i]].camInfo.prob;
-
+        fuseObjClass(objs1[i].classId, i, "lidar", objs2[assignment[i]].classId, assignment[i], "camera");
+        objs1[i].camInfo = objs2[assignment[i]].camInfo;
         assigned[assignment[i]] = true;
       }
     }

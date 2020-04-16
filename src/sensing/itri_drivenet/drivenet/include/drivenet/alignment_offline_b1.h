@@ -16,7 +16,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/core/mat.hpp"
-#include "projection/projector2.h"
+#include "projection/projector3.h"
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -25,13 +25,13 @@
 class AlignmentOff
 {
 private:
-  Projector2 pj;
+  Projector3 pj;
 
 public:
   AlignmentOff();
   ~AlignmentOff();
-  vector<int> run(float x, float y, float z);
-  vector<int> out;
+  std::vector<int> run(float x, float y, float z);
+  std::vector<int> out;
   const int imgW = camera::image_width;
   const int imgH = camera::image_height;
   // LiDAR ground is between -2.5m and -3.3m

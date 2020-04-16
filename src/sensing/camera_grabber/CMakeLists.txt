@@ -1,17 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(camera_grabber)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-if (COMPILER_IS_GNUCXX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-attribute=format")
-endif ()
-
-find_package(CUDA)
-if (NOT ${CUDA_FOUND})
-  message("CUDA not found. Skip building ${PROJECT_NAME}")
-  return ()
-endif ()
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -25,6 +14,25 @@ find_package(catkin REQUIRED COMPONENTS
   car_model
   camera_utils
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
+
+if (NOT ${ENABLE_CAMERA_GRABBER})
+  message("camera_grabber is disable in car ${CAR_MODEL}")
+  return ()
+endif ()
+
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+if (COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-attribute=format")
+endif ()
 
 ## System dependencies are found with CMake's conventions
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)

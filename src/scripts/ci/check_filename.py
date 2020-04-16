@@ -60,7 +60,7 @@ def main():
     """Prog entry"""
     affected_files = get_affected_files()
     ret = _check_space(affected_files)
-    ret += _check_hpp(affected_files)
+    # ret += _check_hpp(affected_files)
     ret += _check_artifacts(affected_files)
     return ret
 

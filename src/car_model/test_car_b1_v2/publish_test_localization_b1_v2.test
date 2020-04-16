@@ -1,0 +1,18 @@
+<launch>
+    <include file="$(find localization)/launch/localization.launch" />
+    <include file="$(find map_pub)/launch/map_pub.launch" />
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/localization_raw_2020-04-13-17-45-48_0.bag" required="true"/>
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /current_pose
+                  timeout: 15
+                  negative: False
+                - name: /localization_to_veh
+                  timeout: 15
+                  negative: False
+        </rosparam>
+    </test>
+</launch>

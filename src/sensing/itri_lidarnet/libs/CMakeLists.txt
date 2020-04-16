@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
 project(libs)
-  
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11) 
-     
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -14,16 +11,21 @@ find_package(catkin REQUIRED COMPONENTS
   #std_msgs
   #genmsg
   grid_map_ros
-)                
-                                                                                          
+  car_model
+)
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-      
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
-      
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -50,9 +52,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 #file(GLOB SOURCES_MESSAGE *.msg)
 #add_message_files(
-  #${SOURCES_MESSAGE} 
+  #${SOURCES_MESSAGE}
 #)
- 
+
 ## Generate services in the 'srv' folder
 #add_service_files(
   #FILES
@@ -120,8 +122,11 @@ HEADER_DIRECTORIES(SOURCES_INCS)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
+find_package(Eigen3)
 include_directories(
- include
+  include
+  ${EIGEN3_INCLUDE_DIR}
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -207,8 +212,7 @@ include_directories(
 ##    use define    ##
 ######################
 
-set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -fopenmp -D_FORCE_INLINES -O2")
-set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -DOTHER_STUFF=1 " )
+set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
 
 ######################
 ##       VTK        ##
@@ -218,7 +222,7 @@ find_package        (VTK REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED) 
+find_package            (PCL 1.8 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
@@ -232,7 +236,7 @@ if (NOT ${CUDA_FOUND})
   return ()
 endif ()
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories     (${CUDA_INCLUDE_DIRS}) 
+include_directories     (${CUDA_INCLUDE_DIRS})
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
 
 ######################
@@ -244,17 +248,17 @@ set                     (QT_FORMS   src/UI/QtViewer.ui)
 QT5_WRAP_CPP            (QT_HEADERS_MOC   ${QT_HEADERS})
 QT5_WRAP_UI             (QT_FORMS_HEADERS ${QT_FORMS})
 ADD_DEFINITIONS         (${QT_DEFINITIONS})
- 
+
 ######################
 ##      OpenCV      ##
 ######################
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
- 
+
 ######################
 ##      Tensorflow  ##
-###################### 
+######################
 if (NOT EXISTS /usr/local/lib/libtensorflow.so)
 
         set(TENSORFLOW_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../dl_data/assets)
@@ -263,25 +267,25 @@ if (NOT EXISTS /usr/local/lib/libtensorflow.so)
         set(TENSORFLOW_LIBRARIES ${TENSORFLOW_ROOT_DIR}/lib/libtensorflow.so)
 
 	include_directories(${TENSORFLOW_INCLUDE_DIRS})
-	link_directories(${TENSORFLOW_ROOT_DIR}/lib)  
-    
+	link_directories(${TENSORFLOW_ROOT_DIR}/lib)
+
 else()
-        
+
 	message( STATUS " Tensorflow status: installed" )	
 	
-	set(TENSORFLOW_INCLUDE_DIRS /usr/local/include/tensorflow/c)        
+	set(TENSORFLOW_INCLUDE_DIRS /usr/local/include/tensorflow/c)
 	set(TENSORFLOW_LIBRARIES tensorflow)
 
 	include_directories(${TENSORFLOW_INCLUDE_DIRS})
 	link_directories(/usr/local/lib)
 
 endif()
-    
+
 ######################
 ##      catkin      ##
-###################### 
+######################
 catkin_package(
-  INCLUDE_DIRS 
+  INCLUDE_DIRS
   ${SOURCES_INCS}
   ${TENSORFLOW_INCLUDE_DIRS}
 
@@ -292,11 +296,56 @@ catkin_package(
   #DEPENDS system_lib
   #message_runtime
   LIBRARIES ${PROJECT_NAME}
-) 
- 
+)
+
 ######################
 ##      libs        ##
 ######################
-file(GLOB_RECURSE SOURCES_SRCS *.cpp *.cu)            
+set(SOURCES_SRCS
+  BoundingBox/ApproxMVBB/Core/AABB.cpp
+  BoundingBox/ApproxMVBB/Core/Common/MyMatrixTypeDefs.cpp
+  BoundingBox/ApproxMVBB/Core/ConvexHull2D.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/EstimateDiameter.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/alloc.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/rand.cpp
+  BoundingBox/ApproxMVBB/Core/Diameter/util.cpp
+  BoundingBox/ApproxMVBB/Core/GeometryPredicates/Predicates.cpp
+  BoundingBox/ApproxMVBB/Core/GeometryPredicates/PredicatesInit.cpp
+  BoundingBox/ApproxMVBB/Core/MinAreaRectangle.cpp
+  BoundingBox/ApproxMVBB/Core/OOBB.cpp
+  BoundingBox/ApproxMVBB/Core/ProjectedPointSet.cpp
+  BoundingBox/ApproxMVBB/Core/RandomGenerators.cpp
+  BoundingBox/ApproxMVBB/UseApproxMVBB.cpp
+  BoundingBox/LShape/LShape.cpp
+  BoundingBox/PCA/PCA.cpp
+  Clustering/DBSCAN/CUDA/DBSCAN_CUDA.cpp
+  Clustering/DBSCAN/CUDA/g_dbscan.cpp
+  Clustering/DBSCAN/Common/DBSCAN.cpp
+  Clustering/DBSCAN/VPTree/DBSCAN_VPTree.cpp
+  Matching/NDT/LiDARStitchingAuto.cpp
+  Matching/NDT/ndt_omp/gicp_omp.cpp
+  Matching/NDT/ndt_omp/ndt_omp.cpp
+  Matching/NDT/ndt_omp/voxel_grid_covariance_omp.cpp
+  Preprocess/GroundFilter/PlaneGroundFilter.cpp
+  Preprocess/GroundFilter/RayGroundFilter.cpp
+  Preprocess/NoiseFilter/NoiseFilter.cpp
+  Preprocess/NoiseFilter/VoxelFilter_CUDA.cpp
+  Preprocess/SpatialFilter/CuboidFilter.cpp
+  Preprocess/Transform/Transform_CUDA.cpp
+  Preprocess/VoxelGrid/VoxelGrid_CUDA.cpp
+  SSN_prepro/preprolib_squseg.cpp
+  TensorFlow/tf_utils.cpp
+  ToControl/EdgeDetect/edge_detect.cpp
+  ToControl/GridMapGen/points_to_costmap.cpp
+  TrafficFlow/S4FlowDetect.cpp
+  Transmission/UdpModuleA.cpp
+  Utility/CompressFunction.cpp
+  Utility/KeyboardMouseEvent.cpp
+  Utility/extract_Indices.cpp
+  eval_utility/eval_utility.cpp
+  Clustering/DBSCAN/CUDA/g_dbscan.cu
+  Preprocess/Transform/Transform_CUDA.cu
+  Preprocess/VoxelGrid/VoxelGrid_CUDA.cu)
+
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
-target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} cuda ${TENSORFLOW_LIBRARIES})
+target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} ${TENSORFLOW_LIBRARIES})
