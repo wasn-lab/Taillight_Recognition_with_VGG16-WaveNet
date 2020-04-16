@@ -1,6 +1,6 @@
 <!--launch file for edge_detection -->
 <launch>
-<!--ros param not release yet except for LidarAll_flag -->
+  <!--ros param not release yet except for LidarAll_flag -->
   <arg name="theta_sample" default="360"/>
   <arg name="max_radius" default="50"/>
   <arg name="grid_min_value" default="0"/>
@@ -13,6 +13,7 @@
   <arg name="maximum_lidar_height_thres" default="5"/>
   <arg name="minimum_lidar_height_thres" default="-5"/>
   <arg name="LidarAll_flag" default="false"/>
+  <arg name="top_only_flag" default="true"/>
 
   <node pkg="edge_detection" type="edge_detection_node" name="edge_detection" output="screen">
     <param name="theta_sample" value="$(arg theta_sample)"/>
@@ -26,7 +27,11 @@
     <param name="grid_position_y" value="$(arg grid_position_y)"/>
     <param name="maximum_lidar_height_thres" value="$(arg maximum_lidar_height_thres)"/>
     <param name="minimum_lidar_height_thres" value="$(arg minimum_lidar_height_thres)"/>
-    <param name="LidarAll_flag" value="$(arg LidarAll_flag)"/> <!--true: LidarAll false: three lidars -->
+    <param name="LidarAll_flag" value="$(arg LidarAll_flag)"/>
+    <!--true: LidarAll false: three lidars -->
+    <param name="top_only_flag" value="$(arg top_only_flag)"/>
+    <!--true: top false: three lidars -->
+
   </node>
 
 </launch>
