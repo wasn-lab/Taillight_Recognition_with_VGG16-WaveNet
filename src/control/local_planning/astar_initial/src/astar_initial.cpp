@@ -95,7 +95,8 @@ void Ini_obs_bytxt()
   std::string fpname = ros::package::getPath("astar_initial");
   // std::string fpname_s = fpname + "/data/20200309_waypoints.txt"; // shalun scenario other
   // std::string fpname_s = fpname + "/data/20200313_waypoints_busstop.txt"; // shalun scenario bus stop
-  std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt";
+  // std::string fpname_s = fpname + "/data/20191127_waypoints_round.txt"; // full route
+  std::string fpname_s = fpname + "/data/20200414_waypoints_round.txt"; // turn left in traffic light intersection
   read_txt(fpname_s, seg_id, seg_x, seg_y, seg_z, seg_h, seg_l);
   std::cout << "Ini_bytxt" << std::endl;
 }
