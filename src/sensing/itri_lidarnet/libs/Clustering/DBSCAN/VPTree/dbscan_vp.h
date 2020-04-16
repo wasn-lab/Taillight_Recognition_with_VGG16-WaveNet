@@ -69,7 +69,7 @@ public:
 
     std::sort(r.begin(), r.end());
 
-    return std::move(r);
+    return r;
   }
 
   uint32_t predict(double eps, size_t min_elems)
