@@ -78,7 +78,7 @@ private:
     int npackets;                    // number of packets to combine
   }
   Config;
-  Config config_;
+  // Config config_;
 
   // diagnostics updater
   diagnostic_updater::Updater diagnostics_;
