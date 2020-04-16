@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf2_geometry_msgs
         sensor_msgs
         std_msgs
+        nav_msgs
         msgs
         pcl_ros
         grid_map_ros
@@ -44,6 +45,7 @@ set(TPP_CATKIN_DEPS
     tf2_geometry_msgs
     sensor_msgs
     std_msgs
+    nav_msgs
     msgs
     pcl_ros
     grid_map_ros
