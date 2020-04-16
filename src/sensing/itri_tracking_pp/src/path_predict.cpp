@@ -534,9 +534,14 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
 }
 
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-                       const unsigned int show_pp)
+                       const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea)
 {
   show_pp_ = show_pp;
+
+#if PP_WAYAREA == 1
+  float wayarea_xlen = (wayarea.info.width - 1) * wayarea.info.resolution;
+  float wayarea_ylen = (wayarea.info.height - 1) * wayarea.info.resolution;
+#endif
 
   std::vector<std::vector<PPLongDouble> >().swap(ppss);
   ppss.reserve(pp_objs_.size());
@@ -571,6 +576,29 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
       std::vector<long double> data_y;
 
       create_pp_input_main(pp_objs_[i].track, data_x, data_y);
+
+#if PP_WAYAREA == 1
+      float obj_x_wayarea = data_x.back() - wayarea.info.origin.position.x;
+      float obj_y_wayarea = data_y.back() - wayarea.info.origin.position.y;
+
+      if (obj_x_wayarea >= 0. && obj_x_wayarea <= wayarea_xlen && obj_y_wayarea >= 0. && obj_y_wayarea <= wayarea_ylen)
+      {
+        int px = obj_x_wayarea / wayarea.info.resolution;
+        int py = obj_y_wayarea / wayarea.info.resolution;
+        int idx = py * wayarea.info.width + px;
+
+        if (wayarea.data[idx] == 100)
+        {
+          pp_objs_[i].track.is_ready_prediction = false;
+          std::cout << "idx = " << idx << " (PP is filtered by wayarea!)" << std::endl;
+        }
+        else
+        {
+          std::cout << "idx = " << idx << std::endl;
+        }
+      }
+#endif
+
       compute_pos_offset(data_x, data_y);
       normalize_pos(data_x, data_y);
 
