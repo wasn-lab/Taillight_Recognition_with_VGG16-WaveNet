@@ -38,6 +38,7 @@ static EdgeDetection FLED;
 
 static double theta_sample;
 static bool lidar_all_flag;
+static bool top_only_flag;
 
 static float max_radius;
 
@@ -226,11 +227,13 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
                         if (ring_edge_pointcloud_publisher.getNumSubscribers() != 0) {
                                 ring_edge_ftop_cloudPtr = TOPED.getRingEdgePointCloud ();
-                                ring_edge_fright_cloudPtr = FRED.getRingEdgePointCloud ();
-                                ring_edge_fleft_cloudPtr = FLED.getRingEdgePointCloud ();
-                                *ring_edge_ftop_cloudPtr += *ring_edge_fright_cloudPtr;
-                                *ring_edge_ftop_cloudPtr += *ring_edge_fleft_cloudPtr;
-
+                                if(!top_only_flag)
+                                {
+                                        ring_edge_fright_cloudPtr = FRED.getRingEdgePointCloud ();
+                                        ring_edge_fleft_cloudPtr = FLED.getRingEdgePointCloud ();
+                                        *ring_edge_ftop_cloudPtr += *ring_edge_fright_cloudPtr;
+                                        *ring_edge_ftop_cloudPtr += *ring_edge_fleft_cloudPtr;
+                                }
                                 pcl::toROSMsg(*ring_edge_ftop_cloudPtr,ring_edge_pointcloud_publisher_msg);
                                 ring_edge_pointcloud_publisher_msg.header.stamp = msg->header.stamp;
                                 ring_edge_pointcloud_publisher_msg.header.seq = msg->header.seq;
@@ -603,6 +606,8 @@ int main(int argc, char **argv)
         private_n.getParam("grid_position_y", grid_position_y);
         private_n.getParam("maximum_lidar_height_thres", maximum_lidar_height_thres);
         private_n.getParam("LidarAll_flag", lidar_all_flag);
+        private_n.getParam("top_only_flag", top_only_flag);
+
         std::cout<< "LidarAll_flag : "<< lidar_all_flag <<std::endl;
 
         TOPED.setLayerName ("front_top_points_layer");
