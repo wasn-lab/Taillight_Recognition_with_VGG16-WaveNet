@@ -21,4 +21,18 @@ if (CATKIN_ENABLE_TESTING)
     DESTINATION ${Project_SOURCE_DIR}/bags
     MD5 16ef3be30e7e2d06b1119021abdff31a
   )
+
+  set(TEST_BAG "lidarxyz2lla_2020-04-13-17-45-48_0.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 1439b6181d4282492b9046a434eeba21
+  )
+
+  set(TEST_BAG "rad_grab_2020-04-13-17-45-48_0.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 f215af4ad6b04fa9ae152f8b46b0f2d8
+  )
 endif()
