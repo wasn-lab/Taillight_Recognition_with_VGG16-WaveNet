@@ -10,6 +10,9 @@
                 - name: /current_pose
                   timeout: 15
                   negative: False
+                - name: /localization_to_veh
+                  timeout: 15
+                  negative: False
         </rosparam>
     </test>
 </launch>
