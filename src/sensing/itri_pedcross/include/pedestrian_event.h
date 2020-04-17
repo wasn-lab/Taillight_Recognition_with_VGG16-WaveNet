@@ -10,6 +10,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Path.h>
+#include "msgs/VehInfo.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
@@ -30,6 +31,7 @@
 // C++ std library dependencies
 #include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
 #include <thread>  // std::this_thread
+#include <fstream>
 
 #include <tensorflow/c/c_api.h>  // TensorFlow C API header.
 //#include <scope_guard.hpp>
@@ -66,6 +68,7 @@ public:
 
   // Functions
   void run();
+  void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
@@ -81,8 +84,8 @@ public:
   void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
   float adjust_probability(msgs::PedObject obj);
-  int get_facing_direction(std::vector<cv::Point2f> keypoints);
-  int get_body_direction(std::vector<cv::Point2f> keypoints);
+  int get_facing_direction(const std::vector<cv::Point2f>& keypoints);
+  int get_body_direction(const std::vector<cv::Point2f>& keypoints);
 
   // OpenPose components
   int openPoseROS();
@@ -93,6 +96,7 @@ public:
   cv::dnn::Net net_openpose;
 
   // All buffer components
+  msgs::VehInfo veh_info;
   std::vector<geometry_msgs::PoseStamped> nav_path;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
   std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
@@ -111,9 +115,11 @@ public:
   cv::Ptr<cv::ml::RTrees> rf_pose;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_1;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
+  std::ofstream file;
 
   // Setup variables
   const int cross_threshold = 55;  // percentage

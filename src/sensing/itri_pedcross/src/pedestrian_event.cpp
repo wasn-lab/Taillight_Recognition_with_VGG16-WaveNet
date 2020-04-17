@@ -10,6 +10,20 @@ void PedestrianEvent::run()
   pedestrian_event();
 }
 
+void PedestrianEvent::veh_info_callback(const msgs::VehInfo::ConstPtr& msg)
+{
+#if USE_GLOG
+  ros::Time start;
+  start = ros::Time::now();
+#endif
+
+  veh_info = *msg;
+
+#if USE_GLOG
+  std::cout << "veh_info buffer time cost: " << ros::Time::now() - start << std::endl;
+#endif
+}
+
 void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
 {
 #if USE_GLOG
@@ -292,10 +306,13 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           tf::Matrix3x3 m(q);
           m.getRPY(roll, pitch, yaw);
 
+          // store points for distance calculate
+          std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
+          nav_path_transformed.reserve(200);
           // find the nearest nav_path point from pedestian's position
           geometry_msgs::PoseStamped nearest_point;
           double min_distance_from_path = 100000;
-          for (geometry_msgs::PoseStamped path_point : nav_path_temp)
+          for (const geometry_msgs::PoseStamped& path_point : nav_path_temp)
           {
             // coordinate transform for  nav_path (map) to camera (base_link)
             geometry_msgs::PoseStamped point_out;
@@ -319,7 +336,41 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
               min_distance_from_path = x_dis + y_dis + z_dis;
               nearest_point = point_out;
             }
+            nav_path_transformed.push_back(point_out);
           }
+          double distance_from_car = 0;
+          geometry_msgs::PoseStamped previous_path_point;
+          bool passed_car_head = false;
+          for (const geometry_msgs::PoseStamped& path_point : nav_path_transformed)
+          {
+            // check 
+            if (path_point.pose.position.x > 0)
+            {
+              passed_car_head = true;
+            }
+            // add distance between points
+            if (passed_car_head)
+            {
+              double x_dis = std::fabs(path_point.pose.position.x - previous_path_point.pose.position.x);
+              x_dis *= x_dis;
+              double y_dis = std::fabs(path_point.pose.position.y - previous_path_point.pose.position.y);
+              y_dis *= y_dis;
+              distance_from_car += sqrt(x_dis + y_dis);
+            }
+            if (path_point.pose.position.x == nearest_point.pose.position.x &&
+            path_point.pose.position.y == nearest_point.pose.position.y)
+            {
+              // print distance
+              file <<ros::Time::now()<<","<<obj_pub.track.id<<","<< distance_from_car<<","<< veh_info.ego_speed<<"\n";  
+
+              std::cout<<"same, distance: "<<distance_from_car<<" id: "<<obj_pub.track.id<<" time: "<<ros::Time::now()<<" speed: "<< veh_info.ego_speed<<std::endl;
+              break;
+            }
+            previous_path_point = path_point;
+          }
+          // to free memory from vector
+          std::vector<geometry_msgs::PoseStamped>().swap(nav_path_transformed);
+
           double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
           double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
           alert_obj.track.forecasts.reserve(20);
@@ -660,7 +711,7 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
  * 2 for facing car side
  * 3 for facing car opposite side
  */
-int PedestrianEvent::get_facing_direction(std::vector<cv::Point2f> keypoints)
+int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoints)
 {
   bool look_at_left = false;
   bool look_at_right = false;
@@ -753,7 +804,7 @@ int PedestrianEvent::get_facing_direction(std::vector<cv::Point2f> keypoints)
  * 2 for facing car side
  * 3 for facing car opposite side
  */
-int PedestrianEvent::get_body_direction(std::vector<cv::Point2f> keypoints)
+int PedestrianEvent::get_body_direction(const std::vector<cv::Point2f>& keypoints)
 {
   int result = 0;
   if (keypoint_is_detected(keypoints.at(9)) && keypoint_is_detected(keypoints.at(10)) &&
@@ -1017,18 +1068,22 @@ void PedestrianEvent::pedestrian_event()
   // custom callback queue
   ros::CallbackQueue queue_1;
   ros::CallbackQueue queue_2;
+  ros::CallbackQueue queue_3;
   // This node handle uses global callback queue
   ros::NodeHandle nh_sub_1;
   // and this one uses custom queue
   ros::NodeHandle nh_sub_2;
   ros::NodeHandle nh_sub_3;
+  ros::NodeHandle nh_sub_4;
   // Set custom callback queue
   nh_sub_2.setCallbackQueue(&queue_1);
   nh_sub_3.setCallbackQueue(&queue_2);
+  nh_sub_4.setCallbackQueue(&queue_3);
 
   ros::Subscriber sub_1;
   ros::Subscriber sub_2;
   ros::Subscriber sub_3;
+  ros::Subscriber sub_4;
   if (input_source == 0)
   {
     sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::chatter_callback,
@@ -1036,6 +1091,8 @@ void PedestrianEvent::pedestrian_event()
     sub_2 = nh_sub_2.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_image_callback,
                                this);  // /cam/F_center is sub topic
     sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
+                               this);  // /cam/F_center is sub topic
+    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
   }
   else if (input_source == 1)
@@ -1046,6 +1103,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_left is sub topic
     sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
                                this);  // /cam/F_center is sub topic
+    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
+                               this);  // /cam/F_center is sub topic
   }
   else if (input_source == 2)
   {
@@ -1054,6 +1113,8 @@ void PedestrianEvent::pedestrian_event()
     sub_2 = nh_sub_2.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_image_callback,
                                this);  // /cam/F_right is sub topic
     sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
+                               this);  // /cam/F_center is sub topic
+    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
   }
   else  // input_source == 3
@@ -1064,11 +1125,14 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_right is sub topic
     sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
                                this);  // /cam/F_center is sub topic
+    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
+                               this);  // /cam/F_center is sub topic
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner_1.reset(new ros::AsyncSpinner(0, &queue_1));
   g_spinner_2.reset(new ros::AsyncSpinner(0, &queue_2));
+  g_spinner_3.reset(new ros::AsyncSpinner(0, &queue_3));
 
   g_enable = true;
   g_trigger = true;
@@ -1086,6 +1150,7 @@ void PedestrianEvent::pedestrian_event()
       // Start the spinner
       g_spinner_1->start();
       g_spinner_2->start();
+      g_spinner_3->start();
       ROS_INFO("Spinner enabled");
       // Reset trigger
       g_trigger = false;
@@ -1098,6 +1163,7 @@ void PedestrianEvent::pedestrian_event()
   // Release AsyncSpinner object
   g_spinner_1.reset();
   g_spinner_2.reset();
+  g_spinner_3.reset();
 
   // Wait for ROS threads to terminate
   ros::waitForShutdown();
@@ -1242,6 +1308,13 @@ int main(int argc, char** argv)
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
   pe.count = 0;
+
+  std::stringstream ss;
+  ss << "../../../ped_output.csv";
+  std::string fname = ss.str();
+  pe.file.open(fname, std::ios_base::app);
   pe.run();
+  pe.file.close();
+
   return 0;
 }

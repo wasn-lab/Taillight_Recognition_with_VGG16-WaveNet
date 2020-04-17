@@ -45,7 +45,7 @@ def pedestrian_marker_callback_final(data):
                     point_2 = element.bPoint.p1
                     point_2.x = pp_point.position.x
                     point_2.y = pp_point.position.y
-                    point_2.z = 2
+                    point_2.z = 0
                     markerArray.markers.append(create_marker(text=".",position=point_2,id=point_2.x*point_2.y,color=[1.0,0.2,0.2]))
             else:
                 prob = "NC(" + get_two_float(element.crossProbability, 2) + ")"
