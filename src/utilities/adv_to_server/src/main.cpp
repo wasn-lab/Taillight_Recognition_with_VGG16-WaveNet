@@ -83,8 +83,10 @@ msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
 std::string mileJson;
+std::string checkJson;
 msgs::RouteInfo route_info;
 std::string board_list="00000000";
+ int routeID = 2000;
 
 const static double PI = 3.14;
 // can data
@@ -131,7 +133,7 @@ struct IMU
   double Gyroz;
 };
 
-const static int ROUTE_ID = 2000;
+
 pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
 IMU imu;
@@ -249,7 +251,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   {
     if (stop[i] == 1)
     {
-      stopids.push_back(i + ROUTE_ID + 1);
+      stopids.push_back(i + routeID + 1);
       board_list += "1";
     }else{
       board_list += "0";
@@ -271,7 +273,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
   J1["status"] = 0;
-  J1["route_id"] = ROUTE_ID;
+  J1["route_id"] = routeID;
   if (stopids.size() == 0)
   {
     J1["bus_stops"] = json::array();
@@ -288,7 +290,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
 {
   mutex_ros.lock();
-  cuttent_arrive_stop.id = ROUTE_ID + (int)input->Dspace_Flag01;
+  cuttent_arrive_stop.id = routeID + (int)input->Dspace_Flag01;
   cuttent_arrive_stop.status = (int)input->Dspace_Flag02;
   //cuttent_arrive_stop.round = (int) input->PX2_Flag01;
   mutex_ros.unlock();
@@ -306,6 +308,15 @@ void callbackMileage(const std_msgs::String::ConstPtr& input)
 void callbackRound(const std_msgs::Int32::ConstPtr& input)
 {
   cuttent_arrive_stop.round = (int) input->data;
+}
+
+void callbackChecker(const std_msgs::String::ConstPtr& input)
+{
+  mutex_ros.lock();
+  checkJson = input->data.c_str();
+  std::cout << "check: " << mileJson << std::endl;
+
+  mutex_ros.unlock();
 }
 
 std::string get_msg_type(int id)
@@ -473,7 +484,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ArrivedStop"] = cuttent_arrive_stop.id;
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
     J1["round"] = cuttent_arrive_stop.round;
-    J1["route_id"] = ROUTE_ID;
+    J1["route_id"] = routeID;
     J1["RouteMode"] = 2;
     J1["Gx"] = imu.Gx;
     J1["Gy"] = imu.Gy;
@@ -521,7 +532,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["rightlight"] = true;
     J1["EStop"] = true;
     J1["ACCpower"] = true;
-    J1["route_id"] = ROUTE_ID;
+    J1["route_id"] = routeID;
     J1["RouteMode"] = 2;
     J1["Gx"] = imu.Gx;
     J1["Gy"] = imu.Gy;
@@ -539,8 +550,12 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["setting"] = 1;
     J1["EExit"] = true;
     J1["board_list"] = board_list;
-  }
-  else if (type == "M8.2.VK004")
+  }else if (type == "M8.2.VK003"){
+    J1["lat"] = gps.lidar_Lat;
+    J1["lng"] = gps.lidar_Lon;
+    json J0 = json::parse(checkJson);
+    J1["checker"] = J0;
+  }else if (type == "M8.2.VK004")
   {
     for (int i = 0; i < FPS_KEY_LEN; i++)
     {
@@ -675,7 +690,7 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, callbackChecker);
 
   while (ros::ok())
   {
@@ -783,7 +798,7 @@ std::string genErrorMsg(int code, std::string msg)
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
   J1["status"] = 0;
-  J1["route_id"] = ROUTE_ID;
+  J1["route_id"] = routeID;
   J1["bus_stops"] = json::array();
   return J1.dump();
 }
@@ -950,7 +965,7 @@ void VK104callback(json reqJson)
    using namespace std;
    
    cout << "VK104callback reqJson: " << reqJson.dump() << endl;
-   int routeID = 0;
+  
    string routePath = "";
    vector<unsigned int> stopids;
    

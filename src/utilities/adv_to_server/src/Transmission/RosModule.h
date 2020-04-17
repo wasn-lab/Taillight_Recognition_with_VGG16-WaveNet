@@ -55,7 +55,9 @@ class RosModuleTraffic
                       void
                       (*cb9) (const std_msgs::Int32::ConstPtr&),
                       void
-                      (*cb10) (const sensor_msgs::Imu::ConstPtr&))
+                      (*cb10) (const sensor_msgs::Imu::ConstPtr&),
+                      void
+                      (*cb11) (const std_msgs::String::ConstPtr&))
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
@@ -68,6 +70,8 @@ class RosModuleTraffic
       static ros::Subscriber next_stop = n.subscribe("/NextStop/Info", 1, cb8);
       static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
       static ros::Subscriber imu = n.subscribe("imu_data_rad", 1, cb10);
+      //checker big buffer for multi event at the same time.
+      static ros::Subscriber checker = n.subscribe("checker", 1000, cb11);
     }
 
     static void
@@ -105,7 +109,7 @@ class RosModuleTraffic
       { 
         count++;
         int numOfSub = reserve_status_pub.getNumSubscribers() ;
-        std::cout << "numOfSub = " << numOfSub << std::endl;
+        //std::cout << "numOfSub = " << numOfSub << std::endl;
         if(numOfSub > 0) 
         {
           std::chrono::duration<int, std::milli> timespan(100);
