@@ -196,7 +196,6 @@ int main(int argc, char** argv)
         }
       }
 
-#pragma omp parallel for
       for (size_t i = 0; i < numberABB; i++)
       {
         UseApproxMVBB approxMVBB;
