@@ -492,8 +492,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["Gyrox"] = imu.Gyrox;
     J1["Gyroy"] = imu.Gyroy;
     J1["Gyroz"] = imu.Gyroz;
-    J1["accelerator"] = 0.0;
-    J1["brake_pedal"] = 0.0;
+    J1["accelerator"] = data[4];
+    J1["brake_pedal"] = data[5];
     J1["distance"] = 0.0;
     J1["mainvoltage"] = 0.0;
     J1["maxvoltage"] = 0.0;
@@ -540,8 +540,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["Gyrox"] = imu.Gyrox;
     J1["Gyroy"] = imu.Gyroy;
     J1["Gyroz"] = imu.Gyroz;
-    J1["accelerator"] = 0.0;
-    J1["brake_pedal"] = 0.0;
+    J1["accelerator"] = data[4];
+    J1["brake_pedal"] = data[5];
     J1["ArrivedStop"] = cuttent_arrive_stop.id;
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
     J1["round"] = cuttent_arrive_stop.round;
