@@ -146,11 +146,11 @@ getContourV2 (const boost::shared_ptr<pcl::PointCloud<PointT> > &cloud,
         cloud_contour->is_dense = false;
         *cloud_innercontour = *cloud_ground;
         cloud_innercontour->is_dense = false;
+        float r = threshold_radius; //m
 
         for (size_t j = 0; j < cloud_contour->points.size (); ++j)
         {
                 theta = j * delta_theta; //deg
-                float r = threshold_radius; //m
 
                 cloud_contour->points[j].x = r * cos(theta / DEG_PER_RAD);
                 cloud_contour->points[j].y = r * sin(theta / DEG_PER_RAD);
@@ -159,17 +159,18 @@ getContourV2 (const boost::shared_ptr<pcl::PointCloud<PointT> > &cloud,
         }
         for (size_t i = 0; i < cloud->points.size (); ++i)
         {
-                double r_point = hypot( cloud->points[i].x, cloud->points[i].y); //平方根
+                // double r_point = hypot( cloud->points[i].x, cloud->points[i].y); //平方根
+                double r_point = (cloud->points[i].x)*(cloud->points[i].x)+(cloud->points[i].y)*(cloud->points[i].y); //平方根
 
                 double theta_2 = atan2(cloud->points[i].y, cloud->points[i].x) * DEG_PER_RAD; //deg
 
                 if (theta_2 < 0)
                 {
-
                         theta_2 += 360;
                 }
                 int indx_theta = round ( theta_2/delta_theta);
-                double r_contour = hypot( cloud_contour->points[indx_theta].x, cloud_contour->points[indx_theta].y);
+                // double r_contour = hypot( cloud_contour->points[indx_theta].x, cloud_contour->points[indx_theta].y);
+                double r_contour = (cloud_contour->points[indx_theta].x)*(cloud_contour->points[indx_theta].x)+ (cloud_contour->points[indx_theta].y)*(cloud_contour->points[indx_theta].y);
 
 
                 if ( r_point < r_contour )
@@ -184,14 +185,18 @@ getContourV2 (const boost::shared_ptr<pcl::PointCloud<PointT> > &cloud,
         {
                 for (size_t i = 0; i < cloud_innercontour->points.size (); ++i)
                 {
-                        double r_point = hypot( cloud_ground->points[i].x, cloud_ground->points[i].y); //平方根
+                        // double r_point = hypot( cloud_ground->points[i].x, cloud_ground->points[i].y); //平方根
+                        double r_point = (cloud_ground->points[i].x)*(cloud_ground->points[i].x)+(cloud_ground->points[i].y)*(cloud_ground->points[i].y); //平方根
+
                         double theta_2 = atan2(cloud_ground->points[i].y, cloud_ground->points[i].x) * DEG_PER_RAD;
                         if (theta_2 < 0)
                         {
                                 theta_2 += 360;
                         }
                         int indx_theta = round ( theta_2/delta_theta);
-                        double r_contour = hypot( cloud_contour->points[indx_theta].x, cloud_contour->points[indx_theta].y);
+                        // double r_contour = hypot( cloud_contour->points[indx_theta].x, cloud_contour->points[indx_theta].y);
+                        double r_contour = (cloud_contour->points[i].x)*(cloud_contour->points[i].x)+(cloud_contour->points[i].y)*(cloud_contour->points[i].y); //平方根
+
                         if ( r_point < r_contour- 1 )
                         {
                                 std::vector<int> indices;
@@ -212,10 +217,13 @@ getContourV2 (const boost::shared_ptr<pcl::PointCloud<PointT> > &cloud,
         {
                 std::vector<float> tmp_contour;
                 double r_contour = hypot( cloud_contour->points[j].x, cloud_contour->points[j].y);
-                if (threshold_radius < r_contour +0.1 || r_contour <0.7 )
+
+                // double r_contour = (cloud_contour->points[j].x)*(cloud_contour->points[j].x)+(cloud_contour->points[j].y)*(cloud_contour->points[j].y);
+
+                if (r < r_contour + 0.1 || r_contour < 0.7 )
                 {
                         cloud_contour->points[j].x = cloud_contour->points[j].y = cloud_contour->points[j].z = std::numeric_limits<float>::quiet_NaN();
-                        contour_distance.push_back(threshold_radius);
+                        contour_distance.push_back(r);
                 }
                 else
                 {

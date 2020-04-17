@@ -56,10 +56,9 @@ include(CompilerFlags)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-
-)
+#generate_messages(
+#  DEPENDENCIES
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

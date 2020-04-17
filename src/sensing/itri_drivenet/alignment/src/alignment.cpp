@@ -29,11 +29,11 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   pixel_position.u = pixel_position_vect[0];
   pixel_position.v = pixel_position_vect[1];
 
-  if (pixel_position.u < 0 || pixel_position.u > image_w_)
+  if (pixel_position.u < 0 || pixel_position.u > image_w_ - 1)
   {
     pixel_position.u = -1;
   }
-  if (pixel_position.v < 0 || pixel_position.v > image_h_)
+  if (pixel_position.v < 0 || pixel_position.v > image_h_ - 1)
   {
     pixel_position.v = -1;
   }

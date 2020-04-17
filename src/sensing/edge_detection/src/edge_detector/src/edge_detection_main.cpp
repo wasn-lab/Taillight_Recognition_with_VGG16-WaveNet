@@ -38,6 +38,7 @@ static EdgeDetection FLED;
 
 static double theta_sample;
 static bool lidar_all_flag;
+static bool top_only_flag;
 
 static float max_radius;
 
@@ -71,6 +72,7 @@ static nav_msgs::OccupancyGrid out_occupancy_dense_grid;
 
 static ros::Publisher ring_edge_pointcloud_publisher;
 static sensor_msgs::PointCloud2 ring_edge_pointcloud_publisher_msg;
+
 
 static bool is_FT_grid_new, is_FR_grid_new, is_FL_grid_new;
 static bool is_init_merged_map, is_init_FT_map, is_init_FR_map;
@@ -117,7 +119,10 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
         pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
-        pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_ftop_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_fright_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_fleft_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+
         pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::PointCloud<pcl::PointXYZI>::Ptr non_ground_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
 
@@ -219,6 +224,24 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
                                 occupancy_grid_publisher.publish(occupancy_grid_msg);
 
                         }
+
+                        if (ring_edge_pointcloud_publisher.getNumSubscribers() != 0) {
+                                ring_edge_ftop_cloudPtr = TOPED.getRingEdgePointCloud ();
+                                if(!top_only_flag)
+                                {
+                                        ring_edge_fright_cloudPtr = FRED.getRingEdgePointCloud ();
+                                        ring_edge_fleft_cloudPtr = FLED.getRingEdgePointCloud ();
+                                        *ring_edge_ftop_cloudPtr += *ring_edge_fright_cloudPtr;
+                                        *ring_edge_ftop_cloudPtr += *ring_edge_fleft_cloudPtr;
+                                }
+                                pcl::toROSMsg(*ring_edge_ftop_cloudPtr,ring_edge_pointcloud_publisher_msg);
+                                ring_edge_pointcloud_publisher_msg.header.stamp = msg->header.stamp;
+                                ring_edge_pointcloud_publisher_msg.header.seq = msg->header.seq;
+
+                                ring_edge_pointcloud_publisher_msg.header.frame_id = "/base_link";
+                                ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
+                        }
+
                         scopedLock.unlock();
 
                 }
@@ -270,16 +293,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
                 non_ground_pointCloudPublisher.publish(non_ground_pointCloud_msg);
         }
 
-        if (ring_edge_pointcloud_publisher.getNumSubscribers() != 0) {
-                ring_edge_cloudPtr = TOPED.getRingEdgePointCloud ();
 
-                pcl::toROSMsg(*ring_edge_cloudPtr,ring_edge_pointcloud_publisher_msg);
-                ring_edge_pointcloud_publisher_msg.header.stamp = msg->header.stamp;
-                ring_edge_pointcloud_publisher_msg.header.seq = msg->header.seq;
-
-                ring_edge_pointcloud_publisher_msg.header.frame_id = "/base_link";
-                ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
-        }
         check_ms = std::chrono::high_resolution_clock::now();
         fp_ms = check_ms - start;
         std::cout<< "-----------------------------------------------------------------"<< std::endl;
@@ -319,7 +333,9 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         *filtered_scan_ptr += *LidAll_cloudPtr;
         *filtered_cloudPtr = hollow_removal (filtered_scan_ptr,-13, 0.7, -2.0, 2.0, -3, 0.5,
-                                             -15, 55, -15, 15, -5, 0.2);
+                                             -15, 55, -15, 15, -5, -0.8 );
+
+
         FRED.setInputCloud (filtered_cloudPtr);
         FRED.startThread ();
         FRED.waitThread();
@@ -330,6 +346,8 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
         is_FR_grid_new = true;
 
         scopedLock.unlock();
+
+
 
 #if PRINT_TIME
         check_ms = std::chrono::high_resolution_clock::now();
@@ -368,7 +386,7 @@ void callback_LidarFrontLeft(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         *filtered_scan_ptr += *LidAll_cloudPtr;
         *filtered_cloudPtr = hollow_removal (filtered_scan_ptr,-13, 0.7, -2.0, 2.0, -3, 0.5,
-                                             -15, 55, -15, 15, -5, 0.2);
+                                             -15, 55, -15, 15, -5, -0.8);
 
         FLED.setInputCloud (filtered_cloudPtr);
         FLED.startThread ();
@@ -431,7 +449,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 #endif
 
         *filtered_cloudPtr = hollow_removal (filtered_scan_ptr,-13, 0.7, -2.0, 2.0, -3, 0.5,
-                                             -15, 55, -15, 15, -5, 0.2);
+                                             -15, 55, -15, 15, -5, -0.8);
 
         TOPED.setInputCloud (filtered_cloudPtr);
         TOPED.startThread ();
@@ -588,6 +606,8 @@ int main(int argc, char **argv)
         private_n.getParam("grid_position_y", grid_position_y);
         private_n.getParam("maximum_lidar_height_thres", maximum_lidar_height_thres);
         private_n.getParam("LidarAll_flag", lidar_all_flag);
+        private_n.getParam("top_only_flag", top_only_flag);
+
         std::cout<< "LidarAll_flag : "<< lidar_all_flag <<std::endl;
 
         TOPED.setLayerName ("front_top_points_layer");

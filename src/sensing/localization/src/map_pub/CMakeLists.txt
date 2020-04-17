@@ -17,10 +17,10 @@ find_package(PCL 1.8.1 REQUIRED)
 
 find_package(Eigen3)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#)
 
 catkin_package(
   INCLUDE_DIRS include

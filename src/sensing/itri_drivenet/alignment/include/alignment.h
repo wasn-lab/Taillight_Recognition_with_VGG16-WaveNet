@@ -37,7 +37,6 @@ public:
   ~Alignment() = default;
   void projectMatrixInit(camera::id cam_id);
   DriveNet::PixelPosition projectPointToPixel(pcl::PointXYZI point);
-  cv::Scalar getDistColor(float distance);
 };
 
 #endif

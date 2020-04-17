@@ -61,6 +61,8 @@ private:
 
   PathPredict pp_;
 
+  nav_msgs::OccupancyGrid wayarea_;
+
   ros::NodeHandle nh_;
   ros::NodeHandle nh2_;
 
@@ -76,6 +78,9 @@ private:
 
   ros::Subscriber fusion_sub_;
   void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
+
+  ros::Subscriber wayarea_sub_;
+  void callback_wayarea(const nav_msgs::OccupancyGrid& input);
 
 #if TTC_TEST
   unsigned int seq_ = 0;

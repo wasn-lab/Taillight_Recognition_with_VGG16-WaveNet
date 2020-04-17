@@ -11,7 +11,7 @@ class TegraAGrabber
 public:
   TegraAGrabber();
   ~TegraAGrabber();
-  void initializeModules(const bool do_resize);
+  void initializeModules(const bool do_resize, const bool do_crop);
   bool runPerception();
 
 protected:
@@ -39,6 +39,7 @@ private:
   NPPResizer resizer_;
   int num_src_bytes_;
   bool resize_;
+  bool crop_;
 
   // ROS publisher
   ros::NodeHandle n;
