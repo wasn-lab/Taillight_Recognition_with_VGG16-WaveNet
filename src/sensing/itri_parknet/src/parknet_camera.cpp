@@ -12,9 +12,9 @@ const std::string camera_names[num_cams_e] = {
 #if CAR_MODEL_IS_HINO
 const ::camera::id camera_id_mapping[num_cams_e] = { ::camera::id::left_120, ::camera::id::front_120,
                                                      ::camera::id::right_120 };
-#elif CAR_MODEL_IS_B1 || CAR_MODEL_IS_OMNIBUS
-const ::camera::id camera_id_mapping[num_cams_e] = { ::camera::id::top_right_front_120, ::camera::id::top_front_120,
-                                                     ::camera::id::top_right_rear_120 };
+#elif CAR_MODEL_IS_OMNIBUS
+const ::camera::id camera_id_mapping[num_cams_e] = { ::camera::id::front_bottom_60, ::camera::id::front_top_far_30,
+                                                     ::camera::id::front_top_close_120 };
 #else
 #error "unreachable"
 #endif
