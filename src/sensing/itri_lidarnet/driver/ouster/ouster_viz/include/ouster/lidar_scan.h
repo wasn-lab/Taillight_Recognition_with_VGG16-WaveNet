@@ -75,7 +75,7 @@ struct LidarScan {
         int idx_;
         Data* data_;
 
-        friend class LidarScan;
+        friend struct LidarScan;
     };
 };
 }
