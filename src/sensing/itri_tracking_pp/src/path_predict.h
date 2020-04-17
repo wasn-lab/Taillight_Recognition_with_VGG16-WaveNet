@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <nav_msgs/OccupancyGrid.h>
 
 #include "tpp.h"
 #include "ar1.h"
@@ -36,7 +37,7 @@ public:
                          const float ego_z_abs, const float ego_heading);
 
   void main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-            const unsigned int show_pp);
+            const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea);
 
   void set_input_shift_m(const long double shift_m)
   {
