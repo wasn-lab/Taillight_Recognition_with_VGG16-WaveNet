@@ -31,6 +31,8 @@ void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
   start = ros::Time::now();
 #endif
   nav_path.clear();
+  std::vector<geometry_msgs::PoseStamped>().swap(nav_path);
+  nav_path.reserve(200);
   for (auto const& obj : msg->poses)
   {
     geometry_msgs::PoseStamped point = obj;
@@ -81,6 +83,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     std::vector<msgs::DetectedObject> alertObjs;
     pedObjs.reserve(msg->objects.end() - msg->objects.begin());
     objs_and_keypoints.clear();
+    std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>>().swap(objs_and_keypoints);
+    objs_and_keypoints.reserve(200);
     for (auto const& obj : msg->objects)
     {
       if (obj.classId != 1 || too_far(obj.bPoint))
@@ -307,8 +311,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           m.getRPY(roll, pitch, yaw);
 
           // store points for distance calculate
-          std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
-          nav_path_transformed.reserve(200);
+          
+          
           // find the nearest nav_path point from pedestian's position
           geometry_msgs::PoseStamped nearest_point;
           double min_distance_from_path = 100000;
@@ -369,7 +373,11 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             previous_path_point = path_point;
           }
           // to free memory from vector
+          std::cout<<"cap b: "<<nav_path_transformed.capacity();
+          nav_path_transformed.clear();
           std::vector<geometry_msgs::PoseStamped>().swap(nav_path_transformed);
+          nav_path_transformed.reserve(200);
+          std::cout<<"cap a: "<<nav_path_transformed.capacity();
 
           double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
           double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
@@ -701,6 +709,8 @@ void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
 
   box_pub.publish(msg_pub2);
   objs_and_keypoints.clear();
+  std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>>().swap(objs_and_keypoints);
+  objs_and_keypoints.reserve(200);
   matrix = 0;
 }
 
@@ -1308,6 +1318,9 @@ int main(int argc, char** argv)
   stop = ros::Time::now();
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
   pe.count = 0;
+
+  pe.nav_path_transformed.reserve(200);
+  pe.nav_path.reserve(200);
 
   std::stringstream ss;
   ss << "../../../ped_output.csv";

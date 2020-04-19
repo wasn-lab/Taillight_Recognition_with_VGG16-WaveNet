@@ -98,6 +98,7 @@ public:
   // All buffer components
   msgs::VehInfo veh_info;
   std::vector<geometry_msgs::PoseStamped> nav_path;
+  std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
   std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
   Buffer buffer;
