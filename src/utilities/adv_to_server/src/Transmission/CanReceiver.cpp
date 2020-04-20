@@ -84,15 +84,21 @@ int CanReceiver::processFrame(double* data, const struct can_frame& frame)
       short f_brake_pressure;
       short r_brake_pressure;
       short steering_wheel_angle;
+      short throttle_percentage;
+      short break_percentage;
       double mutiplier = pow(10.0, -1.0);
       speed = frame.data[0];
       f_brake_pressure = frame.data[1];
       r_brake_pressure = frame.data[2];
       steering_wheel_angle = frame.data[3] | frame.data[4] << 8;
+      throttle_percentage = frame.data[5];
+      break_percentage = frame.data[6];
       data[0] = speed;
       data[1] = (double)f_brake_pressure * mutiplier;
       data[2] = (double)r_brake_pressure * mutiplier;
       data[3] = steering_wheel_angle * mutiplier;
+      data[4] = throttle_percentage;
+      data[5] = break_percentage;
     }
     break;
     default:
