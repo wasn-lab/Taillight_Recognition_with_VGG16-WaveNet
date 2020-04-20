@@ -5,21 +5,19 @@
 #include <chrono>
 
 EdgeDetection::EdgeDetection () :
-        seq_(0),
         theta_sample_(360),
         max_radius_(50),
-
-        grid_min_value_(0.0),
-        grid_max_value_(1.0),
+        seq_(0),
         grid_length_x_(50),
         grid_length_y_(30),
         grid_resolution_(0.2),
         grid_position_x_(10),
         grid_position_y_(0),
+        grid_min_value_(0.0),
+        grid_max_value_(1.0),
         maximum_lidar_height_thres_(5),
         minimum_lidar_height_thres_(-5),
         layer_name_("points_layer")
-
 {
         release_cloud_ = PointCloud<PointXYZI>::Ptr (new PointCloud<PointXYZI>);
         ring_edge_pointCloud_ = PointCloud<PointXYZI>::Ptr (new PointCloud<PointXYZI>);;
