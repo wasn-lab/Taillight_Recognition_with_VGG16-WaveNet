@@ -98,10 +98,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 
     // keep original image
     cv::Mat matrix;
-    cv::Mat matrix_crop; // high resolution
+    cv::Mat matrix_crop;  // high resolution
     // for painting
     cv::Mat matrix2;
-    cv::Mat matrix2_crop; // high resolution
+    cv::Mat matrix2_crop;  // high resolution
     ros::Time frame_timestamp = ros::Time(0);
 
     std::vector<msgs::PedObject> pedObjs;
@@ -224,18 +224,20 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #endif
         // crop image for openpose
         matrix.copyTo(cropedImage);
-        cropedImage = cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+        cropedImage =
+            cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
       }
       else
       {
         obj_pub.camInfo.v -= 692;
 #if USE_GLOG
-        std::cout << matrix_crop.cols << " " << matrix_crop.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
-                  << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
-                  << std::endl;
+        std::cout << matrix_crop.cols << " " << matrix_crop.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v
+                  << " " << obj_pub.camInfo.u + obj_pub.camInfo.width << " "
+                  << obj_pub.camInfo.v + obj_pub.camInfo.height << std::endl;
 #endif
         matrix_crop.copyTo(cropedImage);
-        cropedImage = cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+        cropedImage =
+            cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
       }
 
       // set size to resize cropped image for openpose
@@ -372,8 +374,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           m.getRPY(roll, pitch, yaw);
 
           // store points for distance calculate
-          
-          
+
           // find the nearest nav_path point from pedestian's position
           geometry_msgs::PoseStamped nearest_point;
           double min_distance_from_path = 100000;
@@ -408,7 +409,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           bool passed_car_head = false;
           for (const geometry_msgs::PoseStamped& path_point : nav_path_transformed)
           {
-            // check 
+            // check
             if (path_point.pose.position.x > 0)
             {
               passed_car_head = true;
@@ -423,19 +424,21 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
               distance_from_car += sqrt(x_dis + y_dis);
             }
             if (path_point.pose.position.x == nearest_point.pose.position.x &&
-            path_point.pose.position.y == nearest_point.pose.position.y)
+                path_point.pose.position.y == nearest_point.pose.position.y)
             {
 #if DUMP_LOG
               // print distance
-              file <<ros::Time::now()<<","<<obj_pub.track.id<<","<< distance_from_car<<","<< veh_info.ego_speed<<"\n";  
+              file << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
+                   << veh_info.ego_speed << "\n";
 #endif
-              std::cout<<"same, distance: "<<distance_from_car<<" id: "<<obj_pub.track.id<<" time: "<<ros::Time::now()<<" speed: "<< veh_info.ego_speed<<std::endl;
+              std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
+                        << " time: " << ros::Time::now() << " speed: " << veh_info.ego_speed << std::endl;
               break;
             }
             previous_path_point = path_point;
           }
           // to free memory from vector
-          nav_path_transformed.erase(nav_path_transformed.begin(),nav_path_transformed.end());
+          nav_path_transformed.erase(nav_path_transformed.begin(), nav_path_transformed.end());
 
           double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
           double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
@@ -475,7 +478,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         }
         double roll, pitch, yaw;
         tf::Quaternion q(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
-                          transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
+                         transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
         tf::Matrix3x3 m(q);
         m.getRPY(roll, pitch, yaw);
 
@@ -518,7 +521,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           bool passed_car_head = false;
           for (const geometry_msgs::PoseStamped& path_point : nav_path_transformed)
           {
-            // check 
+            // check
             if (path_point.pose.position.x > 0)
             {
               passed_car_head = true;
@@ -533,19 +536,21 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
               distance_from_car += sqrt(x_dis + y_dis);
             }
             if (path_point.pose.position.x == nearest_point.pose.position.x &&
-            path_point.pose.position.y == nearest_point.pose.position.y)
+                path_point.pose.position.y == nearest_point.pose.position.y)
             {
 #if DUMP_LOG
               // print distance
-              file <<ros::Time::now()<<","<<obj_pub.track.id<<","<< distance_from_car<<","<< veh_info.ego_speed<<"\n";  
+              file << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
+                   << veh_info.ego_speed << "\n";
 #endif
-              std::cout<<"same, distance: "<<distance_from_car<<" id: "<<obj_pub.track.id<<" time: "<<ros::Time::now()<<" speed: "<< veh_info.ego_speed<<std::endl;
+              std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
+                        << " time: " << ros::Time::now() << " speed: " << veh_info.ego_speed << std::endl;
               break;
             }
             previous_path_point = path_point;
           }
           // to free memory from vector
-          nav_path_transformed.erase(nav_path_transformed.begin(),nav_path_transformed.end());
+          nav_path_transformed.erase(nav_path_transformed.begin(), nav_path_transformed.end());
 
           double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
           double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
@@ -749,7 +754,8 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //         probability = "C";
 //       }
 
-//       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(0, 50, 255), 2,
+//       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(0, 50, 255),
+//       2,
 //                   4, 0);
 //     }
 //     else
@@ -770,7 +776,8 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //         probability = "NC";
 //       }
 
-//       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(100, 220, 0),
+//       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(100, 220,
+//       0),
 //                   2, 4, 0);
 //     }
 
@@ -784,7 +791,8 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //     }
 
 //     std::string id_print = "[" + std::to_string(obj.track.id % 1000) + "]";
-//     // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+//     // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0),
+//     2,
 //     // 4,0);
 
 //     // box.x -= 0;
@@ -793,14 +801,16 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //     {
 //       id_print += "<-";
 //       // facing left hand side
-//       // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+//       // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+//       4,
 //       // 0);
 //     }
 //     else if (obj.facing_direction == 1)
 //     {
 //       id_print += "->";
 //       // facing right hand side
-//       // cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+//       // cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+//       4,
 //       // 0);
 //     }
 //     else if (obj.facing_direction == 2)
@@ -817,7 +827,8 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //       // cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
 //       // 0);
 //     }
-//     cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1, 2,
+//     cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1,
+//     2,
 //                 0);
 
 //     cv::Rect box2 = box;
@@ -828,13 +839,15 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //     if (obj.body_direction / 10 == 0)
 //     {
 //       // facing left hand side
-//       cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+//       cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+//       4,
 //                   0);
 //     }
 //     else if (obj.body_direction / 10 == 1)
 //     {
 //       // facing right hand side
-//       cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+//       cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+//       4,
 //                   0);
 //     }
 //     else if (obj.body_direction / 10 == 2)
@@ -866,12 +879,14 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //     else if (obj.body_direction % 10 == 2)
 //     {
 //       // facing car side
-//       cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+//       cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+//       0);
 //     }
 //     else
 //     {
 //       // facing car opposite side
-//       cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4, 0);
+//       cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+//       0);
 //     }
 //   }
 //   // do resize only when computer cannot support
@@ -881,7 +896,7 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 //   sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
 
 //   box_pub.publish(msg_pub2);
-  
+
 //   matrix = 0;
 // }
 
@@ -1277,7 +1292,7 @@ void PedestrianEvent::pedestrian_event()
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic                      
+                               this);  // /cam/F_center is sub topic
   }
   else if (input_source == 1)
   {
@@ -1290,7 +1305,7 @@ void PedestrianEvent::pedestrian_event()
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic    
+                               this);  // /cam/F_center is sub topic
   }
   else if (input_source == 2)
   {
@@ -1303,7 +1318,7 @@ void PedestrianEvent::pedestrian_event()
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic    
+                               this);  // /cam/F_center is sub topic
   }
   else  // input_source == 3
   {
@@ -1316,7 +1331,7 @@ void PedestrianEvent::pedestrian_event()
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic    
+                               this);  // /cam/F_center is sub topic
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
@@ -1475,8 +1490,8 @@ int main(int argc, char** argv)
   ped::PedestrianEvent pe;
   tf2_ros::TransformListener tfListener(pe.tfBuffer);
 
-  pe.rf_pose =
-      cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
+  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
+                                                                                   "yml"));
 
   ros::NodeHandle nh;
   pe.chatter_pub =
