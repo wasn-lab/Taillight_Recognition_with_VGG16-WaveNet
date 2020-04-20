@@ -1,0 +1,3 @@
+[submodule "src/dspace/matlab_carb"]
+	path = src/dspace/matlab_carb
+	url = https://gitlab.itriadv.co/self_driving_bus/matlab_carb.git

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf2_geometry_msgs
   std_msgs
+  nav_msgs
   msgs
   pcl_ros
   grid_map_ros
