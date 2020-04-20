@@ -76,6 +76,7 @@ public:
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
                          ros::Time time);
@@ -122,6 +123,7 @@ public:
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_1;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_4;
   bool g_enable = false;
   bool g_trigger = false;
   int count;

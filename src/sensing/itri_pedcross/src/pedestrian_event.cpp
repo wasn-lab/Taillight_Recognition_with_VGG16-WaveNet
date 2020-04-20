@@ -118,7 +118,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       }
 
       bool in_crop_range = false;
-      if (obj.camInfo.v >= 692 && obj.camInfo.v + obj.camInfo.height < 1006)
+      if (obj.camInfo.v >= 692 && obj.camInfo.v + obj.camInfo.height < 1006 && !crop_image_cache.empty())
       {
         in_crop_range = true;
       }
@@ -238,6 +238,24 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         matrix_crop.copyTo(cropedImage);
         cropedImage =
             cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+
+        obj_pub.camInfo.v += 692;
+        // resize from 1920*1208 to 608*384
+        obj_pub.camInfo.u *= scaling_ratio_width;
+        obj_pub.camInfo.v *= scaling_ratio_height;
+        obj_pub.camInfo.width *= scaling_ratio_width;
+        obj_pub.camInfo.height *= scaling_ratio_height;
+        // obj_pub.camInfo.v -= 5;
+        // obj_pub.camInfo.height += 10;
+        // Avoid index out of bounds
+        if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+        {
+          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+        }
+        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
+        {
+          obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+        }
       }
 
       // set size to resize cropped image for openpose
@@ -573,6 +591,13 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #endif
       if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
       {
+        for (auto point : keypoints)
+        {
+          msgs::Keypoint kp;
+          kp.x = point.x;
+          kp.y = point.y;
+          obj_pub.keypoints.push_back(kp);
+        }
         pedObjs.push_back(obj_pub);
       }
       // buffer for draw function
@@ -589,8 +614,17 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       alert_objs.objects.assign(alertObjs.begin(), alertObjs.end());
       alert_pub.publish(alert_objs);
 
-      msgs::PedObjectArray msg_pub;
+      // sensor_msgs::ImageConstPtr img_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
+      // cv_bridge::CvImage img_bridge;
+      // sensor_msgs::Image img_msg; // >> message to be sent
 
+      // std_msgs::Header header = msg->header; // empty header
+      // header.stamp = ros::Time::now(); // time
+      // img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, matrix);
+      // img_bridge.toImageMsg(img_msg); // from cv_bridge to sensor_msgs::Image
+
+      msgs::PedObjectArray msg_pub;
+      // msg_pub.raw_image = img_msg;
       msg_pub.header = msg->header;
       msg_pub.header.frame_id = msg->header.frame_id;
       msg_pub.header.stamp = msg->header.stamp;
@@ -671,234 +705,284 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
   return obj.crossProbability * 0.7;
 }
 
-// void PedestrianEvent::draw_pedestrians(cv::Mat matrix)
-// {
-//   for (unsigned int i = 0; i < objs_and_keypoints.size(); i++)
-//   {
-//     auto const& obj = objs_and_keypoints[i].first;
-//     std::vector<cv::Point2f> keypoints = objs_and_keypoints[i].second;
+void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg)
+{
+  // cv_bridge::CvImageConstPtr cv_ptr_image;
+  // // cv::Mat image_msg = msg->raw_image;
 
-//     // draw keypoints on raw image
-//     int body_part[17] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
-//     unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
-//     for (unsigned int i = 0; i < body_part_size; i++)
-//     {
-//       keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.height;
-//       keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj.camInfo.height;
-//       if (keypoint_is_detected(keypoints.at(body_part[i])))
-//       {
-//         cv::Point p = keypoints.at(body_part[i]);
-//         p.x = obj.camInfo.u + p.x;
-//         p.y = obj.camInfo.v + p.y;
-//         cv::circle(matrix, p, 2, cv::Scalar(0, 255, 0), -1);
-//       }
-//     }
-//     // draw hands
-//     int body_part1[7] = { 4, 3, 2, 1, 5, 6, 7 };
-//     unsigned int body_part1_size = sizeof(body_part1) / sizeof(*body_part1);
-//     for (unsigned int i = 0; i < body_part1_size - 1; i++)
-//     {
-//       if (keypoint_is_detected(keypoints.at(body_part1[i])) && keypoint_is_detected(keypoints.at(body_part1[i + 1])))
-//       {
-//         cv::Point p = keypoints.at(body_part1[i]);
-//         p.x = obj.camInfo.u + p.x;
-//         p.y = obj.camInfo.v + p.y;
-//         cv::Point p2 = keypoints.at(body_part1[i + 1]);
-//         p2.x = obj.camInfo.u + p2.x;
-//         p2.y = obj.camInfo.v + p2.y;
-//         cv::line(matrix, p, p2, cv::Scalar(0, 0, 255), 1);
-//       }
-//     }
-//     // draw legs
-//     int body_part2[7] = { 11, 10, 9, 1, 12, 13, 14 };
-//     unsigned int body_part2_size = sizeof(body_part2) / sizeof(*body_part2);
-//     for (unsigned int i = 0; i < body_part2_size - 1; i++)
-//     {
-//       if (keypoint_is_detected(keypoints.at(body_part2[i])) && keypoint_is_detected(keypoints.at(body_part2[i + 1])))
-//       {
-//         cv::Point p = keypoints.at(body_part2[i]);
-//         p.x = obj.camInfo.u + p.x;
-//         p.y = obj.camInfo.v + p.y;
-//         cv::Point p2 = keypoints.at(body_part2[i + 1]);
-//         p2.x = obj.camInfo.u + p2.x;
-//         p2.y = obj.camInfo.v + p2.y;
-//         cv::line(matrix, p, p2, cv::Scalar(255, 0, 255), 1);
-//       }
-//     }
+  //   double min = 0;
+  //   double max = 1000;
+  // cv::Mat img_scaled_8u;
+  // cv::Mat(cv_ptr_image->image-min).convertTo(img_scaled_8u, CV_8UC1, 255. / (max - min));
+  // cv::Mat matrix = cv_ptr_image->image;
+  // cv::imshow("OPENCV_WINDOW", matrix);
+  // cv::waitKey(3);
+  // cv::cvtColor(img_scaled_8u, dImg, CV_GRAY2RGB);
+  // cv_ptr_image = cv_bridge::toCvShare(image_msg, "bgr8");
+  // cv_ptr_image->image.copyTo(matrix);
+  cv::Mat matrix;
+  cv::Mat matrix2;
 
-//     cv::Rect box;
-//     box.x = obj.camInfo.u;
-//     box.y = obj.camInfo.v;
-//     box.width = obj.camInfo.width;
-//     box.height = obj.camInfo.height;
-//     cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 1);
-//     if (box.y >= 10)
-//     {
-//       box.y -= 10;
-//     }
-//     else
-//     {
-//       box.y = 0;
-//     }
+  ros::Time msgs_timestamp = ros::Time(0);
+  if (msg->objects[0].header.stamp != ros::Time(0))
+  {
+    msgs_timestamp = msg->objects[0].header.stamp;
+  }
+  else
+  {
+    msgs_timestamp = msg->header.stamp;
+  }
 
-//     std::string probability;
-//     int p = 100 * obj.crossProbability;
-//     if (p >= cross_threshold)
-//     {
-//       if (show_probability)
-//       {
-//         probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
-//       }
-//       else
-//       {
-//         probability = "C";
-//       }
+  for (int i = image_cache.size() - 1; i >= 0; i--)
+  {
+    if (image_cache[i].first <= msgs_timestamp || i == 0)
+    {
+#if USE_GLOG
+      std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
+#endif
 
-//       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(0, 50, 255),
-//       2,
-//                   4, 0);
-//     }
-//     else
-//     {
-//       if (show_probability)
-//       {
-//         if (p >= 10)
-//         {
-//           probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
-//         }
-//         else
-//         {
-//           probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
-//         }
-//       }
-//       else
-//       {
-//         probability = "NC";
-//       }
+      matrix2 = image_cache[i].second;
+      // for drawing bbox and keypoints
+      matrix2.copyTo(matrix);
+      // frame_timestamp = msgs_timestamp;
+      break;
+    }
+  }
 
-//       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.9 /*font size*/, cv::Scalar(100, 220,
-//       0),
-//                   2, 4, 0);
-//     }
+  for (unsigned int i = 0; i < msg->objects.size(); i++)
+  {
+    auto const& obj = msg->objects[i];
+    std::vector<cv::Point2f> keypoints;
+    for (auto const& point : msg->objects[i].keypoints)
+    {
+      cv::Point2f kp;
+      kp.x = point.x;
+      kp.y = point.y;
+      keypoints.push_back(kp);
+    }
 
-//     if (box.y >= 22)
-//     {
-//       box.y -= 22;
-//     }
-//     else
-//     {
-//       box.y = 0;
-//     }
+    // draw keypoints on raw image
+    int body_part[17] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+    unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
+    for (unsigned int i = 0; i < body_part_size; i++)
+    {
+      keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.height;
+      keypoints.at(body_part[i]).y = keypoints.at(body_part[i]).y * obj.camInfo.height;
+      if (keypoint_is_detected(keypoints.at(body_part[i])))
+      {
+        cv::Point p = keypoints.at(body_part[i]);
+        p.x = obj.camInfo.u + p.x;
+        p.y = obj.camInfo.v + p.y;
+        cv::circle(matrix, p, 2, cv::Scalar(0, 255, 0), -1);
+      }
+    }
+    // draw hands
+    int body_part1[7] = { 4, 3, 2, 1, 5, 6, 7 };
+    unsigned int body_part1_size = sizeof(body_part1) / sizeof(*body_part1);
+    for (unsigned int i = 0; i < body_part1_size - 1; i++)
+    {
+      if (keypoint_is_detected(keypoints.at(body_part1[i])) && keypoint_is_detected(keypoints.at(body_part1[i + 1])))
+      {
+        cv::Point p = keypoints.at(body_part1[i]);
+        p.x = obj.camInfo.u + p.x;
+        p.y = obj.camInfo.v + p.y;
+        cv::Point p2 = keypoints.at(body_part1[i + 1]);
+        p2.x = obj.camInfo.u + p2.x;
+        p2.y = obj.camInfo.v + p2.y;
+        cv::line(matrix, p, p2, cv::Scalar(0, 0, 255), 1);
+      }
+    }
+    // draw legs
+    int body_part2[7] = { 11, 10, 9, 1, 12, 13, 14 };
+    unsigned int body_part2_size = sizeof(body_part2) / sizeof(*body_part2);
+    for (unsigned int i = 0; i < body_part2_size - 1; i++)
+    {
+      if (keypoint_is_detected(keypoints.at(body_part2[i])) && keypoint_is_detected(keypoints.at(body_part2[i + 1])))
+      {
+        cv::Point p = keypoints.at(body_part2[i]);
+        p.x = obj.camInfo.u + p.x;
+        p.y = obj.camInfo.v + p.y;
+        cv::Point p2 = keypoints.at(body_part2[i + 1]);
+        p2.x = obj.camInfo.u + p2.x;
+        p2.y = obj.camInfo.v + p2.y;
+        cv::line(matrix, p, p2, cv::Scalar(255, 0, 255), 1);
+      }
+    }
 
-//     std::string id_print = "[" + std::to_string(obj.track.id % 1000) + "]";
-//     // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0),
-//     2,
-//     // 4,0);
+    cv::Rect box;
+    box.x = obj.camInfo.u;
+    box.y = obj.camInfo.v;
+    box.width = obj.camInfo.width;
+    box.height = obj.camInfo.height;
+    cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 1);
+    if (box.y >= 5)
+    {
+      box.y -= 5;
+    }
+    else
+    {
+      box.y = 0;
+    }
 
-//     // box.x -= 0;
-//     // draw face direction
-//     if (obj.facing_direction == 0)
-//     {
-//       id_print += "<-";
-//       // facing left hand side
-//       // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-//       4,
-//       // 0);
-//     }
-//     else if (obj.facing_direction == 1)
-//     {
-//       id_print += "->";
-//       // facing right hand side
-//       // cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-//       4,
-//       // 0);
-//     }
-//     else if (obj.facing_direction == 2)
-//     {
-//       id_print += "O";
-//       // facing car side
-//       // cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//       // 0);
-//     }
-//     else
-//     {
-//       id_print += "X";
-//       // facing car opposite side
-//       // cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//       // 0);
-//     }
-//     cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1,
-//     2,
-//                 0);
+    std::string probability;
+    int p = 100 * obj.crossProbability;
+    if (p >= cross_threshold)
+    {
+      if (show_probability)
+      {
+        probability = "C(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+      }
+      else
+      {
+        probability = "C";
+      }
 
-//     cv::Rect box2 = box;
-//     box.y += 30;
-//     box2.y += 30;
-//     box2.width = 0;
-//     // draw left leg direction
-//     if (obj.body_direction / 10 == 0)
-//     {
-//       // facing left hand side
-//       cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-//       4,
-//                   0);
-//     }
-//     else if (obj.body_direction / 10 == 1)
-//     {
-//       // facing right hand side
-//       cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-//       4,
-//                   0);
-//     }
-//     else if (obj.body_direction / 10 == 2)
-//     {
-//       // facing car side
-//       cv::putText(matrix, "O", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//                   0);
-//     }
-//     else
-//     {
-//       // facing car opposite side
-//       cv::putText(matrix, "X", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//                   0);
-//     }
+      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255), 2,
+                  4, 0);
+    }
+    else
+    {
+      if (show_probability)
+      {
+        if (p >= 10)
+        {
+          probability = "NC(" + std::to_string(p / 100) + "." + std::to_string(p % 100) + ")";
+        }
+        else
+        {
+          probability = "NC(" + std::to_string(p / 100) + ".0" + std::to_string(p % 100) + ")";
+        }
+      }
+      else
+      {
+        probability = "NC";
+      }
 
-//     // draw right leg direction
-//     if (obj.body_direction % 10 == 0)
-//     {
-//       // facing left hand side
-//       cv::putText(matrix, "<-", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//                   0);
-//     }
-//     else if (obj.body_direction % 10 == 1)
-//     {
-//       // facing right hand side
-//       cv::putText(matrix, "->", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//                   0);
-//     }
-//     else if (obj.body_direction % 10 == 2)
-//     {
-//       // facing car side
-//       cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//       0);
-//     }
-//     else
-//     {
-//       // facing car opposite side
-//       cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-//       0);
-//     }
-//   }
-//   // do resize only when computer cannot support
-//   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
+      cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+                  4, 0);
+    }
 
-//   // make cv::Mat to sensor_msgs::Image
-//   sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
+    if (box.y >= 25)
+    {
+      box.y -= 25;
+    }
+    else
+    {
+      box.y = 0;
+    }
 
-//   box_pub.publish(msg_pub2);
+    std::string id_print = "[" + std::to_string(obj.track.id % 1000) + "]";
+    // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0),
+    // 2,
+    // 4,0);
 
-//   matrix = 0;
-// }
+    // box.x -= 0;
+    // draw face direction
+    if (obj.facing_direction == 0)
+    {
+      id_print += "<-";
+      // facing left hand side
+      // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+      // 4,
+      // 0);
+    }
+    else if (obj.facing_direction == 1)
+    {
+      id_print += "->";
+      // facing right hand side
+      // cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+      // 4,
+      // 0);
+    }
+    else if (obj.facing_direction == 2)
+    {
+      id_print += "O";
+      // facing car side
+      // cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+      // 0);
+    }
+    else
+    {
+      id_print += "X";
+      // facing car opposite side
+      // cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
+      // 0);
+    }
+    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1, 2,
+                0);
+
+    //   cv::Rect box2 = box;
+    //   box.y += 30;
+    //   box2.y += 30;
+    //   box2.width = 0;
+    //   // draw left leg direction
+    //   if (obj.body_direction / 10 == 0)
+    //   {
+    //     // facing left hand side
+    //     cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4,
+    //                 0);
+    //   }
+    //   else if (obj.body_direction / 10 == 1)
+    //   {
+    //     // facing right hand side
+    //     cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4,
+    //                 0);
+    //   }
+    //   else if (obj.body_direction / 10 == 2)
+    //   {
+    //     // facing car side
+    //     cv::putText(matrix, "O", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4,
+    //                 0);
+    //   }
+    //   else
+    //   {
+    //     // facing car opposite side
+    //     cv::putText(matrix, "X", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4,
+    //                 0);
+    //   }
+
+    //   // draw right leg direction
+    //   if (obj.body_direction % 10 == 0)
+    //   {
+    //     // facing left hand side
+    //     cv::putText(matrix, "<-", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4,
+    //                 0);
+    //   }
+    //   else if (obj.body_direction % 10 == 1)
+    //   {
+    //     // facing right hand side
+    //     cv::putText(matrix, "->", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4,
+    //                 0);
+    //   }
+    //   else if (obj.body_direction % 10 == 2)
+    //   {
+    //     // facing car side
+    //     cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4, 0);
+    //   }
+    //   else
+    //   {
+    //     // facing car opposite side
+    //     cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
+    //     4, 0);
+    //   }
+  }
+  // do resize only when computer cannot support
+  // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
+
+  // make cv::Mat to sensor_msgs::Image
+  sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
+
+  box_pub.publish(msg_pub2);
+
+  matrix = 0;
+}
 
 /**
  * return
@@ -1265,22 +1349,26 @@ void PedestrianEvent::pedestrian_event()
   ros::CallbackQueue queue_1;
   ros::CallbackQueue queue_2;
   ros::CallbackQueue queue_3;
+  ros::CallbackQueue queue_4;
   // This node handle uses global callback queue
   ros::NodeHandle nh_sub_1;
   // and this one uses custom queue
   ros::NodeHandle nh_sub_2;
   ros::NodeHandle nh_sub_3;
   ros::NodeHandle nh_sub_4;
+  ros::NodeHandle nh_sub_5;
   // Set custom callback queue
   nh_sub_2.setCallbackQueue(&queue_1);
   nh_sub_3.setCallbackQueue(&queue_2);
   nh_sub_4.setCallbackQueue(&queue_3);
+  nh_sub_5.setCallbackQueue(&queue_4);
 
-  ros::Subscriber sub_1;
+  ros::Subscriber sub_1;  // nh_sub_1
   ros::Subscriber sub_2;
-  ros::Subscriber sub_3;
+  ros::Subscriber sub_3;  // nh_sub_1
   ros::Subscriber sub_4;
   ros::Subscriber sub_5;
+  ros::Subscriber sub_6;
   if (input_source == 0)
   {
     sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::chatter_callback,
@@ -1292,6 +1380,8 @@ void PedestrianEvent::pedestrian_event()
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic
+    sub_6 = nh_sub_5.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_pedestrians_callback,
                                this);  // /cam/F_center is sub topic
   }
   else if (input_source == 1)
@@ -1306,6 +1396,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
                                this);  // /cam/F_center is sub topic
+    sub_6 = nh_sub_5.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_pedestrians_callback,
+                               this);  // /cam/F_center is sub topic
   }
   else if (input_source == 2)
   {
@@ -1318,6 +1410,8 @@ void PedestrianEvent::pedestrian_event()
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic
+    sub_6 = nh_sub_5.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_pedestrians_callback,
                                this);  // /cam/F_center is sub topic
   }
   else  // input_source == 3
@@ -1332,12 +1426,15 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
                                this);  // /cam/F_center is sub topic
+    sub_6 = nh_sub_5.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_pedestrians_callback,
+                               this);  // /cam/F_center is sub topic
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner_1.reset(new ros::AsyncSpinner(0, &queue_1));
   g_spinner_2.reset(new ros::AsyncSpinner(0, &queue_2));
   g_spinner_3.reset(new ros::AsyncSpinner(0, &queue_3));
+  g_spinner_4.reset(new ros::AsyncSpinner(0, &queue_4));
 
   g_enable = true;
   g_trigger = true;
@@ -1352,10 +1449,13 @@ void PedestrianEvent::pedestrian_event()
       // Clear old callback from the queue
       queue_1.clear();
       queue_2.clear();
+      queue_3.clear();
+      queue_4.clear();
       // Start the spinner
       g_spinner_1->start();
       g_spinner_2->start();
       g_spinner_3->start();
+      g_spinner_4->start();
       ROS_INFO("Spinner enabled");
       // Reset trigger
       g_trigger = false;
@@ -1369,7 +1469,7 @@ void PedestrianEvent::pedestrian_event()
   g_spinner_1.reset();
   g_spinner_2.reset();
   g_spinner_3.reset();
-
+  g_spinner_4.reset();
   // Wait for ROS threads to terminate
   ros::waitForShutdown();
 }
