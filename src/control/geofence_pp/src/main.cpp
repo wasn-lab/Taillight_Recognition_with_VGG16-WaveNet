@@ -44,7 +44,7 @@
 // Specify running mode
 //#define VIRTUAL
 //#define RADARBOX
-#define PEDESTRIAN
+//#define PEDESTRIAN
 
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
