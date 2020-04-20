@@ -36,7 +36,7 @@ Lidar List:
 
 <!-- MPS ******************************************************************* -->
 <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
-
+ 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />

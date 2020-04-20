@@ -397,15 +397,15 @@ int main(int argc, char** argv)
   thread TheadDetection(UI, argc, argv);
   
   //ros
-  // ros::MultiThreadedSpinner s(3);
-  // ros::spin(s);
+  ros::MultiThreadedSpinner s(3);
+  ros::spin(s);
 
-  ros::Rate loop_rate(80);  // 80Hz
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
+  // ros::Rate loop_rate(80);  // 80Hz
+  // while (ros::ok())
+  // {
+  //   ros::spinOnce();
+  //   loop_rate.sleep();
+  // }
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;

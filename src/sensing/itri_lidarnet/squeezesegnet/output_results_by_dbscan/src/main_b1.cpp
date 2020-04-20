@@ -78,13 +78,13 @@ callback_SSN (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     double latency = (ros::Time::now () - rosTime).toSec();
     if (latency > 0 && latency < 3)
     {
-      cout << "[Latency]: real-time " << latency << endl << endl;
+      cout << "[Latency]: real-time " << latency << "s" << endl << endl;
     }
     else
     {
       latency = (ros::Time (latencyTime[0], latencyTime[1]) - rosTime).toSec();
       if (latency > 0 && latency < 3){
-        cout << "[Latency]: bag " << latency << endl << endl;
+        cout << "[Latency]: bag " << latency << "s"  << endl << endl;
       }
     }
 
