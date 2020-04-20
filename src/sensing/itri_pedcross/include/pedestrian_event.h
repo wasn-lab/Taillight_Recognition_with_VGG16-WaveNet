@@ -81,7 +81,7 @@ public:
   float predict_rf(cv::Mat input_data);
   float predict_rf_pose(cv::Mat input_data);
   bool too_far(const msgs::BoxPoint box_point);
-  void draw_pedestrians(cv::Mat matrix);
+  // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
   float adjust_probability(msgs::PedObject obj);
   int get_facing_direction(const std::vector<cv::Point2f>& keypoints);
@@ -100,7 +100,7 @@ public:
   std::vector<geometry_msgs::PoseStamped> nav_path;
   std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
-  std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
+  // std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
   Buffer buffer;
   int buffer_size = 60;
 
