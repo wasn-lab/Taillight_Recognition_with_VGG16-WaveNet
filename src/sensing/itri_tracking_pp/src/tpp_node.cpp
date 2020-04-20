@@ -39,6 +39,11 @@ static bool done_with_profiling()
 #endif
 }
 
+void TPPNode::callback_wayarea(const nav_msgs::OccupancyGrid& input)
+{
+  wayarea_ = input;
+}
+
 #if TTC_TEST
 void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
 {
@@ -258,7 +263,10 @@ void TPPNode::subscribe_and_advertise_topics()
 
   nh2_.setCallbackQueue(&queue_);
 
-// Note that we use different NodeHandle here
+  // Note that we use different NodeHandle(nh2_) here
+
+  wayarea_sub_ = nh2_.subscribe("occupancy_grid_wayarea", 1, &TPPNode::callback_wayarea, this);
+
 #if TTC_TEST
   seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
   localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
@@ -908,7 +916,7 @@ int TPPNode::run()
 
   subscribe_and_advertise_topics();
 
-  LOG_INFO << "ITRI_Tracking_PP is running! ver. 20191111_1500!" << std::endl;
+  LOG_INFO << "ITRI_Tracking_PP is running!" << std::endl;
 
   signal(SIGINT, signal_handler);
 
@@ -967,7 +975,7 @@ int TPPNode::run()
       // Tracking --> PP =========================================================================
 
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
-      pp_.main(pp_objs_, ppss, mc_.show_pp);  // PP: autoregression of order 1 -- AR(1)
+      pp_.main(pp_objs_, ppss, mc_.show_pp, wayarea_);  // PP: autoregression of order 1 -- AR(1)
 
       publish_pp(pp_pub_, pp_objs_, 0, 0);
 #if TO_GRIDMAP

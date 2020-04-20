@@ -14,6 +14,9 @@
                 - name: /LidarDetection
                   timeout: 15
                   negative: False
+                - name: /LidarDetection/grid
+                  timeout: 15
+                  negative: False
         </rosparam>
     </test>
 </launch>
