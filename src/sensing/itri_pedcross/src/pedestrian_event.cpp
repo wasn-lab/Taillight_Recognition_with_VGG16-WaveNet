@@ -285,6 +285,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       */
       obj_pub.crossProbability = adjust_probability(obj_pub);
 
+#if USE_2D_FOR_ALARM
       // copy another nav_path to prevent vector changing while calculating
       std::vector<geometry_msgs::PoseStamped> nav_path_temp(nav_path);
       if (obj_pub.crossProbability * 100 >= cross_threshold)
@@ -365,9 +366,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             if (path_point.pose.position.x == nearest_point.pose.position.x &&
             path_point.pose.position.y == nearest_point.pose.position.y)
             {
+#if DUMP_LOG
               // print distance
               file <<ros::Time::now()<<","<<obj_pub.track.id<<","<< distance_from_car<<","<< veh_info.ego_speed<<"\n";  
-
+#endif
               std::cout<<"same, distance: "<<distance_from_car<<" id: "<<obj_pub.track.id<<" time: "<<ros::Time::now()<<" speed: "<< veh_info.ego_speed<<std::endl;
               break;
             }
@@ -394,6 +396,117 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           alertObjs.push_back(alert_obj);
         }
       }
+#else
+      // copy another nav_path to prevent vector changing while calculating
+      if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
+      {
+        msgs::PointXYZ camera_position = obj_pub.bPoint.p0;
+        std::vector<geometry_msgs::PoseStamped> nav_path_temp(nav_path);
+        geometry_msgs::TransformStamped transform_stamped;
+        try
+        {
+          transform_stamped = tfBuffer.lookupTransform("base_link", "map", ros::Time(0));
+          std::cout << transform_stamped << std::endl;
+        }
+        catch (tf2::TransformException& ex)
+        {
+          ROS_WARN("%s", ex.what());
+          ros::Duration(1.0).sleep();
+          continue;
+        }
+        double roll, pitch, yaw;
+        tf::Quaternion q(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
+                          transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
+        tf::Matrix3x3 m(q);
+        m.getRPY(roll, pitch, yaw);
+
+        // find the nearest nav_path point from pedestian's position
+        geometry_msgs::PoseStamped nearest_point;
+        double min_distance_from_path = 100000;
+        for (const geometry_msgs::PoseStamped& path_point : nav_path_temp)
+        {
+          // coordinate transform for  nav_path (map) to camera (base_link)
+          geometry_msgs::PoseStamped point_out;
+          point_out.pose.position.x = transform_stamped.transform.translation.x +
+                                      std::cos(yaw) * path_point.pose.position.x -
+                                      std::sin(yaw) * path_point.pose.position.y;
+          point_out.pose.position.y = transform_stamped.transform.translation.y +
+                                      std::sin(yaw) * path_point.pose.position.x +
+                                      std::cos(yaw) * path_point.pose.position.y;
+
+          // calculate distance between pedestrian and each nav_path point
+          double x_dis = std::fabs(point_out.pose.position.x - camera_position.x);
+          x_dis *= x_dis;
+          double y_dis = std::fabs(point_out.pose.position.y - camera_position.y);
+          y_dis *= y_dis;
+          std::cout << "dis: " << x_dis << " " << y_dis << std::endl;
+          if (min_distance_from_path > x_dis + y_dis)
+          {
+            min_distance_from_path = x_dis + y_dis;
+            nearest_point = point_out;
+          }
+          nav_path_transformed.push_back(point_out);
+        }
+        // too close to planned path
+        if (min_distance_from_path < 4)
+        {
+          obj_pub.crossProbability = 1;
+        }
+        if (obj_pub.crossProbability * 100 >= cross_threshold)
+        {
+          double distance_from_car = 0;
+          geometry_msgs::PoseStamped previous_path_point;
+          bool passed_car_head = false;
+          for (const geometry_msgs::PoseStamped& path_point : nav_path_transformed)
+          {
+            // check 
+            if (path_point.pose.position.x > 0)
+            {
+              passed_car_head = true;
+            }
+            // add distance between points
+            if (passed_car_head)
+            {
+              double x_dis = std::fabs(path_point.pose.position.x - previous_path_point.pose.position.x);
+              x_dis *= x_dis;
+              double y_dis = std::fabs(path_point.pose.position.y - previous_path_point.pose.position.y);
+              y_dis *= y_dis;
+              distance_from_car += sqrt(x_dis + y_dis);
+            }
+            if (path_point.pose.position.x == nearest_point.pose.position.x &&
+            path_point.pose.position.y == nearest_point.pose.position.y)
+            {
+#if DUMP_LOG
+              // print distance
+              file <<ros::Time::now()<<","<<obj_pub.track.id<<","<< distance_from_car<<","<< veh_info.ego_speed<<"\n";  
+#endif
+              std::cout<<"same, distance: "<<distance_from_car<<" id: "<<obj_pub.track.id<<" time: "<<ros::Time::now()<<" speed: "<< veh_info.ego_speed<<std::endl;
+              break;
+            }
+            previous_path_point = path_point;
+          }
+          // to free memory from vector
+          nav_path_transformed.erase(nav_path_transformed.begin(),nav_path_transformed.end());
+
+          double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
+          double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
+          alert_obj.track.forecasts.reserve(20);
+          obj_pub.track.forecasts.reserve(20);
+          alert_obj.track.is_ready_prediction = 1;
+          obj_pub.track.is_ready_prediction = 1;
+          for (int i = 0; i < 20; i++)
+          {
+            msgs::PathPrediction pp;
+            pp.position.x = camera_position.x + diff_x * i;
+            pp.position.y = camera_position.y + diff_y * i;
+            std::cout << pp.position << std::endl;
+            alert_obj.track.forecasts.push_back(pp);
+            obj_pub.track.forecasts.push_back(pp);
+          }
+          alertObjs.push_back(alert_obj);
+        }
+      }
+#endif
       if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
       {
         pedObjs.push_back(obj_pub);
@@ -445,6 +558,7 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
   // pedestrian in danger zone, force determine as Cross
   if (std::fabs(x - 303) < 100 * (y - 275) / 108)
   {
+#if USE_2D_FOR_ALARM
     if (y >= 310)
     {
       return 1;
@@ -454,6 +568,9 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
       // in danger zone but too far away from car
       return obj.crossProbability;
     }
+#else
+    return obj.crossProbability;
+#endif
   }
   // at right sidewalk but not walking to left
   if (x >= 303 && std::fabs(x - 303) >= 300 * (y - 275) / 108 && obj.facing_direction != 0)
