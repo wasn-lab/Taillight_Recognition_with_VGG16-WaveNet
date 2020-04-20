@@ -74,6 +74,7 @@ public:
   void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
@@ -103,6 +104,7 @@ public:
   std::vector<geometry_msgs::PoseStamped> nav_path;
   std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
   // std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
   Buffer buffer;
   int buffer_size = 60;

@@ -43,6 +43,27 @@ void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
 #endif
 }
 
+void PedestrianEvent::cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg)
+{
+#if USE_GLOG
+  ros::Time start;
+  start = ros::Time::now();
+#endif
+
+  // buffer raw image in cv::Mat with timestamp
+  cv_bridge::CvImageConstPtr cv_ptr_image;
+  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
+  cv::Mat msg_decode;
+  cv_ptr_image->image.copyTo(msg_decode);
+
+  // buffer raw image in msg
+  crop_image_cache.push_back({ msg->header.stamp, msg_decode });
+
+#if USE_GLOG
+  std::cout << "Crop Image buffer time cost: " << ros::Time::now() - start << std::endl;
+#endif
+}
+
 void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
 #if USE_GLOG
@@ -75,8 +96,12 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 // std::cout << "time stamp: " << msg->header.stamp << " buffer size: " << image_cache.size() << std::endl;
 #endif
 
+    // keep original image
     cv::Mat matrix;
+    cv::Mat matrix_crop; // high resolution
+    // for painting
     cv::Mat matrix2;
+    cv::Mat matrix2_crop; // high resolution
     ros::Time frame_timestamp = ros::Time(0);
 
     std::vector<msgs::PedObject> pedObjs;
@@ -90,6 +115,12 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       if (obj.classId != 1 || too_far(obj.bPoint))
       {  // 1 for people
         continue;
+      }
+
+      bool in_crop_range = false;
+      if (obj.camInfo.v >= 692 && obj.camInfo.v + obj.camInfo.height < 1006)
+      {
+        in_crop_range = true;
       }
 
       // set msg infomation
@@ -149,35 +180,63 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             break;
           }
         }
-      }
-
-      // resize from 1920*1208 to 608*384
-      obj_pub.camInfo.u *= scaling_ratio_width;
-      obj_pub.camInfo.v *= scaling_ratio_height;
-      obj_pub.camInfo.width *= scaling_ratio_width;
-      obj_pub.camInfo.height *= scaling_ratio_height;
-      // obj_pub.camInfo.v -= 5;
-      // obj_pub.camInfo.height += 10;
-      // Avoid index out of bounds
-      if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
-      {
-        obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
-      }
-      if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
-      {
-        obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
-      }
-
+        for (int i = crop_image_cache.size() - 1; i >= 0; i--)
+        {
+          if (image_cache[i].first <= msgs_timestamp || i == 0)
+          {
 #if USE_GLOG
-      std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
-                << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
-                << std::endl;
+            std::cout << "GOT CHA !!!!! time: " << crop_image_cache[i].first << " , " << msgs_timestamp << std::endl;
 #endif
 
-      // crop image for openpose
+            matrix_crop = crop_image_cache[i].second;
+            // for drawing bbox and keypoints
+            matrix_crop.copyTo(matrix2_crop);
+            frame_timestamp = msgs_timestamp;
+            break;
+          }
+        }
+      }
+
       cv::Mat cropedImage;
-      matrix.copyTo(cropedImage);
-      cropedImage = cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+      if (!in_crop_range)
+      {
+        // resize from 1920*1208 to 608*384
+        obj_pub.camInfo.u *= scaling_ratio_width;
+        obj_pub.camInfo.v *= scaling_ratio_height;
+        obj_pub.camInfo.width *= scaling_ratio_width;
+        obj_pub.camInfo.height *= scaling_ratio_height;
+        // obj_pub.camInfo.v -= 5;
+        // obj_pub.camInfo.height += 10;
+        // Avoid index out of bounds
+        if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+        {
+          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+        }
+        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
+        {
+          obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+        }
+
+#if USE_GLOG
+        std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
+                  << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
+                  << std::endl;
+#endif
+        // crop image for openpose
+        matrix.copyTo(cropedImage);
+        cropedImage = cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+      }
+      else
+      {
+        obj_pub.camInfo.v -= 692;
+#if USE_GLOG
+        std::cout << matrix_crop.cols << " " << matrix_crop.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
+                  << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
+                  << std::endl;
+#endif
+        matrix_crop.copyTo(cropedImage);
+        cropedImage = cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+      }
 
       // set size to resize cropped image for openpose
       // max pixel of width or height can only be 368
@@ -1206,6 +1265,7 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_2;
   ros::Subscriber sub_3;
   ros::Subscriber sub_4;
+  ros::Subscriber sub_5;
   if (input_source == 0)
   {
     sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::chatter_callback,
@@ -1216,6 +1276,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
+    sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic                      
   }
   else if (input_source == 1)
   {
@@ -1227,6 +1289,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
+    sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic    
   }
   else if (input_source == 2)
   {
@@ -1238,6 +1302,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
+    sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic    
   }
   else  // input_source == 3
   {
@@ -1249,6 +1315,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
+    sub_5 = nh_sub_3.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic    
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
@@ -1423,6 +1491,7 @@ int main(int argc, char** argv)
   nh.getParam("/max_distance", pe.max_distance);
 
   pe.image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
+  pe.crop_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.buffer.initial();
 
   pe.openPoseROS();
