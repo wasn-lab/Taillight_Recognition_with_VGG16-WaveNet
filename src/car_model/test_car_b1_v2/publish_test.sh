@@ -12,6 +12,7 @@ fi
 if [[ ! -f src/sensing/itri_drivenet/drivenet/data/yolo/yolov3_b1-kINT8-batch3.engine
   || ! -f src/bags/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f src/bags/lidar_raw_2020-03-10-10-48-39_41.bag
+  || ! -f src/bags/edge_detection_2020-04-13-17-45-48_0.bag
   || ! -f src/bags/localization_raw_2020-04-13-17-45-48_0.bag
   || ! -f src/bags/rad_grab_2020-04-13-17-45-48_0.bag
   || ! -f src/bags/ukf_mm_2020-04-13-17-45-48_0.bag
