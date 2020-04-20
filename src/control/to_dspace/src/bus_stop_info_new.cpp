@@ -10,6 +10,8 @@
 #include "msgs/Flag_Info.h"
 #include "msgs/StopInfoArray.h"
 #include "msgs/StopInfo.h"
+#include "msgs/RouteInfo.h"
+
 
 #include "std_msgs/Header.h"
 #include <iostream>
@@ -31,8 +33,10 @@ using namespace std;
 
 const int stop_number = 8; // 8 stops 
 vector<vector<int> > bus_stop_info(5);
+vector<int> bus_stop_init(stop_number);
 int round_count=1;
 const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
+
 
 ros::Publisher publisher_01;
 ros::Publisher publisher_02;
@@ -146,6 +150,41 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 }
 
 
+void chatterCallback_03(const msgs::RouteInfo::ConstPtr& msg)
+{
+	for(uint i=0;i<bus_stop_init.size();i++)
+	{
+		bus_stop_init[i] = 0;
+	}
+	for(uint i=0;i<msg->stops.size();i++)
+	{
+		for(uint j=0;j<bus_stop_code.size();j++)
+		{
+			if(bus_stop_code[j]==msg->stops[i].id)
+			{
+				bus_stop_init[j] = 1;
+			}
+		}
+	}
+	for(uint i=0;i<bus_stop_init.size();i++)
+	{
+		cout << "Initial stop(" << i+1 << "): " <<  bus_stop_init[i] << endl;
+	}
+	// implement bus stop init
+	for (int i=0;i<5;i++)
+	{
+		for(int j=0;j<stop_number;j++)
+		{
+			if(bus_stop_info[i][j]!=1 && bus_stop_init[j]==1)
+			{
+				bus_stop_info[i][j]=1;
+			}
+		}	
+	}
+	// end of implementation		
+}
+
+
 int main(int argc, char **argv)
 {
 	// Initialize stop info global variable
@@ -156,6 +195,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
 	ros::Subscriber subscriber_02 = n.subscribe("/NextStop/Info", 1, chatterCallback_02);
+	ros::Subscriber subscriber_03 = n.subscribe("/reserve/route", 1, chatterCallback_03);
 	publisher_01 = n.advertise<msgs::Flag_Info>("/BusStop/Info", 1);
 	publisher_02 = n.advertise<std_msgs::Int32>("/BusStop/Round", 1);
 	ros::spin();
