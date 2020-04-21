@@ -41,7 +41,7 @@
 
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
-
+#define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -112,7 +112,9 @@ public:
   std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
-  // std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
+  std::vector<std::string> ped_info;
+  std::string delay_from_camera = "NA";
+  std::string chatter_callback_info = "Not running";
   Buffer buffer;
   int buffer_size = 60;
 
