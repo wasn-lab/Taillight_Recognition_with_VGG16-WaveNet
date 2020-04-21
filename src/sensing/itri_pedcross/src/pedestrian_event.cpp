@@ -7,7 +7,48 @@ namespace ped
 {
 void PedestrianEvent::run()
 {
+  std::thread display_thread(&PedestrianEvent::display_on_terminal, this);
   pedestrian_event();
+  display_thread.join();
+}
+
+void PedestrianEvent::display_on_terminal()
+{
+  while (ros::ok())
+  {
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
+    std::stringstream ss;
+    for (int i = 0; i < terminal_size.ws_row; i++)
+    {
+      ss << "\n";
+      if (i == 0 || i == terminal_size.ws_row - 1)
+      {
+        for (int j = 0; j < terminal_size.ws_col; j++)
+        {
+          ss << "*";
+        }
+      }
+      else
+      {
+        for (int j = 0; j < terminal_size.ws_col; j++)
+        {
+          if (j == 0 || j == terminal_size.ws_col - 1)
+          {
+            ss << "*";
+          }
+          else
+          {
+            ss << " ";
+          }
+        }
+      }
+    }
+    std::lock_guard<std::mutex> lock(std::mutex);
+    std::cout << ss.rdbuf() << std::flush;
+    ss.clear();
+    ss.str("");
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
 }
 
 void PedestrianEvent::veh_info_callback(const msgs::VehInfo::ConstPtr& msg)

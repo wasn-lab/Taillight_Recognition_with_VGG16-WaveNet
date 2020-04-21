@@ -32,6 +32,8 @@
 #include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
 #include <thread>  // std::this_thread
 #include <fstream>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include <tensorflow/c/c_api.h>  // TensorFlow C API header.
 //#include <scope_guard.hpp>
@@ -94,6 +96,7 @@ public:
   double get_tranform_yaw(double x, double y, double z, double w);
   geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
                                                 geometry_msgs::Vector3 translation);
+  void display_on_terminal();
 
   // OpenPose components
   int openPoseROS();
@@ -131,6 +134,7 @@ public:
   bool g_trigger = false;
   int count;
   std::ofstream file;
+  struct winsize terminal_size;
 
   // Setup variables
   const int cross_threshold = 55;  // percentage
