@@ -87,7 +87,7 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
 
 void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  if (!image_cache.empty())  // do if there is image in buffer
+  if (!image_cache.empty() && !nav_path.empty())  // do if there is image in buffer
   {
     count++;
 #if USE_GLOG
@@ -182,10 +182,11 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         }
         for (int i = crop_image_cache.size() - 1; i >= 0; i--)
         {
-          if (image_cache[i].first <= msgs_timestamp || i == 0)
+          if (crop_image_cache[i].first <= msgs_timestamp || i == 0)
           {
 #if USE_GLOG
-            std::cout << "GOT CHA !!!!! time: " << crop_image_cache[i].first << " , " << msgs_timestamp << std::endl;
+            std::cout << "GOT CHA !!!!! time: " << crop_image_cache[i].first << " , " << msgs_timestamp << "crop"
+                      << std::endl;
 #endif
 
             matrix_crop = crop_image_cache[i].second;
@@ -198,7 +199,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       }
 
       cv::Mat cropedImage;
-      if (!in_crop_range)
+      if (!in_crop_range || matrix_crop.cols == 0)
       {
         // resize from 1920*1208 to 608*384
         obj_pub.camInfo.u *= scaling_ratio_width;
@@ -233,7 +234,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
 #if USE_GLOG
         std::cout << matrix_crop.cols << " " << matrix_crop.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v
                   << " " << obj_pub.camInfo.u + obj_pub.camInfo.width << " "
-                  << obj_pub.camInfo.v + obj_pub.camInfo.height << std::endl;
+                  << obj_pub.camInfo.v + obj_pub.camInfo.height << "crop" << std::endl;
 #endif
         matrix_crop.copyTo(cropedImage);
         cropedImage =
@@ -245,8 +246,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         obj_pub.camInfo.v *= scaling_ratio_height;
         obj_pub.camInfo.width *= scaling_ratio_width;
         obj_pub.camInfo.height *= scaling_ratio_height;
-        // obj_pub.camInfo.v -= 5;
-        // obj_pub.camInfo.height += 10;
+
         // Avoid index out of bounds
         if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
         {
@@ -385,11 +385,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             ros::Duration(1.0).sleep();
             continue;
           }
-          double roll, pitch, yaw;
-          tf::Quaternion q(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
-                           transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
-          tf::Matrix3x3 m(q);
-          m.getRPY(roll, pitch, yaw);
+          double yaw = get_tranform_yaw(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
+                                        transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
 
           // store points for distance calculate
 
@@ -400,24 +397,15 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           {
             // coordinate transform for  nav_path (map) to camera (base_link)
             geometry_msgs::PoseStamped point_out;
-            point_out.pose.position.x = transform_stamped.transform.translation.x +
-                                        std::cos(yaw) * path_point.pose.position.x -
-                                        std::sin(yaw) * path_point.pose.position.y;
-            point_out.pose.position.y = transform_stamped.transform.translation.y +
-                                        std::sin(yaw) * path_point.pose.position.x +
-                                        std::cos(yaw) * path_point.pose.position.y;
+            point_out.pose.position =
+                get_transform_coordinate(path_point.pose.position, yaw, transform_stamped.transform.translation);
 
             // calculate distance between pedestrian and each nav_path point
-            double x_dis = std::fabs(point_out.pose.position.x - camera_position.x);
-            x_dis *= x_dis;
-            double y_dis = std::fabs(point_out.pose.position.y - camera_position.y);
-            y_dis *= y_dis;
-            double z_dis = std::fabs(point_out.pose.position.z - camera_position.z);
-            z_dis *= z_dis;
-            std::cout << "dis: " << x_dis << " " << y_dis << " " << z_dis << std::endl;
-            if (min_distance_from_path > x_dis + y_dis + z_dis)
+            double distance_diff = get_distance2(point_out.pose.position.x, point_out.pose.position.y,
+                                                 camera_position.x, camera_position.y);
+            if (min_distance_from_path > distance_diff)
             {
-              min_distance_from_path = x_dis + y_dis + z_dis;
+              min_distance_from_path = distance_diff;
               nearest_point = point_out;
             }
             nav_path_transformed.push_back(point_out);
@@ -435,11 +423,9 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             // add distance between points
             if (passed_car_head)
             {
-              double x_dis = std::fabs(path_point.pose.position.x - previous_path_point.pose.position.x);
-              x_dis *= x_dis;
-              double y_dis = std::fabs(path_point.pose.position.y - previous_path_point.pose.position.y);
-              y_dis *= y_dis;
-              distance_from_car += sqrt(x_dis + y_dis);
+              distance_from_car +=
+                  get_distance2(path_point.pose.position.x, path_point.pose.position.y,
+                                previous_path_point.pose.position.x, previous_path_point.pose.position.y);
             }
             if (path_point.pose.position.x == nearest_point.pose.position.x &&
                 path_point.pose.position.y == nearest_point.pose.position.y)
@@ -494,11 +480,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
           ros::Duration(1.0).sleep();
           continue;
         }
-        double roll, pitch, yaw;
-        tf::Quaternion q(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
-                         transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
-        tf::Matrix3x3 m(q);
-        m.getRPY(roll, pitch, yaw);
+        double yaw = get_tranform_yaw(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
+                                      transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
 
         // find the nearest nav_path point from pedestian's position
         geometry_msgs::PoseStamped nearest_point;
@@ -507,28 +490,22 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         {
           // coordinate transform for  nav_path (map) to camera (base_link)
           geometry_msgs::PoseStamped point_out;
-          point_out.pose.position.x = transform_stamped.transform.translation.x +
-                                      std::cos(yaw) * path_point.pose.position.x -
-                                      std::sin(yaw) * path_point.pose.position.y;
-          point_out.pose.position.y = transform_stamped.transform.translation.y +
-                                      std::sin(yaw) * path_point.pose.position.x +
-                                      std::cos(yaw) * path_point.pose.position.y;
+          point_out.pose.position =
+              get_transform_coordinate(path_point.pose.position, yaw, transform_stamped.transform.translation);
 
           // calculate distance between pedestrian and each nav_path point
-          double x_dis = std::fabs(point_out.pose.position.x - camera_position.x);
-          x_dis *= x_dis;
-          double y_dis = std::fabs(point_out.pose.position.y - camera_position.y);
-          y_dis *= y_dis;
-          std::cout << "dis: " << x_dis << " " << y_dis << std::endl;
-          if (min_distance_from_path > x_dis + y_dis)
+          double distance_diff =
+              get_distance2(point_out.pose.position.x, point_out.pose.position.y, camera_position.x, camera_position.y);
+          if (min_distance_from_path > distance_diff)
           {
-            min_distance_from_path = x_dis + y_dis;
+            min_distance_from_path = distance_diff;
             nearest_point = point_out;
           }
           nav_path_transformed.push_back(point_out);
         }
         // too close to planned path
-        if (min_distance_from_path < 4)
+        // from center to left and right 2 meters
+        if (min_distance_from_path < 2)
         {
           obj_pub.crossProbability = 1;
         }
@@ -547,11 +524,9 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
             // add distance between points
             if (passed_car_head)
             {
-              double x_dis = std::fabs(path_point.pose.position.x - previous_path_point.pose.position.x);
-              x_dis *= x_dis;
-              double y_dis = std::fabs(path_point.pose.position.y - previous_path_point.pose.position.y);
-              y_dis *= y_dis;
-              distance_from_car += sqrt(x_dis + y_dis);
+              distance_from_car +=
+                  get_distance2(path_point.pose.position.x, path_point.pose.position.y,
+                                previous_path_point.pose.position.x, previous_path_point.pose.position.y);
             }
             if (path_point.pose.position.x == nearest_point.pose.position.x &&
                 path_point.pose.position.y == nearest_point.pose.position.y)
@@ -604,7 +579,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       // objs_and_keypoints.push_back({ std::move(obj_pub), keypoints });
     }
 
-    if (!pedObjs.empty())  // do things only when there is pedestrian
+    if (!alertObjs.empty())  // do things only when there is pedestrian
     {
       msgs::DetectedObjectArray alert_objs;
 
@@ -613,7 +588,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       alert_objs.header.stamp = msg->header.stamp;
       alert_objs.objects.assign(alertObjs.begin(), alertObjs.end());
       alert_pub.publish(alert_objs);
+    }
 
+    if (!pedObjs.empty())  // do things only when there is pedestrian
+    {
       // sensor_msgs::ImageConstPtr img_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
       // cv_bridge::CvImage img_bridge;
       // sensor_msgs::Image img_msg; // >> message to be sent
@@ -630,10 +608,8 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       msg_pub.header.stamp = msg->header.stamp;
       msg_pub.objects.assign(pedObjs.begin(), pedObjs.end());
       chatter_pub.publish(msg_pub);
-
-      // draw_pedestrians(matrix2);
-      matrix2 = 0;
     }
+    matrix2 = 0;
 #if USE_GLOG
     stop = ros::Time::now();
     total_time += stop - start;
@@ -641,6 +617,26 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     std::cout << "total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
   }
+}
+
+geometry_msgs::Point PedestrianEvent::get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                               geometry_msgs::Vector3 translation)
+{
+  geometry_msgs::Point new_point;
+  new_point.x = translation.x + std::cos(yaw) * origin_point.x - std::sin(yaw) * origin_point.y;
+  new_point.y = translation.y + std::sin(yaw) * origin_point.x + std::cos(yaw) * origin_point.y;
+  return new_point;
+}
+
+double PedestrianEvent::get_tranform_yaw(double x, double y, double z, double w)
+{
+  double roll, pitch, yaw;
+
+  tf::Quaternion q(x, y, z, w);
+  tf::Matrix3x3 m(q);
+  m.getRPY(roll, pitch, yaw);
+
+  return yaw;
 }
 
 float PedestrianEvent::adjust_probability(msgs::PedObject obj)
@@ -720,6 +716,9 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // cv::cvtColor(img_scaled_8u, dImg, CV_GRAY2RGB);
   // cv_ptr_image = cv_bridge::toCvShare(image_msg, "bgr8");
   // cv_ptr_image->image.copyTo(matrix);
+  if (image_cache.empty() || msg->objects.empty())  // do if there is image in buffer
+    return;
+
   cv::Mat matrix;
   cv::Mat matrix2;
 

@@ -91,6 +91,9 @@ public:
   float adjust_probability(msgs::PedObject obj);
   int get_facing_direction(const std::vector<cv::Point2f>& keypoints);
   int get_body_direction(const std::vector<cv::Point2f>& keypoints);
+  double get_tranform_yaw(double x, double y, double z, double w);
+  geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                geometry_msgs::Vector3 translation);
 
   // OpenPose components
   int openPoseROS();
