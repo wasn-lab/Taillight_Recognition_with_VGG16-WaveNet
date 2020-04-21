@@ -701,6 +701,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   /// 1
   p0 = GetPointDist(x1, y2, cam_id);
   p3 = GetPointDist(x2, y2, cam_id);
+  p3.x = p0.x;
 
   if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120)
   {
