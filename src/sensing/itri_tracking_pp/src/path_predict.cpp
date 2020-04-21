@@ -590,12 +590,12 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         if (wayarea.data[idx] == 100)
         {
           pp_objs_[i].track.is_ready_prediction = false;
-          std::cout << "idx = " << idx << " (PP is filtered by wayarea!)" << std::endl;
+          // std::cout << "idx = " << idx << " (PP is filtered by wayarea!)" << std::endl;
         }
-        else
-        {
-          std::cout << "idx = " << idx << std::endl;
-        }
+        // else
+        // {
+        //   std::cout << "idx = " << idx << std::endl;
+        // }
       }
 #endif
 
