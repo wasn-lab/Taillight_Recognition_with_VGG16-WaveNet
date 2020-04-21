@@ -91,7 +91,7 @@
 #define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
 
-#define PP_WAYAREA 0
+#define PP_WAYAREA 1
 
 #define PUNISH_OBJCLASS_CHANGE 0
 
