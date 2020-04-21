@@ -21,6 +21,7 @@ make localization_raw_2020-04-13-17-45-48_0.bag
 make lidarxyz2lla_2020-04-13-17-45-48_0.bag
 make rad_grab_2020-04-13-17-45-48_0.bag
 make ukf_mm_2020-04-13-17-45-48_0.bag
+make target_planner_2020-04-13-17-45-48_0.bag
 set +e
 popd
 
