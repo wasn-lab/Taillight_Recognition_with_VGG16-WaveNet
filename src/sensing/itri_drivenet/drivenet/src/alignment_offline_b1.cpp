@@ -6,7 +6,8 @@ AlignmentOff::AlignmentOff()
   #if CAR_MODEL_IS_B1_V2
   const camera::id camId = camera::id::front_bottom_60;
   #elif CAR_MODEL_IS_B1
-  const camera::id camId = camera::id::front_60;  
+  const camera::id camId = camera::id::right_60;  
+  // const camera::id camId = camera::id::front_60;  
   #else
   #error "car model is not well defined"
   #endif
@@ -251,43 +252,43 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
   for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
 
-    //if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
-      //  LidAll_cloudPtr->points[i].x > 0)
+    if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
+       LidAll_cloudPtr->points[i].x > 0 )
     // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x - 122)/45) < 0.1)
     // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
-    // {
-    //   g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
-    //   if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
-    //   {
-    //     g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x = LidAll_cloudPtr->points[i].x;
-    //     g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y = LidAll_cloudPtr->points[i].y;
-    //     g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z = LidAll_cloudPtr->points[i].z;
-
-    //     // std::cout << LidAll_cloudPtr->points[i].x;
-    //     // std::cout << LidAll_cloudPtr->points[i].y;
-    //     // std::cout << LidAll_cloudPtr->points[i].z << std::endl;
-
-    //     // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x;
-    //     // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y;
-    //     // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z << std::endl;
-    //   }
-    // }
-
-    if(LidAll_cloudPtr->points[i].x > 25 && LidAll_cloudPtr->points[i].z < 0 && LidAll_cloudPtr->points[i].y < 1 && LidAll_cloudPtr->points[i].y > -1)
     {
       g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
-      if(g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
+      if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
       {
-        if(g_al.out[0] = 304)
-        {
-          std::cout << LidAll_cloudPtr->points[i].x << ",";
-          std::cout << LidAll_cloudPtr->points[i].y << ",";
-          std::cout << LidAll_cloudPtr->points[i].z << ",";
-          std::cout << g_al.out[0] << ",";
-          std::cout << g_al.out[1] << std::endl;
-        }
+        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x = LidAll_cloudPtr->points[i].x;
+        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y = LidAll_cloudPtr->points[i].y;
+        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z = LidAll_cloudPtr->points[i].z;
+
+        // std::cout << LidAll_cloudPtr->points[i].x;
+        // std::cout << LidAll_cloudPtr->points[i].y;
+        // std::cout << LidAll_cloudPtr->points[i].z << std::endl;
+
+        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x;
+        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y;
+        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z << std::endl;
       }
     }
+
+    // if(LidAll_cloudPtr->points[i].x > 25 && LidAll_cloudPtr->points[i].z < 0 && LidAll_cloudPtr->points[i].y < 1 && LidAll_cloudPtr->points[i].y > -1)
+    // {
+    //   g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
+    //   if(g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
+    //   {
+    //     if(g_al.out[0] = 304)
+    //     {
+    //       std::cout << LidAll_cloudPtr->points[i].x << ",";
+    //       std::cout << LidAll_cloudPtr->points[i].y << ",";
+    //       std::cout << LidAll_cloudPtr->points[i].z << ",";
+    //       std::cout << g_al.out[0] << ",";
+    //       std::cout << g_al.out[1] << std::endl;
+    //     }
+    //   }
+    
 
 
     
