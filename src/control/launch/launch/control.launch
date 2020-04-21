@@ -14,7 +14,6 @@
 	<node pkg="vehinfo_pub" type="vehinfo_pub" name="vehinfo_pub" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidarxyz2lla" type="lidarxyz2lla_node" name="lidarxyz2lla_node" output="screen" cwd="node" respawn="true"  />
-	<node pkg="rad_grab" type="radfrontpub" name="radfrontpub" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_can" name="radfrontsub_can" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true"  />

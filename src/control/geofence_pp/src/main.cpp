@@ -44,7 +44,7 @@
 // Specify running mode
 //#define VIRTUAL
 //#define RADARBOX
-#define TRACKINGBOX
+//#define PEDESTRIAN
 
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
@@ -274,11 +274,15 @@ int main(int argc, char **argv){
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPP);
 	#elif defined RADARBOX
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPP);
+	#elif defined PEDESTRIAN
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("/PedCross/Alert", 1, chatterCallbackPP);
 	#else
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
 	#endif
+	
 	PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
 	PPCloud_pub = n.advertise<sensor_msgs::PointCloud2>("pp_point_cloud", 1);
+	
 
 
 	ros::Rate loop_rate(10);
