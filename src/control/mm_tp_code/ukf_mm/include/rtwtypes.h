@@ -1,11 +1,15 @@
 //
+// Academic License - for use in teaching, academic research, and meeting
+// course requirements at degree granting institutions only.  Not for
+// government, commercial, or other organizational use.
+//
 // File: rtwtypes.h
 //
 // Code generated for Simulink model 'UKF_MM'.
 //
-// Model version                  : 1.8
+// Model version                  : 1.6
 // Simulink Coder version         : 8.14 (R2018a) 06-Feb-2018
-// C/C++ source code generated on : Thu Apr 16 09:34:12 2020
+// C/C++ source code generated on : Thu Dec 19 17:37:22 2019
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Intel->x86-64 (Linux 64)
