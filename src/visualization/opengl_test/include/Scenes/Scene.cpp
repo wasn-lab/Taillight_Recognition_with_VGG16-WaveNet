@@ -249,7 +249,7 @@ void Scene::Update(ROS_INTERFACE &ros_interface){
 void Scene::Update(ROS_API &ros_api){
     //
     if (!is_initialized){
-        switch_layout( 0 );
+        switch_layout( 1 );
         switchCameraMotionMode( 0 , ros_api);
         switchCameraViewMode( 0, ros_api);
         is_initialized = true;

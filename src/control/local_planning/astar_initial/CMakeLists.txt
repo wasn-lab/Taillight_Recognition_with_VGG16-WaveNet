@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(astar_initial)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -18,9 +15,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   autoware_msgs
-roslib
-libwaypoint_follower
+  roslib
+  libwaypoint_follower
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -117,7 +119,7 @@ libwaypoint_follower
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lidarxyz2lla
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime tf2 tf2_ros msgs nav_msgs libwaypoint_follower
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime tf2 tf2_ros msgs nav_msgs libwaypoint_follower car_model
 #  DEPENDS system_lib
 )
 

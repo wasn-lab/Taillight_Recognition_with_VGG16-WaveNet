@@ -28,14 +28,14 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Float64.h>
 
-void parseColumns(const std::string &line, std::vector<std::string> *columns)
+void parseColumns(const std::string& line, std::vector<std::string>* columns)
 {
-        std::istringstream ss(line);
-        std::string column;
-        while (std::getline(ss, column, ','))
-        {
-                columns->push_back(column);
-        }
+  std::istringstream ss(line);
+  std::string column;
+  while (std::getline(ss, column, ','))
+  {
+    columns->push_back(column);
+  }
 }
 
 ros::Publisher totalMapPointCloudPublisher;
@@ -54,170 +54,152 @@ static double crop_value_min, crop_value_max, crop_value_mean, crop_value_range;
 
 int seq_ = 0;
 
-int
-main (int argc, char** argv)
+int main(int argc, char** argv)
 {
+  pcl::PointXYZI minPt, maxPt;
 
-        pcl::PointXYZI minPt, maxPt;
+  ros::init(argc, argv, "map_pub");
+  ros::NodeHandle nodeHandle;
+  std::string path_map_pub_node = ros::package::getPath("map_pub");
+  totalMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map", 1, true);
+  northMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_north", 1, true);
+  southMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_south", 1, true);
 
+  map_mean_value_publisher = nodeHandle.advertise<std_msgs::Float64>("map_mean_value", 1, true);
 
+  sensor_msgs::PointCloud2 total_map_ptcloud;
+  sensor_msgs::PointCloud2 total_map_ptcloud_north;
+  sensor_msgs::PointCloud2 total_map_ptcloud_south;
 
-        ros::init(argc, argv, "map_pub");
-        ros::NodeHandle nodeHandle;
-        std::string path_map_pub_node = ros::package::getPath("map_pub");
-        totalMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map", 1, true);
-        northMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_north", 1, true);
-        southMapPointCloudPublisher = nodeHandle.advertise<sensor_msgs::PointCloud2>("points_map_south", 1, true);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>());
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_ptr_1(new pcl::PointCloud<pcl::PointXYZI>());
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_ptr_2(new pcl::PointCloud<pcl::PointXYZI>());
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_total(new pcl::PointCloud<pcl::PointXYZI>());
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_total_north(new pcl::PointCloud<pcl::PointXYZI>());
+  pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_total_south(new pcl::PointCloud<pcl::PointXYZI>());
 
-        map_mean_value_publisher = nodeHandle.advertise<std_msgs::Float64>("map_mean_value", 1, true);
+  pcl::PassThrough<pcl::PointXYZI> pass;
 
-        sensor_msgs::PointCloud2 total_map_ptcloud;
-        sensor_msgs::PointCloud2 total_map_ptcloud_north;
-        sensor_msgs::PointCloud2 total_map_ptcloud_south;
+  std::stringstream ss;
+  for (int i = 0; i < 1; i++)
+  {
+    ss << i;
+    pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZI>);
-        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_ptr_1(new pcl::PointCloud<pcl::PointXYZI>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_ptr_2(new pcl::PointCloud<pcl::PointXYZI>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_total(new pcl::PointCloud<pcl::PointXYZI>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_total_north(new pcl::PointCloud<pcl::PointXYZI>());
-        pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud_total_south(new pcl::PointCloud<pcl::PointXYZI>());
-
-        pcl::PassThrough<pcl::PointXYZI> pass;
-
-
-        std::stringstream ss;
-        for (int i = 0; i< 1; i++)
-        {
-                ss << i;
-                pcl::PointCloud<pcl::PointXYZI>::Ptr tmp_cloud (new pcl::PointCloud<pcl::PointXYZI>);
-
-                // if (pcl::io::loadPCDFile<pcl::PointXYZI> (local_lidmap_path + ss.str()+ ".pcd", *tmp_cloud) == -1) //* load the file
-                if (pcl::io::loadPCDFile<pcl::PointXYZI> (path_map_pub_node + "/done_map/total_map.pcd", *tmp_cloud) == -1) //* load the file
-                {
-                        PCL_ERROR ("Couldn't read file .pcd file \n");
-                        return (-1);
-                }
-                else
-                {
+    // if (pcl::io::loadPCDFile<pcl::PointXYZI> (local_lidmap_path + ss.str()+ ".pcd", *tmp_cloud) == -1) //* load the
+    // file
+    if (pcl::io::loadPCDFile<pcl::PointXYZI>(path_map_pub_node + "/done_map/total_map.pcd", *tmp_cloud) ==
+        -1)  //* load the file
+    {
+      PCL_ERROR("Couldn't read file .pcd file \n");
+      return (-1);
+    }
+    else
+    {
 #if TRANSFORMMAP
-                        Eigen::Matrix4f init_guess_;
-                        init_guess_ << 1.0000000,  0.0000000,  0.0000000, 0,
-                        0.0000000,  0.0000000,  -1.0000000, 0,
-                        0.0000000,  1.0000000,  0.0000000, 0,
-                        0,0,0,1;
-                        pcl::transformPointCloud(*tmp_cloud, *cloud, init_guess_);
+      Eigen::Matrix4f init_guess_;
+      init_guess_ << 1.0000000, 0.0000000, 0.0000000, 0, 0.0000000, 0.0000000, -1.0000000, 0, 0.0000000, 1.0000000,
+          0.0000000, 0, 0, 0, 0, 1;
+      pcl::transformPointCloud(*tmp_cloud, *cloud, init_guess_);
 #else
-                        *cloud += *tmp_cloud;
+      *cloud += *tmp_cloud;
 #endif
-
-
 
 #if SAVEMAP
-                        if(pcl::io::savePCDFileBinary("total_map_transformed.pcd", *cloud) == -1) {
-                                std::cout << "Failed saving " << "total_map.pcd" << "." << std::endl;
-                        }
-                        std::cout << "Saved " << "total_map_transformed.pcd" << " (" << cloud->size() << " points)" << std::endl;
+      if (pcl::io::savePCDFileBinary("total_map_transformed.pcd", *cloud) == -1)
+      {
+        std::cout << "Failed saving "
+                  << "total_map.pcd"
+                  << "." << std::endl;
+      }
+      std::cout << "Saved "
+                << "total_map_transformed.pcd"
+                << " (" << cloud->size() << " points)" << std::endl;
 
 #endif
-                }
-                ss.str ("");
-        }
+    }
+    ss.str("");
+  }
 
-        std::cout << "Loaded "
-                  << cloud->width * cloud->height
-                  << " data points from .pcd "
-                  << std::endl;
-        pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-        voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-        voxel_grid_filter.setInputCloud(cloud);
-        voxel_grid_filter.filter(*filtered_cloud_ptr);
-        std::cout << "After Filtered is :  "
-                  << filtered_cloud_ptr->width * filtered_cloud_ptr->height
-                  << " data points"
-                  << std::endl;
+  std::cout << "Loaded " << cloud->width * cloud->height << " data points from .pcd " << std::endl;
+  pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+  voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+  voxel_grid_filter.setInputCloud(cloud);
+  voxel_grid_filter.filter(*filtered_cloud_ptr);
+  std::cout << "After Filtered is :  " << filtered_cloud_ptr->width * filtered_cloud_ptr->height << " data points"
+            << std::endl;
 
-        voxel_grid_filter.setLeafSize(voxel_leaf_size_1, voxel_leaf_size_1, voxel_leaf_size_1);
-        voxel_grid_filter.setInputCloud(cloud);
-        voxel_grid_filter.filter(*filtered_cloud_ptr_1);
-        std::cout << "filtered_cloud_ptr_1 After Filtered is :  "
-                  << filtered_cloud_ptr_1->width * filtered_cloud_ptr_1->height
-                  << " data points"
-                  << std::endl;
+  voxel_grid_filter.setLeafSize(voxel_leaf_size_1, voxel_leaf_size_1, voxel_leaf_size_1);
+  voxel_grid_filter.setInputCloud(cloud);
+  voxel_grid_filter.filter(*filtered_cloud_ptr_1);
+  std::cout << "filtered_cloud_ptr_1 After Filtered is :  "
+            << filtered_cloud_ptr_1->width * filtered_cloud_ptr_1->height << " data points" << std::endl;
 
-        voxel_grid_filter.setLeafSize(voxel_leaf_size_2, voxel_leaf_size_2, voxel_leaf_size_2);
-        voxel_grid_filter.setInputCloud(cloud);
-        voxel_grid_filter.filter(*filtered_cloud_ptr_2);
-        std::cout << "filtered_cloud_ptr_2 After Filtered is :  "
-                  << filtered_cloud_ptr_2->width * filtered_cloud_ptr_2->height
-                  << " data points"
-                  << std::endl;
+  voxel_grid_filter.setLeafSize(voxel_leaf_size_2, voxel_leaf_size_2, voxel_leaf_size_2);
+  voxel_grid_filter.setInputCloud(cloud);
+  voxel_grid_filter.filter(*filtered_cloud_ptr_2);
+  std::cout << "filtered_cloud_ptr_2 After Filtered is :  "
+            << filtered_cloud_ptr_2->width * filtered_cloud_ptr_2->height << " data points" << std::endl;
 
-        *filtered_cloud_total += *filtered_cloud_ptr;
-        *filtered_cloud_total += *filtered_cloud_ptr_1;
-        *filtered_cloud_total += *filtered_cloud_ptr_2;
+  *filtered_cloud_total += *filtered_cloud_ptr;
+  *filtered_cloud_total += *filtered_cloud_ptr_1;
+  *filtered_cloud_total += *filtered_cloud_ptr_2;
 
-        std::cout << "filtered_cloud_total is :  "
-                  << filtered_cloud_total->width * filtered_cloud_total->height
-                  << " data points"
-                  << std::endl;
+  std::cout << "filtered_cloud_total is :  " << filtered_cloud_total->width * filtered_cloud_total->height
+            << " data points" << std::endl;
 
-        pcl::getMinMax3D(*filtered_cloud_total, minPt, maxPt);
-        crop_cord = "x";
-        crop_value_min = minPt.x;
-        crop_value_max = maxPt.x;
-        crop_value_mean = (crop_value_min + crop_value_max)/2;
-        crop_value_range = 50;
-        map_mean_value_publisher.publish(crop_value_mean);
+  pcl::getMinMax3D(*filtered_cloud_total, minPt, maxPt);
+  crop_cord = "x";
+  crop_value_min = minPt.x;
+  crop_value_max = maxPt.x;
+  crop_value_mean = (crop_value_min + crop_value_max) / 2;
+  crop_value_range = 50;
+  std_msgs::Float64 msg;
+  msg.data = crop_value_mean;
+  map_mean_value_publisher.publish(msg);
 
-        pcl::toROSMsg(*filtered_cloud_total, total_map_ptcloud);
-        //total_map_ptcloud.header.stamp = ros::Time::now();
-        total_map_ptcloud.header.seq = ++seq_;
-        total_map_ptcloud.header.frame_id = "/map";
+  pcl::toROSMsg(*filtered_cloud_total, total_map_ptcloud);
+  // total_map_ptcloud.header.stamp = ros::Time::now();
+  total_map_ptcloud.header.seq = ++seq_;
+  total_map_ptcloud.header.frame_id = "/map";
 
-        totalMapPointCloudPublisher.publish(total_map_ptcloud);
-        std::cout << "publish total_map:  "
-                  << total_map_ptcloud.height*total_map_ptcloud.width
-                  << " data points"
-                  << std::endl;
+  totalMapPointCloudPublisher.publish(total_map_ptcloud);
+  std::cout << "publish total_map:  " << total_map_ptcloud.height * total_map_ptcloud.width << " data points"
+            << std::endl;
 
-        pass.setInputCloud(filtered_cloud_total);
-        pass.setFilterFieldName(crop_cord);
-        pass.setFilterLimits(crop_value_mean - crop_value_range, crop_value_max);
-        pass.filter(*filtered_cloud_total_north);
-        pcl::toROSMsg(*filtered_cloud_total_north, total_map_ptcloud_north);
+  pass.setInputCloud(filtered_cloud_total);
+  pass.setFilterFieldName(crop_cord);
+  pass.setFilterLimits(crop_value_mean - crop_value_range, crop_value_max);
+  pass.filter(*filtered_cloud_total_north);
+  pcl::toROSMsg(*filtered_cloud_total_north, total_map_ptcloud_north);
 
-        //total_map_ptcloud_north.header.stamp = ros::Time::now();
-        total_map_ptcloud_north.header.seq = seq_;
-        total_map_ptcloud_north.header.frame_id = "/map";
-        northMapPointCloudPublisher.publish(total_map_ptcloud_north);
-        std::cout << "publish total_map_north:  "
-                  << total_map_ptcloud_north.height*total_map_ptcloud_north.width
-                  << " data points"
-                  << std::endl;
+  // total_map_ptcloud_north.header.stamp = ros::Time::now();
+  total_map_ptcloud_north.header.seq = seq_;
+  total_map_ptcloud_north.header.frame_id = "/map";
+  northMapPointCloudPublisher.publish(total_map_ptcloud_north);
+  std::cout << "publish total_map_north:  " << total_map_ptcloud_north.height * total_map_ptcloud_north.width
+            << " data points" << std::endl;
 
+  pass.setInputCloud(filtered_cloud_total);
+  pass.setFilterFieldName(crop_cord);
+  pass.setFilterLimits(crop_value_min, crop_value_mean + crop_value_range);
+  pass.filter(*filtered_cloud_total_south);
+  pcl::toROSMsg(*filtered_cloud_total_south, total_map_ptcloud_south);
 
-        pass.setInputCloud(filtered_cloud_total);
-        pass.setFilterFieldName(crop_cord);
-        pass.setFilterLimits(crop_value_min, crop_value_mean + crop_value_range);
-        pass.filter(*filtered_cloud_total_south);
-        pcl::toROSMsg(*filtered_cloud_total_south, total_map_ptcloud_south);
+  // total_map_ptcloud_south.header.stamp = ros::Time::now();
+  total_map_ptcloud_south.header.seq = seq_;
+  total_map_ptcloud_south.header.frame_id = "/map";
+  southMapPointCloudPublisher.publish(total_map_ptcloud_south);
+  std::cout << "publish total_map_south:  " << total_map_ptcloud_south.height * total_map_ptcloud_south.width
+            << " data points" << std::endl;
 
-        //total_map_ptcloud_south.header.stamp = ros::Time::now();
-        total_map_ptcloud_south.header.seq = seq_;
-        total_map_ptcloud_south.header.frame_id = "/map";
-        southMapPointCloudPublisher.publish(total_map_ptcloud_south);
-        std::cout << "publish total_map_south:  "
-                  << total_map_ptcloud_south.height*total_map_ptcloud_south.width
-                  << " data points"
-                  << std::endl;
-
-        std::cout << "max x: " << maxPt.x << std::endl;
-        std::cout << "max y: " << maxPt.y << std::endl;
-        std::cout << "max z: " << maxPt.z << std::endl;
-        std::cout << "min x: " << minPt.x << std::endl;
-        std::cout << "min y: " << minPt.y << std::endl;
-        std::cout << "min z: " << minPt.z << std::endl;
-        ros::spin();
-        return 0;
+  std::cout << "max x: " << maxPt.x << std::endl;
+  std::cout << "max y: " << maxPt.y << std::endl;
+  std::cout << "max z: " << maxPt.z << std::endl;
+  std::cout << "min x: " << minPt.x << std::endl;
+  std::cout << "min y: " << minPt.y << std::endl;
+  std::cout << "min z: " << minPt.z << std::endl;
+  ros::spin();
+  return 0;
 }

@@ -11,30 +11,24 @@
 using namespace pcl;
 
 #include "../dataset.hpp"
-#include "dbscan_vp.hpp"
+#include "dbscan_vp.h"
 
 class DBSCAN_VPTree
 {
-  public:
-    DBSCAN_VPTree ();
-    virtual
-    ~DBSCAN_VPTree ();
+public:
+  DBSCAN_VPTree();
+  virtual ~DBSCAN_VPTree();
 
-    void
-    setInputCloud (const PointCloud<PointXYZ>::ConstPtr input);
-    void
-    setEpsilon (const double Epsilon);
-    void
-    setMinpts (const unsigned int MinPts);
-    void
-    segment (IndicesClusters &clusters);
+  void setInputCloud(const PointCloud<PointXYZ>::ConstPtr input);
+  void setEpsilon(const double Epsilon);
+  void setMinpts(const unsigned int MinPts);
+  void segment(IndicesClusters& clusters);
 
-  private:
-    DBSCAN_VP::Ptr dbs;
-    PointCloud<PointXYZ>::ConstPtr input;
-    double epsilon;
-    unsigned int minpts;
-
+private:
+  DBSCAN_VP::Ptr dbs;
+  PointCloud<PointXYZ>::ConstPtr input;
+  double epsilon;
+  unsigned int minpts;
 };
 
 #endif /* DBSCAN_VPTREE_H_ */

@@ -200,52 +200,60 @@ S1Cluster::getClusters (bool debug,
        plane_coef.values[3]);*/
       //float dxdy = fabs (cluster_vector.at (i).dx - cluster_vector.at (i).dy);
       //constrain : too small or thin objects
-      if (cluster_vector.at (i).dz < 0.8)
-        cluster_vector.at (i).cluster_tag = 0;
+      if (cluster_vector.at(i).dz < 0.8)
+      {
+            cluster_vector.at(i).cluster_tag = 0;
+      }
 
       //constrain : too big
-      if (cluster_vector.at (i).dis_max_min > 15 || cluster_vector.at (i).dx > 15 || cluster_vector.at (i).dy > 15 || cluster_vector.at (i).dz > 3)
-        cluster_vector.at (i).cluster_tag = 0;
+      if (cluster_vector.at(i).dis_max_min > 15 || cluster_vector.at(i).dx > 15 || cluster_vector.at(i).dy > 15 ||
+          cluster_vector.at(i).dz > 3)
+      {
+            cluster_vector.at(i).cluster_tag = 0;
+      }
 
-//      //constrain : small size noise
-//      if (cluster_vector.at (i).cloud.size () < 4)
-//        cluster_vector.at (i).cluster_tag = 0;
-//
-//      //constrain : air object
-//      if (min2plane > 1.8 )
-//        cluster_vector.at (i).cluster_tag = 0;
-//
-//      //curb
-//      if (max2plane < 0.8 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2 || cluster_vector.at (i).dz <0.3))
-//         cluster_vector.at (i).cluster_tag = 0;
+      //      //constrain : small size noise
+      //      if (cluster_vector.at (i).cloud.size () < 4)
+      //        cluster_vector.at (i).cluster_tag = 0;
+      //
+      //      //constrain : air object
+      //      if (min2plane > 1.8 )
+      //        cluster_vector.at (i).cluster_tag = 0;
+      //
+      //      //curb
+      //      if (max2plane < 0.8 && (cluster_vector.at (i).dx > 2 || cluster_vector.at (i).dy > 2 || cluster_vector.at
+      //      (i).dz <0.3))
+      //         cluster_vector.at (i).cluster_tag = 0;
 
-//      if( cluster_vector.at (i).center.y < -1.3)
-//      {
-//       if (max2plane < 0.7)
-//          cluster_vector.at (i).cluster_tag = 0;
-//
-//       if (min2plane > 0.6 )
-//         cluster_vector.at (i).cluster_tag = 0;
-//
-//        if (cluster_vector.at (i).dz > 2.4 && cluster_vector.at (i).dz<3 && cluster_vector.at (i).dis_max_min >7)
-//          cluster_vector.at (i).cluster_tag = 0;
-//
-//        if (cluster_vector.at (i).dz > 2 && cluster_vector.at (i).cloud.size() < 100)
-//          cluster_vector.at (i).cluster_tag = 0;
-//
-//        if (cluster_vector.at (i).dz < 1)
-//          cluster_vector.at (i).cluster_tag = 0;
-//
-//        if ((cluster_vector.at (i).cloud.size()/cluster_vector.at (i).hull_vol) <20 )
-//          cluster_vector.at (i).cluster_tag = 0;
-//
-//        if (cluster_vector.at (i).dz > 2)
-//           cluster_vector.at (i).cluster_tag = 0;
-//
-//        //tree
-//        if (max2plane > 2 && ((cluster_vector.at (i).dx <2  && cluster_vector.at (i).dy < 2) || (cluster_vector.at (i).cloud.size()/cluster_vector.at (i).hull_vol) >50))
-//           cluster_vector.at (i).cluster_tag = 0;
-//      }
+      //      if( cluster_vector.at (i).center.y < -1.3)
+      //      {
+      //       if (max2plane < 0.7)
+      //          cluster_vector.at (i).cluster_tag = 0;
+      //
+      //       if (min2plane > 0.6 )
+      //         cluster_vector.at (i).cluster_tag = 0;
+      //
+      //        if (cluster_vector.at (i).dz > 2.4 && cluster_vector.at (i).dz<3 && cluster_vector.at (i).dis_max_min
+      //        >7)
+      //          cluster_vector.at (i).cluster_tag = 0;
+      //
+      //        if (cluster_vector.at (i).dz > 2 && cluster_vector.at (i).cloud.size() < 100)
+      //          cluster_vector.at (i).cluster_tag = 0;
+      //
+      //        if (cluster_vector.at (i).dz < 1)
+      //          cluster_vector.at (i).cluster_tag = 0;
+      //
+      //        if ((cluster_vector.at (i).cloud.size()/cluster_vector.at (i).hull_vol) <20 )
+      //          cluster_vector.at (i).cluster_tag = 0;
+      //
+      //        if (cluster_vector.at (i).dz > 2)
+      //           cluster_vector.at (i).cluster_tag = 0;
+      //
+      //        //tree
+      //        if (max2plane > 2 && ((cluster_vector.at (i).dx <2  && cluster_vector.at (i).dy < 2) ||
+      //        (cluster_vector.at (i).cloud.size()/cluster_vector.at (i).hull_vol) >50))
+      //           cluster_vector.at (i).cluster_tag = 0;
+      //      }
 
     }
   }

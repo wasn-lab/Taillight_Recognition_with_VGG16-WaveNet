@@ -11,6 +11,7 @@
   </group>
 
   <node pkg="tf2_ros" type="static_transform_publisher" name="bus_footprint_tf2"    args="-2.75 0 -3.1 0 0 0  /lidar /base_footprint" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="txt_frame_tf2"    args="30 0 0 0 -0.785 0  /base_footprint /txt_frame" />
 
   <!--Bus footprint-->
   <node name="bus_footprint" pkg="detection_viz" type="bus_footprint.py" output="screen"/>
@@ -170,7 +171,7 @@
   <!-- System status ********************************************************************************** -->
   <node name="m_system_status" pkg="detection_viz" type="text_marker_gen.py" output="screen" clear_params="true">
       <param name="topic" value="/mileage/status_text"/>
-      <param name="frame_id" value="lidar"/>
+      <param name="frame_id" value="txt_frame"/>
       <param name="red"   value="0.9"/>
       <param name="green" value="0.9"/>
       <param name="blue"  value="0.2"/>

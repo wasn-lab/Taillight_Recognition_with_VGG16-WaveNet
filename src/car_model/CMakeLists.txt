@@ -25,6 +25,7 @@ else ()
 endif ()
 
 # default options
+option(ENABLE_CAMERA_GRABBER "Enable camera grabber" ON)
 option(ENABLE_LIGHTNET "Enable traffic light detection" ON)
 option(ENABLE_PARKNET "Enable parking slot detection" ON)
 option(ENABLE_OPENROADNET "Enable open road detection" ON)
