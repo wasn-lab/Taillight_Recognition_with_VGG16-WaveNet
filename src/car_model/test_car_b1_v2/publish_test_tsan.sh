@@ -21,5 +21,6 @@ rostest car_model publish_test_tpp_b1_v2.test
 rostest car_model publish_test_lidarxyz2lla_b1_v2.test
 rostest car_model publish_test_rad_grab_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
+rostest car_model publish_test_target_planner_b1_v2.test
 
 popd
