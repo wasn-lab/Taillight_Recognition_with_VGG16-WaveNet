@@ -95,6 +95,7 @@ private:
   static constexpr float BOX_VOL_RATIO_MAX = 1.5f;
   static constexpr float COST_BOX_DIST_W = 0.5f;
   static constexpr float COST_BOX_VOL_RATIO_W = 1.f - COST_BOX_DIST_W;
+  static constexpr float PUNISH_RATIO = 0.5f;
 
   std::vector<BoxCenter> box_centers_;
   std::vector<std::vector<BoxCorner> > box_corners_of_boxes_;
