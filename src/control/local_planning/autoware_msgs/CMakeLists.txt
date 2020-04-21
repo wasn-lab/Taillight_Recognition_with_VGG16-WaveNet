@@ -23,8 +23,8 @@ add_message_files(
             #CloudClusterArray.msg
             #ColorSet.msg
             #ControlCommand.msg
-            #DetectedObject.msg
-            #DetectedObjectArray.msg
+            DetectedObject.msg
+            DetectedObjectArray.msg
             #ExtractedPosition.msg
             #ImageLaneObjects.msg
             #ImageObjects.msg
