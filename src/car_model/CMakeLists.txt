@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(car_model)
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+
 set(CAR_MODEL "B1_V2" CACHE STRING "Car model (B1, B1_V2, C, HINO, OMNIBUS)")
 set_property(CACHE CAR_MODEL PROPERTY STRINGS B1 B1_V2 C HINO OMNIBUS)
 
@@ -33,9 +35,20 @@ option(ENABLE_PEDCROSS "Enable pedestrian crossing detection" ON)
 option(ENABLE_GOOGLE_BENCHMARK "Enable google benchmark for perf profiling" OFF)
 include(cmake/Options${CAR_MODEL}.cmake)
 
+find_package(OpenCV
+  PATHS /usr/local
+  NO_DEFAULT_PATH
+)
+
+set(OpenCV_LIBS_TMP "")
+foreach(cvlib ${OpenCV_LIBS})
+  list(APPEND OpenCV_LIBS_TMP ${OpenCV_INSTALL_PATH}/lib/lib${cvlib}.so.${OpenCV_VERSION})
+endforeach()
+set(OpenCV_LIBS ${OpenCV_LIBS_TMP})
+
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
-  CFG_EXTRAS CarModel.cmake
+  CFG_EXTRAS CarModel.cmake OpenCVVars.cmake
 )
 message("Car model is ${CAR_MODEL}")
 
@@ -50,6 +63,7 @@ configure_file(
 configure_file(
     scripts/car_model.py.in
     ${PROJECT_BINARY_DIR}/scripts/car_model.py)
+
 
 add_subdirectory(test)
 if (CAR_MODEL_IS_B1)
