@@ -72,19 +72,19 @@ namespace output_dbscan_nodelet
 
           if (debug_output)
           {
-              cout << "[DBScan]: " << stopWatch.getTimeSeconds () << "s" << endl ;
+              cout << "[DBScan]: " << stopWatch.getTimeSeconds () << 's' << endl ;
           }
           double latency = (ros::Time::now () - rosTime).toSec ();
           if (latency > 0 && latency < 3)
           {
-            cout << "[Latency]: real-time " << latency << endl << endl;
+            cout << "[Latency]: real-time " << latency << 's' << endl << endl;
           }
           else
           {
             latency = (ros::Time (latencyTime[0], latencyTime[1]) - rosTime).toSec ();
             if (latency > 0 && latency < 3)
             {
-              cout << "[Latency]: bag " << latency << endl << endl;
+              cout << "[Latency]: bag " << latency << 's' << endl << endl;
             }
           }
         }

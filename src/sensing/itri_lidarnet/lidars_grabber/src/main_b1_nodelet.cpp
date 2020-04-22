@@ -401,7 +401,7 @@ namespace lidars_grabber_b1_nodelet
         cloudPtr_LidAll->clear ();
         if (debug_output)
         { 
-            cout << "[Grabber]: " << stopWatch.getTimeSeconds() << "s" << endl;
+            cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
         }
 
 

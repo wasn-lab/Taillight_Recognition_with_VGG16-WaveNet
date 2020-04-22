@@ -85,7 +85,7 @@ namespace lidars_preprocessing_b1_nodelet
 
           if (debug_output)
           {
-            cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << "s" << endl;
+            cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << 's' << endl;
           }
         }
 

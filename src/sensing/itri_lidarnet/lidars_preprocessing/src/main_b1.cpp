@@ -65,7 +65,7 @@ callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 
     if (debug_output)
     {
-      cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << "s" << endl;
+      cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << 's' << endl;
       
     }
   }

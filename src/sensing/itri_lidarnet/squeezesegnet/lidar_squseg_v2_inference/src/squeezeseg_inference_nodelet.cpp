@@ -169,7 +169,7 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
 
     if (debug_output)
     {
-        cout << "[SSNv2]: " << stopWatch.getTimeSeconds() << "s" << endl;
+        cout << "[SSNv2]: " << stopWatch.getTimeSeconds() << 's' << endl;
     } 
 
     // ======== following comment used for debugging of subscription ========

@@ -85,7 +85,7 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
     { 
       ros::Time rosTime;
       pcl_conversions::fromPCL (msg->header.stamp, rosTime);
-      cout << "[All->SSN]: " << (ros::Time::now () - rosTime).toSec() *1000 << "ms"  << endl;
+      cout << "[All->SSN]: " << (ros::Time::now () - rosTime).toSec() *1000 << "ms" << endl;
       stopWatch.reset ();
     }
     
@@ -167,7 +167,7 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
 
     if (debug_output)
     {
-        cout << "[SSN]: " << stopWatch.getTimeSeconds() << "s" << endl;
+        cout << "[SSN]: " << stopWatch.getTimeSeconds() << 's' << endl;
     } 
 
 

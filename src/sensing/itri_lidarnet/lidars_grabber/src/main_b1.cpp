@@ -100,12 +100,17 @@ void lidarAll_Pub(int lidarNum)
   uint64_t avg_time;
   int n = 0;
   if (cloudPtr_LidarFrontLeft->header.stamp != 0)
+  {
     n += 1;
+  }
   if (cloudPtr_LidarFrontRight->header.stamp != 0)
+  {
     n += 1;
+  }
   if (cloudPtr_LidarFrontTop->header.stamp != 0)
+  {
     n += 1;
-
+  }
   if (n != 0)
   {
     avg_time = (cloudPtr_LidarFrontLeft->header.stamp + cloudPtr_LidarFrontRight->header.stamp + cloudPtr_LidarFrontTop->header.stamp) /  n;
@@ -124,7 +129,7 @@ void lidarAll_Pub(int lidarNum)
   
   if (debug_output)
   { 
-      cout << "[Grabber]: " << stopWatch.getTimeSeconds() << "s" << endl;
+      cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
   }
 
   // if wall_time - ros_time !> 30 minutes, (not rosbag)
