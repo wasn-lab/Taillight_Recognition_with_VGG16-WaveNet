@@ -1,15 +1,14 @@
 <launch>
-    <include file="$(find edge_detection)/launch/edge_detection.launch" />
-
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/edge_detection_2020-04-13-17-45-48_0.bag" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/ukf_mm_2020-04-13-17-45-48_0.bag" />
+    <include file="$(find control)/launch/ukfmm.launch" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
-                - name: /occupancy_grid
+                - name: /ukf_mm_topic
                   timeout: 15
                   negative: False
-                - name: /ring_edge_point_cloud
+                - name: /localization_ukf
                   timeout: 15
                   negative: False
         </rosparam>
