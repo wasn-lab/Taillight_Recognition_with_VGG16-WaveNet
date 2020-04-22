@@ -13,13 +13,13 @@ Work in progress, not add to publish_test.sh yet.
         <rosparam>
             topics:
                 - name: /Tracking2D
-                  timeout: 15
+                  timeout: 60
                   negative: False
                 - name: /PedCross/Alert
-                  timeout: 15
+                  timeout: 60
                   negative: False
                 - name: /PedCross/DrawBBox
-                  timeout: 15
+                  timeout: 60
                   negative: False
 <!--
                 - name: /PedCross/3D_marker
