@@ -15,6 +15,11 @@
   <rosparam param="danger_zone_distance">2</rosparam>
 
   <!-- rviz markers -->
+  <!-- true : use 2d for danger zone -->
+  <!-- false: use 3d for danger zone -->
+  <rosparam param="use_2d_for_alarm">false</rosparam>
+
+  <!-- rviz markers -->
   <!-- true : show probabiliy -->
   <!-- false: not show probability -->
   <rosparam param="show_probability">true</rosparam>
