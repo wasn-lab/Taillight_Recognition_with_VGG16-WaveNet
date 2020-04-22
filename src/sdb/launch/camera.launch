@@ -6,6 +6,10 @@
 	
 	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_c.launch"/>
 
+	<node name="convex_fusion"
+		pkg="convex_fusion"
+		type="convex_fusion_b1_v2"/>
+
 	<node name="msg_recorder"
 		pkg="msg_recorder"
 		type="msg_recorder.py"
