@@ -49,7 +49,7 @@ public:
   DistanceEstimation();
   ~DistanceEstimation();
 
-  void init(std::string pkgPath, int mode);
+  void init(const std::string& pkgPath, int mode);
   msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, camera::id cam_id);
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);

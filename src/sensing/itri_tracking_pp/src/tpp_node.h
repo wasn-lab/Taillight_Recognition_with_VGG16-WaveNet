@@ -35,6 +35,7 @@ private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
   int in_source_ = get_in_source();
+  int occ_source_ = 0;
   bool use_ego_speed_ = get_ego_speed();
 
   bool gen_markers_ = false;

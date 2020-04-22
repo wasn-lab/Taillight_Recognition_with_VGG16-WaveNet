@@ -24,8 +24,12 @@
 #include "ssn_config.h"
 #include "CuboidFilter.h"
 
+
+
 namespace ssn_nodelet
 {
+  extern bool debug_output;
+
   extern ros::Publisher nn_pub;
   extern ros::Subscriber LidarAllSub;
 

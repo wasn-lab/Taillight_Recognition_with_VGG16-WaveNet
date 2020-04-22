@@ -63,4 +63,7 @@ using namespace pcl::console;
 using namespace pcl::visualization;
 using namespace boost::property_tree;
 
+// for Debug 
+#define ENABLE_DEBUG_MODE false
+
 #endif /* ALL_HEADER_H_ */

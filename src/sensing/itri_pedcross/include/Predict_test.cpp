@@ -11825,7 +11825,7 @@ int main()
                 nullptr, 0,                   // Target operations, number of targets.
                 nullptr,                      // Run metadata.
                 status                        // Output status.
-                );
+  );
 
   if (TF_GetCode(status) != TF_OK)
   {
