@@ -27,7 +27,7 @@ DistanceEstimation::DistanceEstimation()
   initDetectArea();
 }
 
-void DistanceEstimation::init(std::string pkgPath, int mode)
+void DistanceEstimation::init(const std::string& pkgPath, int mode)
 {
   de_mode = mode;
 
@@ -201,7 +201,7 @@ int DistanceEstimation::ReadDistanceFromJson(const std::string& filename, cv::Po
   return 0;
 }
 
-float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
+float DistanceEstimation::ComputeObjectXDist(int pixel_loc, std::vector<int> regionHeight,
                                              std::vector<float> regionDist)
 {
   float distance = -1;
@@ -210,33 +210,33 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
   float offset = 0.0;
   for (size_t i = 1; i < regionHeight.size(); i++)
   {
-    if (piexl_loc >= regionHeight[i] && piexl_loc <= regionHeight[i - 1])
+    if (pixel_loc >= regionHeight[i] && pixel_loc <= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i - 1] - regionHeight[i];
       int region_meter = regionDist[i] - regionDist[i - 1];
       unit_length = float(region_meter) / float(regionpixel);
-      bias = piexl_loc - regionHeight[i];
+      bias = pixel_loc - regionHeight[i];
       offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (piexl_loc <= regionHeight[i] && piexl_loc >= regionHeight[i - 1])
+    else if (pixel_loc <= regionHeight[i] && pixel_loc >= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i] - regionHeight[i - 1];
       int region_meter = regionDist[i] - regionDist[i - 1];
       unit_length = float(region_meter) / float(regionpixel);
-      bias = regionHeight[i] - piexl_loc;
+      bias = regionHeight[i] - pixel_loc;
       offset = unit_length * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (piexl_loc > regionHeight.front())
+      if (pixel_loc > regionHeight.front())
       {
         distance = regionDist.front() - 0.2;
       }
-      else if (piexl_loc < regionHeight.back())
+      else if (pixel_loc < regionHeight.back())
       {
         distance = 777;
       }
@@ -726,6 +726,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   /// 1
   p0 = GetPointDist(x1, y2, cam_id);
   p3 = GetPointDist(x2, y2, cam_id);
+  p3.x = p0.x;
 
   if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120)
   {
