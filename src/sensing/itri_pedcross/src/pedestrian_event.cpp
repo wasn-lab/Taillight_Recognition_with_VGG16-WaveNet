@@ -18,7 +18,7 @@ void PedestrianEvent::display_on_terminal()
     for (int i = 0; i < terminal_size.ws_row; i++)
     {
       ss << "\n";
-      if (i == 0 || i == terminal_size.ws_row - 1)
+      if (i == 0 || i == 8 || i == terminal_size.ws_row - 1)
       {
         for (int j = 0; j < terminal_size.ws_col; j++)
         {
@@ -104,12 +104,20 @@ void PedestrianEvent::display_on_terminal()
         {
           line << "Planned path size: " << nav_path.size();
         }
+        else if (i == 6)
+        {
+          line << "input_source: " << input_source << "   max_distance: " << max_distance << "   show_probability: " << show_probability;
+        }
+        else if (i == 7)
+        {
+          line << "danger_zone_distance: " << danger_zone_distance << "   use_2d_for_alarm: " << use_2d_for_alarm;
+        }
         else
         {
           int size_ped_info = ped_info.size();
-          if (i - 6 < size_ped_info)
+          if (i - 9 < size_ped_info)
           {
-            line << ped_info[i - 6];
+            line << ped_info[i - 9];
           }
         }
         for (int k = line.tellp(); k < terminal_size.ws_col; k++)
@@ -726,26 +734,23 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     alert_objs.objects.assign(alertObjs.begin(), alertObjs.end());
     alert_pub.publish(alert_objs);
 
-    if (!pedObjs.empty())  // do things only when there is pedestrian
-    {
-      // sensor_msgs::ImageConstPtr img_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
-      // cv_bridge::CvImage img_bridge;
-      // sensor_msgs::Image img_msg; // >> message to be sent
+    // sensor_msgs::ImageConstPtr img_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
+    // cv_bridge::CvImage img_bridge;
+    // sensor_msgs::Image img_msg; // >> message to be sent
+    // std_msgs::Header header = msg->header; // empty header
+    // header.stamp = ros::Time::now(); // time
+    // img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, matrix);
+    // img_bridge.toImageMsg(img_msg); // from cv_bridge to sensor_msgs::Image
 
-      // std_msgs::Header header = msg->header; // empty header
-      // header.stamp = ros::Time::now(); // time
-      // img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, matrix);
-      // img_bridge.toImageMsg(img_msg); // from cv_bridge to sensor_msgs::Image
+    msgs::PedObjectArray msg_pub;
+    // msg_pub.raw_image = img_msg;
+    msg_pub.header = msg->header;
+    msg_pub.header.frame_id = msg->header.frame_id;
+    msg_pub.header.stamp = msg->header.stamp;
+    msg_pub.objects.assign(pedObjs.begin(), pedObjs.end());
+    chatter_pub.publish(msg_pub);
+    delay_from_camera = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 
-      msgs::PedObjectArray msg_pub;
-      // msg_pub.raw_image = img_msg;
-      msg_pub.header = msg->header;
-      msg_pub.header.frame_id = msg->header.frame_id;
-      msg_pub.header.stamp = msg->header.stamp;
-      msg_pub.objects.assign(pedObjs.begin(), pedObjs.end());
-      chatter_pub.publish(msg_pub);
-      delay_from_camera = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
-    }
     matrix2 = 0;
 
     stop = ros::Time::now();
@@ -864,7 +869,9 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // cv_ptr_image = cv_bridge::toCvShare(image_msg, "bgr8");
   // cv_ptr_image->image.copyTo(matrix);
   if (image_cache.empty() || msg->objects.empty())  // do if there is image in buffer
+  {
     return;
+  }
 
   cv::Mat matrix;
   cv::Mat matrix2;
