@@ -24,6 +24,7 @@ fi
 source devel/setup.bash
 
 rostest car_model publish_test_drivenet_b1_v2.test
+rostest car_model publish_test_convex_fusion_b1_v2.test
 rostest car_model publish_test_tpp_b1_v2.test
 rostest car_model publish_test_lidarnet_b1_v2.test
 rostest car_model publish_test_edge_detection_b1_v2.test
