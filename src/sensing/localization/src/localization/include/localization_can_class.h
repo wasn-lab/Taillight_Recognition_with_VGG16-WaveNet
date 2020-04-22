@@ -9,7 +9,7 @@
 #define LOCALIZATION_CAN_CLASS_H_
 
 #include <cstdio>
-#include <net/if.h> //struct ifreq
+#include <net/if.h>  //struct ifreq
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
@@ -24,15 +24,14 @@
 #include <iostream>
 #include <fstream>
 
-
 struct MsgSendToCan
 {
-        double x;
-        double y;
-        double heading;
-        double fitness_score;
-        double transform_prob;
-        double ndt_reliability;
+  double x;
+  double y;
+  double heading;
+  double fitness_score;
+  double transform_prob;
+  double ndt_reliability;
 };
 
 using namespace std;
@@ -40,25 +39,19 @@ using namespace std;
 class ClassLiDARPoseCan
 {
 private:
+  int s;
+  int required_mtu;
+  int can_counter = 0;
+  bool lidar_error = false;
 
-int s;
-int required_mtu;
-int can_counter = 0;
-bool lidar_error = false;
 public:
+  ClassLiDARPoseCan();
 
-ClassLiDARPoseCan ();
+  ~ClassLiDARPoseCan();
 
-~ClassLiDARPoseCan ();
+  void initial();
 
-void
-initial ();
-
-int
-poseSendByCAN(const struct MsgSendToCan &input_msg);
-
-
-
+  int poseSendByCAN(const struct MsgSendToCan& input_msg);
 };
 
 #endif /*LOCALIZATION_CAN_CLASS_H_*/

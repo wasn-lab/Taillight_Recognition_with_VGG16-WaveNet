@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/rad_grab_2020-04-13-17-45-48_0.bag" required="true" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/rad_grab_2020-04-13-17-45-48_0.bag" />
     <node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true"  />
     <node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true"  />
 
