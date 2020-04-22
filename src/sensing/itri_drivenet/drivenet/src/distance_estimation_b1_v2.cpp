@@ -183,16 +183,17 @@ int DistanceEstimation::ReadDistanceFromJson(const std::string& filename, cv::Po
   jreader.parse(ifs, jdata);
   std::cout << "Reading json file: " << filename << std::endl;
 
-  for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
+  for (auto &jvalue : jdata)
+  // for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
   {
-    auto image_x = jdata[i]["im_x"].asInt();
-    auto image_y = jdata[i]["im_y"].asInt();
+    auto image_x = jvalue["im_x"].asInt();
+    auto image_y = jvalue["im_y"].asInt();
 
     if ((image_y < rows) && (image_x < cols))
     {
-      dist_in_cm[image_y][image_x].x = jdata[i]["dist_in_cm"][0].asInt();
-      dist_in_cm[image_y][image_x].y = jdata[i]["dist_in_cm"][1].asInt();
-      dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
+      dist_in_cm[image_y][image_x].x = jvalue["dist_in_cm"][0].asInt();
+      dist_in_cm[image_y][image_x].y = jvalue["dist_in_cm"][1].asInt();
+      dist_in_cm[image_y][image_x].z = jvalue["dist_in_cm"][2].asInt();
     }
   }
 
