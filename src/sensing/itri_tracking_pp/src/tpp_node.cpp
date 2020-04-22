@@ -264,8 +264,14 @@ void TPPNode::subscribe_and_advertise_topics()
   nh2_.setCallbackQueue(&queue_);
 
   // Note that we use different NodeHandle(nh2_) here
-
-  wayarea_sub_ = nh2_.subscribe("occupancy_grid_wayarea", 1, &TPPNode::callback_wayarea, this);
+  if (occ_source_ == 1)
+  {
+    wayarea_sub_ = nh2_.subscribe("occupancy_wayarea", 1, &TPPNode::callback_wayarea, this);
+  }
+  else
+  {
+    wayarea_sub_ = nh2_.subscribe("occupancy_grid_wayarea", 1, &TPPNode::callback_wayarea, this);
+  }
 
 #if TTC_TEST
   seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
@@ -873,6 +879,7 @@ void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
   nh_.param<int>(domain + "input_source", in_source_, 0);
+  nh_.param<int>(domain + "occ_source", occ_source_, 0);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
