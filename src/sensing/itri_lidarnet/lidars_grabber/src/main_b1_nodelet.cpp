@@ -433,6 +433,6 @@ namespace lidars_grabber_b1_nodelet
 
 //===== Nodelet
 
-}// namespace lidars_grabber_nodelet
+}// namespace lidars_grabber_b1_nodelet
 
 PLUGINLIB_EXPORT_CLASS(lidars_grabber_b1_nodelet::LidarsNodelet, nodelet::Nodelet);
