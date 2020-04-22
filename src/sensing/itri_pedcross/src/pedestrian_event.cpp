@@ -635,7 +635,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         }
         // too close to planned path
         // from center to left and right 2 meters
-        if (min_distance_from_path < 2)
+        if (min_distance_from_path < danger_zone_distance)
         {
           obj_pub.crossProbability = 1;
         }
@@ -1754,6 +1754,7 @@ int main(int argc, char** argv)
   nh.getParam("/show_probability", pe.show_probability);
   nh.getParam("/input_source", pe.input_source);
   nh.getParam("/max_distance", pe.max_distance);
+  nh.getParam("/danger_zone_distance", pe.danger_zone_distance);
 
   pe.image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.crop_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
