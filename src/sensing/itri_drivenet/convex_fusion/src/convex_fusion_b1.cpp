@@ -64,13 +64,13 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
     msgObj.distance = -1;
     msgObj.classId = cluster_info[i].cluster_tag;
     size_t convex_hull_size = cluster_info[i].convex_hull.size();
-    if (cluster_info[i].cluster_tag != static_cast<int>(DriveNet::common_type_id::other)) // If type is Unknown.
+    if (cluster_info[i].cluster_tag != static_cast<int>(DriveNet::common_type_id::other))  // If type is Unknown.
     {
       msgObj.distance = 0;
       float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
       float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
       msgObj.cPoint.objectHigh = top_z - bottom_z;
-      
+
       /// Coordinate system
       ///           ^          ///             ^
       ///      ^   /           ///        ^   /

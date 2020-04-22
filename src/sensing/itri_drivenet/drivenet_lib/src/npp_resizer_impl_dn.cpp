@@ -20,8 +20,7 @@ NPPResizerImpl::NPPResizerImpl(const int src_rows, const int src_cols, const dou
 }
 
 NPPResizerImpl::NPPResizerImpl(const int src_rows, const int src_cols, const int dst_rows, const int dst_cols)
-  : src_line_steps_(src_cols * 3)
-  , dst_line_steps_(dst_cols * 3)
+  : src_line_steps_(src_cols * 3), dst_line_steps_(dst_cols * 3)
 {
   CHECK(src_rows > 0);
   CHECK(src_cols > 0);
@@ -64,4 +63,4 @@ void NPPResizerImpl::set_interpolation_mode(NppiInterpolationMode mode)
 {
   interpolation_mode_ = mode;
 }
-} // namespace DriveNet_npp
+}  // namespace DriveNet_npp
