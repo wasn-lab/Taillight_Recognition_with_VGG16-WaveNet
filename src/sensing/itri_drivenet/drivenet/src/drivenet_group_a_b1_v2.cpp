@@ -10,7 +10,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30};
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30 };
 #else
 #error "car model is not well defined"
 #endif
@@ -220,8 +220,10 @@ int main(int argc, char** argv)
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60, callback_cam_front_top_far_30 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_bottom_60_decode, callback_cam_front_top_far_30_decode };
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
+                                                                            callback_cam_front_top_far_30 };
+  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_bottom_60_decode,
+                                                                             callback_cam_front_top_far_30_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
@@ -317,8 +319,8 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
   if (g_cam_ids[cam_order] == camera::id::front_bottom_60)
   {
-    //l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x1, box.y2);
-    //r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x2, box.y2);
+    // l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x1, box.y2);
+    // r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x2, box.y2);
     l_check = 0;
     r_check = 0;
   }
@@ -354,7 +356,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.width = box.x2 - box.x1;
   cam_info.height = box.y2 - box.y1;
   cam_info.prob = box.prob;
-  cam_info.id = translate_label(box.label);  
+  cam_info.id = translate_label(box.label);
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info;
@@ -466,16 +468,7 @@ void* run_yolo(void* /*unused*/)
                     << ", rows: " << (*mat_srcs_tmp[cam_order]).rows << std::endl;
           continue;
         }
-        try
-        {
-          cv::resize((*mat_srcs_tmp[cam_order]), m_display_tmp, cv::Size(g_rawimg_w, g_rawimg_h), 0, 0, 0);
-        }
-        catch (cv::Exception& e)
-        {
-          std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
-          continue;
-        }
-        m_display = m_display_tmp;
+        m_display = *mat_srcs_tmp[cam_order];
       }
 
       msgs::DetectedObject det_obj;
@@ -490,7 +483,12 @@ void* run_yolo(void* /*unused*/)
         if (g_img_result_publish || g_display_flag)
         {
           class_color = get_label_color(box.label);
-          cv::rectangle(m_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
+          PixelPosition position_1{ int(box.x1), int(box.y1) };
+          PixelPosition position_2{ int(box.x2), int(box.y2) };
+          transferPixelScaling(position_1);
+          transferPixelScaling(position_2);
+          cv::rectangle(m_display, cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
+                        class_color, 3);
         }
       }
       for (size_t i = 0; i < pool.size(); i++)
@@ -579,7 +577,7 @@ void* run_display(void* /*unused*/)
     {
       if (g_mats_display[cam_order].data != nullptr)
       {
-        if (g_mats_display[cam_order].cols * g_mats_display[cam_order].rows == g_rawimg_size)
+        if (g_mats_display[cam_order].cols * g_mats_display[cam_order].rows == g_img_size)
         {
           try
           {
