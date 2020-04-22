@@ -21,14 +21,47 @@ class SIGNAL_ANALYZER(object):
 
         # Parameters
         self.alpha = 2*np.pi*0.1 # 0.1 Hz
-
+        # ROS std_msg/String publisher
         self.event_publisher = event_publisher
-
-        #
+        # List of checker_func
         self.checker_func_list = []
-        self.checker_func_list.append(self.sample_check_func)
-        # self.event_str_dict = dict()
+        # Setup checkers (Note: this function should be overloaded)
+        self.setup_checkers()
 
+    def setup_checkers(self):
+        """
+        ** OVERLOAD
+        """
+        self.checker_func_list.append(self.sample_check_func)
+    #
+    def update(self, value_in):
+        """
+        This is a function that need to be call at each iteration.
+        """
+        # Initialization
+        if self.value is None:
+            self.value = value_in
+        if self.value_avg is None:
+            self.value_avg = value_in
+        # check_func
+        for _check_func in self.checker_func_list:
+            _check_func(value_in)
+        # Update stored value
+        #--------------------#
+        self._filter(value_in)
+
+    def sample_check_func(self, value_in):
+        """
+        This is a sample checker_func.
+        Each chile class can create its own checker_func
+        """
+        delta_value = value_in - self.value_avg
+        if delta_value > 0.0:
+            print("High")
+            self.publish_event("WARN", "abnormally high")
+
+    # Private functions
+    # ------------------------------------#
     def _filter(self, value_in):
         """
         This is a adaptive low pass filter for obtaining the average of the signal.
@@ -47,7 +80,6 @@ class SIGNAL_ANALYZER(object):
         self.value_avg += adT * (value_in - self.value_avg)
         self.value = value_in
         self.stamp_last = stamp_now
-
 
     def _event_2_json(self, status, event_str):
         """
@@ -74,41 +106,34 @@ class SIGNAL_ANALYZER(object):
         print(event_json)
         if self.event_publisher:
             self.event_publisher.publish( event_json )
-
-    #
-    def update(self, value_in):
-        """
-        """
-        # Initialization
-        if self.value is None:
-            self.value = value_in
-        if self.value_avg is None:
-            self.value_avg = value_in
-        # check_func
-        for _check_func in self.checker_func_list:
-            _check_func(value_in)
-        # Update stored value
-        #--------------------#
-        self._filter(value_in)
-
-    def sample_check_func(self, value_in):
-        """
-        """
-        delta_value = value_in - self.value_avg
-        if delta_value > 0.0:
-            print("Hey")
-            self.publish_event("WARN", "abnormally high")
+    # ------------------------------------#
+    # end Private functions
 
 class SIGNAL_ANALYZER_TEST(SIGNAL_ANALYZER):
-    pass
+    def setup_checkers(self):
+        """
+        ** OVERLOAD
+        """
+        self.checker_func_list.append(self.check_low_value)
+
+    def check_low_value(self, value_in):
+        """
+        This is a checker
+        """
+        delta_value = value_in - self.value_avg
+        if delta_value < 0.0:
+            print("Low")
+            self.publish_event("WARN", "abnormally low")
 
 
 if __name__ == "__main__":
-    # sig_analyzer = SIGNAL_ANALYZER()
-    sig_analyzer = SIGNAL_ANALYZER_TEST()
+    sig_analyzer_base = SIGNAL_ANALYZER()
+    sig_analyzer_low = SIGNAL_ANALYZER_TEST()
     while True:
         value =  np.random.rand()
         print("value = %f" % value)
-        sig_analyzer.update( value )
-        print("value_avg = %f" % sig_analyzer.value_avg)
+        sig_analyzer_base.update( value )
+        sig_analyzer_low.update( value )
+        print("sig_analyzer_base.value_avg = %f" % sig_analyzer_base.value_avg)
+        print("sig_analyzer_low.value_avg = %f" % sig_analyzer_low.value_avg)
         time.sleep(0.3)
