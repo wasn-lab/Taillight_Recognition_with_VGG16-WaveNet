@@ -2,15 +2,14 @@
 
 AlignmentOff::AlignmentOff()
 {
-  /// camera layout
-  #if CAR_MODEL_IS_B1_V2
+/// camera layout
+#if CAR_MODEL_IS_B1_V2
   const camera::id camId = camera::id::front_bottom_60;
-  #elif CAR_MODEL_IS_B1
-  const camera::id camId = camera::id::right_60;  
-  // const camera::id camId = camera::id::front_60;  
-  #else
-  #error "car model is not well defined"
-  #endif
+#elif CAR_MODEL_IS_B1
+  const camera::id camId = camera::id::front_60;
+#else
+#error "car model is not well defined"
+#endif
 
   pj.init(camId);
 
@@ -108,34 +107,35 @@ void AlignmentOff::approx_nearest_points_if_necessary()
 
   bool done = false;
 
-  std::cout << "Starting to create image"  << std::endl ;
-  
-/*
-  for(int i = 0; i < 5000; i++)
-  {
-    std::cout << "Process: " << i << "/5000" << std::endl ;
-    
-    for(int j = -3000; j < 3000; j++)
-    {
-      float i_float = (float)i/100;
-      float j_float = (float)j/100;
-      float tmpz = (float)i_float*0.020686-2.63239;
-      // float tmpz = ((float)i_float-79)/30;
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)      // 
-      out = run((float)i_float, (float)j_float, tmpz);
+  std::cout << "Starting to create image" << std::endl;
 
-      if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
+  /*
+    for(int i = 0; i < 5000; i++)
+    {
+      std::cout << "Process: " << i << "/5000" << std::endl ;
+
+      for(int j = -3000; j < 3000; j++)
       {
-        // std::cout << "2D: x = " << out[0] << ". y = " << out[1] ;
-        // std::cout << ", 3D: x = " << i_float << ". y = " << j_float << ". z = " << tmpz << std::endl ;
-        
-        spatial_points_[out[1]][out[0]].x = i_float;
-        spatial_points_[out[1]][out[0]].y = j_float;
-        spatial_points_[out[1]][out[0]].z = 0.0;
+        float i_float = (float)i/100;
+        float j_float = (float)j/100;
+        float tmpz = (float)i_float*0.020686-2.63239;
+        // float tmpz = ((float)i_float-79)/30;
+      // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x -
+    79)/30) < 0.1)      //
+        out = run((float)i_float, (float)j_float, tmpz);
+
+        if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
+        {
+          // std::cout << "2D: x = " << out[0] << ". y = " << out[1] ;
+          // std::cout << ", 3D: x = " << i_float << ". y = " << j_float << ". z = " << tmpz << std::endl ;
+
+          spatial_points_[out[1]][out[0]].x = i_float;
+          spatial_points_[out[1]][out[0]].y = j_float;
+          spatial_points_[out[1]][out[0]].z = 0.0;
+        }
       }
     }
-  }
-  */
+    */
 
   for (int row = 0; row < imgH; row++)
   {
@@ -152,11 +152,11 @@ void AlignmentOff::approx_nearest_points_if_necessary()
   }
 
   cv::namedWindow("image", 1);
-	cv::imshow("image", tmpa);
-	cv::waitKey();
+  cv::imshow("image", tmpa);
+  cv::waitKey();
 
   std::cout << "Total " << unset_points.size() << " need to be approximated" << std::endl;
-  
+
   while (!done)
   {
     int num_approx = 0;
@@ -201,7 +201,6 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     }
   }
   std::cout << " unset_points: " << unset_points.size();
-  
 }
 
 void AlignmentOff::dump_distance_in_json() const
@@ -313,5 +312,4 @@ int main(int argc, char** argv)
 
   g_al.approx_nearest_points_if_necessary();
   g_al.dump_distance_in_json();
-
 }
