@@ -39,9 +39,9 @@ Lidar List:
 <!-- static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
-<!-- MPS ******************************************************************* -->
+<!-- MPS ******************************************************************* 
 <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
- 
+-->
 
 <!-- NODELET *************************************************************** -->
 	<!-- Manager -->
