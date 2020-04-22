@@ -90,7 +90,7 @@ cv::Scalar get_common_label_color(int label_id)
   return class_color;
 }
 
-void transferPixelScaling(PixelPosition& positions) 
+void transferPixelScaling(PixelPosition& positions)
 {
   positions.u = int(positions.u * g_scaling_ratio_w);
   positions.v = int(positions.v * g_scaling_ratio_h);
@@ -98,7 +98,7 @@ void transferPixelScaling(PixelPosition& positions)
 
 void transferPixelScaling(std::vector<PixelPosition>& pixel_positions)
 {
-  for(auto& positions: pixel_positions)
+  for (auto& positions : pixel_positions)
   {
     positions.u = int(positions.u * g_scaling_ratio_w);
     positions.v = int(positions.v * g_scaling_ratio_h);
@@ -128,7 +128,7 @@ object_box getDefaultObjectBox(int label_id)
     bbox.height = 1.5;
     bbox.length = 5;
   }
-  else if(label_id == static_cast<int>(DriveNet::common_type_id::bus))
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::bus))
   {
     bbox.width = 2.5;
     bbox.height = 2;
@@ -142,4 +142,4 @@ object_box getDefaultObjectBox(int label_id)
   }
   return bbox;
 }
-} // namespace DriveNet
+}  // namespace DriveNet

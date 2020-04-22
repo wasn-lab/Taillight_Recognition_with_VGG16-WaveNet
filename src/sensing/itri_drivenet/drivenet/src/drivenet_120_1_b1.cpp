@@ -606,14 +606,16 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
-    if (g_cam_ids[cam_order] == camera::id::top_right_front_120 || g_cam_ids[cam_order] == camera::id::top_right_rear_120)
+    if (g_cam_ids[cam_order] == camera::id::top_right_front_120 ||
+        g_cam_ids[cam_order] == camera::id::top_right_rear_120)
     {
       left_point[0] = boxPoint.p4.x;
       right_point[0] = boxPoint.p0.x;
       left_point[1] = boxPoint.p4.y;
       right_point[1] = boxPoint.p0.y;
     }
-    else if (g_cam_ids[cam_order] == camera::id::top_left_front_120 || g_cam_ids[cam_order] == camera::id::top_left_rear_120)
+    else if (g_cam_ids[cam_order] == camera::id::top_left_front_120 ||
+             g_cam_ids[cam_order] == camera::id::top_left_rear_120)
     {
       left_point[0] = boxPoint.p3.x;
       right_point[0] = boxPoint.p7.x;
@@ -639,7 +641,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   camInfo.height = box.y2 - box.y1;
   camInfo.prob = box.prob;
   camInfo.id = translate_label(box.label);
-  
+
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
   detObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
