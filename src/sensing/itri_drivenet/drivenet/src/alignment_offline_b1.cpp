@@ -195,7 +195,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
 
     std::cout << "Total " << unset_points_temp.size() << " need to be approximated" << std::endl;
     unset_points.assign(unset_points_temp.begin(), unset_points_temp.end());
-    if ((unset_points.size() == 0) || (num_approx == 0))
+    if ((unset_points.empty() == 0) || (num_approx == 0))
     {
       done = true;
     }
