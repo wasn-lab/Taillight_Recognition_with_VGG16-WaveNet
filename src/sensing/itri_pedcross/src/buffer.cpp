@@ -97,6 +97,7 @@ void Buffer::check_life()
   BufferNode* current_node = first;
   while (current_node != 0)
   {
+    BufferNode* next_node = current_node->next;
     if (current_node->refresh)
     {
       current_node->idle_time = 0;
@@ -106,7 +107,7 @@ void Buffer::check_life()
     {
       remove(current_node);
     }
-    current_node = current_node->next;
+    current_node = next_node;
   }
 }
 

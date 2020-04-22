@@ -162,7 +162,7 @@ void KeyboardMouseEvent::keyboardCallback(const pcl::visualization::KeyboardEven
          << ";" << endl
          << "cam.focal[0]=" << cam[0].focal[0] << ";cam.focal[1]=" << cam[0].focal[1]
          << ";cam.focal[2]=" << cam[0].focal[2] << ";" << endl
-         << "cam.clip[0]=" << cam[0].clip[0] << ";cam.clip[1]=" << cam[0].clip[1] << ";cam.clip[2]=" << cam[0].clip[2]
+         << "cam.clip[0]=" << cam[0].clip[0] << ";cam.clip[1]=" << cam[0].clip[1]
          << ";" << endl
          << "cam.fovy=" << cam[0].fovy << ";" << endl
          << "cam.window_pos[0]=" << cam[0].window_pos[0] << ";cam.window_pos[1]=" << cam[0].window_pos[1] << ";" << endl
@@ -173,7 +173,7 @@ void KeyboardMouseEvent::keyboardCallback(const pcl::visualization::KeyboardEven
     cout << "Camera Auto Code: " << endl
          << "cam = CamPara(" << cam[0].pos[0] << "," << cam[0].pos[1] << "," << cam[0].pos[2] << "," << cam[0].view[0]
          << "," << cam[0].view[1] << "," << cam[0].view[2] << "," << cam[0].focal[0] << "," << cam[0].focal[1] << ","
-         << cam[0].focal[2] << "," << cam[0].clip[0] << "," << cam[0].clip[1] << "," << cam[0].clip[2] << ","
+         << cam[0].focal[2] << "," << cam[0].clip[0] << "," << cam[0].clip[1] << ","
          << cam[0].fovy << "," << cam[0].window_pos[0] << "," << cam[0].window_pos[1] << "," << cam[0].window_size[0]
          << "," << cam[0].window_size[1] << ");" << endl;
   }

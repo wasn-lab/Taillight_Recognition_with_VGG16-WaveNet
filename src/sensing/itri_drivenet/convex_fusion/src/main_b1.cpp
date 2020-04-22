@@ -76,13 +76,8 @@ int main(int argc, char** argv)
   {
     StopWatch stopWatch;
 
-    g_mutex_lidarall_nonground.lock();
-    g_mutex_front_60.lock();
-    g_mutex_top_front_120.lock();
-    g_mutex_top_rear_120.lock();
-
     //------------------------------------------------------------------------- LiDAR
-
+    g_mutex_lidarall_nonground.lock();
     PointCloud<PointXYZI> lidarall_nonground;
     lidarall_nonground = *g_ptr_lidarall_nonground;
 
@@ -96,12 +91,11 @@ int main(int argc, char** argv)
     {
       g_heart_beat[0]++;
     }
-
+    g_mutex_lidarall_nonground.unlock();
     //------------------------------------------------------------------------- Camera
     std::vector<msgs::DetectedObject> object_front_60, object_top_front_120, object_top_rear_120;
+    g_mutex_front_60.lock();
     object_front_60 = g_object_front_60;
-    object_top_front_120 = g_object_top_front_120;
-    object_top_rear_120 = g_object_top_rear_120;
 
     if (g_heart_beat[1] > CHECKTIMES)
     {
@@ -113,6 +107,10 @@ int main(int argc, char** argv)
     {
       g_heart_beat[1]++;
     }
+    g_mutex_front_60.unlock();
+
+    g_mutex_top_front_120.lock();
+    object_top_front_120 = g_object_top_front_120;
 
     if (g_heart_beat[2] > CHECKTIMES)
     {
@@ -124,7 +122,9 @@ int main(int argc, char** argv)
     {
       g_heart_beat[2]++;
     }
-
+    g_mutex_top_front_120.unlock();
+    g_mutex_top_rear_120.lock();
+    object_top_rear_120 = g_object_top_rear_120;
     if (g_heart_beat[3] > CHECKTIMES)
     {
       g_object_top_rear_120.clear();
@@ -135,9 +135,6 @@ int main(int argc, char** argv)
     {
       g_heart_beat[3]++;
     }
-    g_mutex_lidarall_nonground.unlock();
-    g_mutex_front_60.unlock();
-    g_mutex_top_front_120.unlock();
     g_mutex_top_rear_120.unlock();
 
     //------------------------------------------------------------------------- Main
@@ -232,7 +229,7 @@ int main(int argc, char** argv)
             }
             break;
 
-          case static_cast<int>(DriveNet::common_type_id::bicycle):  // Bicycle
+          case static_cast<int>(DriveNet::common_type_id::bicycle):    // Bicycle
           case static_cast<int>(DriveNet::common_type_id::motorbike):  // Motobike
             if (camera_ABB[i].min.x < 15)
             {
@@ -248,8 +245,8 @@ int main(int argc, char** argv)
             }
             break;
 
-          case static_cast<int>(DriveNet::common_type_id::car):  // Car
-          case static_cast<int>(DriveNet::common_type_id::bus):  // Bus
+          case static_cast<int>(DriveNet::common_type_id::car):    // Car
+          case static_cast<int>(DriveNet::common_type_id::bus):    // Bus
           case static_cast<int>(DriveNet::common_type_id::truck):  // Truck
             if (camera_ABB[i].min.x < 15)
             {
@@ -272,7 +269,7 @@ int main(int argc, char** argv)
         camera_ABB[i].max.y += -scale;
       }
 
-    //-------------------------------------------------------------------------
+      //-------------------------------------------------------------------------
 
       for (size_t i = 0; i < lidarall_nonground.size(); i++)
       {
@@ -288,8 +285,6 @@ int main(int argc, char** argv)
           }
         }
       }
-
-#pragma omp parallel for
       for (size_t i = 0; i < numberABB; i++)
       {
         UseApproxMVBB approxMVBB;

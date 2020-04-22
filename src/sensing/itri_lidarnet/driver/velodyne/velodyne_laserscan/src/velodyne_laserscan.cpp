@@ -104,7 +104,7 @@ void VelodyneLaserScan::recvCallback(const sensor_msgs::PointCloud2ConstPtr& msg
   // Select ring to use
   uint16_t ring;
 
-  if ((cfg_.ring < 0) || (cfg_.ring >= ring_count_))
+  if ((cfg_.ring < 0) || (cfg_.ring >= static_cast<int>(ring_count_)))
   {
     // Default to ring closest to being level for each known sensor
     if (ring_count_ > 32)

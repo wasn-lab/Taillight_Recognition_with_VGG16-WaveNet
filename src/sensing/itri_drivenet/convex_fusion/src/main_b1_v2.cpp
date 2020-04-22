@@ -52,12 +52,8 @@ int main(int argc, char** argv)
   while (ros::ok())
   {
     StopWatch stopWatch;
-
-    g_mutex_lidarall_nonground.lock();
-    g_mutex_front_bottom_60.lock();
-
     //------------------------------------------------------------------------- LiDAR
-
+    g_mutex_lidarall_nonground.lock();
     PointCloud<PointXYZI> lidarall_nonground;
     lidarall_nonground = *g_ptr_lidarall_nonground;
 
@@ -71,9 +67,10 @@ int main(int argc, char** argv)
     {
       g_heart_beat[0]++;
     }
-
+    g_mutex_lidarall_nonground.unlock();
     //------------------------------------------------------------------------- Camera
     std::vector<msgs::DetectedObject> object_front_bottom_60;
+    g_mutex_front_bottom_60.lock();
     object_front_bottom_60 = g_object_front_bottom_60;
     if (g_heart_beat[1] > CHECKTIMES)
     {
@@ -85,9 +82,7 @@ int main(int argc, char** argv)
     {
       g_heart_beat[1]++;
     }
-
     g_mutex_front_bottom_60.unlock();
-    g_mutex_lidarall_nonground.unlock();
 
     //------------------------------------------------------------------------- Main
     size_t numberABB = object_front_bottom_60.size();
@@ -141,7 +136,7 @@ int main(int argc, char** argv)
             }
             break;
 
-          case static_cast<int>(DriveNet::common_type_id::bicycle):  // Bicycle
+          case static_cast<int>(DriveNet::common_type_id::bicycle):    // Bicycle
           case static_cast<int>(DriveNet::common_type_id::motorbike):  // Motobike
             if (camera_ABB[i].min.x < 15)
             {
@@ -157,8 +152,8 @@ int main(int argc, char** argv)
             }
             break;
 
-          case static_cast<int>(DriveNet::common_type_id::car):  // Car
-          case static_cast<int>(DriveNet::common_type_id::bus):  // Bus
+          case static_cast<int>(DriveNet::common_type_id::car):    // Car
+          case static_cast<int>(DriveNet::common_type_id::bus):    // Bus
           case static_cast<int>(DriveNet::common_type_id::truck):  // Truck
             if (camera_ABB[i].min.x < 15)
             {
@@ -196,7 +191,6 @@ int main(int argc, char** argv)
         }
       }
 
-#pragma omp parallel for
       for (size_t i = 0; i < numberABB; i++)
       {
         UseApproxMVBB approxMVBB;

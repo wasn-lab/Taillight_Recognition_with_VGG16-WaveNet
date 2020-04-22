@@ -16,6 +16,12 @@ set -e
 make -j pcd_saver video_saver image_saver
 make auto_record_2020-03-10-10-48-39_41.bag
 make lidar_raw_2020-03-10-10-48-39_41.bag
+make edge_detection_2020-04-13-17-45-48_0.bag
+make localization_raw_2020-04-13-17-45-48_0.bag
+make lidarxyz2lla_2020-04-13-17-45-48_0.bag
+make rad_grab_2020-04-13-17-45-48_0.bag
+make ukf_mm_2020-04-13-17-45-48_0.bag
+make target_planner_2020-04-13-17-45-48_0.bag
 set +e
 popd
 

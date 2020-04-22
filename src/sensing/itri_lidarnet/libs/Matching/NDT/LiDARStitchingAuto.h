@@ -68,7 +68,7 @@ private:
   int numCPU_ = sysconf(_SC_NPROCESSORS_ONLN);
 
   pcl::console::TicToc tt;
-  bool initialized_;
+  // bool initialized_;
   // trg, src point clouds
   pcl::PointCloud<pcl::PointXYZI>::Ptr src_;
   pcl::PointCloud<pcl::PointXYZI>::Ptr trg_;
