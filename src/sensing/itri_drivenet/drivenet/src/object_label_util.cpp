@@ -90,6 +90,12 @@ cv::Scalar get_common_label_color(int label_id)
   return class_color;
 }
 
+void transferPixelScaling(PixelPosition& positions) 
+{
+  positions.u = int(positions.u * g_scaling_ratio_w);
+  positions.v = int(positions.v * g_scaling_ratio_h);
+}
+
 void transferPixelScaling(std::vector<PixelPosition>& pixel_positions)
 {
   for(auto& positions: pixel_positions)

@@ -52,6 +52,7 @@ struct object_box
 };
 
 int translate_label(int label);
+void transferPixelScaling(PixelPosition& positions);
 void transferPixelScaling(std::vector<PixelPosition>& pixel_positions);
 cv::Scalar get_label_color(int label_id);
 cv::Scalar get_common_label_color(int label_id);
