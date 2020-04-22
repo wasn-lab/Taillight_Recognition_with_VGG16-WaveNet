@@ -12,6 +12,11 @@
   <!-- otherwise: /SensorFusion -->
   <arg name="input_source" default="0" />
 
+  <!-- Occupancy source -->
+  <!-- 1: /occupancy_wayarea -->
+  <!-- otherwise: /occupancy_grid_wayarea -->
+  <arg name="occ_source" default="0" />
+
   <!-- Input/Output FPS -->
   <arg name="input_fps" default="10.0" />
   <arg name="output_fps" default="10.0" />
@@ -44,6 +49,7 @@
   <!-- Launch node -->
   <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
+    <param name="occ_source" value="$(arg occ_source)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
     <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />
