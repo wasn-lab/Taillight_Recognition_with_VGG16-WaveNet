@@ -30,5 +30,5 @@ public:
   int resize(Npp8u* src, Npp8u* dst);
   void set_interpolation_mode(NppiInterpolationMode mode);
 };
-} // namespace DriveNet_npp
+}  // namespace DriveNet_npp
 #endif  // __NPP_RESIZER_IMPL_DN_H__

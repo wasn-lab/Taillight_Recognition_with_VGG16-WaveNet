@@ -18,7 +18,8 @@ class DistanceEstimation
 private:
   DisEstiParams camFR60, camFC60, camFL60, camFT120, camRF120, camRB120, camLF120, camLB120, camBT120;
   CheckArea ShrinkArea_camFR60, ShrinkArea_camFT120, ShrinkArea_camBT120;
-  cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
+  cv::Point3d** align_FC60;
+  cv::Point3d** align_FR60;
 
   /// camId: 0 = camFR60
   /// camId: 1 = camFC60
