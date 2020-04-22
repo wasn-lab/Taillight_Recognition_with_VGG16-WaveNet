@@ -229,7 +229,7 @@ int main(int argc, char** argv)
             }
             break;
 
-          case static_cast<int>(DriveNet::common_type_id::bicycle):  // Bicycle
+          case static_cast<int>(DriveNet::common_type_id::bicycle):    // Bicycle
           case static_cast<int>(DriveNet::common_type_id::motorbike):  // Motobike
             if (camera_ABB[i].min.x < 15)
             {
@@ -245,8 +245,8 @@ int main(int argc, char** argv)
             }
             break;
 
-          case static_cast<int>(DriveNet::common_type_id::car):  // Car
-          case static_cast<int>(DriveNet::common_type_id::bus):  // Bus
+          case static_cast<int>(DriveNet::common_type_id::car):    // Car
+          case static_cast<int>(DriveNet::common_type_id::bus):    // Bus
           case static_cast<int>(DriveNet::common_type_id::truck):  // Truck
             if (camera_ABB[i].min.x < 15)
             {
@@ -269,7 +269,7 @@ int main(int argc, char** argv)
         camera_ABB[i].max.y += -scale;
       }
 
-    //-------------------------------------------------------------------------
+      //-------------------------------------------------------------------------
 
       for (size_t i = 0; i < lidarall_nonground.size(); i++)
       {

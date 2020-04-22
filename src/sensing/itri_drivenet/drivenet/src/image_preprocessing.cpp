@@ -7,7 +7,7 @@ namespace DriveNet
 {
 cv::Scalar CvColor::white_(255, 255, 255, 0);
 cv::Scalar CvColor::blue_(255, 0, 0, 0);
-cv::Scalar CvColor::green_ (0, 255, 0, 0);
+cv::Scalar CvColor::green_(0, 255, 0, 0);
 cv::Scalar CvColor::red_(0, 0, 255, 0);
 cv::Scalar CvColor::yellow_(51, 255, 255, 0);
 cv::Scalar CvColor::gray_(125, 125, 125, 0);
@@ -15,27 +15,27 @@ cv::Scalar CvColor::gray_(125, 125, 125, 0);
 cv::Scalar intToColor(int index)
 {
   cv::Scalar output_color = CvColor::white_;
-  if(index == static_cast<int>(color_enum::white))
+  if (index == static_cast<int>(color_enum::white))
   {
     output_color = CvColor::white_;
   }
-  else if(index == static_cast<int>(color_enum::blue))
+  else if (index == static_cast<int>(color_enum::blue))
   {
     output_color = CvColor::blue_;
   }
-  else if(index == static_cast<int>(color_enum::green))
+  else if (index == static_cast<int>(color_enum::green))
   {
     output_color = CvColor::green_;
   }
-  else if(index == static_cast<int>(color_enum::red))
+  else if (index == static_cast<int>(color_enum::red))
   {
     output_color = CvColor::red_;
   }
-  else if(index == static_cast<int>(color_enum::yellow))
+  else if (index == static_cast<int>(color_enum::yellow))
   {
     output_color = CvColor::yellow_;
   }
-  else if(index == static_cast<int>(color_enum::gray))
+  else if (index == static_cast<int>(color_enum::gray))
   {
     output_color = CvColor::gray_;
   }
@@ -81,4 +81,4 @@ void calibrationImage(const Mat& src, Mat& dst, const Mat& cameraMatrix, const M
   undistort(m_raw, dst, cameraMatrix, distCoeffs);
 }
 
-} // namespace DriveNet
+}  // namespace DriveNet

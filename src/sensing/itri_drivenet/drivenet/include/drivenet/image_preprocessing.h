@@ -22,22 +22,22 @@ public:
   static cv::Scalar green_;
   static cv::Scalar red_;
   static cv::Scalar yellow_;
-  static cv::Scalar gray_;  
+  static cv::Scalar gray_;
 };
 
 enum color_enum
 {
-  white = 0,      // 0
-  blue,           // 1
-  red,            // 2
-  green,          // 3
-  yellow,         // 4
-  gray,           // 5
+  white = 0,  // 0
+  blue,       // 1
+  red,        // 2
+  green,      // 3
+  yellow,     // 4
+  gray,       // 5
 };
 
 cv::Scalar intToColor(int index);
 void loadCalibrationMatrix(const std::string& yml_filename, cv::Mat& cameraMatrix, cv::Mat& distCoeffs);
 void calibrationImage(const cv::Mat& src, cv::Mat& dst, const cv::Mat& cameraMatrix, const cv::Mat& distCoeffs);
-} //namespace DriveNet
+}  // namespace DriveNet
 
 #endif /*IMAGE_PREPROCESSING_H_*/

@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-bool checkBoxInArea(CheckArea areaCheck, int object_x1, int  /*object_y1*/, int object_x2, int object_y2)
+bool checkBoxInArea(CheckArea areaCheck, int object_x1, int /*object_y1*/, int object_x2, int object_y2)
 {
   // printf("x1: %d, y1: %d, x2: %d, y2:%d\n", object_x1, object_y1, object_x2, object_y2);
   /// right
