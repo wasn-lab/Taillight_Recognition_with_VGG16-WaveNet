@@ -713,16 +713,13 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       // objs_and_keypoints.push_back({ std::move(obj_pub), keypoints });
     }
 
-    if (!alertObjs.empty())  // do things only when there is pedestrian
-    {
-      msgs::DetectedObjectArray alert_objs;
+    msgs::DetectedObjectArray alert_objs;
 
-      alert_objs.header = msg->header;
-      alert_objs.header.frame_id = msg->header.frame_id;
-      alert_objs.header.stamp = msg->header.stamp;
-      alert_objs.objects.assign(alertObjs.begin(), alertObjs.end());
-      alert_pub.publish(alert_objs);
-    }
+    alert_objs.header = msg->header;
+    alert_objs.header.frame_id = msg->header.frame_id;
+    alert_objs.header.stamp = msg->header.stamp;
+    alert_objs.objects.assign(alertObjs.begin(), alertObjs.end());
+    alert_pub.publish(alert_objs);
 
     if (!pedObjs.empty())  // do things only when there is pedestrian
     {
