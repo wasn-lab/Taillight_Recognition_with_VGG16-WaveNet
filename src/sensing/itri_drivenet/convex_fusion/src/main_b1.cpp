@@ -94,8 +94,10 @@ int main(int argc, char** argv)
     g_mutex_lidarall_nonground.unlock();
     //------------------------------------------------------------------------- Camera
     std::vector<msgs::DetectedObject> object_front_60, object_top_front_120, object_top_rear_120;
+    ros::Time frame_time;
     g_mutex_front_60.lock();
     object_front_60 = g_object_front_60;
+    frame_time = g_frame_time;
 
     if (g_heart_beat[1] > CHECKTIMES)
     {
@@ -292,7 +294,7 @@ int main(int argc, char** argv)
         approxMVBB.Compute(camera_ABB[i].obb_vertex, camera_ABB[i].center, camera_ABB[i].min, camera_ABB[i].max,
                            camera_ABB[i].convex_hull);
       }
-      convexFusionB1.sendCameraResults(camera_ABB.get(), camera_ABB_bbox.get(), numberABB, g_frame_time, g_frame_id);
+      convexFusionB1.sendCameraResults(camera_ABB.get(), camera_ABB_bbox.get(), numberABB, frame_time, g_frame_id);
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)
