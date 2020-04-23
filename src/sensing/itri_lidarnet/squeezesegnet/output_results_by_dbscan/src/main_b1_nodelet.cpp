@@ -35,6 +35,7 @@ namespace output_dbscan_nodelet
         cout << "[" << ros::this_node::getName () << "] " << "----------------------------startup" << endl;
         cout.setf (std::ios_base::fixed, std::ios_base::floatfield);
         cout.precision (3);
+        ros::param::get("/debug_output", debug_output);
       }        
 
       static void
