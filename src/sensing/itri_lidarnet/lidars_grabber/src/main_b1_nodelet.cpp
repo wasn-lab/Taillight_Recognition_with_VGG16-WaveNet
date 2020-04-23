@@ -15,8 +15,6 @@ namespace lidars_grabber_b1_nodelet
 //===== Declare
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft (new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight (new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarRearLeft (new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarRearRight (new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop (new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidAll (new pcl::PointCloud<pcl::PointXYZI>);
 
@@ -32,8 +30,6 @@ namespace lidars_grabber_b1_nodelet
 
   vector<double> LidarFrontLeft_Fine_Param;
   vector<double> LidarFrontRight_Fine_Param;
-  vector<double> LidarRearLeft_Fine_Param;
-  vector<double> LidarRearRight_Fine_Param;
   vector<double> Zero_Param (6, 0.0);
 
   LiDARStitchingAuto LSA;
@@ -104,6 +100,10 @@ namespace lidars_grabber_b1_nodelet
       cloud_cb_LidarFrontLeft (const boost::shared_ptr<const sensor_msgs::PointCloud2> &input_cloud)
       {
         heartBeat[0] = true;
+        if (debug_output) 
+        {
+          cout << "[Left->Gbr]: " << (ros::Time::now() - input_cloud->header.stamp)*1000 << "ms" << endl;
+        }  
         pcl::fromROSMsg (*input_cloud, *cloudPtr_LidarFrontLeft);
         syncLock_callback ();
       }
@@ -111,22 +111,21 @@ namespace lidars_grabber_b1_nodelet
       cloud_cb_LidarFrontRight (const boost::shared_ptr<const sensor_msgs::PointCloud2> &input_cloud)
       {
         heartBeat[1] = true;
+        if (debug_output) 
+        {
+          cout << "[Right->Gbr]: " << (ros::Time::now() - input_cloud->header.stamp)*1000 << "ms" << endl;
+        }          
         pcl::fromROSMsg (*input_cloud, *cloudPtr_LidarFrontRight);
         syncLock_callback ();
       }
       void
       cloud_cb_LidarFrontTop (const boost::shared_ptr<const sensor_msgs::PointCloud2> &input_cloud)
       {
-#if 0
-        static ros::Time oldtimestamp;
-        ros::Duration intervaltime = input_cloud->header.stamp - oldtimestamp;
-        if(oldtimestamp.sec != 0 && intervaltime.toSec() > 0.1 && intervaltime.sec < 10)
-        {
-          cout << "[lidars_grabber]: missing data " << intervaltime << "," << input_cloud->header.stamp <<endl;
-        }
-        oldtimestamp = input_cloud->header.stamp;
-#endif
         heartBeat[4] = true;
+        if (debug_output) 
+        {
+          cout << "[Top->Gbr]: " << (ros::Time::now() - input_cloud->header.stamp)*1000 << "ms" << endl;
+        }  
         pcl::fromROSMsg (*input_cloud, *cloudPtr_LidarFrontTop);
         syncLock_callback ();
       }
@@ -279,24 +278,15 @@ namespace lidars_grabber_b1_nodelet
           }
           if (heartBeat[4] == true)
           {
-            if (debug_output) 
-            {
-                ros::Time rosTime;
-                pcl_conversions::fromPCL(cloudPtr_LidarFrontTop->header.stamp, rosTime);
-                cout << "[Top->Gbr]: " << (ros::Time::now() - rosTime).toSec()*1000 << "ms" << endl;
-                stopWatch.reset();
-            }
-
             heartBeat[4] = false;
-            *cloudPtr_LidarFrontTop = Transform_CUDA ().compute<PointXYZI> (cloudPtr_LidarFrontTop, 0, 0, 0, 0, 0.23, -1.61);
-            *cloudPtr_LidarFrontTop = CuboidFilter ().hollow_removal<PointXYZI> (cloudPtr_LidarFrontTop, -20, -2, -2, 2, -5, 0);
+            *cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(cloudPtr_LidarFrontTop, 0, 0, 0, 0, 0.2, 0);
+            *cloudPtr_LidarFrontTop = CuboidFilter().hollow_removal<PointXYZI>(cloudPtr_LidarFrontTop, -20, -2, -2, 2, -5, 0);
             cloudPtr_LidarFrontTop->header.frame_id = "lidar";
             pub_LidarFrontTop.publish (*cloudPtr_LidarFrontTop);
             checkPubFlag (4);
             //cout << "PubFlag: 4" << endl;
           }
         }
-
         syncLock.unlock ();
       }
 
@@ -346,6 +336,7 @@ namespace lidars_grabber_b1_nodelet
       void
       lidarAll_Pub (int lidarNum)
       {
+        stopWatch.reset();
 
         *cloudPtr_LidAll = *cloudPtr_LidarFrontLeft;
         *cloudPtr_LidAll += *cloudPtr_LidarFrontRight;
@@ -397,11 +388,10 @@ namespace lidars_grabber_b1_nodelet
         //cloudPtr_LidAll->header.stamp = avg_time;
         pcl_conversions::toPCL(ros::Time::now(), cloudPtr_LidAll->header.stamp);
         pub_LidAll.publish (*cloudPtr_LidAll);
-
         cloudPtr_LidAll->clear ();
         if (debug_output)
         { 
-            cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
+          cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
         }
 
 
