@@ -286,7 +286,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
       // Only first object need to check raw image
       if (!get_timestamp)
       {
-        if (obj.header.stamp.toSec() != 0)
+        if (obj.header.stamp.toSec() > 1)
         {
           msgs_timestamp = obj.header.stamp;
         }
@@ -868,24 +868,29 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // cv::cvtColor(img_scaled_8u, dImg, CV_GRAY2RGB);
   // cv_ptr_image = cv_bridge::toCvShare(image_msg, "bgr8");
   // cv_ptr_image->image.copyTo(matrix);
-  if (image_cache.empty() || msg->objects.empty())  // do if there is image in buffer
+  if (image_cache.empty())  // do if there is image in buffer
   {
     return;
   }
 
   cv::Mat matrix;
   cv::Mat matrix2;
-
   ros::Time msgs_timestamp = ros::Time(0);
-  if (msg->objects[0].header.stamp != ros::Time(0))
+  if (!msg->objects.empty())
   {
-    msgs_timestamp = msg->objects[0].header.stamp;
+    if (msg->objects[0].header.stamp.toSec() > 1)
+    {
+      msgs_timestamp = msg->objects[0].header.stamp;
+    }
+    else
+    {
+      msgs_timestamp = msg->header.stamp;
+    }
   }
   else
   {
     msgs_timestamp = msg->header.stamp;
   }
-
   for (int i = image_cache.size() - 1; i >= 0; i--)
   {
     if (image_cache[i].first <= msgs_timestamp || i == 0)
