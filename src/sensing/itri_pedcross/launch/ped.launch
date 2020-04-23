@@ -11,14 +11,13 @@
   <!-- Set max distance(m) to predict pedestrians -->
   <rosparam param="max_distance">50</rosparam>
 
-  <!-- TPP input/output FPS -->
-  <rosparam param="input_fps">5</rosparam>
-  <rosparam param="output_fps">10</rosparam>
+  <!-- Set danger zone distance(m) to planned path -->
+  <rosparam param="danger_zone_distance">2</rosparam>
 
-  <!-- rviz marker lifetime -->
-  <!-- 0: Auto-assign as (1 / output_fps) -->
-  <!-- other value: manually assign -->
-  <rosparam param="m_lifetime_sec">0</rosparam>
+  <!-- rviz markers -->
+  <!-- true : use 2d for danger zone -->
+  <!-- false: use 3d for danger zone -->
+  <rosparam param="use_2d_for_alarm">false</rosparam>
 
   <!-- rviz markers -->
   <!-- true : show probabiliy -->
