@@ -44,6 +44,7 @@ Lidar List:
 -->
 
 <!-- NODELET *************************************************************** -->
+	
 	<!-- Manager -->
 	<node pkg="nodelet" type="nodelet" name="lidars_nodelet_manager"  args="manager" output="screen"/>
 	
@@ -63,6 +64,7 @@ Lidar List:
 	<!-- DBScan Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="OutputDBScan_Nodelet" args="load output_dbscan_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
 
+	
 
 <!-- Lidar Driver ********************************************************************************** -->
 <!-- ************ Front-Right: MR32 ************ -->
@@ -206,5 +208,11 @@ Lidar List:
             <param name="~/frame_id" value="$(arg frame_id)"/>
         </node>
     </group>
+
+
+
+
+
+
 </launch>
 
