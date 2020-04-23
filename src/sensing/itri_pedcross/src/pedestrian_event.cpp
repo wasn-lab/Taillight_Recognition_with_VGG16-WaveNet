@@ -1771,11 +1771,11 @@ int main(int argc, char** argv)
   ros::NodeHandle nh3;
   pe.alert_pub = nh3.advertise<msgs::DetectedObjectArray>("/PedCross/Alert", 1);  // /PedCross/DrawBBox is pub topic
   // Get parameters from ROS
-  nh.getParam("/show_probability", pe.show_probability);
-  nh.getParam("/input_source", pe.input_source);
-  nh.getParam("/max_distance", pe.max_distance);
-  nh.getParam("/danger_zone_distance", pe.danger_zone_distance);
-  nh.getParam("/use_2d_for_alarm", pe.use_2d_for_alarm);
+  nh.param<bool>("/pedestrian_event/show_probability", pe.show_probability, true);
+  nh.param<int>("/pedestrian_event/input_source", pe.input_source, 3);
+  nh.param<double>("/pedestrian_event/max_distance", pe.max_distance, 50);
+  nh.param<double>("/pedestrian_event/danger_zone_distance", pe.danger_zone_distance, 2);
+  nh.param<bool>("/pedestrian_event/use_2d_for_alarm", pe.use_2d_for_alarm, false);
 
   pe.image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.crop_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
