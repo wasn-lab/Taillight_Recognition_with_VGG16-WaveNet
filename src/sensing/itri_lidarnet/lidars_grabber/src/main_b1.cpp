@@ -120,8 +120,8 @@ void lidarAll_Pub(int lidarNum)
   }
 
   // Choose LidarAll timestamp: 1.avg_time, 2.rosTime::now() 
-  //cloudPtr_LidAll->header.stamp = avg_time;
-  pcl_conversions::toPCL(ros::Time::now(), cloudPtr_LidAll->header.stamp);
+  cloudPtr_LidAll->header.stamp = avg_time;
+  //pcl_conversions::toPCL(ros::Time::now(), cloudPtr_LidAll->header.stamp);
   
   pub_LidAll.publish(*cloudPtr_LidAll);
   cloudPtr_LidAll->clear();
