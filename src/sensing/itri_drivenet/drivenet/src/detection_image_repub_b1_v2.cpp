@@ -1,9 +1,21 @@
-#include "drivenet/detection_image_repub_b1_v2.h"
-
 /// std
 #include <thread>
 #include <mutex>
 #include <iostream>
+
+/// ros
+#include "ros/ros.h"
+#include <ros/package.h>
+#include "std_msgs/Header.h"
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
+
+/// opencv
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+/// util
+#include "camera_params.h"  // include camera topic name
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
@@ -95,7 +107,7 @@ void image_init()
   }
 }
 /// publish image message
-void image_publisher(const cv::Mat& image, const std_msgs::Header& header, image_transport::Publisher img_pub)
+void image_publisher(const cv::Mat& image, const std_msgs::Header& header, image_transport::Publisher& img_pub)
 {
   sensor_msgs::ImagePtr img_msg;
   img_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
