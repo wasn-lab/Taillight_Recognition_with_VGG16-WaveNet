@@ -9,7 +9,7 @@
   <arg name="input_source" default="3" />
 
   <!-- Set max distance(m) to predict pedestrians -->
-  <arg name="max_distance" default="22" />
+  <arg name="max_distance" default="70" />
 
   <!-- Set danger zone distance(m) to planned path -->
   <arg name="danger_zone_distance" default="2" />
