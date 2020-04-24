@@ -20,6 +20,7 @@ rostest car_model publish_test_track2d_b1_v2.test
 #rostest car_model publish_test_lidarnet_b1_v2.test
 rostest car_model publish_test_edge_detection_b1_v2.test
 #rostest car_model publish_test_localization_b1_v2.test
+rostest car_model publish_test_geofence_pp_b1_v2.test
 rostest car_model publish_test_lidarxyz2lla_b1_v2.test
 rostest car_model publish_test_rad_grab_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
