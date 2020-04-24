@@ -148,6 +148,8 @@ public:
   float max_distance = 50;
   const int feature_num = 1174;
   const int frame_num = 10;
+  int danger_zone_distance = 2;
+  bool use_2d_for_alarm = false;
 };
 }  // namespace ped
 
