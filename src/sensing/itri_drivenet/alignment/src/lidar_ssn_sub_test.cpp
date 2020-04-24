@@ -1,6 +1,8 @@
 /// standard
 #include <iostream>
 #include <mutex>
+#include <thread>
+
 /// ros
 #include "ros/ros.h"
 
@@ -19,7 +21,6 @@ std::mutex g_sync_lock_ssn;
 /// lidar
 pcl::PointCloud<pcl::PointXYZIL>::Ptr g_ssn_ptr(new pcl::PointCloud<pcl::PointXYZIL>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_ssn_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-boost::shared_ptr<pcl::visualization::PCLVisualizer> g_viewer(new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
 pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> g_rgb_ssn_points(g_ssn_points_ptr, 255, 255, 255);
 
 //////////////////// for camera image
@@ -31,15 +32,46 @@ void callback_SSN(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
   g_sync_lock_ssn.unlock();
 }
 
-void pclViewerInitializer()
+void pclViewerInitializer(boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer)
 {
-  g_viewer->initCameraParameters();
-  g_viewer->addCoordinateSystem(3.0, 0, 0, 0);       // Origin(0, 0, 0)
-  g_viewer->setCameraPosition(0, 0, 20, 0.2, 0, 0);  // bird view
-  g_viewer->setBackgroundColor(0, 0, 0);
-  g_viewer->setShowFPS(false);
+  pcl_viewer->initCameraParameters();
+  pcl_viewer->addCoordinateSystem(3.0, 0, 0, 0);       // Origin(0, 0, 0)
+  pcl_viewer->setCameraPosition(0, 0, 20, 0.2, 0, 0);  // bird view
+  pcl_viewer->setBackgroundColor(0, 0, 0);
+  pcl_viewer->setShowFPS(false);
 }
 
+void displayLidarData()
+{
+  // std::cout << "===== displayLidarData... =====" << std::endl;
+  /// create variable
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(
+      new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr ssn_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_lidarall(ssn_points_ptr, 255, 255, 255);
+
+  /// init
+  pclViewerInitializer(pcl_viewer);
+
+  /// main loop
+  ros::Rate loop_rate(30);
+  while (ros::ok() && !pcl_viewer->wasStopped())
+  {
+    /// remove points on pcl viewer
+    pcl_viewer->removePointCloud("Cloud viewer");
+
+    g_sync_lock_ssn.lock();  // mutex lidar
+    pcl::copyPointCloud(*g_ssn_points_ptr, *ssn_points_ptr);
+    g_sync_lock_ssn.unlock();  // mutex lidar
+
+    /// draw points on pcl viewer
+    pcl_viewer->addPointCloud<pcl::PointXYZI>(ssn_points_ptr, rgb_lidarall, "Cloud viewer");
+    pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud viewer");
+    
+    pcl_viewer->spinOnce();
+    loop_rate.sleep();
+  }  
+}
 int main(int argc, char** argv)
 {
   std::cout << "===== lidar_ssn_sub_test startup. =====" << std::endl;
@@ -49,26 +81,13 @@ int main(int argc, char** argv)
   /// lidar subscriber
   ros::Subscriber ssn_sub = nh.subscribe("/squ_seg/result_cloud", 1, callback_SSN);
 
-  /// viwer init
-  pclViewerInitializer();
-
-  /// main loop
-  ros::Rate loop_rate(30);
+  std::thread display_lidar_thread(displayLidarData);
+  int thread_count = 2;  /// camera raw + object + lidar raw
+  ros::MultiThreadedSpinner spinner(thread_count);
+  spinner.spin();
   std::cout << "===== lidar_ssn_sub_test running... =====" << std::endl;
-  while (ros::ok())
-  {
-    /// remove points on pcl viewer
-    g_viewer->removePointCloud("Cloud viewer");
-    g_sync_lock_ssn.lock();  // mutex lidar
-    /// draw points on pcl viewer
-    g_viewer->addPointCloud<pcl::PointXYZI>(g_ssn_points_ptr, g_rgb_ssn_points, "Cloud viewer");
-    g_sync_lock_ssn.unlock();  // mutex lidar
-    g_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Cloud viewer");
-    
-    ros::spinOnce();
-    g_viewer->spinOnce();
-    loop_rate.sleep();
-  }
+
+  display_lidar_thread.join();
   std::cout << "===== lidar_ssn_sub_test shutdown. =====" << std::endl;
   return 0;
 }
