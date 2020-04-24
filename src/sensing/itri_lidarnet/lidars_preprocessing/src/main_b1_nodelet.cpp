@@ -10,9 +10,11 @@
 #include "RayGroundFilter.h"
 #include "extract_Indices.h"
 
+bool debug_output = false;
+StopWatch stopWatch;
+
 namespace lidars_preprocessing_b1_nodelet
 {
-
   class LidarsNodelet : public nodelet::Nodelet
   {
     public:
@@ -20,10 +22,11 @@ namespace lidars_preprocessing_b1_nodelet
       onInit ()
       {
         RosModuleB1::RegisterCallBackLidarAll (callback_LidarAll);
-
         cout << "[" << ros::this_node::getName () << "] " << "----------------------------startup" << endl;
         cout.setf (std::ios_base::fixed, std::ios_base::floatfield);
         cout.precision (3);
+        // check debug mode
+        ros::param::get("/debug_output", debug_output);
       }
 
     private:
@@ -41,7 +44,13 @@ namespace lidars_preprocessing_b1_nodelet
 #endif
         if (msg->size () > 100)
         {
-          StopWatch stopWatch;
+          if (debug_output)
+          {
+            ros::Time rosTime;
+            pcl_conversions::fromPCL(msg->header.stamp, rosTime);
+            cout << "[All->Pre]: " << (ros::Time::now() - rosTime).toSec()*1000 << "ms" << endl;
+            stopWatch.reset ();
+          }
 
           pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cur_cloud (new pcl::PointCloud<pcl::PointXYZI>);
           *ptr_cur_cloud = *msg;
@@ -74,9 +83,9 @@ namespace lidars_preprocessing_b1_nodelet
           //RosModuleB1::send_Rviz (*cloud_non_ground);
           RosModuleB1::send_LidarAllNonGround (*cloud_non_ground, msg->header.stamp, msg->header.frame_id);
 
-          if (stopWatch.getTimeSeconds () > 0.05)
+          if (debug_output)
           {
-            cout << "[Preprocess]: slow" << stopWatch.getTimeSeconds () << "s" << endl << endl;
+            cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << 's' << endl;
           }
         }
 

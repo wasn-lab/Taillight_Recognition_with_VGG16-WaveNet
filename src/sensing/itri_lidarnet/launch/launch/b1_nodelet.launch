@@ -1,37 +1,50 @@
 <!-- -*- mode: XML -*- -->
+<!-- 
+Lidar List:
+* LidarFrontRight:         MR32, 192.168.0.220
+* LidarFrontLeft:          MR32, 192.168.0.221     
+* LidarRearRight:         VLP16, 192.168.0.222 not in use
+* LidarRearLeft:          VLP16, 192.168.0.223 not in use
+* LidarFrontTop(base): Ouster64, 192.168.0.224
+-->
+
 <launch>
 <!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
-<rosparam param="LidarFrontLeft_Fine_Param">[0.54, 1.12, -1.85, 0.03, -0.04, 1.76]</rosparam>
-<rosparam param="LidarFrontRight_Fine_Param">[0.47, -1.07, -1.85, -0.03, -0.05, -1.81]</rosparam>
-<rosparam param="LidarRearLeft_Fine_Param">[-6.36, 1.1, -2.24, 3.14, -3.08, -1.08]</rosparam>
-<rosparam param="LidarRearRight_Fine_Param">[-6.37, -1.23, -2.28, 0.03, -0.07, -2.03]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.462, 1.098, -1.858, 0.031, -0.007, 1.783]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[0.512, -1.053, -1.836, -0.025, -0.01, -1.785]</rosparam>
+<rosparam param="LidarRearLeft_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
+<rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 
 <!-- Ros Parameter Backup 
-<rosparam param="LidarFrontLeft_Fine_Param">[0.47, 1.09, -1.85, 0.03, -0.04, 1.77]</rosparam>
-<rosparam param="LidarFrontRight_Fine_Param">[0.41, -1.09, -1.83, -0.02, -0.05, -1.8]</rosparam>
-<rosparam param="LidarRearLeft_Fine_Param">[-6.34, 1.31, -2.19, 3.13, -3.08, -1.09]</rosparam>
-<rosparam param="LidarRearRight_Fine_Param">[-6.37, -0.98, -2.22, 0.05, -0.07, -2.05]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.582, -0.867, -1.899, -0.209, 0.209, 0.22]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[-1.536, -0.863, -1.409, -0.22, 0.259, 2.94]</rosparam>
+<rosparam param="LidarRearLeft_Fine_Param">[-6.36, 1.1, -2.24, 3.14, -3.08, -1.08]</rosparam>
+<rosparam param="LidarRearRight_Fine_Param">[-6.37, -1.23, -2.28, 0.03, -0.07, -2.03]</rosparam>
 -->
 
 <!-- Global arg ************************************************************ -->
+	<rosparam param="debug_output">true</rosparam>
 	<arg name="mode" default="0" />
-	<arg name="rpm_16" default="1200.0" />
-	<arg name="rpm_32" default="1200.0" />
+	<arg name="rpm_set" default="1200.0"/>
+	<arg name="hardware_enable" default="1" />
+	<arg name="set_group_1" value="/LidarFrontTop"/>
 	<rosparam param="LaunchFileName">b1_nodelet.launch</rosparam>
 
-
 <!-- SSN arg *************************************************************** -->
-	<rosparam param="SSN_DataSet">hb_tmp</rosparam>
+	<rosparam param="SSN_DataSet">b1</rosparam>
 	<rosparam param="SSN_ViewType">X</rosparam>
 	<rosparam param="SSN_PubType">"0"</rosparam>
 	<rosparam param="SSN_Hybrid_Detect">"1"</rosparam>
 
-
-<!-- STATIC TF2 ************************************************************ -->
 <!-- static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
-<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0.46 0 3.46 0 0 0 /base_link  /lidar" />
+<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
+
+<!-- MPS ******************************************************************* 
+<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+-->
 
 <!-- NODELET *************************************************************** -->
+	
 	<!-- Manager -->
 	<node pkg="nodelet" type="nodelet" name="lidars_nodelet_manager"  args="manager" output="screen"/>
 	
@@ -41,11 +54,165 @@
 	<!-- Preprocessing Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="LidarsPreprocessingB1_Nodelet" args="load lidars_preprocessing_b1_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	
 	
-	<!-- SSN Nodelet -->
+	<!-- SSN Nodelet 
 	<node pkg="nodelet" type="nodelet" name="SSN_Nodelet" args="load ssn_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	
+	-->
+	<!-- SSN v2 Nodelet -->
+	<node pkg="nodelet" type="nodelet" name="SSN_v2_Nodelet" args="load ssn_v2_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
+	
 	
 	<!-- DBScan Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="OutputDBScan_Nodelet" args="load output_dbscan_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
+
 	
+
+<!-- Lidar Driver ********************************************************************************** -->
+<!-- ************ Front-Right: MR32 ************ -->
+	<group ns="LidarFrontRight" if="$(eval arg('hardware_enable') != 0)">
+
+	<!-- declare arguments with default values -->
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
+  	<arg name="device_ip" default="192.168.0.220" />
+	<arg name="frame_id" default="lidar_front_right" />
+ 	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+  	<arg name="max_range" default="60.0" />
+  	<arg name="min_range" default="0.4" />
+  	<arg name="pcap" default="" />
+	<arg name="port" default="2220" />
+	<arg name="read_fast" default="false" />
+	<arg name="read_once" default="false" />
+	<arg name="repeat_delay" default="0.0" />
+	<arg name="rpm" default="$(arg rpm_set)" />
+	<arg name="gps_time" default="false" />
+	<arg name="cut_angle" default="-0.01" />
+	<arg name="laserscan_ring" default="-1" />
+	<arg name="laserscan_resolution" default="0.007" />
+	<arg name="topic_name" default="Raw" />
+	<remap from="velodyne_points" to="$(arg topic_name)" />
+
+	<!-- start nodelet manager and driver nodelets -->
+	<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+		<arg name="device_ip" value="$(arg device_ip)"/>
+		<arg name="frame_id" value="$(arg frame_id)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="model" value="32C"/>
+	    	<arg name="pcap" value="$(arg pcap)"/>
+	    	<arg name="port" value="$(arg port)"/>
+	    	<arg name="read_fast" value="$(arg read_fast)"/>
+	    	<arg name="read_once" value="$(arg read_once)"/>
+	    	<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+	    	<arg name="rpm" value="$(arg rpm)"/>
+	    	<arg name="gps_time" value="$(arg gps_time)"/>
+	    	<arg name="cut_angle" value="$(arg cut_angle)"/>
+	  </include>
+
+	  <!-- start cloud nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+	    	<arg name="calibration" value="$(arg calibration)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="max_range" value="$(arg max_range)"/>
+	    	<arg name="min_range" value="$(arg min_range)"/>
+	  </include>
+
+	  <!-- start laserscan nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+		<arg name="manager" value="$(arg manager)" />
+	   	<arg name="ring" value="$(arg laserscan_ring)"/>
+	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
+	  </include>
+	</group>
+
+<!-- ************ Front-Left: MR32 ************ -->
+	<group ns="LidarFrontLeft" if="$(eval arg('hardware_enable') != 0)">
+
+	<!-- declare arguments with default values -->
+	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
+  	<arg name="device_ip" default="192.168.0.221" />
+	<arg name="frame_id" default="lidar_front_left" />
+ 	<arg name="manager" default="$(arg frame_id)_nodelet_manager" />
+  	<arg name="max_range" default="60.0" />
+  	<arg name="min_range" default="0.4" />
+  	<arg name="pcap" default="" />
+	<arg name="port" default="2221" />
+	<arg name="read_fast" default="false" />
+	<arg name="read_once" default="false" />
+	<arg name="repeat_delay" default="0.0" />
+	<arg name="rpm" default="$(arg rpm_set)" />
+	<arg name="gps_time" default="false" />
+	<arg name="cut_angle" default="-0.01" />
+	<arg name="laserscan_ring" default="-1" />
+	<arg name="laserscan_resolution" default="0.007" />
+	<arg name="topic_name" default="Raw" />
+	<remap from="velodyne_points" to="$(arg topic_name)" />
+
+	<!-- start nodelet manager and driver nodelets -->
+	<include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+		<arg name="device_ip" value="$(arg device_ip)"/>
+		<arg name="frame_id" value="$(arg frame_id)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="model" value="32C"/>
+	    	<arg name="pcap" value="$(arg pcap)"/>
+	    	<arg name="port" value="$(arg port)"/>
+	    	<arg name="read_fast" value="$(arg read_fast)"/>
+	    	<arg name="read_once" value="$(arg read_once)"/>
+	    	<arg name="repeat_delay" value="$(arg repeat_delay)"/>
+	    	<arg name="rpm" value="$(arg rpm)"/>
+	    	<arg name="gps_time" value="$(arg gps_time)"/>
+	    	<arg name="cut_angle" value="$(arg cut_angle)"/>
+	  </include>
+
+	  <!-- start cloud nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
+	    	<arg name="calibration" value="$(arg calibration)"/>
+	    	<arg name="manager" value="$(arg manager)" />
+	    	<arg name="max_range" value="$(arg max_range)"/>
+	    	<arg name="min_range" value="$(arg min_range)"/>
+	  </include>
+
+	  <!-- start laserscan nodelet -->
+	  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
+		<arg name="manager" value="$(arg manager)" />
+	   	<arg name="ring" value="$(arg laserscan_ring)"/>
+	  	<arg name="resolution" value="$(arg laserscan_resolution)"/>
+	  </include>
+	</group>
+
+<!-- ************ Front-Top: Ouster64 ************ -->
+    <group ns="$(arg set_group_1)" if="$(eval arg('hardware_enable') != 0)">
+        <arg name="os1_hostname" default="192.168.0.224" doc="hostname or IP in dotted decimal form of the sensor"/>
+        <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
+        <arg name="os1_lidar_port" default="7524" doc="port to which the sensor should send lidar data"/>
+        <arg name="os1_imu_port" default="7504" doc="port to which the sensor should send imu data"/>
+        <arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
+        <arg name="lidar_mode" default="1024x20" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
+        <arg name="metadata" default="" doc="override default metadata file for replays"/>
+        <arg name="frame_id" default="lidar"/>
+
+        <node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" >
+            <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
+            <param name="~/replay" value="$(arg replay)"/>
+            <param name="~/os1_hostname" value="$(arg os1_hostname)"/>
+            <param name="~/os1_udp_dest" value="$(arg os1_udp_dest)"/>
+            <param name="~/os1_lidar_port" value="$(arg os1_lidar_port)"/>
+            <param name="~/os1_imu_port" value="$(arg os1_imu_port)"/>
+            <param name="~/metadata" value="$(arg metadata)"/>
+        </node>
+
+        <node pkg="ouster_ros" type="os1_cloud_node" name="os1_cloud_node" output="screen" >
+            <remap from="$(arg set_group_1)/os1_cloud_node/os1_config" to="$(arg set_group_1)/os1_node/os1_config"/>
+            <remap from="$(arg set_group_1)/os1_cloud_node/lidar_packets" to="$(arg set_group_1)/os1_node/lidar_packets"/>
+			<remap from="$(arg set_group_1)/os1_cloud_node/imu_packets" to="$(arg set_group_1)/os1_node/imu_packets"/>
+
+            <remap from="$(arg set_group_1)/os1_cloud_node/points" to="$(arg set_group_1)/Raw"/>
+			<remap from="$(arg set_group_1)/os1_cloud_node/imu" to="$(arg set_group_1)/imu"/>
+            <param name="~/frame_id" value="$(arg frame_id)"/>
+        </node>
+    </group>
+
+
+
+
+
+
 </launch>
 

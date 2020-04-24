@@ -16,12 +16,11 @@
 #define POSE_Y_RATE_THRESHOLD_KMPERHR 30
 #define POSE_Z_RATE_THRESHOLD_KMPERHR 30
 
-#define POSE_ROLL_THRESHOLD_RADPERS 0.0175*90
-#define POSE_PITCH_THRESHOLD_RADPERS 0.0175*90
-#define POSE_YAW_THRESHOLD_RADPERS 0.0175*90
+#define POSE_ROLL_THRESHOLD_RADPERS 0.0175 * 90
+#define POSE_PITCH_THRESHOLD_RADPERS 0.0175 * 90
+#define POSE_YAW_THRESHOLD_RADPERS 0.0175 * 90
 
 #define STABLE_CNT 120
-
 
 #include "msgs/Pose.h"
 
@@ -61,12 +60,12 @@
 
 struct pose
 {
-        double x;
-        double y;
-        double z;
-        double roll;
-        double pitch;
-        double yaw;
+  double x;
+  double y;
+  double z;
+  double roll;
+  double pitch;
+  double yaw;
 };
 
 static pose current_pose, pre_pose, pose_rate;
@@ -81,5 +80,4 @@ static ros::Publisher state_pub;
 
 boost::recursive_mutex ms_checker;
 
-
-#endif //LOCALIZATION_STATE_SUPERVISION_H
+#endif  // LOCALIZATION_STATE_SUPERVISION_H
