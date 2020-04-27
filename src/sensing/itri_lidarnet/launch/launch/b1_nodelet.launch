@@ -39,11 +39,12 @@ Lidar List:
 <!-- static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
-<!-- MPS ******************************************************************* -->
+<!-- MPS ******************************************************************* 
 <node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
- 
+-->
 
 <!-- NODELET *************************************************************** -->
+	
 	<!-- Manager -->
 	<node pkg="nodelet" type="nodelet" name="lidars_nodelet_manager"  args="manager" output="screen"/>
 	
@@ -63,6 +64,7 @@ Lidar List:
 	<!-- DBScan Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="OutputDBScan_Nodelet" args="load output_dbscan_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
 
+	
 
 <!-- Lidar Driver ********************************************************************************** -->
 <!-- ************ Front-Right: MR32 ************ -->
@@ -206,5 +208,11 @@ Lidar List:
             <param name="~/frame_id" value="$(arg frame_id)"/>
         </node>
     </group>
+
+
+
+
+
+
 </launch>
 
