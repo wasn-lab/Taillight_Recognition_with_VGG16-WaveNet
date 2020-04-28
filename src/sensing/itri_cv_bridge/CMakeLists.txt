@@ -23,9 +23,6 @@ catkin_python_setup()
 
 include_directories(include ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
-if(NOT ANDROID)
-add_subdirectory(python)
-endif()
 add_subdirectory(src)
 if(CATKIN_ENABLE_TESTING)
   add_subdirectory(test)
