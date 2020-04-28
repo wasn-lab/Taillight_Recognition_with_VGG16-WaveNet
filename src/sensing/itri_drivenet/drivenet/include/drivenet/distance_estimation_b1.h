@@ -48,10 +48,10 @@ private:
   void initDetectArea();
 
   int ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
-  float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
-  float ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+  float ComputeObjectXDist(int pixel_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
+  float ComputeObjectXDistWithSlope(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                                     std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
-  float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+  float ComputeObjectYDist(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                            std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
   msgs::PointXYZ GetPointDist(int x, int y, camera::id cam_id);
   int BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
