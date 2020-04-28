@@ -1,6 +1,28 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
+set(CATKIN_REQUIRED_COMPONENTS
+    message_generation
+    roscpp
+    geometry_msgs
+    tf2_geometry_msgs
+    sensor_msgs
+    std_msgs
+    msgs
+    car_model
+    image_transport)
+
+if ($ENV{ROS_DISTRO} STREQUAL "melodic")
+  # ROS melodic cv_bridge works well with customized opencv.
+  list(APPEND CATKIN_REQUIRED_COMPONENTS cv_bridge)
+else ()
+  message("Use customized itri_cv_bridge")
+  list(APPEND CATKIN_REQUIRED_COMPONENTS itri_cv_bridge)
+endif()
+
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
+
+
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 
 include(CarModel)
@@ -10,6 +32,7 @@ if (NOT ENABLE_PEDCROSS)
 endif ()
 
 include(CompilerFlags)
+include(OpenCVVars)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
@@ -18,18 +41,6 @@ set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
 set(TENSORFLOW_LIBRARIES tensorflow)
 message("TF found: ${TENSORFLOW_LIBRARIES}")
 
-find_package(catkin REQUIRED COMPONENTS
-    message_generation
-    roscpp
-    geometry_msgs
-    tf2_geometry_msgs
-    sensor_msgs
-    std_msgs
-    msgs
-    cv_bridge
-    image_transport)
-
-find_package(OpenCV REQUIRED)
 find_package(openpose)
 
 if (NOT openpose_LIBRARY)
