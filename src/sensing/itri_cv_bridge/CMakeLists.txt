@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(cv_bridge_kinetic)
-
-if (NOT $ENV{ROS_DISTRO} STREQUAL "kinetic")
-  message("${PROJECT_NAME} is only for ROS kinetic for integrating with opencv")
-  return()
-endif ()
+project(itri_cv_bridge)
 
 find_package(catkin REQUIRED COMPONENTS rosconsole sensor_msgs)
 

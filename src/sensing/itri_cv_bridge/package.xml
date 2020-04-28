@@ -1,5 +1,5 @@
 <package format="2">
-  <name>cv_bridge_kinetic</name>
+  <name>itri_cv_bridge</name>
   <version>1.12.8</version>
   <description>
     This contains CvBridge, which converts between ROS
