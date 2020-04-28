@@ -87,7 +87,7 @@ TF_Tensor* ScalarStringTensor(const char* str, TF_Status* status)
   return tensor;
 }
 
-};  // namespace tf_utils::
+};  // namespace
 
 TF_Graph* tf_utils::LoadGraph(const char* graph_path, const char* checkpoint_prefix, TF_Status* status)
 {
@@ -165,7 +165,7 @@ TF_Graph* tf_utils::LoadGraph(const char* graph_path, const char* checkpoint_pre
                 &restore_op, 1,                 // Target operations, number of targets.
                 nullptr,                        // Run metadata.
                 status                          // Output status.
-                );
+  );
 
   if (TF_GetCode(status) != TF_OK)
   {
@@ -315,7 +315,7 @@ TF_Code tf_utils::RunSession(TF_Session* session, const TF_Output* inputs, TF_Te
       nullptr, 0,                                           // Target operations, number of targets.
       nullptr,                                              // Run metadata.
       status                                                // Output status.
-      );
+  );
 
   return TF_GetCode(status);
 }

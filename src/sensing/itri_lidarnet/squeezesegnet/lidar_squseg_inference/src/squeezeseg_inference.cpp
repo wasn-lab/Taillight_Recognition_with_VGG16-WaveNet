@@ -14,13 +14,12 @@ using ssn_nodelet::hybrid_detect;
 using ssn_nodelet::LidarAllSub;
 using ssn_nodelet::nn_pub;
 using ssn_nodelet::SSN_all;
-
+using ssn_nodelet::debug_output;
 
 int
 main (int argc,
       char **argv)
 {
-  
   if (argc >= 2)
   {
     data_set = string(argv[1]);
@@ -44,6 +43,8 @@ main (int argc,
 
   ros::init (argc, argv, "cpp_preprocessing");
   ros::NodeHandle nh;
+
+  ros::param::get("/debug_output", ssn_nodelet::debug_output);
 
   LidarAllSub = nh.subscribe ("/LidarAll/NonGround", 1, ssn_nodelet::LidarsNodelet::callback_LidarAll);
   nn_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZIL>> ("/squ_seg/result_cloud", 1);

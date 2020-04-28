@@ -85,7 +85,7 @@ void callbackLidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
   LidarAll_cloud.points.resize(LidarAll_cloud.width);
 
 #pragma omp parallel for
-  for (int i = 0; i < msg->points.size(); i++)
+  for (size_t i = 0; i < msg->points.size(); i++)
   {
     LidarAll_cloud.points[i].x = (float)msg->points[i].x;
     LidarAll_cloud.points[i].y = (float)msg->points[i].y;
@@ -124,7 +124,7 @@ void detection(int argc, char** argv)
     cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 384), 0, 0, cv::INTER_LINEAR);
     *release_cloud = *LidarAll_cloudPtr;
     double scaleFactor = M_MID_temp.rows / 384;
-    for (int i = 0; i < release_cloud->size(); i++)
+    for (size_t i = 0; i < release_cloud->size(); i++)
     {
       if (release_cloud->points[i].x > 1)
       {
@@ -134,7 +134,7 @@ void detection(int argc, char** argv)
         result[1] = result[1] * scaleFactor;
         if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
         {
-          int red_int_, gre_int_, blu_int_;
+          int red_int_ = 0, gre_int_ = 0, blu_int_ = 0;
           double depths_float_ = (double)release_cloud->points[i].x;
           if (depths_float_ > 1)
           {

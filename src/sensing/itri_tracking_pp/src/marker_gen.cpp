@@ -97,34 +97,31 @@ std::string MarkerGen::parse_class_id(unsigned int class_id)
   switch (class_id)
   {
     case 1:
-      class_name = "Person";
+      class_name = "P";  // Person
       break;
     case 2:
-      class_name = "Bicycle";
+      class_name = "B";  // Bicycle
       break;
     case 3:
-      class_name = "Motobike";
+      class_name = "M";  // Motobike
       break;
     case 4:
-      class_name = "Car";
+      class_name = "C";  // Car
       break;
     case 5:
-      class_name = "Bus";
+      class_name = "Z";  // Bus
       break;
     case 6:
-      class_name = "Truck";
+      class_name = "T";  // Truck
       break;
     case 7:
-      class_name = "Sign";
+      class_name = "S";  // Sign
       break;
     case 8:
-      class_name = "Light";
-      break;
-    case 9:
-      class_name = "Park";
+      class_name = "L";  // Light
       break;
     default:
-      class_name = "Unknown";
+      class_name = "U";  // Unknown
   }
 
   return class_name;
@@ -258,7 +255,7 @@ visualization_msgs::Marker MarkerGen::create_pp_marker_ellipse(const unsigned in
   marker.id = idx;
   marker.type = visualization_msgs::Marker::CYLINDER;
 
-  double scale = abs_speed_kmph * (forecast_seq + 1) / 120.;
+  double scale = abs_speed_kmph * (forecast_seq + 1) / 200.;
   marker.scale.x = scale;
   marker.scale.y = scale;
   marker.scale.z = 0.1;

@@ -3,7 +3,7 @@
       <arg name="hardware_enable" value="0" />
     </include>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-03-10-10-48-39_41.bag" required="true"/>
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-03-10-10-48-39_41.bag" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
@@ -12,6 +12,9 @@
                   timeout: 15
                   negative: False
                 - name: /LidarDetection
+                  timeout: 15
+                  negative: False
+                - name: /LidarDetection/grid
                   timeout: 15
                   negative: False
         </rosparam>

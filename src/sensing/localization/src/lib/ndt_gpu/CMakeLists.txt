@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_gpu)
-set(CMAKE_BUILD_TYPE "Release")
+
 find_package(catkin REQUIRED)
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
 find_package(PCL 1.8.0 REQUIRED)
 find_package(CUDA)
 
