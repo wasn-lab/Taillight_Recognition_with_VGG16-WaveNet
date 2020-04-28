@@ -78,7 +78,7 @@ std::vector<std_msgs::Header> g_headers(g_cam_ids.size());
 std::vector<int> g_dist_rows(g_cam_ids.size());
 std::vector<int> g_dist_cols(g_cam_ids.size());
 
-pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidall_cloudptr(new pcl::PointCloud<pcl::PointXYZI>);
 
 
 // Prepare cv::Mat
@@ -206,7 +206,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   if(g_lidarall_ctrl)
   {
-    pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
+    pcl::fromROSMsg(*msg, *g_lidall_cloudptr);
     g_lidarall_ctrl = false;
   }
 }
@@ -571,7 +571,7 @@ void* run_yolo(void* /*unused*/)
     if (g_lidarall_publish)
     {
       pcl::PointCloud<pcl::PointXYZI> inputAll;
-      inputAll = *LidAll_cloudPtr;
+      inputAll = *g_lidall_cloudptr;
       g_lidar_repub.publish(inputAll);
       g_lidarall_ctrl = true;
       inputAll.clear();
