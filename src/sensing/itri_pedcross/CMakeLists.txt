@@ -23,7 +23,6 @@ if (NOT ENABLE_PEDCROSS)
 endif ()
 
 include(CompilerFlags)
-include(OpenCVVars)
 
 set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
 
@@ -32,6 +31,10 @@ set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
 set(TENSORFLOW_LIBRARIES tensorflow)
 message("TF found: ${TENSORFLOW_LIBRARIES}")
 
+find_package(OpenCV
+  PATHS /usr/local
+  NO_DEFAULT_PATH
+)
 find_package(openpose)
 
 if (NOT openpose_LIBRARY)
