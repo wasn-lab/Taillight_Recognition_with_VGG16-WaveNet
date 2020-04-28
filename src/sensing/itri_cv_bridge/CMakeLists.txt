@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(itri_cv_bridge)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS rosconsole sensor_msgs)
 
+find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED
   COMPONENTS
     opencv_core

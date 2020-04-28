@@ -10,7 +10,7 @@ set(CATKIN_REQUIRED_COMPONENTS
     std_msgs
     msgs
     car_model
-    itri_cv_bridge
+    cv_bridge
     image_transport)
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
 
@@ -93,6 +93,7 @@ set(CPP_FILES
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
     itri_pedcross
+    /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     ${openpose_LIBRARIES}
