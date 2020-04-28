@@ -23,10 +23,6 @@
 #include "drivenet/type_conversion.h"
 // #include "costmap_generator.h"
 
-#include "sensor_msgs/PointCloud2.h"
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl_conversions/pcl_conversions.h>
+
 
 #endif /*DRIVENET_B1_V2_H_*/
