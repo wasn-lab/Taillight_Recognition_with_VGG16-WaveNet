@@ -3,16 +3,6 @@ project(itri_cv_bridge)
 
 find_package(catkin REQUIRED COMPONENTS rosconsole sensor_msgs)
 
-if(NOT ANDROID)
-  find_package(PythonLibs)
-  if(PYTHONLIBS_VERSION_STRING VERSION_LESS 3)
-    find_package(Boost REQUIRED python)
-  else()
-    find_package(Boost REQUIRED python3)
-  endif()
-else()
-find_package(Boost REQUIRED)
-endif()
 find_package(OpenCV REQUIRED
   COMPONENTS
     opencv_core
@@ -31,7 +21,7 @@ catkin_package(
 
 catkin_python_setup()
 
-include_directories(include ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+include_directories(include ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 if(NOT ANDROID)
 add_subdirectory(python)
