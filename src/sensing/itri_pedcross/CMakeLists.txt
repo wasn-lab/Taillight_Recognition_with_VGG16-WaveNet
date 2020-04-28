@@ -10,18 +10,9 @@ set(CATKIN_REQUIRED_COMPONENTS
     std_msgs
     msgs
     car_model
+    itri_cv_bridge
     image_transport)
-
-if ($ENV{ROS_DISTRO} STREQUAL "melodic")
-  # ROS melodic cv_bridge works well with customized opencv.
-  list(APPEND CATKIN_REQUIRED_COMPONENTS cv_bridge)
-else ()
-  message("Use customized itri_cv_bridge")
-  list(APPEND CATKIN_REQUIRED_COMPONENTS itri_cv_bridge)
-endif()
-
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
-
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 
