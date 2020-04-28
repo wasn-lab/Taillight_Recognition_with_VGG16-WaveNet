@@ -26,6 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
     sensor_msgs
     std_msgs
     msgs
+    cv_bridge
     image_transport)
 
 find_package(OpenCV REQUIRED)
@@ -54,7 +55,6 @@ set(TPP_CATKIN_DEPS
     sensor_msgs
     std_msgs
     msgs
-    itri_cv_bridge
 )
 
 catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
@@ -88,7 +88,6 @@ set(CPP_FILES
 add_executable(itri_pedcross ${CPP_FILES})
 target_link_libraries(
     itri_pedcross
-    itri_cv_bridge
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     ${openpose_LIBRARIES}
