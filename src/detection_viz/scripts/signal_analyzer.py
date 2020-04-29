@@ -9,9 +9,32 @@ import json
 
 class SIGNAL_ANALYZER(object):
 
-    def __init__(self, signal_name="signal_analysis", event_publisher=None):
+    def __init__(self, signal_name="signal_analysis", event_publisher=None, param_dict={}):
+        """
+        param_dict: (key: checker_func_key, value: parameters dict of the checker)
+        - "high_threshold"
+            - "threshold": (0.0) # Note: value in () is the default value
+        - "low_threshold"
+            - "threshold": (0.0)
+
+        - "high_avg_threshold"
+            - "threshold": (0.0)
+        - "low_avg_threshold"
+            - "threshold": (0.0)
+
+        - "higher_avg_value"
+            - "threshold": (0.0)
+        - "lower_avg_value"
+            - "threshold": (0.0)
+
+        - "higher_avg_ratio"
+            - "threshold": (1.0)
+        - "lower_avg_ratio"
+            - "threshold": (1.0)
+        """
         #
         self.name = signal_name
+        self.param_dict = param_dict
 
         # states
         self.value = None
@@ -30,10 +53,143 @@ class SIGNAL_ANALYZER(object):
 
     def setup_checkers(self):
         """
-        ** OVERLOAD
+        Select the checkers to load
         """
-        self.checker_func_list.append(self.sample_check_func)
-    #
+
+        #----------------------------------------#
+        checker_key = "high_threshold"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 0.0
+            self.checker_func_list.append(self.check_func_high_threshold)
+        #
+        checker_key = "low_threshold"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 0.0
+            self.checker_func_list.append(self.check_func_low_threshold)
+        #----------------------------------------#
+        checker_key = "high_avg_threshold"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 0.0
+            self.checker_func_list.append(self.check_func_high_avg_threshold)
+        #
+        checker_key = "low_avg_threshold"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 0.0
+            self.checker_func_list.append(self.check_func_low_avg_threshold)
+        #----------------------------------------#
+        checker_key = "higher_avg_value"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 0.0
+            self.checker_func_list.append(self.check_func_higher_avg_value)
+        #
+        checker_key = "lower_avg_value"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 0.0
+            self.checker_func_list.append(self.check_func_lower_avg_value)
+        #----------------------------------------#
+        checker_key = "higher_avg_ratio"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 1.0
+            self.checker_func_list.append(self.check_func_higher_avg_ratio)
+        #
+        checker_key = "lower_avg_ratio"
+        if checker_key in self.param_dict:
+            param_1 = "threshold"
+            if not param_1 in self.param_dict[checker_key]:
+                self.param_dict[checker_key][param_1] = 1.0
+            self.checker_func_list.append(self.check_func_lower_avg_ratio)
+        #----------------------------------------#
+
+    #----------------------------------------#
+    def check_func_high_threshold(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "high_threshold"
+        if value_in > self.param_dict[checker_key]["threshold"]:
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+
+    def check_func_low_threshold(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "low_threshold"
+        if value_in < self.param_dict[checker_key]["threshold"]:
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+    #----------------------------------------#
+    def check_func_high_avg_threshold(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "high_avg_threshold"
+        if self.value_avg > self.param_dict[checker_key]["threshold"]:
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+
+    def check_func_low_avg_threshold(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "low_avg_threshold"
+        if self.value_avg < self.param_dict[checker_key]["threshold"]:
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+    #----------------------------------------#
+    def check_func_higher_avg_value(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "higher_avg_value"
+        if (value_in - self.value_avg) > self.param_dict[checker_key]["threshold"]:
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+
+    def check_func_lower_avg_value(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "lower_avg_value"
+        if (value_in - self.value_avg) > self.param_dict[checker_key]["threshold"]:
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+    #----------------------------------------#
+    def check_func_higher_avg_ratio(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "higher_avg_ratio"
+        if value_in > (self.value_avg * self.param_dict[checker_key]["threshold"]):
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+
+    def check_func_lower_avg_ratio(self, value_in):
+        """
+        This is a checker_func.
+        """
+        checker_key = "lower_avg_ratio"
+        if value_in < (self.value_avg * self.param_dict[checker_key]["threshold"]):
+            print(checker_key)
+            self.publish_event("WARN", checker_key)
+    #----------------------------------------#
+
+
+    # ------------------------------------#
     def update(self, value_in):
         """
         This is a function that need to be call at each iteration.
@@ -50,15 +206,7 @@ class SIGNAL_ANALYZER(object):
         #--------------------#
         self._filter(value_in)
 
-    def sample_check_func(self, value_in):
-        """
-        This is a sample checker_func.
-        Each chile class can create its own checker_func
-        """
-        delta_value = value_in - self.value_avg
-        if delta_value > 0.0:
-            print("High")
-            self.publish_event("WARN", "abnormally high")
+
 
     # Private functions
     # ------------------------------------#
