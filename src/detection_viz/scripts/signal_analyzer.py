@@ -109,31 +109,14 @@ class SIGNAL_ANALYZER(object):
     # ------------------------------------#
     # end Private functions
 
-class SIGNAL_ANALYZER_TEST(SIGNAL_ANALYZER):
-    def setup_checkers(self):
-        """
-        ** OVERLOAD
-        """
-        self.checker_func_list.append(self.check_low_value)
 
-    def check_low_value(self, value_in):
-        """
-        This is a checker
-        """
-        delta_value = value_in - self.value_avg
-        if delta_value < 0.0:
-            print("Low")
-            self.publish_event("WARN", "abnormally low")
 
 
 if __name__ == "__main__":
     sig_analyzer_base = SIGNAL_ANALYZER()
-    sig_analyzer_low = SIGNAL_ANALYZER_TEST()
     while True:
         value =  np.random.rand()
         print("value = %f" % value)
         sig_analyzer_base.update( value )
-        sig_analyzer_low.update( value )
         print("sig_analyzer_base.value_avg = %f" % sig_analyzer_base.value_avg)
-        print("sig_analyzer_low.value_avg = %f" % sig_analyzer_low.value_avg)
         time.sleep(0.3)
