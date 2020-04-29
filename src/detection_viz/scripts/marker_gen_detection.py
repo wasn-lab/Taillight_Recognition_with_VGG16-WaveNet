@@ -4,6 +4,7 @@ import copy
 import rospy
 from std_msgs.msg import (
     Bool,
+    String
 )
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
@@ -14,6 +15,7 @@ from rosgraph_msgs.msg import Clock
 #
 import numpy as np
 import fps_calculator as FPS
+import signal_analyzer as SA
 
 BOX_ORDER = [
     0, 1,
@@ -59,6 +61,7 @@ class Node:
         # Publishers
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
+        self.checker_event_pub = rospy.Publisher(self.inputTopic + "/checker_event", String, queue_size=1000)
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
