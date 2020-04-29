@@ -165,7 +165,7 @@ class SIGNAL_ANALYZER(object):
         This is a checker_func.
         """
         checker_key = "lower_avg_value"
-        if (value_in - self.value_avg) > self.param_dict[checker_key]["threshold"]:
+        if (value_in - self.value_avg) < self.param_dict[checker_key]["threshold"]:
             print(checker_key)
             self.publish_event("WARN", checker_key)
     #----------------------------------------#
@@ -174,7 +174,11 @@ class SIGNAL_ANALYZER(object):
         This is a checker_func.
         """
         checker_key = "higher_avg_ratio"
-        if value_in > (self.value_avg * self.param_dict[checker_key]["threshold"]):
+        check_H = value_in > (self.value_avg * self.param_dict[checker_key]["threshold"])
+        check_L = value_in < (self.value_avg * self.param_dict[checker_key]["threshold"])
+        #
+        check_ = check_H if self.value_avg >= 0.0 else check_L
+        if check_:
             print(checker_key)
             self.publish_event("WARN", checker_key)
 
@@ -183,7 +187,11 @@ class SIGNAL_ANALYZER(object):
         This is a checker_func.
         """
         checker_key = "lower_avg_ratio"
-        if value_in < (self.value_avg * self.param_dict[checker_key]["threshold"]):
+        check_H = value_in > (self.value_avg * self.param_dict[checker_key]["threshold"])
+        check_L = value_in < (self.value_avg * self.param_dict[checker_key]["threshold"])
+        #
+        check_ = check_L if self.value_avg >= 0.0 else check_H
+        if check_:
             print(checker_key)
             self.publish_event("WARN", checker_key)
     #----------------------------------------#
@@ -261,7 +269,21 @@ class SIGNAL_ANALYZER(object):
 
 
 if __name__ == "__main__":
-    sig_analyzer_base = SIGNAL_ANALYZER()
+    param_dict = dict()
+    param_dict["high_threshold"] = {"threshold":0.6}
+    param_dict["low_threshold"] = {"threshold":0.4}
+
+    param_dict["high_avg_threshold"] = {"threshold":0.6}
+    param_dict["low_avg_threshold"] = {"threshold":0.4}
+
+    param_dict["higher_avg_value"] = {"threshold":0.1}
+    param_dict["lower_avg_value"] = {"threshold":-0.1}
+
+    param_dict["higher_avg_ratio"] = {"threshold":1.1}
+    param_dict["lower_avg_ratio"] = {"threshold":0.9}
+
+
+    sig_analyzer_base = SIGNAL_ANALYZER(param_dict=param_dict)
     while True:
         value =  np.random.rand()
         print("value = %f" % value)
