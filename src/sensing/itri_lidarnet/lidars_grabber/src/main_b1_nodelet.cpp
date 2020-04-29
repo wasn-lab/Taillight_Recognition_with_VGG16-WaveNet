@@ -336,55 +336,28 @@ private:
     *cloudPtr_LidAll += *cloudPtr_LidarFrontRight;
     *cloudPtr_LidAll += *cloudPtr_LidarFrontTop;
 
-    switch (lidarNum)
-    {
-      case 0:
-        cloudPtr_LidAll->header.seq = cloudPtr_LidarFrontLeft->header.seq;
-        cloudPtr_LidAll->header.frame_id = cloudPtr_LidarFrontLeft->header.frame_id;
-        break;
-      case 1:
-        cloudPtr_LidAll->header.seq = cloudPtr_LidarFrontRight->header.seq;
-        cloudPtr_LidAll->header.frame_id = cloudPtr_LidarFrontRight->header.frame_id;
-        break;
-      case 4:
-        cloudPtr_LidAll->header.seq = cloudPtr_LidarFrontTop->header.seq;
-        cloudPtr_LidAll->header.frame_id = cloudPtr_LidarFrontTop->header.frame_id;
-        break;
-      default:
-        cloudPtr_LidAll->header.seq = cloudPtr_LidarFrontTop->header.seq;
-        cloudPtr_LidAll->header.frame_id = cloudPtr_LidarFrontTop->header.frame_id;
-        break;
-    }
-
-    uint64_t avg_time;
-    int n = 0;
-    if (cloudPtr_LidarFrontLeft->header.stamp != 0)
-    {
-      n += 1;
-    };
-    if (cloudPtr_LidarFrontRight->header.stamp != 0)
-    {
-      n += 1;
-    };
     if (cloudPtr_LidarFrontTop->header.stamp != 0)
     {
-      n += 1;
-    };
-    if (n != 0)
-    {
-      avg_time = (cloudPtr_LidarFrontLeft->header.stamp + cloudPtr_LidarFrontRight->header.stamp +
-                  cloudPtr_LidarFrontTop->header.stamp) /
-                 n;
+      cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontTop->header.stamp;
     }
     else
     {
-      avg_time = 0;
+      if (cloudPtr_LidarFrontLeft->header.stamp >= cloudPtr_LidarFrontRight->header.stamp)
+      {
+        cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontLeft->header.stamp;
+      }
+      else
+      {
+        cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontRight->header.stamp;
+      }
     }
 
-    // cloudPtr_LidAll->header.stamp = avg_time;
-    pcl_conversions::toPCL(ros::Time::now(), cloudPtr_LidAll->header.stamp);
+    uint64_t LidarAll_time;
+    LidarAll_time = cloudPtr_LidAll->header.stamp;
+
     pub_LidAll.publish(*cloudPtr_LidAll);
     cloudPtr_LidAll->clear();
+
     if (debug_output)
     {
       cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
@@ -393,22 +366,22 @@ private:
     // if wall_time - ros_time !> 30 minutes, (not rosbag)
     // clear sensor pc data memory if delay 3sec.
     uint64_t now = ros::Time::now().toNSec() / 1000ull;  // microsec
-    if (!((now - avg_time) > 1000000 * 1800))
+    if (!((now - LidarAll_time) > 1000000 * 1800))
     {
-      if ((now - cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 3)
+      if ((now - cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 2)
       {
         cloudPtr_LidarFrontLeft->clear();
-        cout << "Front-Left Clear" << endl;
+        cout << "---------------------> Front-Left Clear" << endl;
       };
-      if ((now - cloudPtr_LidarFrontRight->header.stamp) > 1000000 * 3)
+      if ((now - cloudPtr_LidarFrontRight->header.stamp) > 1000000 * 2)
       {
         cloudPtr_LidarFrontRight->clear();
-        cout << "Front-Right Clear" << endl;
+        cout << "---------------------> Front-Right Clear" << endl;
       };
-      if ((now - cloudPtr_LidarFrontTop->header.stamp) > 1000000 * 3)
+      if ((now - cloudPtr_LidarFrontTop->header.stamp) > 1000000 * 2)
       {
         cloudPtr_LidarFrontTop->clear();
-        cout << "Top Clear" << endl;
+        cout << "---------------------> Top Clear" << endl;
       };
     }
   }
