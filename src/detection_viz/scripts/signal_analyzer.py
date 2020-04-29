@@ -5,6 +5,7 @@ import numpy as np
 # import threading
 from timeit import default_timer as timer
 import time
+import threading
 import json
 
 class SIGNAL_ANALYZER(object):
@@ -12,8 +13,12 @@ class SIGNAL_ANALYZER(object):
     def __init__(self, signal_name="signal_analysis", event_publisher=None, param_dict={}):
         """
         param_dict: (key: checker_func_key, value: parameters dict of the checker)
+        # Note: value in () is the default value
+        - "timeout"
+            - "threshold": (1.0) # sec.
+
         - "high_threshold"
-            - "threshold": (0.0) # Note: value in () is the default value
+            - "threshold": (0.0)
         - "low_threshold"
             - "threshold": (0.0)
 
@@ -50,6 +55,9 @@ class SIGNAL_ANALYZER(object):
         self.checker_func_list = []
         # Setup checkers (Note: this function should be overloaded)
         self.setup_checkers()
+
+        # timeout
+        self.timeout_thread = None
 
     def setup_checkers(self):
         """
@@ -196,12 +204,30 @@ class SIGNAL_ANALYZER(object):
             self.publish_event("WARN", checker_key)
     #----------------------------------------#
 
+    # Timeout
+    #-------------------------------------#
+    def _timeout_handle(self):
+        """
+        """
+        checker_key = "timeout > %f sec." % self.param_dict["timeout"]["threshold"]
+        print(checker_key)
+        self.publish_event("WARN", checker_key)
+
+    def reset_timeout_timer(self):
+        """
+        """
+        if self.timeout_thread is not None:
+            self.timeout_thread.cancel()
+        self.timeout_thread = threading.Timer(self.param_dict["timeout"]["threshold"], self._timeout_handle)
+        self.timeout_thread.start()
+    #-------------------------------------#
 
     # ------------------------------------#
     def update(self, value_in):
         """
         This is a function that need to be call at each iteration.
         """
+        self.reset_timeout_timer()
         # Initialization
         if self.value is None:
             self.value = value_in
@@ -270,6 +296,8 @@ class SIGNAL_ANALYZER(object):
 
 if __name__ == "__main__":
     param_dict = dict()
+    param_dict["timeout"] = {"threshold":0.2}
+
     param_dict["high_threshold"] = {"threshold":0.6}
     param_dict["low_threshold"] = {"threshold":0.4}
 
