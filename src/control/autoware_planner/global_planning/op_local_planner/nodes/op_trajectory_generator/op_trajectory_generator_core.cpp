@@ -41,7 +41,8 @@ TrajectoryGen::TrajectoryGen()
   pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_gen_rviz", 1);
 
   sub_initialpose = nh.subscribe("/initialpose", 1, &TrajectoryGen::callbackGetInitPose, this);
-  sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryGen::callbackGetCurrentPose, this);
+  // sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryGen::callbackGetCurrentPose, this);
+  sub_current_pose = nh.subscribe("/rear_current_pose", 10, &TrajectoryGen::callbackGetCurrentPose, this);
 
   int bVelSource = 1;
   _nh.getParam("/op_trajectory_generator/velocitySource", bVelSource);
