@@ -15,3 +15,4 @@
 
 - [ ] The MR matches what the description says. No more, no less.
 - [ ] No logic error.
+- [ ] The MR is double verified.

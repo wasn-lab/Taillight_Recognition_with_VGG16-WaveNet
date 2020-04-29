@@ -1,27 +1,32 @@
 #include "squeezeseg_inference_nodelet.h"
 
 
+ros::Publisher ssn_v2_nodelet::nn_pub;
+ros::Subscriber ssn_v2_nodelet::LidarAllSub;
 
-  ros::Publisher ssn_v2_nodelet::nn_pub;
-  ros::Subscriber ssn_v2_nodelet::LidarAllSub;
+bool ssn_v2_nodelet::debug_output;
 
-  string ssn_v2_nodelet::data_set;
-  char ssn_v2_nodelet::ViewType;
-  int ssn_v2_nodelet::pub_type;
-  bool ssn_v2_nodelet::hybrid_detect;
+string ssn_v2_nodelet::data_set;
+char ssn_v2_nodelet::ViewType;
+int ssn_v2_nodelet::pub_type;
+bool ssn_v2_nodelet::hybrid_detect;
 
-  string ssn_v2_nodelet::GET_data_set;
-  string ssn_v2_nodelet::GET_ViewType;
-  string ssn_v2_nodelet::GET_pub_type;
-  string ssn_v2_nodelet::GET_hybrid_detect;
+string ssn_v2_nodelet::GET_data_set;
+string ssn_v2_nodelet::GET_ViewType;
+string ssn_v2_nodelet::GET_pub_type;
+string ssn_v2_nodelet::GET_hybrid_detect;
 
-  vector<TF_inference> ssn_v2_nodelet::SSN_all;
+vector<TF_inference> ssn_v2_nodelet::SSN_all;
 
+StopWatch stopWatch;
 
 void
 ssn_v2_nodelet::LidarsNodelet::onInit()
 {
   ros::NodeHandle nh;
+
+  // check debug mode
+  ros::param::get("/debug_output", debug_output);
 
   nh.getParam("SSN_DataSet", GET_data_set);
   nh.getParam("SSN_ViewType", GET_ViewType);
@@ -38,6 +43,7 @@ ssn_v2_nodelet::LidarsNodelet::onInit()
   cout << "ViewType: " << ViewType << endl;
   cout << "pub_type: " << pub_type << endl;
   cout << "hybird_detect: " << hybrid_detect << endl;
+  cout << "debug_output: " << debug_output << endl;  
 
   LidarAllSub = nh.subscribe("/LidarAll/NonGround", 1, callback_LidarAll);
   nn_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZIL>>("/squ_seg/result_cloud", 1);
@@ -67,7 +73,6 @@ void
 ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   // cout << "TensorFlow Version: " << TF_Version() << endl;
-  pcl::StopWatch stopWatch;
 
   VPointCloud::Ptr release_Cloud(new VPointCloud);
 
@@ -75,6 +80,14 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
 
   if (release_Cloud->size() > 100)
   {
+    if (debug_output)
+    { 
+      ros::Time rosTime;
+      pcl_conversions::fromPCL (msg->header.stamp, rosTime);
+      cout << "[All->SSNv2]: " << (ros::Time::now () - rosTime).toSec() *1000 << "ms"  << endl;
+      stopWatch.reset ();
+    }
+    
     //   ===============  temporally enable part of rule-based code for ensuring front-view detection
     //   ==========================
     VPointCloud::Ptr select_Cloud(new VPointCloud);
@@ -153,6 +166,12 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
     nn_pub.publish(*result_cloud_all);
     result_cloud_all->clear();
 
+
+    if (debug_output)
+    {
+        cout << "[SSNv2]: " << stopWatch.getTimeSeconds() << 's' << endl;
+    } 
+
     // ======== following comment used for debugging of subscription ========
     // sensor_msgs::PointCloud2 all_msg;
     // pcl::toROSMsg (*release_Cloud, all_msg);
@@ -162,10 +181,7 @@ ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::Poin
     // all_pub.publish (all_msg);  // publish to /release_cloud
   }
 
-  if (stopWatch.getTimeSeconds() > 0.05)
-  {
-    cout << "[SSN]: " << stopWatch.getTimeSeconds() << "s" << endl << endl;
-  }
+
 }
 
 bool
