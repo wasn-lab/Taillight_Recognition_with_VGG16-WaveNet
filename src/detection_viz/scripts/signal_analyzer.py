@@ -10,7 +10,7 @@ import json
 
 class SIGNAL_ANALYZER(object):
 
-    def __init__(self, signal_name="signal_analysis", event_publisher=None, param_dict={}):
+    def __init__(self, module_name="module", signal_name="signal", event_publisher=None, param_dict={}):
         """
         param_dict: (key: checker_func_key, value: parameters dict of the checker)
         # Note: value in () is the default value
@@ -38,7 +38,8 @@ class SIGNAL_ANALYZER(object):
             - "threshold": (1.0)
         """
         #
-        self.name = signal_name
+        self.module_name = module_name
+        self.signal_name = signal_name
         self.param_dict = param_dict
 
         # states
@@ -58,6 +59,11 @@ class SIGNAL_ANALYZER(object):
 
         # timeout
         self.timeout_thread = None
+        self.reset_timeout_timer(is_first=True)
+
+        # Initial state
+        self.initial_state_period = 15.0 # sec.
+        self.is_initial_state = True
 
     def setup_checkers(self):
         """
@@ -128,65 +134,78 @@ class SIGNAL_ANALYZER(object):
         This is a checker_func.
         """
         checker_key = "high_threshold"
-        if value_in > self.param_dict[checker_key]["threshold"]:
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+        target = self.param_dict[checker_key]["threshold"]
+        if value_in > target:
+            event_str = "%s(%f>%f)" % (checker_key, value_in, target)
+            print(event_str)
+            self.publish_event("WARN", event_str)
 
     def check_func_low_threshold(self, value_in):
         """
         This is a checker_func.
         """
         checker_key = "low_threshold"
-        if value_in < self.param_dict[checker_key]["threshold"]:
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+        target = self.param_dict[checker_key]["threshold"]
+        if value_in < target:
+            event_str = "%s(%f<%f)" % (checker_key, value_in, target)
+            print(event_str)
+            self.publish_event("WARN", event_str)
     #----------------------------------------#
     def check_func_high_avg_threshold(self, value_in):
         """
         This is a checker_func.
         """
         checker_key = "high_avg_threshold"
-        if self.value_avg > self.param_dict[checker_key]["threshold"]:
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+        target = self.param_dict[checker_key]["threshold"]
+        if self.value_avg > target:
+            event_str = "%s(%f>%f)" % (checker_key, self.value_avg, target)
+            print(event_str)
+            self.publish_event("WARN", event_str)
 
     def check_func_low_avg_threshold(self, value_in):
         """
         This is a checker_func.
         """
         checker_key = "low_avg_threshold"
-        if self.value_avg < self.param_dict[checker_key]["threshold"]:
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+        target = self.param_dict[checker_key]["threshold"]
+        if self.value_avg < target:
+            event_str = "%s(%f<%f)" % (checker_key, self.value_avg, target)
+            print(event_str)
+            self.publish_event("WARN", event_str)
     #----------------------------------------#
     def check_func_higher_avg_value(self, value_in):
         """
         This is a checker_func.
         """
         checker_key = "higher_avg_value"
-        if (value_in - self.value_avg) > self.param_dict[checker_key]["threshold"]:
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+        target = self.param_dict[checker_key]["threshold"]
+        if (value_in - self.value_avg) > target:
+            event_str = "%s(%f-%f>%f)" % (checker_key, value_in, self.value_avg, target)
+            print(event_str)
+            self.publish_event("WARN", event_str)
 
     def check_func_lower_avg_value(self, value_in):
         """
         This is a checker_func.
         """
         checker_key = "lower_avg_value"
-        if (value_in - self.value_avg) < self.param_dict[checker_key]["threshold"]:
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+        target = self.param_dict[checker_key]["threshold"]
+        if (value_in - self.value_avg) < target:
+            event_str = "%s(%f-%f<%f)" % (checker_key, value_in, self.value_avg, target)
+            print(event_str)
+            self.publish_event("WARN", event_str)
     #----------------------------------------#
     def check_func_higher_avg_ratio(self, value_in):
         """
         This is a checker_func.
         """
         checker_key = "higher_avg_ratio"
-        check_H = value_in > (self.value_avg * self.param_dict[checker_key]["threshold"])
-        check_L = value_in < (self.value_avg * self.param_dict[checker_key]["threshold"])
-        #
+        target = self.param_dict[checker_key]["threshold"]
+        check_H = value_in > (self.value_avg * target)
+        check_L = value_in < (self.value_avg * target)
         check_ = check_H if self.value_avg >= 0.0 else check_L
         if check_:
+            event_str = "%s(%f/%f>%f)" % (checker_key, value_in, self.value_avg, target)
             print(checker_key)
             self.publish_event("WARN", checker_key)
 
@@ -195,11 +214,12 @@ class SIGNAL_ANALYZER(object):
         This is a checker_func.
         """
         checker_key = "lower_avg_ratio"
-        check_H = value_in > (self.value_avg * self.param_dict[checker_key]["threshold"])
-        check_L = value_in < (self.value_avg * self.param_dict[checker_key]["threshold"])
-        #
+        target = self.param_dict[checker_key]["threshold"]
+        check_H = value_in > (self.value_avg * target)
+        check_L = value_in < (self.value_avg * target)
         check_ = check_L if self.value_avg >= 0.0 else check_H
         if check_:
+            event_str = "%s(%f/%f<%f)" % (checker_key, value_in, self.value_avg, target)
             print(checker_key)
             self.publish_event("WARN", checker_key)
     #----------------------------------------#
@@ -213,12 +233,19 @@ class SIGNAL_ANALYZER(object):
         print(checker_key)
         self.publish_event("WARN", checker_key)
 
-    def reset_timeout_timer(self):
+    def reset_timeout_timer(self, is_first=False):
         """
         """
+        if not "timeout" in self.param_dict:
+            return
+        #
+        timeout_sec = self.param_dict["timeout"]["threshold"]
+        if is_first:
+            timeout_sec += self.initial_state_period
+        #
         if self.timeout_thread is not None:
             self.timeout_thread.cancel()
-        self.timeout_thread = threading.Timer(self.param_dict["timeout"]["threshold"], self._timeout_handle)
+        self.timeout_thread = threading.Timer(timeout_sec, self._timeout_handle)
         self.timeout_thread.start()
     #-------------------------------------#
 
@@ -234,8 +261,9 @@ class SIGNAL_ANALYZER(object):
         if self.value_avg is None:
             self.value_avg = value_in
         # check_func
-        for _check_func in self.checker_func_list:
-            _check_func(value_in)
+        if not self.is_initial_state:
+            for _check_func in self.checker_func_list:
+                _check_func(value_in)
         # Update stored value
         #--------------------#
         self._filter(value_in)
@@ -249,6 +277,14 @@ class SIGNAL_ANALYZER(object):
         This is a adaptive low pass filter for obtaining the average of the signal.
         """
         stamp_now = timer()
+        if (stamp_now - self.stamp_start) < self.initial_state_period:
+            self.is_initial_state = True
+            self.value_avg = value_in
+            self.value = value_in
+            self.stamp_last = stamp_now
+            return
+        self.is_initial_state = False
+        # else, after initial state
         delta_T = stamp_now - self.stamp_last
         #---------------------------#
         # Update the parameter of LPF
@@ -275,9 +311,9 @@ class SIGNAL_ANALYZER(object):
         Output: json string
         """
         json_dict = dict()
-        json_dict["module"] = self.name
+        json_dict["module"] = self.module_name
         json_dict["status"] = status
-        json_dict["event_str"] = event_str
+        json_dict["event_str"] = "[%s]%s" % (self.signal_name, event_str)
         return json.dumps(json_dict)
 
     def publish_event(self, status, event_str):

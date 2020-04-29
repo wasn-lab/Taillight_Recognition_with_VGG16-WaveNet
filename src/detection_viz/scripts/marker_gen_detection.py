@@ -57,11 +57,14 @@ class Node:
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
         self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
+        # Checkers
+        #------------------------#
+        self.checker_event_pub = rospy.Publisher(self.inputTopic + "/checker_event", String, queue_size=1000)
+        self.setup_checkers()
         #------------------------#
         # Publishers
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
-        self.checker_event_pub = rospy.Publisher(self.inputTopic + "/checker_event", String, queue_size=1000)
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
@@ -80,6 +83,14 @@ class Node:
 
     def req_show_track_id_CB(self, msg):
         self.is_showing_track_id = msg.data
+
+    def setup_checkers(self):
+        """
+        Setup signal_analyzer
+        """
+        param_dict = dict()
+        param_dict["low_avg_threshold"] = {"threshold":5.0}
+        self.checker_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name="FPS",event_publisher=self.checker_event_pub, param_dict=param_dict )
 
     def text_marker_position(self, bbox):
         point_1 = bbox.p1
@@ -115,6 +126,9 @@ class Node:
         current_stamp = rospy.get_rostime()
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
+
+        # Checkers
+        self.checker_fps.update(self.fps_cal.fps)
 
         # Clean-up the objects if its distance < 0.0
         #----------------------------------------------#
