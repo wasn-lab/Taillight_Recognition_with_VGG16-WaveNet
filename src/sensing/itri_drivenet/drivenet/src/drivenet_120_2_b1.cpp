@@ -699,8 +699,8 @@ void* run_yolo(void*)
 void* run_display(void*)
 {
   std::cout << "run_display start" << std::endl;
-  cv::namedWindow("FrontTop-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("BackTop-120", CV_WINDOW_NORMAL);
+  cv::namedWindow("FrontTop-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("BackTop-120", cv::WINDOW_NORMAL);
   cv::resizeWindow("FrontTop-120", 480, 360);
   cv::resizeWindow("BackTop-120", 480, 360);
   cv::moveWindow("FrontTop-120", 0, 720);

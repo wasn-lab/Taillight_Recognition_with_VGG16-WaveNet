@@ -2,9 +2,15 @@
 #define IMAGE_PREPROCESSING_H_
 
 #include <iostream>
+#include <opencv2/core/version.hpp>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#if CV_VERSION_MAJOR == 4
+    #include <opencv2/calib3d/calib3d.hpp>
+#else
+    #include <opencv2/imgproc/imgproc.hpp>
+#endif
 #include <opencv2/highgui/highgui.hpp>
+
 
 namespace DriveNet
 {
