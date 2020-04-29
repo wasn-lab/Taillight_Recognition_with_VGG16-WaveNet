@@ -22,16 +22,16 @@ add_message_files(
             CloudCluster.msg
             CloudClusterArray.msg
             #ColorSet.msg
-            #ControlCommand.msg
+            ControlCommand.msg
             DetectedObject.msg
             DetectedObjectArray.msg
-            #ExtractedPosition.msg
+            ExtractedPosition.msg
             #ImageLaneObjects.msg
             #ImageObjects.msg
             LaneArray.msg
             #PointsImage.msg
             #ScanImage.msg
-            #Signals.msg
+            Signals.msg
             #TunedResult.msg
             #ValueSet.msg
             Centroids.msg
