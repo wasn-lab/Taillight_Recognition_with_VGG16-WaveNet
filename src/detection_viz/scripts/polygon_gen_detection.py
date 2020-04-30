@@ -43,7 +43,7 @@ class Node:
         self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
         # Checkers
         #------------------------#
-        self.checker_event_pub = rospy.Publisher(self.inputTopic + "/checker_event", String, queue_size=1000)
+        self.checker_event_pub = rospy.Publisher("/d_viz/checker_event", String, queue_size=1000)
         self.setup_checkers()
         #------------------------#
         # Publishers
@@ -72,9 +72,16 @@ class Node:
         """
         Setup signal_analyzer
         """
+        # FPS
+        signal_name = "absFPS"
         param_dict = dict()
-        param_dict["low_avg_threshold"] = {"threshold":5.0}
-        self.checker_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name="FPS",event_publisher=self.checker_event_pub, param_dict=param_dict )
+        param_dict["low_threshold"] = {"threshold":5.0}
+        self.checker_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # Latency (500ms)
+        signal_name = "absLatency"
+        param_dict = dict()
+        param_dict["high_avg_threshold"] = {"threshold":0.5}
+        self.checker_latency = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
 
     def _increase_point_z(self, pointXYZ_in, high):
         pointXYZ_out = PointXYZ()
@@ -125,11 +132,15 @@ class Node:
 
     def detection_callback(self, message):
         current_stamp = rospy.get_rostime()
+        current_latency = (current_stamp - message.header.stamp).to_sec() # sec.
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
 
         # Checkers
+        #-------------------------------------------#
         self.checker_fps.update(self.fps_cal.fps)
+        self.checker_latency.update(current_latency)
+        #-------------------------------------------#
 
         # Clean-up the objects if its distance < 0.0
         #----------------------------------------------#

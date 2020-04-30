@@ -62,7 +62,7 @@ class SIGNAL_ANALYZER(object):
         self.reset_timeout_timer(is_first=True)
 
         # Initial state
-        self.initial_state_period = 15.0 # sec.
+        self.initial_state_period = 2.0 # 15.0 # sec.
         self.is_initial_state = True
 
     def setup_checkers(self):
@@ -250,6 +250,13 @@ class SIGNAL_ANALYZER(object):
     #-------------------------------------#
 
     # ------------------------------------#
+    def restart():
+        """
+        Restart the filter
+        """
+        self.stamp_start = timer()
+        self.is_initial_state = True
+
     def update(self, value_in):
         """
         This is a function that need to be call at each iteration.
@@ -268,7 +275,13 @@ class SIGNAL_ANALYZER(object):
         #--------------------#
         self._filter(value_in)
 
-
+        # State control
+        #--------------------------------#
+        if self.is_initial_state:
+            if (timer() - self.stamp_start) > self.initial_state_period:
+                self.is_initial_state = False
+                rospy.logwarn("signal_analyzer(%s|%s) started" % (self.module_name, self.signal_name))
+        #--------------------------------#
 
     # Private functions
     # ------------------------------------#
@@ -277,13 +290,13 @@ class SIGNAL_ANALYZER(object):
         This is a adaptive low pass filter for obtaining the average of the signal.
         """
         stamp_now = timer()
-        if (stamp_now - self.stamp_start) < self.initial_state_period:
-            self.is_initial_state = True
+        # Initial state
+        if self.is_initial_state:
             self.value_avg = value_in
             self.value = value_in
             self.stamp_last = stamp_now
             return
-        self.is_initial_state = False
+
         # else, after initial state
         delta_T = stamp_now - self.stamp_last
         #---------------------------#
