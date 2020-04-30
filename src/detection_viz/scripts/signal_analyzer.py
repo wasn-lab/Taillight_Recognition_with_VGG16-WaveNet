@@ -254,7 +254,7 @@ class SIGNAL_ANALYZER(object):
     #-------------------------------------#
 
     # ------------------------------------#
-    def restart():
+    def restart(self):
         """
         Restart the filter
         """
