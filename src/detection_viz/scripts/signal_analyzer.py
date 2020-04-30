@@ -232,7 +232,7 @@ class SIGNAL_ANALYZER(object):
     def _timeout_handle(self):
         """
         """
-        checker_key = "timeout > %f sec." % self.param_dict["timeout"]["threshold"]
+        checker_key = "timeout>%fsec" % self.param_dict["timeout"]["threshold"]
         print(checker_key)
         self.publish_event("WARN", checker_key)
 
