@@ -1,6 +1,5 @@
 #include "squeezeseg_inference_nodelet.h"
 
-
 ros::Publisher ssn_nodelet::nn_pub;
 ros::Subscriber ssn_nodelet::LidarAllSub;
 
@@ -11,7 +10,6 @@ char ssn_nodelet::ViewType;
 int ssn_nodelet::pub_type;
 bool ssn_nodelet::hybrid_detect;
 
-
 string ssn_nodelet::GET_data_set;
 string ssn_nodelet::GET_ViewType;
 string ssn_nodelet::GET_pub_type;
@@ -21,8 +19,7 @@ vector<TF_inference> ssn_nodelet::SSN_all;
 
 StopWatch stopWatch;
 
-void
-ssn_nodelet::LidarsNodelet::onInit()
+void ssn_nodelet::LidarsNodelet::onInit()
 {
   ros::NodeHandle nh;
 
@@ -44,7 +41,7 @@ ssn_nodelet::LidarsNodelet::onInit()
   cout << "ViewType: " << ViewType << endl;
   cout << "pub_type: " << pub_type << endl;
   cout << "hybird_detect: " << hybrid_detect << endl;
-  cout << "debug_output: " << debug_output << endl;  
+  cout << "debug_output: " << debug_output << endl;
 
   LidarAllSub = nh.subscribe("/LidarAll/NonGround", 1, callback_LidarAll);
   nn_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZIL>>("/squ_seg/result_cloud", 1);
@@ -54,13 +51,13 @@ ssn_nodelet::LidarsNodelet::onInit()
 
   for (size_t i = 0; i < phi_center_all.size(); i++)
   {
-      SSN_all.push_back(TF_inference(data_set, ViewType, phi_center_all.at(i), pub_type));
+    SSN_all.push_back(TF_inference(data_set, ViewType, phi_center_all.at(i), pub_type));
   }
 
   vector<int> TF_ERcode(phi_center_all.size());
   for (size_t i = 0; i < phi_center_all.size(); i++)
   {
-      TF_ERcode.at(i) = SSN_all.at(i).TF_init();
+    TF_ERcode.at(i) = SSN_all.at(i).TF_init();
   }
 
   // TODO
@@ -70,8 +67,7 @@ ssn_nodelet::LidarsNodelet::onInit()
    */
 }
 
-void 
-ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
+void ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   // cout << "TensorFlow Version: " << TF_Version() << endl;
 
@@ -82,13 +78,13 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
   if (release_Cloud->size() > 100)
   {
     if (debug_output)
-    { 
+    {
       ros::Time rosTime;
-      pcl_conversions::fromPCL (msg->header.stamp, rosTime);
-      cout << "[All->SSN]: " << (ros::Time::now () - rosTime).toSec() *1000 << "ms" << endl;
-      stopWatch.reset ();
+      pcl_conversions::fromPCL(msg->header.stamp, rosTime);
+      cout << "[All->SSN]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+      stopWatch.reset();
     }
-    
+
     //   ===============  temporally enable part of rule-based code for ensuring front-view detection
     //   ==========================
     VPointCloud::Ptr select_Cloud(new VPointCloud);
@@ -113,7 +109,7 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
     vector<VPointCloudXYZIL::Ptr> result_cloud;
     for (size_t i = 0; i < SSN_all.size(); i++)
     {
-        result_cloud.push_back(VPointCloudXYZIL::Ptr(new VPointCloudXYZIL));
+      result_cloud.push_back(VPointCloudXYZIL::Ptr(new VPointCloudXYZIL));
     }
 
     // VPointCloudXYZIL::Ptr result_cloud(new VPointCloudXYZIL);
@@ -139,7 +135,7 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
 
     for (size_t i = 0; i < SSN_all.size(); i++)
     {
-        *result_cloud_all += *result_cloud.at(i);
+      *result_cloud_all += *result_cloud.at(i);
     }
 
     result_cloud_all->header.frame_id = msg->header.frame_id;
@@ -167,9 +163,8 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
 
     if (debug_output)
     {
-        cout << "[SSN]: " << stopWatch.getTimeSeconds() << 's' << endl;
-    } 
-
+      cout << "[SSN]: " << stopWatch.getTimeSeconds() << 's' << endl;
+    }
 
     // ======== following comment used for debugging of subscription ========
     // sensor_msgs::PointCloud2 all_msg;
@@ -179,12 +174,9 @@ ssn_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl::PointXY
     // all_msg.header.seq = msg->header.seq;
     // all_pub.publish (all_msg);  // publish to /release_cloud
   }
-
-
 }
 
-bool
-ssn_nodelet::LidarsNodelet::to_bool(std::string const& s)
+bool ssn_nodelet::LidarsNodelet::to_bool(std::string const& s)
 {
   return s != "0";
 }
