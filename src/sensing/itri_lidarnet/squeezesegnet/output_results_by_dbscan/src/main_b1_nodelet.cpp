@@ -53,7 +53,10 @@ public:
       {
         ros::Time rosTime;
         pcl_conversions::fromPCL(msg->header.stamp, rosTime);
-        cout << "[All->DB]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+        if ((ros::Time::now() - rosTime).toSec() < 3600)
+        {
+          cout << "[All->DB]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+        }
         stopWatch.reset();
       }
 
@@ -71,6 +74,7 @@ public:
       {
         cout << "[DBScan]: " << stopWatch.getTimeSeconds() << 's' << endl;
       }
+      
       double latency = (ros::Time::now() - rosTime).toSec();
       if (latency > 0 && latency < 3)
       {
