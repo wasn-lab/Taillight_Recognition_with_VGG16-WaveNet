@@ -88,6 +88,47 @@ class Node:
         param_dict["timeout"] = {"threshold":0.7}
         self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
 
+    def get_confidence_scores(self, objects):
+        """
+        cPoint
+        Input:
+            objects (list)
+        Output:
+            (avg_prob, d_min_prob)
+        """
+        #
+        d_min = None
+        d_min_idx = None
+        d_min_prob = 1.0
+        #
+        sum_prob = 0.0
+        obj_count = 0
+        for i, _obj in enumerate(objects):
+            _prob = _obj.camInfo.prob
+            if _prob == 0.0:
+                continue
+            # Sum
+            #-----------------#
+            obj_count += 1
+            sum_prob += _prob
+            #-----------------#
+            depth = self._calculate_distance_polygon( _obj.cPoint )
+            if len(_obj.cPoint.lowerAreaPoints) > 0:
+                if _obj.cPoint.lowerAreaPoints[0].x > 0.0:
+                    # Frontal object and the object is not empty
+                    if (depth < d_min) or (d_min is None):
+                        # Update
+                        d_min = depth
+                        d_min_idx = i
+                        d_min_prob = _prob
+        # Post-process
+        #--------------------------------#
+        if obj_count == 0:
+            avg_prob = 1.0
+        else:
+            avg_prob = sum_prob/obj_count
+        #
+        return (avg_prob, d_min_prob)
 
     def _increase_point_z(self, pointXYZ_in, high):
         pointXYZ_out = PointXYZ()
@@ -158,6 +199,9 @@ class Node:
         self.checker_abs_fps.update(self.fps_cal.fps)
         self.checker_abs_latency.update(current_latency)
         self.checker_timeout.update()
+        #
+        avg_prob, d_min_prob = self.get_confidence_scores(_objects)
+        # print("avg_prob = %f, d_min_prob = %f" % (avg_prob, d_min_prob))
         #-------------------------------------------#
 
 
