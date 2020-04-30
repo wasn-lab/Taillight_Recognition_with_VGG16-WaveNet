@@ -3,7 +3,7 @@
     <include file="$(find drivenet)/launch/b1_v2_drivenet_group_b.launch"/>
     <include file="$(find drivenet)/launch/b1_v2_drivenet_group_c.launch"/>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag" required="true"/>
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>

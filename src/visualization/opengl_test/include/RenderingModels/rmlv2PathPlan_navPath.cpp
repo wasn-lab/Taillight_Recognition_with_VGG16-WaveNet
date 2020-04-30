@@ -177,4 +177,5 @@ bool rmlv2PathPlan_navPath::update_section_orientation(geometry_msgs::Quaternion
         section_vertexes[i] = (_delta_T * glm::vec4(section_vertexes[i], 1.0f)).xyz();
     }
     rm_path.insert_section_vertexes(section_vertexes);
+    return false;
 }

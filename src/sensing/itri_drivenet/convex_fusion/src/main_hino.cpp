@@ -247,7 +247,6 @@ int main(int argc, char** argv)
         }
       }
 
-#pragma omp parallel for
       for (size_t i = 0; i < NumberABB; i++)
       {
         UseApproxMVBB bbox2;

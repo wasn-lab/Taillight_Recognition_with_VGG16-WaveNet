@@ -54,6 +54,6 @@ public:
 
   void stop();
 };
-}
+}  // namespace openpose_ros
 
 #endif

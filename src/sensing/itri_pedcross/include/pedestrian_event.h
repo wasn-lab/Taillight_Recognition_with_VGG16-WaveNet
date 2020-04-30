@@ -10,6 +10,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <nav_msgs/Path.h>
+#include "msgs/VehInfo.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
@@ -30,11 +31,17 @@
 // C++ std library dependencies
 #include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
 #include <thread>  // std::this_thread
+#include <fstream>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include <tensorflow/c/c_api.h>  // TensorFlow C API header.
 //#include <scope_guard.hpp>
 //#include <tf_utils.hpp>
 
+#define USE_2D_FOR_ALARM 0
+#define DUMP_LOG 0
+#define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -66,9 +73,12 @@ public:
 
   // Functions
   void run();
+  void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
                          ros::Time time);
@@ -78,11 +88,15 @@ public:
   float predict_rf(cv::Mat input_data);
   float predict_rf_pose(cv::Mat input_data);
   bool too_far(const msgs::BoxPoint box_point);
-  void draw_pedestrians(cv::Mat matrix);
+  // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
   float adjust_probability(msgs::PedObject obj);
-  int get_facing_direction(std::vector<cv::Point2f> keypoints);
-  int get_body_direction(std::vector<cv::Point2f> keypoints);
+  int get_facing_direction(const std::vector<cv::Point2f>& keypoints);
+  int get_body_direction(const std::vector<cv::Point2f>& keypoints);
+  double get_tranform_yaw(double x, double y, double z, double w);
+  geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                geometry_msgs::Vector3 translation);
+  void display_on_terminal();
 
   // OpenPose components
   int openPoseROS();
@@ -93,9 +107,14 @@ public:
   cv::dnn::Net net_openpose;
 
   // All buffer components
+  msgs::VehInfo veh_info;
   std::vector<geometry_msgs::PoseStamped> nav_path;
+  std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
-  std::vector<std::pair<msgs::PedObject, std::vector<cv::Point2f>>> objs_and_keypoints;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
+  std::vector<std::string> ped_info;
+  std::string delay_from_camera = "NA";
+  std::string chatter_callback_info = "Not running";
   Buffer buffer;
   int buffer_size = 60;
 
@@ -111,20 +130,28 @@ public:
   cv::Ptr<cv::ml::RTrees> rf_pose;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_1;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_4;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
+  std::ofstream file;
+  struct winsize terminal_size;
 
   // Setup variables
   const int cross_threshold = 55;  // percentage
   const double scaling_ratio_width = 0.3167;
   const double scaling_ratio_height = 0.3179;
   const int number_keypoints = 25;
-  bool show_probability = true;
-  int input_source = 0;
-  float max_distance = 50;
   const int feature_num = 1174;
   const int frame_num = 10;
+  
+  // ROS param
+  bool show_probability = true;
+  int input_source = 3;
+  double max_distance = 50;
+  double danger_zone_distance = 2;
+  bool use_2d_for_alarm = false;
 };
 }  // namespace ped
 
