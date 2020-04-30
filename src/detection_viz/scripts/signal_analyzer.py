@@ -54,7 +54,7 @@ class SIGNAL_ANALYZER(object):
         self.event_publisher = event_publisher
 
         # Initial state
-        self.initial_state_period = 2.0 # 15.0 # sec.
+        self.initial_state_period = 15.0 # 2.0 # 15.0 # sec.
         self.is_initial_state = True
 
         # List of checker_func

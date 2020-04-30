@@ -103,6 +103,16 @@ class Node:
         param_dict = dict()
         param_dict["timeout"] = {"threshold":0.7}
         self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # prob, closest object
+        signal_name = "nearProb"
+        param_dict = dict()
+        param_dict["low_threshold"] = {"threshold":0.8}
+        self.checker_nearProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # prob, average
+        signal_name = "avgProb"
+        param_dict = dict()
+        param_dict["low_threshold"] = {"threshold":0.5}
+        self.checker_avgProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
 
     def get_confidence_scores(self, objects):
         """
@@ -200,6 +210,8 @@ class Node:
         #
         avg_prob, d_min_prob = self.get_confidence_scores(_objects)
         # print("avg_prob = %f, d_min_prob = %f" % (avg_prob, d_min_prob))
+        self.checker_nearProb.update(d_min_prob)
+        self.checker_avgProb.update(avg_prob)
         #-------------------------------------------#
 
 
