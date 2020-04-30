@@ -36,10 +36,10 @@ private:
   void initDetectArea();
 
   int ReadDistanceFromJson(const std::string& filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
-  float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
-  float ComputeObjectXDistWithSlope(int piexl_loc_x, int piexl_loc_y, std::vector<int> regionHeight,
+  float ComputeObjectXDist(int pixel_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
+  float ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel_loc_y, std::vector<int> regionHeight,
                                     std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
-  float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+  float ComputeObjectYDist(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                            std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
   msgs::PointXYZ GetPointDist(int x, int y, camera::id cam_id);
   int BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
@@ -49,7 +49,7 @@ public:
   DistanceEstimation();
   ~DistanceEstimation();
 
-  void init(std::string pkgPath, int mode);
+  void init(const std::string& pkgPath, int mode);
   msgs::BoxPoint Get3dBBox(int x1, int y1, int x2, int y2, int class_id, camera::id cam_id);
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);

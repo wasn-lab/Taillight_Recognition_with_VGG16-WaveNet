@@ -25,10 +25,6 @@
 
 #include <ctime>
 
-
-
-
-
 #include <climits>
 #include <Eigen/Geometry>
 
@@ -67,9 +63,9 @@
 #include <pcl/io/boost.h>
 
 #include <pcl/common/geometry.h>
-#include <pcl/common/common.h> //getMinMax3D
+#include <pcl/common/common.h>  //getMinMax3D
 #include <pcl/common/common_headers.h>
-#include <pcl/common/transforms.h> //transform
+#include <pcl/common/transforms.h>  //transform
 #include <pcl/common/centroid.h>
 #include <pcl/common/time.h>
 
@@ -175,6 +171,5 @@ using namespace Eigen;
 #include "UserDefine.h"
 
 #define ENABLE_DEBUG_MODE false
-
 
 #endif /* ALL_HEADER_H_ */

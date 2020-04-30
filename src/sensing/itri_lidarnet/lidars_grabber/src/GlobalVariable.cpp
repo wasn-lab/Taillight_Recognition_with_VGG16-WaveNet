@@ -1,6 +1,5 @@
 #include "GlobalVariable.h"
 
-
 double GlobalVariable::UI_PARA[30] = { 0.0000000 };
 double GlobalVariable::UI_PARA_BK[30] = { 0.0000000 };
 
@@ -16,4 +15,3 @@ bool GlobalVariable::RearLeft_FineTune_Trigger = false;
 bool GlobalVariable::RearRight_FineTune_Trigger = false;
 
 size_t GlobalVariable::STITCHING_MODE_NUM = 0;
-
