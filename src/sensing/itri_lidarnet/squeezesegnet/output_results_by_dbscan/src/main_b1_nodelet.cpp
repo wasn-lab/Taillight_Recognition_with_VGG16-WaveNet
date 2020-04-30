@@ -74,7 +74,7 @@ public:
       {
         cout << "[DBScan]: " << stopWatch.getTimeSeconds() << 's' << endl;
       }
-      
+
       double latency = (ros::Time::now() - rosTime).toSec();
       if (latency > 0 && latency < 3)
       {

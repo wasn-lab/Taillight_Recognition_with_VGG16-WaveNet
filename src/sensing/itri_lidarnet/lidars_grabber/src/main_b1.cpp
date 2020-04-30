@@ -41,8 +41,8 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
   heartBeat[0] = true;
   if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
   {
-    uint64_t diff_time =  (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-    cout << "[Left->Gbr]: " << diff_time  << "ms" << endl;
+    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+    cout << "[Left->Gbr]: " << diff_time << "ms" << endl;
   }
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontLeft);
   syncLock_callback();
@@ -52,8 +52,8 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
   heartBeat[1] = true;
   if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
   {
-    uint64_t diff_time =  (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-    cout << "[Right->Gbr]: " << diff_time  << "ms" << endl;
+    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+    cout << "[Right->Gbr]: " << diff_time << "ms" << endl;
   }
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontRight);
   syncLock_callback();
@@ -63,8 +63,8 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
   heartBeat[4] = true;
   if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
   {
-    uint64_t diff_time =  (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-    cout << "[Top->Gbr]: " << diff_time  << "ms" << endl;
+    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+    cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
   }
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontTop);
   syncLock_callback();
