@@ -24,11 +24,13 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
 	<rosparam param="debug_output">true</rosparam>
+    <arg name="hardware_enable" default="1" />>
+	<arg name="mps" default="0" />
+	
 	<arg name="mode" default="0" />
+    <arg name="set_group_1" value="/LidarFrontTop"/>
+	<rosparam param="LaunchFileName">b1.launch</rosparam>
 	<arg name="rpm_set" default="1200.0"/>
-	<arg name="hardware_enable" default="1" />
-	<arg name="set_group_1" value="/LidarFrontTop"/>
-	<rosparam param="LaunchFileName">b1_nodelet.launch</rosparam>
 
 <!-- SSN arg *************************************************************** -->
 	<rosparam param="SSN_DataSet">b1</rosparam>
@@ -40,10 +42,12 @@ Lidar List:
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
 <!-- MPS ******************************************************************* -->
-<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
- 
+	<group if="$(eval arg('mps') == 1)">
+		<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+	</group>
 
 <!-- NODELET *************************************************************** -->
+	
 	<!-- Manager -->
 	<node pkg="nodelet" type="nodelet" name="lidars_nodelet_manager"  args="manager" output="screen"/>
 	
@@ -63,6 +67,7 @@ Lidar List:
 	<!-- DBScan Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="OutputDBScan_Nodelet" args="load output_dbscan_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>
 
+	
 
 <!-- Lidar Driver ********************************************************************************** -->
 <!-- ************ Front-Right: MR32 ************ -->
@@ -206,5 +211,11 @@ Lidar List:
             <param name="~/frame_id" value="$(arg frame_id)"/>
         </node>
     </group>
+
+
+
+
+
+
 </launch>
 

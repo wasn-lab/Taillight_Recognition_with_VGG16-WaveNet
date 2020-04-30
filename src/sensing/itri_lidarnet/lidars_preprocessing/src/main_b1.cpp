@@ -14,10 +14,8 @@
 bool debug_output = false;
 StopWatch stopWatch;
 
-void 
-callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
+void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
-
 #if 0
   static pcl::uint64_t oldtimestamp;
   pcl::uint64_t intervaltime = msg->header.stamp - oldtimestamp;
@@ -30,13 +28,12 @@ callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 
   if (msg->size() > 100)
   {
-
     if (debug_output)
     {
       ros::Time rosTime;
       pcl_conversions::fromPCL(msg->header.stamp, rosTime);
-      cout << "[All->Pre]: " << (ros::Time::now() - rosTime).toSec()*1000 << "ms" << endl;
-      stopWatch.reset ();
+      cout << "[All->Pre]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+      stopWatch.reset();
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZI>);
@@ -61,12 +58,17 @@ callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     extract_Indices<PointXYZI>(ptr_cur_cloud, indices_ground, *cloud_ground, *cloud_non_ground);
 
     // cout << "[remove ground]:" << timer_algorithm_running.gcloud_non_ground
-    RosModuleB1::send_LidarAllNonGround(*msg, msg->header.stamp, msg->header.frame_id);
+    if (cloud_ground->size() < 100)
+    {
+      RosModuleB1::send_ErrorCode(0x4000);
+      cout << "error: not find ground" << endl;
+    }
+
+    RosModuleB1::send_LidarAllNonGround(*cloud_non_ground, msg->header.stamp, msg->header.frame_id);
 
     if (debug_output)
     {
       cout << "[Preprocess]: " << stopWatch.getTimeSeconds() << 's' << endl;
-      
     }
   }
 }

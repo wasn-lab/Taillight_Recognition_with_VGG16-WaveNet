@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cerrno>
-#include <unistd.h> //sleep
+#include <unistd.h>  //sleep
 #include <omp.h>
 #include <mutex>
 
@@ -45,7 +45,6 @@
 //                      PCL
 // =============================================
 
-
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
@@ -56,9 +55,9 @@
 #include <pcl/io/boost.h>
 
 #include <pcl/common/geometry.h>
-#include <pcl/common/common.h> //getMinMax3D
+#include <pcl/common/common.h>  //getMinMax3D
 #include <pcl/common/common_headers.h>
-#include <pcl/common/transforms.h> //transform
+#include <pcl/common/transforms.h>  //transform
 #include <pcl/common/centroid.h>
 #include <pcl/common/time.h>
 
@@ -91,6 +90,5 @@ using namespace pcl;
 using namespace pcl::console;
 using namespace pcl::visualization;
 using namespace Eigen;
-
 
 #endif /* ALL_HEADER_H_ */
