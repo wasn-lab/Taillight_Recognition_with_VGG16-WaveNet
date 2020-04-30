@@ -140,13 +140,6 @@ class Node:
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
 
-        # Checkers
-        #-------------------------------------------#
-        self.checker_abs_fps.update(self.fps_cal.fps)
-        self.checker_abs_latency.update(current_latency)
-        self.checker_timeout.update()
-        #-------------------------------------------#
-
         # Clean-up the objects if its distance < 0.0
         #----------------------------------------------#
         _objects = None
@@ -157,6 +150,15 @@ class Node:
         else:
             _objects = message.objects
         #----------------------------------------------#
+        
+        # Checkers
+        #-------------------------------------------#
+        self.checker_abs_fps.update(self.fps_cal.fps)
+        self.checker_abs_latency.update(current_latency)
+        self.checker_timeout.update()
+        #-------------------------------------------#
+
+
 
         box_list = MarkerArray()
         delay_list = MarkerArray()
