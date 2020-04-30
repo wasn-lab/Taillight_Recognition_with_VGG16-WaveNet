@@ -234,16 +234,16 @@ int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d**
   jreader.parse(ifs, jdata);
   std::cout << "Reading json file: " << filename << std::endl;
 
-  for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
+  for (auto &jvalue : jdata)
   {
-    auto image_x = jdata[i]["im_x"].asInt();
-    auto image_y = jdata[i]["im_y"].asInt();
+    auto image_x = jvalue["im_x"].asInt();
+    auto image_y = jvalue["im_y"].asInt();
 
     if ((image_y < rows) && (image_x < cols))
     {
-      dist_in_cm[image_y][image_x].x = jdata[i]["dist_in_cm"][0].asInt();
-      dist_in_cm[image_y][image_x].y = jdata[i]["dist_in_cm"][1].asInt();
-      dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
+      dist_in_cm[image_y][image_x].x = jvalue["dist_in_cm"][0].asInt();
+      dist_in_cm[image_y][image_x].y = jvalue["dist_in_cm"][1].asInt();
+      dist_in_cm[image_y][image_x].z = jvalue["dist_in_cm"][2].asInt();
     }
   }
   return 0;
@@ -255,7 +255,7 @@ DisEstiParams DistanceEstimation::CreateFromJson()
   return tmpParmas;
 }
 
-float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
+float DistanceEstimation::ComputeObjectXDist(int pixel_loc, std::vector<int> regionHeight,
                                              std::vector<float> regionDist)
 {
   float distance = -1;
@@ -264,33 +264,33 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
   float offset = 0.0;
   for (size_t i = 1; i < regionHeight.size(); i++)
   {
-    if (piexl_loc >= regionHeight[i] && piexl_loc <= regionHeight[i - 1])
+    if (pixel_loc >= regionHeight[i] && pixel_loc <= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i - 1] - regionHeight[i];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       unitLength = float(regionMeter) / float(regionpixel);
-      bias = piexl_loc - regionHeight[i];
+      bias = pixel_loc - regionHeight[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (piexl_loc <= regionHeight[i] && piexl_loc >= regionHeight[i - 1])
+    else if (pixel_loc <= regionHeight[i] && pixel_loc >= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i] - regionHeight[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       unitLength = float(regionMeter) / float(regionpixel);
-      bias = regionHeight[i] - piexl_loc;
+      bias = regionHeight[i] - pixel_loc;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (piexl_loc > regionHeight.front())
+      if (pixel_loc > regionHeight.front())
       {
         distance = regionDist.front() - 0.2;
       }
-      else if (piexl_loc < regionHeight.back())
+      else if (pixel_loc < regionHeight.back())
       {
         distance = 777;
       }
@@ -367,7 +367,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
   return distance;
 }
 
-float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+float DistanceEstimation::ComputeObjectYDist(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                                              std::vector<float> regionHeightSlope_y, std::vector<float> regionDist,
                                              int img_h)
 {
@@ -380,7 +380,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
 
   for (size_t i = 0; i < regionHeight.size(); i++)
   {
-    int y = img_h - piexl_loc_x;
+    int y = img_h - pixel_loc_x;
     if (regionHeightSlope_y[i] != 0)
     {
       regionHeight_new[i] = regionHeight[i] + int((1 / regionHeightSlope_y[i]) * y);
@@ -393,7 +393,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
 
   for (size_t i = 1; i < regionHeight_new.size(); i++)
   {
-    if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i - 1])
+    if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i - 1])
     {
       int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
       int regionMeter = regionDist[i] - regionDist[i - 1];
@@ -401,12 +401,12 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       {
         unitLength = float(regionMeter) / float(regionpixel);
       }
-      bias = piexl_loc_y - regionHeight_new[i];
+      bias = pixel_loc_y - regionHeight_new[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (piexl_loc_y <= regionHeight_new[i] && piexl_loc_y >= regionHeight_new[i - 1])
+    else if (pixel_loc_y <= regionHeight_new[i] && pixel_loc_y >= regionHeight_new[i - 1])
     {
       int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
@@ -414,18 +414,18 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       {
         unitLength = float(regionMeter) / float(regionpixel);
       }
-      bias = regionHeight_new[i] - piexl_loc_y;
+      bias = regionHeight_new[i] - pixel_loc_y;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (piexl_loc_y < regionHeight_new.front())
+      if (pixel_loc_y < regionHeight_new.front())
       {
         distance = regionDist.front() + 0.5;
       }
-      else if (piexl_loc_y > regionHeight_new.back())
+      else if (pixel_loc_y > regionHeight_new.back())
       {
         distance = regionDist.back() - 0.5;
       }
