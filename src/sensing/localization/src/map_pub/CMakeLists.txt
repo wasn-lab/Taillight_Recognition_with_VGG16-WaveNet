@@ -32,21 +32,6 @@ catkin_package(
 )
 set(POINTS_MAP_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/done_map)
 
-
-if (NOT EXISTS ${POINTS_MAP_DIRS}/total_map.pcd)
-      message( STATUS " downloading points map" )
-
-    file(
-    DOWNLOAD
-      http://118.163.54.109:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd
-    STATUS
-        status
-    LOG
-        log
-    SHOW_PROGRESS
-    )
-endif()
-
 include_directories(
  include
   ${catkin_INCLUDE_DIRS}
