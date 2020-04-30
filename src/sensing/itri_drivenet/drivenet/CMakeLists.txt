@@ -20,6 +20,11 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if(OpenCV_FOUND)
+  message(STATUS "OpenCV IncludeDir: ${OpenCV_INCLUDE_DIRS}")
+  message(STATUS "OpenCV Libararies: ${OpenCV_LIBRARIES}")
+  message(STATUS "OpenCV Libararies Dir: ${OpenCV_LIBRARY_DIRS}")
+endif()
 
 ######################
 ##       PCL        ##
