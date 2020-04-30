@@ -76,12 +76,18 @@ class Node:
         signal_name = "absFPS"
         param_dict = dict()
         param_dict["low_threshold"] = {"threshold":5.0}
-        self.checker_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        self.checker_abs_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # Latency (500ms)
         signal_name = "absLatency"
         param_dict = dict()
         param_dict["high_avg_threshold"] = {"threshold":0.5}
-        self.checker_latency = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        self.checker_abs_latency = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # Timeout (700ms)
+        signal_name = "timeout"
+        param_dict = dict()
+        param_dict["timeout"] = {"threshold":0.7}
+        self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+
 
     def _increase_point_z(self, pointXYZ_in, high):
         pointXYZ_out = PointXYZ()
@@ -138,8 +144,9 @@ class Node:
 
         # Checkers
         #-------------------------------------------#
-        self.checker_fps.update(self.fps_cal.fps)
-        self.checker_latency.update(current_latency)
+        self.checker_abs_fps.update(self.fps_cal.fps)
+        self.checker_abs_latency.update(current_latency)
+        self.checker_timeout.update()
         #-------------------------------------------#
 
         # Clean-up the objects if its distance < 0.0

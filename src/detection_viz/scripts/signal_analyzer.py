@@ -52,6 +52,11 @@ class SIGNAL_ANALYZER(object):
         self.alpha = 2*np.pi*0.1 # 0.1 Hz
         # ROS std_msg/String publisher
         self.event_publisher = event_publisher
+
+        # Initial state
+        self.initial_state_period = 2.0 # 15.0 # sec.
+        self.is_initial_state = True
+
         # List of checker_func
         self.checker_func_list = []
         # Setup checkers (Note: this function should be overloaded)
@@ -61,9 +66,7 @@ class SIGNAL_ANALYZER(object):
         self.timeout_thread = None
         self.reset_timeout_timer(is_first=True)
 
-        # Initial state
-        self.initial_state_period = 2.0 # 15.0 # sec.
-        self.is_initial_state = True
+
 
     def setup_checkers(self):
         """
@@ -242,8 +245,9 @@ class SIGNAL_ANALYZER(object):
         timeout_sec = self.param_dict["timeout"]["threshold"]
         if is_first:
             timeout_sec += self.initial_state_period
+        # print("timeout_sec = %f" % timeout_sec)
         #
-        if self.timeout_thread is not None:
+        if not self.timeout_thread is None:
             self.timeout_thread.cancel()
         self.timeout_thread = threading.Timer(timeout_sec, self._timeout_handle)
         self.timeout_thread.start()
@@ -257,7 +261,7 @@ class SIGNAL_ANALYZER(object):
         self.stamp_start = timer()
         self.is_initial_state = True
 
-    def update(self, value_in):
+    def update(self, value_in=0.0):
         """
         This is a function that need to be call at each iteration.
         """
