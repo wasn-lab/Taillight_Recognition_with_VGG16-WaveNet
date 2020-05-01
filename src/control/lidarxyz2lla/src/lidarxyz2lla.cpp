@@ -12,6 +12,8 @@
 #include <tf/tf.h>
 #include <geometry_msgs/PoseStamped.h>
 
+#include "gnss_utility/gnss_utility.h"
+
 //------------------------------------------------------------------------------------------------------
 // Global Parameter
 double ini_lat; // initial latitude
@@ -29,6 +31,21 @@ ros::Subscriber lidarlla_sub ;
 //------------------------------------------------------------------------------------------------------
 
 geodetic_converter::GeodeticConverter g_geodetic_converter;
+gnss_utility::gnss gnss_tf;
+
+// void testgnss()
+// {
+//     double lat;
+//     double lon;
+//     double E = 250000;
+//     double N = 2655023.12504066;
+//     bool pkm = false;
+    
+//     gnss_tf.TWD97toWGS84(E, N, &lat, &lon, pkm);
+
+//     std::cout << "test : " << lon << std::endl;
+//     std::cout << "test : " << lat << std::endl;
+// }
 
 void initial_para()
 {
