@@ -52,6 +52,8 @@ TrajectoryGen::TrajectoryGen()
     sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryGen::callbackGetVehicleStatus, this);
   else if(bVelSource == 2)
     sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCANInfo, this);
+  else if(bVelSource == 3)
+    sub_veh_info = nh.subscribe("/veh_info", 10, &TrajectoryGen::callbackGetVehInfo, this);
 
   sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryGen::callbackGetGlobalPlannerPath, this);
 }
@@ -151,6 +153,14 @@ void TrajectoryGen::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr 
   m_VehicleStatus.steer = msg->angle * m_CarInfo.max_steer_angle / m_CarInfo.max_steer_value;
   UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
   bVehicleStatus = true;
+}
+
+void TrajectoryGen::callbackGetVehInfo(const msgs::VehInfoConstPtr &msg)
+{
+  m_VehicleStatus.speed = msg->ego_speed;
+  m_CurrentPos.v = m_VehicleStatus.speed;
+  m_VehicleStatus.steer = 0;
+  UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
 }
 
 void TrajectoryGen::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)

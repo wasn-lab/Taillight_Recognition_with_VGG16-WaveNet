@@ -20,6 +20,7 @@ find_package(
     sensor_msgs
     tf
     vector_map_msgs
+    msgs
 )
 
 catkin_package(

@@ -32,6 +32,8 @@
 #include "op_planner/PlannerCommonDef.h"
 #include "op_planner/TrajectoryDynamicCosts.h"
 
+#include "msgs/VehInfo.h"
+
 namespace TrajectoryEvaluatorNS
 {
 
@@ -91,6 +93,7 @@ protected:
   ros::Subscriber sub_current_velocity;
   ros::Subscriber sub_robot_odom;
   ros::Subscriber sub_can_info;
+  ros::Subscriber sub_veh_info;
   ros::Subscriber sub_GlobalPlannerPaths;
   ros::Subscriber sub_LocalPlannerPaths;
   ros::Subscriber sub_predicted_objects;
@@ -102,6 +105,7 @@ protected:
   void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
+  void callbackGetVehInfo(const msgs::VehInfoConstPtr &msg);
   void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
   void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
   void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);

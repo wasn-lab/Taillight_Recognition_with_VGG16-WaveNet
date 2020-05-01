@@ -13,6 +13,7 @@
   <depend>autoware_can_msgs</depend>
   <depend>autoware_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>msgs</depend>
   <depend>map_file</depend>
   <depend>op_planner</depend>
   <depend>op_ros_helpers</depend>
