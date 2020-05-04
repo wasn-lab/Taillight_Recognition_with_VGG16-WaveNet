@@ -6,13 +6,13 @@
 
   <!--choose one-->
     <!--lane planner-->
-    <!--include file="$(find lane_planner)/launch/lane_rule_option.launch"/-->
-    <!--include file="$(find lane_planner)/launch/lane_select.launch"/-->
+    <include file="$(find lane_planner)/launch/lane_rule_option.launch"/>
+    <include file="$(find lane_planner)/launch/lane_select.launch"/>
 
     <!--op local planner-->
-    <include file="$(find op_local_planner)/launch/op_trajectory_generator.launch"/>
-    <include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch"/>
-    <include file="$(find op_local_planner)/launch/op_behavior_selector.launch"/>
+    <!--include file="$(find op_local_planner)/launch/op_trajectory_generator.launch"/-->
+    <!--include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch"/-->
+    <!--include file="$(find op_local_planner)/launch/op_behavior_selector.launch"/-->
   <!--choose one-->
 
 </launch>

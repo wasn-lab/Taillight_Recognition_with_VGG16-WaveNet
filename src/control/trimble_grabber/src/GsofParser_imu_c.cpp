@@ -1456,6 +1456,10 @@ void processINSFullNavigation( int length, char *pData )
         bool pkm = false;
         gnss_tf.WGS84toTWD97(Latitude, Longitude, &TWD97_E, &TWD97_N, pkm);
 
+        tf::Quaternion gnss2local_twd97_q;
+        double Heading_twd97 = -Heading + M_PI/2;
+        gnss2local_twd97_q.setRPY(Roll, Pitch, Heading_twd97);
+
         gnss2local_twd97_data.header.stamp = ros::Time::now();
         gnss2local_twd97_data.header.frame_id = "map";
 
