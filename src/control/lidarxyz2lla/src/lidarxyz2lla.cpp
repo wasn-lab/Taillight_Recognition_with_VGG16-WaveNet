@@ -175,7 +175,7 @@ void initial_para_1()
 	double read_tmp_1[3];
 	int read_index_1 = 0;
 	std::string fname_1 = ros::package::getPath("lidarxyz2lla");
-	fname_1 += "/data/Shift_lidar2twd97.txt";
+	fname_1 += "/data/ITRI_ShiftLidarxyz2TWD97.txt";
   	std::cout << fname_1 << std::endl;
 
   	std::ifstream fin_1;
