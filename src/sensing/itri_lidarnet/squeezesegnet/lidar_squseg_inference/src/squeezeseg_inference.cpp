@@ -2,25 +2,21 @@
 
 // namespace BFS = boost::filesystem;
 
-
 // position of projection center
 // #define x_projCenter -2
 // #define z_projCenter -1.4
 
 using ssn_nodelet::data_set;
-using ssn_nodelet::ViewType;
-using ssn_nodelet::pub_type;
+using ssn_nodelet::debug_output;
 using ssn_nodelet::hybrid_detect;
 using ssn_nodelet::LidarAllSub;
 using ssn_nodelet::nn_pub;
+using ssn_nodelet::pub_type;
 using ssn_nodelet::SSN_all;
+using ssn_nodelet::ViewType;
 
-
-int
-main (int argc,
-      char **argv)
+int main(int argc, char** argv)
 {
-  
   if (argc >= 2)
   {
     data_set = string(argv[1]);
@@ -35,18 +31,20 @@ main (int argc,
     // ss3 << string (argv[5]);
     // ss3 >> hybrid_detect;
     stringstream ss1, ss2;
-    ss1 << string (argv[3]);
+    ss1 << string(argv[3]);
     ss1 >> pub_type;
 
-    ss2 << string (argv[4]);
+    ss2 << string(argv[4]);
     ss2 >> hybrid_detect;
   }
 
-  ros::init (argc, argv, "cpp_preprocessing");
+  ros::init(argc, argv, "cpp_preprocessing");
   ros::NodeHandle nh;
 
-  LidarAllSub = nh.subscribe ("/LidarAll/NonGround", 1, ssn_nodelet::LidarsNodelet::callback_LidarAll);
-  nn_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZIL>> ("/squ_seg/result_cloud", 1);
+  ros::param::get("/debug_output", ssn_nodelet::debug_output);
+
+  LidarAllSub = nh.subscribe("/LidarAll/NonGround", 1, ssn_nodelet::LidarsNodelet::callback_LidarAll);
+  nn_pub = nh.advertise<pcl::PointCloud<pcl::PointXYZIL>>("/squ_seg/result_cloud", 1);
 
   // all_pub = nh.advertise<sensor_msgs::PointCloud2> ("/release_cloud", 1);
 
@@ -55,7 +53,7 @@ main (int argc,
 
   for (size_t i = 0; i < phi_center_all.size(); i++)
   {
-    SSN_all.push_back(TF_inference(data_set,ViewType,phi_center_all.at(i),pub_type));
+    SSN_all.push_back(TF_inference(data_set, ViewType, phi_center_all.at(i), pub_type));
   }
 
   // SSN_P0deg = TF_inference(data_set,ViewType,phi_center,pub_type);
@@ -68,12 +66,12 @@ main (int argc,
 
   // int TF_ERcode = SSN_P0deg.TF_init();
 
-  ros::AsyncSpinner spinner (1);
-  spinner.start ();
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
 
-  while (ros::ok ())
+  while (ros::ok())
   {
-    ros::Rate(1).sleep ();
+    ros::Rate(1).sleep();
   }
 
   for (size_t i = 0; i < phi_center_all.size(); i++)

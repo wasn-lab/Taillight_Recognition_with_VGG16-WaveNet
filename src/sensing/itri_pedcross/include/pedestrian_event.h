@@ -143,11 +143,15 @@ public:
   const double scaling_ratio_width = 0.3167;
   const double scaling_ratio_height = 0.3179;
   const int number_keypoints = 25;
-  bool show_probability = true;
-  int input_source = 0;
-  float max_distance = 50;
   const int feature_num = 1174;
   const int frame_num = 10;
+  
+  // ROS param
+  bool show_probability = true;
+  int input_source = 3;
+  double max_distance = 50;
+  double danger_zone_distance = 2;
+  bool use_2d_for_alarm = false;
 };
 }  // namespace ped
 

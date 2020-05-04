@@ -157,4 +157,4 @@ void YoloLayerV3::serialize(void* buffer)
   assert(d == a + getSerializationSize());
   NO_UNUSED_VAR_CHECK(a);  // silence -Wunused-variable
 }
-} // namespace DriveNet
+}  // namespace DriveNet
