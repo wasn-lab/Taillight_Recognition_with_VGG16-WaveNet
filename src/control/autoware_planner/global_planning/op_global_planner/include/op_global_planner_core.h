@@ -50,6 +50,7 @@
 #include "op_planner/PlannerH.h"
 
 #include "msgs/VehInfo.h"
+#include <ros/package.h>
 
 namespace GlobalPlanningNS
 {

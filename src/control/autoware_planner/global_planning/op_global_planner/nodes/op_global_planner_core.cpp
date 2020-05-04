@@ -356,6 +356,7 @@ void GlobalPlanner::VisualizeDestinations(std::vector<PlannerHNS::WayPoint>& des
 
 void GlobalPlanner::SaveSimulationData()
 {
+  std::cout << "Start save .csv !" << std::endl;
   std::vector<std::string> simulationDataPoints;
   std::ostringstream startStr;
   startStr << m_CurrentPose.pos.x << "," << m_CurrentPose.pos.y << "," << m_CurrentPose.pos.z << "," << m_CurrentPose.pos.a << ","<< m_CurrentPose.cost << "," << 0 << ",";
@@ -371,9 +372,15 @@ void GlobalPlanner::SaveSimulationData()
   std::string header = "X,Y,Z,A,C,V,name,";
 
   std::ostringstream fileName;
-  fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName;
-  fileName << "EgoCar.csv";
-  std::ofstream f(fileName.str().c_str());
+  // fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName;
+  // fileName << "EgoCar.csv";
+  // std::cout << fileName.str() << std::endl;
+  // std::ofstream f(fileName.str().c_str());
+
+  std::string fname = ros::package::getPath("op_global_planner");
+  fname += "/data/Goaldata.csv";
+  std::cout << fname << std::endl;
+  std::ofstream f(fname.c_str());
 
   if(f.is_open())
   {
@@ -388,10 +395,14 @@ void GlobalPlanner::SaveSimulationData()
 
 int GlobalPlanner::LoadSimulationData()
 {
-  std::ostringstream fileName;
-  fileName << "EgoCar.csv";
+  // std::ostringstream fileName;
+  // fileName << "EgoCar.csv";
+  // std::string simuDataFileName = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName + fileName.str();
+  
+  std::string simuDataFileName = ros::package::getPath("op_global_planner");
+  simuDataFileName += "/data/Goaldata.csv";
+  // std::cout << simuDataFileName << std::endl;
 
-  std::string simuDataFileName = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName + fileName.str();
   UtilityHNS::SimulationFileReader sfr(simuDataFileName);
   UtilityHNS::SimulationFileReader::SimulationData data;
 
@@ -513,7 +524,6 @@ void GlobalPlanner::MainLoop()
       }
       VisualizeDestinations(m_GoalsPos, m_iCurrentGoalIndex);
     }
-
     loop_rate.sleep();
   }
 }
