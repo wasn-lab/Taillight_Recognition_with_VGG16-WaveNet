@@ -25,7 +25,8 @@ double T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3
 
 int LidXYZ2ENU_siwtch = 1;
 
-ros::Publisher lidarlla_pub; 
+ros::Publisher lidarlla_pub;
+ros::Publisher lidarlla_wgs84_pub;
 ros::Subscriber lidarlla_sub ;
 // lidarxyz2lla::lidarxyz lidarxyzmsg;
 //------------------------------------------------------------------------------------------------------
@@ -298,6 +299,23 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 	lidarllamsg.lidar_Lon = lidar_lon;
 	lidarllamsg.lidar_Alt = lidar_alt;
 	lidarlla_pub.publish(lidarllamsg);
+
+	// twd97 to wgs84
+	double lidar_E_twd97 = lidar_X + 254229.0;
+	double lidar_N_twd97 = lidar_Y + 2740820.0;
+	double lidar_U_twd97 = lidar_Z + 133.97;
+	bool pkm = false;
+	double lidar_lon_wgs84,lidar_lat_wgs84;
+	double lidar_alt_wgs84 = lidar_U_twd97;
+
+	gnss_tf.TWD97toWGS84(lidar_E_twd97, lidar_N_twd97, &lidar_lat_wgs84, &lidar_lon_wgs84, pkm);
+
+	msgs::LidLLA lidarllamsg_wgs84;
+	lidarllamsg_wgs84.lidar_Lat = lidar_lat_wgs84;
+	lidarllamsg_wgs84.lidar_Lon = lidar_lon_wgs84;
+	lidarllamsg_wgs84.lidar_Alt = lidar_alt_wgs84;
+	lidarlla_wgs84_pub.publish(lidarllamsg_wgs84);
+
 }
 
 int main( int argc, char **argv )
@@ -311,6 +329,7 @@ int main( int argc, char **argv )
 	// subscriber
 	lidarlla_sub = nh.subscribe("current_pose", 1, lidarxyztopicCallback_1);
 	lidarlla_pub = nh.advertise<msgs::LidLLA>("lidar_lla", 1);
+	lidarlla_wgs84_pub = nh.advertise<msgs::LidLLA>("lidar_lla_wgs84", 1);
 	ros::spin();
 
 	return 0 ;
