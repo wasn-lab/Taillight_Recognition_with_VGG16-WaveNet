@@ -356,7 +356,6 @@ void GlobalPlanner::VisualizeDestinations(std::vector<PlannerHNS::WayPoint>& des
 
 void GlobalPlanner::SaveSimulationData()
 {
-  std::cout << "Start save .csv !" << std::endl;
   std::vector<std::string> simulationDataPoints;
   std::ostringstream startStr;
   startStr << m_CurrentPose.pos.x << "," << m_CurrentPose.pos.y << "," << m_CurrentPose.pos.z << "," << m_CurrentPose.pos.a << ","<< m_CurrentPose.cost << "," << 0 << ",";
@@ -371,7 +370,7 @@ void GlobalPlanner::SaveSimulationData()
 
   std::string header = "X,Y,Z,A,C,V,name,";
 
-  std::ostringstream fileName;
+  // std::ostringstream fileName;
   // fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName;
   // fileName << "EgoCar.csv";
   // std::cout << fileName.str() << std::endl;
@@ -379,7 +378,7 @@ void GlobalPlanner::SaveSimulationData()
 
   std::string fname = ros::package::getPath("op_global_planner");
   fname += "/data/Goaldata.csv";
-  std::cout << fname << std::endl;
+  std::cout << "Start save in " << fname << " !" << std::endl;
   std::ofstream f(fname.c_str());
 
   if(f.is_open())
@@ -401,7 +400,7 @@ int GlobalPlanner::LoadSimulationData()
   
   std::string simuDataFileName = ros::package::getPath("op_global_planner");
   simuDataFileName += "/data/Goaldata.csv";
-  // std::cout << simuDataFileName << std::endl;
+  std::cout << "Start load " << simuDataFileName << " !" << std::endl;
 
   UtilityHNS::SimulationFileReader sfr(simuDataFileName);
   UtilityHNS::SimulationFileReader::SimulationData data;
