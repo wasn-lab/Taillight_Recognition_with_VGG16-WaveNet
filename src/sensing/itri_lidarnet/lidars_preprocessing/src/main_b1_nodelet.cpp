@@ -47,7 +47,10 @@ private:
       {
         ros::Time rosTime;
         pcl_conversions::fromPCL(msg->header.stamp, rosTime);
-        cout << "[All->Pre]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+        if ((ros::Time::now() - rosTime).toSec() < 3600)
+        {
+          cout << "[All->Pre]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+        }
         stopWatch.reset();
       }
 

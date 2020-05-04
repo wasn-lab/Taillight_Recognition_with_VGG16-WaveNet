@@ -50,6 +50,7 @@ check_list += ["localization_state"]
 check_list += ["Xbywire_run"]
 # check_list += ["AEB_run"]
 check_list += [ "ACC_run"]
+check_list += [ "detect_obj"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -416,6 +417,8 @@ def main():
     rospy.Subscriber("/mileage/Xbywire_run", String, (lambda msg: _checker_CB(msg, "Xbywire_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     rospy.Subscriber("/mileage/AEB_run", String, (lambda msg: _checker_CB(msg, "AEB_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     rospy.Subscriber("/mileage/ACC_run", String, (lambda msg: _checker_CB(msg, "ACC_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    # Detect object status
+    rospy.Subscriber("/d_viz/checker_event", String, (lambda msg: _checker_CB(msg, "detect_obj", is_event_msg=True, code_func=code_func_event_json ) ) )
     #-----------------------------#
 
 
@@ -429,7 +432,9 @@ def main():
 
         # Check through check_list
         #-----------------------------------------------#
-        for check_item in check_queue_dict:
+        check_queue_dict_key_ = list(check_queue_dict.keys())
+        # for check_item in check_queue_dict: # <-- The dict might change size during iteration, which is not allowabled.
+        for check_item in check_queue_dict_key_:
             if check_queue_dict[check_item].empty():
                 # No event happened in this window
                 latest_status = check_latest_status_dict.get(check_item, None)
