@@ -8,6 +8,7 @@ namespace deeplab
 DEFINE_string(model_variant, "mobilenet_v2", "Model variant");
 DEFINE_string(image_topic, "/cam/front_bottom_60", "Input image topic");
 DEFINE_string(pb_file, "", "The pb file that is exported by deeplab model. If not set, then the default pb will be used.");
+DEFINE_bool(profiling_mode, false, "In profiling mode, node runs for a few seconds and then shut down.");
 
 std::string get_image_topic()
 {
@@ -23,5 +24,9 @@ std::string get_pb_file()
   return FLAGS_image_topic;
 }
 
+bool in_profiling_mode()
+{
+  return FLAGS_profiling_mode;
+}
 
 };  // namespace deeplab

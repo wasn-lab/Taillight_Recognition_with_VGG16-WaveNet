@@ -7,6 +7,17 @@ namespace deeplab {
 
 static bool done_with_profiling()
 {
+  static int count = 0;
+  if (!in_profiling_mode())
+  {
+    return false;
+  }
+
+  if (count > 10)
+  {
+    return true;
+  }
+  count++;
   return false;
 }
 
