@@ -10,18 +10,20 @@ from visualization_msgs.msg import MarkerArray
 
 image_buffer = []
 crop_image_buffer = []
+obj = None
 
 def hrnet_image_crop_callback(data):
     global crop_image_buffer;
-    crop_image_buffer.append(data)
+    #crop_image_buffer.append(data)
     #print("crop image: ", len(crop_image_buffer))
 
 def hrnet_image_callback(data):
     global image_buffer;
-    image_buffer.append(data)
+    #image_buffer.append(data)
     #print("image: ", len(image_buffer))
 
 def hrnet_objects_callback(data):
+    obj = data
     #print("get obj")
 
 def listener_hrnet():
