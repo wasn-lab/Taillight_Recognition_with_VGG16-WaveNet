@@ -25,6 +25,7 @@
   <arg name="show_probability" default="True" />
 
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
+  <node pkg="itri_pedcross" type="hrnet.py" name="hrnet" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="pedestrian_subcriber.py" name="pedestrian_subcriber" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="itri_pedcross" name="pedestrian_event" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
