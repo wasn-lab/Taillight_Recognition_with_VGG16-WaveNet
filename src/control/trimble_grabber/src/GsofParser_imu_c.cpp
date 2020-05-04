@@ -1467,10 +1467,10 @@ void processINSFullNavigation( int length, char *pData )
         gnss2local_twd97_data.pose.position.y = TWD97_N;
         gnss2local_twd97_data.pose.position.z = Altitude;
 
-        gnss2local_twd97_data.pose.orientation.x = q_.x();
-        gnss2local_twd97_data.pose.orientation.y = q_.y();
-        gnss2local_twd97_data.pose.orientation.z = q_.z();
-        gnss2local_twd97_data.pose.orientation.w = q_.w();
+        gnss2local_twd97_data.pose.orientation.x = gnss2local_twd97_q.x();
+        gnss2local_twd97_data.pose.orientation.y = gnss2local_twd97_q.y();
+        gnss2local_twd97_data.pose.orientation.z = gnss2local_twd97_q.z();
+        gnss2local_twd97_data.pose.orientation.w = gnss2local_twd97_q.w();
         gnss2local_twd97_pub.publish(gnss2local_twd97_data);
         
 
