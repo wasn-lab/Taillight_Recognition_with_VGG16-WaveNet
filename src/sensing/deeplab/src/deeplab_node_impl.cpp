@@ -33,7 +33,6 @@ void DeeplabNodeImpl::advertise_topics()
 
 void DeeplabNodeImpl::image_callback(const sensor_msgs::ImageConstPtr& msg_in)
 {
-  LOG(INFO) << "Receive image";
   cv_bridge::CvImagePtr cv_ptr;
   try
   {
@@ -44,13 +43,10 @@ void DeeplabNodeImpl::image_callback(const sensor_msgs::ImageConstPtr& msg_in)
     LOG(ERROR) << "cv_bridge exception: " << e.what();
     return;
   }
-  LOG(INFO) << cv_ptr->image.cols << "x" << cv_ptr->image.rows;
-
-  LOG(INFO) << "Segment image";
   cv::Mat img_out;
   segmenter_.segment(cv_ptr->image, img_out);
 
-  LOG(INFO) << "Publish image";
+  LOG_EVERY_N(INFO, 67) << "Publish image";
   sensor_msgs::ImagePtr msg_out =
       cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::RGB8, img_out).toImageMsg();
   image_publisher_.publish(msg_out);

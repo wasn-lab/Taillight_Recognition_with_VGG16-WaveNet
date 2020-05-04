@@ -193,18 +193,22 @@ void DeleteTensor(TF_Tensor* tensor) {
   }
 }
 
-// void DeleteTensors(const std::vector<TF_Tensor*>& tensors) {
-//   for (auto t : tensors) {
-//     TF_DeleteTensor(t);
-//   }
-// }
+void DeleteTensors(const std::vector<TF_Tensor*>& tensors)
+{
+  for (auto t : tensors)
+  {
+    TF_DeleteTensor(t);
+  }
+}
 
-// void SetTensorsData(TF_Tensor* tensor, const void* data, std::size_t len) {
-//   void* tensor_data = TF_TensorData(tensor);
-//   if (tensor_data != nullptr) {
-//     std::memcpy(tensor_data, data, std::min(len, TF_TensorByteSize(tensor)));
-//   }
-// }
+void SetTensorsData(TF_Tensor* tensor, const void* data, std::size_t len)
+{
+  void* tensor_data = TF_TensorData(tensor);
+  if (tensor_data != nullptr)
+  {
+    std::memcpy(tensor_data, data, std::min(len, TF_TensorByteSize(tensor)));
+  }
+}
 
 } // namespace tf_utils
 

@@ -101,7 +101,6 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   {
     img_bgr = img_in.clone();
   }
-  LOG(INFO) << "img_bgr image size: " << img_bgr.cols << "x" << img_bgr.rows;
 
   cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
   TF_Tensor* input_tensor =
