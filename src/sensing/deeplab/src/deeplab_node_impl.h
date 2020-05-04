@@ -1,5 +1,6 @@
 #pragma once
 
+#include "deeplab_segmenter.h"
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
 
@@ -10,6 +11,9 @@ class DeeplabNodeImpl
   image_transport::Publisher image_publisher_;
   image_transport::Subscriber image_subscriber_;
   ros::NodeHandle node_handle_;
+
+  // NN
+  DeeplabSegmenter segmenter_;
 
   // private functions
   void gracefully_stop_threads();

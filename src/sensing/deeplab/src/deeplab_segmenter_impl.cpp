@@ -45,6 +45,19 @@ const std::vector<std::string> g_label_names{
   "diningtable", "dog",       "horse",   "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tv"
 };
 
+
+static int resize_to_deeplab_input(const cv::Mat& img_in, cv::Mat& img_out)
+{
+  const int num_pixel_diff = img_in.cols - img_in.rows;  // assume |rows| > |cols|
+  const int num_padding_top = num_pixel_diff / 2;
+  const int num_padding_bottom = num_pixel_diff - num_padding_top;
+  cv::Mat tmp;
+
+  cv::copyMakeBorder(img_in, tmp, num_padding_top, num_padding_bottom, /*left*/ 0, /*right*/ 0, cv::BORDER_CONSTANT, camera_utils::get_cv_color(camera_utils::color::black));
+  cv::resize(tmp, img_out, cv::Size(image_width, image_height));
+  return 0;
+}
+
 DeeplabSegmenterImpl::DeeplabSegmenterImpl()
   : tf_graph_(tf_utils::LoadGraph(get_pb_file().c_str()), tf_utils::DeleteGraph)
   , tf_status_(nullptr, TF_DeleteStatus)
@@ -54,20 +67,11 @@ DeeplabSegmenterImpl::DeeplabSegmenterImpl()
   LOG(INFO) << "Load " << get_pb_file();
   if (tf_graph_.get() == nullptr)
   {
-    LOG(ERROR) << "Can't load graph " << get_pb_file();
+    LOG(FATAL) << "Can't load graph " << get_pb_file();
   }
 
-#if 1
   tf_status_.reset(TF_NewStatus());
   tf_sess_.reset(tf_utils::CreateSession(tf_graph_.get()));
-#else
-  tf_sess_options_.reset(TF_NewSessionOptions());
-
-  uint8_t config[16] = { 0x32, 0xe, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xe0, 0x3f, 0x20, 0x1, 0x2a, 0x1, 0x30 };
-  TF_SetConfig(tf_sess_options_.get(), (void*)config, 16, tf_status_.get());
-
-  tf_sess_.reset(TF_NewSession(tf_graph_.get(), tf_sess_options_.get(), tf_status_.get()));
-#endif
 }
 
 DeeplabSegmenterImpl::~DeeplabSegmenterImpl() = default;
@@ -76,10 +80,32 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
 {
   const int64_t input_dims[4] = { 1, image_height, image_width, 3 };
   //  auto rgb_blob = std::move(blob_from_image(img_in));
-  cv::Mat img_rgb = img_in.clone();
-  cv::cvtColor(img_rgb, img_rgb, cv::COLOR_BGR2RGB);
+  cv::Mat img_rgb;
+  cv::Mat img_bgr;
+
+  if (img_in.rows == 0 || img_in.cols == 0)
+  {
+    LOG(WARNING) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols << "x"
+                 << img_in.rows << ". Do nothing";
+    img_out = img_in;
+    return 1;
+  }
+
+  if (img_in.rows != image_height || img_in.cols != image_width)
+  {
+    LOG(WARNING) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols << "x"
+                 << img_in.rows << ". Resize to fit deeplab requirement.";
+    resize_to_deeplab_input(img_in, img_bgr);
+  }
+  else
+  {
+    img_bgr = img_in.clone();
+  }
+  LOG(INFO) << "img_bgr image size: " << img_bgr.cols << "x" << img_bgr.rows;
+
+  cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
   TF_Tensor* input_tensor =
-      tf_utils::CreateTensor(TF_UINT8, input_dims, 4, img_rgb.ptr(), num_pixels * img_in.channels() * sizeof(uint8_t));
+      tf_utils::CreateTensor(TF_UINT8, input_dims, 4, img_rgb.ptr(), num_pixels * img_rgb.channels() * sizeof(uint8_t));
 
   TF_Tensor* output_tensor = nullptr;
   TF_Output input_op = { TF_GraphOperationByName(tf_graph_.get(), "ImageTensor"), 0 };
@@ -100,22 +126,11 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   {
     LOG(WARNING) << "Error run session";
   }
-#if 0 
-https://github.com/tensorflow/tensorflow/blob/master/tensorflow/c/tf_datatype.h
 
-  LOG(INFO) << "output tensor byte size: " << TF_TensorByteSize(output_tensor);
-  LOG(INFO) << "output tensor type: " << TF_TensorType(output_tensor);
-  LOG(INFO) << "output tensor dim " << TF_NumDims(output_tensor);
-  for(int i=0; i<TF_NumDims(output_tensor); i++)
-  {
-    LOG(INFO) << "output tensor dim " << i << " : " << TF_Dim(output_tensor, i);
-  }
-#endif
-  const auto labels = static_cast<int64_t*>(TF_TensorData(output_tensor));  // Return a pointer to the underlying data
-                                                                            // buffer of TF_Tensor*
+  // Return a pointer to the underlying data buffer of TF_Tensor*
+  const auto labels = static_cast<int64_t*>(TF_TensorData(output_tensor));
 
-  std::unordered_map<int64_t, int> counter;
-  cv::Mat overlay(img_in.size(), img_in.type());
+  cv::Mat overlay(img_bgr.size(), img_bgr.type());
   for (int a = 0; a < image_height; a++)
   {
     for (int b = 0; b < image_width; b++)
@@ -134,25 +149,13 @@ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/c/tf_datatype.h
       {
         ocolor = img_in.at<cv::Vec3b>(a, b);
       }
-      if (counter.find(label) == counter.end())
-      {
-        counter[label] = 1;
-      }
-      else
-      {
-        counter[label]++;
-      }
     }
   }
 
   // overlay * alpha + img_in * beta + gamma = img_out
   const double alpha = 0.4;
   const auto beta = 1 - alpha;
-  cv::addWeighted(overlay, alpha, img_in, beta, /*gamma*/ 0, img_out);
-  for (const auto& kv : counter)
-  {
-    LOG(INFO) << g_label_names[kv.first] << " : " << kv.second << " pixels";
-  }
+  cv::addWeighted(overlay, alpha, img_bgr, beta, /*gamma*/ 0, img_out);
   return 0;
 }
 

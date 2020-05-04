@@ -1,15 +1,17 @@
-#include <unordered_map>
+#include <vector>
 #include <glog/logging.h>
 #include "cv_color.h"
 
 namespace camera_utils
 {
-  static std::unordered_map<color, cv::Scalar> g_colors;
+  static std::vector<cv::Scalar> g_colors;
+
 const cv::Scalar& get_cv_color(color color_id)
 {
   if (g_colors.size() == 0)
   {
     LOG(INFO) << "Initialize g_colors.";
+    g_colors.resize(color::nums);
     g_colors[color::aliceblue] = cv::Scalar(255, 248, 240);
     g_colors[color::antiquewhite] = cv::Scalar(215, 235, 250);
     g_colors[color::aqua] = cv::Scalar(255, 255, 0);
@@ -158,6 +160,7 @@ const cv::Scalar& get_cv_color(color color_id)
     g_colors[color::yellow] = cv::Scalar(0, 255, 255);
     g_colors[color::yellowgreen] = cv::Scalar(50, 205, 154);
   }
+  LOG_IF(WARNING, color_id >= color::nums) << "Color id out of range";
   return g_colors[color_id];
 }
 

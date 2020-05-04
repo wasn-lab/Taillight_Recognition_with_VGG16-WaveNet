@@ -21,6 +21,7 @@ set(DEEPLAB_DETECTOR_SRCS main.cpp)
 
 # set up dependencies for pslot_detector
 set(DEEPLAB_LIB_DEPS
+  /usr/local/lib/libopencv_core.so
   tensorflow
   camera_utils
   ${OpenCV_LIBS}

@@ -154,6 +154,7 @@ enum color
   whitesmoke,
   yellow,
   yellowgreen,
+  nums,
 };
 
 const cv::Scalar& get_cv_color(color color_id);
