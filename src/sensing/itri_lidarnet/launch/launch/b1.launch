@@ -24,19 +24,21 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
 	<rosparam param="debug_output">true</rosparam>
-	<arg name="mode" default="0" />
     <arg name="hardware_enable" default="1" />>
-	<arg name="rpm_set" default="1200.0"/>
-    <rosparam param="LaunchFileName">b1.launch</rosparam>
-
-    <arg name="set_group_1" value="/LidarFrontTop"/>
+	<arg name="mps" default="0" />
 	
-<!-- tf2 ******************************************************************* -->
-<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
+	<arg name="mode" default="0" />
+    <arg name="set_group_1" value="/LidarFrontTop"/>
+	<rosparam param="LaunchFileName">b1.launch</rosparam>
+	<arg name="rpm_set" default="1200.0"/>
 
-<!-- MPS ******************************************************************* 
-<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
--->
+<!-- tf2 ******************************************************************* -->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
+
+<!-- MPS ******************************************************************* -->
+	<group if="$(eval arg('mps') == 1)">
+		<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+	</group>
  
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">

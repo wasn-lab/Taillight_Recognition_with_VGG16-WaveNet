@@ -1,6 +1,19 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_pedcross)
 
+set(CATKIN_REQUIRED_COMPONENTS
+    message_generation
+    roscpp
+    geometry_msgs
+    tf2_geometry_msgs
+    sensor_msgs
+    std_msgs
+    msgs
+    car_model
+    cv_bridge
+    image_transport)
+find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
+
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 
 include(CarModel)
@@ -18,18 +31,10 @@ set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
 set(TENSORFLOW_LIBRARIES tensorflow)
 message("TF found: ${TENSORFLOW_LIBRARIES}")
 
-find_package(catkin REQUIRED COMPONENTS
-    message_generation
-    roscpp
-    geometry_msgs
-    tf2_geometry_msgs
-    sensor_msgs
-    std_msgs
-    msgs
-    cv_bridge
-    image_transport)
-
-find_package(OpenCV REQUIRED)
+find_package(OpenCV
+  PATHS /usr/local
+  NO_DEFAULT_PATH
+)
 find_package(openpose)
 
 if (NOT openpose_LIBRARY)
@@ -86,6 +91,18 @@ set(CPP_FILES
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
+
+if(EXISTS /usr/local/lib/libopencv_core.so)
+target_link_libraries(
+    itri_pedcross
+    /usr/local/lib/libopencv_core.so
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${openpose_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY}
+    ${TENSORFLOW_LIBRARIES})
+else()
 target_link_libraries(
     itri_pedcross
     ${catkin_LIBRARIES}
@@ -94,6 +111,8 @@ target_link_libraries(
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
+endif()
+
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
