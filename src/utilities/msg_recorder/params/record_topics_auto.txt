@@ -83,7 +83,6 @@
 /abs_virBB_array
 /marker_array_topic
 
-/radFront
 /radar_point_cloud
 /PathPredictionOutput/radar
 /RadarMarker
@@ -147,6 +146,7 @@
 
 #
 /RadFront
+/RadFrontFilter
 /PP_geofence_line
 /Geofence_line # marker
 /gnss_speed_data
