@@ -4,6 +4,7 @@ import copy
 import rospy
 from std_msgs.msg import (
     Bool,
+    String
 )
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
@@ -14,6 +15,7 @@ from rosgraph_msgs.msg import Clock
 #
 import numpy as np
 import fps_calculator as FPS
+import signal_analyzer as SA
 
 BOX_ORDER = [
     0, 1,
@@ -55,6 +57,10 @@ class Node:
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
         self.is_overwrite_txt_frame_id = (len(self.txt_frame_id) != 0)
+        # Checkers
+        #------------------------#
+        self.checker_event_pub = rospy.Publisher("/d_viz/checker_event", String, queue_size=1000)
+        self.setup_checkers()
         #------------------------#
         # Publishers
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
@@ -77,6 +83,77 @@ class Node:
 
     def req_show_track_id_CB(self, msg):
         self.is_showing_track_id = msg.data
+
+    def setup_checkers(self):
+        """
+        Setup signal_analyzer
+        """
+        # FPS
+        signal_name = "absFPS"
+        param_dict = dict()
+        param_dict["low_threshold"] = {"threshold":5.0}
+        self.checker_abs_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # Latency (500ms)
+        signal_name = "absLatency"
+        param_dict = dict()
+        param_dict["high_avg_threshold"] = {"threshold":0.5}
+        self.checker_abs_latency = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # Timeout (700ms)
+        signal_name = "timeout"
+        param_dict = dict()
+        param_dict["timeout"] = {"threshold":0.7}
+        self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # prob, closest object
+        signal_name = "nearProb"
+        param_dict = dict()
+        param_dict["low_threshold"] = {"threshold":0.8}
+        self.checker_nearProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # prob, average
+        signal_name = "avgProb"
+        param_dict = dict()
+        param_dict["low_threshold"] = {"threshold":0.5}
+        self.checker_avgProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+
+    def get_confidence_scores(self, objects):
+        """
+        bbox
+        Input:
+            objects (list)
+        Output:
+            (avg_prob, d_min_prob)
+        """
+        #
+        d_min = None
+        d_min_idx = None
+        d_min_prob = 1.0
+        #
+        sum_prob = 0.0
+        obj_count = 0
+        for i, _obj in enumerate(objects):
+            _prob = _obj.camInfo.prob
+            if _prob == 0.0:
+                continue
+            # Sum
+            #-----------------#
+            obj_count += 1
+            sum_prob += _prob
+            #-----------------#
+            depth = self._calculate_distance_bbox( _obj.bPoint )
+            if _obj.bPoint.p0.x > 0.0:
+                # Frontal object and the object is not empty
+                if (depth < d_min) or (d_min is None):
+                    # Update
+                    d_min = depth
+                    d_min_idx = i
+                    d_min_prob = _prob
+        # Post-process
+        #--------------------------------#
+        if obj_count == 0:
+            avg_prob = 1.0
+        else:
+            avg_prob = sum_prob/obj_count
+        #
+        return (avg_prob, d_min_prob)
 
     def text_marker_position(self, bbox):
         point_1 = bbox.p1
@@ -110,6 +187,7 @@ class Node:
 
     def detection_callback(self, message):
         current_stamp = rospy.get_rostime()
+        current_latency = (current_stamp - message.header.stamp).to_sec() # sec.
         self.fps_cal.step()
         # print("fps = %f" % self.fps_cal.fps)
 
@@ -123,6 +201,20 @@ class Node:
         else:
             _objects = message.objects
         #----------------------------------------------#
+
+        # Checkers
+        #-------------------------------------------#
+        self.checker_abs_fps.update(self.fps_cal.fps)
+        self.checker_abs_latency.update(current_latency)
+        self.checker_timeout.update()
+        #
+        avg_prob, d_min_prob = self.get_confidence_scores(_objects)
+        # print("avg_prob = %f, d_min_prob = %f" % (avg_prob, d_min_prob))
+        self.checker_nearProb.update(d_min_prob)
+        self.checker_avgProb.update(avg_prob)
+        #-------------------------------------------#
+
+
 
         box_list = MarkerArray()
         delay_list = MarkerArray()

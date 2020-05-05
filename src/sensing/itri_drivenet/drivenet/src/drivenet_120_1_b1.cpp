@@ -931,10 +931,10 @@ void* run_yolo(void*)
 void* run_display(void*)
 {
   std::cout << "run_display start" << std::endl;
-  cv::namedWindow("RightFront-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("RightBack-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("LeftFront-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("LeftBack-120", CV_WINDOW_NORMAL);
+  cv::namedWindow("RightFront-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("RightBack-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("LeftFront-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("LeftBack-120", cv::WINDOW_NORMAL);
   cv::resizeWindow("RightFront-120", 480, 360);
   cv::resizeWindow("RightBack-120", 480, 360);
   cv::resizeWindow("LeftFront-120", 480, 360);
