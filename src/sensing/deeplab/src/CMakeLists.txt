@@ -1,5 +1,5 @@
 set(DEEPLAB_LIB "deeplab")
-set(DEEPLAB_EXE "deeplab_segmenter")
+set(DEEPLAB_EXE "deeplab_node")
 set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
 
 set(DEEPLAB_LIB_SRCS
