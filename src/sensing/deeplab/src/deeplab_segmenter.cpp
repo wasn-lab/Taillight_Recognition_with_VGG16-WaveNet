@@ -9,8 +9,7 @@ DeeplabSegmenter::DeeplabSegmenter()
 
 DeeplabSegmenter::~DeeplabSegmenter() = default;
 
-
-int DeeplabSegmenter::segment(const cv::Mat& img_in, cv::Mat& img_out)
+int32_t DeeplabSegmenter::segment(const cv::Mat& img_in, cv::Mat& img_out)
 {
   nn_ptr_->segment(img_in, img_out);
   return 0;

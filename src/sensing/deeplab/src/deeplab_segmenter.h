@@ -12,6 +12,6 @@ class DeeplabSegmenter {
   public:
     DeeplabSegmenter();
     ~DeeplabSegmenter();
-    int segment(const cv::Mat& img_in, cv::Mat& img_out);
+    int32_t segment(const cv::Mat& img_in, cv::Mat& img_out);
 };
 }; // namespace deeplab

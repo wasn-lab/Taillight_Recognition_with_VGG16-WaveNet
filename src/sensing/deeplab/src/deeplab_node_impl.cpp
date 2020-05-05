@@ -7,7 +7,7 @@ namespace deeplab {
 
 static bool done_with_profiling()
 {
-  static int count = 0;
+  static int32_t count = 0;
   if (!in_profiling_mode())
   {
     return false;
