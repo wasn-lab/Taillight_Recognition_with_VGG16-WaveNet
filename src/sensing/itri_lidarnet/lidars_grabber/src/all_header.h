@@ -12,7 +12,7 @@
 #include <vector>
 #include <omp.h>
 #include <thread>
-#include <unistd.h> //sleep
+#include <unistd.h>  //sleep
 #include <functional>
 #include <cerrno>
 #include <cstdlib>
@@ -63,7 +63,7 @@ using namespace pcl::console;
 using namespace pcl::visualization;
 using namespace boost::property_tree;
 
-// for Debug 
+// for Debug
 #define ENABLE_DEBUG_MODE false
 
 #endif /* ALL_HEADER_H_ */
