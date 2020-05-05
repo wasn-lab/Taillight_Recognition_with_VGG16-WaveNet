@@ -23,7 +23,7 @@ class DeeplabNodeImpl
 public:
   DeeplabNodeImpl();
   ~DeeplabNodeImpl();
-  void image_callback(const sensor_msgs::ImageConstPtr& msg);
+  void image_callback(const sensor_msgs::ImageConstPtr& msg_in);
   void run(int argc, char* argv[]);
 };
 }; // namespace deeplab
