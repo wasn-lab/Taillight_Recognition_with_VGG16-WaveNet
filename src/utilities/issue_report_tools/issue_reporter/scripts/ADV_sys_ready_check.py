@@ -50,7 +50,7 @@ check_list += ["localization_state"]
 check_list += ["Xbywire_run"]
 # check_list += ["AEB_run"]
 check_list += [ "ACC_run"]
-check_list += [ "detect_obj"]
+# check_list += [ "detect_obj"]
 
 """
 The startup_check_list is a subset of check_list.
