@@ -164,6 +164,11 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
     }
   }
 
+  // Delete output_tensor_ in every TF_SessionRun to avoid memory leak.
+  // See https://github.com/tensorflow/tensorflow/issues/29733
+  tf_utils::DeleteTensor(output_tensor_);
+  output_tensor_ = nullptr;
+
   // overlay * alpha + img_in * beta + gamma = img_out
   const double alpha = 0.6;
   const auto beta = 1 - alpha;
