@@ -17,7 +17,7 @@ include(CarModel)
 
 if (NOT ENABLE_DEEPLAB)
   message(STATUS "${PROJECT_NAME} is disabled in car ${CAR_MODEL}")
-#  return ()
+  return ()
 endif()
 include(CompilerFlags)
 
