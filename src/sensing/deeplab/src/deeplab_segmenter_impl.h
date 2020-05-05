@@ -12,6 +12,7 @@ class DeeplabSegmenterImpl {
     std::unique_ptr<TF_Status, void (*)(TF_Status*)> tf_status_;
     std::unique_ptr<TF_SessionOptions, void (*)(TF_SessionOptions*)> tf_sess_options_;
     std::unique_ptr<TF_Session, void (*)(TF_Session*)> tf_sess_;
+    TF_Tensor* input_tensor_;
 
   public:
     DeeplabSegmenterImpl();

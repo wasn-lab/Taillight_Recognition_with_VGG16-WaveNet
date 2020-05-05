@@ -69,9 +69,9 @@ TF_Tensor* CreateTensor(TF_DataType data_type, const std::vector<std::int64_t>& 
 
 void DeleteTensor(TF_Tensor* tensor);
 
-// void DeleteTensors(const std::vector<TF_Tensor*>& tensors);
+void DeleteTensors(const std::vector<TF_Tensor*>& tensors);
 
-// void SetTensorsData(TF_Tensor* tensor, const void* data, std::size_t len);
+void SetTensorsData(TF_Tensor* tensor, const void* data, std::size_t len);
 
 // template <typename T>
 // void SetTensorsData(TF_Tensor* tensor, const std::vector<T>& data) {
