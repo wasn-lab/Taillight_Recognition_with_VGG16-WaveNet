@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(edge_detection)
-set(CMAKE_BUILD_TYPE "Release")
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -13,10 +12,13 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   genmsg
   roslib
-
   grid_map_ros
-
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 ## Find Point Cloud Library 1.9
 find_package(PCL)
@@ -72,10 +74,10 @@ find_package(PCL)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

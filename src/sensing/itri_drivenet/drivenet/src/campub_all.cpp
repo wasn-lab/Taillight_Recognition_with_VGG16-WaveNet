@@ -82,8 +82,8 @@ void collectRepub()
   // arrCamObjAll = arrCamObjBT + arrCamObjLB;
   msgs::DetectedObjectArray arr_cam_obj_all;
   size_t all_size = g_arr_cam_obj_fc.size() + g_arr_cam_obj_ft_f.size() + g_arr_cam_obj_ft_c.size() +
-                   g_arr_cam_obj_rf.size() + g_arr_cam_obj_rb.size() + g_arr_cam_obj_lf.size() + g_arr_cam_obj_lb.size() +
-                   g_arr_cam_obj_bt.size();
+                    g_arr_cam_obj_rf.size() + g_arr_cam_obj_rb.size() + g_arr_cam_obj_lf.size() +
+                    g_arr_cam_obj_lb.size() + g_arr_cam_obj_bt.size();
   arr_cam_obj_all.objects.reserve(all_size);
   arr_cam_obj_all.header = g_header_all;
 

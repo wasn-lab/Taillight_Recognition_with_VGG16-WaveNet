@@ -26,33 +26,33 @@
 
 namespace ssn_nodelet
 {
-  extern ros::Publisher nn_pub;
-  extern ros::Subscriber LidarAllSub;
+extern bool debug_output;
 
-  extern string data_set;
-  extern char ViewType;
-  extern int pub_type;
-  extern bool hybrid_detect;
+extern ros::Publisher nn_pub;
+extern ros::Subscriber LidarAllSub;
 
-  extern string GET_data_set;
-  extern string GET_ViewType;
-  extern string GET_pub_type;
-  extern string GET_hybrid_detect;
+extern string data_set;
+extern char ViewType;
+extern int pub_type;
+extern bool hybrid_detect;
 
-  extern vector<TF_inference> SSN_all;
+extern string GET_data_set;
+extern string GET_ViewType;
+extern string GET_pub_type;
+extern string GET_hybrid_detect;
 
-  class LidarsNodelet : public nodelet::Nodelet
-  {
-    public:
-      virtual void onInit ();
-      static void callback_LidarAll (const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg);
+extern vector<TF_inference> SSN_all;
 
-    private:
-      bool to_bool (std::string const &s);
-      
-  };
+class LidarsNodelet : public nodelet::Nodelet
+{
+public:
+  virtual void onInit();
+  static void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg);
 
-}
+private:
+  bool to_bool(std::string const& s);
+};
+
+}  // namespace ssn_nodelet
 
 #endif /* SQSG_NODELET_H_ */
-

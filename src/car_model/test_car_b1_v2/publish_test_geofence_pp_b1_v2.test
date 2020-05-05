@@ -1,0 +1,14 @@
+<launch>
+<!-- WIP -->
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-04-14-16-41-15_89.bag /PP_geofence_line:=/PP_geofence_line_bak" />
+    <node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  />
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /PP_geofence_line
+                  timeout: 15
+                  negative: False
+        </rosparam>
+    </test>
+</launch>

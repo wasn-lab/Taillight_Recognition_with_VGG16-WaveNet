@@ -22,6 +22,7 @@
 
 #-- 8-camera version
 /cam/front_bottom_60
+/cam/front_bottom_60_crop
 /cam/front_top_close_120
 /cam/front_top_far_30
 /cam/left_back_60
@@ -82,7 +83,6 @@
 /abs_virBB_array
 /marker_array_topic
 
-/radFront
 /radar_point_cloud
 /PathPredictionOutput/radar
 /RadarMarker
@@ -141,19 +141,24 @@
 /mileage/AEB_run
 /mileage/ACC_run
 
-# pedcross
-/PedCross/Pedestrians
-
 # Traffic light
 /LightResultOutput
 
 #
 /RadFront
+/RadFrontFilter
 /PP_geofence_line
 /Geofence_line # marker
 /gnss_speed_data
 /gnss2local_data
+/gnss2local_twd97_data
 
+
+# Pedcross
+/PedCross/Alert
+/PedCross/Pedestrians
+/PedCross/3D_marker
+/Tracking2D
 
 
 

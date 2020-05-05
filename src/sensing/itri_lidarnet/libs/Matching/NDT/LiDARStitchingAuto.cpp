@@ -1,6 +1,6 @@
 #include "LiDARStitchingAuto.h"
 
-LiDARStitchingAuto::LiDARStitchingAuto() : initialized_(false)
+LiDARStitchingAuto::LiDARStitchingAuto()  // : initialized_(false)
 {
   src_.reset(new pcl::PointCloud<pcl::PointXYZI>);
   trg_.reset(new pcl::PointCloud<pcl::PointXYZI>);
