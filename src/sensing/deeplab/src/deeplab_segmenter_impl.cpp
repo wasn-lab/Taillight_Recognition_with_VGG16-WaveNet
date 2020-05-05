@@ -67,6 +67,7 @@ DeeplabSegmenterImpl::DeeplabSegmenterImpl()
   , tf_sess_options_(nullptr, TF_DeleteSessionOptions)
   , tf_sess_(tf_utils::CreateSession(tf_graph_.get()), tf_utils::DeleteSession)
   , input_tensor_(nullptr)
+  , output_tensor_(nullptr)
 {
   LOG(INFO) << "Load " << get_pb_file();
   if (tf_graph_.get() == nullptr)
@@ -82,6 +83,36 @@ DeeplabSegmenterImpl::~DeeplabSegmenterImpl()
 {
   tf_utils::DeleteTensor(input_tensor_);
   input_tensor_ = nullptr;
+  tf_utils::DeleteTensor(output_tensor_);
+  output_tensor_ = nullptr;
+}
+
+const int64_t* DeeplabSegmenterImpl::inference(const cv::Mat& img_rgb)
+{
+  // Deeplab requires RGB layout, which is different from cv::Mat.
+  tf_utils::SetTensorsData(input_tensor_, img_rgb.ptr(), input_tensor_size_in_bytes);
+
+  TF_Output input_op = { TF_GraphOperationByName(tf_graph_.get(), "ImageTensor"), 0 };
+  TF_Output out_op = { TF_GraphOperationByName(tf_graph_.get(), "SemanticPredictions"), 0 };
+
+  TF_SessionRun(tf_sess_.get(),
+                nullptr,                       // Run options.
+                &input_op, &input_tensor_, 1,  // Input tensors, input tensor values, number of inputs.
+                // input_op.data(), input_tensor.data(), input_tensor.size(), // Input tensors, input tensor values,
+                // number of inputs.
+                &out_op, &output_tensor_, 1,  // Output tensors, output tensor values, number of outputs.
+                nullptr, 0,                   // Target operations, number of targets.
+                nullptr,                      // Run metadata.
+                tf_status_.get()              // Output status.
+  );
+
+  if (TF_GetCode(tf_status_.get()) != TF_OK)
+  {
+    LOG(WARNING) << "Error run session";
+  }
+
+  // Return a pointer to the underlying data buffer of TF_Tensor*
+  return static_cast<int64_t*>(TF_TensorData(output_tensor_));
 }
 
 int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
@@ -105,35 +136,8 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   }
 
   cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
-  // Deeplab requires RGB layout, which is different from cv::Mat.
-  tf_utils::SetTensorsData(input_tensor_, img_rgb.ptr(), input_tensor_size_in_bytes);
 
-  TF_Tensor* output_tensor;
-  TF_Output input_op = { TF_GraphOperationByName(tf_graph_.get(), "ImageTensor"), 0 };
-  TF_Output out_op = { TF_GraphOperationByName(tf_graph_.get(), "SemanticPredictions"), 0 };
-
-  TF_SessionRun(tf_sess_.get(),
-                nullptr,                       // Run options.
-                &input_op, &input_tensor_, 1,  // Input tensors, input tensor values, number of inputs.
-                // input_op.data(), input_tensor.data(), input_tensor.size(), // Input tensors, input tensor values,
-                // number of inputs.
-                &out_op, &output_tensor, 1,  // Output tensors, output tensor values, number of outputs.
-                nullptr, 0,                   // Target operations, number of targets.
-                nullptr,                      // Run metadata.
-                tf_status_.get()              // Output status.
-                );
-
-  if (TF_GetCode(tf_status_.get()) != TF_OK)
-  {
-    LOG(WARNING) << "Error run session";
-  }
-
-  // Return a pointer to the underlying data buffer of TF_Tensor*
-  const auto labels = static_cast<int64_t*>(TF_TensorData(output_tensor));
-
-
-  assert(img_bgr.rows == image_height);
-  assert(img_bgr.cols == image_width);
+  const auto labels = inference(img_rgb);
 
   cv::Mat overlay(img_bgr.size(), img_bgr.type());
   uint32_t kth_pixel = 0;
@@ -158,9 +162,6 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
       kth_pixel++;
     }
   }
-
-  tf_utils::DeleteTensor(output_tensor);
-  output_tensor = nullptr;
 
   // overlay * alpha + img_in * beta + gamma = img_out
   const double alpha = 0.6;

@@ -13,6 +13,9 @@ class DeeplabSegmenterImpl {
     std::unique_ptr<TF_SessionOptions, void (*)(TF_SessionOptions*)> tf_sess_options_;
     std::unique_ptr<TF_Session, void (*)(TF_Session*)> tf_sess_;
     TF_Tensor* input_tensor_;
+    TF_Tensor* output_tensor_;
+
+    const int64_t* inference(const cv::Mat &img_rgb);
 
   public:
     DeeplabSegmenterImpl();
