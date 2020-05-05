@@ -13,7 +13,7 @@ static bool done_with_profiling()
     return false;
   }
 
-  if (count > 10)
+  if (count > 100)
   {
     return true;
   }

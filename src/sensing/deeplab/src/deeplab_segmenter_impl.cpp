@@ -126,7 +126,7 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
 
   if (img_in.rows != image_height || img_in.cols != image_width)
   {
-    LOG_EVERY_N(WARNING, 67) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols
+    LOG(WARNING) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols
                              << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
     resize_to_deeplab_input(img_in, img_bgr);
   }
