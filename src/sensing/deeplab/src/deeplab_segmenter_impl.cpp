@@ -90,13 +90,8 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   cv::Mat img_rgb;
   cv::Mat img_bgr;
 
-  if (img_in.rows == 0 || img_in.cols == 0)
-  {
-    LOG(WARNING) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols << "x"
-                 << img_in.rows << ". Do nothing";
-    img_out = img_in;
-    return 1;
-  }
+  assert(img_in.rows > 0);
+  assert(img_in.cols > 0);
 
   if (img_in.rows != image_height || img_in.cols != image_width)
   {
@@ -110,6 +105,7 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   }
 
   cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
+  // Deeplab requires RGB layout, which is different from cv::Mat.
   tf_utils::SetTensorsData(input_tensor_, img_rgb.ptr(), input_tensor_size_in_bytes);
 
   TF_Tensor* output_tensor;
@@ -135,12 +131,17 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   // Return a pointer to the underlying data buffer of TF_Tensor*
   const auto labels = static_cast<int64_t*>(TF_TensorData(output_tensor));
 
+
+  assert(img_bgr.rows == image_height);
+  assert(img_bgr.cols == image_width);
+
   cv::Mat overlay(img_bgr.size(), img_bgr.type());
+  uint32_t kth_pixel = 0;
   for (int a = 0; a < image_height; a++)
   {
     for (int b = 0; b < image_width; b++)
     {
-      auto label = static_cast<camera_utils::color>(labels[image_width * a + b]);
+      auto label = static_cast<camera_utils::color>(labels[kth_pixel]);
       auto& ocolor = overlay.at<cv::Vec3b>(a, b);
       if (label > 0)
       {
@@ -152,8 +153,9 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
       }
       else
       {
-        ocolor = img_in.at<cv::Vec3b>(a, b);
+        ocolor = img_bgr.at<cv::Vec3b>(a, b);
       }
+      kth_pixel++;
     }
   }
 
@@ -161,7 +163,7 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   output_tensor = nullptr;
 
   // overlay * alpha + img_in * beta + gamma = img_out
-  const double alpha = 0.4;
+  const double alpha = 0.6;
   const auto beta = 1 - alpha;
   cv::addWeighted(overlay, alpha, img_bgr, beta, /*gamma*/ 0, img_out);
   return 0;

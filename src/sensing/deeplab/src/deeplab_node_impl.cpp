@@ -59,7 +59,7 @@ void DeeplabNodeImpl::image_callback(const sensor_msgs::ImageConstPtr& msg_in)
 
   LOG_EVERY_N(INFO, 67) << "Publish image";
   sensor_msgs::ImagePtr msg_out =
-      cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::RGB8, img_out).toImageMsg();
+      cv_bridge::CvImage(std_msgs::Header(), sensor_msgs::image_encodings::BGR8, img_out).toImageMsg();
   image_publisher_.publish(msg_out);
 }
 
