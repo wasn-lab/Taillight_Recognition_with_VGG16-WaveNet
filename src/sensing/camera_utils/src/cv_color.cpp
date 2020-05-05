@@ -8,7 +8,7 @@ namespace camera_utils
 
 const cv::Scalar& get_cv_color(color color_id)
 {
-  if (g_colors.size() == 0)
+  if (g_colors.empty())
   {
     LOG(INFO) << "Initialize g_colors.";
     g_colors.resize(color::nums);
