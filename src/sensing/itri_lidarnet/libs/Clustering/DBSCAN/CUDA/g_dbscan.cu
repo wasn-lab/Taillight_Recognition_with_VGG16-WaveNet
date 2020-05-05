@@ -4,7 +4,7 @@
 #include <thrust/device_vector.h>
 
 __global__ void
-_cu_vertdegree(int numpts, int colsize, float eps, float* d_data, int* d_Va)
+_cu_vertdegree(int numpts, int colsize, float* eps, float* d_data, int* d_Va, int label_mode)
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -15,20 +15,30 @@ _cu_vertdegree(int numpts, int colsize, float eps, float* d_data, int* d_Va)
 
   for (int j = 0; j < numpts; ++j) {
     float accum = 0.0;
+    int colxyzsize = 3;
+    int label = d_data[i * colsize + 4]
     
-    for (int cs = 0; cs < colsize; ++cs) {
+    for (int cs = 0; cs < colxyzsize; ++cs) {
       accum += (d_data[i * colsize + cs] - d_data[j * colsize + cs]) * (d_data[i * colsize + cs] - d_data[j * colsize + cs]);
     }
-
-    if (accum < (eps*eps)) {
-      d_Va[i] += 1;
+    
+    if (label_mode) {
+      if (accum < (eps[label]*eps[label]) && label == d_data[j * colsize + 4]) {
+        d_Va[i] += 1;
+      }
+    }
+    else
+    {
+      if (accum < (eps[0]*eps[0])) {
+        d_Va[i] += 1;
+      }
     }
   }
 }
 
-void vertdegree(int N, int colsize, float eps, float* d_data, int* d_Va, int maxThreadsNumber)
+void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int maxThreadsNumber, int label_mode)
 {
-  _cu_vertdegree<<<(N + 255) / 256, 256>>>(N, colsize, eps, d_data, d_Va);
+  _cu_vertdegree<<<(N + 255) / 256, 256>>>(N, colsize, eps, d_data, d_Va, label_mode);
   //cudaDeviceSynchronize();
 }
 
@@ -41,7 +51,7 @@ void adjlistsind(int N, int* Va0, int* Va1)
 }
 
 __global__ void 
-_cu_asmadjlist(int numpts, int colsize, float eps, float* d_data, int* d_Va1, int* d_Ea)
+_cu_asmadjlist(int numpts, int colsize, float* eps, float* d_data, int* d_Va1, int* d_Ea, int label_mode)
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -52,19 +62,30 @@ _cu_asmadjlist(int numpts, int colsize, float eps, float* d_data, int* d_Va1, in
 
   for (int j = 0; j < numpts; ++j) {
     float accum = 0.0;
+    int colxyzsize = 3;
+    int label = d_data[i * colsize + 4]
     
-    for (int cs = 0; cs < colsize; ++cs) {
+    for (int cs = 0; cs < colxyzsize; ++cs) {
       accum += (d_data[i * colsize + cs] - d_data[j * colsize + cs]) * (d_data[i * colsize + cs] - d_data[j * colsize + cs]);
     }
-
-    if (accum < (eps*eps)) {
-      d_Ea[basei] = j;
-      ++basei;
+    
+    if (label_mode) {
+      if (accum < (eps[label]*eps[label]) && label == d_data[j * colsize + 4]) {
+        d_Ea[basei] = j;
+        ++basei;
+      }
+    }
+    else
+    {
+      if (accum < (eps[0]*eps[0])) {
+        d_Ea[basei] = j;
+        ++basei;
+      }
     }
   }
 }
 
-void asmadjlist(int N, int colsize, float eps, float* d_data, int* d_Va1, int* d_Ea)
+void asmadjlist(int N, int colsize, float* eps, float* d_data, int* d_Va1, int* d_Ea)
 {
   _cu_asmadjlist<<<(N + 255) / 256, 256>>>(N, colsize, eps, d_data, d_Va1, d_Ea);
   //cudaDeviceSynchronize();

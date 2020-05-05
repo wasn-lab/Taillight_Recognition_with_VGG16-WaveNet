@@ -12,8 +12,8 @@ S1Cluster::S1Cluster (boost::shared_ptr<pcl::visualization::PCLVisualizer> input
   viewer = input_viewer;
   viewID = input_viewID;
 
-  dbscan.setEpsilon (0.6);
-  dbscan.setMinpts (5);
+  dbscan.setEpsilon (0.6, 0.6, 0.6, 0.6);
+  dbscan.setMinpts (5, 5, 5, 5);
 }
 
 S1Cluster::~S1Cluster ()
@@ -52,7 +52,12 @@ S1Cluster::getClusters (bool debug,
   cout << "-------------------------------Part 0 : get cluster_vector " << timer.getTimeSeconds () << "," << ptr_cur_cloud->size () << endl;
 #endif
 
+#if ENABLE_LABEL_MODE == true
+  dbscan.setInputCloud<PointXYZIL>(ptr_cur_cloud_IL);
+#else
   dbscan.setInputCloud<PointXYZ> (ptr_cur_cloud);
+#endif
+
   dbscan.segment (vectorCluster);
 
 #if ENABLE_DEBUG_MODE == true

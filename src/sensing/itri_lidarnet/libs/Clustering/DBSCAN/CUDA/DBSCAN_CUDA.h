@@ -12,16 +12,16 @@ public:
 
   template <typename PointT>
   void setInputCloud(const typename PointCloud<PointT>::ConstPtr input);
-  void setEpsilon(const double Epsilon);
-  void setMinpts(const unsigned int MinPts);
+  void setEpsilon(const double Epsilon, const double EpsilonCar, const double EpsilonPed, const double EpsilonBike);
+  void setMinpts(const unsigned int MinPts, const unsigned int MinPtsCar, const unsigned int MinPtsPed, const unsigned int MinPtsBike);
   void segment(IndicesClusters& clusters);
 
 private:
   static bool hasInitialCUDA;
   static int maxThreadsNumber;
 
-  double epsilon;
-  unsigned int minpts;
+  float* epsilon;
+  size_t* minpts;
   Dataset::Ptr dset;
   GDBSCAN::Ptr dbs;
 };

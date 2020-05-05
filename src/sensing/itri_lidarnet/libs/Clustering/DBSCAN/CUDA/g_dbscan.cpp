@@ -83,7 +83,7 @@ GDBSCAN::~GDBSCAN()
   }
 }
 
-void GDBSCAN::fit(float eps, size_t min_elems, int maxThreadsNumber)
+void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
 {
   // Vertices degree calculation: For each vertex, we calculate the
   // total number of adjacent vertices. However we can use the multiple cores of
@@ -94,11 +94,20 @@ void GDBSCAN::fit(float eps, size_t min_elems, int maxThreadsNumber)
   // there are no dependency (or communication) between those parallel tasks
   // (embarrassingly parallel problem). Thus, the computational complexity can
   // be reduced from O(V2) to O(V).
-
+  
+  // Determine which mode we are in. If the input column size is 5(XYZIL), we are in label mode
+  int label_mode = 0;
   int N = static_cast<int>(m_dset->rows());        // size()
   int colsize = static_cast<int>(m_dset->cols());  // 3 XYZ
+  // 2020/4/29
+  // for label-based G-DBSCAN, the cols() might be 5 XYZIL
+  if (colsize = 5)
+  {
+    label_mode = 1;
+    std::cout << "In label mode" << std::endl;
+  }
 
-  vertdegree(N, colsize, eps, d_data, d_Va0, maxThreadsNumber);
+  vertdegree(N, colsize, eps, d_data, d_Va0, maxThreadsNumber, label_mode);
 
   // std::cout << "Executed vertdegree transfer";
 
@@ -126,7 +135,8 @@ void GDBSCAN::fit(float eps, size_t min_elems, int maxThreadsNumber)
   // Finished transfer;
   for (int i = 0; i < N; ++i)
   {
-    if (static_cast<size_t>(h_Va0[i]) >= min_elems)
+    int pointclassID = (int)(m_dset->data()[i][4]);
+    if (static_cast<size_t>(h_Va0[i]) >= min_elems[pointclassID])
     {
       core[i] = true;
     }
@@ -161,7 +171,7 @@ void GDBSCAN::fit(float eps, size_t min_elems, int maxThreadsNumber)
 
   ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Ea), Ea_size), "d_Ea malloc");
 
-  asmadjlist(N, colsize, eps, d_data, d_Va1, d_Ea);
+  asmadjlist(N, colsize, eps, d_data, d_Va1, d_Ea, label_mode);
 }
 
 void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited)

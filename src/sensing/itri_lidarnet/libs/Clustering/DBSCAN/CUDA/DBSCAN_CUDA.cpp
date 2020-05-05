@@ -5,8 +5,8 @@ int DBSCAN_CUDA::maxThreadsNumber = 0;
 
 DBSCAN_CUDA::DBSCAN_CUDA()
 {
-  epsilon = 1;
-  minpts = 1;
+  epsilon = new float[4];
+  minpts = new size_t[4];
   dset = Dataset::create();
 
   if (!hasInitialCUDA)
@@ -48,13 +48,19 @@ void DBSCAN_CUDA::setInputCloud(const typename PointCloud<PointT>::ConstPtr Inpu
   dset->load_pcl(Input);
   dbs = boost::make_shared<GDBSCAN>(dset);
 }
-void DBSCAN_CUDA::setEpsilon(const double Epsilon)
+void DBSCAN_CUDA::setEpsilon(const double Epsilon, const double EpsilonCar, const double EpsilonPed, const double EpsilonBike)
 {
-  epsilon = Epsilon;
+  epsilon[0] = Epsilon;
+  epsilon[1] = EpsilonCar;
+  epsilon[2] = EpsilonPed;
+  epsilon[3] = EpsilonBike;
 }
-void DBSCAN_CUDA::setMinpts(const unsigned int MinPts)
+void DBSCAN_CUDA::setMinpts(const unsigned int MinPts, const unsigned int MinPtsCar, const unsigned int MinPtsPed, const unsigned int MinPtsBike)
 {
-  minpts = MinPts;
+  minpts[0] = MinPts;
+  minpts[1] = MinPtsCar;
+  minpts[2] = MinPtsPed;
+  minpts[3] = MinPtsBike;
 }
 
 void DBSCAN_CUDA::segment(IndicesClusters& index)
