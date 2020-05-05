@@ -8,8 +8,8 @@ namespace deeplab {
 class DeeplabNodeImpl
 {
   // ROS
-  image_transport::Publisher image_publisher_;
   image_transport::Subscriber image_subscriber_;
+  ros::Publisher image_publisher_;
   ros::NodeHandle node_handle_;
 
   // NN

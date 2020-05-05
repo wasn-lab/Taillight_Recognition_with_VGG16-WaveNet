@@ -126,8 +126,8 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
 
   if (img_in.rows != image_height || img_in.cols != image_width)
   {
-    LOG(WARNING) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols << "x"
-                 << img_in.rows << ". Resize to fit deeplab requirement.";
+    LOG_EVERY_N(WARNING, 67) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols
+                             << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
     resize_to_deeplab_input(img_in, img_bgr);
   }
   else
@@ -139,6 +139,7 @@ int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
 
   const auto labels = inference(img_rgb);
 
+  // Mark pixels with specific colors.
   cv::Mat overlay(img_bgr.size(), img_bgr.type());
   uint32_t kth_pixel = 0;
   for (int a = 0; a < image_height; a++)

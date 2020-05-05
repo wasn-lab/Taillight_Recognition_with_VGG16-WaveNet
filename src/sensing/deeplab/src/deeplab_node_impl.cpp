@@ -38,8 +38,7 @@ void DeeplabNodeImpl::advertise_topics()
 {
   auto topic = get_image_topic() + std::string("/segment");
   LOG(INFO) << "advertise " << topic;
-  image_transport::ImageTransport it(node_handle_);
-  image_publisher_ = it.advertise(topic, 1);
+  image_publisher_ = node_handle_.advertise<sensor_msgs::Image&>(topic, 1);
 }
 
 void DeeplabNodeImpl::image_callback(const sensor_msgs::ImageConstPtr& msg_in)
@@ -67,7 +66,6 @@ void DeeplabNodeImpl::run(int argc, char* argv[])
 {
   subscribe_topics();
   advertise_topics();
-  // ros::AsyncSpinner spinner(parknet::camera::num_cams_e);
   ros::AsyncSpinner spinner(1);
   spinner.start();
   ros::Rate r(30);
