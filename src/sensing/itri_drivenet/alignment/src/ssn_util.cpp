@@ -31,12 +31,13 @@ int transferCommonLabelToSSNLabel(common_type_id label_id)
   }
   return nn_label_id;
 }
-pcl::PointCloud<pcl::PointXYZI>::Ptr getClassObjectPoint(pcl::PointCloud<pcl::PointXYZIL>::Ptr points_ptr, common_type_id label_id)
+pcl::PointCloud<pcl::PointXYZI>::Ptr getClassObjectPoint(pcl::PointCloud<pcl::PointXYZIL>::Ptr points_ptr,
+                                                         common_type_id label_id)
 {
-  pcl::PointCloud<pcl::PointXYZI>::Ptr out_points_ptr(new pcl::PointCloud<pcl::PointXYZI>); 
+  pcl::PointCloud<pcl::PointXYZI>::Ptr out_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   int nn_label_id = -1;
   nn_label_id = transferCommonLabelToSSNLabel(label_id);
-  for(size_t index = 0; index < points_ptr->size(); index++ )
+  for (size_t index = 0; index < points_ptr->size(); index++)
   {
     if (points_ptr->points[index].label == nn_label_id)
     {
@@ -50,12 +51,13 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr getClassObjectPoint(pcl::PointCloud<pcl::Po
   }
   return out_points_ptr;
 }
-pcl::PointCloud<pcl::PointXYZI>::Ptr getClassObjectPoint(pcl::PointCloud<pcl::PointXYZIL>::Ptr points_ptr, nnClassID label_id)
-{ 
-  pcl::PointCloud<pcl::PointXYZI>::Ptr out_points_ptr(new pcl::PointCloud<pcl::PointXYZI>); 
+pcl::PointCloud<pcl::PointXYZI>::Ptr getClassObjectPoint(pcl::PointCloud<pcl::PointXYZIL>::Ptr points_ptr,
+                                                         nnClassID label_id)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr out_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   int nn_label_id = -1;
   nn_label_id = label_id;
-  for(size_t index = 0; index < points_ptr->size(); index++ )
+  for (size_t index = 0; index < points_ptr->size(); index++)
   {
     if (points_ptr->points[index].label == nn_label_id)
     {

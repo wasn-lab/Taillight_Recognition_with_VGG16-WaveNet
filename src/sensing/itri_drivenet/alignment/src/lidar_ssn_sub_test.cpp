@@ -87,7 +87,7 @@ void displayLidarData()
   ros::Rate loop_rate(30);
   while (ros::ok() && !pcl_viewer->wasStopped())
   {
-    if(g_ssn_ptr->size() > 0)
+    if (g_ssn_ptr->size() > 0)
     {
       g_sync_lock_ssn.lock();  // mutex lidar
       pcl::copyPointCloud(*g_ssn_ptr, *ssn_points_ptr);
@@ -113,15 +113,17 @@ void displayLidarData()
       pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Person cloud");
       pcl_viewer->addPointCloud<pcl::PointXYZI>(car_points_ptr, rgb_car_points, "Car cloud", viewports[1]);
       pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Car cloud");
-      pcl_viewer->addPointCloud<pcl::PointXYZI>(motorbike_points_ptr, rgb_motorbike_points, "Motorbike cloud", viewports[1]);
+      pcl_viewer->addPointCloud<pcl::PointXYZI>(motorbike_points_ptr, rgb_motorbike_points, "Motorbike cloud",
+                                                viewports[1]);
       pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Motorbike cloud");
-      pcl_viewer->addPointCloud<pcl::PointXYZI>(rule_base_points_ptr, rgb_rule_base_points, "Rule_base cloud", viewports[1]);
+      pcl_viewer->addPointCloud<pcl::PointXYZI>(rule_base_points_ptr, rgb_rule_base_points, "Rule_base cloud",
+                                                viewports[1]);
       pcl_viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 1, "Rule_base cloud");
 
       pcl_viewer->spinOnce();
     }
     loop_rate.sleep();
-  }  
+  }
 }
 int main(int argc, char** argv)
 {
