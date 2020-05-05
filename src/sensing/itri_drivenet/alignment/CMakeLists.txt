@@ -90,7 +90,7 @@ elseif(CAR_MODEL_IS_B1_V2)
   target_link_libraries(${PROJECT_NAME}_b1_v2 ${catkin_LIBRARIES} ${LIBS})
   add_dependencies(${PROJECT_NAME}_b1_v2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-  cuda_add_executable(${PROJECT_NAME}_b1_v2_ssn_sub src/lidar_ssn_sub_test.cpp)
+  cuda_add_executable(${PROJECT_NAME}_b1_v2_ssn_sub src/lidar_ssn_sub_test.cpp src/ssn_util.cpp)
   target_link_libraries(${PROJECT_NAME}_b1_v2_ssn_sub ${catkin_LIBRARIES} ${LIBS})
   add_dependencies(${PROJECT_NAME}_b1_v2_ssn_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif ()
