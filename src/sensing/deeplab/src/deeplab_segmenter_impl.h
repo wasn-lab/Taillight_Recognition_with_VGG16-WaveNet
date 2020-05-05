@@ -15,11 +15,13 @@ class DeeplabSegmenterImpl {
     TF_Tensor* input_tensor_;
     TF_Tensor* output_tensor_;
 
-    const int64_t* inference(const cv::Mat &img_rgb);
+    int32_t preprocess_for_input_tensor(const cv::Mat& img_in, cv::Mat& img_rgb);
+    int32_t postprocess_with_labels(const int64_t* labels, const cv::Mat& img_rgb, cv::Mat& img_out);
+    int32_t inference(const cv::Mat &img_rgb);
 
   public:
     DeeplabSegmenterImpl();
     ~DeeplabSegmenterImpl();
-    int segment(const cv::Mat& img_in, cv::Mat& img_out);
+    int32_t segment(const cv::Mat& img_in, cv::Mat& img_out);
 };
 }; // namespace deeplab

@@ -46,18 +46,31 @@ const std::vector<std::string> g_label_names{
   "diningtable", "dog",       "horse",   "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tv"
 };
 
-static int resize_to_deeplab_input(const cv::Mat& img_in, cv::Mat& img_out)
+static int32_t resize_to_deeplab_input(const cv::Mat& img_in, cv::Mat& img_out)
 {
-  const int num_pixel_diff = img_in.cols - img_in.rows;  // assume |rows| > |cols|
-  const int num_padding_top = num_pixel_diff / 2;
-  const int num_padding_bottom = num_pixel_diff - num_padding_top;
   cv::Mat tmp;
 
-  cv::copyMakeBorder(img_in, tmp, num_padding_top, num_padding_bottom, /*left*/ 0, /*right*/ 0, cv::BORDER_CONSTANT,
-                     camera_utils::get_cv_color(camera_utils::color::black));
-  cv::resize(tmp, img_out, cv::Size(image_width, image_height));
-  assert(img_out.rows == image_height);
-  assert(img_out.cols == image_width);
+  cv::copyMakeBorder(img_in, tmp, PADDING_TOP_IN_PIXELS, PADDING_BOTTOM_IN_PIXELS, /*left*/ 0, /*right*/ 0,
+                     cv::BORDER_CONSTANT, camera_utils::get_cv_color(camera_utils::color::black));
+  cv::resize(tmp, img_out, cv::Size(DEEPLAB_IMAGE_WIDTH, DEEPLAB_IMAGE_HEIGHT));
+  assert(img_out.rows == DEEPLAB_IMAGE_HEIGHT);
+  assert(img_out.cols == DEEPLAB_IMAGE_WIDTH);
+  return 0;
+}
+
+static int32_t resize_to_608x384(cv::Mat& img_out)
+{
+  cv::resize(img_out, img_out, cv::Size(ROS_IMAGE_WIDTH, ROS_IMAGE_WIDTH));
+  cv::Rect roi;
+  roi.x = 0;
+  roi.y = PADDING_TOP_IN_PIXELS;
+  roi.width = ROS_IMAGE_WIDTH;
+  roi.height = ROS_IMAGE_HEIGHT;
+
+  img_out = img_out(roi);
+
+  assert(img_out.rows == ROS_IMAGE_HEIGHT);
+  assert(img_out.cols == ROS_IMAGE_WIDTH);
   return 0;
 }
 
@@ -75,8 +88,8 @@ DeeplabSegmenterImpl::DeeplabSegmenterImpl()
     LOG(FATAL) << "Can't load graph " << get_pb_file();
   }
 
-  const int64_t input_dims[4] = { 1, image_height, image_width, 3 };
-  input_tensor_ = tf_utils::CreateTensor(TF_UINT8, input_dims, 4, nullptr, input_tensor_size_in_bytes);
+  const int64_t input_dims[4] = { 1, DEEPLAB_IMAGE_HEIGHT, DEEPLAB_IMAGE_WIDTH, 3 };
+  input_tensor_ = tf_utils::CreateTensor(TF_UINT8, input_dims, 4, nullptr, INPUT_TENSOR_SIZE_IN_BYTES);
 }
 
 DeeplabSegmenterImpl::~DeeplabSegmenterImpl()
@@ -87,10 +100,37 @@ DeeplabSegmenterImpl::~DeeplabSegmenterImpl()
   output_tensor_ = nullptr;
 }
 
-const int64_t* DeeplabSegmenterImpl::inference(const cv::Mat& img_rgb)
+/*
+ * Returns:
+ *   - 0: No resize
+ *   - 1: resize image_in to DEEPLAB_IMAGE_WIDTH * image_height
+ **/
+int32_t DeeplabSegmenterImpl::preprocess_for_input_tensor(const cv::Mat& img_in, cv::Mat& img_rgb)
+{
+  cv::Mat img_bgr;
+  int32_t resized = 0;
+
+  assert(img_in.rows > 0);
+  assert(img_in.cols > 0);
+  if (img_in.rows != DEEPLAB_IMAGE_HEIGHT || img_in.cols != DEEPLAB_IMAGE_WIDTH)
+  {
+    LOG(WARNING) << "Expect image size " << DEEPLAB_IMAGE_WIDTH << "x" << DEEPLAB_IMAGE_HEIGHT << ", Got " << img_in.cols
+                             << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
+    resize_to_deeplab_input(img_in, img_bgr);
+    resized = 1;
+  }
+  else
+  {
+    img_bgr = img_in.clone();
+  }
+  cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
+  return resized;
+}
+
+int32_t DeeplabSegmenterImpl::inference(const cv::Mat& img_rgb)
 {
   // Deeplab requires RGB layout, which is different from cv::Mat.
-  tf_utils::SetTensorsData(input_tensor_, img_rgb.ptr(), input_tensor_size_in_bytes);
+  tf_utils::SetTensorsData(input_tensor_, img_rgb.ptr(), INPUT_TENSOR_SIZE_IN_BYTES);
 
   TF_Output input_op = { TF_GraphOperationByName(tf_graph_.get(), "ImageTensor"), 0 };
   TF_Output out_op = { TF_GraphOperationByName(tf_graph_.get(), "SemanticPredictions"), 0 };
@@ -109,70 +149,62 @@ const int64_t* DeeplabSegmenterImpl::inference(const cv::Mat& img_rgb)
   if (TF_GetCode(tf_status_.get()) != TF_OK)
   {
     LOG(WARNING) << "Error run session";
+    return 1;
   }
-
-  // Return a pointer to the underlying data buffer of TF_Tensor*
-  return static_cast<int64_t*>(TF_TensorData(output_tensor_));
+  return 0;
 }
 
-int DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
+int32_t DeeplabSegmenterImpl::postprocess_with_labels(const int64_t* labels, const cv::Mat& img_rgb, cv::Mat& img_out)
 {
-  //  auto rgb_blob = std::move(blob_from_image(img_in));
-  cv::Mat img_rgb;
-  cv::Mat img_bgr;
-
-  assert(img_in.rows > 0);
-  assert(img_in.cols > 0);
-
-  if (img_in.rows != image_height || img_in.cols != image_width)
-  {
-    LOG(WARNING) << "Expect image size " << image_width << "x" << image_height << ", Got " << img_in.cols
-                             << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
-    resize_to_deeplab_input(img_in, img_bgr);
-  }
-  else
-  {
-    img_bgr = img_in.clone();
-  }
-
-  cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
-
-  const auto labels = inference(img_rgb);
-
   // Mark pixels with specific colors.
-  cv::Mat overlay(img_bgr.size(), img_bgr.type());
+  cv::Mat overlay(img_rgb.size(), img_rgb.type());
   uint32_t kth_pixel = 0;
-  for (int a = 0; a < image_height; a++)
+  for (int32_t a = 0; a < DEEPLAB_IMAGE_HEIGHT; a++)
   {
-    for (int b = 0; b < image_width; b++)
+    for (int32_t b = 0; b < DEEPLAB_IMAGE_WIDTH; b++)
     {
       auto label = static_cast<camera_utils::color>(labels[kth_pixel]);
       auto& ocolor = overlay.at<cv::Vec3b>(a, b);
       if (label > 0)
       {
         auto label_color = camera_utils::get_cv_color(label);
-        for (int i = 0; i < 3; i++)
+        for (int32_t i = 0; i < 3; i++)
         {
           ocolor[i] = label_color[i];
         }
       }
       else
       {
-        ocolor = img_bgr.at<cv::Vec3b>(a, b);
+        ocolor = img_rgb.at<cv::Vec3b>(a, b);
       }
       kth_pixel++;
     }
+  }
+
+  // overlay * alpha + img_in * beta + gamma = img_out
+  const double alpha = 0.7;
+  const auto beta = 1 - alpha;
+  cv::addWeighted(overlay, alpha, img_rgb, beta, /*gamma*/ 0, img_out);
+  cv::cvtColor(img_out, img_out, cv::COLOR_RGB2BGR);
+  return 0;
+}
+
+int32_t DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
+{
+  cv::Mat img_rgb;
+  auto resized = preprocess_for_input_tensor(img_in, img_rgb);
+  inference(img_rgb);
+  postprocess_with_labels(static_cast<int64_t*>(TF_TensorData(output_tensor_)), img_rgb, img_out);
+
+  if (resized)
+  {
+    resize_to_608x384(img_out);
   }
 
   // Delete output_tensor_ in every TF_SessionRun to avoid memory leak.
   // See https://github.com/tensorflow/tensorflow/issues/29733
   tf_utils::DeleteTensor(output_tensor_);
   output_tensor_ = nullptr;
-
-  // overlay * alpha + img_in * beta + gamma = img_out
-  const double alpha = 0.6;
-  const auto beta = 1 - alpha;
-  cv::addWeighted(overlay, alpha, img_bgr, beta, /*gamma*/ 0, img_out);
   return 0;
 }
 
