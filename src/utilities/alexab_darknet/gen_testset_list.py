@@ -40,8 +40,8 @@ def __generate_list(testset_dir):
     image_list = __generate_image_list(testset_dir)
     output_file = os.path.join(testset_dir, "valid.txt")
     with io.open(output_file, "w") as _fp:
-        _fp.write("\n".join(image_list))
-        _fp.write("\n")
+        _fp.write(u"\n".join(image_list))
+        _fp.write(u"\n")
     logging.warning("Write %d lines in %s", len(image_list), output_file)
 
 
