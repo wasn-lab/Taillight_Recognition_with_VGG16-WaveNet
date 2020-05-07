@@ -86,14 +86,14 @@ static sensor_msgs::Imu imu_data;
 static sensor_msgs::Imu imu_data_rad;
 static geometry_msgs::PoseStamped gnss_data;
 static geometry_msgs::PoseStamped gnss2local_data;
-static geometry_msgs::PoseStamped gnss2local_twd97_data;
+static geometry_msgs::PoseStamped gnss_twd97_data;
 
 static tf::Quaternion q_;
 static ros::Publisher imu_pub;
 static ros::Publisher imu_rad_pub;
 static ros::Publisher gnss_pub;
 static ros::Publisher gnss2local_pub;
-static ros::Publisher gnss2local_twd97_pub;
+static ros::Publisher gnss_twd97_pub;
 static ros::Publisher gnss_speed_pub;
 
 
@@ -1456,22 +1456,22 @@ void processINSFullNavigation( int length, char *pData )
         bool pkm = false;
         gnss_tf.WGS84toTWD97(Latitude, Longitude, &TWD97_E, &TWD97_N, pkm);
 
-        tf::Quaternion gnss2local_twd97_q;
-        double Heading_twd97 = -Heading + M_PI/2;
-        gnss2local_twd97_q.setRPY(Roll, Pitch, Heading_twd97);
+        tf::Quaternion gnss_twd97_q;
+        // double Heading_twd97 = -Heading + M_PI/2;
+        gnss_twd97_q.setRPY(Roll, Pitch, Heading);
 
-        gnss2local_twd97_data.header.stamp = ros::Time::now();
-        gnss2local_twd97_data.header.frame_id = "map";
+        gnss_twd97_data.header.stamp = ros::Time::now();
+        gnss_twd97_data.header.frame_id = "map";
 
-        gnss2local_twd97_data.pose.position.x = TWD97_E;
-        gnss2local_twd97_data.pose.position.y = TWD97_N;
-        gnss2local_twd97_data.pose.position.z = Altitude;
+        gnss_twd97_data.pose.position.x = TWD97_E;
+        gnss_twd97_data.pose.position.y = TWD97_N;
+        gnss_twd97_data.pose.position.z = Altitude;
 
-        gnss2local_twd97_data.pose.orientation.x = gnss2local_twd97_q.x();
-        gnss2local_twd97_data.pose.orientation.y = gnss2local_twd97_q.y();
-        gnss2local_twd97_data.pose.orientation.z = gnss2local_twd97_q.z();
-        gnss2local_twd97_data.pose.orientation.w = gnss2local_twd97_q.w();
-        gnss2local_twd97_pub.publish(gnss2local_twd97_data);
+        gnss_twd97_data.pose.orientation.x = gnss_twd97_q.x();
+        gnss_twd97_data.pose.orientation.y = gnss_twd97_q.y();
+        gnss_twd97_data.pose.orientation.z = gnss_twd97_q.z();
+        gnss_twd97_data.pose.orientation.w = gnss_twd97_q.w();
+        gnss_twd97_pub.publish(gnss_twd97_data);
         
 
 }
@@ -1869,7 +1869,7 @@ int main( int argc, char **argv )
         imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);
         gnss_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_data", 20);
         gnss2local_pub = n.advertise<geometry_msgs::PoseStamped>("gnss2local_data", 20);
-        gnss2local_twd97_pub = n.advertise<geometry_msgs::PoseStamped>("gnss2local_twd97_data", 20);
+        gnss_twd97_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_twd97_data", 20);
         gnss_speed_pub = n.advertise<std_msgs::Float64>("gnss_speed_data", 20);
 
         int server_fd, ret;
