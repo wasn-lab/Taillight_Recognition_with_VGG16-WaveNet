@@ -296,18 +296,18 @@ void pclViewerInitializer(boost::shared_ptr<pcl::visualization::PCLVisualizer> p
   }
 
   int v1 = 1, v2 = 2, v3 = 3;
-  pcl_viewer->createViewPort(0.0, 0.0, 0.33, 1.0, v1);
-  pcl_viewer->createViewPort(0.33, 0.0, 0.66, 1.0, v2);
-  pcl_viewer->createViewPort(0.66, 0.0, 1.0, 1.0, v3);
+  // pcl_viewer->createViewPort(0.0, 0.0, 0.33, 1.0, v1);
+  // pcl_viewer->createViewPort(0.33, 0.0, 0.66, 1.0, v2);
+  // pcl_viewer->createViewPort(0.66, 0.0, 1.0, 1.0, v3);
   pcl_viewer->initCameraParameters();
   pcl_viewer->addCoordinateSystem(3.0, 0, 0, 0);
   pcl_viewer->setCameraPosition(0, 0, 20, 0.2, 0, 0);
   pcl_viewer->setShowFPS(false);
-  for (int count = 1; count < window_count + 1; count++)
-  {
-    pcl_viewer->setBackgroundColor(0, 0, 0, count);
-    pcl_viewer->addText(window_name[count - 1], 10, 10, window_name[count - 1], count);
-  }
+  // for (int count = 1; count < window_count + 1; count++)
+  // {
+  //   pcl_viewer->setBackgroundColor(0, 0, 0, count);
+  //   pcl_viewer->addText(window_name[count - 1], 10, 10, window_name[count - 1], count);
+  // }
 }
 
 void cvViewerInitializer()
@@ -608,28 +608,28 @@ void displayLidarData()
   while (ros::ok() && !pcl_viewer->wasStopped())
   {
     /// remove points on pcl viewer
-    pcl_viewer->removePointCloud("Cloud viewer", viewports[0]);
-    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
-    {
-      pcl_viewer->removePointCloud(g_cam_topic_names[cam_order], viewports[1]);
-      pcl_viewer->removePointCloud(g_bbox_topic_names[cam_order], viewports[2]);
-    }
+    pcl_viewer->removePointCloud("Cloud viewer");//, viewports[0]);
+    // for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    // {
+    //   pcl_viewer->removePointCloud(g_cam_topic_names[cam_order], viewports[1]);
+    //   pcl_viewer->removePointCloud(g_bbox_topic_names[cam_order], viewports[2]);
+    // }
     pcl_viewer->removeAllShapes();
 
     /// draw points on pcl viewer
     g_sync_lock_lidar_process.lock();
-    pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer", viewports[0]);
+    pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");//, viewports[0]);
     g_sync_lock_lidar_process.unlock();
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      g_sync_lock_cams_points.lock();  // mutex camera points
-      pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_points_ptr[cam_order], rgb_cams_points[cam_order],
-                                                g_cam_topic_names[cam_order], viewports[1]);
-      g_sync_lock_cams_points.unlock();   // mutex camera points
-      g_sync_lock_objects_points.lock();  // mutex camera object points
-      pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_bbox_points_ptr[cam_order], rgb_cams_bbox_points[cam_order],
-                                                g_bbox_topic_names[cam_order], viewports[2]);
-      g_sync_lock_objects_points.unlock();  // mutex camera object points
+      // g_sync_lock_cams_points.lock();  // mutex camera points
+      // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_points_ptr[cam_order], rgb_cams_points[cam_order],
+      //                                           g_cam_topic_names[cam_order], viewports[1]);
+      // g_sync_lock_cams_points.unlock();   // mutex camera points
+      // g_sync_lock_objects_points.lock();  // mutex camera object points
+      // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_bbox_points_ptr[cam_order], rgb_cams_bbox_points[cam_order],
+      //                                           g_bbox_topic_names[cam_order], viewports[2]);
+      // g_sync_lock_objects_points.unlock();  // mutex camera object points
 
       g_sync_lock_cube.lock();  // mutex camera points
       if(g_cams_bboxs_cube_min_max[cam_order].size() > 0)
@@ -641,13 +641,12 @@ void displayLidarData()
           cv::Scalar cube_color = CvColor::white_;
           cube_color = intToColor(static_cast<int>(cam_order));
 
-          pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z, cube_color[0], cube_color[1], cube_color[2], cube_id, viewports[2]);
+          pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z, cube_color[0], cube_color[1], cube_color[2], cube_id);//, viewports[0]);
           pcl_viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, cube_id);
           cube_cout ++;
         }
       }
       g_sync_lock_cube.unlock();  // mutex camera points
-
     }
     pcl_viewer->spinOnce();
     loop_rate.sleep();
