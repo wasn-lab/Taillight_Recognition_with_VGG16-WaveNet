@@ -145,8 +145,12 @@ class SIGNAL_ANALYZER(object):
         target = self.param_dict[checker_key]["threshold"]
         if value_in > target:
             event_str = "%s(%f>%f)" % (checker_key, value_in, target)
-            print(event_str)
-            self.publish_event("WARN", event_str)
+            # print(event_str)
+            status = "WARN"
+        else:
+            event_str = "%s(%f<=%f)" % (checker_key, value_in, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
 
     def check_func_low_threshold(self, value_in, prev_state=None):
         """
@@ -156,8 +160,12 @@ class SIGNAL_ANALYZER(object):
         target = self.param_dict[checker_key]["threshold"]
         if value_in < target:
             event_str = "%s(%f<%f)" % (checker_key, value_in, target)
-            print(event_str)
-            self.publish_event("WARN", event_str)
+            # print(event_str)
+            status = "WARN"
+        else:
+            event_str = "%s(%f>=%f)" % (checker_key, value_in, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
     #----------------------------------------#
     def check_func_high_avg_threshold(self, value_in, prev_state=None):
         """
@@ -167,8 +175,12 @@ class SIGNAL_ANALYZER(object):
         target = self.param_dict[checker_key]["threshold"]
         if self.value_avg > target:
             event_str = "%s(%f>%f)" % (checker_key, self.value_avg, target)
-            print(event_str)
-            self.publish_event("WARN", event_str)
+            # print(event_str)
+            status = "WARN"
+        else:
+            event_str = "%s(%f<=%f)" % (checker_key, self.value_avg, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
 
     def check_func_low_avg_threshold(self, value_in, prev_state=None):
         """
@@ -178,8 +190,12 @@ class SIGNAL_ANALYZER(object):
         target = self.param_dict[checker_key]["threshold"]
         if self.value_avg < target:
             event_str = "%s(%f<%f)" % (checker_key, self.value_avg, target)
-            print(event_str)
-            self.publish_event("WARN", event_str)
+            # print(event_str)
+            status = "WARN"
+        else:
+            event_str = "%s(%f>=%f)" % (checker_key, self.value_avg, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
     #----------------------------------------#
     def check_func_higher_avg_value(self, value_in, prev_state=None):
         """
@@ -189,8 +205,12 @@ class SIGNAL_ANALYZER(object):
         target = self.param_dict[checker_key]["threshold"]
         if (value_in - self.value_avg) > target:
             event_str = "%s(%f-%f>%f)" % (checker_key, value_in, self.value_avg, target)
-            print(event_str)
-            self.publish_event("WARN", event_str)
+            # print(event_str)
+            status = "WARN"
+        else:
+            event_str = "%s(%f-%f<=%f)" % (checker_key, value_in, self.value_avg, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
 
     def check_func_lower_avg_value(self, value_in, prev_state=None):
         """
@@ -200,8 +220,12 @@ class SIGNAL_ANALYZER(object):
         target = self.param_dict[checker_key]["threshold"]
         if (value_in - self.value_avg) < target:
             event_str = "%s(%f-%f<%f)" % (checker_key, value_in, self.value_avg, target)
-            print(event_str)
-            self.publish_event("WARN", event_str)
+            # print(event_str)
+            status = "WARN"
+        else:
+            event_str = "%s(%f-%f>=%f)" % (checker_key, value_in, self.value_avg, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
     #----------------------------------------#
     def check_func_higher_avg_ratio(self, value_in, prev_state=None):
         """
@@ -214,8 +238,12 @@ class SIGNAL_ANALYZER(object):
         check_ = check_H if self.value_avg >= 0.0 else check_L
         if check_:
             event_str = "%s(%f/%f>%f)" % (checker_key, value_in, self.value_avg, target)
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+            # print(checker_key)
+            status = "WARN"
+        else:
+            event_str = "%s(%f/%f<=%f)" % (checker_key, value_in, self.value_avg, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
 
     def check_func_lower_avg_ratio(self, value_in, prev_state=None):
         """
@@ -228,8 +256,12 @@ class SIGNAL_ANALYZER(object):
         check_ = check_L if self.value_avg >= 0.0 else check_H
         if check_:
             event_str = "%s(%f/%f<%f)" % (checker_key, value_in, self.value_avg, target)
-            print(checker_key)
-            self.publish_event("WARN", checker_key)
+            # print(checker_key)
+            status = "WARN"
+        else:
+            event_str = "%s(%f/%f>=%f)" % (checker_key, value_in, self.value_avg, target)
+            status = "OK"
+        return self.publish_event(status, event_str, prev_state)
     #----------------------------------------#
 
     # Timeout
@@ -279,7 +311,9 @@ class SIGNAL_ANALYZER(object):
         # check_func
         if not self.is_initial_state:
             for i, _check_func in enumerate(self.checker_func_list):
-                _check_func(value_in, self.checker_prev_state_list[i])
+                # print("(before)self.checker_prev_state_list[%d] = %s" % (i, str(self.checker_prev_state_list[i])))
+                self.checker_prev_state_list[i] = _check_func(value_in, self.checker_prev_state_list[i])
+                # print("(after)self.checker_prev_state_list[%d] = %s" % (i, str(self.checker_prev_state_list[i])))
         # Update stored value
         #--------------------#
         self._filter(value_in)
@@ -338,14 +372,18 @@ class SIGNAL_ANALYZER(object):
         json_dict["event_str"] = "[%s]%s" % (self.signal_name, event_str)
         return json.dumps(json_dict)
 
-    def publish_event(self, status, event_str):
+    def publish_event(self, status, event_str, prev_state=None):
         """
         This is the publisher for event.
+        Note: if the prev_state is not given, it always publish te status.
         """
-        event_json = self._event_2_json(status, event_str)
-        print(event_json)
-        if self.event_publisher:
-            self.event_publisher.publish( event_json )
+        # print("status:prev_state = %s:%s" % (str(status), str(prev_state)))
+        if status != prev_state:
+            event_json = self._event_2_json(status, event_str)
+            print(event_json)
+            if self.event_publisher:
+                self.event_publisher.publish( event_json )
+        return status
     # ------------------------------------#
     # end Private functions
 
