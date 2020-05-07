@@ -1,9 +1,0 @@
-Id,Kind,fname
-1,R001,roadedge.csv
-2,R003,curb.csv
-3,R004,intersection.csv
-4,P001,whiteline.csv
-5,P002,stopline.csv
-6,P004,crosswalk.csv
-7,K004,signaldata.csv
-8,K005,streetlight.csv

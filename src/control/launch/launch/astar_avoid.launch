@@ -19,6 +19,8 @@
 
   <!-- Avoidance behavior configurations -->
   <arg name="costmap_topic" default="occupancy_grid_all_expand" /><!--occupancy_grid occupancy_grid_all_expand-->
+  <arg name="base_waypoints_topic" default="base_waypoints_txt" /><!--base_waypoints_txt-->
+  <arg name="closest_waypoint_topic" default="closest_waypoint_txt" /><!--closest_waypoint_txt-->
   <arg name="enable_avoidance" default="false" />
   <arg name="avoid_waypoints_velocity" default="10.0" /><!--km/hr-->
   <arg name="avoid_start_velocity" default="10.0" /><!--1.8 km/hr-->
@@ -51,6 +53,8 @@
     <param name="update_rate" value="$(arg update_rate)" />
 
     <remap from="costmap" to="$(arg costmap_topic)" />
+    <remap from="base_waypoints" to="$(arg base_waypoints_topic)" />
+    <remap from="closest_waypoint" to="$(arg closest_waypoint_topic)" />
     <param name="enable_avoidance" value="$(arg enable_avoidance)" />
     <param name="search_waypoints_size" value="$(arg search_waypoints_size)" />
     <param name="search_waypoints_delta" value="$(arg search_waypoints_delta)" />
