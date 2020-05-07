@@ -91,6 +91,8 @@ set(CPP_FILES
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
+
+if(EXISTS /usr/local/lib/libopencv_core.so)
 target_link_libraries(
     itri_pedcross
     /usr/local/lib/libopencv_core.so
@@ -100,6 +102,17 @@ target_link_libraries(
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
+else()
+target_link_libraries(
+    itri_pedcross
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${openpose_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY}
+    ${TENSORFLOW_LIBRARIES})
+endif()
+
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
