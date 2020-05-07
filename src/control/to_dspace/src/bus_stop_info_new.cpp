@@ -87,6 +87,8 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 			}
 		}
 	}
+	
+	std::cout << "Round number:" << round_count << endl;
 	std::cout << "Current round:" << endl;
 	for(uint i=0;i<bus_stop_code.size();i++){
 		std::cout << "stop" << i+1 << ":" << bus_stop_info[0][i] << '\n';
@@ -94,6 +96,10 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 	std::cout << "Next round:" << endl;
 	for(uint i=0;i<bus_stop_code.size();i++){
 		std::cout << "stop" << i+1 << ":" << bus_stop_info[1][i] << '\n';
+	}
+	std::cout << "Third round:" << endl;
+	for(uint i=0;i<bus_stop_code.size();i++){
+		std::cout << "stop" << i+1 << ":" << bus_stop_info[2][i] << '\n';
 	}
 	send_can();
 	/*
