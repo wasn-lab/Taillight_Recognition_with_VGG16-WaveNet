@@ -96,6 +96,7 @@ void lidarAll_Pub(int lidarNum)
 
   uint64_t LidarAll_time;
   LidarAll_time = cloudPtr_LidAll->header.stamp;
+  cloudPtr_LidAll->header.frame_id = "lidar";
 
   pub_LidAll.publish(*cloudPtr_LidAll);
   cloudPtr_LidAll->clear();
