@@ -104,14 +104,15 @@ class Node:
         param_dict["timeout"] = {"threshold":0.7}
         self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, closest object
+        self.checker_nearProb_couting_range = 30.0 # In the 30 m range will be counted
         signal_name = "nearProb"
         param_dict = dict()
-        param_dict["low_threshold"] = {"threshold":0.8}
+        param_dict["low_avg_threshold"] = {"threshold":0.8}
         self.checker_nearProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, average
         signal_name = "avgProb"
         param_dict = dict()
-        param_dict["low_threshold"] = {"threshold":0.5}
+        param_dict["low_avg_threshold"] = {"threshold":0.5}
         self.checker_avgProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
 
     def get_confidence_scores(self, objects):
@@ -122,8 +123,11 @@ class Node:
         Output:
             (avg_prob, d_min_prob)
         """
-        #
-        d_min = None
+        # try:
+        #     d_min = self.checker_nearProb_couting_range # float("inf")
+        # except:
+        #     d_min = float("inf")
+        d_min = float("inf")
         d_min_idx = None
         d_min_prob = 1.0
         #
@@ -141,7 +145,7 @@ class Node:
             depth = self._calculate_distance_bbox( _obj.bPoint )
             if _obj.bPoint.p0.x > 0.0:
                 # Frontal object and the object is not empty
-                if (depth < d_min) or (d_min is None):
+                if (depth < d_min):
                     # Update
                     d_min = depth
                     d_min_idx = i
@@ -153,7 +157,7 @@ class Node:
         else:
             avg_prob = sum_prob/obj_count
         #
-        return (avg_prob, d_min_prob)
+        return (avg_prob, d_min_prob, d_min)
 
     def text_marker_position(self, bbox):
         point_1 = bbox.p1
@@ -208,8 +212,9 @@ class Node:
         self.checker_abs_latency.update(current_latency)
         self.checker_timeout.update()
         #
-        avg_prob, d_min_prob = self.get_confidence_scores(_objects)
-        # print("avg_prob = %f, d_min_prob = %f" % (avg_prob, d_min_prob))
+        avg_prob, d_min_prob, d_min = self.get_confidence_scores(_objects)
+        # if d_min_prob > 0.0 and d_min_prob < 1.0:
+        #     print("avg_prob = %f, d_min_prob = %f, d_min = %f" % (avg_prob, d_min_prob, d_min))
         self.checker_nearProb.update(d_min_prob)
         self.checker_avgProb.update(avg_prob)
         #-------------------------------------------#
