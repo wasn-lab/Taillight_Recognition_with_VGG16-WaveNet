@@ -59,6 +59,7 @@ class SIGNAL_ANALYZER(object):
 
         # List of checker_func
         self.checker_func_list = []
+        self.checker_prev_state_list = []
         # Setup checkers (Note: this function should be overloaded)
         self.setup_checkers()
 
@@ -131,8 +132,12 @@ class SIGNAL_ANALYZER(object):
             self.checker_func_list.append(self.check_func_lower_avg_ratio)
         #----------------------------------------#
 
+        # Initialize the list of previour states
+        self.checker_prev_state_list = ["OK" for _ in self.checker_func_list]
+        #
+
     #----------------------------------------#
-    def check_func_high_threshold(self, value_in):
+    def check_func_high_threshold(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -143,7 +148,7 @@ class SIGNAL_ANALYZER(object):
             print(event_str)
             self.publish_event("WARN", event_str)
 
-    def check_func_low_threshold(self, value_in):
+    def check_func_low_threshold(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -154,7 +159,7 @@ class SIGNAL_ANALYZER(object):
             print(event_str)
             self.publish_event("WARN", event_str)
     #----------------------------------------#
-    def check_func_high_avg_threshold(self, value_in):
+    def check_func_high_avg_threshold(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -165,7 +170,7 @@ class SIGNAL_ANALYZER(object):
             print(event_str)
             self.publish_event("WARN", event_str)
 
-    def check_func_low_avg_threshold(self, value_in):
+    def check_func_low_avg_threshold(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -176,7 +181,7 @@ class SIGNAL_ANALYZER(object):
             print(event_str)
             self.publish_event("WARN", event_str)
     #----------------------------------------#
-    def check_func_higher_avg_value(self, value_in):
+    def check_func_higher_avg_value(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -187,7 +192,7 @@ class SIGNAL_ANALYZER(object):
             print(event_str)
             self.publish_event("WARN", event_str)
 
-    def check_func_lower_avg_value(self, value_in):
+    def check_func_lower_avg_value(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -198,7 +203,7 @@ class SIGNAL_ANALYZER(object):
             print(event_str)
             self.publish_event("WARN", event_str)
     #----------------------------------------#
-    def check_func_higher_avg_ratio(self, value_in):
+    def check_func_higher_avg_ratio(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -212,7 +217,7 @@ class SIGNAL_ANALYZER(object):
             print(checker_key)
             self.publish_event("WARN", checker_key)
 
-    def check_func_lower_avg_ratio(self, value_in):
+    def check_func_lower_avg_ratio(self, value_in, prev_state=None):
         """
         This is a checker_func.
         """
@@ -273,8 +278,8 @@ class SIGNAL_ANALYZER(object):
             self.value_avg = value_in
         # check_func
         if not self.is_initial_state:
-            for _check_func in self.checker_func_list:
-                _check_func(value_in)
+            for i, _check_func in enumerate(self.checker_func_list):
+                _check_func(value_in, self.checker_prev_state_list[i])
         # Update stored value
         #--------------------#
         self._filter(value_in)
