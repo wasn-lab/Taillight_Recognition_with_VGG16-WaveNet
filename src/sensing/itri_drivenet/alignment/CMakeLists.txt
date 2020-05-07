@@ -82,7 +82,7 @@ set(LIBS ${OpenCV_LIBRARIES}
          drivenet)
 
 if (CAR_MODEL_IS_B1)
-  cuda_add_executable(${PROJECT_NAME}_b1 src/main_b1.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp)
+  cuda_add_executable(${PROJECT_NAME}_b1 src/main_b1.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp)
   target_link_libraries(${PROJECT_NAME}_b1 ${catkin_LIBRARIES} ${LIBS})
   add_dependencies(${PROJECT_NAME}_b1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

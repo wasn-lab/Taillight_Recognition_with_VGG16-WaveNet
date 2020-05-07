@@ -20,6 +20,8 @@
 #include <drivenet/object_label_util.h>
 #include "point_preprocessing.h"
 #include "ssn_util.h"
+#include "points_in_image_area.h"
+#include "sync_message.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -316,7 +318,7 @@ void cvViewerInitializer()
   {
     cv::namedWindow(g_cam_topic_names[cam_order], cv::WINDOW_NORMAL);
     cv::resizeWindow(g_cam_topic_names[cam_order], 360, 270);
-    cv::moveWindow(g_cam_topic_names[cam_order], 380*cam_order, 30);
+    cv::moveWindow(g_cam_topic_names[cam_order], 380 * cam_order, 30);
   }
 }
 
@@ -374,97 +376,16 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<
     }
   }
 }
-void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI> cloud_src, int object_class_id,
-                          pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr)
-{
-  // std::cout << "===== getPointCloudIn3DBox... =====" << std::endl;
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointXYZI minPt, maxPt;
 
-  /// get the box length of object
-  pcl::getMinMax3D(cloud_src, minPt, maxPt);
-  object_box bbox;
-  bbox = getDefaultObjectBox(object_class_id);
-
-  /// build the condition
-  pcl::ConditionAnd<pcl::PointXYZI>::Ptr range_cond(new pcl::ConditionAnd<pcl::PointXYZI>());
-  range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-      new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::GT, minPt.x)));
-  range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-      new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::LT, minPt.x + bbox.length)));
-
-  /// build the filter
-  pcl::ConditionalRemoval<pcl::PointXYZI> condrem;
-  condrem.setCondition(range_cond);
-  cloud_ptr = cloud_src.makeShared();
-  condrem.setInputCloud(cloud_ptr);
-  condrem.setKeepOrganized(false);
-
-  /// apply filter
-  condrem.filter(*cloud_filtered_ptr);
-}
-void getPointCloudInImageFOV(pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr,
-                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
-                             std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h)
+void getPointCloudInAllImageFOV(pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr,
+                                std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                                std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h)
 {
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
-  /// create variable
-  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
-  std::vector<int> cloud_sizes(cams_points_ptr.size(), 0);
-  std::vector<std::vector<std::vector<pcl::PointXYZI>>> point_cloud(
-      cams_points_ptr.size(), std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
-
-  /// copy from source
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
-    pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr[cam_order]);
-    cam_points[cam_order] = *cams_points_ptr[cam_order];
-  }
-  /// find 3d points in image coverage
-  for (size_t i = 0; i < lidarall_ptr->size(); i++)
-  {
-    if (lidarall_ptr->points[i].x > 0)
-    {
-      for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
-      {
-        PixelPosition pixel_position{ -1, -1 };
-        pixel_position = g_alignments[cam_order].projectPointToPixel(lidarall_ptr->points[i]);
-        if (pixel_position.u >= 0 && pixel_position.v >= 0)
-        {
-          if (point_cloud[cam_order][pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
-              point_cloud[cam_order][pixel_position.u][pixel_position.v].x == 0)
-          {
-            point_cloud[cam_order][pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
-          }
-        }
-      }
-    }
-  }
-  /// record the 2d points and 3d points.
-  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
-  {
-    for (int u = 0; u < image_w; u++)
-    {
-      for (int v = 0; v < image_h; v++)
-      {
-        PixelPosition pixel_position{ -1, -1 };
-        pixel_position.u = u;
-        pixel_position.v = v;
-        if (point_cloud[cam_order][u][v].x != 0 && point_cloud[cam_order][u][v].y != 0 &&
-            point_cloud[cam_order][u][v].z != 0)
-        {
-          // cam_pixels[cam_order].push_back(pixel_position);
-          cam_points[cam_order].points[cloud_sizes[cam_order]] = point_cloud[cam_order][u][v];
-          cloud_sizes[cam_order]++;
-        }
-      }
-    }
-  }
-  /// copy to destination
-  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
-  {
-    cam_points[cam_order].resize(cloud_sizes[cam_order]);
-    *cams_points_ptr[cam_order] = cam_points[cam_order];
+    getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order], cam_pixels[cam_order], image_w, image_h,
+                            g_alignments[cam_order]);
   }
 }
 
@@ -475,101 +396,11 @@ void getPointCloudInBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
                            std::vector<std::vector<pcl_cube>>& cams_bboxs_cube_min_max)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
-  /// create variable
-  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
-  std::vector<int> cloud_sizes(cam_points.size(), 0);
-  pcl::PointCloud<pcl::PointXYZI> point_cloud_src;
-  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  std::vector<pcl::PointXYZI> point_vector_object;
-  std::vector<pcl::PointXYZI> point_vector_objects;
-  std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points;
-
-  /// copy from source
-  for (size_t cam_order = 0; cam_order < cam_points.size(); cam_order++)
+  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
-    pcl::copyPointCloud(*cams_points_ptr[cam_order], *cams_bbox_points_ptr[cam_order]);
-    cam_points[cam_order] = *cams_bbox_points_ptr[cam_order];
-  }
-
-  /// main
-  for (size_t cam_order = 0; cam_order < cam_points.size(); cam_order++)
-  {
-    std::vector<pcl_cube> bboxs_cube_min_max;
-    for (const auto& obj : objects[cam_order].objects)
-    {
-      pcl::PointCloud<pcl::PointXYZI> bbox_points;
-      pcl_cube cube_min_max; // object min and max point
-      for (size_t i = 0; i < cam_points[cam_order].points.size(); i++)
-      {
-        // get the 2d box
-        std::vector<PixelPosition> bbox_positions(2);
-        bbox_positions[0].u = obj.camInfo.u;
-        bbox_positions[0].v = obj.camInfo.v;
-        bbox_positions[1].u = obj.camInfo.u + obj.camInfo.width;
-        bbox_positions[1].v = obj.camInfo.v + obj.camInfo.height;
-        transferPixelScaling(bbox_positions);
-
-        // get points in the 2d box
-        PixelPosition pixel_position{ -1, -1 };
-        pixel_position = g_alignments[cam_order].projectPointToPixel(cam_points[cam_order].points[i]);
-        if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-            pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-        {
-          cam_pixels[cam_order].push_back(pixel_position);
-          point_vector_object.push_back(cam_points[cam_order].points[i]);
-          bbox_points.push_back(cam_points[cam_order].points[i]);
-        }
-      }
-      // vector to point cloud
-      pcl::PointCloud<pcl::PointXYZI> point_cloud_object;
-      point_cloud_object.points.resize(point_vector_object.size());
-      for (size_t i = 0; i < point_vector_object.size(); i++)
-      {
-        point_cloud_object.points[i] = point_vector_object[i];
-      }
-      point_vector_object.clear();
-
-      // get points in the 3d box
-      if (g_is_enable_default_3d_bbox)
-      {
-        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr);
-      }
-      else
-      {
-        cloud_filtered_ptr = point_cloud_object.makeShared();
-      }
-
-      // point cloud to vector
-      for (const auto& point : cloud_filtered_ptr->points)
-      {
-        point_vector_object.push_back(point);
-      }
-
-      // concatenate the points of objects
-      point_vector_objects.insert(point_vector_objects.begin(), point_vector_object.begin(), point_vector_object.end());
-      point_vector_object.clear();
-      pcl::getMinMax3D (bbox_points, cube_min_max.p_min, cube_min_max.p_max);
-      object_box bbox;
-      bbox = getDefaultObjectBox(obj.classId);
-      cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
-      cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
-      cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
-      bboxs_cube_min_max.push_back(cube_min_max);
-    }
-    removeDuplePoints(point_vector_objects);
-    for (size_t i = 0; i < point_vector_objects.size(); i++)
-    {
-      cam_points[cam_order].points[i] = point_vector_objects[i];
-      cloud_sizes[cam_order]++;
-    }
-    point_vector_objects.clear();
-    cams_bboxs_cube_min_max[cam_order] = bboxs_cube_min_max;
-  }
-  /// copy to destination
-  for (size_t cam_order = 0; cam_order < cam_points.size(); cam_order++)
-  {
-    cam_points[cam_order].resize(cloud_sizes[cam_order]);
-    *cams_bbox_points_ptr[cam_order] = cam_points[cam_order];
+    getPointCloudInBoxFOV(objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
+                          cam_pixels[cam_order], cams_bboxs_cube_min_max[cam_order], g_alignments[cam_order],
+                          g_is_enable_default_3d_bbox);
   }
 }
 
@@ -608,7 +439,7 @@ void displayLidarData()
   while (ros::ok() && !pcl_viewer->wasStopped())
   {
     /// remove points on pcl viewer
-    pcl_viewer->removePointCloud("Cloud viewer");//, viewports[0]);
+    pcl_viewer->removePointCloud("Cloud viewer");  //, viewports[0]);
     // for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     // {
     //   pcl_viewer->removePointCloud(g_cam_topic_names[cam_order], viewports[1]);
@@ -618,7 +449,7 @@ void displayLidarData()
 
     /// draw points on pcl viewer
     g_sync_lock_lidar_process.lock();
-    pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");//, viewports[0]);
+    pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");  //, viewports[0]);
     g_sync_lock_lidar_process.unlock();
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
@@ -632,18 +463,20 @@ void displayLidarData()
       // g_sync_lock_objects_points.unlock();  // mutex camera object points
 
       g_sync_lock_cube.lock();  // mutex camera points
-      if(g_cams_bboxs_cube_min_max[cam_order].size() > 0)
+      if (g_cams_bboxs_cube_min_max[cam_order].size() > 0)
       {
         int cube_cout = 0;
-        for(const auto& cube: g_cams_bboxs_cube_min_max[cam_order])
+        for (const auto& cube : g_cams_bboxs_cube_min_max[cam_order])
         {
-          std::string cube_id = "cube_cam" + std::to_string(cam_order) + "_"+ std::to_string(cube_cout);
+          std::string cube_id = "cube_cam" + std::to_string(cam_order) + "_" + std::to_string(cube_cout);
           cv::Scalar cube_color = CvColor::white_;
           cube_color = intToColor(static_cast<int>(cam_order));
 
-          pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z, cube_color[0], cube_color[1], cube_color[2], cube_id);//, viewports[0]);
-          pcl_viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION, pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, cube_id);
-          cube_cout ++;
+          pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z,
+                              cube_color[0], cube_color[1], cube_color[2], cube_id);  //, viewports[0]);
+          pcl_viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
+                                                  pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, cube_id);
+          cube_cout++;
         }
       }
       g_sync_lock_cube.unlock();  // mutex camera points
@@ -675,124 +508,7 @@ void displayCameraData()
     loop_rate.sleep();
   }
 }
-cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>& cache_image, ros::Time target_time,
-                                     ros::Duration duration_time)
-{
-  ros::Time begin_time = target_time - duration_time;
-  ros::Time end_time = target_time + duration_time;
-  std::vector<sensor_msgs::Image::ConstPtr> images = cache_image.getInterval(begin_time, end_time);
-  cv::Mat out_mat;
-  if (images.size() > 0)
-  {
-    std::vector<ros::Time> images_time;
-    for (const auto& msg : images)
-    {
-      images_time.push_back(msg->header.stamp);
-    }
-    std::vector<ros::Time>::iterator it;
-    it = std::find(images_time.begin(), images_time.end(), target_time);
-    if (it != images_time.end())
-    {
-      int time_index = std::distance(images_time.begin(), it);
-      cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(images[time_index], sensor_msgs::image_encodings::BGR8);
-      out_mat = cv_ptr->image;
-    }
-    else if (images.size() == 1)
-    {
-      cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(images[0], sensor_msgs::image_encodings::BGR8);
-      out_mat = cv_ptr->image;
-    }
-    else
-    {
-      std::cout << "Not found the same timestamp in camera buffer." << std::endl;
-    }
-  }
-  else
-  {
-    std::cout << "Not found any message in camera buffer." << std::endl;
-  }
-  return out_mat;
-}
-pcl::PointCloud<pcl::PointXYZI>::Ptr
-getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZI>>& cache_lidar, ros::Time target_time,
-                            ros::Duration duration_time)
-{
-  ros::Time begin_time = target_time - duration_time;
-  ros::Time end_time = target_time + duration_time;
-  std::vector<pcl::PointCloud<pcl::PointXYZI>::ConstPtr> lidars = cache_lidar.getInterval(begin_time, end_time);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
-  if (lidars.size() > 0)
-  {
-    std::vector<ros::Time> lidars_time;
-    for (const auto& msg : lidars)
-    {
-      ros::Time header_time;
-      pcl_conversions::fromPCL(msg->header.stamp, header_time);
-      lidars_time.push_back(header_time);
-    }
-    std::vector<ros::Time>::iterator it;
-    it = std::find(lidars_time.begin(), lidars_time.end(), target_time);
-    if (it != lidars_time.end())
-    {
-      int time_index = std::distance(lidars_time.begin(), it);
-      *lidar_ptr = *lidars[time_index];
-    }
-    else if (lidars.size() == 1)
-    {
-      *lidar_ptr = *lidars[0];
-    }
-    else
-    {
-      std::cout << "Not found the same timestamp in lidar buffer." << std::endl;
-    }
-  }
-  else
-  {
-    std::cout << "Not found any message in lidar buffer." << std::endl;
-  }
-  return lidar_ptr;
-}
-pcl::PointCloud<pcl::PointXYZIL>::Ptr
-getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZIL>>& cache_lidar, ros::Time target_time,
-                            ros::Duration duration_time)
-{
-  ros::Time begin_time = target_time - duration_time;
-  ros::Time end_time = target_time + duration_time;
-  std::vector<pcl::PointCloud<pcl::PointXYZIL>::ConstPtr> lidars = cache_lidar.getInterval(begin_time, end_time);
-  pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ptr(new pcl::PointCloud<pcl::PointXYZIL>);
-
-  if (lidars.size() > 0)
-  {
-    std::vector<ros::Time> lidars_time;
-    for (const auto& msg : lidars)
-    {
-      ros::Time header_time;
-      pcl_conversions::fromPCL(msg->header.stamp, header_time);
-      lidars_time.push_back(header_time);
-    }
-    std::vector<ros::Time>::iterator it;
-    it = std::find(lidars_time.begin(), lidars_time.end(), target_time);
-    if (it != lidars_time.end())
-    {
-      int time_index = std::distance(lidars_time.begin(), it);
-      *lidar_ptr = *lidars[time_index];
-    }
-    else if (lidars.size() == 1)
-    {
-      *lidar_ptr = *lidars[0];
-    }
-    else
-    {
-      std::cout << "Not found the same timestamp in lidar buffer." << std::endl;
-    }
-  }
-  else
-  {
-    std::cout << "Not found any message in lidar buffer." << std::endl;
-  }
-  return lidar_ptr;
-}
 void getSyncLidarCameraData()
 {
   std::cout << "getSyncLidarCameraData start." << std::endl;
@@ -876,7 +592,7 @@ void getSyncLidarCameraData()
                     }
                   }
                 }
-                if(sync_camera_time != ros::Time(0))
+                if (sync_camera_time != ros::Time(0))
                 {
                   message_mat = getSpecificTimeCameraMessage(g_cache_image[cam_order], sync_camera_time, duration_time);
                 }
@@ -1031,7 +747,7 @@ void runInference()
       if (lidarall_ptr->size() > 0)
       {
         /// get results
-        getPointCloudInImageFOV(lidar_ssn_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
+        getPointCloudInAllImageFOV(lidar_ssn_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
         getPointCloudInBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels, cams_bboxs_cube_min_max);
 
         /// draw results on image
@@ -1165,7 +881,7 @@ int main(int argc, char** argv)
     sub_filter_lidar_ssn.subscribe(nh, "/squ_seg/result_cloud", 1);
     g_cache_lidar_ssn.setCacheSize(g_buffer_size);
     g_cache_lidar_ssn.connectInput(sub_filter_lidar_ssn);
-    g_cache_lidar_ssn.registerCallback(callback_ssn);    
+    g_cache_lidar_ssn.registerCallback(callback_ssn);
   }
 
   /// class init
