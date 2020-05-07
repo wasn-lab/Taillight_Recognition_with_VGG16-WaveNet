@@ -31,6 +31,7 @@ option(ENABLE_PARKNET "Enable parking slot detection" ON)
 option(ENABLE_OPENROADNET "Enable open road detection" ON)
 option(ENABLE_PEDCROSS "Enable pedestrian crossing detection" ON)
 option(ENABLE_GOOGLE_BENCHMARK "Enable google benchmark for perf profiling" OFF)
+option(ENABLE_DEEPLAB "Enable deeplab node for image segmentation (reference code of Tensorflow C API)" OFF)
 include(cmake/Options${CAR_MODEL}.cmake)
 
 catkin_package(

@@ -13,7 +13,7 @@ void SvmWrapper::initialize(string input_name)
   type_name = input_name;
   pcl::SVMTrain SVMtrain;  //--> our trainer, to be used for store training data or for a new training procedure
   pcl::SVMModel SVMmodel;  //--> classifier model, this is automatically generated after the training or loaded for the
-                           //classification
+                           // classification
   vector<pcl::SVMData> training_set;  //--> the training set is a vector of data
 
   // load the train data file
