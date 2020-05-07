@@ -2,8 +2,8 @@
 <launch>
   <arg name="pathDensity"           default="0.75" /> <!-- distance between each two waypoints-->
   <arg name="enableSmoothing"         default="true" /> <!-- 1 or 0 -->
-  <arg name="enableLaneChange"         default="false" /> <!-- 1 or 0 -->
-  <arg name="enableRvizInput"         default="false" /> <!-- 1 or 0 -->
+  <arg name="enableLaneChange"         default="true" /> <!-- 1 or 0 -->
+  <arg name="enableRvizInput"         default="true" /> <!-- 1 or 0 -->
   <arg name="enableReplan"            default="true" /> <!-- 1 or 0 -->  
   <arg name="velocitySource"          default="3" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info, 3- veh_info) "" -->
   <arg name="mapSource"             default="0" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
