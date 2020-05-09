@@ -211,8 +211,8 @@ def main():
                 print("start_time: No proper time given, start from head.")
                 start_time = 0.0
             #
-
-        play_bag(file_list, topic_list=topic_list, clock=True, loop=True,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
+        is_looping = False
+        play_bag(file_list, topic_list=topic_list, clock=True, loop=is_looping,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
     else:
         print("Wrong input type, exit.")
     print("End of main().")

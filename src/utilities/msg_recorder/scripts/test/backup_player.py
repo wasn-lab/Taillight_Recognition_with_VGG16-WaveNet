@@ -27,6 +27,10 @@ with open("./backup_history.txt") as _F:
     # print(bag_dict)
     for _d in bag_dict:
         bag_dict_list.append(_d)
+# Sort by timestamp
+def get_event_timestamp(d):
+  return d['timestamp']
+bag_dict_list.sort(key=get_event_timestamp)
 # print(bag_dict_list)
 
 # The following is a test
