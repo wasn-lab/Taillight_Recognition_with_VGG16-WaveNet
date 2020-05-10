@@ -88,31 +88,31 @@ class Node:
         """
         Setup signal_analyzer
         """
-        # FPS
-        signal_name = "absFPS"
-        param_dict = dict()
-        param_dict["low_threshold"] = {"threshold":5.0}
-        self.checker_abs_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
-        # Latency (500ms)
-        signal_name = "absLatency"
-        param_dict = dict()
-        param_dict["high_avg_threshold"] = {"threshold":0.5}
-        self.checker_abs_latency = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
-        # Timeout (700ms)
-        signal_name = "timeout"
-        param_dict = dict()
-        param_dict["timeout"] = {"threshold":0.7}
-        self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # # FPS
+        # signal_name = "absFPS"
+        # param_dict = dict()
+        # param_dict["low_threshold"] = {"threshold":5.0}
+        # self.checker_abs_fps = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # # Latency (500ms)
+        # signal_name = "absLatency"
+        # param_dict = dict()
+        # param_dict["high_avg_threshold"] = {"threshold":0.5}
+        # self.checker_abs_latency = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
+        # # Timeout (700ms)
+        # signal_name = "timeout"
+        # param_dict = dict()
+        # param_dict["timeout"] = {"threshold":0.7}
+        # self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, closest object
-        self.checker_nearProb_couting_range = 30.0 # In the 30 m range will be counted
+        self.checker_nearProb_couting_range = 15.0 # In the 30 m range will be counted
         signal_name = "nearProb"
         param_dict = dict()
-        param_dict["low_avg_threshold"] = {"threshold":0.8}
+        param_dict["low_avg_threshold"] = {"threshold":0.65} # 0.7 0.8
         self.checker_nearProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, average
         signal_name = "avgProb"
         param_dict = dict()
-        param_dict["low_avg_threshold"] = {"threshold":0.5}
+        param_dict["low_avg_threshold"] = {"threshold":0.65}
         self.checker_avgProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
 
     def get_confidence_scores(self, objects):
@@ -208,9 +208,9 @@ class Node:
 
         # Checkers
         #-------------------------------------------#
-        self.checker_abs_fps.update(self.fps_cal.fps)
-        self.checker_abs_latency.update(current_latency)
-        self.checker_timeout.update()
+        # self.checker_abs_fps.update(self.fps_cal.fps)
+        # self.checker_abs_latency.update(current_latency)
+        # self.checker_timeout.update()
         #
         avg_prob, d_min_prob, d_min = self.get_confidence_scores(_objects)
         # if d_min_prob > 0.0 and d_min_prob < 1.0:
