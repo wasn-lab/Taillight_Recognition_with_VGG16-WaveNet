@@ -803,7 +803,8 @@ class ROSBAG_CALLER(object):
         Since the original rosbag using date as file name, we don't bother to track the file midification time.
         """
         # Get the current time
-        _trigger_timestamp = time.time()
+        _trigger_timestamp = time.time() # The true wall time, independent to the simulation time, the time that rosbag file name used
+        _trigger_timestamp_ros = rospy.get_time() # Might be the simulation time, used to tag in backup history log
         self._last_trigger_timestamp = _trigger_timestamp
         #
         _pre_trigger_timestamp = _trigger_timestamp - self.time_pre_trigger
@@ -868,15 +869,17 @@ class ROSBAG_CALLER(object):
         # Write an indication text
         file_in_pre_zone_list.sort()
 
-        triggered_datetime = datetime.datetime.fromtimestamp(_trigger_timestamp)
+        triggered_datetime_real = datetime.datetime.fromtimestamp(_trigger_timestamp)
+        triggered_datetime_ros = datetime.datetime.fromtimestamp(_trigger_timestamp_ros)
         # # triggered_datetime_s = target_date.strftime("%Y-%m-%d-%H-%M-%S")
-        # event_str = "\n\n# Triggered at [%s]\nReason: %s\n## backup-files:\n" % (str(triggered_datetime), reason )
+        # event_str = "\n\n# Triggered at [%s]\nReason: %s\n## backup-files:\n" % (str(triggered_datetime_real), reason )
         # for _F in file_in_pre_zone_list:
         #     event_str += " - %s\n" % _F
         # event_str += "\n"
 
         event_dict = dict()
-        event_dict["timestamp"] = triggered_datetime
+        event_dict["real_rec_date"] = triggered_datetime_real
+        event_dict["timestamp"] = triggered_datetime_ros # Note: might be the simulation time
         event_dict["reason"] = reason
         event_dict["bags"] = file_in_pre_zone_list
         event_str = "---\n" + yaml.dump(event_dict) + "\n"
