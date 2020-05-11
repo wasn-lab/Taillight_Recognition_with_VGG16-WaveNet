@@ -1,3 +1,4 @@
+import glob
 import yaml
 import json
 import subprocess
@@ -16,31 +17,7 @@ topic_str = "/CameraDetection/occupancy_grid /CameraDetection/polygon /Flag_Info
 
 topic_list = topic_str.split()
 
-"""
-All the event will be an element in the list in chronological order,
-from oldest to latest.
-"""
-bag_dict_list = []
 
-with open("./backup_history.txt") as _F:
-    bag_dict = yaml.load_all(_F)
-    # print(bag_dict)
-    for _d in bag_dict:
-        bag_dict_list.append(_d)
-# Sort by timestamp
-def get_event_timestamp(d):
-  return d['timestamp']
-bag_dict_list.sort(key=get_event_timestamp)
-# print(bag_dict_list)
-
-# The following is a test
-# for _d in bag_dict_list:
-#     print("Triggered at: %s" % str(_d["timestamp"]))
-#     print("reason: %s" % _d["reason"])
-#     print("bags:")
-#     for _bag in _d["bags"]: # a list
-#         print("- %s" % _bag)
-#     print("\n")
 
 def string_to_datetime(date_str):
     """
@@ -154,47 +131,69 @@ def main():
     global bag_dict_list
     global topic_list
 
-    for idx in range(len(bag_dict_list)):
-        _d = bag_dict_list[idx]
-        print('%d: reason: "%s" [%s], %d bags' % ((idx+1), _d["reason"], str(_d["timestamp"]), len(_d["bags"])) )
+    # Get the list of bag name
+    bag_name_list = glob.glob("*.bag")
+    # Display the list of bag name
+    for idx, name in enumerate(bag_name_list):
+        print("%d: %s" % (idx+1, name))
+
+
     # User selection
     try:
         txt_input = raw_input
     except NameError:
         txt_input = input
+
+    str_in_s = None
+    str_in_e = None
+    id_in_s = None
+    id_in_e = None
     #
-    str_in = txt_input("Event id to play:")
-    # try:
-    #     str_in = txt_input("Event id to play:")
-    # except EOFError:
-    #     print("\nEOFError")
-    #
-    try:
-        id_in = int(str_in)
-        id_in -= 1
-        print("Play #%d event.\n" % (id_in+1))
-    except:
-        id_in = None
+    str_in_s = txt_input("First bag id to play (a: play all):")
+    if str_in_s == "a":
+        id_in_s = 0
+        id_in_e = len(bag_name_list) - 1
+    else:
+        str_in_e = txt_input("Last bag id to play (e: to the last one):")
+        if str_in_e == "e":
+            id_in_e = len(bag_name_list) - 1
+
+
+    # Finally, try parsing the numbers
+    if id_in_s is None:
+        try:
+            id_in_s = int(str_in_s) - 1
+        except:
+            pass
+
+    if id_in_e is None:
+        try:
+            id_in_e = int(str_in_e) - 1
+        except:
+            pass
 
 
 
-    if (not id_in is None) and (id_in >= 0) and (id_in < len(bag_dict_list)):
+    # Determine if they are valid input
+    is_valid_range = False
+    if (id_in_s is not None) and (id_in_e is not None):
+        if id_in_s < id_in_e:
+            if id_in_s >= 0 and id_in_e < len(bag_name_list):
+                is_valid_range = True
+                print("Play bags #%d~#%d.\n" % (id_in_s+1, id_in_e+1))
+
+
+    if is_valid_range:
         #
-        _d = bag_dict_list[id_in]
-        file_list = sorted(_d["bags"])
-        # Calculate the relative time
-        # start_datetime = parse_backup_start_timestamp( file_list[0] )
-        start_datetime = get_backup_start_timestamp( file_list[0] )
-        event_datetime = _d["timestamp"]
-        delta_time = event_datetime - start_datetime
-        #
-        event_sec = delta_time.total_seconds()
-        # print("event_sec = %s, type = %s" % (str(event_sec), str(type(event_sec))))
-        print("\n---\nThe event happened at %f sec.\n---" % event_sec)
+        # _d = bag_dict_list[id_in]
+        # file_list = sorted(_d["bags"])
+
+        file_list = sorted(bag_name_list[id_in_s:id_in_e+1])
+
 
         # Other control items
-        s_str_in = txt_input('Start from? (default: 0, unit: sec.) ("e5" --> (event time - 5.0 sec))\n')
-        u_str_in = txt_input('Duration? (default: "record-length", unit: sec.) ("e" --> symetric around the event time, event should happen at the middle of playback)\n')
+        s_str_in = txt_input('Start from? (default: 0, unit: sec.)\n')
+        u_str_in = txt_input('Duration? (default: "record-length", unit: sec.)\n')
         r_str_in = txt_input("Rate? (default: 1, unit: x)\n")
 
         s_str_in = s_str_in.strip()
@@ -205,37 +204,15 @@ def main():
         start_time = 0.0
         duration = 0.0
         if len(s_str_in) > 0:
-            if s_str_in[0] == "e":
-                try:
-                    start_time = event_sec - float(s_str_in[1:])
-                except ValueError as e:
-                    print(e)
-                    default_ahead_t = 5.0
-                    print("start_time: No proper time ahead given after 'e', using default value [%f]." % default_ahead_t)
-                    start_time = event_sec - default_ahead_t
-                #
-                if start_time < 0.0:
-                    start_time = 0.0
-                s_str_in = "%f" % start_time
-                print("start_time = %f" % start_time)
-            else: # Normal value, no "e" or other commands
-                try:
-                    start_time = float(s_str_in)
-                except ValueError as e:
-                    print(e)
-                    print("start_time: No proper time given, start from head.")
-                    start_time = 0.0
+            try:
+                start_time = float(s_str_in)
+            except ValueError as e:
+                print(e)
+                print("start_time: No proper time given, start from head.")
+                start_time = 0.0
             #
-        #
-        if len(u_str_in) > 0 and u_str_in[0] == "e":
-            duration = (event_sec - start_time)*2.0
-            u_str_in = "%f" % duration
-            print("duration = %f" % duration)
-
-        # Indicate the event happend relative time
-        print("\n-------\nNote: Event happend at %.2f sec.\n-------\n" % (event_sec - start_time))
-
-        play_bag(file_list, topic_list=topic_list, clock=True, loop=True,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
+        is_looping = False
+        play_bag(file_list, topic_list=topic_list, clock=True, loop=is_looping,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
     else:
         print("Wrong input type, exit.")
     print("End of main().")
