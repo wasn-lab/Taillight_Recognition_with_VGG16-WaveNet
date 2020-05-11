@@ -1,11 +1,11 @@
 <launch>
         # Node
-        <node name="drivenet_detect_node_a" pkg="drivenet" type="drivenet_detect_node_a"  output="screen">
+        <node name="drivenet_detect_node_single_cam" pkg="drivenet" type="drivenet_detect_node_single_cam"  output="screen">
                 <param name="car_id" type="int" value="1" />
                 <param name="standard_fps" type="bool" value="0" />
                 <param name="display" type="bool" value="0" />
                 <param name="input_resize" type="bool" value="1" />
-                <param name="imgResult_publish" type="bool" value="1" />
+                <param name="imgResult_publish" type="bool" value="0" />
                 <param name="lidarall_publish" type="bool" value="0" />
                 <param name="dist_esti_mode" type="int" value="1" />
         </node>
