@@ -128,7 +128,7 @@ static std::string pcd_name = "sub_map.pcd";
 
 // Default values localization mapping
 static int max_iter = 30;        // Maximum iterations 30 30
-static float ndt_res = 1.2;      // Resolution MAPPING 1.0 2.0
+static float ndt_res = 1.1;      // Resolution MAPPING 1.0 2.0
 static double step_size = 0.1;   // Step size 0.1  0.2
 static double trans_eps = 0.01;  // Transformation epsilon  0.01 0.02
 
@@ -624,8 +624,8 @@ static void gnss2local_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr
   current_gnss_pose.z = input->pose.position.z-133.97;
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
-  //current_gnss_pose.yaw *= -1;
-  //current_gnss_pose.yaw -= M_PI * 0.83;
+  current_gnss_pose.yaw *= -1;
+  current_gnss_pose.yaw -= M_PI * 0.5;
 
   static pose previous_gnss_pose = current_gnss_pose;
   current_gnss2local_pose = current_gnss_pose;
