@@ -237,16 +237,16 @@ def status_ros_logging(component_status, _fail_str):
 #--------------------------------------#
 def code_func_bool(msg):
     """
-    Output: status_code, event_str
+    Output: checker_name(None), status_code, event_str
     """
     global STATE_DEF_dict
     state = msg.data
     if state == True:
-        return STATE_DEF_dict["OK"], ""
+        return None, STATE_DEF_dict["OK"], ""
     elif state == False:
-        return STATE_DEF_dict["ERROR"], ""
+        return None, STATE_DEF_dict["ERROR"], ""
     else:
-        return STATE_DEF_dict["UNKNOWN"], ""
+        return None, STATE_DEF_dict["UNKNOWN"], ""
 
 def code_func_event_json(msg):
     """
@@ -257,7 +257,7 @@ def code_func_event_json(msg):
         "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN"
         "event_str": "xxx event of yyy module"
     }
-    Output: status_code, event_str
+    Output: checker_name, status_code, event_str
     """
     json_dict = None
     try:
@@ -267,15 +267,16 @@ def code_func_event_json(msg):
     if json_dict is None:
         return STATE_DEF_dict["UNKNOWN"], "wrong json string"
     # else
+    checker_name = json_dict.get("module", None)
     status_code = STATE_DEF_dict.get(json_dict.get("status", "UNKNOWN"), STATE_DEF_dict["UNKNOWN"] )
     event_str = json_dict.get("event_str", "")
     print("json_str = \n%s" % json.dumps(json_dict, indent=4))
-    return status_code, event_str
+    return checker_name, status_code, event_str
 
 
 def code_func_localization(msg):
     """
-    Output: status_code, event_str
+    Output: checker_name, status_code, event_str
     """
     global STATE_DEF_dict
     state = msg.data
@@ -298,29 +299,8 @@ def code_func_localization(msg):
     if low_gnss_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
         event_str += "low_gnss_frequency "
-    return status_code, event_str
+    return "localization_state", status_code, event_str
 
-# Brake
-# brake_state_dict = dict()
-# brake_state_dict[0] = "Released"
-# brake_state_dict[1] = "Auto-braked"
-# brake_state_dict[2] = "Anchored" # Stop-brake
-# brake_state_dict[3] = "AEB"
-# brake_state_dict[4] = "Manual brake"
-# def code_func_brake(msg):
-#     """
-#     Output: status_code, event_str
-#     """
-#     global STATE_DEF_dict
-#     global brake_state_dict
-#     state = msg.data
-#     print("state = %d" % state)
-#     if state >= 3:
-#         status_code = STATE_DEF_dict["WARN"] # Note: not to stop self-driving
-#     else:
-#         status_code = STATE_DEF_dict["OK"]
-#     event_str = brake_state_dict[state]
-#     return status_code, event_str
 #--------------------------------------#
 
 # ROS callbacks
@@ -332,7 +312,9 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     global ros_msg_backup, check_queue_dict
     global advop_run_state
     # global ros_msg_backup, check_dict
-    _status, _event_str = code_func(msg)
+    _checker_name, _status, _event_str = code_func(msg)
+    if _checker_name is None: # If the signal coming with no name defined, use the key as checker_name
+        _checker_name = key
     # check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
     # Note: key may not in check_dict, this can be an add action.
     if not key in check_queue_dict:
@@ -345,12 +327,11 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
             if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
                 # Trigger recorder with reason
-                _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
+                _reason = "%s:%s:%s" % (_checker_name, STATE_DEF_dict_inv[_status], _event_str )
                 # if advop_run_state:
                 if run_state_delay.output(): # Note: delayed close
                     # Note: We only trigger record if it's already in self-driving mode and running
                     #       The events during idle is not going to be backed-up.
-
                     REC_record_backup_pub.publish( _reason )
                     # Write some log
                     rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
