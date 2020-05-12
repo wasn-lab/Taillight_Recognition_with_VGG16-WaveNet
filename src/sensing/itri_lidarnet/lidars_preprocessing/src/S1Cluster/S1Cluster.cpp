@@ -25,8 +25,8 @@ void S1Cluster::initial(boost::shared_ptr<pcl::visualization::PCLVisualizer> inp
   plane_coef.values[2] = 2.3;
   plane_coef.values[3] = 0;
 
-  dbscan.setEpsilon(0.80);
-  dbscan.setMinpts(3);
+  dbscan.setEpsilon(0.80, 0.80, 0.80, 0.80);
+  dbscan.setMinpts(3, 3, 3, 3);
 }
 
 void S1Cluster::setPlaneParameter(pcl::ModelCoefficients inputCoef)

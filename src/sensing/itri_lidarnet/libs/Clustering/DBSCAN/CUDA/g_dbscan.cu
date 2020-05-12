@@ -2,9 +2,12 @@
 #pragma GCC diagnostic ignored "-Wcpp"
 
 #include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
+#include <thrust/scan.h>
+#include <iostream>
 
 __global__ void
-_cu_vertdegree(int numpts, int colsize, float* eps, float* d_data, int* d_Va, int label_mode)
+_cu_vertdegree(int numpts, int colsize, int label_mode, float* eps, float* d_data, int* d_Va)
 {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -16,7 +19,10 @@ _cu_vertdegree(int numpts, int colsize, float* eps, float* d_data, int* d_Va, in
   for (int j = 0; j < numpts; ++j) {
     float accum = 0.0;
     int colxyzsize = 3;
-    int label = d_data[i * colsize + 4]
+    int label = 0;
+    if (label_mode){
+      label = d_data[i * colsize + 4];
+    }
     
     for (int cs = 0; cs < colxyzsize; ++cs) {
       accum += (d_data[i * colsize + cs] - d_data[j * colsize + cs]) * (d_data[i * colsize + cs] - d_data[j * colsize + cs]);
@@ -38,15 +44,17 @@ _cu_vertdegree(int numpts, int colsize, float* eps, float* d_data, int* d_Va, in
 
 void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int maxThreadsNumber, int label_mode)
 {
-  _cu_vertdegree<<<(N + 255) / 256, 256>>>(N, colsize, eps, d_data, d_Va, label_mode);
+  _cu_vertdegree<<<(N + 255) / 256, 256>>>(N, colsize, label_mode, eps, d_data, d_Va);
   //cudaDeviceSynchronize();
 }
 
 void adjlistsind(int N, int* Va0, int* Va1)
 {
   thrust::device_ptr<int> va0_ptr(Va0);
+  //std::cout << "a" << std::endl;
   thrust::device_ptr<int> va1_ptr(Va1);
-  thrust::exclusive_scan(va0_ptr, va0_ptr+N, va1_ptr);
+  //std::cout << "b" << std::endl;
+  thrust::exclusive_scan(thrust::device, va0_ptr, va0_ptr+N, va1_ptr);
   //cudaDeviceSynchronize();
 }
 
@@ -63,8 +71,11 @@ _cu_asmadjlist(int numpts, int colsize, float* eps, float* d_data, int* d_Va1, i
   for (int j = 0; j < numpts; ++j) {
     float accum = 0.0;
     int colxyzsize = 3;
-    int label = d_data[i * colsize + 4]
-    
+    int label = 0;
+    if (label_mode){
+      label = d_data[i * colsize + 4];
+    }
+
     for (int cs = 0; cs < colxyzsize; ++cs) {
       accum += (d_data[i * colsize + cs] - d_data[j * colsize + cs]) * (d_data[i * colsize + cs] - d_data[j * colsize + cs]);
     }
@@ -85,9 +96,9 @@ _cu_asmadjlist(int numpts, int colsize, float* eps, float* d_data, int* d_Va1, i
   }
 }
 
-void asmadjlist(int N, int colsize, float* eps, float* d_data, int* d_Va1, int* d_Ea)
+void asmadjlist(int N, int colsize, float* eps, float* d_data, int* d_Va1, int* d_Ea, int label_mode)
 {
-  _cu_asmadjlist<<<(N + 255) / 256, 256>>>(N, colsize, eps, d_data, d_Va1, d_Ea);
+  _cu_asmadjlist<<<(N + 255) / 256, 256>>>(N, colsize, eps, d_data, d_Va1, d_Ea, label_mode);
   //cudaDeviceSynchronize();
 }
 

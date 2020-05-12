@@ -54,6 +54,8 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 
   dbscan.segment (vectorCluster);
 
+  
+
 #if ENABLE_DEBUG_MODE == true
   cout << "-------------------------------Part 1 : get cluster_vector " << timer.getTimeSeconds() << ","
        << ptr_cur_cloud->size() << endl;

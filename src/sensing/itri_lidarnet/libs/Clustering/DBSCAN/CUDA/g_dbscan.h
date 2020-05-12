@@ -48,6 +48,7 @@ private:
   int* d_Ea;
   int* d_Fa;
   int* d_Xa;
+  float* d_eps;
   std::vector<bool> core;
 
   Labels labels;

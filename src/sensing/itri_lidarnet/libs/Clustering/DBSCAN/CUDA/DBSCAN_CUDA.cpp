@@ -40,6 +40,7 @@ DBSCAN_CUDA::DBSCAN_CUDA()
 
 DBSCAN_CUDA::~DBSCAN_CUDA()
 {
+  dbs = NULL;
 }
 
 template <typename PointT>
@@ -71,11 +72,13 @@ void DBSCAN_CUDA::segment(IndicesClusters& index)
 
     dbs->fit(epsilon, minpts, maxThreadsNumber);
     dbs->predict(index);
+    //dbs = NULL;
 
     // std::cout << "[DBSCNA] CUDA 2 " << dset->rows()<< " " << (omp_get_wtime () - start) <<std::endl;
   }
   catch (const std::runtime_error& re)
   {
+    std::cout <<  re.what() << std::endl;
     std::cout << "[DBSCAN] no memory" << std::endl;
   }
 }

@@ -23,15 +23,19 @@ GDBSCAN::GDBSCAN(const Dataset::Ptr dset)
   , d_Ea(0)
   , d_Fa(0)
   , d_Xa(0)
+  , d_eps(0)
   , core(dset->rows(), false)
   , labels(dset->rows(), -1)
   , cluster_id(0)
 {
-  ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_data), sizeof(float) * m_dset->num_points()), "d_data");
-  ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Va0), vA_size), "d_Va0");
-  ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Va1), vA_size), "d_Va1");
-  ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Fa), vA_size), "d_Fa");
-  ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Xa), vA_size), "d_Xa");
+  //std::cout << "number of points: " << m_dset->num_points() << std::endl;
+  //std::cout << "vA_size: " << vA_size << std::endl;
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_data), sizeof(float) * m_dset->num_points()), "d_data");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Va0), vA_size), "d_Va0");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Va1), vA_size), "d_Va1");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Fa), vA_size), "d_Fa");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Xa), vA_size), "d_Xa");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_eps), sizeof(float) * 4), "d_eps");
 
   size_t copysize = m_dset->cols() * sizeof(float);
 
@@ -81,6 +85,12 @@ GDBSCAN::~GDBSCAN()
     cudaFree(d_Xa);
     d_Xa = 0;
   }
+
+  if (d_eps)
+  {
+    cudaFree(d_eps);
+    d_eps = 0;
+  }
 }
 
 void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
@@ -101,14 +111,16 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   int colsize = static_cast<int>(m_dset->cols());  // 3 XYZ
   // 2020/4/29
   // for label-based G-DBSCAN, the cols() might be 5 XYZIL
-  if (colsize = 5)
+  if (colsize == 5)
   {
     label_mode = 1;
-    std::cout << "In label mode" << std::endl;
+    //std::cout << "[DBSCAN] In label mode" << std::endl;
   }
 
-  vertdegree(N, colsize, eps, d_data, d_Va0, maxThreadsNumber, label_mode);
+  ErrorHandle(cudaMemcpy(d_eps, &eps[0], 4 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to device");
 
+  vertdegree(N, colsize, d_eps, d_data, d_Va0, maxThreadsNumber, label_mode);
+  //std::cout << "[DBSCAN] vertdegree successed" << std::endl;
   // std::cout << "Executed vertdegree transfer";
 
   // Calculation of the adjacency lists indices: The second value in Va is related to the start
@@ -124,9 +136,10 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   // used the thrust library, distributed as part of the CUDA SDK. This library
   // provides, among others algorithms, an optimized exclusive scan
   // implementation that is suitable for our method
-
+  //ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
+  //std::cout << "size of h_Va0:" << sizeof(h_Va0)/sizeof(int) << std::endl;
   adjlistsind(N, d_Va0, d_Va1);
-
+  //std::cout << "[DBSCAN] adjlistsind successed" << std::endl;
   // Executed adjlistsind transfer;
 
   ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
@@ -135,11 +148,21 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   // Finished transfer;
   for (int i = 0; i < N; ++i)
   {
-    int pointclassID = (int)(m_dset->data()[i][4]);
-    if (static_cast<size_t>(h_Va0[i]) >= min_elems[pointclassID])
-    {
-      core[i] = true;
+    if (m_dset->cols()>3){
+      int pointclassID = (int)(m_dset->data()[i][4]);
+      if (static_cast<size_t>(h_Va0[i]) >= min_elems[pointclassID])
+      {
+        core[i] = true;
+      }
     }
+    else
+    {
+      if (static_cast<size_t>(h_Va0[i]) >= min_elems[0])
+      {
+        core[i] = true;
+      }
+    }
+    
   }
 
   // Assembly of adjacency lists: Having the vector Va been completely filled, i.e., for each
@@ -170,8 +193,9 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   }
 
   ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Ea), Ea_size), "d_Ea malloc");
-
-  asmadjlist(N, colsize, eps, d_data, d_Va1, d_Ea, label_mode);
+  //std::cout << "[DBSCAN] before asmadjlist" << std::endl;
+  asmadjlist(N, colsize, d_eps, d_data, d_Va1, d_Ea, label_mode);
+  //std::cout << "[DBSCAN] asmadjlist successed" << std::endl;
 }
 
 void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited)
@@ -180,9 +204,12 @@ void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& vi
 
   std::vector<int> Xa(m_dset->rows(), 0);
   std::vector<int> Fa(m_dset->rows(), 0);
+  //int Xa = new int[m_dset->rows()];
+  //int Fa = new int[m_dset->rows()];
 
   Fa[i] = 1;
-
+  //std::cout << "size of Fa: " << m_dset->rows() * sizeof(int) << std::endl;
+  //std::cout << "vA_size: " << vA_size << std::endl;
   // Fa_Xa_to_device;
   ErrorHandle(cudaMemcpy(d_Fa, &Fa[0], vA_size, cudaMemcpyHostToDevice), "memcpy Fa host to device");
   ErrorHandle(cudaMemcpy(d_Xa, &Xa[0], vA_size, cudaMemcpyHostToDevice), "memcpy Xa host to device");
