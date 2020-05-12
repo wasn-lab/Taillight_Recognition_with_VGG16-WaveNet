@@ -161,13 +161,14 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /cam_obj/front_bottom_60/bbox
       Name: cambbox_FB60
       Namespaces:
-        {}
+        /cam_obj/front_bottom_60: true
+        /cam_obj/front_bottom_60_depth: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /cam_obj/front_top_far_30/bbox
@@ -550,7 +551,7 @@ Visualization Manager:
       Marker Topic: /mileage/status_text/txt
       Name: MarkerArray
       Namespaces:
-        {}
+        /mileage/status_text_T: true
       Queue Size: 100
       Value: true
     - Alpha: 1
