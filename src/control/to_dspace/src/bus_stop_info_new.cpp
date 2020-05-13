@@ -134,9 +134,9 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 				bus_stop_info[bus_stop_info.size()-1][i] = 0;
 			}
 			std::cout << "Change to round: " << round_count << endl;
-			std_msgs::Int32 round_temp;
-			round_temp.data = round_count;
-			publisher_02.publish(round_temp);
+			//std_msgs::Int32 round_temp;
+			//round_temp.data = round_count;
+			//publisher_02.publish(round_temp);
 		}
 		send_can();
 	}
@@ -152,6 +152,9 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
 	msg_temp.PX2_Flag01 = round_count;
 	publisher_01.publish(msg_temp);
+	std_msgs::Int32 round_temp;
+	round_temp.data = round_count;
+	publisher_02.publish(round_temp);
 	
 }
 
