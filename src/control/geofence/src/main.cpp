@@ -44,11 +44,12 @@
 
 
 // Specify running mode
-#define VIRTUAL
+//#define VIRTUAL
 //#define TRACKINGBOX
 
 
 static Geofence PCloud_Geofence(1.2);
+static Geofence CPoint_Geofence(1.2);
 static Geofence BBox_Geofence(1.2);
 static Geofence Radar_Geofence(1.5);
 static Geofence PCloud_Geofence_original(1.2);
@@ -111,6 +112,21 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg){
 	#endif
 }
 
+void chatterCallbackCPoint(const msgs::DetectedObjectArray::ConstPtr& msg){
+	Point Point_temp;
+	vector<Point> PointCloud_temp;
+	for(uint i=0;i<msg->objects.size();i++){
+		for(uint j=0;j<msg->objects[i].cPoint.lowerAreaPoints.size();j++){
+			Point_temp.X = msg->objects[i].cPoint.lowerAreaPoints[j].x;
+			Point_temp.Y = msg->objects[i].cPoint.lowerAreaPoints[j].y;
+			Point_temp.Speed = msg->objects[i].relSpeed;
+			PointCloud_temp.push_back(Point_temp);
+		}
+	}
+	CPoint_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
+
+}
+
 void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg){
 	Point Point_temp;
 	vector<Point> PointCloud_temp;
@@ -160,6 +176,7 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 	PCloud_Geofence.setPath(Position);
 	BBox_Geofence.setPath(Position);
 	Radar_Geofence.setPath(Position);
+	CPoint_Geofence.setPath(Position);
 }
 
 
@@ -182,6 +199,7 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	PCloud_Geofence.setPath(Position);
 	BBox_Geofence.setPath(Position);
 	Radar_Geofence.setPath(Position);
+	CPoint_Geofence.setPath(Position);
 }
 
 void astar_original_callback(const nav_msgs::Path::ConstPtr& msg){
@@ -289,7 +307,7 @@ void Plot_geofence(Point temp)
     line_list.pose.orientation.w = 1.0;
 	line_list.id = 1;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
-	line_list.scale.x = 0.1;
+	line_list.scale.x = 0.3;
 	line_list.color.r = 1.0;
 	line_list.color.g = 0.0;
   	line_list.color.a = 1.0;
@@ -307,6 +325,34 @@ void Plot_geofence(Point temp)
 }
 
 
+void Plot_geofence_yellow(Point temp)
+{ 
+
+	visualization_msgs::Marker line_list;
+  	line_list.header.frame_id = "/map";
+  	line_list.header.stamp = ros::Time::now();
+	line_list.ns = "PC_line";
+	line_list.lifetime = ros::Duration(0.5);
+    line_list.action = visualization_msgs::Marker::ADD;
+    line_list.pose.orientation.w = 1.0;
+	line_list.id = 1;
+    line_list.type = visualization_msgs::Marker::LINE_LIST;
+	line_list.scale.x = 0.3;
+	line_list.color.r = 1.0;
+	line_list.color.g = 1.0;
+  	line_list.color.a = 1.0;
+
+	geometry_msgs::Point p;
+    p.x = temp.X + 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y + 1.5*sin(temp.Direction-M_PI/2);
+    p.z = SLAM_z-2.0;
+	line_list.points.push_back(p);
+	p.x = temp.X - 1.5*cos(temp.Direction-M_PI/2);
+    p.y = temp.Y - 1.5*sin(temp.Direction-M_PI/2);
+	p.z = SLAM_z-2.0;
+	line_list.points.push_back(p);	
+	Geofence_line.publish(line_list); 
+}
 
 
 
@@ -331,7 +377,8 @@ int main(int argc, char **argv){
 	#ifdef VIRTUAL
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPCloud);
 	#else
-		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPCloud);
+		//ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPCloud);
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("/CameraDetection/polygon", 1, chatterCallbackCPoint);
 	#endif
 	Radar_marker = n.advertise<visualization_msgs::Marker>("RadarMarker", 1);
 	Geofence_line = n.advertise<visualization_msgs::Marker>("Geofence_line", 1);
@@ -426,7 +473,7 @@ int main(int argc, char **argv){
 		}
 
 
-
+		/*
 		cout << "=========BBox=========" << endl;
 		if(BBox_Geofence.Calculator()==0){
 			frame.can_id  = 0x591;
@@ -446,9 +493,41 @@ int main(int argc, char **argv){
 			nbytes = write(s, &frame, sizeof(struct can_frame));
 			printf("Wrote %d bytes\n", nbytes);
 			//Publish_Marker(BBox_Geofence.getNearest_X(), BBox_Geofence.getNearest_Y());
+			if(BBox_Geofence.getDistance()<80)
+			{
+				Plot_geofence(BBox_Geofence.findDirection());  
+			}
 		}
 		else{
 			cerr << "Please initialize all BBox parameters first" << endl;
+		}
+		*/
+
+		cout << "=========CPoint(cam)=========" << endl;
+		if(CPoint_Geofence.Calculator()==0){
+			frame.can_id  = 0x591;
+			cout << "Trigger: " << CPoint_Geofence.getTrigger() << " ";
+ 			cout << "Distance: " <<  setprecision(6) << CPoint_Geofence.getDistance() << "\t";
+			cout << "Farest: " <<  setprecision(6) << CPoint_Geofence.getFarest() << "\t";
+			cout << "Speed: " << setprecision(6) << CPoint_Geofence.getObjSpeed() << endl;
+			cout << "(X,Y): " << "(" << CPoint_Geofence.getNearest_X() << "," << CPoint_Geofence.getNearest_Y() << ")" << endl;
+			frame.data[0] = (short int)(CPoint_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(CPoint_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(CPoint_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(CPoint_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(CPoint_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(CPoint_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(CPoint_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			if(CPoint_Geofence.getDistance()<80)
+			{
+				Plot_geofence_yellow(CPoint_Geofence.findDirection());  
+			}
+		}
+		else{
+			cerr << "Please initialize all CPoint parameters first" << endl;
 		}
 
 		cout << "========Radar=========" << endl;
