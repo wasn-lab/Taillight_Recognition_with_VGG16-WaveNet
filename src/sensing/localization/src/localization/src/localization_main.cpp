@@ -625,7 +625,7 @@ static void gnss2local_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
   current_gnss_pose.yaw *= -1;
-  current_gnss_pose.yaw -= M_PI * 0.5;
+  current_gnss_pose.yaw += M_PI * 0.5;
 
   static pose previous_gnss_pose = current_gnss_pose;
   current_gnss2local_pose = current_gnss_pose;
