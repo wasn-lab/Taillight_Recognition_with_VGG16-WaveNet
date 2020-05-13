@@ -104,10 +104,10 @@ class Node:
         # param_dict["timeout"] = {"threshold":0.7}
         # self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, closest object
-        self.checker_nearProb_couting_range = 15.0 # In the 30 m range will be counted
+        self.checker_nearProb_couting_range = 20.0 # In the 30 m range will be counted
         signal_name = "nearProb"
         param_dict = dict()
-        param_dict["low_avg_threshold"] = {"threshold":0.65} # 0.7 0.8
+        param_dict["low_avg_threshold"] = {"threshold":0.75} # 0.65 0.7 0.8
         self.checker_nearProb = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, average
         signal_name = "avgProb"
@@ -123,11 +123,11 @@ class Node:
         Output:
             (avg_prob, d_min_prob)
         """
-        # try:
-        #     d_min = self.checker_nearProb_couting_range # float("inf")
-        # except:
-        #     d_min = float("inf")
-        d_min = float("inf")
+        try:
+            d_range = self.checker_nearProb_couting_range # float("inf")
+        except:
+            d_range = float("inf")
+        d_min = d_range # float("inf")
         d_min_idx = None
         d_min_prob = 1.0
         #
@@ -143,7 +143,7 @@ class Node:
             sum_prob += _prob
             #-----------------#
             depth = self._calculate_distance_bbox( _obj.bPoint )
-            if _obj.bPoint.p0.x > 0.0:
+            if _obj.bPoint.p0.x > 0.0 and abs(_obj.bPoint.p0.y) < d_range:
                 # Frontal object and the object is not empty
                 if (depth < d_min):
                     # Update
