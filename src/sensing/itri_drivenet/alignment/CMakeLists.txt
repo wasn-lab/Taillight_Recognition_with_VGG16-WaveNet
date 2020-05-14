@@ -73,13 +73,15 @@ include_directories(
   ${camera_utils_SOURCE_DIR}/include
   ${drivenet_SOURCE_DIR}/include
   ${libs_SOURCE_DIR}
+  ${libs_SOURCE_DIR}/BoundingBox/ApproxMVBB
 )
 
 set(LIBS ${OpenCV_LIBRARIES}
          ${CUDA_LIBRARIES}
          ${PCL_LIBRARIES}
          camera_utils
-         drivenet)
+         drivenet
+         libs)
 
 if (CAR_MODEL_IS_B1)
   cuda_add_executable(${PROJECT_NAME}_b1 src/main_b1.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp)
@@ -90,7 +92,7 @@ if (CAR_MODEL_IS_B1)
   target_link_libraries(${PROJECT_NAME}_b1_ssn_sub ${catkin_LIBRARIES} ${LIBS})
   add_dependencies(${PROJECT_NAME}_b1_ssn_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 elseif(CAR_MODEL_IS_B1_V2)
-  cuda_add_executable(${PROJECT_NAME}_b1_v2 src/main_b1_v2.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp)
+  cuda_add_executable(${PROJECT_NAME}_b1_v2 src/main_b1_v2.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp src/object_generator.cpp)
   target_link_libraries(${PROJECT_NAME}_b1_v2 ${catkin_LIBRARIES} ${LIBS})
   add_dependencies(${PROJECT_NAME}_b1_v2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
