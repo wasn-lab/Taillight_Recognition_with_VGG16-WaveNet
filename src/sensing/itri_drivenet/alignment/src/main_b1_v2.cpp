@@ -260,20 +260,20 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
   g_polygon_pub.publish(msg_det_obj_arr);
 }
 
-void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer,
-                          std::vector<std::string> window_name, int window_count = 3)
+void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer)/*,
+                          std::vector<std::string> window_name, int window_count = 3)*/
 {
-  if (window_name.size() < 3)
-  {
-    window_name.clear();
-    window_name.push_back("raw_data");
-    window_name.push_back("image fov");
-    window_name.push_back("object");
-  }
-  if (window_count < 3)
-  {
-    window_count = 3;
-  }
+  // if (window_name.size() < 3)
+  // {
+  //   window_name.clear();
+  //   window_name.push_back("raw_data");
+  //   window_name.push_back("image fov");
+  //   window_name.push_back("object");
+  // }
+  // if (window_count < 3)
+  // {
+  //   window_count = 3;
+  // }
 
   // int v1 = 1, v2 = 2, v3 = 3;
   // pcl_viewer->createViewPort(0.0, 0.0, 0.33, 1.0, v1);
@@ -355,7 +355,7 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<
   }
 }
 
-void getPointCloudInAllImageFOV(pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr,
+void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                                 /*std::vector<std::vector<PixelPosition>>& cam_pixels,*/ int image_w, int image_h)
 {
@@ -368,7 +368,7 @@ void getPointCloudInAllImageFOV(pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_pt
 }
 
 void getPointCloudInBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
-                           std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                           const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                            std::vector<std::vector<PixelPosition>>& cam_pixels,
                            std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
@@ -403,11 +403,11 @@ void displayLidarData()
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_lidarall(g_lidarall_ptr_process, 255, 255, 255);
   std::vector<pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>> rgb_cams_points;
   std::vector<pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>> rgb_cams_bbox_points;
-  std::vector<int> viewports{ 1, 2, 3 };
-  std::vector<std::string> view_name{ "raw data", "image fov", "object" };
+  // std::vector<int> viewports{ 1, 2, 3 };
+  // std::vector<std::string> view_name{ "raw data", "image fov", "object" };
 
   /// init
-  pclViewerInitializer(pcl_viewer, view_name, static_cast<int>(viewports.size()));
+  pclViewerInitializer(pcl_viewer);//, view_name, static_cast<int>(viewports.size()));
   pclInitializer(cams_points_ptr);
   pclInitializer(cams_bbox_points_ptr);
   pointsColorInit(rgb_cams_points, g_cams_points_ptr);
