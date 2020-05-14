@@ -7,7 +7,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-struct pcl_cube
+struct MinMax3D
 {
   pcl::PointXYZI p_min;
   pcl::PointXYZI p_max;

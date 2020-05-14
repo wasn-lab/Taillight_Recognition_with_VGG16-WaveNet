@@ -119,7 +119,7 @@ ros::Time g_lidarall_time;
 ros::Time g_lidar_ssn_time;
 
 /// 3d cube
-std::vector<std::vector<pcl_cube>> g_cams_bboxs_cube_min_max(g_cam_ids.size());
+std::vector<std::vector<MinMax3D>> g_cams_bboxs_cube_min_max(g_cam_ids.size());
 std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> g_cams_bboxs_points(g_cam_ids.size());
 
 //////////////////// for camera image
@@ -199,7 +199,7 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
   }
 }
 
-void bbox_publisher(std::vector<std::vector<pcl_cube>>& cams_bboxs_cube_min_max, std_msgs::Header msg_header)
+void bbox_publisher(std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max, std_msgs::Header msg_header)
 {
   msgs::DetectedObjectArray det_obj_arr;
   std::vector<msgs::DetectedObject> det_objs;
@@ -399,7 +399,7 @@ void getPointCloudInBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                            std::vector<std::vector<PixelPosition>>& cam_pixels,
-                           std::vector<std::vector<pcl_cube>>& cams_bboxs_cube_min_max,
+                           std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
                            std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
@@ -705,7 +705,7 @@ void runInference()
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cam_ids.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_points_ptr(g_cam_ids.size());
   std::vector<std::vector<PixelPosition>> cam_pixels(g_cam_ids.size());
-  std::vector<std::vector<pcl_cube>> cams_bboxs_cube_min_max(g_cam_ids.size());
+  std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max(g_cam_ids.size());
   std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points(g_cam_ids.size());
 
   /// init
