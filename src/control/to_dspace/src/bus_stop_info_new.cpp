@@ -76,9 +76,10 @@ void send_can(){
 
 void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 {
-	
+	std::cout << "Round number:" << round_count << endl;
 	for(uint i=0;i<msg->stops.size();i++)
 	{
+		cout << "stop/round: " << msg->stops[i].id << "/" << msg->stops[i].round <<endl;
 		for(uint j=0;j<bus_stop_code.size();j++)
 		{
 			if(bus_stop_code[j]==msg->stops[i].id && msg->stops[i].round>=round_count && msg->stops[i].round<(round_count+5))
@@ -88,7 +89,6 @@ void chatterCallback_01(const msgs::StopInfoArray::ConstPtr& msg)
 		}
 	}
 	
-	std::cout << "Round number:" << round_count << endl;
 	std::cout << "Current round:" << endl;
 	for(uint i=0;i<bus_stop_code.size();i++){
 		std::cout << "stop" << i+1 << ":" << bus_stop_info[0][i] << '\n';
@@ -134,9 +134,9 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 				bus_stop_info[bus_stop_info.size()-1][i] = 0;
 			}
 			std::cout << "Change to round: " << round_count << endl;
-			std_msgs::Int32 round_temp;
-			round_temp.data = round_count;
-			publisher_02.publish(round_temp);
+			//std_msgs::Int32 round_temp;
+			//round_temp.data = round_count;
+			//publisher_02.publish(round_temp);
 		}
 		send_can();
 	}
@@ -152,6 +152,9 @@ void chatterCallback_02(const msgs::Flag_Info::ConstPtr& msg)
 	msg_temp.Dspace_Flag08 = bus_stop_info[0][7];
 	msg_temp.PX2_Flag01 = round_count;
 	publisher_01.publish(msg_temp);
+	std_msgs::Int32 round_temp;
+	round_temp.data = round_count;
+	publisher_02.publish(round_temp);
 	
 }
 
