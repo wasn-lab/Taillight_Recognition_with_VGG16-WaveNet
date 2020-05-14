@@ -3,13 +3,13 @@
 pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(pcl::PointCloud<pcl::PointXYZI>& cloud)
 {
   std::vector<pcl::PointXYZ> obb_vertex;
-  pcl::PointXYZ centroid, minPoint, maxPoint;
+  pcl::PointXYZ centroid, min_point, max_point;
   pcl::PointCloud<pcl::PointXYZ> convex_points;
 
   pcl::copyPointCloud(cloud, convex_points);
   approxMVBB_.setInputCloud(convex_points);
-  approxMVBB_.Compute(obb_vertex, centroid, minPoint, maxPoint, convex_points);
-  
+  approxMVBB_.Compute(obb_vertex, centroid, min_point, max_point, convex_points);
+
   return convex_points;
 }
 msgs::BoxPoint ObjectGenerator::minMax3dToBBox(MinMax3D& cube)
@@ -47,7 +47,7 @@ msgs::BoxPoint ObjectGenerator::minMax3dToBBox(MinMax3D& cube)
   box_point.p2 = box_point.p3;
   box_point.p2.z = cube.p_max.z;
   box_point.p5 = box_point.p4;
-  box_point.p5.z = cube.p_max.z;      
+  box_point.p5.z = cube.p_max.z;
 
   return box_point;
 }

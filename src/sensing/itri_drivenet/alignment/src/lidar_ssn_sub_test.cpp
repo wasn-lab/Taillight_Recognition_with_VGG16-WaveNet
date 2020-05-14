@@ -32,14 +32,14 @@ void callback_SSN(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
   g_sync_lock_ssn.unlock();
 }
 
-void pclViewerInitializer(boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer,
+void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer,
                           std::vector<std::string> window_name, int window_count = 2)
 {
   if (window_name.size() < 2)
   {
     window_name.clear();
-    window_name.push_back("raw_data");
-    window_name.push_back("object");
+    window_name.emplace_back("raw_data");
+    window_name.emplace_back("object");
   }
   if (window_count < 2)
   {
@@ -87,7 +87,7 @@ void displayLidarData()
   ros::Rate loop_rate(30);
   while (ros::ok() && !pcl_viewer->wasStopped())
   {
-    if (g_ssn_ptr->size() > 0)
+    if (!g_ssn_ptr->empty())
     {
       g_sync_lock_ssn.lock();  // mutex lidar
       pcl::copyPointCloud(*g_ssn_ptr, *ssn_points_ptr);

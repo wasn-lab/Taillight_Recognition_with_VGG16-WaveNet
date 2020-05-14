@@ -1,13 +1,13 @@
 #include "sync_message.h"
 
 cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>& cache_image, ros::Time target_time,
-                                     ros::Duration duration_time)
+                                     const ros::Duration& duration_time)
 {
   ros::Time begin_time = target_time - duration_time;
   ros::Time end_time = target_time + duration_time;
   std::vector<sensor_msgs::Image::ConstPtr> images = cache_image.getInterval(begin_time, end_time);
   cv::Mat out_mat;
-  if (images.size() > 0)
+  if (!images.empty())
   {
     std::vector<ros::Time> images_time;
     for (const auto& msg : images)
@@ -41,14 +41,14 @@ cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>&
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZI>>& cache_lidar, ros::Time target_time,
-                            ros::Duration duration_time)
+                            const ros::Duration& duration_time)
 {
   ros::Time begin_time = target_time - duration_time;
   ros::Time end_time = target_time + duration_time;
   std::vector<pcl::PointCloud<pcl::PointXYZI>::ConstPtr> lidars = cache_lidar.getInterval(begin_time, end_time);
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
-  if (lidars.size() > 0)
+  if (!lidars.empty())
   {
     std::vector<ros::Time> lidars_time;
     for (const auto& msg : lidars)
@@ -81,14 +81,14 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
 }
 pcl::PointCloud<pcl::PointXYZIL>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZIL>>& cache_lidar,
-                            ros::Time target_time, ros::Duration duration_time)
+                            ros::Time target_time, const ros::Duration& duration_time)
 {
   ros::Time begin_time = target_time - duration_time;
   ros::Time end_time = target_time + duration_time;
   std::vector<pcl::PointCloud<pcl::PointXYZIL>::ConstPtr> lidars = cache_lidar.getInterval(begin_time, end_time);
   pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ptr(new pcl::PointCloud<pcl::PointXYZIL>);
 
-  if (lidars.size() > 0)
+  if (!lidars.empty())
   {
     std::vector<ros::Time> lidars_time;
     for (const auto& msg : lidars)
