@@ -132,7 +132,7 @@ def main():
     global topic_list
 
     # Get the list of bag name
-    bag_name_list = glob.glob("*.bag")
+    bag_name_list = sorted( glob.glob("*.bag") )
     # Display the list of bag name
     for idx, name in enumerate(bag_name_list):
         print("%d: %s" % (idx+1, name))
@@ -177,7 +177,7 @@ def main():
     # Determine if they are valid input
     is_valid_range = False
     if (id_in_s is not None) and (id_in_e is not None):
-        if id_in_s < id_in_e:
+        if id_in_s <= id_in_e:
             if id_in_s >= 0 and id_in_e < len(bag_name_list):
                 is_valid_range = True
                 print("Play bags #%d~#%d.\n" % (id_in_s+1, id_in_e+1))
@@ -195,10 +195,12 @@ def main():
         s_str_in = txt_input('Start from? (default: 0, unit: sec.)\n')
         u_str_in = txt_input('Duration? (default: "record-length", unit: sec.)\n')
         r_str_in = txt_input("Rate? (default: 1, unit: x)\n")
+        l_str_in = txt_input("Loop? (y/n, default: n (no))")
 
         s_str_in = s_str_in.strip()
         u_str_in = u_str_in.strip()
         r_str_in = r_str_in.strip()
+        l_str_in = l_str_in.strip()
 
         # Generate the time around event time
         start_time = 0.0
@@ -211,7 +213,12 @@ def main():
                 print("start_time: No proper time given, start from head.")
                 start_time = 0.0
             #
+        #
         is_looping = False
+        if len(l_str_in) > 0:
+            is_looping = (l_str_in == "y")
+        print("is_looping = %s" % ("True" if is_looping else "False"))
+        #
         play_bag(file_list, topic_list=topic_list, clock=True, loop=is_looping,  start_str=s_str_in, duration_str=u_str_in, rate_str=r_str_in)
     else:
         print("Wrong input type, exit.")
