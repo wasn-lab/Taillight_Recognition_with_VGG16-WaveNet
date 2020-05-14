@@ -39,9 +39,9 @@ void getPointCloudInImageFOV(pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr,
   {
     for (int v = 0; v < image_h; v++)
     {
-      PixelPosition pixel_position{ -1, -1 };
-      pixel_position.u = u;
-      pixel_position.v = v;
+      // PixelPosition pixel_position{ -1, -1 };
+      // pixel_position.u = u;
+      // pixel_position.v = v;
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
         // cam_pixels.push_back(pixel_position);

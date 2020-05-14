@@ -1,6 +1,6 @@
 #include "object_generator.h"
 
-pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::bbox_to_polygon(pcl::PointCloud<pcl::PointXYZI>& cloud)
+pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(pcl::PointCloud<pcl::PointXYZI>& cloud)
 {
   std::vector<pcl::PointXYZ> obb_vertex;
   pcl::PointXYZ centroid, minPoint, maxPoint;

@@ -265,7 +265,7 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
     {
       msgs::DetectedObject msg_obj;
       pcl::PointCloud<pcl::PointXYZ> convex_points;
-      convex_points = g_object_generator.bbox_to_polygon(points);
+      convex_points = g_object_generator.pointsToPolygon(points);
       
       if (convex_points.size() > 0)
       {
@@ -807,7 +807,7 @@ void runInference()
           }
         }
 
-        bbox_publisher(cams_bboxs_cube_min_max, object_arrs[0].header);
+        // bbox_publisher(cams_bboxs_cube_min_max, object_arrs[0].header);
         polygon_publisher(cams_bboxs_points, object_arrs[0].header);
 
         release(cam_pixels);
@@ -910,7 +910,7 @@ int main(int argc, char** argv)
     g_cache_lidar_ssn.registerCallback(callback_ssn);
 
     /// object publisher
-    g_bbox_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
+    // g_bbox_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
     g_polygon_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 8);
   }
 
