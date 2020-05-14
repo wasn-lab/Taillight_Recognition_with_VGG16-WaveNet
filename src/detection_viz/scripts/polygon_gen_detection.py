@@ -88,7 +88,8 @@ class Node:
         # param_dict["timeout"] = {"threshold":0.7}
         # self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, closest object
-        self.checker_nearProb_couting_range = 20.0 # In the 30 m range will be counted
+        self.checker_nearProb_couting_range = 30.0 # Object in the range will be counted
+        self.checker_nearProb_y_range = 10.0 # The valid range of y value of objects
         signal_name = "nearProb"
         param_dict = dict()
         param_dict["low_avg_threshold"] = {"threshold":0.75} # 0.65 0.7 0.8
@@ -129,7 +130,7 @@ class Node:
             #-----------------#
             depth = self._calculate_distance_polygon( _obj.cPoint )
             if len(_obj.cPoint.lowerAreaPoints) > 0:
-                if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < d_range:
+                if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < self.checker_nearProb_y_range:
                     # Frontal object and the object is not empty
                     if (depth < d_min):
                         # Update
