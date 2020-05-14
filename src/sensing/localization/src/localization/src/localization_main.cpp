@@ -612,7 +612,7 @@ static void gnss2local_callback(const geometry_msgs::PoseStamped::ConstPtr& inpu
   is_trimble_new = true;
 }
 
-static void gnss2local_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+static void gnss_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
   tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
                         input->pose.orientation.w);
@@ -1516,7 +1516,7 @@ int main(int argc, char** argv)
 #endif
 #if TRIMBLE
   //ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_data", 10, gnss2local_callback);
-  ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_twd97_data", 10, gnss2local_twd97_callback);
+  ros::Subscriber gnss2local_sub = nh.subscribe("gnss_twd97_data", 10, gnss_twd97_callback);
 #endif
   pthread_t thread;
   pthread_create(&thread, NULL, thread_func, NULL);
