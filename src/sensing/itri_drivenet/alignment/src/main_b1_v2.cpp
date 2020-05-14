@@ -226,9 +226,6 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
   float max_z = -1.5; 
   for (size_t cam_order = 0; cam_order < cams_bboxs_points.size(); cam_order++)
   {
-    std::cout << "cams_bboxs_points[cam_order].size()" << cams_bboxs_points[cam_order].size() << std::endl;
-    std::cout << "cams_bboxs_cube_min_max[cam_order].size()" << cams_bboxs_cube_min_max[cam_order].size() << std::endl;
-    
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
     {
       msgs::DetectedObject msg_obj;
