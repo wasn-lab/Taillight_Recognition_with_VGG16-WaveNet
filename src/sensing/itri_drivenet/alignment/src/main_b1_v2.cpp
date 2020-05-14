@@ -205,45 +205,10 @@ void bbox_publisher(std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
   std::vector<msgs::DetectedObject> det_objs;
   for (size_t cam_order = 0; cam_order < cams_bboxs_cube_min_max.size(); cam_order++)
   {
-    for (const auto& cube : g_cams_bboxs_cube_min_max[cam_order])
+    for (auto& cube : cams_bboxs_cube_min_max[cam_order])
     {
       msgs::DetectedObject det_obj;
-      /// 3D bounding box
-      ///   p5------p6
-      ///   /|  2   /|
-      /// p1-|----p2 |
-      ///  |p4----|-p7
-      ///  |/  1  | /
-      /// p0-----P3
-
-      msgs::BoxPoint box_point;
-      /// min
-      box_point.p0.x = cube.p_min.x;
-      box_point.p0.y = cube.p_min.y;
-      box_point.p0.z = cube.p_min.z;
-
-      /// max
-      box_point.p6.x = cube.p_max.x;
-      box_point.p6.y = cube.p_max.y;
-      box_point.p6.z = cube.p_max.z;
-
-      /// bottom
-      box_point.p3 = box_point.p0;
-      box_point.p3.y = box_point.p6.y;
-      box_point.p7 = box_point.p6;
-      box_point.p7.z = box_point.p0.z;
-      box_point.p4 = box_point.p0;
-      box_point.p4.x = box_point.p6.x;
-
-      /// top
-      box_point.p1 = box_point.p0;
-      box_point.p1.z = cube.p_max.z;
-      box_point.p2 = box_point.p3;
-      box_point.p2.z = cube.p_max.z;
-      box_point.p5 = box_point.p4;
-      box_point.p5.z = cube.p_max.z;      
-
-      det_obj.bPoint = box_point;
+      det_obj.bPoint = g_object_generator.minMax3dToBBox(cube);
       det_objs.push_back(det_obj);
     }
   }
@@ -253,7 +218,7 @@ void bbox_publisher(std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
   g_bbox_pub.publish(det_obj_arr);
 }
 
-void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points, std_msgs::Header msg_header)
+void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points, std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max, std_msgs::Header msg_header)
 {
   msgs::DetectedObjectArray msg_det_obj_arr;
   std::vector<msgs::DetectedObject> msg_objs;
@@ -261,9 +226,18 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
   float max_z = -1.5; 
   for (size_t cam_order = 0; cam_order < cams_bboxs_points.size(); cam_order++)
   {
-    for (auto& points : cams_bboxs_points[cam_order])
+    std::cout << "cams_bboxs_points[cam_order].size()" << cams_bboxs_points[cam_order].size() << std::endl;
+    std::cout << "cams_bboxs_cube_min_max[cam_order].size()" << cams_bboxs_cube_min_max[cam_order].size() << std::endl;
+    
+    for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
     {
       msgs::DetectedObject msg_obj;
+      /// bbox
+      MinMax3D cube = cams_bboxs_cube_min_max[cam_order][obj_index];
+      msg_obj.bPoint = g_object_generator.minMax3dToBBox(cube);
+
+      /// polygon
+      pcl::PointCloud<pcl::PointXYZI> points = cams_bboxs_points[cam_order][obj_index];
       pcl::PointCloud<pcl::PointXYZ> convex_points;
       convex_points = g_object_generator.pointsToPolygon(points);
       
@@ -808,7 +782,7 @@ void runInference()
         }
 
         // bbox_publisher(cams_bboxs_cube_min_max, object_arrs[0].header);
-        polygon_publisher(cams_bboxs_points, object_arrs[0].header);
+        polygon_publisher(cams_bboxs_points, cams_bboxs_cube_min_max, object_arrs[0].header);
 
         release(cam_pixels);
         release(cams_bboxs_cube_min_max);
