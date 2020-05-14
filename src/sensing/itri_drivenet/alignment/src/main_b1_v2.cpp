@@ -266,9 +266,9 @@ void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisuali
   // if (window_name.size() < 3)
   // {
   //   window_name.clear();
-  //   window_name.push_back("raw_data");
-  //   window_name.push_back("image fov");
-  //   window_name.push_back("object");
+  //   window_name.emplace_back("raw_data");
+  //   window_name.emplace_back("image fov");
+  //   window_name.emplace_back("object");
   // }
   // if (window_count < 3)
   // {
@@ -302,9 +302,9 @@ void cvViewerInitializer()
 
 void pclInitializer(std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& points_ptr)
 {
-  for (size_t i = 0; i < points_ptr.size(); i++)
+  for (auto& point_ptr : points_ptr)
   {
-    points_ptr[i] = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+    point_ptr = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
   }
 }
 
@@ -315,7 +315,7 @@ void pointsColorInit(std::vector<pcl::visualization::PointCloudColorHandlerCusto
   for (size_t index = 0; index < points_ptr.size(); index++)
   {
     point_color = intToColor(static_cast<int>(index));
-    rgb_points.push_back(pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>(
+    rgb_points.emplace_back(pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>(
         points_ptr[index], point_color[0], point_color[1], point_color[2]));
   }
 }
@@ -440,7 +440,7 @@ void displayLidarData()
       //                                           g_bbox_topic_names[cam_order], viewports[2]);
 
       std::lock_guard<std::mutex> lock_cube(g_mutex_cube);  // mutex camera cube
-      if (g_cams_bboxs_cube_min_max[cam_order].size() > 0)
+      if (!g_cams_bboxs_cube_min_max[cam_order].empty())
       {
         int cube_cout = 0;
         for (const auto& cube : g_cams_bboxs_cube_min_max[cam_order])
@@ -457,7 +457,7 @@ void displayLidarData()
         }
       }
       std::lock_guard<std::mutex> lock_polygon(g_mutex_polygon);  // mutex camera polygon
-      if (g_cams_bboxs_points[cam_order].size() > 0)
+      if (!g_cams_bboxs_points[cam_order].empty())
       {
         int polygon_cout = 0;
         for (const auto& points : g_cams_bboxs_points[cam_order])
@@ -515,7 +515,7 @@ void getSyncLidarCameraData()
   ros::Rate loop_rate(20);
   while (ros::ok())
   {
-    if (g_cam_times[0].size() > 0 && g_lidarall_times.size() > 0 && g_lidar_ssn_times.size() > 0 && !g_is_data_sync)
+    if (!g_cam_times[0].empty() && !g_lidarall_times.empty() && !g_lidar_ssn_times.empty() && !g_is_data_sync)
     {
       if (g_is_object_update[0])
       {
@@ -610,7 +610,7 @@ void getSyncLidarCameraData()
             {
               pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr =
                   getSpecificTimeLidarMessage(g_cache_lidar, sync_lidar_time, duration_time);
-              if (lidar_ptr != NULL)
+              if (lidar_ptr != nullptr)
               {
                 std::lock_guard<std::mutex> lock_lidar_raw(g_mutex_lidar_raw);
                 *g_lidarall_ptr = *lidar_ptr;
@@ -640,7 +640,7 @@ void getSyncLidarCameraData()
             {
               pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ssn_ptr =
                   getSpecificTimeLidarMessage(g_cache_lidar_ssn, sync_lidar_ssn_time, duration_time);
-              if (lidar_ssn_ptr != NULL)
+              if (lidar_ssn_ptr != nullptr)
               {
                 std::lock_guard<std::mutex> lock_lidar_ssn(g_mutex_lidar_ssn);
                 *g_lidar_ssn_ptr = *lidar_ssn_ptr;

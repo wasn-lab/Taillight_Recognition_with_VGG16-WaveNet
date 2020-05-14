@@ -161,7 +161,7 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
 }
 
 void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int object_class_id,
-                          pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr)
+                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr)
 {
   // std::cout << "===== getPointCloudIn3DBox... =====" << std::endl;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);

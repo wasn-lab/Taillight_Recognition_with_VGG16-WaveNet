@@ -9,10 +9,10 @@ cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>&
   cv::Mat out_mat;
   if (!images.empty())
   {
-    std::vector<ros::Time> images_time;
-    for (const auto& msg : images)
+    std::vector<ros::Time> images_time(images.size());
+    for (size_t index = 0; index < images.size(); index++)
     {
-      images_time.push_back(msg->header.stamp);
+      images_time[index] = images[index]->header.stamp;
     }
     std::vector<ros::Time>::iterator it;
     it = std::find(images_time.begin(), images_time.end(), target_time);

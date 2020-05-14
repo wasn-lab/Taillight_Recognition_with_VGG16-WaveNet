@@ -338,9 +338,9 @@ void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisuali
   // if (window_name.size() < 3)
   // {
   //   window_name.clear();
-  //   window_name.push_back("raw_data");
-  //   window_name.push_back("image fov");
-  //   window_name.push_back("object");
+  //   window_name.emplace_back("raw_data");
+  //   window_name.emplace_back("image fov");
+  //   window_name.emplace_back("object");
   // }
   // if (window_count < 3)
   // {
