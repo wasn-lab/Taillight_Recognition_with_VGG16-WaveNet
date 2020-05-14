@@ -177,7 +177,7 @@ def main():
     # Determine if they are valid input
     is_valid_range = False
     if (id_in_s is not None) and (id_in_e is not None):
-        if id_in_s < id_in_e:
+        if id_in_s <= id_in_e:
             if id_in_s >= 0 and id_in_e < len(bag_name_list):
                 is_valid_range = True
                 print("Play bags #%d~#%d.\n" % (id_in_s+1, id_in_e+1))
