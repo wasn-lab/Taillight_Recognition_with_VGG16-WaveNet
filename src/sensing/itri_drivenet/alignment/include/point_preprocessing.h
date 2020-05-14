@@ -9,8 +9,8 @@
 
 struct pcl_cube
 {
-    pcl::PointXYZI p_min;
-    pcl::PointXYZI p_max;
+  pcl::PointXYZI p_min;
+  pcl::PointXYZI p_max;
 };
 
 bool comparePoint(pcl::PointXYZI p1, pcl::PointXYZI p2);
