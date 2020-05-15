@@ -1,7 +1,7 @@
 <launch>
     <include file="$(find drivenet)/launch/b1_v2_drivenet_group_a.launch"/>
-    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_b.launch"/>
-    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_c.launch"/>
+    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_side.launch"/>
+    <include file="$(find drivenet)/launch/b1_v2_drivenet_group_top.launch"/>
 
     <node pkg="rosbag" type="play" name="player" output="log" required="true" args="$(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag --delay 5">
     </node>
