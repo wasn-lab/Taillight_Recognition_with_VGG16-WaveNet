@@ -14,17 +14,17 @@ sleep 3
 
 gnome-terminal  -e 'bash -c "source ~/itriadv/devel/setup.bash;./init_lidar.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "~/run_web_video_server.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "~/run_gui_gateway.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidarrun_gui_gateway.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "~/run_sys_check_gateway.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "./init_fusion.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fusion.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_pp.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "./init_edge_detection.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_edge_detection.sh;exec bash"'
 sleep 3
 
 gnome-terminal  -e 'ssh -t ta "source .bashrc;bash reset_time.sh"'
