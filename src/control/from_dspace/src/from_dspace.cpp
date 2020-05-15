@@ -13,6 +13,7 @@ const int NumOfTopic = 4;
 
 #include "msgs/Flag_Info.h"
 #include "msgs/DynamicPath.h"
+#include "msgs/BackendInfo.h"
 #include "std_msgs/Header.h"
 #include <ros/ros.h>
 
@@ -352,6 +353,8 @@ int main(int argc, char **argv)
     Publisher[3] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
 	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
 	//uint32_t seq = 0;
+    ros::Publisher Publisher_BD;
+    Publisher_BD = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
 
     int rc;
 	struct can_filter filter[NumOfReceiveID];
@@ -425,7 +428,8 @@ int main(int argc, char **argv)
             printf("Read %d bytes\n", nbytes);
             ProcessFrame(frame, Publisher, msg123);
         }
-        //Publisher[3].publish(msg123);
+        msgs::BackendInfo msg123;
+        Publisher_BD.publish（msg123）;
         rate.sleep();
     }
     return 0;
