@@ -1,3 +1,3 @@
-# You can run all program by typing on LiDAR IPC
+# You can run all program by typing the following script on LiDAR IPC
 
 > bash sdb-run-lidar.sh
