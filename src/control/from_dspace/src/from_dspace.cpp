@@ -429,7 +429,7 @@ int main(int argc, char **argv)
             ProcessFrame(frame, Publisher, msg123);
         }
         msgs::BackendInfo msg123;
-        Publisher_BD.publish（msg123）;
+        Publisher_BD.publish(msg123);
         rate.sleep();
     }
     return 0;
