@@ -133,10 +133,65 @@ struct IMU
   double Gyroz;
 };
 
+struct VehicelStatus
+{
+  
+  float motor_temperature; //馬達
+  float tire_pressure; //胎壓
+  float air_pressure; //氣壓
+  float battery; //電量 %
+  float steer; //轉向
+  float localization; //定位
+  float odometry; //里程
+  float speed; //車速 km/hr
+  float rotating_speed; //轉速
+  float bus_stop; //站點
+  float vehicle_number; //車號
+  float gear; //檔位
+  int hand_brake; //手煞車
+  float steering_wheel; //方向盤 0關1開
+  int door; //車門 0關1開
+  int air_conditioner; //空調
+  float radar; //radar
+  float lidar;
+  float camera;
+  float GPS;
+  int headlight; //大燈 0關1開
+  int wiper; //雨刷 0關 1開
+  int indoor_light; //車內燈 0關 1開
+  int gross_power; //總電源 0關 1開
+  int left_turn_light; //左方向燈 0關 1開
+  int right_turn_light;//右方向燈 0關 1開
+  int estop; //E-Stop 0關 1開
+  int ACC_state; //ACC電源狀態 0關 1開
+  float time; //標準時間
+  float driving_time; //行駛時間
+  float mileage; //行駛距離
+};
 
+struct batteryInfo
+{
+  float gross_voltage;//總電壓 V
+  float gross_current;//總電流 A
+  float highest_voltage; //最高電池電壓 0.01V
+  float highest_number; //最高電壓電池位置 電池編號
+  float lowest_volage; //最低電池電壓 0.01V
+  float lowest_number; //最低電壓電池位置 電池編號
+  float voltage_deviation; //高低電壓叉 0.01V
+  float highest_temp_location; //電池最高環境溫度位置 區域編號
+  float highest_temperature; //電池最高環境溫度
+};
+
+unsigned int mode; //模式 自動/半自動/手動/鎖定
+float emergency_exit; //緊急出口
+  
 pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
 IMU imu;
+
+VehicelStatus vs;
+batteryInfo battery;
+
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
 {
@@ -351,6 +406,53 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
   imu.Gyroz = input->angular_velocity.z;
 }
 
+void callbackBI(const msgs::BackendInfo::ConstPtr& input)
+{
+  vs.motor_temperature = input->motor_temperature; //馬達溫度
+  vs.tire_pressure = input->tire_pressure; //胎壓
+  vs.air_pressure = input->air_pressure; //氣壓
+  vs.battery =  input->battery; //電量 %
+  vs.steer = input->steer; //轉向
+  vs.localization = input->localization; //定位
+  vs.odometry = input->odometry; //里程
+  vs.speed = input->speed; //車速 km/hr
+  vs.rotating_speed = input->speed ; //轉速
+  vs.bus_stop = input->bus_stop; //站點
+  vs.vehicle_number = input->vehicle_number; //車號
+  vs.gear = input->gear; //檔位
+  vs.hand_brake = input->hand_brake; //手煞車
+  vs.steering_wheel = input->steering_wheel; //方向盤
+  vs.door = input->door; //車門
+  vs.air_conditioner = input->air_conditioner; //空調
+  vs.radar = input->radar; //radar
+  vs.lidar = input->lidar;
+  vs.camera = input->camera;
+  vs.GPS = input->GPS;
+  vs.headlight = input->headlight; //大燈 0關1開
+  vs.wiper = input->wiper; //雨刷 0關 1開
+  vs.indoor_light = input->indoor_light; //車內燈 0關 1開
+  vs.gross_power = input->gross_power; //總電源 0關 1開
+  vs.left_turn_light = input->left_turn_light; //左方向燈 0關 1開
+  vs.right_turn_light = input->right_turn_light;//右方向燈 0關 1開
+  vs.estop = input->estop; //E-Stop 0關 1開
+  vs.ACC_state = input->ACC_state; //ACC電源狀態 0關 1開
+  vs.time = input->time; //標準時間
+  vs.driving_time = input->driving_time; //行駛時間
+  vs.mileage = input->mileage; //行駛距離
+  battery.gross_voltage = input->gross_voltage; //總電壓 V
+  battery.gross_current = input->gross_current; //總電流 A
+  battery.highest_voltage = input->highest_voltage; //最高電池電壓 0.01V
+  battery.highest_number = input->highest_number; //最高電壓電池位置 電池編號
+  battery.lowest_volage = input->lowest_volage; //最低電池電壓 0.01V
+  battery.lowest_number = input->lowest_number; //最低電壓電池位置 電池編號
+  battery.voltage_deviation = input->voltage_deviation; //高低電壓差 0.01V
+  battery.highest_temp_location = input->highest_temp_location; //電池最高環境溫度位置 區域編號
+  battery.highest_temperature = input->highest_temperature; //電池最高環境溫度
+  mode = input->mode; //模式 自動/半自動/手動/鎖定
+  emergency_exit = input->emergency_exit; //緊急出口
+}
+
+
 /*========================= ROS callbacks end =========================*/
 
 /*========================= json parsers begin =========================*/
@@ -454,101 +556,101 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 {
   json J1;
   J1["type"] = type;
-  J1["deviceid"] = PLATE;
+  J1["deviceid"] = vs.vehicle_number; //PLATE;
   J1["receivetime"] = log_Time();
   if (type == "M8.2.VK001")
   {
-    J1["motor"] = 2.1;
-    J1["tirepressure"] = 0.0;
-    J1["airpressure"] = 0.0;
-    J1["electricity"] = 0.0;
-    J1["steering"] = data[3];
-    J1["milage"] = 0.0;
-    J1["speed"] = data[0];
-    J1["rotate"] = 0.0;
-    J1["gear"] = 1;
-    J1["handcuffs"] = true;
-    J1["Steeringwheel"] = 0.0;
-    J1["door"] = true;
-    J1["airconditioner"] = true;
-    J1["lat"] = gps.lidar_Lat;
-    J1["lng"] = gps.lidar_Lon;
-    J1["headlight"] = true;
-    J1["wiper"] = true;
-    J1["Interiorlight"] = true;
-    J1["mainswitch"] = true;
-    J1["leftlight"] = true;
-    J1["rightlight"] = true;
-    J1["EStop"] = true;
-    J1["ACCpower"] = true;
-    J1["ArrivedStop"] = cuttent_arrive_stop.id;
-    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
-    J1["round"] = cuttent_arrive_stop.round;
-    J1["route_id"] = routeID;
-    J1["RouteMode"] = 2;
-    J1["Gx"] = imu.Gx;
-    J1["Gy"] = imu.Gy;
-    J1["Gz"] = imu.Gz;
-    J1["Gyrox"] = imu.Gyrox;
-    J1["Gyroy"] = imu.Gyroy;
-    J1["Gyroz"] = imu.Gyroz;
-    J1["accelerator"] = data[4];
-    J1["brake_pedal"] = data[5];
-    J1["distance"] = 0.0;
-    J1["mainvoltage"] = 0.0;
-    J1["maxvoltage"] = 0.0;
-    J1["maxvbatteryposition"] = "5517XW";
-    J1["minvoltage"] = 0.0;
-    J1["pressurediff"] = 0.0;
-    J1["maxtbatteryposition"] = "454FG";
-    J1["maxtemperature"] = 0.0;
-    J1["Signal"] = 1;
-    J1["CMS"] = 1;
-    J1["setting"] = 1;
+    J1["motor"] = vs.motor_temperature; // 馬達溫度 //2.1;
+    J1["tirepressure"] =  vs.tire_pressure; //胎壓 //0.0;
+    J1["airpressure"] = vs.air_pressure; //氣壓 //0.0;
+    J1["electricity"] = vs.battery; //電量//0.0;
+    J1["steering"] = data[3]; //vs.steer 轉向 目前來源CAN
+    J1["milage"] =  vs.mileage; //行駛距離//0.0;
+    J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
+    J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
+    J1["gear"] = vs.gear; //檔位 //1;
+    J1["handcuffs"] = vs.hand_brake; //手煞車 //true;
+    J1["Steeringwheel"] =vs.steering_wheel; //方向盤 //0.0;
+    J1["door"] = vs.door; //車門 //true;
+    J1["airconditioner"] = vs.air_conditioner; //空調;
+    J1["lat"] = gps.lidar_Lat; //vs.location 目前來源 lidar_lla
+    J1["lng"] = gps.lidar_Lon; //vs.location 目前來源 lidar_lla
+    J1["headlight"] = vs.headlight; //車燈 //true;
+    J1["wiper"] =  vs.wiper; //雨刷//true;
+    J1["Interiorlight"] = vs.indoor_light; //車內燈//true;
+    J1["mainswitch"] = vs.gross_power; //總電源//true;
+    J1["leftlight"] = vs.left_turn_light; //左方向燈; //true
+    J1["rightlight"] = vs.right_turn_light; //右方向燈//true;
+    J1["EStop"] = vs.estop; // E-Stop//true;
+    J1["ACCpower"] = vs.ACC_state; //ACC 電源//true;
+    J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; // 目前來源NextStop/Info
+    J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
+    J1["route_id"] = routeID;  //預設2000
+    J1["RouteMode"] = mode;
+    J1["Gx"] = imu.Gx;   //   目前來源 imu_data_rad
+    J1["Gy"] = imu.Gy;   //   目前來源 imu_data_rad
+    J1["Gz"] = imu.Gz;   //   目前來源 imu_data_rad
+    J1["Gyrox"] = imu.Gyrox; // 目前來源 imu_data_rad
+    J1["Gyroy"] = imu.Gyroy; // 目前來源 imu_data_rad
+    J1["Gyroz"] = imu.Gyroz; // 目前來源 imu_data_rad
+    J1["accelerator"] = data[4]; //無rostopic 目前來源CAN
+    J1["brake_pedal"] = data[5]; //無rostopic 目前來源CAN
+    J1["distance"] = 0.0; //? 跟mileage有何不同？
+    J1["mainvoltage"] = battery.gross_voltage; //總電壓//0.0;
+    J1["maxvoltage"] = battery.highest_voltage; //最高電池電壓//0.0;
+    J1["maxvbatteryposition"] =  battery.highest_number; //最高電壓電池編號//"5517XW";
+    J1["minvoltage"] = battery.lowest_volage; //最低電池電壓//0.0;
+    J1["pressurediff"] = battery.voltage_deviation; //高低電壓差//0.0;
+    J1["maxtbatteryposition"] = battery.lowest_number; //最低電池電壓 0.01V"454FG"; 名稱疑似錯誤
+    J1["maxtemperature"] = battery.highest_temperature; //電池最高環境溫度//0.0;
+    J1["Signal"] = 1; //無資料
+    J1["CMS"] = 1; //無資料
+    J1["setting"] = 1; //無資料
     J1["board_list"] = board_list;
   }
   else if (type == "M8.2.VK002")
   {
-    J1["motor"] = 2.1;
-    J1["tirepressure"] = 0.0;
-    J1["airpressure"] = 0.0;
-    J1["electricity"] = 0.0;
-    J1["steering"] = data[3];
-    J1["milage"] = 0.0;
-    J1["speed"] = data[0];
-    J1["rotate"] = 0.0;
-    J1["gear"] = 1;
-    J1["handcuffs"] = true;
-    J1["Steeringwheel"] = 0.0;
-    J1["door"] = true;
-    J1["airconditioner"] = true;
-    J1["lat"] = gps.lidar_Lat;
-    J1["lng"] = gps.lidar_Lon;
-    J1["headlight"] = true;
-    J1["wiper"] = true;
-    J1["Interiorlight"] = true;
-    J1["mainswitch"] = true;
-    J1["leftlight"] = true;
-    J1["rightlight"] = true;
-    J1["EStop"] = true;
-    J1["ACCpower"] = true;
-    J1["route_id"] = routeID;
-    J1["RouteMode"] = 2;
-    J1["Gx"] = imu.Gx;
-    J1["Gy"] = imu.Gy;
-    J1["Gz"] = imu.Gz;
-    J1["Gyrox"] = imu.Gyrox;
-    J1["Gyroy"] = imu.Gyroy;
-    J1["Gyroz"] = imu.Gyroz;
-    J1["accelerator"] = data[4];
-    J1["brake_pedal"] = data[5];
-    J1["ArrivedStop"] = cuttent_arrive_stop.id;
-    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
-    J1["round"] = cuttent_arrive_stop.round;
-    J1["Signal"] = 1;
-    J1["CMS"] = 1;
-    J1["setting"] = 1;
-    J1["EExit"] = true;
+    J1["motor"] = vs.motor_temperature; // 馬達溫度 //2.1;
+    J1["tirepressure"] = vs.tire_pressure; //胎壓 //0.0;
+    J1["airpressure"] = vs.air_pressure; //氣壓 //0.0;
+    J1["electricity"] =  vs.battery; //電量//0.0;
+    J1["steering"] = data[3]; //vs.steer 轉向 目前來源CAN
+    J1["milage"] = vs.mileage; //行駛距離//0.0;
+    J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
+    J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
+    J1["gear"] = vs.gear; //檔位 //1;
+    J1["handcuffs"] = vs.hand_brake; //手煞車 //true;
+    J1["Steeringwheel"] = vs.steering_wheel; //方向盤 //0.0;
+    J1["door"] = vs.door; //車門 //true;
+    J1["airconditioner"] = vs.air_conditioner; //空調;
+    J1["lat"] = gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
+    J1["lng"] = gps.lidar_Lon;  //vs.location 目前來源 lidar_lla
+    J1["headlight"] = vs.headlight; //車燈 //true;
+    J1["wiper"] = vs.wiper; //雨刷//true;
+    J1["Interiorlight"] = vs.indoor_light; //車內燈//true;
+    J1["mainswitch"] = vs.gross_power; //總電源//true;
+    J1["leftlight"] = vs.left_turn_light; //左方向燈; //true
+    J1["rightlight"] = vs.right_turn_light; //右方向燈//true;
+    J1["EStop"] = vs.estop; // E-Stop//true;
+    J1["ACCpower"] = vs.ACC_state; //ACC 電源//true;
+    J1["route_id"] = routeID; //default 2000
+    J1["RouteMode"] = mode;
+    J1["Gx"] = imu.Gx; //   目前來源 imu_data_rad
+    J1["Gy"] = imu.Gy; //   目前來源 imu_data_rad
+    J1["Gz"] = imu.Gz; //   目前來源 imu_data_rad
+    J1["Gyrox"] = imu.Gyrox; //   目前來源 imu_data_rad
+    J1["Gyroy"] = imu.Gyroy; //   目前來源 imu_data_rad
+    J1["Gyroz"] = imu.Gyroz; //   目前來源 imu_data_rad
+    J1["accelerator"] = data[4]; //無rostopic 目前來源CAN
+    J1["brake_pedal"] = data[5]; //無rostopic 目前來源CAN
+    J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; //目前來源 NextStop/Info
+    J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
+    J1["Signal"] = 1; //無資料
+    J1["CMS"] = 1; //無資料
+    J1["setting"] = 1; //無資料
+    J1["EExit"] = true; //無資料
     J1["board_list"] = board_list;
   }else if (type == "M8.2.VK003"){
     J1["lat"] = gps.lidar_Lat;
@@ -690,7 +792,8 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, callbackChecker);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
+                                     callbackChecker, callbackBI);
 
   while (ros::ok())
   {
