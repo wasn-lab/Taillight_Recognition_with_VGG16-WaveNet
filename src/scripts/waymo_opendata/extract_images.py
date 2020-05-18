@@ -31,7 +31,9 @@ def save_images_by_frame(frame):
     for index, image in enumerate(frame.images):
         camera_name = open_dataset.CameraName.Name.Name(image.name)
         ts = int(image.pose_timestamp * 1000000000)  # precision to nano seconds
-        image_filename = "{}_{}.jpg".format(camera_name, ts)
+        if not os.path.isdir(camera_name):
+            os.makedirs(camera_name)
+        image_filename = "{}/{}.jpg".format(camera_name, ts)
         save_image(image.image, image_filename)
 
 
