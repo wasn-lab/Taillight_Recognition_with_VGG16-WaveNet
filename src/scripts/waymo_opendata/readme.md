@@ -1,5 +1,3 @@
-# Work in progress
-
 ### Prerequisites
 
 ```
@@ -18,4 +16,6 @@ git clone https://github.com/waymo-research/waymo-open-dataset.git waymo-od
 
 ### Extract images
 
+### Appendix
 
+- [tfrecord data format](https://github.com/waymo-research/waymo-open-dataset/blob/master/waymo_open_dataset/dataset.proto)
