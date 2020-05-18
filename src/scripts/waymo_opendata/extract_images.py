@@ -30,7 +30,8 @@ def save_images_by_frame(frame):
     # print(frame.context)
     for index, image in enumerate(frame.images):
         camera_name = open_dataset.CameraName.Name.Name(image.name)
-        image_filename = "{}_{}.jpg".format(camera_name, image.pose_timestamp)
+        ts = int(image.pose_timestamp * 1000000000)  # precision to nano seconds
+        image_filename = "{}_{}.jpg".format(camera_name, ts)
         save_image(image.image, image_filename)
 
 
