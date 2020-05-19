@@ -5,19 +5,21 @@ set -e
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly darknet_dir=$(dirname $(readlink -e $0))
 readonly drivenet_dir=${repo_dir}/src/sensing/itri_drivenet/drivenet
-readonly weights_file=${drivenet_dir}/data/yolo/yolov3_b1.weights
 readonly cfg_file=${drivenet_dir}/data/yolo/yolov3.cfg
 
 
 if [[ "$1" == "fov60" ]]; then
   readonly testset_dir=${darknet_dir}/drivenet_dataset/Dataset_Fov60
   readonly data_file=cfg/drivenet_fov60.data
+  readonly weights_file=${drivenet_dir}/data/yolo/yolov3_b1.weights
 elif [[ "$1" == "fov120" ]]; then
   readonly testset_dir=${darknet_dir}/drivenet_dataset/Dataset_Fov120
   readonly data_file=cfg/drivenet_fov120.data
+  readonly weights_file=${drivenet_dir}/data/yolo/yolov3_fov120_b1.weights
 elif [[ "$1" == "all" ]]; then
   readonly testset_dir=${darknet_dir}/drivenet_dataset
   readonly data_file=cfg/drivenet.data
+  readonly weights_file=${drivenet_dir}/data/yolo/yolov3_b1.weights
 else
   echo "Usage: $0 fov60|fov120|all"
   exit 1
