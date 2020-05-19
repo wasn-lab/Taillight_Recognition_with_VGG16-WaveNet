@@ -20,7 +20,7 @@ def extract_range_images_by_frame(frame):
         frame_utils.parse_range_image_and_camera_projection(frame))
 
     frame.lasers.sort(key=lambda laser: laser.name)
-    ts = frame.timestamp_micros * 1000
+    ts = frame.timestamp_micros
     to_grayscale_factor = 255 / 75.0
     for laser in frame.lasers:
         # laser.name(int) is 1, 2, 3, 4, 5
@@ -37,17 +37,24 @@ def extract_range_images_by_frame(frame):
 
         # Save only range in gray scale.
         # distance (in float32) is 0~75m, infinite distance is 10000000000.0
+        if not os.path.isdir(symbolic_name):
+            os.makedirs(symbolic_name)
         ranges = range_image_range.numpy()
+        # Use tiff file to store raw ranges
+        # since we cannot save float32 as png files.
+        filename = "{}/{}_range.tiff".format(symbolic_name, ts)
+        img = Image.fromarray(ranges.astype(np.float32))
+        img.save(filename)
+        print("Write {}".format(filename))
+
         for row in range(ranges.shape[0]):
             for col in range(ranges.shape[1]):
                 if ranges[row][col] > 75:
                     ranges[row][col] = 255
                 else:
                     ranges[row][col] = ranges[row][col] * to_grayscale_factor
+        filename = "{}/{}_grayscale.png".format(symbolic_name, ts)
         img = Image.fromarray(ranges.astype(np.uint8))
-        if not os.path.isdir(symbolic_name):
-            os.makedirs(symbolic_name)
-        filename = "{}/{}.png".format(symbolic_name, ts)
         img.save(filename)
         print("Write {}".format(filename))
 
