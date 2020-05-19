@@ -27,7 +27,6 @@ Yolo_app g_yolo_app;
 // CosmapGenerator g_cosmap_gener;
 
 /// launch param
-int g_car_id = 1;
 int g_dist_est_mode = 0;
 bool g_standard_fps = false;
 bool g_display_flag = false;
@@ -234,7 +233,6 @@ int main(int argc, char** argv)
   g_is_infer_stop = false;
   g_is_infer_data = false;
 
-  ros::param::get(ros::this_node::getName() + "/car_id", g_car_id);
   ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_fps);
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
@@ -525,9 +523,9 @@ void* run_yolo(void* /*unused*/)
                         class_color, 3);
         }
       }
-      for (size_t i = 0; i < pool.size(); i++)
+      for (auto& item: pool)
       {
-        det_obj = pool[i].get();
+        det_obj = item.get();
         v_do.push_back(det_obj);
         // if (g_display_flag)
         // {
