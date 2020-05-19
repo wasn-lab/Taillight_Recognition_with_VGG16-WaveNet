@@ -565,7 +565,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["airpressure"] = vs.air_pressure; //氣壓 //0.0;
     J1["electricity"] = vs.battery; //電量//0.0;
     J1["steering"] = data[3]; //vs.steer 轉向 目前來源CAN
-    J1["milage"] =  vs.mileage; //行駛距離//0.0;
+    J1["milage"] =  vs.odometry; //行駛距離//0.0;
     J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
@@ -587,7 +587,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; // 目前來源NextStop/Info
     J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
     J1["route_id"] = routeID;  //預設2000
-    J1["RouteMode"] = mode;
+    J1["RouteMode"] = 2;
     J1["Gx"] = imu.Gx;   //   目前來源 imu_data_rad
     J1["Gy"] = imu.Gy;   //   目前來源 imu_data_rad
     J1["Gz"] = imu.Gz;   //   目前來源 imu_data_rad
@@ -602,11 +602,11 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["maxvbatteryposition"] =  battery.highest_number; //最高電壓電池編號//"5517XW";
     J1["minvoltage"] = battery.lowest_volage; //最低電池電壓//0.0;
     J1["pressurediff"] = battery.voltage_deviation; //高低電壓差//0.0;
-    J1["maxtbatteryposition"] = battery.lowest_number; //最低電池電壓 0.01V"454FG"; 名稱疑似錯誤
+    J1["maxtbatteryposition"] = battery.lowest_number; //最低電池電壓 0.01V"454FG"; 
     J1["maxtemperature"] = battery.highest_temperature; //電池最高環境溫度//0.0;
     J1["Signal"] = 1; //無資料
     J1["CMS"] = 1; //無資料
-    J1["setting"] = 1; //無資料
+    J1["setting"] = mode; // 自動/半自動/手動/鎖定
     J1["board_list"] = board_list;
   }
   else if (type == "M8.2.VK002")
@@ -616,7 +616,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["airpressure"] = vs.air_pressure; //氣壓 //0.0;
     J1["electricity"] =  vs.battery; //電量//0.0;
     J1["steering"] = data[3]; //vs.steer 轉向 目前來源CAN
-    J1["milage"] = vs.mileage; //行駛距離//0.0;
+    J1["milage"] = vs.odometry; //行駛距離//0.0;
     J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
@@ -649,8 +649,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
     J1["Signal"] = 1; //無資料
     J1["CMS"] = 1; //無資料
-    J1["setting"] = 1; //無資料
-    J1["EExit"] = true; //無資料
+    J1["setting"] = mode; 
+    J1["EExit"] = emergency_exit; 
     J1["board_list"] = board_list;
   }else if (type == "M8.2.VK003"){
     J1["lat"] = gps.lidar_Lat;
