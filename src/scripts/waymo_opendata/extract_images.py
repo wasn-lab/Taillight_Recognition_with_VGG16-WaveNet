@@ -28,9 +28,12 @@ def save_images_by_frame(frame):
     # range_image_top_pose) = frame_utils.parse_range_image_and_camera_projection(
     #    frame)
     # print(frame.context)
+    ts = frame.timestamp_micros
     for index, image in enumerate(frame.images):
         camera_name = open_dataset.CameraName.Name.Name(image.name)
-        image_filename = "{}_{}.jpg".format(camera_name, image.pose_timestamp)
+        if not os.path.isdir(camera_name):
+            os.makedirs(camera_name)
+        image_filename = "{}/{}.jpg".format(camera_name, ts)
         save_image(image.image, image_filename)
 
 
