@@ -24,13 +24,6 @@ LABEL_TYPE_DICT = {
 }
 
 
-def save_image(data, filename):
-    """Save an image."""
-    img = Image.fromarray(tf.image.decode_jpeg(data).numpy(), "RGB")
-    img.save(filename)
-    print("Write {}".format(filename))
-
-
 def save_lidar_labels_by_frame(frame):
     #(range_images, camera_projections,
     # range_image_top_pose) = frame_utils.parse_range_image_and_camera_projection(
@@ -68,7 +61,6 @@ def save_lidar_labels_by_tfrecord_file(tfrecord_file):
         frame = open_dataset.Frame()
         frame.ParseFromString(bytearray(data.numpy()))
         save_lidar_labels_by_frame(frame)
-        break
 
 
 def main():
