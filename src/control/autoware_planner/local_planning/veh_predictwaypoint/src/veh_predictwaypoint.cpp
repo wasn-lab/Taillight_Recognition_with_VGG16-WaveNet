@@ -28,7 +28,9 @@ double veh_length = 7.0;
 double veh_pose_left = 0.5;
 double veh_pose_front = 0.615;
 double wheel_dis = 3.8;
-double predict_s = 10 + wheel_dis;
+double predict_s_max = 10 + wheel_dis;
+double predict_s;
+double predict_t = 2;
 double Resolution = 50;
 double out_dis = 0.5;
 
@@ -133,6 +135,11 @@ void vehpredictpathgen_pub(bool flag)
   {
     double yaw_rate =  -angular_vz * RT_PI / 180.0;
     double r = speed_mps / yaw_rate;
+    predict_s = wheel_dis + 3 + speed_mps * predict_t ;
+    if (predict_s > predict_s_max)
+    {
+      predict_s = predict_s_max;
+    }
     if (yaw_rate > 0.005 || yaw_rate < -0.005)
     {
       if (r > 0.1)
@@ -345,6 +352,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "veh_predictwaypoint");
   ros::NodeHandle node;
+
+  ros::param::get(ros::this_node::getName()+"/wheel_dis", wheel_dis);
+  ros::param::get(ros::this_node::getName()+"/predict_s_max", predict_s_max);
+  ros::param::get(ros::this_node::getName()+"/predict_t", predict_t);
 
   ros::Subscriber vehinfo_sub = node.subscribe("veh_info", 1, vehinfoCallback);
   ros::Subscriber imudata_sub = node.subscribe("imu_data", 1, imudataCallback);

@@ -89,6 +89,13 @@
     <node pkg="target_planner" type="target_planner" name="target_planner" /> <!--output="screen" /-->
 
     <!-- veh_predictwaypoint pub node-->
-    <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint" /> <!--output="screen" /-->
+    <arg name="wheel_dis" default="3.8" />
+    <arg name="predict_s_max" default="13.8" />
+    <arg name="predict_t" default="2.0" />
+    <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint"> <!--output="screen" -->
+      <param name="wheel_dis" value="$(arg wheel_dis)"/>
+      <param name="predict_s_max" value="$(arg predict_s_max)"/>
+      <param name="predict_t" value="$(arg predict_t)"/>
+    </node>
 
 </launch>
