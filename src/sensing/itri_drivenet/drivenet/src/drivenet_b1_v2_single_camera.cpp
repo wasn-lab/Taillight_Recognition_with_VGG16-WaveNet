@@ -443,7 +443,6 @@ void* run_yolo(void* /*unused*/)
     if (!is_data_vaild)
     {
       reset_data();
-      is_data_vaild = true;
       continue;
     }
 
