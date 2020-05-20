@@ -168,6 +168,8 @@ def _timeout_handle_alive():
     check_queue_dict["node_alive"].put(STATE_DEF_dict["ERROR"])
     # var_advop_node_alive = False
     rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
+    # Publish the event message
+    event_json_pub.publish( get_event_json("node_alive", STATE_DEF_dict["ERROR"], "Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) ) )
 
 def set_timer_alive():
     """
