@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 import os
 import argparse
-import logging
 import tensorflow.compat.v1 as tf
-import math
 import numpy as np
-import itertools
 from PIL import Image
 import matplotlib.pyplot as plt
 
-from waymo_open_dataset.utils import range_image_utils
-from waymo_open_dataset.utils import transform_utils
 from waymo_open_dataset.utils import  frame_utils
 from waymo_open_dataset import dataset_pb2 as open_dataset
 
@@ -66,33 +61,27 @@ def extract_image_lidar_calib_by_frame(frame):
     (range_images, camera_projections, range_image_top_pose) = (
         frame_utils.parse_range_image_and_camera_projection(frame))
 
-    points, cp_points = frame_utils.convert_range_image_to_point_cloud(frame,
-                                                           range_images,
-                                                           camera_projections,
-                                                           range_image_top_pose)
+    points, cp_points = frame_utils.convert_range_image_to_point_cloud(
+        frame, range_images, camera_projections, range_image_top_pose)
     points_ri2, cp_points_ri2 = frame_utils.convert_range_image_to_point_cloud(
-        frame,
-        range_images,
-        camera_projections,
-        range_image_top_pose,
+        frame, range_images, camera_projections, range_image_top_pose,
         ri_index=1)
 
     # 3d points in vehicle frame.
     points_all = np.concatenate(points, axis=0)
-    points_all_ri2 = np.concatenate(points_ri2, axis=0)
+    # points_all_ri2 = np.concatenate(points_ri2, axis=0)
     # camera projection corresponding to each point.
     cp_points_all = np.concatenate(cp_points, axis=0)
-    cp_points_all_ri2 = np.concatenate(cp_points_ri2, axis=0)
+    # cp_points_all_ri2 = np.concatenate(cp_points_ri2, axis=0)
 
-    cp_points_all_concat = np.concatenate([cp_points_all, points_all], axis=-1)
-    cp_points_all_concat_tensor = tf.constant(cp_points_all_concat)
+    # cp_points_all_concat = np.concatenate([cp_points_all, points_all], axis=-1)
+    # cp_points_all_concat_tensor = tf.constant(cp_points_all_concat)
 
     # The distance between lidar points and vehicle frame origin.
     points_all_tensor = tf.norm(points_all, axis=-1, keepdims=True)
     cp_points_all_tensor = tf.constant(cp_points_all, dtype=tf.int32)
 
-    ts = frame.timestamp_micros
-    images = sorted(frame.images, key=lambda i:i.name)
+    images = sorted(frame.images, key=lambda i: i.name)
 
     # Only save FRONT camera image.
     frame_image = images[0]
@@ -108,7 +97,7 @@ def extract_image_lidar_calib_by_frame(frame):
     camera_name = open_dataset.CameraName.Name.Name(frame_image.name)
     if not os.path.isdir(camera_name):
         os.makedirs(camera_name)
-    filename = "{}/{}_calib.jpg".format(camera_name, ts)
+    filename = "{}/{}_calib.jpg".format(camera_name, frame.timestamp_micros)
     plot_points_on_image(projected_points_all_from_raw_data,
                          frame_image, filename, color_func)
 

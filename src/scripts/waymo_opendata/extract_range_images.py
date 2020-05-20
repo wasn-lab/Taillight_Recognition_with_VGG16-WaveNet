@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 import os
 import argparse
-import logging
 import tensorflow.compat.v1 as tf
-import math
 import numpy as np
-import itertools
-import pprint
 from PIL import Image
-from waymo_open_dataset.utils import range_image_utils
-from waymo_open_dataset.utils import transform_utils
+#from waymo_open_dataset.utils import range_image_utils
+#from waymo_open_dataset.utils import transform_utils
 from waymo_open_dataset.utils import  frame_utils
 from waymo_open_dataset import dataset_pb2 as open_dataset
 
@@ -19,7 +15,6 @@ def extract_range_images_by_frame(frame):
         frame_utils.parse_range_image_and_camera_projection(frame))
 
     frame.lasers.sort(key=lambda laser: laser.name)
-    ts = frame.timestamp_micros
     to_grayscale_factor = 255 / 75.0
     for laser in frame.lasers:
         # laser.name(int) is 1, 2, 3, 4, 5
@@ -30,9 +25,9 @@ def extract_range_images_by_frame(frame):
         range_image_tensor = tf.reshape(range_image_tensor, range_image.shape.dims)
         lidar_image_mask = tf.greater_equal(range_image_tensor, 0)
         range_image_tensor = tf.where(lidar_image_mask, range_image_tensor, tf.ones_like(range_image_tensor) * 1e10)
-        range_image_range = range_image_tensor[...,0]
-        range_image_intensity = range_image_tensor[...,1]
-        range_image_elongation = range_image_tensor[...,2]
+        range_image_range = range_image_tensor[..., 0]
+        # range_image_intensity = range_image_tensor[..., 1]
+        # range_image_elongation = range_image_tensor[..., 2]
 
         # Save only range in gray scale.
         # distance (in float32) is 0~75m, infinite distance is 10000000000.0
@@ -41,7 +36,7 @@ def extract_range_images_by_frame(frame):
         ranges = range_image_range.numpy()
         # Use tiff file to store raw ranges
         # since we cannot save float32 as png files.
-        filename = "{}/{}_range.tiff".format(symbolic_name, ts)
+        filename = "{}/{}_range.tiff".format(symbolic_name, frame.timestamp_micros)
         img = Image.fromarray(ranges.astype(np.float32))
         img.save(filename)
         print("Write {}".format(filename))
@@ -52,7 +47,7 @@ def extract_range_images_by_frame(frame):
                     ranges[row][col] = 255
                 else:
                     ranges[row][col] = ranges[row][col] * to_grayscale_factor
-        filename = "{}/{}_grayscale.png".format(symbolic_name, ts)
+        filename = "{}/{}_grayscale.png".format(symbolic_name, frame.timestamp_micros)
         img = Image.fromarray(ranges.astype(np.uint8))
         img.save(filename)
         print("Write {}".format(filename))

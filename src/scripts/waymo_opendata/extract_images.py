@@ -3,14 +3,11 @@ import os
 import argparse
 import logging
 import tensorflow.compat.v1 as tf
-import math
-import numpy as np
-import itertools
 from PIL import Image
 
-from waymo_open_dataset.utils import range_image_utils
-from waymo_open_dataset.utils import transform_utils
-from waymo_open_dataset.utils import  frame_utils
+# from waymo_open_dataset.utils import range_image_utils
+# from waymo_open_dataset.utils import transform_utils
+# from waymo_open_dataset.utils import frame_utils
 from waymo_open_dataset import dataset_pb2 as open_dataset
 
 
@@ -27,12 +24,11 @@ def save_images_by_frame(frame):
     # range_image_top_pose) = frame_utils.parse_range_image_and_camera_projection(
     #    frame)
     # print(frame.context)
-    ts = frame.timestamp_micros
-    for index, image in enumerate(frame.images):
+    for _index, image in enumerate(frame.images):
         camera_name = open_dataset.CameraName.Name.Name(image.name)
         if not os.path.isdir(camera_name):
             os.makedirs(camera_name)
-        image_filename = "{}/{}.jpg".format(camera_name, ts)
+        image_filename = "{}/{}.jpg".format(camera_name, frame.timestamp_micros)
         save_image(image.image, image_filename)
 
 
