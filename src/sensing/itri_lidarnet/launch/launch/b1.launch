@@ -25,7 +25,7 @@ Lidar List:
 <!-- Global arg ************************************************************ -->
 	<rosparam param="debug_output">true</rosparam>
     <arg name="hardware_enable" default="1" />>
-	<arg name="mps" default="0" />
+	<arg name="mps" default="1" />
 	
 	<arg name="mode" default="0" />
     <arg name="set_group_1" value="/LidarFrontTop"/>

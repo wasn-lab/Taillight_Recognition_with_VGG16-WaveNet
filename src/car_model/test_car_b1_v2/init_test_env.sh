@@ -28,10 +28,9 @@ popd
 
 # Generatie drivenet tensorRT engine files.
 find src/sensing/itri_drivenet -name "*.engine" -exec rm {} \;
-roslaunch drivenet b1_v2_drivenet_group_a.launch > /dev/null 2>&1 &
-roslaunch drivenet b1_v2_drivenet_group_b.launch > /dev/null 2>&1 &
-# node c use the same engine as node b
-#roslaunch drivenet b1_v2_drivenet_group_c.launch > /dev/null 2>&1 &
+for launch in `find src/sensing/itri_drivenet -name "b1_v2_*.launch" -printf "%f\n"`; do
+  roslaunch drivenet $launch > /dev/null 2>&1 &
+done
 
 sleep 5m
 killall roslaunch
