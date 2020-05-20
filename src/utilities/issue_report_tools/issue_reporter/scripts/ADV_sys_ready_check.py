@@ -325,21 +325,24 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
-            if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
-                # Trigger recorder with reason
-                _reason = "%s:%s:%s" % (_checker_name, STATE_DEF_dict_inv[_status], _event_str )
-                # if advop_run_state:
-                if run_state_delay.output(): # Note: delayed close
-                    # Note: We only trigger record if it's already in self-driving mode and running
-                    #       The events during idle is not going to be backed-up.
+            # Trigger recorder with reason
+            _reason = "%s:%s:%s" % (_checker_name, STATE_DEF_dict_inv[_status], _event_str )
+            if run_state_delay.output(): # Note: delayed close
+                # Note: We only trigger record if it's already in self-driving mode and running
+                #       The events during idle is not going to be backed-up.
+                #-------------------------#
+                # Publish the event message
+                #
+                #-------------------------#
+                if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+                    # if advop_run_state:
                     REC_record_backup_pub.publish( _reason )
                     # Write some log
                     rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
-                    # Publish the event message
-                    #
-                else:
-                    rospy.logwarn("[sys_ready] It's not in self-driving mode, ignore the event:<%s>" % _reason )
-                    # print("It's not in self-driving mode, ignore the event.")
+                #-------------------------#
+            else:
+                rospy.logwarn("[sys_ready] It's not in self-driving mode, ignore the event:<%s>" % _reason )
+                # print("It's not in self-driving mode, ignore the event.")
                 #
             #
         #
