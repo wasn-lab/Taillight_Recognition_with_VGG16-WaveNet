@@ -6,3 +6,4 @@ src/sensing/itri_lidarnet/libs/BoundingBox/ApproxMVBB
 src/sensing/itri_lidarnet/driver
 src/sensing/itri_lidarnet/libs/Matching/NDT
 src/sensing/itri_lidarnet/libs/Preprocess
+src/scripts/waymo_opendata
