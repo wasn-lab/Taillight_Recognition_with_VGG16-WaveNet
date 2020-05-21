@@ -15,6 +15,7 @@
 
 /// package
 #include "camera_params.h"
+#include "fusion_source_id.h"
 #include "alignment.h"
 #include "visualization_util.h"
 #include <drivenet/object_label_util.h>
@@ -23,6 +24,7 @@
 #include "points_in_image_area.h"
 #include "sync_message.h"
 #include "object_generator.h"
+#include "cloud_cluster.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -54,6 +56,7 @@ const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
 std::vector<Alignment> g_alignments(g_cam_ids.size());
 Visualization g_visualization;
 ObjectGenerator g_object_generator;
+CloudCluster g_cloud_cluster;
 
 /// thread
 std::vector<std::mutex> g_mutex_cams(g_cam_ids.size());
@@ -74,6 +77,7 @@ std::mutex g_mutex_polygon;
 
 /// params
 bool g_is_enable_default_3d_bbox = true;
+bool g_do_clustering = false;
 bool g_data_sync = true;  // trun on or trun off data sync function
 bool g_is_display = false;
 
@@ -230,6 +234,9 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
     {
       msgs::DetectedObject msg_obj;
+      msg_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
+      msg_obj.distance = 0;
+
       /// bbox
       MinMax3D cube = cams_bboxs_cube_min_max[cam_order][obj_index];
       msg_obj.bPoint = g_object_generator.minMax3dToBBox(cube);
@@ -367,19 +374,19 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
   }
 }
 
-void getPointCloudInBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
+void getPointCloudInAllBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
                            const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                            std::vector<std::vector<PixelPosition>>& cam_pixels,
                            std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
                            std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
-  // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
+  // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInBoxFOV(objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
                           cam_pixels[cam_order], cams_bboxs_cube_min_max[cam_order], cams_bboxs_points[cam_order],
-                          g_alignments[cam_order], g_is_enable_default_3d_bbox);
+                          g_alignments[cam_order], g_cloud_cluster, g_is_enable_default_3d_bbox, g_do_clustering);
   }
 }
 
@@ -745,7 +752,7 @@ void runInference()
         std::cout << "===== doInference once =====" << std::endl;
         /// get results
         getPointCloudInAllImageFOV(lidar_ssn_ptr, cams_points_ptr /*, cam_pixels*/, g_image_w, g_image_h);
-        getPointCloudInBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels, cams_bboxs_cube_min_max,
+        getPointCloudInAllBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels, cams_bboxs_cube_min_max,
                               cams_bboxs_points);
 
         if (g_is_display)
