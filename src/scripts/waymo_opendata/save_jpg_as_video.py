@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import os
-import cv2
 import argparse
 import logging
+import cv2
 
 
 def get_image_filenames(dirname):
@@ -42,4 +42,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

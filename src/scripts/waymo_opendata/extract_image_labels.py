@@ -1,17 +1,11 @@
 #!/usr/bin/env python
 import os
 import argparse
+import csv
 import logging
 import tensorflow.compat.v1 as tf
-import math
-import csv
-import numpy as np
-import itertools
 from PIL import Image
 
-from waymo_open_dataset.utils import range_image_utils
-from waymo_open_dataset.utils import transform_utils
-from waymo_open_dataset.utils import  frame_utils
 from waymo_open_dataset import dataset_pb2 as open_dataset
 
 LABEL_TYPE_DICT = {
@@ -35,13 +29,12 @@ def save_2d_bbox_by_frame(frame):
     # range_image_top_pose) = frame_utils.parse_range_image_and_camera_projection(
     #    frame)
     #print(frame.context)
-    ts = frame.timestamp_micros
     field_names = ["name", "center_x", "center_y", "width", "length", "type", "tracking_id"]
-    for index, cam_labels in enumerate(frame.camera_labels):
+    for _index, cam_labels in enumerate(frame.camera_labels):
         camera_name = open_dataset.CameraName.Name.Name(cam_labels.name)
         if not os.path.isdir(camera_name):
             os.makedirs(camera_name)
-        filename = "{}/{}_bbox.csv".format(camera_name, ts)
+        filename = "{}/{}_bbox.csv".format(camera_name, frame.timestamp_micros)
         with open(filename, "w") as _fp:
             writer = csv.writer(_fp)
             writer.writerow(field_names)

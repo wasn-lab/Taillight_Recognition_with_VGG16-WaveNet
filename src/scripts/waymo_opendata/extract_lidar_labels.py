@@ -2,17 +2,13 @@
 import os
 import argparse
 import logging
-import tensorflow.compat.v1 as tf
-import math
 import csv
-import numpy as np
-import itertools
-from PIL import Image
+import tensorflow.compat.v1 as tf
 
-from waymo_open_dataset.utils import range_image_utils
-from waymo_open_dataset.utils import transform_utils
-from waymo_open_dataset.utils import  frame_utils
-from waymo_open_dataset import dataset_pb2 as open_dataset
+#from waymo_open_dataset.utils import range_image_utils
+#from waymo_open_dataset.utils import transform_utils
+#from waymo_open_dataset.utils import  frame_utils
+#from waymo_open_dataset import dataset_pb2 as open_dataset
 
 LABEL_TYPE_DICT = {
     0: "UNKNOWN".lower(),
@@ -28,13 +24,12 @@ def save_lidar_labels_by_frame(frame):
     # range_image_top_pose) = frame_utils.parse_range_image_and_camera_projection(
     #    frame)
     #print(frame.context)
-    ts = frame.timestamp_micros
     field_names = ["center_x", "center_y", "center_z",
                    "width", "length", "height", "heading",
                    "speed_x", "speed_y",
                    "accel_x", "accel_y",
                    "type", "tracking_id", "num_lidar_points_in_box"]
-    filename = "{}_lidar_labels.csv".format(ts)
+    filename = "{}_lidar_labels.csv".format(frame.timestamp_micros)
     with open(filename, "w") as _fp:
         writer = csv.writer(_fp)
         writer.writerow(field_names)
