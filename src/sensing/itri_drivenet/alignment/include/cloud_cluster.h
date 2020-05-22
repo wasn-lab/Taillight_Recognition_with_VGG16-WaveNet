@@ -11,7 +11,8 @@ public:
   CloudCluster();
   virtual ~CloudCluster();
 
-  std::vector<pcl::PointCloud<pcl::PointXYZI>> getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, bool do_downsampling);
+  std::vector<pcl::PointCloud<pcl::PointXYZI>> getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input,
+                                                           bool do_downsampling);
 
 private:
   DBSCAN_CUDA dbscan;

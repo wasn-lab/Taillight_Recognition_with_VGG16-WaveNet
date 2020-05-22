@@ -127,12 +127,12 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
 
     if (!cloud_filtered_ptr->points.empty())
     {
-      if(do_clustering)
+      if (do_clustering)
       {
-        bool do_downsampling = true; // default is ture
+        bool do_downsampling = true;  // default is ture
         std::vector<pcl::PointCloud<pcl::PointXYZI>> cluster_points;
         cluster_points = cloud_cluster.getClusters(cloud_filtered_ptr, do_downsampling);
-        for(const auto& points : cluster_points)
+        for (const auto& points : cluster_points)
         {
           pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
           // if(is_enable_default_3d_bbox)
@@ -144,14 +144,14 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
           //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
           // }
           bboxs_cube_min_max.push_back(cube_min_max);
-          cam_bboxs_points.push_back(points);        
+          cam_bboxs_points.push_back(points);
         }
       }
       else
       {
         pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
         bboxs_cube_min_max.push_back(cube_min_max);
-        cam_bboxs_points.push_back(*cloud_filtered_ptr);    
+        cam_bboxs_points.push_back(*cloud_filtered_ptr);
       }
     }
 

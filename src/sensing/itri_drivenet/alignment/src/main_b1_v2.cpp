@@ -267,8 +267,8 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
   g_polygon_pub.publish(msg_det_obj_arr);
 }
 
-void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer)/*,
-                          std::vector<std::string> window_name, int window_count = 3)*/
+void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer) /*,
+                           std::vector<std::string> window_name, int window_count = 3)*/
 {
   // if (window_name.size() < 3)
   // {
@@ -375,11 +375,11 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
 }
 
 void getPointCloudInAllBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
-                           const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
-                           std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
-                           std::vector<std::vector<PixelPosition>>& cam_pixels,
-                           std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
-                           std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
+                              const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                              std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
+                              std::vector<std::vector<PixelPosition>>& cam_pixels,
+                              std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
+                              std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
   // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
@@ -414,7 +414,7 @@ void displayLidarData()
   // std::vector<std::string> view_name{ "raw data", "image fov", "object" };
 
   /// init
-  pclViewerInitializer(pcl_viewer);//, view_name, static_cast<int>(viewports.size()));
+  pclViewerInitializer(pcl_viewer);  //, view_name, static_cast<int>(viewports.size()));
   pclInitializer(cams_points_ptr);
   pclInitializer(cams_bbox_points_ptr);
   pointsColorInit(rgb_cams_points, g_cams_points_ptr);
@@ -752,8 +752,8 @@ void runInference()
         std::cout << "===== doInference once =====" << std::endl;
         /// get results
         getPointCloudInAllImageFOV(lidar_ssn_ptr, cams_points_ptr /*, cam_pixels*/, g_image_w, g_image_h);
-        getPointCloudInAllBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels, cams_bboxs_cube_min_max,
-                              cams_bboxs_points);
+        getPointCloudInAllBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
+                                 cams_bboxs_cube_min_max, cams_bboxs_points);
 
         if (g_is_display)
         {

@@ -10,12 +10,13 @@ CloudCluster::~CloudCluster()
 {
 }
 
-std::vector<pcl::PointCloud<pcl::PointXYZI>> CloudCluster::getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, bool do_downsampling)
+std::vector<pcl::PointCloud<pcl::PointXYZI>>
+CloudCluster::getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, bool do_downsampling)
 {
   std::vector<pcl::PointIndices> vectorCluster;
   pcl::PointCloud<pcl::PointXYZ>::Ptr ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
-  if(do_downsampling && input->points.size() >= 50)
+  if (do_downsampling && input->points.size() >= 50)
   {
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_upsample(new pcl::PointCloud<pcl::PointXYZI>);
     *input_upsample = *input;
