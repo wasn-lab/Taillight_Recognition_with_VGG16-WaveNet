@@ -1,7 +1,6 @@
 #ifndef CLOUD_CLUSTER_H_
 #define CLOUD_CLUSTER_H_
 
-#include "UserDefine.h"
 #include "VoxelGrid_CUDA.h"
 #include "DBSCAN_CUDA.h"
 
@@ -15,7 +14,7 @@ public:
                                                            bool do_downsampling);
 
 private:
-  DBSCAN_CUDA dbscan;
+  DBSCAN_CUDA dbscan_;
 };
 
 #endif /* CLOUD_CLUSTER_H_ */

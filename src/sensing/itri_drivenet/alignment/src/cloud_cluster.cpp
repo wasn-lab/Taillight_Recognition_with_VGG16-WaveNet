@@ -2,8 +2,8 @@
 
 CloudCluster::CloudCluster()
 {
-  dbscan.setEpsilon(0.6);
-  dbscan.setMinpts(5);
+  dbscan_.setEpsilon(0.6);
+  dbscan_.setMinpts(5);
 }
 
 std::vector<pcl::PointCloud<pcl::PointXYZI>>
@@ -25,8 +25,8 @@ CloudCluster::getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, boo
     pcl::copyPointCloud(*input, *ptr_cur_cloud);
   }
 
-  dbscan.setInputCloud<pcl::PointXYZ>(ptr_cur_cloud);
-  dbscan.segment(vector_cluster);
+  dbscan_.setInputCloud<pcl::PointXYZ>(ptr_cur_cloud);
+  dbscan_.segment(vector_cluster);
 
   std::vector<pcl::PointCloud<pcl::PointXYZI>> vector_raw_cloud(vector_cluster.size());
 
