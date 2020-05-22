@@ -9,7 +9,7 @@ class CloudCluster
 {
 public:
   CloudCluster();
-  virtual ~CloudCluster();
+  ~CloudCluster() = default;
 
   std::vector<pcl::PointCloud<pcl::PointXYZI>> getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input,
                                                            bool do_downsampling);

@@ -13,7 +13,7 @@ CloudCluster::~CloudCluster()
 std::vector<pcl::PointCloud<pcl::PointXYZI>>
 CloudCluster::getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, bool do_downsampling)
 {
-  std::vector<pcl::PointIndices> vectorCluster;
+  std::vector<pcl::PointIndices> vector_cluster;
   pcl::PointCloud<pcl::PointXYZ>::Ptr ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
   if (do_downsampling && input->points.size() >= 50)
@@ -30,19 +30,19 @@ CloudCluster::getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, boo
   }
 
   dbscan.setInputCloud<pcl::PointXYZ>(ptr_cur_cloud);
-  dbscan.segment(vectorCluster);
+  dbscan.segment(vector_cluster);
 
-  std::vector<pcl::PointCloud<pcl::PointXYZI>> vector_raw_cloud(vectorCluster.size());
+  std::vector<pcl::PointCloud<pcl::PointXYZI>> vector_raw_cloud(vector_cluster.size());
 
-  for (size_t i = 0; i < vectorCluster.size(); i++)
+  for (size_t i = 0; i < vector_cluster.size(); i++)
   {
     pcl::PointCloud<pcl::PointXYZI> raw_cloud;
 
-    raw_cloud.resize(vectorCluster.at(i).indices.size());
+    raw_cloud.resize(vector_cluster.at(i).indices.size());
 
-    for (size_t j = 0; j < vectorCluster.at(i).indices.size(); j++)
+    for (size_t j = 0; j < vector_cluster.at(i).indices.size(); j++)
     {
-      raw_cloud.points[j] = input->points[vectorCluster.at(i).indices.at(j)];
+      raw_cloud.points[j] = input->points[vector_cluster.at(i).indices.at(j)];
     }
     vector_raw_cloud[i] = raw_cloud;
   }
