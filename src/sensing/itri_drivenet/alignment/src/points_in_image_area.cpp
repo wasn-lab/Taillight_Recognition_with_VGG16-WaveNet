@@ -60,7 +60,7 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
                            std::vector<PixelPosition>& cam_pixels, std::vector<MinMax3D>& cam_bboxs_cube_min_max,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment alignment,
-                           bool is_enable_default_3d_bbox)
+                           CloudCluster cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
   /// create variable
@@ -79,7 +79,6 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
   std::vector<MinMax3D> bboxs_cube_min_max;
   for (const auto& obj : objects.objects)
   {
-    pcl::PointCloud<pcl::PointXYZI> bbox_points;
     MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
@@ -99,7 +98,6 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
       {
         cam_pixels.push_back(pixel_position);
         point_vector_object.push_back(point);
-        bbox_points.push_back(point);
       }
     }
     // vector to point cloud
@@ -127,19 +125,34 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
       point_vector_object.push_back(point);
     }
 
-    if (!bbox_points.empty())
+    if (!cloud_filtered_ptr->points.empty())
     {
-      pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
-      // if(is_enable_default_3d_bbox)
-      // {
-      //   object_box bbox{};
-      //   bbox = getDefaultObjectBox(obj.classId);
-      //   cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
-      //   cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
-      //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
-      // }
-      bboxs_cube_min_max.push_back(cube_min_max);
-      cam_bboxs_points.push_back(*cloud_filtered_ptr);
+      if (do_clustering)
+      {
+        bool do_downsampling = true;  // default is ture
+        std::vector<pcl::PointCloud<pcl::PointXYZI>> cluster_points;
+        cluster_points = cloud_cluster.getClusters(cloud_filtered_ptr, do_downsampling);
+        for (const auto& points : cluster_points)
+        {
+          pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
+          // if(is_enable_default_3d_bbox)
+          // {
+          //   object_box bbox{};
+          //   bbox = getDefaultObjectBox(obj.classId);
+          //   cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
+          //   cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
+          //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
+          // }
+          bboxs_cube_min_max.push_back(cube_min_max);
+          cam_bboxs_points.push_back(points);
+        }
+      }
+      else
+      {
+        pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
+        bboxs_cube_min_max.push_back(cube_min_max);
+        cam_bboxs_points.push_back(*cloud_filtered_ptr);
+      }
     }
 
     // concatenate the points of objects
