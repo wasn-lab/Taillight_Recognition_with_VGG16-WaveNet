@@ -6,10 +6,6 @@ CloudCluster::CloudCluster()
   dbscan.setMinpts(5);
 }
 
-CloudCluster::~CloudCluster()
-{
-}
-
 std::vector<pcl::PointCloud<pcl::PointXYZI>>
 CloudCluster::getClusters(const pcl::PointCloud<pcl::PointXYZI>::Ptr& input, bool do_downsampling)
 {
