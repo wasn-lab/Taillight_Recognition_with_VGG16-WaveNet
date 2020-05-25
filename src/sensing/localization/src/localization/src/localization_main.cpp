@@ -68,6 +68,9 @@
 #define Wb 0.3
 #define Wc 0.3
 
+#define RANGE_OF_NEIGHTBOR_POINT_IN_METER 0.5
+#define MIN_NEIGHBOR_PERCENTAGE_OF_VALID_POINT 0.001
+
 #if LOG
 std::ofstream myfile("log.csv");
 int cnt_log = 0;
@@ -290,6 +293,37 @@ bool heading_rate(float low, float high, float input)
   return ((input - high) * (input - low) <= 0);
 }
 
+int floatcomp(const void* elem1, const void* elem2)
+{
+    if(*(const double*)elem1 < *(const double*)elem2)
+        return -1;
+    return *(const double*)elem1 > *(const double*)elem2;
+}
+
+int is_valid_point(double* cloud_zArray, int total_point_num ,double zValue)
+{
+    // If #(points within 0.5m of the current point) < #(all points) * 1/1000 , it shuld be considered as noise point
+    int i;
+    int neighbor_num = 0;
+    double neighbor_percentage = 0.0;
+    int valid = 0;
+
+    for ( i = 0 ; i < total_point_num ; i++) {
+        if (fabs(cloud_zArray[i] - zValue) < RANGE_OF_NEIGHTBOR_POINT_IN_METER) {
+		neighbor_num++;		
+	}	
+    }
+    neighbor_num = neighbor_num - 1; // One point is zValue itself
+    neighbor_percentage = (double)(neighbor_num)/(double)(total_point_num);
+    
+    if (neighbor_percentage > MIN_NEIGHBOR_PERCENTAGE_OF_VALID_POINT) {
+	valid = 1;
+    }
+    printf("current_z = %f, neighbor_num = %d total_point_num = %d neighbor_percentage = %f valid = %d\n",zValue,neighbor_num,total_point_num,neighbor_percentage,valid);
+
+    return valid;
+}
+
 float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI center_p, double max_range)
 {
   std::cout << " finding z value ... " << std::endl;
@@ -299,6 +333,10 @@ float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI 
   int cnt_ = 0;
   double square_max_range = max_range * max_range;
   double diff_;
+  double* zArry;
+  int num_points;
+  int i;
+
   if (input.points.size() < 2)
   {
     std::cout << " Did not get map data, check the map_pub node. " << std::endl;
@@ -319,23 +357,40 @@ float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI 
     }
   }
 
-  if (ranged_scan.points.size() < 2)
+  num_points = ranged_scan.points.size();
+
+  if (num_points < 2)
   {
     std::cout << " Poor info of Z ... " << std::endl;
     return 999;
   }
-  else
-  {
-    for (int i = 0; i < ranged_scan.points.size(); i++)
-    {
-      if (ranged_scan.points[i].z < min_value)
-      {
-        min_value = ranged_scan.points[i].z;
-      }
-    }
-    std::cout << " find local Z = " << min_value << std::endl;
-    return min_value;
+
+  zArry = (double*)malloc( num_points * sizeof(double) );
+
+  for (i = 0; i < num_points; i++) {
+    zArry[i] = ranged_scan.points[i].z;
+    qsort(zArry, num_points, sizeof(double), floatcomp);
   }
+
+  for (i = 0; i < num_points ; i++) {	
+    if (is_valid_point(zArry, num_points, zArry[i])) {
+        min_value = zArry[i];
+        break;
+    }
+  }
+    
+  //if not found, just return the smallest value
+  if (min_value == 999) {
+    min_value = zArry[0];
+  }
+
+  std::cout << " find local Z = " << min_value << std::endl;
+  if (zArry) {
+    free(zArry);
+  }
+  
+  return min_value;
+
 }
 
 void transformPoint(const struct pose& input_pose, struct pose& pose_output, const Eigen::Matrix4f& transform)
@@ -413,10 +468,11 @@ void rviz_initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::C
 {
   rviz_input_pose.x = initial_input->pose.pose.position.x;
   rviz_input_pose.y = initial_input->pose.pose.position.y;
-
+ 
   pcl::PointXYZI p_;
   p_.x = rviz_input_pose.x;
   p_.y = rviz_input_pose.y;
+
   if (p_.x < map_mean_value)
   {
     p_.z = 0;
@@ -675,6 +731,7 @@ static void callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointXYZI p_;
     p_.x = current_gnss2local_pose.x;
     p_.y = current_gnss2local_pose.y;
+
     if (p_.x < map_mean_value)
     {
       p_.z = 0;
