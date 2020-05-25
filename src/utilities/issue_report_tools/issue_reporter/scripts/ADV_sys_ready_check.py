@@ -31,6 +31,10 @@ TODO:
   use theis state (latest state) as current state
 
 """
+# Parameters
+
+# Reporting even in mnual-drive mode
+is_reporting_all_time = False
 
 # Timeouts
 #-------------------------#
@@ -63,10 +67,14 @@ startup_check_list = ["node_alive", "REC_is_recording"]
 # startup_check_list += ["localization_state"]
 # startup_check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
 
+
+
+
 # Debug mode
 #------------------------#
 is_debugging = False
 if is_debugging:
+    is_reporting_all_time = True
     check_list = ["node_alive", "REC_is_recording"]
     check_list += ["localization_state"]
     startup_check_list = ["node_alive", "REC_is_recording"]
@@ -135,8 +143,9 @@ ros_msg_backup = dict()
 # ROS publishers
 #-------------------------------#
 ros_advop_sys_ready_pub = rospy.Publisher('/ADV_op/sys_ready', Bool, queue_size=10)
-REC_record_backup_pub = rospy.Publisher('/REC/req_backup', String, queue_size=10)
-sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=100)
+REC_record_backup_pub = rospy.Publisher('/REC/req_backup', String, queue_size=1000)
+event_json_pub = rospy.Publisher('/ADV_op/event_json', String, queue_size=1000)
+sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=1000)
 #-------------------------------#
 
 # SIGNAL_PROCESSING
@@ -159,6 +168,8 @@ def _timeout_handle_alive():
     check_queue_dict["node_alive"].put(STATE_DEF_dict["ERROR"])
     # var_advop_node_alive = False
     rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
+    # Publish the event message
+    event_json_pub.publish( get_event_json("node_alive", STATE_DEF_dict["ERROR"], "Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) ) )
 
 def set_timer_alive():
     """
@@ -303,6 +314,29 @@ def code_func_localization(msg):
 
 #--------------------------------------#
 
+# Get event-json
+#--------------------------------------#
+def get_event_json(checker_name, status_code, event_str, event_timestamp=None):
+    """
+    Through ROS std_msgs.String
+    json string:
+    {
+        "module": "yyy" (string)
+        "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN" (string)
+        "event_str": "xxx event of yyy module" (string)
+        "timestamp": (e.g. 1587014600.0801954, a floating-point number)
+    }
+    Output: json string
+    """
+    json_dict = dict()
+    json_dict["module"] = checker_name
+    json_dict["status"] = STATE_DEF_dict_inv[status_code]
+    json_dict["event_str"] = event_str
+    json_dict["timestamp"] = event_timestamp if (event_timestamp is not None) else time.time()
+    return json.dumps(json_dict)
+#--------------------------------------#
+
+
 # ROS callbacks
 #--------------------------------------#
 def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigger_REC=True, post_func=None ):
@@ -325,21 +359,24 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
-            if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
-                # Trigger recorder with reason
-                _reason = "%s:%s:%s" % (_checker_name, STATE_DEF_dict_inv[_status], _event_str )
-                # if advop_run_state:
-                if run_state_delay.output(): # Note: delayed close
-                    # Note: We only trigger record if it's already in self-driving mode and running
-                    #       The events during idle is not going to be backed-up.
+            # Trigger recorder with reason
+            _reason = "%s:%s:%s" % (_checker_name, STATE_DEF_dict_inv[_status], _event_str )
+            if run_state_delay.output() or is_reporting_all_time: # Note: delayed close
+                # Note: We only trigger record if it's already in self-driving mode and running
+                #       The events during idle is not going to be backed-up.
+                #-------------------------#
+                # Publish the event message
+                event_json_pub.publish( get_event_json(_checker_name, _status, _event_str ) )
+                #-------------------------#
+                if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+                    # if advop_run_state:
                     REC_record_backup_pub.publish( _reason )
                     # Write some log
                     rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
-                    # Publish the event message
-                    #
-                else:
-                    rospy.logwarn("[sys_ready] It's not in self-driving mode, ignore the event:<%s>" % _reason )
-                    # print("It's not in self-driving mode, ignore the event.")
+                #-------------------------#
+            else:
+                rospy.logwarn("[sys_ready] It's not in self-driving mode, ignore the event:<%s>" % _reason )
+                # print("It's not in self-driving mode, ignore the event.")
                 #
             #
         #
