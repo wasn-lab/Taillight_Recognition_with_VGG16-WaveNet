@@ -52,6 +52,7 @@ static Geofence BBox_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop=0;
 static int PP_Distance=1000;
+static int PP_Speed=0;
 ros::Publisher PP_geofence_line;
 ros::Publisher PPCloud_pub;
 
@@ -172,6 +173,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 
 	PP_Stop = 0;
 	PP_Distance = 100;
+	PP_Speed = 0;
 	for(uint i=0;i<msg->objects.size();i++)
 	{
 		//cout << "Start point: " << msg->objects[i].bPoint.p0.x << "," <<  msg->objects[i].bPoint.p0.y << endl;
@@ -237,17 +239,18 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 				}
 				if(BBox_Geofence.getDistance()<80)
 				{
-					cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
+					//cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() << endl;
 					//cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
 					//Plot geofence PP
 					if(BBox_Geofence.getDistance()<PP_Distance && BBox_Geofence.getDistance()>3.8)
 					{
 						PP_Distance = BBox_Geofence.getDistance();
+						PP_Speed = BBox_Geofence.getObjSpeed();
 						Plot_geofence(BBox_Geofence.findDirection());
 					}
 					//if(!(BBox_Geofence.getDistance()>Range_front || BBox_Geofence.getFarest()<Range_back))
 					{
-						cout << "Collision appears" << endl;
+						//cout << "Collision appears" << endl;
 						PP_Stop = 1;
 					}
 				}
@@ -316,16 +319,20 @@ int main(int argc, char **argv){
 	{
 		ros::spinOnce();
 		if(PP_Stop==0){
-			cout << "No Collision" << endl;
+			//cout << "No Collision" << endl;
 		}
 		else{	
-			cout << "Collision appears" << endl;		
+			cout << "Collision appears" << endl;
+			cout << "Distance:" << PP_Distance << endl;
+			cout << "Speed:" << PP_Speed << endl; 		
 		}
 		frame.can_id  = 0x595;
 		frame.data[0] = (short int)(PP_Stop*100);
 		frame.data[1] = (short int)(PP_Stop*100)>>8;
 		frame.data[2] = (short int)(PP_Distance*100);
 		frame.data[3] = (short int)(PP_Distance*100)>>8;
+		frame.data[4] = (short int)(PP_Speed*100);
+		frame.data[5] = (short int)(PP_Speed*100)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
 		//printf("Wrote %d bytes\n", nbytes);
 		loop_rate.sleep();	

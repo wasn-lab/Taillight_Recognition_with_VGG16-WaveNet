@@ -53,7 +53,7 @@ static Geofence CPoint_Geofence(1.2);
 static Geofence BBox_Geofence(1.2);
 static Geofence Radar_Geofence(1.5);
 static Geofence PCloud_Geofence_original(1.2);
-static Geofence Deviate_Geofence(1.5);
+static Geofence Deviate_Geofence(1.2);
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 //static uint Deadend_flag;
 static uint overtake_over_flag;
