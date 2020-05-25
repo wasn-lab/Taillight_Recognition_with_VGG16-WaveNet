@@ -111,7 +111,8 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<PixelPosition>& cam_pixels, std::vector<MinMax3D>& cam_bboxs_cube_min_max,
+                           std::vector<PixelPosition>& cam_pixels, std::vector<int>& cam_bboxs_class_id,
+                           std::vector<MinMax3D>& cam_bboxs_cube_min_max,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment alignment,
                            CloudCluster cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
@@ -133,6 +134,7 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
   for (const auto& obj : objects.objects)
   {
     MinMax3D cube_min_max;  // object min and max point
+    int class_id = obj.classId;
     for (const auto& point : cam_points.points)
     {
       // get the 2d box
@@ -206,6 +208,7 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
         bboxs_cube_min_max.push_back(cube_min_max);
         cam_bboxs_points.push_back(*cloud_filtered_ptr);
       }
+      cam_bboxs_class_id.push_back(class_id);
     }
 
     // concatenate the points of objects

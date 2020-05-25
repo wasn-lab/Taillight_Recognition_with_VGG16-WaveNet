@@ -222,7 +222,8 @@ void bbox_publisher(std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
   g_bbox_pub.publish(det_obj_arr);
 }
 
-void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
+void polygon_publisher(std::vector<std::vector<int>>& cam_bboxs_class_id,
+                       std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
                        std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max, std_msgs::Header msg_header)
 {
   msgs::DetectedObjectArray msg_det_obj_arr;
@@ -234,6 +235,7 @@ void polygon_publisher(std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
     {
       msgs::DetectedObject msg_obj;
+      msg_obj.classId = cam_bboxs_class_id[cam_order][obj_index];
       msg_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
       msg_obj.distance = 0;
 
@@ -378,6 +380,7 @@ void getPointCloudInAllBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
                               const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                               std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                               std::vector<std::vector<PixelPosition>>& cam_pixels,
+                              std::vector<std::vector<int>>& cam_bboxs_class_id,
                               std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
@@ -385,8 +388,9 @@ void getPointCloudInAllBoxFOV(std::vector<msgs::DetectedObjectArray>& objects,
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInBoxFOV(objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
-                          cam_pixels[cam_order], cams_bboxs_cube_min_max[cam_order], cams_bboxs_points[cam_order],
-                          g_alignments[cam_order], g_cloud_cluster, g_is_enable_default_3d_bbox, g_do_clustering);
+                          cam_pixels[cam_order], cam_bboxs_class_id[cam_order], cams_bboxs_cube_min_max[cam_order],
+                          cams_bboxs_points[cam_order], g_alignments[cam_order], g_cloud_cluster,
+                          g_is_enable_default_3d_bbox, g_do_clustering);
   }
 }
 
@@ -685,6 +689,7 @@ void runInference()
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cam_ids.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_points_ptr(g_cam_ids.size());
   std::vector<std::vector<PixelPosition>> cam_pixels(g_cam_ids.size());
+  std::vector<std::vector<int>> cam_bboxs_class_id(g_cam_ids.size());
   std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max(g_cam_ids.size());
   std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points(g_cam_ids.size());
 
@@ -753,7 +758,7 @@ void runInference()
         std::cout << "===== doInference once =====" << std::endl;
         /// get results
         getPointCloudInAllImageFOV(lidar_ssn_ptr, cams_points_ptr /*, cam_pixels*/, g_image_w, g_image_h);
-        getPointCloudInAllBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
+        getPointCloudInAllBoxFOV(object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels, cam_bboxs_class_id,
                                  cams_bboxs_cube_min_max, cams_bboxs_points);
 
         if (g_is_display)
@@ -788,9 +793,10 @@ void runInference()
         }
 
         // bbox_publisher(cams_bboxs_cube_min_max, object_arrs[0].header);
-        polygon_publisher(cams_bboxs_points, cams_bboxs_cube_min_max, object_arrs[0].header);
+        polygon_publisher(cam_bboxs_class_id, cams_bboxs_points, cams_bboxs_cube_min_max, object_arrs[0].header);
 
         release(cam_pixels);
+        release(cam_bboxs_class_id);
         release(cams_bboxs_cube_min_max);
         release(cams_bboxs_points);
       }
