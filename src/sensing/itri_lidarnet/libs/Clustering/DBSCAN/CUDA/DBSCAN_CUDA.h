@@ -11,10 +11,10 @@ public:
   virtual ~DBSCAN_CUDA();
 
   template <typename PointT>
-  void setInputCloud(const typename PointCloud<PointT>::ConstPtr input);
+  void setInputCloud(const typename pcl::PointCloud<PointT>::ConstPtr input);
   void setEpsilon(const double Epsilon);
   void setMinpts(const unsigned int MinPts);
-  void segment(IndicesClusters& clusters);
+  void segment(pcl::IndicesClusters& clusters);
 
 private:
   static bool hasInitialCUDA;
