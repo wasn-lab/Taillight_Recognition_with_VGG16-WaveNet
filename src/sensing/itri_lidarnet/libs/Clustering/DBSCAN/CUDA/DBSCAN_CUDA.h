@@ -11,7 +11,7 @@ public:
   virtual ~DBSCAN_CUDA();
 
   template <typename PointT>
-  void setInputCloud(const typename PointCloud<PointT>::ConstPtr input);
+  void setInputCloud(const typename pcl::PointCloud<PointT>::ConstPtr input);
   void setEpsilon(const double Epsilon, 
                                    const double EpsilonCar, 
                                    const double EpsilonPed, 

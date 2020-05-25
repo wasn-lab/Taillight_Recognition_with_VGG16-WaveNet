@@ -48,7 +48,7 @@ class Dataset : private boost::noncopyable
     }
 
     void
-    load_pcl (const PointCloud<PointXYZ>::ConstPtr input)
+    load_pcl (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr input)
     {
       _data.clear ();
       _data.resize (input->size ());
@@ -74,7 +74,7 @@ class Dataset : private boost::noncopyable
     }
 
     void
-    load_pcl (const PointCloud<PointXYZIL>::ConstPtr input)
+    load_pcl (const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr input)
     {
       _data.clear ();
       _data.resize (input->size ());

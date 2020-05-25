@@ -12,7 +12,6 @@
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
 #include <pcl/segmentation/min_cut_segmentation.h>
 
-using namespace pcl;
 
 #include "../dataset.hpp"
 

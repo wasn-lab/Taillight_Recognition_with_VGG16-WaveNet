@@ -1,5 +1,8 @@
 #include "VoxelGrid_CUDA.h"
 
+using namespace std;
+using namespace pcl;
+
 bool VoxelGrid_CUDA::hasInitialCUDA = false;
 int VoxelGrid_CUDA::maxThreadsNumber = 0;
 
