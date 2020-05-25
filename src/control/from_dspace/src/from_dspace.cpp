@@ -16,6 +16,7 @@ const int NumOfTopic = 8;
 #include "msgs/BackendInfo.h"
 #include "std_msgs/Header.h"
 #include "std_msgs/Float64.h"
+#include "msgs/VehInfo.h"
 #include <ros/ros.h>
 
 
@@ -35,10 +36,9 @@ const int NumOfTopic = 8;
 #include <linux/can.h>
 #include <linux/can/raw.h>
 using namespace std ;
-msgs::DynamicPath msg123;
+msgs::VehInfo msg_VehInfo;
 
-
-int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs::DynamicPath &msg) {
+int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
     switch (frame.can_id) {
     case 0x601:
 	{
@@ -162,29 +162,103 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
     break;
 
     case 0x301:
-	{
+    {
+        int ego_x_tmp;
+        int ego_y_tmp;
+        short ego_z_tmp;
 
-	    return 1;
-	}
+        //bus_vehinfo2_receive::VehInfo msg;
+        ego_x_tmp = frame.data[0] << 8| frame.data[1] << 16 | frame.data[2] << 24;
+        ego_y_tmp = frame.data[3] << 8| frame.data[4] << 16 | frame.data[5] << 24;
+        ego_z_tmp = frame.data[6] | frame.data[7]<< 8;
+
+        msg_VehInfo.ego_x = ego_x_tmp/256;
+        msg_VehInfo.ego_y = ego_y_tmp/256;
+        msg_VehInfo.ego_z = ego_z_tmp;
+
+        msg_VehInfo.ego_x /=100;
+        msg_VehInfo.ego_y /=100;
+        msg_VehInfo.ego_z /=100;
+
+        std::cout <<  "Got 0x301: " <<
+        " msg_VehInfo.ego_x: " << msg_VehInfo.ego_x << " "<<
+        " msg_VehInfo.ego_y: " << msg_VehInfo.ego_y << " " <<
+        " msg_VehInfo.ego_z: " << msg_VehInfo.ego_z << " " << std::endl;
+        return 1;
+    }
     break;
-
     case 0x302:
-	{
+    {
+        short road_id_tmp;
+        short lane_width_tmp;
+        short yaw_rate_tmp;
 
-	    return 1;
-	}
+        road_id_tmp = frame.data[0] | frame.data[1] << 8;
+        lane_width_tmp = frame.data[2];
+        yaw_rate_tmp = frame.data[3] | frame.data[4] << 8;
+
+        msg_VehInfo.road_id = road_id_tmp;
+        msg_VehInfo.lanewidth = lane_width_tmp;
+        msg_VehInfo.lanewidth /=10;
+        msg_VehInfo.yaw_rate = yaw_rate_tmp;
+        msg_VehInfo.yaw_rate /= 10;
+
+        std::cout << "Got 0x302: " <<
+        "road_id: " << msg_VehInfo.road_id <<  " " <<
+        "lane_width: " << msg_VehInfo.lanewidth <<  " " <<
+        "yaw_rate: " << msg_VehInfo.yaw_rate <<  " " << std::endl;
+        return 1;
+    }
     break;
 
     case 0x303:
-	{
-	    return 1;
-	}
+    {
+        int ukf_ego_x_tmp;
+        int ukf_ego_y_tmp;
+        short ukf_ego_heading_tmp;
+
+        ukf_ego_x_tmp = frame.data[0]<<8 | frame.data[1] << 16 | frame.data[2] << 24;
+        ukf_ego_y_tmp = frame.data[3] <<8 | frame.data[4] << 16 | frame.data[5] << 24;
+        ukf_ego_heading_tmp = frame.data[6] | frame.data[7]<< 8;
+
+        msg_VehInfo.ukf_ego_x = ukf_ego_x_tmp/256;
+        msg_VehInfo.ukf_ego_y = ukf_ego_y_tmp/256;
+        msg_VehInfo.ukf_ego_heading = ukf_ego_heading_tmp;
+
+        msg_VehInfo.ukf_ego_x /= 100;
+        msg_VehInfo.ukf_ego_y /= 100;
+        msg_VehInfo.ukf_ego_heading /= 10;
+        std::cout << "Got 0x303:" <<
+        "ukf_ego_x: " << msg_VehInfo.ukf_ego_x <<  " " <<
+        "ukf_ego_y: " << msg_VehInfo.ukf_ego_y <<  " " <<
+        "ukf_ego_heading: " << msg_VehInfo.ukf_ego_heading <<  " " <<std::endl;
+        return 1;
+    }
     break;
 
     case 0x304:
-	{
-	    return 1;
-	}
+    {
+        bool gps_fault_flag_tmp;
+        short ego_heading_tmp;
+        short ego_speed_tmp;
+
+        gps_fault_flag_tmp = frame.data[0];
+        ego_heading_tmp = frame.data[1] | frame.data[2]<< 8;
+        ego_speed_tmp = frame.data[3] | frame.data[4] << 8;
+
+        msg_VehInfo.gps_fault_flag = gps_fault_flag_tmp;
+        msg_VehInfo.ego_heading = ego_heading_tmp;
+        msg_VehInfo.ego_speed = ego_speed_tmp;
+
+        msg_VehInfo.ego_heading /= 10;
+        msg_VehInfo.ego_speed /= 100;
+
+        std::cout << "Got 0x304:" <<
+        "gps_fault_flag: " << unsigned(msg_VehInfo.gps_fault_flag) <<  " " <<
+        "ego_heading: " << msg_VehInfo.ego_heading <<  " " <<
+        "ego_speed: " << msg_VehInfo.ego_speed <<  " " <<std::endl;
+        return 1;
+    }
     break;
     
     case 0x350:
@@ -228,6 +302,8 @@ int main(int argc, char **argv)
 	//uint32_t seq = 0;
     ros::Publisher Publisher_BD;
     Publisher_BD = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
+    ros::Publisher vehinfo_pub;
+    vehinfo_pub = n.advertise<msgs::VehInfo>("veh_info", 1);
 
     int rc;
 	struct can_filter filter[NumOfReceiveID];
@@ -300,10 +376,11 @@ int main(int argc, char **argv)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher, msg123);
+            ProcessFrame(frame, Publisher);
         }
         msgs::BackendInfo msg123;
         Publisher_BD.publish(msg123);
+        //vehinfo_pub.publish(msg_VehInfo);
         rate.sleep();
     }
     return 0;
