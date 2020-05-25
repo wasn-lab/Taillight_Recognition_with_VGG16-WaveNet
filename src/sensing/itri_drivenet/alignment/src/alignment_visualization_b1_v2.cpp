@@ -183,7 +183,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
-    getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order] , cam_pixels[cam_order], image_w, image_h,
+    getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order], cam_pixels[cam_order], image_w, image_h,
                             g_alignments[cam_order]);
   }
 }
@@ -209,7 +209,7 @@ void displayLidarData()
   std::vector<pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI>> rgb_cams_points;
 
   /// init
-  pclViewerInitializer(pcl_viewer);  
+  pclViewerInitializer(pcl_viewer);
   pclInitializer(cams_points_ptr);
   pointsColorInit(rgb_cams_points, g_cams_points_ptr);
 
@@ -227,11 +227,12 @@ void displayLidarData()
 
     /// draw points on pcl viewer
     // std::lock_guard<std::mutex> lock_lidar_process(g_mutex_lidar_process);
-    // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");  //, viewports[0]);
+    // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");  //,
+    // viewports[0]);
 
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points); // mutex camera points
+      std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points);  // mutex camera points
       pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_points_ptr[cam_order], rgb_cams_points[cam_order],
                                                 g_cam_topic_names[cam_order]);
     }
@@ -275,7 +276,7 @@ void runInference()
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cam_ids.size());
   std::vector<std::vector<PixelPosition>> cam_pixels(g_cam_ids.size());
   std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max(g_cam_ids.size());
-  
+
   /// init
   pclInitializer(cams_points_ptr);
 
@@ -293,7 +294,7 @@ void runInference()
       if (cam_mats[cam_order].empty())
       {
         is_data_ready = false;
-        std::cout << "cam_mats " << cam_order << "is empty"  << std::endl;
+        std::cout << "cam_mats " << cam_order << "is empty" << std::endl;
       }
     }
 
@@ -304,14 +305,14 @@ void runInference()
     if (lidarall_ptr->empty())
     {
       is_data_ready = false;
-      std::cout << "lidarall is empty"  << std::endl;
+      std::cout << "lidarall is empty" << std::endl;
     }
 
     if (is_data_ready)
     {
       std::cout << "===== doInference once =====" << std::endl;
       /// get results
-      getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr , cam_pixels, g_image_w, g_image_h);
+      getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
 
       if (g_is_display)
       {

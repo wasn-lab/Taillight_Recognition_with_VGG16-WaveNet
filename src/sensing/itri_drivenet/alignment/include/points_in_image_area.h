@@ -22,8 +22,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
                              std::vector<DriveNet::PixelPosition>& cam_pixels, int image_w, int image_h,
                              Alignment alignment);
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                             pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
-                             int image_w, int image_h,
+                             pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, int image_w, int image_h,
                              Alignment alignment);
 void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
