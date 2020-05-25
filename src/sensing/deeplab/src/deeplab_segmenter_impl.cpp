@@ -46,6 +46,9 @@ const std::vector<std::string> g_label_names{
   "diningtable", "dog",       "horse",   "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tv"
 };
 
+// For debugging: dump statistics about labels
+constexpr bool COUNT_PIXELS_BY_LABEL = false;
+
 static int32_t resize_to_deeplab_input(const cv::Mat& img_in, cv::Mat& img_out)
 {
   cv::Mat tmp;
@@ -200,6 +203,31 @@ int32_t DeeplabSegmenterImpl::segment_into_labels(const cv::Mat& img_in, uint8_t
   {
     labels[idx] = static_cast<uint8_t>(labels64[idx]);
   }
+
+  if (COUNT_PIXELS_BY_LABEL)
+  {
+    std::unordered_map<uint8_t, size_t> pixel_map;
+    for (auto idx = 0; idx < NUM_PIXELS; idx++)
+    {
+      auto label = labels[idx];
+      if (label > 0)
+      {
+        if (pixel_map.find(label) == pixel_map.end())
+        {
+          pixel_map[label] = 1;
+        }
+        else
+        {
+          pixel_map[label] += 1;
+        }
+      }
+    }
+    for (auto& it : pixel_map)
+    {
+      LOG(INFO) << "label " << int(it.first) << " occurs " << it.second << " times.";
+    }
+  }
+
   tf_utils::DeleteTensor(output_tensor_);
   output_tensor_ = nullptr;
   return 0;
