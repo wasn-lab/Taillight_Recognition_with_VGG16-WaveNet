@@ -2,6 +2,8 @@
 
 #include <memory>
 
+namespace image_saver
+{
 class ImageSaverNodeImpl;
 
 class ImageSaverNode
@@ -14,3 +16,4 @@ public:
   ~ImageSaverNode();
   void run();
 };
+};  // namespace image_saver

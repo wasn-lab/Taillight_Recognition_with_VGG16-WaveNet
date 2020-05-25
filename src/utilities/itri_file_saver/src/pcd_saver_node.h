@@ -14,4 +14,3 @@ public:
   ~PCDSaverNode();
   void run();
 };
-
