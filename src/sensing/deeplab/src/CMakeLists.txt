@@ -32,7 +32,12 @@ set(DEEPLAB_LIB_DEPS
 include_directories(${DEEPLAB_INCLUDE_DIRS})
 link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
-add_library(${DEEPLAB_LIB} STATIC ${DEEPLAB_LIB_SRCS})
-add_executable(${DEEPLAB_EXE} ${DEEPLAB_DETECTOR_SRCS})
+add_library(${DEEPLAB_LIB} EXCLUDE_FROM_ALL STATIC ${DEEPLAB_LIB_SRCS})
 target_link_libraries(${DEEPLAB_LIB} ${DEEPLAB_LIB_DEPS})
+
+add_executable(${DEEPLAB_EXE} EXCLUDE_FROM_ALL ${DEEPLAB_DETECTOR_SRCS})
 target_link_libraries(${DEEPLAB_EXE} ${DEEPLAB_LIB})
+
+set(DEEPLAB_CMD_SRCS deeplab_cmd.cpp)
+add_executable(deeplab_cmd EXCLUDE_FROM_ALL ${DEEPLAB_CMD_SRCS})
+target_link_libraries(deeplab_cmd ${DEEPLAB_LIB})

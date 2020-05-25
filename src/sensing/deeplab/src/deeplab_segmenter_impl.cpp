@@ -114,8 +114,8 @@ int32_t DeeplabSegmenterImpl::preprocess_for_input_tensor(const cv::Mat& img_in,
   assert(img_in.cols > 0);
   if (img_in.rows != DEEPLAB_IMAGE_HEIGHT || img_in.cols != DEEPLAB_IMAGE_WIDTH)
   {
-    LOG(WARNING) << "Expect image size " << DEEPLAB_IMAGE_WIDTH << "x" << DEEPLAB_IMAGE_HEIGHT << ", Got " << img_in.cols
-                             << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
+    LOG(WARNING) << "Expect image size " << DEEPLAB_IMAGE_WIDTH << "x" << DEEPLAB_IMAGE_HEIGHT << ", Got "
+                 << img_in.cols << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
     resize_to_deeplab_input(img_in, img_bgr);
     resized = 1;
   }
@@ -186,6 +186,22 @@ int32_t DeeplabSegmenterImpl::postprocess_with_labels(const int64_t* labels, con
   const auto beta = 1 - alpha;
   cv::addWeighted(overlay, alpha, img_rgb, beta, /*gamma*/ 0, img_out);
   cv::cvtColor(img_out, img_out, cv::COLOR_RGB2BGR);
+  return 0;
+}
+
+int32_t DeeplabSegmenterImpl::segment_into_labels(const cv::Mat& img_in, uint8_t* labels)
+{
+  cv::Mat img_rgb;
+  preprocess_for_input_tensor(img_in, img_rgb);
+  inference(img_rgb);
+
+  auto* labels64 = static_cast<int64_t*>(TF_TensorData(output_tensor_));
+  for (auto idx = 0; idx < NUM_PIXELS; idx++)
+  {
+    labels[idx] = static_cast<uint8_t>(labels64[idx]);
+  }
+  tf_utils::DeleteTensor(output_tensor_);
+  output_tensor_ = nullptr;
   return 0;
 }
 

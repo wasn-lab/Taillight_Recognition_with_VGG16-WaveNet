@@ -4,7 +4,8 @@
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
 
-namespace deeplab {
+namespace deeplab
+{
 class DeeplabNodeImpl
 {
   // ROS
@@ -26,4 +27,4 @@ public:
   void image_callback(const sensor_msgs::ImageConstPtr& msg_in);
   void run(int argc, char* argv[]);
 };
-}; // namespace deeplab
+};  // namespace deeplab
