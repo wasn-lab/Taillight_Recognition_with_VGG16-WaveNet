@@ -9,6 +9,7 @@ class Dataset : private boost::noncopyable
     typedef boost::shared_ptr<Dataset> Ptr;
     typedef std::vector<Eigen::VectorXf> DataContainer;
     typedef std::vector<size_t> LabelsContainer;
+    typedef std::vector<int> LabelContainer;
 
     struct point_t
     {
@@ -53,6 +54,8 @@ class Dataset : private boost::noncopyable
       _data.resize (input->size ());
       _labels.clear ();
       _labels.resize (input->size ());
+      _label.clear();
+      _label.resize (input->size ());
       m_cols = 3;
       m_rows = input->size ();
 
@@ -65,6 +68,7 @@ class Dataset : private boost::noncopyable
         col_vector (2) = input->points[i].z;
 
         _data.at (i) = col_vector;
+        _label.at (i) = 0;
       }
 
     }
@@ -76,6 +80,8 @@ class Dataset : private boost::noncopyable
       _data.resize (input->size ());
       _labels.clear ();
       _labels.resize (input->size ());
+      _label.clear();
+      _label.resize (input->size ());
       m_cols = 5;
       m_rows = input->size ();
 
@@ -90,6 +96,7 @@ class Dataset : private boost::noncopyable
         col_vector (4) = input->points[i].label;
 
         _data.at (i) = col_vector;
+        _label.at (i) = input->points[i].label;
       }
 
     }
@@ -203,6 +210,13 @@ class Dataset : private boost::noncopyable
       return r->second;
     }
 
+    LabelContainer&
+    label ()
+    {
+      return _label;
+    }
+    
+
     size_t
     num_points () const
     {
@@ -227,6 +241,7 @@ class Dataset : private boost::noncopyable
 
     DataContainer _data;
     LabelsContainer _labels;
+    LabelContainer _label;
     size_t m_rows;
     size_t m_cols;
 

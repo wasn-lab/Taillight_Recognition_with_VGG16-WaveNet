@@ -9,8 +9,8 @@ S1Cluster::S1Cluster(boost::shared_ptr<pcl::visualization::PCLVisualizer> input_
   viewer = input_viewer;
   viewID = input_viewID;
 
-  dbscan.setEpsilon (0.6, 0.6, 0.6, 0.6);
-  dbscan.setMinpts (5, 5, 5, 5);
+  dbscan.setEpsilon (0.6, 0.6, 0.28, 0.6, 0.28);
+  dbscan.setMinpts (5, 5, 5, 5, 5);
 }
 
 S1Cluster::~S1Cluster()

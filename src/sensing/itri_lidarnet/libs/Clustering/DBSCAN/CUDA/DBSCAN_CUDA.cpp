@@ -49,19 +49,29 @@ void DBSCAN_CUDA::setInputCloud(const typename PointCloud<PointT>::ConstPtr Inpu
   dset->load_pcl(Input);
   dbs = boost::make_shared<GDBSCAN>(dset);
 }
-void DBSCAN_CUDA::setEpsilon(const double Epsilon, const double EpsilonCar, const double EpsilonPed, const double EpsilonBike)
+void DBSCAN_CUDA::setEpsilon(const double Epsilon, 
+                                                                   const double EpsilonCar, 
+                                                                   const double EpsilonPed, 
+                                                                   const double EpsilonBike, 
+                                                                   const double EpsilonRule)
 {
   epsilon[0] = Epsilon;
   epsilon[1] = EpsilonCar;
   epsilon[2] = EpsilonPed;
   epsilon[3] = EpsilonBike;
+  epsilon[4] = EpsilonRule;
 }
-void DBSCAN_CUDA::setMinpts(const unsigned int MinPts, const unsigned int MinPtsCar, const unsigned int MinPtsPed, const unsigned int MinPtsBike)
+void DBSCAN_CUDA::setMinpts(const unsigned int MinPts, 
+                                                                  const unsigned int MinPtsCar, 
+                                                                  const unsigned int MinPtsPed, 
+                                                                  const unsigned int MinPtsBike, 
+                                                                  const unsigned int MinPtsRule)
 {
   minpts[0] = MinPts;
   minpts[1] = MinPtsCar;
   minpts[2] = MinPtsPed;
   minpts[3] = MinPtsBike;
+  minpts[4] = MinPtsRule;
 }
 
 void DBSCAN_CUDA::segment(IndicesClusters& index)
