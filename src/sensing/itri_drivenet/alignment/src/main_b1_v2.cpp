@@ -696,6 +696,7 @@ void runInference()
   ros::Rate loop_rate(10);
   while (ros::ok())
   {
+    is_data_ready = true;
     if (!g_data_sync || g_is_data_sync)
     {
       /// copy camera data

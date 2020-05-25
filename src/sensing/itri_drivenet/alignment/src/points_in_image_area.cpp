@@ -4,6 +4,59 @@ using namespace DriveNet;
 
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
+                             std::vector<PixelPosition>& cam_pixels, int image_w, int image_h, Alignment alignment)
+{
+  // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+  /// create variable
+  pcl::PointCloud<pcl::PointXYZI> cam_points;
+  int cloud_sizes = 0;
+  std::vector<std::vector<pcl::PointXYZI>> point_cloud(
+      std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
+
+  /// copy from source
+  pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
+  cam_points = *cams_points_ptr;
+
+  /// find 3d points in image coverage
+  for (size_t i = 0; i < lidarall_ptr->size(); i++)
+  {
+    if (lidarall_ptr->points[i].x > 0)
+    {
+      PixelPosition pixel_position{ -1, -1 };
+      pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);
+      if (pixel_position.u >= 0 && pixel_position.v >= 0)
+      {
+        if (point_cloud[pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
+            point_cloud[pixel_position.u][pixel_position.v].x == 0)
+        {
+          point_cloud[pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
+        }
+      }
+    }
+  }
+  /// record the 2d points and 3d points.
+  for (int u = 0; u < image_w; u++)
+  {
+    for (int v = 0; v < image_h; v++)
+    {
+      PixelPosition pixel_position{ -1, -1 };
+      pixel_position.u = u;
+      pixel_position.v = v;
+      if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
+      {
+        cam_pixels.push_back(pixel_position);
+        cam_points.points[cloud_sizes] = point_cloud[u][v];
+        cloud_sizes++;
+      }
+    }
+  }
+  /// copy to destination
+  cam_points.resize(cloud_sizes);
+  *cams_points_ptr = cam_points;
+}
+
+void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                             pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                              /*std::vector<PixelPosition>& cam_pixels,*/ int image_w, int image_h, Alignment alignment)
 {
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
