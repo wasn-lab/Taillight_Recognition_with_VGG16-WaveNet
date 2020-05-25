@@ -598,6 +598,7 @@ static void gnss2local_callback(const geometry_msgs::PoseStamped::ConstPtr& inpu
 
   current_gnss_pose.yaw *= -1;
   current_gnss_pose.yaw -= M_PI * 0.83;
+  current_gnss_pose.yaw -= M_PI * 0.5;
 
   static pose previous_gnss_pose = current_gnss_pose;
   current_gnss2local_pose = current_gnss_pose;
