@@ -13,6 +13,7 @@
 #include <pcl/segmentation/min_cut_segmentation.h>
 
 
+
 #include "../dataset.hpp"
 
 void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int* d_label, int maxThreadsNumber, int label_mode);
@@ -34,7 +35,7 @@ public:
   ~GDBSCAN();
 
   void fit(float* eps, size_t* min_elems, int maxThreadsNumber);
-  void predict(IndicesClusters& index);
+  void predict(pcl::IndicesClusters& index);
 
 private:
   const Dataset::Ptr m_dset;

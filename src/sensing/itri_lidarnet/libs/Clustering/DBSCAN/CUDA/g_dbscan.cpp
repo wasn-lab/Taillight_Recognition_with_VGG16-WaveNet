@@ -255,7 +255,7 @@ void GDBSCAN::ErrorHandle(cudaError_t r, std::string Msg)
   }
 }
 
-void GDBSCAN::predict(IndicesClusters& index)
+void GDBSCAN::predict(pcl::IndicesClusters& index)
 {
   // For this step, we decided to parallelize the BFS. Our parallelization
   // approach in CUDA is based on the work presented in [22], which performs a

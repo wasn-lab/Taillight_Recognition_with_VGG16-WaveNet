@@ -22,7 +22,7 @@ public:
                                   const unsigned int MinPtsPed, 
                                   const unsigned int MinPtsBike,
                                   const unsigned int MinPtsRule);
-  void segment(IndicesClusters& clusters);
+  void segment(pcl::IndicesClusters& clusters);
 
 private:
   static bool hasInitialCUDA;

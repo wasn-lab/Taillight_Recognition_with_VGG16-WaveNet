@@ -76,7 +76,7 @@ void DBSCAN_CUDA::setMinpts(const unsigned int MinPts,
   minpts[4] = MinPtsRule;
 }
 
-void DBSCAN_CUDA::segment(IndicesClusters& index)
+void DBSCAN_CUDA::segment(pcl::IndicesClusters& index)
 {
   try
   {
