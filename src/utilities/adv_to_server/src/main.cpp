@@ -17,6 +17,7 @@
 #include "std_msgs/String.h"
 
 bool flag_show_udp_send = true;
+bool event_queue_switch = true;
 
 // VK APIs backend
 const std::string TCP_VK_SRV_ADRR = "60.250.196.127";
@@ -65,6 +66,8 @@ const int ROS_UPDATE_MICROSECONDS = 500 * 1000;
 boost::mutex mutex_queue;
 boost::mutex mutex_ros;
 boost::mutex mutex_trafficLight;
+boost::mutex mutex_event_1;
+boost::mutex mutex_event_2;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
@@ -74,6 +77,8 @@ std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
 std::queue<std::string> trafficLightQueue;
+std::queue<json> eventQueue1;
+std::queue<json> eventQueue2;
 
 TcpServer server;
 
@@ -83,7 +88,7 @@ msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
 std::string mileJson;
-std::string checkJson;
+std::string eventJson;
 msgs::RouteInfo route_info;
 std::string board_list="00000000";
  int routeID = 2000;
@@ -365,13 +370,35 @@ void callbackRound(const std_msgs::Int32::ConstPtr& input)
   cuttent_arrive_stop.round = (int) input->data;
 }
 
-void callbackChecker(const std_msgs::String::ConstPtr& input)
+void callbackEvent(const std_msgs::String::ConstPtr& input)
 {
-  mutex_ros.lock();
-  checkJson = input->data.c_str();
-  std::cout << "check: " << mileJson << std::endl;
+  using namespace std;
+  eventJson = input->data.c_str();
+  json J0 = json::parse(eventJson);
+  json J1;
+  J1["type"] = "M8.2.VK003";
+  J1["deviceid"] = PLATE;
+  J1["lat"] = gps.lidar_Lat;
+  J1["lng"] = gps.lidar_Lon;  
+  J1["module"] = J0.at("module");
+  J1["status"] = J0.at("status");
+  J1["event_str"] = J0.at("event_str");
+  J1["timestamp"] = J0.at("timestamp");
 
-  mutex_ros.unlock();
+  if(event_queue_switch)
+  {
+    cout << " push to queue1 event: " << J1.dump() << endl;
+    mutex_event_1.lock();
+    eventQueue1.push(J1);
+    mutex_event_1.unlock();
+  }
+  else
+  {
+    cout << " push to queue2 event: " << J1.dump() << endl;
+    mutex_event_2.lock();
+    eventQueue2.push(J1);
+    mutex_event_2.unlock();
+  }
 }
 
 std::string get_msg_type(int id)
@@ -556,7 +583,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 {
   json J1;
   J1["type"] = type;
-  J1["deviceid"] = vs.vehicle_number; //PLATE;
+  J1["deviceid"] = PLATE; //PLATE;
   J1["receivetime"] = log_Time();
   if (type == "M8.2.VK001")
   {
@@ -655,8 +682,11 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
   }else if (type == "M8.2.VK003"){
     J1["lat"] = gps.lidar_Lat;
     J1["lng"] = gps.lidar_Lon;
-    json J0 = json::parse(checkJson);
-    J1["checker"] = J0;
+    json J0 = json::parse(eventJson);
+    J1["module"] = J0.at("module");
+    J1["status"] = J0.at("status");
+    J1["event_str"] = J0.at("event_str");
+    J1["timestamp"] = J0.at("timestamp");
   }else if (type == "M8.2.VK004")
   {
     for (int i = 0; i < FPS_KEY_LEN; i++)
@@ -689,6 +719,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= thread runnables begin =========================*/
 void sendRun(int argc, char** argv)
 {
+  using namespace std;
   UdpClient UDP_Back_client;
   UdpClient UDP_OBU_client;
   UdpClient UDP_VK_client;
@@ -717,7 +748,36 @@ void sendRun(int argc, char** argv)
       UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
+ 
     mutex_queue.unlock();
+
+   
+    if(event_queue_switch){
+      mutex_event_1.lock();
+      event_queue_switch = false;
+      while (eventQueue1.size() != 0)
+      {
+        cout << "send from q 1" << endl;
+        json j = eventQueue1.front();
+        UDP_VK_client.send_obj_to_server(j.dump(), flag_show_udp_send);
+        eventQueue1.pop();
+        
+      }
+      mutex_event_1.unlock();
+    }
+    else{
+      mutex_event_2.lock();
+      event_queue_switch = true;
+      while (eventQueue2.size() != 0)
+      {
+        cout << "send from q 2" << endl;  
+        json j = eventQueue2.front();
+        UDP_VK_client.send_obj_to_server(j.dump(), flag_show_udp_send);
+        eventQueue2.pop();
+      }
+      mutex_event_2.unlock();
+    }
+   
 
     boost::this_thread::sleep(boost::posix_time::microseconds(1000));
   }
@@ -793,7 +853,7 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackChecker, callbackBI);
+                                     callbackEvent, callbackBI);
 
   while (ros::ok())
   {
