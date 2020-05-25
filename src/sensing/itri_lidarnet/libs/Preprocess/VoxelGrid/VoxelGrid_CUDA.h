@@ -7,9 +7,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-using namespace std;
-using namespace pcl;
-
 #include "VoxelGrid_CUDA.cuh"
 #include "../../UserDefine.h"
 
@@ -25,7 +22,7 @@ public:
   bool run(typename pcl::PointCloud<PointT>& point_cloud, float resolution);
 
   template <typename PointT>
-  PointCloud<PointT> compute(typename pcl::PointCloud<PointT>::Ptr input, float resolution);
+  pcl::PointCloud<PointT> compute(typename pcl::PointCloud<PointT>::Ptr input, float resolution);
 
 private:
   static bool hasInitialCUDA;

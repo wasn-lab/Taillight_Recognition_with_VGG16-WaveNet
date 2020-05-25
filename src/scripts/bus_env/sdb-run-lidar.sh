@@ -56,7 +56,7 @@ gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_
 sleep 3
 gnome-terminal  -e "bash -c 'export ROS_MASTER_URI=http://192.168.3.1:11311;export ROS_IP=192.168.3.1;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
 sleep 3
-gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.3.1:11311;export ROS_IP=192.168.3.10;source /home/camera/itriadv_d/devel/setup.bash;cd /home/camera/itriadv_d;devel/lib/lightnet_tainan/lightnet_tainan_node;exec bash'"
+gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.3.1:11311;export ROS_IP=192.168.3.10;source /home/camera/itriadv_d/devel/setup.bash;cd /home/camera/itriadv_d;devel/lib/itri_lightnet_new_layout/itri_lightnet_new_layout_node;exec bash'"
 sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh;exec bash'"
 sleep 1
