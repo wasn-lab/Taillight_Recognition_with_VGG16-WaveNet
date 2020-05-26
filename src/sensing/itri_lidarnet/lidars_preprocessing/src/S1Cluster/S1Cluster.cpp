@@ -1,8 +1,8 @@
 #include "S1Cluster.h"
 
-S1Cluster::S1Cluster() : viewID(NULL)
+S1Cluster::S1Cluster() : viewID(nullptr)
 {
-  initial(NULL, NULL);
+  initial(nullptr, nullptr);
 }
 
 S1Cluster::S1Cluster(boost::shared_ptr<pcl::visualization::PCLVisualizer> input_viewer, int* input_viewID)
@@ -36,7 +36,7 @@ void S1Cluster::setPlaneParameter(pcl::ModelCoefficients inputCoef)
 
 CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr input, int* cluster_number)
 {
-  pcl::StopWatch stopWatch;
+  pcl::StopWatch stop_watch;
 
   // ========================================================================================================== Part I :
   // get raw_cluster
@@ -48,7 +48,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------get raw_cluster " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------get raw_cluster " << stop_watch.getTimeSeconds() << endl;
   }
 
   // ========================================================================================================== Part II
@@ -82,7 +82,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------get cluster_vector " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------get cluster_vector " << stop_watch.getTimeSeconds() << endl;
   }
 
   // ========================================================================================================== Part III
@@ -117,7 +117,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------hierarchical " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------hierarchical " << stop_watch.getTimeSeconds() << endl;
   }
 
   // ========================================================================================================== Part IV
@@ -152,7 +152,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------partial " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------partial " << stop_watch.getTimeSeconds() << endl;
   }
   /*
    for (size_t i = 0; i < raw_cluster.size (); i++)
@@ -259,7 +259,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------reduce noise " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------reduce noise " << stop_watch.getTimeSeconds() << endl;
   }
 
   // ========================================================================================================== Part VI
@@ -267,7 +267,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------ConvexHull " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------ConvexHull " << stop_watch.getTimeSeconds() << endl;
   }
 
   /*#pragma omp parallel for
@@ -357,7 +357,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
 
   if (debug)
   {
-    cout << "-------------------------------GRSDSignature21 " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------GRSDSignature21 " << stop_watch.getTimeSeconds() << endl;
     viewer->removeAllShapes(0);
     for (size_t i = 0; i < raw_cluster.size(); i++)
     {
@@ -477,7 +477,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
         ++*viewID;
       }
     }
-    cout << "-------------------------------UI " << stopWatch.getTimeSeconds() << endl;
+    cout << "-------------------------------UI " << stop_watch.getTimeSeconds() << endl;
   }
 
   // ========================================================================================================== Part VII

@@ -1,6 +1,6 @@
 #include "S1Cluster.h"
 
-S1Cluster::S1Cluster() : viewID(NULL)
+S1Cluster::S1Cluster() : viewID(nullptr)
 {
 }
 
@@ -21,21 +21,21 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 {
   pcl::StopWatch timer;
 
-  vector<pcl::PointIndices> vectorCluster;
+  vector<pcl::PointIndices> vector_cluster;
 
-  PointCloud<PointXYZIL>::Ptr inputIL(new PointCloud<PointXYZIL>);
-  *inputIL = *input;
-  *inputIL = VoxelGrid_CUDA().compute<PointXYZIL>(inputIL, 0.2);
+  PointCloud<PointXYZIL>::Ptr input_il(new PointCloud<PointXYZIL>);
+  *input_il = *input;
+  *input_il = VoxelGrid_CUDA().compute<PointXYZIL>(input_il, 0.2);
 
-  PointCloud<PointXYZIL>::Ptr ptr_cur_cloud_IL(new PointCloud<PointXYZIL>);
+  PointCloud<PointXYZIL>::Ptr ptr_cur_cloud_il(new PointCloud<PointXYZIL>);
   PointCloud<PointXYZ>::Ptr ptr_cur_cloud(new PointCloud<PointXYZ>);
 
-  for (size_t i = 0; i < inputIL->size(); ++i)
+  for (size_t i = 0; i < input_il->size(); ++i)
   {
-    if (inputIL->points[i].x != 0 && inputIL->points[i].y != 0 && inputIL->points[i].z != 0)
+    if (input_il->points[i].x != 0 && input_il->points[i].y != 0 && input_il->points[i].z != 0)
     {
-      ptr_cur_cloud_IL->push_back(inputIL->points[i]);
-      ptr_cur_cloud->push_back(PointXYZ(inputIL->points[i].x, inputIL->points[i].y, inputIL->points[i].z));
+      ptr_cur_cloud_il->push_back(input_il->points[i]);
+      ptr_cur_cloud->push_back(PointXYZ(input_il->points[i].x, input_il->points[i].y, input_il->points[i].z));
     }
   }
 
@@ -47,12 +47,12 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 #endif
 
 #if ENABLE_LABEL_MODE == true
-  dbscan.setInputCloud<PointXYZIL>(ptr_cur_cloud_IL);
+  dbscan.setInputCloud<PointXYZIL>(ptr_cur_cloud_il);
 #else
   dbscan.setInputCloud<PointXYZ> (ptr_cur_cloud);
 #endif
 
-  dbscan.segment (vectorCluster);
+  dbscan.segment (vector_cluster);
 
   
 
@@ -62,21 +62,21 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 #endif
 
   vector<CLUSTER_INFO> cluster_vector;  // initialize an vector of cluster Information
-  cluster_vector.resize(vectorCluster.size());
+  cluster_vector.resize(vector_cluster.size());
 
 #pragma omp parallel for
-  for (size_t i = 0; i < vectorCluster.size(); i++)
+  for (size_t i = 0; i < vector_cluster.size(); i++)
   {
     PointCloud<PointXYZ> raw_cloud;
     PointCloud<PointXYZIL> raw_cloud_IL;
 
-    raw_cloud.resize(vectorCluster.at(i).indices.size());
-    raw_cloud_IL.resize(vectorCluster.at(i).indices.size());
+    raw_cloud.resize(vector_cluster.at(i).indices.size());
+    raw_cloud_IL.resize(vector_cluster.at(i).indices.size());
 
-    for (size_t j = 0; j < vectorCluster.at(i).indices.size(); j++)
+    for (size_t j = 0; j < vector_cluster.at(i).indices.size(); j++)
     {
-      raw_cloud.points[j] = ptr_cur_cloud->points[vectorCluster.at(i).indices.at(j)];
-      raw_cloud_IL.points[j] = ptr_cur_cloud_IL->points[vectorCluster.at(i).indices.at(j)];
+      raw_cloud.points[j] = ptr_cur_cloud->points[vector_cluster.at(i).indices.at(j)];
+      raw_cloud_IL.points[j] = ptr_cur_cloud_il->points[vector_cluster.at(i).indices.at(j)];
     }
 
     CLUSTER_INFO cluster_raw;
@@ -93,7 +93,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
   cout << "-------------------------------Part 2 hierarchical feature " << timer.getTimeSeconds() << endl;
 #endif
 /*
-  for (size_t i = 0; i < vectorCluster.size (); i++)
+  for (size_t i = 0; i < vector_cluster.size (); i++)
   {
     if (cluster_vector.at (i).cluster_tag == 1)
     {
@@ -124,7 +124,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 #endif
 
 #pragma omp parallel for
-  for (size_t i = 0; i < vectorCluster.size(); i++)
+  for (size_t i = 0; i < vector_cluster.size(); i++)
   {
     if (cluster_vector.at(i).cluster_tag == 1)
     {
@@ -203,7 +203,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 #endif
 
 #pragma omp parallel for
-  for (size_t i = 0; i < vectorCluster.size(); i++)
+  for (size_t i = 0; i < vector_cluster.size(); i++)
   {
     if (cluster_vector.at(i).cluster_tag == 1)
     {
@@ -239,26 +239,26 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
         // ============== label counting for providing cluster_tag with class types ==================
         if (cluster_vector.at(i).cluster_tag == 1)
         {
-          size_t CNT_Person = 0;
-          size_t CNT_Motor = 0;
-          size_t CNT_Car = 0;
-          size_t CNT_Rule = 0;
+          size_t cnt_Person = 0;
+          size_t cnt_Motor = 0;
+          size_t cnt_Car = 0;
+          size_t cnt_Rule = 0;
 
           for (size_t j = 0; j < cluster_vector.at(i).cloud_IL.size(); j++)
           {
             switch (cluster_vector.at(i).cloud_IL.points.at(j).label)
             {
               case nnClassID::Person:
-                CNT_Person++;
+                cnt_Person++;
                 break;
               case nnClassID::Motobike:
-                CNT_Motor++;
+                cnt_Motor++;
                 break;
               case nnClassID::Car:
-                CNT_Car++;
+                cnt_Car++;
                 break;
               default:
-                CNT_Rule++;
+                cnt_Rule++;
             }
             if (j > 100)
             {
@@ -266,39 +266,39 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
             }
           }
 
-          size_t CNT_MAX = max(max(CNT_Person, CNT_Motor), max(CNT_Car, CNT_Rule));
+          size_t cnt_MAX = max(max(cnt_Person, cnt_Motor), max(cnt_Car, cnt_Rule));
 
-          if (CNT_MAX == CNT_Person)
+          if (cnt_MAX == cnt_Person)
           {
             cluster_vector.at(i).cluster_tag = nnClassID::Person;
           }
-          else if (CNT_MAX == CNT_Motor)
+          else if (cnt_MAX == cnt_Motor)
           {
             cluster_vector.at(i).cluster_tag = nnClassID::Motobike;
           }
-          else if (CNT_MAX == CNT_Car)
+          else if (cnt_MAX == cnt_Car)
           {
             cluster_vector.at(i).cluster_tag = nnClassID::Car;
           }
           else
           {
-            if (CNT_Person == 0 && CNT_Motor == 0 && CNT_Car == 0)
+            if (cnt_Person == 0 && cnt_Motor == 0 && cnt_Car == 0)
             {
               cluster_vector.at(i).cluster_tag = nnClassID::Rule;
             }
             else
             {
-              size_t CNT_2ndMAX = max(max(CNT_Person, CNT_Motor), CNT_Car);
+              size_t cnt_2ndMAX = max(max(cnt_Person, cnt_Motor), cnt_Car);
 
-              if (CNT_2ndMAX == CNT_Person)
+              if (cnt_2ndMAX == cnt_Person)
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Person;
               }
-              else if (CNT_2ndMAX == CNT_Motor)
+              else if (cnt_2ndMAX == cnt_Motor)
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Motobike;
               }
-              else if (CNT_2ndMAX == CNT_Car)
+              else if (cnt_2ndMAX == cnt_Car)
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Car;
               }
@@ -316,7 +316,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 #if ENABLE_DEBUG_MODE == true
 
   viewer->removeAllShapes(0);
-  for (size_t i = 0; i < vectorCluster.size(); i++)
+  for (size_t i = 0; i < vector_cluster.size(); i++)
   {
     if (cluster_vector.at(i).cluster_tag > 0)
     {

@@ -19,8 +19,8 @@ public:
   void segment(pcl::IndicesClusters& clusters);
 
 private:
-  static bool hasInitialCUDA;
-  static int maxThreadsNumber;
+  static bool hasInitialCUDA_;
+  static int maxThreadsNumber_;
 
   float* epsilon;
   size_t* minpts;
