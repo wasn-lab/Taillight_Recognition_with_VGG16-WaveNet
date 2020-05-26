@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
   gflags::ParseCommandLineFlags(&argc, &argv, false);
   google::InstallFailureSignalHandler();
   LOG(INFO) << "OpenCV Version: " << CV_VERSION;
-  ImageSaverNode app;
+  image_saver::ImageSaverNode app;
   app.run();
 
   return 0;

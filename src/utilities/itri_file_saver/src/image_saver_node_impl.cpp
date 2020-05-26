@@ -6,6 +6,8 @@
 #include "image_saver_node_impl.h"
 #include "image_saver_args_parser.h"
 
+namespace image_saver
+{
 ImageSaverNodeImpl::ImageSaverNodeImpl() = default;
 ImageSaverNodeImpl::~ImageSaverNodeImpl() = default;
 
@@ -31,7 +33,7 @@ void ImageSaverNodeImpl::save(const cv_bridge::CvImageConstPtr& cv_ptr, int sec,
   char buff[32] = { 0 };
 
   snprintf(buff, sizeof(buff), "%10d%09d.jpg", sec, nsec);  // NOLINT
-  std::string fname(static_cast<const char*>(buff));
+  std::string fname = get_output_dir() + static_cast<const char*>(buff);
   LOG(INFO) << "write " << fname;
   cv::imwrite(fname, cv_ptr->image);
 }
@@ -55,3 +57,4 @@ void ImageSaverNodeImpl::run()
   }
   spinner.stop();
 }
+};  // namespace image_saver

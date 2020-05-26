@@ -3,8 +3,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <glog/logging.h>
 
-namespace deeplab {
-
+namespace deeplab
+{
 static bool done_with_profiling()
 {
   static int32_t count = 0;
@@ -21,8 +21,7 @@ static bool done_with_profiling()
   return false;
 }
 
-DeeplabNodeImpl::DeeplabNodeImpl():
-  segmenter_()
+DeeplabNodeImpl::DeeplabNodeImpl() : segmenter_()
 {
 }
 
@@ -76,4 +75,4 @@ void DeeplabNodeImpl::run(int argc, char* argv[])
   spinner.stop();
   LOG(INFO) << "END detection";
 }
-}; //namespace deeplab
+};  // namespace deeplab
