@@ -7,7 +7,7 @@
 * Install ros-kinetic-cv-bridge, ros-kinetic-opencv3 and image-transport
 ```
 sudo apt-get install ros-kinetic-image-transport
-sudo apt-get install ros-kinetic-cv-bridge 
+sudo apt-get install ros-kinetic-cv-bridge
 ```
 
 ### Compile (Important!!!)
@@ -35,7 +35,7 @@ roslaunch drivenet b1_drivenet_60.launch
 
 FOV120 CamObjRightFront, CamObjRightBack, CamObjLeftFront, CamObjLeftBack  2D object detection
 ```
-roslaunch drivenet b1_drivenet_120_1.launch 
+roslaunch drivenet b1_drivenet_120_1.launch
 ```
 
 FOV120 CamObjFrontCenter, CamObjBackTop  2D object detection
@@ -61,7 +61,7 @@ roslaunch drivenet b1_v2_drivenet_group_a.launch
 
 /cam/front_top_close_120, /cam/right_front_60, /cam/right_back_60  2D object detection
 ```
-roslaunch drivenet b1_v2_drivenet_group_b.launch 
+roslaunch drivenet b1_v2_drivenet_group_b.launch
 ```
 
 /cam/left_front_60, /cam/left_back_60, /cam/back_top_120  2D object detection
@@ -74,7 +74,7 @@ Camera & LiDAR 3D object detection
 roslaunch alignment b1_v2_3d_object_detection.launch
 ```
 
-### How to setup parameters of launch file 
+### How to setup parameters of launch file
 
 1. car_id (Choose car config)
 ```
