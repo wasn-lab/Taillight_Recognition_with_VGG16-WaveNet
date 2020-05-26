@@ -127,6 +127,40 @@ def read_msg_and_save(mssg, type, filename, pathname=None, campos=None):
         print("{}.txt ok.".format(filename))
 
 
+def read_topic_and_save_camera(
+        in_topicname,
+        in_msg,
+        in_filename,
+        in_timestr,
+        in_bridge_id=0,
+        target_topicname="/cam/front_bottom_60",
+        in_append1="a0",
+        in_append2="A0"):
+    if in_topicname == target_topicname:
+        cam_msg = read_topic_return_msg(in_msg, 1, bridge[in_bridge_id])
+        if check_first:
+            datestr_cam_a0 = in_filename + "_camera_" + in_append1 + "/"
+            if os.path.exists(
+                outdir_img +
+                datestr_cam_a0 +
+                in_timestr +
+                "_camera_" +
+                in_append1 +
+                    ".jpg"):
+                pass
+            else:
+                try:
+                    read_msg_and_save(
+                        cam_msg, 1, in_timestr, in_filename, in_append1)
+                except BaseException:
+                    print(
+                        "Cam" +
+                        in_append2 +
+                        " (" +
+                        in_topicname +
+                        ") cant save.")
+
+
 # ===== main =====
 print ("** Start Extracting**")
 print("** Now is '{}_msg_in_sec' Mode!".format(first_or_last_msg_in_a_sec))
@@ -210,144 +244,23 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                                                     except BaseException:
                                                         print(
                                                             "LidarAll cant save.")
-                                        if topic == "/cam/front_bottom_60":
-                                            camA0_msg = read_topic_return_msg(
-                                                msg, 1, bridge[0])
-                                            if check_first:
-                                                datestr_cam_a0 = filename + "_camera_a0/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_a0 + timestr + '_camera_a0.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camA0_msg, 1, timestr, filename, "a0")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamA0 (" + topic + ") cant save.")
 
-                                        if topic == "/cam/front_top_far_30":
-                                            camA1_msg = read_topic_return_msg(
-                                                msg, 1, bridge[1])
-                                            if check_first:
-                                                datestr_cam_a1 = filename + "_camera_a1/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_a1 + timestr + '_camera_a1.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camA1_msg, 1, timestr, filename, "a1")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamA1 (" + topic + ") cant save.")
-
-                                        # if topic == "/gmsl_camera/port_a/cam_2/image_raw/compressed":
-                                        #     camA2_msg = read_topic_return_msg(msg,1, bridge[2])
-                                        #     if check_first:
-                                        #         datestr_cam_a2 = filename + "_camera_a2/"
-                                        #         if os.path.exists(outdir_img  + datestr_cam_a2 + timestr + '_camera_a2.jpg'): pass
-                                        #         else:
-                                        #             try:
-                                        #                 read_msg_and_save(camA2_msg, 1, timestr, filename, "a2")
-                                        #             except:
-                                        #                 print("CamA2 ("+ topic +") cant save.")
-
-                                        if topic == "/cam/front_top_close_120":
-                                            camB0_msg = read_topic_return_msg(
-                                                msg, 1, bridge[3])
-                                            if check_first:
-                                                datestr_cam_b0 = filename + "_camera_b0/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_b0 + timestr + '_camera_b0.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camB0_msg, 1, timestr, filename, "b0")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamB0 (" + topic + ") cant save.")
-
-                                        if topic == "/cam/right_front_60":
-                                            camB1_msg = read_topic_return_msg(
-                                                msg, 1, bridge[4])
-                                            if check_first:
-                                                datestr_cam_b1 = filename + "_camera_b1/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_b1 + timestr + '_camera_b1.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camB1_msg, 1, timestr, filename, "b1")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamB1 (" + topic + ") cant save.")
-
-                                        if topic == "/cam/right_back_60":
-                                            camB2_msg = read_topic_return_msg(
-                                                msg, 1, bridge[5])
-                                            if check_first:
-                                                datestr_cam_b2 = filename + "_camera_b2/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_b2 + timestr + '_camera_b2.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camB2_msg, 1, timestr, filename, "b2")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamB2 (" + topic + ") cant save.")
-
-                                        if topic == "/cam/left_front_60":
-                                            camC0_msg = read_topic_return_msg(
-                                                msg, 1, bridge[6])
-                                            if check_first:
-                                                datestr_cam_c0 = filename + "_camera_c0/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_c0 + timestr + '_camera_c0.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camC0_msg, 1, timestr, filename, "c0")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamC0 (" + topic + ") cant save.")
-
-                                        if topic == "/cam/left_back_60":
-                                            camC1_msg = read_topic_return_msg(
-                                                msg, 1, bridge[7])
-                                            if check_first:
-                                                datestr_cam_c1 = filename + "_camera_c1/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_c1 + timestr + '_camera_c1.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camC1_msg, 1, timestr, filename, "c1")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamC1 (" + topic + ") cant save.")
-
-                                        if topic == "/cam/back_top_120":
-                                            camC2_msg = read_topic_return_msg(
-                                                msg, 1, bridge[8])
-                                            if check_first:
-                                                datestr_cam_c2 = filename + "_camera_c2/"
-                                                if os.path.exists(
-                                                        outdir_img + datestr_cam_c2 + timestr + '_camera_c2.jpg'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            camC2_msg, 1, timestr, filename, "c2")
-                                                    except BaseException:
-                                                        print(
-                                                            "CamC2 (" + topic + ") cant save.")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 0, "/cam/front_bottom_60", "a0", "A0")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 1, "/cam/front_top_far_30", "a1", "A1")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 3, "/cam/front_top_close_120", "b0", "B0")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 4, "/cam/right_front_60", "b1", "B1")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 5, "/cam/right_back_60", "b2", "B2")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 6, "/cam/left_front_60", "c0", "C0")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 7, "/cam/left_back_60", "c1", "C1")
+                                        read_topic_and_save_camera(
+                                            topic, msg, filename, timestr, 8, "/cam/back_top_120", "c2", "C2")
 
                                         if topic == "/RadFront":
                                             rad_msg = read_topic_return_msg(
