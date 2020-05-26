@@ -10,8 +10,8 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60, 
-                                          camera::id::left_front_60, camera::id::left_back_60};
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -198,7 +198,6 @@ void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-
 void callback_cam_right_front_60_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 0;
@@ -272,14 +271,12 @@ int main(int argc, char** argv)
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_right_front_60,
-                                                                            callback_cam_right_back_60,
-                                                                            callback_cam_left_front_60,
-                                                                            callback_cam_left_back_60 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_right_front_60_decode,
-                                                                             callback_cam_right_back_60_decode,
-                                                                             callback_cam_left_front_60_decode,
-                                                                             callback_cam_left_back_60_decode };
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = {
+    callback_cam_right_front_60, callback_cam_right_back_60, callback_cam_left_front_60, callback_cam_left_back_60
+  };
+  static void (*f_cam_decodes_callbacks[])(
+      sensor_msgs::CompressedImage) = { callback_cam_right_front_60_decode, callback_cam_right_back_60_decode,
+                                        callback_cam_left_front_60_decode, callback_cam_left_back_60_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
