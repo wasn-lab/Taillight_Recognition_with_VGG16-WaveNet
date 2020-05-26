@@ -68,20 +68,20 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
   for (size_t i = 0; i < vector_cluster.size(); i++)
   {
     PointCloud<PointXYZ> raw_cloud;
-    PointCloud<PointXYZIL> raw_cloud_IL;
+    PointCloud<PointXYZIL> raw_cloud_il;
 
     raw_cloud.resize(vector_cluster.at(i).indices.size());
-    raw_cloud_IL.resize(vector_cluster.at(i).indices.size());
+    raw_cloud_il.resize(vector_cluster.at(i).indices.size());
 
     for (size_t j = 0; j < vector_cluster.at(i).indices.size(); j++)
     {
       raw_cloud.points[j] = ptr_cur_cloud->points[vector_cluster.at(i).indices.at(j)];
-      raw_cloud_IL.points[j] = ptr_cur_cloud_il->points[vector_cluster.at(i).indices.at(j)];
+      raw_cloud_il.points[j] = ptr_cur_cloud_il->points[vector_cluster.at(i).indices.at(j)];
     }
 
     CLUSTER_INFO cluster_raw;
     cluster_raw.cloud = raw_cloud;
-    cluster_raw.cloud_IL = raw_cloud_IL;
+    cluster_raw.cloud_IL = raw_cloud_il;
 
     pcl::getMinMax3D(cluster_raw.cloud, cluster_raw.min, cluster_raw.max);
     cluster_raw.cluster_tag = 1;
@@ -239,26 +239,26 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
         // ============== label counting for providing cluster_tag with class types ==================
         if (cluster_vector.at(i).cluster_tag == 1)
         {
-          size_t cnt_Person = 0;
-          size_t cnt_Motor = 0;
-          size_t cnt_Car = 0;
-          size_t cnt_Rule = 0;
+          size_t cnt_person = 0;
+          size_t cnt_motor = 0;
+          size_t cnt_car = 0;
+          size_t cnt_rule = 0;
 
           for (size_t j = 0; j < cluster_vector.at(i).cloud_IL.size(); j++)
           {
             switch (cluster_vector.at(i).cloud_IL.points.at(j).label)
             {
               case nnClassID::Person:
-                cnt_Person++;
+                cnt_person++;
                 break;
               case nnClassID::Motobike:
-                cnt_Motor++;
+                cnt_motor++;
                 break;
               case nnClassID::Car:
-                cnt_Car++;
+                cnt_car++;
                 break;
               default:
-                cnt_Rule++;
+                cnt_rule++;
             }
             if (j > 100)
             {
@@ -266,39 +266,39 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
             }
           }
 
-          size_t cnt_MAX = max(max(cnt_Person, cnt_Motor), max(cnt_Car, cnt_Rule));
+          size_t cnt_max = max(max(cnt_person, cnt_motor), max(cnt_car, cnt_rule));
 
-          if (cnt_MAX == cnt_Person)
+          if (cnt_max == cnt_person)
           {
             cluster_vector.at(i).cluster_tag = nnClassID::Person;
           }
-          else if (cnt_MAX == cnt_Motor)
+          else if (cnt_max == cnt_motor)
           {
             cluster_vector.at(i).cluster_tag = nnClassID::Motobike;
           }
-          else if (cnt_MAX == cnt_Car)
+          else if (cnt_max == cnt_car)
           {
             cluster_vector.at(i).cluster_tag = nnClassID::Car;
           }
           else
           {
-            if (cnt_Person == 0 && cnt_Motor == 0 && cnt_Car == 0)
+            if (cnt_person == 0 && cnt_motor == 0 && cnt_car == 0)
             {
               cluster_vector.at(i).cluster_tag = nnClassID::Rule;
             }
             else
             {
-              size_t cnt_2ndMAX = max(max(cnt_Person, cnt_Motor), cnt_Car);
+              size_t cnt_2nd_max = max(max(cnt_person, cnt_motor), cnt_car);
 
-              if (cnt_2ndMAX == cnt_Person)
+              if (cnt_2nd_max == cnt_person)
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Person;
               }
-              else if (cnt_2ndMAX == cnt_Motor)
+              else if (cnt_2nd_max == cnt_motor)
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Motobike;
               }
-              else if (cnt_2ndMAX == cnt_Car)
+              else if (cnt_2nd_max == cnt_car)
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Car;
               }
@@ -433,7 +433,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
   cluster_vector.resize(k);
 
   *cluster_number = cluster_vector.size();
-  CLUSTER_INFO* cluster_modify =
+  auto* cluster_modify =
       new CLUSTER_INFO[cluster_vector.size()];  // initialize an vector of cluster point cloud
 
   for (size_t i = 0; i < cluster_vector.size(); i++)
