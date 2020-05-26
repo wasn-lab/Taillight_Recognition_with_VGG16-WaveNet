@@ -12,11 +12,10 @@
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
 #include <pcl/segmentation/min_cut_segmentation.h>
 
-
-
 #include "../dataset.hpp"
 
-void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int* d_label, int maxThreadsNumber, int label_mode);
+void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int* d_label, int maxThreadsNumber,
+                int label_mode);
 
 void adjlistsind(int N, int* Va0, int* Va1);
 

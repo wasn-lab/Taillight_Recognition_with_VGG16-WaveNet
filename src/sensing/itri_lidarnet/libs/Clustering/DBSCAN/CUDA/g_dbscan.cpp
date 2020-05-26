@@ -31,8 +31,8 @@ GDBSCAN::GDBSCAN(const Dataset::Ptr dset)
   , labels(dset->rows(), -1)
   , cluster_id(0)
 {
-  //std::cout << "number of points: " << m_dset->num_points() << std::endl;
-  //std::cout << "vA_size: " << vA_size << std::endl;
+  // std::cout << "number of points: " << m_dset->num_points() << std::endl;
+  // std::cout << "vA_size: " << vA_size << std::endl;
   ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_data), sizeof(float) * m_dset->num_points()), "d_data");
   ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_label), sizeof(int) * m_dset->rows()), "d_label");
   ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Va0), vA_size), "d_Va0");
@@ -40,9 +40,12 @@ GDBSCAN::GDBSCAN(const Dataset::Ptr dset)
   ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Fa), vA_size), "d_Fa");
   ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Xa), vA_size), "d_Xa");
   ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_eps), sizeof(float) * 5), "d_eps");
-  
-  ErrorHandle(cudaMemcpy(d_label, &(m_dset->label()[0]), sizeof(int) * m_dset->rows(), cudaMemcpyHostToDevice),
-                "memcpy of d_label");
+
+  ErrorHandle(cudaMemcpy(d_label, &(m_dset->label()[0]), sizeof(int) * m_dset->rows(), cudaMemcpyHostToDevice), "memcpy"
+                                                                                                                " of "
+                                                                                                                "d_"
+                                                                                                                "labe"
+                                                                                                                "l");
 
   size_t copysize = m_dset->cols() * sizeof(float);
 
@@ -62,7 +65,7 @@ GDBSCAN::~GDBSCAN()
     cudaFree(d_data);
     d_data = 0;
   }
-  
+
   if (d_label)
   {
     cudaFree(d_label);
@@ -117,7 +120,7 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   // there are no dependency (or communication) between those parallel tasks
   // (embarrassingly parallel problem). Thus, the computational complexity can
   // be reduced from O(V2) to O(V).
-  
+
   // Determine which mode we are in. If the input column size is 5(XYZIL), we are in label mode
   int label_mode = 0;
   int N = static_cast<int>(m_dset->rows());        // size()
@@ -130,10 +133,11 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
     std::cout << "[DBSCAN] In label mode" << std::endl;
   }
 
-  ErrorHandle(cudaMemcpy(d_eps, &eps[0], 5 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to device");
+  ErrorHandle(cudaMemcpy(d_eps, &eps[0], 5 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to "
+                                                                                     "device");
 
   vertdegree(N, colsize, d_eps, d_data, d_Va0, d_label, maxThreadsNumber, label_mode);
-  //std::cout << "[DBSCAN] vertdegree successed" << std::endl;
+  // std::cout << "[DBSCAN] vertdegree successed" << std::endl;
   // std::cout << "Executed vertdegree transfer";
 
   // Calculation of the adjacency lists indices: The second value in Va is related to the start
@@ -149,10 +153,10 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   // used the thrust library, distributed as part of the CUDA SDK. This library
   // provides, among others algorithms, an optimized exclusive scan
   // implementation that is suitable for our method
-  //ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
-  //std::cout << "size of h_Va0:" << sizeof(h_Va0)/sizeof(int) << std::endl;
+  // ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
+  // std::cout << "size of h_Va0:" << sizeof(h_Va0)/sizeof(int) << std::endl;
   adjlistsind(N, d_Va0, d_Va1);
-  //std::cout << "[DBSCAN] adjlistsind successed" << std::endl;
+  // std::cout << "[DBSCAN] adjlistsind successed" << std::endl;
   // Executed adjlistsind transfer;
 
   ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
@@ -161,7 +165,8 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   // Finished transfer;
   for (int i = 0; i < N; ++i)
   {
-    if (m_dset->cols()>3){
+    if (m_dset->cols() > 3)
+    {
       int pointclassID = (int)(m_dset->data()[i][4]);
       if (static_cast<size_t>(h_Va0[i]) >= min_elems[pointclassID])
       {
@@ -175,7 +180,6 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
         core[i] = true;
       }
     }
-    
   }
 
   // Assembly of adjacency lists: Having the vector Va been completely filled, i.e., for each
@@ -206,9 +210,9 @@ void GDBSCAN::fit(float* eps, size_t* min_elems, int maxThreadsNumber)
   }
 
   ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Ea), Ea_size), "d_Ea malloc");
-  //std::cout << "[DBSCAN] before asmadjlist" << std::endl;
+  // std::cout << "[DBSCAN] before asmadjlist" << std::endl;
   asmadjlist(N, colsize, d_eps, d_data, d_Va1, d_Ea, d_label, label_mode);
-  //std::cout << "[DBSCAN] asmadjlist successed" << std::endl;
+  // std::cout << "[DBSCAN] asmadjlist successed" << std::endl;
 }
 
 void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited)
@@ -217,12 +221,12 @@ void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& vi
 
   std::vector<int> Xa(m_dset->rows(), 0);
   std::vector<int> Fa(m_dset->rows(), 0);
-  //int Xa = new int[m_dset->rows()];
-  //int Fa = new int[m_dset->rows()];
+  // int Xa = new int[m_dset->rows()];
+  // int Fa = new int[m_dset->rows()];
 
   Fa[i] = 1;
-  //std::cout << "size of Fa: " << m_dset->rows() * sizeof(int) << std::endl;
-  //std::cout << "vA_size: " << vA_size << std::endl;
+  // std::cout << "size of Fa: " << m_dset->rows() * sizeof(int) << std::endl;
+  // std::cout << "vA_size: " << vA_size << std::endl;
   // Fa_Xa_to_device;
   ErrorHandle(cudaMemcpy(d_Fa, &Fa[0], vA_size, cudaMemcpyHostToDevice), "memcpy Fa host to device");
   ErrorHandle(cudaMemcpy(d_Xa, &Xa[0], vA_size, cudaMemcpyHostToDevice), "memcpy Xa host to device");

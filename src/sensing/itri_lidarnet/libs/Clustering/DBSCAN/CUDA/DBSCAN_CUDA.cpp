@@ -43,6 +43,8 @@ DBSCAN_CUDA::DBSCAN_CUDA()
 DBSCAN_CUDA::~DBSCAN_CUDA()
 {
   dbs = NULL;
+  delete[] epsilon;
+  delete[] minpts;
 }
 
 template <typename PointT>
@@ -51,11 +53,8 @@ void DBSCAN_CUDA::setInputCloud(const typename PointCloud<PointT>::ConstPtr Inpu
   dset->load_pcl(Input);
   dbs = boost::make_shared<GDBSCAN>(dset);
 }
-void DBSCAN_CUDA::setEpsilon(const double Epsilon, 
-                                                                   const double EpsilonCar, 
-                                                                   const double EpsilonPed, 
-                                                                   const double EpsilonBike, 
-                                                                   const double EpsilonRule)
+void DBSCAN_CUDA::setEpsilon(const double Epsilon, const double EpsilonCar, const double EpsilonPed,
+                             const double EpsilonBike, const double EpsilonRule)
 {
   epsilon[0] = Epsilon;
   epsilon[1] = EpsilonCar;
@@ -63,11 +62,8 @@ void DBSCAN_CUDA::setEpsilon(const double Epsilon,
   epsilon[3] = EpsilonBike;
   epsilon[4] = EpsilonRule;
 }
-void DBSCAN_CUDA::setMinpts(const unsigned int MinPts, 
-                                                                  const unsigned int MinPtsCar, 
-                                                                  const unsigned int MinPtsPed, 
-                                                                  const unsigned int MinPtsBike, 
-                                                                  const unsigned int MinPtsRule)
+void DBSCAN_CUDA::setMinpts(const unsigned int MinPts, const unsigned int MinPtsCar, const unsigned int MinPtsPed,
+                            const unsigned int MinPtsBike, const unsigned int MinPtsRule)
 {
   minpts[0] = MinPts;
   minpts[1] = MinPtsCar;
@@ -84,13 +80,13 @@ void DBSCAN_CUDA::segment(pcl::IndicesClusters& index)
 
     dbs->fit(epsilon, minpts, maxThreadsNumber);
     dbs->predict(index);
-    //dbs = NULL;
+    // dbs = NULL;
 
     // std::cout << "[DBSCNA] CUDA 2 " << dset->rows()<< " " << (omp_get_wtime () - start) <<std::endl;
   }
   catch (const std::runtime_error& re)
   {
-    std::cout <<  re.what() << std::endl;
+    std::cout << re.what() << std::endl;
     std::cout << "[DBSCAN] no memory" << std::endl;
   }
 }
