@@ -4,7 +4,7 @@ using namespace pcl;
 
 bool has_nonzero(std::vector<int>& v)
 {
-  for (int i : v)
+  for (size_t i = 0; i < v.size(); ++i)
   {
     if (v[i] > 0)
     {
@@ -122,21 +122,21 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
   // be reduced from O(V2) to O(V).
 
   // Determine which mode we are in. If the input column size is 5(XYZIL), we are in label mode
-  int label_mode = 0;
+  ClusteringMode cluster_mode = NORMAL_MODE;
   auto n = static_cast<int>(m_dset->rows());        // size()
   auto colsize = static_cast<int>(m_dset->cols());  // 3 XYZ
   // 2020/4/29
   // for label-based G-DBSCAN, the cols() might be 5 XYZIL
   if (colsize == 5)
   {
-    label_mode = 1;
+    cluster_mode = LABEL_MODE;
     std::cout << "[DBSCAN] In label mode" << std::endl;
   }
 
   ErrorHandle(cudaMemcpy(d_eps, &eps[0], 5 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to "
                                                                                      "device");
 
-  vertdegree(n, colsize, d_eps, d_data, d_Va0, d_label, maxThreadsNumber, label_mode);
+  vertdegree(n, colsize, d_eps, d_data, d_Va0, d_label, maxThreadsNumber, cluster_mode);
   // std::cout << "[DBSCAN] vertdegree successed" << std::endl;
   // std::cout << "Executed vertdegree transfer";
 
@@ -211,7 +211,7 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
 
   ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Ea), ea_size), "d_Ea malloc");
   // std::cout << "[DBSCAN] before asmadjlist" << std::endl;
-  asmadjlist(n, colsize, d_eps, d_data, d_Va1, d_Ea, d_label, label_mode);
+  asmadjlist(n, colsize, d_eps, d_data, d_Va1, d_Ea, d_label, cluster_mode);
   // std::cout << "[DBSCAN] asmadjlist successed" << std::endl;
 }
 

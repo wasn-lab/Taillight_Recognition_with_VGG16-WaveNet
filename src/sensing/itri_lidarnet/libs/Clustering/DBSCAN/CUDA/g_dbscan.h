@@ -1,8 +1,6 @@
 #ifndef G_DBSCAN
 #define G_DBSCAN
 
-#define LABEL_CLUSTERING true
-
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 
@@ -13,6 +11,8 @@
 #include <pcl/segmentation/min_cut_segmentation.h>
 
 #include "../dataset.hpp"
+
+enum ClusteringMode {NORMAL_MODE=0, LABEL_MODE};
 
 void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int* d_label, int maxThreadsNumber,
                 int label_mode);
