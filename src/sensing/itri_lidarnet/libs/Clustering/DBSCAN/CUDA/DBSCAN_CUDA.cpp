@@ -87,7 +87,6 @@ void DBSCAN_CUDA::segment(pcl::IndicesClusters& index)
   catch (const std::runtime_error& re)
   {
     std::cout << re.what() << std::endl;
-    std::cout << "[DBSCAN] no memory" << std::endl;
   }
 }
 
