@@ -50,7 +50,7 @@ DBSCAN_CUDA::~DBSCAN_CUDA()
 template <typename PointT>
 void DBSCAN_CUDA::setInputCloud(const typename PointCloud<PointT>::ConstPtr input)
 {
-  dset->load_pcl(Input);
+  dset->load_pcl(input);
   dbs = boost::make_shared<GDBSCAN>(dset);
 }
 void DBSCAN_CUDA::setEpsilon(const double Epsilon, const double EpsilonCar, const double EpsilonPed,
@@ -90,6 +90,6 @@ void DBSCAN_CUDA::segment(pcl::IndicesClusters& clusters)
   }
 }
 
-template void DBSCAN_CUDA::setInputCloud<PointXYZ>(const PointCloud<PointXYZ>::ConstPtr Input);
+template void DBSCAN_CUDA::setInputCloud<PointXYZ>(const PointCloud<PointXYZ>::ConstPtr input);
 
-template void DBSCAN_CUDA::setInputCloud<PointXYZIL>(const PointCloud<PointXYZIL>::ConstPtr Input);
+template void DBSCAN_CUDA::setInputCloud<PointXYZIL>(const PointCloud<PointXYZIL>::ConstPtr input);
