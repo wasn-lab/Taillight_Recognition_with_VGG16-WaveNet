@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "file_saver");
+  ros::init(argc, argv, "file_saver", ros::init_options::AnonymousName);
   gflags::ParseCommandLineFlags(&argc, &argv, false);
   google::InstallFailureSignalHandler();
   LOG(INFO) << "OpenCV Version: " << CV_VERSION;
