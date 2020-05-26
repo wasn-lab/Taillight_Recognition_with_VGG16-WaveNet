@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
     cv::Mat output(cv::Size(deeplab::DEEPLAB_IMAGE_WIDTH, deeplab::DEEPLAB_IMAGE_HEIGHT), CV_8UC1);
     segmenter.segment_into_labels(input, labels.get());
     memcpy(output.data, labels.get(), sizeof(uint8_t) * deeplab::NUM_PIXELS);
+    LOG(INFO) << "Write " << output_filename;
     cv::imwrite(output_filename, output);
   }
 
