@@ -207,7 +207,7 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
     return false;
   }
 
-  std::cout << "After cudaFree" << std::endl;
+  // std::cout << "After cudaFree" << std::endl;
   // coutMemoryStatus ();
 
   return true;
