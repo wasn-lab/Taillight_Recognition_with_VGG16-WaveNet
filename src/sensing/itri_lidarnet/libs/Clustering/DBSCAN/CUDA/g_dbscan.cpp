@@ -167,7 +167,7 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
   {
     if (m_dset->cols() > 3)
     {
-      int pointclass_id = (int)(m_dset->data()[i][4]);
+      auto pointclass_id = (int)(m_dset->data()[i][4]);
       if (static_cast<size_t>(h_Va0[i]) >= min_elems[pointclass_id])
       {
         core[i] = true;
@@ -192,7 +192,7 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
   // second value of Va, and has an offset related to the degree of the vertex.
 
   size_t ea_size;
-  if (h_Va0.size() >= 1)
+  if (!h_Va0.empty())
   {
     ea_size = static_cast<size_t>(h_Va0[h_Va0.size() - 1] + h_Va1[h_Va1.size() - 1]) * sizeof(int);
   }

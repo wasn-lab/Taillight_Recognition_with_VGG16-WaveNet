@@ -20,7 +20,7 @@ DBSCAN_CUDA::DBSCAN_CUDA()
       return;
     }
 
-    cudaDeviceProp prop;
+    cudaDeviceProp prop{};
     cudaGetDeviceProperties(&prop, 0);
 
     if (prop.major == 2)
