@@ -10,7 +10,6 @@
 #include <pcl/segmentation/conditional_euclidean_clustering.h>
 #include <pcl/segmentation/min_cut_segmentation.h>
 
-using namespace pcl;
 
 #include "../dataset.hpp"
 
@@ -33,7 +32,7 @@ public:
   ~GDBSCAN();
 
   void fit(float eps, size_t min_elems, int maxThreadsNumber);
-  void predict(IndicesClusters& index);
+  void predict(pcl::IndicesClusters& index);
 
 private:
   const Dataset::Ptr m_dset;
