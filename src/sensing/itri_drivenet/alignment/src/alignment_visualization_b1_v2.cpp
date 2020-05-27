@@ -233,7 +233,6 @@ void displayLidarData()
   x_dist -= 10;
   point_10m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
   color_10m = g_visualization.getDistColor(x_dist);
-  std::cout << "point_10m: " << point_10m.p_max.x << ", " << point_10m.p_max.y << std::endl;
 
   /// main loop
   ros::Rate loop_rate(10);
@@ -374,8 +373,8 @@ void runInference()
 
 int main(int argc, char** argv)
 {
-  std::cout << "===== Alignment startup. =====" << std::endl;
-  ros::init(argc, argv, "Alignment");
+  std::cout << "===== Alignment_visualization startup. =====" << std::endl;
+  ros::init(argc, argv, "Alignment_visualization");
   ros::NodeHandle nh;
 
   /// ros Subscriber
@@ -417,7 +416,7 @@ int main(int argc, char** argv)
   int thread_count = int(g_cam_ids.size()) * 2 + 1;  /// camera raw + object + lidar raw
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
-  std::cout << "===== Alignment running... =====" << std::endl;
+  std::cout << "===== Alignment_visualization running... =====" << std::endl;
 
   /// main loop end
   if (g_is_display)
@@ -426,6 +425,6 @@ int main(int argc, char** argv)
     display_camera_thread.join();
   }
   main_thread.join();
-  std::cout << "===== Alignment shutdown. =====" << std::endl;
+  std::cout << "===== Alignment_visualization shutdown. =====" << std::endl;
   return 0;
 }
