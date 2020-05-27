@@ -808,7 +808,7 @@ void receiveUDPRun(int argc, char** argv)
   while (true)
   {
     UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
-
+    //UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
     int result = UDP_OBU_server.recv(buffer, sizeof(buffer));
 
     if (result != -1)
@@ -834,8 +834,24 @@ void sendROSRun(int argc, char** argv)
     {
       std::string trafficMsg = trafficLightQueue.front();
       trafficLightQueue.pop();
+      msgs::Spat spat;
+      json J0 = json::parse(trafficMsg);
+      try
+      {
+        json J1 = J0.at("SPaT_MAP_Info");
+        spat.lat = J1.at("Latitude");
+        spat.lon = J1.at("Longitude");
+        spat.spat_state = J1.at("Spat_state");
+        spat.spat_sec = J1.at("Spat_sec");
+        spat.signal_state = J1.at("Signal_state");
+        spat.index = J1.at("Index");
+      } 
+      catch(std::exception& e)
+      {
+        std::cout << "parsing fail: " << e.what() << " "<<std::endl;
+      }
       //send traffic light
-      RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, trafficMsg);
+      RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, spat);
     }
     mutex_trafficLight.unlock();
     
