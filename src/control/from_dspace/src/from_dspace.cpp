@@ -8,7 +8,7 @@
 //Can setup
 #define CAN_DLC 8;
 #define CAN_CHNNEL "can1"
-const int NumOfReceiveID = 5;
+const int NumOfReceiveID = 10;
 const int NumOfTopic = 8;
 
 #include "msgs/Flag_Info.h"
@@ -286,9 +286,6 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "from_dspace");
     ros::NodeHandle n;
-    //ros::Publisher Publisher01 = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
-	//ros::Publisher Publisher02 = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
-	//ros::Publisher Publisher03 = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
 	ros::Publisher Publisher[NumOfTopic];
 	Publisher[0] = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
 	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
@@ -298,10 +295,9 @@ int main(int argc, char **argv)
     Publisher[5] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
     Publisher[6] = n.advertise<msgs::Flag_Info>("/Ego_speed/kph", 1);
     Publisher[7] = n.advertise<msgs::Flag_Info>("/Ego_speed/ms", 1);
-	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
-	//uint32_t seq = 0;
-    ros::Publisher Publisher_BD;
-    Publisher_BD = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
+
+    ros::Publisher Publisher_BE;
+    Publisher_BE = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
     ros::Publisher vehinfo_pub;
     vehinfo_pub = n.advertise<msgs::VehInfo>("veh_info", 1);
 
@@ -315,22 +311,13 @@ int main(int argc, char **argv)
 	filter[1].can_id = 0x602;
 	filter[2].can_id = 0x603;
     filter[3].can_id = 0x610;
-    filter[4].can_id = 0x351;
-
-    /*
-	filter[3].can_id = 0x3A0;
-	filter[4].can_id = 0x3A1;
-	filter[5].can_id = 0x3A2;
-	filter[6].can_id = 0x3A3;
-	filter[7].can_id = 0x3A4;
-	filter[8].can_id = 0x3A5;
-	filter[9].can_id = 0x3A6;
-	filter[10].can_id = 0x3A7;
-	filter[11].can_id = 0x3A8;
-	filter[12].can_id = 0x3A9;
-	filter[13].can_id = 0x3B0;
-	filter[14].can_id = 0x3B1;
-    */
+    filter[4].can_id = 0x301;
+    filter[5].can_id = 0x302;
+    filter[6].can_id = 0x303;
+    filter[7].can_id = 0x304;
+    filter[8].can_id = 0x350;
+    filter[9].can_id = 0x351;
+    
 
     int s;
     const char *ifname = CAN_CHNNEL;
@@ -379,7 +366,8 @@ int main(int argc, char **argv)
             ProcessFrame(frame, Publisher);
         }
         msgs::BackendInfo msg123;
-        Publisher_BD.publish(msg123);
+        msg123.localization = 66;
+        Publisher_BE.publish(msg123);
         //vehinfo_pub.publish(msg_VehInfo);
         rate.sleep();
     }
