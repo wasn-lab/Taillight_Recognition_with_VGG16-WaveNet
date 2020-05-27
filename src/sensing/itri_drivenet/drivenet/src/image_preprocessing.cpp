@@ -10,7 +10,7 @@ cv::Scalar CvColor::blue_(255, 0, 0, 0);
 cv::Scalar CvColor::green_(0, 255, 0, 0);
 cv::Scalar CvColor::red_(0, 0, 255, 0);
 cv::Scalar CvColor::purple_(139, 0, 139, 0);
-cv::Scalar CvColor::yellow_(51, 255, 255, 0);
+cv::Scalar CvColor::yellow_(0, 255, 255, 0);
 cv::Scalar CvColor::gray_(125, 125, 125, 0);
 
 cv::Scalar intToColor(int index)

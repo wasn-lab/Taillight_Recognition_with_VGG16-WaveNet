@@ -252,11 +252,11 @@ void displayLidarData()
     // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");  //,
     // viewports[0]);
 
-    pcl_viewer->addLine<pcl::PointXYZI> (point_50m.p_min, point_50m.p_max, color_50m[0], color_50m[1], color_50m[2], "line-50m");
-    pcl_viewer->addLine<pcl::PointXYZI> (point_40m.p_min, point_40m.p_max, color_40m[0], color_40m[1], color_40m[2], "line-40m");
-    pcl_viewer->addLine<pcl::PointXYZI> (point_30m.p_min, point_30m.p_max, color_30m[0], color_30m[1], color_30m[2], "line-30m");
-    pcl_viewer->addLine<pcl::PointXYZI> (point_20m.p_min, point_20m.p_max, color_20m[0], color_20m[1], color_20m[2], "line-20m");
-    pcl_viewer->addLine<pcl::PointXYZI> (point_10m.p_min, point_10m.p_max, color_10m[0], color_10m[1], color_10m[2], "line-10m");
+    pcl_viewer->addLine<pcl::PointXYZI> (point_50m.p_min, point_50m.p_max, color_50m[2], color_50m[1], color_50m[0], "line-50m");
+    pcl_viewer->addLine<pcl::PointXYZI> (point_40m.p_min, point_40m.p_max, color_40m[2], color_40m[1], color_40m[0], "line-40m");
+    pcl_viewer->addLine<pcl::PointXYZI> (point_30m.p_min, point_30m.p_max, color_30m[2], color_30m[1], color_30m[0], "line-30m");
+    pcl_viewer->addLine<pcl::PointXYZI> (point_20m.p_min, point_20m.p_max, color_20m[2], color_20m[1], color_20m[0], "line-20m");
+    pcl_viewer->addLine<pcl::PointXYZI> (point_10m.p_min, point_10m.p_max, color_10m[2], color_10m[1], color_10m[0], "line-10m");
 
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
