@@ -10,6 +10,7 @@ readonly data_file=${darknet_dir}/cfg/drivenet_fov60.data
 readonly weights_file=${drivenet_dir}/data/yolo/yolov3_b1.weights
 readonly cam_ids="back_top_120 front_bottom_60 front_top_close_120 front_top_far_30 left_back_60 left_front_60 right_back_60 right_front_60"
 readonly image_list_txt=${TMP_DIR}/weakness_detection_image_list.txt
+readonly yolo_result_json=${TMP_DIR}/yolo_result.json
 
 if [[ "" == "$1" || ! -f "$1" ]]; then
   echo "This script find spurious results made by object detection NN."
@@ -66,7 +67,27 @@ function run_deeplab {
   ${repo_dir}/devel/lib/deeplab/deeplab_cmd < ${image_list_txt}
 }
 
+function build_darknet_exe {
+  pushd ${darknet_dir}
+  if [[ -d build ]]; then
+    rm -r build
+  fi
+
+  mkdir -p build
+  pushd build
+  cmake .. -DENABLE_OPENCV=0
+  make -j
+  popd
+  popd
+}
+
+function run_yolo {
+  ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json} < ${image_list_txt}
+}
+
 make_itrisaver
 save_images
 run_deeplab
-#rm_tmp_files
+build_darknet_exe
+run_yolo
+rm_tmp_files
