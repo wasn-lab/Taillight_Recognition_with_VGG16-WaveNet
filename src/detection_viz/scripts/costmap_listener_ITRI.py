@@ -175,7 +175,8 @@ def costmap_listener():
     # Init. node
     rospy.init_node('costmap_listener', anonymous=True)
 
-    costmap_topic_name = "/occupancy_grid_wayarea"
+    # costmap_topic_name = "/occupancy_grid_wayarea"
+    costmap_topic_name = "/occupancy_grid"
     # costmap_topic_name = "/move_base/global_costmap"
 
 
@@ -193,7 +194,11 @@ def costmap_listener():
             costmap_L.plot_costmap(show_obstacle_only=False)
             costmap_L.costmap_updated = False
         #
-        rate.sleep()
+        try:
+            rate.sleep()
+        except:
+            # ROS time go backward due to the looping of rosbag replay and use simulation time
+            pass
 
 
 if __name__ == '__main__':
