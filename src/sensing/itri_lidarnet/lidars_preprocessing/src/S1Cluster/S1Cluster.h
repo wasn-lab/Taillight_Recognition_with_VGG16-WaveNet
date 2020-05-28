@@ -17,7 +17,7 @@ public:
 
   void setPlaneParameter(pcl::ModelCoefficients inputCoef);
 
-  CLUSTER_INFO* getClusters(bool is_debug, PointCloud<PointXYZ>::ConstPtr input, int* cluster_number);
+  CLUSTER_INFO* getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr input, int* cluster_number);
 
 private:
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
