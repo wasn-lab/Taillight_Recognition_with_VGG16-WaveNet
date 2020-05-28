@@ -1,5 +1,7 @@
 #include "g_dbscan.h"
 
+using namespace pcl;
+
 bool has_nonzero(std::vector<int>& v)
 {
   for (size_t i = 0; i < v.size(); ++i)

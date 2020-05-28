@@ -73,11 +73,15 @@ void displayLidarData()
   pcl::PointCloud<pcl::PointXYZI>::Ptr car_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr motorbike_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr rule_base_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_ssn_points(ssn_points_ptr, 255, 255, 255); // white
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_person_points(ssn_points_ptr, 255, 255, 0);  // yellow
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_ssn_points(ssn_points_ptr, 255, 255,
+                                                                                  255);  // white
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_person_points(ssn_points_ptr, 255, 255,
+                                                                                     0);                       // yellow
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_car_points(ssn_points_ptr, 0, 255, 0);  // green
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_motorbike_points(ssn_points_ptr, 0, 0, 255);  // blue
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_rule_base_points(ssn_points_ptr, 255, 255, 255);  // white
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_motorbike_points(ssn_points_ptr, 0, 0,
+                                                                                        255);  // blue
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_rule_base_points(ssn_points_ptr, 255, 255,
+                                                                                        255);  // white
   std::vector<int> viewports{ 1, 2 };
   std::vector<std::string> view_name{ "raw data", "object" };
 

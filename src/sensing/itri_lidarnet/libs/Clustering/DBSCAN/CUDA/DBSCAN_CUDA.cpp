@@ -1,5 +1,7 @@
 #include "DBSCAN_CUDA.h"
 
+using namespace pcl;
+
 bool DBSCAN_CUDA::hasInitialCUDA = false;
 int DBSCAN_CUDA::maxThreadsNumber = 0;
 

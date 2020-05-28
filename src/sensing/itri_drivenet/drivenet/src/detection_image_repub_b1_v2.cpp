@@ -155,7 +155,7 @@ void collect_repub()
     cv::hconcat(mats[3], white_img, stitch_img_row_2);
     cv::hconcat(stitch_img_row_2, mats[4], stitch_img_row_2);
     cv::vconcat(stitch_img_row_1, stitch_img_row_2, stitch_img);
-    cv::resize(stitch_img, stitch_img_resize, cv::Size((g_img_w * 3) / 2, (g_img_h * 2) / 2));
+    cv::resize(stitch_img, stitch_img_resize, cv::Size((g_img_w * 3) / 4, (g_img_h * 2) / 4));
 
     if (g_display)
     {
