@@ -82,12 +82,15 @@ function build_darknet_exe {
 }
 
 function run_yolo {
-  ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json} < ${image_list_txt}
+  pushd ${darknet_dir}
+  # ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json} < ${image_list_txt}
+  ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json}
+  popd
 }
 
-make_itrisaver
-save_images
-run_deeplab
-build_darknet_exe
+#make_itrisaver
+#save_images
+#run_deeplab
+#build_darknet_exe
 run_yolo
-rm_tmp_files
+#rm_tmp_files
