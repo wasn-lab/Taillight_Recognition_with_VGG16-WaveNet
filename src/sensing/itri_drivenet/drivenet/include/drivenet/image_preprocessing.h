@@ -11,7 +11,6 @@
 #endif
 #include <opencv2/highgui/highgui.hpp>
 
-
 namespace DriveNet
 {
 struct PixelPosition

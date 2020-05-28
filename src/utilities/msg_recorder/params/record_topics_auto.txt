@@ -97,6 +97,7 @@
 /occupancy_grid
 /occupancy_grid_updates
 /ring_edge_point_cloud
+/occupancy_grid_wayarea
 
 /SensorFusion
 /PathPredictionOutput # With fusion
