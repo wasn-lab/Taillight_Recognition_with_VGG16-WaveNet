@@ -150,6 +150,17 @@ class COSTMAP_LISTENER(object):
         #
         return index2D_np
 
+    def get_cost_by_point2D(self, point2D, is_checking_bound=True):
+        """
+        This is the function to get the cost from costmap at a specific location (point2D)
+        """
+        point2D_np = np.array(point2D).reshape((2,))
+        res = self._get_index2D_from_point2D(point2D_np, is_checking_bound=is_checking_bound)
+        if res is None:
+            return None
+        else:
+            return self.costmap[res[0], res[1]]
+
 
     def plot_costmap(self, show_obstacle_only=False):
         """
@@ -199,6 +210,8 @@ def costmap_listener():
             # print("costmap_updated")
             costmap_L.plot_costmap(show_obstacle_only=False)
             costmap_L.costmap_updated = False
+            # _cost = costmap_L.get_cost_by_point2D( (0.0, 0.0))
+            # print("_cost = %s" % str(_cost))
         #
         try:
             rate.sleep()
