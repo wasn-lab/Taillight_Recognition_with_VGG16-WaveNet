@@ -14,6 +14,7 @@
 #include "msgs/StopInfoArray.h"
 #include "msgs/StopInfo.h"
 #include "msgs/RouteInfo.h"
+#include "msgs/BackendInfo.h"
 #include "sensor_msgs/Imu.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -57,7 +58,9 @@ class RosModuleTraffic
                       void
                       (*cb10) (const sensor_msgs::Imu::ConstPtr&),
                       void
-                      (*cb11) (const std_msgs::String::ConstPtr&))
+                      (*cb11) (const std_msgs::String::ConstPtr&),
+                      void
+                      (*cb12) (const msgs::BackendInfo::ConstPtr&))
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
@@ -71,7 +74,8 @@ class RosModuleTraffic
       static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
       static ros::Subscriber imu = n.subscribe("imu_data_rad", 1, cb10);
       //checker big buffer for multi event at the same time.
-      static ros::Subscriber checker = n.subscribe("checker", 1000, cb11);
+      static ros::Subscriber checker = n.subscribe("/ADV_op/event_json", 1000, cb11);
+      static ros::Subscriber backendInfo = n.subscribe("Backend/Info", 1, cb12);
     }
 
     static void

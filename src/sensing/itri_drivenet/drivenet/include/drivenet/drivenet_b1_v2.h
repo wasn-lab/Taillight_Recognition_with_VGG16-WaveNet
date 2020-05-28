@@ -23,6 +23,4 @@
 #include "drivenet/type_conversion.h"
 // #include "costmap_generator.h"
 
-
-
 #endif /*DRIVENET_B1_V2_H_*/
