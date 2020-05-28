@@ -28,13 +28,11 @@ class COSTMAP_LISTENER(object):
 
         The param_dict should include the following fields:
         - costmap_topic_name
-        - is_using_given_origin
-        o origin_point2D
+        - is_using_ITRI_origin
         """
         # Get parameters from param_dict
         self.costmap_topic_name = param_dict.get('costmap_topic_name', "/occupancy_grid_wayarea") # or, "/move_base/global_costmap"
-        self.is_using_given_origin = param_dict.get('is_using_given_origin', False)
-        self.origin_point2D_given = np.array( param_dict.get('origin_point2D', (0.0, 0.0) ) ).reshape( (2,) )
+        self.is_using_ITRI_origin = param_dict.get('is_using_ITRI_origin', False)
 
         # Parameters
         # Special values
@@ -58,7 +56,7 @@ class COSTMAP_LISTENER(object):
             - origin
         """
         self.costmap_shape = np.array((0,0))
-        self.origin_point2D = self.origin_point2D_given # np.array((0,0)) # shape = (2,). There's no need to get the orientation, since it's always be 0 deg.
+        self.origin_point2D = np.array((0,0)) # shape = (2,). There's no need to get the orientation, since it's always be 0 deg.
         # This is the data of costmap, shape=(height, width)
         self.costmap = np.zeros((1,1))
 
@@ -77,7 +75,9 @@ class COSTMAP_LISTENER(object):
         self.costmap_frame = data.header.frame_id
         self.costmap_info = data.info
         self.costmap_shape = np.array( (data.info.height, data.info.width) ) # (height,width); height for y-direction, width for x-direction, like image
-        if not self.is_using_given_origin: # Only update this value if we are using the origin given in the message
+        if self.is_using_ITRI_origin:
+            self.origin_point2D = np.array( ( (-data.info.width*data.info.resolution*0.5+10.0), (-data.info.height*data.info.resolution*0.5+0.0) ) ) # shape = (2,). There's no need to get the orientation, since it's always be 0 deg.
+        else: # Use the origin recorded in message
             self.origin_point2D = np.array( (data.info.origin.position.x, data.info.origin.position.y) ) # shape = (2,). There's no need to get the orientation, since it's always be 0 deg.
         # print self.costmap_info
         #
@@ -187,8 +187,7 @@ def costmap_listener():
 
     param_dict = dict()
     param_dict['costmap_topic_name'] = costmap_topic_name
-    param_dict['is_using_given_origin'] = True
-    param_dict['origin_point2D'] = (0.0, 0.0)
+    param_dict['is_using_ITRI_origin'] = True
     #
     costmap_L = COSTMAP_LISTENER(param_dict)
 
