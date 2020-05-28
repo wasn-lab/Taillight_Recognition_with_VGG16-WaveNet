@@ -18,6 +18,8 @@ from rosgraph_msgs.msg import Clock
 import numpy as np
 import fps_calculator as FPS
 import signal_analyzer as SA
+# Costmap listener
+import costmap_listener_ITRI as CLN
 
 class Node:
 
@@ -34,9 +36,18 @@ class Node:
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
+        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", True)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
+        # Costmap listener
+        if self.is_using_costmap_listener:
+            param_dict = dict()
+            param_dict['costmap_topic_name'] = "occupancy_grid" # "/occupancy_grid_wayarea"
+            param_dict['is_using_ITRI_origin'] = True
+            self.costmap_listener = CLN.COSTMAP_LISTENER(param_dict)
+        else:
+            self.costmap_listener = None
         # Flags
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
@@ -130,6 +141,15 @@ class Node:
             #-----------------#
             depth = self._calculate_distance_polygon( _obj.cPoint )
             if len(_obj.cPoint.lowerAreaPoints) > 0:
+                # Check with map
+                #-----------------------#
+                is_valid = True
+                if self.costmap_listener is not None:
+                    is_occ = self.costmap_listener.is_occupied_at_point2D( (_obj.cPoint.lowerAreaPoints[0].x, _obj.cPoint.lowerAreaPoints[0].y))
+                    is_valid = (not is_occ) if is_occ is not None else False
+                if not is_valid:
+                    continue
+                #-----------------------#
                 if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < self.checker_nearProb_y_range:
                     # Frontal object and the object is not empty
                     if (depth < d_min):

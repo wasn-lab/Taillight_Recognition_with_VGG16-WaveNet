@@ -143,23 +143,33 @@ class COSTMAP_LISTENER(object):
         if is_checking_bound:
             if (np.sum(index2D_np < 0) > 0) or (np.sum(index2D_np >= self.costmap_shape) > 0):
                 # out of bound
-                rospy.logwarn("[Costmap-listener] The point queried is out of bound.")
+                # rospy.logwarn("[Costmap-listener] The point queried is out of bound.")
                 return None
                 # Simply warning, still return an invalid index
             #
         #
         return index2D_np
 
-    def get_cost_by_point2D(self, point2D, is_checking_bound=True):
+    def get_cost_by_point2D(self, point2D):
         """
         This is the function to get the cost from costmap at a specific location (point2D)
         """
         point2D_np = np.array(point2D).reshape((2,))
-        res = self._get_index2D_from_point2D(point2D_np, is_checking_bound=is_checking_bound)
+        res = self._get_index2D_from_point2D(point2D_np, is_checking_bound=True)
         if res is None:
             return None
         else:
             return self.costmap[res[0], res[1]]
+
+    def is_occupied_at_point2D(self, point2D):
+        """
+        This is the function to check if the given position is considered occupied.
+        """
+        _cost = self.get_cost_by_point2D(point2D)
+        if _cost is None:
+            return None
+        else:
+            return (_cost > self.special_values_occupied_threshold)
 
 
     def plot_costmap(self, show_obstacle_only=False):
