@@ -321,8 +321,8 @@ void chatterCallback_05(const msgs::Spat::ConstPtr& msg)
 	frame.can_id  = 0x062;
 	frame.data[0] = (short int)(msg->spat_state);
 	frame.data[1] = (short int)(msg->spat_state)>>8;
-	frame.data[2] = (short int)(msg->spat_sec);
-	frame.data[3] = (short int)(msg->spat_sec)>>8;
+	frame.data[2] = (short int)(msg->spat_sec*100);
+	frame.data[3] = (short int)(msg->spat_sec*100)>>8;
 	frame.data[4] = (short int)(msg->signal_state);
 	frame.data[5] = (short int)(msg->signal_state)>>8;
 	frame.data[6] = (short int)(msg->index);
