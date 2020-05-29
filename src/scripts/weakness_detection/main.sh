@@ -83,8 +83,7 @@ function build_darknet_exe {
 
 function run_yolo {
   pushd ${darknet_dir}
-  # ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json} < ${image_list_txt}
-  ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json}
+  ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json} < ${image_list_txt}
   popd
 }
 

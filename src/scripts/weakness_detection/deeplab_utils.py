@@ -14,9 +14,7 @@ def read_labels_by_deeplab_output(png_file):
         logging.error("File not exist: %s", png_file)
         return None
     img = cv2.imread(png_file, cv2.CV_8UC1)
-    pixel_map = {}
-    assert(img.shape[0] == IMAGE_HEIGHT)
-    assert(img.shape[1] == IMAGE_WIDTH)
+#    pixel_map = {}
 #    for row in range(IMAGE_HEIGHT):
 #        for col in range(IMAGE_WIDTH):
 #            label = img[row][col]
