@@ -15,6 +15,7 @@ const double NumOfID = 5;
 #include "msgs/TrackInfo.h"
 #include "msgs/DetectedLight.h"
 #include "msgs/DetectedLightArray.h"
+#include "msgs/Spat.h"
 #include <iostream>
 #include <cstdlib>
 #include "ros/ros.h"
@@ -288,6 +289,55 @@ void chatterCallback_04(const msgs::DetectedLightArray::ConstPtr& msg)
 
 }
 
+void chatterCallback_05(const msgs::Spat::ConstPtr& msg)
+{
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x062;
+	frame.data[0] = (short int)(msg->spat_state);
+	frame.data[1] = (short int)(msg->spat_state)>>8;
+	frame.data[2] = (short int)(msg->spat_sec);
+	frame.data[3] = (short int)(msg->spat_sec)>>8;
+	frame.data[4] = (short int)(msg->signal_state);
+	frame.data[5] = (short int)(msg->signal_state)>>8;
+	frame.data[6] = (short int)(msg->index);
+	frame.data[7] = (short int)(msg->index)>>8;
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	cout << "spat_state: " << int(msg->spat_state) << endl;
+	cout << "spat_sec: " << double(msg->spat_sec) << endl;
+	cout << "spat_status: " << int(msg->signal_state) << endl;
+	cout << "spat_index: " << int(msg->index) << endl;
+	close(s);
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+
+}
+
 
 int main(int argc, char **argv)
 {
@@ -297,6 +347,7 @@ int main(int argc, char **argv)
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
   ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
   ros::Subscriber dSPACE_subscriber_04 = n.subscribe("LightResultOutput", 1, chatterCallback_04);
+  ros::Subscriber dSPACE_subscriber_05 = n.subscribe("/traffic", 1, chatterCallback_05);
   ros::spin();
   return 0;
 }
