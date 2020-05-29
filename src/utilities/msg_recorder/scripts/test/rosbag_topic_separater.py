@@ -1,5 +1,13 @@
 import rosbag
-bag = rosbag.Bag('input.bag')
+
+
+#-----------------#
+input_bag_name = "input.bag"
+output_bag_dir = "./sep_out/"
+#-----------------#
+
+
+bag = rosbag.Bag()
 topics = bag.get_type_and_topic_info()[1].keys()
 types = []
 for i in range(0,len(bag.get_type_and_topic_info()[1].values())):
