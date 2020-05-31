@@ -50,7 +50,7 @@ for idx, _pack in enumerate(bag_size_name_tuple_list):
     _d["ranking"] = idx + 1
     _d["size(MB)"] = size_in_MB
     _d["ratio in file"] = bag_name_to_percent_dict[name]
-    _d["topic name"] = name.replace("@", "/")
+    _d["topic name"] = name.replace("@", "/").replace(".bag", "")
     list_bag_info.append(_d)
 
 
