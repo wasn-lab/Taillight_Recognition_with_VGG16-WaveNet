@@ -52,7 +52,7 @@ class Node:
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", True)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
-        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
+        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", True)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
@@ -158,10 +158,7 @@ class Node:
             depth = self._calculate_distance_bbox( _obj.bPoint )
             # Check with map
             #-----------------------#
-            is_valid = True
-            if self.costmap_listener is not None:
-                is_occ = self.costmap_listener.is_occupied_at_point2D( (_obj.bPoint.p0.x, _obj.bPoint.p0.y))
-                is_valid = (not is_occ) if (is_occ is not None) else False
+            is_valid = self.check_bPoint_in_wayarea(  _obj.bPoint )
             if not is_valid:
                 continue
             #-----------------------#
@@ -180,6 +177,13 @@ class Node:
             avg_prob = sum_prob/obj_count
         #
         return (avg_prob, d_min_prob, d_min)
+
+    def check_bPoint_in_wayarea(self, bPoint):
+        is_valid = True
+        if self.costmap_listener is not None:
+            is_occ = self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y))
+            is_valid = (not is_occ) if (is_occ is not None) else False
+        return is_valid
 
     def text_marker_position(self, bbox):
         point_1 = bbox.p1

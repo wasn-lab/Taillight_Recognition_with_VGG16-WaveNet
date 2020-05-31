@@ -36,7 +36,7 @@ class Node:
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
-        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
+        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", True)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
@@ -144,10 +144,7 @@ class Node:
             if len(_obj.cPoint.lowerAreaPoints) > 0:
                 # Check with map
                 #-----------------------#
-                is_valid = True
-                if self.costmap_listener is not None:
-                    is_occ = self.costmap_listener.is_occupied_at_point2D( (_obj.cPoint.lowerAreaPoints[0].x, _obj.cPoint.lowerAreaPoints[0].y))
-                    is_valid = (not is_occ) if (is_occ is not None) else False
+                is_valid = self.check_cPoint_in_wayarea(  _obj.cPoint )
                 if not is_valid:
                     continue
                 #-----------------------#
@@ -166,6 +163,13 @@ class Node:
             avg_prob = sum_prob/obj_count
         #
         return (avg_prob, d_min_prob, d_min)
+
+    def check_cPoint_in_wayarea(self, cPoint):
+        is_valid = True
+        if self.costmap_listener is not None:
+            is_occ = self.costmap_listener.is_occupied_at_point2D( (cPoint.lowerAreaPoints[0].x, cPoint.lowerAreaPoints[0].y))
+            is_valid = (not is_occ) if (is_occ is not None) else False
+        return is_valid
 
     def _increase_point_z(self, pointXYZ_in, high):
         pointXYZ_out = PointXYZ()
