@@ -1,9 +1,38 @@
 import rosbag
 import os
+import glob
+import json
+
+# UI for selecting file
+#----------------------------------------#
+input_bag_name_chosen = None
+# Get the list of bag name
+bag_name_list = sorted( glob.glob("*.bag") )
+# Display the list of bag name
+for idx, name in enumerate(bag_name_list):
+    print("%d: %s" % (idx+1, name))
+
+# User selection
+try:
+    txt_input = raw_input
+except NameError:
+    txt_input = input
+
+str_in_s = txt_input("Bag id to process:")
+try:
+    id_in_s = int(str_in_s) - 1
+    input_bag_name_chosen = bag_name_list[id_in_s]
+except:
+    print("Wrong input, close the program")
+    exit()
+#----------------------------------------#
+
+
+
 
 #-----------------#
-input_bag_name = "auto_record_2020-05-21-16-27-33_2.bag" # "input.bag"
-output_bag_dir = "sep_out/"
+input_bag_name = input_bag_name_chosen # "auto_record_2020-05-21-16-27-33_2.bag" # "input.bag"
+output_bag_dir = "sep_out/" + input_bag_name_chosen[:-4] + "/" # Note: remove the ".bag" part
 #-----------------#
 
 # Creating directories
@@ -21,9 +50,11 @@ types = []
 for i in range(0,len(bag.get_type_and_topic_info()[1].values())):
     types.append(bag.get_type_and_topic_info()[1].values()[i][0])
 
+print("")
 # print("bag.get_type_and_topic_info() = %s" % str(bag.get_type_and_topic_info()))
 print("topics = %s" % str(topics))
 print("types = %s" % str(types))
+print("")
 
 
 #--------------------------------#
@@ -55,4 +86,4 @@ for _topic, msg, t in rosbag.Bag(input_bag_name).read_messages():
 print('-'*70)
 print("Finished!!")
 print('-'*70)
-print("topic_to_bag_name_dict = %s" % str(topic_to_bag_name_dict))
+print("\ntopic_to_bag_name_dict = \n%s" % json.dumps(topic_to_bag_name_dict, indent=4))
