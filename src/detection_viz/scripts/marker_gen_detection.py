@@ -161,7 +161,7 @@ class Node:
             is_valid = True
             if self.costmap_listener is not None:
                 is_occ = self.costmap_listener.is_occupied_at_point2D( (_obj.bPoint.p0.x, _obj.bPoint.p0.y))
-                is_valid = (not is_occ) if is_occ is not None else False
+                is_valid = (not is_occ) if (is_occ is not None) else False
             if not is_valid:
                 continue
             #-----------------------#
