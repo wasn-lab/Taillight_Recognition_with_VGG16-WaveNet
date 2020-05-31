@@ -2,7 +2,7 @@ import rosbag
 import os
 
 #-----------------#
-input_bag_name = "input.bag"
+input_bag_name = "auto_record_2020-05-21-16-27-33_2.bag" # "input.bag"
 output_bag_dir = "sep_out/"
 #-----------------#
 
