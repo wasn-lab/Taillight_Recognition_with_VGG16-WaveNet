@@ -2,6 +2,8 @@ import rosbag
 import os
 import glob
 import json
+import yaml
+import time
 
 # UI for selecting file
 #----------------------------------------#
@@ -57,13 +59,32 @@ print("types = %s" % str(types))
 print("")
 
 
+
+#---------#
+info_dict = yaml.load(rosbag.Bag(input_bag_name, 'r')._get_yaml_info())
+# start_timestamp = info_dict.get("start", None)
+total_msg_count = info_dict["messages"]
+
+# print("info_dict = \n%s" % json.dumps(info_dict, indent=4))
+# # print("info_dict.keys() = \n%s" % str(info_dict.keys()))
+# # print('type(info_dict["start"]) = %s' % type(info_dict["start"]))
+# print('info_dict["start"] = %f' % info_dict["start"])
+# print('info_dict["end"] = %f' % info_dict["end"])
+# print('info_dict["messages"] = %d' % info_dict["messages"])
+# print('info_dict["duration"] = %f' % info_dict["duration"])
+# print('info_dict["size"] = %d' % info_dict["size"])
+#---------#
+
 #--------------------------------#
 topic_to_bag_name_dict = dict()
 # for _topic in topics:
 #     topic_to_bag_name_dict[_topic] = _topic.replace('/', '@') + ".bag"
 # print("topic_to_bag_name_dict = %s" % str(topic_to_bag_name_dict))
 
+# Variables
 msg_count = 0
+T_start = time.time()
+est_total_T_f = None
 
 print('-'*70)
 print("Start looping!!")
@@ -73,8 +94,35 @@ for _topic, msg, t in rosbag.Bag(input_bag_name).read_messages():
     msg_count += 1
     if not _topic in topic_to_bag_name_dict:
         topic_to_bag_name_dict[_topic] = _topic.replace('/', '@') + ".bag"
+
+
+    # Shoe the progress
+    #-------------------------------#
+    progress = msg_count/float(total_msg_count)
     #
-    print("#%d\tWrite file <%s>" % (msg_count, topic_to_bag_name_dict[_topic]))
+    duration = time.time() - T_start # sec.
+    est_total_T = duration/progress
+    # Filter
+    #-----------------#
+    if est_total_T_f is None:
+        est_total_T_f = est_total_T
+    else:
+        est_total_T_f += 0.05*(est_total_T - est_total_T_f)
+    #-----------------#
+    # end Filter
+    # est_remained_T = est_total_T - duration
+    est_remained_T = est_total_T_f - duration
+    #-------------------------------#
+    # print("#%d\tWrite file <%s>" % (msg_count, topic_to_bag_name_dict[_topic]))
+    print("#%d/%d (progress: %.2f)\ttime(elapsed/remained/total)= (%f/%f/%f)\tWrite file <%s>" % \
+                (msg_count, total_msg_count, progress, \
+                duration, est_remained_T, est_total_T, \
+                topic_to_bag_name_dict[_topic])\
+                )
+    #-------------------------------#
+    # end Shoe the progress
+
+
     _file_path = output_bag_dir + topic_to_bag_name_dict[_topic]
     try:
         with rosbag.Bag(_file_path, 'a') as outbag:
@@ -82,6 +130,8 @@ for _topic, msg, t in rosbag.Bag(input_bag_name).read_messages():
     except:
         with rosbag.Bag(_file_path, 'w') as outbag:
             outbag.write(_topic, msg, t)
+
+
 
 print('-'*70)
 print("Finished!!")
