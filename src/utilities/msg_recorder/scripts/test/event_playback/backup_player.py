@@ -197,6 +197,13 @@ def main():
         #
         _d = bag_dict_list[id_in]
         file_list = sorted(_d["bags"])
+
+        # Print the file list
+        print("bags to play:")
+        for _bag in file_list:
+            print(_bag)
+
+
         # Calculate the relative time
         # start_datetime = parse_backup_start_timestamp( file_list[0] )
         start_datetime = get_backup_start_timestamp( file_list[0] )
