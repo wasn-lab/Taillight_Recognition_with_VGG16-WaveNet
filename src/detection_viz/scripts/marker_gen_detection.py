@@ -150,18 +150,20 @@ class Node:
             _prob = _obj.camInfo.prob
             if _prob == 0.0:
                 continue
-            # Sum
-            #-----------------#
-            obj_count += 1
-            sum_prob += _prob
-            #-----------------#
-            depth = self._calculate_distance_bbox( _obj.bPoint )
+                
             # Check with map
             #-----------------------#
             is_valid = self.check_bPoint_in_wayarea(  _obj.bPoint )
             if not is_valid:
                 continue
             #-----------------------#
+
+            # Sum
+            #-----------------#
+            obj_count += 1
+            sum_prob += _prob
+            #-----------------#
+            depth = self._calculate_distance_bbox( _obj.bPoint )
             if _obj.bPoint.p0.x > 0.0 and abs(_obj.bPoint.p0.y) < self.checker_nearProb_y_range:
                 # Frontal object and the object is not empty
                 if (depth < d_min):
@@ -181,8 +183,15 @@ class Node:
     def check_bPoint_in_wayarea(self, bPoint):
         is_valid = True
         if self.costmap_listener is not None:
-            is_occ = self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y))
-            is_valid = (not is_occ) if (is_occ is not None) else False
+            is_occ_list = []
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y) ) )
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p3.x, bPoint.p3.y) ) )
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p4.x, bPoint.p4.y) ) )
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p7.x, bPoint.p7.y) ) )
+            for is_occ in is_occ_list:
+                is_valid &= (not is_occ) if (is_occ is not None) else False
+            # is_occ = self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y))
+            # is_valid = (not is_occ) if (is_occ is not None) else False
         return is_valid
 
     def text_marker_position(self, bbox):

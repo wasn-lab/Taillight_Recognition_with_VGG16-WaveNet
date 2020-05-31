@@ -135,26 +135,29 @@ class Node:
             _prob = _obj.camInfo.prob
             if _prob == 0.0:
                 continue
+            if len(_obj.cPoint.lowerAreaPoints) == 0:
+                continue
+            
+            # Check with map
+            #-----------------------#
+            is_valid = self.check_cPoint_in_wayarea(  _obj.cPoint )
+            if not is_valid:
+                continue
+            #-----------------------#
+
             # Sum
             #-----------------#
             obj_count += 1
             sum_prob += _prob
             #-----------------#
             depth = self._calculate_distance_polygon( _obj.cPoint )
-            if len(_obj.cPoint.lowerAreaPoints) > 0:
-                # Check with map
-                #-----------------------#
-                is_valid = self.check_cPoint_in_wayarea(  _obj.cPoint )
-                if not is_valid:
-                    continue
-                #-----------------------#
-                if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < self.checker_nearProb_y_range:
-                    # Frontal object and the object is not empty
-                    if (depth < d_min):
-                        # Update
-                        d_min = depth
-                        d_min_idx = i
-                        d_min_prob = _prob
+            if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < self.checker_nearProb_y_range:
+                # Frontal object and the object is not empty
+                if (depth < d_min):
+                    # Update
+                    d_min = depth
+                    d_min_idx = i
+                    d_min_prob = _prob
         # Post-process
         #--------------------------------#
         if obj_count == 0:
@@ -167,8 +170,11 @@ class Node:
     def check_cPoint_in_wayarea(self, cPoint):
         is_valid = True
         if self.costmap_listener is not None:
-            is_occ = self.costmap_listener.is_occupied_at_point2D( (cPoint.lowerAreaPoints[0].x, cPoint.lowerAreaPoints[0].y))
-            is_valid = (not is_occ) if (is_occ is not None) else False
+            for _point in cPoint.lowerAreaPoints:
+                is_occ = self.costmap_listener.is_occupied_at_point2D( (_point.x, _point.y) )
+                is_valid &= (not is_occ) if (is_occ is not None) else False
+            # is_occ = self.costmap_listener.is_occupied_at_point2D( (cPoint.lowerAreaPoints[0].x, cPoint.lowerAreaPoints[0].y))
+            # is_valid = (not is_occ) if (is_occ is not None) else False
         return is_valid
 
     def _increase_point_z(self, pointXYZ_in, high):
