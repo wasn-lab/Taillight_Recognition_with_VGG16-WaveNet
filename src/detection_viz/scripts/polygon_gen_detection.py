@@ -225,7 +225,9 @@ class Node:
         _objects = None
         _num_removed_obj = None
         if self.is_ignoring_empty_obj:
-            _objects = [_obj for _obj in message.objects if _obj.distance >= 0.0]
+            # _objects = [_obj for _obj in message.objects if _obj.distance >= 0.0]
+            # Remove empty polygons as well
+            _objects = [_obj for _obj in message.objects if (_obj.distance >= 0.0) and (len( _obj.cPoint.lowerAreaPoints) > 0)]
             _num_removed_obj = len(message.objects) - len(_objects)
         else:
             _objects = message.objects
@@ -271,6 +273,7 @@ class Node:
                     prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
                     box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].cPoint, obj_id, prob=prob_) )
                     idx += 1
+
 
         #
         self.polygon_pub.publish(box_list)
