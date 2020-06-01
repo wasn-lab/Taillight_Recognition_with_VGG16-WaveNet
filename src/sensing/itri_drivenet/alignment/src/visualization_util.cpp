@@ -63,8 +63,12 @@ cv::Scalar Visualization::getDistColor(float distance_in_meters)
 MinMax3D Visualization::getDistLinePoint(float x_dist, float y_dist, float z_dist)
 {
   MinMax3D point;
-  point.p_min.x = x_dist; point.p_min.y = (-1) * y_dist; point.p_min.z = z_dist;
-  point.p_max.x = x_dist; point.p_max.y = y_dist; point.p_max.z = z_dist;
+  point.p_min.x = x_dist;
+  point.p_min.y = (-1) * y_dist;
+  point.p_min.z = z_dist;
+  point.p_max.x = x_dist;
+  point.p_max.y = y_dist;
+  point.p_max.z = z_dist;
 
   return point;
 }
