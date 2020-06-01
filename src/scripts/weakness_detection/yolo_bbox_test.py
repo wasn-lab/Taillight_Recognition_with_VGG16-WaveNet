@@ -13,13 +13,15 @@ class YoloBBoxTest(unittest.TestCase):
         self.mgr = YoloMgr(result_json)
 
     def test_bbox_coord(self):
-        coord = self.mgr.frames[0]["objects"][0]["relative_coordinates"]
+        obj = self.mgr.frames[0]["objects"][0]
+        bbox = YoloBBox(obj)
+        coord = obj["relative_coordinates"]
+
         self.assertEqual(coord["width"], 0.043834)
         self.assertEqual(coord["center_x"], 0.194974)
         self.assertEqual(coord["height"], 0.055284)
         self.assertEqual(coord["center_y"], 0.278952)
 
-        bbox = YoloBBox(coord)
         self.assertEqual(bbox.as_tuple(), (105, 96, 131, 117))
 
         self.assertTrue(bbox.is_on_border(105, 100))
