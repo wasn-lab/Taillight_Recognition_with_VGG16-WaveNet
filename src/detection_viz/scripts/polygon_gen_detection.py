@@ -137,7 +137,12 @@ class Node:
                 continue
             if len(_obj.cPoint.lowerAreaPoints) == 0:
                 continue
-            
+            # Sum for averaging
+            #-----------------#
+            obj_count += 1
+            sum_prob += _prob
+            #-----------------#
+
             # Check with map
             #-----------------------#
             is_valid = self.check_cPoint_in_wayarea(  _obj.cPoint )
@@ -145,11 +150,7 @@ class Node:
                 continue
             #-----------------------#
 
-            # Sum
-            #-----------------#
-            obj_count += 1
-            sum_prob += _prob
-            #-----------------#
+            # find the closest one
             depth = self._calculate_distance_polygon( _obj.cPoint )
             if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < self.checker_nearProb_y_range:
                 # Frontal object and the object is not empty

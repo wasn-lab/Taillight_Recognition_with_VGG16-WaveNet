@@ -150,7 +150,12 @@ class Node:
             _prob = _obj.camInfo.prob
             if _prob == 0.0:
                 continue
-                
+            # Sum for averaging
+            #-----------------#
+            obj_count += 1
+            sum_prob += _prob
+            #-----------------#
+
             # Check with map
             #-----------------------#
             is_valid = self.check_bPoint_in_wayarea(  _obj.bPoint )
@@ -158,11 +163,7 @@ class Node:
                 continue
             #-----------------------#
 
-            # Sum
-            #-----------------#
-            obj_count += 1
-            sum_prob += _prob
-            #-----------------#
+            # find the closest one
             depth = self._calculate_distance_bbox( _obj.bPoint )
             if _obj.bPoint.p0.x > 0.0 and abs(_obj.bPoint.p0.y) < self.checker_nearProb_y_range:
                 # Frontal object and the object is not empty
