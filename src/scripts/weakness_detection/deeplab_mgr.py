@@ -2,6 +2,22 @@
 import os
 import logging
 import cv2
+from decimal import Decimal, ROUND_HALF_UP
+
+# Raw image: 608x384, deeplab: 513x513.
+# To get deeplab input: 608x384 -> 608x608 (letterbox) -> 513x513
+
+RAW_TO_DEEPLAB_SCALE = 513.0 / 608
+LETTERBOX_BORDER = (608 - 384) / 2
+MIN_Y = LETTERBOX_BORDER * RAW_TO_DEEPLAB_SCALE
+MAX_Y = (LETTERBOX_BORDER + 384 - 1) * RAW_TO_DEEPLAB_SCALE
+
+def to_raw_image_pos(x, y):
+    assert(x >= 0)
+    assert(y >= MIN_Y)
+    assert(x < DeeplabMgr.IMAGE_WIDTH)
+    assert(y <= MAX_Y)
+    return (int(x / RAW_TO_DEEPLAB_SCALE + 0.5), int(y / RAW_TO_DEEPLAB_SCALE + 0.5) - 112)
 
 
 class DeeplabMgr(object):
