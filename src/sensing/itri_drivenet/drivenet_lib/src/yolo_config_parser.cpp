@@ -144,11 +144,13 @@ NetworkInfo getYoloNetworkInfo()
 
 InferParams getYoloInferParams()
 {
-  return InferParams{
-    FLAGS_print_perf_info,         FLAGS_print_prediction_info,           FLAGS_calibration_images,
-    FLAGS_calibration_images_path, static_cast<float>(FLAGS_prob_thresh), static_cast<float>(FLAGS_prob_thresh_bike),
-    static_cast<float>(FLAGS_nms_thresh)
-  };
+  return InferParams{ FLAGS_print_perf_info,
+                      FLAGS_print_prediction_info,
+                      FLAGS_calibration_images,
+                      FLAGS_calibration_images_path,
+                      static_cast<float>(FLAGS_prob_thresh),
+                      static_cast<float>(FLAGS_prob_thresh_bike),
+                      static_cast<float>(FLAGS_nms_thresh) };
 }
 
 uint64_t getSeed()
