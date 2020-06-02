@@ -27,7 +27,7 @@ void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
                            std::vector<DriveNet::PixelPosition>& cam_pixels,
                            std::vector<MinMax3D>& cam_bboxs_cube_min_max,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment alignment,
-                           CloudCluster cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering);
+                           CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering);
 void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int object_class_id,
                           pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr);
 #endif
