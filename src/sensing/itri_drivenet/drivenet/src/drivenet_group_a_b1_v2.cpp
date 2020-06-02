@@ -236,7 +236,7 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/car_id", g_car_id);
   ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_fps);
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
-    ros::param::get(ros::this_node::getName() + "/debug", g_debug_flag);
+  ros::param::get(ros::this_node::getName() + "/debug", g_debug_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
   ros::param::get(ros::this_node::getName() + "/lidarall_publish", g_lidarall_publish);
@@ -549,7 +549,8 @@ void* run_yolo(void* /*unused*/)
             float distance = det_obj.distance;
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
-            cv::putText(m_display, distance_str + " m", cvPoint(position_1.u + 5, position_1.v - 5), 0, 0.3, class_color, 1);
+            cv::putText(m_display, distance_str + " m", cvPoint(position_1.u + 5, position_1.v - 5), 0, 0.3,
+                        class_color, 1);
           }
         }
       }

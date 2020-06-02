@@ -96,13 +96,13 @@ std::string get_common_label_string(int label_id)
   {
     class_name = "P";
   }
-  else if (label_id == static_cast<int>(DriveNet::common_type_id::bicycle)) 
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::bicycle))
   {
     class_name = "B";
   }
   else if (label_id == static_cast<int>(DriveNet::common_type_id::motorbike))
   {
-    class_name = "M";    
+    class_name = "M";
   }
   else if (label_id == static_cast<int>(DriveNet::common_type_id::car))
   {
@@ -110,11 +110,11 @@ std::string get_common_label_string(int label_id)
   }
   else if (label_id == static_cast<int>(DriveNet::common_type_id::bus))
   {
-    class_name = "B";    
+    class_name = "B";
   }
   else if (label_id == static_cast<int>(DriveNet::common_type_id::truck))
   {
-    class_name = "T";   
+    class_name = "T";
   }
   else
   {
