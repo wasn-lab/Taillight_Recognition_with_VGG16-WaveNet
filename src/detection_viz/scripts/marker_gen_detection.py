@@ -16,6 +16,8 @@ from rosgraph_msgs.msg import Clock
 import numpy as np
 import fps_calculator as FPS
 import signal_analyzer as SA
+# Costmap listener
+import costmap_listener_ITRI as CLN
 
 BOX_ORDER = [
     0, 1,
@@ -50,9 +52,19 @@ class Node:
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", True)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
+        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
+        # Costmap listener
+        if self.is_using_costmap_listener:
+            param_dict = dict()
+            param_dict['costmap_topic_name'] = "/occupancy_grid_wayarea" # "occupancy_grid" #
+            param_dict['is_using_ITRI_origin'] = True
+            self.costmap_listener = CLN.COSTMAP_LISTENER(param_dict)
+            print("[%s] Using costmap listener!" % self.delay_prefix)
+        else:
+            self.costmap_listener = None
         # Flags
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
@@ -138,11 +150,20 @@ class Node:
             _prob = _obj.camInfo.prob
             if _prob == 0.0:
                 continue
-            # Sum
+            # Sum for averaging
             #-----------------#
             obj_count += 1
             sum_prob += _prob
             #-----------------#
+
+            # Check with map
+            #-----------------------#
+            is_valid = self.check_bPoint_in_wayarea(  _obj.bPoint )
+            if not is_valid:
+                continue
+            #-----------------------#
+
+            # find the closest one
             depth = self._calculate_distance_bbox( _obj.bPoint )
             if _obj.bPoint.p0.x > 0.0 and abs(_obj.bPoint.p0.y) < self.checker_nearProb_y_range:
                 # Frontal object and the object is not empty
@@ -159,6 +180,20 @@ class Node:
             avg_prob = sum_prob/obj_count
         #
         return (avg_prob, d_min_prob, d_min)
+
+    def check_bPoint_in_wayarea(self, bPoint):
+        is_valid = True
+        if self.costmap_listener is not None:
+            is_occ_list = []
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y) ) )
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p3.x, bPoint.p3.y) ) )
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p4.x, bPoint.p4.y) ) )
+            is_occ_list.append( self.costmap_listener.is_occupied_at_point2D( (bPoint.p7.x, bPoint.p7.y) ) )
+            for is_occ in is_occ_list:
+                is_valid &= (not is_occ) if (is_occ is not None) else False
+            # is_occ = self.costmap_listener.is_occupied_at_point2D( (bPoint.p0.x, bPoint.p0.y))
+            # is_valid = (not is_occ) if (is_occ is not None) else False
+        return is_valid
 
     def text_marker_position(self, bbox):
         point_1 = bbox.p1
