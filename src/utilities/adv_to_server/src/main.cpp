@@ -607,7 +607,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
     J1["Steeringwheel"] =data[3]; //方向盤 //0.0;
     J1["door"] = convertBoolean(vs.door); //車門 //true;
-    J1["airconditioner"] = convertBoolean((vs.air_conditioner); //空調;
+    J1["airconditioner"] = convertBoolean(vs.air_conditioner); //空調;
     J1["lat"] = gps.lidar_Lat; //vs.location 目前來源 lidar_lla
     J1["lng"] = gps.lidar_Lon; //vs.location 目前來源 lidar_lla
     J1["headlight"] = convertBoolean(vs.headlight); //車燈 //true;
