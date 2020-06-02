@@ -18,7 +18,6 @@ void Projector3::init(int camera_id)
       std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
       std::strcat(file_path, file_name);
       readCameraParameters(file_path);
-      delete file_name;
       delete [] file_path;
       break;
 
@@ -28,7 +27,6 @@ void Projector3::init(int camera_id)
       std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
       std::strcat(file_path, file_name);
       readCameraParameters(file_path);
-      delete file_name;
       delete [] file_path;
       break;
 
