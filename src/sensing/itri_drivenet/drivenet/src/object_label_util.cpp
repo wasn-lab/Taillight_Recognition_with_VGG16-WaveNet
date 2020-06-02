@@ -89,6 +89,39 @@ cv::Scalar get_common_label_color(int label_id)
   }
   return class_color;
 }
+std::string get_common_label_string(int label_id)
+{
+  std::string class_name = "";
+  if (label_id == static_cast<int>(DriveNet::common_type_id::person))
+  {
+    class_name = "P";
+  }
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::bicycle)) 
+  {
+    class_name = "B";
+  }
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::motorbike))
+  {
+    class_name = "M";    
+  }
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::car))
+  {
+    class_name = "C";
+  }
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::bus))
+  {
+    class_name = "B";    
+  }
+  else if (label_id == static_cast<int>(DriveNet::common_type_id::truck))
+  {
+    class_name = "T";   
+  }
+  else
+  {
+    class_name = "";
+  }
+  return class_name;
+}
 
 void transferPixelScaling(PixelPosition& positions)
 {
