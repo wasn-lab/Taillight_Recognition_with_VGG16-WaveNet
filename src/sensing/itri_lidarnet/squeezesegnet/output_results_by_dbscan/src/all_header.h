@@ -84,6 +84,7 @@
 #include "UserDefine.h"
 
 #define ENABLE_DEBUG_MODE false
+#define ENABLE_LABEL_MODE true
 
 using namespace std;
 using namespace pcl;

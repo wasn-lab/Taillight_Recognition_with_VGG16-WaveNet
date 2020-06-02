@@ -74,12 +74,15 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
 
   if (maxThreadsNumber == 0)
   {
+    std::cout << "[voxel_grid] Error: max thread equals 0" << std::endl;
     return false;
   }
-
+  
   err = cudaMalloc((void**)&d_point_cloud, point_cloud.points.size() * sizeof(PointT));
   if (err != ::cudaSuccess)
   {
+    std::cout << cudaGetErrorName(err) << std::endl;
+    std::cout << "[voxel_grid] Error: Failed to allocate memory for cuda" << std::endl;
     return false;
   }
 
@@ -87,6 +90,7 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
                    cudaMemcpyHostToDevice);
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to copy memory for cuda" << std::endl;
     return false;
   }
 
@@ -94,6 +98,7 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
                                         rgd_params);
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to calculate grid parameters" << std::endl;
     return false;
   }
 
@@ -114,12 +119,14 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
   err = cudaMalloc((void**)&d_hashTable, point_cloud.points.size() * sizeof(hashElement));
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to allocate hash table memory for cuda" << std::endl;
     return false;
   }
 
   err = cudaMalloc((void**)&d_buckets, rgd_params.number_of_buckets * sizeof(bucket));
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to allocate buckects for cuda" << std::endl;
     return false;
   }
 
@@ -127,18 +134,21 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
                                   rgd_params);
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to calculate grid" << std::endl;
     return false;
   }
 
   err = cudaMalloc((void**)&d_markers, point_cloud.points.size() * sizeof(bool));
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to allocate marker memory for cuda" << std::endl;
     return false;
   }
 
   err = cudaDownSample(maxThreadsNumber, d_markers, d_hashTable, d_buckets, rgd_params, point_cloud.points.size());
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to downsampling" << std::endl;
     return false;
   }
 
@@ -147,6 +157,7 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
   err = cudaMemcpy(h_markers, d_markers, point_cloud.points.size() * sizeof(bool), cudaMemcpyDeviceToHost);
   if (err != ::cudaSuccess)
   {
+    std::cout << "[voxel_grid] Error: Failed to copy marker memory for cuda" << std::endl;
     return false;
   }
 
