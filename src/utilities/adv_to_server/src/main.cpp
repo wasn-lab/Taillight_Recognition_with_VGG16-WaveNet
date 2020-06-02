@@ -237,6 +237,12 @@ std::time_t convertStrToTimeStamp(std::string time)
   std::time_t time_stamp = mktime(&t);
   return time_stamp;
 }
+
+bool convertBoolean(int state)
+{
+  if(state == 0) return false;
+  return true;
+}
 /*=========================tools end=========================*/
 
 /*========================= ROS callbacks begin=========================*/
@@ -598,20 +604,20 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
-    J1["handcuffs"] = vs.hand_brake; //手煞車 //true;
+    J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
     J1["Steeringwheel"] =data[3]; //方向盤 //0.0;
-    J1["door"] = vs.door; //車門 //true;
-    J1["airconditioner"] = vs.air_conditioner; //空調;
+    J1["door"] = convertBoolean(vs.door); //車門 //true;
+    J1["airconditioner"] = convertBoolean((vs.air_conditioner); //空調;
     J1["lat"] = gps.lidar_Lat; //vs.location 目前來源 lidar_lla
     J1["lng"] = gps.lidar_Lon; //vs.location 目前來源 lidar_lla
-    J1["headlight"] = vs.headlight; //車燈 //true;
-    J1["wiper"] =  vs.wiper; //雨刷//true;
-    J1["Interiorlight"] = vs.indoor_light; //車內燈//true;
-    J1["mainswitch"] = vs.gross_power; //總電源//true;
-    J1["leftlight"] = vs.left_turn_light; //左方向燈; //true
-    J1["rightlight"] = vs.right_turn_light; //右方向燈//true;
-    J1["EStop"] = vs.estop; // E-Stop//true;
-    J1["ACCpower"] = vs.ACC_state; //ACC 電源//true;
+    J1["headlight"] = convertBoolean(vs.headlight); //車燈 //true;
+    J1["wiper"] =  convertBoolean(vs.wiper); //雨刷//true;
+    J1["Interiorlight"] = convertBoolean(vs.indoor_light); //車內燈//true;
+    J1["mainswitch"] = convertBoolean(vs.gross_power); //總電源//true;
+    J1["leftlight"] = convertBoolean(vs.left_turn_light); //左方向燈; //true
+    J1["rightlight"] = convertBoolean(vs.right_turn_light); //右方向燈//true;
+    J1["EStop"] = convertBoolean(vs.estop); // E-Stop//true;
+    J1["ACCpower"] = convertBoolean(vs.ACC_state); //ACC 電源//true;
     J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; // 目前來源NextStop/Info
     J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
@@ -651,20 +657,20 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
-    J1["handcuffs"] = vs.hand_brake; //手煞車 //true;
+    J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
     J1["Steeringwheel"] = data[3]; //方向盤 //0.0;
-    J1["door"] = vs.door; //車門 //true;
-    J1["airconditioner"] = vs.air_conditioner; //空調;
+    J1["door"] = convertBoolean(vs.door); //車門 //true;
+    J1["airconditioner"] = convertBoolean(vs.air_conditioner); //空調;
     J1["lat"] = gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
     J1["lng"] = gps.lidar_Lon;  //vs.location 目前來源 lidar_lla
-    J1["headlight"] = vs.headlight; //車燈 //true;
-    J1["wiper"] = vs.wiper; //雨刷//true;
-    J1["Interiorlight"] = vs.indoor_light; //車內燈//true;
-    J1["mainswitch"] = vs.gross_power; //總電源//true;
-    J1["leftlight"] = vs.left_turn_light; //左方向燈; //true
-    J1["rightlight"] = vs.right_turn_light; //右方向燈//true;
-    J1["EStop"] = vs.estop; // E-Stop//true;
-    J1["ACCpower"] = vs.ACC_state; //ACC 電源//true;
+    J1["headlight"] = convertBoolean(vs.headlight); //車燈 //true;
+    J1["wiper"] = convertBoolean(vs.wiper); //雨刷//true;
+    J1["Interiorlight"] = convertBoolean(vs.indoor_light); //車內燈//true;
+    J1["mainswitch"] = convertBoolean(vs.gross_power); //總電源//true;
+    J1["leftlight"] = convertBoolean(vs.left_turn_light); //左方向燈; //true
+    J1["rightlight"] = convertBoolean(vs.right_turn_light); //右方向燈//true;
+    J1["EStop"] = convertBoolean(vs.estop); // E-Stop//true;
+    J1["ACCpower"] = convertBoolean(vs.ACC_state); //ACC 電源//true;
     J1["route_id"] = routeID; //default 2000
     J1["RouteMode"] = mode;
     J1["Gx"] = imu.Gx; //   目前來源 imu_data_rad
@@ -727,10 +733,12 @@ void sendRun(int argc, char** argv)
   UdpClient UDP_Back_client;
   UdpClient UDP_OBU_client;
   UdpClient UDP_VK_client;
+  UdpClient UDP_TABLET_client;
 
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
+  UDP_TABLET_client.initial("192.168.43.63", 9876);
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
@@ -750,6 +758,7 @@ void sendRun(int argc, char** argv)
     while (vkQueue.size() != 0)
     {
       UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
  
@@ -763,7 +772,9 @@ void sendRun(int argc, char** argv)
       {
         cout << "send from q 1" << endl;
         json j = eventQueue1.front();
-        UDP_VK_client.send_obj_to_server(j.dump(), flag_show_udp_send);
+        string jstr = j.dump();
+        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
         eventQueue1.pop();
         
       }
@@ -776,7 +787,9 @@ void sendRun(int argc, char** argv)
       {
         cout << "send from q 2" << endl;  
         json j = eventQueue2.front();
-        UDP_VK_client.send_obj_to_server(j.dump(), flag_show_udp_send);
+        string jstr = j.dump();
+        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
         eventQueue2.pop();
       }
       mutex_event_2.unlock();
