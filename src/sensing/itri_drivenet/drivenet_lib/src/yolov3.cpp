@@ -49,7 +49,15 @@ std::vector<BBoxInfo> YoloV3::decodeTensor(const int imageIdx, const int imageH,
         }
         maxProb = objectness * maxProb;
 
-        if (maxProb > m_ProbThresh)
+        float probThresh = m_ProbThresh;
+        if(maxIndex == 3 || maxIndex == 1)
+        {
+          if (maxProb > m_ProbThreshBike)
+          {
+            probThresh = m_ProbThreshBike;
+          }
+        }
+        if (maxProb > probThresh)
         {
           addBBoxProposal(bx, by, bw, bh, tensor.stride, scalingFactor, xOffset, yOffset, maxIndex, maxProb, binfo);
         }
