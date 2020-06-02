@@ -43,8 +43,8 @@ DBSCAN_CUDA::DBSCAN_CUDA()
 DBSCAN_CUDA::~DBSCAN_CUDA()
 {
   dbs = nullptr;
-  // delete[] epsilon;
-  // delete[] minpts;
+  delete[] epsilon;
+  delete[] minpts;
 }
 
 template <typename PointT>
