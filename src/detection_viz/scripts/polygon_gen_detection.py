@@ -36,7 +36,7 @@ class Node:
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
-        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", True)
+        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
