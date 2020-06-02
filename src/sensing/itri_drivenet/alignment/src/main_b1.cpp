@@ -898,8 +898,8 @@ void buffer_monitor()
 }
 int main(int argc, char** argv)
 {
-  std::cout << "===== Alignment startup. =====" << std::endl;
-  ros::init(argc, argv, "Alignment");
+  std::cout << "===== Multi_sensor_3d_object_detection startup. =====" << std::endl;
+  ros::init(argc, argv, "Multi_sensor_3d_object_detection");
   ros::NodeHandle nh;
 
   /// ros Subscriber
@@ -995,7 +995,7 @@ int main(int argc, char** argv)
   int thread_count = int(g_cam_ids.size()) * 2 + 1;  /// camera raw + object + lidar raw
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
-  std::cout << "===== Alignment running... =====" << std::endl;
+  std::cout << "===== Multi_sensor_3d_object_detection running... =====" << std::endl;
 
   /// main loop end
   if (g_is_display)
@@ -1009,6 +1009,6 @@ int main(int argc, char** argv)
     sync_data_thread.join();
   }
   main_thread.join();
-  std::cout << "===== Alignment shutdown. =====" << std::endl;
+  std::cout << "===== Multi_sensor_3d_object_detection shutdown. =====" << std::endl;
   return 0;
 }
