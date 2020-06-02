@@ -22,7 +22,7 @@ public:
   S1Cluster(boost::shared_ptr<pcl::visualization::PCLVisualizer> input_viewer, int* input_viewID);
   virtual ~S1Cluster();
 
-  CLUSTER_INFO* getClusters(bool is_debug, const PointCloud<PointXYZIL>::ConstPtr input, int* cluster_number);
+  CLUSTER_INFO* getClusters(bool debug, const PointCloud<PointXYZIL>::ConstPtr input, int* cluster_number);
 
 private:
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
