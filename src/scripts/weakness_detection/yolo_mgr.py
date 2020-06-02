@@ -3,10 +3,10 @@ import os
 import io
 import json
 import logging
-from deeplab_mgr import DeeplabMgr, to_raw_image_pos
+from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import YoloBBox
-from nn_labels import DeeplabLabel, YoloLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID
+from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
 
 def read_result_json(filename):
     if not os.path.isfile(filename):
@@ -21,14 +21,29 @@ def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
     """
     Return True if one of yolo_bboxes covers deeplab's result. False otherwise.
     """
-    _x, _y = to_raw_image_pos(deeplab_col, deeplab_row)
+    _x, _y = deeplab_pos_to_raw_pos(deeplab_col, deeplab_row)
     expected_id = DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID[deeplab_class_id]
     ret = False
     for bbox in yolo_bboxes:
         if bbox.class_id == expected_id:
             if bbox.is_within(_x, _y):
                 ret = True
-    return True
+    return ret
+
+
+def _yolo_contains_enough_deeplab_labels(bbox, deeplab_mgr):
+    """Return True if |bbox| contains 20% or more deeplab detections."""
+    if bbox.class_id not in YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID:
+        return True
+    num_pixels_with_same_id = 0
+    expected_id = YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID[bbox.class_id]
+    for row in range(bbox.top_y, bbox.bottom_y + 1):
+        for col in range(bbox.left_x, bbox.right_x + 1):
+            deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(col, row)
+            if deeplab_mgr.get_label_by_xy(deeplab_x, deeplab_y) == expected_id:
+                num_pixels_with_same_id += 1
+    total_bbox_pixels = (bbox.bottom_y - bbox.top_y + 1) * (bbox.right_x - bbox.left_x + 1)
+    return bool(num_pixels_with_same_id > total_bbox_pixels * 0.2)
 
 
 def _cmpr_yolo_with_deeplab(yolo_frame):
@@ -51,7 +66,13 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
             within = _within_bboxes(bboxes, deeplab_label, row, col)
             if not within:
                 num_mismatch += 1
+    if num_mismatch > 0:
+        logging.warning("Deeplab finds object but yolo does not: %s", filename)
     # yolo finds an object, but deeplab does not:
+    for bbox in bboxes:
+        if not _yolo_contains_enough_deeplab_labels(bbox, deeplab_mgr):
+            logging.warning("Yolo finds object but deeplab does not: %s", filename)
+            num_mismatch += 1
     return num_mismatch
 
 
@@ -63,8 +84,6 @@ class YoloMgr(object):
         for frame in self.frames:
             num_mismatch = _cmpr_yolo_with_deeplab(frame)
             logging.warning("Inspect %s", frame["filename"])
-            if num_mismatch > 0:
-                logging.warning("Find weakness: %s", frame["filename"])
 
 
 if __name__ == "__main__":
