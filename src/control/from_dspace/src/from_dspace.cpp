@@ -151,11 +151,10 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 		msg_temp.Dspace_Flag01 = frame.data[0];
 		msg_temp.Dspace_Flag02 = frame.data[1];
 		msg_temp.Dspace_Flag03 = frame.data[2];
-		msg_temp.Dspace_Flag04 = frame.data[3];
-		msg_temp.Dspace_Flag05 = frame.data[4];
-		msg_temp.Dspace_Flag06 = frame.data[5];
-		msg_temp.Dspace_Flag07 = frame.data[6];
-		msg_temp.Dspace_Flag08 = frame.data[7];
+		msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag05 = frame.data[5];
+		msg_temp.Dspace_Flag06 = frame.data[6];
+		msg_temp.Dspace_Flag07 = frame.data[7];
 	    Publisher[3].publish(msg_temp);
 	    return 1;
 	}
