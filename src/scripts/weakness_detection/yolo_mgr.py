@@ -3,6 +3,7 @@ import os
 import io
 import json
 import logging
+import pprint
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import YoloBBox
@@ -81,10 +82,12 @@ class YoloMgr(object):
         self.frames = read_result_json(json_file)
 
     def find_weakness_images(self):
+        num_weak_images_found = 0
         for frame in self.frames:
-            num_mismatch = _cmpr_yolo_with_deeplab(frame)
-            logging.warning("Inspect %s", frame["filename"])
-
+            frame["deeplab_disagree"] = _cmpr_yolo_with_deeplab(frame)
+        self.frames.sort(key=lambda x: x["deeplab_disagree"])
+        for frame in self.frames[-10:]:
+            pprint.pprint(frame)
 
 if __name__ == "__main__":
     mgr = YoloMgr("/tmp/yolo_result.json")
