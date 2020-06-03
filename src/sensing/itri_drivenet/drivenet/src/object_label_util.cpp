@@ -11,27 +11,27 @@ const float g_scaling_ratio_h = (float)g_image_h / (float)g_raw_image_h;
 
 int translate_label(int label)
 {
-  if (label == static_cast<int>(DriveNet::net_type_id::person))
+  if (label == static_cast<int>(DriveNet::yolo_class_id::person))
   {
     return static_cast<int>(DriveNet::common_type_id::person);
   }
-  else if (label == static_cast<int>(DriveNet::net_type_id::bicycle))
+  else if (label == static_cast<int>(DriveNet::yolo_class_id::bicycle))
   {
     return static_cast<int>(DriveNet::common_type_id::bicycle);
   }
-  else if (label == static_cast<int>(DriveNet::net_type_id::car))
+  else if (label == static_cast<int>(DriveNet::yolo_class_id::car))
   {
     return static_cast<int>(DriveNet::common_type_id::car);
   }
-  else if (label == static_cast<int>(DriveNet::net_type_id::motorbike))
+  else if (label == static_cast<int>(DriveNet::yolo_class_id::motorbike))
   {
     return static_cast<int>(DriveNet::common_type_id::motorbike);
   }
-  else if (label == static_cast<int>(DriveNet::net_type_id::bus))
+  else if (label == static_cast<int>(DriveNet::yolo_class_id::bus))
   {
     return static_cast<int>(DriveNet::common_type_id::bus);
   }
-  else if (label == static_cast<int>(DriveNet::net_type_id::truck))
+  else if (label == static_cast<int>(DriveNet::yolo_class_id::truck))
   {
     return static_cast<int>(DriveNet::common_type_id::truck);
   }
@@ -43,18 +43,18 @@ int translate_label(int label)
 cv::Scalar get_label_color(int label_id)
 {
   cv::Scalar class_color;
-  if (label_id == static_cast<int>(DriveNet::net_type_id::person))
+  if (label_id == static_cast<int>(DriveNet::yolo_class_id::person))
   {
     class_color = CvColor::red_;
   }
-  else if (label_id == static_cast<int>(DriveNet::net_type_id::bicycle) ||
-           label_id == static_cast<int>(DriveNet::net_type_id::motorbike))
+  else if (label_id == static_cast<int>(DriveNet::yolo_class_id::bicycle) ||
+           label_id == static_cast<int>(DriveNet::yolo_class_id::motorbike))
   {
     class_color = CvColor::green_;
   }
-  else if (label_id == static_cast<int>(DriveNet::net_type_id::car) ||
-           label_id == static_cast<int>(DriveNet::net_type_id::bus) ||
-           label_id == static_cast<int>(DriveNet::net_type_id::truck))
+  else if (label_id == static_cast<int>(DriveNet::yolo_class_id::car) ||
+           label_id == static_cast<int>(DriveNet::yolo_class_id::bus) ||
+           label_id == static_cast<int>(DriveNet::yolo_class_id::truck))
   {
     class_color = CvColor::blue_;
   }

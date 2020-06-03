@@ -183,12 +183,12 @@ std::vector<BBoxInfo> nmsAllClasses(const float nmsThresh, std::vector<BBoxInfo>
     splitBoxes[class_id] = nonMaximumSuppression(nmsThresh, splitBoxes[class_id]);
 
     // car:2, bus: 5, truck: 7
-    if (class_id == ClassId::car || class_id == ClassId::bus || class_id == ClassId::truck)
+    if (class_id == static_cast<int>(yolo_class_id::car) || class_id == static_cast<int>(yolo_class_id::bus) || class_id == static_cast<int>(yolo_class_id::truck))
     {
       splitBoxes_car.insert(splitBoxes_car.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
     }
     // motorbike:1, bike: 3
-    else if (class_id == ClassId::motorbike || class_id == ClassId::bicycle)
+    else if (class_id == static_cast<int>(yolo_class_id::motorbike) || class_id == static_cast<int>(yolo_class_id::bicycle))
     {
       splitBoxes_bike.insert(splitBoxes_bike.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
     }

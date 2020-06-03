@@ -31,7 +31,7 @@ struct BBoxInfo
   float prob;
 };
 
-enum ClassId
+enum class yolo_class_id
 {
   begin = 0,
   person = begin,  // 0

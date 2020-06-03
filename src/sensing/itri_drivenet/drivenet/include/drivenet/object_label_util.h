@@ -6,21 +6,10 @@
 #include "detected_object_class_id.h"
 #include "image_preprocessing.h"
 #include "camera_params.h"
+#include "trt_utils.h"
 
 namespace DriveNet
 {
-enum class net_type_id
-{
-  begin = 0,
-  person = begin,  // 0
-  bicycle,         // 1
-  car,             // 2
-  motorbike,       // 3
-  others1,         // 4
-  bus,             // 5
-  others2,         // 6
-  truck            // 7
-};
 
 enum class common_type_id
 {
