@@ -9,6 +9,7 @@
 #include <ros/package.h>
 #include <cstring>
 #include <fstream>
+#include <cmath>
 #include <tf/tf.h>
 #include <geometry_msgs/PoseStamped.h>
 
@@ -30,6 +31,7 @@ double shift_x,shift_y,shift_z;
 
 ros::Publisher lidarlla_pub;
 ros::Publisher lidarlla_wgs84_pub;
+ros::Publisher lidarlla_heading_pub;
 ros::Subscriber lidarlla_sub ;
 // lidarxyz2lla::lidarxyz lidarxyzmsg;
 //------------------------------------------------------------------------------------------------------
@@ -362,6 +364,23 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 	std::cout <<"lidar Lon wgs84 : "<< std::setprecision(20) << lidar_lon_wgs84 << std::endl;
 	std::cout <<"lidar Alt wgs84 : "<< std::setprecision(20) << lidar_alt_wgs84 << std::endl;
 
+	// lidar heading to gnss
+	double lidar_roll, lidar_pitch, lidar_yaw;
+  	tf::Quaternion lidar_q(lidarxyzmsg->pose.orientation.x, lidarxyzmsg->pose.orientation.y, lidarxyzmsg->pose.orientation.z,lidarxyzmsg->pose.orientation.w);
+  	tf::Matrix3x3 lidar_m(lidar_q);
+  	lidar_m.getRPY(lidar_roll, lidar_pitch, lidar_yaw);
+
+	std_msgs::Float64 lidartognss_yaw;
+	lidartognss_yaw.data = -(lidar_yaw-M_PI/2)*180/M_PI;
+	if (lidartognss_yaw.data >= 360)
+	{
+		lidartognss_yaw.data = lidartognss_yaw.data - 360;
+	}
+	if (lidartognss_yaw.data < 0)
+	{
+		lidartognss_yaw.data = lidartognss_yaw.data + 360;
+	}
+	lidarlla_heading_pub.publish(lidartognss_yaw);
 }
 
 int main( int argc, char **argv )
@@ -377,6 +396,7 @@ int main( int argc, char **argv )
 	lidarlla_sub = nh.subscribe("current_pose", 1, lidarxyztopicCallback_1);
 	lidarlla_pub = nh.advertise<msgs::LidLLA>("lidar_lla", 1);
 	lidarlla_wgs84_pub = nh.advertise<msgs::LidLLA>("lidar_lla_wgs84", 1);
+	lidarlla_heading_pub = nh.advertise<std_msgs::Float64>("lidar_lla_heading", 1);
 	ros::spin();
 
 	return 0 ;
