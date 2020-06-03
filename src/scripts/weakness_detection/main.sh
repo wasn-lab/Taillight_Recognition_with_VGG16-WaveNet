@@ -12,12 +12,6 @@ readonly cam_ids="back_top_120 front_bottom_60 front_top_close_120 front_top_far
 readonly image_list_txt=${TMP_DIR}/weakness_detection_image_list.txt
 readonly yolo_result_json=${TMP_DIR}/yolo_result.json
 
-if [[ "" == "$1" || ! -f "$1" ]]; then
-  echo "This script find spurious results made by object detection NN."
-  echo "The input is images stored in a rosbag file."
-  echo "  Usage: $0 bag_file"
-  exit 1
-fi
 readonly bag_file=$1
 
 source $repo_dir/devel/setup.bash
@@ -40,7 +34,15 @@ function save_images {
     ${repo_dir}/devel/lib/itri_file_saver/image_saver -image_topic ${topic} -output_dir ${output_dir} 2>/dev/null &
   done
   sleep 3
-  rosbag play $bag_file -u 3
+
+  if [[ ! -f "$bag_file" ]]; then
+    echo "This script find spurious results made by object detection NN."
+    echo "The input is images stored in a rosbag file."
+    echo "  Usage: $0 bag_file"
+    exit 1
+  fi
+
+  rosbag play $bag_file  # -u 3
   sleep 3  # wait for savers finish their jobs
   killall image_saver
   set -e
@@ -82,14 +84,20 @@ function build_darknet_exe {
 }
 
 function run_yolo {
-  pushd ${darknet_dir}
-  ${darknet_dir}/build/darknet detector test ${data_file} ${cfg_file} ${weights_file} -thresh 0.5 -ext_output -dont_show -out ${yolo_result_json} < ${image_list_txt}
-  popd
+  python3 gen_yolo_detection_img.py
+  if [[ -f ${darknet_dir}/predictions.jpg ]]; then
+    rm ${darknet_dir}/predictions.jpg
+  fi
 }
 
-#make_itrisaver
-#save_images
-#run_deeplab
-#build_darknet_exe
+function find_yolo_deeplab_mismatch {
+  python find_weakness.py
+}
+
+make_itrisaver
+save_images
+run_deeplab
+build_darknet_exe
 run_yolo
-#rm_tmp_files
+find_yolo_deeplab_mismatch
+rm_tmp_files

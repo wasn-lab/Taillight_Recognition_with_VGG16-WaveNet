@@ -3,7 +3,6 @@ import os
 import io
 import json
 import logging
-import pprint
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import YoloBBox
@@ -47,16 +46,10 @@ def _yolo_contains_enough_deeplab_labels(bbox, deeplab_mgr):
     return bool(num_pixels_with_same_id > total_bbox_pixels * 0.2)
 
 
-def _cmpr_yolo_with_deeplab(yolo_frame):
-    """
-    Return number of mismatches if yolo disagrees with deeplab or vice versa.
-    Return 0 otherwise (that is, they have the same detection result).
-    """
-    num_mismatch = 0
-    filename = yolo_frame["filename"]
-    deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab_labels.png")
-    bboxes = [YoloBBox(_) for _ in yolo_frame["objects"]]
+def _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename):
     # deeplab finds an object, but yolo does not:
+    total_object_labels = 0
+    num_labels_covered = 0
     for row in range(DEEPLAB_MIN_Y, DEEPLAB_MAX_Y):
         for col in range(DEEPLAB_IMAGE_WIDTH):
             deeplab_label = deeplab_mgr.get_label_by_xy(col, row)
@@ -64,11 +57,24 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
                 continue
             if deeplab_label not in DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID:
                 continue
-            within = _within_bboxes(bboxes, deeplab_label, row, col)
-            if not within:
-                num_mismatch += 1
-    if num_mismatch > 0:
-        logging.warning("Deeplab finds object but yolo does not: %s", filename)
+            total_object_labels += 1
+            if _within_bboxes(bboxes, deeplab_label, row, col):
+                num_labels_covered += 1
+    if num_labels_covered >= total_object_labels * 0.9:
+        return 0
+    logging.warning("Deeplab is not covered by yolo enough: %s", filename)
+    return 1
+
+
+def _cmpr_yolo_with_deeplab(yolo_frame):
+    """
+    Return number of mismatches if yolo disagrees with deeplab or vice versa.
+    Return 0 otherwise (that is, they have the same detection result).
+    """
+    filename = yolo_frame["filename"]
+    deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab_labels.png")
+    bboxes = [YoloBBox(_) for _ in yolo_frame["objects"]]
+    num_mismatch = _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename)
     # yolo finds an object, but deeplab does not:
     for bbox in bboxes:
         if not _yolo_contains_enough_deeplab_labels(bbox, deeplab_mgr):
@@ -81,14 +87,11 @@ class YoloMgr(object):
     def __init__(self, json_file):
         self.frames = read_result_json(json_file)
 
+    def get_weakest_images(self, amount=10):
+        """Move weakest images to |weakness_dir|"""
+        self.frames.sort(key=lambda x: x["deeplab_disagree"])
+        return [_["filename"] for _ in self.frames[-amount:]]
+
     def find_weakness_images(self):
-        num_weak_images_found = 0
         for frame in self.frames:
             frame["deeplab_disagree"] = _cmpr_yolo_with_deeplab(frame)
-        self.frames.sort(key=lambda x: x["deeplab_disagree"])
-        for frame in self.frames[-10:]:
-            pprint.pprint(frame)
-
-if __name__ == "__main__":
-    mgr = YoloMgr("/tmp/yolo_result.json")
-    mgr.find_weakness_images()
