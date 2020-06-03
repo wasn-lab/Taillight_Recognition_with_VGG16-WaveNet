@@ -16,7 +16,7 @@ gnome-terminal  -e 'bash -c "source ~/itriadv/devel/setup.bash;./init_lidar.sh;e
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidarrun_gui_gateway.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_gui_gateway.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh;exec bash"'
 sleep 3
