@@ -675,9 +675,9 @@ static void gnss_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr& inpu
   tf::Matrix3x3 gnss_m(gnss_q);
 
   pose current_gnss_pose;
-  current_gnss_pose.x = input->pose.position.x-254229.0;
-  current_gnss_pose.y = input->pose.position.y-2740820.0;
-  current_gnss_pose.z = input->pose.position.z-133.97;
+  current_gnss_pose.x = input->pose.position.x-254545.56;
+  current_gnss_pose.y = input->pose.position.y-2740707.78;
+  current_gnss_pose.z = input->pose.position.z-137.89;
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
   current_gnss_pose.yaw *= -1;
