@@ -615,7 +615,8 @@ void* run_yolo(void*)
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
             class_color = get_common_label_color(detObj.classId);
-            cv::putText(M_display, distance_str + " m", cvPoint(position_1.u + 10, position_1.v - 10), 0, 0.5, class_color, 2);
+            cv::putText(M_display, distance_str + " m", cvPoint(position_1.u + 10, position_1.v - 10), 0, 0.5,
+                        class_color, 2);
           }
         }
       }
@@ -699,8 +700,8 @@ void* run_yolo(void*)
 void* run_display(void*)
 {
   std::cout << "run_display start" << std::endl;
-  cv::namedWindow("FrontTop-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("BackTop-120", CV_WINDOW_NORMAL);
+  cv::namedWindow("FrontTop-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("BackTop-120", cv::WINDOW_NORMAL);
   cv::resizeWindow("FrontTop-120", 480, 360);
   cv::resizeWindow("BackTop-120", 480, 360);
   cv::moveWindow("FrontTop-120", 0, 720);

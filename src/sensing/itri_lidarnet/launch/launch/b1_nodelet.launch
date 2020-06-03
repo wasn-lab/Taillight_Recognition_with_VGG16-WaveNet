@@ -24,11 +24,13 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
 	<rosparam param="debug_output">true</rosparam>
+    <arg name="hardware_enable" default="1" />>
+	<arg name="mps" default="0" />
+	
 	<arg name="mode" default="0" />
+    <arg name="set_group_1" value="/LidarFrontTop"/>
+	<rosparam param="LaunchFileName">b1.launch</rosparam>
 	<arg name="rpm_set" default="1200.0"/>
-	<arg name="hardware_enable" default="1" />
-	<arg name="set_group_1" value="/LidarFrontTop"/>
-	<rosparam param="LaunchFileName">b1_nodelet.launch</rosparam>
 
 <!-- SSN arg *************************************************************** -->
 	<rosparam param="SSN_DataSet">b1</rosparam>
@@ -39,9 +41,10 @@ Lidar List:
 <!-- static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
 <node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
 
-<!-- MPS ******************************************************************* 
-<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
--->
+<!-- MPS ******************************************************************* -->
+	<group if="$(eval arg('mps') == 1)">
+		<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
+	</group>
 
 <!-- NODELET *************************************************************** -->
 	

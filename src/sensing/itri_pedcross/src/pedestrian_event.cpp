@@ -920,6 +920,11 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       keypoints.push_back(kp);
     }
 
+    if (keypoints.size() < 18)
+    {
+      continue;
+    }
+
     // draw keypoints on raw image
     int body_part[17] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
     unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);

@@ -97,8 +97,8 @@ void DistanceEstimation::initParams()
                                                                                                   // //Horizontal line
   arr_params[camera::id::right_front_60].regionDist_x = { 0, 1, 2, 3, 4, 5, 6 };  // 5 to 10, 20 to 50m (~5m)
   arr_params[camera::id::right_front_60].regionHeight_y = { 2507, 1904, 1498, 1032, 637, 357, -80 };  //-2 to 0 to
-                                                                                                      //2(~1m)
-                                                                                                      ////Vertical line
+                                                                                                      // 2(~1m)
+  ////Vertical line
   arr_params[camera::id::right_front_60].regionHeightSlope_y = { -1.2286, -2.4524, -6.000, 21.3529,
                                                                  4.7308,  3.0297,  1.8171 };
   arr_params[camera::id::right_front_60].regionDist_y = { -6, -5, -4, -3, -2, -1, -0 };  //-2 to 0 to 2 (~1m)
@@ -110,8 +110,8 @@ void DistanceEstimation::initParams()
                                                                                                      // line
   arr_params[camera::id::right_back_60].regionDist_x = { 0, 1, 2, 3, 4, 5, 6, 7 };  // 5 to 10, 20 to 50m (~5m)
   arr_params[camera::id::right_back_60].regionHeight_y = { 2049, 1688, 1209, 714, 217, -114, -738 };  //-2 to 0 to
-                                                                                                      //2(~1m)
-                                                                                                      ////Vertical line
+                                                                                                      // 2(~1m)
+  ////Vertical line
   arr_params[camera::id::right_back_60].regionHeightSlope_y = { -1.7722, -2.1614, -6.4409, 6.9259,
                                                                 2.1378,  1.6333,  0.9539 };
   arr_params[camera::id::right_back_60].regionDist_y = { -9, -8, -7, -6, -5, -4, -3 };  //-2 to 0 to 2 (~1m)
@@ -183,7 +183,7 @@ int DistanceEstimation::ReadDistanceFromJson(const std::string& filename, cv::Po
   jreader.parse(ifs, jdata);
   std::cout << "Reading json file: " << filename << std::endl;
 
-  for (auto &jvalue : jdata)
+  for (auto& jvalue : jdata)
   {
     auto image_x = jvalue["im_x"].asInt();
     auto image_y = jvalue["im_y"].asInt();

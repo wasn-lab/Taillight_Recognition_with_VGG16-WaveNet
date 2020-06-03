@@ -83,7 +83,6 @@
 /abs_virBB_array
 /marker_array_topic
 
-/radFront
 /radar_point_cloud
 /PathPredictionOutput/radar
 /RadarMarker
@@ -98,6 +97,7 @@
 /occupancy_grid
 /occupancy_grid_updates
 /ring_edge_point_cloud
+/occupancy_grid_wayarea
 
 /SensorFusion
 /PathPredictionOutput # With fusion
@@ -147,10 +147,12 @@
 
 #
 /RadFront
+/RadFrontFilter
 /PP_geofence_line
 /Geofence_line # marker
 /gnss_speed_data
 /gnss2local_data
+/gnss_twd97_data
 
 
 # Pedcross
