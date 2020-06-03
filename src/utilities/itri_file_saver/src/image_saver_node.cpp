@@ -6,9 +6,10 @@
 #include "image_saver_node.h"
 #include "image_saver_node_impl.h"
 
-ImageSaverNode::ImageSaverNode()
+namespace image_saver
 {
-  image_saver_node_impl_.reset(new ImageSaverNodeImpl());
+ImageSaverNode::ImageSaverNode() : image_saver_node_impl_(std::make_unique<ImageSaverNodeImpl>())
+{
 }
 
 ImageSaverNode::~ImageSaverNode() = default;
@@ -17,3 +18,4 @@ void ImageSaverNode::run()
 {
   image_saver_node_impl_->run();
 }
+};  // namespace image_saver

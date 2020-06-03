@@ -20,7 +20,6 @@ set(PEDCROSS_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_pedcross/mod
 set(LIGHTNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet/itri_lightnet_main/resources)
 set(LIGHTNET_TAINAN_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_tainan/itri_lightnet_tainan_main/resources)
 set(LOCALIZATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/localization)
-set(DEEPLAB_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/deeplab/weights)
 
 function(download_file)
     cmake_parse_arguments(OPT "" "URL;DESTINATION;MD5" "" ${ARGN})
@@ -70,10 +69,6 @@ endif ()
 
 if (ENABLE_PARKNET)
   include(cmake/parknet_weights.cmake)
-endif ()
-
-if (ENABLE_DEEPLAB)
-  include(cmake/deeplab_weights.cmake)
 endif ()
 
 if (CAR_MODEL_IS_HINO)

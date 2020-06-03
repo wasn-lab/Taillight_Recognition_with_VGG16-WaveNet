@@ -15,10 +15,6 @@ find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 include(CarModel)
 
-if (NOT ENABLE_DEEPLAB)
-  message(STATUS "${PROJECT_NAME} is disabled in car ${CAR_MODEL}")
-  return ()
-endif()
 include(CompilerFlags)
 
 catkin_package(CATKIN_DEPENDS ${CATKIN_REQUIRED_COMPONENTS})
