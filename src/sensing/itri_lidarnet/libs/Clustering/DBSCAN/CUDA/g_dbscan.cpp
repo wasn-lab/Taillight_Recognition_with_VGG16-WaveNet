@@ -215,7 +215,7 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
   // std::cout << "[DBSCAN] asmadjlist successed" << std::endl;
 }
 
-void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited, int& count)
+void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited)
 {
   auto n = static_cast<int>(m_dset->rows());
 
@@ -245,7 +245,6 @@ void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& vi
   {
     if (xa[i] != 0) //  && visited[i] == false
     {
-      count++;
       visited[i] = true;
       labels[i] = cluster;
     }
@@ -296,16 +295,8 @@ void GDBSCAN::predict(pcl::IndicesClusters& index)
 
     visited[i] = true;
     labels[i] = cluster_id;
-    int count = 0;
-    breadth_first_search(static_cast<int>(i), cluster_id, visited, count);
-    if  (count > 2)
-    {
-      cluster_id += 1;
-    }
-    else
-    {
-      std::cout << "GACHA" << std::endl;
-    }
+    breadth_first_search(static_cast<int>(i), cluster_id, visited);
+    cluster_id += 1;
     
   }
 
@@ -323,7 +314,7 @@ void GDBSCAN::predict(pcl::IndicesClusters& index)
 
     for (int k = 0; k < cluster_id; k++)
     {
-      if (buff[k].indices.size() > 0)
+      if (!buff[k].indices.empty())
       {
         index.push_back(buff[k]);
       }

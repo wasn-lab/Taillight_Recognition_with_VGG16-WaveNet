@@ -54,7 +54,7 @@ private:
   Labels labels;
   int32_t cluster_id;
 
-  void breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited, int& count);
+  void breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited);
 
   void ErrorHandle(cudaError_t r, const std::string &Msg);
 };
