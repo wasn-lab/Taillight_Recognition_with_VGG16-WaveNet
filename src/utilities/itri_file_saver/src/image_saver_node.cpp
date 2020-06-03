@@ -8,9 +8,8 @@
 
 namespace image_saver
 {
-ImageSaverNode::ImageSaverNode()
+ImageSaverNode::ImageSaverNode() : image_saver_node_impl_(std::make_unique<ImageSaverNodeImpl>())
 {
-  image_saver_node_impl_.reset(new ImageSaverNodeImpl());
 }
 
 ImageSaverNode::~ImageSaverNode() = default;

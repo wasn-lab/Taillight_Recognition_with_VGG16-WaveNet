@@ -35,7 +35,7 @@ void ImageSaverNodeImpl::save(const cv_bridge::CvImageConstPtr& cv_ptr, int sec,
 
   snprintf(buff, sizeof(buff), "%10d%09d.jpg", sec, nsec);  // NOLINT
   auto output_dir = get_output_dir();
-  if ((output_dir.size() > 0) && (output_dir[output_dir.size() - 1] != PATH_SEPARATOR))
+  if ((!output_dir.empty()) && (output_dir[output_dir.size() - 1] != PATH_SEPARATOR))
   {
     output_dir += PATH_SEPARATOR;
   }
