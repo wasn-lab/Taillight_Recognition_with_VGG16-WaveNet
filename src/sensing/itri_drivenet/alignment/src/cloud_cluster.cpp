@@ -2,8 +2,8 @@
 
 CloudCluster::CloudCluster()
 {
-  dbscan_.setEpsilon(0.6);
-  dbscan_.setMinpts(5);
+  dbscan_.setEpsilon(0.6, 0.6, 0.6, 0.6, 0.6);
+  dbscan_.setMinpts(5, 5, 5, 5, 5);
 }
 
 std::vector<pcl::PointCloud<pcl::PointXYZI>>

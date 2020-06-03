@@ -16,7 +16,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60};
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -85,7 +85,6 @@ std::vector<int> g_dist_rows(g_cam_ids.size());
 std::vector<int> g_dist_cols(g_cam_ids.size());
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidall_cloudptr(new pcl::PointCloud<pcl::PointXYZI>);
-
 
 // Prepare cv::Mat
 void image_init()
@@ -210,7 +209,7 @@ void callback_cam_front_top_far_30_decode(sensor_msgs::CompressedImage compressI
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
-  if(g_lidarall_ctrl)
+  if (g_lidarall_ctrl)
   {
     pcl::fromROSMsg(*msg, *g_lidall_cloudptr);
     g_lidarall_ctrl = false;
@@ -268,7 +267,7 @@ int main(int argc, char** argv)
     if (g_lidarall_publish)
     {
       g_lidar_sub = nh.subscribe("/LidarFrontTop/Raw", 1, callback_LidarAll);
-      g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>> ("/LidarAll_re", 2);
+      g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/LidarAll_re", 2);
     }
 
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
@@ -340,7 +339,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::DetectedObject det_obj;
   msgs::CamInfo cam_info;
 
-  if(g_is_distance)
+  if (g_is_distance)
   {
     msgs::BoxPoint box_point;
     int l_check = 2;
@@ -522,7 +521,7 @@ void* run_yolo(void* /*unused*/)
                         class_color, 3);
         }
       }
-      for (auto& item: pool)
+      for (auto& item : pool)
       {
         det_obj = item.get();
         v_do.push_back(det_obj);

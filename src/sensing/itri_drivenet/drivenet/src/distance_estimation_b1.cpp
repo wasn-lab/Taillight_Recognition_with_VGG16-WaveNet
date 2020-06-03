@@ -18,7 +18,6 @@ DistanceEstimation::~DistanceEstimation()
 
     delete[] align_FR60;
   }
-
 }
 
 void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
@@ -50,10 +49,7 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
       align_FR60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(FR60Json, align_FR60, img_al_h, img_al_w);
-
-
   }
-
 
   // // FL60
   // std::string FL60Json = pkgPath;
@@ -234,7 +230,7 @@ int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d**
   jreader.parse(ifs, jdata);
   std::cout << "Reading json file: " << filename << std::endl;
 
-  for (auto &jvalue : jdata)
+  for (auto& jvalue : jdata)
   {
     auto image_x = jvalue["im_x"].asInt();
     auto image_y = jvalue["im_y"].asInt();
@@ -1119,18 +1115,18 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       }
     }
     if (cam_id == camera::id::right_60)
-  {
-    if (Parmas.regionDist_x.size() != 0)
     {
-      x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
-                                       Parmas.regionDist_x, img_h);
+      if (Parmas.regionDist_x.size() != 0)
+      {
+        x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
+                                         Parmas.regionDist_x, img_h);
+      }
+      if (Parmas.regionDist_y.size() != 0)
+      {
+        y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
+                                                  Parmas.regionDist_y);
+      }
     }
-    if (Parmas.regionDist_y.size() != 0)
-    {
-      y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
-                                                Parmas.regionDist_y);
-    }
-  }
   }
 
   if (cam_id == camera::id::left_60)
