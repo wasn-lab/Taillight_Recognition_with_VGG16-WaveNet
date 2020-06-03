@@ -130,7 +130,7 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
   if (colsize == 5)
   {
     cluster_mode = LABEL_MODE;
-    std::cout << "[DBSCAN] In label mode" << std::endl;
+    // std::cout << "[DBSCAN] In label mode" << std::endl;
   }
 
   ErrorHandle(cudaMemcpy(d_eps, &eps[0], 5 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to "
@@ -243,7 +243,7 @@ void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& vi
 
   for (size_t i = 0; i < m_dset->rows(); ++i)
   {
-    if (xa[i] != 0)
+    if (xa[i] != 0) //  && visited[i] == false
     {
       visited[i] = true;
       labels[i] = cluster;
@@ -297,6 +297,7 @@ void GDBSCAN::predict(pcl::IndicesClusters& index)
     labels[i] = cluster_id;
     breadth_first_search(static_cast<int>(i), cluster_id, visited);
     cluster_id += 1;
+    
   }
 
   if (cluster_id > 0)
@@ -313,7 +314,10 @@ void GDBSCAN::predict(pcl::IndicesClusters& index)
 
     for (int k = 0; k < cluster_id; k++)
     {
-      index.push_back(buff[k]);
+      if (!buff[k].indices.empty())
+      {
+        index.push_back(buff[k]);
+      }
     }
   }
   else
