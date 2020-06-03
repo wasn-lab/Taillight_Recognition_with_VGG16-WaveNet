@@ -53,7 +53,7 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     """
     num_mismatch = 0
     filename = yolo_frame["filename"]
-    deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab.png")
+    deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab_labels.png")
     bboxes = [YoloBBox(_) for _ in yolo_frame["objects"]]
     # deeplab finds an object, but yolo does not:
     for row in range(DEEPLAB_MIN_Y, DEEPLAB_MAX_Y):

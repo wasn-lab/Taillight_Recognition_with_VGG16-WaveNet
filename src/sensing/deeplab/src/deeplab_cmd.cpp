@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     {
       LOG(WARNING) << "File not exist: " << filename;
     }
-    std::string output_filename = filename.substr(0, filename.size() - 4) + "_deeplab.png";
+    std::string output_filename = filename.substr(0, filename.size() - 4) + "_deeplab_labels.png";
     auto input = cv::imread(filename);
     cv::Mat output(cv::Size(deeplab::DEEPLAB_IMAGE_WIDTH, deeplab::DEEPLAB_IMAGE_HEIGHT), CV_8UC1);
 
