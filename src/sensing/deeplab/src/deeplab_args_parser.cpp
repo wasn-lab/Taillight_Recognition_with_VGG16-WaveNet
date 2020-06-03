@@ -19,7 +19,7 @@ std::string get_pb_file()
 {
   if (FLAGS_pb_file.size() == 0)
   {
-    return ros::package::getPath("deeplab") + "/weights/frozen_inference_graph.pb";
+    return ros::package::getPath("deeplab") + "/weights/xception65_coco_voc_trainval.pb";
   }
   return FLAGS_image_topic;
 }
