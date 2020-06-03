@@ -76,13 +76,13 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       }
     }
 
-#if PP_VERTICES_VIA_SPEED
+#if PP_VERTICES_VIA_SPEED == 1
     pp_objs_[i].track.forecasts.resize(num_forecasts_ * 5);
 #else
     pp_objs_[i].track.forecasts.resize(num_forecasts_);
 #endif
 
-#if PP_VERTICES_VIA_SPEED
+#if PP_VERTICES_VIA_SPEED == 1
     for (unsigned j = 0; j < num_forecasts_ * 5; j++)
 #else
     for (unsigned j = 0; j < num_forecasts_; j++)
@@ -520,6 +520,7 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
   cv::Mat y_m(1, 4, CV_32FC1, cv::Scalar(0));
   cv::polarToCart(mag_m, ang_rad, x_m, y_m, false);
 
+#if PP_VERTICES_VIA_SPEED == 1
   pps.v1.x = forecast.position.x + x_m.at<float>(0, 0);
   pps.v1.y = forecast.position.y + y_m.at<float>(0, 0);
 
@@ -531,6 +532,7 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
 
   pps.v4.x = forecast.position.x + x_m.at<float>(0, 3);
   pps.v4.y = forecast.position.y + y_m.at<float>(0, 3);
+#endif
 }
 
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
@@ -634,7 +636,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].covariance_xy = pps[j].cov_xy;
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
 
-#if PP_VERTICES_VIA_SPEED
+#if PP_VERTICES_VIA_SPEED == 1
         pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].absSpeed);
 
         unsigned int k = num_forecasts_ + j * 4;

@@ -254,7 +254,7 @@ void TPPNode::subscribe_and_advertise_topics()
     LOG_INFO << "Input Source: Camera approach 2" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
-  }  
+  }
   else
   {
     LOG_INFO << "Input Source: Fusion" << std::endl;
