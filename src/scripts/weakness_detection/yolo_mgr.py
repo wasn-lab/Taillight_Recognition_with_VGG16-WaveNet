@@ -87,9 +87,11 @@ class YoloMgr(object):
     def __init__(self, json_file):
         self.frames = read_result_json(json_file)
 
-    def get_weakest_images(self, amount=10):
+    def get_weakest_images(self, amount=0):
         """Move weakest images to |weakness_dir|"""
         self.frames.sort(key=lambda x: x["deeplab_disagree"])
+        if amount <= 0:
+            amount = int(len(self.frames) * 0.05) + 1
         return [_["filename"] for _ in self.frames[-amount:]]
 
     def find_weakness_images(self):
