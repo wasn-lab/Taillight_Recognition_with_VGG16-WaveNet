@@ -130,7 +130,7 @@ void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
   if (colsize == 5)
   {
     cluster_mode = LABEL_MODE;
-    std::cout << "[DBSCAN] In label mode" << std::endl;
+    // std::cout << "[DBSCAN] In label mode" << std::endl;
   }
 
   ErrorHandle(cudaMemcpy(d_eps, &eps[0], 5 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to "
