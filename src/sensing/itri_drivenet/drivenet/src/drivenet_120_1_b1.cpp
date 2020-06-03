@@ -802,7 +802,8 @@ void* run_yolo(void*)
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
             class_color = get_common_label_color(detObj.classId);
-            cv::putText(M_display, distance_str + " m", cvPoint(position_1.u + 10, position_1.v - 10), 0, 0.5, class_color, 2);
+            cv::putText(M_display, distance_str + " m", cvPoint(position_1.u + 10, position_1.v - 10), 0, 0.5,
+                        class_color, 2);
           }
         }
       }

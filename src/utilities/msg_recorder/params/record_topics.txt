@@ -97,6 +97,7 @@
 /occupancy_grid
 /occupancy_grid_updates
 /ring_edge_point_cloud
+/occupancy_grid_wayarea
 
 /SensorFusion
 /PathPredictionOutput # With fusion
@@ -151,7 +152,7 @@
 /Geofence_line # marker
 /gnss_speed_data
 /gnss2local_data
-/gnss2local_twd97_data
+/gnss_twd97_data
 
 
 # Pedcross

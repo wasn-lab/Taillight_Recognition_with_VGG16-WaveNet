@@ -37,7 +37,7 @@ Lidar List:
 
 <!-- MPS ******************************************************************* -->
 	<group if="$(eval arg('mps') == 1)">
-		<node pkg="scripts" type="mps.sh" name="mps.sh" output="screen"/>
+		<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
 	</group>
  
 <!-- Mode Switch ************************************************************ -->
