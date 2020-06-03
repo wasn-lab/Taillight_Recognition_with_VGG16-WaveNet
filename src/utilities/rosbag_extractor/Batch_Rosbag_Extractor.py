@@ -22,10 +22,11 @@ from os.path import getsize
 first_or_last_msg_in_a_sec = "first"  # first or last
 
 bridge = [CvBridge(), CvBridge(), CvBridge(),
-            CvBridge(), CvBridge(), CvBridge(),
-            CvBridge(), CvBridge(), CvBridge()]
+          CvBridge(), CvBridge(), CvBridge(),
+          CvBridge(), CvBridge(), CvBridge()]
 
 check_first = False
+
 
 def read_topic_return_msg(msg, type, contain):
     if type == 0:  # lidar
@@ -116,9 +117,14 @@ def read_topic_and_save_camera(
             else:
                 try:
                     read_msg_and_save(
-                        cam_msg, 1, in_outdir, in_timestr, in_filename, in_append1)
+                        cam_msg,
+                        1,
+                        in_outdir,
+                        in_timestr,
+                        in_filename,
+                        in_append1)
                 except BaseException:
-                    print 
+                    print
                     print(
                         "Cam" +
                         in_append2 +
@@ -158,7 +164,7 @@ def main():
     datestr = ""
     time_tick = False
 
-       # User selection
+    # User selection
     try:
         txt_input = raw_input
     except NameError:
@@ -170,10 +176,10 @@ def main():
             print("Mode 1 selected: 1FPS.\n")
         else:
             print("Mode 2 selected: 10FPS.\n")
-    except:
+    except BaseException:
         id_in = None
         exit()
-    
+
     print ("** Start Extracting**")
     print("** Now is '{}_msg_in_sec' Mode!".format(first_or_last_msg_in_a_sec))
     rootDir = dir_path + '/bags'
@@ -205,7 +211,8 @@ def main():
                                 os.chdir(dirName)
                                 if bagFile.endswith(".bag"):
                                     print (bagFile)
-                                    filename = bagFile.split("/")[-1].split(".")[0]
+                                    filename = bagFile.split(
+                                        "/")[-1].split(".")[0]
                                     print (filename)
                                     path = bagFile.split(filename)[0]
 
@@ -228,9 +235,11 @@ def main():
                                             datestr = time.strftime(
                                                 "%Y-%m-%d-%H-%M-%S", datearray)
                                             if id_in == 1:
-                                                timestr = str(msg.header.stamp.secs )
+                                                timestr = str(
+                                                    msg.header.stamp.secs)
                                             else:
-                                                timestr = str(msg.header.stamp.secs) + str(msg.header.stamp.nsecs )[0]
+                                                timestr = str(
+                                                    msg.header.stamp.secs) + str(msg.header.stamp.nsecs)[0]
                                             if timestr != last_timestr:
                                                 time_tick = True
                                             else:
@@ -283,7 +292,8 @@ def main():
                                                             read_msg_and_save(
                                                                 rad_msg, 2, outdir, timestr + "_rad")
                                                         except BaseException:
-                                                            print("rad cant save.")
+                                                            print(
+                                                                "rad cant save.")
 
                                         elif time_tick:
                                             if check_first:
@@ -353,7 +363,8 @@ def main():
 
     print ("** Finish Extracting **")
 
-if __name__ ==  "__main__":
+
+if __name__ == "__main__":
     # ===== Global Functions =====
     if first_or_last_msg_in_a_sec.strip().lower() == "first":
         check_first = True
