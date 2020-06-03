@@ -50,7 +50,7 @@ std::vector<BBoxInfo> YoloV3::decodeTensor(const int imageIdx, const int imageH,
         maxProb = objectness * maxProb;
 
         float probThresh = m_ProbThresh;
-        if (maxIndex == 3 || maxIndex == 1)
+        if (maxIndex == ClassId::motorbike || maxIndex == ClassId::bicycle)
         {
           if (maxProb > m_ProbThreshBike)
           {
