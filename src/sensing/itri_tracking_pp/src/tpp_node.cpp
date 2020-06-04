@@ -918,8 +918,8 @@ void TPPNode::set_ros_params()
   pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
 
   set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_radar_tpp, 0.5f, 0.f, 0.f, 1.f);
-  set_ColorRGBA(mc_.color_camera_tpp, 0.5f, 0.5f, 0.5f, 1.f);
+  set_ColorRGBA(mc_.color_radar_tpp, 0.f, 1.f, 1.f, 1.f);
+  set_ColorRGBA(mc_.color_camera_tpp, 0.f, 1.f, 1.f, 1.f);
   set_ColorRGBA(mc_.color_fusion_tpp, 0.f, 1.f, 1.f, 1.f);
 }
 
