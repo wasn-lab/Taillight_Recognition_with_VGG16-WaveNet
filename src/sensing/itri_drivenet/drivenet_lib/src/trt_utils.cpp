@@ -170,16 +170,37 @@ std::vector<BBoxInfo> nmsAllClasses(const float nmsThresh, std::vector<BBoxInfo>
 {
   std::vector<BBoxInfo> result;
   std::vector<std::vector<BBoxInfo>> splitBoxes(numClasses);
+  std::vector<BBoxInfo> splitBoxes_car;
+  std::vector<BBoxInfo> splitBoxes_bike;
+
   for (auto& box : binfo)
   {
     splitBoxes.at(box.label).push_back(box);
   }
 
-  for (auto& boxes : splitBoxes)
+  for (size_t class_id = 0; class_id < splitBoxes.size(); class_id++)
   {
-    boxes = nonMaximumSuppression(nmsThresh, boxes);
-    result.insert(result.end(), boxes.begin(), boxes.end());
+    splitBoxes[class_id] = nonMaximumSuppression(nmsThresh, splitBoxes[class_id]);
+
+    // car:2, bus: 5, truck: 7
+    if (class_id == static_cast<int>(yolo_class_id::car) || class_id == static_cast<int>(yolo_class_id::bus) || class_id == static_cast<int>(yolo_class_id::truck))
+    {
+      splitBoxes_car.insert(splitBoxes_car.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
+    }
+    // motorbike:1, bike: 3
+    else if (class_id == static_cast<int>(yolo_class_id::motorbike) || class_id == static_cast<int>(yolo_class_id::bicycle))
+    {
+      splitBoxes_bike.insert(splitBoxes_bike.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
+    }
+    else
+    {
+      result.insert(result.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
+    }
   }
+  splitBoxes_car = nonMaximumSuppression(nmsThresh, splitBoxes_car);
+  splitBoxes_bike = nonMaximumSuppression(nmsThresh, splitBoxes_bike);
+  result.insert(result.end(), splitBoxes_car.begin(), splitBoxes_car.end());
+  result.insert(result.end(), splitBoxes_bike.begin(), splitBoxes_bike.end());
 
   return result;
 }

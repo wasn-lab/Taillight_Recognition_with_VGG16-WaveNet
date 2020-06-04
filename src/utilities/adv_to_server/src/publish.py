@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # license removed for brevity
-# 測試工具
+#test tool
 import rospy
 import json
 from std_msgs.msg import String
@@ -15,7 +15,7 @@ def talker():
         count+=1
         current_time = time.time()
         #print(current_time)
-        obj = {"module":"offline test", "status": "ok", "event_str" : "AEB", "timestamp": current_time }
+        obj = {"module":"brake_status", "status": "ok", "event_str" : "AEB", "timestamp": current_time }
         #rospy.loginfo(json)
         pub.publish(json.dumps(obj))
         rate.sleep()
