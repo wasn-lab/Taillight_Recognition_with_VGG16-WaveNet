@@ -21,6 +21,7 @@ Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferPara
   , m_InputC(0)
   , m_InputSize(0)
   , m_ProbThresh(inferParams.probThresh)
+  , m_ProbThreshBike(inferParams.probThreshBike)
   , m_NMSThresh(inferParams.nmsThresh)
   , m_PrintPerfInfo(inferParams.printPerfInfo)
   , m_PrintPredictions(inferParams.printPredictionInfo)

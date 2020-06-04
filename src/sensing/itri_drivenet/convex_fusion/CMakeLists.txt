@@ -43,8 +43,10 @@ include_directories(
   ${car_model_BINARY_DIR}/include
   ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${drivenet_lib_SOURCE_DIR}/include
   ${drivenet_SOURCE_DIR}/include
-  ${OBJECTCOSTMAPGENERATOR_INCLUDE}
+  ${drivenet_SOURCE_DIR}/include
+  ${object_costmap_generator_SOURCE_DIR}/include
   ${libs_SOURCE_DIR}
   ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
   ${libs_SOURCE_DIR}/Preprocess/NoiseFilter
