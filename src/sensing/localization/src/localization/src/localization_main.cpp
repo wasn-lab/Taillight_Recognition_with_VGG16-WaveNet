@@ -26,6 +26,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 #include <memory>
 #include <pthread.h>
 #include <sstream>
@@ -369,9 +370,10 @@ float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI 
 
   for (i = 0; i < num_points; i++) {
     zArry[i] = ranged_scan.points[i].z;
-    qsort(zArry, num_points, sizeof(double), floatcomp);
   }
 
+  qsort(zArry, num_points, sizeof(double), floatcomp);
+  
   for (i = 0; i < num_points ; i++) {	
     if (is_valid_point(zArry, num_points, zArry[i])) {
         min_value = zArry[i];
@@ -1488,7 +1490,12 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
   private_nh.getParam("use_rviz_", use_rviz_);
+  private_nh.getParam("lidar_height", lidar_height);
+  private_nh.getParam("ndt_res", ndt_res);
+
   std::cout << "use_rviz_: " << use_rviz_ << std::endl;
+  std::cout << "lidar_height: " << lidar_height << std::endl;
+  std::cout << "ndt_res: " << ndt_res << std::endl;
 
 #if MAPPING
 
