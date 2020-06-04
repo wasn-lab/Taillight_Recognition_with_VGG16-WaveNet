@@ -221,43 +221,43 @@ void TPPNode::subscribe_and_advertise_topics()
 
   if (in_source_ == 1)
   {
-    LOG_INFO << "Input Source: Lidar" << std::endl;
+    LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
   else if (in_source_ == 2)
   {
-    LOG_INFO << "Input Source: Radar" << std::endl;
+    LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
   else if (in_source_ == 3)
   {
-    LOG_INFO << "Input Source: Camera approach 1" << std::endl;
+    LOG_INFO << "Input Source: Camera approach 1 (/CamObjFrontCenter)" << std::endl;
     fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (in_source_ == 4)
   {
-    LOG_INFO << "Input Source: Virtual_abs" << std::endl;
+    LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else if (in_source_ == 5)
   {
-    LOG_INFO << "Input Source: Virtual_rel" << std::endl;
+    LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else if (in_source_ == 6)
   {
-    LOG_INFO << "Input Source: Camera approach 2" << std::endl;
+    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else
   {
-    LOG_INFO << "Input Source: Fusion" << std::endl;
+    LOG_INFO << "Input Source: Fusion (/SensorFusion)" << std::endl;
     fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
