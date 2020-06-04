@@ -909,6 +909,10 @@ void TPPNode::set_ros_params()
   nh_.param<int>(domain + "show_pp", show_pp_int, 0);
   mc_.show_pp = (unsigned int)show_pp_int;
 
+  int num_pp_input_min = 0;
+  nh_.param<int>(domain + "num_pp_input_min", num_pp_input_min, 0);
+  pp_.set_num_pp_input_min((std::size_t)std::max(num_pp_input_min, 0));
+
   double pp_obj_min_kmph = 0.;
   nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
   pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
