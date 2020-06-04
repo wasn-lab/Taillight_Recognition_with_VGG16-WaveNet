@@ -233,8 +233,8 @@ void TPPNode::subscribe_and_advertise_topics()
   }
   else if (in_source_ == 3)
   {
-    LOG_INFO << "Input Source: Camera approach 1 (/CamObjFrontCenter)" << std::endl;
-    fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
+    fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (in_source_ == 4)
