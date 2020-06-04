@@ -49,10 +49,14 @@
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 static double current_x, current_y, current_z;
 static Geofence BBox_Geofence(1.2);
+static Geofence PedCross_Geofence(1.2);
 static double Ego_speed_ms;
 static int PP_Stop=0;
+static int PP_Stop_PedCross=0;
 static int PP_Distance=1000;
+static int PP_Distance_PedCross=1000;
 static int PP_Speed=0;
+static int PP_Speed_PedCross=0;
 ros::Publisher PP_geofence_line;
 ros::Publisher PPCloud_pub;
 
@@ -94,6 +98,7 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
         Position.push_back(Pos);
     }
 	BBox_Geofence.setPath(Position);
+	PedCross_Geofence.setPath(Position);
 }
 
 
@@ -114,6 +119,7 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 		}	
 	}
 	BBox_Geofence.setPath(Position);
+	PedCross_Geofence.setPath(Position);
 }
 
 void Plot_geofence(Point temp)
@@ -261,7 +267,55 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg){
 }
 
 
+void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg){	
 
+	PP_Stop_PedCross = 0;
+	PP_Distance_PedCross = 100;
+	PP_Speed_PedCross = 0;
+	for(uint i=0;i<msg->objects.size();i++)
+	{
+		if(msg->objects[i].track.is_ready_prediction==1)
+		{
+			for(uint j=0;j<msg->objects[i].track.forecasts.size();j++)
+			{
+				Point Point_temp;
+				vector<Point> PointCloud_temp;
+				Point_temp.X = msg->objects[i].track.forecasts[j].position.x;
+				//cout << "x:" << Point_temp.X << endl;
+				Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
+				//cout << "y:" <<Point_temp.Y << endl;
+				Point_temp.Speed = msg->objects[i].relSpeed;
+				PointCloud_temp.push_back(Point_temp);
+				//cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y << endl;
+
+				PedCross_Geofence.setPointCloud(PointCloud_temp,true,SLAM_x,SLAM_y,Heading);
+
+				if(PedCross_Geofence.Calculator()==1){
+					cerr << "Please initialize all PCloud parameters first" << endl;
+					return;
+				}
+				if(PedCross_Geofence.getDistance()<80)
+				{
+					//cout << "PP Points in boundary: " << PedCross_Geofence.getDistance() << " - " << PedCross_Geofence.getFarest() << endl;
+					//cout << "(x,y): " << PedCross_Geofence.getNearest_X() << "," << PedCross_Geofence.getNearest_Y() << endl;
+					//Plot geofence PP
+					if(PedCross_Geofence.getDistance()<PP_Distance_PedCross && PedCross_Geofence.getDistance()>3.8)
+					{
+						PP_Distance_PedCross = PedCross_Geofence.getDistance();
+						PP_Speed_PedCross = PedCross_Geofence.getObjSpeed();
+						Plot_geofence(PedCross_Geofence.findDirection());
+					}
+					//if(!(PedCross_Geofence.getDistance()>Range_front || PedCross_Geofence.getFarest()<Range_back))
+					{
+						//cout << "Collision appears" << endl;
+						PP_Stop_PedCross = 1;
+					}
+				}
+			}
+		}
+			
+	}
+}
 
 
 int main(int argc, char **argv){ 
@@ -282,7 +336,8 @@ int main(int argc, char **argv){
 	#else
 		ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPP);
 	#endif
-	
+	ros::Subscriber PedCrossGeofenceSub = n.subscribe("/PedCross/Alert", 1, chatterCallbackPP_PedCross);
+
 	PP_geofence_line = n.advertise<visualization_msgs::Marker>("PP_geofence_line", 1);
 	PPCloud_pub = n.advertise<sensor_msgs::PointCloud2>("pp_point_cloud", 1);
 	
@@ -333,6 +388,24 @@ int main(int argc, char **argv){
 		frame.data[3] = (short int)(PP_Distance*100)>>8;
 		frame.data[4] = (short int)(PP_Speed*100);
 		frame.data[5] = (short int)(PP_Speed*100)>>8;
+		nbytes = write(s, &frame, sizeof(struct can_frame));
+
+
+		if(PP_Stop_PedCross==0){
+			//cout << "No Collision" << endl;
+		}
+		else{	
+			cout << "PedCross collision appears" << endl;
+			cout << "PedCross distance:" << PP_Distance_PedCross << endl;
+			cout << "PedCross speed:" << PP_Speed_PedCross << endl; 		
+		}
+		frame.can_id  = 0x596;
+		frame.data[0] = (short int)(PP_Stop_PedCross*100);
+		frame.data[1] = (short int)(PP_Stop_PedCross*100)>>8;
+		frame.data[2] = (short int)(PP_Distance_PedCross*100);
+		frame.data[3] = (short int)(PP_Distance_PedCross*100)>>8;
+		frame.data[4] = (short int)(PP_Speed_PedCross*100);
+		frame.data[5] = (short int)(PP_Speed_PedCross*100)>>8;
 		nbytes = write(s, &frame, sizeof(struct can_frame));
 		//printf("Wrote %d bytes\n", nbytes);
 		loop_rate.sleep();	
