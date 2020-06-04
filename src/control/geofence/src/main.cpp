@@ -51,7 +51,7 @@
 static Geofence PCloud_Geofence(1.2);
 static Geofence CPoint_Geofence(1.2);
 static Geofence BBox_Geofence(1.2);
-static Geofence Radar_Geofence(1.5);
+static Geofence Radar_Geofence(1.6);
 static Geofence PCloud_Geofence_original(1.2);
 static Geofence Deviate_Geofence(1.2);
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
