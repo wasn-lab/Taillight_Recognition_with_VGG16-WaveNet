@@ -26,6 +26,13 @@ function make_itrisaver {
 }
 
 function save_images {
+  if [[ ! -f "$bag_file" ]]; then
+    echo "This script find spurious results made by object detection NN."
+    echo "The input is images stored in a rosbag file."
+    echo "  Usage: $0 bag_file"
+    exit 1
+  fi
+
   set +e
   for cam_id in $cam_ids; do
     topic="/cam/${cam_id}"
@@ -34,13 +41,6 @@ function save_images {
     ${repo_dir}/devel/lib/itri_file_saver/image_saver -image_topic ${topic} -output_dir ${output_dir} 2>/dev/null &
   done
   sleep 3
-
-  if [[ ! -f "$bag_file" ]]; then
-    echo "This script find spurious results made by object detection NN."
-    echo "The input is images stored in a rosbag file."
-    echo "  Usage: $0 bag_file"
-    exit 1
-  fi
 
   rosbag play $bag_file  # -u 3
   sleep 3  # wait for savers finish their jobs
