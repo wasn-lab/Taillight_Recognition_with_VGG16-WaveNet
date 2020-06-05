@@ -346,7 +346,7 @@ int main(int argc, char **argv)
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
   ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
-  ros::Subscriber dSPACE_subscriber_04 = n.subscribe("LightResultOutput", 1, chatterCallback_04);
+  ros::Subscriber dSPACE_subscriber_04 = n.subscribe("LightResultOutput_ITRI_Campus", 1, chatterCallback_04);
   ros::Subscriber dSPACE_subscriber_05 = n.subscribe("/traffic", 1, chatterCallback_05);
   ros::spin();
   return 0;
