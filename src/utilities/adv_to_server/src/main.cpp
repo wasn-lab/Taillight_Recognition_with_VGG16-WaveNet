@@ -735,10 +735,16 @@ void sendRun(int argc, char** argv)
   UdpClient UDP_VK_client;
   UdpClient UDP_TABLET_client;
 
+  TCPClient TCP_VK_client;
+
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
   UDP_TABLET_client.initial("192.168.43.63", 9876);
+
+  TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
+  TCP_VK_client.connectServer();
+
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
@@ -768,34 +774,64 @@ void sendRun(int argc, char** argv)
     if(event_queue_switch){
       mutex_event_1.lock();
       event_queue_switch = false;
+      
       while (eventQueue1.size() != 0)
       {
         cout << "send from q 1" << endl;
         json j = eventQueue1.front();
         string jstr = j.dump();
-        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        const char* msg = jstr.c_str();
+        //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        TCP_VK_client.sendRequest(msg, strlen(msg));
         UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
         eventQueue1.pop();
-        
+        if(eventQueue1.size() == 0)
+        {
+          string end_str = "@"; 
+          const char * end_token = end_str.c_str();
+          TCP_VK_client.sendRequest(end_token, strlen(end_token));
+        }
+        else
+        {
+          string end_str = "#"; 
+          const char * end_token = end_str.c_str();
+          TCP_VK_client.sendRequest(end_token, strlen(end_token));
+        }
       }
+      
       mutex_event_1.unlock();
     }
     else{
       mutex_event_2.lock();
       event_queue_switch = true;
+    
       while (eventQueue2.size() != 0)
       {
         cout << "send from q 2" << endl;  
         json j = eventQueue2.front();
         string jstr = j.dump();
-        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        const char* msg = jstr.c_str();
+        //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        TCP_VK_client.sendRequest(msg, strlen(msg));
+        //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
         UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
         eventQueue2.pop();
+        if(eventQueue2.size() == 0)
+        {
+          string end_str = "@"; 
+          const char * end_token = end_str.c_str();
+          TCP_VK_client.sendRequest(end_token, strlen(end_token));
+        }
+        else
+        {
+          string end_str = "#"; 
+          const char * end_token = end_str.c_str();
+          TCP_VK_client.sendRequest(end_token, strlen(end_token));
+        }
       }
+      
       mutex_event_2.unlock();
     }
-   
-
     boost::this_thread::sleep(boost::posix_time::microseconds(1000));
   }
 }
