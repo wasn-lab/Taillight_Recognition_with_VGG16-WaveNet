@@ -10,7 +10,6 @@ import os
 import time
 import string
 import rospy
-import pypcd
 from pypcd import *
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
@@ -140,30 +139,12 @@ def main():
     # ===== Global Variable =====
     dir_path = os.path.dirname(os.path.abspath('__file__'))
     os.chdir(os.path.dirname(os.path.abspath('__file__')) + "/bags")
-    count = 0
-    current_filename = " "
-    last_extracted_pcd = " "
-    last_extracted_img_a0 = " "
-    last_extracted_img_a1 = " "
-    last_extracted_img_a2 = " "
-    last_extracted_img_b0 = " "
-    last_extracted_img_b1 = " "
-    last_extracted_img_b2 = " "
-    last_extracted_img_c0 = " "
-    last_extracted_img_c1 = " "
-    last_extracted_img_c2 = " "
-    last_extracted_rad = " "
 
     last_timestr = ""
-    last_datestr = ""
-
-    bags_lst = []
-    bags_dir_lst = []
-    bags_dir = ""
     Extracted_Dir_list = ["Dummy"]
 
     timestr = ""
-    datestr = ""
+    # datestr = ""
     time_tick = False
 
     # User selection
@@ -220,10 +201,10 @@ def main():
                                     filename = bagFile.split(
                                         "/")[-1].split(".")[0]
                                     print (filename)
-                                    path = bagFile.split(filename)[0]
+                                    #path = bagFile.split(filename)[0]
 
                                     bag = rosbag.Bag((bagFile))
-                                    topics_lst = bag.get_type_and_topic_info().topics
+                                    #topics_lst = bag.get_type_and_topic_info().topics
 
                                     # check save path
                                     outdir = dir_path + "/Extracted/" + filename + '/'
@@ -235,11 +216,11 @@ def main():
                                         #print("A: " + topic)
                                         # Update LidarAll time
                                         if topic == "/LidarAll":
-                                            pc = PointCloud.from_msg(msg)
-                                            timeint = msg.header.stamp.secs
-                                            datearray = time.localtime(timeint)
-                                            datestr = time.strftime(
-                                                "%Y-%m-%d-%H-%M-%S", datearray)
+                                            #pc = PointCloud.from_msg(msg)
+                                            # timeint = msg.header.stamp.secs
+                                            # datearray = time.localtime(timeint)
+                                            # datestr = time.strftime(
+                                                # "%Y-%m-%d-%H-%M-%S", datearray)
                                             if id_in == 1:
                                                 timestr = str(
                                                     msg.header.stamp.secs)
@@ -268,7 +249,6 @@ def main():
                                                         except BaseException:
                                                             print(
                                                                 "LidarAll cant save.")
-
                                             read_topic_and_save_camera(
                                                 topic, msg, outdir, filename, timestr, 0, "/cam/front_bottom_60", "a0", "A0")
                                             read_topic_and_save_camera(
@@ -303,71 +283,71 @@ def main():
                                                             print(
                                                                 "rad cant save.")
 
-                                        elif time_tick:
-                                            if check_first:
-                                                pass
-                                            else:
-                                                # save first and update new
-                                                time_tick = False
-                                                try:
-                                                    read_msg_and_save(
-                                                        lidarall_msg, 0, outdir, last_timestr, filename)
-                                                except BaseException:
-                                                    print("lidar cant save.")
+                                        # elif time_tick:
+                                        #     if check_first:
+                                        #         pass
+                                        #     else:
+                                        #         # save first and update new
+                                        #         time_tick = False
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 lidarall_msg, 0, outdir, last_timestr, filename)
+                                        #         except BaseException:
+                                        #             print("lidar cant save.")
 
-                                                try:
-                                                    read_msg_and_save(
-                                                        camA0_msg, 1, outdir, last_timestr, filename, "a0")
-                                                except BaseException:
-                                                    print("CamA0 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camA0_msg, 1, outdir, last_timestr, filename, "a0")
+                                        #         except BaseException:
+                                        #             print("CamA0 cant save.")
 
-                                                try:
-                                                    read_msg_and_save(
-                                                        camA1_msg, 1, outdir, last_timestr, filename, "a1")
-                                                except BaseException:
-                                                    print("CamA1 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camA1_msg, 1, outdir, last_timestr, filename, "a1")
+                                        #         except BaseException:
+                                        #             print("CamA1 cant save.")
 
-                                                # try:
-                                                #     read_msg_and_save(camA2_msg, 1, outdir, last_timestr, filename, "a2")
-                                                # except:
-                                                #     print("CamA2 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        camB0_msg, 1, outdir, last_timestr, filename, "b0")
-                                                except BaseException:
-                                                    print("CamB0 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        camB1_msg, 1, outdir, last_timestr, filename, "b1")
-                                                except BaseException:
-                                                    print("CamB1 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        camB2_msg, 1, outdir, last_timestr, filename, "b2")
-                                                except BaseException:
-                                                    print("CamB2 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        camC0_msg, 1, outdir, last_timestr, filename, "c0")
-                                                except BaseException:
-                                                    print("CamC0 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        camC1_msg, 1, outdir, last_timestr, filename, "c1")
-                                                except BaseException:
-                                                    print("CamC1 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        camC2_msg, 1, outdir, last_timestr, filename, "c2")
-                                                except BaseException:
-                                                    print("CamC2 cant save.")
-                                                try:
-                                                    read_msg_and_save(
-                                                        rad_msg, 2, outdir, last_timestr + "_rad")
-                                                except BaseException:
-                                                    print("rad cant save.")
-                                        last_timestr = timestr
-                                        last_datestr = datestr
+                                        #         # try:
+                                        #         #     read_msg_and_save(camA2_msg, 1, outdir, last_timestr, filename, "a2")
+                                        #         # except:
+                                        #         #     print("CamA2 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camB0_msg, 1, outdir, last_timestr, filename, "b0")
+                                        #         except BaseException:
+                                        #             print("CamB0 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camB1_msg, 1, outdir, last_timestr, filename, "b1")
+                                        #         except BaseException:
+                                        #             print("CamB1 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camB2_msg, 1, outdir, last_timestr, filename, "b2")
+                                        #         except BaseException:
+                                        #             print("CamB2 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camC0_msg, 1, outdir, last_timestr, filename, "c0")
+                                        #         except BaseException:
+                                        #             print("CamC0 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camC1_msg, 1, outdir, last_timestr, filename, "c1")
+                                        #         except BaseException:
+                                        #             print("CamC1 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 camC2_msg, 1, outdir, last_timestr, filename, "c2")
+                                        #         except BaseException:
+                                        #             print("CamC2 cant save.")
+                                        #         try:
+                                        #             read_msg_and_save(
+                                        #                 rad_msg, 2, outdir, last_timestr + "_rad")
+                                        #         except BaseException:
+                                        #             print("rad cant save.")
+                                        # last_timestr = timestr
+                                        # last_datestr = datestr
 
     print ("** Finish Extracting **")
 
