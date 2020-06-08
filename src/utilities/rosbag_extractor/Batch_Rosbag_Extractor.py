@@ -114,6 +114,8 @@ def read_topic_and_save_camera(
                 in_append1 +
                     ".jpg"):
                 pass
+            elif in_timestr == "":
+                pass
             else:
                 try:
                     read_msg_and_save(
@@ -169,7 +171,11 @@ def main():
         txt_input = raw_input
     except NameError:
         txt_input = input
-    str_in = txt_input("Mode id (1: 1FPS; 2: 10FPS):")
+    str_in = ""
+    try:
+        str_in = txt_input('Mode(1: in 1FPS, 2: in 10FPS):\n')
+    except EOFError:
+        str_in = "1"
     try:
         id_in = int(str_in)
         if id_in == 1:
@@ -286,6 +292,8 @@ def main():
                                                 if check_first:
                                                     if os.path.exists(
                                                             outdir + timestr + '_rad.txt'):
+                                                        pass
+                                                    elif timestr == "":
                                                         pass
                                                     else:
                                                         try:
