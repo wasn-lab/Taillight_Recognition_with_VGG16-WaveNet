@@ -7,30 +7,27 @@
 
 void Projector3::init(int camera_id)
 {
-  char* file_name;
+  
 #if CAR_MODEL_IS_B1_V2
   switch (camera_id)
   {
     case camera::id::front_bottom_60:
     {
-      file_name = (char*)"/fix_front_bottom_60_0310.yml";
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string(file_name);
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_bottom_60_0310.yml");
       readCameraParameters(file_path.c_str());
     }
       break;
     
     case camera::id::right_back_60:
     {
-      file_name = (char*)"/fix_right_back_60_0511.yml";
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string(file_name);
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_right_back_60_0511.yml");
       readCameraParameters(file_path.c_str());
     }
       break;
 
     case camera::id::left_back_60:
     {
-      file_name = (char*)"/fix_left_back_60_0528.yml";
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string(file_name);
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_left_back_60_0528.yml");
       readCameraParameters(file_path.c_str());
     }
       break;
@@ -39,7 +36,6 @@ void Projector3::init(int camera_id)
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
   }
-  file_name = nullptr;
 #endif
 }
 
