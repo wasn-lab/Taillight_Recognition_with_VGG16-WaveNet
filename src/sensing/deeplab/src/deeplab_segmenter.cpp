@@ -15,9 +15,9 @@ int32_t DeeplabSegmenter::segment(const cv::Mat& img_in, cv::Mat& img_out)
   return nn_ptr_->segment(img_in, img_out);
 }
 
-int32_t DeeplabSegmenter::segment_into_labels(const cv::Mat& img_in, uint8_t* labels)
+int32_t DeeplabSegmenter::segment_with_labels(const cv::Mat& img_in, cv::Mat& img_out, uint8_t* labels)
 {
-  return nn_ptr_->segment_into_labels(img_in, labels);
+  return nn_ptr_->segment_with_labels(img_in, img_out, labels);
 }
 
 };  // namespace deeplab
