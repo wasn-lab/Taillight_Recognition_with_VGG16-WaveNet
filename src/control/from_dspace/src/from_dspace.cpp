@@ -37,6 +37,7 @@ const int NumOfTopic = 8;
 #include <linux/can/raw.h>
 using namespace std ;
 msgs::VehInfo msg_VehInfo;
+msgs::VehInfo msg_Backend;
 
 int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
     switch (frame.can_id) {
@@ -295,8 +296,8 @@ int main(int argc, char **argv)
     Publisher[6] = n.advertise<msgs::Flag_Info>("/Ego_speed/kph", 1);
     Publisher[7] = n.advertise<msgs::Flag_Info>("/Ego_speed/ms", 1);
 
-    ros::Publisher Publisher_BE;
-    Publisher_BE = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
+    ros::Publisher Publisher_Backend;
+    Publisher_Backend = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
     ros::Publisher vehinfo_pub;
     vehinfo_pub = n.advertise<msgs::VehInfo>("veh_info", 1);
 
@@ -364,9 +365,7 @@ int main(int argc, char **argv)
             printf("Read %d bytes\n", nbytes);
             ProcessFrame(frame, Publisher);
         }
-        msgs::BackendInfo msg123;
-        msg123.localization = 66;
-        Publisher_BE.publish(msg123);
+        Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);
         rate.sleep();
     }
