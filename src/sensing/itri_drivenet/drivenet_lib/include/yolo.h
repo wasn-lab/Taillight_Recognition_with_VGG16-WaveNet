@@ -38,6 +38,7 @@ struct InferParams
   std::string calibImages;
   std::string calibImagesPath;
   float probThresh;
+  float probThreshBike;
   float nmsThresh;
 };
 
@@ -123,6 +124,7 @@ protected:
   uint m_InputC;
   uint64_t m_InputSize;
   const float m_ProbThresh;
+  const float m_ProbThreshBike;
   const float m_NMSThresh;
   std::vector<std::string> m_ClassNames;
   // Class ids for coco benchmarking

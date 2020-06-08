@@ -46,3 +46,4 @@ src/dl_data/assets/
 src/sensing/itri_lidarnet/lidars_grabber/src/UI/Makefile
 src/utilities/alexab_darknet/drivenet_dataset
 src/utilities/alexab_darknet/build
+src/sensing/deeplab/weights

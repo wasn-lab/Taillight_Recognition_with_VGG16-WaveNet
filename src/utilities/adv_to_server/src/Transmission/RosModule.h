@@ -16,6 +16,7 @@
 #include "msgs/RouteInfo.h"
 #include "msgs/BackendInfo.h"
 #include "sensor_msgs/Imu.h"
+#include "msgs/Spat.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/tf.h>
@@ -79,16 +80,12 @@ class RosModuleTraffic
     }
 
     static void
-    publishTraffic(std::string topic, std::string input)
+    publishTraffic(std::string topic, msgs::Spat input)
     {
-      std::cout << "publishTraffic topic " << topic << " , input" << input << std::endl;
+      std::cout << "publishTraffic topic " << topic <<  std::endl;
       ros::NodeHandle n;
-      static ros::Publisher traffic_pub = n.advertise<std_msgs::String>(topic, 1000);
-      std_msgs::String msg;
-      std::stringstream ss;
-      ss << input;
-      msg.data = ss.str();
-      traffic_pub.publish(msg);
+      static ros::Publisher traffic_pub = n.advertise<msgs::Spat>(topic, 1000);
+      traffic_pub.publish(input);
     }
 
     static void
