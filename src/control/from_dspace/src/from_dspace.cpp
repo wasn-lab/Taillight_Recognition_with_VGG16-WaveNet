@@ -8,7 +8,7 @@
 //Can setup
 #define CAN_DLC 8;
 #define CAN_CHNNEL "can1"
-const int NumOfReceiveID = 10;
+const int NumOfReceiveID = 15;
 const int NumOfTopic = 8;
 
 #include "msgs/Flag_Info.h"
@@ -37,7 +37,7 @@ const int NumOfTopic = 8;
 #include <linux/can/raw.h>
 using namespace std ;
 msgs::VehInfo msg_VehInfo;
-msgs::VehInfo msg_Backend;
+msgs::BackendInfo msg_Backend;
 
 int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
     switch (frame.can_id) {
@@ -187,6 +187,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
         return 1;
     }
     break;
+
     case 0x302:
     {
         short road_id_tmp;
@@ -267,6 +268,82 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 	}
     break;
 
+    case 0x620:
+    {
+        bool gps_fault_flag_tmp;
+        short ego_heading_tmp;
+        short ego_speed_tmp;
+        msg_Backend.door = frame.data[6]&1;
+        msg_Backend.headlight = (frame.data[6]>>1)&1;
+        msg_Backend.left_turn_light = (frame.data[6]>>2)&1;
+        msg_Backend.right_turn_light = (frame.data[6]>>3)&1;
+        msg_Backend.air_conditioner = (frame.data[6]>>4)&1;
+        msg_Backend.estop = (frame.data[6]>>5)&1;
+        msg_Backend.wiper = (frame.data[6]>>6)&1;
+        msg_Backend.hand_brake = (frame.data[6]>>7)&1;
+        msg_Backend.indoor_light = frame.data[7]&1;
+        msg_Backend.gross_power = (frame.data[7]>>1)&1;
+        msg_Backend.ACC_state = (frame.data[7]>>2)&1;
+
+        std::cout << "Got 0x620" << endl;
+        return 1;
+    }
+    break;
+
+    case 0x621:
+    {
+
+
+        msg_Backend.mileage = frame.data[0] | frame.data[1]<< 8 | frame.data[2]<< 16 | frame.data[3]<< 24 ;
+        msg_Backend.speed = frame.data[4];
+        msg_Backend.air_pressure = frame.data[5];
+        // 電門踏板 = frame.data[6];
+        // 速度命令 = frame.data[7];
+
+        std::cout << "Got 0x621" << endl;
+
+        return 1;
+    }
+    break;
+
+    case 0x622:
+    {
+
+        msg_Backend.gross_current = frame.data[0] | frame.data[1]<< 8;
+        msg_Backend.highest_voltage = frame.data[2] | frame.data[3]<< 8;
+        msg_Backend.highest_number = frame.data[4];
+        msg_Backend.lowest_volage = frame.data[5] | frame.data[6]<< 8;
+        msg_Backend.lowest_number = frame.data[7];
+
+        std::cout << "Got 0x622" << endl;
+        return 1;
+    }
+    break;
+
+    case 0x623:
+    {
+        msg_Backend.voltage_deviation = frame.data[0];
+        msg_Backend.highest_temperature = frame.data[1] | frame.data[2]<< 8;
+        msg_Backend.highest_temp_location = frame.data[3];
+        msg_Backend.gross_voltage = frame.data[4] | frame.data[5]<< 8;
+        // 控制電壓 = frame.data[6];
+        msg_Backend.battery = frame.data[7];
+
+        std::cout << "Got 0x623" << endl;
+        return 1;
+    }
+    break;
+
+    case 0x624:
+    {
+        msg_Backend.motor_temperature = frame.data[0] | frame.data[1]<< 8;
+        // life signal = (frame.data[7]>>7)&1;
+
+        std::cout << "Got 0x624" << endl;
+        return 1;
+    }
+    break;
+
     default:
 		{
 		    // Should never get here if the receive filters were set up correctly
@@ -317,6 +394,11 @@ int main(int argc, char **argv)
     filter[7].can_id = 0x304;
     filter[8].can_id = 0x350;
     filter[9].can_id = 0x351;
+    filter[10].can_id = 0x620;
+    filter[11].can_id = 0x621;
+    filter[12].can_id = 0x622;
+    filter[13].can_id = 0x623;
+    filter[14].can_id = 0x624;
     
 
     int s;
