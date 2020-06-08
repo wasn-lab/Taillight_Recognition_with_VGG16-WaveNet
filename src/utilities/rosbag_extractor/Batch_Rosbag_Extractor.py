@@ -10,7 +10,8 @@ import os
 import time
 import string
 import rospy
-from pypcd import *
+import pypcd
+from pypcd import PointCloud
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
 from os.path import getsize
@@ -29,7 +30,7 @@ check_first = False
 
 def read_topic_return_msg(msg, type, contain):
     if type == 0:  # lidar
-        pc = PointCloud.from_msg(msg)
+        pc = pypcd.PointCloud.from_msg(msg)
         return pc
     # if type == 1: #cam
     #     try:
