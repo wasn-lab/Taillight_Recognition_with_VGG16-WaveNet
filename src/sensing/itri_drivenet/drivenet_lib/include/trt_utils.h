@@ -31,6 +31,19 @@ struct BBoxInfo
   float prob;
 };
 
+enum class yolo_class_id
+{
+  begin = 0,
+  person = begin,  // 0
+  bicycle,         // 1
+  car,             // 2
+  motorbike,       // 3
+  others1,         // 4
+  bus,             // 5
+  others2,         // 6
+  truck            // 7
+};
+
 class Logger : public nvinfer1::ILogger
 {
 public:

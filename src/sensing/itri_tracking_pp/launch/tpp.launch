@@ -44,6 +44,9 @@
   <!-- otherwise: No show pp -->
   <arg name="show_pp" default="2" />
 
+  <!-- Min number of consecutive tracked time ticks to activate PP: should be >= 3 -->
+  <arg name="num_pp_input_min" default="6" />
+
   <arg name="pp_obj_min_kmph" default="1.0" />
   <arg name="pp_obj_max_kmph" default="70.0" />
 
@@ -62,6 +65,7 @@
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
     <param name="show_pp" value="$(arg show_pp)" />
+    <param name="num_pp_input_min" value="$(arg num_pp_input_min)" />
     <param name="pp_obj_min_kmph" value="$(arg pp_obj_min_kmph)" />
     <param name="pp_obj_max_kmph" value="$(arg pp_obj_max_kmph)" />
   </node>
