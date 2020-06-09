@@ -107,13 +107,13 @@ void AlignmentOff::visualize() const
   {
     for (int col = 0; col < imgW; col++)
     {
-      int R = 0;
-      int G = 0;
+      // int R = 0;
+      // int G = 0;
       int B = 0;
 
       B = round(spatial_points_[row][col].x*5);
-      G = round(spatial_points_[row][col].y*20);
-      R = round(spatial_points_[row][col].z*40);  
+      // G = round(spatial_points_[row][col].y*20);
+      // R = round(spatial_points_[row][col].z*40);  
 
       vis.at<cv::Vec3b>(row, col)[0] = B;
       vis.at<cv::Vec3b>(row, col)[1] = 0;
@@ -186,7 +186,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     for (const auto& kv : revised_points)
     {
       const auto& image_point = kv.first;
-      const auto& aligned_image_point = kv.second;
+      // const auto& aligned_image_point = kv.second;
       
       int count = 0;
       cv::Point3d sum_3d;
