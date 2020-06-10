@@ -36,7 +36,7 @@
   <arg name="show_tracktime" default="False" />
   <arg name="show_source" default="False" />
   <arg name="show_distance" default="False" />
-  <arg name="show_absspeed" default="False" />
+  <arg name="show_absspeed" default="True" />
 
   <!-- 1: Show pp centers -->
   <!-- 2: Show pp ellipses -->
