@@ -48,7 +48,7 @@
   <arg name="num_pp_input_min" default="4" />
 
   <arg name="pp_obj_min_kmph" default="1.0" />
-  <arg name="pp_obj_max_kmph" default="70.0" />
+  <arg name="pp_obj_max_kmph" default="80.0" />
 
   <!-- Launch node -->
   <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
