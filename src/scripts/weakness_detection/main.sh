@@ -12,8 +12,6 @@ readonly cam_ids="back_top_120 front_bottom_60 front_top_close_120 front_top_far
 readonly image_list_txt=${TMP_DIR}/weakness_detection_image_list.txt
 readonly yolo_result_json=${TMP_DIR}/yolo_result.json
 
-readonly bag_file=$1
-
 source $repo_dir/devel/setup.bash
 
 # check if ROS master is alive
@@ -35,21 +33,23 @@ function save_images {
   done
   sleep 3
 
-  if [[ ! -f "$bag_file" ]]; then
-    echo "This script find spurious results made by object detection NN."
-    echo "The input is images stored in a rosbag file."
-    echo "  Usage: $0 bag_file"
+  if [[ "$#" == "0" ]]; then
+    echo "Usage: $0 bag1 [bag2] ..."
     exit 1
   fi
+  for bag in $@; do
+    if [[ "$bag" == *".bag" ]]; then
+      rosbag play $bag
+    fi
+  done
 
-  rosbag play $bag_file  # -u 3
   sleep 3  # wait for savers finish their jobs
   killall image_saver
   set -e
   true > ${image_list_txt}
   for cam_id in $cam_ids; do
     output_dir=${TMP_DIR}/${cam_id}
-    find $output_dir -name "*.jpg" -type f >> ${image_list_txt}
+    find $output_dir -name "*.jpg" -type f | grep -v yolo | grep -v deeplab >> ${image_list_txt}
   done
 }
 
@@ -95,9 +95,9 @@ function find_yolo_deeplab_mismatch {
 }
 
 make_itrisaver
-save_images
+save_images $@
 run_deeplab
 build_darknet_exe
 run_yolo
 find_yolo_deeplab_mismatch
-rm_tmp_files
+#rm_tmp_files
