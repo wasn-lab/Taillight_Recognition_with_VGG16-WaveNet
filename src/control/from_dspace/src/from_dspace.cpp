@@ -16,6 +16,7 @@ const int NumOfTopic = 8;
 #include "msgs/BackendInfo.h"
 #include "std_msgs/Header.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/Int8MultiArray.h"
 #include "msgs/VehInfo.h"
 #include <ros/ros.h>
 
@@ -38,6 +39,7 @@ const int NumOfTopic = 8;
 using namespace std ;
 msgs::VehInfo msg_VehInfo;
 msgs::BackendInfo msg_Backend;
+int cc[4];
 int counter = 0;
 
 int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
