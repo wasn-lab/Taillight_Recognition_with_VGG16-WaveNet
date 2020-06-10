@@ -45,7 +45,7 @@
   <arg name="show_pp" default="2" />
 
   <!-- Min number of consecutive tracked time ticks to activate PP: should be >= 3 -->
-  <arg name="num_pp_input_min" default="6" />
+  <arg name="num_pp_input_min" default="4" />
 
   <arg name="pp_obj_min_kmph" default="1.0" />
   <arg name="pp_obj_max_kmph" default="70.0" />
