@@ -39,11 +39,10 @@ const int NumOfTopic = 8;
 using namespace std ;
 msgs::VehInfo msg_VehInfo;
 msgs::BackendInfo msg_Backend;
-int cc[4];
-int counter = 0;
+
+
 
 int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
-    counter = 0;
     switch (frame.can_id) {
     case 0x601:
 	{
@@ -315,8 +314,10 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 
         msg_Backend.gross_current = frame.data[0] | frame.data[1]<< 8;
         msg_Backend.highest_voltage = frame.data[2] | frame.data[3]<< 8;
+        msg_Backend.highest_voltage = msg_Backend.highest_voltage/100;
         msg_Backend.highest_number = frame.data[4];
         msg_Backend.lowest_volage = frame.data[5] | frame.data[6]<< 8;
+        msg_Backend.lowest_volage = msg_Backend.lowest_volage/100;
         msg_Backend.lowest_number = frame.data[7];
 
         std::cout << "Got 0x622" << endl;
@@ -327,6 +328,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
     case 0x623:
     {
         msg_Backend.voltage_deviation = frame.data[0];
+        msg_Backend.voltage_deviation = msg_Backend.voltage_deviation/100;
         msg_Backend.highest_temperature = frame.data[1] | frame.data[2]<< 8;
         msg_Backend.highest_temp_location = frame.data[3];
         msg_Backend.gross_voltage = frame.data[4] | frame.data[5]<< 8;
@@ -341,6 +343,7 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
     case 0x624:
     {
         msg_Backend.motor_temperature = frame.data[0] | frame.data[1]<< 8;
+        msg_Backend.motor_temperature = msg_Backend.motor_temperature/10;
         // life signal = (frame.data[7]>>7)&1;
 
         std::cout << "Got 0x624" << endl;
@@ -449,9 +452,7 @@ int main(int argc, char **argv)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher);
-            cout << "counter = " << counter;
-            counter = counter+1;
+            ProcessFrame(frame, Publisher);;
         }
         Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);
