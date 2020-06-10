@@ -68,7 +68,7 @@ std::mutex g_mutex_lidar_process;
 std::mutex g_mutex_lidar_ssn;
 std::mutex g_mutex_cams_points;
 std::mutex g_mutex_objects_points;
-std::recursive_mutex  g_mutex_cam_times;
+std::recursive_mutex g_mutex_cam_times;
 std::recursive_mutex g_mutex_lidar_time;
 std::recursive_mutex g_mutex_lidar_ssn_time;
 std::vector<std::mutex> g_mutex_cam_time(g_cam_ids.size());
@@ -141,7 +141,8 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_time[cam_order] = msg->header.stamp;
-    // std::cout << "g_cam_single_time[cam_order]: " << g_cam_single_time[cam_order].sec << "." << g_cam_single_time[cam_order].nsec <<
+    // std::cout << "g_cam_single_time[cam_order]: " << g_cam_single_time[cam_order].sec << "." <<
+    // g_cam_single_time[cam_order].nsec <<
     // std::endl;
   }
 }
@@ -859,10 +860,12 @@ void buffer_monitor()
       {
         std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[index]);
         g_cam_times[index].push_back(g_cam_single_time[index]);
-        // std::cout << "g_cam_single_time[index]: " << g_cam_single_time[index].sec << "." << g_cam_single_time[index].nsec <<
+        // std::cout << "g_cam_single_time[index]: " << g_cam_single_time[index].sec << "." <<
+        // g_cam_single_time[index].nsec <<
         // std::endl;
       }
-      // std::cout << "g_object_arrs: " << g_object_arrs[0].header.stamp.sec << "." << g_object_arrs[0].header.stamp.nsec <<
+      // std::cout << "g_object_arrs: " << g_object_arrs[0].header.stamp.sec << "." <<
+      // g_object_arrs[0].header.stamp.nsec <<
       // std::endl;
 
       std::lock_guard<std::recursive_mutex> lock_lidar_ssn_time(g_mutex_lidar_ssn_time);
@@ -881,7 +884,7 @@ void buffer_monitor()
         }
         std::lock_guard<std::recursive_mutex> lock_lidar_time(g_mutex_lidar_time);
         g_lidarall_times.erase(g_lidarall_times.begin(), g_lidarall_times.begin() + g_buffer_size / 2);
-        
+
         std::lock_guard<std::recursive_mutex> lock_lidar_ssn_time(g_mutex_lidar_ssn_time);
         g_lidar_ssn_times.erase(g_lidar_ssn_times.begin(), g_lidar_ssn_times.begin() + g_buffer_size / 4);
       }
