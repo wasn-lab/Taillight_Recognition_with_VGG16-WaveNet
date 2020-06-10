@@ -29,6 +29,7 @@ def main():
 
     mgr = YoloMgr(args.yolo_result_json)
     mgr.find_weakness_images()
+    mgr.save_weakness_logs(weakness_dir)
 
     move_weakest_images(mgr.get_weakest_images(), weakness_dir)
 
