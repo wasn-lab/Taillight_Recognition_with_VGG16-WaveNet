@@ -38,8 +38,10 @@ const int NumOfTopic = 8;
 using namespace std ;
 msgs::VehInfo msg_VehInfo;
 msgs::BackendInfo msg_Backend;
+int counter = 0;
 
 int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
+    counter = 0;
     switch (frame.can_id) {
     case 0x601:
 	{
@@ -446,6 +448,8 @@ int main(int argc, char **argv)
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
             ProcessFrame(frame, Publisher);
+            cout << "counter = " << counter;
+            counter = counter+1;
         }
         Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);
