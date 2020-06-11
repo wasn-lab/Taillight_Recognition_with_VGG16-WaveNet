@@ -7,35 +7,26 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-using namespace std;
-using namespace pcl;
-
 #include "VoxelGrid_CUDA.cuh"
 #include "../../UserDefine.h"
 
 class VoxelGrid_CUDA
 {
-  public:
-    VoxelGrid_CUDA ();
-    ~VoxelGrid_CUDA ();
+public:
+  VoxelGrid_CUDA();
+  ~VoxelGrid_CUDA();
 
-    void
-    coutMemoryStatus ();
+  void coutMemoryStatus();
 
-    template <typename PointT>
-    bool
-    run (typename pcl::PointCloud<PointT> &point_cloud,
-         float resolution);
+  template <typename PointT>
+  bool run(typename pcl::PointCloud<PointT>& point_cloud, float resolution);
 
-    template <typename PointT>
-    PointCloud<PointT>
-    compute (typename pcl::PointCloud<PointT>::Ptr input,
-             float resolution);
+  template <typename PointT>
+  pcl::PointCloud<PointT> compute(typename pcl::PointCloud<PointT>::Ptr input, float resolution);
 
-  private:
-    static bool hasInitialCUDA;
-    static int  maxThreadsNumber;
-
+private:
+  static bool hasInitialCUDA;
+  static int maxThreadsNumber;
 };
 
 #endif

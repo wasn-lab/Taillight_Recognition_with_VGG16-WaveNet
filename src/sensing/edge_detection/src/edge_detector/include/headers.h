@@ -1,15 +1,14 @@
 #ifndef HEADERS_H_
 #define HEADERS_H_
 
-///ros
+/// ros
 #include <ros/package.h>
 #include "ros/ros.h"
 #include "std_msgs/Header.h"
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-
-///pcl
+/// pcl
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
@@ -35,8 +34,8 @@
 #include <pcl/sample_consensus/sac_model_line.h>
 #include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
 
-#include <pcl/common/common.h>  //getMinMax3D
-#include <pcl/common/transforms.h> //transform​
+#include <pcl/common/common.h>      //getMinMax3D
+#include <pcl/common/transforms.h>  //transform​
 #include <pcl/common/common_headers.h>
 
 #include <pcl/visualization/cloud_viewer.h>
@@ -46,7 +45,7 @@
 #include <pcl/console/parse.h>
 
 #include <pcl/console/time.h>
-#include <unistd.h> //sleep
+#include <unistd.h>  //sleep
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -78,8 +77,7 @@ typedef pcl::PointCloud<PointT> Cloud;
 typedef typename Cloud::ConstPtr CloudConstPtr;
 
 #define PI 3.14159265359
-#define DEG_PER_RAD (180.0/PI)
+#define DEG_PER_RAD (180.0 / PI)
 #define BUF_SIZE 10000
-
 
 #endif /* HEADERS_H_ */

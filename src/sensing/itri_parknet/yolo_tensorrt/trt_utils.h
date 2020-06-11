@@ -86,11 +86,7 @@ private:
 
     nvinfer1::DimsHW compute(nvinfer1::DimsHW inputDims, nvinfer1::DimsHW kernelSize,
                              nvinfer1::DimsHW stride, nvinfer1::DimsHW padding,
-#if TENSORRT_VERSION_MAJOR == 5
                              nvinfer1::DimsHW dilation, const char* layerName) const override
-#else
-                             nvinfer1::DimsHW dilation, const char* layerName)
-#endif
     {
         assert(inputDims.d[0] == inputDims.d[1]);
         assert(kernelSize.d[0] == kernelSize.d[1]);

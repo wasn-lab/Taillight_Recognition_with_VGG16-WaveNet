@@ -409,7 +409,13 @@ void KalmanTrackers::compute_distance_table()
 
       float cost_box_vol_ratio = box_vol_ratio_larger * track_range_sed / BOX_VOL_RATIO_MAX;
 
-      float cost_final = COST_BOX_DIST_W * cost_box_dist + COST_BOX_VOL_RATIO_W * cost_box_vol_ratio;
+#if PUNISH_OBJCLASS_CHANGE
+      float punish = (objs_[j].classId == tracks_[i].box_.classId) ? 0.f : track_range_sed * PUNISH_RATIO;
+#else
+      float punish = 0.f;
+#endif
+
+      float cost_final = COST_BOX_DIST_W * cost_box_dist + COST_BOX_VOL_RATIO_W * cost_box_vol_ratio + punish;
 
       if (cost_final <= track_range_sed)
       {

@@ -1,9 +1,9 @@
 #ifndef ALL_HEADER_H_
 #define ALL_HEADER_H_
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
@@ -12,9 +12,9 @@
 #include <vector>
 #include <omp.h>
 #include <thread>
-#include <unistd.h> //sleep
+#include <unistd.h>  //sleep
 #include <functional>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include <condition_variable>
 
@@ -62,5 +62,8 @@ using namespace pcl;
 using namespace pcl::console;
 using namespace pcl::visualization;
 using namespace boost::property_tree;
+
+// for Debug
+#define ENABLE_DEBUG_MODE false
 
 #endif /* ALL_HEADER_H_ */

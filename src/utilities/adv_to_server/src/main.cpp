@@ -17,6 +17,7 @@
 #include "std_msgs/String.h"
 
 bool flag_show_udp_send = true;
+bool event_queue_switch = true;
 
 // VK APIs backend
 const std::string TCP_VK_SRV_ADRR = "60.250.196.127";
@@ -46,6 +47,9 @@ const std::string TOPIC_TRAFFIC = "/traffic";
 const std::string TOPIC_SERCER_STATUS = "/backend/connected";
 // reserve bus
 const std::string TOPIC_RESERVE = "/reserve/request";
+// route 
+const std::string TOPIC_ROUTE = "/reserve/route";
+
 
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
@@ -62,6 +66,8 @@ const int ROS_UPDATE_MICROSECONDS = 500 * 1000;
 boost::mutex mutex_queue;
 boost::mutex mutex_ros;
 boost::mutex mutex_trafficLight;
+boost::mutex mutex_event_1;
+boost::mutex mutex_event_2;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
@@ -71,6 +77,8 @@ std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
 std::queue<std::string> trafficLightQueue;
+std::queue<json> eventQueue1;
+std::queue<json> eventQueue2;
 
 TcpServer server;
 
@@ -80,6 +88,10 @@ msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
 std::string mileJson;
+std::string eventJson;
+msgs::RouteInfo route_info;
+std::string board_list="00000000";
+ int routeID = 2000;
 
 const static double PI = 3.14;
 // can data
@@ -116,9 +128,74 @@ struct ArriveStop
   int round; // current round
 };
 
-const static int ROUTE_ID = 2000;
+struct IMU
+{
+  double Gx;
+  double Gy;
+  double Gz;
+  double Gyrox;
+  double Gyroy;
+  double Gyroz;
+};
+
+struct VehicelStatus
+{
+  
+  float motor_temperature; //馬達
+  float tire_pressure; //胎壓
+  float air_pressure; //氣壓
+  float battery; //電量 %
+  float steer; //轉向
+  float localization; //定位
+  float odometry; //里程
+  float speed; //車速 km/hr
+  float rotating_speed; //轉速
+  float bus_stop; //站點
+  float vehicle_number; //車號
+  float gear; //檔位
+  int hand_brake; //手煞車
+  float steering_wheel; //方向盤 0關1開
+  int door; //車門 0關1開
+  int air_conditioner; //空調
+  float radar; //radar
+  float lidar;
+  float camera;
+  float GPS;
+  int headlight; //大燈 0關1開
+  int wiper; //雨刷 0關 1開
+  int indoor_light; //車內燈 0關 1開
+  int gross_power; //總電源 0關 1開
+  int left_turn_light; //左方向燈 0關 1開
+  int right_turn_light;//右方向燈 0關 1開
+  int estop; //E-Stop 0關 1開
+  int ACC_state; //ACC電源狀態 0關 1開
+  float time; //標準時間
+  float driving_time; //行駛時間
+  float mileage; //行駛距離
+};
+
+struct batteryInfo
+{
+  float gross_voltage;//總電壓 V
+  float gross_current;//總電流 A
+  float highest_voltage; //最高電池電壓 0.01V
+  float highest_number; //最高電壓電池位置 電池編號
+  float lowest_volage; //最低電池電壓 0.01V
+  float lowest_number; //最低電壓電池位置 電池編號
+  float voltage_deviation; //高低電壓叉 0.01V
+  float highest_temp_location; //電池最高環境溫度位置 區域編號
+  float highest_temperature; //電池最高環境溫度
+};
+
+unsigned int mode; //模式 自動/半自動/手動/鎖定
+float emergency_exit; //緊急出口
+  
 pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
+IMU imu;
+
+VehicelStatus vs;
+batteryInfo battery;
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
@@ -159,6 +236,12 @@ std::time_t convertStrToTimeStamp(std::string time)
   }
   std::time_t time_stamp = mktime(&t);
   return time_stamp;
+}
+
+bool convertBoolean(int state)
+{
+  if(state == 0) return false;
+  return true;
 }
 /*=========================tools end=========================*/
 
@@ -216,7 +299,8 @@ void callback_fps(const std_msgs::String::ConstPtr& input)
 
 void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 {
-  std::cout << "<<<<<<<<<<<<<<<callbackBusStopInfo>>>>>>>>>>>>>>>" << std::endl;
+  //std::cout << "<<<<<<<<<<<<<<<callbackBusStopInfo>>>>>>>>>>>>>>>" << std::endl;
+  board_list = "";
   float stop[8];
   memset(stop, 0, sizeof(stop));
   mutex_ros.lock();
@@ -233,7 +317,10 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   {
     if (stop[i] == 1)
     {
-      stopids.push_back(i + ROUTE_ID + 1);
+      stopids.push_back(i + routeID + 1);
+      board_list += "1";
+    }else{
+      board_list += "0";
     }
   }
   json J2;
@@ -252,7 +339,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
   J1["status"] = 0;
-  J1["route_id"] = ROUTE_ID;
+  J1["route_id"] = routeID;
   if (stopids.size() == 0)
   {
     J1["bus_stops"] = json::array();
@@ -269,7 +356,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
 void callbackNextStop(const msgs::Flag_Info::ConstPtr& input)
 {
   mutex_ros.lock();
-  cuttent_arrive_stop.id = ROUTE_ID + (int)input->Dspace_Flag01;
+  cuttent_arrive_stop.id = routeID + (int)input->Dspace_Flag01;
   cuttent_arrive_stop.status = (int)input->Dspace_Flag02;
   //cuttent_arrive_stop.round = (int) input->PX2_Flag01;
   mutex_ros.unlock();
@@ -287,6 +374,37 @@ void callbackMileage(const std_msgs::String::ConstPtr& input)
 void callbackRound(const std_msgs::Int32::ConstPtr& input)
 {
   cuttent_arrive_stop.round = (int) input->data;
+}
+
+void callbackEvent(const std_msgs::String::ConstPtr& input)
+{
+  using namespace std;
+  eventJson = input->data.c_str();
+  json J0 = json::parse(eventJson);
+  json J1;
+  J1["type"] = "M8.2.VK003";
+  J1["deviceid"] = PLATE;
+  J1["lat"] = gps.lidar_Lat;
+  J1["lng"] = gps.lidar_Lon;  
+  J1["module"] = J0.at("module");
+  J1["status"] = J0.at("status");
+  J1["event_str"] = J0.at("event_str");
+  J1["timestamp"] = J0.at("timestamp");
+
+  if(event_queue_switch)
+  {
+    cout << " push to queue1 event: " << J1.dump() << endl;
+    mutex_event_1.lock();
+    eventQueue1.push(J1);
+    mutex_event_1.unlock();
+  }
+  else
+  {
+    cout << " push to queue2 event: " << J1.dump() << endl;
+    mutex_event_2.lock();
+    eventQueue2.push(J1);
+    mutex_event_2.unlock();
+  }
 }
 
 std::string get_msg_type(int id)
@@ -310,6 +428,63 @@ std::string get_msg_type(int id)
   }
   return "";
 }
+
+void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
+{
+  imu.Gx = input->linear_acceleration.x;
+  imu.Gy = input->linear_acceleration.y;
+  imu.Gz = input->linear_acceleration.z;
+  imu.Gyrox = input->angular_velocity.x;
+  imu.Gyroy = input->angular_velocity.y;
+  imu.Gyroz = input->angular_velocity.z;
+}
+
+void callbackBI(const msgs::BackendInfo::ConstPtr& input)
+{
+  vs.motor_temperature = input->motor_temperature; //馬達溫度
+  vs.tire_pressure = input->tire_pressure; //胎壓
+  vs.air_pressure = input->air_pressure; //氣壓
+  vs.battery =  input->battery; //電量 %
+  vs.steer = input->steer; //轉向
+  vs.localization = input->localization; //定位
+  vs.odometry = input->odometry; //里程
+  vs.speed = input->speed; //車速 km/hr
+  vs.rotating_speed = input->speed ; //轉速
+  vs.bus_stop = input->bus_stop; //站點
+  vs.vehicle_number = input->vehicle_number; //車號
+  vs.gear = input->gear; //檔位
+  vs.hand_brake = input->hand_brake; //手煞車
+  vs.steering_wheel = input->steering_wheel; //方向盤
+  vs.door = input->door; //車門
+  vs.air_conditioner = input->air_conditioner; //空調
+  vs.radar = input->radar; //radar
+  vs.lidar = input->lidar;
+  vs.camera = input->camera;
+  vs.GPS = input->GPS;
+  vs.headlight = input->headlight; //大燈 0關1開
+  vs.wiper = input->wiper; //雨刷 0關 1開
+  vs.indoor_light = input->indoor_light; //車內燈 0關 1開
+  vs.gross_power = input->gross_power; //總電源 0關 1開
+  vs.left_turn_light = input->left_turn_light; //左方向燈 0關 1開
+  vs.right_turn_light = input->right_turn_light;//右方向燈 0關 1開
+  vs.estop = input->estop; //E-Stop 0關 1開
+  vs.ACC_state = input->ACC_state; //ACC電源狀態 0關 1開
+  vs.time = input->time; //標準時間
+  vs.driving_time = input->driving_time; //行駛時間
+  vs.mileage = input->mileage; //行駛距離
+  battery.gross_voltage = input->gross_voltage; //總電壓 V
+  battery.gross_current = input->gross_current; //總電流 A
+  battery.highest_voltage = input->highest_voltage; //最高電池電壓 0.01V
+  battery.highest_number = input->highest_number; //最高電壓電池位置 電池編號
+  battery.lowest_volage = input->lowest_volage; //最低電池電壓 0.01V
+  battery.lowest_number = input->lowest_number; //最低電壓電池位置 電池編號
+  battery.voltage_deviation = input->voltage_deviation; //高低電壓差 0.01V
+  battery.highest_temp_location = input->highest_temp_location; //電池最高環境溫度位置 區域編號
+  battery.highest_temperature = input->highest_temperature; //電池最高環境溫度
+  mode = input->mode; //模式 自動/半自動/手動/鎖定
+  emergency_exit = input->emergency_exit; //緊急出口
+}
+
 
 /*========================= ROS callbacks end =========================*/
 
@@ -414,86 +589,115 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 {
   json J1;
   J1["type"] = type;
-  J1["deviceid"] = PLATE;
+  J1["deviceid"] = PLATE; //PLATE;
   J1["receivetime"] = log_Time();
   if (type == "M8.2.VK001")
   {
-    J1["motor"] = 2.1;
-    J1["tirepressure"] = 0.0;
-    J1["airpressure"] = 0.0;
-    J1["electricity"] = 0.0;
-    J1["steering"] = data[3];
-    J1["milage"] = 0.0;
-    J1["speed"] = data[0];
-    J1["rotate"] = 0.0;
-    J1["gear"] = 1;
-    J1["handcuffs"] = true;
-    J1["Steeringwheel"] = 0.0;
-    J1["door"] = true;
-    J1["airconditioner"] = true;
-    J1["lat"] = gps.lidar_Lat;
-    J1["lng"] = gps.lidar_Lon;
-    J1["headlight"] = true;
-    J1["wiper"] = true;
-    J1["Interiorlight"] = true;
-    J1["mainswitch"] = true;
-    J1["leftlight"] = true;
-    J1["rightlight"] = true;
-    J1["EStop"] = true;
-    J1["ACCpower"] = true;
-    J1["ArrivedStop"] = cuttent_arrive_stop.id;
-    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
-    J1["round"] = cuttent_arrive_stop.round;
-    J1["route_id"] = ROUTE_ID;
+    J1["motor"] = vs.motor_temperature; // 馬達溫度 //2.1;
+    J1["tirepressure"] =  vs.tire_pressure; //胎壓 //0.0;
+    J1["airpressure"] = vs.air_pressure; //氣壓 //0.0;
+    J1["electricity"] = vs.battery; //電量//0.0;
+    J1["steering"] = vs.steer; // 轉向 
+    J1["bearing"] = current_gnss_pose.yaw * 180 / PI;
+    J1["heading"] = 0.0;
+    J1["milage"] =  vs.odometry; //行駛距離//0.0;
+    J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
+    J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
+    J1["gear"] = vs.gear; //檔位 //1;
+    J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
+    J1["Steeringwheel"] =data[3]; //方向盤 //0.0;
+    J1["door"] = convertBoolean(vs.door); //車門 //true;
+    J1["airconditioner"] = convertBoolean(vs.air_conditioner); //空調;
+    J1["lat"] = gps.lidar_Lat; //vs.location 目前來源 lidar_lla
+    J1["lng"] = gps.lidar_Lon; //vs.location 目前來源 lidar_lla
+    J1["headlight"] = convertBoolean(vs.headlight); //車燈 //true;
+    J1["wiper"] =  convertBoolean(vs.wiper); //雨刷//true;
+    J1["Interiorlight"] = convertBoolean(vs.indoor_light); //車內燈//true;
+    J1["mainswitch"] = convertBoolean(vs.gross_power); //總電源//true;
+    J1["leftlight"] = convertBoolean(vs.left_turn_light); //左方向燈; //true
+    J1["rightlight"] = convertBoolean(vs.right_turn_light); //右方向燈//true;
+    J1["EStop"] = convertBoolean(vs.estop); // E-Stop//true;
+    J1["ACCpower"] = convertBoolean(vs.ACC_state); //ACC 電源//true;
+    J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; // 目前來源NextStop/Info
+    J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
+    J1["route_id"] = routeID;  //預設2000
     J1["RouteMode"] = 2;
-    J1["distance"] = 0.0;
-    J1["mainvoltage"] = 0.0;
-    J1["maxvoltage"] = 0.0;
-    J1["maxvbatteryposition"] = "5517XW";
-    J1["minvoltage"] = 0.0;
-    J1["pressurediff"] = 0.0;
-    J1["maxtbatteryposition"] = "454FG";
-    J1["maxtemperature"] = 0.0;
-    J1["Signal"] = 1;
-    J1["CMS"] = 1;
-    J1["setting"] = 1;
+    J1["Gx"] = imu.Gx;   //   目前來源 imu_data_rad
+    J1["Gy"] = imu.Gy;   //   目前來源 imu_data_rad
+    J1["Gz"] = imu.Gz;   //   目前來源 imu_data_rad
+    J1["Gyrox"] = imu.Gyrox; // 目前來源 imu_data_rad
+    J1["Gyroy"] = imu.Gyroy; // 目前來源 imu_data_rad
+    J1["Gyroz"] = imu.Gyroz; // 目前來源 imu_data_rad
+    J1["accelerator"] = data[4]; //無rostopic 目前來源CAN
+    J1["brake_pedal"] = data[5]; //無rostopic 目前來源CAN
+    J1["distance"] = 0.0; //? 跟mileage有何不同？
+    J1["mainvoltage"] = battery.gross_voltage; //總電壓//0.0;
+    J1["maxvoltage"] = battery.highest_voltage; //最高電池電壓//0.0;
+    J1["maxvbatteryposition"] =  battery.highest_number; //最高電壓電池編號//"5517XW";
+    J1["minvoltage"] = battery.lowest_volage; //最低電池電壓//0.0;
+    J1["pressurediff"] = battery.voltage_deviation; //高低電壓差//0.0;
+    J1["maxtbatteryposition"] = battery.lowest_number; //最低電池電壓 0.01V"454FG"; 
+    J1["maxtemperature"] = battery.highest_temperature; //電池最高環境溫度//0.0;
+    J1["Signal"] = 1; //無資料
+    J1["CMS"] = 1; //無資料
+    J1["setting"] = mode; // 自動/半自動/手動/鎖定
+    J1["board_list"] = board_list;
   }
   else if (type == "M8.2.VK002")
   {
-    J1["motor"] = 2.1;
-    J1["tirepressure"] = 0.0;
-    J1["airpressure"] = 0.0;
-    J1["electricity"] = 0.0;
-    J1["steering"] = data[3];
-    J1["milage"] = 0.0;
-    J1["speed"] = data[0];
-    J1["rotate"] = 0.0;
-    J1["gear"] = 1;
-    J1["handcuffs"] = true;
-    J1["Steeringwheel"] = 0.0;
-    J1["door"] = true;
-    J1["airconditioner"] = true;
+    J1["motor"] = vs.motor_temperature; // 馬達溫度 //2.1;
+    J1["tirepressure"] = vs.tire_pressure; //胎壓 //0.0;
+    J1["airpressure"] = vs.air_pressure; //氣壓 //0.0;
+    J1["electricity"] =  vs.battery; //電量//0.0;
+    J1["steering"] = vs.steer; // 轉向 
+    J1["bearing"] = current_gnss_pose.yaw * 180 / PI;
+    J1["heading"] = 0.0;
+    J1["milage"] = vs.odometry; //行駛距離//0.0;
+    J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
+    J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
+    J1["gear"] = vs.gear; //檔位 //1;
+    J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
+    J1["Steeringwheel"] = data[3]; //方向盤 //0.0;
+    J1["door"] = convertBoolean(vs.door); //車門 //true;
+    J1["airconditioner"] = convertBoolean(vs.air_conditioner); //空調;
+    J1["lat"] = gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
+    J1["lng"] = gps.lidar_Lon;  //vs.location 目前來源 lidar_lla
+    J1["headlight"] = convertBoolean(vs.headlight); //車燈 //true;
+    J1["wiper"] = convertBoolean(vs.wiper); //雨刷//true;
+    J1["Interiorlight"] = convertBoolean(vs.indoor_light); //車內燈//true;
+    J1["mainswitch"] = convertBoolean(vs.gross_power); //總電源//true;
+    J1["leftlight"] = convertBoolean(vs.left_turn_light); //左方向燈; //true
+    J1["rightlight"] = convertBoolean(vs.right_turn_light); //右方向燈//true;
+    J1["EStop"] = convertBoolean(vs.estop); // E-Stop//true;
+    J1["ACCpower"] = convertBoolean(vs.ACC_state); //ACC 電源//true;
+    J1["route_id"] = routeID; //default 2000
+    J1["RouteMode"] = mode;
+    J1["Gx"] = imu.Gx; //   目前來源 imu_data_rad
+    J1["Gy"] = imu.Gy; //   目前來源 imu_data_rad
+    J1["Gz"] = imu.Gz; //   目前來源 imu_data_rad
+    J1["Gyrox"] = imu.Gyrox; //   目前來源 imu_data_rad
+    J1["Gyroy"] = imu.Gyroy; //   目前來源 imu_data_rad
+    J1["Gyroz"] = imu.Gyroz; //   目前來源 imu_data_rad
+    J1["accelerator"] = data[4]; //無rostopic 目前來源CAN
+    J1["brake_pedal"] = data[5]; //無rostopic 目前來源CAN
+    J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
+    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; //目前來源 NextStop/Info
+    J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
+    J1["Signal"] = 1; //無資料
+    J1["CMS"] = 1; //無資料
+    J1["setting"] = mode; 
+    J1["EExit"] = emergency_exit; 
+    J1["board_list"] = board_list;
+  }else if (type == "M8.2.VK003"){
     J1["lat"] = gps.lidar_Lat;
     J1["lng"] = gps.lidar_Lon;
-    J1["headlight"] = true;
-    J1["wiper"] = true;
-    J1["Interiorlight"] = true;
-    J1["mainswitch"] = true;
-    J1["leftlight"] = true;
-    J1["rightlight"] = true;
-    J1["EStop"] = true;
-    J1["ACCpower"] = true;
-    J1["route_id"] = ROUTE_ID;
-    J1["RouteMode"] = 2;
-    J1["ArrivedStop"] = cuttent_arrive_stop.id;
-    J1["ArrivedStopStatus"] = cuttent_arrive_stop.status;
-    J1["round"] = cuttent_arrive_stop.round;
-    J1["Signal"] = 1;
-    J1["CMS"] = 1;
-    J1["setting"] = 1;
-    J1["EExit"] = true;
-  }
-  else if (type == "M8.2.VK004")
+    json J0 = json::parse(eventJson);
+    J1["module"] = J0.at("module");
+    J1["status"] = J0.at("status");
+    J1["event_str"] = J0.at("event_str");
+    J1["timestamp"] = J0.at("timestamp");
+  }else if (type == "M8.2.VK004")
   {
     for (int i = 0; i < FPS_KEY_LEN; i++)
     {
@@ -525,13 +729,16 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= thread runnables begin =========================*/
 void sendRun(int argc, char** argv)
 {
+  using namespace std;
   UdpClient UDP_Back_client;
   UdpClient UDP_OBU_client;
   UdpClient UDP_VK_client;
+  UdpClient UDP_TABLET_client;
 
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
+  UDP_TABLET_client.initial("192.168.43.63", 9876);
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
@@ -551,9 +758,43 @@ void sendRun(int argc, char** argv)
     while (vkQueue.size() != 0)
     {
       UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
+ 
     mutex_queue.unlock();
+
+   
+    if(event_queue_switch){
+      mutex_event_1.lock();
+      event_queue_switch = false;
+      while (eventQueue1.size() != 0)
+      {
+        cout << "send from q 1" << endl;
+        json j = eventQueue1.front();
+        string jstr = j.dump();
+        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
+        eventQueue1.pop();
+        
+      }
+      mutex_event_1.unlock();
+    }
+    else{
+      mutex_event_2.lock();
+      event_queue_switch = true;
+      while (eventQueue2.size() != 0)
+      {
+        cout << "send from q 2" << endl;  
+        json j = eventQueue2.front();
+        string jstr = j.dump();
+        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
+        eventQueue2.pop();
+      }
+      mutex_event_2.unlock();
+    }
+   
 
     boost::this_thread::sleep(boost::posix_time::microseconds(1000));
   }
@@ -584,7 +825,7 @@ void receiveUDPRun(int argc, char** argv)
   while (true)
   {
     UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
-
+    //UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
     int result = UDP_OBU_server.recv(buffer, sizeof(buffer));
 
     if (result != -1)
@@ -610,9 +851,29 @@ void sendROSRun(int argc, char** argv)
     {
       std::string trafficMsg = trafficLightQueue.front();
       trafficLightQueue.pop();
-      RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, trafficMsg);
+      msgs::Spat spat;
+      json J0 = json::parse(trafficMsg);
+      try
+      {
+        json J1 = J0.at("SPaT_MAP_Info");
+        spat.lat = J1.at("Latitude");
+        spat.lon = J1.at("Longitude");
+        spat.spat_state = J1.at("Spat_state");
+        spat.spat_sec = J1.at("Spat_sec");
+        spat.signal_state = J1.at("Signal_state");
+        spat.index = J1.at("Index");
+      } 
+      catch(std::exception& e)
+      {
+        std::cout << "parsing fail: " << e.what() << " "<<std::endl;
+      }
+      //send traffic light
+      RosModuleTraffic::publishTraffic(TOPIC_TRAFFIC, spat);
     }
     mutex_trafficLight.unlock();
+    
+    //send route info
+    RosModuleTraffic::publishRoute(TOPIC_ROUTE, route_info);
 
     boost::this_thread::sleep(boost::posix_time::microseconds(500000));
     ros::spinOnce();
@@ -624,7 +885,8 @@ void receiveRosRun(int argc, char** argv)
   bool isBigBus = checkCommand(argc, argv, "-big");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
-                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound);
+                                     callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
+                                     callbackEvent, callbackBI);
 
   while (ros::ok())
   {
@@ -709,6 +971,18 @@ void getServerStatusRun(int argc, char** argv)
   }
 }
 
+std::string genResMsg(int status)
+{
+  json J1;
+  json J2;
+
+  J2["msgInfo"] = "Success";
+  J2["msgCode"] = 200;
+  J1["messageObj"] = J2;
+  J1["status"] = status;
+  return J1.dump();
+}
+
 std::string genErrorMsg(int code, std::string msg)
 {
   json J1;
@@ -720,7 +994,7 @@ std::string genErrorMsg(int code, std::string msg)
   J1["type"] = "M8.2.VK102";
   J1["plate"] = PLATE;
   J1["status"] = 0;
-  J1["route_id"] = ROUTE_ID;
+  J1["route_id"] = routeID;
   J1["bus_stops"] = json::array();
   return J1.dump();
 }
@@ -882,6 +1156,58 @@ void VK103callback(json reqJson)
   }
 }
 
+void VK104callback(json reqJson)
+{
+   using namespace std;
+   
+   cout << "VK104callback reqJson: " << reqJson.dump() << endl;
+  
+   string routePath = "";
+   vector<unsigned int> stopids;
+   
+
+   // get data
+   try
+   {
+     routeID = reqJson.at("routeid").get<int>();
+     routePath = reqJson.at("routepath").get<string>(); 
+     stopids = reqJson.at("stopid").get< vector<unsigned int> >();
+   }
+   catch (exception& e)
+   {
+     cout << "VK104callback message: " << e.what() << endl;
+     server.send_json(genResMsg(0));
+     return;
+   }
+ 
+   route_info.routeid = routeID;
+   route_info.route_path = routePath;
+   route_info.stops.clear();
+   for (size_t i = 0 ; i < stopids.size(); i++)
+   {
+     msgs::StopInfo stop;
+     stop.round = 1;
+     stop.id = stopids[i];
+     route_info.stops.push_back(stop);
+   }
+
+    /* check response from /BusStop/Info */ 
+   unsigned short retryCount = 0;
+   while ( VK102Response.empty() && (retryCount < RESERVE_WAITING_TIMEOUT / REVERSE_SLEEP_TIME_MICROSECONDS ) )
+   {
+     retryCount ++;
+     boost::this_thread::sleep(boost::posix_time::microseconds(REVERSE_SLEEP_TIME_MICROSECONDS));
+   }
+  
+   /* response to server */
+   if (VK102Response.empty())
+   {
+     server.send_json(genResMsg(0));
+   }else {
+     server.send_json(genResMsg(1));
+   }
+}
+
 //route api
 void route(std::string request)
 {
@@ -920,6 +1246,9 @@ void route(std::string request)
   } else if ("M8.2.VK103" == type)
   {
     VK103callback(requestJson);
+  } else if ("M8.2.VK104" == type)
+  {
+    VK104callback(requestJson);
   }
 }
 
@@ -929,7 +1258,7 @@ void tcpServerRun(int argc, char** argv)
 {
   // set ip and port
   server.initial(TCP_ADV_SRV_ADRR, TCP_ADV_SRV_PORT);
-  // server.initial("192.168.43.204",8765);
+  //server.initial("192.168.43.204",8765);
   // server.initial("192.168.2.110",8765);
   // listening connection request
   int result = server.start_listening();

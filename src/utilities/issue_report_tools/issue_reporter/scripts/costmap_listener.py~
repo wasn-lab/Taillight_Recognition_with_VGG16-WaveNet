@@ -463,13 +463,13 @@ class COSTMAP_LISTENER(object):
         #
         return (pose_2D, stamp_amclPose)
 
-    def plot_costmap(self, show_obstacle_onlt=False):
+    def plot_costmap(self, show_obstacle_only=False):
         """
         This function help plot the costmap with pyplot
         """
         # Flip the image for maching the image coordinate convention!
 
-        if show_obstacle_onlt:
+        if show_obstacle_only:
             Cmap_H = cv2.flip(self.costmap,0)>=100
         else:
             Cmap_H = cv2.flip(self.costmap,0)
@@ -512,7 +512,7 @@ def costmap_listener():
         #
         if costmap_L.costmap_updated:
             # print("costmap_updated")
-            costmap_L.plot_costmap(show_obstacle_onlt=True)
+            costmap_L.plot_costmap(show_obstacle_only=True)
             costmap_L.costmap_updated = False
             #
             cost = costmap_L.get_current_footprint_cost()

@@ -1,0 +1,25 @@
+<launch>
+<!-- WIP -->
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-04-14-16-41-15_89.bag /RadarMarker:=/RadarMarker_bak /Geofence_line:=/Geofence_line_bak /Geofence_PC:=/Geofence_PC_bak /Geofence_original:=/Geofence_original" />
+    <node pkg="geofence" type="geofence" name="geofence" output="screen" />
+
+<!--
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /RadarMarker
+                  timeout: 15
+                  negative: False
+                - name: /Geofence_line
+                  timeout: 15
+                  negative: False
+                - name: /Geofence_PC
+                  timeout: 15
+                  negative: False
+                - name: /Geofence_original
+                  timeout: 15
+                  negative: False
+        </rosparam>
+-->
+    </test>
+</launch>

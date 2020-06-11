@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <nav_msgs/OccupancyGrid.h>
 
 #include "tpp.h"
 #include "ar1.h"
@@ -36,7 +37,7 @@ public:
                          const float ego_z_abs, const float ego_heading);
 
   void main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-            const unsigned int show_pp);
+            const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea);
 
   void set_input_shift_m(const long double shift_m)
   {
@@ -53,19 +54,24 @@ public:
     pp_obj_max_kmph_ = pp_obj_max_kmph;
   }
 
+  void set_num_pp_input_min(const std::size_t num_pp_input_min)
+  {
+    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), num_pp_input_max_ - (std::size_t)2);
+  }
+
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
   unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
-  const std::size_t num_pp_input_min_ = 10;
+  std::size_t num_pp_input_min_ = 6;
   const std::size_t num_pp_input_max_ = 20;
 
   static constexpr float pp_allow_x_min_m = -10.f;
   static constexpr float pp_allow_x_max_m = 100.f;
-  static constexpr float pp_allow_y_min_m = -10.f;
-  static constexpr float pp_allow_y_max_m = 10.f;
+  static constexpr float pp_allow_y_min_m = -30.f;
+  static constexpr float pp_allow_y_max_m = 30.f;
 
   static constexpr float box_length_thr_xy = 0.7f;
   static constexpr float box_length_thr_z = 0.5f;

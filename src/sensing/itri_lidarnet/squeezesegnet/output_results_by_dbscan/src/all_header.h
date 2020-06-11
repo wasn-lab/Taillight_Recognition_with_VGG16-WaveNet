@@ -5,9 +5,9 @@
 //                      STD
 // =============================================
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
 #include <stdexcept>
 
 #include <iostream>
@@ -20,16 +20,16 @@
 #include <functional>
 #include <algorithm>
 #include <atomic>
-#include <errno.h>
-#include <unistd.h> //sleep
+#include <cerrno>
+#include <unistd.h>  //sleep
 #include <omp.h>
 #include <mutex>
 
-#include <time.h>
+#include <ctime>
 #include <ctime>
 
-#include <limits.h>
-#include <math.h>
+#include <climits>
+#include <cmath>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -45,7 +45,6 @@
 //                      PCL
 // =============================================
 
-
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
@@ -56,9 +55,9 @@
 #include <pcl/io/boost.h>
 
 #include <pcl/common/geometry.h>
-#include <pcl/common/common.h> //getMinMax3D
+#include <pcl/common/common.h>  //getMinMax3D
 #include <pcl/common/common_headers.h>
-#include <pcl/common/transforms.h> //transform
+#include <pcl/common/transforms.h>  //transform
 #include <pcl/common/centroid.h>
 #include <pcl/common/time.h>
 
@@ -85,12 +84,12 @@
 #include "UserDefine.h"
 
 #define ENABLE_DEBUG_MODE false
+#define ENABLE_LABEL_MODE true
 
 using namespace std;
 using namespace pcl;
 using namespace pcl::console;
 using namespace pcl::visualization;
 using namespace Eigen;
-
 
 #endif /* ALL_HEADER_H_ */
