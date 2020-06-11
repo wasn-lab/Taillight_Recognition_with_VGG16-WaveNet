@@ -459,6 +459,7 @@ int main(int argc, char** argv)
     ros::spinOnce();
     loop_rate.sleep();
   }
+  TheadDetection.join();
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;
