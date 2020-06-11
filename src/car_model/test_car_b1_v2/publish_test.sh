@@ -9,8 +9,7 @@ if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
   exit 1
 fi
 
-if [[ ! -f src/sensing/itri_drivenet/drivenet/data/yolo/yolov3_b1-kINT8-batch3.engine
-  || ! -f src/bags/auto_record_2020-03-10-10-48-39_41.bag
+if [[ ! -f src/bags/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f src/bags/auto_record_2020-04-14-16-41-15_89.bag
   || ! -f src/bags/lidar_raw_2020-03-10-10-48-39_41.bag
   || ! -f src/bags/edge_detection_2020-04-13-17-45-48_0.bag
@@ -28,7 +27,7 @@ rostest car_model publish_test_drivenet_b1_v2.test
 rostest car_model publish_test_convex_fusion_b1_v2.test
 #rostest car_model publish_test_tpp_b1_v2.test
 rostest car_model publish_test_track2d_b1_v2.test
-rostest car_model publish_test_pedcross_b1_v2.test
+#rostest car_model publish_test_pedcross_b1_v2.test
 rostest car_model publish_test_lidarnet_b1_v2.test
 rostest car_model publish_test_edge_detection_b1_v2.test
 rostest car_model publish_test_localization_b1_v2.test
