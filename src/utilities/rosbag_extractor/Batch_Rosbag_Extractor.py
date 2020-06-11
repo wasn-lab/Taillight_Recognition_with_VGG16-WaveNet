@@ -30,7 +30,7 @@ check_first = True
 
 def read_topic_return_msg(msg, type, contain):
     if type == 0:  # lidar
-        pc = pypcd.PointCloud.from_msg(msg)  # pylint: disable=no-member
+        pc = pypcd.PointCloud.from_msg(msg)  # pylint: disable=no-member, no-name-in-module
         return pc
     # if type == 1: #cam
     #     try:
