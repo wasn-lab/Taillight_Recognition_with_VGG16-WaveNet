@@ -11,7 +11,7 @@ import time
 import string
 import rospy
 import pypcd
-from pypcd import PointCloud  # pylint: no-name-in-module
+from pypcd import PointCloud  # pylint: disable=no-name-in-module
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
 from os.path import getsize
