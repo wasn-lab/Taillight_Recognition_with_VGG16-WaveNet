@@ -39,10 +39,6 @@ set(CXX_SRCS
 #    yolo_config_parser.cpp
     yolov3.cpp)
 
-if (NOT TensorRT_VERSION_MAJOR VERSION_EQUAL 5)
-  message(FATAL_ERROR "Only for TensorRT 5.")
-endif()
-
 find_package(PkgConfig)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 
