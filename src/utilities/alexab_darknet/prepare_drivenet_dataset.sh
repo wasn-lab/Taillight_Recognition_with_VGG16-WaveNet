@@ -3,7 +3,7 @@ set -x
 set -e
 
 export RSYNC_PASSWORD=itriu300
-rsync_server="nas-cht.itriadv.co"
+rsync_server="nas.itriadv.co"
 readonly port=873
 
 readonly darknet_dir=$(dirname $(readlink -e $0))

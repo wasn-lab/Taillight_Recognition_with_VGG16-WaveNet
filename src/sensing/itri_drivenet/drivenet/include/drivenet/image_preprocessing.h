@@ -26,6 +26,7 @@ public:
   static cv::Scalar blue_;
   static cv::Scalar green_;
   static cv::Scalar red_;
+  static cv::Scalar purple_;
   static cv::Scalar yellow_;
   static cv::Scalar gray_;
 };
