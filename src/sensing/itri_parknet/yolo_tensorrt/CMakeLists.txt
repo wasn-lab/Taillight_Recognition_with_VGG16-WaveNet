@@ -44,7 +44,6 @@ pkg_check_modules(GLIB REQUIRED glib-2.0)
 
 include_directories(${CUDA_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS} ${TensorRT_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS} ${GLFAGS_INCLUDE_DIRS})
 
-add_definitions("-DTENSORRT_VERSION_MAJOR=${TensorRT_VERSION_MAJOR}")
 if (COMPILER_IS_GNUCXX)
   set_source_files_properties(yoloplugin_lib.cpp PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
   set_source_files_properties(yolo.cpp PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
