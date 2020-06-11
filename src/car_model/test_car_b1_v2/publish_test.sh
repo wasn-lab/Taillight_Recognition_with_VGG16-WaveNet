@@ -23,6 +23,7 @@ fi
 
 source devel/setup.bash
 
+export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v2.test
 rostest car_model publish_test_convex_fusion_b1_v2.test
 #rostest car_model publish_test_tpp_b1_v2.test
