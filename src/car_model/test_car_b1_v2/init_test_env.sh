@@ -28,8 +28,6 @@ popd
 
 # Generatie drivenet tensorRT engine files.
 find src/sensing/itri_drivenet -name "*.engine" -exec rm {} \;
-python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_group_a.launch
-python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_side.launch
-python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_top.launch
+python src/car_model/scripts/gen_drivenet_engine.py --package sdb --launch camera.launch
 
 find src/sensing/itri_drivenet -name "*.engine"
