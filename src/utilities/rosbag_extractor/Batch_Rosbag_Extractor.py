@@ -11,7 +11,7 @@ import time
 import string
 import rospy
 import pypcd
-from pypcd import PointCloud
+from pypcd import PointCloud  # pylint: no-name-in-module
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
 from os.path import getsize
@@ -30,7 +30,7 @@ check_first = True
 
 def read_topic_return_msg(msg, type, contain):
     if type == 0:  # lidar
-        pc = pypcd.PointCloud.from_msg(msg)  # pylint: disable=no-member, no-name-in-module
+        pc = pypcd.PointCloud.from_msg(msg)  # pylint: disable=no-member
         return pc
     # if type == 1: #cam
     #     try:
