@@ -92,7 +92,8 @@ private:
   static constexpr float BOX_SIZE_TH = 0.3f;
 
   const float BOX_VOL_MIN_FOR_RATIO = 1.f;
-  static constexpr float BOX_VOL_RATIO_MAX = 1.7f;
+  static constexpr float BOX_VOL_RATIO_MAX =
+      2.2f;  // SHOULD > 2 to tolerate camera-based 3d bbox deformation for allowing pp starting distance > 35m
   static constexpr float COST_BOX_DIST_W = 0.5f;
   static constexpr float COST_BOX_VOL_RATIO_W = 1.f - COST_BOX_DIST_W;
   static constexpr float PUNISH_RATIO = 0.5f;

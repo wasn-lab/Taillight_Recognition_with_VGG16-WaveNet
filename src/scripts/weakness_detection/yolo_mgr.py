@@ -3,6 +3,8 @@ import os
 import io
 import json
 import logging
+import datetime
+import multiprocessing
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import YoloBBox
@@ -94,6 +96,21 @@ class YoloMgr(object):
             amount = int(len(self.frames) * 0.05) + 1
         return [_["filename"] for _ in self.frames[-amount:]]
 
+    def save_weakness_logs(self, weakness_dir):
+        now = datetime.datetime.now()
+        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(now.year, now.month, now.day, now.hour, now.minute)
+        output_file = os.path.join(weakness_dir, filename)
+        contents = json.dumps(self.frames, sort_keys=True)
+        with open(output_file, "w") as _fp:
+            _fp.write(contents)
+        logging.warning("Write %s", output_file)
+
     def find_weakness_images(self):
-        for frame in self.frames:
-            frame["deeplab_disagree"] = _cmpr_yolo_with_deeplab(frame)
+        nproc = multiprocessing.cpu_count()
+        pool = multiprocessing.Pool(nproc)
+        res = pool.map(_cmpr_yolo_with_deeplab, self.frames)
+        for idx, frame in enumerate(self.frames):
+            frame["deeplab_disagree"] = res[idx]
+
+        pool.close()
+        pool.join()
