@@ -57,8 +57,8 @@ const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 const int RESERVE_WAITING_TIMEOUT = 3 * 1000 * 1000;
 // UDP server udpate from queues freq 100ms
 const int UDP_SERVER_UPDATE_MICROSECONDS = 100 * 1000;
-// ROS update time: 500ms
-const int ROS_UPDATE_MICROSECONDS = 500 * 1000;
+// ROS update time: 100ms
+const int ROS_UPDATE_MICROSECONDS = 100 * 1000;
 // server status update time: 10 sec
 //const int SERVER_STATUS_UPDATE_MICROSECONDS = 10 * 1000 * 1000;
 
