@@ -784,9 +784,13 @@ void sendRun(int argc, char** argv)
         TCPClient TCP_VK_client;
         TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
         TCP_VK_client.connectServer();
+        
         while (eventQueue1.size() != 0)
         {
           cout << "send from q 1" << endl;
+          string start_str = "$"+ PLATE + "%";
+          const char * start_token = start_str.c_str();
+          TCP_VK_client.sendRequest(start_token, strlen(start_token));
           json j = eventQueue1.front();
           string jstr = j.dump();
           const char* msg = jstr.c_str();
@@ -807,7 +811,7 @@ void sendRun(int argc, char** argv)
             const char * end_token = end_str.c_str();
             TCP_VK_client.sendRequest(end_token, strlen(end_token));
           }
-          boost::this_thread::sleep(boost::posix_time::microseconds(1000)); //100 ms 
+          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms 
         }
         mutex_event_1.unlock();
       }//if(eventQueue1.size() != 0)
@@ -819,9 +823,13 @@ void sendRun(int argc, char** argv)
         TCPClient TCP_VK_client;
         TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
         TCP_VK_client.connectServer();
+        
         while (eventQueue2.size() != 0)
         {
-          cout << "send from q 2" << endl;  
+          cout << "send from q 2" << endl; 
+          string start_str = "$"+ PLATE + "%";
+          const char * start_token = start_str.c_str();
+          TCP_VK_client.sendRequest(start_token, strlen(start_token)); 
           json j = eventQueue2.front();
           string jstr = j.dump();
           const char* msg = jstr.c_str();
@@ -843,8 +851,8 @@ void sendRun(int argc, char** argv)
             const char * end_token = end_str.c_str();
             TCP_VK_client.sendRequest(end_token, strlen(end_token));
           }
-          boost::this_thread::sleep(boost::posix_time::microseconds(1000)); //100 ms
-        } 
+          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms
+         } 
         mutex_event_2.unlock();
       }//if(eventQueue2.size() != 0)
     }//else
