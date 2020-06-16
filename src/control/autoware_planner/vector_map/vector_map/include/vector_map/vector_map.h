@@ -296,23 +296,6 @@ public:
   }
 };
 
-template <class T>
-std::vector<T> parse(const std::string& csv_file)
-{
-  std::ifstream ifs(csv_file.c_str());
-  std::string line;
-  std::getline(ifs, line);  // remove first line
-  std::vector<T> objs;
-  while (std::getline(ifs, line))
-  {
-    T obj;
-    std::istringstream iss(line);
-    iss >> obj;
-    objs.push_back(obj);
-  }
-  return objs;
-}
-
 class VectorMap
 {
 private:
@@ -498,7 +481,7 @@ geometry_msgs::Point convertPointToGeomPoint(const Point& point);
 Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point);
 geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector);
 Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quaternion);
-}  // namespace vector_map
+};  // namespace vector_map
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Point& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::Vector& obj);
@@ -565,5 +548,27 @@ std::istream& operator>>(std::istream& is, vector_map::CurveMirror& obj);
 std::istream& operator>>(std::istream& is, vector_map::Wall& obj);
 std::istream& operator>>(std::istream& is, vector_map::Fence& obj);
 std::istream& operator>>(std::istream& is, vector_map::RailCrossing& obj);
+
+
+namespace vector_map
+{
+template <class T>
+std::vector<T> parse(const std::string& csv_file)
+{
+  std::ifstream ifs(csv_file.c_str());
+  std::string line;
+  std::getline(ifs, line);  // remove first line
+  std::vector<T> objs;
+  while (std::getline(ifs, line))
+  {
+    T obj;
+    std::istringstream iss(line);
+    iss >> obj;
+    objs.push_back(obj);
+  }
+  return objs;
+}
+};  // namespace vector_map
+
 
 #endif  // VECTOR_MAP_VECTOR_MAP_H

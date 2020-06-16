@@ -6,6 +6,8 @@
 
 #include <cv_bridge/cv_bridge.h>
 
+namespace image_saver
+{
 class ImageSaverNodeImpl
 {
 private:
@@ -23,3 +25,4 @@ public:
   ~ImageSaverNodeImpl();
   void run();
 };
+};  // namespace image_saver

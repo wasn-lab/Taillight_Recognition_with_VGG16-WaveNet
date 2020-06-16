@@ -16,11 +16,11 @@ public:
 protected:
   void InitParameters();
 
-#if CAR_MODEL_IS_B1 || CAR_MODEL_IS_OMNIBUS
+#if CAR_MODEL_IS_B1
   const std::vector<int> cam_ids_{ camera::id::top_front_120,      camera::id::top_right_front_120,
                                    camera::id::top_right_rear_120, camera::id::top_left_front_120,
                                    camera::id::top_left_rear_120,  camera::id::top_rear_120 };
-#elif CAR_MODEL_IS_B1_V2
+#elif CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
   const std::vector<int> cam_ids_{ camera::id::front_top_close_120, camera::id::right_front_60,
                                    camera::id::right_back_60,       camera::id::left_front_60,
                                    camera::id::left_back_60,        camera::id::back_top_120 };

@@ -24,5 +24,5 @@ bool getSaveDetections();
 std::string getSaveDetectionsPath();
 uint getBatchSize();
 bool getShuffleTestSet();
-} // namespace DriveNet
+}  // namespace DriveNet
 #endif  //_YOLO_CONFIG_PARSER_

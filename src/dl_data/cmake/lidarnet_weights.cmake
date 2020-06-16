@@ -43,22 +43,22 @@ download_file(
 download_file(
     URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/N90deg.pb"
     DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/N90deg.pb"
-    MD5 31d1e2ff56aa0d7f67f06d033e423794)
+    MD5 6cdc45f525f3a8ce6e327a39bd7dadb2)
 
 download_file(
     URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P0deg.pb"
     DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P0deg.pb"
-    MD5 391b26bf8e434381e785d4b031f1190e)
+    MD5 fbafe57dce27c8c9f9e23aa9ac02036c)
 
 download_file(
     URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P90deg.pb"
     DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P90deg.pb"
-    MD5 a554c98d041a112dfa9fa14e425e2c6e)
+    MD5 851b09d29479e4df57560573a824db54)
 
 download_file(
     URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/P180deg.pb"
     DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P180deg.pb"
-    MD5 1abcf546c2456c43e67c9070b55f14f0)
+    MD5 b796ab75ebc7c022ff74d92b995d3e6c)
 
 #download_file(
 #    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/N90deg.pb"

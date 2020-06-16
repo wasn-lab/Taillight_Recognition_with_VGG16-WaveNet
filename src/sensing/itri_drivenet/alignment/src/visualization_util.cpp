@@ -10,22 +10,23 @@ void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point
   cv::circle(m_src, center_point, 1, point_color, -1, cv::LINE_8, 0);
 }
 
-void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects)
+void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects)
 {
-  std::vector<cv::Point> cvPoints(2);
-  std::vector<PixelPosition> pixelPositions(2);
-  for (const auto& obj: objects)
+  std::vector<cv::Point> cv_points(2);
+  std::vector<PixelPosition> pixel_positions(2);
+  for (const auto& obj : objects)
   {
-    pixelPositions[0].u = obj.camInfo.u;
-    pixelPositions[0].v = obj.camInfo.v;
-    pixelPositions[1].u = obj.camInfo.u + obj.camInfo.width;
-    pixelPositions[1].v = obj.camInfo.v + obj.camInfo.height;
+    pixel_positions[0].u = obj.camInfo.u;
+    pixel_positions[0].v = obj.camInfo.v;
+    pixel_positions[1].u = obj.camInfo.u + obj.camInfo.width;
+    pixel_positions[1].v = obj.camInfo.v + obj.camInfo.height;
 
-    cvPoints[0].x = int(pixelPositions[0].u * scaling_ratio_w_);
-    cvPoints[0].y = int(pixelPositions[0].v * scaling_ratio_h_);
-    cvPoints[1].x = int(pixelPositions[1].u * scaling_ratio_w_);
-    cvPoints[1].y = int(pixelPositions[1].v * scaling_ratio_h_);
-    cv::rectangle(m_src, cvPoints[0], cvPoints[1], cv::Scalar(255, 255, 255), 1, cv::LINE_8);
+    transferPixelScaling(pixel_positions);
+    cv_points[0].x = pixel_positions[0].u;
+    cv_points[0].y = pixel_positions[0].v;
+    cv_points[1].x = pixel_positions[1].u;
+    cv_points[1].y = pixel_positions[1].v;
+    cv::rectangle(m_src, cv_points[0], cv_points[1], CvColor::white_, 1, cv::LINE_8);
   }
 }
 
@@ -34,19 +35,40 @@ cv::Scalar Visualization::getDistColor(float distance_in_meters)
   cv::Scalar color;
   if (distance_in_meters >= 0 && distance_in_meters <= 10)
   {
-    color = Color::red_;
+    color = CvColor::red_;
   }
   else if (distance_in_meters > 10 && distance_in_meters <= 20)
   {
-    color = Color::yellow_;
+    color = CvColor::yellow_;
   }
   else if (distance_in_meters > 20 && distance_in_meters <= 30)
   {
-    color = Color::green_;
+    color = CvColor::green_;
+  }
+  else if (distance_in_meters > 30 && distance_in_meters <= 40)
+  {
+    color = CvColor::blue_;
+  }
+  else if (distance_in_meters > 40 && distance_in_meters <= 50)
+  {
+    color = CvColor::purple_;
   }
   else
   {
-    color = Color::blue_;
+    color = CvColor::white_;
   }
   return color;
+}
+
+MinMax3D Visualization::getDistLinePoint(float x_dist, float y_dist, float z_dist)
+{
+  MinMax3D point;
+  point.p_min.x = x_dist;
+  point.p_min.y = (-1) * y_dist;
+  point.p_min.z = z_dist;
+  point.p_max.x = x_dist;
+  point.p_max.y = y_dist;
+  point.p_max.z = z_dist;
+
+  return point;
 }

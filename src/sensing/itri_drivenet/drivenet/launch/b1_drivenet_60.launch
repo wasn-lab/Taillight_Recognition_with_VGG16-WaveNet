@@ -1,6 +1,6 @@
 <launch>
         # Node
-        <node name="drivenet_node" pkg="drivenet" type="drivenet_node"  output="screen">
+        <node name="drivenet_detect_node_1" pkg="drivenet" type="drivenet_detect_node_1"  output="screen">
                 <param name="car_id" type="int" value="1" />
                 <param name="standard_fps" type="bool" value="0" />
                 <param name="display" type="bool" value="0" />

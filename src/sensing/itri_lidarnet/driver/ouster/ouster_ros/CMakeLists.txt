@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(ouster_ros)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(jsoncpp REQUIRED jsoncpp)
 
@@ -22,7 +17,12 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   tf2_geometry_msgs
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
 
 add_message_files(FILES PacketMsg.msg)
 add_service_files(FILES OS1ConfigSrv.srv)

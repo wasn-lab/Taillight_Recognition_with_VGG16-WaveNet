@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(alignment_tool)
 
-add_compile_options(-std=c++11)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -16,7 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
 )
 
-
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 
 set(rqt_image_view_INCLUDE_DIRECTORIES
@@ -46,7 +45,7 @@ include_directories(
  include
   ${catkin_INCLUDE_DIRS}
 )
- 
+
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -59,7 +58,7 @@ find_package        (VTK 6.2 REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED) 
+find_package            (PCL 1.8 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})

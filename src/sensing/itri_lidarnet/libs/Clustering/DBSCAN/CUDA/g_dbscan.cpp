@@ -1,91 +1,116 @@
 #include "g_dbscan.h"
 
-bool
-has_nonzero (std::vector<int>& v)
+using namespace pcl;
+
+bool has_nonzero(std::vector<int>& v)
 {
-  for (size_t i = 0; i < v.size (); ++i)
+  for (size_t i = 0; i < v.size(); ++i)
   {
     if (v[i] > 0)
+    {
       return true;
+    }
   }
   return false;
 }
 
-GDBSCAN::GDBSCAN (const Dataset::Ptr dset) :
-    m_dset (dset),
-    d_data (0),
-    vA_size (sizeof(int) * dset->rows ()),
-    d_Va0 (0),
-    d_Va1 (0),
-    h_Va0 (dset->rows (), 0),
-    h_Va1 (dset->rows (), 0),
-    d_Ea (0),
-    d_Fa (0),
-    d_Xa (0),
-    core (dset->rows (), false),
-    labels (dset->rows (), -1),
-    cluster_id (0)
+GDBSCAN::GDBSCAN(const Dataset::Ptr &dset)
+  : m_dset(dset)
+  , d_data(nullptr)
+  , d_label(nullptr)
+  , vA_size(sizeof(int) * dset->rows())
+  , d_Va0(nullptr)
+  , d_Va1(nullptr)
+  , h_Va0(dset->rows(), 0)
+  , h_Va1(dset->rows(), 0)
+  , d_Ea(nullptr)
+  , d_Fa(nullptr)
+  , d_Xa(nullptr)
+  , d_eps(nullptr)
+  , core(dset->rows(), false)
+  , labels(dset->rows(), -1)
+  , cluster_id(0)
 {
-  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_data), sizeof(float) * m_dset->num_points ()),"d_data");
-  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Va0), vA_size),"d_Va0");
-  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Va1), vA_size),"d_Va1");
-  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Fa), vA_size),"d_Fa");
-  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Xa), vA_size),"d_Xa");
+  // std::cout << "number of points: " << m_dset->num_points() << std::endl;
+  // std::cout << "vA_size: " << vA_size << std::endl;
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_data), sizeof(float) * m_dset->num_points()), "d_data");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_label), sizeof(int) * m_dset->rows()), "d_label");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Va0), vA_size), "d_Va0");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Va1), vA_size), "d_Va1");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Fa), vA_size), "d_Fa");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_Xa), vA_size), "d_Xa");
+  ErrorHandle(cudaMallocManaged(reinterpret_cast<void**>(&d_eps), sizeof(float) * 5), "d_eps");
 
-  size_t copysize = m_dset->cols () * sizeof(float);
+  ErrorHandle(cudaMemcpy(d_label, &(m_dset->label()[0]), sizeof(int) * m_dset->rows(), cudaMemcpyHostToDevice), "memcpy"
+                                                                                                                " of "
+                                                                                                                "d_"
+                                                                                                                "labe"
+                                                                                                                "l");
 
-  for (size_t i = 0; i < m_dset->rows (); ++i)
+  size_t copysize = m_dset->cols() * sizeof(float);
+
+  for (size_t i = 0; i < m_dset->rows(); ++i)
   {
-    ErrorHandle(cudaMemcpy (d_data + i * m_dset->cols (), m_dset->data ()[i].data (), copysize, cudaMemcpyHostToDevice),"memcpy");
+    ErrorHandle(cudaMemcpy(d_data + i * m_dset->cols(), m_dset->data()[i].data(), copysize, cudaMemcpyHostToDevice),
+                "memcpy");
 
-    //std::cout << "Copied " << i << "th row to device, size = " << copysize;
+    // std::cout << "Copied " << i << "th row to device, size = " << copysize;
   }
 }
 
-GDBSCAN::~GDBSCAN ()
+GDBSCAN::~GDBSCAN()
 {
-  if (d_data)
+  if (d_data != nullptr)
   {
-    cudaFree (d_data);
-    d_data = 0;
+    cudaFree(d_data);
+    d_data = nullptr;
   }
 
-  if (d_Va0)
+  if (d_label != nullptr)
   {
-    cudaFree (d_Va0);
-    d_Va0 = 0;
+    cudaFree(d_label);
+    d_label = nullptr;
   }
 
-  if (d_Va1)
+  if (d_Va0 != nullptr)
   {
-    cudaFree (d_Va1);
-    d_Va1 = 0;
+    cudaFree(d_Va0);
+    d_Va0 = nullptr;
   }
 
-  if (d_Ea)
+  if (d_Va1 != nullptr)
   {
-    cudaFree (d_Ea);
-    d_Ea = 0;
+    cudaFree(d_Va1);
+    d_Va1 = nullptr;
   }
 
-  if (d_Fa)
+  if (d_Ea != nullptr)
   {
-    cudaFree (d_Fa);
-    d_Fa = 0;
+    cudaFree(d_Ea);
+    d_Ea = nullptr;
   }
 
-  if (d_Xa)
+  if (d_Fa != nullptr)
   {
-    cudaFree (d_Xa);
-    d_Xa = 0;
+    cudaFree(d_Fa);
+    d_Fa = nullptr;
+  }
+
+  if (d_Xa != nullptr)
+  {
+    cudaFree(d_Xa);
+    d_Xa = nullptr;
+  }
+
+  if (d_eps != nullptr)
+  {
+    cudaFree(d_eps);
+    d_eps = nullptr;
   }
 }
 
-void
-GDBSCAN::fit (float eps,
-              size_t min_elems, int maxThreadsNumber)
+void GDBSCAN::fit(float* eps, const size_t* min_elems, int maxThreadsNumber)
 {
-
   // Vertices degree calculation: For each vertex, we calculate the
   // total number of adjacent vertices. However we can use the multiple cores of
   // the GPU to process multiple vertices in parallel. Our parallel strategy
@@ -96,12 +121,24 @@ GDBSCAN::fit (float eps,
   // (embarrassingly parallel problem). Thus, the computational complexity can
   // be reduced from O(V2) to O(V).
 
-  int N = static_cast<int> (m_dset->rows ()); //size()
-  int colsize = static_cast<int> (m_dset->cols ()); //3 XYZ
+  // Determine which mode we are in. If the input column size is 5(XYZIL), we are in label mode
+  ClusteringMode cluster_mode = NORMAL_MODE;
+  auto n = static_cast<int>(m_dset->rows());        // size()
+  auto colsize = static_cast<int>(m_dset->cols());  // 3 XYZ
+  // 2020/4/29
+  // for label-based G-DBSCAN, the cols() might be 5 XYZIL
+  if (colsize == 5)
+  {
+    cluster_mode = LABEL_MODE;
+    // std::cout << "[DBSCAN] In label mode" << std::endl;
+  }
 
-  vertdegree (N, colsize, eps, d_data, d_Va0, maxThreadsNumber);
+  ErrorHandle(cudaMemcpy(d_eps, &eps[0], 5 * sizeof(float), cudaMemcpyHostToDevice), "memcpy of eps from host to "
+                                                                                     "device");
 
-  //std::cout << "Executed vertdegree transfer";
+  vertdegree(n, colsize, d_eps, d_data, d_Va0, d_label, maxThreadsNumber, cluster_mode);
+  // std::cout << "[DBSCAN] vertdegree successed" << std::endl;
+  // std::cout << "Executed vertdegree transfer";
 
   // Calculation of the adjacency lists indices: The second value in Va is related to the start
   // index in Ea of the adjacency list of a particular vertex. The calculation
@@ -116,20 +153,32 @@ GDBSCAN::fit (float eps,
   // used the thrust library, distributed as part of the CUDA SDK. This library
   // provides, among others algorithms, an optimized exclusive scan
   // implementation that is suitable for our method
+  // ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
+  // std::cout << "size of h_Va0:" << sizeof(h_Va0)/sizeof(int) << std::endl;
+  adjlistsind(n, d_Va0, d_Va1);
+  // std::cout << "[DBSCAN] adjlistsind successed" << std::endl;
+  // Executed adjlistsind transfer;
 
-  adjlistsind (N, d_Va0, d_Va1);
+  ErrorHandle(cudaMemcpy(&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost), "memcpy Va0 device to host");
+  ErrorHandle(cudaMemcpy(&h_Va1[0], d_Va1, vA_size, cudaMemcpyDeviceToHost), "memcpy Va1 device to host");
 
-  //Executed adjlistsind transfer;
-
-  ErrorHandle(cudaMemcpy (&h_Va0[0], d_Va0, vA_size, cudaMemcpyDeviceToHost),"memcpy Va0 device to host");
-  ErrorHandle(cudaMemcpy (&h_Va1[0], d_Va1, vA_size, cudaMemcpyDeviceToHost),"memcpy Va1 device to host");
-
-  //Finished transfer;
-  for (int i = 0; i < N; ++i)
+  // Finished transfer;
+  for (int i = 0; i < n; ++i)
   {
-    if (static_cast<size_t> (h_Va0[i]) >= min_elems)
+    if (m_dset->cols() > 3)
     {
-      core[i] = true;
+      auto pointclass_id = (int)(m_dset->data()[i][4]);
+      if (static_cast<size_t>(h_Va0[i]) >= min_elems[pointclass_id])
+      {
+        core[i] = true;
+      }
+    }
+    else
+    {
+      if (static_cast<size_t>(h_Va0[i]) >= min_elems[0])
+      {
+        core[i] = true;
+      }
     }
   }
 
@@ -142,54 +191,59 @@ GDBSCAN::fit (float eps,
   // The adjacency list for each vertex starts at the indices present in the
   // second value of Va, and has an offset related to the degree of the vertex.
 
-  size_t Ea_size;
-  if (h_Va0.size () >= 1)
-    Ea_size = static_cast<size_t> (h_Va0[h_Va0.size () - 1] + h_Va1[h_Va1.size () - 1]) * sizeof(int);
-  else
-    Ea_size = 0;
-  //std::cout << "Allocating " << Ea_size << " bytes for Ea "<< h_Va0[h_Va0.size() - 1] << "+" << h_Va1[h_Va1.size() - 1];
-
-  if (d_Ea)
+  size_t ea_size;
+  if (!h_Va0.empty())
   {
-    cudaFree (d_Ea);
-    d_Ea = 0;
+    ea_size = static_cast<size_t>(h_Va0[h_Va0.size() - 1] + h_Va1[h_Va1.size() - 1]) * sizeof(int);
+  }
+  else
+  {
+    ea_size = 0;
+  }
+  // std::cout << "Allocating " << Ea_size << " bytes for Ea "<< h_Va0[h_Va0.size() - 1] << "+" << h_Va1[h_Va1.size() -
+  // 1];
+
+  if (d_Ea != nullptr)
+  {
+    cudaFree(d_Ea);
+    d_Ea = nullptr;
   }
 
-  ErrorHandle(cudaMalloc (reinterpret_cast<void**> (&d_Ea), Ea_size),"d_Ea malloc");
-
-  asmadjlist (N, colsize, eps, d_data, d_Va1, d_Ea);
-
+  ErrorHandle(cudaMalloc(reinterpret_cast<void**>(&d_Ea), ea_size), "d_Ea malloc");
+  // std::cout << "[DBSCAN] before asmadjlist" << std::endl;
+  asmadjlist(n, colsize, d_eps, d_data, d_Va1, d_Ea, d_label, cluster_mode);
+  // std::cout << "[DBSCAN] asmadjlist successed" << std::endl;
 }
 
-void
-GDBSCAN::breadth_first_search (int i,
-                               int32_t cluster,
-                               std::vector<bool>& visited)
+void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited)
 {
-  int N = static_cast<int> (m_dset->rows ());
+  auto n = static_cast<int>(m_dset->rows());
 
-  std::vector<int> Xa (m_dset->rows (), 0);
-  std::vector<int> Fa (m_dset->rows (), 0);
+  std::vector<int> xa(m_dset->rows(), 0);
+  std::vector<int> fa(m_dset->rows(), 0);
+  // int Xa = new int[m_dset->rows()];
+  // int Fa = new int[m_dset->rows()];
 
-  Fa[i] = 1;
+  fa[i] = 1;
+  // std::cout << "size of Fa: " << m_dset->rows() * sizeof(int) << std::endl;
+  // std::cout << "vA_size: " << vA_size << std::endl;
+  // Fa_Xa_to_device;
+  ErrorHandle(cudaMemcpy(d_Fa, &fa[0], vA_size, cudaMemcpyHostToDevice), "memcpy Fa host to device");
+  ErrorHandle(cudaMemcpy(d_Xa, &xa[0], vA_size, cudaMemcpyHostToDevice), "memcpy Xa host to device");
 
-  //Fa_Xa_to_device;
-  ErrorHandle(cudaMemcpy (d_Fa, &Fa[0], vA_size, cudaMemcpyHostToDevice),"memcpy Fa host to device");
-  ErrorHandle(cudaMemcpy (d_Xa, &Xa[0], vA_size, cudaMemcpyHostToDevice),"memcpy Xa host to device");
-
-  while (has_nonzero (Fa))
+  while (has_nonzero(fa))
   {
-    breadth_first_search_kern (N, d_Ea, d_Va0, d_Va1, d_Fa, d_Xa);
-    //Fa_to_host;
-    ErrorHandle(cudaMemcpy (&Fa[0], d_Fa, vA_size, cudaMemcpyDeviceToHost),"memcpy Fa device to host");
+    breadth_first_search_kern(n, d_Ea, d_Va0, d_Va1, d_Fa, d_Xa);
+    // Fa_to_host;
+    ErrorHandle(cudaMemcpy(&fa[0], d_Fa, vA_size, cudaMemcpyDeviceToHost), "memcpy Fa device to host");
   }
 
-  //Xa_to_host;
-  ErrorHandle(cudaMemcpy (&Xa[0], d_Xa, vA_size, cudaMemcpyDeviceToHost),"memcpy Xa device to host");
+  // Xa_to_host;
+  ErrorHandle(cudaMemcpy(&xa[0], d_Xa, vA_size, cudaMemcpyDeviceToHost), "memcpy Xa device to host");
 
-  for (size_t i = 0; i < m_dset->rows (); ++i)
+  for (size_t i = 0; i < m_dset->rows(); ++i)
   {
-    if (Xa[i])
+    if (xa[i] != 0) //  && visited[i] == false
     {
       visited[i] = true;
       labels[i] = cluster;
@@ -197,16 +251,15 @@ GDBSCAN::breadth_first_search (int i,
   }
 }
 
-void
-GDBSCAN::ErrorHandle(cudaError_t r, std::string Msg){
+void GDBSCAN::ErrorHandle(cudaError_t r, const std::string &Msg)
+{
   if (r != cudaSuccess)
   {
-    throw std::runtime_error ("[DBSCAN] CUDA Error :" + Msg + ", " + std::to_string (r));
+    throw std::runtime_error("[DBSCAN] CUDA Error :" + Msg + ", " + std::to_string(r));
   }
 }
 
-void
-GDBSCAN::predict (IndicesClusters &index)
+void GDBSCAN::predict(pcl::IndicesClusters& index)
 {
   // For this step, we decided to parallelize the BFS. Our parallelization
   // approach in CUDA is based on the work presented in [22], which performs a
@@ -227,43 +280,48 @@ GDBSCAN::predict (IndicesClusters &index)
   // 3 and 4.
 
   cluster_id = 0;
-  std::vector<bool> visited (m_dset->rows (), false);
+  std::vector<bool> visited(m_dset->rows(), false);
 
-  for (size_t i = 0; i < m_dset->rows (); ++i)
+  for (size_t i = 0; i < m_dset->rows(); ++i)
   {
     if (visited[i])
+    {
       continue;
+    }
     if (!core[i])
+    {
       continue;
+    }
 
     visited[i] = true;
     labels[i] = cluster_id;
-    breadth_first_search (static_cast<int> (i), cluster_id, visited);
+    breadth_first_search(static_cast<int>(i), cluster_id, visited);
     cluster_id += 1;
+    
   }
 
   if (cluster_id > 0)
   {
     PointIndices buff[cluster_id];
 
-    for (size_t i = 0; i < labels.size (); i++)  //scan all points
+    for (size_t i = 0; i < labels.size(); i++)  // scan all points
     {
-      if (labels.at (i) >= 0)
+      if (labels.at(i) >= 0)
       {
-        buff[labels.at (i)].indices.push_back (i);
+        buff[labels.at(i)].indices.push_back(i);
       }
     }
 
     for (int k = 0; k < cluster_id; k++)
     {
-      index.push_back (buff[k]);
+      if (!buff[k].indices.empty())
+      {
+        index.push_back(buff[k]);
+      }
     }
-
   }
   else
   {
     index.resize(0);
   }
-
 }
-
