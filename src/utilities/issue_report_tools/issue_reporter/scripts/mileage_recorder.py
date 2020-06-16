@@ -104,7 +104,7 @@ def brake_state_2_string(state_in):
 
 # Event report: json_str converters
 #--------------------------------#
-def brake_state_2_json(state_in):
+def brake_state_2_json(state_in, module="brake", check_state=(3,4) ):
     """
     Through ROS std_msgs.String
     json string:
@@ -116,8 +116,8 @@ def brake_state_2_json(state_in):
     Output: json string
     """
     json_dict = dict()
-    json_dict["module"] = "brake"
-    if state_in >= 3: # 3 and 4
+    json_dict["module"] = module
+    if state_in in check_state: # 3 and 4
         json_dict["status"] = "WARN"
     else:
         json_dict["status"] = "OK"
@@ -215,7 +215,12 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( brake_state_2_string(brake_state) )
         # Publish as ROS message
-        brake_event_pub.publish( brake_state_2_json(brake_state) )
+        # brake_event_pub.publish( brake_state_2_json(brake_state) )
+        #
+        # AEB checker and manual-brake checker
+        brake_event_pub.publish( brake_state_2_json(brake_state, module="brake_AEB", check_state=(3,) ) )
+        brake_event_pub.publish( brake_state_2_json(brake_state, module="brake_MINT", check_state=(4,) ) )
+
 
     # Xbywire states
     Xbywire_run_state_now = int( round(data.Dspace_Flag06) )
@@ -349,7 +354,10 @@ def main(sys_args):
     # Publishing intial state
     #--------------------------------------#
     run_state_pub.publish( (adv_run_state==1) )
-    brake_event_pub.publish( brake_state_2_json(brake_state) )
+    # brake_event_pub.publish( brake_state_2_json(brake_state) )
+    # AEB checker and manual-brake checker
+    brake_event_pub.publish( brake_state_2_json(brake_state, module="brake_AEB", check_state=(3,) ) )
+    brake_event_pub.publish( brake_state_2_json(brake_state, module="brake_MINT", check_state=(4,) ) )
     #--------------------------------------#
 
     # Loop for user command via stdin
