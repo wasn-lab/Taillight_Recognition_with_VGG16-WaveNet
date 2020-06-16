@@ -25,9 +25,10 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>car_model</build_depend>
-  <build_depend>camera_utils</build_depend>
-  <build_depend>drivenet</build_depend>
   <build_depend>msgs</build_depend>
+  <build_depend>camera_utils</build_depend>
+  <build_depend>libs</build_depend>
+  <build_depend>drivenet</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>msgs</build_export_depend>

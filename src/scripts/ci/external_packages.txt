@@ -2,3 +2,8 @@ src/utilities/google-benchmark
 src/visualization/opengl_test/external
 src/visualization/opengl_test/include/GLM
 src/sensing/camera_grabber/src/Util
+src/sensing/itri_lidarnet/libs/BoundingBox/ApproxMVBB
+src/sensing/itri_lidarnet/driver
+src/sensing/itri_lidarnet/libs/Matching/NDT
+src/sensing/itri_lidarnet/libs/Preprocess
+src/scripts/waymo_opendata

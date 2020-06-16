@@ -80,8 +80,8 @@ void Track2DNode::subscribe_and_advertise_topics()
   }
   else
   {
-    LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
-    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &Track2DNode::callback_camera, this);
+    LOG_INFO << "Input Source: /cam_obj/front_bottom_60" << std::endl;
+    camera_sub_ = nh_.subscribe("/cam_obj/front_bottom_60", 1, &Track2DNode::callback_camera, this);
   }
 
   track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking2D", 2);

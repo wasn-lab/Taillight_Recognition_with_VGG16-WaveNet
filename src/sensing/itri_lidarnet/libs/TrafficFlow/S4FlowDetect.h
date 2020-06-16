@@ -13,34 +13,23 @@
 
 class S4FlowDetect
 {
-  public:
-    S4FlowDetect ();
-    S4FlowDetect (boost::shared_ptr<pcl::visualization::PCLVisualizer> input_viewer,
-                  int *input_viewID);
-    virtual
-    ~S4FlowDetect ();
+public:
+  S4FlowDetect();
+  S4FlowDetect(boost::shared_ptr<pcl::visualization::PCLVisualizer> input_viewer, int* input_viewID);
+  virtual ~S4FlowDetect();
 
-    void
-    add_gateway_rectangle (pcl::PointXYZ rectangle_min,
-                           pcl::PointXYZ rectangle_max);
+  void add_gateway_rectangle(pcl::PointXYZ rectangle_min, pcl::PointXYZ rectangle_max);
 
-    void
-    update (bool is_debug,
-            CLUSTER_INFO* cluster_info,
-            int cluster_number,
-            int *counter);
+  void update(bool is_debug, CLUSTER_INFO* cluster_info, int cluster_number, int* counter);
 
-    void
-    show_info (int counter[],
-               double system_running_time_second,
-               double frames_running_time_second);
+  void show_info(int counter[], double system_running_time_second, double frames_running_time_second);
 
-  private:
-    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
-    int *viewID;
+private:
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
+  int* viewID;
 
-    pcl::PointXYZ pt_min;
-    pcl::PointXYZ pt_max;
+  pcl::PointXYZ pt_min;
+  pcl::PointXYZ pt_max;
 };
 
 #endif /* S4FLOWDETECT_H_ */

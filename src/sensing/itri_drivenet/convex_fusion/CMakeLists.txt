@@ -43,8 +43,10 @@ include_directories(
   ${car_model_BINARY_DIR}/include
   ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
+  ${drivenet_lib_SOURCE_DIR}/include
   ${drivenet_SOURCE_DIR}/include
-  ${OBJECTCOSTMAPGENERATOR_INCLUDE}
+  ${drivenet_SOURCE_DIR}/include
+  ${object_costmap_generator_SOURCE_DIR}/include
   ${libs_SOURCE_DIR}
   ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
   ${libs_SOURCE_DIR}/Preprocess/NoiseFilter
@@ -86,4 +88,9 @@ if (CAR_MODEL_IS_B1)
   add_dependencies      (${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS}) 
   target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs object_costmap_generator)
   qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
+elseif(CAR_MODEL_IS_B1_V2)
+  cuda_add_executable   (${PROJECT_NAME}_b1_v2 src/main_b1_v2.cpp src/convex_fusion_b1_v2.cpp)
+  add_dependencies      (${PROJECT_NAME}_b1_v2 ${catkin_EXPORTED_TARGETS}) 
+  target_link_libraries (${PROJECT_NAME}_b1_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs object_costmap_generator)
+  qt5_use_modules       (${PROJECT_NAME}_b1_v2 Widgets)
 endif()

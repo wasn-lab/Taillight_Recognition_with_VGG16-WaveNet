@@ -16,15 +16,12 @@ if (CMAKE_COMPILER_IS_GNUCXX OR COMPILER_IS_CLANG)
     set(COMPILER_IS_GCC_OR_CLANG ON)
 endif ()
 
-set(CMAKE_CXX_STANDARD 11)  # -std=c++11
+set(CMAKE_CXX_STANDARD 14)  # -std=c++14
 set(CMAKE_C_STANDARD 11)  # -std=gnu11
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # -fPIC -fPIE
 
 set(CUDA_NVCC_FLAGS
     -O3
-    -gencode arch=compute_30,code=sm_30
-    -gencode arch=compute_35,code=sm_35
-    -gencode arch=compute_50,code=[sm_50,compute_50]
-    -gencode arch=compute_52,code=[sm_52,compute_52]
     -gencode arch=compute_61,code=sm_61
     -gencode arch=compute_62,code=sm_62
     -gencode=arch=compute_70,code=sm_70

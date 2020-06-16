@@ -9,27 +9,22 @@ using namespace pcl;
 
 #include "../VoxelGrid/VoxelGrid_CUDA.cuh"
 
-
 class VoxelFilter_CUDA
 {
-  public:
-    VoxelFilter_CUDA ();
-    ~VoxelFilter_CUDA ();
+public:
+  VoxelFilter_CUDA();
+  ~VoxelFilter_CUDA();
 
-    int
-    getNumberOfAvailableThreads ();
+  int getNumberOfAvailableThreads();
 
-    bool
-    removeNoiseNaive (pcl::PointCloud<pcl::PointXYZ> &point_cloud,
-                      float resolution,
-                      int number_of_points_in_bucket_threshold);
+  bool removeNoiseNaive(pcl::PointCloud<pcl::PointXYZ>& point_cloud, float resolution,
+                        int number_of_points_in_bucket_threshold);
 
-    pcl::PointCloud<pcl::PointXYZ>
-    compute (pcl::PointCloud<pcl::PointXYZ>::Ptr input,
-             float resolution,
-             int number_of_points_in_bucket_threshold);
-  private:
-    static bool hasInitialCUDA;
+  pcl::PointCloud<pcl::PointXYZ> compute(pcl::PointCloud<pcl::PointXYZ>::Ptr input, float resolution,
+                                         int number_of_points_in_bucket_threshold);
+
+private:
+  static bool hasInitialCUDA;
 };
 
 #endif
