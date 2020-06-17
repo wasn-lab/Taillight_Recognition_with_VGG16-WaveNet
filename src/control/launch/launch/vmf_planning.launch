@@ -1,0 +1,23 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <!--VMF-->
+  <include file="$(find map_file)/launch/vector_map_loader.launch"/>
+  <include file="$(find object_map)/launch/wayarea2grid.launch"/>
+
+  <!--op global planner-->
+  <include file="$(find op_global_planner)/launch/op_global_planner.launch"/>
+  <!--choose one-->
+    <!--lane planner-->
+    <include file="$(find lane_planner)/launch/lane_rule_option.launch"/>
+    <include file="$(find lane_planner)/launch/lane_select.launch"/>
+    <!--op local planner-->
+    <!--include file="$(find op_local_planner)/launch/op_trajectory_generator.launch"/-->
+    <!--include file="$(find op_local_planner)/launch/op_trajectory_evaluator.launch"/-->
+    <!--include file="$(find op_local_planner)/launch/op_behavior_selector.launch"/-->
+  <!--choose one-->
+
+  <include file="$(find control)/launch/ukfmm.launch"/>
+  <include file="$(find control)/launch/astar_avoid.launch"/>
+
+</launch>
