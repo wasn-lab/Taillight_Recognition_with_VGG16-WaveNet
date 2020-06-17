@@ -108,7 +108,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   *cams_points_ptr = cam_points;
 }
 
-void getPointCloudInBoxFOV(msgs::DetectedObjectArray& objects,
+void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
                            std::vector<PixelPosition>& cam_pixels, std::vector<int>& cam_bboxs_class_id,

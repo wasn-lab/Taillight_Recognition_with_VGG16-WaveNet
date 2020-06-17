@@ -16,6 +16,6 @@ public:
   DeeplabSegmenter();
   ~DeeplabSegmenter();
   int32_t segment(const cv::Mat& img_in, cv::Mat& img_out);
-  int32_t segment_into_labels(const cv::Mat& img_in, uint8_t* labels);
+  int32_t segment_with_labels(const cv::Mat& img_in, cv::Mat& img_out, uint8_t* labels);
 };
 };  // namespace deeplab
