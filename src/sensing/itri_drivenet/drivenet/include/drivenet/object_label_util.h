@@ -6,21 +6,10 @@
 #include "detected_object_class_id.h"
 #include "image_preprocessing.h"
 #include "camera_params.h"
+#include "trt_utils.h"
 
 namespace DriveNet
 {
-enum class net_type_id
-{
-  begin = 0,
-  person = begin,  // 0
-  bicycle,         // 1
-  car,             // 2
-  motorbike,       // 3
-  others1,         // 4
-  bus,             // 5
-  others2,         // 6
-  truck            // 7
-};
 
 enum class common_type_id
 {
@@ -55,6 +44,7 @@ void transferPixelScaling(PixelPosition& positions);
 void transferPixelScaling(std::vector<PixelPosition>& pixel_positions);
 cv::Scalar get_label_color(int label_id);
 cv::Scalar get_common_label_color(int label_id);
+std::string get_common_label_string(int label_id);
 object_box getDefaultObjectBox(int label_id);
 
 }  // namespace DriveNet

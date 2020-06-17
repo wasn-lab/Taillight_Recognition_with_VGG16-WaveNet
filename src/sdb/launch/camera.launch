@@ -2,23 +2,19 @@
 
 	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_a.launch"/>
 
-	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_b.launch"/>
+	<include file="$(find drivenet)/launch/b1_v2_drivenet_side.launch"/>
 	
-	<include file="$(find drivenet)/launch/b1_v2_drivenet_group_c.launch"/>
+	<include file="$(find drivenet)/launch/b1_v2_drivenet_top.launch"/>
 
-	<node name="convex_fusion"
-		pkg="convex_fusion"
-		type="convex_fusion_b1_v2"/>
+	<include file="$(find alignment)/launch/b1_v2_3d_object_detection.launch"/>
 
 	<node name="drivenet"
 		pkg="drivenet"
-		type="drivenet_node_img_repub"/>
+		type="drivenet_util_node_img_repub"/>
 
 	<node name="msg_recorder"
 		pkg="msg_recorder"
 		type="msg_recorder.py"
 		args="-A --NO_KEY_IN"/>
-
-	<include file="$(find detection_viz)/launch/itriadv_viz.launch"/>
 
 </launch>

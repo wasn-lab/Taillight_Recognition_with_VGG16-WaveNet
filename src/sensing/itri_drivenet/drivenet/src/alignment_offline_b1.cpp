@@ -250,11 +250,12 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
   for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
-
     if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
-       LidAll_cloudPtr->points[i].x > 0 )
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x - 122)/45) < 0.1)
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
+        LidAll_cloudPtr->points[i].x > 0)
+    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x -
+    // 122)/45) < 0.1)
+    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30)
+    // < 0.1)
     {
       g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
       if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
@@ -273,7 +274,8 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
       }
     }
 
-    // if(LidAll_cloudPtr->points[i].x > 25 && LidAll_cloudPtr->points[i].z < 0 && LidAll_cloudPtr->points[i].y < 1 && LidAll_cloudPtr->points[i].y > -1)
+    // if(LidAll_cloudPtr->points[i].x > 25 && LidAll_cloudPtr->points[i].z < 0 && LidAll_cloudPtr->points[i].y < 1 &&
+    // LidAll_cloudPtr->points[i].y > -1)
     // {
     //   g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
     //   if(g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
@@ -287,10 +289,6 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
     //       std::cout << g_al.out[1] << std::endl;
     //     }
     //   }
-    
-
-
-    
   }
 }
 

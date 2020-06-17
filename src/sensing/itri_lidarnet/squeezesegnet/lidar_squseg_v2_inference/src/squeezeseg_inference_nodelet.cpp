@@ -81,7 +81,10 @@ void ssn_v2_nodelet::LidarsNodelet::callback_LidarAll(const pcl::PointCloud<pcl:
     {
       ros::Time rosTime;
       pcl_conversions::fromPCL(msg->header.stamp, rosTime);
-      cout << "[All->SSNv2]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+      if ((ros::Time::now() - rosTime).toSec() < 3600)
+      {
+        cout << "[All->SSNv2]: " << (ros::Time::now() - rosTime).toSec() * 1000 << "ms" << endl;
+      }
       stopWatch.reset();
     }
 

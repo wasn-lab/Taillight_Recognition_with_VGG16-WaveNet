@@ -2,10 +2,15 @@ This repository contains the source codes of self-driving car maintained by ITRI
 
 ### Prerequisite
 
-1. ROS
-1. PCL 1.9.0
+1. Ubuntu 18.04
+1. ROS Melodic
+1. OpenCV 4.2.0 (Optional)
+1. PCL 1.9.1 (Optional)
 1. Cuda (Optional)
 1. TensorRT (Optional)
+
+See [Automatic Scripts](https://gitlab.itriadv.co/self_driving_bus/automatic_scripts)
+about how to install tem.
 
 ### How to build
 

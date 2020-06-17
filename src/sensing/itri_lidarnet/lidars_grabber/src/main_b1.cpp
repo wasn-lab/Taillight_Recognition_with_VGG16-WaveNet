@@ -39,9 +39,10 @@ void lidarAll_Pub(int lidarNum);
 void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   heartBeat[0] = true;
-  if (debug_output)
+  if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
   {
-    cout << "[Left->Gbr]: " << (ros::Time::now() - input_cloud->header.stamp) * 1000 << "ms" << endl;
+    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+    cout << "[Left->Gbr]: " << diff_time << "ms" << endl;
   }
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontLeft);
   syncLock_callback();
@@ -49,9 +50,10 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   heartBeat[1] = true;
-  if (debug_output)
+  if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
   {
-    cout << "[Right->Gbr]: " << (ros::Time::now() - input_cloud->header.stamp) * 1000 << "ms" << endl;
+    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+    cout << "[Right->Gbr]: " << diff_time << "ms" << endl;
   }
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontRight);
   syncLock_callback();
@@ -59,9 +61,10 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   heartBeat[4] = true;
-  if (debug_output)
+  if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
   {
-    cout << "[Top->Gbr]: " << (ros::Time::now() - input_cloud->header.stamp) * 1000 << "ms" << endl;
+    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+    cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
   }
   pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontTop);
   syncLock_callback();
@@ -93,6 +96,7 @@ void lidarAll_Pub(int lidarNum)
 
   uint64_t LidarAll_time;
   LidarAll_time = cloudPtr_LidAll->header.stamp;
+  cloudPtr_LidAll->header.frame_id = "lidar";
 
   pub_LidAll.publish(*cloudPtr_LidAll);
   cloudPtr_LidAll->clear();
@@ -383,6 +387,7 @@ int main(int argc, char** argv)
     ros::spinOnce();
     loop_rate.sleep();
   }
+  TheadDetection.join();
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;

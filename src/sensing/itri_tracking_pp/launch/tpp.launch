@@ -9,8 +9,9 @@
   <!-- 3: /CamObjFrontCenter -->
   <!-- 4: /abs_virBB_array -->
   <!-- 5: /rel_virBB_array -->
+  <!-- 6: /CameraDetection/polygon -->  
   <!-- otherwise: /SensorFusion -->
-  <arg name="input_source" default="0" />
+  <arg name="input_source" default="6" />
 
   <!-- Occupancy source -->
   <!-- 1: /occupancy_wayarea -->
@@ -35,7 +36,7 @@
   <arg name="show_tracktime" default="False" />
   <arg name="show_source" default="False" />
   <arg name="show_distance" default="False" />
-  <arg name="show_absspeed" default="False" />
+  <arg name="show_absspeed" default="True" />
 
   <!-- 1: Show pp centers -->
   <!-- 2: Show pp ellipses -->
@@ -43,8 +44,11 @@
   <!-- otherwise: No show pp -->
   <arg name="show_pp" default="2" />
 
+  <!-- Min number of consecutive tracked time ticks to activate PP: should be >= 3 -->
+  <arg name="num_pp_input_min" default="4" />
+
   <arg name="pp_obj_min_kmph" default="1.0" />
-  <arg name="pp_obj_max_kmph" default="70.0" />
+  <arg name="pp_obj_max_kmph" default="80.0" />
 
   <!-- Launch node -->
   <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
@@ -61,6 +65,7 @@
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
     <param name="show_pp" value="$(arg show_pp)" />
+    <param name="num_pp_input_min" value="$(arg num_pp_input_min)" />
     <param name="pp_obj_min_kmph" value="$(arg pp_obj_min_kmph)" />
     <param name="pp_obj_max_kmph" value="$(arg pp_obj_max_kmph)" />
   </node>

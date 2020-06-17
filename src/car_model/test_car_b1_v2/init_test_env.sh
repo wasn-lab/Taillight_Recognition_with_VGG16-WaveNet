@@ -28,11 +28,8 @@ popd
 
 # Generatie drivenet tensorRT engine files.
 find src/sensing/itri_drivenet -name "*.engine" -exec rm {} \;
-roslaunch drivenet b1_v2_drivenet_group_a.launch > /dev/null 2>&1 &
-roslaunch drivenet b1_v2_drivenet_group_b.launch > /dev/null 2>&1 &
-# node c use the same engine as node b
-#roslaunch drivenet b1_v2_drivenet_group_c.launch > /dev/null 2>&1 &
+python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_group_a.launch
+python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_side.launch
+python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_top.launch
 
-sleep 5m
-killall roslaunch
 find src/sensing/itri_drivenet -name "*.engine"
