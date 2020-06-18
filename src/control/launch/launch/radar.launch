@@ -1,0 +1,6 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+	<!-- nodes -->
+	<node pkg="rad_grab" type="radfrontpub" name="radfrontpub" output="screen" cwd="node" respawn="true"  />
+
+</launch>

@@ -9,6 +9,7 @@
 
 /// ros
 #include <msgs/DetectedObjectArray.h>
+#include <msgs/DetectedObject.h>
 
 /// util
 #include "drivenet/object_label_util.h"
@@ -25,6 +26,14 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, int image_w, int image_h,
                              Alignment& alignment);
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
+                           const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
+                           pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
+                           std::vector<DriveNet::PixelPosition>& cam_pixels, std::vector<int>& cam_bboxs_class_id,
+                           std::vector<MinMax3D>& cam_bboxs_cube_min_max,
+                           std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
+                           CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering);
+void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
+                           msgs::DetectedObjectArray& remaining_objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
                            std::vector<DriveNet::PixelPosition>& cam_pixels, std::vector<int>& cam_bboxs_class_id,
