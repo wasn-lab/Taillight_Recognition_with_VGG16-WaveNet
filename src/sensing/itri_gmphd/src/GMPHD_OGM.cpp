@@ -45,7 +45,7 @@ GMPHD_OGM::GMPHD_OGM()
 
 	this->isInitialization = false;
 
-	this->InitializeColorTab();
+	// this->InitializeColorTab();
 
 	//this->InitializeTrackletsContainters(); // called in SetParams() again
 
@@ -1790,28 +1790,28 @@ void GMPHD_OGM::InitializeTrackletsContainters() {
 	this->groupsBatch = new std::map<int, std::vector<RectID>>[this->params.GROUP_QUEUE_SIZE];
 }
 // Initialize Color Tab
-void GMPHD_OGM::InitializeColorTab()
-{
-	int a;
-	for (a = 1; a*a*a < MAX_OBJECTS; a++);
-	int n = 255 / (a - 1);
-	IplImage *temp = cvCreateImage(cvSize(40 * (MAX_OBJECTS), 32), IPL_DEPTH_8U, 3);
-	cvSet(temp, CV_RGB(0, 0, 0));
-	for (int i = 0; i < a; i++) {
-		for (int j = 0; j < a; j++) {
-			for (int k = 0; k < a; k++) {
-				//if(i*a*a+j*a+k>MAX_OBJECTS) break;
-				//printf("%d:(%d,%d,%d)\n",i*a*a +j*a+k,i*n,j*n,k*n);
-				if (i*a*a + j*a + k == MAX_OBJECTS) break;
-				color_tab[i*a*a + j*a + k] = CV_RGB(i*n, j*n, k*n);
-				cvLine(temp, cvPoint((i*a*a + j*a + k) * 40 + 20, 0), cvPoint((i*a*a + j*a + k) * 40 + 20, 32), CV_RGB(i*n, j*n, k*n), 32);
-			}
-		}
-	}
-	//cvShowImage("(private)Color tap", temp);
-	//cvWaitKey(1);
-	cvReleaseImage(&temp);
-}
+// void GMPHD_OGM::InitializeColorTab()
+// {
+// 	int a;
+// 	for (a = 1; a*a*a < MAX_OBJECTS; a++);
+// 	int n = 255 / (a - 1);
+// 	IplImage *temp = cv::CreateImage(cv::Size(40 * (MAX_OBJECTS), 32), IPL_DEPTH_8U, 3);
+// 	cv::Set(temp, CV_RGB(0, 0, 0));
+// 	for (int i = 0; i < a; i++) {
+// 		for (int j = 0; j < a; j++) {
+// 			for (int k = 0; k < a; k++) {
+// 				//if(i*a*a+j*a+k>MAX_OBJECTS) break;
+// 				//printf("%d:(%d,%d,%d)\n",i*a*a +j*a+k,i*n,j*n,k*n);
+// 				if (i*a*a + j*a + k == MAX_OBJECTS) break;
+// 				color_tab[i*a*a + j*a + k] = CV_RGB(i*n, j*n, k*n);
+// 				cv::line(temp, cv::Point((i*a*a + j*a + k) * 40 + 20, 0), cv::Point((i*a*a + j*a + k) * 40 + 20, 32), CV_RGB(i*n, j*n, k*n), 32);
+// 			}
+// 		}
+// 	}
+// 	//cvShowImage("(private)Color tap", temp);
+// 	//cvWaitKey(1);
+// 	cv::ReleaseImage(&temp);
+// }
 void GMPHD_OGM::InitializeMatrices(cv::Mat &F, cv::Mat &Q, cv::Mat &Ps, cv::Mat &R, cv::Mat &H, int dims_state, int dims_obs)
 {
 	/* Initialize the transition matrix F, from state_t-1 to state_t

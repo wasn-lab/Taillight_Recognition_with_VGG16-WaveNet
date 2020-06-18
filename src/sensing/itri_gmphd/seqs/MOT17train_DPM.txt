@@ -1,4 +1,4 @@
-/home/u300/Downloads/MOT2017/train/
+/home/wasn/Downloads/MOT2017/train/
 ITRIMOT1
 MOT17-04-DPM
 MOT17-05-DPM

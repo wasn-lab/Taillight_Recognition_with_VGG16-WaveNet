@@ -61,14 +61,14 @@ namespace SYM {
 
 	std::string DB_NAMES[3] = { "MOT15", "MOT17", "CVPR19" };
 
-	CvScalar OBJECT_COLORS[7] = \
-	{	cvScalar(255, 255, 0),	/*Person: Lite Blue*/
-		cvScalar(255, 255, 255),/*Car: White*/
-		cvScalar(255, 0, 255),	/*Bicycle: Pink*/
-		cvScalar(0, 0, 255),	/*Truck: Red*/
-		cvScalar(0, 255, 255),	/*Bus: Yellow*/
-		cvScalar(0, 255, 0),	/*Green*/
-		cvScalar(255, 0, 0)		/*Blue*/};
+	cv::Scalar OBJECT_COLORS[7] = \
+	{	cv::Scalar(255, 255, 0),	/*Person: Lite Blue*/
+		cv::Scalar(255, 255, 255),/*Car: White*/
+		cv::Scalar(255, 0, 255),	/*Bicycle: Pink*/
+		cv::Scalar(0, 0, 255),	/*Truck: Red*/
+		cv::Scalar(0, 255, 255),	/*Bus: Yellow*/
+		cv::Scalar(0, 255, 0),	/*Green*/
+		cv::Scalar(255, 0, 0)		/*Blue*/};
 }
 
 /**
@@ -720,7 +720,7 @@ void DrawDetBBS(cv::Mat& img, int iter, cv::Rect bb, double conf, double conf_th
 		/// Draw Detection Bounding Boxes with detection cofidence score
 		cv::rectangle(img, bb, color, thick);
 		cv::rectangle(img, cv::Point(bb.x, bb.y), cv::Point(bb.x + bb.width, bb.y - 30), color, -1);
-		cv::putText(img, cArrConfidence, cvPoint(bb.x, bb.y - 5), cv::FONT_HERSHEY_SIMPLEX, 0.6, CV_RGB(0, 0, 0), 2);
+		cv::putText(img, cArrConfidence, cv::Point(bb.x, bb.y - 5), cv::FONT_HERSHEY_SIMPLEX, 0.6, CV_RGB(0, 0, 0), 2);
 	}
 	else {
 		cv::rectangle(img, bb, color, 1);
@@ -731,7 +731,7 @@ void DrawDetBBS(cv::Mat& img, int iter, cv::Rect bb, double conf, double conf_th
 	/// Draw Observation ID (not target ID)
 	char cArrObsID[8];
 	snprintf(cArrObsID, 8, "%d", iter);
-	cv::putText(img, cArrObsID, cvPoint(bb.x + 5, bb.y + 30), cv::FONT_HERSHEY_SIMPLEX, 1.0, color, 2);
+	cv::putText(img, cArrObsID, cv::Point(bb.x + 5, bb.y + 30), cv::FONT_HERSHEY_SIMPLEX, 1.0, color, 2);
 }
 // Draw the Tracking Bounding Box
 void DrawTrkBBS(cv::Mat& img, cv::Rect rec, cv::Scalar color, int thick, int id, double fontScale, string type) {
@@ -764,7 +764,7 @@ void DrawFrameNumberAndFPS(int iFrameCnt, cv::Mat& img, double scale, int thick,
 	// Draw Frame Number
 	char frameCntBuf[8];
 	snprintf(frameCntBuf, 8, "%d", (iFrameCnt + frameOffset) / frames_skip_interval);
-	cv::putText(img, frameCntBuf, cv::Point(10, 65), CV_FONT_HERSHEY_SIMPLEX, scale, cvScalar(255, 255, 255), thick);
+	cv::putText(img, frameCntBuf, cv::Point(10, 65), cv::FONT_HERSHEY_SIMPLEX, scale, cv::Scalar(255, 255, 255), thick);
 
 	// Draw Frames Per Second
 	if (sec > 0.0) {
