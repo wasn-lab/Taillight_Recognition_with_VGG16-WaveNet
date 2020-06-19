@@ -1,7 +1,7 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
-  <include file="$(find map_loader)/launch/lanelet2_map_loader.launch"/>
-  <include file="$(find map_tf_generator)/launch/map_tf_generator.launch"/>
+  <include file="$(find map_launch)/launch/map.launch"/>
+  <include file="$(find planning_launch)/launch/planning.launch"/>
 
 </launch>

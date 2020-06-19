@@ -24,6 +24,17 @@ add_message_files(
     DynamicObjectWithFeatureArray.msg
     PredictedPath.msg
 )
+add_message_files(
+  DIRECTORY msg/traffic_light_recognition
+  FILES
+    LampState.msg
+    TrafficLightRoi.msg
+    TrafficLightRoiArray.msg
+    TrafficLightState.msg
+    TrafficLightStateArray.msg
+)
+
+
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
