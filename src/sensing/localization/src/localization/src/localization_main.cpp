@@ -698,6 +698,35 @@ static void gnss_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr& inpu
 
   is_trimble_new = true;
 }
+
+static void gnss_utm_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+  tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                        input->pose.orientation.w);
+  tf::Matrix3x3 gnss_m(gnss_q);
+
+  pose current_gnss_pose;
+  current_gnss_pose.x = input->pose.position.x;
+  current_gnss_pose.y = input->pose.position.y;
+  current_gnss_pose.z = input->pose.position.z;
+  gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
+
+  current_gnss_pose.yaw *= -1;
+  current_gnss_pose.yaw += M_PI * 0.5;
+
+  static pose previous_gnss_pose = current_gnss_pose;
+  current_gnss2local_pose = current_gnss_pose;
+
+  previous_gnss_pose.x = current_gnss_pose.x;
+  previous_gnss_pose.y = current_gnss_pose.y;
+  previous_gnss_pose.z = current_gnss_pose.z;
+  previous_gnss_pose.roll = current_gnss_pose.roll;
+  previous_gnss_pose.pitch = current_gnss_pose.pitch;
+  previous_gnss_pose.yaw = current_gnss_pose.yaw;
+
+  is_trimble_new = true;
+}
+
 #endif
 
 static void callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -1581,7 +1610,8 @@ int main(int argc, char** argv)
 #endif
 #if TRIMBLE
   //ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_data", 10, gnss2local_callback);
-  ros::Subscriber gnss2local_sub = nh.subscribe("gnss_twd97_data", 10, gnss_twd97_callback);
+  //ros::Subscriber gnss2local_sub = nh.subscribe("gnss_twd97_data", 10, gnss_twd97_callback);
+  ros::Subscriber gnss2local_sub = nh.subscribe("gnss_utm_data", 10, gnss_utm_callback);
 #endif
   pthread_t thread;
   pthread_create(&thread, NULL, thread_func, NULL);
