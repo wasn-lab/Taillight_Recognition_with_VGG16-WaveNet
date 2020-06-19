@@ -5,6 +5,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(CATKIN_REQUIRED_COMPONENTS
     roscpp
+    sensor_msgs
+    std_msgs
+    msgs
+    car_model
+    cv_bridge
+    image_transport
     )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
 
@@ -26,6 +32,9 @@ find_package(Boost REQUIRED COMPONENTS thread system wave timer signals serializ
 
 set(TPP_CATKIN_DEPS
     roscpp
+    sensor_msgs
+    std_msgs
+    msgs
 )
 
 catkin_package(CATKIN_DEPENDS ${TPP_CATKIN_DEPS})
@@ -49,6 +58,7 @@ set(CPP_FILES
 )
 
 add_executable(itri_gmphd ${CPP_FILES})
+add_executable(bag_to_MOT src/bag_to_MOT.cpp)
 
 if(EXISTS /usr/local/lib/libopencv_core.so)
 target_link_libraries(
@@ -64,7 +74,23 @@ target_link_libraries(
     ${OpenCV_LIBS}
     ${Boost_LIBRARIES})
 endif()
+if(EXISTS /usr/local/lib/libopencv_core.so)
+target_link_libraries(
+    bag_to_MOT
+    /usr/local/lib/libopencv_core.so
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${Boost_LIBRARIES})
+else()
+target_link_libraries(
+    bag_to_MOT
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${Boost_LIBRARIES})
+endif()
 
 add_dependencies(itri_gmphd ${catkin_EXPORTED_TARGETS})
+add_dependencies(bag_to_MOT ${catkin_EXPORTED_TARGETS})
+
 configure_file(include/gmphd_def.h.in
                ${PROJECT_BINARY_DIR}/include/gmphd_def.h)

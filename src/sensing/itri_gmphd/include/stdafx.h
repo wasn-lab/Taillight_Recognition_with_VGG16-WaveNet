@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 //#include <tchar.h>
 
-// TODO: 
+// TODO:
 //#include <io.h>
 
 #include <fstream>

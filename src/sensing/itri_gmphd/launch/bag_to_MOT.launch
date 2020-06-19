@@ -25,5 +25,5 @@
   <arg name="show_probability" default="True" />
 
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
-  <node pkg="itri_gmphd" type="itri_gmphd" name="itri_gmphd" cwd="node" output="screen"></node>
+  <node pkg="itri_gmphd" type="bag_to_MOT" name="bag_to_MOT" cwd="node" output="screen"></node>
 </launch>
