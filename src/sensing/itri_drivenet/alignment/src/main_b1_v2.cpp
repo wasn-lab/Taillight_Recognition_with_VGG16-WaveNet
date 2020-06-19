@@ -1129,7 +1129,7 @@ int main(int argc, char** argv)
   }
   /// main loop start
   std::thread main_thread(runInference);
-  int thread_count = int(g_cam_ids.size()) * 2 + 2;  /// camera raw + object + lidar raw + ssn
+  int thread_count = int(g_cam_ids.size()) * 2 + 3;  /// camera raw + object + lidar raw + ssn + nonground
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
   std::cout << "===== Multi_sensor_3d_object_detection running... =====" << std::endl;
