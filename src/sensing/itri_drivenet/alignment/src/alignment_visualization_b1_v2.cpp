@@ -37,7 +37,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30};
 #else
 #error "car model is not well defined"
 #endif
@@ -97,6 +97,16 @@ std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> g_cams_bboxs_points(g_
 void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
+void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -387,7 +397,7 @@ int main(int argc, char** argv)
   ros::Subscriber lidarall;
 
   /// get callback function
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60 };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60, callback_cam_front_top_far_30 };
 
   /// set topic name
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
