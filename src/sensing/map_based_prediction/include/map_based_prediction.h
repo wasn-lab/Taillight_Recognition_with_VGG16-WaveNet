@@ -51,34 +51,29 @@ private:
   double time_horizon_;
   double sampling_delta_time_;
 
-  bool getPredictedPath(
-    const double height, const double current_d_position, const double current_d_velocity,
-    const double current_s_position, const double current_s_velocity,
-    const double target_s_position, const std_msgs::Header & origin_header, Spline2D & spline2d,
-    autoware_perception_msgs::PredictedPath & path);
+  bool getPredictedPath(const double height, const double current_d_position, const double current_d_velocity,
+                        const double current_s_position, const double current_s_velocity,
+                        const double target_s_position, const std_msgs::Header& origin_header, Spline2D& spline2d,
+                        autoware_perception_msgs::PredictedPath& path);
 
-  bool getLinearPredictedPath(
-    const geometry_msgs::Pose & object_pose, const geometry_msgs::Twist & object_twist,
-    const std_msgs::Header & origin_header,
-    autoware_perception_msgs::PredictedPath & predicted_path);
+  bool getLinearPredictedPath(const geometry_msgs::Pose& object_pose, const geometry_msgs::Twist& object_twist,
+                              const std_msgs::Header& origin_header,
+                              autoware_perception_msgs::PredictedPath& predicted_path);
 
   // double calculateLikelyhood(const double desired_yaw, const double current_d, const double current_yaw);
   double calculateLikelyhood(const double current_d);
 
-  bool normalizeLikelyhood(std::vector<autoware_perception_msgs::PredictedPath> & paths);
+  bool normalizeLikelyhood(std::vector<autoware_perception_msgs::PredictedPath>& paths);
 
 public:
-  MapBasedPrediction(
-    double interpolating_resolution, double time_horizon, double sampling_delta_time);
+  MapBasedPrediction(double interpolating_resolution, double time_horizon, double sampling_delta_time);
 
-  bool doPrediction(
-    const DynamicObjectWithLanesArray & in_objects,
-    std::vector<autoware_perception_msgs::DynamicObject> & out_objects,
-    std::vector<geometry_msgs::Point> & debug_interpolated_points);
+  bool doPrediction(const DynamicObjectWithLanesArray& in_objects,
+                    std::vector<autoware_perception_msgs::DynamicObject>& out_objects,
+                    std::vector<geometry_msgs::Point>& debug_interpolated_points);
 
-  bool doLinearPrediction(
-    const autoware_perception_msgs::DynamicObjectArray & in_objects,
-    std::vector<autoware_perception_msgs::DynamicObject> & out_objects);
+  bool doLinearPrediction(const autoware_perception_msgs::DynamicObjectArray& in_objects,
+                          std::vector<autoware_perception_msgs::DynamicObject>& out_objects);
 };
 
 #endif  // MAP_BASED_PREDICTION_H
