@@ -367,7 +367,8 @@ class SIGNAL_ANALYZER(object):
         Output: json string
         """
         json_dict = dict()
-        json_dict["module"] = self.module_name
+        checker_name = self.module_name + "_" + self.signal_name # self.module_name
+        json_dict["module"] = checker_name
         json_dict["status"] = status
         json_dict["event_str"] = "[%s]%s" % (self.signal_name, event_str)
         return json.dumps(json_dict)
