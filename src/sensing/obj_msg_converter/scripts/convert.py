@@ -58,8 +58,8 @@ class Node:
 
             out_obj.shape.type = 2
             # out_obj.shape.dimensions =
-            if not obj.cPoint.lowerAreaPoints.empty():
-                for p in cPoint.lowerAreaPoints:
+            if not in_obj.cPoint.lowerAreaPoints:
+                for p in in_obj.cPoint.lowerAreaPoints:
                     out_obj.shape.footprint.append(Point32(p.x, p.y, p.z))
 
             out_list.objects.append(out_obj)
