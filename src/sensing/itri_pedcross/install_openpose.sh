@@ -1,8 +1,13 @@
 #!/bin/bash
+##########################################################
+# for OpenCV 4 above                                     #
+# openpose version: commit b365f48                       #
+# caffe version: commit c95002fb                         #
+# caffe version will depend on newest update on GitHub   #
+##########################################################
 
 sudo apt-get install protobuf-compiler libatlas-base-dev 
-# openpose version: commit 825f0d0
-# caffe version: commit b5ede48
+
 wget http://nas.itriadv.co:8888/git_data/B1/ped_models/openpose.tar.gz
 tar zxvf openpose.tar.gz
 cd ./openpose
