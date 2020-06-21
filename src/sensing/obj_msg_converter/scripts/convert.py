@@ -6,7 +6,12 @@ from geometry_msgs.msg import Polygon, PolygonStamped, Point32, Point
 from std_msgs.msg import Header
 from msgs.msg import *
 from autoware_perception_msgs.msg import *
+import numpy as np
 
+def my_divide(dividend, divisor):
+    remain = dividend % divisor
+    floor = dividend // divisor
+    return floor, remain
 
 class Node:
 
@@ -32,7 +37,16 @@ class Node:
         for in_obj in in_list.objects:
             out_obj = DynamicObject()
 
-            out_obj.id = in_obj.track.id
+            # in_obj.track.id(uint32) to out_obj.id.uuid(uint8[16])
+            id_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            tmp_id = in_obj.track.id
+            tmp_id, id_list[15]= my_divide(tmp_id, 256)
+            tmp_id, id_list[14]= my_divide(tmp_id, 256)
+            tmp_id, id_list[13]= my_divide(tmp_id, 256)
+            tmp_id, id_list[12]= my_divide(tmp_id, 256)
+            out_obj.id.uuid = id_list
+            # print('in_obj.track.id = {0}'.format(in_obj.track.id))
+            # print('out_obj.id.uuid = {0}'.format(out_obj.id.uuid))
 
             out_obj.semantic.type = in_obj.classId
             out_obj.semantic.confidence = in_obj.camInfo.prob
