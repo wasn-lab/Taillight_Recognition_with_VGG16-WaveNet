@@ -5,7 +5,7 @@ import rospy
 from geometry_msgs.msg import Polygon, PolygonStamped, Point32, Point
 from std_msgs.msg import Header
 from msgs.msg import *
-from msgs2.autoware_perception_msgs.msg.object_recognition import *
+from autoware_perception_msgs.msg import *
 
 
 class Node:

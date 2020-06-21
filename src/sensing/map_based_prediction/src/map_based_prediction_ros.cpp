@@ -190,7 +190,7 @@ MapBasedPredictionROS::MapBasedPredictionROS() : pnh_("~"), interpolating_resolu
 void MapBasedPredictionROS::createROSPubSub()
 {
   sub_objects_ = nh_.subscribe<autoware_perception_msgs::DynamicObjectArray>(
-    "/perception/object_recognition/tracking/objects", 1, &MapBasedPredictionROS::objectsCallback,
+    "/Tracking3D_aw", 1, &MapBasedPredictionROS::objectsCallback,
     this);
   sub_map_ = nh_.subscribe("/vector_map", 10, &MapBasedPredictionROS::mapCallback, this);
 
