@@ -38,11 +38,11 @@ class Node:
             out_obj.semantic.confidence = in_obj.camInfo.prob
 
             out_obj.state.pose_covariance.pose.position.x = (
-                in_obj.bPoint.b0.x + in_obj.bPoint.b7.x) / 2
+                in_obj.bPoint.p0.x + in_obj.bPoint.p7.x) / 2
             out_obj.state.pose_covariance.pose.position.y = (
-                in_obj.bPoint.b0.y + in_obj.bPoint.b7.y) / 2
+                in_obj.bPoint.p0.y + in_obj.bPoint.p7.y) / 2
             out_obj.state.pose_covariance.pose.position.z = (
-                in_obj.bPoint.b0.z + in_obj.bPoint.b7.z) / 2
+                in_obj.bPoint.p0.z + in_obj.bPoint.p7.z) / 2
             # out_obj.state.pose_covariance.pose.orientation =
             # out_obj.state.pose_covariance.covariance =
 
