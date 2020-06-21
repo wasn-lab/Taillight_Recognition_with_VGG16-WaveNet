@@ -8,10 +8,12 @@ from msgs.msg import *
 from autoware_perception_msgs.msg import *
 import numpy as np
 
+
 def my_divide(dividend, divisor):
     remain = dividend % divisor
     floor = dividend // divisor
     return floor, remain
+
 
 class Node:
 
@@ -31,13 +33,13 @@ class Node:
     def track3d_callback(self, msg):
         self.track3d_aw_pub.publish(self.msg_convert(msg))
 
-    def classid_convert(self, input): 
+    def classid_convert(self, input):
         dict = {
             0: 0,
-            1: 6, 
+            1: 6,
             2: 4,
             3: 5,
-            4: 1, 
+            4: 1,
             5: 3,
             6: 2,
             7: -1,
@@ -45,7 +47,6 @@ class Node:
             9: -1
         }
         return dict.get(input)
-
 
     def msg_convert(self, in_list):
         out_list = DynamicObjectArray()
@@ -57,10 +58,10 @@ class Node:
             # in_obj.track.id(uint32) to out_obj.id.uuid(uint8[16])
             id_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             tmp_id = in_obj.track.id
-            tmp_id, id_list[15]= my_divide(tmp_id, 256)
-            tmp_id, id_list[14]= my_divide(tmp_id, 256)
-            tmp_id, id_list[13]= my_divide(tmp_id, 256)
-            tmp_id, id_list[12]= my_divide(tmp_id, 256)
+            tmp_id, id_list[15] = my_divide(tmp_id, 256)
+            tmp_id, id_list[14] = my_divide(tmp_id, 256)
+            tmp_id, id_list[13] = my_divide(tmp_id, 256)
+            tmp_id, id_list[12] = my_divide(tmp_id, 256)
             out_obj.id.uuid = id_list
             # print('in_obj.track.id = {0}'.format(in_obj.track.id))
             # print('out_obj.id.uuid = {0}'.format(out_obj.id.uuid))
