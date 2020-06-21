@@ -31,6 +31,22 @@ class Node:
     def track3d_callback(self, msg):
         self.track3d_aw_pub.publish(self.msg_convert(msg))
 
+    def classid_convert(self, input): 
+        dict = {
+            0: 0,
+            1: 6, 
+            2: 4,
+            3: 5,
+            4: 1, 
+            5: 3,
+            6: 2,
+            7: -1,
+            8: -1,
+            9: -1
+        }
+        return dict.get(input)
+
+
     def msg_convert(self, in_list):
         out_list = DynamicObjectArray()
         out_list.header = in_list.header
@@ -49,7 +65,9 @@ class Node:
             # print('in_obj.track.id = {0}'.format(in_obj.track.id))
             # print('out_obj.id.uuid = {0}'.format(out_obj.id.uuid))
 
-            out_obj.semantic.type = in_obj.classId
+            out_obj.semantic.type = self.classid_convert(in_obj.classId)
+            # print('in_obj.classId = {0}; out_obj.semantic.type = {1}'.format(in_obj.classId, out_obj.semantic.type))
+
             out_obj.semantic.confidence = in_obj.camInfo.prob
 
             out_obj.state.pose_covariance.pose.position.x = (
