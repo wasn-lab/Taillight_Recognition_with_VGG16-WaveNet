@@ -33,6 +33,7 @@ class Node:
 
     def msg_convert(self, in_list):
         out_list = DynamicObjectArray()
+        out_list.header = in_list.header
 
         for in_obj in in_list.objects:
             out_obj = DynamicObject()
