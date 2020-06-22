@@ -9,14 +9,7 @@ from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_dee
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import YoloBBox
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
-
-def read_result_json(filename):
-    if not os.path.isfile(filename):
-        logging.error("File not found: %s", filename)
-        return []
-    with io.open(filename, encoding="utf-8") as _fp:
-        jdata = json.load(_fp)
-    return jdata
+from json_utils import read_json_file
 
 
 def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
@@ -87,7 +80,7 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
 
 class YoloMgr(object):
     def __init__(self, json_file):
-        self.frames = read_result_json(json_file)
+        self.frames = read_json_file(json_file)
 
     def get_weakest_images(self, amount=0):
         """Move weakest images to |weakness_dir|"""
