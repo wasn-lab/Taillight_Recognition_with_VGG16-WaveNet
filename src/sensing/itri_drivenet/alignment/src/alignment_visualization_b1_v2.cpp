@@ -14,6 +14,7 @@
 #include <drivenet/object_label_util.h>
 #include "point_preprocessing.h"
 #include "points_in_image_area.h"
+#include "point_preprocessing.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -36,7 +37,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30, camera::id::right_back_60, camera::id::left_back_60};
 #else
 #error "car model is not well defined"
 #endif
@@ -96,6 +97,36 @@ std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> g_cams_bboxs_points(g_
 void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
+void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
+void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
+void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -213,6 +244,26 @@ void displayLidarData()
   pclInitializer(cams_points_ptr);
   pointsColorInit(rgb_cams_points, g_cams_points_ptr);
 
+  MinMax3D point_50m, point_40m, point_30m, point_20m, point_10m;
+  cv::Scalar color_50m, color_40m, color_30m, color_20m, color_10m;
+  float x_dist = 50;
+  float y_dist = 50;
+  float z_dist = -3;
+  point_50m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_50m = g_visualization.getDistColor(x_dist);
+  x_dist -= 10;
+  point_40m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_40m = g_visualization.getDistColor(x_dist);
+  x_dist -= 10;
+  point_30m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_30m = g_visualization.getDistColor(x_dist);
+  x_dist -= 10;
+  point_20m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_20m = g_visualization.getDistColor(x_dist);
+  x_dist -= 10;
+  point_10m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_10m = g_visualization.getDistColor(x_dist);
+
   /// main loop
   ros::Rate loop_rate(10);
   while (ros::ok() && !pcl_viewer->wasStopped())
@@ -229,6 +280,17 @@ void displayLidarData()
     // std::lock_guard<std::mutex> lock_lidar_process(g_mutex_lidar_process);
     // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");  //,
     // viewports[0]);
+
+    pcl_viewer->addLine<pcl::PointXYZI>(point_50m.p_min, point_50m.p_max, color_50m[2], color_50m[1], color_50m[0],
+                                        "line-50m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_40m.p_min, point_40m.p_max, color_40m[2], color_40m[1], color_40m[0],
+                                        "line-40m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_30m.p_min, point_30m.p_max, color_30m[2], color_30m[1], color_30m[0],
+                                        "line-30m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_20m.p_min, point_20m.p_max, color_20m[2], color_20m[1], color_20m[0],
+                                        "line-20m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_10m.p_min, point_10m.p_max, color_10m[2], color_10m[1], color_10m[0],
+                                        "line-10m");
 
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
@@ -346,8 +408,8 @@ void runInference()
 
 int main(int argc, char** argv)
 {
-  std::cout << "===== Alignment startup. =====" << std::endl;
-  ros::init(argc, argv, "Alignment");
+  std::cout << "===== Alignment_visualization startup. =====" << std::endl;
+  ros::init(argc, argv, "Alignment_visualization");
   ros::NodeHandle nh;
 
   /// ros Subscriber
@@ -355,7 +417,8 @@ int main(int argc, char** argv)
   ros::Subscriber lidarall;
 
   /// get callback function
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60 };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60, callback_cam_front_top_far_30,
+  callback_cam_right_back_60, callback_cam_left_back_60 };
 
   /// set topic name
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -389,7 +452,7 @@ int main(int argc, char** argv)
   int thread_count = int(g_cam_ids.size()) * 2 + 1;  /// camera raw + object + lidar raw
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
-  std::cout << "===== Alignment running... =====" << std::endl;
+  std::cout << "===== Alignment_visualization running... =====" << std::endl;
 
   /// main loop end
   if (g_is_display)
@@ -398,6 +461,6 @@ int main(int argc, char** argv)
     display_camera_thread.join();
   }
   main_thread.join();
-  std::cout << "===== Alignment shutdown. =====" << std::endl;
+  std::cout << "===== Alignment_visualization shutdown. =====" << std::endl;
   return 0;
 }
