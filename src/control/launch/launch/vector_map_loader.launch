@@ -1,0 +1,7 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <include file="$(find map_file)/launch/vector_map_loader.launch"/>
+  <include file="$(find object_map)/launch/wayarea2grid.launch"/>
+
+</launch>

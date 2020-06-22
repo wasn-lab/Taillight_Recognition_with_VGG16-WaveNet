@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   tf
   car_model
+  gnss_utility
 )
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -21,7 +22,7 @@ include(CompilerFlags)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp std_msgs car_model
+  CATKIN_DEPENDS roscpp std_msgs car_model gnss_utility
 )
 
 include_directories(

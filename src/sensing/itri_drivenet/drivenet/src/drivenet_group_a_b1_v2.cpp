@@ -31,6 +31,7 @@ int g_car_id = 1;
 int g_dist_est_mode = 0;
 bool g_standard_fps = false;
 bool g_display_flag = false;
+bool g_debug_flag = false;
 bool g_input_resize = true;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
 bool g_img_result_publish = true;
 bool g_lidarall_publish = true;
@@ -235,6 +236,7 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/car_id", g_car_id);
   ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_fps);
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
+  ros::param::get(ros::this_node::getName() + "/debug", g_debug_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
   ros::param::get(ros::this_node::getName() + "/lidarall_publish", g_lidarall_publish);
@@ -524,20 +526,33 @@ void* run_yolo(void* /*unused*/)
       {
         det_obj = pool[i].get();
         v_do.push_back(det_obj);
-        // if (g_display_flag)
-        // {
-        //   if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
-        //   {
-        //     int x1 = detObj.camInfo.u;
-        //     int y1 = detObj.camInfo.v;
-        //     float distance = detObj.distance;
-        //     distance = truncateDecimalPrecision(distance, 1);
-        //     std::string distance_str = floatToString_with_RealPrecision(distance);
+        if (g_img_result_publish || g_display_flag)
+        {
+          int x1 = det_obj.camInfo.u;
+          int y1 = det_obj.camInfo.v;
+          PixelPosition position_1{ x1, y1 };
+          transferPixelScaling(position_1);
 
-        //     class_color = get_common_label_color(detObj.classId);
-        //     cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
-        //   }
-        // }
+          float class_id = det_obj.camInfo.id;
+          class_color = get_common_label_color(class_id);
+
+          if (g_debug_flag)
+          {
+            // draw class name
+            std::string class_name = get_common_label_string(class_id);
+            cv::putText(m_display, class_name, cvPoint(position_1.u + 10, position_1.v + 10), 0, 0.3, class_color, 1);
+          }
+
+          // draw distance
+          if (det_obj.bPoint.p0.x != 0 && det_obj.bPoint.p0.z != 0)
+          {
+            float distance = det_obj.distance;
+            distance = truncateDecimalPrecision(distance, 1);
+            std::string distance_str = floatToString_with_RealPrecision(distance);
+            cv::putText(m_display, distance_str + " m", cvPoint(position_1.u + 5, position_1.v - 5), 0, 0.3,
+                        class_color, 1);
+          }
+        }
       }
 
       doa.header = headers_tmp[cam_order];

@@ -2,6 +2,12 @@ set(DEEPLAB_LIB "deeplab")
 set(DEEPLAB_EXE "deeplab_node")
 set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
 
+catkin_download_test_data(xception65_coco_voc_trainval.pb
+  "http://nas.itriadv.co:8888/git_data/B1/deeplab/xception65_coco_voc_trainval.pb"
+  DESTINATION ${deeplab_SOURCE_DIR}/weights
+  MD5 ab5108a6fc6824c9cda9090a19181ca6
+)
+
 set(DEEPLAB_LIB_SRCS
   tf_utils.cpp
   deeplab_args_parser.cpp
@@ -32,7 +38,13 @@ set(DEEPLAB_LIB_DEPS
 include_directories(${DEEPLAB_INCLUDE_DIRS})
 link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
-add_library(${DEEPLAB_LIB} STATIC ${DEEPLAB_LIB_SRCS})
-add_executable(${DEEPLAB_EXE} ${DEEPLAB_DETECTOR_SRCS})
+add_library(${DEEPLAB_LIB} EXCLUDE_FROM_ALL STATIC ${DEEPLAB_LIB_SRCS})
 target_link_libraries(${DEEPLAB_LIB} ${DEEPLAB_LIB_DEPS})
+add_dependencies(${DEEPLAB_LIB} xception65_coco_voc_trainval.pb)
+
+add_executable(${DEEPLAB_EXE} EXCLUDE_FROM_ALL ${DEEPLAB_DETECTOR_SRCS})
 target_link_libraries(${DEEPLAB_EXE} ${DEEPLAB_LIB})
+
+set(DEEPLAB_CMD_SRCS deeplab_cmd.cpp)
+add_executable(deeplab_cmd EXCLUDE_FROM_ALL ${DEEPLAB_CMD_SRCS})
+target_link_libraries(deeplab_cmd ${DEEPLAB_LIB})
