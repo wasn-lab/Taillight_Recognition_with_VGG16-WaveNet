@@ -75,13 +75,22 @@ public:
   void run();
   void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
-  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache);
   void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer &buffer, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache, int from_camera);
+  void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
-                         ros::Time time);
+                         ros::Time time, Buffer &buffer);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
@@ -110,12 +119,16 @@ public:
   msgs::VehInfo veh_info;
   std::vector<geometry_msgs::PoseStamped> nav_path;
   std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache;
   std::vector<std::string> ped_info;
   std::string delay_from_camera = "NA";
   std::string chatter_callback_info = "Not running";
-  Buffer buffer;
+  Buffer buffer_front;
+  Buffer buffer_left;
+  Buffer buffer_right;
   int buffer_size = 60;
 
   // ROS components
@@ -132,6 +145,11 @@ public:
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_4;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_5;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_6;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_7;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_8;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_9;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
