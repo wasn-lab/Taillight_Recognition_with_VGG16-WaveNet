@@ -659,27 +659,15 @@ nvinfer1::ILayer* netAddUpsample(int layerIdx, std::map<std::string, std::string
     std::string postLayerName = "postMul_" + std::to_string(layerIdx);
     post_m->setName(postLayerName.c_str());
     // add matrix multiply layers for upsampling
-#if TENSORRT_VERSION_MAJOR == 5
     nvinfer1::IMatrixMultiplyLayer* mm1
         = network->addMatrixMultiply(*preM->getOutput(0), nvinfer1::MatrixOperation::kNONE, *input,
                                      nvinfer1::MatrixOperation::kNONE);
-#elif TENSORRT_VERSION_MAJOR == 4
-    nvinfer1::IMatrixMultiplyLayer* mm1
-        = network->addMatrixMultiply(*preM->getOutput(0), false, *input,
-                                     false);
-#endif
     assert(mm1 != nullptr);
     std::string mm1LayerName = "mm1_" + std::to_string(layerIdx);
     mm1->setName(mm1LayerName.c_str());
-#if TENSORRT_VERSION_MAJOR == 5
     nvinfer1::IMatrixMultiplyLayer* mm2
         = network->addMatrixMultiply(*mm1->getOutput(0), nvinfer1::MatrixOperation::kNONE,
                                      *post_m->getOutput(0), nvinfer1::MatrixOperation::kNONE);
-#elif TENSORRT_VERSION_MAJOR == 4
-    nvinfer1::IMatrixMultiplyLayer* mm2
-        = network->addMatrixMultiply(*mm1->getOutput(0), false,
-                                     *post_m->getOutput(0), false);
-#endif
     assert(mm2 != nullptr);
     std::string mm2LayerName = "mm2_" + std::to_string(layerIdx);
     mm2->setName(mm2LayerName.c_str());

@@ -39,6 +39,7 @@ DEFINE_string(calibration_images_path, "not-specified",
               "'calibration_images' flag");
 DEFINE_uint64(batch_size, 3, "[OPTIONAL] Batch size for the inference engine.");
 DEFINE_double(prob_thresh, 0.5, "[OPTIONAL] Probability threshold for detected objects");
+DEFINE_double(prob_thresh_bike, 0.35, "[OPTIONAL] Probability threshold for detected bike objects");
 DEFINE_double(nms_thresh, 0.5, "[OPTIONAL] IOU threshold for bounding box candidates");
 DEFINE_bool(do_benchmark, false, "[OPTIONAL] Generate JSON file with detection info in coco benchmark format");
 DEFINE_bool(save_detections, false, "[OPTIONAL] Flag to save images overlayed with objects detected.");
@@ -143,10 +144,13 @@ NetworkInfo getYoloNetworkInfo()
 
 InferParams getYoloInferParams()
 {
-  return InferParams{
-    FLAGS_print_perf_info,         FLAGS_print_prediction_info,           FLAGS_calibration_images,
-    FLAGS_calibration_images_path, static_cast<float>(FLAGS_prob_thresh), static_cast<float>(FLAGS_nms_thresh)
-  };
+  return InferParams{ FLAGS_print_perf_info,
+                      FLAGS_print_prediction_info,
+                      FLAGS_calibration_images,
+                      FLAGS_calibration_images_path,
+                      static_cast<float>(FLAGS_prob_thresh),
+                      static_cast<float>(FLAGS_prob_thresh_bike),
+                      static_cast<float>(FLAGS_nms_thresh) };
 }
 
 uint64_t getSeed()
