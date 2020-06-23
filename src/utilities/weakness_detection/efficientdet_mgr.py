@@ -1,29 +1,25 @@
 #!/usr/bin/env python
-import os
 import logging
+from json_utils import read_json_file
+from bbox import BBox
+from nn_labels import EFFICIENTDET_CLASS_ID_TO_NAME
 
 
 class EfficientDetMgr(object):
     def __init__(self, json_file):
-        self.labels = self.__read_efficientdet_output(json_file)
-
-    def get_label_by_xy(self, x, y):
-        """Return the label at the specific location (x, y)"""
-        return self.labels[y][x]
-
-    def __read_labels_by_deeplab_output(self, png_file):
-        """Each pixel in |png_file| is labels. EX: 15 is person."""
-        if not os.path.isfile(png_file):
-            logging.error("File not exist: %s", png_file)
-            return None
-        img = cv2.imread(png_file, cv2.CV_8UC1)
-        return img
-
-    def count_labels(self):
-        pixel_map = {}
-        for row in range(DEEPLAB_IMAGE_HEIGHT):
-            for col in range(DEEPLAB_IMAGE_WIDTH):
-                label = self.labels[row][col]
-                if label > 0:
-                    pixel_map[label] = 1 + pixel_map.get(label, 0)
-        return pixel_map
+        detection_result = read_json_file(json_file)
+        self.bboxes = []
+        for i in range(len(detection_result["class_ids"])):
+            bbox = BBox()
+            bbox.class_id = detection_result["class_ids"][i]
+            if bbox.class_id not in EFFICIENTDET_CLASS_ID_TO_NAME:
+                logging.warning("Ignore class_id %d", bbox.class_id)
+                continue
+            bbox.confidence = detection_result["scores"][i]
+            roi = detection_result["rois"][i]
+            bbox.left_x = int(roi[0] + 0.5)
+            bbox.top_y = int(roi[1] + 0.5)
+            bbox.right_x = int(roi[2] + 0.5)
+            bbox.bottom_y = int(roi[3] + 0.5)
+            bbox.name = EFFICIENTDET_CLASS_ID_TO_NAME[bbox.class_id]
+            self.bboxes.append(bbox)

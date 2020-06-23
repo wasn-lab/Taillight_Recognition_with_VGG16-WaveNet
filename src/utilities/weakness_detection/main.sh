@@ -5,6 +5,7 @@ TMP_DIR=/tmp
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly darknet_dir=${repo_dir}/src/utilities/alexab_darknet
 readonly drivenet_dir=${repo_dir}/src/sensing/itri_drivenet/drivenet
+readonly weakness_det_dir=${repo_dir}/src/utilities/weakness_detection
 readonly cfg_file=${drivenet_dir}/data/yolo/yolov3.cfg
 readonly data_file=${darknet_dir}/cfg/drivenet_fov60.data
 readonly weights_file=${drivenet_dir}/data/yolo/yolov3_b1.weights
@@ -90,8 +91,24 @@ function run_yolo {
   fi
 }
 
-function find_yolo_deeplab_mismatch {
+function find_weakness {
   python find_weakness.py
+}
+
+function run_efficientdet {
+  pushd ${weakness_det_dir}
+  if [[ ! -f Yet-Another-EfficientDet-Pytorch/weights/efficientdet-d4.pth ]]; then
+    mkdir -p Yet-Another-EfficientDet-Pytorch/weights
+    pushd Yet-Another-EfficientDet-Pytorch/weights
+    wget http://nas.itriadv.co:8888/git_data/B1/efficientdet-pytorch/efficientdet-d4.pth
+    popd
+  fi
+  source ~/py36_efficientdet/bin/activate
+  pushd Yet-Another-EfficientDet-Pytorch
+  python efficientdet_itri.py
+  deactivate
+  popd
+  popd
 }
 
 make_itrisaver
@@ -99,5 +116,7 @@ save_images $@
 run_deeplab
 build_darknet_exe
 run_yolo
-find_yolo_deeplab_mismatch
+run_efficientdet
+
+find_weakness
 #rm_tmp_files
