@@ -76,6 +76,7 @@ std::queue<std::string> q;
 std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
+std::queue<std::string> vkStatusQueue;
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
 std::queue<json> eventQueue2;
@@ -770,11 +771,17 @@ void sendRun(int argc, char** argv)
     while (vkQueue.size() != 0)
     {
       UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
-      UDP_VK_FG_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
- 
+    
+    while (vkStatusQueue.size() != 0)
+    {
+      UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
+      UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
+      //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      vkStatusQueue.pop();
+    }
     mutex_queue.unlock();
 
    
@@ -974,14 +981,14 @@ void receiveRosRun(int argc, char** argv)
     {
       std::string temp_vk002 = get_jsonmsg_to_vk_server("M8.2.VK002");
       mutex_queue.lock();
-      vkQueue.push(temp_vk002);
+      vkStatusQueue.push(temp_vk002);
       mutex_queue.unlock();
     }
     else
     {
       std::string temp_vk001 = get_jsonmsg_to_vk_server("M8.2.VK001");
       mutex_queue.lock();
-      vkQueue.push(temp_vk001);
+      vkStatusQueue.push(temp_vk001);
       mutex_queue.unlock();
     }
 
