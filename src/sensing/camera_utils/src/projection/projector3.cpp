@@ -3,22 +3,42 @@
 #include "car_model.h"
 #include "camera_params.h"
 #include <camera_utils_defs.h>
-#include <string.h>
+#include <cstring>
 
 void Projector3::init(int camera_id)
 {
-  char* file_name;
-  char* file_path;
+  
 #if CAR_MODEL_IS_B1_V2
   switch (camera_id)
   {
     case camera::id::front_bottom_60:
-      file_name = (char*)"/fix_0310_front_bottom_60.yml";
-      file_path = new char[std::strlen(CAMERA_UTILS_DATA_DIR) + std::strlen(file_name) + 1];
-      std::strcpy(file_path, CAMERA_UTILS_DATA_DIR);
-      std::strcat(file_path, file_name);
-      readCameraParameters(file_path);
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_bottom_60_0310.yml");
+      readCameraParameters(file_path.c_str());
+    }
       break;
+
+    case camera::id::front_top_far_30:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_top_far_30_0608.yml");
+      readCameraParameters(file_path.c_str());
+    }
+      break;
+    
+    case camera::id::right_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_right_back_60_0619.yml");
+      readCameraParameters(file_path.c_str());
+    }
+      break;
+
+    case camera::id::left_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_left_back_60_0528.yml");
+      readCameraParameters(file_path.c_str());
+    }
+      break;
+    
     default:
       std::cerr << " No match camera id, init failed." << std::endl;
       break;

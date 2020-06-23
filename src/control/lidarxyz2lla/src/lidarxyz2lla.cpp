@@ -9,8 +9,11 @@
 #include <ros/package.h>
 #include <cstring>
 #include <fstream>
+#include <cmath>
 #include <tf/tf.h>
 #include <geometry_msgs/PoseStamped.h>
+
+#include "gnss_utility/gnss_utility.h"
 
 //------------------------------------------------------------------------------------------------------
 // Global Parameter
@@ -23,12 +26,32 @@ double T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3
 
 int LidXYZ2ENU_siwtch = 1;
 
-ros::Publisher lidarlla_pub; 
+// twd972wgs84
+double shift_x,shift_y,shift_z;
+
+ros::Publisher lidarlla_pub;
+ros::Publisher lidarlla_wgs84_pub;
+ros::Publisher lidarlla_heading_pub;
 ros::Subscriber lidarlla_sub ;
 // lidarxyz2lla::lidarxyz lidarxyzmsg;
 //------------------------------------------------------------------------------------------------------
 
 geodetic_converter::GeodeticConverter g_geodetic_converter;
+gnss_utility::gnss gnss_tf;
+
+// void testgnss()
+// {
+//     double lat;
+//     double lon;
+//     double E = 250000;
+//     double N = 2655023.12504066;
+//     bool pkm = false;
+    
+//     gnss_tf.TWD97toWGS84(E, N, &lat, &lon, pkm);
+
+//     std::cout << "test : " << lon << std::endl;
+//     std::cout << "test : " << lat << std::endl;
+// }
 
 void initial_para()
 {
@@ -36,6 +59,7 @@ void initial_para()
 	int read_index = 0;
 	std::string fname = ros::package::getPath("lidarxyz2lla");
 	fname += "/data/ITRI_NEW_LidXYZ2ENU_sec.txt";
+	// fname += "/data/Shalun_LidXYZ2ENU.txt";
   	std::cout << fname << std::endl;
 
   	std::ifstream fin;
@@ -146,6 +170,45 @@ void initial_para()
     std::cout << "init_long : " << std::setprecision(20) << ini_lon << std::endl;
     std::cout << "init_lat : " << std::setprecision(20) << ini_lat << std::endl;
     std::cout << "init_alt : " << std::setprecision(20) << ini_alt << std::endl;
+}
+
+void initial_para_1()
+{
+	double read_tmp_1[3];
+	int read_index_1 = 0;
+	std::string fname_1 = ros::package::getPath("lidarxyz2lla");
+	fname_1 += "/data/ITRI_ShiftLidarxyz2TWD97.txt";
+  	std::cout << fname_1 << std::endl;
+
+  	std::ifstream fin_1;
+    char line_1[100];
+    memset( line_1, 0, sizeof(line_1));
+
+    fin_1.open(fname_1.c_str(),std::ios::in);
+    if(!fin_1) 
+    {
+        std::cout << "Fail to import txt" <<std::endl;
+        exit(1);
+    }
+
+    while(fin_1.getline(line_1,sizeof(line_1),',')) 
+    {
+		// fin_1.getline(line_1,sizeof(line_1),'\n');
+	    std::string nmea_str(line_1);
+	    std::stringstream ss(nmea_str);
+	    std::string token;
+
+	    getline(ss,token, ',');
+	    read_tmp_1[read_index_1] = atof(token.c_str());
+	    read_index_1 += 1;
+    }
+    shift_x = read_tmp_1[0];
+    shift_y = read_tmp_1[1];
+    shift_z = read_tmp_1[2];
+
+    std::cout << "shift_x : " << std::setprecision(20) << shift_x << std::endl;
+    std::cout << "shift_y : " << std::setprecision(20) << shift_y << std::endl;
+    std::cout << "shift_z : " << std::setprecision(20) << shift_z << std::endl;
 }
 
 // void lidarxyztopicCallback(const lidarxyz2lla::LidXYZ::ConstPtr& lidarxyzmsg)
@@ -280,12 +343,51 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 	lidarllamsg.lidar_Lon = lidar_lon;
 	lidarllamsg.lidar_Alt = lidar_alt;
 	lidarlla_pub.publish(lidarllamsg);
+
+	// twd97 to wgs84
+	double lidar_E_twd97 = lidar_X + shift_x;
+	double lidar_N_twd97 = lidar_Y + shift_y;
+	double lidar_U_twd97 = lidar_Z + shift_z;
+	bool pkm = false;
+	double lidar_lon_wgs84,lidar_lat_wgs84;
+	double lidar_alt_wgs84 = lidar_U_twd97;
+
+	gnss_tf.TWD97toWGS84(lidar_E_twd97, lidar_N_twd97, &lidar_lat_wgs84, &lidar_lon_wgs84, pkm);
+
+	msgs::LidLLA lidarllamsg_wgs84;
+	lidarllamsg_wgs84.lidar_Lat = lidar_lat_wgs84;
+	lidarllamsg_wgs84.lidar_Lon = lidar_lon_wgs84;
+	lidarllamsg_wgs84.lidar_Alt = lidar_alt_wgs84;
+	lidarlla_wgs84_pub.publish(lidarllamsg_wgs84);
+
+	std::cout <<"lidar Lat wgs84 : "<< std::setprecision(20) << lidar_lat_wgs84 << std::endl;
+	std::cout <<"lidar Lon wgs84 : "<< std::setprecision(20) << lidar_lon_wgs84 << std::endl;
+	std::cout <<"lidar Alt wgs84 : "<< std::setprecision(20) << lidar_alt_wgs84 << std::endl;
+
+	// lidar heading to gnss
+	double lidar_roll, lidar_pitch, lidar_yaw;
+  	tf::Quaternion lidar_q(lidarxyzmsg->pose.orientation.x, lidarxyzmsg->pose.orientation.y, lidarxyzmsg->pose.orientation.z,lidarxyzmsg->pose.orientation.w);
+  	tf::Matrix3x3 lidar_m(lidar_q);
+  	lidar_m.getRPY(lidar_roll, lidar_pitch, lidar_yaw);
+
+	std_msgs::Float64 lidartognss_yaw;
+	lidartognss_yaw.data = -(lidar_yaw-M_PI/2)*180/M_PI;
+	if (lidartognss_yaw.data >= 360)
+	{
+		lidartognss_yaw.data = lidartognss_yaw.data - 360;
+	}
+	if (lidartognss_yaw.data < 0)
+	{
+		lidartognss_yaw.data = lidartognss_yaw.data + 360;
+	}
+	lidarlla_heading_pub.publish(lidartognss_yaw);
 }
 
 int main( int argc, char **argv )
 {
 	// initial parameter
 	initial_para();
+	initial_para_1();
 	// ros initial
 	ros::init(argc, argv, "lidarxyz2lla");
 	ros::NodeHandle nh;
@@ -293,6 +395,8 @@ int main( int argc, char **argv )
 	// subscriber
 	lidarlla_sub = nh.subscribe("current_pose", 1, lidarxyztopicCallback_1);
 	lidarlla_pub = nh.advertise<msgs::LidLLA>("lidar_lla", 1);
+	lidarlla_wgs84_pub = nh.advertise<msgs::LidLLA>("lidar_lla_wgs84", 1);
+	lidarlla_heading_pub = nh.advertise<std_msgs::Float64>("lidar_lla_heading", 1);
 	ros::spin();
 
 	return 0 ;

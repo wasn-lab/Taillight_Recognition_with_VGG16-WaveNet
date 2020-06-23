@@ -21,11 +21,11 @@ export dn_launch_file=b1_v2_drivenet_group_a.launch
 roslaunch car_model drivenet_b1_v2_node_hz.test | tee -a ${logf_separately}
 
 echo "STATUS: Run drivenet node b"
-export dn_launch_file=b1_v2_drivenet_group_b.launch
+export dn_launch_file=b1_v2_drivenet_side.launch
 roslaunch car_model drivenet_b1_v2_node_hz.test | tee -a ${logf_separately}
 
 echo "STATUS: Run drivenet node c"
-export dn_launch_file=b1_v2_drivenet_group_c.launch
+export dn_launch_file=b1_v2_drivenet_top.launch
 roslaunch car_model drivenet_b1_v2_node_hz.test | tee -a ${logf_separately}
 }
 

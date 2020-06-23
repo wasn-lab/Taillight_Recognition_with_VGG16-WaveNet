@@ -73,18 +73,30 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
 
 void Track2DNode::subscribe_and_advertise_topics()
 {
-  if (in_source_ == 1)
+  if (in_source_ == 0)
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
     camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D", 2);
   }
-  else
+  else if (in_source_ == 1)
   {
-    LOG_INFO << "Input Source: /CamObjFrontCenter" << std::endl;
-    camera_sub_ = nh_.subscribe("/CamObjFrontCenter", 1, &Track2DNode::callback_camera, this);
+    LOG_INFO << "Input Source: /cam_obj/front_bottom_60" << std::endl;
+    camera_sub_ = nh_.subscribe("/cam_obj/front_bottom_60", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 2);
   }
-
-  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking2D", 2);
+  else if (in_source_ == 2)
+  {
+    LOG_INFO << "Input Source: /cam_obj/left_back_60" << std::endl;
+    camera_sub_ = nh_.subscribe("/cam_obj/left_back_60", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/left_back_60", 2);
+  }
+  else  // if(in_source_ == 3)
+  {
+    LOG_INFO << "Input Source: /cam_obj/right_back_60" << std::endl;
+    camera_sub_ = nh_.subscribe("/cam_obj/right_back_60", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/right_back_60", 2);
+  }
 }
 
 void Track2DNode::publish()
@@ -145,9 +157,9 @@ void Track2DNode::publish()
 
 void Track2DNode::set_ros_params()
 {
-  std::string domain = "/itri_tracking_2d/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
-  nh_.param<double>(domain + "output_fps", output_fps, 10.);
+  std::string domain = ros::this_node::getName();
+  nh_.param<int>(domain + "/input_source", in_source_, 0);
+  nh_.param<double>(domain + "/output_fps", output_fps, 10.);
 }
 
 int Track2DNode::run()

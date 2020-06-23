@@ -18,5 +18,5 @@ private:
   std::vector<BBoxInfo> decodeTensor(const int imageIdx, const int imageH, const int imageW,
                                      const TensorInfo& tensor) override;
 };
-} // namespace DriveNet
+}  // namespace DriveNet
 #endif  // _YOLO_V3_

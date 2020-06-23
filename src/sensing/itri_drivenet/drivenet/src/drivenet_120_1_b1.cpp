@@ -606,14 +606,16 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 
     std::vector<float> left_point(2);
     std::vector<float> right_point(2);
-    if (g_cam_ids[cam_order] == camera::id::top_right_front_120 || g_cam_ids[cam_order] == camera::id::top_right_rear_120)
+    if (g_cam_ids[cam_order] == camera::id::top_right_front_120 ||
+        g_cam_ids[cam_order] == camera::id::top_right_rear_120)
     {
       left_point[0] = boxPoint.p4.x;
       right_point[0] = boxPoint.p0.x;
       left_point[1] = boxPoint.p4.y;
       right_point[1] = boxPoint.p0.y;
     }
-    else if (g_cam_ids[cam_order] == camera::id::top_left_front_120 || g_cam_ids[cam_order] == camera::id::top_left_rear_120)
+    else if (g_cam_ids[cam_order] == camera::id::top_left_front_120 ||
+             g_cam_ids[cam_order] == camera::id::top_left_rear_120)
     {
       left_point[0] = boxPoint.p3.x;
       right_point[0] = boxPoint.p7.x;
@@ -639,7 +641,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   camInfo.height = box.y2 - box.y1;
   camInfo.prob = box.prob;
   camInfo.id = translate_label(box.label);
-  
+
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
   detObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
@@ -762,16 +764,7 @@ void* run_yolo(void*)
                     << std::endl;
           continue;
         }
-        try
-        {
-          cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(g_rawimg_w, g_rawimg_h), 0, 0, 0);
-        }
-        catch (cv::Exception& e)
-        {
-          std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
-          continue;
-        }
-        M_display = M_display_tmp;
+        M_display = *matSrcs_tmp[ndx];
       }
       msgs::DetectedObject detObj;
       int cam_order = matOrder_tmp[ndx];
@@ -786,7 +779,12 @@ void* run_yolo(void*)
         if (g_img_result_publish || g_display_flag)
         {
           class_color = get_label_color(box.label);
-          cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
+          PixelPosition position_1{ int(box.x1), int(box.y1) };
+          PixelPosition position_2{ int(box.x2), int(box.y2) };
+          transferPixelScaling(position_1);
+          transferPixelScaling(position_2);
+          cv::rectangle(M_display, cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
+                        class_color, 3);
         }
       }
       for (size_t i = 0; i < pool.size(); i++)
@@ -797,14 +795,15 @@ void* run_yolo(void*)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {
-            int x1 = detObj.camInfo.u;
-            int y1 = detObj.camInfo.v;
+            PixelPosition position_1{ int(detObj.camInfo.u), int(detObj.camInfo.v) };
+            transferPixelScaling(position_1);
             float distance = detObj.distance;
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
             class_color = get_common_label_color(detObj.classId);
-            cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
+            cv::putText(M_display, distance_str + " m", cvPoint(position_1.u + 10, position_1.v - 10), 0, 0.5,
+                        class_color, 2);
           }
         }
       }
@@ -933,10 +932,10 @@ void* run_yolo(void*)
 void* run_display(void*)
 {
   std::cout << "run_display start" << std::endl;
-  cv::namedWindow("RightFront-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("RightBack-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("LeftFront-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("LeftBack-120", CV_WINDOW_NORMAL);
+  cv::namedWindow("RightFront-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("RightBack-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("LeftFront-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("LeftBack-120", cv::WINDOW_NORMAL);
   cv::resizeWindow("RightFront-120", 480, 360);
   cv::resizeWindow("RightBack-120", 480, 360);
   cv::resizeWindow("LeftFront-120", 480, 360);
@@ -966,10 +965,10 @@ void* run_display(void*)
   {
     if (g_mat120_0_display.data || g_mat120_1_display.data || g_mat120_2_display.data || g_mat120_3_display.data)
     {
-      if (g_mat120_0_display.cols * g_mat120_0_display.rows == g_rawimg_size &&
-          g_mat120_1_display.cols * g_mat120_1_display.rows == g_rawimg_size &&
-          g_mat120_2_display.cols * g_mat120_2_display.rows == g_rawimg_size &&
-          g_mat120_3_display.cols * g_mat120_3_display.rows == g_rawimg_size)
+      if (g_mat120_0_display.cols * g_mat120_0_display.rows == g_img_size &&
+          g_mat120_1_display.cols * g_mat120_1_display.rows == g_img_size &&
+          g_mat120_2_display.cols * g_mat120_2_display.rows == g_img_size &&
+          g_mat120_3_display.cols * g_mat120_3_display.rows == g_img_size)
       {
         try
         {

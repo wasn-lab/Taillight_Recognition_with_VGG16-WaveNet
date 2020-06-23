@@ -25,7 +25,7 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="lidar"/>
       <param name="delay_pos_x"  value="3.0"/>
-      <param name="is_ignoring_empty_obj"  value="false"/>
+      <param name="is_ignoring_empty_obj"  value="true"/>
   </node>
 
   <!-- Camera Polygon **************************************************************************** -->
@@ -88,6 +88,7 @@
       <param name="blue"  value="1.0"/>
       <param name="delay_prefix"  value="camFB60"/>
       <param name="delay_pos_x"  value="-1.0"/>
+      <param name="is_using_costmap_listener"  value="True"/>
   </node>
   <node name="m_Detect_camFTF30" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/cam_obj/front_top_far_30"/>

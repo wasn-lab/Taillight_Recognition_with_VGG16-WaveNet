@@ -13,21 +13,20 @@
 /// utils
 #include <camera_params.h>
 #include "drivenet/image_preprocessing.h"
+#include "drivenet/object_label_util.h"
+#include "point_preprocessing.h"
 
 class Visualization
 {
 private:
   int image_w_ = camera::image_width;
   int image_h_ = camera::image_height;
-  int raw_image_w_ = camera::raw_image_width;
-  int raw_image_h_ = camera::raw_image_height;
-  float scaling_ratio_w_ = (float)image_w_ / (float)raw_image_w_;
-  float scaling_ratio_h_ = (float)image_h_ / (float)raw_image_h_;
 
 public:
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x);
-  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject> objects);
+  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects);
   cv::Scalar getDistColor(float distance_in_meters);
+  MinMax3D getDistLinePoint(float x_dist, float y_dist, float z_dist);
 };
 
 #endif
