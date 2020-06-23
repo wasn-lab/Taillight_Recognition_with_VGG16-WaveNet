@@ -7,7 +7,7 @@ import datetime
 import multiprocessing
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
-from yolo_bbox import YoloBBox
+from yolo_bbox import gen_bbox_by_yolo_object
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
 from json_utils import read_json_file
 
@@ -68,7 +68,7 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     """
     filename = yolo_frame["filename"]
     deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab_labels.png")
-    bboxes = [YoloBBox(_) for _ in yolo_frame["objects"]]
+    bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
     num_mismatch = _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename)
     # yolo finds an object, but deeplab does not:
     for bbox in bboxes:
