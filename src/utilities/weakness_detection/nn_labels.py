@@ -20,6 +20,15 @@ class YoloLabel(object):
     TRUCK = 7
     TRAFFIC_LIGHT = 9
 
+class EfficientDetLabel(object):
+    """Same as Yolo. Other labels in efficientdet are ignored."""
+    PERSON = 0
+    BICYCLE = 1
+    CAR = 2
+    MOTORBIKE = 3
+    BUS = 5
+    TRUCK = 7
+    TRAFFIC_LIGHT = 9
 
 DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID = {
     DeeplabLabel.BUS: YoloLabel.BUS,
