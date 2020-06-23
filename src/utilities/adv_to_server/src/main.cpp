@@ -741,14 +741,14 @@ void sendRun(int argc, char** argv)
   UdpClient UDP_OBU_client;
   UdpClient UDP_VK_client;
   UdpClient UDP_TABLET_client;
-
+  UdpClient UDP_VK_FG_client;
   
 
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
   UDP_TABLET_client.initial("192.168.43.63", 9876);
-
+  UDP_VK_FG_client.initial("140.134.128.42", 8888);
   
 
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
@@ -770,6 +770,7 @@ void sendRun(int argc, char** argv)
     while (vkQueue.size() != 0)
     {
       UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      UDP_VK_FG_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
