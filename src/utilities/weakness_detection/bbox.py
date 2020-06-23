@@ -1,5 +1,21 @@
 #!/usr/bin/env python
 
+
+def calc_iou(box1, box2):
+    if box1.class_id != box2.class_id:
+        return 0
+    left_x = max(box1.left_x, box2.left_x)
+    right_x = min(box1.right_x, box2.right_x)
+    top_y = max(box1.top_y, box2.top_y)
+    bottom_y = min(box1.bottom_y, box2.bottom_y)
+    if left_x >= right_x or top_y <= bottom_y:
+        return 0
+    area1 = (box1.right_x - box1.left_x) * (box1.bottom_y - box1.top_y)
+    area2 = (box2.right_x - box2.left_x) * (box2.bottom_y - box2.top_y)
+    intersection = (right_x - left_x) * (bottom_y - top_y)
+    return float(intersection) / (area1 + area2 - intersection)
+
+
 class BBox(object):
     def __init__(self):
         """

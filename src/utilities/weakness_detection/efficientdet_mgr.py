@@ -23,3 +23,6 @@ class EfficientDetMgr(object):
             bbox.bottom_y = int(roi[3] + 0.5)
             bbox.name = EFFICIENTDET_CLASS_ID_TO_NAME[bbox.class_id]
             self.bboxes.append(bbox)
+
+    def get_bboxes(self):
+        return self.bboxes

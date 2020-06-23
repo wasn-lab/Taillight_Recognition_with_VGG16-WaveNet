@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import io
 import json
 import logging
 import datetime
@@ -8,8 +7,10 @@ import multiprocessing
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import gen_bbox_by_yolo_object
+from bbox import calc_iou
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
 from json_utils import read_json_file
+from efficientdet_mgr import EfficientDetMgr
 
 
 def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
@@ -78,6 +79,20 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     return num_mismatch
 
 
+def _cmpr_yolo_with_efficientdet(yolo_frame):
+    filename = yolo_frame["filename"]
+    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d4.json")
+    yolo_bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
+    edet_bboxes = edet_mgr.get_bboxes()
+    num_mismatch = 0
+    for ybox in yolo_bboxes:
+        match = False
+        for ebox in edet_bboxes:
+            if ebox.class_id != ybox.class_id:
+                continue
+            iou = calc_iou(ybox, ebox)
+
+
 class YoloMgr(object):
     def __init__(self, json_file):
         self.frames = read_json_file(json_file)
@@ -91,7 +106,8 @@ class YoloMgr(object):
 
     def save_weakness_logs(self, weakness_dir):
         now = datetime.datetime.now()
-        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(now.year, now.month, now.day, now.hour, now.minute)
+        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(
+            now.year, now.month, now.day, now.hour, now.minute)
         output_file = os.path.join(weakness_dir, filename)
         contents = json.dumps(self.frames, sort_keys=True)
         with open(output_file, "w") as _fp:
