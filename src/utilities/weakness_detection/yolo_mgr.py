@@ -118,7 +118,7 @@ class YoloMgr(object):
         self.frames.sort(key=lambda x: x["disagree_level"])
         if amount <= 0:
             amount = int(len(self.frames) * 0.05) + 1
-        return [_["filename"] for _ in self.frames[-amount:]]
+        return [_["filename"] for _ in self.frames[-amount:] if _["disagree_level"] > 0]
 
     def save_weakness_logs(self, weakness_dir):
         now = datetime.datetime.now()

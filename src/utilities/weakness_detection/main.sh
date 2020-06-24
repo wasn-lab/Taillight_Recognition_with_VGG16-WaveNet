@@ -50,8 +50,9 @@ function save_images {
   true > ${image_list_txt}
   for cam_id in $cam_ids; do
     output_dir=${TMP_DIR}/${cam_id}
-    find $output_dir -name "*.jpg" -type f | grep -v yolo | grep -v deeplab >> ${image_list_txt}
+    find $output_dir -name "*.jpg" -type f | grep -v yolo | grep -v deeplab |grep -v efficientdet >> ${image_list_txt}
   done
+  echo "y" | rosnode cleanup
 }
 
 function rm_tmp_files {

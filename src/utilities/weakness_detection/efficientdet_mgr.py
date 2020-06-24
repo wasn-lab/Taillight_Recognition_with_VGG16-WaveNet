@@ -2,7 +2,7 @@
 import logging
 from json_utils import read_json_file
 from bbox import BBox
-from nn_labels import EFFICIENTDET_CLASS_ID_TO_NAME
+from nn_labels import EFFICIENTDET_CLASS_ID_TO_NAME, EfficientDetLabel
 
 
 class EfficientDetMgr(object):
@@ -15,6 +15,8 @@ class EfficientDetMgr(object):
             if bbox.class_id not in EFFICIENTDET_CLASS_ID_TO_NAME:
                 logging.warning("Ignore class_id %d", bbox.class_id)
                 continue
+            if bbox.class_id == EfficientDetLabel.TRUCK:
+                bbox.class_id = EfficientDetLabel.CAR
             bbox.confidence = detection_result["scores"][i]
             roi = detection_result["rois"][i]
             bbox.left_x = int(roi[0] + 0.5)

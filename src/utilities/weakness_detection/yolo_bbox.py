@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from image_consts import RAW_IMAGE_WIDTH, RAW_IMAGE_HEIGHT
 from bbox import BBox
+from nn_labels import YoloLabel
 
 
 def gen_bbox_by_yolo_object(yolo_object):
@@ -23,5 +24,8 @@ def gen_bbox_by_yolo_object(yolo_object):
     box.bottom_y = int(bottom_y)
     box.name = yolo_object["name"]
     box.class_id = yolo_object["class_id"]
+    # treat truck as car because NN is easy to confuse them
+    if box.class_id == YoloLabel.TRUCK:
+        box.class_id = YoloLabel.CAR
     box.confidence = yolo_object["confidence"]
     return box
