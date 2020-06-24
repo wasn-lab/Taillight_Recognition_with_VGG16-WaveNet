@@ -23,14 +23,18 @@ Lidar List:
 -->
 
 <!-- Global arg ************************************************************ -->
-	<rosparam param="debug_output">true</rosparam>
-    <arg name="hardware_enable" default="1" />>
+    <arg name="use_filter" default="0" />
+	<arg name="hardware_enable" default="1" />>
 	<arg name="mps" default="1" />
-	
 	<arg name="mode" default="0" />
     <arg name="set_group_1" value="/LidarFrontTop"/>
-	<rosparam param="LaunchFileName">b1.launch</rosparam>
 	<arg name="rpm_set" default="1200.0"/>
+
+	<rosparam param="debug_output">true</rosparam>
+	<rosparam param="LaunchFileName">b1.launch</rosparam>
+<!-- Filter **************************************************************** -->
+	<rosparam param="use_filter" if="$(eval arg('use_filter') != 1)">false</rosparam>
+	<rosparam param="use_filter" if="$(eval arg('use_filter') == 1)">true</rosparam>
 
 <!-- tf2 ******************************************************************* -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="Lidar_tf2"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
@@ -39,7 +43,7 @@ Lidar List:
 	<group if="$(eval arg('mps') == 1)">
 		<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
 	</group>
- 
+
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
