@@ -10,7 +10,8 @@ def move_weakest_images(filenames, weakness_dir):
     for filename in filenames:
         deeplab_overlay_fn = filename[:-4] + "_deeplab_overlay.jpg"
         yolo_result_fn = filename[:-4] + "_yolo.jpg"
-        for src in [filename, deeplab_overlay_fn, yolo_result_fn]:
+        edet_fn = filename[:-4] + "_efficientdet_d4.jpg"
+        for src in [filename, deeplab_overlay_fn, yolo_result_fn, edet_fn]:
             _, basename = os.path.split(src)
             dest = os.path.join(weakness_dir, basename)
             logging.warning("cp %s %s", src, dest)

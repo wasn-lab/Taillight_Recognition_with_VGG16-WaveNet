@@ -50,7 +50,7 @@ OBJ_LIST = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
             'refrigerator', '', 'book', 'clock', 'vase', 'scissors',
             'teddy bear', 'hair drier', 'toothbrush']
 COLOR_LIST = standard_to_bgr(STANDARD_COLORS)
-THRESHOLD = 0.2
+THRESHOLD = 0.3
 IOU_THRESHOLD = 0.2
 
 

@@ -84,13 +84,29 @@ def _cmpr_yolo_with_efficientdet(yolo_frame):
     edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d4.json")
     yolo_bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
     edet_bboxes = edet_mgr.get_bboxes()
-    num_mismatch = 0
+    num_mismatch = abs(len(yolo_bboxes) - len(edet_bboxes))
     for ybox in yolo_bboxes:
         match = False
         for ebox in edet_bboxes:
             if ebox.class_id != ybox.class_id:
                 continue
             iou = calc_iou(ybox, ebox)
+            if iou >= 0.25:
+                match = True
+        if not match:
+            num_mismatch += 1
+
+    for ebox in edet_bboxes:
+        match = False
+        for ybox in yolo_bboxes:
+            if ebox.class_id != ybox.class_id:
+                continue
+            iou = calc_iou(ybox, ebox)
+            if iou >= 0.25:
+                match = True
+        if not match:
+            num_mismatch += 1
+    return num_mismatch
 
 
 class YoloMgr(object):
@@ -99,7 +115,7 @@ class YoloMgr(object):
 
     def get_weakest_images(self, amount=0):
         """Move weakest images to |weakness_dir|"""
-        self.frames.sort(key=lambda x: x["deeplab_disagree"])
+        self.frames.sort(key=lambda x: x["disagree_level"])
         if amount <= 0:
             amount = int(len(self.frames) * 0.05) + 1
         return [_["filename"] for _ in self.frames[-amount:]]
@@ -117,9 +133,20 @@ class YoloMgr(object):
     def find_weakness_images(self):
         nproc = multiprocessing.cpu_count()
         pool = multiprocessing.Pool(nproc)
+
         res = pool.map(_cmpr_yolo_with_deeplab, self.frames)
         for idx, frame in enumerate(self.frames):
             frame["deeplab_disagree"] = res[idx]
 
+        res = pool.map(_cmpr_yolo_with_efficientdet, self.frames)
+        for idx, frame in enumerate(self.frames):
+            frame["edet_disagree"] = res[idx]
+
         pool.close()
         pool.join()
+
+        for frame in self.frames:
+            frame["disagree_level"] = frame["edet_disagree"] * frame["deeplab_disagree"]
+            logging.warning("%s: deeplab: %d, edet: %d, level: %d",
+                frame["filename"], frame["deeplab_disagree"],
+                frame["edet_disagree"], frame["disagree_level"])
