@@ -104,7 +104,7 @@ def brake_state_2_string(state_in):
 
 # Event report: json_str converters
 #--------------------------------#
-def brake_state_2_json(state_in):
+def brake_state_2_json(state_in, checker_name="brake", check_state=(3,4) ):
     """
     Through ROS std_msgs.String
     json string:
@@ -116,15 +116,15 @@ def brake_state_2_json(state_in):
     Output: json string
     """
     json_dict = dict()
-    json_dict["module"] = "brake"
-    if state_in >= 3: # 3 and 4
+    json_dict["module"] = checker_name
+    if state_in in check_state: # 3 and 4
         json_dict["status"] = "WARN"
     else:
         json_dict["status"] = "OK"
     json_dict["event_str"] = brake_state_2_string(state_in)
     return json.dumps(json_dict)
 
-def module_run_state_2_json(state_in, module_name="module_run"):
+def module_run_state_2_json(state_in, checker_name="module_run"):
     """
     Through ROS std_msgs.String
     json string:
@@ -136,12 +136,12 @@ def module_run_state_2_json(state_in, module_name="module_run"):
     Output: json string
     """
     json_dict = dict()
-    json_dict["module"] = module_name
+    json_dict["module"] = checker_name
     if state_in < 1:
         json_dict["status"] = "FATAL"
     else: # 1
         json_dict["status"] = "OK"
-    json_dict["event_str"] = "%s-%s" % (module_name, "ON" if state_in >=1 else "OFF" )
+    json_dict["event_str"] = "%s-%s" % (checker_name, "Yes" if state_in >=1 else "No" )
     return json.dumps(json_dict)
 #--------------------------------#
 
@@ -215,7 +215,12 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( brake_state_2_string(brake_state) )
         # Publish as ROS message
-        brake_event_pub.publish( brake_state_2_json(brake_state) )
+        # brake_event_pub.publish( brake_state_2_json(brake_state) )
+        #
+        # AEB checker and manual-brake checker
+        brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_AEB", check_state=(3,) ) )
+        brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_MINT", check_state=(4,) ) )
+
 
     # Xbywire states
     Xbywire_run_state_now = int( round(data.Dspace_Flag06) )
@@ -225,7 +230,7 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( "Xbywire_run_state = %d" % Xbywire_run_state )
         # Publish as ROS message
-        Xbywire_run_event_pub.publish( module_run_state_2_json(Xbywire_run_state, module_name="Xbywire") )
+        Xbywire_run_event_pub.publish( module_run_state_2_json(Xbywire_run_state, checker_name="Xbywire_run") )
 
     # AEB states
     AEB_run_state_now = int( round(data.Dspace_Flag07) )
@@ -235,7 +240,7 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( "AEB_run_state = %d" % AEB_run_state )
         # Publish as ROS message
-        AEB_run_event_pub.publish( module_run_state_2_json(AEB_run_state, module_name="AEB") )
+        AEB_run_event_pub.publish( module_run_state_2_json(AEB_run_state, checker_name="AEB_run") )
 
     # ACC states
     ACC_run_state_now = int( round(data.Dspace_Flag08) )
@@ -245,7 +250,7 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( "ACC_run_state = %d" % ACC_run_state )
         # Publish as ROS message
-        ACC_run_event_pub.publish( module_run_state_2_json(ACC_run_state, module_name="ACC") )
+        ACC_run_event_pub.publish( module_run_state_2_json(ACC_run_state, checker_name="ACC_run") )
 
 
 
@@ -349,7 +354,10 @@ def main(sys_args):
     # Publishing intial state
     #--------------------------------------#
     run_state_pub.publish( (adv_run_state==1) )
-    brake_event_pub.publish( brake_state_2_json(brake_state) )
+    # brake_event_pub.publish( brake_state_2_json(brake_state) )
+    # AEB checker and manual-brake checker
+    brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_AEB", check_state=(3,) ) )
+    brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_MINT", check_state=(4,) ) )
     #--------------------------------------#
 
     # Loop for user command via stdin
