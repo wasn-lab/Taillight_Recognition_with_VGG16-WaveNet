@@ -1,22 +1,16 @@
 #!/usr/bin/env python
 import os
-import io
 import json
 import logging
 import datetime
 import multiprocessing
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
-from yolo_bbox import YoloBBox
+from yolo_bbox import gen_bbox_by_yolo_object
+from bbox import calc_iou
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
-
-def read_result_json(filename):
-    if not os.path.isfile(filename):
-        logging.error("File not found: %s", filename)
-        return []
-    with io.open(filename, encoding="utf-8") as _fp:
-        jdata = json.load(_fp)
-    return jdata
+from json_utils import read_json_file
+from efficientdet_mgr import EfficientDetMgr
 
 
 def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
@@ -75,7 +69,7 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     """
     filename = yolo_frame["filename"]
     deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab_labels.png")
-    bboxes = [YoloBBox(_) for _ in yolo_frame["objects"]]
+    bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
     num_mismatch = _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename)
     # yolo finds an object, but deeplab does not:
     for bbox in bboxes:
@@ -85,20 +79,51 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     return num_mismatch
 
 
+def _cmpr_yolo_with_efficientdet(yolo_frame):
+    filename = yolo_frame["filename"]
+    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d4.json")
+    yolo_bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
+    edet_bboxes = edet_mgr.get_bboxes()
+    num_mismatch = abs(len(yolo_bboxes) - len(edet_bboxes))
+    for ybox in yolo_bboxes:
+        match = False
+        for ebox in edet_bboxes:
+            if ebox.class_id != ybox.class_id:
+                continue
+            iou = calc_iou(ybox, ebox)
+            if iou >= 0.25:
+                match = True
+        if not match:
+            num_mismatch += 1
+
+    for ebox in edet_bboxes:
+        match = False
+        for ybox in yolo_bboxes:
+            if ebox.class_id != ybox.class_id:
+                continue
+            iou = calc_iou(ybox, ebox)
+            if iou >= 0.25:
+                match = True
+        if not match:
+            num_mismatch += 1
+    return num_mismatch
+
+
 class YoloMgr(object):
     def __init__(self, json_file):
-        self.frames = read_result_json(json_file)
+        self.frames = read_json_file(json_file)
 
     def get_weakest_images(self, amount=0):
         """Move weakest images to |weakness_dir|"""
-        self.frames.sort(key=lambda x: x["deeplab_disagree"])
+        self.frames.sort(key=lambda x: x["disagree_level"])
         if amount <= 0:
             amount = int(len(self.frames) * 0.05) + 1
-        return [_["filename"] for _ in self.frames[-amount:]]
+        return [_["filename"] for _ in self.frames[-amount:] if _["disagree_level"] > 0]
 
     def save_weakness_logs(self, weakness_dir):
         now = datetime.datetime.now()
-        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(now.year, now.month, now.day, now.hour, now.minute)
+        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(
+            now.year, now.month, now.day, now.hour, now.minute)
         output_file = os.path.join(weakness_dir, filename)
         contents = json.dumps(self.frames, sort_keys=True)
         with open(output_file, "w") as _fp:
@@ -108,9 +133,20 @@ class YoloMgr(object):
     def find_weakness_images(self):
         nproc = multiprocessing.cpu_count()
         pool = multiprocessing.Pool(nproc)
+
         res = pool.map(_cmpr_yolo_with_deeplab, self.frames)
         for idx, frame in enumerate(self.frames):
             frame["deeplab_disagree"] = res[idx]
 
+        res = pool.map(_cmpr_yolo_with_efficientdet, self.frames)
+        for idx, frame in enumerate(self.frames):
+            frame["edet_disagree"] = res[idx]
+
         pool.close()
         pool.join()
+
+        for frame in self.frames:
+            frame["disagree_level"] = frame["edet_disagree"] * frame["deeplab_disagree"]
+            logging.warning("%s: deeplab: %d, edet: %d, level: %d",
+                frame["filename"], frame["deeplab_disagree"],
+                frame["edet_disagree"], frame["disagree_level"])
