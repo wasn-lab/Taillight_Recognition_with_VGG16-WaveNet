@@ -18,7 +18,7 @@ void PedestrianEvent::display_on_terminal()
     for (int i = 0; i < terminal_size.ws_row; i++)
     {
       ss << "\n";
-      if (i == 0 || i == 8 || i == terminal_size.ws_row - 1)
+      if (i == 0 || i == 10 || i == terminal_size.ws_row - 1)
       {
         for (int j = 0; j < terminal_size.ws_col; j++)
         {
@@ -40,21 +40,8 @@ void PedestrianEvent::display_on_terminal()
         }
         else if (i == 3)
         {
-          line << "Image buffer size: ";
-          line << front_image_cache.size() << "(608x384) ";
-          line << crop_image_cache.size() << "(1920x314) time: ";
-          if (front_image_cache.size() > 0)
-          {
-            line << std::to_string(front_image_cache[front_image_cache.size() - 1].first.toSec());
-          }
-          else
-          {
-            line << "NA";
-          }
-        }
-        else if (i == 4)
-        {
-          line << "Image FPS: ";
+          line << "Front camera: buffer size: ";
+          line << front_image_cache.size() << " FPS: ";
           if (front_image_cache.size() > 0)
           {
             ros::Time latest_time;
@@ -71,12 +58,98 @@ void PedestrianEvent::display_on_terminal()
                 break;
               }
             }
-            line << frame_number << "(608x384) ";
+            line << frame_number << " time: ";
           }
           else
           {
-            line << "NA(608x384) ";
+            line << "NA time: ";
           }
+
+          if (front_image_cache.size() > 0)
+          {
+            line << std::to_string(front_image_cache[front_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
+        }
+        else if (i == 4)
+        {
+          line << "Left  camera: buffer size: ";
+          line << left_image_cache.size() << " FPS: ";
+          if (left_image_cache.size() > 0)
+          {
+            ros::Time latest_time;
+            int frame_number = 0;
+            for (int j = left_image_cache.size() - 1; j >= 0; j--)
+            {
+              if (ros::Time::now() - left_image_cache[j].first <= ros::Duration(1))
+              {
+                latest_time = left_image_cache[left_image_cache.size() - 1].first;
+                frame_number++;
+              }
+              else
+              {
+                break;
+              }
+            }
+            line << frame_number << " time: ";
+          }
+          else
+          {
+            line << "NA time: ";
+          }
+
+          if (left_image_cache.size() > 0)
+          {
+            line << std::to_string(left_image_cache[left_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
+        }
+        else if (i == 5)
+        {
+          line << "Right camera: buffer size: ";
+          line << right_image_cache.size() << " FPS: ";
+          if (right_image_cache.size() > 0)
+          {
+            ros::Time latest_time;
+            int frame_number = 0;
+            for (int j = right_image_cache.size() - 1; j >= 0; j--)
+            {
+              if (ros::Time::now() - right_image_cache[j].first <= ros::Duration(1))
+              {
+                latest_time = right_image_cache[right_image_cache.size() - 1].first;
+                frame_number++;
+              }
+              else
+              {
+                break;
+              }
+            }
+            line << frame_number << " time: ";
+          }
+          else
+          {
+            line << "NA time: ";
+          }
+
+          if (right_image_cache.size() > 0)
+          {
+            line << std::to_string(right_image_cache[right_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
+        }
+        else if (i == 6)
+        {
+          line << "Crop  camera: buffer size: ";
+          line << crop_image_cache.size() << " FPS: ";
           if (crop_image_cache.size() > 0)
           {
             ros::Time latest_time;
@@ -93,26 +166,36 @@ void PedestrianEvent::display_on_terminal()
                 break;
               }
             }
-            line << frame_number << "(1920x314)";
+            line << frame_number << " time: ";
           }
           else
           {
-            line << "NA(1920x314)";
+            line << "NA time: ";
           }
-        }
-        else if (i == 5)
-        {
-          line << "Planned path size: " << nav_path.size();
-        }
-        else if (i == 6)
-        {
-          line << "input_source: " << input_source << "   max_distance: " << max_distance << "   show_probability: " << show_probability;
+
+          if (crop_image_cache.size() > 0)
+          {
+            line << std::to_string(crop_image_cache[crop_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
         }
         else if (i == 7)
         {
+          line << "Planned path size: " << nav_path.size();
+          line << " time: " << time_nav_path;
+        }
+        else if (i == 8)
+        {
+          line << "input_source: " << input_source << "   max_distance: " << max_distance << "   show_probability: " << show_probability;
+        }
+        else if (i == 9)
+        {
           line << "danger_zone_distance: " << danger_zone_distance << "   use_2d_for_alarm: " << use_2d_for_alarm;
         }
-        else
+        else // i >= 11
         {
           int size_ped_info = ped_info.size();
           if (i - 9 < size_ped_info)
@@ -160,10 +243,8 @@ void PedestrianEvent::veh_info_callback(const msgs::VehInfo::ConstPtr& msg)
 
 void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
 {
-#if PRINT_MESSAGE
   ros::Time start;
   start = ros::Time::now();
-#endif
   nav_path.clear();
   std::vector<geometry_msgs::PoseStamped>().swap(nav_path);
   nav_path.reserve(200);
@@ -172,6 +253,7 @@ void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
     geometry_msgs::PoseStamped point = obj;
     nav_path.push_back(point);
   }
+  time_nav_path = std::to_string(start.toSec());
 #if PRINT_MESSAGE
   std::cout << "Path buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -747,17 +829,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         }
       }
 
-      if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
+      for (auto point : keypoints)
       {
-        for (auto point : keypoints)
-        {
-          msgs::Keypoint kp;
-          kp.x = point.x;
-          kp.y = point.y;
-          obj_pub.keypoints.push_back(kp);
-        }
-        pedObjs.push_back(obj_pub);
+        msgs::Keypoint kp;
+        kp.x = point.x;
+        kp.y = point.y;
+        obj_pub.keypoints.push_back(kp);
       }
+      pedObjs.push_back(obj_pub);
     }
 
     msgs::DetectedObjectArray alert_objs;
@@ -907,7 +986,6 @@ void PedestrianEvent::draw_ped_right_callback(const msgs::PedObjectArray::ConstP
 
 void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache, int from_camera)
 {
-  ped_info.clear();
   if (image_cache.empty())  // do if there is image in buffer
   {
     return;
@@ -1177,8 +1255,12 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     //     cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
     //     4, 0);
     //   }
-    ped_info.push_back(id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) + " y: " +
+    ped_info.insert(ped_info.begin(), id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) + " y: " +
                        std::to_string((int)obj.bPoint.p0.y) + " keypoints number: " + std::to_string(keypoint_number));
+    if (ped_info.size() > 40)
+    {
+      ped_info.pop_back();
+    }
   }
   // do resize only when computer cannot support
   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
@@ -1696,9 +1778,9 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is subscirbe topic
     sub_10 = nh_sub_10.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_front_callback,
+    sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_front_callback,
+    sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
                                this);  // /cam/F_center is subscirbe topic
   }
 

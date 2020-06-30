@@ -118,6 +118,7 @@ public:
   // All buffer components
   msgs::VehInfo veh_info;
   std::vector<geometry_msgs::PoseStamped> nav_path;
+  std::string time_nav_path = "NA";
   std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
