@@ -87,7 +87,7 @@ public:
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
-  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache);
+  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache, int from_camera);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
                          ros::Time time, Buffer &buffer);
@@ -132,8 +132,12 @@ public:
   int buffer_size = 60;
 
   // ROS components
-  ros::Publisher chatter_pub;
-  ros::Publisher box_pub;
+  ros::Publisher chatter_pub_front;
+  ros::Publisher chatter_pub_left;
+  ros::Publisher chatter_pub_right;
+  ros::Publisher box_pub_front;
+  ros::Publisher box_pub_left;
+  ros::Publisher box_pub_right;
   ros::Publisher alert_pub;
   ros::Time total_time;
   tf2_ros::Buffer tfBuffer;
@@ -150,6 +154,8 @@ public:
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_7;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_8;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_9;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_10;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_11;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
