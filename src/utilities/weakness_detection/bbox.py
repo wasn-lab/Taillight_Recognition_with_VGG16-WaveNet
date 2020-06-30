@@ -49,8 +49,5 @@ class BBox(object):
             return bool(x >= left_x and x <= right_x)
         return False
 
-    def is_within(self, x, y):
-        return bool(x >= self.left_x and x <= self.right_x and y >= self.top_y and y <= self.bottom_y)
-
     def __str__(self):
         return "{}({}): ({}, {}, {}, {}), confidence: {}".format(self.name, self.class_id, self.left_x, self.top_y, self.right_x, self.bottom_y, self.confidence)
