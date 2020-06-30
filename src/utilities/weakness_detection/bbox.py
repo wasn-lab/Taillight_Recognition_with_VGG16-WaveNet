@@ -36,10 +36,6 @@ class BBox(object):
     def is_within(self, x, y):
         return bool(x >= self.left_x and x <= self.right_x and y >= self.top_y and y <= self.bottom_y)
 
-    def as_tuple(self):
-        """return (left_x, top_y, right_x, bottom_y)"""
-        return (self.left_x, self.top_y, self.right_x, self.bottom_y)
-
     def is_on_border(self, x, y):
         """Return True if (x,y) is on bbox border."""
         left_x, top_y, right_x, bottom_y = self.as_tuple()
