@@ -78,19 +78,22 @@ public:
   void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache);
+  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
+                            boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache);
   void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer &buffer, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache, int from_camera);
+  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
+                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
-  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache, int from_camera);
+  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
+                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
-                         ros::Time time, Buffer &buffer);
+                         ros::Time time, Buffer& buffer);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
@@ -169,7 +172,7 @@ public:
   const int number_keypoints = 25;
   const int feature_num = 1174;
   const int frame_num = 10;
-  
+
   // ROS param
   bool show_probability = true;
   int input_source = 3;
