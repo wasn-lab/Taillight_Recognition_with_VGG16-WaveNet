@@ -36,7 +36,7 @@ void DistanceEstimation::init(const std::string& pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string fc60_json = pkgPath;
-    fc60_json.append("/data/alignment/fm60_0325.json");
+    fc60_json.append("/data/alignment/fm60_0528.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {

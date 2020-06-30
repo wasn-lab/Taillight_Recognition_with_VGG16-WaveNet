@@ -4,19 +4,14 @@ set -e
 
 readonly build_type="${build_type:-Release}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
-readonly iwyu_path=/usr/local/llvm-6.0.0/bin/include-what-you-use
+export PATH=${PATH}:/usr/local/llvm-6.0.0/bin/
+readonly iwyu_path=$(which include-what-you-use)
 
 if [[ ! -f ${iwyu_path} ]]; then
   echo "Cannot find iwyu binary. Exit."
   exit 0
 fi
 
-if [[ ! -d /usr/local/llvm-6.0.0/bin ]]; then
-  echo "Cannot find clang 6. Exit."
-  exit 0
-fi
-
-export PATH=/usr/local/llvm-6.0.0/bin:$PATH
 export CC=clang
 export CXX=clang++
 
