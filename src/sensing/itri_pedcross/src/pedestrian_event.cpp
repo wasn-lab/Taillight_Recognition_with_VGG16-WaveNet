@@ -297,8 +297,8 @@ void PedestrianEvent::cache_crop_image_callback(const sensor_msgs::Image::ConstP
   cv_ptr_image->image.copyTo(msg_decode);
 
   // buffer raw image in msg
-  crop_image_cache.push_back({ msg->header.stamp, msg_decode });
-
+  crop_image_cache.push_back({ msg->header.stamp, msg_decode.clone() });
+  msg_decode.release();
 #if PRINT_MESSAGE
   std::cout << "Crop Image buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -334,8 +334,8 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   cv_ptr_image->image.copyTo(msg_decode);
 
   // buffer raw image in msg
-  image_cache.push_back({ msg->header.stamp, msg_decode });
-
+  image_cache.push_back({ msg->header.stamp, msg_decode.clone() });
+  msg_decode.release();
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -372,7 +372,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     cv::Mat matrix_crop;  // high resolution
     // for painting
     cv::Mat matrix2;
-    cv::Mat matrix2_crop;  // high resolution
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
     bool has_crop_image = !crop_image_cache.empty();
@@ -460,8 +459,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #endif
 
               matrix_crop = crop_image_cache[i].second;
-              // for drawing bbox and keypoints
-              matrix_crop.copyTo(matrix2_crop);
               get_timestamp = true;
               break;
             }
@@ -761,7 +758,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     }
     delay_from_camera = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 
-    matrix2 = 0;
+    matrix.release();
+    matrix2.release();
+    matrix_crop.release();
 
     stop = ros::Time::now();
     total_time += stop - start;
@@ -1156,7 +1155,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
                                           " keypoints number: " + std::to_string(keypoint_number));
     if (ped_info.size() > 40)
     {
-      ped_info.pop_back();
+      ped_info.erase(ped_info.end() - 1);
     }
   }
   // do resize only when computer cannot support
@@ -1452,7 +1451,7 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
     cv::Mat feature_mat = cv::Mat(1, total_feature_size, CV_32F, feature_arr);
     // Predict
     float predict_result = predict_rf_pose(feature_mat);
-
+    feature_mat.release();
     return predict_result;
   }
   catch (const std::exception& e)
@@ -1521,7 +1520,7 @@ float PedestrianEvent::predict_rf_pose(cv::Mat input_data)
   std::cout << votes.at<int>(0, 0) << " " << votes.at<int>(0, 1) << std::endl;
   std::cout << votes.at<int>(1, 0) << " " << votes.at<int>(1, 1) << std::endl;
 #endif
-
+  votes.release();
   return p;
 }
 
