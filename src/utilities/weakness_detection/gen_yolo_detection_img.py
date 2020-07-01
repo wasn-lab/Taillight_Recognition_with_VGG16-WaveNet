@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Generate the detection results of images. The output include a json file and
+images drawn with bounding boxes.
+"""
 import argparse
 import os
 import logging
@@ -19,9 +23,12 @@ def process_filenames_arg(txt_file):
     return [_.strip() for _ in contents.splitlines()]
 
 
-def detect_by_yolo(darknet_exe, yolo_data_file, yolo_cfg_file, yolo_weights, json_output, image_filenames):
+def detect_by_yolo(darknet_exe, yolo_data_file, yolo_cfg_file, yolo_weights,
+                   json_output, image_filenames):
     os.chdir(DARKNET_DIR)
-    cmd = [darknet_exe, "detector", "test", yolo_data_file, yolo_cfg_file, yolo_weights, "-thresh", "0.5", "-dont_show", "-ext_output", "-out", json_output]
+    cmd = [darknet_exe, "detector", "test", yolo_data_file, yolo_cfg_file,
+           yolo_weights, "-thresh", "0.5", "-dont_show", "-ext_output",
+           "-out", json_output]
     print(" ".join(cmd))
     child = pexpect.spawnu(" ".join(cmd))
     child.expect("Enter Image Path:")
@@ -54,11 +61,12 @@ def main():
     parser.add_argument("--yolo-data-file", default=data_file)
     parser.add_argument("--yolo-cfg-file", default=cfg_file)
     parser.add_argument("--yolo-weights", default=weights_file)
-    parser.add_argument("--json-output", default="/tmp/yolo_result.json")
+    parser.add_argument("--yolo-result-json", default="/tmp/yolo_result.json")
     parser.add_argument("--image-filenames", default="/tmp/weakness_detection_image_list.txt")
     args = parser.parse_args()
     image_filenames = process_filenames_arg(args.image_filenames)
-    detect_by_yolo(args.darknet_exe, args.yolo_data_file, args.yolo_cfg_file, args.yolo_weights, args.json_output, image_filenames)
+    detect_by_yolo(args.darknet_exe, args.yolo_data_file, args.yolo_cfg_file,
+                   args.yolo_weights, args.yolo_result_json, image_filenames)
 
 if __name__ == "__main__":
     main()

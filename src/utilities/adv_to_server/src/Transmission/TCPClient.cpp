@@ -69,6 +69,7 @@ int TCPClient::connectServer()
 int TCPClient::sendRequest(const char* msg, size_t size)
 {
   std::string json(msg);
+  std::cout << "==========================================" << json << endl;
   int rel = send(f_socket, msg, size, 0);
   if (rel < 0)
   {

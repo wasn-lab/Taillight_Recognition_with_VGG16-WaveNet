@@ -196,14 +196,14 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     // Image 3D bounding box
     glm::vec3 _cambbox_color(1.0, 1.0, 1.0);
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_right), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_center), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_left), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_top), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_fore), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_rear), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_fore), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_rear), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_bottom_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_top_close_120), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_top_far_30), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_back_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_front_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_back_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_front_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_back_top_120), _cambbox_color) ) );
     _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_rear_center), _cambbox_color) ) );
 
 
