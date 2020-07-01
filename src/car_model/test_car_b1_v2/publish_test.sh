@@ -17,7 +17,8 @@ if [[ ! -f src/bags/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f src/bags/rad_grab_2020-04-13-17-45-48_0.bag
   || ! -f src/bags/ukf_mm_2020-04-13-17-45-48_0.bag
   || ! -f src/bags/target_planner_2020-04-13-17-45-48_0.bag
-  || ! -f src/bags/lidarxyz2lla_2020-04-13-17-45-48_0.bag ]]; then
+  || ! -f src/bags/lidarxyz2lla_2020-04-13-17-45-48_0.bag 
+  || ! -f auto_record_2020-06-19-16-26-18_1_filtered.bag ]]; then
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
@@ -37,5 +38,6 @@ rostest car_model publish_test_rad_grab_b1_v2.test
 rostest car_model publish_test_geofence_pp_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
 rostest car_model publish_test_target_planner_b1_v2.test
+rostest car_model publish_test_drivenet_b1_v2_sidecam_3dobj.test
 
 popd
