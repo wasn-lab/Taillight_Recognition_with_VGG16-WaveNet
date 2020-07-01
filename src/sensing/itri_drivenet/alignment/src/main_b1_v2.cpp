@@ -47,7 +47,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::right_back_60, camera::id::left_back_60};
 #else
 #error "car model is not well defined"
 #endif
@@ -153,6 +153,46 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
+void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  if (!g_data_sync)
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+    g_mats[cam_order] = cv_ptr->image;
+  }
+  else
+  {
+    std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
+    g_cam_single_time[cam_order] = msg->header.stamp;
+    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
+    // g_cam_single_time[cam_order].nsec <<
+    // std::endl;
+  }
+}
+
+void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  if (!g_data_sync)
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+    g_mats[cam_order] = cv_ptr->image;
+  }
+  else
+  {
+    std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
+    g_cam_single_time[cam_order] = msg->header.stamp;
+    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
+    // g_cam_single_time[cam_order].nsec <<
+    // std::endl;
+  }
+}
+
 //////////////////// for camera object
 void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
@@ -165,6 +205,29 @@ void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstP
   // std::endl;
 }
 
+void callback_object_cam_right_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  std::lock_guard<std::mutex> lock_objects(g_mutex_objects);
+  g_is_object_update[cam_order] = true;
+  g_object_arrs[cam_order] = *msg;
+  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
+  // std::endl;
+}
+
+void callback_object_cam_left_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  std::lock_guard<std::mutex> lock_objects(g_mutex_objects);
+  g_is_object_update[cam_order] = true;
+  g_object_arrs[cam_order] = *msg;
+  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
+  // std::endl;
+}
+
+//////////////////// for LiDAR data
 void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   if (!g_data_sync)
@@ -978,10 +1041,6 @@ void buffer_monitor()
     if (g_data_sync)
     {
       // Add buffer
-      g_lidarall_times.push_back(g_lidarall_time);
-      // std::cout << "buffer lidarall time: " << g_lidarall_time.sec << "." << g_lidarall_time.nsec <<
-      // std::endl;
-
       std::lock_guard<std::recursive_mutex> lock_cam_times(g_mutex_cam_times);
       for (size_t index = 0; index < g_cam_ids.size(); index++)
       {
@@ -991,13 +1050,19 @@ void buffer_monitor()
         // g_cam_single_time[index].nsec <<
         // std::endl;
       }
+
       // std::cout << "buffer camera object: " << g_object_arrs[0].header.stamp.sec << "." <<
       // g_object_arrs[0].header.stamp.nsec <<
       // std::endl;
 
+      // std::lock_guard<std::recursive_mutex> lock_lidar_time(g_mutex_lidar_time);
+      g_lidarall_times.push_back(g_lidarall_time);
+      // std::cout << "buffer lidarall time: " << g_lidarall_time.sec << "." << g_lidarall_time.nsec <<
+      // std::endl;
+
       std::lock_guard<std::recursive_mutex> lock_lidar_nonground_time(g_mutex_lidar_nonground_time);
       g_lidarall_nonground_times.push_back(g_lidarall_nonground_time);
-      // std::cout << "buffer lidar all time: " << g_lidarall_nonground_time.sec << "." << g_lidarall_nonground_time.nsec <<
+      // std::cout << "buffer lidar nonground time: " << g_lidarall_nonground_time.sec << "." << g_lidarall_nonground_time.nsec <<
       // std::endl;
 
       std::lock_guard<std::recursive_mutex> lock_lidar_ssn_time(g_mutex_lidar_ssn_time);
@@ -1048,9 +1113,11 @@ int main(int argc, char** argv)
   message_filters::Subscriber<pcl::PointCloud<pcl::PointXYZIL>> sub_filter_lidar_ssn;
 
   /// get callback function
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60 };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
+                                                                            callback_cam_right_back_60, callback_cam_left_back_60};
   static void (*f_callbacks_object[])(
-      const msgs::DetectedObjectArray::ConstPtr&) = { callback_object_cam_front_bottom_60 };
+      const msgs::DetectedObjectArray::ConstPtr&) = { callback_object_cam_front_bottom_60, callback_object_cam_right_back_60,
+                                                      callback_object_cam_left_back_60};
 
   /// set topic name
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -1069,7 +1136,7 @@ int main(int argc, char** argv)
     }
 
     lidarall = nh.subscribe("/LidarAll", 1, callback_lidarall);
-    // lidarall_nonground = nh.subscribe("/LidarAll/NonGround", 1, callback_lidarall_nonground);
+    lidarall_nonground = nh.subscribe("/LidarAll/NonGround", 1, callback_lidarall_nonground);
     lidar_ssn_sub = nh.subscribe("/squ_seg/result_cloud", 1, callback_ssn);
   }
   else
@@ -1077,25 +1144,25 @@ int main(int argc, char** argv)
     /// message_filters Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order], g_buffer_size);
+      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order], 1);
       g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
       g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
       g_cache_image[cam_order].setCacheSize(g_buffer_size);
 
-      object_filter_subs[cam_order].subscribe(nh, g_bbox_topic_names[cam_order], g_buffer_size);
+      object_filter_subs[cam_order].subscribe(nh, g_bbox_topic_names[cam_order], 1);
       object_filter_subs[cam_order].registerCallback(f_callbacks_object[cam_order]);
     }
-    sub_filter_lidarall.subscribe(nh, "/LidarAll", g_buffer_size);
+    sub_filter_lidarall.subscribe(nh, "/LidarAll", 1);
     g_cache_lidarall.setCacheSize(g_buffer_size);
     g_cache_lidarall.connectInput(sub_filter_lidarall);
     g_cache_lidarall.registerCallback(callback_lidarall);
 
-    sub_filter_lidarall_nonground.subscribe(nh, "/LidarAll/NonGround", g_buffer_size);
+    sub_filter_lidarall_nonground.subscribe(nh, "/LidarAll/NonGround", 1);
     g_cache_lidarall_nonground.setCacheSize(g_buffer_size);
     g_cache_lidarall_nonground.connectInput(sub_filter_lidarall_nonground);
     g_cache_lidarall_nonground.registerCallback(callback_lidarall_nonground);
 
-    sub_filter_lidar_ssn.subscribe(nh, "/squ_seg/result_cloud", g_buffer_size);
+    sub_filter_lidar_ssn.subscribe(nh, "/squ_seg/result_cloud", 1);
     g_cache_lidar_ssn.setCacheSize(g_buffer_size);
     g_cache_lidar_ssn.connectInput(sub_filter_lidar_ssn);
     g_cache_lidar_ssn.registerCallback(callback_ssn);
@@ -1129,7 +1196,7 @@ int main(int argc, char** argv)
   }
   /// main loop start
   std::thread main_thread(runInference);
-  int thread_count = int(g_cam_ids.size()) * 2 + 2;  /// camera raw + object + lidar raw + ssn
+  int thread_count = int(g_cam_ids.size()) * 2 + 3;  /// camera raw + object + lidar raw + ssn + nonground
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
   std::cout << "===== Multi_sensor_3d_object_detection running... =====" << std::endl;

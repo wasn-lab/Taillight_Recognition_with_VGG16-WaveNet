@@ -57,8 +57,8 @@ const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 const int RESERVE_WAITING_TIMEOUT = 3 * 1000 * 1000;
 // UDP server udpate from queues freq 100ms
 const int UDP_SERVER_UPDATE_MICROSECONDS = 100 * 1000;
-// ROS update time: 500ms
-const int ROS_UPDATE_MICROSECONDS = 500 * 1000;
+// ROS update time: 100ms
+const int ROS_UPDATE_MICROSECONDS = 100 * 1000;
 // server status update time: 10 sec
 //const int SERVER_STATUS_UPDATE_MICROSECONDS = 10 * 1000 * 1000;
 
@@ -76,6 +76,7 @@ std::queue<std::string> q;
 std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
+std::queue<std::string> vkStatusQueue;
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
 std::queue<json> eventQueue2;
@@ -91,7 +92,11 @@ std::string mileJson;
 std::string eventJson;
 msgs::RouteInfo route_info;
 std::string board_list="00000000";
- int routeID = 2000;
+int routeID = 2000;
+
+
+long event_recv_count = 0;
+long event_send_count = 0;
 
 const static double PI = 3.14;
 // can data
@@ -382,6 +387,7 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
   eventJson = input->data.c_str();
   json J0 = json::parse(eventJson);
   json J1;
+  
   J1["type"] = "M8.2.VK003";
   J1["deviceid"] = PLATE;
   J1["lat"] = gps.lidar_Lat;
@@ -390,7 +396,8 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
   J1["status"] = J0.at("status");
   J1["event_str"] = J0.at("event_str");
   J1["timestamp"] = J0.at("timestamp");
-
+  
+  
   if(event_queue_switch)
   {
     cout << " push to queue1 event: " << J1.dump() << endl;
@@ -405,6 +412,7 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
     eventQueue2.push(J1);
     mutex_event_2.unlock();
   }
+  event_recv_count ++;
 }
 
 std::string get_msg_type(int id)
@@ -734,11 +742,16 @@ void sendRun(int argc, char** argv)
   UdpClient UDP_OBU_client;
   UdpClient UDP_VK_client;
   UdpClient UDP_TABLET_client;
+  UdpClient UDP_VK_FG_client;
+  
 
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
   UDP_TABLET_client.initial("192.168.43.63", 9876);
+  UDP_VK_FG_client.initial("140.134.128.42", 8888);
+  
+
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
@@ -761,41 +774,98 @@ void sendRun(int argc, char** argv)
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
- 
+    
+    while (vkStatusQueue.size() != 0)
+    {
+      UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
+      UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
+      //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      vkStatusQueue.pop();
+    }
     mutex_queue.unlock();
 
    
     if(event_queue_switch){
-      mutex_event_1.lock();
-      event_queue_switch = false;
-      while (eventQueue1.size() != 0)
-      {
-        cout << "send from q 1" << endl;
-        json j = eventQueue1.front();
-        string jstr = j.dump();
-        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
-        eventQueue1.pop();
+      if(eventQueue1.size() != 0){
+        mutex_event_1.lock();
+        event_queue_switch = false;
+        TCPClient TCP_VK_client;
+        TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
+        TCP_VK_client.connectServer();
         
-      }
-      mutex_event_1.unlock();
-    }
+        while (eventQueue1.size() != 0)
+        {
+          cout << "send from q 1" << endl;
+          string start_str = "$"+ PLATE + "%";
+          const char * start_token = start_str.c_str();
+          TCP_VK_client.sendRequest(start_token, strlen(start_token));
+          json j = eventQueue1.front();
+          string jstr = j.dump();
+          const char* msg = jstr.c_str();
+          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          TCP_VK_client.sendRequest(msg, strlen(msg));
+          event_send_count ++;
+          UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
+          eventQueue1.pop();
+          if(eventQueue1.size() == 0)
+          {
+            string end_str = "@"; 
+            const char * end_token = end_str.c_str();
+            TCP_VK_client.sendRequest(end_token, strlen(end_token));
+          }
+          else
+          {
+            string end_str = "#"; 
+            const char * end_token = end_str.c_str();
+            TCP_VK_client.sendRequest(end_token, strlen(end_token));
+          }
+          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms 
+        }
+        mutex_event_1.unlock();
+      }//if(eventQueue1.size() != 0)
+    }//if(event_queue_switch)
     else{
-      mutex_event_2.lock();
-      event_queue_switch = true;
-      while (eventQueue2.size() != 0)
-      {
-        cout << "send from q 2" << endl;  
-        json j = eventQueue2.front();
-        string jstr = j.dump();
-        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
-        eventQueue2.pop();
-      }
-      mutex_event_2.unlock();
-    }
-   
-
+      if(eventQueue2.size() != 0){
+        mutex_event_2.lock();
+        event_queue_switch = true;
+        TCPClient TCP_VK_client;
+        TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
+        TCP_VK_client.connectServer();
+        
+        while (eventQueue2.size() != 0)
+        {
+          cout << "send from q 2" << endl; 
+          string start_str = "$"+ PLATE + "%";
+          const char * start_token = start_str.c_str();
+          TCP_VK_client.sendRequest(start_token, strlen(start_token)); 
+          json j = eventQueue2.front();
+          string jstr = j.dump();
+          const char* msg = jstr.c_str();
+          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          TCP_VK_client.sendRequest(msg, strlen(msg));
+          event_send_count ++;
+          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
+          eventQueue2.pop();
+          if(eventQueue2.size() == 0)
+          {
+            string end_str = "@"; 
+            const char * end_token = end_str.c_str();
+            TCP_VK_client.sendRequest(end_token, strlen(end_token));
+          }
+          else
+          {
+            string end_str = "#"; 
+            const char * end_token = end_str.c_str();
+            TCP_VK_client.sendRequest(end_token, strlen(end_token));
+          }
+          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms
+         } 
+        mutex_event_2.unlock();
+      }//if(eventQueue2.size() != 0)
+    }//else
+    cout << " receive event: " << event_recv_count << endl;
+    cout << " send event: " << event_send_count << endl;
     boost::this_thread::sleep(boost::posix_time::microseconds(1000));
   }
 }
@@ -911,14 +981,14 @@ void receiveRosRun(int argc, char** argv)
     {
       std::string temp_vk002 = get_jsonmsg_to_vk_server("M8.2.VK002");
       mutex_queue.lock();
-      vkQueue.push(temp_vk002);
+      vkStatusQueue.push(temp_vk002);
       mutex_queue.unlock();
     }
     else
     {
       std::string temp_vk001 = get_jsonmsg_to_vk_server("M8.2.VK001");
       mutex_queue.lock();
-      vkQueue.push(temp_vk001);
+      vkStatusQueue.push(temp_vk001);
       mutex_queue.unlock();
     }
 
