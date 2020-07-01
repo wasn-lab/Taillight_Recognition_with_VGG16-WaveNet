@@ -138,10 +138,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
        bbox.compute (cluster_vector.at (i).obb_vertex, cluster_vector.at (i).center, cluster_vector.at (i).covariance,
        cluster_vector.at (i).min, cluster_vector.at (i).max);*/
 
-      UseApproxMVBB bbox2;
-      bbox2.setInputCloud(cluster_vector.at(i).cloud);
-      bbox2.Compute(cluster_vector.at(i).obb_vertex, cluster_vector.at(i).cld_center, cluster_vector.at(i).min,
-                    cluster_vector.at(i).max, cluster_vector.at(i).convex_hull);
+
 
       cluster_vector.at(i).dx = fabs(cluster_vector.at(i).max.x - cluster_vector.at(i).min.x);
       cluster_vector.at(i).dy = fabs(cluster_vector.at(i).max.y - cluster_vector.at(i).min.y);
@@ -303,6 +300,17 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
                 cluster_vector.at(i).cluster_tag = nnClassID::Car;
               }
             }
+          }
+          if(cluster_vector.at(i).cluster_tag == nnClassID::Car)
+          {
+/*
+            UseApproxMVBB bbox2;
+            bbox2.setInputCloud(cluster_vector.at(i).cloud);
+            bbox2.Compute(cluster_vector.at(i).obb_vertex, cluster_vector.at(i).cld_center,
+                          cluster_vector.at(i).min, cluster_vector.at(i).max, 
+                          cluster_vector.at(i).convex_hull);
+*/
+            estimator_.getShapeAndPose(cluster_vector.at(i));
           }
         }
       }

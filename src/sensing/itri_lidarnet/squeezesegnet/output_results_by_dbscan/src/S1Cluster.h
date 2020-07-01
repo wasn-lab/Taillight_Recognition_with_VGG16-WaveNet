@@ -7,6 +7,7 @@
 #include "NoiseFilter.h"
 #include "VoxelGrid_CUDA.h"
 #include "DBSCAN_CUDA.h"
+#include "shape_estimator.hpp"
 
 #define TAG_RAW -2
 #define TAG_DROP -1
@@ -29,6 +30,7 @@ private:
   int* viewID;
 
   DBSCAN_CUDA dbscan;
+  ShapeEstimator estimator_;
 };
 
 #endif /* S1CLUSTER_H_ */
