@@ -6,4 +6,4 @@ download_file(
 download_file(
     URL "http://118.163.54.109:8888/git_data/B1/drivenet/yolov3_fov120_b1.weights"
     DESTINATION "${DRIVENET_WEIGHTS_DIR}/yolov3_fov120_b1.weights"
-    MD5 a30ed70c06a7439accdb66b05efad392)
+    MD5 4118310143beeb928b9037a8e2b32fea)
