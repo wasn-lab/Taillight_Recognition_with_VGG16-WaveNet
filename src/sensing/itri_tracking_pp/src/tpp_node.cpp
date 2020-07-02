@@ -218,6 +218,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 void TPPNode::subscribe_and_advertise_topics()
 {
   std::string topic = "PathPredictionOutput";
+  use_tracking2d = false;
 
   if (in_source_ == 1)
   {
@@ -253,6 +254,13 @@ void TPPNode::subscribe_and_advertise_topics()
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
+  }
+  else if (in_source_ == 7)
+  {
+    use_tracking2d = true;
+    LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
+    fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else
@@ -973,7 +981,7 @@ int TPPNode::run()
       clock_t begin_time = clock();
 #endif
 
-// Tracking start ==========================================================================
+      // Tracking start ==========================================================================
 
 #if TTC_TEST
       seq_ = seq_cb_;
@@ -999,7 +1007,7 @@ int TPPNode::run()
       publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif
 
-// PP end ==================================================================================
+      // PP end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();

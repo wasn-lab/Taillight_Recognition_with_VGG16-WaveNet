@@ -166,6 +166,6 @@ struct MarkerConfig
   std_msgs::ColorRGBA color_camera_tpp;
   std_msgs::ColorRGBA color_fusion_tpp;
 };
-}
+}  // namespace tpp
 
 #endif  // __TPP_BASE_H__

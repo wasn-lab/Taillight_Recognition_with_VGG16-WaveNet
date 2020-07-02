@@ -6,9 +6,11 @@
 
 namespace tpp
 {
-constexpr unsigned int num_forecasts_ = 20;
+static constexpr unsigned int num_forecasts_ = 20;
 
-constexpr unsigned int num_2dbox_corners = 4;
+static constexpr unsigned int num_2dbox_corners = 4;
+
+static bool use_tracking2d = false;
 
 struct BoxCenter
 {
