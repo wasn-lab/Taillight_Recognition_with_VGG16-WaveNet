@@ -9,6 +9,7 @@ S1Cluster::S1Cluster(boost::shared_ptr<pcl::visualization::PCLVisualizer> input_
   viewer = input_viewer;
   viewID = input_viewID;
 
+  ros::param::get("/use_shape_estimation", use_shape_estimation);
   dbscan.setEpsilon (0.6, 0.6, 0.28, 0.6, 0.28);
   dbscan.setMinpts (5, 5, 5, 5, 5);
 }
@@ -303,14 +304,18 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
           }
           if(cluster_vector.at(i).cluster_tag == nnClassID::Car)
           {
-/*
-            UseApproxMVBB bbox2;
-            bbox2.setInputCloud(cluster_vector.at(i).cloud);
-            bbox2.Compute(cluster_vector.at(i).obb_vertex, cluster_vector.at(i).cld_center,
-                          cluster_vector.at(i).min, cluster_vector.at(i).max, 
-                          cluster_vector.at(i).convex_hull);
-*/
-            estimator_.getShapeAndPose(cluster_vector.at(i));
+            if(use_shape_estimation)
+            {
+              estimator_.getShapeAndPose(cluster_vector.at(i));
+            }
+            else
+            {
+              UseApproxMVBB bbox2;
+              bbox2.setInputCloud(cluster_vector.at(i).cloud);
+              bbox2.Compute(cluster_vector.at(i).obb_vertex, cluster_vector.at(i).cld_center,
+                            cluster_vector.at(i).min, cluster_vector.at(i).max, 
+                            cluster_vector.at(i).convex_hull);
+            }
           }
         }
       }

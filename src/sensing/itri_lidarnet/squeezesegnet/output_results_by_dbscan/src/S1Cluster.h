@@ -24,6 +24,7 @@ public:
   virtual ~S1Cluster();
 
   CLUSTER_INFO* getClusters(bool debug, const PointCloud<PointXYZIL>::ConstPtr input, int* cluster_number);
+  bool use_shape_estimation = false;
 
 private:
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
