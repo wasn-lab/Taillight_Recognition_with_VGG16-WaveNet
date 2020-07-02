@@ -49,7 +49,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   pcl::toROSMsg(*cloud, msgtemp);
   // msgtemp.header.stamp = msg->radHeader.stamp;
   // msgtemp.header.seq = msg->radHeader.seq;
-  msgtemp.header.frame_id = "/base_link";
+  msgtemp.header.frame_id = "base_link";
   PCloud_pub.publish(msgtemp);
 }
 

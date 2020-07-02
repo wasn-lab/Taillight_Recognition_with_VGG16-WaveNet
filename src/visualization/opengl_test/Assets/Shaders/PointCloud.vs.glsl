@@ -7,13 +7,13 @@ layout(location = 1) in vec4 color;
 uniform mat4 mv_matrix;
 uniform mat4 proj_matrix;
 
-flat out vec4 starColor;
-
+//flat out vec4 starColor;
+out vec4 starColor;
 void main(void)
 {
     vec4 newVertex = mv_matrix * position;
     // float size = 2.0;
-    float size = 20.0/( abs(newVertex.z) );
+    //float size = 20.0/( abs(newVertex.z) );
     // float size = 20.0/( length(newVertex.xyz) ); //20.0/( abs(newVertex.z) );
     // size = smoothstep(1.0, 800.0, size);
 
@@ -30,5 +30,6 @@ void main(void)
 
 
     gl_Position = newVertex;
-	gl_PointSize = size;
+    starColor[3] = 1- gl_Position.z / 100 + 0.5 ;
+	//gl_PointSize = size;
 }
