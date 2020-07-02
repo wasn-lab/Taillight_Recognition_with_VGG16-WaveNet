@@ -62,6 +62,10 @@ add_executable(radfrontpub_txt src/RadFrontPub_txt.cpp)
 target_link_libraries(radfrontpub_txt ${catkin_LIBRARIES})
 add_dependencies(radfrontpub_txt ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(alpharadfrontpub src/AlphaRadFrontPub.cpp)
+target_link_libraries(alpharadfrontpub ${catkin_LIBRARIES})
+add_dependencies(alpharadfrontpub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 #add_executable(radfrontsub src/RadFrontSub.cpp)
 #target_link_libraries(radfrontsub ${catkin_LIBRARIES})
 #add_dependencies(radfrontsub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
