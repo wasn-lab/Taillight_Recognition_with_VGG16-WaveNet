@@ -34,6 +34,8 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
+#include "detected_object_class_id.h"
+
 #define TTC_TEST 0
 #if TTC_TEST
 #include <std_msgs/Int32.h>
@@ -166,6 +168,6 @@ struct MarkerConfig
   std_msgs::ColorRGBA color_camera_tpp;
   std_msgs::ColorRGBA color_fusion_tpp;
 };
-}
+}  // namespace tpp
 
 #endif  // __TPP_BASE_H__
