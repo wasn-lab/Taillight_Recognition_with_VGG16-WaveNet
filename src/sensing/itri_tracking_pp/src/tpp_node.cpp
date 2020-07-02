@@ -991,7 +991,7 @@ int TPPNode::run()
 #endif
 
       // MOT: SORT algorithm
-      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, use_tracking2d);
       compute_velocity_kalman();
 
       publish_tracking();

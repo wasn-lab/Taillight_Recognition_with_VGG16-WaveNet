@@ -653,7 +653,7 @@ void KalmanTrackers::update_boxes()
 }
 
 void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
-                                         const float ego_z_abs, const float ego_heading)
+                                         const float ego_z_abs, const float ego_heading, const bool use_tracking2d)
 {
   if (objs_.size() == 0 && tracks_.size() == 0)
   {
