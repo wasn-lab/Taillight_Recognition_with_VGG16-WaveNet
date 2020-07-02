@@ -2,7 +2,7 @@
 import os
 import unittest
 from yolo_mgr import YoloMgr
-from yolo_bbox import YoloBBox
+from yolo_bbox import gen_bbox_by_yolo_object
 
 
 TEST_DIR, _ = os.path.split(os.path.abspath(__file__))
@@ -14,7 +14,7 @@ class YoloBBoxTest(unittest.TestCase):
 
     def test_bbox_coord(self):
         obj = self.mgr.frames[0]["objects"][0]
-        bbox = YoloBBox(obj)
+        bbox = gen_bbox_by_yolo_object(obj)
         coord = obj["relative_coordinates"]
 
         self.assertEqual(coord["width"], 0.043834)

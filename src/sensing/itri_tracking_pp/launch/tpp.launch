@@ -28,7 +28,7 @@
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
-  <arg name="m_lifetime_sec" default="1.0" />
+  <arg name="m_lifetime_sec" default="0.15" />
 
   <!-- Rviz markers -->
   <arg name="gen_markers" default="True" />
