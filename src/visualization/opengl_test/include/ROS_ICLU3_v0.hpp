@@ -49,6 +49,28 @@ enum class MSG_ID{
     bounding_box_image_left_fore,
     bounding_box_image_left_rear,
     bounding_box_image_rear_center,
+    
+    // new image
+    camera_front_bottom_60,
+    camera_front_top_close_120,
+    camera_front_top_far_30,
+    camera_left_back_60,
+    camera_left_front_60,
+    camera_right_back_60,
+    camera_right_front_60,
+    camera_back_top_120,
+   
+    // new 2D bounding box
+    bounding_box_image_front_bottom_60,
+    bounding_box_image_front_top_close_120,
+    bounding_box_image_front_top_far_30,
+    bounding_box_image_left_back_60,
+    bounding_box_image_left_front_60,
+    bounding_box_image_right_back_60,
+    bounding_box_image_right_front_60,
+    bounding_box_image_back_top_120,
+    
+
     // PointCloud
     point_cloud_raw,
     point_cloud_map,

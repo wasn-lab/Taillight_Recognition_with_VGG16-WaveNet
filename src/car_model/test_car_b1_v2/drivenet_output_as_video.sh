@@ -14,7 +14,7 @@ if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
 fi
 
 source devel/setup.bash
-export output_dir=/var/www/html/artifacts/${today}
+export output_dir=/var/www/html/artifacts/drivenet-detection/${today}
 mkdir -p $output_dir
 chmod 775 $output_dir
 
@@ -30,4 +30,5 @@ popd
 cp src/scripts/ci/show_drivenet_videos.html $output_dir
 find $output_dir -type f -exec chmod 644 {} \;
 
-echo "Visit http://ci.itriadv.co/artifacts/${today} to download the results."
+set +x
+echo "Visit http://ci.itriadv.co/artifacts/drivenet-detection/${today} to download the results."

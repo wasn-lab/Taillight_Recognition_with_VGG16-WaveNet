@@ -18,7 +18,7 @@ void PedestrianEvent::display_on_terminal()
     for (int i = 0; i < terminal_size.ws_row; i++)
     {
       ss << "\n";
-      if (i == 0 || i == 8 || i == terminal_size.ws_row - 1)
+      if (i == 0 || i == 10 || i == terminal_size.ws_row - 1)
       {
         for (int j = 0; j < terminal_size.ws_col; j++)
         {
@@ -40,21 +40,8 @@ void PedestrianEvent::display_on_terminal()
         }
         else if (i == 3)
         {
-          line << "Image buffer size: ";
-          line << front_image_cache.size() << "(608x384) ";
-          line << crop_image_cache.size() << "(1920x314) time: ";
-          if (front_image_cache.size() > 0)
-          {
-            line << std::to_string(front_image_cache[front_image_cache.size() - 1].first.toSec());
-          }
-          else
-          {
-            line << "NA";
-          }
-        }
-        else if (i == 4)
-        {
-          line << "Image FPS: ";
+          line << "Front camera: buffer size: ";
+          line << front_image_cache.size() << " FPS: ";
           if (front_image_cache.size() > 0)
           {
             ros::Time latest_time;
@@ -71,12 +58,98 @@ void PedestrianEvent::display_on_terminal()
                 break;
               }
             }
-            line << frame_number << "(608x384) ";
+            line << frame_number << " time: ";
           }
           else
           {
-            line << "NA(608x384) ";
+            line << "NA time: ";
           }
+
+          if (front_image_cache.size() > 0)
+          {
+            line << std::to_string(front_image_cache[front_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
+        }
+        else if (i == 4)
+        {
+          line << "Left  camera: buffer size: ";
+          line << left_image_cache.size() << " FPS: ";
+          if (left_image_cache.size() > 0)
+          {
+            ros::Time latest_time;
+            int frame_number = 0;
+            for (int j = left_image_cache.size() - 1; j >= 0; j--)
+            {
+              if (ros::Time::now() - left_image_cache[j].first <= ros::Duration(1))
+              {
+                latest_time = left_image_cache[left_image_cache.size() - 1].first;
+                frame_number++;
+              }
+              else
+              {
+                break;
+              }
+            }
+            line << frame_number << " time: ";
+          }
+          else
+          {
+            line << "NA time: ";
+          }
+
+          if (left_image_cache.size() > 0)
+          {
+            line << std::to_string(left_image_cache[left_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
+        }
+        else if (i == 5)
+        {
+          line << "Right camera: buffer size: ";
+          line << right_image_cache.size() << " FPS: ";
+          if (right_image_cache.size() > 0)
+          {
+            ros::Time latest_time;
+            int frame_number = 0;
+            for (int j = right_image_cache.size() - 1; j >= 0; j--)
+            {
+              if (ros::Time::now() - right_image_cache[j].first <= ros::Duration(1))
+              {
+                latest_time = right_image_cache[right_image_cache.size() - 1].first;
+                frame_number++;
+              }
+              else
+              {
+                break;
+              }
+            }
+            line << frame_number << " time: ";
+          }
+          else
+          {
+            line << "NA time: ";
+          }
+
+          if (right_image_cache.size() > 0)
+          {
+            line << std::to_string(right_image_cache[right_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
+        }
+        else if (i == 6)
+        {
+          line << "Crop  camera: buffer size: ";
+          line << crop_image_cache.size() << " FPS: ";
           if (crop_image_cache.size() > 0)
           {
             ros::Time latest_time;
@@ -93,26 +166,37 @@ void PedestrianEvent::display_on_terminal()
                 break;
               }
             }
-            line << frame_number << "(1920x314)";
+            line << frame_number << " time: ";
           }
           else
           {
-            line << "NA(1920x314)";
+            line << "NA time: ";
           }
-        }
-        else if (i == 5)
-        {
-          line << "Planned path size: " << nav_path.size();
-        }
-        else if (i == 6)
-        {
-          line << "input_source: " << input_source << "   max_distance: " << max_distance << "   show_probability: " << show_probability;
+
+          if (crop_image_cache.size() > 0)
+          {
+            line << std::to_string(crop_image_cache[crop_image_cache.size() - 1].first.toSec());
+          }
+          else
+          {
+            line << "NA";
+          }
         }
         else if (i == 7)
         {
+          line << "Planned path size: " << nav_path.size();
+          line << " time: " << time_nav_path;
+        }
+        else if (i == 8)
+        {
+          line << "input_source: " << input_source << "   max_distance: " << max_distance
+               << "   show_probability: " << show_probability;
+        }
+        else if (i == 9)
+        {
           line << "danger_zone_distance: " << danger_zone_distance << "   use_2d_for_alarm: " << use_2d_for_alarm;
         }
-        else
+        else  // i >= 11
         {
           int size_ped_info = ped_info.size();
           if (i - 9 < size_ped_info)
@@ -160,18 +244,40 @@ void PedestrianEvent::veh_info_callback(const msgs::VehInfo::ConstPtr& msg)
 
 void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
 {
-#if PRINT_MESSAGE
   ros::Time start;
   start = ros::Time::now();
-#endif
   nav_path.clear();
-  std::vector<geometry_msgs::PoseStamped>().swap(nav_path);
+  std::vector<cv::Point2f>().swap(nav_path);
   nav_path.reserve(200);
+
   for (auto const& obj : msg->poses)
   {
-    geometry_msgs::PoseStamped point = obj;
+    geometry_msgs::TransformStamped transform_stamped;
+    try
+    {
+      transform_stamped = tfBuffer.lookupTransform("base_link", "map", ros::Time(0));
+#if PRINT_MESSAGE
+      std::cout << transform_stamped << std::endl;
+#endif
+    }
+    catch (tf2::TransformException& ex)
+    {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+    double yaw = get_tranform_yaw(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
+                                  transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
+    geometry_msgs::PoseStamped point_out;
+    point_out.pose.position = get_transform_coordinate(obj.pose.position, yaw, transform_stamped.transform.translation);
+
+    cv::Point2f point;
+    point.x = point_out.pose.position.x;
+    point.y = point_out.pose.position.y;
     nav_path.push_back(point);
   }
+
+  time_nav_path = std::to_string(start.toSec());
 #if PRINT_MESSAGE
   std::cout << "Path buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -191,8 +297,8 @@ void PedestrianEvent::cache_crop_image_callback(const sensor_msgs::Image::ConstP
   cv_ptr_image->image.copyTo(msg_decode);
 
   // buffer raw image in msg
-  crop_image_cache.push_back({ msg->header.stamp, msg_decode });
-
+  crop_image_cache.push_back({ msg->header.stamp, msg_decode.clone() });
+  msg_decode.release();
 #if PRINT_MESSAGE
   std::cout << "Crop Image buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -213,7 +319,8 @@ void PedestrianEvent::cache_right_image_callback(const sensor_msgs::Image::Const
   cache_image_callback(msg, right_image_cache);
 }
 
-void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache)
+void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
+                                           boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache)
 {
 #if PRINT_MESSAGE
   ros::Time start;
@@ -227,8 +334,8 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   cv_ptr_image->image.copyTo(msg_decode);
 
   // buffer raw image in msg
-  image_cache.push_back({ msg->header.stamp, msg_decode });
-
+  image_cache.push_back({ msg->header.stamp, msg_decode.clone() });
+  msg_decode.release();
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
 #endif
@@ -251,7 +358,8 @@ void PedestrianEvent::right_callback(const msgs::DetectedObjectArray::ConstPtr& 
   main_callback(msg, buffer_right, right_image_cache, 2);
 }
 
-void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer &buffer, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache, int from_camera)
+void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
+                                    boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera)
 {
   if (!image_cache.empty() && !nav_path.empty())  // do if there is image in buffer
   {
@@ -264,7 +372,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     cv::Mat matrix_crop;  // high resolution
     // for painting
     cv::Mat matrix2;
-    cv::Mat matrix2_crop;  // high resolution
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
     bool has_crop_image = !crop_image_cache.empty();
@@ -352,8 +459,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #endif
 
               matrix_crop = crop_image_cache[i].second;
-              // for drawing bbox and keypoints
-              matrix_crop.copyTo(matrix2_crop);
               get_timestamp = true;
               break;
             }
@@ -525,237 +630,104 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             p8.y = 383;
             cv::line(matrix2, p, p8, cv::Scalar(0, 0, 155), 1);
       */
+
+      // only for front camera
       if (from_camera == 0)
       {
         obj_pub.crossProbability = adjust_probability(obj_pub);
       }
 
-      if (use_2d_for_alarm)
-      {
-        // copy another nav_path to prevent vector changing while calculating
-        std::vector<geometry_msgs::PoseStamped> nav_path_temp(nav_path);
-        if (obj_pub.crossProbability * 100 >= cross_threshold)
-        {
-          if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
-          {
-            msgs::PointXYZ camera_position = obj_pub.bPoint.p0;
-
-            geometry_msgs::TransformStamped transform_stamped;
-            try
-            {
-              transform_stamped = tfBuffer.lookupTransform("base_link", "map", ros::Time(0));
-#if PRINT_MESSAGE
-              std::cout << transform_stamped << std::endl;
-#endif
-            }
-            catch (tf2::TransformException& ex)
-            {
-              ROS_WARN("%s", ex.what());
-              ros::Duration(1.0).sleep();
-              continue;
-            }
-            double yaw =
-                get_tranform_yaw(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
-                                 transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
-
-            // find the nearest nav_path point from pedestian's position
-            geometry_msgs::PoseStamped nearest_point;
-            double min_distance_from_path = 100000;
-            for (const geometry_msgs::PoseStamped& path_point : nav_path_temp)
-            {
-              // coordinate transform for  nav_path (map) to camera (base_link)
-              geometry_msgs::PoseStamped point_out;
-              point_out.pose.position =
-                  get_transform_coordinate(path_point.pose.position, yaw, transform_stamped.transform.translation);
-
-              // calculate distance between pedestrian and each nav_path point
-              double distance_diff = get_distance2(point_out.pose.position.x, point_out.pose.position.y,
-                                                   camera_position.x, camera_position.y);
-              if (min_distance_from_path > distance_diff)
-              {
-                min_distance_from_path = distance_diff;
-                nearest_point = point_out;
-              }
-              nav_path_transformed.push_back(point_out);
-            }
-            double distance_from_car = 0;
-            geometry_msgs::PoseStamped previous_path_point;
-            bool passed_car_head = false;
-            for (const geometry_msgs::PoseStamped& path_point : nav_path_transformed)
-            {
-              // check
-              if (path_point.pose.position.x > 0)
-              {
-                passed_car_head = true;
-              }
-              // add distance between points
-              if (passed_car_head)
-              {
-                distance_from_car +=
-                    get_distance2(path_point.pose.position.x, path_point.pose.position.y,
-                                  previous_path_point.pose.position.x, previous_path_point.pose.position.y);
-              }
-              if (path_point.pose.position.x == nearest_point.pose.position.x &&
-                  path_point.pose.position.y == nearest_point.pose.position.y)
-              {
-#if DUMP_LOG
-                // print distance
-                file << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
-                     << veh_info.ego_speed << "\n";
-#endif
-#if PRINT_MESSAGE
-                std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
-                          << " time: " << ros::Time::now() << " speed: " << veh_info.ego_speed << std::endl;
-#endif
-                break;
-              }
-              previous_path_point = path_point;
-            }
-            // to free memory from vector
-            nav_path_transformed.erase(nav_path_transformed.begin(), nav_path_transformed.end());
-
-            double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
-            double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
-            alert_obj.track.forecasts.reserve(20);
-            obj_pub.track.forecasts.reserve(20);
-            alert_obj.track.is_ready_prediction = 1;
-            obj_pub.track.is_ready_prediction = 1;
-            for (int i = 0; i < 20; i++)
-            {
-              msgs::PathPrediction pp;
-              pp.position.x = camera_position.x + diff_x * i;
-              pp.position.y = camera_position.y + diff_y * i;
-#if PRINT_MESSAGE
-              std::cout << pp.position << std::endl;
-#endif
-              alert_obj.track.forecasts.push_back(pp);
-              obj_pub.track.forecasts.push_back(pp);
-            }
-            alertObjs.push_back(alert_obj);
-          }
-        }
-      }
-      else
-      {
-        // copy another nav_path to prevent vector changing while calculating
-        if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
-        {
-          msgs::PointXYZ camera_position = obj_pub.bPoint.p0;
-          std::vector<geometry_msgs::PoseStamped> nav_path_temp(nav_path);
-          geometry_msgs::TransformStamped transform_stamped;
-          try
-          {
-            transform_stamped = tfBuffer.lookupTransform("base_link", "map", ros::Time(0));
-#if PRINT_MESSAGE
-            std::cout << transform_stamped << std::endl;
-#endif
-          }
-          catch (tf2::TransformException& ex)
-          {
-            ROS_WARN("%s", ex.what());
-            ros::Duration(1.0).sleep();
-            continue;
-          }
-          double yaw = get_tranform_yaw(transform_stamped.transform.rotation.x, transform_stamped.transform.rotation.y,
-                                        transform_stamped.transform.rotation.z, transform_stamped.transform.rotation.w);
-
-          // find the nearest nav_path point from pedestian's position
-          geometry_msgs::PoseStamped nearest_point;
-          double min_distance_from_path = 100000;
-          for (const geometry_msgs::PoseStamped& path_point : nav_path_temp)
-          {
-            // coordinate transform for  nav_path (map) to camera (base_link)
-            geometry_msgs::PoseStamped point_out;
-            point_out.pose.position =
-                get_transform_coordinate(path_point.pose.position, yaw, transform_stamped.transform.translation);
-
-            // calculate distance between pedestrian and each nav_path point
-            double distance_diff = get_distance2(point_out.pose.position.x, point_out.pose.position.y,
-                                                 camera_position.x, camera_position.y);
-            if (min_distance_from_path > distance_diff)
-            {
-              min_distance_from_path = distance_diff;
-              nearest_point = point_out;
-            }
-            nav_path_transformed.push_back(point_out);
-          }
-          // too close to planned path
-          // from center to left and right 2 meters
-          if (min_distance_from_path < danger_zone_distance)
-          {
-            obj_pub.crossProbability = 1;
-          }
-          if (obj_pub.crossProbability * 100 >= cross_threshold)
-          {
-            double distance_from_car = 0;
-            geometry_msgs::PoseStamped previous_path_point;
-            bool passed_car_head = false;
-            for (const geometry_msgs::PoseStamped& path_point : nav_path_transformed)
-            {
-              // check
-              if (path_point.pose.position.x > 0)
-              {
-                passed_car_head = true;
-              }
-              // add distance between points
-              if (passed_car_head)
-              {
-                distance_from_car +=
-                    get_distance2(path_point.pose.position.x, path_point.pose.position.y,
-                                  previous_path_point.pose.position.x, previous_path_point.pose.position.y);
-              }
-              if (path_point.pose.position.x == nearest_point.pose.position.x &&
-                  path_point.pose.position.y == nearest_point.pose.position.y)
-              {
-#if DUMP_LOG
-                // print distance
-                file << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
-                     << veh_info.ego_speed << "\n";
-#endif
-#if PRINT_MESSAGE
-                std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
-                          << " time: " << ros::Time::now() << " speed: " << veh_info.ego_speed << std::endl;
-#endif
-                break;
-              }
-              previous_path_point = path_point;
-            }
-            // to free memory from vector
-            nav_path_transformed.erase(nav_path_transformed.begin(), nav_path_transformed.end());
-
-            double diff_x = (nearest_point.pose.position.x - camera_position.x) / 10;
-            double diff_y = (nearest_point.pose.position.y - camera_position.y) / 10;
-            alert_obj.track.forecasts.reserve(20);
-            obj_pub.track.forecasts.reserve(20);
-            alert_obj.track.is_ready_prediction = 1;
-            obj_pub.track.is_ready_prediction = 1;
-            for (int i = 0; i < 20; i++)
-            {
-              msgs::PathPrediction pp;
-              pp.position.x = camera_position.x + diff_x * i;
-              pp.position.y = camera_position.y + diff_y * i;
-#if PRINT_MESSAGE
-              std::cout << pp.position << std::endl;
-#endif
-              alert_obj.track.forecasts.push_back(pp);
-              obj_pub.track.forecasts.push_back(pp);
-            }
-            alertObjs.push_back(alert_obj);
-          }
-        }
-      }
-
+      // copy another nav_path to prevent vector changing while calculating
       if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
       {
-        for (auto point : keypoints)
+        msgs::PointXYZ camera_position = obj_pub.bPoint.p0;
+        std::vector<cv::Point2f> nav_path_temp(nav_path);
+
+        // find the nearest nav_path point from pedestian's position
+        cv::Point2f nearest_point;
+        double min_distance_from_path = 100000;
+        for (const cv::Point2f& path_point : nav_path_temp)
         {
-          msgs::Keypoint kp;
-          kp.x = point.x;
-          kp.y = point.y;
-          obj_pub.keypoints.push_back(kp);
+          // calculate distance between pedestrian and each nav_path point
+          double distance_diff = get_distance2(path_point.x, path_point.y, camera_position.x, camera_position.y);
+          if (min_distance_from_path > distance_diff)
+          {
+            min_distance_from_path = distance_diff;
+            nearest_point = path_point;
+          }
         }
-        pedObjs.push_back(obj_pub);
+        // too close to planned path
+        // from center to left and right 2 meters
+        if (min_distance_from_path < danger_zone_distance)
+        {
+          obj_pub.crossProbability = 1;
+        }
+        if (obj_pub.crossProbability * 100 >= cross_threshold)
+        {
+          double distance_from_car = 0;
+          cv::Point2f previous_path_point;
+          bool passed_car_head = false;
+          for (const cv::Point2f& path_point : nav_path_temp)
+          {
+            // check
+            if (path_point.x > 0)
+            {
+              passed_car_head = true;
+            }
+            // add distance between points
+            if (passed_car_head)
+            {
+              distance_from_car +=
+                  get_distance2(path_point.x, path_point.y, previous_path_point.x, previous_path_point.y);
+            }
+            if (path_point.x == nearest_point.x && path_point.y == nearest_point.y)
+            {
+#if DUMP_LOG
+              // print distance
+              file << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
+                   << veh_info.ego_speed << "\n";
+#endif
+#if PRINT_MESSAGE
+              std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
+                        << " time: " << ros::Time::now() << " speed: " << veh_info.ego_speed << std::endl;
+#endif
+              break;
+            }
+            previous_path_point = path_point;
+          }
+          // to free memory from vector
+          nav_path_temp.erase(nav_path_temp.begin(), nav_path_temp.end());
+          std::vector<cv::Point2f>().swap(nav_path_temp);
+
+          double diff_x = (nearest_point.x - camera_position.x) / 10;
+          double diff_y = (nearest_point.y - camera_position.y) / 10;
+          alert_obj.track.forecasts.reserve(20);
+          obj_pub.track.forecasts.reserve(20);
+          alert_obj.track.is_ready_prediction = 1;
+          obj_pub.track.is_ready_prediction = 1;
+          for (int i = 0; i < 20; i++)
+          {
+            msgs::PathPrediction pp;
+            pp.position.x = camera_position.x + diff_x * i;
+            pp.position.y = camera_position.y + diff_y * i;
+#if PRINT_MESSAGE
+            std::cout << pp.position << std::endl;
+#endif
+            alert_obj.track.forecasts.push_back(pp);
+            obj_pub.track.forecasts.push_back(pp);
+          }
+          alertObjs.push_back(alert_obj);
+        }
       }
+
+      for (auto point : keypoints)
+      {
+        msgs::Keypoint kp;
+        kp.x = point.x;
+        kp.y = point.y;
+        obj_pub.keypoints.push_back(kp);
+      }
+      pedObjs.push_back(obj_pub);
     }
 
     msgs::DetectedObjectArray alert_objs;
@@ -772,10 +744,23 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     msg_pub.header.frame_id = msg->header.frame_id;
     msg_pub.header.stamp = msg->header.stamp;
     msg_pub.objects.assign(pedObjs.begin(), pedObjs.end());
-    chatter_pub.publish(msg_pub);
+    if (from_camera == 0)  // front
+    {
+      chatter_pub_front.publish(msg_pub);
+    }
+    else if (from_camera == 1)  // left
+    {
+      chatter_pub_left.publish(msg_pub);
+    }
+    else if (from_camera == 2)  // right
+    {
+      chatter_pub_right.publish(msg_pub);
+    }
     delay_from_camera = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 
-    matrix2 = 0;
+    matrix.release();
+    matrix2.release();
+    matrix_crop.release();
 
     stop = ros::Time::now();
     total_time += stop - start;
@@ -783,6 +768,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                             "(sec) Total cost time: " + std::to_string((total_time).toSec()) +
                             "(sec) Loop: " + std::to_string(count);
 #if PRINT_MESSAGE
+    std::cout << "Camera source: " << from_camera << std::endl;
     std::cout << "Cost time: " << stop - start << " sec" << std::endl;
     std::cout << "Total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
@@ -878,35 +864,23 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
 
 void PedestrianEvent::draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, front_image_cache);
+  draw_pedestrians_callback(msg, front_image_cache, 0);
 }
 
 void PedestrianEvent::draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, left_image_cache);
+  draw_pedestrians_callback(msg, left_image_cache, 1);
 }
 
 void PedestrianEvent::draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, right_image_cache);
+  draw_pedestrians_callback(msg, right_image_cache, 2);
 }
 
-void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg, boost::circular_buffer<std::pair<ros::Time, cv::Mat>> &image_cache)
+void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
+                                                boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache,
+                                                int from_camera)
 {
-  ped_info.clear();
-  // cv_bridge::CvImageConstPtr cv_ptr_image;
-  // // cv::Mat image_msg = msg->raw_image;
-
-  //   double min = 0;
-  //   double max = 1000;
-  // cv::Mat img_scaled_8u;
-  // cv::Mat(cv_ptr_image->image-min).convertTo(img_scaled_8u, CV_8UC1, 255. / (max - min));
-  // cv::Mat matrix = cv_ptr_image->image;
-  // cv::imshow("OPENCV_WINDOW", matrix);
-  // cv::waitKey(3);
-  // cv::cvtColor(img_scaled_8u, dImg, CV_GRAY2RGB);
-  // cv_ptr_image = cv_bridge::toCvShare(image_msg, "bgr8");
-  // cv_ptr_image->image.copyTo(matrix);
   if (image_cache.empty())  // do if there is image in buffer
   {
     return;
@@ -1176,8 +1150,13 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     //     cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
     //     4, 0);
     //   }
-    ped_info.push_back(id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) + " y: " +
-                       std::to_string((int)obj.bPoint.p0.y) + " keypoints number: " + std::to_string(keypoint_number));
+    ped_info.insert(ped_info.begin(), id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) +
+                                          " y: " + std::to_string((int)obj.bPoint.p0.y) +
+                                          " keypoints number: " + std::to_string(keypoint_number));
+    if (ped_info.size() > 40)
+    {
+      ped_info.erase(ped_info.end() - 1);
+    }
   }
   // do resize only when computer cannot support
   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
@@ -1185,7 +1164,18 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // make cv::Mat to sensor_msgs::Image
   sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
 
-  box_pub.publish(msg_pub2);
+  if (from_camera == 0)  // front
+  {
+    box_pub_front.publish(msg_pub2);
+  }
+  else if (from_camera == 1)  // left
+  {
+    box_pub_left.publish(msg_pub2);
+  }
+  else if (from_camera == 2)  // right
+  {
+    box_pub_right.publish(msg_pub2);
+  }
 
   matrix = 0;
 }
@@ -1353,7 +1343,7 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
  * cross probability
  */
 float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2,
-                                        std::vector<cv::Point2f> keypoint, int id, ros::Time time, Buffer &buffer)
+                                        std::vector<cv::Point2f> keypoint, int id, ros::Time time, Buffer& buffer)
 {
   try
   {
@@ -1461,7 +1451,7 @@ float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, f
     cv::Mat feature_mat = cv::Mat(1, total_feature_size, CV_32F, feature_arr);
     // Predict
     float predict_result = predict_rf_pose(feature_mat);
-
+    feature_mat.release();
     return predict_result;
   }
   catch (const std::exception& e)
@@ -1530,7 +1520,7 @@ float PedestrianEvent::predict_rf_pose(cv::Mat input_data)
   std::cout << votes.at<int>(0, 0) << " " << votes.at<int>(0, 1) << std::endl;
   std::cout << votes.at<int>(1, 0) << " " << votes.at<int>(1, 1) << std::endl;
 #endif
-
+  votes.release();
   return p;
 }
 
@@ -1561,6 +1551,8 @@ void PedestrianEvent::pedestrian_event()
   ros::CallbackQueue queue_7;
   ros::CallbackQueue queue_8;
   ros::CallbackQueue queue_9;
+  ros::CallbackQueue queue_10;
+  ros::CallbackQueue queue_11;
   // This node handle uses global callback queue
   ros::NodeHandle nh_sub_1;
   // and this one uses custom queue
@@ -1573,6 +1565,8 @@ void PedestrianEvent::pedestrian_event()
   ros::NodeHandle nh_sub_8;
   ros::NodeHandle nh_sub_9;
   ros::NodeHandle nh_sub_10;
+  ros::NodeHandle nh_sub_11;
+  ros::NodeHandle nh_sub_12;
   // Set custom callback queue
   nh_sub_2.setCallbackQueue(&queue_1);
   nh_sub_3.setCallbackQueue(&queue_2);
@@ -1583,6 +1577,8 @@ void PedestrianEvent::pedestrian_event()
   nh_sub_8.setCallbackQueue(&queue_7);
   nh_sub_9.setCallbackQueue(&queue_8);
   nh_sub_10.setCallbackQueue(&queue_9);
+  nh_sub_11.setCallbackQueue(&queue_10);
+  nh_sub_12.setCallbackQueue(&queue_11);
 
   ros::Subscriber sub_1;
   ros::Subscriber sub_2;
@@ -1594,6 +1590,8 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_8;
   ros::Subscriber sub_9;
   ros::Subscriber sub_10;
+  ros::Subscriber sub_11;
+  ros::Subscriber sub_12;
   if (input_source == 0)
   {
     sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::front_callback,
@@ -1639,7 +1637,7 @@ void PedestrianEvent::pedestrian_event()
     sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
                                this);  // /cam/F_center is sub topic
   }
-  else  if (input_source == 3)
+  else if (input_source == 3)
   {
     sub_1 = nh_sub_1.subscribe("/Tracking2D", 1, &PedestrianEvent::front_callback,
                                this);  // /PathPredictionOutput is sub topic
@@ -1674,8 +1672,12 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is subscirbe topic
     sub_9 = nh_sub_9.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_10 = nh_sub_10.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
-                               this);  // /cam/F_center is subscirbe topic
+    sub_10 = nh_sub_10.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
+                                 this);  // /cam/F_center is subscirbe topic
+    sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
+                                 this);  // /cam/F_center is subscirbe topic
+    sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
+                                 this);  // /cam/F_center is subscirbe topic
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
@@ -1688,6 +1690,8 @@ void PedestrianEvent::pedestrian_event()
   g_spinner_7.reset(new ros::AsyncSpinner(0, &queue_7));
   g_spinner_8.reset(new ros::AsyncSpinner(0, &queue_8));
   g_spinner_9.reset(new ros::AsyncSpinner(0, &queue_9));
+  g_spinner_10.reset(new ros::AsyncSpinner(0, &queue_10));
+  g_spinner_11.reset(new ros::AsyncSpinner(0, &queue_11));
 
   g_enable = true;
   g_trigger = true;
@@ -1709,6 +1713,8 @@ void PedestrianEvent::pedestrian_event()
       queue_7.clear();
       queue_8.clear();
       queue_9.clear();
+      queue_10.clear();
+      queue_11.clear();
       // Start the spinner
       g_spinner_1->start();
       g_spinner_2->start();
@@ -1719,6 +1725,8 @@ void PedestrianEvent::pedestrian_event()
       g_spinner_7->start();
       g_spinner_8->start();
       g_spinner_9->start();
+      g_spinner_10->start();
+      g_spinner_11->start();
       ROS_INFO("Spinner enabled");
       // Reset trigger
       g_trigger = false;
@@ -1738,6 +1746,8 @@ void PedestrianEvent::pedestrian_event()
   g_spinner_7.reset();
   g_spinner_8.reset();
   g_spinner_9.reset();
+  g_spinner_10.reset();
+  g_spinner_11.reset();
   // Wait for ROS threads to terminate
   ros::waitForShutdown();
 }
@@ -1865,19 +1875,34 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
   tf2_ros::TransformListener tfListener(pe.tfBuffer);
-std::cout<< PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
-  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
-  
-  ros::NodeHandle nh;
-  pe.chatter_pub =
-      nh.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians", 1);  // /PedCross/Pedestrians is pub topic
+  std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
+  pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
+                                                                                   "yml"));
+
+  ros::NodeHandle nh1;
+  pe.chatter_pub_front = nh1.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_bottom_60",
+                                                             1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
-  pe.box_pub = nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox", 1);  // /PedCross/DrawBBox is pub topic
+  pe.box_pub_front =
+      nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/front_bottom_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh3;
-  pe.alert_pub = nh3.advertise<msgs::DetectedObjectArray>("/PedCross/Alert", 1);  // /PedCross/DrawBBox is pub topic
+  pe.chatter_pub_left = nh3.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/left_back_60",
+                                                            1);  // /PedCross/Pedestrians is pub topic
+  ros::NodeHandle nh4;
+  pe.box_pub_left =
+      nh4.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
+  ros::NodeHandle nh5;
+  pe.chatter_pub_right = nh5.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/right_back_60",
+                                                             1);  // /PedCross/Pedestrians is pub topic
+  ros::NodeHandle nh6;
+  pe.box_pub_right =
+      nh6.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
+  ros::NodeHandle nh7;
+  pe.alert_pub = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert", 1);  // /PedCross/DrawBBox is pub topic
   // Get parameters from ROS
+  ros::NodeHandle nh;
   nh.param<bool>("/pedestrian_event/show_probability", pe.show_probability, true);
-  nh.param<int>("/pedestrian_event/input_source", pe.input_source, 3);
+  nh.param<int>("/pedestrian_event/input_source", pe.input_source, 4);
   nh.param<double>("/pedestrian_event/max_distance", pe.max_distance, 50);
   nh.param<double>("/pedestrian_event/danger_zone_distance", pe.danger_zone_distance, 2);
   nh.param<bool>("/pedestrian_event/use_2d_for_alarm", pe.use_2d_for_alarm, false);
@@ -1896,7 +1921,6 @@ std::cout<< PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml")
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
   pe.count = 0;
 
-  pe.nav_path_transformed.reserve(200);
   pe.nav_path.reserve(200);
 
   std::stringstream ss;
