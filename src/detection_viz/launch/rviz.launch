@@ -1,0 +1,6 @@
+<launch>
+  <arg name="rviz_config" default="U3_b5" />
+  <!-- rviz ************************************************************************************* -->
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find detection_viz)/rviz/$(arg rviz_config).rviz" />
+
+</launch>
