@@ -87,7 +87,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
     {
       point.x = msg->radPoint[i].x;
       point.y = msg->radPoint[i].y;
-      point.z = -3;
+      point.z = -2;
       point.speed = msg->radPoint[i].speed;
 
       rad.radPoint.push_back(point);
@@ -96,7 +96,6 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   std::cout << "Radar Data : " << rad.radPoint.size() << std::endl;
   rad.radHeader.stamp = msg->radHeader.stamp;
   rad.radHeader.seq = msg->radHeader.seq;
-  rad.radPoint.clear();
   RadFrontPub.publish(rad);
 }
 
