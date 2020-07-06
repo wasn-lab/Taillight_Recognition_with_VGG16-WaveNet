@@ -259,11 +259,11 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
 
   // std::cout << "objects.objects size: " << objects.objects.size() << std::endl;
   /// main
-  if (remaining_objects.objects.size() > 0)
+  if (!remaining_objects.objects.empty())
   {
     remaining_objects.objects.clear();
   }
-  if (objects_2d_bbox.objects.size() > 0)
+  if (!objects_2d_bbox.objects.empty())
   {
     objects_2d_bbox.objects.clear();
   }

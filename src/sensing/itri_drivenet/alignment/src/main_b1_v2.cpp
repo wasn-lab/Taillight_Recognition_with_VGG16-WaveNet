@@ -968,13 +968,13 @@ void runInference()
         g_is_data_sync = false;
         std::cout << "===== doInference once =====" << std::endl;
         /// get results
-        std::thread getPointInImageFOV_thread_1(getPointCloudInAllImageFOV, lidar_ssn_ptr, std::ref(cams_points_ptr) /*, cam_pixels*/, g_image_w, g_image_h);
-        std::thread getPointInImageFOV_thread_2(getPointCloudInAllImageFOV, lidarall_nonground_ptr, std::ref(cams_raw_points_ptr) /*, cam_pixels*/, g_image_w, g_image_h);
-        getPointInImageFOV_thread_1.join();
+        std::thread get_point_in_image_fov_thread_1(getPointCloudInAllImageFOV, lidar_ssn_ptr, std::ref(cams_points_ptr) /*, cam_pixels*/, g_image_w, g_image_h);
+        std::thread get_point_in_image_fov_thread_2(getPointCloudInAllImageFOV, lidarall_nonground_ptr, std::ref(cams_raw_points_ptr) /*, cam_pixels*/, g_image_w, g_image_h);
+        get_point_in_image_fov_thread_1.join();
         getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels, objects_2d_bbox_arrs,
                                  cams_bboxs_cube_min_max, cams_bboxs_points);
 
-        getPointInImageFOV_thread_2.join();
+        get_point_in_image_fov_thread_2.join();
         getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels_raw, objects_2d_bbox_arrs,
                                 cams_bboxs_cube_min_max_raw, cams_bboxs_points_raw); 
         /// combine results
