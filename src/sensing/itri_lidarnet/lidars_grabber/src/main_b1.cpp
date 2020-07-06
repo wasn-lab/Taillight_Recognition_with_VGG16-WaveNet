@@ -7,36 +7,37 @@
 #include "NoiseFilter.h"
 #include "extract_Indices.h"
 
-
 //---------------------------- pointcloud
 // no-filter PointCloud
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidAll(new pcl::PointCloud<pcl::PointXYZI>);
+pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll(new pcl::PointCloud<pcl::PointXYZI>);
 
 // Noise PointCloud
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop_Noise(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft_Noise(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight_Noise(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop_Noise(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft_Noise(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight_Noise(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll_Noise(new pcl::PointCloud<pcl::PointXYZI>);
 
 // Focus PointCloud
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop_Focus(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft_Focus(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight_Focus(new pcl::PointCloud<pcl::PointXYZI>);
+// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll_Focus(new pcl::PointCloud<pcl::PointXYZI>);
 
 //---------------------------- Publisher
 // no-filter
 ros::Publisher pub_LidarFrontLeft;
 ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
-ros::Publisher pub_LidAll;
+ros::Publisher pub_LidarAll;
 
 // noise pub
 ros::Publisher pub_LidarFrontTop_Noise;
 ros::Publisher pub_LidarFrontLeft_Noise;
 ros::Publisher pub_LidarFrontRight_Noise;
+ros::Publisher pub_LidarAll_Noise;
 
 //----------------------------- Stitching
 vector<double> LidarFrontLeft_Fine_Param;
@@ -47,6 +48,7 @@ LiDARStitchingAuto LSA;
 
 //--------------------------- Global Variables
 mutex syncLock;
+
 StopWatch stopWatch;
 bool debug_output = false;
 bool use_filter = false;
@@ -64,78 +66,206 @@ void lidarAll_Pub(int lidarNum);
 // lidars_callback -> synLock_callback
 void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
-  heartBeat[0] = true;
-  if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
+  if (input_cloud->width * input_cloud->height > 100)
   {
-    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-    cout << "[Left->Gbr]: " << diff_time << "ms" << endl;
+    heartBeat[0] = true;
+    // check data from hardware
+    if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
+    {
+      uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+      cout << "[Left->Gbr]: " << diff_time << "ms" << endl;
+    }
+    pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+
+    // check stitching
+    if (GlobalVariable::STITCHING_MODE_NUM == 1)
+    {
+      syncLock_callback();
+    }
+    else
+    {
+      heartBeat[0] = false;
+      
+      // Transfrom
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
+      input_cloud_tmp, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], LidarFrontLeft_Fine_Param[2], LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4],
+      LidarFrontLeft_Fine_Param[5]);
+            
+      // filter
+      *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
+      *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      
+      // assign
+      *cloudPtr_LidarFrontLeft = *input_cloud_tmp;
+
+      // publish
+      cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
+      pub_LidarFrontLeft.publish(*cloudPtr_LidarFrontLeft);
+    }  
   }
-  pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontLeft);
-  syncLock_callback();
 }
 
 void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
-  heartBeat[1] = true;
-  if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
+  if (input_cloud->width * input_cloud->height > 100)
   {
-    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-    cout << "[Right->Gbr]: " << diff_time << "ms" << endl;
+    heartBeat[0] = true;
+
+    // check data from hardware
+    if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
+    {
+      uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+      cout << "[Right->Gbr]: " << diff_time << "ms" << endl;
+    }
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+
+    // check stitching
+    if (GlobalVariable::STITCHING_MODE_NUM == 1)
+    {
+      syncLock_callback();
+    }
+    else
+    {
+      heartBeat[0] = false;
+      
+      // Transfrom
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
+      input_cloud_tmp, LidarFrontRight_Fine_Param[0], LidarFrontRight_Fine_Param[1], LidarFrontRight_Fine_Param[2], LidarFrontRight_Fine_Param[3], LidarFrontRight_Fine_Param[4],
+      LidarFrontRight_Fine_Param[5]);
+
+      // filter
+      *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
+      *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      
+      // assign
+      *cloudPtr_LidarFrontRight = *input_cloud_tmp;
+      
+      // publish
+      cloudPtr_LidarFrontRight->header.frame_id = "lidar";
+      pub_LidarFrontRight.publish(*cloudPtr_LidarFrontRight);
+    }  
   }
-  pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontRight);
-  syncLock_callback();
 }
 
 void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
-  heartBeat[4] = true;
-  if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
+  if (input_cloud->width * input_cloud->height > 100)
   {
-    uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-    cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
+    stopWatch.reset();
+    heartBeat[0] = true;
+
+    // check data from hardware
+    if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
+    {
+      uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
+      cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
+    }
+    pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+
+    // check stitching
+    if (GlobalVariable::STITCHING_MODE_NUM == 1)
+    {
+      syncLock_callback();
+    }
+    else
+    {
+      heartBeat[0] = false;
+      
+      // Transfrom
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
+      
+      // filter
+      *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
+      *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      
+      // assign
+      *cloudPtr_LidarFrontTop = *input_cloud_tmp;
+
+      // publish
+      cloudPtr_LidarFrontTop->header.frame_id = "lidar";
+      pub_LidarFrontTop.publish(*cloudPtr_LidarFrontTop);
+    }  
   }
-  pcl::fromROSMsg(*input_cloud, *cloudPtr_LidarFrontTop);
-  stopWatch.reset();
-  syncLock_callback();
 }
+
+
+float return_MaxTimeDiff(float a, float b , float c)
+{
+  float diff_ab = a - b;
+  float diff_ac = a - c;
+ 
+  if (( diff_ab < 0 && diff_ac < 0 ) || ( diff_ab > 0 && diff_ac > 0) )
+  {
+    if (abs(diff_ab) > abs(diff_ac))
+    {
+      return diff_ab;
+    }
+    else
+    {
+      return diff_ac;
+    }
+  }
+  else
+  {
+    return diff_ab + diff_ac;
+  }
+}
+
 
 void lidarAll_Pub(int lidarNum)
 {
-  *cloudPtr_LidAll += *cloudPtr_LidarFrontLeft;
-  *cloudPtr_LidAll += *cloudPtr_LidarFrontRight;
-  *cloudPtr_LidAll += *cloudPtr_LidarFrontTop;
+  // check time sync
+  // float Max_Time_Diff;
 
-  // time stamp correction
+  // Max_Time_Diff = return_MaxTimeDiff( cloudPtr_LidarFrontTop->header.stamp.toSec(), 
+  // cloudPtr_LidarFrontLeft->header.stamp.toSec(), cloudPtr_LidarFrontRight->header.stamp.toSec());
+ 
+  // if (Max_Time_Diff > 0.05) 
+  // {
+  //   cout << "!-----------------------> Lidars is not Synchromized in  " << Max_Time_Diff << "s" << endl;
+  // }  
+   
+  
+  //------ combine pointcloud
+  *cloudPtr_LidarAll += *cloudPtr_LidarFrontLeft;
+  *cloudPtr_LidarAll += *cloudPtr_LidarFrontRight;
+  *cloudPtr_LidarAll += *cloudPtr_LidarFrontTop;
+
+  //------ assign header
   if (cloudPtr_LidarFrontTop->header.stamp != 0)
   {
-    cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontTop->header.stamp;
+    cloudPtr_LidarAll->header.stamp = cloudPtr_LidarFrontTop->header.stamp;
   }
   else
   {
     if (cloudPtr_LidarFrontLeft->header.stamp >= cloudPtr_LidarFrontRight->header.stamp)
     {
-      cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontLeft->header.stamp;
+      cloudPtr_LidarAll->header.stamp = cloudPtr_LidarFrontLeft->header.stamp;
     }
     else
     {
-      cloudPtr_LidAll->header.stamp = cloudPtr_LidarFrontRight->header.stamp;
+      cloudPtr_LidarAll->header.stamp = cloudPtr_LidarFrontRight->header.stamp;
     }
   }
-
   uint64_t LidarAll_time;
-  LidarAll_time = cloudPtr_LidAll->header.stamp;
-  cloudPtr_LidAll->header.frame_id = "lidar";
+  LidarAll_time = cloudPtr_LidarAll->header.stamp;
+  cloudPtr_LidarAll->header.frame_id = "lidar";
 
 
-  //pub LidarAll
-  pub_LidAll.publish(*cloudPtr_LidAll);
-  cloudPtr_LidAll->clear();
+  //------ pub LidarAll
+  pub_LidarAll.publish(*cloudPtr_LidarAll);
+  cloudPtr_LidarAll->clear();
 
   if (debug_output)
   {
     cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
   }
 
+  //------ clear memory
   // if wall_time - ros_time !> 30 minutes, (not rosbag)
   // clear sensor pc data memory if delay 2sec.
   uint64_t now = ros::Time::now().toNSec() / 1000ull;  // microsec
@@ -158,6 +288,7 @@ void lidarAll_Pub(int lidarNum)
     };
   }
 }
+
 
 void checkPubFlag(int lidarNum)
 {
@@ -300,124 +431,6 @@ void syncLock_callback()
       checkPubFlag(4);
     }
   }
-  //========================== ELSE AREA ==========================//
-  else
-  {
-    if (heartBeat[0] == true)
-    {
-      heartBeat[0] = false;
-      *cloudPtr_LidarFrontLeft = Transform_CUDA().compute<PointXYZI>(
-          cloudPtr_LidarFrontLeft, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1],
-          LidarFrontLeft_Fine_Param[2], LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4],
-          LidarFrontLeft_Fine_Param[5]);
-      cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
-      
-      // get focus area
-      // *cloudPtr_LidarFrontLeft_Focus = CuboidFilter().separate_cloud<PointXYZI>(cloudPtr_LidarFrontLeft, -1, 30, -15, 15, -5, 0.001)[0];
-      // cloudPtr_LidarFrontLeft_Focus->header.frame_id = cloudPtr_LidarFrontLeft->header.frame_id;
-      // cloudPtr_LidarFrontLeft_Focus->header.stamp = cloudPtr_LidarFrontLeft->header.stamp;
-      // cloudPtr_LidarFrontLeft_Focus->header.seq = cloudPtr_LidarFrontLeft->header.seq;
-      // *cloudPtr_LidarFrontLeft = *cloudPtr_LidarFrontLeft_Focus;
-
-      // L Noise Filter Get Noise
-      pcl::RadiusOutlierRemoval<pcl::PointXYZI> LidarFrontLeft_NoiseFilter;
-      LidarFrontLeft_NoiseFilter.setInputCloud(cloudPtr_LidarFrontLeft);
-      LidarFrontLeft_NoiseFilter.setRadiusSearch(0.22);
-      LidarFrontLeft_NoiseFilter.setMinNeighborsInRadius(1);
-      LidarFrontLeft_NoiseFilter.setNegative(true);
-      LidarFrontLeft_NoiseFilter.filter(*cloudPtr_LidarFrontLeft_Noise);
-      if (use_filter)
-      {
-        LidarFrontLeft_NoiseFilter.setNegative(false);
-        LidarFrontLeft_NoiseFilter.filter(*cloudPtr_LidarFrontLeft);
-      }
-
-      pub_LidarFrontLeft.publish(*cloudPtr_LidarFrontLeft);
-      pub_LidarFrontLeft_Noise.publish(*cloudPtr_LidarFrontLeft_Noise);
-
-      checkPubFlag(0);
-    }
-    if (heartBeat[1] == true)
-    {
-      heartBeat[1] = false;
-      *cloudPtr_LidarFrontRight = Transform_CUDA().compute<PointXYZI>(
-          cloudPtr_LidarFrontRight, LidarFrontRight_Fine_Param[0], LidarFrontRight_Fine_Param[1],
-          LidarFrontRight_Fine_Param[2], LidarFrontRight_Fine_Param[3], LidarFrontRight_Fine_Param[4],
-          LidarFrontRight_Fine_Param[5]);
-      cloudPtr_LidarFrontRight->header.frame_id = "lidar";
-
-      // get focus area
-      // *cloudPtr_LidarFrontRight_Focus = CuboidFilter().separate_cloud<PointXYZI>(cloudPtr_LidarFrontRight,-1, 30, -15, 15, -5, 0.001)[0];
-      // cloudPtr_LidarFrontRight_Focus->header.frame_id = cloudPtr_LidarFrontRight->header.frame_id;
-      // cloudPtr_LidarFrontRight_Focus->header.stamp = cloudPtr_LidarFrontRight->header.stamp;
-      // cloudPtr_LidarFrontRight_Focus->header.seq = cloudPtr_LidarFrontRight->header.seq;
-      // *cloudPtr_LidarFrontRight = *cloudPtr_LidarFrontRight_Focus;
-
-
-      // R Noise Filter Get Noise
-      pcl::RadiusOutlierRemoval<pcl::PointXYZI> LidarFrontRight_NoiseFilter;
-      LidarFrontRight_NoiseFilter.setInputCloud(cloudPtr_LidarFrontRight);
-      LidarFrontRight_NoiseFilter.setRadiusSearch(0.22);
-      LidarFrontRight_NoiseFilter.setMinNeighborsInRadius(1);
-      LidarFrontRight_NoiseFilter.setNegative(true);
-      LidarFrontRight_NoiseFilter.filter(*cloudPtr_LidarFrontRight_Noise);
-      
-      // Deleted Noise
-      if (use_filter)
-      {
-        LidarFrontRight_NoiseFilter.setNegative(false);
-        LidarFrontRight_NoiseFilter.filter(*cloudPtr_LidarFrontRight);
-      }
-
-      pub_LidarFrontRight.publish(*cloudPtr_LidarFrontRight);
-      pub_LidarFrontRight_Noise.publish(*cloudPtr_LidarFrontRight_Noise);
-      
-      checkPubFlag(1);
-    }
-    if (heartBeat[4] == true)
-    {
-      heartBeat[4] = false;
-      *cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(cloudPtr_LidarFrontTop, 0, 0, 0, 0, 0.2, 0);
-      *cloudPtr_LidarFrontTop = CuboidFilter().hollow_removal<PointXYZI>(cloudPtr_LidarFrontTop, -20, 0.001, -2, 2, -5, 0.001);
-      cloudPtr_LidarFrontTop->header.frame_id = "lidar";
-
-      // get focus area
-      *cloudPtr_LidarFrontTop_Focus = CuboidFilter().separate_cloud<PointXYZI>(cloudPtr_LidarFrontTop, -1, 30, -15, 15, -5, 0.001)[0];
-      cloudPtr_LidarFrontTop_Focus->header.frame_id = cloudPtr_LidarFrontTop->header.frame_id;
-      cloudPtr_LidarFrontTop_Focus->header.stamp = cloudPtr_LidarFrontTop->header.stamp;
-      cloudPtr_LidarFrontTop_Focus->header.seq = cloudPtr_LidarFrontTop->header.seq;
-      *cloudPtr_LidarFrontTop = *cloudPtr_LidarFrontTop_Focus;
-
-
-      // Top Radius Noise Filter Get Noise
-      pcl::RadiusOutlierRemoval<pcl::PointXYZI> LidarFrontTop_NoiseFilter;
-      LidarFrontTop_NoiseFilter.setInputCloud(cloudPtr_LidarFrontTop);
-      LidarFrontTop_NoiseFilter.setRadiusSearch(0.22);
-      LidarFrontTop_NoiseFilter.setMinNeighborsInRadius(1);
-      LidarFrontTop_NoiseFilter.setNegative(true);
-      LidarFrontTop_NoiseFilter.filter(*cloudPtr_LidarFrontTop_Noise);
-      
-      // Top Statistical Filter
-      // pcl::StatisticalOutlierRemoval<pcl::PointXYZI> LidarFrontTop_NoiseFilter;
-      // LidarFrontTop_NoiseFilter.setInputCloud(cloudPtr_LidarFrontTop);
-      // LidarFrontTop_NoiseFilter.setMeanK(10);
-      // LidarFrontTop_NoiseFilter.setStddevMulThresh(1);
-      // LidarFrontTop_NoiseFilter.setNegative(true);
-      // LidarFrontTop_NoiseFilter.filter(*cloudPtr_LidarFrontTop_Noise);      
-
-
-      // Deleted Noise
-      if (use_filter)
-      {
-        LidarFrontTop_NoiseFilter.setNegative(false);
-        LidarFrontTop_NoiseFilter.filter(*cloudPtr_LidarFrontTop);
-      }
-      pub_LidarFrontTop.publish(*cloudPtr_LidarFrontTop);
-      pub_LidarFrontTop_Noise.publish(*cloudPtr_LidarFrontTop_Noise);
-    
-      checkPubFlag(4);
-    }
-  }
   syncLock.unlock();
 }
 
@@ -431,6 +444,17 @@ void UI(int argc, char** argv)
     a.exec();
   }
 }
+
+void LidarAll_Publisher(int argc, char** argv)
+{
+  ros::Rate loop_rate(20);  // 80Hz
+  while (ros::ok())
+  {
+    lidarAll_Pub(4);
+    loop_rate.sleep();
+  }
+}
+
 
 int main(int argc, char** argv)
 {
@@ -481,30 +505,25 @@ int main(int argc, char** argv)
   ros::Subscriber sub_LidarFrontTop =
       n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
 
+
   // no-filter publisher
   pub_LidarFrontLeft = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontLeft", 1);
   pub_LidarFrontRight = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontRight", 1);
   pub_LidarFrontTop = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop", 1);
-  pub_LidAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
+  pub_LidarAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
 
-  //Noise publisher
-  pub_LidarFrontLeft_Noise = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontLeft_Noise", 1);
-  pub_LidarFrontRight_Noise = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontRight_Noise", 1);
-  pub_LidarFrontTop_Noise = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop_Noise", 1);
-
-  thread TheadDetection(UI, argc, argv);
+  thread TheadDetection_UI(UI, argc, argv);
+  thread TheadDetection_Pub(LidarAll_Publisher, argc, argv);
 
   //----------------------------------- ros
-  // ros::MultiThreadedSpinner s(3);
-  // ros::spin(s);
+  ros::AsyncSpinner spinner(4);
+  spinner.start();
 
-  ros::Rate loop_rate(80);  // 80Hz
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  TheadDetection.join();
+  TheadDetection_UI.join();
+  TheadDetection_Pub.join();
+  ros::waitForShutdown();
+
+  
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;
