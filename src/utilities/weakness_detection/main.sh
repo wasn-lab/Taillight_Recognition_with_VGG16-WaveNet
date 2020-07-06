@@ -31,7 +31,7 @@ function save_images {
   set +e
   for cam_id in $cam_ids; do
     topic="/cam/${cam_id}"
-    output_dir=${TMP_DIR}/${cam_id}
+    output_dir=${TMP_DIR}/raw/${cam_id}
     mkdir -p $output_dir
     ${repo_dir}/devel/lib/itri_file_saver/image_saver -image_topic ${topic} -output_dir ${output_dir} 2>/dev/null &
   done
@@ -51,16 +51,17 @@ function save_images {
   killall image_saver
   set -e
   for cam_id in $cam_ids; do
-    output_dir=${TMP_DIR}/${cam_id}
-    image_list_txt=${TMP_DIR}/${cam_id}/image_list.txt
+    output_dir=${TMP_DIR}/raw/${cam_id}
+    image_list_txt=${TMP_DIR}/raw/${cam_id}/image_list.txt
     find $output_dir -name "*.jpg" -type f | grep -v yolo | grep -v deeplab |grep -v efficientdet > ${image_list_txt}
   done
   echo "y" | rosnode cleanup
+
 }
 
-function rm_tmp_files {
+function rm_raw_files {
   for cam_id in $cam_ids; do
-    output_dir=${TMP_DIR}/${cam_id}
+    output_dir=${TMP_DIR}/raw/${cam_id}
     if [[ -d ${output_dir} ]]; then
       rm -r $output_dir
     fi
@@ -69,7 +70,7 @@ function rm_tmp_files {
 
 function run_deeplab {
   for cam_id in $cam_ids; do
-    image_list_txt=${TMP_DIR}/${cam_id}/image_list.txt
+    image_list_txt=${TMP_DIR}/raw/${cam_id}/image_list.txt
     ${repo_dir}/devel/lib/deeplab/deeplab_cmd < ${image_list_txt}
   done
 }
@@ -90,14 +91,14 @@ function build_darknet_exe {
 
 function run_yolo {
   for cam_id in $cam_ids_fov120; do
-    image_list_txt=${TMP_DIR}/${cam_id}/image_list.txt
-    yolo_result_json=${TMP_DIR}/${cam_id}/yolo_result.json
+    image_list_txt=${TMP_DIR}/raw/${cam_id}/image_list.txt
+    yolo_result_json=${TMP_DIR}/raw/${cam_id}/yolo_result.json
     python3 gen_yolo_detection_img.py --yolo-weights ${yolo_weights_fov120} --image-filenames ${image_list_txt} --yolo-result-json ${yolo_result_json}
   done
 
   for cam_id in $cam_ids_fov30_60; do
-    image_list_txt=${TMP_DIR}/${cam_id}/image_list.txt
-    yolo_result_json=${TMP_DIR}/${cam_id}/yolo_result.json
+    image_list_txt=${TMP_DIR}/raw/${cam_id}/image_list.txt
+    yolo_result_json=${TMP_DIR}/raw/${cam_id}/yolo_result.json
     python3 gen_yolo_detection_img.py --yolo-weights ${yolo_weights_fov30_60} --image-filenames ${image_list_txt} --yolo-result-json ${yolo_result_json}
   done
 }
@@ -114,7 +115,7 @@ function run_efficientdet {
   pushd Yet-Another-EfficientDet-Pytorch
 
   for cam_id in $cam_ids; do
-    image_list_txt=${TMP_DIR}/${cam_id}/image_list.txt
+    image_list_txt=${TMP_DIR}/raw/${cam_id}/image_list.txt
     python efficientdet_itri.py --image-filenames ${image_list_txt}
   done
   deactivate
@@ -124,16 +125,10 @@ function run_efficientdet {
 }
 
 function find_weakness {
-  if [[ "$#" == "1" && "$1" == *".bag" ]]; then
-    bn=$(basename $1)
-    weakness_images_dir=${TMP_DIR}/${bn}
-  else
-    weakness_images_dir=${TMP_DIR}/weakness_images
-  fi
-
+  weakness_images_dir=${TMP_DIR}/weak
 
   for cam_id in $cam_ids; do
-    yolo_result_json=${TMP_DIR}/${cam_id}/yolo_result.json
+    yolo_result_json=${TMP_DIR}/raw/${cam_id}/yolo_result.json
     weakness_image_dir=${weakness_images_dir}/${cam_id}
     python find_weakness.py --yolo-result-json ${yolo_result_json} --weakness-image-dir ${weakness_image_dir}
   done
@@ -146,5 +141,5 @@ build_darknet_exe
 run_yolo
 run_efficientdet
 
-find_weakness $@
-rm_tmp_files
+find_weakness
+#rm_raw_files

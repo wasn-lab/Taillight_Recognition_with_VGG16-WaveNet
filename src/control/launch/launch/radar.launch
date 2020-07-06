@@ -2,6 +2,7 @@
 <launch>
 	<!-- nodes -->
 	<node pkg="rad_grab" type="radfrontpub" name="radfrontpub" output="screen" cwd="node" respawn="true"  />
+	<node pkg="rad_grab" type="radfrontpub_filter" name="radfrontpub_filter" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_can" name="radfrontsub_can" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true"  />
 	<node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true"  />
