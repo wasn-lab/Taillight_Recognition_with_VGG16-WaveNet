@@ -9,8 +9,11 @@ readonly rsync_server="nas.itriadv.co"
 readonly port=873
 readonly path_prefix="Share/ADV/Rosbag/B1/"
 readonly weakness_detection_dir=${repo_dir}/src/utilities/weakness_detection
-
 readonly rsync_list=$(rsync -av --list-only --exclude test_case "rsync://icl_u300@${rsync_server}:${port}/${path_prefix}" | awk '{print $NF}')
+
+if [[ -d /usr/local/lib/python3.6/dist-packages/cv2 ]]; then
+  export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages
+fi
 
 for bag_path in $rsync_list; do
   if [[ "$bag_path" == *".bag" ]]; then
