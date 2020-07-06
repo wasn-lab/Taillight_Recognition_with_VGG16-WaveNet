@@ -160,7 +160,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (in_source_ == 2)
+    if (input_source_ == 2)
     {
       for (auto& obj : KTs_.objs_)
       {
@@ -220,43 +220,43 @@ void TPPNode::subscribe_and_advertise_topics()
   std::string topic = "PathPredictionOutput";
   use_tracking2d = false;
 
-  if (in_source_ == 1)
+  if (input_source_ == 1)
   {
     LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
-  else if (in_source_ == 2)
+  else if (input_source_ == 2)
   {
     LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
-  else if (in_source_ == 3)
+  else if (input_source_ == 3)
   {
     LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
     fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
-  else if (in_source_ == 4)
+  else if (input_source_ == 4)
   {
     LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (in_source_ == 5)
+  else if (input_source_ == 5)
   {
     LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (in_source_ == 6)
+  else if (input_source_ == 6)
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
-  else if (in_source_ == 7)
+  else if (input_source_ == 7)
   {
     use_tracking2d = true;
     LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
@@ -895,7 +895,7 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
+  nh_.param<int>(domain + "input_source", input_source_, 0);
   nh_.param<int>(domain + "occ_source", occ_source_, 0);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);

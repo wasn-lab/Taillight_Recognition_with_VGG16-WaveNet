@@ -33,7 +33,7 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = 6;
+  int input_source_ = 6;
   int occ_source_ = 0;
 
   bool use_tracking2d = false;
