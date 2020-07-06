@@ -220,43 +220,43 @@ void TPPNode::subscribe_and_advertise_topics()
   std::string topic = "PathPredictionOutput";
   use_tracking2d = false;
 
-  if (input_source_ == 1)
+  if (input_source_ == InputSource::LidarDet)
   {
     LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
-  else if (input_source_ == 2)
+  else if (input_source_ == InputSource::RadarDet)
   {
     LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
-  else if (input_source_ == 3)
+  else if (input_source_ == InputSource::CameraDetV1)
   {
     LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
     fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
-  else if (input_source_ == 4)
+  else if (input_source_ == InputSource::VirtualBBoxAbs)
   {
     LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (input_source_ == 5)
+  else if (input_source_ == InputSource::VirtualBBoxRel)
   {
     LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (input_source_ == 6)
+  else if (input_source_ == InputSource::CameraDetV2)
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
-  else if (input_source_ == 7)
+  else if (input_source_ == InputSource::Tracking2D)
   {
     use_tracking2d = true;
     LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
