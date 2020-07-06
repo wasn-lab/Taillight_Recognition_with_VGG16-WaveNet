@@ -23,9 +23,11 @@ public:
 
   PointCloud<PointXYZ> runRandomSampling(PointCloud<PointXYZ>::Ptr input, float model_ss);
 
-  PointCloud<PointXYZ> runStatisticalOutlierRemoval(PointCloud<PointXYZ>::Ptr input, int MeanK, double StddevMulThresh);
+  PointCloud<PointXYZI> runStatisticalOutlierRemoval(PointCloud<PointXYZI>::Ptr input, int MeanK, double StddevMulThresh);
 
-  PointCloud<PointXYZ> runRadiusOutlierRemoval(PointCloud<PointXYZ>::Ptr input, double radius, int min_pts);
+  template <typename PointT>
+  PointCloud<PointT> runRadiusOutlierRemoval(typename PointCloud<PointT>::Ptr input, double radius, int min_pts);
+
 };
 
 #endif
