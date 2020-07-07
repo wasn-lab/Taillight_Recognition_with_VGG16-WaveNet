@@ -52,7 +52,6 @@ set(SOURCES_SRCS
   src/point32_impl.cpp
   src/ros_params_parser.cpp
   src/simple_kalman.cpp
-  src/tpp_args_parser.cpp
   src/tpp_node.cpp
   src/track_hist.cpp
   src/utils.cpp
