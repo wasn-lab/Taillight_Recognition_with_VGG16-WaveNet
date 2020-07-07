@@ -34,7 +34,7 @@ private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
   int input_source_ = InputSource::CameraDetV2;
-  int occ_source_ = 0;
+  int occ_source_ = OccupancySource::PlannedPathBased;
 
   bool use_tracking2d = false;
 

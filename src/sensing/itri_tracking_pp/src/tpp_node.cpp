@@ -278,7 +278,7 @@ void TPPNode::subscribe_and_advertise_topics()
   nh2_.setCallbackQueue(&queue_);
 
   // Note that we use different NodeHandle(nh2_) here
-  if (occ_source_ == 1)
+  if (occ_source_ == OccupancySource::MapBased)
   {
     wayarea_sub_ = nh2_.subscribe("occupancy_wayarea", 1, &TPPNode::callback_wayarea, this);
   }
@@ -896,7 +896,7 @@ void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
   nh_.param<int>(domain + "input_source", input_source_, 0);
-  nh_.param<int>(domain + "occ_source", occ_source_, 0);
+  nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);

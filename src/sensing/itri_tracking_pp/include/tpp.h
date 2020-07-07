@@ -23,6 +23,13 @@ enum InputSource
   NumInputSources
 };
 
+enum OccupancySource
+{
+  PlannedPathBased = 0,
+  MapBased,
+  NumOccupancySources
+};
+
 struct BoxCenter
 {
   unsigned int id;

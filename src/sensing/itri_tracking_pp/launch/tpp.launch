@@ -15,8 +15,8 @@
   <arg name="input_source" default="6" />
 
   <!-- Occupancy source -->
-  <!-- 1: /occupancy_wayarea -->
-  <!-- otherwise: /occupancy_grid_wayarea -->
+  <!-- 1: MapBased: /occupancy_wayarea -->
+  <!-- otherwise: PlannedPathBased: /occupancy_grid_wayarea -->
   <arg name="occ_source" default="0" />
 
   <!-- Input/Output FPS -->
