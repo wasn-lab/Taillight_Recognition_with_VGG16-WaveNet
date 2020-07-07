@@ -520,7 +520,7 @@ void TPPNode::publish_tracking()
         }
 
         // set length
-        box.track.length = (track.hist_.len_ > 0) ? track.hist_.len_ : 0;
+        box.track.length = track.hist_.len_;
 
         // set is_over_max_length
         if (track.hist_.len_ >= (unsigned short)track.hist_.max_len_)
