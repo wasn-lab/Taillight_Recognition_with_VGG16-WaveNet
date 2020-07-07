@@ -303,7 +303,7 @@ void TPPNode::subscribe_and_advertise_topics()
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0 || input_source_ == InputSource::RadarDet)
+  if (cPoint.lowerAreaPoints.empty() || input_source_ == InputSource::RadarDet)
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
