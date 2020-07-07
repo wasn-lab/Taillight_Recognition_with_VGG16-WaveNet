@@ -199,6 +199,8 @@ pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
 IMU imu;
 
+std::string current_spat = "";
+
 VehicelStatus vs;
 batteryInfo battery;
 
@@ -647,7 +649,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["pressurediff"] = battery.voltage_deviation; //高低電壓差//0.0;
     J1["maxtbatteryposition"] = battery.lowest_number; //最低電池電壓 0.01V"454FG"; 
     J1["maxtemperature"] = battery.highest_temperature; //電池最高環境溫度//0.0;
-    J1["Signal"] = 1; //無資料
+    J1["Signal"] = current_spat; //無資料
     J1["CMS"] = 1; //無資料
     J1["setting"] = mode; // 自動/半自動/手動/鎖定
     J1["board_list"] = board_list;
@@ -692,7 +694,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; //目前來源 NextStop/Info
     J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
-    J1["Signal"] = 1; //無資料
+    J1["Signal"] = current_spat; //無資料
     J1["CMS"] = 1; //無資料
     J1["setting"] = mode; 
     J1["EExit"] = emergency_exit; 
@@ -777,8 +779,8 @@ void sendRun(int argc, char** argv)
     
     while (vkStatusQueue.size() != 0)
     {
-      UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
-      UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
+      UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), true);
+      UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), true);
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkStatusQueue.pop();
     }
@@ -864,8 +866,8 @@ void sendRun(int argc, char** argv)
         mutex_event_2.unlock();
       }//if(eventQueue2.size() != 0)
     }//else
-    cout << " receive event: " << event_recv_count << endl;
-    cout << " send event: " << event_send_count << endl;
+    //cout << " receive event: " << event_recv_count << endl;
+    //cout << " send event: " << event_send_count << endl;
     boost::this_thread::sleep(boost::posix_time::microseconds(1000));
   }
 }
@@ -894,14 +896,15 @@ void receiveUDPRun(int argc, char** argv)
 {
   while (true)
   {
-    UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
-    //UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
+    //UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
+    UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
     int result = UDP_OBU_server.recv(buffer, sizeof(buffer));
-
+    current_spat = "";
     if (result != -1)
     {
       mutex_trafficLight.lock();
       std::string tempStr(buffer);
+      current_spat = tempStr;
       memset(buffer, 0, sizeof(buffer));
       trafficLightQueue.push(tempStr);
       mutex_trafficLight.unlock();
