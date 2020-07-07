@@ -79,7 +79,14 @@ include_directories(
   ${libs_SOURCE_DIR}/Clustering/DBSCAN/CUDA
 )
 
-set(LIBS ${OpenCV_LIBRARIES}
+if(EXISTS /usr/local/lib/libopencv_core.so)
+set(OpenCV_USER_LIBRARIES /usr/local/lib/libopencv_core.so
+                          ${OpenCV_LIBRARIES})
+else()
+set(OpenCV_USER_LIBRARIES ${OpenCV_LIBRARIES})
+endif()
+
+set(LIBS ${OpenCV_USER_LIBRARIES}
          ${CUDA_LIBRARIES}
          ${PCL_LIBRARIES}
          camera_utils
@@ -96,7 +103,7 @@ if (CAR_MODEL_IS_B1)
   add_dependencies(${PROJECT_NAME}_b1_ssn_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 elseif(CAR_MODEL_IS_B1_V2)
   cuda_add_executable(${PROJECT_NAME}_b1_v2 src/main_b1_v2.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/sync_message.cpp src/object_generator.cpp src/cloud_cluster.cpp)
-  target_link_libraries(${PROJECT_NAME}_b1_v2 ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_b1_v2 ${LIBS} ${catkin_LIBRARIES})
   add_dependencies(${PROJECT_NAME}_b1_v2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
   cuda_add_executable(${PROJECT_NAME}_b1_v2_alignment src/alignment_visualization_b1_v2.cpp src/alignment.cpp src/visualization_util.cpp src/point_preprocessing.cpp src/points_in_image_area.cpp src/cloud_cluster.cpp)

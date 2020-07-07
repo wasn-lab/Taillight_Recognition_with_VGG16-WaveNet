@@ -6,9 +6,29 @@
 
 namespace tpp
 {
-constexpr unsigned int num_forecasts_ = 20;
+static constexpr unsigned int num_forecasts_ = 20;
 
-constexpr unsigned int num_2dbox_corners = 4;
+static constexpr unsigned int num_2dbox_corners = 4;
+
+enum InputSource
+{
+  Fusion = 0,
+  LidarDet,
+  RadarDet,
+  CameraDetV1,
+  VirtualBBoxAbs,
+  VirtualBBoxRel,
+  CameraDetV2,
+  Tracking2D,
+  NumInputSources
+};
+
+enum OccupancySource
+{
+  PlannedPathBased = 0,
+  MapBased,
+  NumOccupancySources
+};
 
 struct BoxCenter
 {

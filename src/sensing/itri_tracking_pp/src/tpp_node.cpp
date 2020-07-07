@@ -160,7 +160,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (in_source_ == 2)
+    if (input_source_ == InputSource::RadarDet)
     {
       for (auto& obj : KTs_.objs_)
       {
@@ -218,41 +218,49 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 void TPPNode::subscribe_and_advertise_topics()
 {
   std::string topic = "PathPredictionOutput";
+  use_tracking2d = false;
 
-  if (in_source_ == 1)
+  if (input_source_ == InputSource::LidarDet)
   {
     LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
-  else if (in_source_ == 2)
+  else if (input_source_ == InputSource::RadarDet)
   {
     LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
-  else if (in_source_ == 3)
+  else if (input_source_ == InputSource::CameraDetV1)
   {
     LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
     fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
-  else if (in_source_ == 4)
+  else if (input_source_ == InputSource::VirtualBBoxAbs)
   {
     LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (in_source_ == 5)
+  else if (input_source_ == InputSource::VirtualBBoxRel)
   {
     LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (in_source_ == 6)
+  else if (input_source_ == InputSource::CameraDetV2)
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
+  }
+  else if (input_source_ == InputSource::Tracking2D)
+  {
+    use_tracking2d = true;
+    LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
+    fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else
@@ -270,7 +278,7 @@ void TPPNode::subscribe_and_advertise_topics()
   nh2_.setCallbackQueue(&queue_);
 
   // Note that we use different NodeHandle(nh2_) here
-  if (occ_source_ == 1)
+  if (occ_source_ == OccupancySource::MapBased)
   {
     wayarea_sub_ = nh2_.subscribe("occupancy_wayarea", 1, &TPPNode::callback_wayarea, this);
   }
@@ -510,6 +518,9 @@ void TPPNode::publish_tracking()
         {
           box.track.head = track.hist_.head_;
         }
+
+        // set length
+        box.track.length = track.hist_.len_;
 
         // set is_over_max_length
         if (track.hist_.len_ >= (unsigned short)track.hist_.max_len_)
@@ -884,8 +895,8 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
-  nh_.param<int>(domain + "occ_source", occ_source_, 0);
+  nh_.param<int>(domain + "input_source", input_source_, InputSource::CameraDetV2);
+  nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
@@ -973,14 +984,14 @@ int TPPNode::run()
       clock_t begin_time = clock();
 #endif
 
-// Tracking start ==========================================================================
+      // Tracking start ==========================================================================
 
 #if TTC_TEST
       seq_ = seq_cb_;
 #endif
 
       // MOT: SORT algorithm
-      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, use_tracking2d);
       compute_velocity_kalman();
 
       publish_tracking();
@@ -999,7 +1010,7 @@ int TPPNode::run()
       publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif
 
-// PP end ==================================================================================
+      // PP end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();
