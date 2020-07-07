@@ -29,7 +29,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   ros::NodeHandle n;
   msgs::DetectedObjectArray BBox;
   msgs::DetectedObject Box_temp;
-
+  BBox.header = msg->radHeader;
   Box_temp.header = msg->radHeader;
   Box_temp.header.frame_id = "lidar";
   // BBox.objects.resize(msg->radPoint.size());
