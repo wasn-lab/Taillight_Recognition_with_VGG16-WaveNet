@@ -19,7 +19,7 @@
 
 #include "car_filter.hpp"
 
-bool CarFilter::filter(const CLUSTER_INFO & cluster_info)
+bool CarFilter::filter(const CLUSTER_INFO& cluster_info)
 {
   double x = cluster_info.obb_dx;
   double y = cluster_info.obb_dy;
@@ -29,18 +29,22 @@ bool CarFilter::filter(const CLUSTER_INFO & cluster_info)
   constexpr double min_length = 3.0;
   constexpr double max_length = 5.0;
 
-  if (x < min_width && y < min_width) {
+  if (x < min_width && y < min_width)
+  {
     return false;
   }
-  if (max_width < x && max_width < y) {
+  if (max_width < x && max_width < y)
+  {
     return false;
   }
 
-  if (max_length < x || max_length < y) {
+  if (max_length < x || max_length < y)
+  {
     return false;
   }
 
-  if (s < 0.5 && max_length * max_width < s) {
+  if (s < 0.5 && max_length * max_width < s)
+  {
     return false;
   }
   return true;

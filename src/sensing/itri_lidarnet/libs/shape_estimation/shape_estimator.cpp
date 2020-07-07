@@ -25,31 +25,37 @@
 #include "model/bounding_box.hpp"
 #include "model/model_interface.hpp"
 
-ShapeEstimator::ShapeEstimator() {}
+ShapeEstimator::ShapeEstimator()
+{
+}
 
-bool ShapeEstimator::getShapeAndPose(CLUSTER_INFO & cluster_info)
+bool ShapeEstimator::getShapeAndPose(CLUSTER_INFO& cluster_info)
 {
   // check input
-  if (cluster_info.cloud.empty()) return false;
+  if (cluster_info.cloud.empty())
+    return false;
 
   // estimate shape
-  if (!estimateShape(cluster_info)) {
+  if (!estimateShape(cluster_info))
+  {
     return false;
   }
 
   // rule based filter
-  if (!applyFilter(cluster_info)) {
+  if (!applyFilter(cluster_info))
+  {
     return false;
   }
 
   // rule based corrector
-  if (!applyCorrector(cluster_info)) {
+  if (!applyCorrector(cluster_info))
+  {
     return false;
   }
   return true;
 }
 
-bool ShapeEstimator::estimateShape(CLUSTER_INFO & cluster_info)
+bool ShapeEstimator::estimateShape(CLUSTER_INFO& cluster_info)
 {
   // estimate shape
   std::unique_ptr<ShapeEstimationModelInterface> model_ptr;
@@ -57,7 +63,7 @@ bool ShapeEstimator::estimateShape(CLUSTER_INFO & cluster_info)
   return model_ptr->estimate(cluster_info);
 }
 
-bool ShapeEstimator::applyFilter(const CLUSTER_INFO & cluster_info)
+bool ShapeEstimator::applyFilter(const CLUSTER_INFO& cluster_info)
 {
   // rule based filter
   std::unique_ptr<ShapeEstimationFilterInterface> filter_ptr;
@@ -65,7 +71,7 @@ bool ShapeEstimator::applyFilter(const CLUSTER_INFO & cluster_info)
   return filter_ptr->filter(cluster_info);
 }
 
-bool ShapeEstimator::applyCorrector(CLUSTER_INFO & cluster_info)
+bool ShapeEstimator::applyCorrector(CLUSTER_INFO& cluster_info)
 {
   // rule based corrector
   std::unique_ptr<ShapeEstimationCorrectorInterface> corrector_ptr;

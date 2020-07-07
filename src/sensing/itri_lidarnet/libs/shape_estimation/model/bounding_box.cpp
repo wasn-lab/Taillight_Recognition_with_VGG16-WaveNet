@@ -31,14 +31,15 @@
 
 #include <Eigen/Core>
 
-bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
+bool BoundingBoxModel::estimate(CLUSTER_INFO& cluster_info)
 {
   // calc centroid point for height(z)
   pcl::PointXYZ centroid;
   centroid.x = 0;
   centroid.y = 0;
   centroid.z = 0;
-  for (const auto & pcl_point : cluster_info.cloud) {
+  for (const auto& pcl_point : cluster_info.cloud)
+  {
     centroid.x += pcl_point.x;
     centroid.y += pcl_point.y;
     centroid.z += pcl_point.z;
@@ -49,9 +50,12 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
   // calc min and max z for height
   double min_z = 0;
   double max_z = 0;
-  for (size_t i = 0; i < cluster_info.cloud.size(); ++i) {
-    if (cluster_info.cloud.at(i).z < min_z || i == 0) min_z = cluster_info.cloud.at(i).z;
-    if (max_z < cluster_info.cloud.at(i).z || i == 0) max_z = cluster_info.cloud.at(i).z;
+  for (size_t i = 0; i < cluster_info.cloud.size(); ++i)
+  {
+    if (cluster_info.cloud.at(i).z < min_z || i == 0)
+      min_z = cluster_info.cloud.at(i).z;
+    if (max_z < cluster_info.cloud.at(i).z || i == 0)
+      max_z = cluster_info.cloud.at(i).z;
   }
   /*
    * Paper : IV2017, Efficient L-Shape Fitting for Vehicle Detection Using Laser Scanners
@@ -62,14 +66,16 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
   const double max_angle = M_PI / 2.0;
   const double eplison = 0.001;
   const double angle_reso = M_PI / 180.0;
-  for (double theta = 0; theta <= max_angle + eplison; theta += angle_reso) {
+  for (double theta = 0; theta <= max_angle + eplison; theta += angle_reso)
+  {
     Eigen::Vector2d e_1;
     e_1 << std::cos(theta), std::sin(theta);  // col.3, Algo.2
     Eigen::Vector2d e_2;
     e_2 << -std::sin(theta), std::cos(theta);  // col.4, Algo.2
     std::vector<double> C_1;                   // col.5, Algo.2
     std::vector<double> C_2;                   // col.6, Algo.2
-    for (const auto & point : cluster_info.cloud) {
+    for (const auto& point : cluster_info.cloud)
+    {
       C_1.push_back(point.x * e_1.x() + point.y * e_1.y());
       C_2.push_back(point.x * e_2.x() + point.y * e_2.y());
     }
@@ -79,8 +85,10 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
 
   double theta_star;  // col.10, Algo.2
   double max_q;
-  for (size_t i = 0; i < Q.size(); ++i) {
-    if (max_q < Q.at(i).second || i == 0) {
+  for (size_t i = 0; i < Q.size(); ++i)
+  {
+    if (max_q < Q.at(i).second || i == 0)
+    {
       max_q = Q.at(i).second;
       theta_star = Q.at(i).first;
     }
@@ -92,7 +100,8 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
   e_2_star << -std::sin(theta_star), std::cos(theta_star);
   std::vector<double> C_1_star;  // col.11, Algo.2
   std::vector<double> C_2_star;  // col.11, Algo.2
-  for (const auto & point : cluster_info.cloud) {
+  for (const auto& point : cluster_info.cloud)
+  {
     C_1_star.push_back(point.x * e_1_star.x() + point.y * e_1_star.y());
     C_2_star.push_back(point.x * e_2_star.x() + point.y * e_2_star.y());
   }
@@ -131,8 +140,8 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
   diagonal_vec << intersection_x_1 - intersection_x_2, intersection_y_1 - intersection_y_2;
 
   // calc yaw
-  //tf2::Quaternion quat;
-  //quat.setEuler(/* roll */ 0, /* pitch */ 0, /* yaw */ std::atan2(e_1_star.y(), e_1_star.x()));
+  // tf2::Quaternion quat;
+  // quat.setEuler(/* roll */ 0, /* pitch */ 0, /* yaw */ std::atan2(e_1_star.y(), e_1_star.x()));
 
   // output
   cluster_info.obb_center.x = (intersection_x_1 + intersection_x_2) / 2.0;
@@ -145,25 +154,26 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
   cluster_info.obb_orient = std::atan2(e_1_star.y(), e_1_star.x());
 
   // check wrong output
-  if (cluster_info.obb_dx < ep && cluster_info.obb_dy < ep) return false;
-/*
-  // output
-  shape_output.type = autoware_perception_msgs::Shape::BOUNDING_BOX;
-  pose_output.position.x = (intersection_x_1 + intersection_x_2) / 2.0;
-  pose_output.position.y = (intersection_y_1 + intersection_y_2) / 2.0;
-  pose_output.position.z = centroid.z;
-  pose_output.orientation = tf2::toMsg(quat);
-  orientation_output = false;
-  constexpr double ep = 0.001;
-  shape_output.dimensions.x = std::fabs(e_x.dot(diagonal_vec));
-  shape_output.dimensions.y = std::fabs(e_y.dot(diagonal_vec));
-  shape_output.dimensions.z = std::max((max_z - min_z), ep);
+  if (cluster_info.obb_dx < ep && cluster_info.obb_dy < ep)
+    return false;
+  /*
+    // output
+    shape_output.type = autoware_perception_msgs::Shape::BOUNDING_BOX;
+    pose_output.position.x = (intersection_x_1 + intersection_x_2) / 2.0;
+    pose_output.position.y = (intersection_y_1 + intersection_y_2) / 2.0;
+    pose_output.position.z = centroid.z;
+    pose_output.orientation = tf2::toMsg(quat);
+    orientation_output = false;
+    constexpr double ep = 0.001;
+    shape_output.dimensions.x = std::fabs(e_x.dot(diagonal_vec));
+    shape_output.dimensions.y = std::fabs(e_y.dot(diagonal_vec));
+    shape_output.dimensions.z = std::max((max_z - min_z), ep);
 
-  // check wrong output
-  if (shape_output.dimensions.x < ep && shape_output.dimensions.y < ep) return false;
-  shape_output.dimensions.x = std::max(shape_output.dimensions.x, ep);
-  shape_output.dimensions.y = std::max(shape_output.dimensions.y, ep);
-*/
+    // check wrong output
+    if (shape_output.dimensions.x < ep && shape_output.dimensions.y < ep) return false;
+    shape_output.dimensions.x = std::max(shape_output.dimensions.x, ep);
+    shape_output.dimensions.y = std::max(shape_output.dimensions.y, ep);
+  */
   return true;
 }
 
@@ -317,8 +327,7 @@ bool BoundingBoxModel::estimate(CLUSTER_INFO & cluster_info)
 //   return beta;
 // }
 
-double BoundingBoxModel::calcClosenessCriterion(
-  const std::vector<double> & C_1, const std::vector<double> & C_2)
+double BoundingBoxModel::calcClosenessCriterion(const std::vector<double>& C_1, const std::vector<double>& C_2)
 {
   // Paper : Algo.4 Closeness Criterion
   const double min_c_1 = *std::min_element(C_1.begin(), C_1.end());  // col.2, Algo.4
@@ -327,19 +336,22 @@ double BoundingBoxModel::calcClosenessCriterion(
   const double max_c_2 = *std::max_element(C_2.begin(), C_2.end());  // col.3, Algo.4
 
   std::vector<double> D_1;  // col.4, Algo.4
-  for (const auto & c_1_element : C_1) {
+  for (const auto& c_1_element : C_1)
+  {
     const double v = std::min(max_c_1 - c_1_element, c_1_element - min_c_1);
     D_1.push_back(std::fabs(v));
   }
 
   std::vector<double> D_2;  // col.5, Algo.4
-  for (const auto & c_2_element : C_2) {
+  for (const auto& c_2_element : C_2)
+  {
     const double v = std::min(max_c_2 - c_2_element, c_2_element - min_c_2);
     D_2.push_back(std::fabs(v));
   }
   const double d_min = 0.03;
   double beta = 0;  // col.6, Algo.4
-  for (size_t i = 0; i < D_1.size(); ++i) {
+  for (size_t i = 0; i < D_1.size(); ++i)
+  {
     const double d = std::max(std::min(D_1.at(i), D_2.at(i)), d_min);
     beta += 1.0 / d;
   }
