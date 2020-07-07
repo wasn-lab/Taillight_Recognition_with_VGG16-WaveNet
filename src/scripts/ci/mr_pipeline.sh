@@ -41,6 +41,9 @@ for fname in ${affected_files}; do
   fi
 done
 
+# When executable file names change and publish test still use old names,
+# the test should report failure. To do so, we should clean up the
+# old executables.
 if [[ -d devel/lib ]]; then
   find devel/lib -executable -type f -exec rm {} \;
 fi
