@@ -59,12 +59,10 @@
 #include <string>
 
 // instantiate template for transforming a VPointCloud
-template bool
-  pcl_ros::transformPointCloud<velodyne_rawdata::VPoint>(
-    const std::string &,
-    const velodyne_rawdata::VPointCloud &,
-    velodyne_rawdata::VPointCloud &,
-    const tf::TransformListener &);
+template bool pcl_ros::transformPointCloud<velodyne_rawdata::VPoint>(const std::string&,
+                                                                     const velodyne_rawdata::VPointCloud&,
+                                                                     velodyne_rawdata::VPointCloud&,
+                                                                     const tf::TransformListener&);
 
 namespace velodyne_pointcloud
 {
@@ -74,31 +72,29 @@ class Transform
 {
 public:
   Transform(ros::NodeHandle node, ros::NodeHandle private_nh);
-  ~Transform() {}
+  ~Transform()
+  {
+  }
 
 private:
-  void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
+  void processScan(const velodyne_msgs::VelodyneScan::ConstPtr& scanMsg);
 
   // Pointer to dynamic reconfigure service srv_
-  boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::
-    TransformNodeConfig>> srv_;
-  void reconfigure_callback(
-    velodyne_pointcloud::TransformNodeConfig &config,
-    uint32_t level);
+  boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::TransformNodeConfig>> srv_;
+  void reconfigure_callback(velodyne_pointcloud::TransformNodeConfig& config, uint32_t level);
 
   const std::string tf_prefix_;
   boost::shared_ptr<velodyne_rawdata::RawData> data_;
   message_filters::Subscriber<velodyne_msgs::VelodyneScan> velodyne_scan_;
-  tf::MessageFilter<velodyne_msgs::VelodyneScan> *tf_filter_;
+  tf::MessageFilter<velodyne_msgs::VelodyneScan>* tf_filter_;
   ros::Publisher output_;
   tf::TransformListener listener_;
 
   /// configuration parameters
   typedef struct
   {
-    std::string frame_id;          // fixed frame ID
-  }
-  Config;
+    std::string frame_id;  // fixed frame ID
+  } Config;
   Config config_;
 
   // Point cloud buffers for collecting points within a packet.  The

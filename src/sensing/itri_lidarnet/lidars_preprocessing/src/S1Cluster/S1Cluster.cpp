@@ -504,8 +504,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, PointCloud<PointXYZ>::ConstPtr 
   // ========================================================================================================== Part
   // VIII
   *cluster_number = cluster_vector.size();
-  auto* cluster_modify =
-      new CLUSTER_INFO[cluster_vector.size()];  // initialize an vector of cluster point cloud
+  auto* cluster_modify = new CLUSTER_INFO[cluster_vector.size()];  // initialize an vector of cluster point cloud
 
 #pragma omp parallel for
   for (size_t i = 0; i < cluster_vector.size(); i++)
