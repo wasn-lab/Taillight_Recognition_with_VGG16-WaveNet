@@ -160,7 +160,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (input_source_ == 2)
+    if (input_source_ == InputSource::RadarDet)
     {
       for (auto& obj : KTs_.objs_)
       {

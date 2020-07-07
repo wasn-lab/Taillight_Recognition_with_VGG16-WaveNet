@@ -33,7 +33,7 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int input_source_ = 6;
+  int input_source_ = InputSource::CameraDetV2;
   int occ_source_ = 0;
 
   bool use_tracking2d = false;
