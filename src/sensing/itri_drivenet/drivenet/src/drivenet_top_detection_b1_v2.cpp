@@ -354,7 +354,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.width = box.x2 - box.x1;
   cam_info.height = box.y2 - box.y1;
   cam_info.prob = box.prob;
-  cam_info.id = translate_label(box.label);
+  cam_info.id = g_cam_ids[cam_order];
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info;

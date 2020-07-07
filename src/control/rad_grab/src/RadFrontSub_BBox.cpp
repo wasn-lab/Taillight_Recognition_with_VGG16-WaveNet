@@ -27,9 +27,11 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
 {
   std_msgs::Header h = msg->radHeader;
   ros::NodeHandle n;
-  uint32_t shape = visualization_msgs::Marker::SPHERE;
   msgs::DetectedObjectArray BBox;
   msgs::DetectedObject Box_temp;
+  BBox.header = msg->radHeader;
+  Box_temp.header = msg->radHeader;
+  Box_temp.header.frame_id = "lidar";
   // BBox.objects.resize(msg->radPoint.size());
 
   for (int i = 0; i < msg->radPoint.size(); i++)
@@ -39,10 +41,18 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
       Box_temp.relSpeed = msg->radPoint[i].speed;
       Box_temp.bPoint.p0.x = msg->radPoint[i].x;
       Box_temp.bPoint.p0.y = -msg->radPoint[i].y;
+      Box_temp.bPoint.p1.x = msg->radPoint[i].x;
+      Box_temp.bPoint.p1.y = -msg->radPoint[i].y;
+      Box_temp.bPoint.p2.x = msg->radPoint[i].x;
+      Box_temp.bPoint.p2.y = -msg->radPoint[i].y;
       Box_temp.bPoint.p3.x = msg->radPoint[i].x;
       Box_temp.bPoint.p3.y = -msg->radPoint[i].y;
       Box_temp.bPoint.p4.x = msg->radPoint[i].x;
       Box_temp.bPoint.p4.y = -msg->radPoint[i].y;
+      Box_temp.bPoint.p5.x = msg->radPoint[i].x;
+      Box_temp.bPoint.p5.y = -msg->radPoint[i].y;
+      Box_temp.bPoint.p6.x = msg->radPoint[i].x;
+      Box_temp.bPoint.p6.y = -msg->radPoint[i].y;
       Box_temp.bPoint.p7.x = msg->radPoint[i].x;
       Box_temp.bPoint.p7.y = -msg->radPoint[i].y;
       BBox.objects.push_back(Box_temp);
@@ -60,7 +70,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "RadFrontSub_BBox");
   ros::NodeHandle n;
   ros::Subscriber RadFrontSub = n.subscribe("RadFront", 1, callbackRadFront);
-  BBox_pub = n.advertise<msgs::DetectedObjectArray>("PathPredictionOutput/radar", 1);
+  BBox_pub = n.advertise<msgs::DetectedObjectArray>("RadarDetection", 1);
   ros::Rate rate(100);
   while (ros::ok())
   {
