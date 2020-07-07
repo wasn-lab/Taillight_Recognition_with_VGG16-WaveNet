@@ -895,7 +895,7 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
-  nh_.param<int>(domain + "input_source", input_source_, 0);
+  nh_.param<int>(domain + "input_source", input_source_, InputSource::CameraDetV2);
   nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
