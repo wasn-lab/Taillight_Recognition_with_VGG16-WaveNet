@@ -781,7 +781,7 @@ void sendRun(int argc, char** argv)
     {
       UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), true);
       UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), true);
-      //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      UDP_TABLET_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
       vkStatusQueue.pop();
     }
     mutex_queue.unlock();
