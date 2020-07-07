@@ -146,12 +146,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    for (auto& obj : KTs_.objs_)
-    {
-      obj.absSpeed = 0.f;
-      obj.relSpeed = 0.f;
-    }
-
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
     {
@@ -160,30 +154,20 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (input_source_ == InputSource::RadarDet)
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "RadFront";
-      }
-    }
-    else
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "lidar";
-      }
-    }
-
-#if USE_RADAR_REL_SPEED
     for (auto& obj : KTs_.objs_)
     {
-      if (obj.header.frame_id == "RadarFront")
+      obj.header.frame_id = "lidar";
+      obj.absSpeed = 0.f;
+
+      if (input_source_ == InputSource::RadarDet)
       {
         obj.relSpeed = mps_to_kmph(obj.relSpeed);
       }
+      else
+      {
+        obj.relSpeed = 0.f;
+      }
     }
-#endif
 
 #if FILL_CONVEX_HULL
     for (auto& obj : KTs_.objs_)
@@ -319,7 +303,7 @@ void TPPNode::subscribe_and_advertise_topics()
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
+  if (cPoint.lowerAreaPoints.size() == 0 || input_source_ == InputSource::RadarDet)
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
@@ -442,9 +426,8 @@ void TPPNode::compute_velocity_kalman()
       track.box_.absSpeed = 0.f;
     }
 
-// DetectedObject.relSpeed
-#if USE_RADAR_REL_SPEED
-    if (track.box_.header.frame_id != "RadarFront")
+    // DetectedObject.relSpeed
+    if (input_source_ != InputSource::RadarDet)
     {
       MyPoint32 p_rel;
       track.box_center_.pos.get_point_rel(p_rel);
@@ -454,17 +437,6 @@ void TPPNode::compute_velocity_kalman()
       rel_v_rel.z = track.box_.track.relative_velocity.z;
       track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
     }
-#else
-    MyPoint32 p_rel;
-    track.box_center_.pos.get_point_rel(p_rel);  // m
-
-    Vector3_32 rel_v_rel;
-    rel_v_rel.x = track.box_.track.relative_velocity.x;  // km/h
-    rel_v_rel.y = track.box_.track.relative_velocity.y;  // km/h
-    rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
-
-    track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-#endif
 
     if (std::isnan(track.box_.relSpeed))
     {
