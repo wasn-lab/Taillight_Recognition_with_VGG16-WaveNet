@@ -67,6 +67,10 @@ int main(int argc, char** argv)
     perror("bind");
     return 1;
   }
+  else
+  {
+    std::cout << "Create success !!" << std::endl;
+  }
 
   ros::init(argc, argv, "RadFrontPub");
   ros::NodeHandle n;
