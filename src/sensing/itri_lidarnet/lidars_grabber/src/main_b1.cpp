@@ -14,18 +14,6 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight(new pcl::PointClou
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll(new pcl::PointCloud<pcl::PointXYZI>);
 
-// Noise PointCloud
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop_Noise(new pcl::PointCloud<pcl::PointXYZI>);
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft_Noise(new pcl::PointCloud<pcl::PointXYZI>);
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight_Noise(new pcl::PointCloud<pcl::PointXYZI>);
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll_Noise(new pcl::PointCloud<pcl::PointXYZI>);
-
-// Focus PointCloud
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-// pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll_Focus(new pcl::PointCloud<pcl::PointXYZI>);
-
 //---------------------------- Publisher
 // no-filter
 ros::Publisher pub_LidarFrontLeft;
@@ -81,6 +69,8 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     // check stitching
     if (GlobalVariable::STITCHING_MODE_NUM == 1)
     {
+      // assign
+      *cloudPtr_LidarFrontLeft = *input_cloud_tmp;
       syncLock_callback();
     }
     else
@@ -102,7 +92,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       // publish
       cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       pub_LidarFrontLeft.publish(*cloudPtr_LidarFrontLeft);
-    }  
+    }
   }
 }
 
@@ -125,11 +115,12 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
     // check stitching
     if (GlobalVariable::STITCHING_MODE_NUM == 1)
     {
+      *cloudPtr_LidarFrontRight = *input_cloud_tmp;
       syncLock_callback();
     }
     else
     {
-      heartBeat[0] = false;
+      heartBeat[1] = false;
       
       // Transfrom
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
@@ -146,7 +137,8 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       // publish
       cloudPtr_LidarFrontRight->header.frame_id = "lidar";
       pub_LidarFrontRight.publish(*cloudPtr_LidarFrontRight);
-    }  
+    }
+
   }
 }
 
@@ -155,7 +147,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
   if (input_cloud->width * input_cloud->height > 100)
   {
     stopWatch.reset();
-    heartBeat[0] = true;
+    heartBeat[4] = true;
 
     // check data from hardware
     if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
@@ -169,6 +161,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     // check stitching
     if (GlobalVariable::STITCHING_MODE_NUM == 1)
     {
+      *cloudPtr_LidarFrontTop = *input_cloud_tmp;
       syncLock_callback();
     }
     else
@@ -366,7 +359,7 @@ void syncLock_callback()
           GlobalVariable::UI_PARA[3], GlobalVariable::UI_PARA[4], GlobalVariable::UI_PARA[5]);
       cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       pub_LidarFrontLeft.publish(*cloudPtr_LidarFrontLeft);
-      checkPubFlag(0);
+      //checkPubFlag(0);
     }
 
     if (heartBeat[1] == true)
@@ -415,7 +408,7 @@ void syncLock_callback()
 
       cloudPtr_LidarFrontRight->header.frame_id = "lidar";
       pub_LidarFrontRight.publish(*cloudPtr_LidarFrontRight);
-      checkPubFlag(1);
+      //checkPubFlag(1);
     }
 
     // LidarFrontTop does not need to compute
@@ -426,9 +419,8 @@ void syncLock_callback()
       *cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(cloudPtr_LidarFrontTop, 0, 0, 0, 0, 0.2, 0);
 
       cloudPtr_LidarFrontTop->header.frame_id = "lidar";
-
       pub_LidarFrontTop.publish(*cloudPtr_LidarFrontTop);
-      checkPubFlag(4);
+      //checkPubFlag(4);
     }
   }
   syncLock.unlock();
@@ -447,11 +439,14 @@ void UI(int argc, char** argv)
 
 void LidarAll_Publisher(int argc, char** argv)
 {
-  ros::Rate loop_rate(20);  // 80Hz
-  while (ros::ok())
+  if (GlobalVariable::STITCHING_MODE_NUM != 1)
   {
-    lidarAll_Pub(4);
-    loop_rate.sleep();
+    ros::Rate loop_rate(20);  // 80Hz
+    while (ros::ok())
+    {
+      lidarAll_Pub(4);
+      loop_rate.sleep();
+    }
   }
 }
 
@@ -523,7 +518,6 @@ int main(int argc, char** argv)
   TheadDetection_Pub.join();
   ros::waitForShutdown();
 
-  
 
   cout << "=============== Grabber Stop ===============" << endl;
   return 0;
