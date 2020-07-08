@@ -34,7 +34,7 @@ public:
   }
 
   void callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_, const float ego_x_abs, const float ego_y_abs,
-                         const float ego_z_abs, const float ego_heading);
+                         const float ego_z_abs, const float ego_heading, const int input_source);
 
   void main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
             const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea);
@@ -62,6 +62,7 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
+  int input_source_ = InputSource::CameraDetV2;
   unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;

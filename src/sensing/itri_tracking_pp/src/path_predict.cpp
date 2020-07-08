@@ -3,12 +3,14 @@
 namespace tpp
 {
 void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_, const float ego_x_abs,
-                                    const float ego_y_abs, const float ego_z_abs, const float ego_heading)
+                                    const float ego_y_abs, const float ego_z_abs, const float ego_heading,
+                                    const int input_source)
 {
   ego_x_abs_ = ego_x_abs;
   ego_y_abs_ = ego_y_abs;
   ego_z_abs_ = ego_z_abs;
   ego_heading_ = ego_heading;
+  input_source_ = input_source;
 
 #if DEBUG_PP
   LOG_INFO << "num_pp_input_in_use_ =" << num_pp_input_in_use_ << std::endl;
@@ -58,30 +60,33 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
           continue;
         }
 
-        // PP filter 4: object size z
-        if (box_z_length < box_length_thr_z)
+        if (input_source_ != InputSource::RadarDet)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
-          continue;
-        }
-
-        // PP filter 5: object size x & y
-        if (pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-            pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-            pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
-        {
-          if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
+          // PP filter 4: object size z
+          if (box_z_length < box_length_thr_z)
           {
             pp_objs_[i].track.is_ready_prediction = false;
             continue;
           }
-        }
-        else
-        {
-          if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
+
+          // PP filter 5: object size x & y
+          if (pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+              pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+              pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
           {
-            pp_objs_[i].track.is_ready_prediction = false;
-            continue;
+            if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
+            {
+              pp_objs_[i].track.is_ready_prediction = false;
+              continue;
+            }
+          }
+          else
+          {
+            if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
+            {
+              pp_objs_[i].track.is_ready_prediction = false;
+              continue;
+            }
           }
         }
 
