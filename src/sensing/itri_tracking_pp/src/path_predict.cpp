@@ -61,10 +61,23 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
           continue;
         }
 
-        if (!(box_x_length >= box_length_thr_xy || box_y_length >= box_length_thr_xy))
+        if (pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+            pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+            pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
-          continue;
+          if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
+          {
+            pp_objs_[i].track.is_ready_prediction = false;
+            continue;
+          }
+        }
+        else
+        {
+          if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
+          {
+            pp_objs_[i].track.is_ready_prediction = false;
+            continue;
+          }
         }
 
 #if DEBUG_PP
