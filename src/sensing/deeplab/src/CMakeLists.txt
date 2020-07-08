@@ -3,7 +3,7 @@ set(DEEPLAB_EXE "deeplab_node")
 set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
 
 catkin_download_test_data(xception65_coco_voc_trainval.pb
-  "http://118.163.54.109:8888/Share/ADV/S3_git_data/deeplab/xception65_coco_voc_trainval.pb"
+  "http://nas.itriadv.co:8888/git_data/B1/deeplab/xception65_coco_voc_trainval.pb"
   DESTINATION ${deeplab_SOURCE_DIR}/weights
   MD5 ab5108a6fc6824c9cda9090a19181ca6
 )

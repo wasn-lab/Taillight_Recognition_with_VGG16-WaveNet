@@ -54,9 +54,12 @@
 //ros
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/Float64.h>
 #include <ros/package.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
+
+#include "gnss_utility/gnss_utility.h"
 
 #define SERVER_PORT 8888
 #define BUFF_LEN 1024
@@ -67,6 +70,8 @@ typedef unsigned long U32;
 typedef unsigned short U16;
 typedef signed short S16;
 typedef char U8;
+
+gnss_utility::gnss gnss_tf;
 
 // A few global variables needed for collecting full GSOF packets from
 // multiple Trimcomm packets.
@@ -81,15 +86,31 @@ static sensor_msgs::Imu imu_data;
 static sensor_msgs::Imu imu_data_rad;
 static geometry_msgs::PoseStamped gnss_data;
 static geometry_msgs::PoseStamped gnss2local_data;
+static geometry_msgs::PoseStamped gnss_twd97_data;
 
 static tf::Quaternion q_;
 static ros::Publisher imu_pub;
 static ros::Publisher imu_rad_pub;
 static ros::Publisher gnss_pub;
 static ros::Publisher gnss2local_pub;
+static ros::Publisher gnss_twd97_pub;
+static ros::Publisher gnss_speed_pub;
 
 
 int close(int fd);
+
+// void testgnss()
+// {
+//     double lat = 24.25252525;
+//     double lon = 121.25252525;
+//     double E,N;
+//     bool pkm = false;
+    
+//     gnss_tf.WGS84toTWD97(lat, lon, &E, &N, pkm);
+
+//     std::cout << "test : " << E << std::endl;
+//     std::cout << "test : " << N << std::endl;
+// }
 
 /**********************************************************************/
 void initial_para()
@@ -99,6 +120,7 @@ void initial_para()
         int read_index = 0;
         std::string fname = ros::package::getPath("trimble_gps_imu_pub");
         fname += "/data/ITRI_NEW_ENU2LidXYZ_sec.txt";
+        // fname += "/data/Shalun_ENU2LidXYZ.txt";
         std::cout << fname << std::endl;
 
         std::ifstream fin;
@@ -1348,6 +1370,10 @@ void processINSFullNavigation( int length, char *pData )
         printf( " \n " );
         printf( " -------------------------------------End INS Type 49------------------------- \n ");
 
+        std_msgs::Float64 Speed;
+        Speed.data = Total_Speed;
+        gnss_speed_pub.publish(Speed);
+
         tf::Quaternion gnss_q;
 
         gnss_data.header.stamp = ros::Time::now();
@@ -1424,6 +1450,29 @@ void processINSFullNavigation( int length, char *pData )
         imu_data_rad.angular_velocity.y = Angular_rate_Traverse_Y * PI/180;
         imu_data_rad.angular_velocity.z = Angular_rate_Down_Z * PI/180;
         imu_rad_pub.publish(imu_data_rad);
+
+        // WGS84 to TWD97
+        double TWD97_E,TWD97_N;
+        bool pkm = false;
+        gnss_tf.WGS84toTWD97(Latitude, Longitude, &TWD97_E, &TWD97_N, pkm);
+
+        tf::Quaternion gnss_twd97_q;
+        // double Heading_twd97 = -Heading + M_PI/2;
+        gnss_twd97_q.setRPY(Roll, Pitch, Heading);
+
+        gnss_twd97_data.header.stamp = ros::Time::now();
+        gnss_twd97_data.header.frame_id = "map";
+
+        gnss_twd97_data.pose.position.x = TWD97_E;
+        gnss_twd97_data.pose.position.y = TWD97_N;
+        gnss_twd97_data.pose.position.z = Altitude;
+
+        gnss_twd97_data.pose.orientation.x = gnss_twd97_q.x();
+        gnss_twd97_data.pose.orientation.y = gnss_twd97_q.y();
+        gnss_twd97_data.pose.orientation.z = gnss_twd97_q.z();
+        gnss_twd97_data.pose.orientation.w = gnss_twd97_q.w();
+        gnss_twd97_pub.publish(gnss_twd97_data);
+        
 
 }
 
@@ -1801,6 +1850,8 @@ void handle_udp_msg(int fd)
         }
 }
 
+
+
 /**********************************************************************/
 int main( int argc, char **argv )
 // int main( int argn, char **argc )
@@ -1818,6 +1869,8 @@ int main( int argc, char **argv )
         imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);
         gnss_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_data", 20);
         gnss2local_pub = n.advertise<geometry_msgs::PoseStamped>("gnss2local_data", 20);
+        gnss_twd97_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_twd97_data", 20);
+        gnss_speed_pub = n.advertise<std_msgs::Float64>("gnss_speed_data", 20);
 
         int server_fd, ret;
         struct sockaddr_in ser_addr;

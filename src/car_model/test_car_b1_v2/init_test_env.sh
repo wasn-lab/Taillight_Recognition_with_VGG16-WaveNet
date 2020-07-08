@@ -23,13 +23,12 @@ make lidarxyz2lla_2020-04-13-17-45-48_0.bag
 make rad_grab_2020-04-13-17-45-48_0.bag
 make ukf_mm_2020-04-13-17-45-48_0.bag
 make target_planner_2020-04-13-17-45-48_0.bag
+make auto_record_2020-06-19-16-26-18_1_filtered.bag
 set +e
 popd
 
 # Generatie drivenet tensorRT engine files.
 find src/sensing/itri_drivenet -name "*.engine" -exec rm {} \;
-python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_group_a.launch
-python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_side.launch
-python src/car_model/scripts/gen_drivenet_engine.py --launch-type b1_v2_drivenet_top.launch
+src/car_model/scripts/gen_drivenet_engine.py --package sdb --launch camera.launch
 
 find src/sensing/itri_drivenet -name "*.engine"
