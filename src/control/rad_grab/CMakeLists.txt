@@ -50,6 +50,33 @@ add_definitions(${PCL_DEFINITIONS})
 ###########
 include_directories(${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
+add_executable(radfrontpub src/RadFrontPub.cpp)
+target_link_libraries(radfrontpub ${catkin_LIBRARIES})
+add_dependencies(radfrontpub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(radfrontpub_filter src/RadFrontPub_Filter.cpp)
+target_link_libraries(radfrontpub_filter ${catkin_LIBRARIES})
+add_dependencies(radfrontpub_filter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(radfrontpub_txt src/RadFrontPub_txt.cpp)
+target_link_libraries(radfrontpub_txt ${catkin_LIBRARIES})
+add_dependencies(radfrontpub_txt ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(alpharadfrontpub src/AlphaRadFrontPub.cpp)
+target_link_libraries(alpharadfrontpub ${catkin_LIBRARIES})
+add_dependencies(alpharadfrontpub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+#add_executable(radfrontsub src/RadFrontSub.cpp)
+#target_link_libraries(radfrontsub ${catkin_LIBRARIES})
+#add_dependencies(radfrontsub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+#add_executable(radfrontsub_rviz src/RadFrontSub_rviz.cpp)
+#target_link_libraries(radfrontsub_rviz ${catkin_LIBRARIES})
+#add_dependencies(radfrontsub_rviz ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(radfrontsub_can src/RadFrontSub_CAN.cpp)
+target_link_libraries(radfrontsub_can ${catkin_LIBRARIES})
+add_dependencies(radfrontsub_can ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(radfrontsub_pcloud src/RadFrontSub_PCloud.cpp)
 target_link_libraries(radfrontsub_pcloud ${catkin_LIBRARIES})
@@ -58,25 +85,3 @@ add_dependencies(radfrontsub_pcloud ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin
 add_executable(radfrontsub_bbox src/RadFrontSub_BBox.cpp)
 target_link_libraries(radfrontsub_bbox ${catkin_LIBRARIES})
 add_dependencies(radfrontsub_bbox ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(radfrontpub_txt src/RadFrontPub_txt.cpp)
-target_link_libraries(radfrontpub_txt ${catkin_LIBRARIES})
-add_dependencies(radfrontpub_txt ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(radfrontpub src/RadFrontPub.cpp)
-target_link_libraries(radfrontpub ${catkin_LIBRARIES})
-add_dependencies(radfrontpub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(radfrontsub src/RadFrontSub.cpp)
-target_link_libraries(radfrontsub ${catkin_LIBRARIES})
-add_dependencies(radfrontsub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(radfrontsub_rviz src/RadFrontSub_rviz.cpp)
-target_link_libraries(radfrontsub_rviz ${catkin_LIBRARIES})
-add_dependencies(radfrontsub_rviz ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-add_executable(radfrontsub_can src/RadFrontSub_CAN.cpp)
-target_link_libraries(radfrontsub_can ${catkin_LIBRARIES})
-add_dependencies(radfrontsub_can ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-

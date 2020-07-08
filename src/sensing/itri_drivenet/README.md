@@ -59,14 +59,14 @@ source ./devel/setup.bash
 roslaunch drivenet b1_v2_drivenet_group_a.launch
 ```
 
-/cam/front_top_close_120, /cam/right_front_60, /cam/right_back_60  2D object detection
+/cam/right_front_60, /cam/right_back_60, /cam/left_front_60, /cam/left_back_60,  2D object detection
 ```
-roslaunch drivenet b1_v2_drivenet_group_b.launch
+roslaunch drivenet b1_v2_drivenet_side.launch
 ```
 
-/cam/left_front_60, /cam/left_back_60, /cam/back_top_120  2D object detection
+/cam/front_top_close_120, /cam/back_top_120  2D object detection
 ```
-roslaunch drivenet b1_v2_drivenet_group_c.launch
+roslaunch drivenet b1_v2_drivenet_top.launch
 ```
 
 Camera & LiDAR 3D object detection

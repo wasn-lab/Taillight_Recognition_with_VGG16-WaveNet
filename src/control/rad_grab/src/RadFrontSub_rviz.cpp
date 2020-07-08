@@ -73,7 +73,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   uint32_t shape = visualization_msgs::Marker::SPHERE;
   visualization_msgs::Marker marker;
   // Set the frame ID and timestamp.  See the TF tutorials for information on these.
-  marker.header.frame_id = "/base_link";
+  marker.header.frame_id = "base_link";
   marker.header.stamp = ros::Time::now();
 
   // Set the namespace and id for this marker.  This serves to create a unique ID
