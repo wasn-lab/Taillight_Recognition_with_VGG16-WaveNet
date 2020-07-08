@@ -1,6 +1,9 @@
 #ifndef VISUALIZATION_UTIL_H_
 #define VISUALIZATION_UTIL_H_
 
+/// stardard
+#include <math.h>
+
 /// ros
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
