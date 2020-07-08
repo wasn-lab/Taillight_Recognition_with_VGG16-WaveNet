@@ -21,8 +21,7 @@ bool is_file(const std::string& name)
 
 std::string get_trt_engine_fullpath(const std::string& weights_file)
 {
-  return std::string(weights_file + ".tensorrt" + std::to_string(TENSORRT_VERSION_MAJOR) + "." +
-                     std::to_string(TENSORRT_VERSION_MINOR) + "." + std::to_string(TENSORRT_VERSION_PATCH) + ".engine");
+  return std::string(weights_file + ".tensorrt.engine");
 }
 
 };  // namespace

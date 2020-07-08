@@ -24,17 +24,18 @@ int main(int argc, char* argv[])
     {
       LOG(WARNING) << "File not exist: " << filename;
     }
-    std::string output_filename = filename.substr(0, filename.size() - 4) + "_deeplab_labels.png";
+    cv::Mat overlay;
+
     auto input = cv::imread(filename);
     cv::Mat output(cv::Size(deeplab::DEEPLAB_IMAGE_WIDTH, deeplab::DEEPLAB_IMAGE_HEIGHT), CV_8UC1);
 
-    segmenter.segment_into_labels(input, labels.get());
+    segmenter.segment_with_labels(input, overlay, labels.get());
     memcpy(output.data, labels.get(), sizeof(uint8_t) * deeplab::NUM_PIXELS);
+
+    std::string output_filename = filename.substr(0, filename.size() - 4) + "_deeplab_labels.png";
     LOG(INFO) << "Write " << output_filename;
     cv::imwrite(output_filename, output);
 
-    cv::Mat overlay;
-    segmenter.segment(input, overlay);
     std::string overlay_filename = filename.substr(0, filename.size() - 4) + "_deeplab_overlay.jpg";
     LOG(INFO) << "Write " << overlay_filename;
     cv::imwrite(overlay_filename, overlay);
