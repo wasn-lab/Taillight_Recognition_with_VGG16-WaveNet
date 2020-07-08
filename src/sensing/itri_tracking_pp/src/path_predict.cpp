@@ -30,6 +30,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       {
         pp_objs_[i].track.is_ready_prediction = true;
 
+        // PP filter 1: object absolute speed
         if (pp_objs_[i].absSpeed < pp_obj_min_kmph_ && pp_objs_[i].absSpeed > pp_obj_max_kmph_)
         {
           pp_objs_[i].track.is_ready_prediction = false;
@@ -43,24 +44,28 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         float box_y_length = std::abs(pp_objs_[i].bPoint.p6.y - pp_objs_[i].bPoint.p0.y);
         float box_z_length = std::abs(pp_objs_[i].bPoint.p6.z - pp_objs_[i].bPoint.p0.z);
 
+        // PP filter 2: object position x
         if (box_center_x < pp_allow_x_min_m || box_center_x > pp_allow_x_max_m)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;
         }
 
+        // PP filter 3: object position y
         if (box_center_y < pp_allow_y_min_m || box_center_y > pp_allow_y_max_m)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;
         }
 
+        // PP filter 4: object size z
         if (box_z_length < box_length_thr_z)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;
         }
 
+        // PP filter 5: object size x & y
         if (pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Person ||
             pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
             pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
