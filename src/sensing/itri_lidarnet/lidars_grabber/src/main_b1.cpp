@@ -38,6 +38,10 @@ LiDARStitchingAuto LSA;
 mutex syncLock;
 
 StopWatch stopWatch;
+StopWatch stopWatch_L;
+StopWatch stopWatch_R;
+StopWatch stopWatch_T;
+
 bool debug_output = false;
 bool use_filter = false;
 
@@ -82,10 +86,13 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       input_cloud_tmp, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], LidarFrontLeft_Fine_Param[2], LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4],
       LidarFrontLeft_Fine_Param[5]);
             
+   
       // filter
       *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
+      stopWatch_L.reset();
       *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-      
+      cout << "Left Filter-- " <<  "Points: " << input_cloud_tmp->size() <<  "; Time Took: "  << stopWatch_L.getTimeSeconds() << 's' << endl;
+
       // assign
       *cloudPtr_LidarFrontLeft = *input_cloud_tmp;
 
@@ -93,6 +100,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       pub_LidarFrontLeft.publish(*cloudPtr_LidarFrontLeft);
     }
+
   }
 }
 
@@ -129,8 +137,10 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 
       // filter
       *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
+      stopWatch_R.reset();
       *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-      
+      cout << "Right Filter-- " <<  "Points: " << input_cloud_tmp->size() <<  ";Time Took: "  << stopWatch_R.getTimeSeconds() << 's' << endl;
+
       // assign
       *cloudPtr_LidarFrontRight = *input_cloud_tmp;
       
@@ -155,6 +165,8 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
       cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
     }
+    
+    pcl::PointCloud<pcl::PointXYZI>::Ptr noise_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
 
@@ -174,7 +186,12 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       // filter
       *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
       *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-      
+           
+      *noise_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
+      stopWatch_T.reset();
+      *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      cout << "Top Filter-- " <<  "Points: " << input_cloud_tmp->size() << "; Time Took: "  << stopWatch_T.getTimeSeconds() << 's' << endl;
+
       // assign
       *cloudPtr_LidarFrontTop = *input_cloud_tmp;
 
@@ -258,23 +275,23 @@ void lidarAll_Pub(int lidarNum)
     cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
   }
 
-  //------ clear memory
-  // if wall_time - ros_time !> 30 minutes, (not rosbag)
+  //------ clear real time memory
+  // if wall_time - ros_time < 30 minutes, (not rosbag)
   // clear sensor pc data memory if delay 2sec.
   uint64_t now = ros::Time::now().toNSec() / 1000ull;  // microsec
   if (!((now - LidarAll_time) > 1000000 * 1800))
   {
-    if ((now - cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 2)
+    if ((now - cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 1)
     {
       cloudPtr_LidarFrontLeft->clear();
       cout << "---------------------> Front-Left Clear" << endl;
     };
-    if ((now - cloudPtr_LidarFrontRight->header.stamp) > 1000000 * 2)
+    if ((now - cloudPtr_LidarFrontRight->header.stamp) > 1000000 * 1)
     {
       cloudPtr_LidarFrontRight->clear();
       cout << "---------------------> Front-Right Clear" << endl;
     };
-    if ((now - cloudPtr_LidarFrontTop->header.stamp) > 1000000 * 2)
+    if ((now - cloudPtr_LidarFrontTop->header.stamp) > 1000000 * 1)
     {
       cloudPtr_LidarFrontTop->clear();
       cout << "---------------------> Top Clear" << endl;
