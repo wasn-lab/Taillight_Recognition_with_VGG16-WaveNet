@@ -298,6 +298,15 @@ std::shared_ptr<client> init_client(const std::string& hostname,
                                     int imu_port) {
     auto cli = init_client(lidar_port, imu_port);
 
+
+    int sock_fd = cfg_socket(hostname.c_str());
+    auto state = poll_client(*cli, 10);
+    if (state != OS1:: EXIT && state != OS1::ERROR && state != TIMEOUT) {
+        cli->meta["hostname"] = hostname;
+        cli->meta["lidar_mode"] = to_string(mode);
+    return cli;
+    }
+
     int sock_fd = cfg_socket(hostname.c_str());
 
     Json::CharReaderBuilder builder{};
