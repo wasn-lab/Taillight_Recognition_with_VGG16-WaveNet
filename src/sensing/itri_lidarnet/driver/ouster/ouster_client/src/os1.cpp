@@ -327,7 +327,7 @@ std::shared_ptr<client> init_client(const std::string& hostname, const std::stri
 
   int sock_fd = cfg_socket(hostname.c_str());
   
-  auto state = poll_client(*cli, 10);
+  auto state = poll_client(*cli, 10); // timeout in 10 secs;
   if (state != OS1:: EXIT && state != OS1::ERROR && state != TIMEOUT) {
       cli->meta["hostname"] = hostname;
       cli->meta["lidar_mode"] = to_string(mode);
