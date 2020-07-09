@@ -67,10 +67,14 @@ int main(int argc, char** argv)
     perror("bind");
     return 1;
   }
+  else
+  {
+    std::cout << "Create success !!" << std::endl;
+  }
 
   ros::init(argc, argv, "RadFrontPub");
   ros::NodeHandle n;
-  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
+  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("RadFrontRaw", 1);
   ros::Rate loop_rate(20);  // ros::Rate loop_rate(30);
   srand(ros::Time::now().toSec());
 

@@ -10,7 +10,8 @@ def move_weakest_images(filenames, weakness_dir):
     for filename in filenames:
         deeplab_overlay_fn = filename[:-4] + "_deeplab_overlay.jpg"
         yolo_result_fn = filename[:-4] + "_yolo.jpg"
-        for src in [filename, deeplab_overlay_fn, yolo_result_fn]:
+        edet_fn = filename[:-4] + "_efficientdet_d4.jpg"
+        for src in [filename, deeplab_overlay_fn, yolo_result_fn, edet_fn]:
             _, basename = os.path.split(src)
             dest = os.path.join(weakness_dir, basename)
             logging.warning("cp %s %s", src, dest)
@@ -19,8 +20,14 @@ def move_weakest_images(filenames, weakness_dir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--yolo-result-json", default="/tmp/yolo_result.json")
-    parser.add_argument("--weakness-image-dir", default="/tmp/weakness_images")
+    dft_yolo_result = os.path.join(
+        os.environ.get("TMP_DIR", "/tmp"),
+        "yolo_result.json")
+    dft_weakest_image_dir = os.path.join(
+        os.environ.get("TMP_DIR", "/tmp"),
+        "weakness_images")
+    parser.add_argument("--yolo-result-json", default=dft_yolo_result)
+    parser.add_argument("--weakness-image-dir", default=dft_weakest_image_dir)
     args = parser.parse_args()
 
     weakness_dir = args.weakness_image_dir
