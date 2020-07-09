@@ -105,7 +105,7 @@ double data[10] = { 0 };
 // traffic light buffer
 char buffer[1024];
 
-const static std::string PLATE = "ITRI-ADV";
+const static std::string PLATE = "ITRI-ADV1000";
 const static int FPS_KEY_LEN = 27;
 const static std::string keys[] = {
   "FPS_LidarAll",         "FPS_LidarDetection",   "FPS_camF_right",        "FPS_camF_center",     "FPS_camF_left",
@@ -750,7 +750,7 @@ void sendRun(int argc, char** argv)
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
-  UDP_TABLET_client.initial("192.168.43.63", 9876);
+  UDP_TABLET_client.initial("192.168.43.100", 9876);
   UDP_VK_FG_client.initial("140.134.128.42", 8888);
   
 
