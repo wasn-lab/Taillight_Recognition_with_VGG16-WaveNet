@@ -1,5 +1,8 @@
 #include "visualization_util.h"
 
+/// stardard
+#include <math.h>
+
 using namespace DriveNet;
 
 void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x)
@@ -33,23 +36,25 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 cv::Scalar Visualization::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
-  if (fabs(distance_in_meters) > 0 && fabs(distance_in_meters) <= 10)
+  
+  distance_in_meters = fabs(distance_in_meters);
+  if (distance_in_meters > 0 && distance_in_meters <= 10)
   {
     color = CvColor::red_;
   }
-  else if (fabs(distance_in_meters) > 10 && fabs(distance_in_meters) <= 20)
+  else if (distance_in_meters > 10 && distance_in_meters <= 20)
   {
     color = CvColor::yellow_;
   }
-  else if (fabs(distance_in_meters) > 20 && fabs(distance_in_meters) <= 30)
+  else if (distance_in_meters > 20 && distance_in_meters <= 30)
   {
     color = CvColor::green_;
   }
-  else if (fabs(distance_in_meters) > 30 && fabs(distance_in_meters) <= 40)
+  else if (distance_in_meters > 30 && distance_in_meters <= 40)
   {
     color = CvColor::blue_;
   }
-  else if (fabs(distance_in_meters) > 40 && fabs(distance_in_meters) <= 50)
+  else if (distance_in_meters > 40 && distance_in_meters <= 50)
   {
     color = CvColor::purple_;
   }
