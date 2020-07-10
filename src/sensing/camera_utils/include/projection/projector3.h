@@ -19,7 +19,7 @@ private:
   float min_x;
   float max_x;
   float min_y;
-  float max_y;  
+  float max_y;
   void readCameraParameters(const char* yml_filename);
 
 public:

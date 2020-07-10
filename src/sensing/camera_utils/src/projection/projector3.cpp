@@ -7,7 +7,6 @@
 
 void Projector3::init(int camera_id)
 {
-  
 #if CAR_MODEL_IS_B1_V2
   switch (camera_id)
   {
@@ -16,29 +15,29 @@ void Projector3::init(int camera_id)
       std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_bottom_60_0310.yml");
       readCameraParameters(file_path.c_str());
     }
-      break;
+    break;
 
     case camera::id::front_top_far_30:
     {
       std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_top_far_30_0608.yml");
       readCameraParameters(file_path.c_str());
     }
-      break;
-    
+    break;
+
     case camera::id::right_back_60:
     {
       std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_right_back_60_0619.yml");
       readCameraParameters(file_path.c_str());
     }
-      break;
+    break;
 
     case camera::id::left_back_60:
     {
       std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_left_back_60_0707.yml");
       readCameraParameters(file_path.c_str());
     }
-      break;
-    
+    break;
+
     default:
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
@@ -50,14 +49,14 @@ std::vector<int> Projector3::project(float x, float y, float z)
 {
   std::vector<int> result(2, -1);
   bool in_coverage = true;
-  if(!coverage_mat.empty())
+  if (!coverage_mat.empty())
   {
-    if(x < min_x || x > max_x || y < min_y || y > max_y) 
+    if (x < min_x || x > max_x || y < min_y || y > max_y)
     {
       in_coverage = false;
     }
   }
-  if(in_coverage)
+  if (in_coverage)
   {
     if (!projectionMatrix.empty())
     {
