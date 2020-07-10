@@ -22,3 +22,9 @@ DistCoeff: !!opencv-matrix
        -2.9684403277431298e-01 ]
 ImageSize: [ 608, 384 ]
 ReprojectionError: 7.5079422653643557e-01
+CoverageMat: !!opencv-matrix
+   rows: 2
+   cols: 2
+   dt: f
+   data: [ -3., 50.,
+           -50., -1. ]

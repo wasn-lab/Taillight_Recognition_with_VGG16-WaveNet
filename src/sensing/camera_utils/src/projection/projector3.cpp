@@ -48,19 +48,30 @@ void Projector3::init(int camera_id)
 
 std::vector<int> Projector3::project(float x, float y, float z)
 {
-  std::vector<int> result(2);
-  if (!projectionMatrix.empty())
+  std::vector<int> result(2, -1);
+  bool in_coverage = true;
+  if(!coverage_mat.empty())
   {
-    std::vector<cv::Point3d> object_point;
-    object_point.emplace_back(cv::Point3d((double)x, (double)y, (double)z));
-    std::vector<cv::Point2d> image_point;
-    cv::projectPoints(object_point, rotarionVec, translationVec, cameraMat, distCoeff, image_point);
-    result[0] = image_point[0].x;
-    result[1] = image_point[0].y;
+    if(x < min_x || x > max_x || y < min_y || y > max_y) 
+    {
+      in_coverage = false;
+    }
   }
-  else
+  if(in_coverage)
   {
-    std::cerr << " Projection Matrix is empty." << std::endl;
+    if (!projectionMatrix.empty())
+    {
+      std::vector<cv::Point3d> object_point;
+      object_point.emplace_back(cv::Point3d((double)x, (double)y, (double)z));
+      std::vector<cv::Point2d> image_point;
+      cv::projectPoints(object_point, rotarionVec, translationVec, cameraMat, distCoeff, image_point);
+      result[0] = image_point[0].x;
+      result[1] = image_point[0].y;
+    }
+    else
+    {
+      std::cerr << " Projection Matrix is empty." << std::endl;
+    }
   }
   return result;
 }
@@ -91,6 +102,17 @@ void Projector3::readCameraParameters(const char* yml_filename)
   fs["ImageSize"] >> ImageSize;
   cv::hconcat(rotarionMat, translationVec, projectionMatrix);
   projectionMatrix = cameraMat * projectionMatrix;
+
+  fs["CoverageMat"] >> coverage_mat;
+  if (!coverage_mat.empty())
+  {
+    min_x = coverage_mat.at<float>(0, 0);
+    max_x = coverage_mat.at<float>(0, 1);
+    min_y = coverage_mat.at<float>(1, 0);
+    max_y = coverage_mat.at<float>(1, 1);
+    // std::cout << "min_x: " << min_x << ", max_x: " << max_x << std::endl;
+    // std::cout << "min_y: " << min_y << ", max_y: " << max_y << std::endl;
+  }
 
   // Debug: Camera Parameters
   /*
