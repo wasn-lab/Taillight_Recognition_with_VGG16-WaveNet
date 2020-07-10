@@ -12,28 +12,28 @@ void Projector3::init(int camera_id)
   {
     case camera::id::front_bottom_60:
     {
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_bottom_60_0310.yml");
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v2_front_bottom_60.yml");
       readCameraParameters(file_path.c_str());
     }
     break;
 
     case camera::id::front_top_far_30:
     {
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_front_top_far_30_0608.yml");
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v2_front_top_far_30.yml");
       readCameraParameters(file_path.c_str());
     }
     break;
 
     case camera::id::right_back_60:
     {
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_right_back_60_0619.yml");
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v2_right_back_60.yml");
       readCameraParameters(file_path.c_str());
     }
     break;
 
     case camera::id::left_back_60:
     {
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/fix_left_back_60_0707.yml");
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v2_left_back_60.yml");
       readCameraParameters(file_path.c_str());
     }
     break;
