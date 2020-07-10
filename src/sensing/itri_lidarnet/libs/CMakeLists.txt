@@ -346,7 +346,17 @@ set(SOURCES_SRCS
   shape_estimation/shape_estimator.cpp
   shape_estimation/model/bounding_box.cpp
   shape_estimation/filter/car_filter.cpp
+  shape_estimation/filter/bus_filter.cpp
+  shape_estimation/filter/truck_filter.cpp
+  shape_estimation/filter/motor_filter.cpp
+  shape_estimation/filter/no_filter.cpp
+  shape_estimation/filter/pedestrian_filter.cpp
   shape_estimation/corrector/car_corrector.cpp
+  shape_estimation/corrector/bus_corrector.cpp
+  shape_estimation/corrector/truck_corrector.cpp
+  shape_estimation/corrector/motor_corrector.cpp
+  shape_estimation/corrector/pedestrian_corrector.cpp
+  shape_estimation/corrector/no_corrector.cpp
   Clustering/DBSCAN/CUDA/g_dbscan.cu
   Preprocess/Transform/Transform_CUDA.cu
   Preprocess/VoxelGrid/VoxelGrid_CUDA.cu)
