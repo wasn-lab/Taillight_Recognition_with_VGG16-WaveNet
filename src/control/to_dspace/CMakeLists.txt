@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(to_dspace)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -13,7 +10,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   msgs
+  car_model
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -34,6 +36,7 @@ catkin_package(CATKIN_DEPENDS
   std_msgs 
   message_runtime 
   msgs
+  car_model
 )
 
 ###########
@@ -46,7 +49,7 @@ add_executable(to_dspace src/to_dspace.cpp )
 target_link_libraries(to_dspace ${catkin_LIBRARIES})
 add_dependencies(to_dspace ${catkin_EXPORTED_TARGETS})
 
-add_executable(bus_stop_info src/bus_stop_info_new.cpp )
+add_executable(bus_stop_info src/bus_stop_info.cpp )
 target_link_libraries(bus_stop_info ${catkin_LIBRARIES})
 add_dependencies(bus_stop_info ${catkin_EXPORTED_TARGETS})
 

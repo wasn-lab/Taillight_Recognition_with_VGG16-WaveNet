@@ -456,8 +456,8 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   camInfo.width = box.x2 - box.x1;
   camInfo.height = box.y2 - box.y1;
   camInfo.prob = box.prob;
-  camInfo.id = translate_label(box.label);
-  
+  camInfo.id = g_cam_ids[cam_order];
+
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;
   detObj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
@@ -577,16 +577,7 @@ void* run_yolo(void*)
                     << std::endl;
           continue;
         }
-        try
-        {
-          cv::resize((*matSrcs_tmp[ndx]), M_display_tmp, cv::Size(g_rawimg_w, g_rawimg_h), 0, 0, 0);
-        }
-        catch (cv::Exception& e)
-        {
-          std::cout << "OpenCV Exception: " << std::endl << e.what() << std::endl;
-          continue;
-        }
-        M_display = M_display_tmp;
+        M_display = *matSrcs_tmp[ndx];
       }
       msgs::DetectedObject detObj;
       int cam_order = matOrder_tmp[ndx];
@@ -601,25 +592,31 @@ void* run_yolo(void*)
         if (g_img_result_publish || g_display_flag)
         {
           class_color = get_label_color(box.label);
-          cv::rectangle(M_display, cvPoint(box.x1, box.y1), cvPoint(box.x2, box.y2), class_color, 8);
+          PixelPosition position_1{ int(box.x1), int(box.y1) };
+          PixelPosition position_2{ int(box.x2), int(box.y2) };
+          transferPixelScaling(position_1);
+          transferPixelScaling(position_2);
+          cv::rectangle(M_display, cvPoint(position_1.u, position_1.v), cvPoint(position_2.u, position_2.v),
+                        class_color, 3);
         }
       }
       for (size_t i = 0; i < pool.size(); i++)
       {
         detObj = pool[i].get();
         vDo.push_back(detObj);
-        if (g_display_flag)
+        if (g_img_result_publish || g_display_flag)
         {
           if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
           {
-            int x1 = detObj.camInfo.u;
-            int y1 = detObj.camInfo.v;
+            PixelPosition position_1{ int(detObj.camInfo.u), int(detObj.camInfo.v) };
+            transferPixelScaling(position_1);
             float distance = detObj.distance;
             distance = truncateDecimalPrecision(distance, 1);
             std::string distance_str = floatToString_with_RealPrecision(distance);
 
             class_color = get_common_label_color(detObj.classId);
-            cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
+            cv::putText(M_display, distance_str + " m", cvPoint(position_1.u + 10, position_1.v - 10), 0, 0.5,
+                        class_color, 2);
           }
         }
       }
@@ -703,8 +700,8 @@ void* run_yolo(void*)
 void* run_display(void*)
 {
   std::cout << "run_display start" << std::endl;
-  cv::namedWindow("FrontTop-120", CV_WINDOW_NORMAL);
-  cv::namedWindow("BackTop-120", CV_WINDOW_NORMAL);
+  cv::namedWindow("FrontTop-120", cv::WINDOW_NORMAL);
+  cv::namedWindow("BackTop-120", cv::WINDOW_NORMAL);
   cv::resizeWindow("FrontTop-120", 480, 360);
   cv::resizeWindow("BackTop-120", 480, 360);
   cv::moveWindow("FrontTop-120", 0, 720);
@@ -726,8 +723,8 @@ void* run_display(void*)
   {
     if (g_mat120_0_display.data || g_mat120_1_display.data)
     {
-      if (g_mat120_0_display.cols * g_mat120_0_display.rows == g_rawimg_size &&
-          g_mat120_1_display.cols * g_mat120_1_display.rows == g_rawimg_size)
+      if (g_mat120_0_display.cols * g_mat120_0_display.rows == g_img_size &&
+          g_mat120_1_display.cols * g_mat120_1_display.rows == g_img_size)
       {
         try
         {

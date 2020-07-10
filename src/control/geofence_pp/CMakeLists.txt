@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(geofence_pp)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
-find_package(PCL)
-
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -16,10 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   msgs
+  car_model
 )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
+
 ################################################
-## Declare ROS messages, services and actions ##
+## Declare ROS messages, services and actions #
 ################################################
 ## Generate added messages and services with any dependencies listed here
 #generate_messages(
@@ -32,12 +32,14 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(CATKIN_DEPENDS
-  roscpp 
-  rospy 
-  std_msgs 
-  message_runtime 
+  roscpp
+  rospy
+  std_msgs
+  message_runtime
   msgs
+  car_model
 )
+find_package(PCL)
 
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -59,10 +61,3 @@ add_executable(geofence_pp src/main.cpp src/Geofence_Class.cpp )
 target_link_libraries(geofence_pp ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(geofence_pp ${catkin_EXPORTED_TARGETS} )
 #add_dependencies(geofence_pp ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-
-
-
-
-
-

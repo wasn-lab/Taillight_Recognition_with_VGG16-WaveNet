@@ -8,7 +8,15 @@ DistanceEstimation::~DistanceEstimation()
     {
       delete[] align_FC60[i];
     }
+
     delete[] align_FC60;
+
+    for (int i = 0; i < img_h; i++)
+    {
+      delete[] align_FR60[i];
+    }
+
+    delete[] align_FR60;
   }
 }
 
@@ -23,24 +31,25 @@ void DistanceEstimation::init(int car_id, std::string pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string FC60Json = pkgPath;
-    FC60Json.append("/data/alignment/out.json");
+    FC60Json.append("/data/alignment/v1FM60_0331.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(FC60Json, align_FC60, img_al_h, img_al_w);
-  }
+    // CreateFromJson();
 
-  // // FR60
-  // std::string FR60Json = pkgPath;
-  // FR60Json.append("/data/alignment/FR60_2.json");
-  // align_FR60 = new cv::Point3d*[img_h];
-  // for (int i = 0; i < img_h; i++)
-  // {
-  //   align_FR60[i] = new cv::Point3d[img_w];
-  // }
-  // ReadDistanceFromJson(FR60Json, align_FR60, img_h, img_w);
+    // FR60
+    std::string FR60Json = pkgPath;
+    FR60Json.append("/data/alignment/FR60_v1.json");
+    align_FR60 = new cv::Point3d*[img_al_h];
+    for (int i = 0; i < img_al_h; i++)
+    {
+      align_FR60[i] = new cv::Point3d[img_al_w];
+    }
+    ReadDistanceFromJson(FR60Json, align_FR60, img_al_h, img_al_w);
+  }
 
   // // FL60
   // std::string FL60Json = pkgPath;
@@ -96,6 +105,14 @@ void DistanceEstimation::initParams()
                                   -1.53, -0.66, -0.452, -0.333, -0.251, -0.121 };
   camFC60.regionHeight_y = { -1817, -617, -252, 0, 242, 608, 913, 1220, 1510, 1746, 2016, 2346, 3801 };
   camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
+
+  // camFC60.regionHeight_x = { 1207, 1189, 1151, 1123,       1097 /*10*/, 1079, 1063, 1050, 1041, 1028, 1022,
+  //                             1012, 1006,  1000,  997 /*20*/, 975,         962,  953,  943,  940,  928 /*50*/ };
+  // camFC60.regionDist_x = { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50 };
+  // camFC60.regionHeightSlope_y = { 0.1099,  0.2326, 0.2941,   0.4,  0.625,   1.4286,  5,
+  //                                 -0.9091, -0.5, -0.333, -0.2564, -0.2083, -0.11 };
+  // camFC60.regionHeight_y = { -1951, -461, -174, 115, 407, 692, 976, 1266, 1547, 1832, 2119, 2403, 3780 };
+  // camFC60.regionDist_y = { 10, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -10 };
 
   // camId: 2 (Front Left)
   camFL60.regionHeight_x = { 0, 54, 335, 644, 1022, 1351, 1556, 1758, 1975, 2230, 2429 };
@@ -213,22 +230,28 @@ int DistanceEstimation::ReadDistanceFromJson(std::string filename, cv::Point3d**
   jreader.parse(ifs, jdata);
   std::cout << "Reading json file: " << filename << std::endl;
 
-  for (Json::ArrayIndex i = 0; i < jdata.size(); i++)
+  for (auto& jvalue : jdata)
   {
-    auto image_x = jdata[i]["im_x"].asInt();
-    auto image_y = jdata[i]["im_y"].asInt();
+    auto image_x = jvalue["im_x"].asInt();
+    auto image_y = jvalue["im_y"].asInt();
 
     if ((image_y < rows) && (image_x < cols))
     {
-      dist_in_cm[image_y][image_x].x = jdata[i]["dist_in_cm"][0].asInt();
-      dist_in_cm[image_y][image_x].y = jdata[i]["dist_in_cm"][1].asInt();
-      dist_in_cm[image_y][image_x].z = jdata[i]["dist_in_cm"][2].asInt();
+      dist_in_cm[image_y][image_x].x = jvalue["dist_in_cm"][0].asInt();
+      dist_in_cm[image_y][image_x].y = jvalue["dist_in_cm"][1].asInt();
+      dist_in_cm[image_y][image_x].z = jvalue["dist_in_cm"][2].asInt();
     }
   }
   return 0;
 }
 
-float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight,
+DisEstiParams DistanceEstimation::CreateFromJson()
+{
+  DisEstiParams tmpParmas;
+  return tmpParmas;
+}
+
+float DistanceEstimation::ComputeObjectXDist(int pixel_loc, std::vector<int> regionHeight,
                                              std::vector<float> regionDist)
 {
   float distance = -1;
@@ -237,33 +260,33 @@ float DistanceEstimation::ComputeObjectXDist(int piexl_loc, std::vector<int> reg
   float offset = 0.0;
   for (size_t i = 1; i < regionHeight.size(); i++)
   {
-    if (piexl_loc >= regionHeight[i] && piexl_loc <= regionHeight[i - 1])
+    if (pixel_loc >= regionHeight[i] && pixel_loc <= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i - 1] - regionHeight[i];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       unitLength = float(regionMeter) / float(regionpixel);
-      bias = piexl_loc - regionHeight[i];
+      bias = pixel_loc - regionHeight[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (piexl_loc <= regionHeight[i] && piexl_loc >= regionHeight[i - 1])
+    else if (pixel_loc <= regionHeight[i] && pixel_loc >= regionHeight[i - 1])
     {
       int regionpixel = regionHeight[i] - regionHeight[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
       unitLength = float(regionMeter) / float(regionpixel);
-      bias = regionHeight[i] - piexl_loc;
+      bias = regionHeight[i] - pixel_loc;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (piexl_loc > regionHeight.front())
+      if (pixel_loc > regionHeight.front())
       {
         distance = regionDist.front() - 0.2;
       }
-      else if (piexl_loc < regionHeight.back())
+      else if (pixel_loc < regionHeight.back())
       {
         distance = 777;
       }
@@ -340,7 +363,7 @@ float DistanceEstimation::ComputeObjectXDistWithSlope(int pixel_loc_x, int pixel
   return distance;
 }
 
-float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+float DistanceEstimation::ComputeObjectYDist(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                                              std::vector<float> regionHeightSlope_y, std::vector<float> regionDist,
                                              int img_h)
 {
@@ -353,7 +376,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
 
   for (size_t i = 0; i < regionHeight.size(); i++)
   {
-    int y = img_h - piexl_loc_x;
+    int y = img_h - pixel_loc_x;
     if (regionHeightSlope_y[i] != 0)
     {
       regionHeight_new[i] = regionHeight[i] + int((1 / regionHeightSlope_y[i]) * y);
@@ -366,7 +389,7 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
 
   for (size_t i = 1; i < regionHeight_new.size(); i++)
   {
-    if (piexl_loc_y >= regionHeight_new[i] && piexl_loc_y <= regionHeight_new[i - 1])
+    if (pixel_loc_y >= regionHeight_new[i] && pixel_loc_y <= regionHeight_new[i - 1])
     {
       int regionpixel = regionHeight_new[i - 1] - regionHeight_new[i];
       int regionMeter = regionDist[i] - regionDist[i - 1];
@@ -374,12 +397,12 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       {
         unitLength = float(regionMeter) / float(regionpixel);
       }
-      bias = piexl_loc_y - regionHeight_new[i];
+      bias = pixel_loc_y - regionHeight_new[i];
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
-    else if (piexl_loc_y <= regionHeight_new[i] && piexl_loc_y >= regionHeight_new[i - 1])
+    else if (pixel_loc_y <= regionHeight_new[i] && pixel_loc_y >= regionHeight_new[i - 1])
     {
       int regionpixel = regionHeight_new[i] - regionHeight_new[i - 1];
       int regionMeter = regionDist[i] - regionDist[i - 1];
@@ -387,18 +410,18 @@ float DistanceEstimation::ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, s
       {
         unitLength = float(regionMeter) / float(regionpixel);
       }
-      bias = regionHeight_new[i] - piexl_loc_y;
+      bias = regionHeight_new[i] - pixel_loc_y;
       offset = unitLength * float(bias);
       distance = regionDist[i] - offset;
       break;
     }
     else
     {
-      if (piexl_loc_y < regionHeight_new.front())
+      if (pixel_loc_y < regionHeight_new.front())
       {
         distance = regionDist.front() + 0.5;
       }
-      else if (piexl_loc_y > regionHeight_new.back())
+      else if (pixel_loc_y > regionHeight_new.back())
       {
         distance = regionDist.back() - 0.5;
       }
@@ -1066,6 +1089,16 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       p0.z = align_FC60[x_loc][y_loc].z / 100;
       return p0;
     }
+    else if (cam_id == camera::id::right_60)
+    {
+      y_loc = (int)((float)y_loc / img_w * img_al_w);
+      x_loc = (int)((float)x_loc / img_h * img_al_h);
+
+      p0.x = align_FR60[x_loc][y_loc].x / 100;
+      p0.y = align_FR60[x_loc][y_loc].y / 100;
+      p0.z = align_FR60[x_loc][y_loc].z / 100;
+      return p0;
+    }
   }
   else
   {
@@ -1081,9 +1114,22 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
                                          Parmas.regionDist_y, img_h);
       }
     }
+    if (cam_id == camera::id::right_60)
+    {
+      if (Parmas.regionDist_x.size() != 0)
+      {
+        x_distMeter = ComputeObjectYDist(y_loc, x_loc, Parmas.regionHeight_x, Parmas.regionHeightSlope_x,
+                                         Parmas.regionDist_x, img_h);
+      }
+      if (Parmas.regionDist_y.size() != 0)
+      {
+        y_distMeter = ComputeObjectXDistWithSlope(y_loc, x_loc, Parmas.regionHeight_y, Parmas.regionHeightSlope_y,
+                                                  Parmas.regionDist_y);
+      }
+    }
   }
 
-  if (cam_id == camera::id::right_60 || cam_id == camera::id::left_60)
+  if (cam_id == camera::id::left_60)
   {
     if (Parmas.regionDist_x.size() != 0)
     {

@@ -31,7 +31,7 @@ public:
   }
 
   void kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
-                           const float ego_heading);
+                           const float ego_heading, const bool use_tracking2d);
 
   float get_Q1()
   {
@@ -81,7 +81,7 @@ private:
 
   unsigned int trackid_new_ = TRACK_ID_MIN;
 
-  static constexpr float TRACK_RANGE_SED = 9.f;          // 4^2
+  static constexpr float TRACK_RANGE_SED = 16.f;         // 4^2
   static constexpr float TRACK_RANGE_SED_WARMUP = 16.f;  // 5^2
 
   float ego_x_abs_ = 0.f;
@@ -92,9 +92,11 @@ private:
   static constexpr float BOX_SIZE_TH = 0.3f;
 
   const float BOX_VOL_MIN_FOR_RATIO = 1.f;
-  static constexpr float BOX_VOL_RATIO_MAX = 1.5f;
+  static constexpr float BOX_VOL_RATIO_MAX =
+      2.2f;  // SHOULD > 2 to tolerate camera-based 3d bbox deformation for allowing pp starting distance > 35m
   static constexpr float COST_BOX_DIST_W = 0.5f;
   static constexpr float COST_BOX_VOL_RATIO_W = 1.f - COST_BOX_DIST_W;
+  static constexpr float PUNISH_RATIO = 0.5f;
 
   std::vector<BoxCenter> box_centers_;
   std::vector<std::vector<BoxCorner> > box_corners_of_boxes_;

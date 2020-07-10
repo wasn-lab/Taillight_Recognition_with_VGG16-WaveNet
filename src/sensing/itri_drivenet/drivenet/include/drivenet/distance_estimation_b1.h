@@ -18,7 +18,8 @@ class DistanceEstimation
 private:
   DisEstiParams camFR60, camFC60, camFL60, camFT120, camRF120, camRB120, camLF120, camLB120, camBT120;
   CheckArea ShrinkArea_camFR60, ShrinkArea_camFT120, ShrinkArea_camBT120;
-  cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
+  cv::Point3d** align_FC60;
+  cv::Point3d** align_FR60;
 
   /// camId: 0 = camFR60
   /// camId: 1 = camFC60
@@ -47,14 +48,15 @@ private:
   void initDetectArea();
 
   int ReadDistanceFromJson(std::string filename, cv::Point3d** dist_in_cm, const int rows, const int cols);
-  float ComputeObjectXDist(int piexl_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
-  float ComputeObjectXDistWithSlope(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+  float ComputeObjectXDist(int pixel_loc, std::vector<int> regionHeight, std::vector<float> regionDist);
+  float ComputeObjectXDistWithSlope(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                                     std::vector<float> regionHeightSlope_x, std::vector<float> regionDist);
-  float ComputeObjectYDist(int piexl_loc_y, int piexl_loc_x, std::vector<int> regionHeight,
+  float ComputeObjectYDist(int pixel_loc_y, int pixel_loc_x, std::vector<int> regionHeight,
                            std::vector<float> regionHeightSlope_y, std::vector<float> regionDist, int img_h);
   msgs::PointXYZ GetPointDist(int x, int y, camera::id cam_id);
   int BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
   float RatioDefine(camera::id cam_id, int cls);
+  DisEstiParams CreateFromJson();
 
 public:
   ~DistanceEstimation();

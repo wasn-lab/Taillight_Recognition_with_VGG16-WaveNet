@@ -31,6 +31,10 @@ TODO:
   use theis state (latest state) as current state
 
 """
+# Parameters
+
+# Reporting even in mnual-drive mode
+is_reporting_all_time = False
 
 # Timeouts
 #-------------------------#
@@ -47,7 +51,10 @@ check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
 check_list += ["localization_state"]
-check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
+check_list += ["Xbywire_run"]
+# check_list += ["AEB_run"]
+check_list += [ "ACC_run"]
+check_list += [ "detect_obj"]
 
 """
 The startup_check_list is a subset of check_list.
@@ -59,6 +66,19 @@ startup_check_list = ["node_alive", "REC_is_recording"]
 # startup_check_list += ["backend_connected"] # Will be added for release version
 # startup_check_list += ["localization_state"]
 # startup_check_list += ["Xbywire_run", "AEB_run", "ACC_run"]
+
+
+
+
+# Debug mode
+#------------------------#
+is_debugging = False
+if is_debugging:
+    is_reporting_all_time = True
+    check_list = ["node_alive", "REC_is_recording"]
+    check_list += ["localization_state"]
+    startup_check_list = ["node_alive", "REC_is_recording"]
+#------------------------#
 
 
 print("check_list = %s" % str(check_list))
@@ -98,9 +118,9 @@ REC_BACKUP_LEVEL = STATE_DEF_dict["WARN"] # Greater or equal to this trigger the
 advop_run_state = False # Default not running
 
 # Initialize the container for status queues
-check_queue = dict()
+check_queue_dict = dict()
 for key in check_list:
-    check_queue[key] = Queue.Queue()
+    check_queue_dict[key] = Queue.Queue()
 # The container for latest status get from queue
 check_latest_status_dict = dict()
 
@@ -123,8 +143,9 @@ ros_msg_backup = dict()
 # ROS publishers
 #-------------------------------#
 ros_advop_sys_ready_pub = rospy.Publisher('/ADV_op/sys_ready', Bool, queue_size=10)
-REC_record_backup_pub = rospy.Publisher('/REC/req_backup', String, queue_size=10)
-sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=100)
+REC_record_backup_pub = rospy.Publisher('/REC/req_backup', String, queue_size=1000)
+event_json_pub = rospy.Publisher('/ADV_op/event_json', String, queue_size=1000)
+sys_fail_reson_pub = rospy.Publisher('/ADV_op/sys_fail_reason', String, queue_size=1000)
 #-------------------------------#
 
 # SIGNAL_PROCESSING
@@ -143,10 +164,12 @@ def _timeout_handle_alive():
     global STATE_DEF_dict
     # global check_dict
     # check_dict["node_alive"] = STATE_DEF_dict["ERROR"] # Abandoned
-    global check_queue
-    check_queue["node_alive"].put(STATE_DEF_dict["ERROR"])
+    global check_queue_dict
+    check_queue_dict["node_alive"].put(STATE_DEF_dict["ERROR"])
     # var_advop_node_alive = False
     rospy.logwarn("[sys_ready] Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) )
+    # Publish the event message
+    event_json_pub.publish( get_event_json("node_alive", STATE_DEF_dict["ERROR"], "Timeout: sys_alive was not received within %.1f sec." % float(timeout_alive) ) )
 
 def set_timer_alive():
     """
@@ -225,16 +248,16 @@ def status_ros_logging(component_status, _fail_str):
 #--------------------------------------#
 def code_func_bool(msg):
     """
-    Output: status_code, event_str
+    Output: checker_name(None), status_code, event_str
     """
     global STATE_DEF_dict
     state = msg.data
     if state == True:
-        return STATE_DEF_dict["OK"], ""
+        return None, STATE_DEF_dict["OK"], ""
     elif state == False:
-        return STATE_DEF_dict["ERROR"], ""
+        return None, STATE_DEF_dict["ERROR"], ""
     else:
-        return STATE_DEF_dict["UNKNOWN"], ""
+        return None, STATE_DEF_dict["UNKNOWN"], ""
 
 def code_func_event_json(msg):
     """
@@ -245,7 +268,7 @@ def code_func_event_json(msg):
         "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN"
         "event_str": "xxx event of yyy module"
     }
-    Output: status_code, event_str
+    Output: checker_name, status_code, event_str
     """
     json_dict = None
     try:
@@ -255,15 +278,16 @@ def code_func_event_json(msg):
     if json_dict is None:
         return STATE_DEF_dict["UNKNOWN"], "wrong json string"
     # else
+    checker_name = json_dict.get("module", None)
     status_code = STATE_DEF_dict.get(json_dict.get("status", "UNKNOWN"), STATE_DEF_dict["UNKNOWN"] )
     event_str = json_dict.get("event_str", "")
     print("json_str = \n%s" % json.dumps(json_dict, indent=4))
-    return status_code, event_str
+    return checker_name, status_code, event_str
 
 
 def code_func_localization(msg):
     """
-    Output: status_code, event_str
+    Output: checker_name, status_code, event_str
     """
     global STATE_DEF_dict
     state = msg.data
@@ -273,38 +297,45 @@ def code_func_localization(msg):
     pose_unstable = (state & 8) > 0
     #
     status_code = STATE_DEF_dict["OK"]
+    event_str = ""
     if pose_unstable:
         status_code = max(status_code, STATE_DEF_dict["FATAL"])
+        event_str += "pose_unstable "
     if low_pose_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
+        event_str += "low_pose_frequency "
     if low_lidar_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
+        event_str += "low_lidar_frequency "
     if low_gnss_frequency:
         status_code = max(status_code, STATE_DEF_dict["WARN"])
-    return status_code, ""
+        event_str += "low_gnss_frequency "
+    return "localization_state", status_code, event_str
 
-# Brake
-# brake_state_dict = dict()
-# brake_state_dict[0] = "Released"
-# brake_state_dict[1] = "Auto-braked"
-# brake_state_dict[2] = "Anchored" # Stop-brake
-# brake_state_dict[3] = "AEB"
-# brake_state_dict[4] = "Manual brake"
-# def code_func_brake(msg):
-#     """
-#     Output: status_code, event_str
-#     """
-#     global STATE_DEF_dict
-#     global brake_state_dict
-#     state = msg.data
-#     print("state = %d" % state)
-#     if state >= 3:
-#         status_code = STATE_DEF_dict["WARN"] # Note: not to stop self-driving
-#     else:
-#         status_code = STATE_DEF_dict["OK"]
-#     event_str = brake_state_dict[state]
-#     return status_code, event_str
 #--------------------------------------#
+
+# Get event-json
+#--------------------------------------#
+def get_event_json(checker_name, status_code, event_str, event_timestamp=None):
+    """
+    Through ROS std_msgs.String
+    json string:
+    {
+        "module": "yyy" (string)
+        "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN" (string)
+        "event_str": "xxx event of yyy module" (string)
+        "timestamp": (e.g. 1587014600.0801954, a floating-point number)
+    }
+    Output: json string
+    """
+    json_dict = dict()
+    json_dict["module"] = checker_name
+    json_dict["status"] = STATE_DEF_dict_inv[status_code]
+    json_dict["event_str"] = event_str
+    json_dict["timestamp"] = event_timestamp if (event_timestamp is not None) else time.time()
+    return json.dumps(json_dict)
+#--------------------------------------#
+
 
 # ROS callbacks
 #--------------------------------------#
@@ -312,34 +343,40 @@ def _checker_CB(msg, key, code_func=code_func_bool, is_event_msg=True, is_trigge
     """
     is_event_msg: True-->event message, False-->state message
     """
-    global ros_msg_backup, check_queue
+    global ros_msg_backup, check_queue_dict
     global advop_run_state
     # global ros_msg_backup, check_dict
-    _status, _event_str = code_func(msg)
+    _checker_name, _status, _event_str = code_func(msg)
+    if _checker_name is None: # If the signal coming with no name defined, use the key as checker_name
+        _checker_name = key
     # check_dict[key] = _status # Note: key may not in check_dict, this can be an add action.
     # Note: key may not in check_dict, this can be an add action.
-    if not key in check_queue:
-        check_queue[key] = Queue.Queue()
-    check_queue[key].put(_status)
+    if not key in check_queue_dict:
+        check_queue_dict[key] = Queue.Queue()
+    check_queue_dict[key].put(_status)
 
     # EVENT trigger REC backup
     if key in check_list: # If it's not in the check_list, bypass the recorder part
         # It should be checked to trigger recorder and publish event
         if is_event_msg or ros_msg_backup.get(key, None) != msg: # Only status change will viewd as event
-            if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
-                # if advop_run_state:
-                if run_state_delay.output(): # Note: delayed close
-                    # Note: We only trigger record if it's already in self-driving mode and running
-                    #       The events during idle is not going to be backed-up.
-                    # Trigger recorder with reason
-                    _reason = "%s:%s:%s" % (key, STATE_DEF_dict_inv[_status], _event_str )
+            # Trigger recorder with reason
+            _reason = "%s:%s:%s" % (_checker_name, STATE_DEF_dict_inv[_status], _event_str )
+            if run_state_delay.output() or is_reporting_all_time: # Note: delayed close
+                # Note: We only trigger record if it's already in self-driving mode and running
+                #       The events during idle is not going to be backed-up.
+                #-------------------------#
+                # Publish the event message
+                event_json_pub.publish( get_event_json(_checker_name, _status, _event_str ) )
+                #-------------------------#
+                if is_trigger_REC and evaluate_is_REC_BACKUP(_status):
+                    # if advop_run_state:
                     REC_record_backup_pub.publish( _reason )
                     # Write some log
                     rospy.logwarn("[sys_ready] REC backup reason:<%s>" % _reason )
-                    # Publish the event message
-                    #
-                else:
-                    print("It's not in self-driving mode, ignore the event.")
+                #-------------------------#
+            else:
+                rospy.logwarn("[sys_ready] It's not in self-driving mode, ignore the event:<%s>" % _reason )
+                # print("It's not in self-driving mode, ignore the event.")
                 #
             #
         #
@@ -364,7 +401,7 @@ def main():
     # global var_advop_node_alive, var_REC_is_recording
     global STATE_DEF_dict, STATE_DEF_dict_inv
     global check_list # The list of components needs to be checked
-    global check_dict, check_queue, check_latest_status_dict
+    global check_dict, check_queue_dict, check_latest_status_dict
     global sys_total_status
     rospy.init_node('ADV_sys_ready_check', anonymous=False)
     print("[sys_ready_check] Node started.")
@@ -398,6 +435,8 @@ def main():
     rospy.Subscriber("/mileage/Xbywire_run", String, (lambda msg: _checker_CB(msg, "Xbywire_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     rospy.Subscriber("/mileage/AEB_run", String, (lambda msg: _checker_CB(msg, "AEB_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     rospy.Subscriber("/mileage/ACC_run", String, (lambda msg: _checker_CB(msg, "ACC_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    # Detect object status
+    rospy.Subscriber("/d_viz/checker_event", String, (lambda msg: _checker_CB(msg, "detect_obj", is_event_msg=True, code_func=code_func_event_json ) ) )
     #-----------------------------#
 
 
@@ -411,8 +450,10 @@ def main():
 
         # Check through check_list
         #-----------------------------------------------#
-        for check_item in check_queue:
-            if check_queue[check_item].empty():
+        check_queue_dict_key_ = list(check_queue_dict.keys())
+        # for check_item in check_queue_dict: # <-- The dict might change size during iteration, which is not allowabled.
+        for check_item in check_queue_dict_key_:
+            if check_queue_dict[check_item].empty():
                 # No event happened in this window
                 latest_status = check_latest_status_dict.get(check_item, None)
                 if not latest_status is None:
@@ -421,21 +462,22 @@ def main():
                     check_latest_status_dict[check_item] = None
             else:
                 # Some events happened in this window
-                num_items = check_queue[check_item].qsize()
+                num_items = check_queue_dict[check_item].qsize()
                 worst_status = None
                 latest_status = None
                 for idx in range(num_items):
                     try:
-                        an_item_status = check_queue[check_item].get(False)
+                        an_item_status = check_queue_dict[check_item].get(False)
                         if (worst_status is None) or (an_item_status > worst_status):
                             worst_status = an_item_status
                         latest_status = an_item_status
                     except:
-                        print("check_queue[%s] is empty" % check_item)
+                        print("check_queue_dict[%s] is empty" % check_item)
                         break
                 if not worst_status is None:
                     check_dict[check_item] = worst_status
-                check_latest_status_dict[check_item] = latest_status
+                # else, keep the previous status
+                check_latest_status_dict[check_item] = latest_status # Note: this can be None
 
 
         # for check_item in check_dict:

@@ -146,6 +146,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     */
 
     // Grid ground, local
+
     _rmGrid_ptr.reset(new rmGrid(_Assets_path, "GUI_base_footprint", "GUI_base_footprint" ) );
     _rmGrid_ptr->set_grid_param(5.0, 5.0, 10, 10, 0.0f, true, glm::vec3(0.5f,0.5f,0.5f));
     _rm_BaseModel.push_back( _rmGrid_ptr );
@@ -165,11 +166,11 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     // Map
     pc_ptr_1.reset(new rmPointCloud(_Assets_path, int(MSG_ID::point_cloud_map)) );
-    pc_ptr_1->set_color(glm::vec3(0.68627451f, 0.0f, 0.76862745f));
+    pc_ptr_1->set_color(glm::vec3(1.0f));
     _rm_BaseModel.push_back( pc_ptr_1 );
     // Raw data
     pc_ptr_1.reset(new rmPointCloud(_Assets_path, int(MSG_ID::point_cloud_raw)) );
-    pc_ptr_1->set_color(glm::vec3(1.0f));
+    pc_ptr_1->set_color(glm::vec3(1.0f, 1.0f, 0.0f));
     _rm_BaseModel.push_back( pc_ptr_1 );
 
 
@@ -195,14 +196,14 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
     // Image 3D bounding box
     glm::vec3 _cambbox_color(1.0, 1.0, 1.0);
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_right), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_center), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_left), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_top), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_fore), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_rear), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_fore), _cambbox_color) ) );
-    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_rear), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_bottom_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_top_close_120), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_front_top_far_30), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_back_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_left_front_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_back_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_right_front_60), _cambbox_color) ) );
+    _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_back_top_120), _cambbox_color) ) );
     _rm_BaseModel.push_back( std::shared_ptr<rmLidarBoundingBox>(new rmLidarBoundingBox(_Assets_path, int(MSG_ID::bounding_box_image_rear_center), _cambbox_color) ) );
 
 
@@ -539,6 +540,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
 
 
     // Top-level top-centered back image (dynamic) <-- "Rear-sight mirror"
+/*
     _image_board_ptr.reset(new rmImageBoard(_Assets_path, int(MSG_ID::camera_rear_center), false, true, true) );
     _image_board_ptr->alpha = 0.9;
     _image_board_ptr->color_transform = glm::vec4(1.0f);
@@ -549,7 +551,7 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _image_board_ptr->shape.setBoardPositionCVPixel(-300, 0, 1, ALIGN_X::RIGHT, ALIGN_Y::TOP ); // Right side
     _image_board_ptr->shape.setBoardPositionCVPixel(0, 0, 0, ALIGN_X::LEFT, ALIGN_Y::TOP ); // Left side
     _rm_BaseModel.push_back( _image_board_ptr );
-
+*/
 
     // Remove the following for backend demo
     // // rmlv2SpeedMeter
@@ -560,6 +562,12 @@ SCENE_W_main::SCENE_W_main(std::string pkg_path_in):
     // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightSimple>( new rmlv2TrafficLightSimple(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
     // // _rm_BaseModel.push_back( std::shared_ptr<rmlv2TrafficLightImage>( new rmlv2TrafficLightImage(_Assets_path, int(MSG_ID::flag_info_2) ) ) );
 
+ //Roger disable 3d image
+ for (size_t i=0; i < enable_ctr_id_list_image.size(); ++i){
+            auto _ptr = &(_rm_BaseModel[ enable_ctr_id_list_image[i] ]);
+            // (*_ptr)->set_enable( !((*_ptr)->get_enable()) );
+            (*_ptr)->set_enable( false );
+ }
 }
 
 

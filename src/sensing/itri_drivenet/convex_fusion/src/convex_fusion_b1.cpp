@@ -1,6 +1,6 @@
 #include "convex_fusion_b1.h"
 
-void ConvexFusionB1::initial(std::string nodename, int argc, char** argv)
+void ConvexFusionB1::initial(const std::string& nodename, int argc, char** argv)
 {
   ros::init(argc, argv, nodename);
   ros::NodeHandle n;
@@ -33,7 +33,7 @@ void ConvexFusionB1::registerCallBackCameraDetection(
       n.subscribe(camera::topics_obj[camera::id::top_rear_120], 1, callback_top_rear_120);
 }
 
-void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_id, int module_id)
+void ConvexFusionB1::sendErrorCode(unsigned int error_code, const std::string& frame_id, int module_id)
 {
   static uint32_t seq;
 
@@ -48,7 +48,7 @@ void ConvexFusionB1::sendErrorCode(unsigned int error_code, std::string& frame_i
 }
 
 void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO* cluster_info_bbox, int cluster_size,
-                                       ros::Time rostime, std::string& frame_id)
+                                       ros::Time rostime, const std::string& frame_id)
 {
   if (use_gridmap_publish_)
   {
@@ -64,13 +64,13 @@ void ConvexFusionB1::sendCameraResults(CLUSTER_INFO* cluster_info, CLUSTER_INFO*
     msgObj.distance = -1;
     msgObj.classId = cluster_info[i].cluster_tag;
     size_t convex_hull_size = cluster_info[i].convex_hull.size();
-    if (cluster_info[i].cluster_tag != static_cast<int>(DriveNet::common_type_id::other)) // If type is Unknown.
+    if (cluster_info[i].cluster_tag != static_cast<int>(DriveNet::common_type_id::other))  // If type is Unknown.
     {
       msgObj.distance = 0;
       float bottom_z = std::min(min_z, cluster_info_bbox[i].min.z);
       float top_z = std::max(max_z, cluster_info_bbox[i].max.z);
       msgObj.cPoint.objectHigh = top_z - bottom_z;
-      
+
       /// Coordinate system
       ///           ^          ///             ^
       ///      ^   /           ///        ^   /

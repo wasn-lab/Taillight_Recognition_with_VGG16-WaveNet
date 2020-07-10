@@ -31,6 +31,19 @@ struct BBoxInfo
   float prob;
 };
 
+enum class yolo_class_id
+{
+  begin = 0,
+  person = begin,  // 0
+  bicycle,         // 1
+  car,             // 2
+  motorbike,       // 3
+  others1,         // 4
+  bus,             // 5
+  others2,         // 6
+  truck            // 7
+};
+
 class Logger : public nvinfer1::ILogger
 {
 public:
@@ -137,5 +150,5 @@ nvinfer1::ILayer* netAddUpsample(int layerIdx, std::map<std::string, std::string
                                  nvinfer1::ITensor* input, nvinfer1::INetworkDefinition* network);
 void printLayerInfo(std::string layerIndex, std::string layerName, std::string layerInput, std::string layerOutput,
                     std::string weightPtr);
-} // namespace DriveNet
+}  // namespace DriveNet
 #endif

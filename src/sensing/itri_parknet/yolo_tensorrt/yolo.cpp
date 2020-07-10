@@ -36,12 +36,8 @@ Yolo::Yolo(const uint batchSize, const NetworkInfo& networkInfo, const InferPara
   , m_WtsFilePath(networkInfo.wtsFilePath)
   , m_LabelsFilePath(networkInfo.labelsFilePath)
   , m_Precision(networkInfo.precision)
-  ,
-#if TENSORRT_VERSION_MAJOR == 5
-  m_DeviceType(networkInfo.deviceType)
-  ,
-#endif
-  m_CalibImages(inferParams.calibImages)
+  , m_DeviceType(networkInfo.deviceType)
+  , m_CalibImages(inferParams.calibImages)
   , m_CalibImagesFilePath(inferParams.calibImagesPath)
   , m_CalibTableFilePath(networkInfo.calibrationTablePath)
   , m_InputBlobName(networkInfo.inputBlobName)
@@ -435,7 +431,7 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
   {
     m_Builder->setHalf2Mode(true);
   }
-#if TENSORRT_VERSION_MAJOR == 5
+
   m_Builder->allowGPUFallback(true);
   int nbLayers = m_Network->getNbLayers();
   int layersOnDLA = 0;
@@ -451,7 +447,6 @@ void Yolo::createYOLOEngine(const nvinfer1::DataType dataType, Int8EntropyCalibr
     }
   }
   std::cout << "Total number of layers on DLA: " << layersOnDLA << std::endl;
-#endif
 
   // Build the engine
   std::cout << "Building the TensorRT Engine..." << std::endl;

@@ -1,15 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(trimble_gps_imu_pub)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
-include(CompilerFlags)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   roslib
   tf
+  car_model
+  gnss_utility
 )
+
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CarModel)
+include(CompilerFlags)
 
 #generate_messages(
 #  DEPENDENCIES
@@ -19,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp std_msgs
+  CATKIN_DEPENDS roscpp std_msgs car_model gnss_utility
 )
 
 include_directories(

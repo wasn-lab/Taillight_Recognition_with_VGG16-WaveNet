@@ -22,54 +22,48 @@
 #include <cstring>
 #include <visualization_msgs/Marker.h>
 
-//For PCL
+// For PCL
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-
 ros::Publisher PCloud_pub;
 
-
-void callbackRadFront(const msgs::Rad::ConstPtr &msg)
+void callbackRadFront(const msgs::Rad::ConstPtr& msg)
 {
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointXYZI temp;
+  // pcl::fromROSMsg(*msg, *cloud);
 
-	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-	pcl::PointXYZI temp;
-	//pcl::fromROSMsg(*msg, *cloud);
-	
-	for (int i = 0; i < msg->radPoint.size(); i++)
-	{
-		if(msg->radPoint[i].speed<80){
-			temp.x = msg->radPoint[i].x;
-			temp.y = -msg->radPoint[i].y;
-			cloud->points.push_back(temp);
-		}	
-	}
-	sensor_msgs::PointCloud2 msgtemp;
-	pcl::toROSMsg(*cloud, msgtemp);
-	//msgtemp.header.stamp = msg->radHeader.stamp;
-	//msgtemp.header.seq = msg->radHeader.seq;
-	msgtemp.header.frame_id = "/base_link";
-	PCloud_pub.publish(msgtemp);
-	
-	
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    if (msg->radPoint[i].speed < 80)
+    {
+      temp.x = msg->radPoint[i].x;
+      temp.y = -msg->radPoint[i].y;
+      cloud->points.push_back(temp);
+    }
+  }
+  sensor_msgs::PointCloud2 msgtemp;
+  pcl::toROSMsg(*cloud, msgtemp);
+  // msgtemp.header.stamp = msg->radHeader.stamp;
+  // msgtemp.header.seq = msg->radHeader.seq;
+  msgtemp.header.frame_id = "base_link";
+  PCloud_pub.publish(msgtemp);
 }
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-
-  ros::init(argc, argv, "RadFrontSub_PCloud");  
+  ros::init(argc, argv, "RadFrontSub_PCloud");
   ros::NodeHandle n;
-  ros::Subscriber RadFrontSub = n.subscribe("RadFront", 1, callbackRadFront); 
+  ros::Subscriber RadFrontSub = n.subscribe("RadFront", 1, callbackRadFront);
   PCloud_pub = n.advertise<sensor_msgs::PointCloud2>("radar_point_cloud", 1);
   ros::Rate rate(100);
   while (ros::ok())
   {
     ros::spinOnce();
-	rate.sleep();
+    rate.sleep();
   }
   return 0;
 }

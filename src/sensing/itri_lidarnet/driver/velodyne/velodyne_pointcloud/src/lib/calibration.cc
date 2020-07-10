@@ -155,7 +155,7 @@ namespace velodyne_pointcloud
       std::pair<int, LaserCorrection> correction;
       lasers[i] >> correction;
       const int index = correction.first;
-      if( index >= calibration.laser_corrections.size() )
+      if( index >= static_cast<int>(calibration.laser_corrections.size()) )
       {
         calibration.laser_corrections.resize( index+1 );
       }

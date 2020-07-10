@@ -409,7 +409,13 @@ void KalmanTrackers::compute_distance_table()
 
       float cost_box_vol_ratio = box_vol_ratio_larger * track_range_sed / BOX_VOL_RATIO_MAX;
 
-      float cost_final = COST_BOX_DIST_W * cost_box_dist + COST_BOX_VOL_RATIO_W * cost_box_vol_ratio;
+#if PUNISH_OBJCLASS_CHANGE
+      float punish = (objs_[j].classId == tracks_[i].box_.classId) ? 0.f : track_range_sed * PUNISH_RATIO;
+#else
+      float punish = 0.f;
+#endif
+
+      float cost_final = COST_BOX_DIST_W * cost_box_dist + COST_BOX_VOL_RATIO_W * cost_box_vol_ratio + punish;
 
       if (cost_final <= track_range_sed)
       {
@@ -456,11 +462,11 @@ void KalmanTrackers::associate_data()
   }
 #endif
 
-  Hungarian HungAlgo;
+  Hungarian hun;
   std::vector<int> assignment;
 
 #if DEBUG
-  double cost = HungAlgo.solve(costMatrix, assignment);
+  double cost = hun.solve(costMatrix, assignment);
 
   for (unsigned i = 0; i < costMatrix.size(); i++)
   {
@@ -469,7 +475,7 @@ void KalmanTrackers::associate_data()
 
   LOG_INFO << "\ncost: " << cost << std::endl;
 #else
-  HungAlgo.solve(costMatrix, assignment);
+  hun.solve(costMatrix, assignment);
 #endif
 
   for (unsigned i = 0; i < tracks_.size(); i++)
@@ -647,7 +653,7 @@ void KalmanTrackers::update_boxes()
 }
 
 void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
-                                         const float ego_z_abs, const float ego_heading)
+                                         const float ego_z_abs, const float ego_heading, const bool use_tracking2d)
 {
   if (objs_.size() == 0 && tracks_.size() == 0)
   {
@@ -666,15 +672,18 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
     tracks_[i].predict();
   }
 
-  // data association: hungarian algorithm
-  init_objs();
-  init_distance_table();
-  compute_distance_table();
-  associate_data();
+  if (!use_tracking2d)
+  {
+    // data association: hungarian algorithm
+    init_objs();
+    init_distance_table();
+    compute_distance_table();
+    associate_data();
 
-  // track id management
-  give_ids_to_unassociated_objs();
-  correct_duplicate_track_ids();
+    // track id management
+    give_ids_to_unassociated_objs();
+    correct_duplicate_track_ids();
+  }
 
   // sync objs_ and tracks_
   set_time_displacement(dt);

@@ -45,19 +45,19 @@ function analyze {
   echo "`date`: start analyze"
   cov-analyze -dir ${data_dir} --strip-path ${strip_dir}
   for cfg in $cfgs; do
-    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${strip_dir}/..
+    cov-analyze --disable-default --misra-config ${cfg} --dir ${data_dir} --strip-path ${strip_dir}
   done
   echo "`date`: end analyze"
 }
 
 # build blacklisted packages
-cleanup
-echo "`date`: start of localization build"
-cov-build --dir ${coverity_data_blacklist_dir} --emit-complementary-info \
-  catkin_make -DENABLE_CCACHE=0 -DCATKIN_WHITELIST_PACKAGES="${blacklist};cuda_downsample" ${EXTRA_CATKIN_ARGS}
-echo "`date`: end of localization build"
-analyze ${coverity_data_blacklist_dir}
-commit ${coverity_data_blacklist_dir} localization
+#cleanup
+#echo "`date`: start of localization build"
+#cov-build --dir ${coverity_data_blacklist_dir} --emit-complementary-info \
+#  catkin_make -DENABLE_CCACHE=0 -DCATKIN_WHITELIST_PACKAGES="${blacklist};cuda_downsample" ${EXTRA_CATKIN_ARGS}
+#echo "`date`: end of localization build"
+#analyze ${coverity_data_blacklist_dir}
+#commit ${coverity_data_blacklist_dir} localization
 
 # build all except blacklisted packages
 # Use this order because most people can see analysis result at the most recent stream.

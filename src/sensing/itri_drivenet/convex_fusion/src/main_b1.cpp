@@ -2,56 +2,59 @@
 #include "VoxelGrid_CUDA.h"
 #include "VoxelFilter_CUDA.h"
 #include "UseApproxMVBB.h"
+#include "module_id.h"
 
 using namespace std;
 using namespace pcl;
 
 #define CHECKTIMES 20
 
-mutex g_syncLock;
-pcl::PointCloud<pcl::PointXYZI>::Ptr g_ptr_cur_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+mutex g_mutex_lidarall_nonground;
+mutex g_mutex_front_60;
+mutex g_mutex_top_front_120;
+mutex g_mutex_top_rear_120;
+pcl::PointCloud<pcl::PointXYZI>::Ptr g_ptr_lidarall_nonground(new pcl::PointCloud<pcl::PointXYZI>);
 vector<msgs::DetectedObject> g_object_front_60;
 vector<msgs::DetectedObject> g_object_top_front_120;
 vector<msgs::DetectedObject> g_object_top_rear_120;
-size_t g_heartBeat[4];
+size_t g_heart_beat[4];
 ros::Time g_frame_time;
-std::string g_frame_id = "lidar";
-int g_module_id = 2;
+const std::string g_frame_id = "lidar";
 
 void callback_lidarall_nonground(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
-  g_syncLock.lock();
-  *g_ptr_cur_cloud = *msg;
-  g_heartBeat[0] = 0;
-  g_syncLock.unlock();
+  g_mutex_lidarall_nonground.lock();
+  *g_ptr_lidarall_nonground = *msg;
+  g_heart_beat[0] = 0;
+  g_mutex_lidarall_nonground.unlock();
   // cout<<"Lidar"<<endl;
 }
 
 void callback_camera_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  g_syncLock.lock();
+  g_mutex_front_60.lock();
   g_object_front_60 = msg->objects;
   g_frame_time = msg->header.stamp;
-  g_heartBeat[1] = 0;
-  g_syncLock.unlock();
+  g_heart_beat[1] = 0;
+  g_mutex_front_60.unlock();
   // cout<< camera::topics_obj[camera::id::front_60] <<endl;
 }
 
 void callback_camera_top_front_120(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  g_syncLock.lock();
+  g_mutex_top_front_120.lock();
   g_object_top_front_120 = msg->objects;
-  g_heartBeat[2] = 0;
-  g_syncLock.unlock();
+  g_heart_beat[2] = 0;
+  g_mutex_top_front_120.unlock();
   // cout<< camera::topics_obj[camera::id::top_front_120] <<endl;
 }
 
 void callback_camera_top_rear_120(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  g_syncLock.lock();
+  g_mutex_top_rear_120.lock();
   g_object_top_rear_120 = msg->objects;
-  g_heartBeat[3] = 0;
-  g_syncLock.unlock();
+  g_heart_beat[3] = 0;
+  g_mutex_top_rear_120.unlock();
   // cout<< camera::topics_obj[camera::id::top_rear_120] <<endl;
 }
 
@@ -73,195 +76,203 @@ int main(int argc, char** argv)
   {
     StopWatch stopWatch;
 
-    g_syncLock.lock();
-
     //------------------------------------------------------------------------- LiDAR
-
+    g_mutex_lidarall_nonground.lock();
     PointCloud<PointXYZI> lidarall_nonground;
-    lidarall_nonground = *g_ptr_cur_cloud;
+    lidarall_nonground = *g_ptr_lidarall_nonground;
 
-    if (g_heartBeat[0] > CHECKTIMES)
+    if (g_heart_beat[0] > CHECKTIMES)
     {
       lidarall_nonground.clear();
-      g_heartBeat[0] = 0;
+      g_heart_beat[0] = 0;
       cout << "[Convex Fusion]: no LidarAllNonGroud" << endl;
     }
     else
     {
-      g_heartBeat[0]++;
+      g_heart_beat[0]++;
     }
-
+    g_mutex_lidarall_nonground.unlock();
     //------------------------------------------------------------------------- Camera
+    std::vector<msgs::DetectedObject> object_front_60, object_top_front_120, object_top_rear_120;
+    ros::Time frame_time;
+    g_mutex_front_60.lock();
+    object_front_60 = g_object_front_60;
+    frame_time = g_frame_time;
 
-    size_t numberABB = g_object_front_60.size() + g_object_top_front_120.size() + g_object_top_rear_120.size();
-
-    CLUSTER_INFO* camera_ABB = new CLUSTER_INFO[numberABB];
-    CLUSTER_INFO* camera_ABB_bbox = new CLUSTER_INFO[numberABB];
-
-    size_t cnt = 0;
-    for (size_t i = 0; i < g_object_front_60.size(); i++)
-    {
-      camera_ABB[i + cnt].min.x = g_object_front_60[i].bPoint.p0.x;
-      camera_ABB[i + cnt].min.y = g_object_front_60[i].bPoint.p0.y;
-      camera_ABB[i + cnt].min.z = g_object_front_60[i].bPoint.p0.z;
-      camera_ABB[i + cnt].max.x = g_object_front_60[i].bPoint.p6.x;
-      camera_ABB[i + cnt].max.y = g_object_front_60[i].bPoint.p6.y;
-      camera_ABB[i + cnt].max.z = g_object_front_60[i].bPoint.p6.z;
-      if (g_object_front_60[i].distance < 0)
-      {
-        camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
-      }
-      else
-      {
-        camera_ABB[i + cnt].cluster_tag = g_object_front_60[i].classId;
-      }
-      camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
-    }
-    cnt += g_object_front_60.size();
-
-    for (size_t i = 0; i < g_object_top_front_120.size(); i++)
-    {
-      camera_ABB[i + cnt].min.x = g_object_top_front_120[i].bPoint.p0.x;
-      camera_ABB[i + cnt].min.y = g_object_top_front_120[i].bPoint.p0.y;
-      camera_ABB[i + cnt].min.z = g_object_top_front_120[i].bPoint.p0.z;
-      camera_ABB[i + cnt].max.x = g_object_top_front_120[i].bPoint.p6.x;
-      camera_ABB[i + cnt].max.y = g_object_top_front_120[i].bPoint.p6.y;
-      camera_ABB[i + cnt].max.z = g_object_top_front_120[i].bPoint.p6.z;
-      if (g_object_top_front_120[i].distance < 0)
-      {
-        camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
-      }
-      else
-      {
-        camera_ABB[i + cnt].cluster_tag = g_object_top_front_120[i].classId;
-      }
-      camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
-    }
-    cnt += g_object_top_front_120.size();
-
-    for (size_t i = 0; i < g_object_top_rear_120.size(); i++)
-    {
-      camera_ABB[i + cnt].min.x = g_object_top_rear_120[i].bPoint.p0.x;
-      camera_ABB[i + cnt].min.y = g_object_top_rear_120[i].bPoint.p0.y;
-      camera_ABB[i + cnt].min.z = g_object_top_rear_120[i].bPoint.p0.z;
-      camera_ABB[i + cnt].max.x = g_object_top_rear_120[i].bPoint.p6.x;
-      camera_ABB[i + cnt].max.y = g_object_top_rear_120[i].bPoint.p6.y;
-      camera_ABB[i + cnt].max.z = g_object_top_rear_120[i].bPoint.p6.z;
-      if (g_object_top_rear_120[i].distance < 0)
-      {
-        camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
-      }
-      else
-      {
-        camera_ABB[i + cnt].cluster_tag = g_object_top_rear_120[i].classId;
-      }
-      camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
-    }
-
-    for (size_t i = 0; i < numberABB; i++)
-    {
-      float scale = 0;
-
-      switch (camera_ABB[i].cluster_tag)
-      {
-        case static_cast<int>(DriveNet::common_type_id::other):  // Unknown
-          scale = 0;
-          break;
-
-        case static_cast<int>(DriveNet::common_type_id::person):  // Person
-          if (camera_ABB[i].min.x < 10)
-          {
-            scale = 1;
-          }
-          else if (camera_ABB[i].min.x >= 10 && camera_ABB[i].min.x <= 30)
-          {
-            scale = 1.5;
-          }
-          else if (camera_ABB[i].min.x > 30)
-          {
-            scale = 2;
-          }
-          break;
-
-        case static_cast<int>(DriveNet::common_type_id::bicycle):  // Bicycle
-        case static_cast<int>(DriveNet::common_type_id::motorbike):  // Motobike
-          if (camera_ABB[i].min.x < 15)
-          {
-            scale = 0.8;
-          }
-          else if (camera_ABB[i].min.x >= 15 && camera_ABB[i].min.x <= 30)
-          {
-            scale = 1.2;
-          }
-          else if (camera_ABB[i].min.x > 30)
-          {
-            scale = 1.6;
-          }
-          break;
-
-        case static_cast<int>(DriveNet::common_type_id::car):  // Car
-        case static_cast<int>(DriveNet::common_type_id::bus):  // Bus
-        case static_cast<int>(DriveNet::common_type_id::truck):  // Truck
-          if (camera_ABB[i].min.x < 15)
-          {
-            scale = 0.2;
-          }
-          else if (camera_ABB[i].min.x >= 15 && camera_ABB[i].min.x <= 30)
-          {
-            scale = 0.8;
-          }
-          else if (camera_ABB[i].min.x > 30)
-          {
-            scale = 1.5;
-          }
-          break;
-      }
-
-      camera_ABB[i].min.x += -scale;
-      camera_ABB[i].min.y += +scale;
-      camera_ABB[i].max.x += +scale;
-      camera_ABB[i].max.y += -scale;
-    }
-
-    if (g_heartBeat[1] > CHECKTIMES)
+    if (g_heart_beat[1] > CHECKTIMES)
     {
       g_object_front_60.clear();
-      g_heartBeat[1] = 0;
+      g_heart_beat[1] = 0;
       cout << "[Convex Fusion]: no " << camera::topics_obj[camera::id::front_60] << endl;
     }
     else
     {
-      g_heartBeat[1]++;
+      g_heart_beat[1]++;
     }
+    g_mutex_front_60.unlock();
 
-    if (g_heartBeat[2] > CHECKTIMES)
+    g_mutex_top_front_120.lock();
+    object_top_front_120 = g_object_top_front_120;
+
+    if (g_heart_beat[2] > CHECKTIMES)
     {
       g_object_top_front_120.clear();
-      g_heartBeat[2] = 0;
+      g_heart_beat[2] = 0;
       cout << "[Convex Fusion]: no " << camera::topics_obj[camera::id::top_front_120] << endl;
     }
     else
     {
-      g_heartBeat[2]++;
+      g_heart_beat[2]++;
     }
-
-    if (g_heartBeat[3] > CHECKTIMES)
+    g_mutex_top_front_120.unlock();
+    g_mutex_top_rear_120.lock();
+    object_top_rear_120 = g_object_top_rear_120;
+    if (g_heart_beat[3] > CHECKTIMES)
     {
       g_object_top_rear_120.clear();
-      g_heartBeat[3] = 0;
+      g_heart_beat[3] = 0;
       cout << "[Convex Fusion]: no " << camera::topics_obj[camera::id::top_rear_120] << endl;
     }
     else
     {
-      g_heartBeat[3]++;
+      g_heart_beat[3]++;
     }
+    g_mutex_top_rear_120.unlock();
 
-    //-------------------------------------------------------------------------
-
-    g_syncLock.unlock();
-
+    //------------------------------------------------------------------------- Main
+    size_t numberABB = object_front_60.size() + object_top_front_120.size() + object_top_rear_120.size();
     if (numberABB > 0)
     {
+      std::unique_ptr<CLUSTER_INFO[]> camera_ABB(new CLUSTER_INFO[numberABB]);
+      std::unique_ptr<CLUSTER_INFO[]> camera_ABB_bbox(new CLUSTER_INFO[numberABB]);
+
+      size_t cnt = 0;
+      for (size_t i = 0; i < object_front_60.size(); i++)
+      {
+        camera_ABB[i + cnt].min.x = object_front_60[i].bPoint.p0.x;
+        camera_ABB[i + cnt].min.y = object_front_60[i].bPoint.p0.y;
+        camera_ABB[i + cnt].min.z = object_front_60[i].bPoint.p0.z;
+        camera_ABB[i + cnt].max.x = object_front_60[i].bPoint.p6.x;
+        camera_ABB[i + cnt].max.y = object_front_60[i].bPoint.p6.y;
+        camera_ABB[i + cnt].max.z = object_front_60[i].bPoint.p6.z;
+        if (object_front_60[i].distance < 0)
+        {
+          camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
+        }
+        else
+        {
+          camera_ABB[i + cnt].cluster_tag = object_front_60[i].classId;
+        }
+        camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
+      }
+      cnt += object_front_60.size();
+
+      for (size_t i = 0; i < object_top_front_120.size(); i++)
+      {
+        camera_ABB[i + cnt].min.x = object_top_front_120[i].bPoint.p0.x;
+        camera_ABB[i + cnt].min.y = object_top_front_120[i].bPoint.p0.y;
+        camera_ABB[i + cnt].min.z = object_top_front_120[i].bPoint.p0.z;
+        camera_ABB[i + cnt].max.x = object_top_front_120[i].bPoint.p6.x;
+        camera_ABB[i + cnt].max.y = object_top_front_120[i].bPoint.p6.y;
+        camera_ABB[i + cnt].max.z = object_top_front_120[i].bPoint.p6.z;
+        if (object_top_front_120[i].distance < 0)
+        {
+          camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
+        }
+        else
+        {
+          camera_ABB[i + cnt].cluster_tag = object_top_front_120[i].classId;
+        }
+        camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
+      }
+      cnt += object_top_front_120.size();
+
+      for (size_t i = 0; i < object_top_rear_120.size(); i++)
+      {
+        camera_ABB[i + cnt].min.x = object_top_rear_120[i].bPoint.p0.x;
+        camera_ABB[i + cnt].min.y = object_top_rear_120[i].bPoint.p0.y;
+        camera_ABB[i + cnt].min.z = object_top_rear_120[i].bPoint.p0.z;
+        camera_ABB[i + cnt].max.x = object_top_rear_120[i].bPoint.p6.x;
+        camera_ABB[i + cnt].max.y = object_top_rear_120[i].bPoint.p6.y;
+        camera_ABB[i + cnt].max.z = object_top_rear_120[i].bPoint.p6.z;
+        if (object_top_rear_120[i].distance < 0)
+        {
+          camera_ABB[i + cnt].cluster_tag = static_cast<int>(DriveNet::common_type_id::other);
+        }
+        else
+        {
+          camera_ABB[i + cnt].cluster_tag = object_top_rear_120[i].classId;
+        }
+        camera_ABB_bbox[i + cnt] = camera_ABB[i + cnt];
+      }
+
+      for (size_t i = 0; i < numberABB; i++)
+      {
+        float scale = 0;
+
+        switch (camera_ABB[i].cluster_tag)
+        {
+          case static_cast<int>(DriveNet::common_type_id::other):  // Unknown
+            scale = 0;
+            break;
+
+          case static_cast<int>(DriveNet::common_type_id::person):  // Person
+            if (camera_ABB[i].min.x < 10)
+            {
+              scale = 1;
+            }
+            else if (camera_ABB[i].min.x >= 10 && camera_ABB[i].min.x <= 30)
+            {
+              scale = 1.5;
+            }
+            else if (camera_ABB[i].min.x > 30)
+            {
+              scale = 2;
+            }
+            break;
+
+          case static_cast<int>(DriveNet::common_type_id::bicycle):    // Bicycle
+          case static_cast<int>(DriveNet::common_type_id::motorbike):  // Motobike
+            if (camera_ABB[i].min.x < 15)
+            {
+              scale = 0.8;
+            }
+            else if (camera_ABB[i].min.x >= 15 && camera_ABB[i].min.x <= 30)
+            {
+              scale = 1.2;
+            }
+            else if (camera_ABB[i].min.x > 30)
+            {
+              scale = 1.6;
+            }
+            break;
+
+          case static_cast<int>(DriveNet::common_type_id::car):    // Car
+          case static_cast<int>(DriveNet::common_type_id::bus):    // Bus
+          case static_cast<int>(DriveNet::common_type_id::truck):  // Truck
+            if (camera_ABB[i].min.x < 15)
+            {
+              scale = 0.2;
+            }
+            else if (camera_ABB[i].min.x >= 15 && camera_ABB[i].min.x <= 30)
+            {
+              scale = 0.8;
+            }
+            else if (camera_ABB[i].min.x > 30)
+            {
+              scale = 1.5;
+            }
+            break;
+        }
+
+        camera_ABB[i].min.x += -scale;
+        camera_ABB[i].min.y += +scale;
+        camera_ABB[i].max.x += +scale;
+        camera_ABB[i].max.y += -scale;
+      }
+
+      //-------------------------------------------------------------------------
+
       for (size_t i = 0; i < lidarall_nonground.size(); i++)
       {
         for (size_t j = 0; j < numberABB; j++)
@@ -276,8 +287,6 @@ int main(int argc, char** argv)
           }
         }
       }
-
-#pragma omp parallel for
       for (size_t i = 0; i < numberABB; i++)
       {
         UseApproxMVBB approxMVBB;
@@ -285,10 +294,7 @@ int main(int argc, char** argv)
         approxMVBB.Compute(camera_ABB[i].obb_vertex, camera_ABB[i].center, camera_ABB[i].min, camera_ABB[i].max,
                            camera_ABB[i].convex_hull);
       }
-      convexFusionB1.sendCameraResults(camera_ABB, camera_ABB_bbox, numberABB, g_frame_time, g_frame_id);
-      
-      delete[]camera_ABB;
-      delete[]camera_ABB_bbox;
+      convexFusionB1.sendCameraResults(camera_ABB.get(), camera_ABB_bbox.get(), numberABB, frame_time, g_frame_id);
     }
 
     if (stopWatch.getTimeSeconds() > 0.05)
@@ -299,7 +305,7 @@ int main(int argc, char** argv)
     ros::spinOnce();
     loop_rate.sleep();
   }
-  convexFusionB1.sendErrorCode(0x0006, g_frame_id, g_module_id);
+  convexFusionB1.sendErrorCode(0x0006, g_frame_id, sensor_msgs_itri::ModuleId::DriveNet);
 
   cout << "===================== convex_fusion end   =====================" << endl;
   return (0);

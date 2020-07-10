@@ -1,12 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_pub)
-add_compile_options(-std=c++11)
-set(CMAKE_BUILD_TYPE "Release")
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-endif()
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -16,14 +9,18 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
+
 ## Find Point Cloud Library 1.8
 find_package(PCL 1.8.1 REQUIRED)
 
+find_package(Eigen3)
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+#generate_messages(
+#  DEPENDENCIES
+#  std_msgs
+#)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -34,21 +31,6 @@ catkin_package(
 
 )
 set(POINTS_MAP_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/done_map)
-
-
-if (NOT EXISTS ${POINTS_MAP_DIRS}/total_map.pcd)
-      message( STATUS " downloading points map" )
-
-    file(
-    DOWNLOAD
-    	http://118.163.54.109:8888/Share/ADV/LiDAR_maps/done_map_total_itri_downsample/total_map.pcd ${POINTS_MAP_DIRS}/total_map.pcd    	
-    STATUS
-        status
-    LOG 
-        log
-    SHOW_PROGRESS
-    )
-endif()
 
 include_directories(
  include

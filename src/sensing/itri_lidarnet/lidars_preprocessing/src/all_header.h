@@ -6,10 +6,7 @@
 //                      STD
 // =============================================
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdexcept>
+#include <cstdio>
 
 #include <iostream>
 #include <sstream>
@@ -22,23 +19,13 @@
 #include <chrono>
 #include <functional>
 #include <algorithm>
-#include <errno.h>
-#include <unistd.h> //sleep
+#include <cerrno>
 #include <omp.h>
 #include <mutex>
 
-#include <time.h>
 #include <ctime>
 
-
-
-
-
-#include <limits.h>
-#include <math.h>
-
-
-#include <Eigen/Core>
+#include <climits>
 #include <Eigen/Geometry>
 
 //#include <pcap.h>
@@ -76,9 +63,9 @@
 #include <pcl/io/boost.h>
 
 #include <pcl/common/geometry.h>
-#include <pcl/common/common.h> //getMinMax3D
+#include <pcl/common/common.h>  //getMinMax3D
 #include <pcl/common/common_headers.h>
-#include <pcl/common/transforms.h> //transform
+#include <pcl/common/transforms.h>  //transform
 #include <pcl/common/centroid.h>
 #include <pcl/common/time.h>
 
@@ -184,6 +171,5 @@ using namespace Eigen;
 #include "UserDefine.h"
 
 #define ENABLE_DEBUG_MODE false
-
 
 #endif /* ALL_HEADER_H_ */
