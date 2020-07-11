@@ -26,3 +26,9 @@ DistCoeff: !!opencv-matrix
 ImageSize: [ 608, 384 ]
 ReprojectionError: 1.9152198972419840e-01
 ChessboardViewNUM: 37
+CoverageMat: !!opencv-matrix
+   rows: 2
+   cols: 2
+   dt: f
+   data: [ 0., 50.,
+           -50., 50. ]
