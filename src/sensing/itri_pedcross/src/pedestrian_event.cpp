@@ -423,8 +423,10 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
         resize_width_to = int(aspect_ratio * resize_height_to);
       }
       cv::resize(cropedImage, cropedImage, cv::Size(resize_width_to, resize_height_to));
-
+      ros::Time inference_start = ros::Time::now();
       std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
+      ros::Time inference_stop = ros::Time::now();
+      average_inference_time = average_inference_time * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
 
       bool has_keypoint = false;
       int count_points = 0;
@@ -756,7 +758,7 @@ void PedestrianEvent::chatter_callback(const msgs::DetectedObjectArray::ConstPtr
     stop = ros::Time::now();
     total_time += stop - start;
     chatter_callback_info = "Cost time: " + std::to_string((stop - start).toSec()) +
-                            "(sec) Total cost time: " + std::to_string((total_time).toSec()) +
+                            "(sec) OpenPose inference time: " + std::to_string(average_inference_time) +
                             "(sec) Loop: " + std::to_string(count);
 #if PRINT_MESSAGE
     std::cout << "Cost time: " << stop - start << " sec" << std::endl;
@@ -1795,12 +1797,18 @@ int main(int argc, char** argv)
   pe.nav_path_transformed.reserve(200);
   pe.nav_path.reserve(200);
 
+#if DUMP_LOG
   std::stringstream ss;
   ss << "../../../ped_output.csv";
   std::string fname = ss.str();
   pe.file.open(fname, std::ios_base::app);
+#endif
+
   pe.run();
+
+#if DUMP_LOG
   pe.file.close();
+#endif
 
   return 0;
 }
