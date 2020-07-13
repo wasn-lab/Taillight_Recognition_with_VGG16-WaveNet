@@ -7,8 +7,9 @@ pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(pcl::PointCloud<
   pcl::PointCloud<pcl::PointXYZ> convex_points;
 
   pcl::copyPointCloud(cloud, convex_points);
-  approxMVBB_.setInputCloud(convex_points);
-  approxMVBB_.Compute(obb_vertex, centroid, min_point, max_point, convex_points);
+  UseApproxMVBB approxMVBB;
+  approxMVBB.setInputCloud(convex_points);
+  approxMVBB.Compute(obb_vertex, centroid, min_point, max_point, convex_points);
 
   return convex_points;
 }

@@ -15,7 +15,6 @@
 class ObjectGenerator
 {
 private:
-  UseApproxMVBB approxMVBB_;
 
 public:
   pcl::PointCloud<pcl::PointXYZ> pointsToPolygon(pcl::PointCloud<pcl::PointXYZI>& cloud);

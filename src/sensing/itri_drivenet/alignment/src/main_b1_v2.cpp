@@ -342,6 +342,8 @@ void polygon_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
   std::vector<msgs::DetectedObject> msg_objs;
   float min_z = -3;
   float max_z = -1.5;
+
+  #pragma omp parallel for  
   for (size_t cam_order = 0; cam_order < cams_bboxs_points.size(); cam_order++)
   {
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
