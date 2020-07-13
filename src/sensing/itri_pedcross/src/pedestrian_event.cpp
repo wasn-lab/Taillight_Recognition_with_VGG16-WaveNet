@@ -361,7 +361,7 @@ void PedestrianEvent::right_callback(const msgs::DetectedObjectArray::ConstPtr& 
 void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
                                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera)
 {
-  if (!image_cache.empty() && !nav_path.empty())  // do if there is image in buffer
+  if (!image_cache.empty())  // do if there is image in buffer
   {
     count++;
     ros::Time start, stop;
@@ -640,7 +640,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       }
 
       // copy another nav_path to prevent vector changing while calculating
-      if (obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0)
+      if ((obj_pub.bPoint.p0.x != 0 || obj_pub.bPoint.p0.y != 0) && !nav_path.empty())
       {
         msgs::PointXYZ camera_position = obj_pub.bPoint.p0;
         std::vector<cv::Point2f> nav_path_temp(nav_path);
