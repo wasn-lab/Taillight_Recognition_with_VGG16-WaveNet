@@ -88,10 +88,14 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
             
    
       // filter
-      // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
-      // stopWatch_L.reset();
-      // *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-      // cout << "Left Filter-- " <<  "Points: " << input_cloud_tmp->size() <<  "; Time Took: "  << stopWatch_L.getTimeSeconds() << 's' << endl;
+      stopWatch_L.reset();
+      *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1, -50.0, 50.0, -25.0, 25.0, -5.0, 0.01);
+      if (use_filter)
+      {
+        *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      }
+      
+      cout << "Left Filter-- " <<  "Points: " << input_cloud_tmp->size() <<  "; Time Took: "  << stopWatch_L.getTimeSeconds() << 's' << endl;
 
       // assign
       *cloudPtr_LidarFrontLeft = *input_cloud_tmp;
@@ -136,10 +140,13 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       LidarFrontRight_Fine_Param[5]);
 
       // filter
-      // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
-      // stopWatch_R.reset();
-      // *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-      // cout << "Right Filter-- " <<  "Points: " << input_cloud_tmp->size() <<  ";Time Took: "  << stopWatch_R.getTimeSeconds() << 's' << endl;
+      stopWatch_R.reset();
+      *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1, -50.0, 50.0, -25.0, 25.0, -5.0, 0.01);
+      if (use_filter)
+      {
+        *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      }
+      cout << "Right Filter-- " <<  "Points: " << input_cloud_tmp->size() <<  ";Time Took: "  << stopWatch_R.getTimeSeconds() << 's' << endl;
 
       // assign
       *cloudPtr_LidarFrontRight = *input_cloud_tmp;
@@ -156,7 +163,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 {
   if (input_cloud->width * input_cloud->height > 100)
   {
-    
+    stopWatch.reset();
     heartBeat[4] = true;
 
     // check data from hardware
@@ -185,9 +192,13 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
       
       // filter
-      // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.5, -15.0, 50.0, -15.0, 15.0, -5.0, 0.01);
-      // *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-      
+      stopWatch_T.reset();
+      *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1, -50.0, 50.0, -25.0, 25.0, -5.0, 0.01);
+      if (use_filter)
+      {
+        *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+      }
+      cout << "Top Filter-- " <<  "Points: " << input_cloud_tmp->size() << "; Time Took: "  << stopWatch_T.getTimeSeconds() << 's' << endl;
       
       // assign
       *cloudPtr_LidarFrontTop = *input_cloud_tmp;
@@ -195,48 +206,50 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       // publish
       cloudPtr_LidarFrontTop->header.frame_id = "lidar";
       pub_LidarFrontTop.publish(*cloudPtr_LidarFrontTop);
-      cout << "Top Filter-- " <<  "Points: " << input_cloud_tmp->size() << "; Time Took: "  << stopWatch_T.getTimeSeconds() << 's' << endl;
+      
     }  
   }
 }
 
 
-ros::Time return_RosMaxTimeDiff(float a, float b , float c)
-{
-  float diff_ab = a - b;
-  float diff_ac = a - c;
- 
-  if (( diff_ab < 0 && diff_ac < 0 ) || ( diff_ab > 0 && diff_ac > 0) )
-  {
-    if (abs(diff_ab) > abs(diff_ac))
-    {
-      return diff_ab;
-    }
-    else
-    {
-      return diff_ac;
-    }
-  }
-  else
-  {
-    return diff_ab + diff_ac;
-  }
-}
+// float return_MaxTimeDiff(uint64_t a, uint64_t b , uint64_t c)
+// {
+//   int64_t diff_ab = a - b;
+//   int64_t diff_ac = a - c;
+
+//   return max(diff_ab, diff_ac)/10000000;
+
+//   // if (( diff_ab < 0 && diff_ac < 0 ) || ( diff_ab > 0 && diff_ac > 0) )
+//   // {
+//   //   if (abs(diff_ab) > abs(diff_ac))
+//   //   {
+//   //     return diff_ab;
+//   //   }
+//   //   else
+//   //   {
+//   //     return diff_ac;
+//   //   }
+//   // }
+//   // else
+//   // {
+//   //   return diff_ab + diff_ac;
+//   // }
+// }
 
 
 void lidarAll_Pub(int lidarNum)
 {
-  stopWatch.reset();
   // check time sync
   // float Max_Time_Diff;
 
-  // Max_Time_Diff = return_MaxTimeDiff( cloudPtr_LidarFrontTop->header.stamp.toSec(), 
-  // cloudPtr_LidarFrontLeft->header.stamp.toSec(), cloudPtr_LidarFrontRight->header.stamp.toSec());
- 
-  // if (Max_Time_Diff > 0.05) 
-  // {
-  //   cout << "!-----------------------> Lidars is not Synchromized in  " << Max_Time_Diff << "s" << endl;
-  // }  
+  // Max_Time_Diff = return_MaxTimeDiff( cloudPtr_LidarFrontTop->header.stamp, cloudPtr_LidarFrontLeft->header.stamp,
+  //                                     cloudPtr_LidarFrontRight->header.stamp);
+
+  // cout << "Max Time Diff: " << Max_Time_Diff << endl;  
+  // // if (Max_Time_Diff > 0.05) 
+  // // {
+  // //   cout << "!-----------------------> Lidars is not Synchromized in  " << Max_Time_Diff << "s" << endl;
+  // // }  
    
   
   //------ combine pointcloud
@@ -264,21 +277,15 @@ void lidarAll_Pub(int lidarNum)
   LidarAll_time = cloudPtr_LidarAll->header.stamp;
   cloudPtr_LidarAll->header.frame_id = "lidar";
 
-
   //------ pub LidarAll
   pub_LidarAll.publish(*cloudPtr_LidarAll);
   cloudPtr_LidarAll->clear();
 
-
-  // uint64_t now = ros::Time::now().toNSec() / 1000ull;  // microsec
-  // now - cloudPtr_LidarAll->header.stamp
-
-
   if (debug_output)
   {
-    cout << "[Grabber]: " << ros::time::now() - stopWatch.getTimeSeconds() << 's' << endl;
+    cout << "[Grabber]: " << stopWatch.getTimeSeconds() << 's' << endl;
+    //cout << "[Grabber]: " << ((ros::Time::now().toNSec()/1000ull) - cloudPtr_LidarFrontTop->header.stamp) / 1000000.0 << "s" << endl;
   }
-
 
   //------ clear real time memory
   // if wall_time - ros_time < 30 minutes, (not rosbag)
@@ -533,7 +540,7 @@ int main(int argc, char** argv)
   thread TheadDetection_Pub(LidarAll_Publisher, argc, argv);
 
   //----------------------------------- ros
-  ros::AsyncSpinner spinner(4);
+  ros::AsyncSpinner spinner(16);
   spinner.start();
 
   TheadDetection_UI.join();

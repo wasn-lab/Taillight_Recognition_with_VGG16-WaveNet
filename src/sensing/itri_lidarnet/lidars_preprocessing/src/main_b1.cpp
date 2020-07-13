@@ -6,6 +6,7 @@
 #include "PlaneGroundFilter.h"
 #include "RayGroundFilter.h"
 #include "extract_Indices.h"
+#include "NoiseFilter.h"
 
 #if ENABLE_DEBUG_MODE == true
 #include "UI/QtViewer.h"
@@ -43,10 +44,11 @@ void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     *ptr_cur_cloud = *msg;
     // cout << "[raw data       ]:" << ptr_cur_cloud->size () << endl;
 
-    // *ptr_cur_cloud = CuboidFilter().pass_through_soild<PointXYZI>(ptr_cur_cloud, -50, 50, -25, 25, -5, 1);
-    // *ptr_cur_cloud = CuboidFilter().hollow_removal<PointXYZI>(ptr_cur_cloud, -6.6, 0.9, -1.45, 1.45, -5, 1);
+    *ptr_cur_cloud = CuboidFilter().pass_through_soild<PointXYZI>(ptr_cur_cloud, -50, 50, -25, 25, -5, 1);
+    *ptr_cur_cloud = CuboidFilter().hollow_removal<PointXYZI>(ptr_cur_cloud, -6.6, 0.9, -1.45, 1.45, -5, 1);
     // cout << "[pass through   ]:" << ptr_cur_cloud->size () << "," << timer_algorithm_running.getTimeSeconds () << "s"
     // << endl;
+    
 
     PointCloud<PointXYZI>::Ptr cloud_ground(new PointCloud<PointXYZI>);
     PointCloud<PointXYZI>::Ptr cloud_non_ground(new PointCloud<PointXYZI>);
