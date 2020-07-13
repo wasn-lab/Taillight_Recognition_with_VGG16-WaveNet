@@ -114,9 +114,9 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "RadFrontPub_Filter");
+  ros::init(argc, argv, "Rad_Filter");
   ros::NodeHandle n;
-  ros::Subscriber RadFrontSub = n.subscribe("RadFrontRaw", 1, callbackRadFront);
+  ros::Subscriber RadFrontSub = n.subscribe("RadFrontDelphi", 1, callbackRadFront);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
