@@ -36,8 +36,8 @@ for bag_path in $rsync_list; do
         rm ${bag_local_fullpath}
         base_url="http://ci.itriadv.co/artifacts/weakness-detection/${bag_basename}"
         echo "visit ${base_url}/weak to get the results."
-        find ${weakness_detection_dir} -type d -exec chmod 755 {} \;
-        find ${weakness_detection_dir} -type f -exec chmod 644 {} \;
+        find ${TMP_DIR} -type d -exec chmod 755 {} \;
+        find ${TMP_DIR} -type f -exec chmod 644 {} \;
       else
         echo "${bag_local_fullpath} does not contain images. Move to next bag."
       fi

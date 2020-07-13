@@ -20,7 +20,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   /// find 3d points in image coverage
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
-    if (lidarall_ptr->points[i].x > 0)
+    if (lidarall_ptr->points[i].x > -3) // coverage is +50 ~ -3m
     {
       PixelPosition pixel_position{ -1, -1 };
       pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);
@@ -73,7 +73,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   /// find 3d points in image coverage
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
-    if (lidarall_ptr->points[i].x > 0)
+    if (lidarall_ptr->points[i].x > -3) // coverage is +50 ~ -3m
     {
       PixelPosition pixel_position{ -1, -1 };
       pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);

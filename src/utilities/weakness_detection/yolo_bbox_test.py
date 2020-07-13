@@ -2,7 +2,7 @@
 import os
 import unittest
 from yolo_mgr import YoloMgr
-from yolo_bbox import gen_bbox_by_yolo_object
+from yolo_bbox import gen_bbox_by_yolo_object, bbox_in_yolo_format
 
 
 TEST_DIR, _ = os.path.split(os.path.abspath(__file__))
@@ -30,6 +30,15 @@ class YoloBBoxTest(unittest.TestCase):
         self.assertFalse(bbox.is_on_border(105, 118))
         self.assertFalse(bbox.is_on_border(0, 100))
 
+    def test_bbox_in_yolo_format(self):
+        img_width = 608
+        img_height = 384
+
+        bbox = bbox_in_yolo_format(105, 96, 131, 117, img_width, img_height)
+        self.assertTrue(abs(bbox[0] - 0.194974) < 0.01)
+        self.assertTrue(abs(bbox[1] - 0.278952) < 0.01)
+        self.assertTrue(abs(bbox[2] - 0.043834) < 0.01)
+        self.assertTrue(abs(bbox[3] - 0.055284) < 0.01)
 
 if __name__ == "__main__":
     unittest.main()
