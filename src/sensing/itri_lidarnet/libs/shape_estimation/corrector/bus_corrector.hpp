@@ -21,13 +21,12 @@
 
 #include "corrector_interface.hpp"
 
-class CarCorrector : public ShapeEstimationCorrectorInterface
+class BusCorrector : public ShapeEstimationCorrectorInterface
 {
-
 public:
-  CarCorrector(){};
+  BusCorrector(){};
 
-  ~CarCorrector(){};
+  ~BusCorrector(){};
 
   bool correct(CLUSTER_INFO & cluster_info) override;
 };
