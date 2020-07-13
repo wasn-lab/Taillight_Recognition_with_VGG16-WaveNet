@@ -1833,11 +1833,11 @@ std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> PedestrianEvent::create
   // Create new datum
   auto datums_ptr = std::make_shared<std::vector<std::shared_ptr<op::Datum>>>();
   datums_ptr->emplace_back();
-  auto& datumPtr = datums_ptr->at(0);
-  datumPtr = std::make_shared<op::Datum>();
+  auto& datum_ptr = datums_ptr->at(0);
+  datum_ptr = std::make_shared<op::Datum>();
 
   // Fill datum
-  datumPtr->cvInputData = OP_CV2OPCONSTMAT(mat);
+  datum_ptr->cvInputData = OP_CV2OPCONSTMAT(mat);
 
   return datums_ptr;
 }
@@ -1867,7 +1867,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "pedestrian_event");
 
   ped::PedestrianEvent pe;
-  tf2_ros::TransformListener tfListener(pe.tfBuffer);
+  tf2_ros::TransformListener tf_listener(pe.tfBuffer);
   std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
   pe.rf_pose = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
                                                                                    "yml"));

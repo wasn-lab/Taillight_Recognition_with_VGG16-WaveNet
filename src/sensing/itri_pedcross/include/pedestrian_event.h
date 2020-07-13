@@ -113,7 +113,7 @@ public:
   // OpenPose components
   int openPoseROS();
   std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
-  bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr);
+  bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr);
   std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
   openpose_ros::OpenPose openPose;
   cv::dnn::Net net_openpose;
