@@ -164,6 +164,7 @@ public:
   int count;
   std::ofstream file;
   struct winsize terminal_size;
+  double average_inference_time = 0;
 
   // Setup variables
   const int cross_threshold = 55;  // percentage
