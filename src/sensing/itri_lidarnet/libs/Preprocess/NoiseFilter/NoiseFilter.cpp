@@ -81,12 +81,12 @@ PointCloud<PointXYZ> NoiseFilter::runRandomSampling(PointCloud<PointXYZ>::Ptr in
 
 
 //-------- Statistical Filter <PointXYZ>
-PointCloud<PointXYZI> NoiseFilter::runStatisticalOutlierRemoval(PointCloud<PointXYZI>::Ptr input, int MeanK,
-                                                               double StddevMulThresh)
+template <typename PointT>
+PointCloud<PointT> NoiseFilter::runStatisticalOutlierRemoval(typename PointCloud<PointT>::Ptr input, int MeanK, double StddevMulThresh)
 {
-  PointCloud<PointXYZI> out_cloud;
+  PointCloud<PointT> out_cloud;
 
-  pcl::StatisticalOutlierRemoval<PointXYZI> sor;
+  pcl::StatisticalOutlierRemoval<PointT> sor;
   sor.setInputCloud(input);
   sor.setMeanK(MeanK);
   sor.setStddevMulThresh(StddevMulThresh);
@@ -95,6 +95,8 @@ PointCloud<PointXYZI> NoiseFilter::runStatisticalOutlierRemoval(PointCloud<Point
 
   return out_cloud;
 }
+template PointCloud<PointXYZI> NoiseFilter::runStatisticalOutlierRemoval<PointXYZI> (typename PointCloud<PointXYZI>::Ptr input, int MeanK, double StddevMulThresh);
+
 
 //-------- RadiusFilter <PointT>
 template <typename PointT>
