@@ -42,7 +42,7 @@ void PedestrianEvent::display_on_terminal()
         {
           line << "Front camera: buffer size: ";
           line << front_image_cache.size() << " FPS: ";
-          if (front_image_cache.size() > 0)
+          if (!front_image_cache.empty())
           {
             ros::Time latest_time;
             int frame_number = 0;
@@ -65,7 +65,7 @@ void PedestrianEvent::display_on_terminal()
             line << "NA time: ";
           }
 
-          if (front_image_cache.size() > 0)
+          if (!front_image_cache.empty())
           {
             line << std::to_string(front_image_cache[front_image_cache.size() - 1].first.toSec());
           }
@@ -78,7 +78,7 @@ void PedestrianEvent::display_on_terminal()
         {
           line << "Left  camera: buffer size: ";
           line << left_image_cache.size() << " FPS: ";
-          if (left_image_cache.size() > 0)
+          if (!left_image_cache.empty())
           {
             ros::Time latest_time;
             int frame_number = 0;
@@ -101,7 +101,7 @@ void PedestrianEvent::display_on_terminal()
             line << "NA time: ";
           }
 
-          if (left_image_cache.size() > 0)
+          if (!left_image_cache.empty())
           {
             line << std::to_string(left_image_cache[left_image_cache.size() - 1].first.toSec());
           }
@@ -114,7 +114,7 @@ void PedestrianEvent::display_on_terminal()
         {
           line << "Right camera: buffer size: ";
           line << right_image_cache.size() << " FPS: ";
-          if (right_image_cache.size() > 0)
+          if (!right_image_cache.empty())
           {
             ros::Time latest_time;
             int frame_number = 0;
@@ -137,7 +137,7 @@ void PedestrianEvent::display_on_terminal()
             line << "NA time: ";
           }
 
-          if (right_image_cache.size() > 0)
+          if (!right_image_cache.empty())
           {
             line << std::to_string(right_image_cache[right_image_cache.size() - 1].first.toSec());
           }
@@ -150,7 +150,7 @@ void PedestrianEvent::display_on_terminal()
         {
           line << "Crop  camera: buffer size: ";
           line << crop_image_cache.size() << " FPS: ";
-          if (crop_image_cache.size() > 0)
+          if (!crop_image_cache.empty())
           {
             ros::Time latest_time;
             int frame_number = 0;
@@ -173,7 +173,7 @@ void PedestrianEvent::display_on_terminal()
             line << "NA time: ";
           }
 
-          if (crop_image_cache.size() > 0)
+          if (!crop_image_cache.empty())
           {
             line << std::to_string(crop_image_cache[crop_image_cache.size() - 1].first.toSec());
           }
@@ -274,7 +274,7 @@ void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
     cv::Point2f point;
     point.x = point_out.pose.position.x;
     point.y = point_out.pose.position.y;
-    nav_path.push_back(point);
+    nav_path.emplace_back(point);
   }
 
   time_nav_path = std::to_string(start.toSec());
@@ -375,9 +375,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
     bool has_crop_image = !crop_image_cache.empty();
-    std::vector<msgs::PedObject> pedObjs;
-    std::vector<msgs::DetectedObject> alertObjs;
-    pedObjs.reserve(msg->objects.end() - msg->objects.begin());
+    std::vector<msgs::PedObject> ped_objs;
+    std::vector<msgs::DetectedObject> alert_objs;
+    ped_objs.reserve(msg->objects.end() - msg->objects.begin());
 
     for (auto const& obj : msg->objects)
     {
@@ -466,7 +466,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         }
       }
 
-      cv::Mat cropedImage;
+      cv::Mat croped_image;
       if (!in_crop_range)
       {
         // resize from 1920*1208 to 608*384
@@ -492,9 +492,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   << std::endl;
 #endif
         // crop image for openpose
-        matrix.copyTo(cropedImage);
-        cropedImage =
-            cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+        matrix.copyTo(croped_image);
+        croped_image =
+            croped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
       }
       else
       {
@@ -504,9 +504,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   << " " << obj_pub.camInfo.u + obj_pub.camInfo.width << " "
                   << obj_pub.camInfo.v + obj_pub.camInfo.height << "crop" << std::endl;
 #endif
-        matrix_crop.copyTo(cropedImage);
-        cropedImage =
-            cropedImage(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+        matrix_crop.copyTo(croped_image);
+        croped_image =
+            croped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
 
         obj_pub.camInfo.v += 692;
         // resize from 1920*1208 to 608*384
@@ -532,37 +532,37 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       float aspect_ratio = 0.0;
       int resize_height_to = 0;
       int resize_width_to = 0;
-      if (cropedImage.cols >= cropedImage.rows)
+      if (croped_image.cols >= croped_image.rows)
       {  // width larger than height
-        if (cropedImage.cols > max_pixel)
+        if (croped_image.cols > max_pixel)
         {
           resize_width_to = max_pixel;
         }
         else
         {
-          resize_width_to = cropedImage.cols;
+          resize_width_to = croped_image.cols;
         }
         resize_width_to = max_pixel;  // force to max pixel
-        aspect_ratio = (float)cropedImage.rows / (float)cropedImage.cols;
+        aspect_ratio = (float)croped_image.rows / (float)croped_image.cols;
         resize_height_to = int(aspect_ratio * resize_width_to);
       }
       else
       {  // height larger than width
-        if (cropedImage.rows > max_pixel)
+        if (croped_image.rows > max_pixel)
         {
           resize_height_to = max_pixel;
         }
         else
         {
-          resize_height_to = cropedImage.rows;
+          resize_height_to = croped_image.rows;
         }
         resize_height_to = max_pixel;  // force to max pixel
-        aspect_ratio = (float)cropedImage.cols / (float)cropedImage.rows;
+        aspect_ratio = (float)croped_image.cols / (float)croped_image.rows;
         resize_width_to = int(aspect_ratio * resize_height_to);
       }
-      cv::resize(cropedImage, cropedImage, cv::Size(resize_width_to, resize_height_to));
+      cv::resize(croped_image, croped_image, cv::Size(resize_width_to, resize_height_to));
       ros::Time inference_start = ros::Time::now();
-      std::vector<cv::Point2f> keypoints = get_openpose_keypoint(cropedImage);
+      std::vector<cv::Point2f> keypoints = get_openpose_keypoint(croped_image);
       ros::Time inference_stop = ros::Time::now();
       average_inference_time = average_inference_time * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
 
@@ -715,10 +715,10 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #if PRINT_MESSAGE
             std::cout << pp.position << std::endl;
 #endif
-            alert_obj.track.forecasts.push_back(pp);
-            obj_pub.track.forecasts.push_back(pp);
+            alert_obj.track.forecasts.emplace_back(pp);
+            obj_pub.track.forecasts.emplace_back(pp);
           }
-          alertObjs.push_back(alert_obj);
+          alert_objs.emplace_back(alert_obj);
         }
       }
 
@@ -727,36 +727,36 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         msgs::Keypoint kp;
         kp.x = point.x;
         kp.y = point.y;
-        obj_pub.keypoints.push_back(kp);
+        obj_pub.keypoints.emplace_back(kp);
       }
-      pedObjs.push_back(obj_pub);
+      ped_objs.emplace_back(obj_pub);
     }
 
-    msgs::DetectedObjectArray alert_objs;
+    msgs::DetectedObjectArray alert_obj_array;
 
-    alert_objs.header = msg->header;
-    alert_objs.header.frame_id = msg->header.frame_id;
-    alert_objs.header.stamp = msg->header.stamp;
-    alert_objs.objects.assign(alertObjs.begin(), alertObjs.end());
-    alert_pub.publish(alert_objs);
+    alert_obj_array.header = msg->header;
+    alert_obj_array.header.frame_id = msg->header.frame_id;
+    alert_obj_array.header.stamp = msg->header.stamp;
+    alert_obj_array.objects.assign(alert_objs.begin(), alert_objs.end());
+    alert_pub.publish(alert_obj_array);
 
-    msgs::PedObjectArray msg_pub;
-    // msg_pub.raw_image = img_msg;
-    msg_pub.header = msg->header;
-    msg_pub.header.frame_id = msg->header.frame_id;
-    msg_pub.header.stamp = msg->header.stamp;
-    msg_pub.objects.assign(pedObjs.begin(), pedObjs.end());
+    msgs::PedObjectArray ped_obj_array;
+    // ped_obj_array.raw_image = img_msg;
+    ped_obj_array.header = msg->header;
+    ped_obj_array.header.frame_id = msg->header.frame_id;
+    ped_obj_array.header.stamp = msg->header.stamp;
+    ped_obj_array.objects.assign(ped_objs.begin(), ped_objs.end());
     if (from_camera == 0)  // front
     {
-      chatter_pub_front.publish(msg_pub);
+      chatter_pub_front.publish(ped_obj_array);
     }
     else if (from_camera == 1)  // left
     {
-      chatter_pub_left.publish(msg_pub);
+      chatter_pub_left.publish(ped_obj_array);
     }
     else if (from_camera == 2)  // right
     {
-      chatter_pub_right.publish(msg_pub);
+      chatter_pub_right.publish(ped_obj_array);
     }
     delay_from_camera = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 
@@ -922,17 +922,16 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     }
   }
 
-  for (unsigned int i = 0; i < msg->objects.size(); i++)
+  for (const auto& obj : msg->objects)
   {
-    auto const& obj = msg->objects[i];
     std::vector<cv::Point2f> keypoints;
     int keypoint_number = 0;
-    for (auto const& point : msg->objects[i].keypoints)
+    for (auto const& point : obj.keypoints)
     {
       cv::Point2f kp;
       kp.x = point.x;
       kp.y = point.y;
-      keypoints.push_back(kp);
+      keypoints.emplace_back(kp);
     }
 
     if (keypoints.size() < 18)
@@ -1018,7 +1017,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       }
 
       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(0, 50, 255), 2,
-                  4, 0);
+                  4, false);
     }
     else
     {
@@ -1039,7 +1038,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       }
 
       cv::putText(matrix, probability, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-                  4, 0);
+                  4, false);
     }
 
     if (box.y >= 25)
@@ -1053,8 +1052,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
 
     std::string id_print = "[" + std::to_string(obj.track.id % 1000) + "]";
     // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0),
-    // 2,
-    // 4,0);
+    // 2, 4, false);
 
     // box.x -= 0;
     // draw face direction
@@ -1063,8 +1061,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       id_print += "left ";
       // facing left hand side
       // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-      // 4,
-      // 0);
+      // 4, false);
     }
     else if (obj.facing_direction == 1)
     {
@@ -1079,17 +1076,17 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       id_print += "back ";
       // facing car side
       // cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-      // 0);
+      // false);
     }
     else
     {
       id_print += "front";
       // facing car opposite side
       // cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-      // 0);
+      // false);
     }
     cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1, 2,
-                0);
+                false);
 
     //   cv::Rect box2 = box;
     //   box.y += 30;
@@ -1100,29 +1097,25 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     //   {
     //     // facing left hand side
     //     cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4,
-    //                 0);
+    //     4, false);
     //   }
     //   else if (obj.body_direction / 10 == 1)
     //   {
     //     // facing right hand side
     //     cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4,
-    //                 0);
+    //     4, false);
     //   }
     //   else if (obj.body_direction / 10 == 2)
     //   {
     //     // facing car side
     //     cv::putText(matrix, "O", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4,
-    //                 0);
+    //     4, false);
     //   }
     //   else
     //   {
     //     // facing car opposite side
     //     cv::putText(matrix, "X", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4,
-    //                 0);
+    //     4, false);
     //   }
 
     //   // draw right leg direction
@@ -1130,27 +1123,25 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     //   {
     //     // facing left hand side
     //     cv::putText(matrix, "<-", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4,
-    //                 0);
+    //     4, false);
     //   }
     //   else if (obj.body_direction % 10 == 1)
     //   {
     //     // facing right hand side
     //     cv::putText(matrix, "->", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4,
-    //                 0);
+    //     4, false);
     //   }
     //   else if (obj.body_direction % 10 == 2)
     //   {
     //     // facing car side
     //     cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, 0);
+    //     4, false);
     //   }
     //   else
     //   {
     //     // facing car opposite side
     //     cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, 0);
+    //     4, false);
     //   }
     ped_info.insert(ped_info.begin(), id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) +
                                           " y: " + std::to_string((int)obj.bPoint.p0.y) +
@@ -1164,19 +1155,19 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // cv::resize(matrix, matrix, cv::Size(matrix.cols / 1, matrix.rows / 1));
 
   // make cv::Mat to sensor_msgs::Image
-  sensor_msgs::ImageConstPtr msg_pub2 = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
+  sensor_msgs::ImageConstPtr viz_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
 
   if (from_camera == 0)  // front
   {
-    box_pub_front.publish(msg_pub2);
+    box_pub_front.publish(viz_pub);
   }
   else if (from_camera == 1)  // left
   {
-    box_pub_left.publish(msg_pub2);
+    box_pub_left.publish(viz_pub);
   }
   else if (from_camera == 2)  // right
   {
-    box_pub_right.publish(msg_pub2);
+    box_pub_right.publish(viz_pub);
   }
 
   matrix = 0;
@@ -1472,7 +1463,7 @@ float PedestrianEvent::get_distance2(float x1, float y1, float x2, float y2)
 // return degree with line formed by two points and vertical line
 float PedestrianEvent::get_angle2(float x1, float y1, float x2, float y2)
 {
-  return M_PI / 2 - atan2(std::fabs(y1 - y2), std::fabs(x1 - x2));
+  return M_PI / 2 - std::atan2(std::fabs(y1 - y2), std::fabs(x1 - x2));
 }
 
 // return 3 inner angles of the triangle formed by three points
@@ -1485,8 +1476,8 @@ float* PedestrianEvent::get_triangle_angle(float x1, float y1, float x2, float y
   static float angle[3] = { 0.0f, 0.0f, 0.0f };
   if (test <= 1 && test >= -1)
   {
-    angle[0] = acos((a * a + c * c - b * b) / (2 * a * c));
-    angle[1] = acos((a * a + b * b - c * c) / (2 * a * b));
+    angle[0] = std::acos((a * a + c * c - b * b) / (2 * a * c));
+    angle[1] = std::acos((a * a + b * b - c * c) / (2 * a * b));
     angle[2] = M_PI - angle[0] - angle[1];
   }
   else
@@ -1509,7 +1500,7 @@ float* PedestrianEvent::get_triangle_angle(float x1, float y1, float x2, float y
 
 // use random forest model to predict cross probability
 // return cross probability
-float PedestrianEvent::predict_rf_pose(cv::Mat input_data)
+float PedestrianEvent::predict_rf_pose(const cv::Mat& input_data)
 {
   cv::Mat votes;
   rf_pose->getVotes(input_data, votes, 0);
@@ -1766,40 +1757,40 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 
   float height = input_image.rows;
 
-  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datumToProcess = createDatum(input_image);
-  bool successfullyEmplaced = openPose.waitAndEmplace(datumToProcess);
-  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datumProcessed;
-  if (successfullyEmplaced && openPose.waitAndPop(datumProcessed))
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datum_to_process = createDatum(input_image);
+  bool successfully_emplaced = openPose.waitAndEmplace(datum_to_process);
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> datum_processed;
+  if (successfully_emplaced && openPose.waitAndPop(datum_processed))
   {
-    // display(datumProcessed);
-    if (datumProcessed != nullptr && !datumProcessed->empty())
+    // display(datum_processed);
+    if (datum_processed != nullptr && !datum_processed->empty())
     {
 #if PRINT_MESSAGE
       op::opLog("\nKeypoints:");
 #endif
       // Accesing each element of the keypoints
-      const auto& poseKeypoints = datumProcessed->at(0)->poseKeypoints;
+      const auto& pose_keypoints = datum_processed->at(0)->poseKeypoints;
 #if PRINT_MESSAGE
       op::opLog("Person pose keypoints:");
 #endif
-      for (auto person = 0; person < poseKeypoints.getSize(0); person++)
+      for (auto person = 0; person < pose_keypoints.getSize(0); person++)
       {
 #if PRINT_MESSAGE
         op::opLog("Person " + std::to_string(person) + " (x, y, score):");
 #endif
-        for (auto bodyPart = 0; bodyPart < poseKeypoints.getSize(1); bodyPart++)
+        for (auto body_part = 0; body_part < pose_keypoints.getSize(1); body_part++)
         {
-          float x = poseKeypoints[{ person, bodyPart, 0 }] / height;
-          float y = poseKeypoints[{ person, bodyPart, 1 }] / height;
-          points.push_back(cv::Point2f(x, y));
+          float x = pose_keypoints[{ person, body_part, 0 }] / height;
+          float y = pose_keypoints[{ person, body_part, 1 }] / height;
+          points.emplace_back(cv::Point2f(x, y));
 
-          std::string valueToPrint;
-          for (auto xyscore = 0; xyscore < poseKeypoints.getSize(2); xyscore++)
+          std::string value_to_print;
+          for (auto xyscore = 0; xyscore < pose_keypoints.getSize(2); xyscore++)
           {
-            valueToPrint += std::to_string(poseKeypoints[{ person, bodyPart, xyscore }]) + " ";
+            value_to_print += std::to_string(pose_keypoints[{ person, body_part, xyscore }]) + " ";
           }
 #if PRINT_MESSAGE
-          op::opLog(valueToPrint);
+          op::opLog(value_to_print);
 #endif
         }
       }
@@ -1812,27 +1803,27 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 
   for (int i = 0; i < 25; i++)
   {
-    points.push_back(cv::Point2f(0.0, 0.0));
+    points.emplace_back(cv::Point2f(0.0, 0.0));
   }
 
   return points;
 }
 
-bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr)
+bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr)
 {
   // User's displaying/saving/other processing here
   // datum.cvOutputData: rendered frame with pose or heatmaps
-  // datum.poseKeypoints: Array<float> with the estimated pose
+  // datum.pose_keypoints: Array<float> with the estimated pose
   char key = ' ';
-  if (datumsPtr != nullptr && !datumsPtr->empty())
+  if (datums_ptr != nullptr && !datums_ptr->empty())
   {
-    cv::imshow("User worker GUI", OP_OP2CVCONSTMAT(datumsPtr->at(0)->cvOutputData));
+    cv::imshow("User worker GUI", OP_OP2CVCONSTMAT(datums_ptr->at(0)->cvOutputData));
     // Display image and sleeps at least 1 ms (it usually sleeps ~5-10 msec to display the image)
     key = (char)cv::waitKey(1);
   }
   else
   {
-    op::opLog("Nullptr or empty datumsPtr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
+    op::opLog("Nullptr or empty datums_ptr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
   }
   return (key == 27);
 }
@@ -1840,15 +1831,15 @@ bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<
 std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> PedestrianEvent::createDatum(cv::Mat mat)
 {
   // Create new datum
-  auto datumsPtr = std::make_shared<std::vector<std::shared_ptr<op::Datum>>>();
-  datumsPtr->emplace_back();
-  auto& datumPtr = datumsPtr->at(0);
+  auto datums_ptr = std::make_shared<std::vector<std::shared_ptr<op::Datum>>>();
+  datums_ptr->emplace_back();
+  auto& datumPtr = datums_ptr->at(0);
   datumPtr = std::make_shared<op::Datum>();
 
   // Fill datum
   datumPtr->cvInputData = OP_CV2OPCONSTMAT(mat);
 
-  return datumsPtr;
+  return datums_ptr;
 }
 
 int PedestrianEvent::openPoseROS()

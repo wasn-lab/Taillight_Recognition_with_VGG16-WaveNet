@@ -98,7 +98,7 @@ public:
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
   float predict_rf(cv::Mat input_data);
-  float predict_rf_pose(cv::Mat input_data);
+  float predict_rf_pose(const cv::Mat& input_data);
   bool too_far(const msgs::BoxPoint box_point);
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
