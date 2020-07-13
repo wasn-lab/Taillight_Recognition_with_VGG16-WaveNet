@@ -10,7 +10,9 @@ from pedestrian_marker import pedestrian_marker_callback_final
 
 def listener_pedestrian():
     rospy.init_node('node_name')
-    rospy.Subscriber('/PedCross/Pedestrians', PedObjectArray, pedestrian_marker_callback_final)
+    rospy.Subscriber('/PedCross/Pedestrians/front_bottom_60', PedObjectArray, pedestrian_marker_callback_final)
+    rospy.Subscriber('/PedCross/Pedestrians/left_back_60', PedObjectArray, pedestrian_marker_callback_final)
+    rospy.Subscriber('/PedCross/Pedestrians/right_back_60', PedObjectArray, pedestrian_marker_callback_final)
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
