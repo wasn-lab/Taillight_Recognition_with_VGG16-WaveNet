@@ -249,13 +249,13 @@ bool approximateProgressiveMorphological(const pcl::PointCloud<PointT>::ConstPtr
   // apmf.setMaxDistance(0.6);      // 0.2 //0.3
 
   // Wayne's Parameters
-  apmf.setCellSize(0.2);
-  apmf.setBase(2);  // 0.1
+  apmf.setCellSize(0.8);
+  apmf.setBase(1);  // 0.1
   apmf.setExponential(false);
   apmf.setMaxWindowSize(1.0);    // 3.0
   apmf.setSlope(0.9);            // 0.2 //1.0f
   apmf.setInitialDistance(0.2);  // 0.12 //0.1
-  apmf.setMaxDistance(0.28);      // 0.2 //0.3
+  apmf.setMaxDistance(0.5);      // 0.2 //0.3
   
   apmf.setNumberOfThreads(2);
   apmf.extract(ground->indices);
