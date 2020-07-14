@@ -6,9 +6,6 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
-if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
-  export PATH=/usr/local/llvm-6.0.0/bin:$PATH
-fi
 export CC=clang
 export CXX=clang++
 
