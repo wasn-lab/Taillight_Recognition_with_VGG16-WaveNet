@@ -17,7 +17,7 @@ void getEdgeContour(const boost::shared_ptr<pcl::PointCloud<PointT> >& cloud,
                     const float length, float threshold_width)
 {
   ///@ theta_sample sample number between +-length @ length +- y length of LiDAR @  threshold_width width of x
-  double y_;
+  // double y_;
   double delta_length = length / theta_sample;
 
   boost::shared_ptr<pcl::PointCloud<PointT> > right_edge_(new pcl::PointCloud<PointT>);
@@ -183,7 +183,7 @@ void getContourV2(const boost::shared_ptr<pcl::PointCloud<PointT> >& cloud,
       {
         theta_2 += 360;
       }
-      int indx_theta = round(theta_2 / delta_theta);
+      //int indx_theta = round(theta_2 / delta_theta);
       // double r_contour = hypot( cloud_contour->points[indx_theta].x, cloud_contour->points[indx_theta].y);
       double r_contour = (cloud_contour->points[i].x) * (cloud_contour->points[i].x) +
                          (cloud_contour->points[i].y) * (cloud_contour->points[i].y);  //平方根
