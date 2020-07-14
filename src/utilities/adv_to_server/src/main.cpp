@@ -105,15 +105,18 @@ double data[10] = { 0 };
 // traffic light buffer
 char buffer[1024];
 
-const static std::string PLATE = "ITRI-ADV1000";
-const static int FPS_KEY_LEN = 27;
+const static std::string PLATE = "ITRI-ADV";
+const static int FPS_KEY_LEN = 27 + 16;
 const static std::string keys[] = {
   "FPS_LidarAll",         "FPS_LidarDetection",   "FPS_camF_right",        "FPS_camF_center",     "FPS_camF_left",
   "FPS_camF_top",         "FPS_camR_front",       "FPS_camR_rear",         "FPS_camL_front",      "FPS_camL_rear",
   "FPS_camB_top",         "FPS_CamObjFrontRight", "FPS_CamObjFrontCenter", "FPS_CamObjFrontLeft", "FPS_CamObjFrontTop",
   "FPS_CamObjRightFront", "FPS_CamObjRightBack",  "FPS_CamObjLeftFront",   "FPS_CamObjLeftBack",  "FPS_CamObjBackTop",
   "FPS_current_pose",     "FPS_veh_info",         "FPS_dynamic_path_para", "FPS_Flag_Info01",     "FPS_Flag_Info02",
-  "FPS_Flag_Info03",      "FPS_V2X_msg",
+  "FPS_Flag_Info03",      "FPS_V2X_msg",          "FPS_camfront_bottom_60","FPS_camtop_close_120","FPS_camfront_top_far_30",
+  "FPS_camleft_back_60",  "FPS_camleft_front_60", "FPS_camright_back_60",  "FPS_camright_front_60","FPS_camback_top_120",
+  "FPS_cam_objfront_bottom_60","FPS_cam_objront_top_close_120","FPS_cam_objfront_top_far_30", "FPS_cam_objleft_back_60",
+  "FPS_cam_objleft_front_60",  "FPS_cam_objright_back_60",     "FPS_cam_objright_front_60",   "FPS_cam_objback_top_120"
 };
 
 struct pose
@@ -750,7 +753,7 @@ void sendRun(int argc, char** argv)
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
-  UDP_TABLET_client.initial("192.168.43.100", 9876);
+  UDP_TABLET_client.initial("192.168.1.3", 9876);
   UDP_VK_FG_client.initial("140.134.128.42", 8888);
   
 
