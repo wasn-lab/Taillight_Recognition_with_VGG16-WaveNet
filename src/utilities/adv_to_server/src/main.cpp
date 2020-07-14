@@ -916,10 +916,11 @@ void sendROSRun(int argc, char** argv)
 void receiveRosRun(int argc, char** argv)
 {
   bool isBigBus = checkCommand(argc, argv, "-big");
+  bool isNewMap = checkCommand(argc, argv, "-newMap");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI);
+                                     callbackEvent, callbackBI, isNewMap);
 
   while (ros::ok())
   {
@@ -1362,6 +1363,7 @@ int main(int argc, char** argv)
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
+
   msgs::StopInfoArray empty;
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);
   /*block main.*/
