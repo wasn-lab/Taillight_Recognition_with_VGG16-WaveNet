@@ -26,7 +26,7 @@ bool PedestrianFilter::filter(const CLUSTER_INFO& cluster_info)
   double s = x * y;
   constexpr double min_width = 0.3;
   constexpr double max_width = 1.0;
-  constexpr double min_length = 0.3;
+  //constexpr double min_length = 0.3;
   constexpr double max_length = 1.0;
 
   if (x < min_width && y < min_width)

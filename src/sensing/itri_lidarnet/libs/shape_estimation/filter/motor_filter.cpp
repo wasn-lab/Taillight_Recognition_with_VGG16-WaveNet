@@ -26,7 +26,7 @@ bool MotorFilter::filter(const CLUSTER_INFO& cluster_info)
   double s = x * y;
   constexpr double min_width = 0.5;
   constexpr double max_width = 1.2;
-  constexpr double min_length = 1.0;
+  //constexpr double min_length = 1.0;
   constexpr double max_length = 2.0;
 
   if (x < min_width && y < min_width)

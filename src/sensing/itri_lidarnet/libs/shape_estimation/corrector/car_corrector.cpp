@@ -68,7 +68,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
   v_point.push_back(Eigen::Vector2d(-cluster_info.obb_dx / 2.0, 0.0));
   v_point.push_back(Eigen::Vector2d(0.0, -cluster_info.obb_dy / 2.0));
 
-  size_t first_most_distant_index;
+  size_t first_most_distant_index = 0;
   {
     double distance = 0.0;
     for (size_t i = 0; i < v_point.size(); ++i)
@@ -80,7 +80,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
       }
     }
   }
-  size_t second_most_distant_index;
+  size_t second_most_distant_index = 0;
   {
     double distance = 0.0;
     for (size_t i = 0; i < v_point.size(); ++i)
@@ -92,7 +92,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
       }
     }
   }
-  size_t third_most_distant_index;
+  size_t third_most_distant_index = 0;
   {
     double distance = 0.0;
     for (size_t i = 0; i < v_point.size(); ++i)

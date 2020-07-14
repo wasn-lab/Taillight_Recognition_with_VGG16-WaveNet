@@ -26,7 +26,7 @@ bool TruckFilter::filter(const CLUSTER_INFO& cluster_info)
   double s = x * y;
   constexpr double min_width = 1.5;
   constexpr double max_width = 2.9;
-  constexpr double min_length = 4.0;
+  //constexpr double min_length = 4.0;
   constexpr double max_length = 7.9;
 
   if (x < min_width && y < min_width)

@@ -26,7 +26,7 @@ bool BusFilter::filter(const CLUSTER_INFO& cluster_info)
   double s = x * y;
   constexpr double min_width = 2.0;
   constexpr double max_width = 2.9;
-  constexpr double min_length = 5.0;
+  //constexpr double min_length = 5.0;
   constexpr double max_length = 12.0;
 
   if (x < min_width && y < min_width)
