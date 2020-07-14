@@ -374,7 +374,10 @@ void polygon_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
           convex_point.z = min_z;
           msg_obj.cPoint.lowerAreaPoints.push_back(convex_point);
         }
-        msg_objs.push_back(msg_obj);
+        #pragma omp critical
+        {
+          msg_objs.push_back(msg_obj);
+        }
       }
     }
   }
