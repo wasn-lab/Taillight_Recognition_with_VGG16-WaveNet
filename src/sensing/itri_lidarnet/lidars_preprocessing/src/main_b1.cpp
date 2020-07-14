@@ -48,7 +48,6 @@ void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     *ptr_cur_cloud = CuboidFilter().hollow_removal<PointXYZI>(ptr_cur_cloud, -6.6, 0.9, -1.45, 1.45, -5, 1);
     // cout << "[pass through   ]:" << ptr_cur_cloud->size () << "," << timer_algorithm_running.getTimeSeconds () << "s"
     // << endl;
-    
 
     PointCloud<PointXYZI>::Ptr cloud_ground(new PointCloud<PointXYZI>);
     PointCloud<PointXYZI>::Ptr cloud_non_ground(new PointCloud<PointXYZI>);

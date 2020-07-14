@@ -306,4 +306,3 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
 
   return true;
 }
-

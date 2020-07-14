@@ -22,7 +22,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-bool NoCorrector::correct(CLUSTER_INFO & cluster_info)
+bool NoCorrector::correct(CLUSTER_INFO& cluster_info)
 {
   return true;
 }

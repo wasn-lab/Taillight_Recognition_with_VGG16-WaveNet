@@ -8,7 +8,6 @@ NoiseFilter::~NoiseFilter()
 {
 }
 
-
 //-------- Uniform Sampling <PointT>
 template <typename PointT>
 PointCloud<PointT> NoiseFilter::runUniformSampling(const typename PointCloud<PointT>::Ptr input, float model_ss)
@@ -23,10 +22,11 @@ PointCloud<PointT> NoiseFilter::runUniformSampling(const typename PointCloud<Poi
   return out_cloud;
 }
 
-template PointCloud<PointXYZ> NoiseFilter::runUniformSampling<PointXYZ>(const typename PointCloud<PointXYZ>::Ptr input, float model_ss);
+template PointCloud<PointXYZ> NoiseFilter::runUniformSampling<PointXYZ>(const typename PointCloud<PointXYZ>::Ptr input,
+                                                                        float model_ss);
 
-template PointCloud<PointXYZI> NoiseFilter::runUniformSampling<PointXYZI>(const typename PointCloud<PointXYZI>::Ptr  input, float model_ss);
-
+template PointCloud<PointXYZI>
+NoiseFilter::runUniformSampling<PointXYZI>(const typename PointCloud<PointXYZI>::Ptr input, float model_ss);
 
 //-------- Random Sample <PointXYZ>
 PointCloud<PointXYZ> NoiseFilter::runRandomSampling(PointCloud<PointXYZ>::Ptr input, float model_ss_)
@@ -79,10 +79,10 @@ PointCloud<PointXYZ> NoiseFilter::runRandomSampling(PointCloud<PointXYZ>::Ptr in
   return out_cloud;
 }
 
-
 //-------- Statistical Filter <PointXYZ>
 template <typename PointT>
-PointCloud<PointT> NoiseFilter::runStatisticalOutlierRemoval(typename PointCloud<PointT>::Ptr input, int MeanK, double StddevMulThresh)
+PointCloud<PointT> NoiseFilter::runStatisticalOutlierRemoval(typename PointCloud<PointT>::Ptr input, int MeanK,
+                                                             double StddevMulThresh)
 {
   PointCloud<PointT> out_cloud;
 
@@ -95,12 +95,13 @@ PointCloud<PointT> NoiseFilter::runStatisticalOutlierRemoval(typename PointCloud
 
   return out_cloud;
 }
-template PointCloud<PointXYZI> NoiseFilter::runStatisticalOutlierRemoval<PointXYZI> (typename PointCloud<PointXYZI>::Ptr input, int MeanK, double StddevMulThresh);
-
+template PointCloud<PointXYZI> NoiseFilter::runStatisticalOutlierRemoval<PointXYZI>(
+    typename PointCloud<PointXYZI>::Ptr input, int MeanK, double StddevMulThresh);
 
 //-------- RadiusFilter <PointT>
 template <typename PointT>
-PointCloud<PointT> NoiseFilter::runRadiusOutlierRemoval(typename PointCloud<PointT>::Ptr input, double radius, int min_pts)
+PointCloud<PointT> NoiseFilter::runRadiusOutlierRemoval(typename PointCloud<PointT>::Ptr input, double radius,
+                                                        int min_pts)
 {
   PointCloud<PointT> out_cloud;
 
@@ -119,7 +120,7 @@ PointCloud<PointT> NoiseFilter::runRadiusOutlierRemoval(typename PointCloud<Poin
   return out_cloud;
 }
 
-template PointCloud<PointXYZ> NoiseFilter::runRadiusOutlierRemoval<PointXYZ> (typename PointCloud<PointXYZ>::Ptr input, double radius, int min_pts);
-template PointCloud<PointXYZI> NoiseFilter::runRadiusOutlierRemoval<PointXYZI>(typename PointCloud<PointXYZI>::Ptr input, double radius, int min_pts);
-
-
+template PointCloud<PointXYZ> NoiseFilter::runRadiusOutlierRemoval<PointXYZ>(typename PointCloud<PointXYZ>::Ptr input,
+                                                                             double radius, int min_pts);
+template PointCloud<PointXYZI>
+NoiseFilter::runRadiusOutlierRemoval<PointXYZI>(typename PointCloud<PointXYZI>::Ptr input, double radius, int min_pts);

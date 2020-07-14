@@ -23,10 +23,10 @@ public:
                                     double Ymax, double Zmin, double Zmax);
 
   template <typename PointT>
-  PointCloud<PointT> hollow_removal_IO(typename PointCloud<PointT>::Ptr input,
-                                              double Xmin, double Xmax, double Ymin, double Ymax, double Zmin, double Zmax,
-                                              double Xmin_outlier, double Xmax_outlier, double Ymin_outlier,
-                                              double Ymax_outlier, double Zmin_outlier, double Zmax_outlier);
+  PointCloud<PointT> hollow_removal_IO(typename PointCloud<PointT>::Ptr input, double Xmin, double Xmax, double Ymin,
+                                       double Ymax, double Zmin, double Zmax, double Xmin_outlier, double Xmax_outlier,
+                                       double Ymin_outlier, double Ymax_outlier, double Zmin_outlier,
+                                       double Zmax_outlier);
 
   template <typename PointT>
   vector<PointCloud<PointT>> separate_cloud(typename PointCloud<PointT>::Ptr input, float Xmin, float Xmax, float Ymin,
