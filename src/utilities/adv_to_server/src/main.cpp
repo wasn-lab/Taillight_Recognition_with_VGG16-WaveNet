@@ -787,82 +787,42 @@ void sendRun(int argc, char** argv)
     mutex_queue.unlock();
 
    
-    if(event_queue_switch){
+    if(event_queue_switch)
+    {
       if(eventQueue1.size() != 0){
         mutex_event_1.lock();
         event_queue_switch = false;
-        TCPClient TCP_VK_client;
-        TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
-        TCP_VK_client.connectServer();
-        
+      
         while (eventQueue1.size() != 0)
         {
-          cout << "send from q 1" << endl;
-          string start_str = "$"+ PLATE + "%";
-          const char * start_token = start_str.c_str();
-          TCP_VK_client.sendRequest(start_token, strlen(start_token));
           json j = eventQueue1.front();
           string jstr = j.dump();
-          const char* msg = jstr.c_str();
-          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-          TCP_VK_client.sendRequest(msg, strlen(msg));
-          event_send_count ++;
+          cout << "++++++++++++++++++++++++++++++send from q 1 " << jstr << endl;
+          UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
           UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
           eventQueue1.pop();
-          if(eventQueue1.size() == 0)
-          {
-            string end_str = "@"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          else
-          {
-            string end_str = "#"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms 
         }
+
         mutex_event_1.unlock();
-      }//if(eventQueue1.size() != 0)
+      }  
     }//if(event_queue_switch)
-    else{
+    else
+    {
       if(eventQueue2.size() != 0){
         mutex_event_2.lock();
         event_queue_switch = true;
-        TCPClient TCP_VK_client;
-        TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
-        TCP_VK_client.connectServer();
-        
-        while (eventQueue2.size() != 0)
+    
+        while (eventQueue1.size() != 0)
         {
-          cout << "send from q 2" << endl; 
-          string start_str = "$"+ PLATE + "%";
-          const char * start_token = start_str.c_str();
-          TCP_VK_client.sendRequest(start_token, strlen(start_token)); 
+         
           json j = eventQueue2.front();
           string jstr = j.dump();
-          const char* msg = jstr.c_str();
-          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-          TCP_VK_client.sendRequest(msg, strlen(msg));
-          event_send_count ++;
-          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          cout << "+++++++++++++++++++++++++++++++send from q 2 " << jstr << endl;
+          UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
           UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
           eventQueue2.pop();
-          if(eventQueue2.size() == 0)
-          {
-            string end_str = "@"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          else
-          {
-            string end_str = "#"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms
-         } 
+        }
+
         mutex_event_2.unlock();
       }//if(eventQueue2.size() != 0)
     }//else
