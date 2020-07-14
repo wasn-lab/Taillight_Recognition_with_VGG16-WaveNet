@@ -4,7 +4,7 @@
 
 namespace camera_utils
 {
-  static std::vector<cv::Scalar> g_colors;
+static std::vector<cv::Scalar> g_colors;
 
 const cv::Scalar& get_cv_color(color color_id)
 {

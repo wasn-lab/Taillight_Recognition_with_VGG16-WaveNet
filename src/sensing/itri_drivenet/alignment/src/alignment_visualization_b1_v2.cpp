@@ -244,8 +244,8 @@ void displayLidarData()
   pclInitializer(cams_points_ptr);
   pointsColorInit(rgb_cams_points, g_cams_points_ptr);
 
-  MinMax3D point_50m, point_40m, point_30m, point_20m, point_10m;
-  cv::Scalar color_50m, color_40m, color_30m, color_20m, color_10m;
+  MinMax3D point_50m, point_40m, point_30m, point_20m, point_10m, point_0m, point_negative_10m;
+  cv::Scalar color_50m, color_40m, color_30m, color_20m, color_10m, color_0m, color_negative_10m;
   float x_dist = 50;
   float y_dist = 50;
   float z_dist = -3;
@@ -263,6 +263,12 @@ void displayLidarData()
   x_dist -= 10;
   point_10m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
   color_10m = g_visualization.getDistColor(x_dist);
+  x_dist -= 10;
+  point_0m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_0m = g_visualization.getDistColor(x_dist);
+  x_dist -= 10;
+  point_negative_10m = g_visualization.getDistLinePoint(x_dist, y_dist, z_dist);
+  color_negative_10m = g_visualization.getDistColor(x_dist);
 
   /// main loop
   ros::Rate loop_rate(10);
@@ -291,7 +297,10 @@ void displayLidarData()
                                         "line-20m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_10m.p_min, point_10m.p_max, color_10m[2], color_10m[1], color_10m[0],
                                         "line-10m");
-
+    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0],
+                                        "line-0m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_negative_10m.p_min, point_negative_10m.p_max, color_negative_10m[2], color_negative_10m[1], color_negative_10m[0],
+                                        "line-negative-10m");                                        
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
       std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points);  // mutex camera points
