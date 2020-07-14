@@ -19,7 +19,7 @@
 
 #include "no_filter.hpp"
 
-bool NoFilter::filter(const CLUSTER_INFO & cluster_info)
+bool NoFilter::filter(const CLUSTER_INFO& cluster_info)
 {
   return true;
 }
