@@ -487,6 +487,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
                                 /*std::vector<std::vector<PixelPosition>>& cam_pixels,*/ int image_w, int image_h)
 {
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+  #pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order] /*, cam_pixels[cam_order]*/, image_w, image_h,
@@ -504,6 +505,7 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& obje
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
   // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
+  #pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInBoxFOV(objects[cam_order], remaining_objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
@@ -521,6 +523,7 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& rema
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
   // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
+  #pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInBoxFOV(remaining_objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
@@ -919,13 +922,11 @@ void runInference()
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_points_ptr(g_cam_ids.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_raw_points_ptr(g_cam_ids.size());
   std::vector<std::vector<PixelPosition>> cam_pixels(g_cam_ids.size());
-  std::vector<std::vector<PixelPosition>> cam_pixels_raw(g_cam_ids.size());
   std::vector<std::vector<int>> cam_bboxs_class_id(g_cam_ids.size());
   std::vector<std::vector<int>> cam_bboxs_class_id_raw(g_cam_ids.size());
   std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max(g_cam_ids.size());
-  std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max_raw(g_cam_ids.size());
   std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points(g_cam_ids.size());
-  std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points_raw(g_cam_ids.size());
+
   /// init
   pclInitializer(cams_raw_points_ptr);
   pclInitializer(cams_points_ptr);
@@ -1009,21 +1010,13 @@ void runInference()
                                  cams_bboxs_cube_min_max, cams_bboxs_points);
 
         get_point_in_image_fov_thread_2.join();
-        getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels_raw, objects_2d_bbox_arrs,
-                                cams_bboxs_cube_min_max_raw, cams_bboxs_points_raw); 
-        /// combine results
-        for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
-        {
-          // cam_bboxs_class_id[cam_order].insert(cam_bboxs_class_id[cam_order].end(), cam_bboxs_class_id_raw[cam_order].begin(), cam_bboxs_class_id_raw[cam_order].end());
-          cams_bboxs_points[cam_order].insert(cams_bboxs_points[cam_order].end(), cams_bboxs_points_raw[cam_order].begin(), cams_bboxs_points_raw[cam_order].end());
-          cams_bboxs_cube_min_max[cam_order].insert(cams_bboxs_cube_min_max[cam_order].end(), cams_bboxs_cube_min_max_raw[cam_order].begin(), cams_bboxs_cube_min_max_raw[cam_order].end());
-        } 
+        getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels, objects_2d_bbox_arrs,
+                                cams_bboxs_cube_min_max, cams_bboxs_points);
 
         if (g_is_display)
         {
           for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
           {
-            cam_pixels[cam_order].insert(cam_pixels[cam_order].end(), cam_pixels_raw[cam_order].begin(), cam_pixels_raw[cam_order].end());
             *cams_bbox_points_ptr[cam_order] += *cams_bbox_raw_points_ptr[cam_order];
             *cams_points_ptr[cam_order] += *cams_raw_points_ptr[cam_order];
           }
@@ -1063,10 +1056,7 @@ void runInference()
         release(cam_bboxs_class_id);
         release(cams_bboxs_cube_min_max);
         release(cams_bboxs_points);
-        release(cam_pixels_raw);
         release(cam_bboxs_class_id_raw);
-        release(cams_bboxs_cube_min_max_raw);
-        release(cams_bboxs_points_raw);
       }
     }
     loop_rate.sleep();
