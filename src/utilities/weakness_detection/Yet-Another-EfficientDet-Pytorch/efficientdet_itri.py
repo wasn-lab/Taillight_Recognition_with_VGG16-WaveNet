@@ -40,7 +40,6 @@ OBJ_LIST = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
             'refrigerator', '', 'book', 'clock', 'vase', 'scissors',
             'teddy bear', 'hair drier', 'toothbrush']
 COLOR_LIST = standard_to_bgr(STANDARD_COLORS)
-THRESHOLD = 0.3
 IOU_THRESHOLD = 0.2
 
 DRIVENET_CLASS_IDS = [0, 1, 2, 3, 5, 7]  # only output these class
@@ -68,11 +67,13 @@ class NumpyEncoder(json.JSONEncoder):
 
 class EfficientDet():
     """Object detection using efficientDet"""
-    def __init__(self, coef, save_yolo_fmt=False):
+    def __init__(self, coef, conf_thresh=0.25, save_detection_result=True, save_yolo_fmt=False):
+        self.conf_thresh = conf_thresh  # confidence threshold
         self.model = None
         self.compound_coef = coef
         self.pred = None
         self.img = None
+        self.save_detection_result = save_detection_result
         self.save_yolo_fmt = save_yolo_fmt
 
     def get_input_size(self):
@@ -133,7 +134,9 @@ class EfficientDet():
                 _fp.write("\n")
         logging.warning("Write %s", output_file)
 
-    def save_pred(self, img_path):
+    def save_detection_result_if_necessary(self, img_path):
+        if not self.save_detection_result:
+            return
         pred = self.pred
         img = self.img
         nobjs = len(pred["rois"])
@@ -166,7 +169,7 @@ class EfficientDet():
             out = postprocess(pimg,
                               anchors, regression, classification,
                               regress_boxes, clip_boxes,
-                              THRESHOLD, IOU_THRESHOLD)
+                              self.conf_thresh, IOU_THRESHOLD)
             self.pred = invert_affine(framed_metas, out)[0]
         logging.info("Inference time: %f", time.time() - start_time)
 
@@ -174,7 +177,7 @@ class EfficientDet():
         logging.warning("Load %s", img_path)
         self.img = cv2.imread(img_path)
         self.inference()
-        self.save_pred(img_path)
+        self.save_detection_result_if_necessary(img_path)
         self.save_yolo_fmt_if_necessary(img_path)
 
 
@@ -185,10 +188,11 @@ def main():
         "weakness_detection_image_list.txt")
     parser = argparse.ArgumentParser()
     parser.add_argument("--coef", type=int, default=4)
+    parser.add_argument("--conf-thresh", type=float, default=0.25)
     parser.add_argument("--image-filenames", default=default_img_list)
     parser.add_argument("--save-yolo-fmt", action="store_true")
     args = parser.parse_args()
-    edet = EfficientDet(args.coef, args.save_yolo_fmt)
+    edet = EfficientDet(args.coef, conf_thresh=args.conf_thres, save_yolo_fmt=args.save_yolo_fmt)
     with io.open(args.image_filenames, encoding="utf-8") as _fp:
         contents = _fp.read()
     for line in contents.splitlines():
