@@ -6,7 +6,7 @@ sudo bash -c "rm /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "touch /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set the interface on which dnsmasq operates.' >> /etc/dnsmasq.d/dhcp.conf"
 	
-sudo bash -c "echo 'interface=bridge0' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'interface=br0' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# To disable dnsmasq DNS server functionality.' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo 'port=0' >> /etc/dnsmasq.d/dhcp.conf"

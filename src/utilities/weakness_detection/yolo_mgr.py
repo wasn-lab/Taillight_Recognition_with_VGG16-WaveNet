@@ -3,14 +3,22 @@ import os
 import json
 import logging
 import datetime
+import sys
+import subprocess
 import multiprocessing
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import gen_bbox_by_yolo_object
-from bbox import calc_iou
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
 from json_utils import read_json_file
 from efficientdet_mgr import EfficientDetMgr
+
+REPO_DIR = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
+REPO_DIR = REPO_DIR.decode("utf-8").strip()
+UTILITIES_IOU_DIR = os.path.join(REPO_DIR, "src", "utilities", "iou")
+sys.path.append(UTILITIES_IOU_DIR)
+
+from iou_utils import calc_iou  # pylint: disable=import-error
 
 
 def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
