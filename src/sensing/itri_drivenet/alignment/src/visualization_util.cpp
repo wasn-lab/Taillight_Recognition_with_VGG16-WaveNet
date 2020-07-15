@@ -36,7 +36,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 cv::Scalar Visualization::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
-  
+
   distance_in_meters = fabs(distance_in_meters);
   if (distance_in_meters > 0 && distance_in_meters <= 10)
   {

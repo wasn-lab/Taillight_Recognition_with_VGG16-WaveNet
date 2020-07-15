@@ -15,7 +15,6 @@
 class ObjectGenerator
 {
 private:
-
 public:
   pcl::PointCloud<pcl::PointXYZ> pointsToPolygon(pcl::PointCloud<pcl::PointXYZI>& cloud);
   msgs::BoxPoint minMax3dToBBox(MinMax3D& cube);
