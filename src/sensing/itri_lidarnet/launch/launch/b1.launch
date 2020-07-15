@@ -37,8 +37,8 @@ Lidar List:
 	<rosparam param="use_filter" if="$(eval arg('use_filter') == 1)">true</rosparam>
 
 <!-- tf2 ******************************************************************* -->
-	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 /base_link /os1_sensor" />
-	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 /base_link /lidar" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 base_link os1_sensor" />
+	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
 
 <!-- MPS ******************************************************************* -->
 	<group if="$(eval arg('mps') == 1)">
