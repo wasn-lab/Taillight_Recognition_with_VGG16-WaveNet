@@ -1,7 +1,7 @@
 #include "visualization_util.h"
 
 /// stardard
-#include <math.h>
+#include <cmath>
 
 using namespace DriveNet;
 
@@ -37,7 +37,7 @@ cv::Scalar Visualization::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
 
-  distance_in_meters = fabs(distance_in_meters);
+  distance_in_meters = std::fabs(distance_in_meters);
   if (distance_in_meters > 0 && distance_in_meters <= 10)
   {
     color = CvColor::red_;
