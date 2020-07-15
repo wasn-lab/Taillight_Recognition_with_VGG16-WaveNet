@@ -17,17 +17,35 @@
  * v1.0 Yukihiro Saito
  */
 
-#pragma once
+#include "bus_filter.hpp"
 
-#include "corrector_interface.hpp"
-
-class CarCorrector : public ShapeEstimationCorrectorInterface
+bool BusFilter::filter(const CLUSTER_INFO& cluster_info)
 {
+  double x = cluster_info.obb_dx;
+  double y = cluster_info.obb_dy;
+  double s = x * y;
+  constexpr double min_width = 2.0;
+  constexpr double max_width = 2.9;
+  //constexpr double min_length = 5.0;
+  constexpr double max_length = 12.0;
 
-public:
-  CarCorrector(){};
+  if (x < min_width && y < min_width)
+  {
+    return false;
+  }
+  if (max_width < x && max_width < y)
+  {
+    return false;
+  }
 
-  ~CarCorrector(){};
+  if (max_length < x || max_length < y)
+  {
+    return false;
+  }
 
-  bool correct(CLUSTER_INFO & cluster_info) override;
-};
+  if (s < 0.5 && max_length * max_width < s)
+  {
+    return false;
+  }
+  return true;
+}

@@ -17,17 +17,35 @@
  * v1.0 Yukihiro Saito
  */
 
-#pragma once
+#include "truck_filter.hpp"
 
-#include "corrector_interface.hpp"
-
-class CarCorrector : public ShapeEstimationCorrectorInterface
+bool TruckFilter::filter(const CLUSTER_INFO& cluster_info)
 {
+  double x = cluster_info.obb_dx;
+  double y = cluster_info.obb_dy;
+  double s = x * y;
+  constexpr double min_width = 1.5;
+  constexpr double max_width = 2.9;
+  //constexpr double min_length = 4.0;
+  constexpr double max_length = 7.9;
 
-public:
-  CarCorrector(){};
+  if (x < min_width && y < min_width)
+  {
+    return false;
+  }
+  if (max_width < x && max_width < y)
+  {
+    return false;
+  }
 
-  ~CarCorrector(){};
+  if (max_length < x || max_length < y)
+  {
+    return false;
+  }
 
-  bool correct(CLUSTER_INFO & cluster_info) override;
-};
+  if (s < 0.5 && max_length * max_width < s)
+  {
+    return false;
+  }
+  return true;
+}

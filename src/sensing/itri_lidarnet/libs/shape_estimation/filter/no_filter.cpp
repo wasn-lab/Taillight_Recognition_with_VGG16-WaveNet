@@ -17,17 +17,9 @@
  * v1.0 Yukihiro Saito
  */
 
-#pragma once
+#include "no_filter.hpp"
 
-#include "corrector_interface.hpp"
-
-class CarCorrector : public ShapeEstimationCorrectorInterface
+bool NoFilter::filter(const CLUSTER_INFO& cluster_info)
 {
-
-public:
-  CarCorrector(){};
-
-  ~CarCorrector(){};
-
-  bool correct(CLUSTER_INFO & cluster_info) override;
-};
+  return true;
+}

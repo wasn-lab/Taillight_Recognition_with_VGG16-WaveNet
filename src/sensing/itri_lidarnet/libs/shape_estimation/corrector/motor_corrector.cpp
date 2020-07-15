@@ -17,15 +17,16 @@
  * v1.0 Yukihiro Saito
  */
 
-#include "car_corrector.hpp"
+#include "motor_corrector.hpp"
 #include "tf2/LinearMath/Matrix3x3.h"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <cmath>
 
-bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
+bool MotorCorrector::correct(CLUSTER_INFO& cluster_info)
 {
   /*
     Eigen::Translation<double, 2> trans =
@@ -36,7 +37,6 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
       pose_output.orientation.z);
     Eigen::Vector3d euler = quat.toRotationMatrix().eulerAngles(0, 1, 2);
     const double yaw = euler[2];
-    Eigen::Rotation2Dd rotate(yaw);
   */
   Eigen::Translation<double, 2> trans =
       Eigen::Translation<double, 2>(cluster_info.obb_center.x, cluster_info.obb_center.y);
@@ -108,10 +108,10 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
 
   // rule based correction
   Eigen::Vector2d correction_vector = Eigen::Vector2d::Zero();
-  constexpr double min_width = 1.2;
-  constexpr double max_width = 2.2;
-  constexpr double min_length = 3.0;
-  constexpr double max_length = 5.0;
+  constexpr double min_width = 0.5;
+  constexpr double max_width = 1.2;
+  constexpr double min_length = 1.0;
+  constexpr double max_length = 2.0;
 
   if ((int)std::abs((int)first_most_distant_index - (int)second_most_distant_index) % 2 == 0)
   {
