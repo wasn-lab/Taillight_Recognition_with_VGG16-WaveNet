@@ -19,15 +19,14 @@
 
 #pragma once
 
-#include "corrector_interface.hpp"
+#include "filter_interface.hpp"
 
-class CarCorrector : public ShapeEstimationCorrectorInterface
+class MotorFilter : public ShapeEstimationFilterInterface
 {
-
 public:
-  CarCorrector(){};
+  MotorFilter(){};
 
-  ~CarCorrector(){};
+  ~MotorFilter(){};
 
-  bool correct(CLUSTER_INFO & cluster_info) override;
+  bool filter(const CLUSTER_INFO & cluster_info) override;
 };

@@ -17,17 +17,12 @@
  * v1.0 Yukihiro Saito
  */
 
-#pragma once
+#include "no_corrector.hpp"
+#define EIGEN_MPL2_ONLY
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
-#include "corrector_interface.hpp"
-
-class CarCorrector : public ShapeEstimationCorrectorInterface
+bool NoCorrector::correct(CLUSTER_INFO & cluster_info)
 {
-
-public:
-  CarCorrector(){};
-
-  ~CarCorrector(){};
-
-  bool correct(CLUSTER_INFO & cluster_info) override;
-};
+  return true;
+}
