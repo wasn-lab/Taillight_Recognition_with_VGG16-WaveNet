@@ -3,15 +3,13 @@
 Lidar List:
 * LidarFrontRight:         MR32, 192.168.0.220
 * LidarFrontLeft:          MR32, 192.168.0.221     
-* LidarRearRight:         VLP16, 192.168.0.222
-* LidarRearLeft:          VLP16, 192.168.0.223
 * LidarFrontTop(base): Ouster64, 192.168.0.224
 -->
 
 <launch>
 <!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
-<rosparam param="LidarFrontLeft_Fine_Param">[0.462, 1.098, -1.858, 0.031, -0.007, 1.783]</rosparam>
-<rosparam param="LidarFrontRight_Fine_Param">[0.512, -1.053, -1.836, -0.025, -0.01, -1.785]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.459, 1.098, -1.858, 0.027, -0.002, 1.771]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[0.512, -1.053, -1.836, -0.023, -0.007, -1.776]</rosparam>
 <rosparam param="LidarRearLeft_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 <rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 
