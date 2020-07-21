@@ -43,9 +43,9 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
       pixel_position.v = v;
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
-        cam_points.points[cloud_sizes] = point_cloud[u][v];
 #pragma omp critical
         {
+          cam_points.points[cloud_sizes] = point_cloud[u][v];          
           cam_pixels.push_back(pixel_position);
           cloud_sizes++;
         }
@@ -94,15 +94,11 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   {
     for (int v = 0; v < image_h; v++)
     {
-      // PixelPosition pixel_position{ -1, -1 };
-      // pixel_position.u = u;
-      // pixel_position.v = v;
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
-        // cam_pixels.push_back(pixel_position);
-        cam_points.points[cloud_sizes] = point_cloud[u][v];
 #pragma omp critical
         {
+          cam_points.points[cloud_sizes] = point_cloud[u][v];
           cloud_sizes++;
         }
       }
