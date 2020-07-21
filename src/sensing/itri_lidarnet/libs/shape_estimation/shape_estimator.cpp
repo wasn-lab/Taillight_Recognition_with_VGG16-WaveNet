@@ -21,15 +21,24 @@
 #include <iostream>
 #include <memory>
 #include "corrector/car_corrector.hpp"
+#include "corrector/truck_corrector.hpp"
+#include "corrector/bus_corrector.hpp"
+#include "corrector/motor_corrector.hpp"
+#include "corrector/pedestrian_corrector.hpp"
+#include "corrector/no_corrector.hpp"
 #include "filter/car_filter.hpp"
+#include "filter/truck_filter.hpp"
+#include "filter/bus_filter.hpp"
+#include "filter/motor_filter.hpp"
+#include "filter/pedestrian_filter.hpp"
+#include "filter/no_filter.hpp"
 #include "model/bounding_box.hpp"
-#include "model/model_interface.hpp"
 
 ShapeEstimator::ShapeEstimator()
 {
 }
 
-bool ShapeEstimator::getShapeAndPose(CLUSTER_INFO& cluster_info)
+bool ShapeEstimator::getShapeAndPose(nnClassID type, CLUSTER_INFO & cluster_info)
 {
   // check input
   if (cluster_info.cloud.empty())
@@ -42,14 +51,12 @@ bool ShapeEstimator::getShapeAndPose(CLUSTER_INFO& cluster_info)
   }
 
   // rule based filter
-  if (!applyFilter(cluster_info))
-  {
+  if (!applyFilter(type, cluster_info)) {
     return false;
   }
 
   // rule based corrector
-  if (!applyCorrector(cluster_info))
-  {
+  if (!applyCorrector(type, cluster_info)) {
     return false;
   }
   return true;
@@ -63,18 +70,62 @@ bool ShapeEstimator::estimateShape(CLUSTER_INFO& cluster_info)
   return model_ptr->estimate(cluster_info);
 }
 
-bool ShapeEstimator::applyFilter(const CLUSTER_INFO& cluster_info)
+bool ShapeEstimator::applyFilter(const nnClassID type, const CLUSTER_INFO & cluster_info)
 {
   // rule based filter
   std::unique_ptr<ShapeEstimationFilterInterface> filter_ptr;
-  filter_ptr.reset(new CarFilter);
+  if (type == nnClassID::Car && (cluster_info.obb_dx < 5.0 && cluster_info.obb_dy < 5.0)) {
+    filter_ptr.reset(new CarFilter);
+  } 
+  else if (type == nnClassID::Car && (cluster_info.obb_dx < 7.9 && cluster_info.obb_dy < 7.9)) 
+  {
+    filter_ptr.reset(new TruckFilter);
+  } 
+  else if (type == nnClassID::Car && (cluster_info.obb_dx < 12 && cluster_info.obb_dy < 12)) 
+  {
+    filter_ptr.reset(new BusFilter);
+  } 
+  else if (type == nnClassID::Motobike) 
+  {
+    filter_ptr.reset(new MotorFilter);
+  } 
+  else if (type == nnClassID::Person) 
+  {
+    filter_ptr.reset(new PedestrianFilter);
+  } 
+  else 
+  {
+    filter_ptr.reset(new NoFilter);
+  }
   return filter_ptr->filter(cluster_info);
 }
 
-bool ShapeEstimator::applyCorrector(CLUSTER_INFO& cluster_info)
+bool ShapeEstimator::applyCorrector(const nnClassID type, CLUSTER_INFO & cluster_info)
 {
   // rule based corrector
   std::unique_ptr<ShapeEstimationCorrectorInterface> corrector_ptr;
-  corrector_ptr.reset(new CarCorrector);
+  if (type == nnClassID::Car && (cluster_info.obb_dx < 5.0 && cluster_info.obb_dy < 5.0)) {
+    corrector_ptr.reset(new CarCorrector);
+  } 
+  else if (type == nnClassID::Car && (cluster_info.obb_dx < 7.9 && cluster_info.obb_dy < 7.9)) 
+  {
+    corrector_ptr.reset(new TruckCorrector);
+  } 
+  else if (type == nnClassID::Car && (cluster_info.obb_dx < 12 && cluster_info.obb_dy < 12)) 
+  {
+    corrector_ptr.reset(new BusCorrector);
+  } 
+  else if (type == nnClassID::Motobike) 
+  {
+    corrector_ptr.reset(new MotorCorrector);
+  } 
+  else if (type == nnClassID::Person) 
+  {
+    corrector_ptr.reset(new PedestrianCorrector);
+  } 
+  else 
+  {
+    corrector_ptr.reset(new NoCorrector);
+  }
   return corrector_ptr->correct(cluster_info);
 }

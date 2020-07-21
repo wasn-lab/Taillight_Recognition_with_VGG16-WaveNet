@@ -306,11 +306,19 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
               }
             }
           }
-          if (cluster_vector.at(i).cluster_tag == nnClassID::Car)
+          if (use_shape_estimation)
           {
-            if (use_shape_estimation)
+            if (cluster_vector.at(i).cluster_tag == nnClassID::Car)
             {
-              estimator_.getShapeAndPose(cluster_vector.at(i));
+              estimator_.getShapeAndPose(nnClassID::Car, cluster_vector.at(i));
+            }
+            if (cluster_vector.at(i).cluster_tag == nnClassID::Motobike)
+            {
+              estimator_.getShapeAndPose(nnClassID::Motobike, cluster_vector.at(i));
+            }
+            if (cluster_vector.at(i).cluster_tag == nnClassID::Person)
+            {
+              estimator_.getShapeAndPose(nnClassID::Person, cluster_vector.at(i));
             }
           }
         }

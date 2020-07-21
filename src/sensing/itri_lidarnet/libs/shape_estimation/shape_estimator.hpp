@@ -28,13 +28,13 @@ class ShapeEstimator
 {
 private:
   bool estimateShape(CLUSTER_INFO & cluster_info);
-  bool applyFilter(const CLUSTER_INFO & cluster_info);
-  bool applyCorrector(CLUSTER_INFO & cluster_info);
+  bool applyFilter(const nnClassID type, const CLUSTER_INFO & cluster_info);
+  bool applyCorrector(const nnClassID type, CLUSTER_INFO & cluster_info);
 
 public:
   ShapeEstimator();
 
   ~ShapeEstimator(){};
 
-  bool getShapeAndPose(CLUSTER_INFO & cluster_info);
+  bool getShapeAndPose(nnClassID type, CLUSTER_INFO & cluster_info);
 };
