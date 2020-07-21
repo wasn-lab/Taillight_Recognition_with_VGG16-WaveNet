@@ -24,7 +24,6 @@
 #define EIGEN_MPL2_ONLY
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <cmath>
 
 bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
 {
@@ -37,6 +36,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
       pose_output.orientation.z);
     Eigen::Vector3d euler = quat.toRotationMatrix().eulerAngles(0, 1, 2);
     const double yaw = euler[2];
+    Eigen::Rotation2Dd rotate(yaw);
   */
   Eigen::Translation<double, 2> trans =
       Eigen::Translation<double, 2>(cluster_info.obb_center.x, cluster_info.obb_center.y);
@@ -68,7 +68,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
   v_point.push_back(Eigen::Vector2d(-cluster_info.obb_dx / 2.0, 0.0));
   v_point.push_back(Eigen::Vector2d(0.0, -cluster_info.obb_dy / 2.0));
 
-  size_t first_most_distant_index;
+  size_t first_most_distant_index = 0;
   {
     double distance = 0.0;
     for (size_t i = 0; i < v_point.size(); ++i)
@@ -80,7 +80,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
       }
     }
   }
-  size_t second_most_distant_index;
+  size_t second_most_distant_index = 0;
   {
     double distance = 0.0;
     for (size_t i = 0; i < v_point.size(); ++i)
@@ -92,7 +92,7 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
       }
     }
   }
-  size_t third_most_distant_index;
+  size_t third_most_distant_index = 0;
   {
     double distance = 0.0;
     for (size_t i = 0; i < v_point.size(); ++i)
@@ -305,36 +305,4 @@ bool CarCorrector::correct(CLUSTER_INFO& cluster_info)
   */
 
   return true;
-}
-
-void CarCorrector::rotation2D(double xy_input[2], double xy_output[2], double theta)
-{
-  xy_output[0] = xy_input[0] * std::cos(theta) + xy_input[1] * std::sin(theta);
-  xy_output[1] = -xy_input[0] * std::sin(theta) + xy_input[1] * std::cos(theta);
-}
-
-void CarCorrector::setBoundingBox(CLUSTER_INFO& cluster_info, double pt0[2], double pt3[2], double pt4[2],
-                                  double pt7[2])
-{
-  /* ABB order
-  | pt5 _______pt6(max)
-  |     |\      \
-  |     | \      \
-  |     |  \______\
-  | pt4 \  |pt1   |pt2
-  |      \ |      |
-  |       \|______|
-  | pt0(min)    pt3
-  |------------------------>X
-  */
-  double z_min = cluster_info.obb_center.z - (cluster_info.obb_dz / 2);
-  double z_max = cluster_info.obb_center.z + (cluster_info.obb_dz / 2);
-  cluster_info.obb_vertex.at(1) = pcl::PointXYZ(pt0[0], pt0[1], z_max);
-  cluster_info.obb_vertex.at(2) = pcl::PointXYZ(pt3[0], pt3[1], z_max);
-  cluster_info.obb_vertex.at(6) = pcl::PointXYZ(pt4[0], pt4[1], z_max);
-  cluster_info.obb_vertex.at(5) = pcl::PointXYZ(pt7[0], pt7[1], z_max);
-  cluster_info.obb_vertex.at(0) = pcl::PointXYZ(pt0[0], pt0[1], z_min);
-  cluster_info.obb_vertex.at(3) = pcl::PointXYZ(pt3[0], pt3[1], z_min);
-  cluster_info.obb_vertex.at(7) = pcl::PointXYZ(pt4[0], pt4[1], z_min);
-  cluster_info.obb_vertex.at(4) = pcl::PointXYZ(pt7[0], pt7[1], z_min);
 }

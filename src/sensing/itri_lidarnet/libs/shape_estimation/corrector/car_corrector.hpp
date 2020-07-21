@@ -23,9 +23,6 @@
 
 class CarCorrector : public ShapeEstimationCorrectorInterface
 {
-private:
-  void rotation2D(double xy_input[2], double xy_output[2], double theta);
-  void setBoundingBox(CLUSTER_INFO & cluster_info, double pt0[2], double pt3[2], double pt4[2], double pt7[2]);
 
 public:
   CarCorrector(){};

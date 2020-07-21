@@ -106,14 +106,17 @@ double data[10] = { 0 };
 char buffer[1024];
 
 const static std::string PLATE = "ITRI-ADV";
-const static int FPS_KEY_LEN = 27;
+const static int FPS_KEY_LEN = 27 + 16;
 const static std::string keys[] = {
   "FPS_LidarAll",         "FPS_LidarDetection",   "FPS_camF_right",        "FPS_camF_center",     "FPS_camF_left",
   "FPS_camF_top",         "FPS_camR_front",       "FPS_camR_rear",         "FPS_camL_front",      "FPS_camL_rear",
   "FPS_camB_top",         "FPS_CamObjFrontRight", "FPS_CamObjFrontCenter", "FPS_CamObjFrontLeft", "FPS_CamObjFrontTop",
   "FPS_CamObjRightFront", "FPS_CamObjRightBack",  "FPS_CamObjLeftFront",   "FPS_CamObjLeftBack",  "FPS_CamObjBackTop",
   "FPS_current_pose",     "FPS_veh_info",         "FPS_dynamic_path_para", "FPS_Flag_Info01",     "FPS_Flag_Info02",
-  "FPS_Flag_Info03",      "FPS_V2X_msg",
+  "FPS_Flag_Info03",      "FPS_V2X_msg",          "FPS_camfront_bottom_60","FPS_camtop_close_120","FPS_camfront_top_far_30",
+  "FPS_camleft_back_60",  "FPS_camleft_front_60", "FPS_camright_back_60",  "FPS_camright_front_60","FPS_camback_top_120",
+  "FPS_cam_objfront_bottom_60","FPS_cam_objront_top_close_120","FPS_cam_objfront_top_far_30", "FPS_cam_objleft_back_60",
+  "FPS_cam_objleft_front_60",  "FPS_cam_objright_back_60",     "FPS_cam_objright_front_60",   "FPS_cam_objback_top_120"
 };
 
 struct pose
@@ -750,7 +753,7 @@ void sendRun(int argc, char** argv)
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
-  UDP_TABLET_client.initial("192.168.43.63", 9876);
+  UDP_TABLET_client.initial("192.168.1.3", 9876);
   UDP_VK_FG_client.initial("140.134.128.42", 8888);
   
 
@@ -781,88 +784,48 @@ void sendRun(int argc, char** argv)
     {
       UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), true);
       UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), true);
-      //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
+      UDP_TABLET_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
       vkStatusQueue.pop();
     }
     mutex_queue.unlock();
 
    
-    if(event_queue_switch){
+    if(event_queue_switch)
+    {
       if(eventQueue1.size() != 0){
         mutex_event_1.lock();
         event_queue_switch = false;
-        TCPClient TCP_VK_client;
-        TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
-        TCP_VK_client.connectServer();
-        
+      
         while (eventQueue1.size() != 0)
         {
-          cout << "send from q 1" << endl;
-          string start_str = "$"+ PLATE + "%";
-          const char * start_token = start_str.c_str();
-          TCP_VK_client.sendRequest(start_token, strlen(start_token));
           json j = eventQueue1.front();
           string jstr = j.dump();
-          const char* msg = jstr.c_str();
-          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-          TCP_VK_client.sendRequest(msg, strlen(msg));
-          event_send_count ++;
+          cout << "++++++++++++++++++++++++++++++send from q 1 " << jstr << endl;
+          UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
           UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
           eventQueue1.pop();
-          if(eventQueue1.size() == 0)
-          {
-            string end_str = "@"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          else
-          {
-            string end_str = "#"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms 
         }
+
         mutex_event_1.unlock();
-      }//if(eventQueue1.size() != 0)
+      }  
     }//if(event_queue_switch)
-    else{
+    else
+    {
       if(eventQueue2.size() != 0){
         mutex_event_2.lock();
         event_queue_switch = true;
-        TCPClient TCP_VK_client;
-        TCP_VK_client.initial(TCP_VK_SRV_ADRR, TCP_VK_SRV_PORT);
-        TCP_VK_client.connectServer();
-        
-        while (eventQueue2.size() != 0)
+    
+        while (eventQueue1.size() != 0)
         {
-          cout << "send from q 2" << endl; 
-          string start_str = "$"+ PLATE + "%";
-          const char * start_token = start_str.c_str();
-          TCP_VK_client.sendRequest(start_token, strlen(start_token)); 
+         
           json j = eventQueue2.front();
           string jstr = j.dump();
-          const char* msg = jstr.c_str();
-          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-          TCP_VK_client.sendRequest(msg, strlen(msg));
-          event_send_count ++;
-          //UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          cout << "+++++++++++++++++++++++++++++++send from q 2 " << jstr << endl;
+          UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
           UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
           eventQueue2.pop();
-          if(eventQueue2.size() == 0)
-          {
-            string end_str = "@"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          else
-          {
-            string end_str = "#"; 
-            const char * end_token = end_str.c_str();
-            TCP_VK_client.sendRequest(end_token, strlen(end_token));
-          }
-          boost::this_thread::sleep(boost::posix_time::microseconds(20*1000)); //20 ms
-         } 
+        }
+
         mutex_event_2.unlock();
       }//if(eventQueue2.size() != 0)
     }//else
@@ -956,10 +919,11 @@ void sendROSRun(int argc, char** argv)
 void receiveRosRun(int argc, char** argv)
 {
   bool isBigBus = checkCommand(argc, argv, "-big");
+  bool isNewMap = checkCommand(argc, argv, "-newMap");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI);
+                                     callbackEvent, callbackBI, isNewMap);
 
   while (ros::ok())
   {
@@ -1402,6 +1366,7 @@ int main(int argc, char** argv)
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
+
   msgs::StopInfoArray empty;
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);
   /*block main.*/

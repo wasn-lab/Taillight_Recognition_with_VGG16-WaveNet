@@ -74,7 +74,8 @@ static ros::Publisher ring_edge_pointcloud_publisher;
 static sensor_msgs::PointCloud2 ring_edge_pointcloud_publisher_msg;
 
 static bool is_FT_grid_new, is_FR_grid_new, is_FL_grid_new;
-static bool is_init_merged_map, is_init_FT_map, is_init_FR_map;
+static bool is_init_merged_map;
+//static bool is_init_FT_map, is_init_FR_map;
 
 static grid_map::GridMap merged_costmap_;
 static grid_map::GridMap front_top_grid_map_data, front_right_grid_map_data, front_left_grid_map_data;
@@ -216,7 +217,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
         grid_map::GridMapRosConverter::toOccupancyGrid(merged_costmap_, "merged_costmap_layer", 0, 1,
                                                        occupancy_grid_msg);
         occupancy_grid_msg.header = in_header;
-        occupancy_grid_msg.header.frame_id = "/base_link";
+        occupancy_grid_msg.header.frame_id = "base_link";
         occupancy_grid_publisher.publish(occupancy_grid_msg);
       }
 
@@ -234,7 +235,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
         ring_edge_pointcloud_publisher_msg.header.stamp = msg->header.stamp;
         ring_edge_pointcloud_publisher_msg.header.seq = msg->header.seq;
 
-        ring_edge_pointcloud_publisher_msg.header.frame_id = "/base_link";
+        ring_edge_pointcloud_publisher_msg.header.frame_id = "base_link";
         ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
       }
 
@@ -265,7 +266,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::toROSMsg(*filtered_cloudPtr, mopho_input_pointCloud_msg);
     mopho_input_pointCloud_msg.header.stamp = msg->header.stamp;
     mopho_input_pointCloud_msg.header.seq = msg->header.seq;
-    mopho_input_pointCloud_msg.header.frame_id = "/base_link";
+    mopho_input_pointCloud_msg.header.frame_id = "base_link";
     mopho_input_pointCloudPublisher.publish(mopho_input_pointCloud_msg);
   }
 
@@ -275,7 +276,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::toROSMsg(*ground_cloudPtr, ground_pointCloud_msg);
     ground_pointCloud_msg.header.stamp = msg->header.stamp;
     ground_pointCloud_msg.header.seq = msg->header.seq;
-    ground_pointCloud_msg.header.frame_id = "/base_link";
+    ground_pointCloud_msg.header.frame_id = "base_link";
     ground_pointCloudPublisher.publish(ground_pointCloud_msg);
   }
 
@@ -286,7 +287,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::toROSMsg(*non_ground_cloudPtr, non_ground_pointCloud_msg);
     non_ground_pointCloud_msg.header.stamp = msg->header.stamp;
     non_ground_pointCloud_msg.header.seq = msg->header.seq;
-    non_ground_pointCloud_msg.header.frame_id = "/base_link";
+    non_ground_pointCloud_msg.header.frame_id = "base_link";
     non_ground_pointCloudPublisher.publish(non_ground_pointCloud_msg);
   }
 
@@ -499,7 +500,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
         grid_map::GridMapRosConverter::toOccupancyGrid(merged_costmap_, "merged_costmap_layer", 0, 1,
                                                        occupancy_grid_msg);
         occupancy_grid_msg.header = in_header;
-        occupancy_grid_msg.header.frame_id = "/base_link";
+        occupancy_grid_msg.header.frame_id = "base_link";
         occupancy_grid_publisher.publish(occupancy_grid_msg);
       }
       scopedLock.unlock();
@@ -529,7 +530,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::toROSMsg(*filtered_cloudPtr, mopho_input_pointCloud_msg);
     mopho_input_pointCloud_msg.header.stamp = msg->header.stamp;
     mopho_input_pointCloud_msg.header.seq = msg->header.seq;
-    mopho_input_pointCloud_msg.header.frame_id = "/base_link";
+    mopho_input_pointCloud_msg.header.frame_id = "base_link";
     mopho_input_pointCloudPublisher.publish(mopho_input_pointCloud_msg);
   }
 
@@ -539,7 +540,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::toROSMsg(*ground_cloudPtr, ground_pointCloud_msg);
     ground_pointCloud_msg.header.stamp = msg->header.stamp;
     ground_pointCloud_msg.header.seq = msg->header.seq;
-    ground_pointCloud_msg.header.frame_id = "/base_link";
+    ground_pointCloud_msg.header.frame_id = "base_link";
     ground_pointCloudPublisher.publish(ground_pointCloud_msg);
   }
 
@@ -550,7 +551,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
     pcl::toROSMsg(*non_ground_cloudPtr, non_ground_pointCloud_msg);
     non_ground_pointCloud_msg.header.stamp = msg->header.stamp;
     non_ground_pointCloud_msg.header.seq = msg->header.seq;
-    non_ground_pointCloud_msg.header.frame_id = "/base_link";
+    non_ground_pointCloud_msg.header.frame_id = "base_link";
     non_ground_pointCloudPublisher.publish(non_ground_pointCloud_msg);
   }
 
@@ -562,7 +563,7 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
     ring_edge_pointcloud_publisher_msg.header.stamp = msg->header.stamp;
     ring_edge_pointcloud_publisher_msg.header.seq = msg->header.seq;
 
-    ring_edge_pointcloud_publisher_msg.header.frame_id = "/base_link";
+    ring_edge_pointcloud_publisher_msg.header.frame_id = "base_link";
     ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
   }
 #if PRINT_TIME
