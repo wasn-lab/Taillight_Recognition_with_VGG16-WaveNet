@@ -583,8 +583,8 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   ofs.close();
 }
 
-void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
-                         const float time_offset)
+void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
+                                const unsigned int pub_offset, const float time_offset)
 {
 #if SAVE_OUTPUT_TXT
   save_output_to_txt(objs);
@@ -751,7 +751,7 @@ int TPPNode::run()
       clock_t begin_time = clock();
 #endif
 
-// Tracking start ==========================================================================
+      // Tracking start ==========================================================================
 
       // MOT: SORT algorithm
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
@@ -760,7 +760,7 @@ int TPPNode::run()
       publish_tracking();
       publish_tracking2(track3d_pub_, track3d_objs_, 0, 0);
 
-// Tracking end ==================================================================================
+      // Tracking end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();

@@ -35,13 +35,12 @@
 static bool g_viz_lanelets_centerline = true;
 static ros::Publisher g_map_pub;
 
-void insertMarkerArray(
-  visualization_msgs::MarkerArray * a1, const visualization_msgs::MarkerArray & a2)
+void insertMarkerArray(visualization_msgs::MarkerArray* a1, const visualization_msgs::MarkerArray& a2)
 {
   a1->markers.insert(a1->markers.end(), a2.markers.begin(), a2.markers.end());
 }
 
-void setColor(std_msgs::ColorRGBA * cl, double r, double g, double b, double a)
+void setColor(std_msgs::ColorRGBA* cl, double r, double g, double b, double a)
 {
   cl->r = r;
   cl->g = g;
@@ -59,22 +58,17 @@ void binMapCallback(autoware_lanelet2_msgs::MapBin msg)
   // get lanelets etc to visualize
   lanelet::ConstLanelets all_lanelets = lanelet::utils::query::laneletLayer(viz_lanelet_map);
   lanelet::ConstLanelets road_lanelets = lanelet::utils::query::roadLanelets(all_lanelets);
-  lanelet::ConstLanelets crosswalk_lanelets =
-    lanelet::utils::query::crosswalkLanelets(all_lanelets);
-  std::vector<lanelet::ConstLineString3d> stop_lines =
-    lanelet::utils::query::stopLinesLanelets(road_lanelets);
-  std::vector<lanelet::TrafficLightConstPtr> tl_reg_elems =
-    lanelet::utils::query::trafficLights(all_lanelets);
+  lanelet::ConstLanelets crosswalk_lanelets = lanelet::utils::query::crosswalkLanelets(all_lanelets);
+  std::vector<lanelet::ConstLineString3d> stop_lines = lanelet::utils::query::stopLinesLanelets(road_lanelets);
+  std::vector<lanelet::TrafficLightConstPtr> tl_reg_elems = lanelet::utils::query::trafficLights(all_lanelets);
   std::vector<lanelet::AutowareTrafficLightConstPtr> aw_tl_reg_elems =
-    lanelet::utils::query::autowareTrafficLights(all_lanelets);
-  std::vector<lanelet::DetectionAreaConstPtr> da_reg_elems =
-    lanelet::utils::query::detectionAreas(all_lanelets);
-  lanelet::ConstLineStrings3d parking_spaces =
-    lanelet::utils::query::getAllParkingSpaces(viz_lanelet_map);
+      lanelet::utils::query::autowareTrafficLights(all_lanelets);
+  std::vector<lanelet::DetectionAreaConstPtr> da_reg_elems = lanelet::utils::query::detectionAreas(all_lanelets);
+  lanelet::ConstLineStrings3d parking_spaces = lanelet::utils::query::getAllParkingSpaces(viz_lanelet_map);
   lanelet::ConstPolygons3d parking_lots = lanelet::utils::query::getAllParkingLots(viz_lanelet_map);
 
-  std_msgs::ColorRGBA cl_road, cl_cross, cl_ll_borders, cl_stoplines, cl_trafficlights,
-    cl_detection_areas, cl_parking_lots, cl_parking_spaces;
+  std_msgs::ColorRGBA cl_road, cl_cross, cl_ll_borders, cl_stoplines, cl_trafficlights, cl_detection_areas,
+      cl_parking_lots, cl_parking_spaces;
   setColor(&cl_road, 0.2, 0.7, 0.7, 0.3);
   setColor(&cl_cross, 0.2, 0.7, 0.2, 0.3);
   setColor(&cl_ll_borders, 1.0, 1.0, 1.0, 0.999);
@@ -86,37 +80,27 @@ void binMapCallback(autoware_lanelet2_msgs::MapBin msg)
 
   visualization_msgs::MarkerArray map_marker_array;
 
-  insertMarkerArray(
-    &map_marker_array, lanelet::visualization::laneletsBoundaryAsMarkerArray(
-                         road_lanelets, cl_ll_borders, g_viz_lanelets_centerline));
-  insertMarkerArray(
-    &map_marker_array,
-    lanelet::visualization::laneletsAsTriangleMarkerArray("road_lanelets", road_lanelets, cl_road));
-  insertMarkerArray(
-    &map_marker_array, lanelet::visualization::laneletsAsTriangleMarkerArray(
-                         "crosswalk_lanelets", crosswalk_lanelets, cl_cross));
-  insertMarkerArray(
-    &map_marker_array, lanelet::visualization::laneletDirectionAsMarkerArray(road_lanelets));
-  insertMarkerArray(
-    &map_marker_array,
-    lanelet::visualization::lineStringsAsMarkerArray(stop_lines, "stop_lines", cl_stoplines, 0.5));
-  insertMarkerArray(
-    &map_marker_array,
-    lanelet::visualization::autowareTrafficLightsAsMarkerArray(aw_tl_reg_elems, cl_trafficlights));
-  insertMarkerArray(
-    &map_marker_array,
-    lanelet::visualization::detectionAreasAsMarkerArray(da_reg_elems, cl_detection_areas));
-  insertMarkerArray(
-    &map_marker_array,
-    lanelet::visualization::parkingLotsAsMarkerArray(parking_lots, cl_parking_lots));
-  insertMarkerArray(
-    &map_marker_array,
-    lanelet::visualization::parkingSpacesAsMarkerArray(parking_spaces, cl_parking_spaces));
+  insertMarkerArray(&map_marker_array, lanelet::visualization::laneletsBoundaryAsMarkerArray(
+                                           road_lanelets, cl_ll_borders, g_viz_lanelets_centerline));
+  insertMarkerArray(&map_marker_array,
+                    lanelet::visualization::laneletsAsTriangleMarkerArray("road_lanelets", road_lanelets, cl_road));
+  insertMarkerArray(&map_marker_array, lanelet::visualization::laneletsAsTriangleMarkerArray(
+                                           "crosswalk_lanelets", crosswalk_lanelets, cl_cross));
+  insertMarkerArray(&map_marker_array, lanelet::visualization::laneletDirectionAsMarkerArray(road_lanelets));
+  insertMarkerArray(&map_marker_array,
+                    lanelet::visualization::lineStringsAsMarkerArray(stop_lines, "stop_lines", cl_stoplines, 0.5));
+  insertMarkerArray(&map_marker_array,
+                    lanelet::visualization::autowareTrafficLightsAsMarkerArray(aw_tl_reg_elems, cl_trafficlights));
+  insertMarkerArray(&map_marker_array,
+                    lanelet::visualization::detectionAreasAsMarkerArray(da_reg_elems, cl_detection_areas));
+  insertMarkerArray(&map_marker_array, lanelet::visualization::parkingLotsAsMarkerArray(parking_lots, cl_parking_lots));
+  insertMarkerArray(&map_marker_array,
+                    lanelet::visualization::parkingSpacesAsMarkerArray(parking_spaces, cl_parking_spaces));
 
   g_map_pub.publish(map_marker_array);
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "lanelet2_map_visualizer");
   ros::NodeHandle pnh("~");
