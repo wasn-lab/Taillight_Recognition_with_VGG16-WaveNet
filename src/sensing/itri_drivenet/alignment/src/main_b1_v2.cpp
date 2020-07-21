@@ -57,7 +57,7 @@ const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id
 std::vector<Alignment> g_alignments(g_cam_ids.size());
 Visualization g_visualization;
 ObjectGenerator g_object_generator;
-CloudCluster g_cloud_cluster;
+std::vector<CloudCluster> g_cloud_clusters(g_cam_ids.size());
 
 /// thread
 std::vector<std::mutex> g_mutex_cams(g_cam_ids.size());
@@ -512,7 +512,7 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& obje
     getPointCloudInBoxFOV(objects[cam_order], remaining_objects[cam_order], cams_points_ptr[cam_order],
                           cams_bbox_points_ptr[cam_order], cam_pixels[cam_order], objects_2d_bbox[cam_order],
                           cams_bboxs_cube_min_max[cam_order], cams_bboxs_points[cam_order], g_alignments[cam_order],
-                          g_cloud_cluster, g_is_enable_default_3d_bbox, g_do_clustering);
+                          g_cloud_clusters[cam_order], g_is_enable_default_3d_bbox, g_do_clustering);
   }
 }
 void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& remaining_objects,
@@ -529,7 +529,7 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& rema
   {
     getPointCloudInBoxFOV(remaining_objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
                           cam_pixels[cam_order], objects_2d_bbox[cam_order], cams_bboxs_cube_min_max[cam_order],
-                          cams_bboxs_points[cam_order], g_alignments[cam_order], g_cloud_cluster,
+                          cams_bboxs_points[cam_order], g_alignments[cam_order], g_cloud_clusters[cam_order],
                           g_is_enable_default_3d_bbox, g_do_clustering);
   }
 }
