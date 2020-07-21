@@ -194,9 +194,10 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<
                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
 {
   // std::cout << "===== drawPointCloudOnImages... =====" << std::endl;
-  pcl::PointCloud<pcl::PointXYZI> point_cloud;
+#pragma omp parallel for  
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
+    pcl::PointCloud<pcl::PointXYZI> point_cloud;
     point_cloud = *cams_points_ptr[cam_order];
     for (size_t i = 0; i < point_cloud.size(); i++)
     {
@@ -213,6 +214,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
                                 std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h)
 {
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+#pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order], cam_pixels[cam_order], image_w, image_h,
