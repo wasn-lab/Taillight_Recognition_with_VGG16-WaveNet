@@ -1,5 +1,7 @@
 <launch>
-    <include file="$(find lidar)/launch/b1.launch"/>
+    <include file="$(find lidar)/launch/b1.launch">
+      <arg name="hardware_enable" value="0" />
+    </include>
     <include file="$(find drivenet)/launch/b1_v2_drivenet_group_a.launch"/>
     <include file="$(find drivenet)/launch/b1_v2_drivenet_side.launch"/>
     <include file="$(find alignment)/launch/b1_v2_3d_object_detection.launch"/>
