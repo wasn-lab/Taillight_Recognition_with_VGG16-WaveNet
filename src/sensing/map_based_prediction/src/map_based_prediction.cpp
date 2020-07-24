@@ -24,16 +24,14 @@
 
 #include "map_based_prediction.h"
 
-MapBasedPrediction::MapBasedPrediction(
-  double interpolating_resolution, double time_horizon, double sampling_delta_time)
-: interpolating_resolution_(interpolating_resolution),
-  time_horizon_(time_horizon),
-  sampling_delta_time_(sampling_delta_time)
+MapBasedPrediction::MapBasedPrediction(double interpolating_resolution, double time_horizon, double sampling_delta_time)
+  : interpolating_resolution_(interpolating_resolution)
+  , time_horizon_(time_horizon)
+  , sampling_delta_time_(sampling_delta_time)
 {
 }
 
-double calculateEuclideanDistance(
-  const geometry_msgs::Point & point1, const geometry_msgs::Point & point2)
+double calculateEuclideanDistance(const geometry_msgs::Point& point1, const geometry_msgs::Point& point2)
 {
   double dx = point1.x - point2.x;
   double dy = point1.y - point2.y;
@@ -41,15 +39,16 @@ double calculateEuclideanDistance(
   return distance;
 }
 
-bool getNearestPoint(
-  const std::vector<geometry_msgs::Point> & points, const geometry_msgs::Point point,
-  geometry_msgs::Point & nearest_point)
+bool getNearestPoint(const std::vector<geometry_msgs::Point>& points, const geometry_msgs::Point point,
+                     geometry_msgs::Point& nearest_point)
 {
   double min_dist = 1e+10;
   bool flag = false;
-  for (const auto & tmp_point : points) {
+  for (const auto& tmp_point : points)
+  {
     double distance = calculateEuclideanDistance(point, tmp_point);
-    if (distance < min_dist) {
+    if (distance < min_dist)
+    {
       min_dist = distance;
       nearest_point = point;
       flag = true;
@@ -58,16 +57,17 @@ bool getNearestPoint(
   return flag;
 }
 
-bool getNearestPointIdx(
-  const std::vector<geometry_msgs::Point> & points, const geometry_msgs::Point point,
-  geometry_msgs::Point & nearest_point, size_t & nearest_index)
+bool getNearestPointIdx(const std::vector<geometry_msgs::Point>& points, const geometry_msgs::Point point,
+                        geometry_msgs::Point& nearest_point, size_t& nearest_index)
 {
   double min_dist = 10000000;
   bool flag = false;
   size_t index = 0;
-  for (const auto & tmp_point : points) {
+  for (const auto& tmp_point : points)
+  {
     double distance = calculateEuclideanDistance(point, tmp_point);
-    if (distance < min_dist) {
+    if (distance < min_dist)
+    {
       min_dist = distance;
       nearest_point = tmp_point;
       flag = true;
@@ -78,21 +78,20 @@ bool getNearestPointIdx(
   return flag;
 }
 
-bool MapBasedPrediction::doPrediction(
-  const DynamicObjectWithLanesArray & in_objects,
-  std::vector<autoware_perception_msgs::DynamicObject> & out_objects,
-  std::vector<geometry_msgs::Point> & debug_interpolated_points)
+bool MapBasedPrediction::doPrediction(const DynamicObjectWithLanesArray& in_objects,
+                                      std::vector<autoware_perception_msgs::DynamicObject>& out_objects,
+                                      std::vector<geometry_msgs::Point>& debug_interpolated_points)
 {
   std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
-  for (auto & object_with_lanes : in_objects.objects) {
+  for (auto& object_with_lanes : in_objects.objects)
+  {
     const double min_lon_velocity_ms_for_map_based_prediction = 1;
-    if (
-      std::fabs(object_with_lanes.object.state.twist_covariance.twist.linear.x) <
-      min_lon_velocity_ms_for_map_based_prediction) {
+    if (std::fabs(object_with_lanes.object.state.twist_covariance.twist.linear.x) <
+        min_lon_velocity_ms_for_map_based_prediction)
+    {
       autoware_perception_msgs::PredictedPath predicted_path;
-      getLinearPredictedPath(
-        object_with_lanes.object.state.pose_covariance.pose,
-        object_with_lanes.object.state.twist_covariance.twist, in_objects.header, predicted_path);
+      getLinearPredictedPath(object_with_lanes.object.state.pose_covariance.pose,
+                             object_with_lanes.object.state.twist_covariance.twist, in_objects.header, predicted_path);
       autoware_perception_msgs::DynamicObject tmp_object;
       tmp_object = object_with_lanes.object;
       tmp_object.state.predicted_paths.push_back(predicted_path);
@@ -101,15 +100,18 @@ bool MapBasedPrediction::doPrediction(
     }
     autoware_perception_msgs::DynamicObject tmp_object;
     tmp_object = object_with_lanes.object;
-    for (const auto & path : object_with_lanes.lanes) {
+    for (const auto& path : object_with_lanes.lanes)
+    {
       std::vector<double> tmp_x;
       std::vector<double> tmp_y;
       std::vector<geometry_msgs::Pose> geometry_points = path;
-      for (size_t i = 0; i < path.size(); i++) {
-        if (i > 0) {
-          double dist = calculateEuclideanDistance(
-            geometry_points[i].position, geometry_points[i - 1].position);
-          if (dist < interpolating_resolution_) {
+      for (size_t i = 0; i < path.size(); i++)
+      {
+        if (i > 0)
+        {
+          double dist = calculateEuclideanDistance(geometry_points[i].position, geometry_points[i - 1].position);
+          if (dist < interpolating_resolution_)
+          {
             continue;
           }
         }
@@ -120,7 +122,8 @@ bool MapBasedPrediction::doPrediction(
       Spline2D spline2d(tmp_x, tmp_y);
       std::vector<geometry_msgs::Point> interpolated_points;
       std::vector<double> interpolated_yaws;
-      for (float s = 0.0; s < spline2d.s.back(); s += interpolating_resolution_) {
+      for (float s = 0.0; s < spline2d.s.back(); s += interpolating_resolution_)
+      {
         std::array<double, 2> point1 = spline2d.calc_position(s);
         geometry_msgs::Point g_point;
         g_point.x = point1[0];
@@ -131,41 +134,40 @@ bool MapBasedPrediction::doPrediction(
       }
       debug_interpolated_points = interpolated_points;
 
-      geometry_msgs::Point object_point =
-        object_with_lanes.object.state.pose_covariance.pose.position;
+      geometry_msgs::Point object_point = object_with_lanes.object.state.pose_covariance.pose.position;
       geometry_msgs::Point nearest_point;
       size_t nearest_point_idx;
-      if (getNearestPointIdx(interpolated_points, object_point, nearest_point, nearest_point_idx)) {
+      if (getNearestPointIdx(interpolated_points, object_point, nearest_point, nearest_point_idx))
+      {
         // calculate initial position in Frenet coordinate
         // Optimal Trajectory Generation for Dynamic Street Scenarios in a Frenet Frame
         // Path Planning for Highly Automated Driving on Embedded GPUs
-        double current_s_position =
-          interpolating_resolution_ * static_cast<double>(nearest_point_idx);
+        double current_s_position = interpolating_resolution_ * static_cast<double>(nearest_point_idx);
         double current_d_position = calculateEuclideanDistance(nearest_point, object_point);
 
         double lane_yaw = spline2d.calc_yaw(current_s_position);
-        std::vector<double> origin_v = {std::cos(lane_yaw), std::sin(lane_yaw)};
-        std::vector<double> object_v = {object_point.x - nearest_point.x,
-                                        object_point.y - nearest_point.y};
+        std::vector<double> origin_v = { std::cos(lane_yaw), std::sin(lane_yaw) };
+        std::vector<double> object_v = { object_point.x - nearest_point.x, object_point.y - nearest_point.y };
         double cross2d = object_v[0] * origin_v[1] - object_v[1] * origin_v[0];
-        if (cross2d < 0) {
+        if (cross2d < 0)
+        {
           current_d_position *= -1;
         }
 
         // Does not consider orientation of twist since predicting lane-direction
         double current_d_velocity = object_with_lanes.object.state.twist_covariance.twist.linear.y;
-        double current_s_velocity =
-          std::fabs(object_with_lanes.object.state.twist_covariance.twist.linear.x);
+        double current_s_velocity = std::fabs(object_with_lanes.object.state.twist_covariance.twist.linear.x);
         double target_s_position = std::min(spline2d.s.back(), current_s_position + 10);
         autoware_perception_msgs::PredictedPath path;
 
         geometry_msgs::PoseWithCovarianceStamped point;
         point.pose.pose.position = object_point;
-        getPredictedPath(
-          object_point.z, current_d_position, current_d_velocity, current_s_position,
-          current_s_velocity, target_s_position, in_objects.header, spline2d, path);
+        getPredictedPath(object_point.z, current_d_position, current_d_velocity, current_s_position, current_s_velocity,
+                         target_s_position, in_objects.header, spline2d, path);
         tmp_object.state.predicted_paths.push_back(path);
-      } else {
+      }
+      else
+      {
         continue;
       }
     }
@@ -178,17 +180,16 @@ bool MapBasedPrediction::doPrediction(
   return true;
 }
 
-bool MapBasedPrediction::doLinearPrediction(
-  const autoware_perception_msgs::DynamicObjectArray & in_objects,
-  std::vector<autoware_perception_msgs::DynamicObject> & out_objects)
+bool MapBasedPrediction::doLinearPrediction(const autoware_perception_msgs::DynamicObjectArray& in_objects,
+                                            std::vector<autoware_perception_msgs::DynamicObject>& out_objects)
 {
   std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
 
-  for (const auto object : in_objects.objects) {
+  for (const auto object : in_objects.objects)
+  {
     autoware_perception_msgs::PredictedPath path;
-    getLinearPredictedPath(
-      object.state.pose_covariance.pose, object.state.twist_covariance.twist, in_objects.header,
-      path);
+    getLinearPredictedPath(object.state.pose_covariance.pose, object.state.twist_covariance.twist, in_objects.header,
+                           path);
     autoware_perception_msgs::DynamicObject tmp_object;
     tmp_object = object;
     tmp_object.state.predicted_paths.push_back(path);
@@ -201,25 +202,26 @@ bool MapBasedPrediction::doLinearPrediction(
   return true;
 }
 
-bool MapBasedPrediction::normalizeLikelyhood(
-  std::vector<autoware_perception_msgs::PredictedPath> & paths)
+bool MapBasedPrediction::normalizeLikelyhood(std::vector<autoware_perception_msgs::PredictedPath>& paths)
 {
   // TODO: is could not be the smartest way
   double sum_confidence = 0;
-  for (const auto & path : paths) {
+  for (const auto& path : paths)
+  {
     sum_confidence += 1 / path.confidence;
   }
 
-  for (auto & path : paths) {
+  for (auto& path : paths)
+  {
     path.confidence = (1 / path.confidence) / sum_confidence;
   }
 }
 
-bool MapBasedPrediction::getPredictedPath(
-  const double height, const double current_d_position, const double current_d_velocity,
-  const double current_s_position, const double current_s_velocity, const double target_s_position,
-  const std_msgs::Header & origin_header, Spline2D & spline2d,
-  autoware_perception_msgs::PredictedPath & path)
+bool MapBasedPrediction::getPredictedPath(const double height, const double current_d_position,
+                                          const double current_d_velocity, const double current_s_position,
+                                          const double current_s_velocity, const double target_s_position,
+                                          const std_msgs::Header& origin_header, Spline2D& spline2d,
+                                          autoware_perception_msgs::PredictedPath& path)
 {
   // Quintic polynominal for d
   // A = np.array([[T**3, T**4, T**5],
@@ -235,15 +237,14 @@ bool MapBasedPrediction::getPredictedPath(
 
   double t = time_horizon_;
   Eigen::Matrix3d a_3_inv;
-  a_3_inv << 10 / std::pow(t, 3), -4 / std::pow(t, 2), 1 / (2 * t), -15 / std::pow(t, 4),
-    7 / std::pow(t, 3), -1 / std::pow(t, 2), 6 / std::pow(t, 5), -3 / std::pow(t, 4),
-    1 / (2 * std::pow(t, 3));
+  a_3_inv << 10 / std::pow(t, 3), -4 / std::pow(t, 2), 1 / (2 * t), -15 / std::pow(t, 4), 7 / std::pow(t, 3),
+      -1 / std::pow(t, 2), 6 / std::pow(t, 5), -3 / std::pow(t, 4), 1 / (2 * std::pow(t, 3));
 
   double target_d_velocity = current_d_velocity;
   double target_d_accerelation = 0;
   Eigen::Vector3d b_3;
-  b_3 << target_d_position - current_d_position - current_d_velocity * t,
-    target_d_velocity - current_d_velocity, target_d_accerelation;
+  b_3 << target_d_position - current_d_position - current_d_velocity * t, target_d_velocity - current_d_velocity,
+      target_d_accerelation;
 
   Eigen::Vector3d x_3;
   x_3 = a_3_inv * b_3;
@@ -265,14 +266,16 @@ bool MapBasedPrediction::getPredictedPath(
   double dt = sampling_delta_time_;
   std::vector<double> d_vec;
   double calculated_d, calculated_s;
-  for (double i = 0; i < t; i += dt) {
-    calculated_d = current_d_position + current_d_velocity * i + 0 * 2 * i * i +
-                   x_3(0) * i * i * i + x_3(1) * i * i * i * i + x_3(2) * i * i * i * i * i;
-    calculated_s = current_s_position + current_s_velocity * i + 2 * 0 * i * i +
-                   x_2(0) * i * i * i + x_2(1) * i * i * i * i;
+  for (double i = 0; i < t; i += dt)
+  {
+    calculated_d = current_d_position + current_d_velocity * i + 0 * 2 * i * i + x_3(0) * i * i * i +
+                   x_3(1) * i * i * i * i + x_3(2) * i * i * i * i * i;
+    calculated_s =
+        current_s_position + current_s_velocity * i + 2 * 0 * i * i + x_2(0) * i * i * i + x_2(1) * i * i * i * i;
 
     geometry_msgs::PoseWithCovarianceStamped tmp_point;
-    if (calculated_s > spline2d.s.back()) {
+    if (calculated_s > spline2d.s.back())
+    {
       break;
     }
     std::array<double, 2> p = spline2d.calc_position(calculated_s);
@@ -293,16 +296,18 @@ bool MapBasedPrediction::getPredictedPath(
   return false;
 }
 
-bool MapBasedPrediction::getLinearPredictedPath(
-  const geometry_msgs::Pose & object_pose, const geometry_msgs::Twist & object_twist,
-  const std_msgs::Header & origin_header, autoware_perception_msgs::PredictedPath & predicted_path)
+bool MapBasedPrediction::getLinearPredictedPath(const geometry_msgs::Pose& object_pose,
+                                                const geometry_msgs::Twist& object_twist,
+                                                const std_msgs::Header& origin_header,
+                                                autoware_perception_msgs::PredictedPath& predicted_path)
 {
   const double yaw = tf2::getYaw(object_pose.orientation);
-  const double & sampling_delta_time = sampling_delta_time_;
-  const double & time_horizon = time_horizon_;
+  const double& sampling_delta_time = sampling_delta_time_;
+  const double& time_horizon = time_horizon_;
   const double ep = 0.001;
 
-  for (double dt = 0.0; dt < time_horizon + ep; dt += sampling_delta_time) {
+  for (double dt = 0.0; dt < time_horizon + ep; dt += sampling_delta_time)
+  {
     geometry_msgs::PoseWithCovarianceStamped pose_cov_stamped;
     pose_cov_stamped.header = origin_header;
     pose_cov_stamped.header.stamp = origin_header.stamp + ros::Duration(dt);

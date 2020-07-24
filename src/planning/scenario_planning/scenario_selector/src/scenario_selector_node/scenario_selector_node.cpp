@@ -74,7 +74,7 @@ geometry_msgs::PoseStamped::ConstPtr getCurrentPose(const tf2_ros::Buffer & tf_b
 
   try {
     tf_current_pose =
-      tf_buffer.lookupTransform("map", "base_link", ros::Time(0), ros::Duration(1.0));
+      tf_buffer.lookupTransform("map", "rear_wheel", ros::Time(0), ros::Duration(1.0));
   } catch (tf2::TransformException ex) {
     ROS_ERROR("[scenario_selector] %s", ex.what());
     return nullptr;
@@ -328,7 +328,7 @@ ScenarioSelectorNode::ScenarioSelectorNode()
   // Wait for first tf
   while (ros::ok()) {
     try {
-      tf_buffer_.lookupTransform("map", "base_link", ros::Time(0), ros::Duration(10.0));
+      tf_buffer_.lookupTransform("map", "rear_wheel", ros::Time(0), ros::Duration(10.0));
       break;
     } catch (tf2::TransformException ex) {
       ROS_DEBUG("waiting for initial pose...");

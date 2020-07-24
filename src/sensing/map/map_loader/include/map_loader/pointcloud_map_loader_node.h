@@ -40,13 +40,13 @@
 class PointCloudMapLoaderNode
 {
 public:
-  explicit PointCloudMapLoaderNode(const std::vector<std::string> & pcd_paths);
+  explicit PointCloudMapLoaderNode(const std::vector<std::string>& pcd_paths);
 
 private:
-  ros::NodeHandle nh_{""};
-  ros::NodeHandle private_nh_{"~"};
+  ros::NodeHandle nh_{ "" };
+  ros::NodeHandle private_nh_{ "~" };
 
   ros::Publisher pub_pointcloud_map_;
 
-  sensor_msgs::PointCloud2 loadPCDFiles(const std::vector<std::string> & pcd_paths);
+  sensor_msgs::PointCloud2 loadPCDFiles(const std::vector<std::string>& pcd_paths);
 };

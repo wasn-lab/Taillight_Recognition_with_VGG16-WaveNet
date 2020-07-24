@@ -111,7 +111,7 @@ SelfPoseLinstener::SelfPoseLinstener() : tf_listener_(tf_buffer_){};
 
 bool SelfPoseLinstener::isSelfPoseReady()
 {
-  return tf_buffer_.canTransform("map", "base_link", ros::Time(0), ros::Duration(0.1));
+  return tf_buffer_.canTransform("map", "rear_wheel", ros::Time(0), ros::Duration(0.1));
 }
 
 bool SelfPoseLinstener::getSelfPose(geometry_msgs::PoseStamped & self_pose)
@@ -120,7 +120,7 @@ bool SelfPoseLinstener::getSelfPose(geometry_msgs::PoseStamped & self_pose)
     geometry_msgs::TransformStamped transform;
     std::string map_frame = "map";
     transform =
-      tf_buffer_.lookupTransform(map_frame, "base_link", ros::Time(0), ros::Duration(0.1));
+      tf_buffer_.lookupTransform(map_frame, "rear_wheel", ros::Time(0), ros::Duration(0.1));
     self_pose.pose.position.x = transform.transform.translation.x;
     self_pose.pose.position.y = transform.transform.translation.y;
     self_pose.pose.position.z = transform.transform.translation.z;

@@ -35,11 +35,9 @@ public:
 
   //! Directly construct a stop line from its required rule parameters.
   //! Might modify the input data in oder to get correct tags.
-  static Ptr make(
-    Id id, const AttributeMap & attributes, const Polygons3d & detectionAreas,
-    const LineString3d & stopLine)
+  static Ptr make(Id id, const AttributeMap& attributes, const Polygons3d& detectionAreas, const LineString3d& stopLine)
   {
-    return Ptr{new DetectionArea(id, attributes, detectionAreas, stopLine)};
+    return Ptr{ new DetectionArea(id, attributes, detectionAreas, stopLine) };
   }
 
   /**
@@ -53,14 +51,14 @@ public:
    * @brief add a new detection area
    * @param primitive detection area to add
    */
-  void addDetectionArea(const Polygon3d & primitive);
+  void addDetectionArea(const Polygon3d& primitive);
 
   /**
    * @brief remove a detection area
    * @param primitive the primitive
    * @return true if the detection area existed and was removed
    */
-  bool removeDetectionArea(const Polygon3d & primitive);
+  bool removeDetectionArea(const Polygon3d& primitive);
 
   /**
    * @brief get the stop line for the detection area
@@ -73,7 +71,7 @@ public:
    * @brief set a new stop line, overwrite the old one
    * @param stopLine new stop line
    */
-  void setStopLine(const LineString3d & stopLine);
+  void setStopLine(const LineString3d& stopLine);
 
   //! Deletes the stop line
   void removeStopLine();
@@ -82,10 +80,8 @@ private:
   // the following lines are required so that lanelet2 can create this object
   // when loading a map with this regulatory element
   friend class lanelet::RegisterRegulatoryElement<DetectionArea>;
-  DetectionArea(
-    Id id, const AttributeMap & attributes, const Polygons3d & detectionAreas,
-    const LineString3d & stopLine);
-  explicit DetectionArea(const lanelet::RegulatoryElementDataPtr & data);
+  DetectionArea(Id id, const AttributeMap& attributes, const Polygons3d& detectionAreas, const LineString3d& stopLine);
+  explicit DetectionArea(const lanelet::RegulatoryElementDataPtr& data);
 };
 static lanelet::RegisterRegulatoryElement<DetectionArea> regDetectionArea;
 

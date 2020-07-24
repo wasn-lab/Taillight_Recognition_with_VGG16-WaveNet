@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lanelet2_map_preprocessor)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++14 -fext-numeric-literals)
 
 find_package(catkin REQUIRED COMPONENTS
   lanelet2_extension

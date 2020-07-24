@@ -31,7 +31,7 @@ public:
   }
 
   void kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs, const float ego_z_abs,
-                           const float ego_heading);
+                           const float ego_heading, const bool use_tracking2d);
 
   float get_Q1()
   {

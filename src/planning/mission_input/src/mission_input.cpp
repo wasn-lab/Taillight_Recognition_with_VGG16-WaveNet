@@ -62,7 +62,7 @@ double (&SEG_Z)[size_readtmp],double (&ORI_X)[size_readtmp],double (&ORI_Y)[size
 void Ini_obs_bytxt()
 {
   std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/test.txt"; // full route
+  std::string fpname_s = fpname + "/data/ITRI_route_01.txt"; // full route
 
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
@@ -71,7 +71,7 @@ void get_goal_point()
 {
   geometry_msgs::PoseStamped input_goal;
 
-  input_goal.header.frame_id = "viewer";
+  input_goal.header.frame_id = "map";
   input_goal.header.stamp = ros::Time::now();
 
   input_goal.pose.position.x = seg_x[0];
@@ -96,8 +96,7 @@ void get_checkpoint_point()
  
   for (int i=1;i<read_index;i++)
   {
-    input_checkpoint.header.seq = 99;
-    input_checkpoint.header.frame_id = "viewer";
+    input_checkpoint.header.frame_id = "map";
     input_checkpoint.header.stamp = ros::Time::now();
     input_checkpoint.pose.position.x = seg_x[i];
     input_checkpoint.pose.position.y = seg_y[i];

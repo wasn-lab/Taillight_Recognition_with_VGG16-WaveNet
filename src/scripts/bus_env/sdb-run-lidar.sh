@@ -9,7 +9,7 @@ gnome-terminal  -e 'bash -c "source .bashrc;echo itri | sudo -S bash ~/itriadv/s
 sleep 3
 gnome-terminal  -e "ssh -t camera 'echo itri | sudo -S bash ~/itriadv/src/scripts/bus_env/camera/ip_forwarding.sh'"
 sleep 3
-gnome-terminal  -e 'ssh -t ta "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.1.3"'
+gnome-terminal  -e 'ssh -t ta "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1"'
 sleep 3
 
 gnome-terminal  -e 'bash -c "source ~/itriadv/devel/setup.bash;./init_lidar.sh;exec bash"'
@@ -54,14 +54,14 @@ gnome-terminal  -e 'ssh -t local "/home/localization/itriadv/src/scripts/bus_env
 sleep 3
 gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_camera.sh;exec bash"'
 sleep 3
-gnome-terminal  -e "bash -c 'export ROS_MASTER_URI=http://192.168.3.1:11311;export ROS_IP=192.168.3.1;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
+gnome-terminal  -e "bash -c 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.1.3;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
 sleep 3
-gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.3.1:11311;export ROS_IP=192.168.3.10;source /home/camera/itriadv_d/devel/setup.bash;cd /home/camera/itriadv_d;devel/lib/itri_lightnet_new_layout/itri_lightnet_new_layout_node;exec bash'"
+gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.3.10;source /home/camera/itriadv_d/devel/setup.bash;cd /home/camera/itriadv_d;devel/lib/itri_lightnet_new_layout/itri_lightnet_new_layout_node;exec bash'"
 sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh;exec bash'"
 sleep 1
-export ROS_MASTER_URI=http://192.168.3.1:11311
-export ROS_IP=192.168.3.1
+export ROS_MASTER_URI=http://192.168.1.3:11311
+export ROS_IP=192.168.1.3
 source /home/lidar/itriadv/devel/setup.bash
 roslaunch sdb gui.launch
 

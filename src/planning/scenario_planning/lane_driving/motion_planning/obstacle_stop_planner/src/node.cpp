@@ -530,7 +530,7 @@ bool ObstacleStopPlannerNode::getSelfPose(
   try {
     geometry_msgs::TransformStamped transform;
     transform =
-      tf_buffer.lookupTransform(header.frame_id, "base_link", header.stamp, ros::Duration(0.1));
+      tf_buffer.lookupTransform(header.frame_id, "rear_wheel", header.stamp, ros::Duration(0.1));
     self_pose.position.x = transform.transform.translation.x;
     self_pose.position.y = transform.transform.translation.y;
     self_pose.position.z = transform.transform.translation.z;

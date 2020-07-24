@@ -1,0 +1,16 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <!--tf rear_wheel-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
+
+  <!-- rear current pose pub node-->
+  <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" />
+
+  <!--path transfer node-->
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" />
+    
+  <!-- target pub node-->
+  <node pkg="target_planner" type="target_planner" name="target_planner" /> <!--output="screen" /-->
+
+</launch>

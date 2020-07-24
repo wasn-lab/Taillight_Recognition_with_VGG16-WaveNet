@@ -12,10 +12,10 @@
     <!--node pkg="map_loader" type="pointcloud_map_loader" name="pointcloud_map_loader" args="$(arg pointcloud_map_path)">
       <remap from="~output/pointcloud_map" to="/map/pointcloud_map" />
     </node-->
-
+  </group>
     <include file="$(find map_tf_generator)/launch/map_tf_generator.launch">
       <arg name="input_map_points_topic" value="points_map" /><!--/map/pointcloud_map-->
     </include>
-  </group>
+  
 
 </launch>

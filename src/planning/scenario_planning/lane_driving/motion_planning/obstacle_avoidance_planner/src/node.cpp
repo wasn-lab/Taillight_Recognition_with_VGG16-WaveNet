@@ -230,7 +230,7 @@ std::unique_ptr<geometry_msgs::Pose> ObstacleAvoidancePlanner::getCurrentEgoPose
 
   try {
     tf_current_pose =
-      tf_buffer_ptr_->lookupTransform("map", "base_link", ros::Time(0), ros::Duration(1.0));
+      tf_buffer_ptr_->lookupTransform("map", "rear_wheel", ros::Time(0), ros::Duration(1.0));
   } catch (tf2::TransformException ex) {
     ROS_ERROR("[ObstacleAvoidancePlanner] %s", ex.what());
     return nullptr;

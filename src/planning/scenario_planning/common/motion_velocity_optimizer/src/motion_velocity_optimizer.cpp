@@ -96,11 +96,11 @@ MotionVelocityOptimizer::MotionVelocityOptimizer() : nh_(""), pnh_("~"), tf_list
   /* wait to get vehicle position */
   while (ros::ok()) {
     try {
-      tf_buffer_.lookupTransform("map", "base_link", ros::Time::now(), ros::Duration(5.0));
+      tf_buffer_.lookupTransform("map", "rear_wheel", ros::Time::now(), ros::Duration(5.0));
       break;
     } catch (tf2::TransformException & ex) {
       ROS_INFO(
-        "[MotionVelocityOptimizer] is waitting to get map to base_link transform. %s", ex.what());
+        "[MotionVelocityOptimizer] is waitting to get map to rear_wheel transform. %s", ex.what());
       continue;
     }
   }
@@ -133,9 +133,9 @@ void MotionVelocityOptimizer::updateCurrentPose()
 {
   geometry_msgs::TransformStamped transform;
   try {
-    transform = tf_buffer_.lookupTransform("map", "base_link", ros::Time(0));
+    transform = tf_buffer_.lookupTransform("map", "rear_wheel", ros::Time(0));
   } catch (tf2::TransformException & ex) {
-    ROS_WARN("[MotionVelocityOptimizer] cannot get map to base_link transform. %s", ex.what());
+    ROS_WARN("[MotionVelocityOptimizer] cannot get map to rear_wheel transform. %s", ex.what());
     return;
   }
 

@@ -65,6 +65,7 @@ void rmPointCloud::LoadModel(){
 	glEnableVertexAttribArray(1);
 
     // Texture
+    /*
 	// glEnable(GL_TEXTURE_2D);
 	// glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &m_shape.m_texture);
@@ -79,7 +80,7 @@ void rmPointCloud::LoadModel(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     std::cout << "Load texture success!\n";
-
+    */
 }
 void rmPointCloud::Update(float dt){
     // Update the data (buffer variables) here
@@ -170,16 +171,19 @@ void rmPointCloud::Render(std::shared_ptr<ViewManager> &_camera_ptr){
     glUniformMatrix4fv(uniforms.proj_matrix, 1, GL_FALSE, value_ptr(_camera_ptr->GetProjectionMatrix()));
     // Point sprite
     //--------------------------------//
-    glEnable(GL_POINT_SPRITE);
-    {
+    //glEnable(GL_POINT_SPRITE);
+    //{
         // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         // glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_shape.m_texture);
-        glEnable(GL_PROGRAM_POINT_SIZE);
+        //glBindTexture(GL_TEXTURE_2D, m_shape.m_texture);
+        //glEnable(GL_PROGRAM_POINT_SIZE);
+        glEnable(GL_POINT_SMOOTH);
+        glPointSize(2.0f);
         glDrawArrays(GL_POINTS, 0, m_shape.indexCount); // draw part of points
-    }
+        glDisable(GL_POINT_SMOOTH);
+    //}
     // Close
-    glDisable(GL_POINT_SPRITE);
+    //glDisable(GL_POINT_SPRITE);
     //--------------------------------//
     _program_ptr->CloseProgram();
 }

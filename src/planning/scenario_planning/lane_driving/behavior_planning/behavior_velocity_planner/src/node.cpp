@@ -166,7 +166,7 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode()
 
 geometry_msgs::PoseStamped BehaviorVelocityPlannerNode::getCurrentPose()
 {
-  return transform2pose(waitForTransform(tf_buffer_, "map", "base_link"));
+  return transform2pose(waitForTransform(tf_buffer_, "map", "rear_wheel"));
 }
 
 bool BehaviorVelocityPlannerNode::isDataReady()

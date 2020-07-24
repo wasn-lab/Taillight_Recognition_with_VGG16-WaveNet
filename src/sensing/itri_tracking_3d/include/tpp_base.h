@@ -139,6 +139,6 @@ struct MarkerConfig
 
   std_msgs::ColorRGBA color;
 };
-}
+}  // namespace tpp
 
 #endif  // __TPP_BASE_H__

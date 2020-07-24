@@ -89,16 +89,15 @@ private:
   std::shared_ptr<lanelet::traffic_rules::TrafficRules> traffic_rules_ptr_;
   std::shared_ptr<MapBasedPrediction> map_based_prediction_;
 
-  bool getSelfPose(geometry_msgs::Pose & self_pose, const std_msgs::Header & header);
-  bool getSelfPoseInMap(geometry_msgs::Pose & self_pose);
+  bool getSelfPose(geometry_msgs::Pose& self_pose, const std_msgs::Header& header);
+  bool getSelfPoseInMap(geometry_msgs::Pose& self_pose);
 
-  void objectsCallback(const autoware_perception_msgs::DynamicObjectArrayConstPtr & in_objects);
-  void mapCallback(const autoware_lanelet2_msgs::MapBin & msg);
+  void objectsCallback(const autoware_perception_msgs::DynamicObjectArrayConstPtr& in_objects);
+  void mapCallback(const autoware_lanelet2_msgs::MapBin& msg);
 
-  bool getClosestLanelets(
-    const autoware_perception_msgs::DynamicObject & object,
-    const lanelet::LaneletMapPtr & lanelet_map_ptr,
-    std::vector<lanelet::Lanelet> & closest_lanelets, std::string uuid_string);
+  bool getClosestLanelets(const autoware_perception_msgs::DynamicObject& object,
+                          const lanelet::LaneletMapPtr& lanelet_map_ptr,
+                          std::vector<lanelet::Lanelet>& closest_lanelets, std::string uuid_string);
 
 public:
   MapBasedPredictionROS();

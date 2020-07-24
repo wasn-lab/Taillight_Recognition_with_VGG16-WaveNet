@@ -79,7 +79,7 @@ void DataManager::onVehiclePoseUpdate(const ros::TimerEvent & event)
   try {
     const auto current_time = ros::Time::now();
     const auto transform =
-      tf_buffer_.lookupTransform("map", "base_link", current_time, ros::Duration(0.1));
+      tf_buffer_.lookupTransform("map", "rear_wheel", current_time, ros::Duration(0.1));
     vehicle_pose_.pose.position.x = transform.transform.translation.x;
     vehicle_pose_.pose.position.y = transform.transform.translation.y;
     vehicle_pose_.pose.position.z = transform.transform.translation.z;
