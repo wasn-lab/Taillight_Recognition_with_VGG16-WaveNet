@@ -26,7 +26,7 @@ PacmodInterface::PacmodInterface()
   is_clear_override_needed_(false)
 {
   /* setup parameters */
-  private_nh_.param<std::string>("base_frame_id", base_frame_id_, "base_link");
+  private_nh_.param<std::string>("base_frame_id", base_frame_id_, "rear_wheel");
   private_nh_.param<int>("command_timeout_ms", command_timeout_ms_, 1000);
   private_nh_.param<double>("loop_rate", loop_rate_, 30.0);
   private_nh_.param<bool>("show_debug_info", show_debug_info_, false);

@@ -48,7 +48,7 @@
 #include <autoware_vehicle_msgs/TurnSignal.h>
 #include <autoware_vehicle_msgs/VehicleCommand.h>
 
-static const std::string BASE_FRAME_ID = "base_link";
+static const std::string BASE_FRAME_ID = "rear_wheel";
 
 class SSCInterface
 {

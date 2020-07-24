@@ -1,16 +1,22 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
+  <arg name="lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
+  <arg name="pp_objects_topic" default="/perception/object_recognition/objects" />
+
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
-  <!-- rear current pose pub node-->
-  <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" />
+  <!-- planning initial node-->
+  <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" >
+	<remap from="output/lidar_no_ground" to="$(arg lidar_noground_topic)" />
+	<remap from="output/pp_objects" to="$(arg pp_objects_topic)" />
+  </node>
 
   <!--path transfer node-->
   <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" />
     
   <!-- target pub node-->
-  <node pkg="target_planner" type="target_planner" name="target_planner" /> <!--output="screen" /-->
+  <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" />
 
 </launch>

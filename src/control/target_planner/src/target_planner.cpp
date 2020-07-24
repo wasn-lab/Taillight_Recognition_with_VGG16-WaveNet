@@ -51,7 +51,7 @@ double Look_ahead_S0 = 3;
 double current_velocity_ = 0;
 
 bool current_pose_ini = false;
-bool ukfmm_ini = false;
+bool ukfmm_ini = true;
 bool final_path_ini = false;
 bool current_velocity_initialized_ = false;
 
@@ -237,7 +237,10 @@ int main(int argc, char** argv)
     {
       break;
     }
-    ROS_WARN("Waiting for subscribing topics...");
+    ROS_WARN("[target planner] Waiting for subscribing topics...");
+    std::cout << "current_pose_ini : " << current_pose_ini << std::endl;
+    std::cout << "ukfmm_ini : " << ukfmm_ini << std::endl;
+    std::cout << "final_path_ini : " << final_path_ini << std::endl;
     ros::Duration(1.0).sleep();
   }
   while (ros::ok())

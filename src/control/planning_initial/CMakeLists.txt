@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_ros
   car_model
   autoware_perception_msgs
+  pcl_ros
 )
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -117,7 +118,7 @@ include(CompilerFlags)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lidarxyz2lla
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime tf2 tf2_ros msgs nav_msgs car_model autoware_perception_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime tf2 tf2_ros msgs nav_msgs car_model autoware_perception_msgs pcl_ros
 #  DEPENDS system_lib
 )
 

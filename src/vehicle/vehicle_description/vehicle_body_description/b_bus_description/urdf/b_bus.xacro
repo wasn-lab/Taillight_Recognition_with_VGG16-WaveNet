@@ -7,7 +7,7 @@
   <!-- vehicle body -->
   <link name="base_link">
     <visual>
-      <origin xyz="-1.7 0 1.5" rpy="${pi/2.0} 0 ${pi}"/>
+      <origin xyz="-5.85 0 0" rpy="${pi/2.0} 0 ${pi}"/>
       <geometry>
         <mesh filename="package://b_bus_description/mesh/b_bus.dae" scale="1 1 1"/>
       </geometry>
