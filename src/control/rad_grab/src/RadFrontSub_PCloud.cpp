@@ -34,7 +34,6 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointXYZI temp;
-  // pcl::fromROSMsg(*msg, *cloud);
 
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
@@ -47,8 +46,8 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   }
   sensor_msgs::PointCloud2 msgtemp;
   pcl::toROSMsg(*cloud, msgtemp);
-  // msgtemp.header.stamp = msg->radHeader.stamp;
-  // msgtemp.header.seq = msg->radHeader.seq;
+  msgtemp.header = msg->radHeader;
+  msgtemp.header.seq = msg->radHeader.seq;
   msgtemp.header.frame_id = "base_link";
   PCloud_pub.publish(msgtemp);
 }

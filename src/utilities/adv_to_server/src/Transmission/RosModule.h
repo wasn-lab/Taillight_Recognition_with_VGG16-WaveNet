@@ -61,13 +61,24 @@ class RosModuleTraffic
                       void
                       (*cb11) (const std_msgs::String::ConstPtr&),
                       void
-                      (*cb12) (const msgs::BackendInfo::ConstPtr&))
+                      (*cb12) (const msgs::BackendInfo::ConstPtr&),
+                      bool isNewMap)
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
-      static ros::Subscriber gps = n.subscribe ("lidar_lla", 1, cb2);
+     
       static ros::Subscriber vehInfo = n.subscribe ("veh_info", 1, cb3);
-      static ros::Subscriber gnss2local_sub = n.subscribe("gnss2local_data", 1, cb4);
+
+      if(isNewMap){
+        std::cout << "===============================subscribe for new map" << std::endl;
+        static ros::Subscriber gps = n.subscribe ("lidar_lla_wgs84", 1, cb2);
+        static ros::Subscriber gnss2local_sub = n.subscribe("gnss_data", 1, cb4);
+      }else{
+        std::cout << "===============================subscribe for old map" << std::endl;
+        static ros::Subscriber gps = n.subscribe ("lidar_lla", 1, cb2);
+        static ros::Subscriber gnss2local_sub = n.subscribe("gnss2local_data", 1, cb4);
+      }
+      
       static ros::Subscriber fps = n.subscribe("/GUI/topic_fps_out", 1, cb5);
       static ros::Subscriber busStopInfo = n.subscribe("/BusStop/Info", 1, cb6);
       static ros::Subscriber reverse = n.subscribe("/mileage/relative_mileage", 1, cb7);

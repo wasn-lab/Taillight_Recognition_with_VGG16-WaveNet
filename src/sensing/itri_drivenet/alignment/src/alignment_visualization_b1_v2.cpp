@@ -37,7 +37,8 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30, camera::id::right_back_60, camera::id::left_back_60};
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
+                                         camera::id::right_back_60, camera::id::left_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -193,9 +194,10 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<
                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
 {
   // std::cout << "===== drawPointCloudOnImages... =====" << std::endl;
-  pcl::PointCloud<pcl::PointXYZI> point_cloud;
+#pragma omp parallel for  
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
+    pcl::PointCloud<pcl::PointXYZI> point_cloud;
     point_cloud = *cams_points_ptr[cam_order];
     for (size_t i = 0; i < point_cloud.size(); i++)
     {
@@ -212,6 +214,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
                                 std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h)
 {
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+#pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order], cam_pixels[cam_order], image_w, image_h,
@@ -297,10 +300,10 @@ void displayLidarData()
                                         "line-20m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_10m.p_min, point_10m.p_max, color_10m[2], color_10m[1], color_10m[0],
                                         "line-10m");
-    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0],
-                                        "line-0m");
-    pcl_viewer->addLine<pcl::PointXYZI>(point_negative_10m.p_min, point_negative_10m.p_max, color_negative_10m[2], color_negative_10m[1], color_negative_10m[0],
-                                        "line-negative-10m");                                        
+    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0], "line-"
+                                                                                                               "0m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_negative_10m.p_min, point_negative_10m.p_max, color_negative_10m[2],
+                                        color_negative_10m[1], color_negative_10m[0], "line-negative-10m");
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
       std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points);  // mutex camera points
@@ -426,8 +429,9 @@ int main(int argc, char** argv)
   ros::Subscriber lidarall;
 
   /// get callback function
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60, callback_cam_front_top_far_30,
-  callback_cam_right_back_60, callback_cam_left_back_60 };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
+    callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_right_back_60, callback_cam_left_back_60
+  };
 
   /// set topic name
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
