@@ -26,7 +26,7 @@ void Projector3::init(int camera_id)
 
     case camera::id::right_back_60:
     {
-      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/fix_b1_v2_right_back_60.yml");
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v2_right_back_60.yml");
       readCameraParameters(file_path.c_str());
     }
     break;
