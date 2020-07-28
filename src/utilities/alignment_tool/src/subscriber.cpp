@@ -107,14 +107,14 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_bottom_60", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/right_back_60", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
   while (ros::ok())
   {
-    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1], GlobalVariable::UI_PARA[2],
-                               GlobalVariable::UI_PARA[3], GlobalVariable::UI_PARA[4], GlobalVariable::UI_PARA[5]);
+    projector.setcameraMat(GlobalVariable::UI_PARA[5],0,0,0);
+    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2],GlobalVariable::UI_PARA[3],GlobalVariable::UI_PARA[4],0);
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
@@ -126,7 +126,7 @@ void detection(int argc, char** argv)
     double scaleFactor = M_MID_temp.rows / 384;
     for (size_t i = 0; i < release_cloud->size(); i++)
     {
-      if (release_cloud->points[i].x > 1)
+      if (!projector.outOfFov(release_cloud->points[i].x, release_cloud->points[i].y, release_cloud->points[i].z))
       {
         std::vector<int> result = projector.project(
             (float)release_cloud->points[i].x, (float)release_cloud->points[i].y, (float)release_cloud->points[i].z);
@@ -134,10 +134,13 @@ void detection(int argc, char** argv)
         result[1] = result[1] * scaleFactor;
         if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
         {
+          double hight = (double)release_cloud->points[i].z;
+          if(hight > -2)
+          {
+            cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 3, CV_RGB(0, 0, 0), -1, 8, 0);
+          }
           int red_int_ = 0, gre_int_ = 0, blu_int_ = 0;
           double depths_float_ = (double)release_cloud->points[i].x;
-          if (depths_float_ > 1)
-          {
             if (depths_float_ <= 7)
             {
               red_int_ = 255;
@@ -168,7 +171,6 @@ void detection(int argc, char** argv)
               gre_int_ = 0;
               blu_int_ = 255;
             }
-          }
           cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int_, gre_int_, blu_int_), -1, 8, 0);
         }
       }
