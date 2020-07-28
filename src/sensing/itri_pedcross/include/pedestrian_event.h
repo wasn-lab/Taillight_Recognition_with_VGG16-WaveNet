@@ -78,17 +78,19 @@ public:
   void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
                             boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache);
-  void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
                      boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
@@ -123,7 +125,7 @@ public:
   std::vector<cv::Point2f> nav_path;
   std::string time_nav_path = "NA";
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache;
   std::vector<std::string> ped_info;
@@ -132,15 +134,18 @@ public:
   Buffer buffer_front;
   Buffer buffer_left;
   Buffer buffer_right;
+  Buffer buffer_fov30;
   int buffer_size = 60;
 
   // ROS components
   ros::Publisher chatter_pub_front;
   ros::Publisher chatter_pub_left;
   ros::Publisher chatter_pub_right;
+  ros::Publisher chatter_pub_fov30;
   ros::Publisher box_pub_front;
   ros::Publisher box_pub_left;
   ros::Publisher box_pub_right;
+  ros::Publisher box_pub_fov30;
   ros::Publisher alert_pub;
   ros::Time total_time;
   tf2_ros::Buffer tfBuffer;
@@ -159,6 +164,8 @@ public:
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_9;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_10;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_11;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_12;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_13;
   bool g_enable = false;
   bool g_trigger = false;
   int count;

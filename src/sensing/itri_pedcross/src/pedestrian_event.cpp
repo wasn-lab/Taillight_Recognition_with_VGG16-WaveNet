@@ -148,17 +148,17 @@ void PedestrianEvent::display_on_terminal()
         }
         else if (i == 6)
         {
-          line << "Crop  camera: buffer size: ";
-          line << crop_image_cache.size() << " FPS: ";
-          if (!crop_image_cache.empty())
+          line << "FOV30 camera: buffer size: ";
+          line << fov30_image_cache.size() << " FPS: ";
+          if (!fov30_image_cache.empty())
           {
             ros::Time latest_time;
             int frame_number = 0;
-            for (int j = crop_image_cache.size() - 1; j >= 0; j--)
+            for (int j = fov30_image_cache.size() - 1; j >= 0; j--)
             {
-              if (ros::Time::now() - crop_image_cache[j].first <= ros::Duration(1))
+              if (ros::Time::now() - fov30_image_cache[j].first <= ros::Duration(1))
               {
-                latest_time = crop_image_cache[crop_image_cache.size() - 1].first;
+                latest_time = fov30_image_cache[fov30_image_cache.size() - 1].first;
                 frame_number++;
               }
               else
@@ -173,9 +173,9 @@ void PedestrianEvent::display_on_terminal()
             line << "NA time: ";
           }
 
-          if (!crop_image_cache.empty())
+          if (!fov30_image_cache.empty())
           {
-            line << std::to_string(crop_image_cache[crop_image_cache.size() - 1].first.toSec());
+            line << std::to_string(fov30_image_cache[fov30_image_cache.size() - 1].first.toSec());
           }
           else
           {
@@ -283,27 +283,6 @@ void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
 #endif
 }
 
-void PedestrianEvent::cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg)
-{
-#if PRINT_MESSAGE
-  ros::Time start;
-  start = ros::Time::now();
-#endif
-
-  // buffer raw image in cv::Mat with timestamp
-  cv_bridge::CvImageConstPtr cv_ptr_image;
-  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat msg_decode;
-  cv_ptr_image->image.copyTo(msg_decode);
-
-  // buffer raw image in msg
-  crop_image_cache.push_back({ msg->header.stamp, msg_decode.clone() });
-  msg_decode.release();
-#if PRINT_MESSAGE
-  std::cout << "Crop Image buffer time cost: " << ros::Time::now() - start << std::endl;
-#endif
-}
-
 void PedestrianEvent::cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
   cache_image_callback(msg, front_image_cache);
@@ -317,6 +296,11 @@ void PedestrianEvent::cache_left_image_callback(const sensor_msgs::Image::ConstP
 void PedestrianEvent::cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
   cache_image_callback(msg, right_image_cache);
+}
+
+void PedestrianEvent::cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg)
+{
+  cache_image_callback(msg, fov30_image_cache);
 }
 
 void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
@@ -358,6 +342,12 @@ void PedestrianEvent::right_callback(const msgs::DetectedObjectArray::ConstPtr& 
   main_callback(msg, buffer_right, right_image_cache, 2);
 }
 
+void PedestrianEvent::fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
+{
+  // 3 for fov30
+  main_callback(msg, buffer_fov30, fov30_image_cache, 3);
+}
+
 void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
                                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera)
 {
@@ -369,12 +359,10 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 
     // keep original image
     cv::Mat matrix;
-    cv::Mat matrix_crop;  // high resolution
     // for painting
     cv::Mat matrix2;
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
-    bool has_crop_image = !crop_image_cache.empty();
     std::vector<msgs::PedObject> ped_objs;
     std::vector<msgs::DetectedObject> alert_objs;
     ped_objs.reserve(msg->objects.end() - msg->objects.begin());
@@ -384,12 +372,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       if (obj.classId != 1 || too_far(obj.bPoint))
       {  // 1 for people
         continue;
-      }
-
-      bool in_crop_range = false;
-      if (obj.camInfo.v >= 692 && obj.camInfo.v + obj.camInfo.height < 1006 && has_crop_image && from_camera == 0)
-      {
-        in_crop_range = true;
       }
 
       // set msg infomation
@@ -447,84 +429,35 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             break;
           }
         }
-        if (from_camera == 0)
-        {
-          for (int i = crop_image_cache.size() - 1; i >= 0; i--)
-          {
-            if (crop_image_cache[i].first <= msgs_timestamp || i == 0)
-            {
-#if PRINT_MESSAGE
-              std::cout << "GOT CHA !!!!! time: " << crop_image_cache[i].first << " , " << msgs_timestamp << "crop"
-                        << std::endl;
-#endif
-
-              matrix_crop = crop_image_cache[i].second;
-              get_timestamp = true;
-              break;
-            }
-          }
-        }
       }
 
       cv::Mat croped_image;
-      if (!in_crop_range)
+      // resize from 1920*1208 to 608*384
+      obj_pub.camInfo.u *= scaling_ratio_width;
+      obj_pub.camInfo.v *= scaling_ratio_height;
+      obj_pub.camInfo.width *= scaling_ratio_width;
+      obj_pub.camInfo.height *= scaling_ratio_height;
+      // obj_pub.camInfo.v -= 5;
+      // obj_pub.camInfo.height += 10;
+      // Avoid index out of bounds
+      if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
       {
-        // resize from 1920*1208 to 608*384
-        obj_pub.camInfo.u *= scaling_ratio_width;
-        obj_pub.camInfo.v *= scaling_ratio_height;
-        obj_pub.camInfo.width *= scaling_ratio_width;
-        obj_pub.camInfo.height *= scaling_ratio_height;
-        // obj_pub.camInfo.v -= 5;
-        // obj_pub.camInfo.height += 10;
-        // Avoid index out of bounds
-        if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
-        {
-          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
-        }
-        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
-        {
-          obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
-        }
+        obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+      }
+      if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
+      {
+        obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+      }
 
 #if PRINT_MESSAGE
-        std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
-                  << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
-                  << std::endl;
+      std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
+                << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
+                << std::endl;
 #endif
-        // crop image for openpose
-        matrix.copyTo(croped_image);
-        croped_image =
-            croped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
-      }
-      else
-      {
-        obj_pub.camInfo.v -= 692;
-#if PRINT_MESSAGE
-        std::cout << matrix_crop.cols << " " << matrix_crop.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v
-                  << " " << obj_pub.camInfo.u + obj_pub.camInfo.width << " "
-                  << obj_pub.camInfo.v + obj_pub.camInfo.height << "crop" << std::endl;
-#endif
-        matrix_crop.copyTo(croped_image);
-        croped_image =
-            croped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
-
-        obj_pub.camInfo.v += 692;
-        // resize from 1920*1208 to 608*384
-        obj_pub.camInfo.u *= scaling_ratio_width;
-        obj_pub.camInfo.v *= scaling_ratio_height;
-        obj_pub.camInfo.width *= scaling_ratio_width;
-        obj_pub.camInfo.height *= scaling_ratio_height;
-
-        // Avoid index out of bounds
-        if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
-        {
-          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
-        }
-        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
-        {
-          obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
-        }
-      }
+      // crop image for openpose
+      matrix.copyTo(croped_image);
+      croped_image =
+          croped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
 
       // set size to resize cropped image for openpose
       // max pixel of width or height can only be 368
@@ -758,11 +691,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     {
       chatter_pub_right.publish(ped_obj_array);
     }
+    else if (from_camera == 3)  // fov30
+    {
+      chatter_pub_fov30.publish(ped_obj_array);
+    }
     delay_from_camera = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 
     matrix.release();
     matrix2.release();
-    matrix_crop.release();
 
     stop = ros::Time::now();
     total_time += stop - start;
@@ -877,6 +813,11 @@ void PedestrianEvent::draw_ped_left_callback(const msgs::PedObjectArray::ConstPt
 void PedestrianEvent::draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
   draw_pedestrians_callback(msg, right_image_cache, 2);
+}
+
+void PedestrianEvent::draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg)
+{
+  draw_pedestrians_callback(msg, fov30_image_cache, 3);
 }
 
 void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
@@ -1168,6 +1109,10 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   else if (from_camera == 2)  // right
   {
     box_pub_right.publish(viz_pub);
+  }
+  else if (from_camera == 3)  // fov30
+  {
+    box_pub_fov30.publish(viz_pub);
   }
 
   matrix = 0;
@@ -1546,6 +1491,8 @@ void PedestrianEvent::pedestrian_event()
   ros::CallbackQueue queue_9;
   ros::CallbackQueue queue_10;
   ros::CallbackQueue queue_11;
+  ros::CallbackQueue queue_12;
+  ros::CallbackQueue queue_13;
   // This node handle uses global callback queue
   ros::NodeHandle nh_sub_1;
   // and this one uses custom queue
@@ -1560,6 +1507,8 @@ void PedestrianEvent::pedestrian_event()
   ros::NodeHandle nh_sub_10;
   ros::NodeHandle nh_sub_11;
   ros::NodeHandle nh_sub_12;
+  ros::NodeHandle nh_sub_13;
+  ros::NodeHandle nh_sub_14;
   // Set custom callback queue
   nh_sub_2.setCallbackQueue(&queue_1);
   nh_sub_3.setCallbackQueue(&queue_2);
@@ -1572,6 +1521,8 @@ void PedestrianEvent::pedestrian_event()
   nh_sub_10.setCallbackQueue(&queue_9);
   nh_sub_11.setCallbackQueue(&queue_10);
   nh_sub_12.setCallbackQueue(&queue_11);
+  nh_sub_13.setCallbackQueue(&queue_12);
+  nh_sub_14.setCallbackQueue(&queue_13);
 
   ros::Subscriber sub_1;
   ros::Subscriber sub_2;
@@ -1585,6 +1536,8 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_10;
   ros::Subscriber sub_11;
   ros::Subscriber sub_12;
+  ros::Subscriber sub_13;
+  ros::Subscriber sub_14;
   if (input_source == 0)
   {
     sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::front_callback,
@@ -1595,8 +1548,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
-    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic
+    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic*/
     sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
                                this);  // /cam/F_center is sub topic
   }
@@ -1610,8 +1563,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
-    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic
+    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic*/
     sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
                                this);  // /cam/F_center is sub topic
   }
@@ -1625,8 +1578,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
-    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic
+    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic*/
     sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
                                this);  // /cam/F_center is sub topic
   }
@@ -1640,8 +1593,8 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /cam/F_center is sub topic
     sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
                                this);  // /cam/F_center is sub topic
-    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic
+    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
+                               this);  // /cam/F_center is sub topic*/
     sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
                                this);  // /cam/F_center is sub topic
   }
@@ -1653,23 +1606,27 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /Tracking2D/left_back_60 is subscirbe topic
     sub_3 = nh_sub_3.subscribe("/Tracking2D/right_back_60", 1, &PedestrianEvent::right_callback,
                                this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_4 = nh_sub_4.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
+    sub_4 = nh_sub_4.subscribe("/Tracking2D/front_top_far_30", 1, &PedestrianEvent::fov30_callback,
+                               this);  // /Tracking2D/right_back_60 is subscirbe topic
+    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
                                this);  // /cam/F_right is subscirbe topic
-    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is subscirbe topic
     sub_6 = nh_sub_6.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_left_image_callback,
                                this);  // /cam/F_center is subscirbe topic
     sub_7 = nh_sub_7.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_right_image_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_8 = nh_sub_8.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
+    sub_8 = nh_sub_8.subscribe("/cam/front_top_far_30", 1, &PedestrianEvent::cache_fov30_image_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_9 = nh_sub_9.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
+    sub_9 = nh_sub_9.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_10 = nh_sub_10.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
+    sub_10 = nh_sub_10.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
+                               this);  // /cam/F_center is subscirbe topic
+    sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
                                  this);  // /cam/F_center is subscirbe topic
-    sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
+    sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
                                  this);  // /cam/F_center is subscirbe topic
-    sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
+    sub_13 = nh_sub_13.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
+                                 this);  // /cam/F_center is subscirbe topic
+    sub_14 = nh_sub_14.subscribe("/PedCross/Pedestrians/front_top_far_30", 1, &PedestrianEvent::draw_ped_fov30_callback,
                                  this);  // /cam/F_center is subscirbe topic
   }
 
@@ -1685,6 +1642,8 @@ void PedestrianEvent::pedestrian_event()
   g_spinner_9.reset(new ros::AsyncSpinner(0, &queue_9));
   g_spinner_10.reset(new ros::AsyncSpinner(0, &queue_10));
   g_spinner_11.reset(new ros::AsyncSpinner(0, &queue_11));
+  g_spinner_12.reset(new ros::AsyncSpinner(0, &queue_12));
+  g_spinner_13.reset(new ros::AsyncSpinner(0, &queue_13));
 
   g_enable = true;
   g_trigger = true;
@@ -1708,6 +1667,8 @@ void PedestrianEvent::pedestrian_event()
       queue_9.clear();
       queue_10.clear();
       queue_11.clear();
+      queue_12.clear();
+      queue_13.clear();
       // Start the spinner
       g_spinner_1->start();
       g_spinner_2->start();
@@ -1720,6 +1681,8 @@ void PedestrianEvent::pedestrian_event()
       g_spinner_9->start();
       g_spinner_10->start();
       g_spinner_11->start();
+      g_spinner_12->start();
+      g_spinner_13->start();
       ROS_INFO("Spinner enabled");
       // Reset trigger
       g_trigger = false;
@@ -1741,6 +1704,8 @@ void PedestrianEvent::pedestrian_event()
   g_spinner_9.reset();
   g_spinner_10.reset();
   g_spinner_11.reset();
+  g_spinner_12.reset();
+  g_spinner_13.reset();
   // Wait for ROS threads to terminate
   ros::waitForShutdown();
 }
@@ -1891,7 +1856,13 @@ int main(int argc, char** argv)
   pe.box_pub_right =
       nh6.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh7;
-  pe.alert_pub = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert", 1);  // /PedCross/DrawBBox is pub topic
+  pe.chatter_pub_fov30 = nh7.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_top_far_30",
+                                                             1);  // /PedCross/Pedestrians is pub topic
+  ros::NodeHandle nh8;
+  pe.box_pub_fov30 =
+      nh8.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/front_top_far_30", 1);  // /PedCross/DrawBBox is pub topic
+  ros::NodeHandle nh9;
+  pe.alert_pub = nh9.advertise<msgs::DetectedObjectArray>("/PedCross/Alert", 1);  // /PedCross/DrawBBox is pub topic
   // Get parameters from ROS
   ros::NodeHandle nh;
   nh.param<bool>("/pedestrian_event/show_probability", pe.show_probability, true);
@@ -1903,10 +1874,11 @@ int main(int argc, char** argv)
   pe.front_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.left_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.right_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
-  pe.crop_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
+  pe.fov30_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.buffer_front.initial();
   pe.buffer_left.initial();
   pe.buffer_right.initial();
+  pe.buffer_fov30.initial();
 
   pe.openPoseROS();
 
