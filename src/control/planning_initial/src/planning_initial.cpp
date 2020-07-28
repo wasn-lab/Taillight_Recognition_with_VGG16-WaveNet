@@ -84,12 +84,12 @@ int main(int argc, char** argv)
   ros::NodeHandle node;
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber avoiding_flag_sub = node.subscribe("avoiding_path", 1, avoidingflagCallback);
-  ros::Subscriber objects_sub = node.subscribe("objects", 1, objectsCallback);
-  ros::Subscriber Lidnogroundpoint_sub = node.subscribe("ring_edge_point_cloud", 1, LidnogroundpointCallback); // /LidarAll/NonGround2
+  ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);
+  ros::Subscriber Lidnogroundpoint_sub = node.subscribe("input/lidar_no_ground", 1, LidnogroundpointCallback); // /LidarAll/NonGround2
   ros::Subscriber velocity_sub = node.subscribe("veh_info",1,currentVelocityCallback);
   ros::Subscriber imu_data_sub = node.subscribe("imu_data_rad",1,imudataCallback);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
-  objects_pub = node.advertise<autoware_perception_msgs::DynamicObjectArray>("output/pp_objects", 1, true);
+  objects_pub = node.advertise<autoware_perception_msgs::DynamicObjectArray>("output/objects", 1, true);
   nogroundpoints_pub = node.advertise<sensor_msgs::PointCloud2>("output/lidar_no_ground", 1, true);
   twist_pub = node.advertise<geometry_msgs::TwistStamped>("/localization/twist", 1, true);
   // enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);

@@ -1,16 +1,20 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
-  <arg name="lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
-  <arg name="pp_objects_topic" default="/perception/object_recognition/objects" />
+  <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
+  <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
+  <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" />
+  <arg name="input/objects_topic" default="Tracking3D_aw" /><!--objects-->
 
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
   <!-- planning initial node-->
   <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" >
-	<remap from="output/lidar_no_ground" to="$(arg lidar_noground_topic)" />
-	<remap from="output/pp_objects" to="$(arg pp_objects_topic)" />
+	<remap from="output/lidar_no_ground" to="$(arg output/lidar_noground_topic)" />
+	<remap from="output/objects" to="$(arg output/objects_topic)" />
+        <remap from="input/lidar_no_ground" to="$(arg input/lidar_noground_topic)" />
+	<remap from="input/objects" to="$(arg input/objects_topic)" />
   </node>
 
   <!--path transfer node-->
