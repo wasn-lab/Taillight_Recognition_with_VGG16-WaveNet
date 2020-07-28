@@ -66,5 +66,6 @@ set -e
 set +x
 source devel/setup.bash
 python src/scripts/ci/run_pylint.py
+src/scripts/ci/run_unittest.sh
 
 popd
