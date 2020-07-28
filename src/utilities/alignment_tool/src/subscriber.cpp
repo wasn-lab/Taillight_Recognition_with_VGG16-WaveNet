@@ -139,39 +139,39 @@ void detection(int argc, char** argv)
           {
             cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 3, CV_RGB(0, 0, 0), -1, 8, 0);
           }
-          int red_int_ = 0, gre_int_ = 0, blu_int_ = 0;
-          double depths_float_ = (double)release_cloud->points[i].x;
-            if (depths_float_ <= 7)
+          int red_int = 0, gre_int = 0, blu_int = 0;
+          double depths_float = (double)release_cloud->points[i].x;
+            if (depths_float <= 7)
             {
-              red_int_ = 255;
-              gre_int_ = depths_float_ * 5;
-              blu_int_ = 0;
+              red_int = 255;
+              gre_int = depths_float * 5;
+              blu_int = 0;
             }
-            else if (depths_float_ <= 10)
+            else if (depths_float <= 10)
             {
-              red_int_ = 510 - (depths_float_ * 5);
-              gre_int_ = 255;
-              blu_int_ = 0;
+              red_int = 510 - (depths_float * 5);
+              gre_int = 255;
+              blu_int = 0;
             }
-            else if (depths_float_ <= 14)
+            else if (depths_float <= 14)
             {
-              red_int_ = 0;
-              gre_int_ = 255;
-              blu_int_ = (depths_float_ - 102) * 5;
+              red_int = 0;
+              gre_int = 255;
+              blu_int = (depths_float - 102) * 5;
             }
-            else if (depths_float_ <= 21)
+            else if (depths_float <= 21)
             {
-              red_int_ = 0;
-              gre_int_ = 1020 - (depths_float_ * 5);
-              blu_int_ = 255;
+              red_int = 0;
+              gre_int = 1020 - (depths_float * 5);
+              blu_int = 255;
             }
             else
             {
-              red_int_ = (depths_float_ - 204) * 5;
-              gre_int_ = 0;
-              blu_int_ = 255;
+              red_int = (depths_float - 204) * 5;
+              gre_int = 0;
+              blu_int = 255;
             }
-          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int_, gre_int_, blu_int_), -1, 8, 0);
+          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
         }
       }
     }
