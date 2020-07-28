@@ -120,9 +120,9 @@ class Node:
 
             out_obj.shape.type = 2
 
-            if not in_obj.cPoint.lowerAreaPoints:
+            if in_obj.cPoint.lowerAreaPoints:
                 for p in in_obj.cPoint.lowerAreaPoints:
-                    out_obj.shape.footprint.append(Point32(p.x, p.y, p.z))
+                    out_obj.shape.footprint.points.append(Point32(p.x, p.y, p.z))
 
             out_list.objects.append(out_obj)
 
