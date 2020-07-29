@@ -9,7 +9,7 @@ import sys
 import subprocess
 import os
 
-from deeplab_mgr import DeeplabMgr
+from deeplab_mgr import DeeplabMgr, raw_image_pos_to_deeplab_pos
 from json_utils import read_json_file
 from image_utils import get_image_size
 from nn_labels import DRIVENET_CLASS_IDS, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID
@@ -127,7 +127,8 @@ class Validator():
                 if deeplab_match:
                     break
                 for x in range(gt_bbox[1], gt_bbox[3]):
-                    class_id = deeplab_mgr.get_label_by_org_image_xy(x, y, img_width, img_height)
+                    deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(x, y, img_width, img_height)
+                    class_id = deeplab_mgr.get_label_by_xy(deeplab_x, deeplab_y)
                     if class_id not in DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID:
                         continue
                     if DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID[class_id] == gt_bbox[0]:

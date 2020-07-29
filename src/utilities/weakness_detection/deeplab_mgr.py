@@ -43,18 +43,6 @@ class DeeplabMgr(object):
         """Return the label at the specific location (x, y)"""
         return self.labels[y][x]
 
-    def get_label_by_org_image_xy(self, x, y, org_width, org_height):
-        """Return the label at the specific location (x, y)"""
-        letterbox_border_height = (org_width - org_height) / 2
-        scale = float(DEEPLAB_IMAGE_WIDTH) / org_width
-        width = int(x * scale + 0.5);
-        width = min(width, DEEPLAB_IMAGE_WIDTH - 1)
-        height = int((y + letterbox_border_height) * scale + 0.5)
-        height = min(height, DEEPLAB_IMAGE_HEIGHT - 1)
-        logging.debug("Map org (%d, %d) to (%d, %d)", x, y, width, height)
-
-        return self.labels[height][width]
-
     def __read_labels_by_deeplab_output(self, png_file):
         """Each pixel in |png_file| is labels. EX: 15 is person."""
         if not os.path.isfile(png_file):
