@@ -192,7 +192,7 @@ def main():
     parser.add_argument("--image-filenames", default=default_img_list)
     parser.add_argument("--save-yolo-fmt", action="store_true")
     args = parser.parse_args()
-    edet = EfficientDet(args.coef, conf_thresh=args.conf_thres, save_yolo_fmt=args.save_yolo_fmt)
+    edet = EfficientDet(args.coef, conf_thresh=args.conf_thresh, save_yolo_fmt=args.save_yolo_fmt)
     with io.open(args.image_filenames, encoding="utf-8") as _fp:
         contents = _fp.read()
     for line in contents.splitlines():
