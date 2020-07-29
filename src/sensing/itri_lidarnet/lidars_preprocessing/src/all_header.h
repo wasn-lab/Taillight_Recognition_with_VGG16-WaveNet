@@ -55,6 +55,9 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
+
 #include <pcl/console/parse.h>
 #include <pcl/console/print.h>
 #include <pcl/console/time.h>
