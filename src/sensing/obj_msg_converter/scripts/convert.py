@@ -15,28 +15,33 @@ def my_divide(dividend, divisor):
     return floor, remain
 
 
-def vector3d_to_quaternion(p):
+def vector3d_to_quaternion(v):
+    # Half-way vector solution for finding quaternion representing the
+    # rotation from one vector to another
     u = [1, 0, 0]
-    norm1 = math.sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2])
-    if norm1 == 0:
-        norm1 = 1
-    v = [p[0] / norm1, p[1] / norm1, p[2] / norm1]
 
-    q = [0, 0, 0, 0]  # x, y, z, w
+    norm1 = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
+    if norm1 != 0:
+        v = [v[0] / norm1, v[1] / norm1, v[2] / norm1]
+
+    q = [0, 0, 0, 0]  # quaternion [x, y, z, w]
     if (array_equal(u, v)):
         q = [0, 0, 0, 1]
     elif (array_equal(u, negative(v))):
-        q = [0, 0, 1, 0]
+        q = [0, 0, 1, 0]  # orthogonal to u
     else:
-        half = [0, 0, 0]
         half = [u[0] + v[0], u[1] + v[1], u[2] + v[2]]
-        temp = cross(u, half)
-        q = [temp[0], temp[1], temp[2], dot(u, half)]
-
-    norm2 = math.sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3])
-    if norm2 == 0:
-        norm2 = 1
-    q = [q[0] / norm2, q[1] / norm2, q[2] / norm2, q[3] / norm2]
+        norm2 = math.sqrt(
+            half[0] *
+            half[0] +
+            half[1] *
+            half[1] +
+            half[2] *
+            half[2])
+        if norm2 != 0:
+            half = [half[0] / norm2, half[1] / norm2, half[2] / norm2]
+        cross_u_half = cross(u, half)
+        q = [cross_u_half[0], cross_u_half[1], cross_u_half[2], dot(u, half)]
 
     return q
 
@@ -104,9 +109,9 @@ class Node:
             out_obj.state.pose_covariance.pose.position.z = (
                 in_obj.bPoint.p0.z + in_obj.bPoint.p7.z) / 2
 
-            out_obj.state.twist_covariance.twist.linear.x = in_obj.track.absolute_velocity.x
-            out_obj.state.twist_covariance.twist.linear.y = in_obj.track.absolute_velocity.y
-            out_obj.state.twist_covariance.twist.linear.z = in_obj.track.absolute_velocity.z
+            out_obj.state.twist_covariance.twist.linear.x = in_obj.track.relative_velocity.x
+            out_obj.state.twist_covariance.twist.linear.y = in_obj.track.relative_velocity.y
+            out_obj.state.twist_covariance.twist.linear.z = in_obj.track.relative_velocity.z
 
             vec3 = [
                 out_obj.state.twist_covariance.twist.linear.x,
@@ -122,7 +127,8 @@ class Node:
 
             if in_obj.cPoint.lowerAreaPoints:
                 for p in in_obj.cPoint.lowerAreaPoints:
-                    out_obj.shape.footprint.points.append(Point32(p.x, p.y, p.z))
+                    out_obj.shape.footprint.points.append(
+                        Point32(p.x, p.y, p.z))
 
             out_list.objects.append(out_obj)
 
