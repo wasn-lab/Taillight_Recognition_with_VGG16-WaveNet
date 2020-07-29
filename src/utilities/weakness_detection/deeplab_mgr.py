@@ -3,31 +3,36 @@ import os
 import logging
 import cv2
 from image_consts import (
-    LETTERBOX_BORDER_WIDTH,
-    DEEPLAB_RAW_TO_DEEPLAB_SCALE,
+    RAW_IMAGE_WIDTH,
+    RAW_IMAGE_HEIGHT,
     DEEPLAB_IMAGE_WIDTH,
     DEEPLAB_IMAGE_HEIGHT)
 
 
-def deeplab_pos_to_raw_pos(x, y):
+def deeplab_pos_to_raw_pos(x, y, scale=0):
     """
     Raw image: 608x384, deeplab: 513x513.
     To get deeplab input: 608x384 -> 608x608 (letterbox) -> 513x513
     """
-    _x = int(x / DEEPLAB_RAW_TO_DEEPLAB_SCALE + 0.5)
-    _y = int(y / DEEPLAB_RAW_TO_DEEPLAB_SCALE + 0.5) - 112
+    if scale == 0:
+        scale = float(DEEPLAB_IMAGE_WIDTH) / RAW_IMAGE_WIDTH
+    _x = int(x / scale + 0.5)
+    _y = int(y / scale + 0.5) - 112
     return (_x, _y)
 
 
-def raw_image_pos_to_deeplab_pos(raw_x, raw_y):
+def raw_image_pos_to_deeplab_pos(raw_x, raw_y, org_width=RAW_IMAGE_WIDTH, org_height=RAW_IMAGE_HEIGHT):
     """
     Map the raw image position (raw_x, raw_y) to the corresponding
     deeplab position.
     """
-    yolo_x, yolo_y = raw_x, raw_y + LETTERBOX_BORDER_WIDTH
-    deeplab_x, deeplab_y = yolo_x * DEEPLAB_RAW_TO_DEEPLAB_SCALE, yolo_y * DEEPLAB_RAW_TO_DEEPLAB_SCALE
-
-    return (int(deeplab_x + 0.5), int(deeplab_y + 0.5))
+    letterbox_border_height = (org_width - org_height) / 2
+    scale = float(DEEPLAB_IMAGE_WIDTH) / org_width
+    _x = int(raw_x * scale + 0.5);
+    _x = min(_x, DEEPLAB_IMAGE_WIDTH - 1)
+    _y = int((raw_y + letterbox_border_height) * scale + 0.5)
+    _y = min(_y, DEEPLAB_IMAGE_HEIGHT - 1)
+    return (_x, _y)
 
 
 class DeeplabMgr(object):
