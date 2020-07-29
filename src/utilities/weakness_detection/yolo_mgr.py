@@ -7,6 +7,7 @@ import sys
 import subprocess
 import multiprocessing
 from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
+from image_utils import get_image_size
 from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import gen_bbox_by_yolo_object
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
@@ -18,7 +19,7 @@ REPO_DIR = REPO_DIR.decode("utf-8").strip()
 UTILITIES_IOU_DIR = os.path.join(REPO_DIR, "src", "utilities", "iou")
 sys.path.append(UTILITIES_IOU_DIR)
 
-from iou_utils import calc_iou  # pylint: disable=import-error
+from iou_utils import calc_iou_by_bbox # pylint: disable=import-error
 
 
 def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
@@ -89,16 +90,15 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
 
 def _cmpr_yolo_with_efficientdet(yolo_frame):
     filename = yolo_frame["filename"]
+    img_width, img_height = get_image_size(filename)
     edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d4.json")
-    yolo_bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
+    yolo_bboxes = [gen_bbox_by_yolo_object(_, img_width, img_height) for _ in yolo_frame["objects"]]
     edet_bboxes = edet_mgr.get_bboxes()
     num_mismatch = abs(len(yolo_bboxes) - len(edet_bboxes))
     for ybox in yolo_bboxes:
         match = False
         for ebox in edet_bboxes:
-            if ebox.class_id != ybox.class_id:
-                continue
-            iou = calc_iou(ybox, ebox)
+            iou = calc_iou_by_bbox(ybox, ebox)
             if iou >= 0.25:
                 match = True
         if not match:
@@ -107,9 +107,7 @@ def _cmpr_yolo_with_efficientdet(yolo_frame):
     for ebox in edet_bboxes:
         match = False
         for ybox in yolo_bboxes:
-            if ebox.class_id != ybox.class_id:
-                continue
-            iou = calc_iou(ybox, ebox)
+            iou = calc_iou_by_bbox(ybox, ebox)
             if iou >= 0.25:
                 match = True
         if not match:

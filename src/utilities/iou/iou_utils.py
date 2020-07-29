@@ -18,3 +18,11 @@ def calc_iou5(box1, box2):
     if box1[0] != box2[0]:
         return 0
     return calc_iou(box1[1:], box2[1:])
+
+
+def calc_iou_by_bbox(box1, box2):
+    """box: [class_id, left_x, top_y, right_x, bottom_y]"""
+    if box1.class_id != box2.class_id:
+        return 0
+
+    return calc_iou(box1.as_list(), box2.as_list())
