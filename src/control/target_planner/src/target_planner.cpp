@@ -106,6 +106,8 @@ void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, 
     dis += dis_waypoints;
     if (dis >= ahead_dis_)
     {
+      // std::cout << "index : " << index << std::endl;
+      // std::cout << "dis : " << dis << std::endl;
       break;
     }
   }
@@ -143,9 +145,11 @@ void run()
 {
   targetplanner(rear_current_pose, rear_targetpoint, rear_vehicle_targetpoint, 0.0, rear_target_pub, rear_vehicle_target_pub);
   std::cout << "rear_vehicle_targetpoint.x = " << rear_vehicle_targetpoint.x << std::endl;
+  std::cout << "rear_vehicle_targetpoint.y = " << rear_vehicle_targetpoint.y << std::endl;
 
   targetplanner(rear_current_pose, front_targetpoint, front_vehicle_targetpoint, 3.8, front_target_pub, front_vehicle_target_pub);
   std::cout << "front_vehicle_targetpoint.x = " << front_vehicle_targetpoint.x << std::endl;
+  std::cout << "front_vehicle_targetpoint.y = " << front_vehicle_targetpoint.y << std::endl;
 }
 
 void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)

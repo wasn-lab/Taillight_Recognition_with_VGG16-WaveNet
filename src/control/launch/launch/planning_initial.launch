@@ -4,7 +4,7 @@
   <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
   <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
   <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" />
-  <arg name="input/objects_topic" default="Tracking3D_aw" /><!--objects-->
+  <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
 
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
