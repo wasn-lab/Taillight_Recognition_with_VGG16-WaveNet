@@ -103,6 +103,40 @@ class Validator():
             all_fn += fn
         logging.info("TP: %d, FP: %d, FN: %d", all_tp, all_fp, all_fn)
 
+    def calc_tp_fp_fn_only_edet(self, filename):
+        yolo_bboxes = self.get_yolo_bboxes(filename)
+        edet_bboxes = self.get_edet_bboxes(filename)
+        gt_bboxes = self.get_gt_bboxes(filename)
+        tp = 0
+        fn = 0
+        fp = 0
+        img_width, img_height = get_image_size(filename)
+        for gt_bbox in gt_bboxes:
+            yolo_match = False
+            edet_match = False
+            deeplab_match = False
+            for yolo_bbox in yolo_bboxes:
+                if calc_iou5(yolo_bbox, gt_bbox) >= self.iou_threshold:
+                    logging.debug("Yolo match: %s with %s", yolo_bbox, gt_bbox)
+                    yolo_match = True
+                    break
+            for edet_bbox in edet_bboxes:
+                if calc_iou5(edet_bbox, gt_bbox) >= self.iou_threshold:
+                    logging.debug("Edet match: %s with %s", edet_bbox, gt_bbox)
+                    edet_match = True
+                    break
+            if yolo_match and not edet_match:
+                fp += 1
+            if not yolo_match:
+                if edet_match:
+                    tp += 1
+                else:
+                    fn += 1
+        logging.info("%s (%dx%d): tp: %d, fp:%d, fn: %d, groundtruth: %d",
+                     filename, img_width, img_height, tp, fp, fn, len(gt_bboxes))
+        return tp, fp, fn
+
+
 
     def calc_tp_fp_fn(self, filename):
         yolo_bboxes = self.get_yolo_bboxes(filename)
@@ -127,33 +161,27 @@ class Validator():
                     logging.debug("Edet match: %s with %s", edet_bbox, gt_bbox)
                     edet_match = True
                     break
-#            for y in range(gt_bbox[2], gt_bbox[4]):
-#                if deeplab_match:
-#                    break
-#                for x in range(gt_bbox[1], gt_bbox[3]):
-#                    deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(x, y, img_width, img_height)
-#                    class_id = deeplab_mgr.get_label_by_xy(deeplab_x, deeplab_y)
-#                    if class_id not in DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID:
-#                        continue
-#                    if DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID[class_id] == gt_bbox[0]:
-#                        logging.debug("Deeplab match at (%d, %d) for gt_box %s", x, y, gt_bbox)
-#                        deeplab_match = True
-#                        break
-#            if yolo_match and (not edet_match) and (not deeplab_match):
-#                fp += 1
-#
-#            if not yolo_match:
-#                if edet_match and deeplab_match:
-#                    tp += 1
-#                else:
-#                    fn += 1
-            if yolo_match and not edet_match:
+            for y in range(gt_bbox[2], gt_bbox[4]):
+                if deeplab_match:
+                    break
+                for x in range(gt_bbox[1], gt_bbox[3]):
+                    deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(x, y, img_width, img_height)
+                    class_id = deeplab_mgr.get_label_by_xy(deeplab_x, deeplab_y)
+                    if class_id not in DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID:
+                        continue
+                    if DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID[class_id] == gt_bbox[0]:
+                        logging.debug("Deeplab match at (%d, %d) for gt_box %s", x, y, gt_bbox)
+                        deeplab_match = True
+                        break
+            if yolo_match and (not edet_match) and (not deeplab_match):
                 fp += 1
+
             if not yolo_match:
-                if edet_match:
+                if edet_match and deeplab_match:
                     tp += 1
                 else:
                     fn += 1
+
         logging.info("%s (%dx%d): tp: %d, fp:%d, fn: %d, groundtruth: %d",
                      filename, img_width, img_height, tp, fp, fn, len(gt_bboxes))
         return tp, fp, fn

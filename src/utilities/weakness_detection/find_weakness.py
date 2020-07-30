@@ -10,12 +10,14 @@ def move_weakest_images(filenames, weakness_dir):
     for filename in filenames:
         deeplab_overlay_fn = filename[:-4] + "_deeplab_overlay.jpg"
         yolo_result_fn = filename[:-4] + "_yolo.jpg"
-        edet_fn = filename[:-4] + "_efficientdet_d4.jpg"
-        for src in [filename, deeplab_overlay_fn, yolo_result_fn, edet_fn]:
+        edet_d4_fn = filename[:-4] + "_efficientdet_d4.jpg"
+        edet_d7_fn = filename[:-4] + "_efficientdet_d7.jpg"
+        for src in [filename, deeplab_overlay_fn, yolo_result_fn, edet_d4_fn, edet_d7_fn]:
             _, basename = os.path.split(src)
             dest = os.path.join(weakness_dir, basename)
             logging.warning("cp %s %s", src, dest)
-            shutil.copyfile(src, dest)
+            if os.path.isfile(src):
+                shutil.copyfile(src, dest)
 
 
 def main():
@@ -37,9 +39,7 @@ def main():
     mgr = YoloMgr(args.yolo_result_json)
     mgr.find_weakness_images()
     mgr.save_weakness_logs(weakness_dir)
-    for fn in mgr.get_weakest_images():
-        print(fn)
-    #move_weakest_images(mgr.get_weakest_images(), weakness_dir)
+    move_weakest_images(mgr.get_weakest_images(), weakness_dir)
 
 
 if __name__ == "__main__":
