@@ -26,6 +26,8 @@ for bag_path in $bags; do
       pushd ${TMP_DIR}
       tar zcvf weak.tar.gz weak
       rm -r raw
+      find ${TMP_DIR} -type f -exec chmod 644 {} \;
+      find ${TMP_DIR} -type d -exec chmod 755 {} \;
       popd
       base_url="http://ci.itriadv.co/artifacts/weakness-detection/${bag_basename}"
       echo "visit ${base_url}/weak to get the results."
