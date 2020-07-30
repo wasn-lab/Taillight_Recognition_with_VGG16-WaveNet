@@ -24,9 +24,10 @@ from iou_utils import calc_iou5  # pylint: disable=import-error
 
 
 class Validator():
-    def __init__(self, yolo_result_json, coef, weak_image_list, iou_threshold):
+    def __init__(self, yolo_result_json, coef, weak_image_list, iou_threshold, with_deeplab):
         self.iou_threshold = iou_threshold
         self.coef = coef
+        self.with_deeplab = with_deeplab
         self.yolo_result = self.get_yolo_result(yolo_result_json)
         with io.open(weak_image_list, encoding="utf-8") as _fp:
             contents = _fp.read()
@@ -82,13 +83,13 @@ class Validator():
         for line in contents.splitlines():
             fields = line.strip().split()
             class_id = int(fields[0])
-            cx = float(fields[1])
-            cy = float(fields[2])
+            _cx = float(fields[1])
+            _cy = float(fields[2])
             width = float(fields[3])
             height = float(fields[4])
 
             left_x, top_y, right_x, bottom_y = yolo_format_in_bbox(
-                cx, cy, width, height, img_width, img_height)
+                _cx, _cy, width, height, img_width, img_height)
             bboxes.append([class_id, left_x, top_y, right_x, bottom_y])
         return bboxes
 
@@ -97,19 +98,22 @@ class Validator():
         all_fp = 0
         all_fn = 0
         for filename in self.weak_images:
-            tp, fp, fn = self.calc_tp_fp_fn(filename)
-            all_tp += tp
-            all_fp += fp
-            all_fn += fn
+            if self.with_deeplab:
+                true_positive, false_positive, false_negative = self.calc_tp_fp_fn(filename)
+            else:
+                true_positive, false_positive, false_negative = self.calc_tp_fp_fn_only_edet(filename)
+            all_tp += true_positive
+            all_fp += false_positive
+            all_fn += false_negative
         logging.info("TP: %d, FP: %d, FN: %d", all_tp, all_fp, all_fn)
 
     def calc_tp_fp_fn_only_edet(self, filename):
         yolo_bboxes = self.get_yolo_bboxes(filename)
         edet_bboxes = self.get_edet_bboxes(filename)
         gt_bboxes = self.get_gt_bboxes(filename)
-        tp = 0
-        fn = 0
-        fp = 0
+        true_positive = 0
+        false_negative = 0
+        false_positive = 0
         img_width, img_height = get_image_size(filename)
         for gt_bbox in gt_bboxes:
             yolo_match = False
@@ -126,15 +130,15 @@ class Validator():
                     edet_match = True
                     break
             if yolo_match and not edet_match:
-                fp += 1
+                false_positive += 1
             if not yolo_match:
                 if edet_match:
-                    tp += 1
+                    true_positive += 1
                 else:
-                    fn += 1
-        logging.info("%s (%dx%d): tp: %d, fp:%d, fn: %d, groundtruth: %d",
-                     filename, img_width, img_height, tp, fp, fn, len(gt_bboxes))
-        return tp, fp, fn
+                    false_negative += 1
+        logging.info("%s (%dx%d): true_positive: %d, false_positive:%d, false_negative: %d, groundtruth: %d",
+                     filename, img_width, img_height, true_positive, false_positive, false_negative, len(gt_bboxes))
+        return true_positive, false_positive, false_negative
 
 
 
@@ -143,9 +147,9 @@ class Validator():
         edet_bboxes = self.get_edet_bboxes(filename)
         gt_bboxes = self.get_gt_bboxes(filename)
         deeplab_mgr = self.get_deeplab_results(filename)
-        tp = 0
-        fn = 0
-        fp = 0
+        true_positive = 0
+        false_negative = 0
+        false_positive = 0
         img_width, img_height = get_image_size(filename)
         for gt_bbox in gt_bboxes:
             yolo_match = False
@@ -174,17 +178,17 @@ class Validator():
                         deeplab_match = True
                         break
             if yolo_match and (not edet_match) and (not deeplab_match):
-                fp += 1
+                false_positive += 1
 
             if not yolo_match:
                 if edet_match and deeplab_match:
-                    tp += 1
+                    true_positive += 1
                 else:
-                    fn += 1
+                    false_negative += 1
 
-        logging.info("%s (%dx%d): tp: %d, fp:%d, fn: %d, groundtruth: %d",
-                     filename, img_width, img_height, tp, fp, fn, len(gt_bboxes))
-        return tp, fp, fn
+        logging.info("%s (%dx%d): true_positive: %d, false_positive:%d, false_negative: %d, groundtruth: %d",
+                     filename, img_width, img_height, true_positive, false_positive, false_negative, len(gt_bboxes))
+        return true_positive, false_positive, false_negative
 
 def main():
 
@@ -194,8 +198,10 @@ def main():
     parser.add_argument("--coef", type=int, default=4)
     parser.add_argument("--iou-threshold", type=float, default=0.25)
     parser.add_argument("--weak-image-list", required=True)
+    parser.add_argument("--with-deeplab", action="store_true")
     args = parser.parse_args()
-    obj = Validator(args.yolo_result_json, args.coef, args.weak_image_list, args.iou_threshold)
+    obj = Validator(args.yolo_result_json, args.coef, args.weak_image_list,
+                    args.iou_threshold, args.with_deeplab)
     obj.run()
 
 
