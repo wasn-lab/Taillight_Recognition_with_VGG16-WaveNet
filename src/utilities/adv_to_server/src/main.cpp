@@ -815,7 +815,7 @@ void sendRun(int argc, char** argv)
         mutex_event_2.lock();
         event_queue_switch = true;
     
-        while (eventQueue1.size() != 0)
+        while (eventQueue2.size() != 0)
         {
          
           json j = eventQueue2.front();
@@ -859,8 +859,8 @@ void receiveUDPRun(int argc, char** argv)
 {
   while (true)
   {
-    //UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
-    UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
+    UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
+    //UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
     int result = UDP_OBU_server.recv(buffer, sizeof(buffer));
     current_spat = "";
     if (result != -1)
