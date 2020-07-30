@@ -8,7 +8,7 @@ void Projector3::init(int camera_id)
 {
   char* file_name;
   char* file_path;
-  file_name = (char*)"b1_v2_left_back_60.yml";
+  file_name = (char*)"b1_v2_front_bottom_60.yml";
   file_path = new char[std::strlen("") + std::strlen(file_name) + 1];
   // filePath = new char[std::strlen(file_name) + 1];
   std::strcpy(file_path, "");
