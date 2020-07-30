@@ -35,6 +35,17 @@ def raw_image_pos_to_deeplab_pos(raw_x, raw_y, org_width=RAW_IMAGE_WIDTH, org_he
     return (_x, _y)
 
 
+def get_deeplab_min_y(org_width=RAW_IMAGE_WIDTH, org_height=RAW_IMAGE_HEIGHT):
+    border = (org_width - org_height) / 2
+    scale = DEEPLAB_IMAGE_WIDTH / float(org_width)
+    return int(border * scale + 0.5)
+
+def get_deeplab_max_y(org_width=RAW_IMAGE_WIDTH, org_height=RAW_IMAGE_HEIGHT):
+    border = (org_width - org_height) / 2
+    scale = DEEPLAB_IMAGE_WIDTH / float(org_width)
+    return int((border + org_height - 1) * scale + 0.5)
+
+
 class DeeplabMgr(object):
     def __init__(self, png_file):
         self.labels = self.__read_labels_by_deeplab_output(png_file)

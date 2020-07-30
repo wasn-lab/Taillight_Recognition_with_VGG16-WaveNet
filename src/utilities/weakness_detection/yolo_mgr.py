@@ -6,9 +6,12 @@ import datetime
 import sys
 import subprocess
 import multiprocessing
-from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
+from deeplab_mgr import (DeeplabMgr, deeplab_pos_to_raw_pos,
+                         raw_image_pos_to_deeplab_pos,
+                         get_deeplab_min_y,
+                         get_deeplab_max_y)
 from image_utils import get_image_size
-from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
+from image_consts import DEEPLAB_IMAGE_WIDTH
 from yolo_bbox import gen_bbox_by_yolo_object
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
 from json_utils import read_json_file
@@ -55,7 +58,8 @@ def _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename):
     # deeplab finds an object, but yolo does not:
     total_object_labels = 0
     num_labels_covered = 0
-    for row in range(DEEPLAB_MIN_Y, DEEPLAB_MAX_Y):
+    img_width, img_height = get_image_size(filename)
+    for row in range(get_deeplab_min_y(img_width, img_height), get_deeplab_max_y(img_width, img_height)):
         for col in range(DEEPLAB_IMAGE_WIDTH):
             deeplab_label = deeplab_mgr.get_label_by_xy(col, row)
             if deeplab_label == DeeplabLabel.BACKGROUND:
@@ -91,7 +95,7 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
 def _cmpr_yolo_with_efficientdet(yolo_frame):
     filename = yolo_frame["filename"]
     img_width, img_height = get_image_size(filename)
-    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d4.json")
+    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d7.json")
     yolo_bboxes = [gen_bbox_by_yolo_object(_, img_width, img_height) for _ in yolo_frame["objects"]]
     edet_bboxes = edet_mgr.get_bboxes()
     num_mismatch = abs(len(yolo_bboxes) - len(edet_bboxes))

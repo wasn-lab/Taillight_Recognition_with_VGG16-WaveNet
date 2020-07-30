@@ -24,9 +24,12 @@ from iou_utils import calc_iou5  # pylint: disable=import-error
 
 
 class Validator():
-    def __init__(self, yolo_result_json, iou_threshold):
+    def __init__(self, yolo_result_json, weak_image_list, iou_threshold):
         self.iou_threshold = iou_threshold
         self.yolo_result = self.get_yolo_result(yolo_result_json)
+        with io.open(weak_image_list, encoding="utf-8") as _fp:
+            contents = _fp.read()
+            self.weak_images = [_.strip() for _ in contents.splitlines()]
 
     def get_yolo_result(self, json_file):
         yolo_result = {}
@@ -92,7 +95,7 @@ class Validator():
         all_tp = 0
         all_fp = 0
         all_fn = 0
-        for filename in self.yolo_result:
+        for filename in self.weak_images:
             tp, fp, fn = self.calc_tp_fp_fn(filename)
             all_tp += tp
             all_fp += fp
@@ -123,28 +126,35 @@ class Validator():
                     logging.debug("Edet match: %s with %s", edet_bbox, gt_bbox)
                     edet_match = True
                     break
-            for y in range(gt_bbox[2], gt_bbox[4]):
-                if deeplab_match:
-                    break
-                for x in range(gt_bbox[1], gt_bbox[3]):
-                    deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(x, y, img_width, img_height)
-                    class_id = deeplab_mgr.get_label_by_xy(deeplab_x, deeplab_y)
-                    if class_id not in DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID:
-                        continue
-                    if DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID[class_id] == gt_bbox[0]:
-                        logging.debug("Deeplab match at (%d, %d) for gt_box %s", x, y, gt_bbox)
-                        deeplab_match = True
-                        break
-            if yolo_match and (not edet_match) and (not deeplab_match):
+#            for y in range(gt_bbox[2], gt_bbox[4]):
+#                if deeplab_match:
+#                    break
+#                for x in range(gt_bbox[1], gt_bbox[3]):
+#                    deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(x, y, img_width, img_height)
+#                    class_id = deeplab_mgr.get_label_by_xy(deeplab_x, deeplab_y)
+#                    if class_id not in DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID:
+#                        continue
+#                    if DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID[class_id] == gt_bbox[0]:
+#                        logging.debug("Deeplab match at (%d, %d) for gt_box %s", x, y, gt_bbox)
+#                        deeplab_match = True
+#                        break
+#            if yolo_match and (not edet_match) and (not deeplab_match):
+#                fp += 1
+#
+#            if not yolo_match:
+#                if edet_match and deeplab_match:
+#                    tp += 1
+#                else:
+#                    fn += 1
+            if yolo_match and not edet_match:
                 fp += 1
-
             if not yolo_match:
-                if edet_match and deeplab_match:
+                if edet_match:
                     tp += 1
                 else:
                     fn += 1
-        logging.info("%s (%dx%d): tp: %d, fp:%d, fn: %d",
-                     filename, img_width, img_height, tp, fp, fn)
+        logging.info("%s (%dx%d): tp: %d, fp:%d, fn: %d, groundtruth: %d",
+                     filename, img_width, img_height, tp, fp, fn, len(gt_bboxes))
         return tp, fp, fn
 
 def main():
@@ -152,9 +162,10 @@ def main():
     logging.basicConfig(format='%(asctime)-15s %(message)s', level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("--yolo-result-json", required=True)
-    parser.add_argument("--iou-threshold", type=float, default=0.5)
+    parser.add_argument("--iou-threshold", type=float, default=0.25)
+    parser.add_argument("--weak-image-list", required=True)
     args = parser.parse_args()
-    obj = Validator(args.yolo_result_json, args.iou_threshold)
+    obj = Validator(args.yolo_result_json, args.weak_image_list, args.iou_threshold)
     obj.run()
 
 
