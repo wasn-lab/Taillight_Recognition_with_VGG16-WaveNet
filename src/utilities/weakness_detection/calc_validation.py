@@ -24,8 +24,9 @@ from iou_utils import calc_iou5  # pylint: disable=import-error
 
 
 class Validator():
-    def __init__(self, yolo_result_json, weak_image_list, iou_threshold):
+    def __init__(self, yolo_result_json, coef, weak_image_list, iou_threshold):
         self.iou_threshold = iou_threshold
+        self.coef = coef
         self.yolo_result = self.get_yolo_result(yolo_result_json)
         with io.open(weak_image_list, encoding="utf-8") as _fp:
             contents = _fp.read()
@@ -60,7 +61,7 @@ class Validator():
 
     def get_edet_bboxes(self, filename):
         bboxes = []
-        pred = read_json_file(filename[:-4] + "_efficientdet_d4.json")
+        pred = read_json_file(filename[:-4] + "_efficientdet_d{}.json".format(self.coef))
         nobjs = len(pred["rois"])
         for j in range(nobjs):
             class_id = pred['class_ids'][j]
@@ -162,10 +163,11 @@ def main():
     logging.basicConfig(format='%(asctime)-15s %(message)s', level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("--yolo-result-json", required=True)
+    parser.add_argument("--coef", type=int, default=4)
     parser.add_argument("--iou-threshold", type=float, default=0.25)
     parser.add_argument("--weak-image-list", required=True)
     args = parser.parse_args()
-    obj = Validator(args.yolo_result_json, args.weak_image_list, args.iou_threshold)
+    obj = Validator(args.yolo_result_json, args.coef, args.weak_image_list, args.iou_threshold)
     obj.run()
 
 
