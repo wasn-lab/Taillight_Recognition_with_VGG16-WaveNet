@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "itri_tracking_2d", ros::init_options::NoSigintHandler);
+  ros::init(argc, argv, "itri_tracking_2d", ros::init_options::AnonymousName);
   gflags::ParseCommandLineFlags(&argc, &argv, false);
 #if USE_GLOG
   google::InstallFailureSignalHandler();

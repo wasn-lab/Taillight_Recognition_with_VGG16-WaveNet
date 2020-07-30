@@ -1,3 +1,4 @@
+#define GLM_ENABLE_EXPERIMENTAL
 #include <gtest/gtest.h>
 #include <cmath>
 #include "imu_distance.h"

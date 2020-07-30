@@ -653,7 +653,7 @@ void KalmanTrackers::update_boxes()
 }
 
 void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
-                                         const float ego_z_abs, const float ego_heading)
+                                         const float ego_z_abs, const float ego_heading, const bool use_tracking2d)
 {
   if (objs_.size() == 0 && tracks_.size() == 0)
   {
@@ -672,15 +672,18 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
     tracks_[i].predict();
   }
 
-  // data association: hungarian algorithm
-  init_objs();
-  init_distance_table();
-  compute_distance_table();
-  associate_data();
+  if (!use_tracking2d)
+  {
+    // data association: hungarian algorithm
+    init_objs();
+    init_distance_table();
+    compute_distance_table();
+    associate_data();
 
-  // track id management
-  give_ids_to_unassociated_objs();
-  correct_duplicate_track_ids();
+    // track id management
+    give_ids_to_unassociated_objs();
+    correct_duplicate_track_ids();
+  }
 
   // sync objs_ and tracks_
   set_time_displacement(dt);

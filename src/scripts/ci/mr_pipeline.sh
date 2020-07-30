@@ -41,6 +41,13 @@ for fname in ${affected_files}; do
   fi
 done
 
+# When executable file names change and publish test still use old names,
+# the test should report failure. To do so, we should clean up the
+# old executables.
+if [[ -d devel/lib ]]; then
+  find devel/lib -executable -type f -exec rm {} \;
+fi
+
 readonly clean_build_status=$(python src/scripts/ci/decide_dirty_clean_build.py)
 echo ${clean_build_status}
 if [[ "${clean_build_status}" =~ "Clean build" ]]; then
@@ -59,5 +66,6 @@ set -e
 set +x
 source devel/setup.bash
 python src/scripts/ci/run_pylint.py
+src/scripts/ci/run_unittest.sh
 
 popd

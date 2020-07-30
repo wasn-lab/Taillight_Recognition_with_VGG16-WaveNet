@@ -20,11 +20,21 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
-if(OpenCV_FOUND)
-  message(STATUS "OpenCV IncludeDir: ${OpenCV_INCLUDE_DIRS}")
-  message(STATUS "OpenCV Libararies: ${OpenCV_LIBRARIES}")
-  message(STATUS "OpenCV Libararies Dir: ${OpenCV_LIBRARY_DIRS}")
-endif()
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+else()
+  #message(STATUS "OpenCV IncludeDir: ${OpenCV_INCLUDE_DIRS}")
+  #message(STATUS "OpenCV Libararies: ${OpenCV_LIBRARIES}")
+  #message(STATUS "OpenCV Libararies Dir: ${OpenCV_LIBRARY_DIRS}")
+
+  if(EXISTS /usr/local/lib/libopencv_core.so)
+    set(OpenCV_USER_LIBRARIES /usr/local/lib/libopencv_core.so
+                              ${OpenCV_LIBRARIES})
+  else()
+    set(OpenCV_USER_LIBRARIES ${OpenCV_LIBRARIES})
+  endif()
+endif ()
 
 ######################
 ##       PCL        ##
@@ -41,11 +51,11 @@ if (NOT ${CUDA_FOUND})
 endif ()
 
 find_package(TensorRT)
-message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 if (NOT TensorRT_FOUND)
   message("Cannot find TensorRT. Skip ${PROJECT_NAME}")
   return()
 endif()
+#message(STATUS "TensorRT_LIBRARY: ${TensorRT_LIBRARY}")
 
 catkin_package(
   INCLUDE_DIRS include
@@ -54,7 +64,7 @@ catkin_package(
 set(LIBS drivenet_lib
          object_costmap_generator
          camera_utils
-         ${OpenCV_LIBRARIES}
+         ${OpenCV_USER_LIBRARIES}
          ${PCL_LIBRARIES}
          nvinfer
          nvinfer_plugin
@@ -72,13 +82,13 @@ include_directories(
   ${car_model_BINARY_DIR}/include
   ${msgs_SOURCE_DIR}/include
   ${camera_utils_SOURCE_DIR}/include
-  ${DRIVENETLIB_INCLUDE}
-  ${OBJECTCOSTMAPGENERATOR_INCLUDE}
+  ${drivenet_lib_SOURCE_DIR}/include
+  ${object_costmap_generator_SOURCE_DIR}/include
   ${CUDA_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
-message(STATUS "DRIVENETLIB_INCLUDE: ${DRIVENETLIB_INCLUDE}")
+#message(STATUS "DRIVENETLIB_INCLUDE: ${DRIVENETLIB_INCLUDE}")
 
 link_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -102,13 +112,13 @@ list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_side_dete
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_top_detection_b1_v2.cpp" )
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/drivenet_b1_v2_single_camera.cpp" )
 list(REMOVE_ITEM LIB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/detection_image_repub_b1_v2.cpp" )
-message(STATUS "Lib_sources: " ${LIB_SOURCES})
+#message(STATUS "Lib_sources: " ${LIB_SOURCES})
 file(GLOB_RECURSE EXCEPTION_SRCS src/exception_handling/*.cpp)
 file(GLOB_RECURSE COMMON_UTILS src/common_utils/*.cpp)
 
 cuda_add_library(${PROJECT_NAME} SHARED ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${LIBS})
+target_link_libraries(${PROJECT_NAME} ${LIBS} ${catkin_LIBRARIES} )
 
 if (CAR_MODEL_IS_B1)
   add_executable(${PROJECT_NAME}_detect_node_1 src/drivenet_60_b1.cpp src/distance_estimation_b1.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
@@ -121,10 +131,10 @@ if (CAR_MODEL_IS_B1)
   add_dependencies(${PROJECT_NAME}_detect_node_3 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_depth_node_alignment ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-  target_link_libraries(${PROJECT_NAME}_detect_node_1 ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_detect_node_2 ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_detect_node_3 ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_depth_node_alignment ${catkin_LIBRARIES} ${LIBS})
+  target_link_libraries(${PROJECT_NAME}_detect_node_1 ${LIBS} ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_detect_node_2 ${LIBS} ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_detect_node_3 ${LIBS} ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_depth_node_alignment ${LIBS} ${catkin_LIBRARIES})
 
 elseif(CAR_MODEL_IS_B1_V2)
   add_executable(${PROJECT_NAME}_detect_node_a src/drivenet_group_a_b1_v2.cpp src/distance_estimation_b1_v2.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
@@ -143,11 +153,11 @@ elseif(CAR_MODEL_IS_B1_V2)
   add_dependencies(${PROJECT_NAME}_util_node_obj_pub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   add_dependencies(${PROJECT_NAME}_util_node_img_repub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
  
-  target_link_libraries(${PROJECT_NAME}_detect_node_a ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_detect_node_side ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_detect_node_top ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_detect_node_single_cam ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_depth_node_alignment ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_util_node_obj_pub ${catkin_LIBRARIES} ${LIBS})
-  target_link_libraries(${PROJECT_NAME}_util_node_img_repub ${catkin_LIBRARIES} ${LIBS})  
+  target_link_libraries(${PROJECT_NAME}_detect_node_a ${LIBS} ${catkin_LIBRARIES} )
+  target_link_libraries(${PROJECT_NAME}_detect_node_side ${LIBS} ${catkin_LIBRARIES} )
+  target_link_libraries(${PROJECT_NAME}_detect_node_top ${LIBS} ${catkin_LIBRARIES} )
+  target_link_libraries(${PROJECT_NAME}_detect_node_single_cam ${LIBS} ${catkin_LIBRARIES} )
+  target_link_libraries(${PROJECT_NAME}_depth_node_alignment ${LIBS} ${catkin_LIBRARIES} )
+  target_link_libraries(${PROJECT_NAME}_util_node_obj_pub ${LIBS} ${catkin_LIBRARIES} )
+  target_link_libraries(${PROJECT_NAME}_util_node_img_repub ${LIBS} ${catkin_LIBRARIES} )  
 endif ()

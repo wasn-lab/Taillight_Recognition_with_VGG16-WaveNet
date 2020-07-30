@@ -64,4 +64,11 @@ if (CATKIN_ENABLE_TESTING)
     MD5 fe9ddeb4a65c5c518145a2a5edd4dd08
   )
 
+  set(TEST_BAG "auto_record_2020-06-19-16-26-18_1_filtered.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 93e265acc97c7f951930f01d7cb938a5
+  )
+
 endif()
