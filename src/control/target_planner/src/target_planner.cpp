@@ -49,6 +49,7 @@ nav_msgs::Path final_waypoints;
 double Look_ahead_time = 1.6;
 double Look_ahead_S0 = 3;
 double current_velocity_ = 0;
+double wheel_dis = 3.8;
 
 bool current_pose_ini = false;
 bool ukfmm_ini = true;
@@ -63,39 +64,44 @@ bool checkInitialized()
   return initialized;
 }
 
-void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, double wheel_dis, ros::Publisher target_pub, ros::Publisher vehicle_target_pub)
+void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, double wheel_dis_, ros::Publisher target_pub, ros::Publisher vehicle_target_pub)
 { 
   double dis = 0.0;
   double ahead_dis = current_velocity_ * Look_ahead_time + Look_ahead_S0;
   // std::cout << "ahead_dis : " << ahead_dis << std::endl;
-  double prev_pose_x_ = final_waypoints.poses[0].pose.position.x;
-  double prev_pose_y_ = final_waypoints.poses[0].pose.position.y;
-  double next_pose_x_ = final_waypoints.poses[1].pose.position.x;
-  double next_pose_y_ = final_waypoints.poses[1].pose.position.y;
-  double dis_waypoints_ = std::sqrt((next_pose_x_-prev_pose_x_)*(next_pose_x_-prev_pose_x_)+(next_pose_y_-prev_pose_y_)*(next_pose_y_-prev_pose_y_));
-  double a_x = pose.x - prev_pose_x_;
-  double a_y = pose.y - prev_pose_y_;
-  double b_x = next_pose_x_ - prev_pose_x_;
-  double b_y = next_pose_y_ - prev_pose_y_;
-  double o_x = ((a_x*b_x + a_y*b_y)*b_x)/(dis_waypoints_);
-  double ahead_dis_ = 0.0;
-  // std::cout << "std::fabs(a_x*b_x + a_y*b_y) : " << std::fabs(a_x*b_x + a_y*b_y) << std::endl;
-  // std::cout << "abs(a_x*b_x + a_y*b_y) : " << abs(a_x*b_x + a_y*b_y) << std::endl;
-  // std::cout << next_pose_x_ << "/" << prev_pose_x_ << "/" << o_x << std::endl;
-  // if ((a_x*b_x + a_y*b_y) > 0)
-    // ahead_dis_ = ahead_dis + std::fabs(a_x*b_x + a_y*b_y)/std::sqrt(dis_waypoints_) + wheel_dis;
-  // else
-    // ahead_dis_ = ahead_dis - std::fabs(a_x*b_x + a_y*b_y)/std::sqrt(dis_waypoints_) + wheel_dis;
-  // if ((a_x*b_x + a_y*b_y) > 0)
-    ahead_dis_ = ahead_dis + (a_x*b_x + a_y*b_y)/std::sqrt(dis_waypoints_) + wheel_dis;
-  // else
-  //   ahead_dis_ = ahead_dis - (a_x*b_x + a_y*b_y)/std::sqrt(dis_waypoints_) + wheel_dis;
-  // std::cout << "ahead_dis_ : " << ahead_dis_ << std::endl;
   int waypoints_size = final_waypoints.poses.size();
+  double diss_max = 100;
+  int index_ = 0;
+  for (int i = 1; i < waypoints_size; i++)
+  {
+    double prev_pose_x_ = final_waypoints.poses[i-1].pose.position.x;
+    double prev_pose_y_ = final_waypoints.poses[i-1].pose.position.y;
+    double next_pose_x_ = final_waypoints.poses[i].pose.position.x;
+    double next_pose_y_ = final_waypoints.poses[i].pose.position.y;
+    double dis_waypoints_ = std::sqrt((next_pose_x_-prev_pose_x_)*(next_pose_x_-prev_pose_x_)+(next_pose_y_-prev_pose_y_)*(next_pose_y_-prev_pose_y_));
+    double a_x = pose.x - prev_pose_x_;
+    double a_y = pose.y - prev_pose_y_;
+    double b_x = next_pose_x_ - prev_pose_x_;
+    double b_y = next_pose_y_ - prev_pose_y_;
+    double diss = (a_x*b_x + a_y*b_y)/dis_waypoints_;
+
+    if (diss < diss_max && diss > 0)
+    {
+      diss_max = diss;
+      index_ = index_ + 1;
+    }
+    else
+    {
+      break;
+    }
+  }
+  double ahead_dis_ = ahead_dis + diss_max + wheel_dis_;
+  // std::cout << "diss_max : " << diss_max << std::endl;
+  // std::cout << "ahead_dis_ : " << ahead_dis_ << std::endl;
   int index = 0;
   double dis_waypoints = 0.0;
   // std::cout << "waypoints_size : " << waypoints_size << std::endl;
-  for (int i = 1; i < waypoints_size; i++)
+  for (int i = index_; i < waypoints_size; i++)
   {
     index = i;
     double prev_pose_x = final_waypoints.poses[i-1].pose.position.x;
@@ -134,7 +140,7 @@ void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, 
   geometry_msgs::PoseStamped vehicle_target_pose;
   vehicle_target_pose.header.frame_id = "base_link";
   vehicle_target_pose.header.stamp = ros::Time::now();
-  vehicle_target_pose.pose.position.x = vehicle_target.x;
+  vehicle_target_pose.pose.position.x = vehicle_target.x - wheel_dis;
   vehicle_target_pose.pose.position.y = vehicle_target.y;
   vehicle_target_pose.pose.position.z = target.z;
   vehicle_target_pose.pose.orientation.w = 1.0;
@@ -147,7 +153,7 @@ void run()
   std::cout << "rear_vehicle_targetpoint.x = " << rear_vehicle_targetpoint.x << std::endl;
   std::cout << "rear_vehicle_targetpoint.y = " << rear_vehicle_targetpoint.y << std::endl;
 
-  targetplanner(rear_current_pose, front_targetpoint, front_vehicle_targetpoint, 3.8, front_target_pub, front_vehicle_target_pub);
+  targetplanner(rear_current_pose, front_targetpoint, front_vehicle_targetpoint, wheel_dis, front_target_pub, front_vehicle_target_pub);
   std::cout << "front_vehicle_targetpoint.x = " << front_vehicle_targetpoint.x << std::endl;
   std::cout << "front_vehicle_targetpoint.y = " << front_vehicle_targetpoint.y << std::endl;
 }
@@ -223,6 +229,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "target_planner");
   ros::NodeHandle node;
+
+  ros::param::get(ros::this_node::getName()+"/Look_ahead_time", Look_ahead_time);
+  ros::param::get(ros::this_node::getName()+"/Look_ahead_S0", Look_ahead_S0);
+  
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, currentposeCallback);
   ros::Subscriber rear_current_pose_sub = node.subscribe("rear_current_pose", 1, rear_currentposeCallback);
   ros::Subscriber ukfmm_sub = node.subscribe("ukf_mm_topic", 1, ukfmm_callback);

@@ -6,6 +6,10 @@
   <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" />
   <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
 
+  <arg name="Look_ahead_time" default="1.6" />
+  <arg name="Look_ahead_S0" default="3" />
+  <arg name="wheel_dis" default="3.8" />
+
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
@@ -18,7 +22,11 @@
   </node>
 
   <!--path transfer node-->
-  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" />
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" >
+	<param name="Look_ahead_time" value="$(arg Look_ahead_time)" />
+	<param name="Look_ahead_S0" value="$(arg Look_ahead_S0)" />
+        <param name="wheel_dis" value="$(arg wheel_dis)" />
+  </node>
     
   <!-- target pub node-->
   <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" />
