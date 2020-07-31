@@ -9,8 +9,8 @@ class Projector3
 private:
   cv::Mat projectionMatrix;
   cv::Mat cameraExtrinsicMat;
-  cv::Mat rotarionMat;
-  cv::Mat rotarionVec;
+  cv::Mat rotationMat;
+  cv::Mat rotationVec;
   cv::Mat translationVec;
   cv::Mat cameraMat;
   cv::Mat distCoeff;
@@ -25,5 +25,6 @@ private:
 public:
   void init(int camera_id);
   std::vector<int> project(float x, float y, float z);
+  bool outOfFov(float x, float y, float z);
 };
 #endif

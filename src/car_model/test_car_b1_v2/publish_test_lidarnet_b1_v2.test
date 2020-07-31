@@ -1,6 +1,7 @@
 <launch>
     <include file="$(find lidar)/launch/b1.launch">
       <arg name="hardware_enable" value="0" />
+      <arg name="mps" value="0" />
     </include>
 
     <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-03-10-10-48-39_41.bag" />

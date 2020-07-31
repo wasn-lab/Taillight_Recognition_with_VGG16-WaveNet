@@ -50,3 +50,5 @@ YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID = {
     YoloLabel.MOTORBIKE: DeeplabLabel.MOTORBIKE,
     YoloLabel.PERSON: DeeplabLabel.PERSON,
     }
+
+DRIVENET_CLASS_IDS = [0, 1, 2, 3, 5, 7]
