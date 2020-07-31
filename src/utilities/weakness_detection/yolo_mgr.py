@@ -6,6 +6,7 @@ import datetime
 import sys
 import subprocess
 import multiprocessing
+from itertools import product
 from deeplab_mgr import (DeeplabMgr, deeplab_pos_to_raw_pos,
                          raw_image_pos_to_deeplab_pos,
                          get_deeplab_min_y,
@@ -92,10 +93,14 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     return num_mismatch
 
 
-def _cmpr_yolo_with_efficientdet(yolo_frame):
+def _cmpr_yolo_with_efficientdet_wrapper(args):
+    return _cmpr_yolo_with_efficientdet(*args)
+
+
+def _cmpr_yolo_with_efficientdet(yolo_frame, edet_coef):
     filename = yolo_frame["filename"]
     img_width, img_height = get_image_size(filename)
-    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d7.json")
+    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d{}.json".format(edet_coef))
     yolo_bboxes = [gen_bbox_by_yolo_object(_, img_width, img_height) for _ in yolo_frame["objects"]]
     edet_bboxes = edet_mgr.get_bboxes()
     num_mismatch = abs(len(yolo_bboxes) - len(edet_bboxes))
@@ -120,7 +125,8 @@ def _cmpr_yolo_with_efficientdet(yolo_frame):
 
 
 class YoloMgr(object):
-    def __init__(self, json_file):
+    def __init__(self, json_file, edet_coef=4):
+        self.edet_coef = edet_coef
         self.frames = read_json_file(json_file)
 
     def get_weakest_images(self, amount=0):
@@ -148,7 +154,7 @@ class YoloMgr(object):
         for idx, frame in enumerate(self.frames):
             frame["deeplab_disagree"] = res[idx]
 
-        res = pool.map(_cmpr_yolo_with_efficientdet, self.frames)
+        res = pool.map(_cmpr_yolo_with_efficientdet_wrapper, product(self.frames, [self.edet_coef]))
         for idx, frame in enumerate(self.frames):
             frame["edet_disagree"] = res[idx]
 
