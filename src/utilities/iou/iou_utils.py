@@ -21,7 +21,7 @@ def calc_iou5(box1, box2):
 
 
 def calc_iou_by_bbox(box1, box2):
-    """box: [class_id, left_x, top_y, right_x, bottom_y]"""
+    """bbox: A class with a member class_id and as_list() returning the bounding box"""
     if box1.class_id != box2.class_id:
         return 0
 
