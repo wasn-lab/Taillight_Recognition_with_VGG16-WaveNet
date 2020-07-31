@@ -224,8 +224,8 @@ void alignmentInitializer()
 void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<PixelPosition>>& cam_pixels,
                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
 {
-  // std::cout << "===== drawPointCloudOnImages... =====" << std::endl;
-#pragma omp parallel for  
+// std::cout << "===== drawPointCloudOnImages... =====" << std::endl;
+#pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     pcl::PointCloud<pcl::PointXYZI> point_cloud;
@@ -244,7 +244,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
                                 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                                 std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h)
 {
-  // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+// std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
 #pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
@@ -495,7 +495,7 @@ int main(int argc, char** argv)
 
   /// main loop start
   std::thread main_thread(runInference);
-  int thread_count = int(g_cam_ids.size())+ 1;  /// camera raw + lidar raw
+  int thread_count = int(g_cam_ids.size()) + 1;  /// camera raw + lidar raw
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
   std::cout << "===== Alignment_visualization running... =====" << std::endl;
