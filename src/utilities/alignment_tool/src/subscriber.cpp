@@ -107,14 +107,14 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/left_back_60", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_top_far_30", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
   while (ros::ok())
   {
     projector.setcameraMat(0,0,0,0);
-    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2],GlobalVariable::UI_PARA[3],GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5]);
+    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2] * 10,GlobalVariable::UI_PARA[3],GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5]);
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
@@ -141,33 +141,33 @@ void detection(int argc, char** argv)
           }
           int red_int = 0, gre_int = 0, blu_int = 0;
           double depths_float = (double)release_cloud->points[i].x;
-            if (depths_float <= 7)
+            if (abs(depths_float) <= 7)
             {
               red_int = 255;
-              gre_int = depths_float * 5;
+              gre_int = abs(depths_float) * 5;
               blu_int = 0;
             }
-            else if (depths_float <= 10)
+            else if (abs(depths_float) <= 10)
             {
-              red_int = 510 - (depths_float * 5);
+              red_int = 510 - (abs(depths_float) * 5);
               gre_int = 255;
               blu_int = 0;
             }
-            else if (depths_float <= 14)
+            else if (abs(depths_float) <= 14)
             {
               red_int = 0;
               gre_int = 255;
-              blu_int = (depths_float - 102) * 5;
+              blu_int = (abs(depths_float) - 102) * 5;
             }
-            else if (depths_float <= 21)
+            else if (abs(depths_float) <= 21)
             {
               red_int = 0;
-              gre_int = 1020 - (depths_float * 5);
+              gre_int = 1020 - (abs(depths_float) * 5);
               blu_int = 255;
             }
             else
             {
-              red_int = (depths_float - 204) * 5;
+              red_int = (abs(depths_float) - 204) * 5;
               gre_int = 0;
               blu_int = 255;
             }
