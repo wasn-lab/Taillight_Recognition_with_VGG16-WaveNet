@@ -109,7 +109,9 @@ bool Projector3::outOfFov(float x, float y, float z)
     double tan = point.at<double>(0, 0) / point.at<double>(2, 0);
     double angle = atan(tan) * 180 / M_PI;
     if (angle > 30 || angle < -30)
+    {
       return true;
+    }
   }
   return false;
 }
