@@ -38,7 +38,8 @@ using namespace DriveNet;
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
-                                         camera::id::right_back_60, camera::id::left_back_60 };
+                                         camera::id::front_top_close_120, camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -115,9 +116,39 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   g_mats[cam_order] = cv_ptr->image;
 }
 
+void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_close_120);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
+void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_front_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
 void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+
+  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
+  g_mats[cam_order] = cv_ptr->image;
+}
+
+void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -430,7 +461,9 @@ int main(int argc, char** argv)
 
   /// get callback function
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
-    callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_right_back_60, callback_cam_left_back_60
+    callback_cam_front_bottom_60, callback_cam_front_top_far_30,
+    callback_cam_front_top_close_120, callback_cam_right_front_60, callback_cam_right_back_60,
+    callback_cam_left_front_60, callback_cam_left_back_60
   };
 
   /// set topic name
@@ -462,7 +495,7 @@ int main(int argc, char** argv)
 
   /// main loop start
   std::thread main_thread(runInference);
-  int thread_count = int(g_cam_ids.size()) * 2 + 1;  /// camera raw + object + lidar raw
+  int thread_count = int(g_cam_ids.size())+ 1;  /// camera raw + lidar raw
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
   std::cout << "===== Alignment_visualization running... =====" << std::endl;
