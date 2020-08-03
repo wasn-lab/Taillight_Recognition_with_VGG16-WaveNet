@@ -144,8 +144,8 @@ bool Projector3::outOfFov(float x, float y, float z)
         std::cerr << " No match camera id, init failed." << std::endl;
       break;
     }
-  }
 #endif
+  }
   return false;
 }
 
