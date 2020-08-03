@@ -232,6 +232,7 @@ int main(int argc, char** argv)
 
   ros::param::get(ros::this_node::getName()+"/Look_ahead_time", Look_ahead_time);
   ros::param::get(ros::this_node::getName()+"/Look_ahead_S0", Look_ahead_S0);
+  ros::param::get(ros::this_node::getName()+"/wheel_dis", wheel_dis);
   
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, currentposeCallback);
   ros::Subscriber rear_current_pose_sub = node.subscribe("rear_current_pose", 1, rear_currentposeCallback);
