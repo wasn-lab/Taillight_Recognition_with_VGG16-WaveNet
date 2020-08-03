@@ -61,7 +61,7 @@ include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
 include_directories     (${CUDA_INCLUDE_DIRS}) 
-message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+#message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
  
 ######################
 ##       CUDA       ##

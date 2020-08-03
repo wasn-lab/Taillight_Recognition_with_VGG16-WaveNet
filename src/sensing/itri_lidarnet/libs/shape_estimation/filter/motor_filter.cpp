@@ -19,28 +19,32 @@
 
 #include "motor_filter.hpp"
 
-bool MotorFilter::filter(const CLUSTER_INFO & cluster_info)
+bool MotorFilter::filter(const CLUSTER_INFO& cluster_info)
 {
   double x = cluster_info.obb_dx;
   double y = cluster_info.obb_dy;
   double s = x * y;
   constexpr double min_width = 0.5;
   constexpr double max_width = 1.2;
-  constexpr double min_length = 1.0;
+  //constexpr double min_length = 1.0;
   constexpr double max_length = 2.0;
 
-  if (x < min_width && y < min_width) {
+  if (x < min_width && y < min_width)
+  {
     return false;
   }
-  if (max_width < x && max_width < y) {
+  if (max_width < x && max_width < y)
+  {
     return false;
   }
 
-  if (max_length < x || max_length < y) {
+  if (max_length < x || max_length < y)
+  {
     return false;
   }
 
-  if (s < 0.5 && max_length * max_width < s) {
+  if (s < 0.5 && max_length * max_width < s)
+  {
     return false;
   }
   return true;

@@ -84,7 +84,7 @@ int main(int argc, char** argv)
   // alpha_radar_parsing(t_frame);
 
   struct can_frame s_frame;
-  s_frame.can_id = 0xC1;
+  s_frame.can_id = 0xC2;
   s_frame.can_dlc = 8;
   s_frame.data[0] = 0x61;
   s_frame.data[1] = 0x72;
@@ -95,6 +95,11 @@ int main(int argc, char** argv)
   s_frame.data[6] = 0x20;
   s_frame.data[7] = 0x32;
   int s_result = write(s, &s_frame, sizeof(s_frame));
+
+  s_frame.can_id = 0xC3;
+
+  s_result = write(s, &s_frame, sizeof(s_frame));
+
   if (s_result != sizeof(s_frame))
   {
     printf("Error\n!");

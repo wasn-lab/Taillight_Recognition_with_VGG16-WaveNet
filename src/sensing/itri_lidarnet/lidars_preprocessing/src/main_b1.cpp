@@ -6,6 +6,7 @@
 #include "PlaneGroundFilter.h"
 #include "RayGroundFilter.h"
 #include "extract_Indices.h"
+#include "NoiseFilter.h"
 
 #if ENABLE_DEBUG_MODE == true
 #include "UI/QtViewer.h"
