@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <osm generator="VMB">
-<MetaInfo format_version="1" map_version="5"/>
+<MetaInfo format_version="1" map_version="4"/>
 <node id="393867" lat="24.772792143842857" lon="121.04473002273795">
 <tag k="type" v=""/>
 <tag k="subtype" v=""/>
@@ -62254,7 +62254,6 @@
 <relation id="399192">
 <member type="way" ref="399187" role="left"/>
 <member type="way" ref="399186" role="right"/>
-<tag k="turn_direction" v="straight"/>
 <tag k="type" v="lanelet"/>
 <tag k="subtype" v="road"/>
 <tag k="location" v="urban"/>
@@ -62275,7 +62274,6 @@
 <relation id="399254">
 <member type="way" ref="399201" role="left"/>
 <member type="way" ref="399200" role="right"/>
-<tag k="turn_direction" v="right"/>
 <tag k="type" v="lanelet"/>
 <tag k="subtype" v="road"/>
 <tag k="location" v="urban"/>
@@ -62286,7 +62284,6 @@
 <relation id="399283">
 <member type="way" ref="399256" role="left"/>
 <member type="way" ref="399255" role="right"/>
-<tag k="turn_direction" v="left"/>
 <tag k="type" v="lanelet"/>
 <tag k="subtype" v="road"/>
 <tag k="location" v="urban"/>
@@ -62297,7 +62294,6 @@
 <relation id="399354">
 <member type="way" ref="399285" role="left"/>
 <member type="way" ref="399284" role="right"/>
-<tag k="turn_direction" v="right"/>
 <tag k="type" v="lanelet"/>
 <tag k="subtype" v="road"/>
 <tag k="location" v="urban"/>
@@ -62308,7 +62304,6 @@
 <relation id="399413">
 <member type="way" ref="399356" role="left"/>
 <member type="way" ref="399355" role="right"/>
-<tag k="turn_direction" v="left"/>
 <tag k="type" v="lanelet"/>
 <tag k="subtype" v="road"/>
 <tag k="location" v="urban"/>
@@ -62329,7 +62324,6 @@
 <relation id="399429">
 <member type="way" ref="399424" role="left"/>
 <member type="way" ref="399423" role="right"/>
-<tag k="turn_direction" v="straight"/>
 <tag k="type" v="lanelet"/>
 <tag k="subtype" v="road"/>
 <tag k="location" v="urban"/>

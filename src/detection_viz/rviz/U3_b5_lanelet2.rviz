@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Local_Path1
         - /Map_pp1
         - /Planning1
       Splitter Ratio: 0.5828729271888733
@@ -135,7 +136,8 @@ Visualization Manager:
       Marker Topic: /LidarDetection/poly
       Name: Lidar_polygon
       Namespaces:
-        {}
+        /LidarDetection: true
+        /LidarDetection_depth: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -256,7 +258,7 @@ Visualization Manager:
       Marker Topic: /PathPredictionOutput/delayTxt
       Name: tracking_latency
       Namespaces:
-        /PathPredictionOutput_d: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Group
@@ -328,7 +330,7 @@ Visualization Manager:
       Marker Topic: /RadarMarker
       Name: Radar_filtered_point
       Namespaces:
-        {}
+        RadarPlotter: true
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -340,7 +342,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 3
+      Line Width: 2
       Name: Local_Path
       Offset:
         X: 0
@@ -653,7 +655,7 @@ Visualization Manager:
         - Class: rviz/MarkerArray
           Enabled: true
           Marker Topic: /map/vector_map_marker
-          Name: vector_map
+          Name: VectorMap
           Namespaces:
             {}
           Queue Size: 100
@@ -661,15 +663,78 @@ Visualization Manager:
         - Class: rviz/MarkerArray
           Enabled: true
           Marker Topic: /planning/mission_planning/route_marker
-          Name: Mission_planning
+          Name: MissionPlanning
           Namespaces:
             {}
           Queue Size: 100
           Value: true
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz_plugins/Path
+              Color Border Vel Max: 3
+              Enabled: true
+              Name: Path
+              Topic: /planning/scenario_planning/lane_driving/behavior_planning/path
+              Unreliable: false
+              Value: true
+              View Path:
+                Alpha: 0.4000000059604645
+                Color: 0; 0; 0
+                Constant Color: false
+                Value: true
+                Width: 2
+              View Velocity:
+                Alpha: 0.4000000059604645
+                Color: 0; 0; 0
+                Constant Color: false
+                Scale: 0.30000001192092896
+                Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/blind_spot
+              Name: Blind Spot
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk
+              Name: Crosswalk
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/intersection
+              Name: Intersection
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/stop_line
+              Name: StopLine
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/MarkerArray
+              Enabled: true
+              Marker Topic: /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/traffic_light
+              Name: TrafficLight
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: BehaviorPlanning
         - Class: rviz/MarkerArray
           Enabled: true
           Marker Topic: /planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/marker
-          Name: obstacle_avoidance
+          Name: ObstaclePointCloudStop
           Namespaces:
             {}
           Queue Size: 100
@@ -677,8 +742,8 @@ Visualization Manager:
         - Class: rviz_plugins/Trajectory
           Color Border Vel Max: 3
           Enabled: true
-          Name: Final_path
-          Topic: /planning/scenario_planning/lane_driving/trajectory
+          Name: ScenarioTrajectory
+          Topic: /planning/scenario_planning/trajectory
           Unreliable: false
           Value: true
           View Path:
@@ -693,6 +758,21 @@ Visualization Manager:
             Constant Color: false
             Scale: 0.30000001192092896
             Value: true
+        - Alpha: 1
+          Axes Length: 1
+          Axes Radius: 0.10000000149011612
+          Class: rviz/Pose
+          Color: 255; 25; 0
+          Enabled: true
+          Head Length: 0.30000001192092896
+          Head Radius: 0.10000000149011612
+          Name: front_vehicle_target
+          Shaft Length: 1
+          Shaft Radius: 1
+          Shape: Arrow
+          Topic: /front_vehicle_target_point
+          Unreliable: false
+          Value: true
       Enabled: true
       Name: Planning
   Enabled: true
@@ -741,7 +821,7 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: base_link
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.1454074382781982
+      Yaw: 3.145409107208252
     Saved: ~
 Window Geometry:
   Displays:
