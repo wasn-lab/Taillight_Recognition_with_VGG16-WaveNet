@@ -109,6 +109,8 @@ bool Projector3::outOfFov(float x, float y, float z)
     }
     double tan = point.at<double>(0, 0) / point.at<double>(2, 0);
     double angle = atan(tan) * 180 / M_PI;
+
+#if CAR_MODEL_IS_B1_V2
     switch (camera_id_)
     {
       case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
@@ -143,6 +145,7 @@ bool Projector3::outOfFov(float x, float y, float z)
       break;
     }
   }
+#endif
   return false;
 }
 

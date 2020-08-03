@@ -107,7 +107,7 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_top_close_120", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/right_back_60", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
