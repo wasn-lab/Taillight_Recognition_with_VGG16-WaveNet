@@ -25,6 +25,11 @@ fi
 
 source devel/setup.bash
 
+# cache *.engine for quick loading
+for engine in `find src/sensing -name "*.engine"`; do
+  cat $engine > /dev/null 2>&1
+done
+
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v2.test
 #rostest car_model publish_test_tpp_b1_v2.test
