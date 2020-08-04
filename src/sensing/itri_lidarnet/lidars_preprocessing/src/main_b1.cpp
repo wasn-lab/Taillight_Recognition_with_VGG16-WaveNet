@@ -61,7 +61,7 @@ void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     // *indices_ground = RayGroundFilter (2.57, 2.8, 9.0, 0.01, 0.01, 0.15, 0.3, 0.8, 0.175).compute<PointXYZ> (buff);
     // extract_Indices<PointXYZI> (ptr_cur_cloud, indices_ground, *cloud_ground, *cloud_non_ground);
 
-    *indices_ground = PlaneGroundFilter().runMorphological<PointXYZI>(ptr_cur_cloud, 0.05, 2, 1, 0.9, 0.32, 0.34);
+    *indices_ground = PlaneGroundFilter().runMorphological<PointXYZI>(ptr_cur_cloud, 0.2, 2, 1, 0.9, 0.32, 0.34);
     extract_Indices<PointXYZI>(ptr_cur_cloud, indices_ground, *cloud_ground, *cloud_non_ground);
 
     // Noise Filter --------------------------------------------------------
