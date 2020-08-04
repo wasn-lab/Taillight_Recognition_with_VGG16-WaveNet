@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import unittest
 from deeplab_mgr import deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
-from image_consts import LETTERBOX_BORDER_WIDTH, DEEPLAB_RAW_TO_DEEPLAB_SCALE, DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH, DEEPLAB_IMAGE_HEIGHT, RAW_IMAGE_WIDTH, RAW_IMAGE_HEIGHT
+from image_consts import (DEEPLAB_IMAGE_WIDTH, RAW_IMAGE_WIDTH,
+                          RAW_IMAGE_HEIGHT)
 
 
-class YoloBBoxTest(unittest.TestCase):
+class DeeplabMgrTest(unittest.TestCase):
     def test_deeplab_pos_to_raw_pos(self):
         raw_x, raw_y = 100, 150
         deeplab_x, deeplab_y = raw_image_pos_to_deeplab_pos(raw_x, raw_y)
@@ -13,12 +14,10 @@ class YoloBBoxTest(unittest.TestCase):
         self.assertEqual(_x, raw_x)
         self.assertEqual(_y, raw_y)
 
-        raw_x, raw_y = deeplab_pos_to_raw_pos(0, DEEPLAB_MIN_Y)
-        self.assertEqual(raw_x, 0)
-        self.assertTrue(raw_y <= 1)  # rounding error
-
-        self.assertEqual(deeplab_pos_to_raw_pos(DEEPLAB_IMAGE_WIDTH - 1, DEEPLAB_MAX_Y), (RAW_IMAGE_WIDTH - 1, RAW_IMAGE_HEIGHT - 1))
-
+        raw_x, raw_y = 817, 360
+        x, y = raw_image_pos_to_deeplab_pos(raw_x, raw_y, 1280, 720)
+        self.assertTrue(abs(x - 327) <= 1)
+        self.assertTrue(abs(y - 256) <= 1)
 
 if __name__ == "__main__":
     unittest.main()

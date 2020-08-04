@@ -16,9 +16,10 @@
 #include "ouster_ros/PacketMsg.h"
 #include "ouster_ros/point_os1.h"
 
-namespace ouster_ros {
-namespace OS1 {
-
+namespace ouster_ros
+{
+namespace OS1
+{
 using CloudOS1 = pcl::PointCloud<PointOS1>;
 using ns = std::chrono::nanoseconds;
 
@@ -46,8 +47,7 @@ bool read_lidar_packet(const ouster::OS1::client& cli, PacketMsg& pm);
  * @param frame the frame to set in the resulting ROS message
  * @return ROS sensor message with fields populated from the OS1 packet
  */
-sensor_msgs::Imu packet_to_imu_msg(const PacketMsg& pm,
-                                   const std::string& frame);
+sensor_msgs::Imu packet_to_imu_msg(const PacketMsg& pm, const std::string& frame);
 
 /**
  * Serialize a PCL point cloud to a ROS message
@@ -56,8 +56,7 @@ sensor_msgs::Imu packet_to_imu_msg(const PacketMsg& pm,
  * @param frame the frame to set in the resulting ROS message
  * @return a ROS message containing the point cloud
  */
-sensor_msgs::PointCloud2 cloud_to_cloud_msg(const CloudOS1& cloud, ns timestamp,
-                                            const std::string& frame);
+sensor_msgs::PointCloud2 cloud_to_cloud_msg(const CloudOS1& cloud, ns timestamp, const std::string& frame);
 
 /**
  * Convert transformation matrix return by sensor to ROS transform
@@ -66,8 +65,7 @@ sensor_msgs::PointCloud2 cloud_to_cloud_msg(const CloudOS1& cloud, ns timestamp,
  * @param child_frame the child frame of the published transform
  * @return ROS message suitable for publishing as a transform
  */
-geometry_msgs::TransformStamped transform_to_tf_msg(
-    const std::vector<double>& mat, const std::string& frame,
-    const std::string& child_frame);
-}
-}
+geometry_msgs::TransformStamped transform_to_tf_msg(const std::vector<double>& mat, const std::string& frame,
+                                                    const std::string& child_frame);
+}  // namespace OS1
+}  // namespace ouster_ros

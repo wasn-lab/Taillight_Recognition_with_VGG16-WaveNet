@@ -330,249 +330,249 @@ public:
     LidarDetectionRVIZ_pub.publish(markerArray);
   }
 
-//   static void Send_LidarResultsRVIZ_abb(CLUSTER_INFO* cluster_info, int cluster_size)
-//   {
-//     static ros::Publisher LidarDetectionRVIZ_abb_pub =
-//         ros::NodeHandle().advertise<visualization_msgs::MarkerArray>("/LidarDetection/abbs", 1);
+  static void Send_LidarResultsRVIZ_abb(CLUSTER_INFO* cluster_info, int cluster_size)
+  {
+    static ros::Publisher LidarDetectionRVIZ_abb_pub =
+        ros::NodeHandle().advertise<visualization_msgs::MarkerArray>("/LidarDetection/abbs", 1);
 
-//     visualization_msgs::MarkerArray markerArray;
-//     markerArray.markers.resize(cluster_size);
+    visualization_msgs::MarkerArray markerArray;
+    markerArray.markers.resize(cluster_size);
 
-//     size_t TrackID = 0;
-//     for (int i = 0; i < cluster_size; ++i)
-//     {
-//       markerArray.markers[i].header.frame_id = "lidar";
-//       markerArray.markers[i].header.stamp = ros::Time();
-//       markerArray.markers[i].id = TrackID++;
-//       markerArray.markers[i].action = visualization_msgs::Marker::ADD;
-//       markerArray.markers[i].type = visualization_msgs::Marker::LINE_LIST;
-//       markerArray.markers[i].pose.orientation.w = 1.0;
-//       markerArray.markers[i].scale.x = 0.05;
+    size_t TrackID = 0;
+    for (int i = 0; i < cluster_size; ++i)
+    {
+      markerArray.markers[i].header.frame_id = "lidar";
+      markerArray.markers[i].header.stamp = ros::Time();
+      markerArray.markers[i].id = TrackID++;
+      markerArray.markers[i].action = visualization_msgs::Marker::ADD;
+      markerArray.markers[i].type = visualization_msgs::Marker::LINE_LIST;
+      markerArray.markers[i].pose.orientation.w = 1.0;
+      markerArray.markers[i].scale.x = 0.05;
 
-//       switch (cluster_info[i].cluster_tag)
-//       {
-//         case nnClassID::Person:
-//           markerArray.markers[i].color.r = 0.0;
-//           markerArray.markers[i].color.g = 1.0;
-//           markerArray.markers[i].color.b = 1.0;
-//           markerArray.markers[i].color.a = 1.0;
-//           break;
-//         case nnClassID::Motobike:
-//           markerArray.markers[i].color.r = 1.0;
-//           markerArray.markers[i].color.g = 0.0;
-//           markerArray.markers[i].color.b = 1.0;
-//           markerArray.markers[i].color.a = 1.0;
-//           break;
-//         case nnClassID::Car:
-//           markerArray.markers[i].color.r = 0.0;
-//           markerArray.markers[i].color.g = 1.0;
-//           markerArray.markers[i].color.b = 0.0;
-//           markerArray.markers[i].color.a = 1.0;
-//           break;
-//           ;
-//         default:
-//           markerArray.markers[i].color.r = 1.0;
-//           markerArray.markers[i].color.g = 0.0;
-//           markerArray.markers[i].color.b = 0.0;
-//           markerArray.markers[i].color.a = 1.0;
-//       }
+      switch (cluster_info[i].cluster_tag)
+      {
+        case nnClassID::Person:
+          markerArray.markers[i].color.r = 0.0;
+          markerArray.markers[i].color.g = 1.0;
+          markerArray.markers[i].color.b = 1.0;
+          markerArray.markers[i].color.a = 1.0;
+          break;
+        case nnClassID::Motobike:
+          markerArray.markers[i].color.r = 1.0;
+          markerArray.markers[i].color.g = 0.0;
+          markerArray.markers[i].color.b = 1.0;
+          markerArray.markers[i].color.a = 1.0;
+          break;
+        case nnClassID::Car:
+          markerArray.markers[i].color.r = 0.0;
+          markerArray.markers[i].color.g = 1.0;
+          markerArray.markers[i].color.b = 0.0;
+          markerArray.markers[i].color.a = 1.0;
+          break;
+          ;
+        default:
+          markerArray.markers[i].color.r = 1.0;
+          markerArray.markers[i].color.g = 0.0;
+          markerArray.markers[i].color.b = 0.0;
+          markerArray.markers[i].color.a = 1.0;
+      }
 
-//       markerArray.markers[i].lifetime = ros::Duration(0.1);
+      markerArray.markers[i].lifetime = ros::Duration(0.1);
 
-//       // draw a 2D polygon at the side of minY
-//       for (size_t j = 0; j < cluster_info[i].abb_vertex.size()/2; ++j)
-//       {
-//         geometry_msgs::Point p;
+      // draw a 2D polygon at the side of minY
+      for (size_t j = 0; j < cluster_info[i].abb_vertex.size() / 2; ++j)
+      {
+        geometry_msgs::Point p;
 
-//         p.x = cluster_info[i].abb_vertex[j].x;
-//         p.y = cluster_info[i].abb_vertex[j].y;
-//         p.z = cluster_info[i].abb_vertex[j].z;
-//         markerArray.markers[i].points.push_back(p);
+        p.x = cluster_info[i].abb_vertex[j].x;
+        p.y = cluster_info[i].abb_vertex[j].y;
+        p.z = cluster_info[i].abb_vertex[j].z;
+        markerArray.markers[i].points.push_back(p);
 
-//         if (j == cluster_info[i].abb_vertex.size()/2 - 1)
-//         {
-//           p.x = cluster_info[i].abb_vertex[0].x;
-//           p.y = cluster_info[i].abb_vertex[0].y;
-//           p.z = cluster_info[i].abb_vertex[0].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//         else
-//         {
-//           p.x = cluster_info[i].abb_vertex[j + 1].x;
-//           p.y = cluster_info[i].abb_vertex[j + 1].y;
-//           p.z = cluster_info[i].abb_vertex[j + 1].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//       }
+        if (j == cluster_info[i].abb_vertex.size() / 2 - 1)
+        {
+          p.x = cluster_info[i].abb_vertex[0].x;
+          p.y = cluster_info[i].abb_vertex[0].y;
+          p.z = cluster_info[i].abb_vertex[0].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+        else
+        {
+          p.x = cluster_info[i].abb_vertex[j + 1].x;
+          p.y = cluster_info[i].abb_vertex[j + 1].y;
+          p.z = cluster_info[i].abb_vertex[j + 1].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+      }
 
-// #if (true)
-//       // draw a 2D polygon at the side of maxY
-//       for (size_t j = cluster_info[i].abb_vertex.size()/2; j < cluster_info[i].abb_vertex.size(); ++j)
-//       {
-//         geometry_msgs::Point p;
+#if (true)
+      // draw a 2D polygon at the side of maxY
+      for (size_t j = cluster_info[i].abb_vertex.size() / 2; j < cluster_info[i].abb_vertex.size(); ++j)
+      {
+        geometry_msgs::Point p;
 
-//         p.x = cluster_info[i].abb_vertex[j].x;
-//         p.y = cluster_info[i].abb_vertex[j].y;
-//         p.z = cluster_info[i].abb_vertex[j].z;
-//         markerArray.markers[i].points.push_back(p);
+        p.x = cluster_info[i].abb_vertex[j].x;
+        p.y = cluster_info[i].abb_vertex[j].y;
+        p.z = cluster_info[i].abb_vertex[j].z;
+        markerArray.markers[i].points.push_back(p);
 
-//         if (j == cluster_info[i].abb_vertex.size() - 1)
-//         {
-//           p.x = cluster_info[i].abb_vertex[4].x;
-//           p.y = cluster_info[i].abb_vertex[4].y;
-//           p.z = cluster_info[i].abb_vertex[4].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//         else
-//         {
-//           p.x = cluster_info[i].abb_vertex[j + 1].x;
-//           p.y = cluster_info[i].abb_vertex[j + 1].y;
-//           p.z = cluster_info[i].abb_vertex[j + 1].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//       }
+        if (j == cluster_info[i].abb_vertex.size() - 1)
+        {
+          p.x = cluster_info[i].abb_vertex[4].x;
+          p.y = cluster_info[i].abb_vertex[4].y;
+          p.z = cluster_info[i].abb_vertex[4].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+        else
+        {
+          p.x = cluster_info[i].abb_vertex[j + 1].x;
+          p.y = cluster_info[i].abb_vertex[j + 1].y;
+          p.z = cluster_info[i].abb_vertex[j + 1].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+      }
 
-//       // draw vertical lines of bounding box
-//       for (size_t j = 0; j < cluster_info[i].abb_vertex.size()/2; ++j)
-//       {
-//         geometry_msgs::Point p;
+      // draw vertical lines of bounding box
+      for (size_t j = 0; j < cluster_info[i].abb_vertex.size() / 2; ++j)
+      {
+        geometry_msgs::Point p;
 
-//         p.x = cluster_info[i].abb_vertex[j].x;
-//         p.y = cluster_info[i].abb_vertex[j].y;
-//         p.z = cluster_info[i].abb_vertex[j].z;
-//         markerArray.markers[i].points.push_back(p);
+        p.x = cluster_info[i].abb_vertex[j].x;
+        p.y = cluster_info[i].abb_vertex[j].y;
+        p.z = cluster_info[i].abb_vertex[j].z;
+        markerArray.markers[i].points.push_back(p);
 
-//         p.x = cluster_info[i].abb_vertex[j + 4].x;
-//         p.y = cluster_info[i].abb_vertex[j + 4].y;
-//         p.z = cluster_info[i].abb_vertex[j + 4].z;
-//         markerArray.markers[i].points.push_back(p);
-//       }
-// #endif
-//     }
-//     LidarDetectionRVIZ_abb_pub.publish(markerArray);
-//   }
+        p.x = cluster_info[i].abb_vertex[j + 4].x;
+        p.y = cluster_info[i].abb_vertex[j + 4].y;
+        p.z = cluster_info[i].abb_vertex[j + 4].z;
+        markerArray.markers[i].points.push_back(p);
+      }
+#endif
+    }
+    LidarDetectionRVIZ_abb_pub.publish(markerArray);
+  }
 
-//   static void Send_LidarResultsRVIZ_obb(CLUSTER_INFO* cluster_info, int cluster_size)
-//   {
-//     static ros::Publisher LidarDetectionRVIZ_obb_pub =
-//         ros::NodeHandle().advertise<visualization_msgs::MarkerArray>("/LidarDetection/obbs", 1);
+  static void Send_LidarResultsRVIZ_obb(CLUSTER_INFO* cluster_info, int cluster_size)
+  {
+    static ros::Publisher LidarDetectionRVIZ_obb_pub =
+        ros::NodeHandle().advertise<visualization_msgs::MarkerArray>("/LidarDetection/obbs", 1);
 
-//     visualization_msgs::MarkerArray markerArray;
-//     markerArray.markers.resize(cluster_size);
+    visualization_msgs::MarkerArray markerArray;
+    markerArray.markers.resize(cluster_size);
 
-//     size_t TrackID = 0;
-//     for (int i = 0; i < cluster_size; ++i)
-//     {
-//       markerArray.markers[i].header.frame_id = "lidar";
-//       markerArray.markers[i].header.stamp = ros::Time();
-//       markerArray.markers[i].id = TrackID++;
-//       markerArray.markers[i].action = visualization_msgs::Marker::ADD;
-//       markerArray.markers[i].type = visualization_msgs::Marker::LINE_LIST;
-//       markerArray.markers[i].pose.orientation.w = 1.0;
-//       markerArray.markers[i].scale.x = 0.05;
+    size_t TrackID = 0;
+    for (int i = 0; i < cluster_size; ++i)
+    {
+      markerArray.markers[i].header.frame_id = "lidar";
+      markerArray.markers[i].header.stamp = ros::Time();
+      markerArray.markers[i].id = TrackID++;
+      markerArray.markers[i].action = visualization_msgs::Marker::ADD;
+      markerArray.markers[i].type = visualization_msgs::Marker::LINE_LIST;
+      markerArray.markers[i].pose.orientation.w = 1.0;
+      markerArray.markers[i].scale.x = 0.05;
 
-//       switch (cluster_info[i].cluster_tag)
-//       {
-//         case nnClassID::Person:
-//           markerArray.markers[i].color.r = 0.0;
-//           markerArray.markers[i].color.g = 1.0;
-//           markerArray.markers[i].color.b = 1.0;
-//           markerArray.markers[i].color.a = 1.0;
-//           break;
-//         case nnClassID::Motobike:
-//           markerArray.markers[i].color.r = 1.0;
-//           markerArray.markers[i].color.g = 0.0;
-//           markerArray.markers[i].color.b = 1.0;
-//           markerArray.markers[i].color.a = 1.0;
-//           break;
-//         case nnClassID::Car:
-//           markerArray.markers[i].color.r = 0.0;
-//           markerArray.markers[i].color.g = 1.0;
-//           markerArray.markers[i].color.b = 0.0;
-//           markerArray.markers[i].color.a = 1.0;
-//           break;
-//           ;
-//         default:
-//           markerArray.markers[i].color.r = 1.0;
-//           markerArray.markers[i].color.g = 0.0;
-//           markerArray.markers[i].color.b = 0.0;
-//           markerArray.markers[i].color.a = 1.0;
-//       }
+      switch (cluster_info[i].cluster_tag)
+      {
+        case nnClassID::Person:
+          markerArray.markers[i].color.r = 0.0;
+          markerArray.markers[i].color.g = 1.0;
+          markerArray.markers[i].color.b = 1.0;
+          markerArray.markers[i].color.a = 1.0;
+          break;
+        case nnClassID::Motobike:
+          markerArray.markers[i].color.r = 1.0;
+          markerArray.markers[i].color.g = 0.0;
+          markerArray.markers[i].color.b = 1.0;
+          markerArray.markers[i].color.a = 1.0;
+          break;
+        case nnClassID::Car:
+          markerArray.markers[i].color.r = 0.0;
+          markerArray.markers[i].color.g = 1.0;
+          markerArray.markers[i].color.b = 0.0;
+          markerArray.markers[i].color.a = 1.0;
+          break;
+          ;
+        default:
+          markerArray.markers[i].color.r = 1.0;
+          markerArray.markers[i].color.g = 0.0;
+          markerArray.markers[i].color.b = 0.0;
+          markerArray.markers[i].color.a = 1.0;
+      }
 
-//       markerArray.markers[i].lifetime = ros::Duration(0.1);
+      markerArray.markers[i].lifetime = ros::Duration(0.1);
 
-//       // draw a 2D polygon at the side of minY
-//       for (size_t j = 0; j < cluster_info[i].obb_vertex.size()/2; ++j)
-//       {
-//         geometry_msgs::Point p;
+      // draw a 2D polygon at the side of minY
+      for (size_t j = 0; j < cluster_info[i].obb_vertex.size() / 2; ++j)
+      {
+        geometry_msgs::Point p;
 
-//         p.x = cluster_info[i].obb_vertex[j].x;
-//         p.y = cluster_info[i].obb_vertex[j].y;
-//         p.z = cluster_info[i].obb_vertex[j].z;
-//         markerArray.markers[i].points.push_back(p);
+        p.x = cluster_info[i].obb_vertex[j].x;
+        p.y = cluster_info[i].obb_vertex[j].y;
+        p.z = cluster_info[i].obb_vertex[j].z;
+        markerArray.markers[i].points.push_back(p);
 
-//         if (j == cluster_info[i].obb_vertex.size()/2 - 1)
-//         {
-//           p.x = cluster_info[i].obb_vertex[0].x;
-//           p.y = cluster_info[i].obb_vertex[0].y;
-//           p.z = cluster_info[i].obb_vertex[0].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//         else
-//         {
-//           p.x = cluster_info[i].obb_vertex[j + 1].x;
-//           p.y = cluster_info[i].obb_vertex[j + 1].y;
-//           p.z = cluster_info[i].obb_vertex[j + 1].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//       }
+        if (j == cluster_info[i].obb_vertex.size() / 2 - 1)
+        {
+          p.x = cluster_info[i].obb_vertex[0].x;
+          p.y = cluster_info[i].obb_vertex[0].y;
+          p.z = cluster_info[i].obb_vertex[0].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+        else
+        {
+          p.x = cluster_info[i].obb_vertex[j + 1].x;
+          p.y = cluster_info[i].obb_vertex[j + 1].y;
+          p.z = cluster_info[i].obb_vertex[j + 1].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+      }
 
-// #if (true)
-//       // draw a 2D polygon at the side of maxY
-//       for (size_t j = cluster_info[i].obb_vertex.size()/2; j < cluster_info[i].obb_vertex.size(); ++j)
-//       {
-//         geometry_msgs::Point p;
+#if (true)
+      // draw a 2D polygon at the side of maxY
+      for (size_t j = cluster_info[i].obb_vertex.size() / 2; j < cluster_info[i].obb_vertex.size(); ++j)
+      {
+        geometry_msgs::Point p;
 
-//         p.x = cluster_info[i].obb_vertex[j].x;
-//         p.y = cluster_info[i].obb_vertex[j].y;
-//         p.z = cluster_info[i].obb_vertex[j].z;
-//         markerArray.markers[i].points.push_back(p);
+        p.x = cluster_info[i].obb_vertex[j].x;
+        p.y = cluster_info[i].obb_vertex[j].y;
+        p.z = cluster_info[i].obb_vertex[j].z;
+        markerArray.markers[i].points.push_back(p);
 
-//         if (j == cluster_info[i].obb_vertex.size() - 1)
-//         {
-//           p.x = cluster_info[i].obb_vertex[4].x;
-//           p.y = cluster_info[i].obb_vertex[4].y;
-//           p.z = cluster_info[i].obb_vertex[4].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//         else
-//         {
-//           p.x = cluster_info[i].obb_vertex[j + 1].x;
-//           p.y = cluster_info[i].obb_vertex[j + 1].y;
-//           p.z = cluster_info[i].obb_vertex[j + 1].z;
-//           markerArray.markers[i].points.push_back(p);
-//         }
-//       }
+        if (j == cluster_info[i].obb_vertex.size() - 1)
+        {
+          p.x = cluster_info[i].obb_vertex[4].x;
+          p.y = cluster_info[i].obb_vertex[4].y;
+          p.z = cluster_info[i].obb_vertex[4].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+        else
+        {
+          p.x = cluster_info[i].obb_vertex[j + 1].x;
+          p.y = cluster_info[i].obb_vertex[j + 1].y;
+          p.z = cluster_info[i].obb_vertex[j + 1].z;
+          markerArray.markers[i].points.push_back(p);
+        }
+      }
 
-//       // draw vertical lines of bounding box
-//       for (size_t j = 0; j < cluster_info[i].obb_vertex.size()/2; ++j)
-//       {
-//         geometry_msgs::Point p;
+      // draw vertical lines of bounding box
+      for (size_t j = 0; j < cluster_info[i].obb_vertex.size() / 2; ++j)
+      {
+        geometry_msgs::Point p;
 
-//         p.x = cluster_info[i].obb_vertex[j].x;
-//         p.y = cluster_info[i].obb_vertex[j].y;
-//         p.z = cluster_info[i].obb_vertex[j].z;
-//         markerArray.markers[i].points.push_back(p);
+        p.x = cluster_info[i].obb_vertex[j].x;
+        p.y = cluster_info[i].obb_vertex[j].y;
+        p.z = cluster_info[i].obb_vertex[j].z;
+        markerArray.markers[i].points.push_back(p);
 
-//         p.x = cluster_info[i].obb_vertex[j + 4].x;
-//         p.y = cluster_info[i].obb_vertex[j + 4].y;
-//         p.z = cluster_info[i].obb_vertex[j + 4].z;
-//         markerArray.markers[i].points.push_back(p);
-//       }
-// #endif
-//     }
-//     LidarDetectionRVIZ_obb_pub.publish(markerArray);
-//   }
+        p.x = cluster_info[i].obb_vertex[j + 4].x;
+        p.y = cluster_info[i].obb_vertex[j + 4].y;
+        p.z = cluster_info[i].obb_vertex[j + 4].z;
+        markerArray.markers[i].points.push_back(p);
+      }
+#endif
+    }
+    LidarDetectionRVIZ_obb_pub.publish(markerArray);
+  }
 
   static void Send_LidarResultsGrid(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime,
                                     const string& frameId)

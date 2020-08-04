@@ -29,6 +29,9 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+using namespace std;
+
+
 ros::Publisher RadFrontPub;
 
 double imu_angular_velocity_z = 0;
@@ -40,6 +43,16 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   msgs::Rad rad;
   msgs::PointXYZV point;
 
+  //             _____
+  //             |   |
+  //             |   |
+  //             |   |
+  //             |   |
+  //             |   |
+  //             |___|
+  //
+  //
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
     int m_NeedAdd = 0;
@@ -47,7 +60,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
     double y = abs(msg->radPoint[i].y);
     double speed = abs(msg->radPoint[i].speed);
 
-    if (y == 0 || speed > 80 || x > 50)
+    if (speed > 80 || x > 80)
     {
       continue;
     }
@@ -73,22 +86,27 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
     }
     else
     {
-      if (y < 1.2 && speed > 3)
-      {
-        m_NeedAdd = 1;
-      }
-      else if (y < 15 && y >= 1.2 && speed > 0)
-      {
-        m_NeedAdd = 1;
-      }
+      // 直線先不做判斷，先讓AEB work
+      m_NeedAdd = 1;
+      // if (y < 1.2 && speed > 3)
+      // {
+      //   m_NeedAdd = 1;
+      // }
+      // else if (y < 15 && y >= 1.2 && speed > 0)
+      // {
+      //   m_NeedAdd = 1;
+      // }
     }
 
     if (m_NeedAdd == 1)
     {
       point.x = msg->radPoint[i].x;
       point.y = msg->radPoint[i].y;
-      point.z = -3;
+      point.z = 0;
       point.speed = msg->radPoint[i].speed;
+
+      // Debug
+      cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
 
       rad.radPoint.push_back(point);
     }
@@ -96,7 +114,6 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   std::cout << "Radar Data : " << rad.radPoint.size() << std::endl;
   rad.radHeader.stamp = msg->radHeader.stamp;
   rad.radHeader.seq = msg->radHeader.seq;
-  rad.radPoint.clear();
   RadFrontPub.publish(rad);
 }
 
@@ -115,9 +132,9 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "RadFrontPub_Filter");
+  ros::init(argc, argv, "Rad_Filter");
   ros::NodeHandle n;
-  ros::Subscriber RadFrontSub = n.subscribe("RadFrontRaw", 1, callbackRadFront);
+  ros::Subscriber RadFrontSub = n.subscribe("RadFrontDelphi", 1, callbackRadFront);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
