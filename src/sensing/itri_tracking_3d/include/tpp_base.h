@@ -90,6 +90,8 @@
 // when a tracked bbox shrinks severely in a sudden, replace it with the previous (larger) bbox
 #define PREVENT_SHRINK_BBOX 0
 
+#define PP_FILTER_DRIVABLE_AREA 1
+
 #define O_FIX std::setiosflags(std::ios::fixed)
 #define O_P std::setprecision(8)
 

@@ -48,6 +48,77 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 #endif
 }
 
+#if PP_FILTER_DRIVABLE_AREA == 1
+void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input)
+{
+  std::cout << *input << std::endl;
+
+  ros::Time start;
+  start = ros::Time::now();
+
+  std::vector<cv::Point3f>().swap(lanelet2_route_left);
+  std::vector<cv::Point3f>().swap(lanelet2_route_right);
+  lanelet2_route_left.reserve(200);
+  lanelet2_route_right.reserve(200);
+
+  for (auto const& obj : input->markers)
+  {
+    if (obj.ns.compare("left_lane_bound") == 0)
+    {
+      for (auto const& obj_point : obj.points)
+      {
+        cv::Point3f point;
+        point.x = obj_point.x;
+        point.y = obj_point.y;
+        point.z = obj_point.z;
+        bool push_or_not = true;
+        for (size_t i = 0; i < lanelet2_route_left.size(); i++)
+        {
+          if (lanelet2_route_left[i].x == point.x && lanelet2_route_left[i].y == point.y &&
+              lanelet2_route_left[i].z == point.z)
+          {
+            push_or_not = false;
+          }
+        }
+        if (push_or_not)
+        {
+          lanelet2_route_left.push_back(point);
+        }
+      }
+    }
+    else if (obj.ns.compare("right_lane_bound") == 0)
+    {
+      for (auto const& obj_point : obj.points)
+      {
+        cv::Point3f point;
+        point.x = obj_point.x;
+        point.y = obj_point.y;
+        point.z = obj_point.z;
+        bool push_or_not = true;
+        for (size_t i = 0; i < lanelet2_route_left.size(); i++)
+        {
+          if (lanelet2_route_left[i].x == point.x && lanelet2_route_left[i].y == point.y &&
+              lanelet2_route_left[i].z == point.z)
+          {
+            push_or_not = false;
+          }
+        }
+        if (push_or_not)
+        {
+          lanelet2_route_right.push_back(point);
+        }
+      }
+    }
+  }
+
+  // time_nav_path = std::to_string(start.toSec());
+
+  // #if PRINT_MESSAGE
+  //   std::cout << "Path buffer time cost: " << ros::Time::now() - start << std::endl;
+  // #endif
+}
+#endif
+
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
@@ -217,21 +288,30 @@ void TPPNode::subscribe_and_advertise_topics()
 
   // Note that we use different NodeHandle(nh2_) here
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
+#if PP_FILTER_DRIVABLE_AREA == 1
+  lanelet2_route_sub_ =
+      nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
+#endif
 
   if (gen_markers_)
   {
     std::string topic1 = topic + "/markers";
     mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
 
-    std::string topic3 = topic + "/id";
-    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
+    std::string topic2 = topic + "/id";
+    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
 
-    std::string topic4 = topic + "/speed";
-    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
+    std::string topic3 = topic + "/speed";
+    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
 
-    std::string topic7 = topic + "/vel";
-    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
+    std::string topic4 = topic + "/vel";
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
   }
+
+#if PP_FILTER_DRIVABLE_AREA == 1
+  std::string topic5 = topic + "/drivable";
+  drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
+#endif
 }
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
@@ -461,6 +541,239 @@ void TPPNode::publish_tracking()
   }
 }
 
+#if PP_FILTER_DRIVABLE_AREA == 1
+geometry_msgs::Point TPPNode::get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                       geometry_msgs::Vector3 translation)
+{
+  geometry_msgs::Point new_point;
+  new_point.x = translation.x + std::cos(yaw) * origin_point.x - std::sin(yaw) * origin_point.y;
+  new_point.y = translation.y + std::sin(yaw) * origin_point.x + std::cos(yaw) * origin_point.y;
+  return new_point;
+}
+
+bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon)
+{
+  int nvert = polygon.size();
+  double testx = position.x;
+  double testy = position.y;
+  std::vector<double> vertx;
+  std::vector<double> verty;
+  for (auto const& obj : polygon)
+  {
+    vertx.push_back(obj.x);
+    verty.push_back(obj.y);
+  }
+
+  int i, j, c = 0;
+  for (i = 0, j = nvert - 1; i < nvert; j = i++)
+  {
+    if (((verty[i] > testy) != (verty[j] > testy)) &&
+        (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
+    {
+      c = 1 + c;
+    }
+  }
+  if (c % 2 == 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point, const double expand_range_left,
+                                   const double expand_range_right)
+{
+  cv::Point2f position;
+  position.x = box_point.p0.x;
+  position.y = box_point.p0.y;
+
+  // if (position.x > max_distance || position.x <= 1)
+  // {
+  //   return true;
+  // }
+
+  if (lanelet2_route_left.empty() || lanelet2_route_right.empty())
+  {
+    return false;
+  }
+
+  geometry_msgs::TransformStamped tf_stamped;
+  try
+  {
+    tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+#if PRINT_MESSAGE
+    std::cout << tf_stamped << std::endl;
+#endif
+  }
+  catch (tf2::TransformException& ex)
+  {
+    ROS_WARN("%s", ex.what());
+    ros::Duration(1.0).sleep();
+    return false;
+  }
+
+  double yaw = tf2::getYaw(tf_stamped.transform.rotation);
+
+  std::vector<cv::Point3f> lanelet2_route_left_temp(lanelet2_route_left);
+  std::vector<cv::Point3f> lanelet2_route_right_temp(lanelet2_route_right);
+  std::vector<cv::Point2f> route_left_transformed;
+  std::vector<cv::Point2f> route_right_transformed;
+
+  for (auto const& obj : lanelet2_route_left_temp)
+  {
+    cv::Point2f point;
+    point.x = obj.x;
+    point.y = obj.y;
+    route_left_transformed.push_back(point);
+  }
+
+  for (auto const& obj : lanelet2_route_right_temp)
+  {
+    cv::Point2f point;
+    point.x = obj.x;
+    point.y = obj.y;
+    route_right_transformed.push_back(point);
+  }
+
+  std::vector<cv::Point3f>().swap(lanelet2_route_left_temp);
+  std::vector<cv::Point3f>().swap(lanelet2_route_right_temp);
+
+  geometry_msgs::PoseStamped point_in;
+  point_in.pose.position.x = position.x;
+  point_in.pose.position.y = position.y;
+  point_in.pose.position.z = 0;
+
+  geometry_msgs::PoseStamped point_out;
+  point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped.transform.translation);
+  position.x = point_out.pose.position.x;
+  position.y = point_out.pose.position.y;
+
+  // expand warning zone for left bound
+  std::vector<cv::Point2f> expanded_route_left;
+  for (size_t i = 0; i < route_left_transformed.size(); i++)
+  {
+    if (i == 0)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_left_transformed[0].x - route_right_transformed[0].x;
+      diff_y = route_left_transformed[0].y - route_right_transformed[0].y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_left_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
+      expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
+      expanded_route_left.push_back(expand_point);
+    }
+    else if (i == route_left_transformed.size() - 1)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_left_transformed.back().x - route_right_transformed.back().x;
+      diff_y = route_left_transformed.back().y - route_right_transformed.back().y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_left_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
+      expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
+      expanded_route_left.push_back(expand_point);
+    }
+    else
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_left_transformed[i + 1].x - route_left_transformed[i - 1].x;
+      diff_y = route_left_transformed[i + 1].y - route_left_transformed[i - 1].y;
+      double N_x = (-1) * diff_y;
+      double N_y = diff_x;
+      double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
+      cv::Point2f expand_point = route_left_transformed[i];
+      expand_point.x = expand_point.x + N_x / distance * expand_range_left;
+      expand_point.y = expand_point.y + N_y / distance * expand_range_left;
+      expanded_route_left.push_back(expand_point);
+    }
+  }
+  // expand warning zone for right bound
+  std::vector<cv::Point2f> expanded_route_right;
+  for (size_t i = 0; i < route_right_transformed.size(); i++)
+  {
+    if (i == 0)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_right_transformed[0].x - route_left_transformed[0].x;
+      diff_y = route_right_transformed[0].y - route_left_transformed[0].y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_right_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
+      expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
+      expanded_route_right.push_back(expand_point);
+    }
+    else if (i == route_left_transformed.size() - 1)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_right_transformed.back().x - route_left_transformed.back().x;
+      diff_y = route_right_transformed.back().y - route_left_transformed.back().y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_right_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
+      expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
+      expanded_route_right.push_back(expand_point);
+    }
+    else
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_right_transformed[i + 1].x - route_right_transformed[i - 1].x;
+      diff_y = route_right_transformed[i + 1].y - route_right_transformed[i - 1].y;
+      double N_x = diff_y;
+      double N_y = (-1) * diff_x;
+      double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
+      cv::Point2f expand_point = route_right_transformed[i];
+      expand_point.x = expand_point.x + N_x / distance * expand_range_right;
+      expand_point.y = expand_point.y + N_y / distance * expand_range_right;
+      expanded_route_right.push_back(expand_point);
+    }
+  }
+
+  // route_right_transformed add into route_left_transformed reversed
+  while (!expanded_route_right.empty())
+  {
+    expanded_route_left.push_back(expanded_route_right.back());
+    expanded_route_right.pop_back();
+  }
+  expanded_route_left.push_back(expanded_route_left[0]);  // close the polygon
+
+  geometry_msgs::PolygonStamped polygon_merker;
+  polygon_merker.header.frame_id = "map";
+
+  for (auto const& obj : expanded_route_left)
+  {
+    geometry_msgs::Point32 polygon_point;
+    polygon_point.x = obj.x;
+    polygon_point.y = obj.y;
+    polygon_merker.polygon.points.push_back(polygon_point);
+  }
+
+  drivable_area_pub_.publish(polygon_merker);
+
+  // all route, check ped in polygon or not
+  // no need to filter peds in warning zone
+  if (check_in_polygon(position, expanded_route_left))
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+  // no need to filter
+  return false;
+}
+#endif
+
 inline bool test_file_exist(const std::string& name)
 {
   ifstream f(name.c_str());
@@ -595,7 +908,23 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
   msg.header = objs_header_;
   msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);
 
+#if PP_FILTER_DRIVABLE_AREA == 1
+  msg.objects.reserve(objs.size());
+
+  for (auto& obj : objs)
+  {
+    if (drivable_area_filter(obj.bPoint, 4.5, 1))
+    {
+      continue;
+    }
+    else
+    {
+      msg.objects.push_back(obj);
+    }
+  }
+#else
   msg.objects.assign(objs.begin(), objs.end());
+#endif
 
   for (auto& obj : msg.objects)
   {
@@ -642,7 +971,7 @@ void TPPNode::get_current_ego_data_main()
   ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
 }
 
-void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
+void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 {
   geometry_msgs::TransformStamped tf_stamped;
   bool is_warning = false;
@@ -723,7 +1052,6 @@ int TPPNode::run()
 
   g_trigger = true;
 
-  tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
 
   ros::Rate loop_rate(output_fps);
@@ -741,7 +1069,7 @@ int TPPNode::run()
 
     if (g_trigger && is_legal_dt_)
     {
-      get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
+      get_current_ego_data(KTs_.header_.stamp);  // sync data
 
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;

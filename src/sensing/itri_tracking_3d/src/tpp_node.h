@@ -9,6 +9,10 @@
 #include "ego_param.h"
 #include "marker_gen.h"
 #include <visualization_msgs/MarkerArray.h>
+#if PP_FILTER_DRIVABLE_AREA == 1
+#include <tf2/utils.h>
+#include <geometry_msgs/PolygonStamped.h>
+#endif
 
 #include <fstream>
 
@@ -61,6 +65,9 @@ private:
   ros::CallbackQueue queue_;
 
   ros::Publisher track3d_pub_;
+#if PP_FILTER_DRIVABLE_AREA == 1
+  ros::Publisher drivable_area_pub_;
+#endif
 
   MarkerGen mg_;
 
@@ -69,6 +76,11 @@ private:
 
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
+
+#if PP_FILTER_DRIVABLE_AREA == 1
+  ros::Subscriber lanelet2_route_sub_;
+  void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
+#endif
 
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
@@ -84,6 +96,18 @@ private:
   double ego_speed_kmph_ = 0.;
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
+
+#if PP_FILTER_DRIVABLE_AREA == 1
+  std::vector<cv::Point3f> lanelet2_route_left;
+  std::vector<cv::Point3f> lanelet2_route_right;
+
+  tf2_ros::Buffer tf_buffer;
+  geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                geometry_msgs::Vector3 translation);
+  bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
+  bool drivable_area_filter(const msgs::BoxPoint box_point, const double expand_range_left,
+                            const double expand_range_right);
+#endif
 
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
@@ -108,7 +132,7 @@ private:
   void set_ros_params();
   void subscribe_and_advertise_topics();
   void get_current_ego_data_main();
-  void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
+  void get_current_ego_data(const ros::Time fusion_stamp);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 };
