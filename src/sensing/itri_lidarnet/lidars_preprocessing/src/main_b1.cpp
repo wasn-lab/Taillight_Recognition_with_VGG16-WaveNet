@@ -7,7 +7,8 @@
 #include "RayGroundFilter.h"
 #include "extract_Indices.h"
 #include "NoiseFilter.h"
-	
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #if ENABLE_DEBUG_MODE == true
 #include "UI/QtViewer.h"
