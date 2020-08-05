@@ -112,7 +112,7 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", debug_output);
 
-  pub_sensor_msgs_nonground = n.advertise<sensor_msgs::PointCloud2>("/LidarAll/NonGround_2", 1);
+  pub_sensor_msgs_nonground = n.advertise<sensor_msgs::PointCloud2>("/LidarAll/NonGround_SensorMsgs", 1);
 
   cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
   cout.precision(3);
