@@ -21,9 +21,6 @@ ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
 ros::Publisher pub_LidarAll;
 
-ros::Publisher pub_LidarFrontLeft_Ring;
-ros::Publisher pub_LidarFrontTop_Ring;
-
 //----------------------------- Stitching
 vector<double> LidarFrontLeft_Fine_Param;
 vector<double> LidarFrontRight_Fine_Param;
