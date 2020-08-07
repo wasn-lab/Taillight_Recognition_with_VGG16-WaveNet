@@ -16,6 +16,10 @@ if [[ ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag ]]; then
 fi
 
 source devel/setup.bash
+# cache *.engine for quick loading
+for engine in `find src/sensing -name "*.engine"`; do
+  cat $engine > /dev/null 2>&1
+done
 
 if [[ -f /usr/local/lib/libopencv_core.so ]]; then
   # workaround for opencv 4.2/cv_bridge compatibility. Remove it in the future.

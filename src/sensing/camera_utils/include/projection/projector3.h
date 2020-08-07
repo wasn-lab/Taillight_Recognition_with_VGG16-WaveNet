@@ -16,6 +16,7 @@ private:
   cv::Mat distCoeff;
   cv::Size ImageSize;
   cv::Mat coverage_mat;
+  int camera_id_;
   float min_x;
   float max_x;
   float min_y;
