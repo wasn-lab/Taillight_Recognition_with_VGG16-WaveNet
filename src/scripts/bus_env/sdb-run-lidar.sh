@@ -60,7 +60,7 @@ gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.1.3:1131
 sleep 2
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh;exec bash'"
 sleep 1
-gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_pp.sh;exec bash'"
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d.sh;exec bash'"
 sleep 1
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.1.3
