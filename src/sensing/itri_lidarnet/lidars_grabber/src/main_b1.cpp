@@ -21,12 +21,6 @@ ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
 ros::Publisher pub_LidarAll;
 
-// noise pub
-ros::Publisher pub_LidarFrontTop_Noise;
-ros::Publisher pub_LidarFrontLeft_Noise;
-ros::Publisher pub_LidarFrontRight_Noise;
-ros::Publisher pub_LidarAll_Noise;
-
 //----------------------------- Stitching
 vector<double> LidarFrontLeft_Fine_Param;
 vector<double> LidarFrontRight_Fine_Param;
@@ -44,6 +38,7 @@ StopWatch stopWatch_T;
 
 bool debug_output = false;
 bool use_filter = false;
+bool use_roi = false;
 
 bool heartBeat[5] = { false, false, false, false, false };  //{ FrontLeft, FrontRight, RearLeft, RearRight, FrontTop }
 int heartBeat_times[5] = { 0, 0, 0, 0, 0 };
@@ -53,8 +48,55 @@ void syncLock_callback();
 void checkPubFlag(int lidarNum);
 void lidarAll_Pub(int lidarNum);
 
+
+
+//------------------------------ get ring from sensor_msgs to pcl
+pcl::PointCloud<pcl::PointXYZIR> get_ring_pcl_from_sensor_msgs(const sensor_msgs::PointCloud2 & cloud_msg)
+{
+  pcl::PointCloud<pcl::PointXYZIR> cloud;
+
+  // Get the field structure of this point cloud
+  int pointBytes = cloud_msg.point_step;
+  int offset_x;
+  int offset_y;
+  int offset_z;
+  int offset_int;
+  int offset_ring;
+  for (int f=0; f<cloud_msg.fields.size(); ++f)
+  {
+    if (cloud_msg.fields[f].name == "x")
+      offset_x = cloud_msg.fields[f].offset;
+    if (cloud_msg.fields[f].name == "y")
+      offset_y = cloud_msg.fields[f].offset;
+    if (cloud_msg.fields[f].name == "z")
+      offset_z = cloud_msg.fields[f].offset;
+    if (cloud_msg.fields[f].name == "intensity")
+      offset_int = cloud_msg.fields[f].offset;
+    if (cloud_msg.fields[f].name == "ring")
+      offset_ring = cloud_msg.fields[f].offset;
+  }
+
+  // populate point cloud object
+  for (int p=0; p< (cloud_msg.width * cloud_msg.height); ++p)
+  {
+      pcl::PointXYZIR newPoint;
+
+      newPoint.x = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_x);
+      newPoint.y = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_y);
+      newPoint.z = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_z);
+      newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int);
+      newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes*p) + offset_ring);
+
+      cloud.points.push_back(newPoint);
+  }
+
+  pcl_conversions::toPCL(cloud_msg.header, cloud.header);
+
+  return cloud;
+}
+
+
 //------------------------------ Callback
-// lidars_callback -> synLock_callback
 void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   if (input_cloud->width * input_cloud->height > 100)
@@ -66,9 +108,24 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
       cout << "[Left->Gbr]: " << diff_time << "ms" << endl;
     }
-
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+
+    //-------------------------- ring filter
+    if (use_filter)
+    {
+      stopWatch_L.reset();
+      pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+      pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+      *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.3);
+      cout << "Left Filter-- "  << "Points: " << output_cloud_tmp_ring->size() << "; Time Took: " << stopWatch_L.getTimeSeconds() << 's' << endl;
+
+      pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
+    }
+    else
+    {
+      pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+    }
 
     // -------------------------- check stitching
     if (GlobalVariable::STITCHING_MODE_NUM == 1)
@@ -83,20 +140,18 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     else
     {
       heartBeat[0] = false;
-      stopWatch_L.reset();
+      
       // Transfrom
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], LidarFrontLeft_Fine_Param[2],
           LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4], LidarFrontLeft_Fine_Param[5]);
+      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
 
-      // filter
-      if (use_filter)
+      // ROI
+      if (use_roi)
       {
-        *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1,
-                                                                       -30, 4, 0, 30.0, -5.0, 0.01);
-        *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-        cout << "Left Filter-- "
-             << "Points: " << input_cloud_tmp->size() << "; Time Took: " << stopWatch_L.getTimeSeconds() << 's' << endl;
+        // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1,
+        //                                                                -30, 4, 0, 30.0, -5.0, 0.01);
       }
 
       // assign
@@ -123,7 +178,22 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+
+    if (use_filter)
+    {
+      stopWatch_R.reset();
+      pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+      pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+      *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.3);
+      cout << "Right Filter-- "  << "Points: " << output_cloud_tmp_ring->size() << "; Time Took: " << stopWatch_R.getTimeSeconds() << 's' << endl;
+
+      pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
+    }
+    else
+    {
+      pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+    }
 
     // ------------------------------- check stitching
     if (GlobalVariable::STITCHING_MODE_NUM == 1)
@@ -144,16 +214,13 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, LidarFrontRight_Fine_Param[0], LidarFrontRight_Fine_Param[1], LidarFrontRight_Fine_Param[2],
           LidarFrontRight_Fine_Param[3], LidarFrontRight_Fine_Param[4], LidarFrontRight_Fine_Param[5]);
-
-      // filter
-
-      if (use_filter)
+      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
+      
+      // ROI
+      if (use_roi)
       {
-        *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1,
-                                                                       -30.0, 4, -30.0, 0, -5.0, 0.01);
-        *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-        cout << "Right Filter-- "
-             << "Points: " << input_cloud_tmp->size() << "; Time Took: " << stopWatch_R.getTimeSeconds() << 's' << endl;
+        // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0, 0.1,
+        //                                                                -30.0, 4, -30.0, 0, -5.0, 0.01);
       }
 
       // assign
@@ -178,8 +245,25 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
       cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
     }
+    
+    // ring filter
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+    if (use_filter)
+    {
+      stopWatch_T.reset();
+      pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+      pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+      *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
+
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
+      cout << "Top Filter-- "  << "Points: " << output_cloud_tmp_ring->size() << "; Time Took: " << stopWatch_T.getTimeSeconds() << 's' << endl;
+
+      pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
+    }
+    else
+    {
+      pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+    }
 
     // check stitching
     if (GlobalVariable::STITCHING_MODE_NUM == 1)
@@ -192,18 +276,15 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     else
     {
       heartBeat[0] = false;
-      stopWatch_T.reset();
+      
       // Transfrom
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
-
-      // filter
-      if (use_filter)
+      *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
+      if (use_roi)
       {
-        *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.2, 1.2, -3.0, 0.3,
-                                                                       4, 50.0, -25.0, 25.0, -5.0, 0.01);
-        *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
-        cout << "Top Filter-- "
-             << "Points: " << input_cloud_tmp->size() << "; Time Took: " << stopWatch_T.getTimeSeconds() << 's' << endl;
+        //*input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.2, 1.2, -3.0, 0.3,
+                                                                      // -50, 50.0, -25.0, 25.0, -5.0, 0.01);
+        //*ptr_cur_cloud = CuboidFilter().pass_through_soild<PointXYZI>(ptr_cur_cloud, -50, 50, -25, 25, -5, 1);
       }
 
       // assign
@@ -249,7 +330,10 @@ void lidarAll_Pub(int lidarNum)
   cloudPtr_LidarAll->header.frame_id = "lidar";
 
   //------ pub LidarAll
-  pub_LidarAll.publish(*cloudPtr_LidarAll);
+  if (cloudPtr_LidarAll->size() > 100)
+  {
+    pub_LidarAll.publish(*cloudPtr_LidarAll);
+  }
   cloudPtr_LidarAll->clear();
 
   if (debug_output)
@@ -313,6 +397,7 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", debug_output);
   ros::param::get("/use_filter", use_filter);
+  ros::param::get("/use_roi", use_roi);
 
   // check stitching mode
   if (pcl::console::find_switch(argc, argv, "-D"))
@@ -352,7 +437,7 @@ int main(int argc, char** argv)
   ros::Subscriber sub_LidarFrontTop =
       n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cloud_cb_LidarFrontTop);
 
-  // no-filter publisher
+  // publisher
   pub_LidarFrontLeft = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontLeft", 1);
   pub_LidarFrontRight = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontRight", 1);
   pub_LidarFrontTop = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop", 1);

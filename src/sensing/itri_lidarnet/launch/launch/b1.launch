@@ -22,6 +22,7 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
     <arg name="use_filter" default="0" />
+	<arg name="use_roi" default="0" />
 	<arg name="hardware_enable" default="1" />
 	<arg name="mps" default="1" />
 	<arg name="mode" default="0" />
@@ -30,9 +31,16 @@ Lidar List:
 
 	<rosparam param="debug_output">true</rosparam>
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
+
+<!-- ROI **************************************************************** -->
+	<rosparam param="use_roi" if="$(eval arg('use_roi') != 1)">false</rosparam>
+	<rosparam param="use_roi" if="$(eval arg('use_roi') == 1)">true</rosparam>
+
+
 <!-- Filter **************************************************************** -->
 	<rosparam param="use_filter" if="$(eval arg('use_filter') != 1)">false</rosparam>
 	<rosparam param="use_filter" if="$(eval arg('use_filter') == 1)">true</rosparam>
+
 
 <!-- tf2 ******************************************************************* -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 base_link os1_sensor" />
@@ -42,8 +50,10 @@ Lidar List:
 	<group if="$(eval arg('mps') == 1)">
 		<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
 	</group>
+
 <!-- Shape estimation ******************************************************************* -->
-<rosparam param="use_shape_estimation">true</rosparam>​
+<rosparam param="use_shape_estimation">false</rosparam>​
+
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />

@@ -17,7 +17,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
   cam_points = *cams_points_ptr;
 
-  /// find 3d points in image coverage
+/// find 3d points in image coverage
 #pragma omp parallel for
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
@@ -42,7 +42,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
       pixel_position.v = v;
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
-        cam_points.points[cloud_sizes] = point_cloud[u][v];      
+        cam_points.points[cloud_sizes] = point_cloud[u][v];
         cam_pixels.push_back(pixel_position);
         cloud_sizes++;
       }
@@ -68,7 +68,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
   cam_points = *cams_points_ptr;
 
-  /// find 3d points in image coverage
+/// find 3d points in image coverage
 #pragma omp parallel for
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
@@ -84,7 +84,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
     }
   }
 
-  /// record the 3d points
+/// record the 3d points
 #pragma omp parallel for collapse(2)
   for (int u = 0; u < image_w; u++)
   {
