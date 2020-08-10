@@ -183,7 +183,7 @@ PointCloud<PointXYZIR> NoiseFilter::runRingOutlierRemoval(PointCloud<PointXYZIR>
                         std::pow(p_forward.y - p_forward_forward.y, 2.0) +
                         std::pow(p_forward.z - p_forward_forward.z, 2.0) );
         
-        if( diff_point_1 <= threshold && diff_point_2 <= threshold )
+        if( diff_point_1 <= threshold || diff_point_2 <= threshold )
         {
           pcl_output->points.push_back(p_forward);
         }    
