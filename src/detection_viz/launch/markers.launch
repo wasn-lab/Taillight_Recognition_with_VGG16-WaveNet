@@ -49,9 +49,9 @@
   <!-- Tracking Polygon ************************************************************************* -->
   <node name="m_Tracking_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/PathPredictionOutput"/>
-      <param name="red"   value="0.0"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="0.5"/>
+      <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>
