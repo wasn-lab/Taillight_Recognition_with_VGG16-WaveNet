@@ -1,5 +1,6 @@
 <launch>
     <include file="$(find lidar)/launch/b1.launch">
+      <arg name="mode" value="4" />
       <arg name="hardware_enable" value="0" />
       <arg name="mps" value="0" />
     </include>
