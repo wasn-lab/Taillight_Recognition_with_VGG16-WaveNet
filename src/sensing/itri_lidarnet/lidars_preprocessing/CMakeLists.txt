@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   libs
   nodelet
   car_model
+  sensor_msgs
 )
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -118,7 +119,7 @@ include(CarModel)
 catkin_package(
   #INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}_b1_nodelet
-  CATKIN_DEPENDS roscpp rospy msgs
+  CATKIN_DEPENDS roscpp rospy msgs sensor_msgs
   #std_msgs
   #DEPENDS system_lib
   #message_runtime

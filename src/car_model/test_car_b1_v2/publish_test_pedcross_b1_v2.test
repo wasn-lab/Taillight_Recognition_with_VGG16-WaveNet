@@ -10,7 +10,7 @@
                 - name: /PedCross/Alert
                   timeout: 15
                   negative: False
-                - name: /PedCross/DrawBBox
+                - name: /PedCross/DrawBBox/front_bottom_60
                   timeout: 15
                   negative: False
                 - name: /PedCross/3D_marker
