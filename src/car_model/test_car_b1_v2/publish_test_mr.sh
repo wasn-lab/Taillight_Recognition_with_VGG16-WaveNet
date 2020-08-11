@@ -11,7 +11,8 @@ if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
   exit 0
 fi
 
-if [[ ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag ]]; then
+if [[ ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag
+  || ! -f ${bag_dir}/auto_record_2020-08-04-10-15-25_4.bag ]]; then
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
@@ -26,5 +27,6 @@ if [[ -f /usr/local/lib/libopencv_core.so ]]; then
   export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 fi
 rostest car_model publish_test_drivenet_b1_v2_sidecam_3dobj.test
+rostest car_model publish_test_track2d_b1_v2.test
 
 popd
