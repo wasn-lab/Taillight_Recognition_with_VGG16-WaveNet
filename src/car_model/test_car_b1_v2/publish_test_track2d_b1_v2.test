@@ -6,7 +6,7 @@
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
-                - name: /Tracking2D/front_bottom_60
+                - name: /Tracking2D/front_top_far_30
                   timeout: 15
                   negative: False
         </rosparam>
