@@ -105,7 +105,7 @@ int main(int argc, char** argv)
     printf("Error\n!");
   }
 
-  ros::init(argc, argv, "AlphaRadFrontPub");
+  ros::init(argc, argv, "RadFrontAlpha");
   ros::NodeHandle n;
   ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("RadFrontAlpha", 1);
   ros::Rate loop_rate(20);
