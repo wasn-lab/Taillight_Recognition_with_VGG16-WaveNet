@@ -12,7 +12,7 @@ if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
 fi
 
 if [[ ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag
-  || ! -f ${bag_dir}/auto_record_2020-08-04-10-15-25_4.bag ]]; then
+  || ! -f ${bag_dir}/auto_record_2020-08-04-10-15-25_4_filtered.bag ]]; then
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
