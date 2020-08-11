@@ -16,7 +16,9 @@ if [[ ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
+set +x
 source devel/setup.bash
+set -x
 # cache *.engine for quick loading
 for engine in `find src/sensing -name "*.engine"`; do
   cat $engine > /dev/null 2>&1
