@@ -8,12 +8,16 @@
 //Can setup
 #define CAN_DLC 8;
 #define CAN_CHNNEL "can1"
-const int NumOfReceiveID = 4;
-const int NumOfTopic = 4;
+const int NumOfReceiveID = 15;
+const int NumOfTopic = 8;
 
 #include "msgs/Flag_Info.h"
 #include "msgs/DynamicPath.h"
+#include "msgs/BackendInfo.h"
 #include "std_msgs/Header.h"
+#include "std_msgs/Float64.h"
+#include "std_msgs/Int8MultiArray.h"
+#include "msgs/VehInfo.h"
 #include <ros/ros.h>
 
 
@@ -33,10 +37,12 @@ const int NumOfTopic = 4;
 #include <linux/can.h>
 #include <linux/can/raw.h>
 using namespace std ;
-msgs::DynamicPath msg123;
+msgs::VehInfo msg_VehInfo;
+msgs::BackendInfo msg_Backend;
 
 
-int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs::DynamicPath &msg) {
+
+int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
     switch (frame.can_id) {
     case 0x601:
 	{
@@ -130,199 +136,221 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher, msgs:
 
 	    cout << " Next Stop: " << msg_temp.Dspace_Flag01 << endl;
 	    cout << " Stop status: " << msg_temp.Dspace_Flag02 << endl;
+	    Publisher[5].publish(msg_temp);
+	    return 1;
+	}
+    break;
+
+    case 0x351:
+	{
+        std_msgs::Float64 speed_kph;
+        std_msgs::Float64 speed_ms ;
+	    msgs::Flag_Info msg_temp;
+        speed_kph.data = frame.data[0];
+        Publisher[6].publish(speed_kph);
+        cout << "speed_kph: " << speed_kph.data << endl;
+        speed_ms.data = speed_kph.data/3.6;
+        Publisher[7].publish(speed_ms);
+        cout << "speed_ms: " << speed_ms.data << endl;
+		msg_temp.Dspace_Flag01 = frame.data[0];
+		msg_temp.Dspace_Flag02 = frame.data[1];
+		msg_temp.Dspace_Flag03 = frame.data[2];
+		msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag05 = frame.data[5];
+		msg_temp.Dspace_Flag06 = frame.data[6];
+		msg_temp.Dspace_Flag07 = frame.data[7];
 	    Publisher[3].publish(msg_temp);
 	    return 1;
 	}
     break;
+
+    case 0x301:
+    {
+        int ego_x_tmp;
+        int ego_y_tmp;
+        short ego_z_tmp;
+
+        //bus_vehinfo2_receive::VehInfo msg;
+        ego_x_tmp = frame.data[0] << 8| frame.data[1] << 16 | frame.data[2] << 24;
+        ego_y_tmp = frame.data[3] << 8| frame.data[4] << 16 | frame.data[5] << 24;
+        ego_z_tmp = frame.data[6] | frame.data[7]<< 8;
+
+        msg_VehInfo.ego_x = ego_x_tmp/256;
+        msg_VehInfo.ego_y = ego_y_tmp/256;
+        msg_VehInfo.ego_z = ego_z_tmp;
+
+        msg_VehInfo.ego_x /=100;
+        msg_VehInfo.ego_y /=100;
+        msg_VehInfo.ego_z /=100;
+
+        std::cout <<  "Got 0x301: " <<
+        " msg_VehInfo.ego_x: " << msg_VehInfo.ego_x << " "<<
+        " msg_VehInfo.ego_y: " << msg_VehInfo.ego_y << " " <<
+        " msg_VehInfo.ego_z: " << msg_VehInfo.ego_z << " " << std::endl;
+        return 1;
+    }
+    break;
+
+    case 0x302:
+    {
+        short road_id_tmp;
+        short lane_width_tmp;
+        short yaw_rate_tmp;
+
+        road_id_tmp = frame.data[0] | frame.data[1] << 8;
+        lane_width_tmp = frame.data[2];
+        yaw_rate_tmp = frame.data[3] | frame.data[4] << 8;
+
+        msg_VehInfo.road_id = road_id_tmp;
+        msg_VehInfo.lanewidth = lane_width_tmp;
+        msg_VehInfo.lanewidth /=10;
+        msg_VehInfo.yaw_rate = yaw_rate_tmp;
+        msg_VehInfo.yaw_rate /= 10;
+
+        std::cout << "Got 0x302: " <<
+        "road_id: " << msg_VehInfo.road_id <<  " " <<
+        "lane_width: " << msg_VehInfo.lanewidth <<  " " <<
+        "yaw_rate: " << msg_VehInfo.yaw_rate <<  " " << std::endl;
+        return 1;
+    }
+    break;
+
+    case 0x303:
+    {
+        int ukf_ego_x_tmp;
+        int ukf_ego_y_tmp;
+        short ukf_ego_heading_tmp;
+
+        ukf_ego_x_tmp = frame.data[0]<<8 | frame.data[1] << 16 | frame.data[2] << 24;
+        ukf_ego_y_tmp = frame.data[3] <<8 | frame.data[4] << 16 | frame.data[5] << 24;
+        ukf_ego_heading_tmp = frame.data[6] | frame.data[7]<< 8;
+
+        msg_VehInfo.ukf_ego_x = ukf_ego_x_tmp/256;
+        msg_VehInfo.ukf_ego_y = ukf_ego_y_tmp/256;
+        msg_VehInfo.ukf_ego_heading = ukf_ego_heading_tmp;
+
+        msg_VehInfo.ukf_ego_x /= 100;
+        msg_VehInfo.ukf_ego_y /= 100;
+        msg_VehInfo.ukf_ego_heading /= 10;
+        std::cout << "Got 0x303:" <<
+        "ukf_ego_x: " << msg_VehInfo.ukf_ego_x <<  " " <<
+        "ukf_ego_y: " << msg_VehInfo.ukf_ego_y <<  " " <<
+        "ukf_ego_heading: " << msg_VehInfo.ukf_ego_heading <<  " " <<std::endl;
+        return 1;
+    }
+    break;
+
+    case 0x304:
+    {
+        bool gps_fault_flag_tmp;
+        short ego_heading_tmp;
+        short ego_speed_tmp;
+
+        gps_fault_flag_tmp = frame.data[0];
+        ego_heading_tmp = frame.data[1] | frame.data[2]<< 8;
+        ego_speed_tmp = frame.data[3] | frame.data[4] << 8;
+
+        msg_VehInfo.gps_fault_flag = gps_fault_flag_tmp;
+        msg_VehInfo.ego_heading = ego_heading_tmp;
+        msg_VehInfo.ego_speed = ego_speed_tmp;
+
+        msg_VehInfo.ego_heading /= 10;
+        msg_VehInfo.ego_speed /= 100;
+
+        std::cout << "Got 0x304:" <<
+        "gps_fault_flag: " << unsigned(msg_VehInfo.gps_fault_flag) <<  " " <<
+        "ego_heading: " << msg_VehInfo.ego_heading <<  " " <<
+        "ego_speed: " << msg_VehInfo.ego_speed <<  " " <<std::endl;
+        return 1;
+    }
+    break;
     
-    /*
-	case 0x3A0:
+    case 0x350:
 	{
-        int XP1_0_tmp;
-        int XP1_1_tmp;
-        XP1_0_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        XP1_1_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.XP1_0 = XP1_0_tmp;
-        msg.XP1_1 = XP1_1_tmp;
-        msg.XP1_0 /=1000000.0;
-        msg.XP1_1 /=1000000.0;
-        std::cout <<  "Got 0x3A0: " <<
-        " msg.XP1_0: " << std::setprecision(10) << msg.XP1_0 << " "<<
-        " msg.XP1_1: " << std::setprecision(10) << msg.XP1_1 << " " << std::endl;
-	}
-    break;
-    case 0x3A1:
- 	{
-
-        int XP1_2_tmp;
-        int XP1_3_tmp;
-        XP1_2_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        XP1_3_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.XP1_2 = XP1_2_tmp;
-        msg.XP1_3 = XP1_3_tmp;
-        msg.XP1_2 /=1000000.0;
-        msg.XP1_3 /=1000000.0;
-        std::cout <<  "Got 0x3A1: " <<
-        " msg.XP1_2: " << std::setprecision(10) << msg.XP1_2 << " "<<
-        " msg.XP1_3: " << std::setprecision(10) << msg.XP1_3 << " " << std::endl;
-	}
-    break;
-    case 0x3A2:
-	{
-       
-		int XP1_4_tmp;
-        int XP1_5_tmp;
-        XP1_4_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        XP1_5_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.XP1_4 = XP1_4_tmp;
-        msg.XP1_5 = XP1_5_tmp;
-        msg.XP1_4 /=1000000.0;
-        msg.XP1_5 /=1000000.0;
-        std::cout <<  "Got 0x3A2: " <<
-        " msg.XP1_4: " << std::setprecision(10) << msg.XP1_4 << " "<<
-        " msg.XP1_5: " << std::setprecision(10) << msg.XP1_5 << " " << std::endl;
+	    return 1;
 	}
     break;
 
-    case 0x3A3:
-	{
-        int YP1_0_tmp;
-        int YP1_1_tmp;
-        YP1_0_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        YP1_1_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.YP1_0 = YP1_0_tmp;
-        msg.YP1_1 = YP1_1_tmp;
-        msg.YP1_0 /=1000000.0;
-        msg.YP1_1 /=1000000.0;
-        std::cout <<  "Got 0x3A3: " <<
-        " msg.YP1_0: " << std::setprecision(10) << msg.YP1_0 << " "<<
-        " msg.YP1_1: " << std::setprecision(10) << msg.YP1_1 << " " << std::endl;
-	}
-    break;
-    case 0x3A4:
-	{
-       
-		int YP1_2_tmp;
-        int YP1_3_tmp;
-        YP1_2_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        YP1_3_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.YP1_2 = YP1_2_tmp;
-        msg.YP1_3 = YP1_3_tmp;
-        msg.YP1_2 /=1000000.0;
-        msg.YP1_3 /=1000000.0;
-        std::cout <<  "Got 0x3A4: " <<
-        " msg.YP1_2: " << std::setprecision(10) << msg.YP1_2 << " "<<
-        " msg.YP1_3: " << std::setprecision(10) << msg.YP1_3 << " " << std::endl;
-	}
-    break;
-    case 0x3A5:
-	{       
-		int YP1_4_tmp;
-        int YP1_5_tmp;
-        YP1_4_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        YP1_5_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.YP1_4 = YP1_4_tmp;
-        msg.YP1_5 = YP1_5_tmp;
-        msg.YP1_4 /=1000000.0;
-        msg.YP1_5 /=1000000.0;
-        std::cout <<  "Got 0x3A5: " <<
-        " msg.YP1_4: " << std::setprecision(10) << msg.YP1_4 << " "<<
-        " msg.YP1_5: " << std::setprecision(10) << msg.YP1_5 << " " << std::endl;
-	}
+    case 0x620:
+    {
+        bool gps_fault_flag_tmp;
+        short ego_heading_tmp;
+        short ego_speed_tmp;
+        msg_Backend.door = frame.data[6]&1;
+        msg_Backend.headlight = (frame.data[6]>>1)&1;
+        msg_Backend.left_turn_light = (frame.data[6]>>2)&1;
+        msg_Backend.right_turn_light = (frame.data[6]>>3)&1;
+        msg_Backend.air_conditioner = (frame.data[6]>>4)&1;
+        msg_Backend.estop = (frame.data[6]>>5)&1;
+        msg_Backend.wiper = (frame.data[6]>>6)&1;
+        msg_Backend.hand_brake = (frame.data[6]>>7)&1;
+        msg_Backend.indoor_light = frame.data[7]&1;
+        msg_Backend.gross_power = (frame.data[7]>>1)&1;
+        msg_Backend.ACC_state = (frame.data[7]>>2)&1;
+
+        std::cout << "Got 0x620" << endl;
+        return 1;
+    }
     break;
 
-    case 0x3A6:
-	{      
-		int XP2_0_tmp;
-        int XP2_1_tmp;
-        XP2_0_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        XP2_1_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.XP2_0 = XP2_0_tmp;
-        msg.XP2_1 = XP2_1_tmp;
-        msg.XP2_0 /=1000000.0;
-        msg.XP2_1 /=1000000.0;
-        std::cout <<  "Got 0x3A6: " <<
-        " msg.XP2_0: " << std::setprecision(10) << msg.XP2_0 << " "<<
-        " msg.XP2_1: " << std::setprecision(10) << msg.XP2_1 << " " << std::endl;
-	}
+    case 0x621:
+    {
+
+
+        msg_Backend.mileage = frame.data[0] | frame.data[1]<< 8 | frame.data[2]<< 16 | frame.data[3]<< 24 ;
+        msg_Backend.speed = frame.data[4];
+        msg_Backend.air_pressure = frame.data[5];
+        // 電門踏板 = frame.data[6];
+        // 速度命令 = frame.data[7];
+
+        std::cout << "Got 0x621" << endl;
+
+        return 1;
+    }
     break;
-    case 0x3A7:
-	{
-        int XP2_2_tmp;
-        int XP2_3_tmp;
-        XP2_2_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        XP2_3_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.XP2_2 = XP2_2_tmp;
-        msg.XP2_3 = XP2_3_tmp;
-        msg.XP2_2 /=1000000.0;
-        msg.XP2_3 /=1000000.0;
-        std::cout <<  "Got 0x3A7: " <<
-        " msg.XP2_2: " << std::setprecision(10) << msg.XP2_2 << " "<<
-        " msg.XP2_3: " << std::setprecision(10) << msg.XP2_3 << " " << std::endl;
-	}
+
+    case 0x622:
+    {
+
+        msg_Backend.gross_current = frame.data[0] | frame.data[1]<< 8;
+        msg_Backend.highest_voltage = frame.data[2] | frame.data[3]<< 8;
+        msg_Backend.highest_voltage = msg_Backend.highest_voltage/100;
+        msg_Backend.highest_number = frame.data[4];
+        msg_Backend.lowest_volage = frame.data[5] | frame.data[6]<< 8;
+        msg_Backend.lowest_volage = msg_Backend.lowest_volage/100;
+        msg_Backend.lowest_number = frame.data[7];
+
+        std::cout << "Got 0x622" << endl;
+        return 1;
+    }
     break;
-    case 0x3A8:
-	{
-        int XP2_4_tmp;
-        int XP2_5_tmp;
-        XP2_4_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        XP2_5_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.XP2_4 = XP2_4_tmp;
-        msg.XP2_5 = XP2_5_tmp;
-        msg.XP2_4 /=1000000.0;
-        msg.XP2_5 /=1000000.0;
-        std::cout <<  "Got 0x3A8: " <<
-        " msg.XP2_4: " << std::setprecision(10) << msg.XP2_4 << " "<<
-        " msg.XP2_5: " << std::setprecision(10) << msg.XP2_5 << " " << std::endl;
-	}
+
+    case 0x623:
+    {
+        msg_Backend.voltage_deviation = frame.data[0];
+        msg_Backend.voltage_deviation = msg_Backend.voltage_deviation/100;
+        msg_Backend.highest_temperature = frame.data[1] | frame.data[2]<< 8;
+        msg_Backend.highest_temp_location = frame.data[3];
+        msg_Backend.gross_voltage = frame.data[4] | frame.data[5]<< 8;
+        // 控制電壓 = frame.data[6];
+        msg_Backend.battery = frame.data[7];
+
+        std::cout << "Got 0x623" << endl;
+        return 1;
+    }
     break;
-    case 0x3A9:
-	{
-        int YP2_0_tmp;
-        int YP2_1_tmp;
-        YP2_0_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        YP2_1_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.YP2_0 = YP2_0_tmp;
-        msg.YP2_1 = YP2_1_tmp;
-        msg.YP2_0 /=1000000.0;
-        msg.YP2_1 /=1000000.0;
-        std::cout <<  "Got 0x3A9: " <<
-        " msg.YP2_0: " << std::setprecision(10) << msg.YP2_0 << " "<<
-        " msg.YP2_1: " << std::setprecision(10) << msg.YP2_1 << " " << std::endl;
-	}
+
+    case 0x624:
+    {
+        msg_Backend.motor_temperature = frame.data[0] | frame.data[1]<< 8;
+        msg_Backend.motor_temperature = msg_Backend.motor_temperature/10;
+        // life signal = (frame.data[7]>>7)&1;
+
+        std::cout << "Got 0x624" << endl;
+        return 1;
+    }
     break;
-    case 0x3B0:
-	{
-        int YP2_2_tmp;
-        int YP2_3_tmp;
-        YP2_2_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-        YP2_3_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-        msg.YP2_2 = YP2_2_tmp;
-        msg.YP2_3 = YP2_3_tmp;
-        msg.YP2_2 /=1000000.0;
-        msg.YP2_3 /=1000000.0;
-        std::cout <<  "Got 0x3B0: " <<
-        " msg.YP2_2: " << std::setprecision(10) << msg.YP2_2 << " "<<
-        " msg.YP2_3: " << std::setprecision(10) << msg.YP2_3 << " " << std::endl;
-	}
-    break;
-    case 0x3B1:
-	{
-	    int YP2_4_tmp;
-	    int YP2_5_tmp;
-	    YP2_4_tmp = frame.data[0] | frame.data[1] << 8 | frame.data[2] << 16 | frame.data[3] << 24;
-	    YP2_5_tmp = frame.data[4] | frame.data[5] << 8 | frame.data[6] << 16 | frame.data[7] << 24;
-	    msg.YP2_4 = YP2_4_tmp;
-	    msg.YP2_5 = YP2_5_tmp;
-	    msg.YP2_4 /=1000000.0;
-	    msg.YP2_5 /=1000000.0;
-	    std::cout <<  "Got 0x3B1: " <<
-	    " msg.YP2_4: " << std::setprecision(10) << msg.YP2_4 << " "<<
-	    " msg.YP2_5: " << std::setprecision(10) << msg.YP2_5 << " " << std::endl;
-		
-	}
-    break;
-    */
+
     default:
 		{
 		    // Should never get here if the receive filters were set up correctly
@@ -342,16 +370,20 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "from_dspace");
     ros::NodeHandle n;
-    //ros::Publisher Publisher01 = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
-	//ros::Publisher Publisher02 = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
-	//ros::Publisher Publisher03 = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
 	ros::Publisher Publisher[NumOfTopic];
 	Publisher[0] = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
 	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
 	Publisher[2] = n.advertise<msgs::Flag_Info>("Flag_Info03", 1);
-    Publisher[3] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
-	//Publisher[3] = n.advertise<msgs::DynamicPath>("dynamic_path_para_test", 1);
-	//uint32_t seq = 0;
+    Publisher[3] = n.advertise<msgs::Flag_Info>("Flag_Info04", 1);
+    Publisher[4] = n.advertise<msgs::Flag_Info>("Flag_Info05", 1);
+    Publisher[5] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
+    Publisher[6] = n.advertise<msgs::Flag_Info>("/Ego_speed/kph", 1);
+    Publisher[7] = n.advertise<msgs::Flag_Info>("/Ego_speed/ms", 1);
+
+    ros::Publisher Publisher_Backend;
+    Publisher_Backend = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
+    ros::Publisher vehinfo_pub;
+    vehinfo_pub = n.advertise<msgs::VehInfo>("veh_info", 1);
 
     int rc;
 	struct can_filter filter[NumOfReceiveID];
@@ -363,21 +395,18 @@ int main(int argc, char **argv)
 	filter[1].can_id = 0x602;
 	filter[2].can_id = 0x603;
     filter[3].can_id = 0x610;
-
-    /*
-	filter[3].can_id = 0x3A0;
-	filter[4].can_id = 0x3A1;
-	filter[5].can_id = 0x3A2;
-	filter[6].can_id = 0x3A3;
-	filter[7].can_id = 0x3A4;
-	filter[8].can_id = 0x3A5;
-	filter[9].can_id = 0x3A6;
-	filter[10].can_id = 0x3A7;
-	filter[11].can_id = 0x3A8;
-	filter[12].can_id = 0x3A9;
-	filter[13].can_id = 0x3B0;
-	filter[14].can_id = 0x3B1;
-    */
+    filter[4].can_id = 0x301;
+    filter[5].can_id = 0x302;
+    filter[6].can_id = 0x303;
+    filter[7].can_id = 0x304;
+    filter[8].can_id = 0x350;
+    filter[9].can_id = 0x351;
+    filter[10].can_id = 0x620;
+    filter[11].can_id = 0x621;
+    filter[12].can_id = 0x622;
+    filter[13].can_id = 0x623;
+    filter[14].can_id = 0x624;
+    
 
     int s;
     const char *ifname = CAN_CHNNEL;
@@ -423,9 +452,10 @@ int main(int argc, char **argv)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher, msg123);
+            ProcessFrame(frame, Publisher);;
         }
-        //Publisher[3].publish(msg123);
+        Publisher_Backend.publish(msg_Backend);
+        //vehinfo_pub.publish(msg_VehInfo);
         rate.sleep();
     }
     return 0;

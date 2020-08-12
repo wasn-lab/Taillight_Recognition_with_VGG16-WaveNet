@@ -68,6 +68,49 @@ template PointCloud<PointXYZI> CuboidFilter::hollow_removal<PointXYZI>(typename 
                                                                        double Ymax, double Zmin, double Zmax);
 
 template <typename PointT>
+PointCloud<PointT> CuboidFilter::hollow_removal_IO(typename PointCloud<PointT>::Ptr input, double Xmin, double Xmax,
+                                                   double Ymin, double Ymax, double Zmin, double Zmax,
+                                                   double Xmin_outlier, double Xmax_outlier, double Ymin_outlier,
+                                                   double Ymax_outlier, double Zmin_outlier, double Zmax_outlier)
+{
+  PointCloud<PointT> buff = *input;
+
+  int k = 0;
+  for (size_t i = 0; i < buff.size(); i++)
+  {
+    if ((buff.points[i].x < Xmax_outlier && buff.points[i].x > Xmin_outlier) &&
+        (buff.points[i].y < Ymax_outlier && buff.points[i].y > Ymin_outlier) &&
+        (buff.points[i].z < Zmax_outlier && buff.points[i].z > Zmin_outlier))
+    {
+      if (!((buff.points[i].x < Xmax && buff.points[i].x > Xmin) &&
+            (buff.points[i].y < Ymax && buff.points[i].y > Ymin) &&
+            (buff.points[i].z < Zmax && buff.points[i].z > Zmin)))
+      {
+        buff.points[k] = buff.points[i];
+        k++;
+      }
+    }
+  }
+  buff.resize(k);
+
+  return buff;
+}
+
+template PointCloud<PointXYZ> CuboidFilter::hollow_removal_IO<PointXYZ>(typename PointCloud<PointXYZ>::Ptr input,
+                                                                        double Xmin, double Xmax, double Ymin,
+                                                                        double Ymax, double Zmin, double Zmax,
+                                                                        double Xmin_outlier, double Xmax_outlier,
+                                                                        double Ymin_outlier, double Ymax_outlier,
+                                                                        double Zmin_outlier, double Zmax_outlier);
+
+template PointCloud<PointXYZI> CuboidFilter::hollow_removal_IO<PointXYZI>(typename PointCloud<PointXYZI>::Ptr input,
+                                                                          double Xmin, double Xmax, double Ymin,
+                                                                          double Ymax, double Zmin, double Zmax,
+                                                                          double Xmin_outlier, double Xmax_outlier,
+                                                                          double Ymin_outlier, double Ymax_outlier,
+                                                                          double Zmin_outlier, double Zmax_outlier);
+
+template <typename PointT>
 vector<PointCloud<PointT>> CuboidFilter::separate_cloud(typename PointCloud<PointT>::Ptr input, float Xmin, float Xmax,
                                                         float Ymin, float Ymax, float Zmin, float Zmax)
 {

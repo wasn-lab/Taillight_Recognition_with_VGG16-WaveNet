@@ -8,4 +8,11 @@ pcl::PointIndicesPtr indices_ground (new pcl::PointIndices);
 
 cout << "[remove_plane]:" << ptr_cur_cloud->size () << "," << timer_algorithm_running.getTimeSeconds () << "s" << endl;
       
-      
+// filter
+if (use_filter)
+{
+    *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -6.0, 0.5, -1.2, 1.2, -3.0, 0.1);
+    *input_cloud_tmp = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(input_cloud_tmp, 0.22, 1);
+    cout << "Top Filter-- "
+    << "Points: " << input_cloud_tmp->size() << "; Time Took: " << stopWatch_T.getTimeSeconds() << 's' << endl;
+}

@@ -380,7 +380,7 @@ public:
       markerArray.markers[i].lifetime = ros::Duration(0.1);
 
       // draw a 2D polygon at the side of minY
-      for (size_t j = 0; j < cluster_info[i].abb_vertex.size()/2; ++j)
+      for (size_t j = 0; j < cluster_info[i].abb_vertex.size() / 2; ++j)
       {
         geometry_msgs::Point p;
 
@@ -389,7 +389,7 @@ public:
         p.z = cluster_info[i].abb_vertex[j].z;
         markerArray.markers[i].points.push_back(p);
 
-        if (j == cluster_info[i].abb_vertex.size()/2 - 1)
+        if (j == cluster_info[i].abb_vertex.size() / 2 - 1)
         {
           p.x = cluster_info[i].abb_vertex[0].x;
           p.y = cluster_info[i].abb_vertex[0].y;
@@ -407,7 +407,7 @@ public:
 
 #if (true)
       // draw a 2D polygon at the side of maxY
-      for (size_t j = cluster_info[i].abb_vertex.size()/2; j < cluster_info[i].abb_vertex.size(); ++j)
+      for (size_t j = cluster_info[i].abb_vertex.size() / 2; j < cluster_info[i].abb_vertex.size(); ++j)
       {
         geometry_msgs::Point p;
 
@@ -433,7 +433,7 @@ public:
       }
 
       // draw vertical lines of bounding box
-      for (size_t j = 0; j < cluster_info[i].abb_vertex.size()/2; ++j)
+      for (size_t j = 0; j < cluster_info[i].abb_vertex.size() / 2; ++j)
       {
         geometry_msgs::Point p;
 
@@ -502,7 +502,7 @@ public:
       markerArray.markers[i].lifetime = ros::Duration(0.1);
 
       // draw a 2D polygon at the side of minY
-      for (size_t j = 0; j < cluster_info[i].obb_vertex.size()/2; ++j)
+      for (size_t j = 0; j < cluster_info[i].obb_vertex.size() / 2; ++j)
       {
         geometry_msgs::Point p;
 
@@ -511,7 +511,7 @@ public:
         p.z = cluster_info[i].obb_vertex[j].z;
         markerArray.markers[i].points.push_back(p);
 
-        if (j == cluster_info[i].obb_vertex.size()/2 - 1)
+        if (j == cluster_info[i].obb_vertex.size() / 2 - 1)
         {
           p.x = cluster_info[i].obb_vertex[0].x;
           p.y = cluster_info[i].obb_vertex[0].y;
@@ -529,7 +529,7 @@ public:
 
 #if (true)
       // draw a 2D polygon at the side of maxY
-      for (size_t j = cluster_info[i].obb_vertex.size()/2; j < cluster_info[i].obb_vertex.size(); ++j)
+      for (size_t j = cluster_info[i].obb_vertex.size() / 2; j < cluster_info[i].obb_vertex.size(); ++j)
       {
         geometry_msgs::Point p;
 
@@ -555,7 +555,7 @@ public:
       }
 
       // draw vertical lines of bounding box
-      for (size_t j = 0; j < cluster_info[i].obb_vertex.size()/2; ++j)
+      for (size_t j = 0; j < cluster_info[i].obb_vertex.size() / 2; ++j)
       {
         geometry_msgs::Point p;
 

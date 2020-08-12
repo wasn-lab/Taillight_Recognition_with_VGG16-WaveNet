@@ -31,6 +31,10 @@ void coFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
               boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, const std::string& co, float min_value,
               float max_value, bool negative);
 
+void radiusFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
+                  boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, double radius, int min_pts);
+
+
 void iFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
              boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, float i_min, float i_max, bool i_negtive);
 
