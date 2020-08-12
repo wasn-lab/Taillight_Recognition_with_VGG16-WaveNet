@@ -57,6 +57,28 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include "UserDefine.h"
+#include "std_msgs/String.h"
+
+//--------------OCCCCCC
+#include <pcl/pcl_base.h>
+#include <pcl/impl/pcl_base.hpp>
+PCL_INSTANTIATE_PCLBase(pcl::PointXYZIR);
+
+// #include <pcl/impl/instantiate.hpp>
+// #include <pcl/compression/octree_pointcloud_compression.h>
+
+// // impl
+// #include <pcl/octree/impl/octree2buf_base.hpp>
+// #include <pcl/octree/impl/octree_base.hpp>
+// #include <pcl/octree/impl/octree_iterator.hpp>
+// #include <pcl/octree/impl/octree_pointcloud_adjacency.hpp>
+// #include <pcl/octree/impl/octree_pointcloud.hpp>
+// #include <pcl/octree/impl/octree_pointcloud_voxelcentroid.hpp>
+// #include <pcl/octree/impl/octree_search.hpp>
+
+// PCL_INSTANTIATE_Octree(pcl::PointXYZIR);
+
 using namespace std;
 using namespace pcl;
 using namespace pcl::console;

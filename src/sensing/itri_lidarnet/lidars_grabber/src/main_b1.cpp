@@ -6,6 +6,9 @@
 #include "CuboidFilter.h"
 #include "NoiseFilter.h"
 #include "extract_Indices.h"
+#include "from_sensor_msgs.h"
+
+
 
 //---------------------------- pointcloud
 // no-filter PointCloud
@@ -20,6 +23,8 @@ ros::Publisher pub_LidarFrontLeft;
 ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
 ros::Publisher pub_LidarAll;
+
+ros::Publisher pub_LidarFrontLeft_Test;
 
 //----------------------------- Stitching
 vector<double> LidarFrontLeft_Fine_Param;
@@ -49,51 +54,11 @@ void checkPubFlag(int lidarNum);
 void lidarAll_Pub(int lidarNum);
 
 
-
-//------------------------------ get ring from sensor_msgs to pcl
-pcl::PointCloud<pcl::PointXYZIR> get_ring_pcl_from_sensor_msgs(const sensor_msgs::PointCloud2 & cloud_msg)
-{
-  pcl::PointCloud<pcl::PointXYZIR> cloud;
-
-  // Get the field structure of this point cloud
-  int pointBytes = cloud_msg.point_step;
-  int offset_x;
-  int offset_y;
-  int offset_z;
-  int offset_int;
-  int offset_ring;
-  for (int f=0; f<cloud_msg.fields.size(); ++f)
-  {
-    if (cloud_msg.fields[f].name == "x")
-      offset_x = cloud_msg.fields[f].offset;
-    if (cloud_msg.fields[f].name == "y")
-      offset_y = cloud_msg.fields[f].offset;
-    if (cloud_msg.fields[f].name == "z")
-      offset_z = cloud_msg.fields[f].offset;
-    if (cloud_msg.fields[f].name == "intensity")
-      offset_int = cloud_msg.fields[f].offset;
-    if (cloud_msg.fields[f].name == "ring")
-      offset_ring = cloud_msg.fields[f].offset;
-  }
-
-  // populate point cloud object
-  for (int p=0; p< (cloud_msg.width * cloud_msg.height); ++p)
-  {
-      pcl::PointXYZIR newPoint;
-
-      newPoint.x = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_x);
-      newPoint.y = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_y);
-      newPoint.z = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_z);
-      newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int);
-      newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes*p) + offset_ring);
-
-      cloud.points.push_back(newPoint);
-  }
-
-  pcl_conversions::toPCL(cloud_msg.header, cloud.header);
-
-  return cloud;
-}
+// pcl::PointCloud<pcl::PointXYZRGBA> XYZIR_to_XYZRBGA(PointCloud<PointXYZIR>::Ptr input)
+// {
+//   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+//   for (int p=0; p< (cloud_msg.width * cloud_msg.height); ++p)
+// }
 
 
 //------------------------------ Callback
@@ -108,23 +73,94 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
       cout << "[Left->Gbr]: " << diff_time << "ms" << endl;
     }
+    
+    //-------------------------- sensor_msg to pcl XYZIR
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+    *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);
+    
+
+    //-------------------------- test for range image
+    // We now want to create a range image from the above point cloud, with a 1deg angular resolution
+    
+    // float angular_resolution_x = (float) ( 0.01f * (M_PI/180.0f));  //  1.0 degree in radians
+    // float angular_resolution_y = (float) ( 0.007f * (M_PI/180.0f));  //  1.0 degree in radians
+    // float maxAngleWidth    = (float) (360.0f * (M_PI/180.0f));  // 360.0 degree in radians
+    // float maxAngleHeight    = (float) (33.0f * (M_PI/180.0f));  // 180.0 degree in radians
+    // Eigen::Affine3f sensorPose = (Eigen::Affine3f)Eigen::Translation3f(0.0f, 0.0f, 0.0f);
+    // pcl::RangeImage::CoordinateFrame coordinate_frame = pcl::RangeImage::LASER_FRAME;
+    // float noiseLevel=0.00;
+    // float minRange = 0.3f;
+    // int borderSize = 1;
+
+    // pcl::RangeImage rangeImage;
+    // rangeImage.createFromPointCloud(*input_cloud_tmp_ring, angular_resolution_x, angular_resolution_y, maxAngleWidth, maxAngleHeight,
+    //                                  sensorPose, coordinate_frame, noiseLevel, minRange, borderSize);
+    // rangeImage.header = input_cloud_tmp_ring->header;
+    // std::cout << rangeImage << "\n";
+    // pcl::RangeImage RangeImage_raw;
+    // RangeImage_raw = PointCloudtoRangeImage(input_cloud_tmp_ring, "velodyne", 32);
+    // //pub_LidarFrontLeft_RangeImage.publish(RangeImage_raw);
+
+
+    //------------------- oct compress
+    // pcl::octree::PointCloudCompression<pcl::PointXYZIR> * PointCloudEncoder;
+    // pcl::octree::PointCloudCompression<pcl::PointXYZIR> * PointCloudDecoder;  
+
+    // pcl::octree::compression_Profiles_e compressionProfile = pcl::octree::MED_RES_ONLINE_COMPRESSION_WITH_COLOR;
+    // bool showStatistics=true;
+    // // 初始化压缩与解压缩对象
+    // PointCloudEncoder=new pcl::octree::PointCloudCompression<pcl::PointXYZIR> (compressionProfile, showStatistics);
+    // PointCloudDecoder=new pcl::octree::PointCloudCompression<pcl::PointXYZIR> ();
+  
+    // // 存储压缩点云的字节流
+    // std::stringstream compressedData;
+    // pcl::PointCloud<pcl::PointXYZIR>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZIR> ());
+    // PointCloudEncoder->encodePointCloud (input_cloud_tmp_ring, compressedData); 
+    // PointCloudDecoder->decodePointCloud (compressedData, cloudOut);
+
+    // --------------------------------------------------------------------------------------------OCT
+        
+    bool showStatistics = true;
+    // for a full list of profiles see: /io/include/pcl/compression/compression_profiles.h
+    pcl::io::compression_Profiles_e compressionProfile = pcl::io::MED_RES_ONLINE_COMPRESSION_WITH_COLOR;
+
+
+    // instantiate point cloud compression for encoding and decoding
+    pcl::io::OctreePointCloudCompression<pcl::PointXYZIR>* PointCloudEncoder;
+    PointCloudEncoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZIR> (compressionProfile, showStatistics);
+    
+    // pcl::io::OctreePointCloudCompression<pcl::PointXYZIR>* PointCloudDecoder;
+    // PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZIR> ();
+
+    std_msgs::String compress_msg_for_pub;
+    std::stringstream compressedData;
+
+    // Compress the cloud (you would save the stream to disk).
+    //pcl::PointCloud<pcl::PointXYZ>::Ptr test_cloud_xyz(new pcl::PointCloud<pcl::PointXYZ>);
+    //pcl::copyPointCloud(*input_cloud_tmp_ring, *test_cloud_xyz);
+    //octreeCompression.encodePointCloud(test_cloud_xyz, compressedData);
+    //compress_msg_for_pub.data = compressedData.str();
+
+    //pub_LidarFrontLeft_Test.publish(compress_msg_for_pub);
+
+    // // Decompress the cloud.
+    // //octreeCompression.decodePointCloud(compressedData, decompressedCloud);
+    // end OCT-------------------------------------------------------------------------------------
+
 
     //-------------------------- ring filter
     if (use_filter)
     {
       stopWatch_L.reset();
-      pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
       pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
-      *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.3);
       cout << "Left Filter-- "  << "Points: " << output_cloud_tmp_ring->size() << "; Time Took: " << stopWatch_L.getTimeSeconds() << 's' << endl;
-
       pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
     }
     else
     {
-      pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+      pcl::copyPointCloud(*input_cloud_tmp_ring, *input_cloud_tmp);
     }
 
     // -------------------------- check stitching
@@ -177,22 +213,21 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       cout << "[Right->Gbr]: " << diff_time << "ms" << endl;
     }
 
+    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+    *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
 
     if (use_filter)
     {
       stopWatch_R.reset();
-      pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
       pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
-      *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.3);
       cout << "Right Filter-- "  << "Points: " << output_cloud_tmp_ring->size() << "; Time Took: " << stopWatch_R.getTimeSeconds() << 's' << endl;
-
       pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
     }
     else
     {
-      pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+      pcl::copyPointCloud(*input_cloud_tmp_ring, *input_cloud_tmp);
     }
 
     // ------------------------------- check stitching
@@ -245,16 +280,19 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
       cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
     }
-    
-    // ring filter
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+    *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud); 
+
+    // test for range image
+    // pcl::RangeImage RangeImage_raw;
+    // RangeImage_raw = PointCloudtoRangeImage(input_cloud_tmp_ring, "ouster", 64);
+
+    // ring filter
     if (use_filter)
     {
       stopWatch_T.reset();
-      pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
       pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
-      *input_cloud_tmp_ring = get_ring_pcl_from_sensor_msgs(*input_cloud);    
-
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
       cout << "Top Filter-- "  << "Points: " << output_cloud_tmp_ring->size() << "; Time Took: " << stopWatch_T.getTimeSeconds() << 's' << endl;
 
@@ -262,7 +300,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     }
     else
     {
-      pcl::fromROSMsg(*input_cloud, *input_cloud_tmp);
+      pcl::copyPointCloud(*input_cloud_tmp_ring, *input_cloud_tmp);
     }
 
     // check stitching
@@ -442,6 +480,8 @@ int main(int argc, char** argv)
   pub_LidarFrontRight = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontRight", 1);
   pub_LidarFrontTop = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop", 1);
   pub_LidarAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
+
+  pub_LidarFrontLeft_Test = n.advertise<std_msgs::String>("/LidarFrontLeft/Test", 1);
 
   thread TheadDetection_UI(UI, argc, argv);
   thread TheadDetection_Pub(LidarAll_Publisher, argc, argv);
