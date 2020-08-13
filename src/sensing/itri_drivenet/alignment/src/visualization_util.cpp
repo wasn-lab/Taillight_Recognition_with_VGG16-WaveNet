@@ -1,5 +1,8 @@
 #include "visualization_util.h"
 
+/// stardard
+#include <cmath>
+
 using namespace DriveNet;
 
 void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x)
@@ -33,7 +36,9 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 cv::Scalar Visualization::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
-  if (distance_in_meters >= 0 && distance_in_meters <= 10)
+
+  distance_in_meters = std::fabs(distance_in_meters);
+  if (distance_in_meters > 0 && distance_in_meters <= 10)
   {
     color = CvColor::red_;
   }

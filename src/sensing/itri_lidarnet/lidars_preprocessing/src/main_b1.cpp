@@ -6,6 +6,9 @@
 #include "PlaneGroundFilter.h"
 #include "RayGroundFilter.h"
 #include "extract_Indices.h"
+#include "NoiseFilter.h"
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #if ENABLE_DEBUG_MODE == true
 #include "UI/QtViewer.h"
@@ -13,6 +16,8 @@
 
 bool debug_output = false;
 StopWatch stopWatch;
+
+ros::Publisher pub_sensor_msgs_nonground;
 
 void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
@@ -54,11 +59,17 @@ void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 
     // pcl::PointCloud<pcl::PointXYZ>::Ptr buff (new pcl::PointCloud<pcl::PointXYZ>);
     // copyPointCloud (*ptr_cur_cloud, *buff);
-    //*indices_ground = RayGroundFilter (2.57, 2.8, 9.0, 0.01, 0.01, 0.15, 0.3, 0.8, 0.175).compute<PointXYZ> (buff);
+    // *indices_ground = RayGroundFilter (2.57, 2.8, 9.0, 0.01, 0.01, 0.15, 0.3, 0.8, 0.175).compute<PointXYZ> (buff);
     // extract_Indices<PointXYZI> (ptr_cur_cloud, indices_ground, *cloud_ground, *cloud_non_ground);
 
-    *indices_ground = PlaneGroundFilter().runMorphological<PointXYZI>(ptr_cur_cloud, 0.3, 2, 1, 0.9, 0.32, 0.33);
+    *indices_ground = PlaneGroundFilter().runMorphological<PointXYZI>(ptr_cur_cloud, 0.2, 2, 1, 0.9, 0.32, 0.34);
     extract_Indices<PointXYZI>(ptr_cur_cloud, indices_ground, *cloud_ground, *cloud_non_ground);
+
+    // Noise Filter --------------------------------------------------------
+    // PointCloud<PointXYZI>::Ptr cloud_denoise(new PointCloud<PointXYZI>);
+    // *cloud_denoise = NoiseFilter().runRadiusOutlierRemoval<PointXYZI>(cloud_non_ground, 0.22, 1);
+    // *cloud_non_ground = *cloud_denoise;
+    //----------------------------------------------------------------------
 
     // cout << "[remove ground]:" << timer_algorithm_running.gcloud_non_ground
     if (cloud_ground->size() < 100)
@@ -66,8 +77,13 @@ void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
       RosModuleB1::send_ErrorCode(0x4000);
       cout << "error: not find ground" << endl;
     }
-
     RosModuleB1::send_LidarAllNonGround(*cloud_non_ground, msg->header.stamp, msg->header.frame_id);
+
+    // send sensor_msgs_nonground 
+    sensor_msgs::PointCloud2 sensor_msgs_nonground; 
+    pcl::toROSMsg(*cloud_non_ground, sensor_msgs_nonground);
+    pub_sensor_msgs_nonground.publish(sensor_msgs_nonground);
+
 
     if (debug_output)
     {
@@ -89,6 +105,7 @@ void UI(int argc, char** argv)
 int main(int argc, char** argv)
 {
   RosModuleB1::initial("lidars_preprocessing", argc, argv);
+  ros::NodeHandle n;
   RosModuleB1::RegisterCallBackLidarAll(callback_LidarAll);
   cout << "[" << ros::this_node::getName() << "] "
        << "----------------------------startup" << endl;
@@ -96,12 +113,15 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", debug_output);
 
+  pub_sensor_msgs_nonground = n.advertise<sensor_msgs::PointCloud2>("/LidarAll/NonGround_SensorMsgs", 1);
+
   cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
   cout.precision(3);
 
 #if ENABLE_DEBUG_MODE == true
   thread TheadDetection(UI, argc, argv);
 #endif
+
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
