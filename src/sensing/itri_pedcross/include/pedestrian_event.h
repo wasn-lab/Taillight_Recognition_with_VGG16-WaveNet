@@ -25,6 +25,7 @@
 #include <map>
 #include <boost/circular_buffer.hpp>
 #include <buffer.h>
+#include <skeleton_buffer.h>
 #include <openpose.h>
 #include <openpose_ros_io.h>
 #include <openpose_flags.h>
@@ -86,7 +87,8 @@ public:
   void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
-                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
+                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
+                     std::vector<SkeletonBuffer>& skeleton_buffer);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
@@ -135,6 +137,11 @@ public:
   Buffer buffer_left;
   Buffer buffer_right;
   Buffer buffer_fov30;
+  // pair(track id, skeleton[x1,y1,x2,y2...])
+  std::vector<SkeletonBuffer> skeleton_buffer_front;
+  std::vector<SkeletonBuffer> skeleton_buffer_left;
+  std::vector<SkeletonBuffer> skeleton_buffer_right;
+  std::vector<SkeletonBuffer> skeleton_buffer_fov30;
   int buffer_size = 60;
 
   // ROS components

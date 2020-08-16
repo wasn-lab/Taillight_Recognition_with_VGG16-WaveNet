@@ -328,28 +328,29 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
 void PedestrianEvent::front_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 0 for front
-  main_callback(msg, buffer_front, front_image_cache, 0);
+  main_callback(msg, buffer_front, front_image_cache, 0, skeleton_buffer_front);
 }
 void PedestrianEvent::left_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 1 for left
-  main_callback(msg, buffer_left, left_image_cache, 1);
+  main_callback(msg, buffer_left, left_image_cache, 1, skeleton_buffer_left);
 }
 
 void PedestrianEvent::right_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 2 for right
-  main_callback(msg, buffer_right, right_image_cache, 2);
+  main_callback(msg, buffer_right, right_image_cache, 2, skeleton_buffer_right);
 }
 
 void PedestrianEvent::fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 3 for fov30
-  main_callback(msg, buffer_fov30, fov30_image_cache, 3);
+  main_callback(msg, buffer_fov30, fov30_image_cache, 3, skeleton_buffer_fov30);
 }
 
 void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
-                                    boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera)
+                                    boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
+                                    std::vector<SkeletonBuffer>& skeleton_buffer)
 {
   if (!image_cache.empty())  // do if there is image in buffer
   {
@@ -495,7 +496,79 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       }
       cv::resize(croped_image, croped_image, cv::Size(resize_width_to, resize_height_to));
       ros::Time inference_start = ros::Time::now();
-      std::vector<cv::Point2f> keypoints = get_openpose_keypoint(croped_image);
+      // search index in skeleton buffer
+      int skeleton_index = -1;
+      for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
+      {
+        if (skeleton_buffer.at(i).track_id == obj_pub.track.id)
+        {
+          skeleton_index = i;
+        }
+      }
+      std::vector<cv::Point2f> keypoints;
+      if (skeleton_index == -1)  // if there is no data in skeleton buffer
+      {
+        keypoints = get_openpose_keypoint(croped_image);
+        SkeletonBuffer new_person;
+        new_person.track_id = obj_pub.track.id;
+        new_person.calculated_skeleton.emplace_back(keypoints);
+        new_person.calculated_skeleton.emplace_back(keypoints);
+        new_person.calculated_skeleton.emplace_back(keypoints);
+        new_person.calculated_skeleton.emplace_back(keypoints);
+        new_person.last_real_skeleton.assign(keypoints.begin(), keypoints.end());
+        skeleton_buffer.emplace_back(new_person);
+      }
+      else  // if there is data in skeleton buffer
+      {
+        if (skeleton_buffer.at(skeleton_index).calculated_skeleton.empty())
+        {
+          keypoints = get_openpose_keypoint(croped_image);
+          std::vector<cv::Point2f> keypoints_diff;
+          for (unsigned int i = 0; i < keypoints.size(); i++)
+          {
+            cv::Point2f diff;
+            diff.x = keypoints.at(i).x - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).x;
+            diff.y = keypoints.at(i).y - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).y;
+            diff.x /= 5;
+            diff.y /= 5;
+            keypoints_diff.emplace_back(diff);
+          }
+          std::vector<cv::Point2f> keypoints_tmp;
+          keypoints_tmp.assign(keypoints.begin(), keypoints.end());
+          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+          {
+            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
+            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+          }
+          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
+          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+          {
+            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
+            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+          }
+          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
+          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+          {
+            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
+            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+          }
+          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
+          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+          {
+            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
+            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+          }
+          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
+          skeleton_buffer.at(skeleton_index).last_real_skeleton.assign(keypoints.begin(), keypoints.end());
+        }
+        else
+        {
+          keypoints = skeleton_buffer.at(skeleton_index).calculated_skeleton.at(0);
+          // remove first calculated_skeleton
+          skeleton_buffer.at(skeleton_index)
+              .calculated_skeleton.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton.begin());
+        }
+      }
       ros::Time inference_stop = ros::Time::now();
       average_inference_time = average_inference_time * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
 
@@ -710,6 +783,12 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     std::cout << "Cost time: " << stop - start << " sec" << std::endl;
     std::cout << "Total time: " << total_time << " sec / loop: " << count << std::endl;
 #endif
+    // sleep 0.1 sec for 10 FPS
+    ros::Duration sleep_time = ros::Duration(0.1) - (stop - start);
+    if (sleep_time > ros::Duration(0.0))
+    {
+      sleep_time.sleep();
+    }
   }
 }
 
@@ -1619,7 +1698,7 @@ void PedestrianEvent::pedestrian_event()
     sub_9 = nh_sub_9.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
                                this);  // /cam/F_center is subscirbe topic
     sub_10 = nh_sub_10.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
-                               this);  // /cam/F_center is subscirbe topic
+                                 this);  // /cam/F_center is subscirbe topic
     sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
                                  this);  // /cam/F_center is subscirbe topic
     sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
@@ -1766,7 +1845,7 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
   std::cout << "Openpose time cost: " << ros::Time::now() - timer << std::endl;
 #endif
 
-  for (int i = 0; i < 25; i++)
+  for (int i = points.size(); i < 25; i++)
   {
     points.emplace_back(cv::Point2f(0.0, 0.0));
   }
