@@ -24,6 +24,7 @@ make rad_grab_2020-04-13-17-45-48_0.bag
 make ukf_mm_2020-04-13-17-45-48_0.bag
 make target_planner_2020-04-13-17-45-48_0.bag
 make auto_record_2020-06-19-16-26-18_1_filtered.bag
+make auto_record_2020-08-04-10-15-25_4_filtered.bag
 set +e
 popd
 

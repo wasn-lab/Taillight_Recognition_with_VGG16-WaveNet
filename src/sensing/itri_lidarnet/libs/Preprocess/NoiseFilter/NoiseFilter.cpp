@@ -8,6 +8,7 @@ NoiseFilter::~NoiseFilter()
 {
 }
 
+//-------- Uniform Sampling <PointT>
 template <typename PointT>
 PointCloud<PointT> NoiseFilter::runUniformSampling(const typename PointCloud<PointT>::Ptr input, float model_ss)
 {
@@ -27,6 +28,7 @@ template PointCloud<PointXYZ> NoiseFilter::runUniformSampling<PointXYZ>(const ty
 template PointCloud<PointXYZI>
 NoiseFilter::runUniformSampling<PointXYZI>(const typename PointCloud<PointXYZI>::Ptr input, float model_ss);
 
+//-------- Random Sample <PointXYZ>
 PointCloud<PointXYZ> NoiseFilter::runRandomSampling(PointCloud<PointXYZ>::Ptr input, float model_ss_)
 {
   PointCloud<PointXYZ> out_cloud;
@@ -77,12 +79,14 @@ PointCloud<PointXYZ> NoiseFilter::runRandomSampling(PointCloud<PointXYZ>::Ptr in
   return out_cloud;
 }
 
-PointCloud<PointXYZ> NoiseFilter::runStatisticalOutlierRemoval(PointCloud<PointXYZ>::Ptr input, int MeanK,
-                                                               double StddevMulThresh)
+//-------- Statistical Filter <PointXYZ>
+template <typename PointT>
+PointCloud<PointT> NoiseFilter::runStatisticalOutlierRemoval(typename PointCloud<PointT>::Ptr input, int MeanK,
+                                                             double StddevMulThresh)
 {
-  PointCloud<PointXYZ> out_cloud;
+  PointCloud<PointT> out_cloud;
 
-  pcl::StatisticalOutlierRemoval<PointXYZ> sor;
+  pcl::StatisticalOutlierRemoval<PointT> sor;
   sor.setInputCloud(input);
   sor.setMeanK(MeanK);
   sor.setStddevMulThresh(StddevMulThresh);
@@ -91,14 +95,19 @@ PointCloud<PointXYZ> NoiseFilter::runStatisticalOutlierRemoval(PointCloud<PointX
 
   return out_cloud;
 }
+template PointCloud<PointXYZI> NoiseFilter::runStatisticalOutlierRemoval<PointXYZI>(
+    typename PointCloud<PointXYZI>::Ptr input, int MeanK, double StddevMulThresh);
 
-PointCloud<PointXYZ> NoiseFilter::runRadiusOutlierRemoval(PointCloud<PointXYZ>::Ptr input, double radius, int min_pts)
+//-------- RadiusFilter <PointT>
+template <typename PointT>
+PointCloud<PointT> NoiseFilter::runRadiusOutlierRemoval(typename PointCloud<PointT>::Ptr input, double radius,
+                                                        int min_pts)
 {
-  PointCloud<PointXYZ> out_cloud;
+  PointCloud<PointT> out_cloud;
 
   if (input->size() > 0)
   {
-    pcl::RadiusOutlierRemoval<PointXYZ> outrem;
+    pcl::RadiusOutlierRemoval<PointT> outrem;
     outrem.setInputCloud(input);
     outrem.setRadiusSearch(radius);  // unit:m
     outrem.setMinNeighborsInRadius(min_pts);
@@ -110,3 +119,81 @@ PointCloud<PointXYZ> NoiseFilter::runRadiusOutlierRemoval(PointCloud<PointXYZ>::
   }
   return out_cloud;
 }
+
+template PointCloud<PointXYZ> 
+NoiseFilter::runRadiusOutlierRemoval<PointXYZ>(typename PointCloud<PointXYZ>::Ptr input,
+                                                                             double radius, int min_pts);
+template PointCloud<PointXYZI>
+NoiseFilter::runRadiusOutlierRemoval<PointXYZI>(typename PointCloud<PointXYZI>::Ptr input, double radius, int min_pts);
+
+
+PointCloud<PointXYZIR> NoiseFilter::runRingOutlierRemoval(PointCloud<PointXYZIR>::Ptr input, int ring_num, float threshold)
+{ 
+  pcl::PointCloud<pcl::PointXYZIR>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZIR>);
+  pcl::copyPointCloud(*input, *pcl_input);
+  if (pcl_input->points.empty()) 
+  {
+    return *pcl_input;
+  }
+
+  std::vector<pcl::PointCloud<pcl::PointXYZIR>> pcl_input_ring_array;
+  pcl_input_ring_array.resize(ring_num);  // TODO
+
+  for (const auto& p : pcl_input->points) 
+  {
+    pcl_input_ring_array.at(p.ring).push_back(p);
+  }
+
+  pcl::PointCloud<pcl::PointXYZIR>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZIR>);
+  pcl_output->points.reserve(pcl_input->points.size());
+
+  pcl::PointXYZIR p;
+  pcl::PointXYZIR p_forward;
+  pcl::PointXYZIR p_forward_forward;
+
+  for (int i=0; i < pcl_input_ring_array.size(); i++)
+  {
+    pcl_input_ring_array[i].points.push_back(pcl_input_ring_array[i].points.at(0));
+    pcl_input_ring_array[i].points.push_back(pcl_input_ring_array[i].points.at(1));
+  }
+
+  for (const auto & ring_pointcloud : pcl_input_ring_array)
+  {
+    if (ring_pointcloud.points.size() < 2) 
+    {
+      continue;
+    }
+
+    for (auto iter = std::begin(ring_pointcloud.points); iter != std::end(ring_pointcloud.points) - 1; ++iter) 
+    {
+      p.x = iter->x;
+      p.y = iter->y;
+      p.z = iter->z;
+      p.intensity = iter->intensity;
+      p.ring = iter->ring;
+      if (p_forward.x && p_forward_forward.x)
+      {
+        float diff_point_1 = std::sqrt(
+                        std::pow(p_forward.x - p.x, 2.0) +
+                        std::pow(p_forward.y - p.y, 2.0) +
+                        std::pow(p_forward.z - p.z, 2.0) );
+        
+        float diff_point_2 = std::sqrt(
+                        std::pow(p_forward.x - p_forward_forward.x, 2.0) +
+                        std::pow(p_forward.y - p_forward_forward.y, 2.0) +
+                        std::pow(p_forward.z - p_forward_forward.z, 2.0) );
+        
+        if( diff_point_1 <= threshold && diff_point_2 <= threshold )
+        {
+          pcl_output->points.push_back(p_forward);
+        }    
+      }
+      p_forward_forward = p_forward;
+      p_forward = p;    
+    }
+  }
+  pcl_output->header = input->header;
+  return *pcl_output;
+}
+
+

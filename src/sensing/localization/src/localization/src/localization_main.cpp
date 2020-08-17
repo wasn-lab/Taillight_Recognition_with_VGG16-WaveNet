@@ -720,8 +720,9 @@ static void callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr& input)
 #if CUDA
     if (!CDS.downsampling(*LidFrontTop_cloudPtr, voxel_leaf_size))
     {
-      cudaDeviceReset();
-      std::cout << "cudaDownSample.downsampling NOT SUCCESFULL " << std::endl;
+     	// cudaDeviceReset(); //Remove this API since it will destroy all allocations and reset all state on the current device in the current process.
+        std::cout << "cudaDownSample.downsampling NOT SUCCESFULL " << std::endl;
+	return; // Since something wrong in this cloud points, abandon it and just process the next one
     }
     else
     {
