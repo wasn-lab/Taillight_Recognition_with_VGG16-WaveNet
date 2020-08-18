@@ -20,8 +20,6 @@ void calculate_LRturn(autoware_planning_msgs::Trajectory traj)
   double size = traj.points.size();
   double first_yaw = tf::getYaw(traj.points[0].pose.orientation);
   double last_yaw = tf::getYaw(traj.points[size-1].pose.orientation);
-  std::cout << "first_yaw : " << first_yaw << std::endl;
-  std::cout << "last_yaw : " << last_yaw << std::endl;
   LRturn = -1;
   double angle_diff = last_yaw - first_yaw;
   if (angle_diff < -RT_PI)
@@ -45,6 +43,8 @@ void calculate_LRturn(autoware_planning_msgs::Trajectory traj)
   {
     LRturn = 0;
   }
+  // std::cout << "first_yaw : " << first_yaw << std::endl;
+  // std::cout << "last_yaw : " << last_yaw << std::endl;
   // std::cout << "angle_diff_setting : " << angle_diff_setting << std::endl;
   // std::cout << "angle_diff : " << angle_diff << std::endl;
   // std::cout << "LRturn : " << LRturn << std::endl;
@@ -55,14 +55,14 @@ void calculate_slope(autoware_planning_msgs::Trajectory traj)
   double size = traj.points.size();
   double first_z = traj.points[0].pose.position.z;
   double last_z = traj.points[size-1].pose.position.z;
-  std::cout << "first_z : " << first_z << std::endl;
-  std::cout << "last_z : " << last_z << std::endl;
   up_hill = false;
   double z_diff = last_z - first_z;
   if (z_diff > z_diff_setting)
   {
     up_hill = true;
   }
+  // std::cout << "first_z : " << first_z << std::endl;
+  // std::cout << "last_z : " << last_z << std::endl;
   // std::cout << "z_diff_setting : " << z_diff_setting << std::endl;
   // std::cout << "z_diff : " << z_diff << std::endl;
   // std::cout << "up_hill : " << up_hill << std::endl;
