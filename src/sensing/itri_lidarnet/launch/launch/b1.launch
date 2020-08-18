@@ -22,6 +22,7 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
     <arg name="use_filter" default="0" />
+	<arg name="use_compress" default="0" />
 	<arg name="use_roi" default="0" />
 	<arg name="hardware_enable" default="1" />
 	<arg name="mps" default="1" />
@@ -40,6 +41,10 @@ Lidar List:
 <!-- Filter **************************************************************** -->
 	<rosparam param="use_filter" if="$(eval arg('use_filter') != 1)">false</rosparam>
 	<rosparam param="use_filter" if="$(eval arg('use_filter') == 1)">true</rosparam>
+
+<!-- Compress*************************************************************** -->
+	<rosparam param="use_compress" if="$(eval arg('use_compress') != 1)">false</rosparam>
+	<rosparam param="use_compress" if="$(eval arg('use_compress') == 1)">true</rosparam>
 
 
 <!-- tf2 ******************************************************************* -->
@@ -80,6 +85,11 @@ Lidar List:
 		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
 		<node pkg="lidar_squseg_v2_inference"      type="lidar_squseg_v2_inference"	 	 	name="lidar_squseg_v2_inference"    			output="screen" cwd="node" args="b1 X 0 1" />
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
+	</group>
+
+	<group if="$(eval arg('mode') == 5)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
+		<node pkg="lidars_decoder" 			type="lidars_decoder_b1" 			name="lidars_decoder_b1" 			output="screen" cwd="node" respawn="true"  />
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->
