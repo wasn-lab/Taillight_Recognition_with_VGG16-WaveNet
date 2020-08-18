@@ -19,11 +19,17 @@ if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/ukf_mm_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/target_planner_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/lidarxyz2lla_2020-04-13-17-45-48_0.bag
-  || ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag ]]; then
+  || ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag
+  || ! -f ${bag_dir}/auto_record_2020-08-04-10-15-25_4_filtered.bag ]]; then
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
 source devel/setup.bash
+
+# cache *.engine for quick loading
+for engine in `find src/sensing -name "*.engine"`; do
+  cat $engine > /dev/null 2>&1
+done
 
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v2.test

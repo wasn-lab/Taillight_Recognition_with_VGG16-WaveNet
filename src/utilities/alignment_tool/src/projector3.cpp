@@ -8,7 +8,7 @@ void Projector3::init(int camera_id)
 {
   char* file_name;
   char* file_path;
-  file_name = (char*)"b1_v2_front_bottom_60.yml";
+  file_name = (char*)"b1_v2_right_back_60.yml";
   file_path = new char[std::strlen("") + std::strlen(file_name) + 1];
   // filePath = new char[std::strlen(file_name) + 1];
   std::strcpy(file_path, "");
@@ -45,9 +45,9 @@ void Projector3::setprojectionMat(double yaw, double pitch, double roll, double 
   rotationVec_fix.at<double>(1, 0) = rotationVec.at<double>(1, 0) + (pitch * M_PI / 180);
   rotationVec_fix.at<double>(2, 0) = rotationVec.at<double>(2, 0) + (roll * M_PI / 180);
 
-  translationVec_fix.at<double>(0, 0) = translationVec.at<double>(0, 0) + (tx / 10);
-  translationVec_fix.at<double>(1, 0) = translationVec.at<double>(1, 0) + (ty / 10);
-  translationVec_fix.at<double>(2, 0) = translationVec.at<double>(2, 0) + (tz / 10);
+  translationVec_fix.at<double>(0, 0) = translationVec.at<double>(0, 0) + (tx / 100);
+  translationVec_fix.at<double>(1, 0) = translationVec.at<double>(1, 0) + (ty / 100);
+  translationVec_fix.at<double>(2, 0) = translationVec.at<double>(2, 0) + (tz / 100);
 
   cv::Mat translationVec_temp = cv::Mat::zeros(3, 1, cv::DataType<double>::type);
   double x = -translationVec_fix.at<double>(2, 0);  // y
@@ -98,7 +98,9 @@ bool Projector3::outOfFov(float x, float y, float z)
     double tan = point.at<double>(0, 0) / point.at<double>(2, 0);
     double angle = atan(tan) * 180 / M_PI;
     if (angle > 30 || angle < -30)
+    {
       return true;
+    }
   }
   return false;
 }
