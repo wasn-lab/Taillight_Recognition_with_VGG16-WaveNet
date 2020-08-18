@@ -3,13 +3,17 @@
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Pose.h>
 #include <tf/tf.h>
+#include <msgs/CurrentTrajInfo.h>
 
 #define RT_PI 3.14159265358979323846
 
 double angle_diff_setting = RT_PI/4;
 double z_diff_setting = 2.0;
+int LRturn = -1;
+bool up_hill = false;
 
 ros::Publisher nav_path_pub;
+ros::Publisher currenttrajinfo_pub;
 
 void calculate_LRturn(autoware_planning_msgs::Trajectory traj)
 {
@@ -18,7 +22,7 @@ void calculate_LRturn(autoware_planning_msgs::Trajectory traj)
   double last_yaw = tf::getYaw(traj.points[size-1].pose.orientation);
   std::cout << "first_yaw : " << first_yaw << std::endl;
   std::cout << "last_yaw : " << last_yaw << std::endl;
-  double LRturn = -1;
+  LRturn = -1;
   double angle_diff = last_yaw - first_yaw;
   if (angle_diff < -RT_PI)
   {
@@ -41,9 +45,9 @@ void calculate_LRturn(autoware_planning_msgs::Trajectory traj)
   {
     LRturn = 0;
   }
-  std::cout << "angle_diff_setting : " << angle_diff_setting << std::endl;
-  std::cout << "angle_diff : " << angle_diff << std::endl;
-  std::cout << "LRturn : " << LRturn << std::endl;
+  // std::cout << "angle_diff_setting : " << angle_diff_setting << std::endl;
+  // std::cout << "angle_diff : " << angle_diff << std::endl;
+  // std::cout << "LRturn : " << LRturn << std::endl;
 }
 
 void calculate_slope(autoware_planning_msgs::Trajectory traj)
@@ -53,21 +57,32 @@ void calculate_slope(autoware_planning_msgs::Trajectory traj)
   double last_z = traj.points[size-1].pose.position.z;
   std::cout << "first_z : " << first_z << std::endl;
   std::cout << "last_z : " << last_z << std::endl;
-  bool up_hill = false;
+  up_hill = false;
   double z_diff = last_z - first_z;
   if (z_diff > z_diff_setting)
   {
     up_hill = true;
   }
-  std::cout << "z_diff_setting : " << z_diff_setting << std::endl;
-  std::cout << "z_diff : " << z_diff << std::endl;
-  std::cout << "up_hill : " << up_hill << std::endl;
+  // std::cout << "z_diff_setting : " << z_diff_setting << std::endl;
+  // std::cout << "z_diff : " << z_diff << std::endl;
+  // std::cout << "up_hill : " << up_hill << std::endl;
+}
+
+void publish_CurrentTrajInfo()
+{
+  msgs::CurrentTrajInfo info;
+  info.header.frame_id = "rear_wheel";
+  info.header.stamp = ros::Time::now();
+  info.LRturn = LRturn;
+  info.Uphill = up_hill;
+  currenttrajinfo_pub.publish(info);
 }
 
 void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
 {
   calculate_LRturn(traj);
   calculate_slope(traj);
+  publish_CurrentTrajInfo();
   
   nav_msgs::Path current_path;
   geometry_msgs::PoseStamped current_posestamped;
@@ -98,6 +113,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber safety_waypoints_sub = node.subscribe("/planning/scenario_planning/trajectory", 1, transfer_callback);
   nav_path_pub = node.advertise<nav_msgs::Path>("nav_path_astar_final",1);
+  currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
 
   ros::spin();
   return 0;
