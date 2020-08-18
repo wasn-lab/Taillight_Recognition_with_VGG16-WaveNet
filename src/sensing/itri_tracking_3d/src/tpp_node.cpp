@@ -245,6 +245,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 void TPPNode::subscribe_and_advertise_topics()
 {
   std::string topic = "Tracking3D";
+  use_tracking2d = false;
 
   if (in_source_ == 1)
   {
@@ -275,6 +276,12 @@ void TPPNode::subscribe_and_advertise_topics()
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+  }
+  else if (in_source_ == 7)
+  {
+    use_tracking2d = true;
+    LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
+    fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
   }
   else
   {
@@ -1082,7 +1089,7 @@ int TPPNode::run()
       // Tracking start ==========================================================================
 
       // MOT: SORT algorithm
-      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, use_tracking2d);
       compute_velocity_kalman();
 
       publish_tracking();
