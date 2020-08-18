@@ -115,7 +115,7 @@ std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> g_cams_bbox_points_ptr(g_cam_i
 std::vector<pcl::visualization::Camera> g_cam;
 
 /// object
-ros::Publisher g_bbox_pub, g_polygon_pub;
+ros::Publisher g_object_pub;
 std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
 
@@ -317,26 +317,7 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
   }
 }
 
-void bbox_publisher(std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max, std_msgs::Header msg_header)
-{
-  msgs::DetectedObjectArray det_obj_arr;
-  std::vector<msgs::DetectedObject> det_objs;
-  for (auto& bboxs_cube_min_max : cams_bboxs_cube_min_max)
-  {
-    for (auto& cube : bboxs_cube_min_max)
-    {
-      msgs::DetectedObject det_obj;
-      det_obj.bPoint = g_object_generator.minMax3dToBBox(cube);
-      det_objs.push_back(det_obj);
-    }
-  }
-  det_obj_arr.header = std::move(msg_header);
-  det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
-  det_obj_arr.objects = det_objs;
-  g_bbox_pub.publish(det_obj_arr);
-}
-
-void polygon_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
+void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
                        std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
                        /*std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,*/ std_msgs::Header msg_header)
 {
@@ -403,7 +384,7 @@ void polygon_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
   msg_det_obj_arr.header = std::move(msg_header);
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
   msg_det_obj_arr.objects = msg_objs;
-  g_polygon_pub.publish(msg_det_obj_arr);
+  g_object_pub.publish(msg_det_obj_arr);
 }
 
 void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer) /*,
@@ -1078,8 +1059,7 @@ void runInference()
           }
         }
 
-        // bbox_publisher(cams_bboxs_cube_min_max, object_arrs[0].header);
-        polygon_publisher(objects_2d_bbox_arrs, cams_bboxs_points, /*cams_bboxs_cube_min_max,*/ object_arrs[0].header);
+        object_publisher(objects_2d_bbox_arrs, cams_bboxs_points, /*cams_bboxs_cube_min_max,*/ object_arrs[0].header);
 
         release(cam_pixels);
         release(cam_bboxs_class_id);
@@ -1232,8 +1212,7 @@ int main(int argc, char** argv)
     g_cache_lidar_ssn.registerCallback(callback_ssn);
 
     /// object publisher
-    // g_bbox_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
-    g_polygon_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result_polygon, 8);
+    g_object_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
   }
 
   /// class init
