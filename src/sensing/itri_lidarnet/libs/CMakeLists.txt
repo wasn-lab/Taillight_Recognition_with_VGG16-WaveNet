@@ -360,7 +360,7 @@ set(SOURCES_SRCS
   Clustering/DBSCAN/CUDA/g_dbscan.cu
   Preprocess/Transform/Transform_CUDA.cu
   Preprocess/VoxelGrid/VoxelGrid_CUDA.cu
-  Formatter/from_sensor_msgs.cpp
+  Format/pointcloud_format_conversion.cpp
   )
 
 

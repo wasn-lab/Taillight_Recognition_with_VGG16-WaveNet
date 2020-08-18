@@ -1,5 +1,5 @@
-#ifndef FROM_SENSOR_MSGS_H
-#define FROM_SENSOR_MSGS_H
+#ifndef POINTCLOUD_FORMAT_CONVERSION_H
+#define POINTCLOUD_FORMAT_CONVERSION_H
 
 #include <cstdio>
 #include <cstdlib>
@@ -24,17 +24,16 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <pcl/point_types.h>
 #include <pcl/conversions.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <pcl/range_image/range_image.h>
-#include <pcl/range_image/range_image_planar.h>
-
-// std::string lidar_brand;
-pcl::PointCloud<pcl::PointXYZIR> get_ring_pcl_from_sensor_msgs(const sensor_msgs::PointCloud2 & cloud_msg);
-
-pcl::RangeImage PointCloudtoRangeImage(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud, std::string lidar_brand, int ring_num);
+#include <pcl/compression/octree_pointcloud_compression.h>
 
 
-#endif // FROM_SENSOR_MSGS_H
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2 & cloud_msg);
+
+pcl::PointCloud<pcl::PointXYZRGBA> XYZIR_to_XYZRBGA(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud);
+
+pcl::PointCloud<pcl::PointXYZIR> XYZRBGA_to_XYZIR(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr input_cloud);
+
+#endif
