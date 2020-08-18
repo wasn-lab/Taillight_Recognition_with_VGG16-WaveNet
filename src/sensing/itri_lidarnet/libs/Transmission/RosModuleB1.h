@@ -13,6 +13,9 @@
 #include "../ToControl/EdgeDetect/edge_detect.h"
 #include "../UserDefine.h"
 
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 class RosModuleB1
 {
 public:
@@ -194,6 +197,11 @@ public:
           msgObj.cPoint.lowerAreaPoints[j].y = cluster_info[i].convex_hull[j].y;
           msgObj.cPoint.lowerAreaPoints[j].z = cluster_info[i].convex_hull[j].z;
         }
+
+        msgObj.centerPoint.x = cluster_info[i].obb_center.x;
+        msgObj.centerPoint.y = cluster_info[i].obb_center.y;
+        msgObj.centerPoint.z = cluster_info[i].obb_center.z;
+        msgObj.bOrient.z = cluster_info[i].obb_orient;
 
         msgObj.cPoint.objectHigh = cluster_info[i].dz;
 
@@ -572,6 +580,39 @@ public:
 #endif
     }
     LidarDetectionRVIZ_obb_pub.publish(markerArray);
+  }
+
+  static void Send_LidarResultsRVIZ_heading(CLUSTER_INFO* cluster_info, int cluster_size)
+  {
+    static ros::Publisher LidarDetectionRVIZ_heading_pub =
+        ros::NodeHandle().advertise<visualization_msgs::MarkerArray>("/LidarDetection/heading", 1);
+    visualization_msgs::MarkerArray markerArray;
+    markerArray.markers.resize(cluster_size);
+    size_t TrackID = 0;
+    for (int i = 0; i < cluster_size; ++i)
+    {
+      markerArray.markers[i].header.frame_id = "lidar";
+      markerArray.markers[i].header.stamp = ros::Time();
+      markerArray.markers[i].id = TrackID++;
+      markerArray.markers[i].action = visualization_msgs::Marker::ADD;
+      markerArray.markers[i].type = visualization_msgs::Marker::ARROW;
+      markerArray.markers[i].pose.position.x = cluster_info[i].obb_center.x;
+      markerArray.markers[i].pose.position.y = cluster_info[i].obb_center.y;
+      markerArray.markers[i].pose.position.z = cluster_info[i].obb_center.z;
+
+      tf2::Quaternion quat;
+      quat.setEuler(/* roll */ 0, /* pitch */ 0, /* yaw */ cluster_info[i].obb_orient);
+      markerArray.markers[i].pose.orientation = tf2::toMsg(quat);
+      markerArray.markers[i].color.r = 0.0;
+      markerArray.markers[i].color.g = 1.0;
+      markerArray.markers[i].color.b = 0.0;
+      markerArray.markers[i].color.a = 1.0;
+      markerArray.markers[i].scale.x = 2;
+      markerArray.markers[i].scale.y = 0.2;
+      markerArray.markers[i].scale.z = 0.2;
+      markerArray.markers[i].lifetime = ros::Duration(0.1);    
+    }
+    LidarDetectionRVIZ_heading_pub.publish(markerArray);
   }
 
   static void Send_LidarResultsGrid(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime,
