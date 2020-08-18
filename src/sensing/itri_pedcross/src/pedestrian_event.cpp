@@ -527,38 +527,37 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           for (unsigned int i = 0; i < keypoints.size(); i++)
           {
             cv::Point2f diff;
-            diff.x = keypoints.at(i).x - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).x;
-            diff.y = keypoints.at(i).y - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).y;
-            diff.x /= 5;
-            diff.y /= 5;
+            std::cout << "keypoints.size: " << keypoints.size()
+                      << "last_real_skeleton.size: " << skeleton_buffer.at(skeleton_index).last_real_skeleton.size()
+                      << std::endl;
+            if (keypoint_is_detected(keypoints.at(i)) &&
+                keypoint_is_detected(skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i)))
+            {
+              diff.x = keypoints.at(i).x - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).x;
+              diff.y = keypoints.at(i).y - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).y;
+              diff.x /= 5;
+              diff.y /= 5;
+            }
+            else
+            {
+              diff.x = 0;
+              diff.y = 0;
+            }
             keypoints_diff.emplace_back(diff);
           }
+
           std::vector<cv::Point2f> keypoints_tmp;
           keypoints_tmp.assign(keypoints.begin(), keypoints.end());
-          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+          for (int predict_times = 0; predict_times < 4; predict_times++)
           {
-            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
-            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+            for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+            {
+              keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
+              keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+            }
+            skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
           }
-          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
-          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
-          {
-            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
-            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
-          }
-          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
-          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
-          {
-            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
-            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
-          }
-          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
-          for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
-          {
-            keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
-            keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
-          }
-          skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
+
           skeleton_buffer.at(skeleton_index).last_real_skeleton.assign(keypoints.begin(), keypoints.end());
         }
         else
@@ -567,6 +566,25 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           // remove first calculated_skeleton
           skeleton_buffer.at(skeleton_index)
               .calculated_skeleton.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton.begin());
+          double w_h_ratio = (double)obj_pub.camInfo.width / (double)obj_pub.camInfo.height;
+          double min_x = 0;
+          double min_y = 0;
+          double max_x = 0;
+          double max_y = 1;
+          for (unsigned int i = 0; i < keypoints.size(); i++)
+          {
+            min_x = std::min(min_x, (double)keypoints.at(i).x);
+            min_y = std::min(min_y, (double)keypoints.at(i).y);
+            max_x = std::max(max_x, (double)keypoints.at(i).x);
+            max_y = std::max(max_y, (double)keypoints.at(i).y);
+          }
+          double max_w = max_x - min_x;
+          double max_h = max_y - min_y;
+          for (unsigned int i = 0; i < keypoints.size(); i++)
+          {
+            keypoints.at(i).x = (keypoints.at(i).x - min_x) / max_w * w_h_ratio;
+            keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
+          }
         }
       }
       ros::Time inference_stop = ros::Time::now();
@@ -1797,7 +1815,7 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 #endif
 
   std::vector<cv::Point2f> points;
-  points.reserve(number_keypoints * 2);
+  points.reserve(number_keypoints);
 
   float height = input_image.rows;
 
@@ -1817,7 +1835,7 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat input_im
 #if PRINT_MESSAGE
       op::opLog("Person pose keypoints:");
 #endif
-      for (auto person = 0; person < pose_keypoints.getSize(0); person++)
+      for (auto person = 0; person < 1; person++)  // only get first detected person
       {
 #if PRINT_MESSAGE
         op::opLog("Person " + std::to_string(person) + " (x, y, score):");
