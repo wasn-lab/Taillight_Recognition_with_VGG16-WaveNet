@@ -913,7 +913,7 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
 
   for (auto& obj : objs)
   {
-    if (drivable_area_filter(obj.bPoint, 4.5, 1))
+    if (drivable_area_filter(obj.bPoint, 3.5, 0))
     {
       continue;
     }
