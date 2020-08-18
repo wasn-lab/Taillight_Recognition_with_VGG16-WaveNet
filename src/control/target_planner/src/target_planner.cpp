@@ -85,6 +85,11 @@ void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, 
     double b_y = next_pose_y_ - prev_pose_y_;
     double diss = (a_x*b_x + a_y*b_y)/dis_waypoints_;
 
+    if (i==1 && diss < 0)
+    {
+      diss_max = diss;
+      break;
+    }
     if (diss < diss_max && diss > 0)
     {
       diss_max = diss;

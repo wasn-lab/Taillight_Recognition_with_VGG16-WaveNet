@@ -3,12 +3,14 @@
 
   <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
   <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
-  <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" />
+  <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" /> <!--NonGround_sensor_msgs2-->
   <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
   <arg name="wheel_dis" default="3.8" />
+  <arg name="angle_diff_setting" default="0.78539816339" /> <!--PI/4-->
+  <arg name="z_diff_setting" default="2.0" />
 
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
@@ -22,7 +24,10 @@
   </node>
 
   <!--path transfer node-->
-  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" />
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" >
+        <param name="angle_diff_setting" value="$(arg angle_diff_setting)" />
+        <param name="z_diff_setting" value="$(arg z_diff_setting)" />
+  </node>
     
   <!-- target pub node-->
   <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" >
