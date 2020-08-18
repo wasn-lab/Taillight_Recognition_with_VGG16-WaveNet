@@ -332,6 +332,7 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
     {
       msgs::DetectedObject msg_obj;
+      msg_obj.header = objects_2d_bbox[cam_order].objects[obj_index].header;
       msg_obj.classId = objects_2d_bbox[cam_order].objects[obj_index].classId;
       msg_obj.camInfo = objects_2d_bbox[cam_order].objects[obj_index].camInfo;
       msg_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;

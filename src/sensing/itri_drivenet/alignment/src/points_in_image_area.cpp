@@ -127,17 +127,19 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
 
   // std::cout << "objects.objects size: " << objects.objects.size() << std::endl;
   /// main
-  for (const auto& obj : objects.objects)
+  for (auto& obj : objects.objects)
   {
-    MinMax3D cube_min_max;  // object min and max point
+    msgs::DetectedObject obj_tmp = obj;
+    obj_tmp.header = objects.header;
+    // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
       // get the 2d box
       std::vector<PixelPosition> bbox_positions(2);
-      bbox_positions[0].u = obj.camInfo.u;
-      bbox_positions[0].v = obj.camInfo.v;
-      bbox_positions[1].u = obj.camInfo.u + obj.camInfo.width;
-      bbox_positions[1].v = obj.camInfo.v + obj.camInfo.height;
+      bbox_positions[0].u = obj_tmp.camInfo.u;
+      bbox_positions[0].v = obj_tmp.camInfo.v;
+      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
       transferPixelScaling(bbox_positions);
 
       // get points in the 2d box
@@ -211,7 +213,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
           // cam_bboxs_cube_min_max.push_back(cube_min_max);
           cam_bboxs_points.push_back(*cloud_filtered_ptr);
         }
-        objects_2d_bbox.objects.push_back(obj);
+        objects_2d_bbox.objects.push_back(obj_tmp);
 
         // concatenate the points of objects
         point_vector_objects.insert(point_vector_objects.begin(), point_vector_object.begin(),
@@ -264,17 +266,19 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
     objects_2d_bbox.objects.clear();
   }
 
-  for (const auto& obj : objects.objects)
+  for (auto& obj : objects.objects)
   {
+    msgs::DetectedObject obj_tmp = obj;
+    obj_tmp.header = objects.header;
     // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
       // get the 2d box
       std::vector<PixelPosition> bbox_positions(2);
-      bbox_positions[0].u = obj.camInfo.u;
-      bbox_positions[0].v = obj.camInfo.v;
-      bbox_positions[1].u = obj.camInfo.u + obj.camInfo.width;
-      bbox_positions[1].v = obj.camInfo.v + obj.camInfo.height;
+      bbox_positions[0].u = obj_tmp.camInfo.u;
+      bbox_positions[0].v = obj_tmp.camInfo.v;
+      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
       transferPixelScaling(bbox_positions);
 
       // get points in the 2d box
@@ -348,7 +352,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
           // cam_bboxs_cube_min_max.push_back(cube_min_max);
           cam_bboxs_points.push_back(*cloud_filtered_ptr);
         }
-        objects_2d_bbox.objects.push_back(obj);
+        objects_2d_bbox.objects.push_back(obj_tmp);
 
         // concatenate the points of objects
         point_vector_objects.insert(point_vector_objects.begin(), point_vector_object.begin(),
