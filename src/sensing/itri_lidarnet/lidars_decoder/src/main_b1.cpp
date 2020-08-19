@@ -14,6 +14,10 @@ mutex L_Lock;
 mutex R_Lock;
 mutex T_Lock;
 
+StopWatch stopWatch_T;
+
+
+bool to_decompress = false;
 //------------------------------ Callback
 void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
 {
@@ -84,6 +88,9 @@ void cloud_cb_LidarFrontRight(msgs::CompressedPointCloud msg)
 void cloud_cb_LidarFrontTop(msgs::CompressedPointCloud msg)
 {
   T_Lock.lock();
+
+  stopWatch_T.reset();
+
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGBA>());
   
   stringstream msg_data_ss;
@@ -108,6 +115,8 @@ void cloud_cb_LidarFrontTop(msgs::CompressedPointCloud msg)
 
 
   delete (PointCloudDecoder);
+  
+  cout << "[T-Decode]:" << stopWatch_T.getTimeSeconds() << 's' << endl;
   T_Lock.unlock();
 }
 
@@ -117,6 +126,8 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "lidars_decoder");
   ros::NodeHandle n;
 
+  ros::param::get("/to_decompress", to_raw);
+
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
       n.subscribe<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1, cloud_cb_LidarFrontLeft);
@@ -125,13 +136,26 @@ int main(int argc, char** argv)
   ros::Subscriber sub_LidarFrontTop =
       n.subscribe<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1, cloud_cb_LidarFrontTop);
 
-  // publisher
-  pub_LidarFrontLeft =
-      n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontLeft/Decompressed", 1);
-  pub_LidarFrontRight =
-      n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontRight/Decompressed", 1);
-  pub_LidarFrontTop =
-      n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontTop/Decompressed", 1);
+  if (to_decompress)
+  {
+    // publisher
+    pub_LidarFrontLeft =
+        n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontLeft/Decompressed", 1);
+    pub_LidarFrontRight =
+        n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontRight/Decompressed", 1);
+    pub_LidarFrontTop =
+        n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontTop/Decompressed", 1);
+  }
+  else
+  {
+    // publisher
+    pub_LidarFrontLeft =
+        n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw", 1);
+    pub_LidarFrontRight =
+        n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontRight/Raw", 1);
+    pub_LidarFrontTop =
+        n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1);
+  }
 
 
   ros::AsyncSpinner spinner(3);
