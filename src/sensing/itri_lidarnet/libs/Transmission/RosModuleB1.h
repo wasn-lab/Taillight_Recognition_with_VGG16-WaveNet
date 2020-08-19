@@ -6,12 +6,16 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <rosgraph_msgs/Clock.h>
 
+#include "msgs/DetectedObjectArray_v2.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
 
 #include "../ToControl/GridMapGen/points_to_costmap.h"
 #include "../ToControl/EdgeDetect/edge_detect.h"
 #include "../UserDefine.h"
+
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 class RosModuleB1
 {
@@ -82,6 +86,134 @@ public:
     input.header.frame_id = frameId;
     input.header.stamp = pcltime;
     LidarAllNonGround_pub.publish(input);
+  }
+static void Send_LidarResults_v2(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, const string& frameId)
+  {
+    static ros::Publisher LidarDetection_pub_v2 =
+        ros::NodeHandle().advertise<msgs::DetectedObjectArray_v2>("/LidarDetection_v2", 1);
+
+    msgs::DetectedObjectArray_v2 msgObjArr;
+    msgObjArr.header.frame_id = "lidar";
+
+    for (int i = 0; i < cluster_size; i++)
+    {
+      if (cluster_info[i].cluster_tag >= 1)
+      {
+        msgs::DetectedObject_v2 msgObj;
+
+        switch (cluster_info[i].cluster_tag)
+        {
+          case nnClassID::Rule:
+            msgObj.classId = msgClassID::Unknown;  // unknow
+            break;
+          case nnClassID::Person:
+            msgObj.classId = msgClassID::Person;  // person
+            break;
+          case nnClassID::Motobike:
+            msgObj.classId = msgClassID::Motobike;  // motobike
+            break;
+          case nnClassID::Car:
+            msgObj.classId = msgClassID::Car;  // car
+            break;
+        }
+
+        msgObj.distance = cluster_info[i].dis_center_origin;
+
+        // if (cluster_info[i].dis_abbc_obbc > 0.1)
+        if (true)
+        {
+          msgObj.bPoint.p0.x = cluster_info[i].min.x;
+          msgObj.bPoint.p0.y = cluster_info[i].min.y;
+          msgObj.bPoint.p0.z = cluster_info[i].min.z;
+
+          msgObj.bPoint.p1.x = cluster_info[i].min.x;
+          msgObj.bPoint.p1.y = cluster_info[i].min.y;
+          msgObj.bPoint.p1.z = cluster_info[i].max.z;
+
+          msgObj.bPoint.p2.x = cluster_info[i].max.x;
+          msgObj.bPoint.p2.y = cluster_info[i].min.y;
+          msgObj.bPoint.p2.z = cluster_info[i].max.z;
+
+          msgObj.bPoint.p3.x = cluster_info[i].max.x;
+          msgObj.bPoint.p3.y = cluster_info[i].min.y;
+          msgObj.bPoint.p3.z = cluster_info[i].min.z;
+
+          msgObj.bPoint.p4.x = cluster_info[i].min.x;
+          msgObj.bPoint.p4.y = cluster_info[i].max.y;
+          msgObj.bPoint.p4.z = cluster_info[i].min.z;
+
+          msgObj.bPoint.p5.x = cluster_info[i].min.x;
+          msgObj.bPoint.p5.y = cluster_info[i].max.y;
+          msgObj.bPoint.p5.z = cluster_info[i].max.z;
+
+          msgObj.bPoint.p6.x = cluster_info[i].max.x;
+          msgObj.bPoint.p6.y = cluster_info[i].max.y;
+          msgObj.bPoint.p6.z = cluster_info[i].max.z;
+
+          msgObj.bPoint.p7.x = cluster_info[i].max.x;
+          msgObj.bPoint.p7.y = cluster_info[i].max.y;
+          msgObj.bPoint.p7.z = cluster_info[i].min.z;
+        }
+        else
+        {
+          msgObj.bPoint.p0.x = cluster_info[i].obb_vertex.at(0).x;
+          msgObj.bPoint.p0.y = cluster_info[i].obb_vertex.at(0).y;
+          msgObj.bPoint.p0.z = cluster_info[i].obb_vertex.at(0).z;
+
+          msgObj.bPoint.p1.x = cluster_info[i].obb_vertex.at(1).x;
+          msgObj.bPoint.p1.y = cluster_info[i].obb_vertex.at(1).y;
+          msgObj.bPoint.p1.z = cluster_info[i].obb_vertex.at(1).z;
+
+          msgObj.bPoint.p2.x = cluster_info[i].obb_vertex.at(2).x;
+          msgObj.bPoint.p2.y = cluster_info[i].obb_vertex.at(2).y;
+          msgObj.bPoint.p2.z = cluster_info[i].obb_vertex.at(2).z;
+
+          msgObj.bPoint.p3.x = cluster_info[i].obb_vertex.at(3).x;
+          msgObj.bPoint.p3.y = cluster_info[i].obb_vertex.at(3).y;
+          msgObj.bPoint.p3.z = cluster_info[i].obb_vertex.at(3).z;
+
+          msgObj.bPoint.p4.x = cluster_info[i].obb_vertex.at(4).x;
+          msgObj.bPoint.p4.y = cluster_info[i].obb_vertex.at(4).y;
+          msgObj.bPoint.p4.z = cluster_info[i].obb_vertex.at(4).z;
+
+          msgObj.bPoint.p5.x = cluster_info[i].obb_vertex.at(5).x;
+          msgObj.bPoint.p5.y = cluster_info[i].obb_vertex.at(5).y;
+          msgObj.bPoint.p5.z = cluster_info[i].obb_vertex.at(5).z;
+
+          msgObj.bPoint.p6.x = cluster_info[i].obb_vertex.at(6).x;
+          msgObj.bPoint.p6.y = cluster_info[i].obb_vertex.at(6).y;
+          msgObj.bPoint.p6.z = cluster_info[i].obb_vertex.at(6).z;
+
+          msgObj.bPoint.p7.x = cluster_info[i].obb_vertex.at(7).x;
+          msgObj.bPoint.p7.y = cluster_info[i].obb_vertex.at(7).y;
+          msgObj.bPoint.p7.z = cluster_info[i].obb_vertex.at(7).z;
+        }
+
+        msgObj.cPoint.lowerAreaPoints.resize(cluster_info[i].convex_hull.size());
+
+        for (size_t j = 0; j < cluster_info[i].convex_hull.size(); j++)
+        {
+          msgObj.cPoint.lowerAreaPoints[j].x = cluster_info[i].convex_hull[j].x;
+          msgObj.cPoint.lowerAreaPoints[j].y = cluster_info[i].convex_hull[j].y;
+          msgObj.cPoint.lowerAreaPoints[j].z = cluster_info[i].convex_hull[j].z;
+        }
+
+        msgObj.centerPoint.x = cluster_info[i].obb_center.x;
+        msgObj.centerPoint.y = cluster_info[i].obb_center.y;
+        msgObj.centerPoint.z = cluster_info[i].obb_center.z;
+        msgObj.bOrient.z = cluster_info[i].obb_orient;
+
+        msgObj.cPoint.objectHigh = cluster_info[i].dz;
+
+        msgObj.fusionSourceId = 2;
+
+        msgObj.header.stamp = rostime;
+        msgObjArr.objects.push_back(msgObj);
+      }
+    }
+    msgObjArr.header.stamp = rostime;
+    msgObjArr.header.frame_id = frameId;
+    LidarDetection_pub_v2.publish(msgObjArr);
   }
 
   static void Send_LidarResults(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, const string& frameId)
@@ -194,7 +326,6 @@ public:
           msgObj.cPoint.lowerAreaPoints[j].y = cluster_info[i].convex_hull[j].y;
           msgObj.cPoint.lowerAreaPoints[j].z = cluster_info[i].convex_hull[j].z;
         }
-
         msgObj.cPoint.objectHigh = cluster_info[i].dz;
 
         msgObj.fusionSourceId = 2;
@@ -572,6 +703,39 @@ public:
 #endif
     }
     LidarDetectionRVIZ_obb_pub.publish(markerArray);
+  }
+
+  static void Send_LidarResultsRVIZ_heading(CLUSTER_INFO* cluster_info, int cluster_size)
+  {
+    static ros::Publisher LidarDetectionRVIZ_heading_pub =
+        ros::NodeHandle().advertise<visualization_msgs::MarkerArray>("/LidarDetection/heading", 1);
+    visualization_msgs::MarkerArray markerArray;
+    markerArray.markers.resize(cluster_size);
+    size_t TrackID = 0;
+    for (int i = 0; i < cluster_size; ++i)
+    {
+      markerArray.markers[i].header.frame_id = "lidar";
+      markerArray.markers[i].header.stamp = ros::Time();
+      markerArray.markers[i].id = TrackID++;
+      markerArray.markers[i].action = visualization_msgs::Marker::ADD;
+      markerArray.markers[i].type = visualization_msgs::Marker::ARROW;
+      markerArray.markers[i].pose.position.x = cluster_info[i].obb_center.x;
+      markerArray.markers[i].pose.position.y = cluster_info[i].obb_center.y;
+      markerArray.markers[i].pose.position.z = cluster_info[i].obb_center.z;
+
+      tf2::Quaternion quat;
+      quat.setEuler(/* roll */ 0, /* pitch */ 0, /* yaw */ cluster_info[i].obb_orient);
+      markerArray.markers[i].pose.orientation = tf2::toMsg(quat);
+      markerArray.markers[i].color.r = 0.0;
+      markerArray.markers[i].color.g = 1.0;
+      markerArray.markers[i].color.b = 0.0;
+      markerArray.markers[i].color.a = 1.0;
+      markerArray.markers[i].scale.x = 2;
+      markerArray.markers[i].scale.y = 0.2;
+      markerArray.markers[i].scale.z = 0.2;
+      markerArray.markers[i].lifetime = ros::Duration(0.1);    
+    }
+    LidarDetectionRVIZ_heading_pub.publish(markerArray);
   }
 
   static void Send_LidarResultsGrid(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime,
