@@ -6,7 +6,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <rosgraph_msgs/Clock.h>
 
-#include "msgs/DetectedObjectArray_new.h"
+#include "msgs/DetectedObjectArray_v2.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/ErrorCode.h"
 
@@ -87,19 +87,19 @@ public:
     input.header.stamp = pcltime;
     LidarAllNonGround_pub.publish(input);
   }
-static void Send_LidarResults_new(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, const string& frameId)
+static void Send_LidarResults_v2(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, const string& frameId)
   {
-    static ros::Publisher LidarDetection_pub_new =
-        ros::NodeHandle().advertise<msgs::DetectedObjectArray_new>("/LidarDetection_new", 1);
+    static ros::Publisher LidarDetection_pub_v2 =
+        ros::NodeHandle().advertise<msgs::DetectedObjectArray_v2>("/LidarDetection_v2", 1);
 
-    msgs::DetectedObjectArray_new msgObjArr;
+    msgs::DetectedObjectArray_v2 msgObjArr;
     msgObjArr.header.frame_id = "lidar";
 
     for (int i = 0; i < cluster_size; i++)
     {
       if (cluster_info[i].cluster_tag >= 1)
       {
-        msgs::DetectedObject_new msgObj;
+        msgs::DetectedObject_v2 msgObj;
 
         switch (cluster_info[i].cluster_tag)
         {
@@ -213,7 +213,7 @@ static void Send_LidarResults_new(CLUSTER_INFO* cluster_info, int cluster_size, 
     }
     msgObjArr.header.stamp = rostime;
     msgObjArr.header.frame_id = frameId;
-    LidarDetection_pub_new.publish(msgObjArr);
+    LidarDetection_pub_v2.publish(msgObjArr);
   }
 
   static void Send_LidarResults(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, const string& frameId)
