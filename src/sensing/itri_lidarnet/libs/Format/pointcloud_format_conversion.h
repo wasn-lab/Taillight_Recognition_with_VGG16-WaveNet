@@ -30,7 +30,7 @@
 #include <pcl/compression/octree_pointcloud_compression.h>
 
 
-pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2 & cloud_msg);
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2 & cloud_msg, string brand);
 
 pcl::PointCloud<pcl::PointXYZRGBA> XYZIR_to_XYZRBGA(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud);
 

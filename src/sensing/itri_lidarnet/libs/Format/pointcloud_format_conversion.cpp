@@ -1,7 +1,7 @@
 #include "pointcloud_format_conversion.h"
 
 
-pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2 & cloud_msg)
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2 & cloud_msg, string brand)
 {
   pcl::PointCloud<pcl::PointXYZIR> cloud;
 
@@ -34,7 +34,17 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
       newPoint.x = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_x);
       newPoint.y = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_y);
       newPoint.z = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_z);
-      newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int);
+
+      if (brand == "ouster")
+      {
+        newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int) /3000 * 255 ;
+      }
+      else
+      {
+        newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int);
+      }
+      
+      
       newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes*p) + offset_ring);
 
       cloud.points.push_back(newPoint);

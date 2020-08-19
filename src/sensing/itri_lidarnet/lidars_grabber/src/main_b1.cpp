@@ -70,7 +70,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     //-------------------------- sensor_msg to pcl XYZIR
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud);
+    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "velodyne");
 
     if (use_compress)
     {
@@ -170,7 +170,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud);    
+    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "velodyne");    
 
     if (use_compress)
     {
@@ -266,7 +266,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     }
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
-    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud); 
+    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster"); 
 
     if (use_compress)
     {
