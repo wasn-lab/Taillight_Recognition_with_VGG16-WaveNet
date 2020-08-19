@@ -13,6 +13,7 @@ float32 relSpeed
 
 BoxPoint bPoint
 ConvexPoint cPoint
+PointXYZ centerPoint
 Quaternion bOrient
 
 TrackInfo track
