@@ -21,43 +21,58 @@ Lidar List:
 -->
 
 <!-- Global arg ************************************************************ -->
-    <arg name="use_filter" default="0" />
-	<arg name="use_compress" default="0" />
-	<arg name="use_roi" default="0" />
-	<arg name="hardware_enable" default="1" />
-	<arg name="mps" default="1" />
+    <!-- System -->
+	<arg name="mps" default="true" />
 	<arg name="mode" default="0" />
-    <arg name="set_group_1" value="/LidarFrontTop"/>
-	<arg name="rpm_set" default="1200.0"/>
 
-	<rosparam param="debug_output">true</rosparam>
+	<!-- Hardware -->
+	<arg name="hardware_enable" default="true" />
+    
+	<!-- Grabber & Preprocessing -->
+	<arg name="use_compress" default="false" />
+	<arg name="use_filter" default="false" />
+	<arg name="use_roi" default="false" />
+	
+	<!-- SSN and Shape -->
+	<arg name="use_shape_estimation" default="false" />
+
+	<!-- Ouster Setting -->
+	<arg name="set_group_1" value="/LidarFrontTop"/>
+
+	<!-- Stitching-->
+	<arg name="use_old_stitch" value="false"/>
+
+	<!-- Debug -->
+	<arg name="debug_output" value="true"/>
+	<arg name="pub_decompress" value="false"/>
+
+<!-- Parameter ************************************************************* -->
+	<param name="use_compress" value="$(arg use_compress)" /> 
+	<param name="use_filter" value="$(arg use_filter)"/>
+	<param name="use_roi" value="$(arg use_roi)"/>
+	<param name="use_shape_estimation" value="$(arg use_shape_estimation)"/>
+
+	<param name="debug_output" value="$(arg debug_output"/>
+	<param name="pub_decompress" value="$(arg pub_decompress"/>
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
-
-<!-- ROI **************************************************************** -->
-	<rosparam param="use_roi" if="$(eval arg('use_roi') != 1)">false</rosparam>
-	<rosparam param="use_roi" if="$(eval arg('use_roi') == 1)">true</rosparam>
-
-
-<!-- Filter **************************************************************** -->
-	<rosparam param="use_filter" if="$(eval arg('use_filter') != 1)">false</rosparam>
-	<rosparam param="use_filter" if="$(eval arg('use_filter') == 1)">true</rosparam>
-
-<!-- Compress*************************************************************** -->
-	<rosparam param="use_compress" if="$(eval arg('use_compress') != 1)">false</rosparam>
-	<rosparam param="use_compress" if="$(eval arg('use_compress') == 1)">true</rosparam>
-
 
 <!-- tf2 ******************************************************************* -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 base_link os1_sensor" />
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
 
 <!-- MPS ******************************************************************* -->
-	<group if="$(eval arg('mps') == 1)">
+	<group if="$(arg mps)">
 		<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
 	</group>
 
-<!-- Shape estimation ******************************************************************* -->
-<rosparam param="use_shape_estimation">false</rosparam>​
+<!-- Stitch ******************************************************************* -->
+	<group if="$(arg use_old_stitch)">
+		<rosparam param="LidarFrontLeft_Fine_Param">[0.462, 1.098, -1.858, 0.031, -0.007, 1.783]</rosparam>
+		<rosparam param="LidarFrontRight_Fine_Param">[0.512, -1.053, -1.836, -0.025, -0.01, -1.785]</rosparam>
+		<rosparam param="LidarRearLeft_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
+		<rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
+	</group>
+
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
@@ -87,14 +102,17 @@ Lidar List:
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
-	<group if="$(eval arg('mode') == 5)">
+	<group if="$(eval arg('mode') == 9)">
+		<node pkg="lidars_decoder" 				type="lidars_decoder_b1" 			name="lidars_decoder_b1" 			output="screen" cwd="node" respawn="true"  />
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
-		<node pkg="lidars_decoder" 			type="lidars_decoder_b1" 			name="lidars_decoder_b1" 			output="screen" cwd="node" respawn="true"  />
+		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
+		<node pkg="lidar_squseg_v2_inference"   type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"   	output="screen" cwd="node" args="b1 X 0 1" /> 
+		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->
 <!-- ************ Front-Right: MR32 ************ -->
-	<group ns="LidarFrontRight" if="$(eval arg('hardware_enable') != 0)">
+	<group ns="LidarFrontRight" if="$(arg hardware_enable)">
 
 	<!-- declare arguments with default values -->
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
@@ -108,7 +126,7 @@ Lidar List:
 	<arg name="read_fast" default="false" />
 	<arg name="read_once" default="false" />
 	<arg name="repeat_delay" default="0.0" />
-	<arg name="rpm" default="$(arg rpm_set)" />
+	<arg name="rpm" default="1200" />
 	<arg name="gps_time" default="false" />
 	<arg name="cut_angle" default="-0.01" />
 	<arg name="laserscan_ring" default="-1" />
@@ -149,7 +167,7 @@ Lidar List:
 	</group>
 
 <!-- ************ Front-Left: MR32 ************ -->
-	<group ns="LidarFrontLeft" if="$(eval arg('hardware_enable') != 0)">
+	<group ns="LidarFrontLeft" if="$(arg hardware_enable)">
 
 	<!-- declare arguments with default values -->
 	<arg name="calibration" default="$(find velodyne_pointcloud)/params/VeloView-VLP-32C.yaml"/>
@@ -163,7 +181,7 @@ Lidar List:
 	<arg name="read_fast" default="false" />
 	<arg name="read_once" default="false" />
 	<arg name="repeat_delay" default="0.0" />
-	<arg name="rpm" default="$(arg rpm_set)" />
+	<arg name="rpm" default="1200" />
 	<arg name="gps_time" default="false" />
 	<arg name="cut_angle" default="-0.01" />
 	<arg name="laserscan_ring" default="-1" />
@@ -204,7 +222,7 @@ Lidar List:
 	</group>
 
 <!-- ************ Front-Top: Ouster64 ************ -->
-    <group ns="$(arg set_group_1)" if="$(eval arg('hardware_enable') != 0)">
+    <group ns="$(arg set_group_1)" if="$(arg hardware_enable)">
         <arg name="os1_hostname" default="192.168.0.224" doc="hostname or IP in dotted decimal form of the sensor"/>
         <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
         <arg name="os1_lidar_port" default="7524" doc="port to which the sensor should send lidar data"/>
