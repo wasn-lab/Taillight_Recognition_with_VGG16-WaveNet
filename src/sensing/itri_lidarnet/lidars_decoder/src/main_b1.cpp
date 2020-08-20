@@ -17,7 +17,7 @@ mutex T_Lock;
 StopWatch stopWatch_T;
 
 
-bool to_decompress = false;
+bool pub_decompress = false;
 //------------------------------ Callback
 void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
 {
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "lidars_decoder");
   ros::NodeHandle n;
 
-  ros::param::get("/to_decompress", to_raw);
+  ros::param::get("/pub_decompress", pub_decompress);
 
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
   ros::Subscriber sub_LidarFrontTop =
       n.subscribe<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1, cloud_cb_LidarFrontTop);
 
-  if (to_decompress)
+  if (pub_decompress)
   {
     // publisher
     pub_LidarFrontLeft =
