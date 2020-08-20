@@ -27,6 +27,7 @@
               negative: False
             - name: /CameraDetection
               timeout: 60
+              negative: False
         </rosparam>
     </test>
 </launch>
