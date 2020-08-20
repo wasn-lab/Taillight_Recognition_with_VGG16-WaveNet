@@ -4,7 +4,7 @@ from bbox import BBox
 from nn_labels import YoloLabel
 
 
-def gen_bbox_by_yolo_object(yolo_object):
+def gen_bbox_by_yolo_object(yolo_object, img_width=RAW_IMAGE_WIDTH, img_height=RAW_IMAGE_HEIGHT):
     """
     (0, 0) is the left-top corner of image.
     """
@@ -15,8 +15,8 @@ def gen_bbox_by_yolo_object(yolo_object):
         relative_coordinates["center_y"],
         relative_coordinates["width"],
         relative_coordinates["height"],
-        RAW_IMAGE_WIDTH,
-        RAW_IMAGE_HEIGHT)
+        img_width,
+        img_height)
     box.name = yolo_object["name"]
     box.class_id = yolo_object["class_id"]
     # treat truck as car because NN is easy to confuse them

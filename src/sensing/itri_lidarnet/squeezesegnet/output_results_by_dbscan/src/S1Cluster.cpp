@@ -241,6 +241,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
         // ============== label counting for providing cluster_tag with class types ==================
         if (cluster_vector.at(i).cluster_tag == 1)
         {
+
           size_t cnt_person = 0;
           size_t cnt_motor = 0;
           size_t cnt_car = 0;
@@ -312,11 +313,11 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
             {
               estimator_.getShapeAndPose(nnClassID::Car, cluster_vector.at(i));
             }
-            if (cluster_vector.at(i).cluster_tag == nnClassID::Motobike)
+            else if (cluster_vector.at(i).cluster_tag == nnClassID::Motobike)
             {
               estimator_.getShapeAndPose(nnClassID::Motobike, cluster_vector.at(i));
             }
-            if (cluster_vector.at(i).cluster_tag == nnClassID::Person)
+            else if (cluster_vector.at(i).cluster_tag == nnClassID::Person)
             {
               estimator_.getShapeAndPose(nnClassID::Person, cluster_vector.at(i));
             }

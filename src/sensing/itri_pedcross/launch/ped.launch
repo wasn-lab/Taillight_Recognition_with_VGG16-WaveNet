@@ -6,7 +6,8 @@
   <!-- 1: camera front left -->
   <!-- 2: camera front right -->
   <!-- 3: tracking with camera front center -->
-  <arg name="input_source" default="3" />
+  <!-- 4: tracking with front/left/right cameras -->
+  <arg name="input_source" default="4" />
 
   <!-- Set max distance(m) to predict pedestrians -->
   <arg name="max_distance" default="70" />
