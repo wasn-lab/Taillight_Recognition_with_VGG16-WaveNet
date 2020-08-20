@@ -110,7 +110,7 @@ class Node:
                 in_obj.bPoint.p0.z + in_obj.bPoint.p7.z) / 2
 
             out_obj.state.twist_covariance.twist.linear.x = in_obj.track.relative_velocity.x
-            out_obj.state.twist_covariance.twist.linear.y = -in_obj.track.relative_velocity.y
+            out_obj.state.twist_covariance.twist.linear.y = in_obj.track.relative_velocity.y
             out_obj.state.twist_covariance.twist.linear.z = in_obj.track.relative_velocity.z
 
             if out_obj.state.twist_covariance.twist.linear.x == 0:
