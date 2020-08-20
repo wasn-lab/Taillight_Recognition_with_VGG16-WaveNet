@@ -1,6 +1,8 @@
 #include "object_generator.h"
-#include "drivenet/object_label_util.h"
 #include <pcl/common/geometry.h> 
+#include "drivenet/object_label_util.h"
+#include "UseApproxMVBB.h"
+#include "shape_estimator.hpp" // L-shape estimator
 
 pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(const pcl::PointCloud<pcl::PointXYZI>& cloud)
 {
@@ -15,7 +17,7 @@ pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(const pcl::Point
 
   return convex_points;
 }
-msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(CLUSTER_INFO cluster_vector)
+msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(const CLUSTER_INFO& cluster_vector)
 {
   msgs::BoxPoint box_point;
   if (!cluster_vector.obb_vertex.empty())
