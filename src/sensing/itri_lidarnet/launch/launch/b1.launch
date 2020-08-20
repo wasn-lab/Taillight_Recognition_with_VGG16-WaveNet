@@ -52,7 +52,7 @@ Lidar List:
 	</group>
 
 <!-- Shape estimation ******************************************************************* -->
-<rosparam param="use_shape_estimation">false</rosparam>​
+<rosparam param="use_shape_estimation">true</rosparam>​
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
