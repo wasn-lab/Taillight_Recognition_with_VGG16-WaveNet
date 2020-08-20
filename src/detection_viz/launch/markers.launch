@@ -57,6 +57,17 @@
       <param name="is_tracking_mode"  value="true"/>
   </node>
 
+  <!-- Tracking 3D Polygon ************************************************************************* -->
+  <node name="m_Tracking_3d_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/Tracking3D"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.4"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
+  </node>
+
   <!-- virbb bbox ******************************************************************************* -->
   <node name="m_virbb" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/abs_virBB_array"/>
