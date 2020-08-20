@@ -904,10 +904,10 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
   pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
 
-  set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_radar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_camera_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_fusion_tpp, 0.f, 1.f, 1.f, 1.f);
+  set_ColorRGBA(mc_.color_lidar_tpp, 1.f, 1.f, 0.4f, 1.f);  // Unmellow Yellow (255, 255, 102)
+  set_ColorRGBA(mc_.color_radar_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color_camera_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color_fusion_tpp, 1.f, 1.f, 0.4f, 1.f);
 }
 
 int TPPNode::run()
