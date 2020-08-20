@@ -1,8 +1,6 @@
 #ifndef ALL_HEADER_H_
 #define ALL_HEADER_H_
 
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
@@ -60,7 +58,6 @@
 #include "UserDefine.h"
 #include "std_msgs/String.h"
 #include <pcl/compression/octree_pointcloud_compression.h>
-
 
 using namespace std;
 using namespace pcl;

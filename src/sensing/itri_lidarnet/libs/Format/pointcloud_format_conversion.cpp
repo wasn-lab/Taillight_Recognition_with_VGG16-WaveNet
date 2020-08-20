@@ -1,7 +1,6 @@
 #include "pointcloud_format_conversion.h"
 
-
-pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2 & cloud_msg, string brand)
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, string brand)
 {
   pcl::PointCloud<pcl::PointXYZIR> cloud;
 
@@ -12,7 +11,7 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   int offset_z;
   int offset_int;
   int offset_ring;
-  for (int f=0; f<cloud_msg.fields.size(); ++f)
+  for (int f = 0; f < cloud_msg.fields.size(); ++f)
   {
     if (cloud_msg.fields[f].name == "x")
       offset_x = cloud_msg.fields[f].offset;
@@ -27,27 +26,26 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   }
 
   // populate point cloud object
-  for (int p=0; p< (cloud_msg.width * cloud_msg.height); ++p)
+  for (int p = 0; p < (cloud_msg.width * cloud_msg.height); ++p)
   {
-      pcl::PointXYZIR newPoint;
+    pcl::PointXYZIR newPoint;
 
-      newPoint.x = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_x);
-      newPoint.y = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_y);
-      newPoint.z = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_z);
+    newPoint.x = *(float*)(&cloud_msg.data[0] + (pointBytes * p) + offset_x);
+    newPoint.y = *(float*)(&cloud_msg.data[0] + (pointBytes * p) + offset_y);
+    newPoint.z = *(float*)(&cloud_msg.data[0] + (pointBytes * p) + offset_z);
 
-      if (brand == "ouster")
-      {
-        newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int) /3000 * 255 ;
-      }
-      else
-      {
-        newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes*p) + offset_int);
-      }
-      
-      
-      newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes*p) + offset_ring);
+    if (brand == "ouster")
+    {
+      newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes * p) + offset_int) / 3000 * 255;
+    }
+    else
+    {
+      newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes * p) + offset_int);
+    }
 
-      cloud.points.push_back(newPoint);
+    newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes * p) + offset_ring);
+
+    cloud.points.push_back(newPoint);
   }
 
   pcl_conversions::toPCL(cloud_msg.header, cloud.header);
@@ -55,12 +53,11 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   return cloud;
 }
 
-
 pcl::PointCloud<pcl::PointXYZRGBA> XYZIR_to_XYZRBGA(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud)
 {
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
-  
-  for (int p=0; p< (input_cloud->size()); ++p)
+
+  for (int p = 0; p < (input_cloud->size()); ++p)
   {
     pcl::PointXYZRGBA new_point;
     new_point.x = input_cloud->points[p].x;
@@ -81,8 +78,8 @@ pcl::PointCloud<pcl::PointXYZRGBA> XYZIR_to_XYZRBGA(pcl::PointCloud<pcl::PointXY
 pcl::PointCloud<pcl::PointXYZIR> XYZRBGA_to_XYZIR(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr input_cloud)
 {
   pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZIR>);
-  
-  for (int p=0; p< (input_cloud->size()); ++p)
+
+  for (int p = 0; p < (input_cloud->size()); ++p)
   {
     pcl::PointXYZIR new_point;
     new_point.x = input_cloud->points[p].x;
@@ -99,17 +96,18 @@ pcl::PointCloud<pcl::PointXYZIR> XYZRBGA_to_XYZIR(pcl::PointCloud<pcl::PointXYZR
 }
 
 //---------------------- WIP: DO NOT USE THIS FUNCTION.
-// pcl::RangeImage PointCloudtoRangeImage(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud, std::string lidar_brand, int ring_num)
+// pcl::RangeImage PointCloudtoRangeImage(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud, std::string lidar_brand,
+// int ring_num)
 // {
 //   // pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 //   // pcl::copyPointCloud(*input, *input_cloud);
-  
+
 //   if (lidar_brand == "ouster")
 //   {
 //     if (ring_num == 64)
 //     {
 //       input_cloud->width = input_cloud->size() / 64;
-//       input_cloud->height = 64;  
+//       input_cloud->height = 64;
 
 //       // We now want to create a range image from the above point cloud, with a 1deg angular resolution
 //       float angularResolution = (float) ( 0.4f * (M_PI/180.0f));  //  1.0 degree in radians
@@ -124,7 +122,7 @@ pcl::PointCloud<pcl::PointXYZIR> XYZRBGA_to_XYZIR(pcl::PointCloud<pcl::PointXYZR
 //       pcl::RangeImage rangeImage;
 //       rangeImage.createFromPointCloud(*input_cloud, angularResolution, maxAngleWidth, maxAngleHeight,
 //                                       sensorPose, coordinate_frame, noiseLevel, minRange, borderSize);
-      
+
 //       rangeImage.header = input_cloud->header;
 
 //       std::cout << rangeImage << "\n";
@@ -133,6 +131,3 @@ pcl::PointCloud<pcl::PointXYZIR> XYZRBGA_to_XYZIR(pcl::PointCloud<pcl::PointXYZR
 //     }
 //   }
 // }
-  
-
-
