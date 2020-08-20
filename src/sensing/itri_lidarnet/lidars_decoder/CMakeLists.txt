@@ -124,7 +124,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
+  #include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -228,3 +228,13 @@ add_definitions		(${PCL_DEFINITIONS})
 add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} )
 add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
 target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} )
+
+
+######################
+##       CUDA       ##
+######################
+find_package	        (CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
