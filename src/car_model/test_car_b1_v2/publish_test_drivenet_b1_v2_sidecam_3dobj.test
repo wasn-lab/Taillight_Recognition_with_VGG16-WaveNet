@@ -1,28 +1,32 @@
 <launch>
-    <include file="$(find lidar)/launch/b1.launch"/>
+    <include file="$(find lidar)/launch/b1.launch">
+      <arg name="mode" value="4" />
+      <arg name="hardware_enable" value="0" />
+      <arg name="mps" value="0" />
+    </include>
     <include file="$(find drivenet)/launch/b1_v2_drivenet_group_a.launch"/>
     <include file="$(find drivenet)/launch/b1_v2_drivenet_side.launch"/>
     <include file="$(find alignment)/launch/b1_v2_3d_object_detection.launch"/>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-06-19-16-26-18_1_filtered.bag" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-06-19-16-26-18_1_filtered.bag -d 20" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
           topics:
             - name: /cam/right_front_60/detect_image
-              timeout: 11.2
+              timeout: 31.2
               negative: False
             - name: /cam/right_back_60/detect_image
-              timeout: 11.2
+              timeout: 31.2
               negative: False
             - name: /cam/left_front_60/detect_image
-              timeout: 11.2
+              timeout: 31.2
               negative: False
             - name: /cam/left_back_60/detect_image
-              timeout: 11.2
+              timeout: 31.2
               negative: False
-            - name: /CameraDetection/polygon
-              timeout: 11.2
+            - name: /CameraDetection
+              timeout: 31.2
               negative: False
         </rosparam>
     </test>

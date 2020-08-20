@@ -41,12 +41,14 @@ def pedestrian_marker_callback_final(data):
             if element.crossProbability > 0.55: #threshold
                 prob = "C(" + get_two_float(element.crossProbability, 2) + ")"
                 markerArray.markers.append(create_marker(text=prob,position=point,id=element.track.id,color=[1.0,0.2,0.0]))
-                for i in range(20):
+                i = 0
+                for track_point in element.track.forecasts:
                     point_2 = element.bPoint.p1
-                    point_2.x = element.track.forecasts[i].position.x
-                    point_2.y = element.track.forecasts[i].position.y
+                    point_2.x = track_point.position.x
+                    point_2.y = track_point.position.y
                     point_2.z = 0
                     markerArray.markers.append(create_marker(text=".", position=point_2, id=element.track.id*20 + i, color=[1.0,0.2,0.0]))
+                    i = i + 1
             else:
                 prob = "NC(" + get_two_float(element.crossProbability, 2) + ")"
                 markerArray.markers.append(create_marker(text=prob,position=point,id=element.track.id,color=[0.0,0.9,0.4]))
