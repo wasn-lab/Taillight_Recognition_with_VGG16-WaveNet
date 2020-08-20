@@ -25,7 +25,7 @@
             - name: /cam/left_back_60/detect_image
               timeout: 31.2
               negative: False
-            - name: /CameraDetection/polygon
+            - name: /CameraDetection
               timeout: 31.2
               negative: False
         </rosparam>

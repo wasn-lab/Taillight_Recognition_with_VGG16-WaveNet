@@ -88,6 +88,7 @@ include_directories(
   ${libs_SOURCE_DIR}/BoundingBox/ApproxMVBB
   ${libs_SOURCE_DIR}/Preprocess/VoxelGrid
   ${libs_SOURCE_DIR}/Clustering/DBSCAN/CUDA
+  ${libs_SOURCE_DIR}/shape_estimation
 )
 
 set(LIBS ${OpenCV_USER_LIBRARIES}
