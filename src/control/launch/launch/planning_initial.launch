@@ -9,9 +9,14 @@
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
   <arg name="wheel_dis" default="3.8" />
-  <arg name="angle_diff_setting" default="0.78539816339" /> <!--PI/4-->
-  <arg name="z_diff_setting" default="2.0" />
 
+  <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
+  <arg name="angle_diff_setting_out" default="0.3" />
+  <arg name="angle_diff_setting_distoturn" default="0.3" />
+  <arg name="z_diff_setting_in" default="1.0" />
+  <arg name="z_diff_setting_out" default="0.1" />
+  <arg name="slope_setting_distouphill" default="0.08" />
+  
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
@@ -25,8 +30,12 @@
 
   <!--path transfer node-->
   <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" >
-        <param name="angle_diff_setting" value="$(arg angle_diff_setting)" />
-        <param name="z_diff_setting" value="$(arg z_diff_setting)" />
+        <param name="angle_diff_setting_in" value="$(arg angle_diff_setting_in)" />
+	<param name="angle_diff_setting_out" value="$(arg angle_diff_setting_out)" />
+	<param name="angle_diff_setting_distoturn" value="$(arg angle_diff_setting_distoturn)" />
+        <param name="z_diff_setting_in" value="$(arg z_diff_setting_in)" />
+        <param name="z_diff_setting_out" value="$(arg z_diff_setting_out)" />
+	<param name="slope_setting_distouphill" value="$(arg slope_setting_distouphill)" />
   </node>
     
   <!-- target pub node-->

@@ -112,24 +112,32 @@ void get_checkpoint_point()
     ros::spinOnce();
     loop_rate.sleep();
   }
-  
 }
 
+void offline_realtime_goal_setting()
+{
+  // if (ORGS == 0)
+  // {
+    Ini_obs_bytxt();
+    get_goal_point();
+    get_checkpoint_point();
+  // }
+  // else
+  // {
+    
+  // } 
+}
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "mission_input");
   ros::NodeHandle node;
 
-  Ini_obs_bytxt();
   goal_publisher = node.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10, true);
   checkpoint_publisher = node.advertise<geometry_msgs::PoseStamped>("/checkpoint", 10, true);
-  
-  
-  get_goal_point();
-  get_checkpoint_point();
-  
-	
+
+  offline_realtime_goal_setting();
+
   //ros::spin();
   return 0;
 };

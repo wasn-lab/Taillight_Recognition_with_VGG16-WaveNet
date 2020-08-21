@@ -155,12 +155,12 @@ void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, 
 void run()
 {
   targetplanner(rear_current_pose, rear_targetpoint, rear_vehicle_targetpoint, 0.0, rear_target_pub, rear_vehicle_target_pub);
-  std::cout << "rear_vehicle_targetpoint.x = " << rear_vehicle_targetpoint.x << std::endl;
-  std::cout << "rear_vehicle_targetpoint.y = " << rear_vehicle_targetpoint.y << std::endl;
+  // std::cout << "rear_vehicle_targetpoint.x = " << rear_vehicle_targetpoint.x << std::endl;
+  // std::cout << "rear_vehicle_targetpoint.y = " << rear_vehicle_targetpoint.y << std::endl;
 
   targetplanner(rear_current_pose, front_targetpoint, front_vehicle_targetpoint, wheel_dis, front_target_pub, front_vehicle_target_pub);
-  std::cout << "front_vehicle_targetpoint.x = " << front_vehicle_targetpoint.x << std::endl;
-  std::cout << "front_vehicle_targetpoint.y = " << front_vehicle_targetpoint.y << std::endl;
+  // std::cout << "front_vehicle_targetpoint.x = " << front_vehicle_targetpoint.x << std::endl;
+  // std::cout << "front_vehicle_targetpoint.y = " << front_vehicle_targetpoint.y << std::endl;
 }
 
 void currentposeCallback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
@@ -266,7 +266,7 @@ int main(int argc, char** argv)
   while (ros::ok())
   { 
     run();
-    ROS_INFO("Publish target point");
+    // ROS_INFO("Publish target point");
     ros::spinOnce();
     loop_rate.sleep();   
   }
