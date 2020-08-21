@@ -14,19 +14,30 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   for (int f = 0; f < cloud_msg.fields.size(); ++f)
   {
     if (cloud_msg.fields[f].name == "x")
+    {
       offset_x = cloud_msg.fields[f].offset;
+    }
     if (cloud_msg.fields[f].name == "y")
+    {
       offset_y = cloud_msg.fields[f].offset;
+    }
     if (cloud_msg.fields[f].name == "z")
+    {
       offset_z = cloud_msg.fields[f].offset;
+    }
     if (cloud_msg.fields[f].name == "intensity")
+    {
       offset_int = cloud_msg.fields[f].offset;
+    }
     if (cloud_msg.fields[f].name == "ring")
+    {
       offset_ring = cloud_msg.fields[f].offset;
+    }
+
   }
 
   // populate point cloud object
-  for (int p = 0; p < (cloud_msg.width * cloud_msg.height); ++p)
+  for (int p = 0, bound=cloud_msg.width * cloud_msg.height; p < bound; ++p)
   {
     pcl::PointXYZIR newPoint;
 

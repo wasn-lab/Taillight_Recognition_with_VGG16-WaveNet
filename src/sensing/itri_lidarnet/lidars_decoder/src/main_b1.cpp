@@ -10,11 +10,11 @@ ros::Publisher pub_LidarFrontLeft;
 ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
 
-mutex L_Lock;
-mutex R_Lock;
-mutex T_Lock;
+std::mutex L_Lock;
+std::mutex R_Lock;
+std::mutex T_Lock;
 
-StopWatch stopWatch_T;
+pcl::StopWatch stopWatch_T;
 
 bool pub_decompress = false;
 //------------------------------ Callback
