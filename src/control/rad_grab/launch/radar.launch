@@ -12,9 +12,9 @@
 
 	<!-- Global arg ************************************************************ -->
 	<arg name="radar_enable" default="1" />
-	<arg name="delphi_enable" default="0" />
+	<arg name="delphi_enable" default="1" />
 	<arg name="umec_enable" default="0" />
-	<arg name="alpha_front_enable" default="1" />
+	<arg name="alpha_front_enable" default="0" />
 	<arg name="alpha_side_enable" default="0" />
 
 	<rosparam param="debug_output">true</rosparam>
