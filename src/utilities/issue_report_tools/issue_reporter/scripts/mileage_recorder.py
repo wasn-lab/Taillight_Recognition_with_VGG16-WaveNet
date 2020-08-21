@@ -284,7 +284,7 @@ def _control_checker_CB(msg):
     CAN_up_fail_now = False
     for _s in flag_check_list:
         CAN_up_fail_now |= (_s == 1)
-    CAN_up_state_now = 1 if CAN_up_state_now else 0
+    CAN_up_state_now = 1 if CAN_up_fail_now else 0
     if CAN_up_state != CAN_up_state_now:
         # State change event
         CAN_up_state = CAN_up_state_now
