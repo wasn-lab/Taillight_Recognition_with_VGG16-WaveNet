@@ -21,6 +21,7 @@ ros::Publisher pub_LidarFrontLeft;
 ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
 ros::Publisher pub_LidarAll;
+ros::Publisher pub_LidarFrontTop_Localization;
 
 ros::Publisher pub_LidarFrontLeft_Compress;
 ros::Publisher pub_LidarFrontRight_Compress;
@@ -136,8 +137,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       if (use_roi)
       {
         // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0,
-        // 0.1,
-        //                                                                -30, 4, 0, 30.0, -5.0, 0.01);
+        // 0.1, -30, 4, 0, 30.0, -5.0, 0.01);
       }
 
       // assign
@@ -235,8 +235,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       if (use_roi)
       {
         // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0,
-        // 0.1,
-        //                                                                -30.0, 4, -30.0, 0, -5.0, 0.01);
+        // 0.1, -30.0, 4, -30.0, 0, -5.0, 0.01);
       }
 
       // assign
@@ -297,7 +296,13 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       compressedData.str("");
     }
 
-    // ring filter
+    // For Localization
+    pcl::PointCloud<pcl::PointXYZI>::Ptr localization_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::copyPointCloud(*input_cloud_tmp_ring, *localization_cloud);
+    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0.2, 0);
+    pub_LidarFrontTop_Localization.publish(*localization_cloud);
+    
+    // Ring Filter
     if (use_filter)
     {
       pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
@@ -343,6 +348,36 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
   }
   T_Lock.unlock();
 }
+
+
+// Point Cloud Compression Thread
+void Top_Compress(int argc, char** argv)
+{
+
+}
+
+void Left_Compress(int argc, char** argv)
+{
+
+}
+
+void Right_Compress(int argc, char** argv)
+{
+
+}
+
+
+void LidarAll_Publisher(int argc, char** argv)
+{
+  ros::Rate loop_rate(20);  // 80Hz
+  while (ros::ok())
+  {
+    lidarAll_Pub(4);
+    loop_rate.sleep();
+  }
+}
+
+
 
 void lidarAll_Pub(int lidarNum)
 {
@@ -416,15 +451,6 @@ void UI(int argc, char** argv)
   }
 }
 
-void LidarAll_Publisher(int argc, char** argv)
-{
-  ros::Rate loop_rate(20);  // 80Hz
-  while (ros::ok())
-  {
-    lidarAll_Pub(4);
-    loop_rate.sleep();
-  }
-}
 
 int main(int argc, char** argv)
 {
@@ -483,19 +509,31 @@ int main(int argc, char** argv)
   pub_LidarFrontTop = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop", 1);
   pub_LidarAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
 
+  pub_LidarFrontTop_Localization = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop/Localization", 1);
+
+
   // publisher - compressed
   pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1);
   pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Compressed", 1);
   pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1);
 
-  thread TheadDetection_UI(UI, argc, argv);
-  thread TheadDetection_Pub(LidarAll_Publisher, argc, argv);
+  thread ThreadDetection_UI(UI, argc, argv);
+  thread ThreadDetection_Pub(LidarAll_Publisher, argc, argv);
+
+  thread Thread_Top_Compress(Top_Compress, argc, argv);
+  thread Thread_Left_Compress(Left_Compress, argc, argv);
+  thread Thread_Right_Compress(Right_Compress, argc, argv);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();
 
-  TheadDetection_UI.join();
-  TheadDetection_Pub.join();
+  ThreadDetection_UI.join();
+  ThreadDetection_Pub.join();
+
+  Thread_Top_Compress.join();
+  Thread_Left_Compress.join();
+  Thread_Right_Compress.join();
+
   ros::waitForShutdown();
 
   cout << "=============== Grabber Stop ===============" << endl;
