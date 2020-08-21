@@ -400,7 +400,7 @@ class Node:
             text = "[%d]D=%.2fm" % (bbox_id, depth )
         if prob is not None:
             text += ",P=%.2f" % prob
-        scale = 2.0
+        scale = 1.0
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_depth"), scale=scale )
 
     def create_tracking_text_marker(self, idx, header, bbox, bbox_id=None):
