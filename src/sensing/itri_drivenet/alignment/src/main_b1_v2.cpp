@@ -17,6 +17,7 @@
 #include "camera_params.h"
 #include "fusion_source_id.h"
 #include "alignment.h"
+#include "box_fusion.h"
 #include "visualization_util.h"
 #include <drivenet/object_label_util.h>
 #include "point_preprocessing.h"
@@ -44,6 +45,9 @@
 
 /// namespace
 using namespace DriveNet;
+
+Boxfusion g_box_fusion;
+
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
@@ -1016,6 +1020,8 @@ void runInference()
                                                     std::ref(cams_raw_points_ptr) /*, cam_pixels*/, g_image_w,
                                                     g_image_h);
         get_point_in_image_fov_thread_1.join();
+        // 在這加入比較 iou 的 function 主要針對 front bottom 60 度與 left back 60 度為主
+        object_arrs = g_box_fusion.boxfuse(object_arrs, camera::id::front_bottom_60, camera::id::left_back_60);
         getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
                                  objects_2d_bbox_arrs, cams_bboxs_cube_min_max, cams_bboxs_points);
 
