@@ -37,14 +37,13 @@ Lidar List:
 	<arg name="use_shape_estimation" default="false" />
 
 	<!-- Ouster Setting -->
-	<arg name="set_group_1" value="/LidarFrontTop"/>
+	<arg name="set_group_1" default="/LidarFrontTop"/>
 
 	<!-- Stitching-->
-	<arg name="use_old_stitch" value="false"/>
+	<arg name="use_old_stitch" default="false"/>
 
 	<!-- Debug -->
-	<arg name="debug_output" value="true"/>
-	<arg name="pub_decompress" value="false"/>
+	<arg name="pub_decompress" default="false"/>
 
 <!-- Parameter ************************************************************* -->
 	<param name="use_compress" value="$(arg use_compress)" /> 
@@ -52,8 +51,9 @@ Lidar List:
 	<param name="use_roi" value="$(arg use_roi)"/>
 	<param name="use_shape_estimation" value="$(arg use_shape_estimation)"/>
 
-	<param name="debug_output" value="$(arg debug_output"/>
+	
 	<param name="pub_decompress" value="$(arg pub_decompress"/>
+	<rosparam param="debug_output">true</rosparam>
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
 
 <!-- tf2 ******************************************************************* -->
