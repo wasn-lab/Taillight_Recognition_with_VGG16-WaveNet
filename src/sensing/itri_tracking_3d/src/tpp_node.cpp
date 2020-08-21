@@ -1040,7 +1040,7 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "show_distance", mc_.show_distance, false);
   nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, false);
 
-  set_ColorRGBA(mc_.color, 0.f, 1.f, 1.f, 1.f);
+  set_ColorRGBA(mc_.color, 1.f, 1.f, 0.4f, 1.f);  // Unmellow Yellow (255, 255, 102)
 }
 
 int TPPNode::run()
