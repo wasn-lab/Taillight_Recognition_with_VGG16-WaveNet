@@ -18,6 +18,8 @@ from rosgraph_msgs.msg import Clock
 import numpy as np
 import fps_calculator as FPS
 import signal_analyzer as SA
+# Costmap listener
+import costmap_listener_ITRI as CLN
 
 class Node:
 
@@ -34,9 +36,19 @@ class Node:
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
+        self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
         # FPS
         self.fps_cal = FPS.FPS()
+        # Costmap listener
+        if self.is_using_costmap_listener:
+            param_dict = dict()
+            param_dict['costmap_topic_name'] = "/occupancy_grid_wayarea" # "occupancy_grid" #
+            param_dict['is_using_ITRI_origin'] = True
+            self.costmap_listener = CLN.COSTMAP_LISTENER(param_dict)
+            print("[%s] Using costmap listener!" % self.delay_prefix)
+        else:
+            self.costmap_listener = None
         # Flags
         self.is_showing_depth = True
         self.is_showing_track_id = self.is_tracking_mode
@@ -88,7 +100,8 @@ class Node:
         # param_dict["timeout"] = {"threshold":0.7}
         # self.checker_timeout = SA.SIGNAL_ANALYZER(module_name=self.delay_prefix, signal_name=signal_name,event_publisher=self.checker_event_pub, param_dict=param_dict )
         # prob, closest object
-        self.checker_nearProb_couting_range = 20.0 # In the 30 m range will be counted
+        self.checker_nearProb_couting_range = 30.0 # Object in the range will be counted
+        self.checker_nearProb_y_range = 10.0 # The valid range of y value of objects
         signal_name = "nearProb"
         param_dict = dict()
         param_dict["low_avg_threshold"] = {"threshold":0.75} # 0.65 0.7 0.8
@@ -122,20 +135,30 @@ class Node:
             _prob = _obj.camInfo.prob
             if _prob == 0.0:
                 continue
-            # Sum
+            if len(_obj.cPoint.lowerAreaPoints) == 0:
+                continue
+            # Sum for averaging
             #-----------------#
             obj_count += 1
             sum_prob += _prob
             #-----------------#
+
+            # Check with map
+            #-----------------------#
+            is_valid = self.check_cPoint_in_wayarea(  _obj.cPoint )
+            if not is_valid:
+                continue
+            #-----------------------#
+
+            # find the closest one
             depth = self._calculate_distance_polygon( _obj.cPoint )
-            if len(_obj.cPoint.lowerAreaPoints) > 0:
-                if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < d_range:
-                    # Frontal object and the object is not empty
-                    if (depth < d_min):
-                        # Update
-                        d_min = depth
-                        d_min_idx = i
-                        d_min_prob = _prob
+            if _obj.cPoint.lowerAreaPoints[0].x > 0.0 and abs(_obj.cPoint.lowerAreaPoints[0].y) < self.checker_nearProb_y_range:
+                # Frontal object and the object is not empty
+                if (depth < d_min):
+                    # Update
+                    d_min = depth
+                    d_min_idx = i
+                    d_min_prob = _prob
         # Post-process
         #--------------------------------#
         if obj_count == 0:
@@ -144,6 +167,16 @@ class Node:
             avg_prob = sum_prob/obj_count
         #
         return (avg_prob, d_min_prob, d_min)
+
+    def check_cPoint_in_wayarea(self, cPoint):
+        is_valid = True
+        if self.costmap_listener is not None:
+            for _point in cPoint.lowerAreaPoints:
+                is_occ = self.costmap_listener.is_occupied_at_point2D( (_point.x, _point.y) )
+                is_valid &= (not is_occ) if (is_occ is not None) else False
+            # is_occ = self.costmap_listener.is_occupied_at_point2D( (cPoint.lowerAreaPoints[0].x, cPoint.lowerAreaPoints[0].y))
+            # is_valid = (not is_occ) if (is_occ is not None) else False
+        return is_valid
 
     def _increase_point_z(self, pointXYZ_in, high):
         pointXYZ_out = PointXYZ()
@@ -203,7 +236,9 @@ class Node:
         _objects = None
         _num_removed_obj = None
         if self.is_ignoring_empty_obj:
-            _objects = [_obj for _obj in message.objects if _obj.distance >= 0.0]
+            # _objects = [_obj for _obj in message.objects if _obj.distance >= 0.0]
+            # Remove empty polygons as well
+            _objects = [_obj for _obj in message.objects if (_obj.distance >= 0.0) and (len( _obj.cPoint.lowerAreaPoints) > 0)]
             _num_removed_obj = len(message.objects) - len(_objects)
         else:
             _objects = message.objects
@@ -249,6 +284,7 @@ class Node:
                     prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
                     box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].cPoint, obj_id, prob=prob_) )
                     idx += 1
+
 
         #
         self.polygon_pub.publish(box_list)

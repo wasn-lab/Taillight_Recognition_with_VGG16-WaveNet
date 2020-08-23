@@ -16,6 +16,7 @@
 #include "msgs/RouteInfo.h"
 #include "msgs/BackendInfo.h"
 #include "sensor_msgs/Imu.h"
+#include "msgs/Spat.h"
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/tf.h>
@@ -60,13 +61,24 @@ class RosModuleTraffic
                       void
                       (*cb11) (const std_msgs::String::ConstPtr&),
                       void
-                      (*cb12) (const msgs::BackendInfo::ConstPtr&))
+                      (*cb12) (const msgs::BackendInfo::ConstPtr&),
+                      bool isNewMap)
     {
       ros::NodeHandle n;
       static ros::Subscriber detObj = n.subscribe ("LidarDetection", 1, cb1);
-      static ros::Subscriber gps = n.subscribe ("lidar_lla", 1, cb2);
+     
       static ros::Subscriber vehInfo = n.subscribe ("veh_info", 1, cb3);
-      static ros::Subscriber gnss2local_sub = n.subscribe("gnss2local_data", 1, cb4);
+
+      if(isNewMap){
+        std::cout << "===============================subscribe for new map" << std::endl;
+        static ros::Subscriber gps = n.subscribe ("lidar_lla_wgs84", 1, cb2);
+        static ros::Subscriber gnss2local_sub = n.subscribe("gnss_data", 1, cb4);
+      }else{
+        std::cout << "===============================subscribe for old map" << std::endl;
+        static ros::Subscriber gps = n.subscribe ("lidar_lla", 1, cb2);
+        static ros::Subscriber gnss2local_sub = n.subscribe("gnss2local_data", 1, cb4);
+      }
+      
       static ros::Subscriber fps = n.subscribe("/GUI/topic_fps_out", 1, cb5);
       static ros::Subscriber busStopInfo = n.subscribe("/BusStop/Info", 1, cb6);
       static ros::Subscriber reverse = n.subscribe("/mileage/relative_mileage", 1, cb7);
@@ -79,16 +91,12 @@ class RosModuleTraffic
     }
 
     static void
-    publishTraffic(std::string topic, std::string input)
+    publishTraffic(std::string topic, msgs::Spat input)
     {
-      std::cout << "publishTraffic topic " << topic << " , input" << input << std::endl;
+      std::cout << "publishTraffic topic " << topic <<  std::endl;
       ros::NodeHandle n;
-      static ros::Publisher traffic_pub = n.advertise<std_msgs::String>(topic, 1000);
-      std_msgs::String msg;
-      std::stringstream ss;
-      ss << input;
-      msg.data = ss.str();
-      traffic_pub.publish(msg);
+      static ros::Publisher traffic_pub = n.advertise<msgs::Spat>(topic, 1000);
+      traffic_pub.publish(input);
     }
 
     static void

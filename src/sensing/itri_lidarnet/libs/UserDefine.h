@@ -45,11 +45,21 @@ struct PointXYZIL
 struct PointXYZID
 {
   PCL_ADD_POINT4D                  // point types, 4 elements
-      float intensity;             // lidar intensity
+  float intensity;             // lidar intensity
   float d;                         // depth or range (paper)
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW  // ensure proper alignment (Eigen)
 } EIGEN_ALIGN16;
 // point structure : euclidean xyz coordinates, and the intensity value.
+
+struct PointXYZIR
+{
+  PCL_ADD_POINT4D;  // preferred way of adding a XYZ+padding
+  float intensity;
+  uint16_t ring;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW  // make sure our new allocators are aligned
+} EIGEN_ALIGN16;
+// enforce SSE padding for correct memory alignment
+
 
 }  // namespace pcl
 
@@ -67,10 +77,14 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZIL, (float, x, x)(float, y, y)(float, 
 POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZID,
                                   (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(float, d, d))
 
+POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZIR,
+                                  (float, x, x)(float, y, y)(float, z, z)(float, intensity, intensity)(uint16_t, ring, ring))
+
 PCL_INSTANTIATE_PointCloud(pcl::PointXYZIDL);
 PCL_INSTANTIATE_PointCloud(pcl::PointXYZLO);
 PCL_INSTANTIATE_PointCloud(pcl::PointXYZIL);
 PCL_INSTANTIATE_PointCloud(pcl::PointXYZID);
+PCL_INSTANTIATE_PointCloud(pcl::PointXYZIR);
 
 typedef pcl::PointXYZI VPoint;
 typedef pcl::PointCloud<VPoint> VPointCloud;

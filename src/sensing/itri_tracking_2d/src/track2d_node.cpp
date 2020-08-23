@@ -55,7 +55,15 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
 
 #if INPUT_ALL_CLASS
-    KTs_.objs_.assign(input->objects.begin(), input->objects.end());
+    // KTs_.objs_.assign(input->objects.begin(), input->objects.end());
+    KTs_.objs_.reserve(input->objects.size());
+    for (unsigned i = 0; i < input->objects.size(); i++)
+    {
+      if (input->objects[i].camInfo.id == in_source_)
+      {
+        KTs_.objs_.push_back(input->objects[i]);
+      }
+    }
 #else
     KTs_.objs_.reserve(input->objects.size());
     for (unsigned i = 0; i < input->objects.size(); i++)
@@ -73,18 +81,53 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
 
 void Track2DNode::subscribe_and_advertise_topics()
 {
-  if (in_source_ == 1)
+  /**
+   * enum id
+   * {
+   *  begin = 0,
+   *  front_bottom_60 = begin,  // 0
+   *  front_top_far_30,         // 1
+   *  front_bottom_60_crop,     // 2
+   *  _dummy1,                  // 3  // NOLINT
+   *  front_top_close_120,      // 4
+   *  right_front_60,           // 5
+   *  right_back_60,            // 6
+   *  _dummy2,                  // 7  // NOLINT
+   *  left_front_60,            // 8
+   *  left_back_60,             // 9
+   *  back_top_120,             // 10
+   *  _dummy3,                  // 11  // NOLINT
+   *  num_ids                   // 12
+   * };
+   */
+  if (in_source_ == 0)
   {
     LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Output Topic: /Tracking2D/front_bottom_60" << std::endl;   
     camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 2);
   }
-  else
+  else if (in_source_ == 9)
   {
-    LOG_INFO << "Input Source: /cam_obj/front_bottom_60" << std::endl;
-    camera_sub_ = nh_.subscribe("/cam_obj/front_bottom_60", 1, &Track2DNode::callback_camera, this);
+    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Output Topic: /Tracking2D/left_back_60" << std::endl;
+    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/left_back_60", 2);
   }
-
-  track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking2D", 2);
+  else  if(in_source_ == 6)
+  {
+    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Output Topic: /Tracking2D/right_back_60" << std::endl;
+    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/right_back_60", 2);
+  }
+  else  if(in_source_ == 1)
+  {
+    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Output Topic: /Tracking2D/front_top_far_30" << std::endl;
+    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_top_far_30", 2);
+  }
 }
 
 void Track2DNode::publish()
@@ -145,9 +188,9 @@ void Track2DNode::publish()
 
 void Track2DNode::set_ros_params()
 {
-  std::string domain = "/itri_tracking_2d/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
-  nh_.param<double>(domain + "output_fps", output_fps, 10.);
+  std::string domain = ros::this_node::getName();
+  nh_.param<int>(domain + "/input_source", in_source_, 0);
+  nh_.param<double>(domain + "/output_fps", output_fps, 10.);
 }
 
 int Track2DNode::run()

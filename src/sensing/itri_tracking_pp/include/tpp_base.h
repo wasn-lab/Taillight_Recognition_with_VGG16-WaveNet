@@ -34,6 +34,8 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
+#include "detected_object_class_id.h"
+
 #define TTC_TEST 0
 #if TTC_TEST
 #include <std_msgs/Int32.h>
@@ -95,16 +97,13 @@
 
 #define PUNISH_OBJCLASS_CHANGE 0
 
-#define PP_VERTICES_VIA_SPEED 1
+#define PP_VERTICES_VIA_SPEED 0
 
-#if PP_VERTICES_VIA_SPEED
+#if PP_VERTICES_VIA_SPEED == 1
 #define TO_GRIDMAP 1
 #endif
 
-#define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
-#if USE_RADAR_REL_SPEED
 #define USE_RADAR_ABS_SPEED 0  // compute absolute speed from ege speed, ego heading, and radar's relative speed
-#endif
 
 #define REMOVE_IMPULSE_NOISE 0
 #define NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX 0
@@ -166,6 +165,6 @@ struct MarkerConfig
   std_msgs::ColorRGBA color_camera_tpp;
   std_msgs::ColorRGBA color_fusion_tpp;
 };
-}
+}  // namespace tpp
 
 #endif  // __TPP_BASE_H__

@@ -1,5 +1,8 @@
 #include "visualization_util.h"
 
+/// stardard
+#include <cmath>
+
 using namespace DriveNet;
 
 void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x)
@@ -33,7 +36,9 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 cv::Scalar Visualization::getDistColor(float distance_in_meters)
 {
   cv::Scalar color;
-  if (distance_in_meters >= 0 && distance_in_meters <= 10)
+
+  distance_in_meters = std::fabs(distance_in_meters);
+  if (distance_in_meters > 0 && distance_in_meters <= 10)
   {
     color = CvColor::red_;
   }
@@ -45,9 +50,30 @@ cv::Scalar Visualization::getDistColor(float distance_in_meters)
   {
     color = CvColor::green_;
   }
-  else
+  else if (distance_in_meters > 30 && distance_in_meters <= 40)
   {
     color = CvColor::blue_;
   }
+  else if (distance_in_meters > 40 && distance_in_meters <= 50)
+  {
+    color = CvColor::purple_;
+  }
+  else
+  {
+    color = CvColor::white_;
+  }
   return color;
+}
+
+MinMax3D Visualization::getDistLinePoint(float x_dist, float y_dist, float z_dist)
+{
+  MinMax3D point;
+  point.p_min.x = x_dist;
+  point.p_min.y = (-1) * y_dist;
+  point.p_min.z = z_dist;
+  point.p_max.x = x_dist;
+  point.p_max.y = y_dist;
+  point.p_max.z = z_dist;
+
+  return point;
 }

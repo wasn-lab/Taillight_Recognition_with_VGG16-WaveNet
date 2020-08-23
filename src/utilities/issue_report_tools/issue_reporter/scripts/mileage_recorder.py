@@ -23,6 +23,7 @@ from std_msgs.msg import (
     Bool,
     String,
     Int32,
+    Int8MultiArray,
 )
 
 from msgs.msg import (
@@ -43,7 +44,8 @@ brake_state = 0
 Xbywire_run_state = None # 0
 AEB_run_state = None # 0
 ACC_run_state = None # 0
-#
+# CAN state
+CAN_up_state = None
 
 # Queue
 adv_run_Q = Queue.Queue()
@@ -61,6 +63,7 @@ brake_event_pub = rospy.Publisher('/mileage/brake_event', String, queue_size=100
 Xbywire_run_event_pub = rospy.Publisher('/mileage/Xbywire_run', String, queue_size=100, latch=True)
 AEB_run_event_pub = rospy.Publisher('/mileage/AEB_run', String, queue_size=100, latch=True)
 ACC_run_event_pub = rospy.Publisher('/mileage/ACC_run', String, queue_size=100, latch=True)
+CAN_up_OK_event_pub = rospy.Publisher('/mileage/CAN_up_OK', String, queue_size=100, latch=True)
 #-------------------#
 
 
@@ -104,7 +107,7 @@ def brake_state_2_string(state_in):
 
 # Event report: json_str converters
 #--------------------------------#
-def brake_state_2_json(state_in):
+def brake_state_2_json(state_in, checker_name="brake", check_state=(3,4) ):
     """
     Through ROS std_msgs.String
     json string:
@@ -116,15 +119,15 @@ def brake_state_2_json(state_in):
     Output: json string
     """
     json_dict = dict()
-    json_dict["module"] = "brake"
-    if state_in >= 3: # 3 and 4
+    json_dict["module"] = checker_name
+    if state_in in check_state: # 3 and 4
         json_dict["status"] = "WARN"
     else:
         json_dict["status"] = "OK"
     json_dict["event_str"] = brake_state_2_string(state_in)
     return json.dumps(json_dict)
 
-def module_run_state_2_json(state_in, module_name="module_run"):
+def module_run_state_2_json(state_in, checker_name="module_run"):
     """
     Through ROS std_msgs.String
     json string:
@@ -136,12 +139,32 @@ def module_run_state_2_json(state_in, module_name="module_run"):
     Output: json string
     """
     json_dict = dict()
-    json_dict["module"] = module_name
+    json_dict["module"] = checker_name
     if state_in < 1:
         json_dict["status"] = "FATAL"
     else: # 1
         json_dict["status"] = "OK"
-    json_dict["event_str"] = "%s-%s" % (module_name, "ON" if state_in >=1 else "OFF" )
+    json_dict["event_str"] = "%s-%s" % (checker_name, "Yes" if state_in >=1 else "No" )
+    return json.dumps(json_dict)
+
+def CAN_up_OK_state_2_json(state_in, checker_name="CAN_up_OK"):
+    """
+    Through ROS std_msgs.String
+    json string:
+    {
+        "module": "yyy"
+        "status": "OK"/"WARN"/"ERROR"/"FATAL"/"UNKNOWN"
+        "event_str": "xxx event of yyy module"
+    }
+    Output: json string
+    """
+    json_dict = dict()
+    json_dict["module"] = checker_name
+    if state_in > 0:
+        json_dict["status"] = "FATAL"
+    else: # 0
+        json_dict["status"] = "OK"
+    json_dict["event_str"] = "%s-%s" % (checker_name, "Yes" if state_in == 0 else "No" )
     return json.dumps(json_dict)
 #--------------------------------#
 
@@ -215,7 +238,12 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( brake_state_2_string(brake_state) )
         # Publish as ROS message
-        brake_event_pub.publish( brake_state_2_json(brake_state) )
+        # brake_event_pub.publish( brake_state_2_json(brake_state) )
+        #
+        # AEB checker and manual-brake checker
+        brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_AEB", check_state=(3,) ) )
+        brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_MINT", check_state=(4,) ) )
+
 
     # Xbywire states
     Xbywire_run_state_now = int( round(data.Dspace_Flag06) )
@@ -225,7 +253,7 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( "Xbywire_run_state = %d" % Xbywire_run_state )
         # Publish as ROS message
-        Xbywire_run_event_pub.publish( module_run_state_2_json(Xbywire_run_state, module_name="Xbywire") )
+        Xbywire_run_event_pub.publish( module_run_state_2_json(Xbywire_run_state, checker_name="Xbywire_run") )
 
     # AEB states
     AEB_run_state_now = int( round(data.Dspace_Flag07) )
@@ -235,7 +263,7 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( "AEB_run_state = %d" % AEB_run_state )
         # Publish as ROS message
-        AEB_run_event_pub.publish( module_run_state_2_json(AEB_run_state, module_name="AEB") )
+        AEB_run_event_pub.publish( module_run_state_2_json(AEB_run_state, checker_name="AEB_run") )
 
     # ACC states
     ACC_run_state_now = int( round(data.Dspace_Flag08) )
@@ -245,8 +273,25 @@ def _flag_info_03_CB(data):
         # Print to stdout
         print( "ACC_run_state = %d" % ACC_run_state )
         # Publish as ROS message
-        ACC_run_event_pub.publish( module_run_state_2_json(ACC_run_state, module_name="ACC") )
+        ACC_run_event_pub.publish( module_run_state_2_json(ACC_run_state, checker_name="ACC_run") )
 
+def _control_checker_CB(msg):
+    """
+    The callback function of CAN status
+    """
+    global CAN_up_state
+    flag_check_list = msg.data
+    CAN_up_fail_now = False
+    for _s in flag_check_list:
+        CAN_up_fail_now |= (_s == 1)
+    CAN_up_state_now = 1 if CAN_up_fail_now else 0
+    if CAN_up_state != CAN_up_state_now:
+        # State change event
+        CAN_up_state = CAN_up_state_now
+        # Print to stdout
+        print( "CAN_up_state = %d" % CAN_up_state )
+        # Publish as ROS message
+        CAN_up_OK_event_pub.publish( CAN_up_OK_state_2_json(CAN_up_state, checker_name="CAN_up_OK") )
 
 
 #---------------------#
@@ -344,12 +389,16 @@ def main(sys_args):
     rospy.Subscriber("/veh_info", VehInfo, _veh_info_CB)
     rospy.Subscriber("/Flag_Info02", Flag_Info, _flag_info_02_CB)
     rospy.Subscriber("/Flag_Info03", Flag_Info, _flag_info_03_CB)
+    rospy.Subscriber("/control_checker", Int8MultiArray, _control_checker_CB)
     #--------------------------------------#
 
     # Publishing intial state
     #--------------------------------------#
     run_state_pub.publish( (adv_run_state==1) )
-    brake_event_pub.publish( brake_state_2_json(brake_state) )
+    # brake_event_pub.publish( brake_state_2_json(brake_state) )
+    # AEB checker and manual-brake checker
+    brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_AEB", check_state=(3,) ) )
+    brake_event_pub.publish( brake_state_2_json(brake_state, checker_name="brake_MINT", check_state=(4,) ) )
     #--------------------------------------#
 
     # Loop for user command via stdin

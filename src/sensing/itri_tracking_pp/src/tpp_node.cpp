@@ -146,12 +146,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    for (auto& obj : KTs_.objs_)
-    {
-      obj.absSpeed = 0.f;
-      obj.relSpeed = 0.f;
-    }
-
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
     {
@@ -160,30 +154,20 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (in_source_ == 2)
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "RadFront";
-      }
-    }
-    else
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "lidar";
-      }
-    }
-
-#if USE_RADAR_REL_SPEED
     for (auto& obj : KTs_.objs_)
     {
-      if (obj.header.frame_id == "RadarFront")
+      obj.header.frame_id = "lidar";
+      obj.absSpeed = 0.f;
+
+      if (input_source_ == InputSource::RadarDet)
       {
         obj.relSpeed = mps_to_kmph(obj.relSpeed);
       }
+      else
+      {
+        obj.relSpeed = 0.f;
+      }
     }
-#endif
 
 #if FILL_CONVEX_HULL
     for (auto& obj : KTs_.objs_)
@@ -218,46 +202,54 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 void TPPNode::subscribe_and_advertise_topics()
 {
   std::string topic = "PathPredictionOutput";
+  use_tracking2d = false;
 
-  if (in_source_ == 1)
+  if (input_source_ == InputSource::LidarDet)
   {
-    LOG_INFO << "Input Source: Lidar" << std::endl;
+    LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
-  else if (in_source_ == 2)
+  else if (input_source_ == InputSource::RadarDet)
   {
-    LOG_INFO << "Input Source: Radar" << std::endl;
+    LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
-  else if (in_source_ == 3)
+  else if (input_source_ == InputSource::CameraDetV1)
   {
-    LOG_INFO << "Input Source: Camera approach 1" << std::endl;
-    fusion_sub_ = nh_.subscribe("CamObjFrontCenter", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
+    fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
-  else if (in_source_ == 4)
+  else if (input_source_ == InputSource::VirtualBBoxAbs)
   {
-    LOG_INFO << "Input Source: Virtual_abs" << std::endl;
+    LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (in_source_ == 5)
+  else if (input_source_ == InputSource::VirtualBBoxRel)
   {
-    LOG_INFO << "Input Source: Virtual_rel" << std::endl;
+    LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
-  else if (in_source_ == 6)
+  else if (input_source_ == InputSource::CameraDetV2)
   {
-    LOG_INFO << "Input Source: Camera approach 2" << std::endl;
+    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
-  }  
+  }
+  else if (input_source_ == InputSource::Tracking2D)
+  {
+    use_tracking2d = true;
+    LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
+    fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
+    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
+  }
   else
   {
-    LOG_INFO << "Input Source: Fusion" << std::endl;
+    LOG_INFO << "Input Source: Fusion (/SensorFusion)" << std::endl;
     fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
@@ -270,7 +262,7 @@ void TPPNode::subscribe_and_advertise_topics()
   nh2_.setCallbackQueue(&queue_);
 
   // Note that we use different NodeHandle(nh2_) here
-  if (occ_source_ == 1)
+  if (occ_source_ == OccupancySource::MapBased)
   {
     wayarea_sub_ = nh2_.subscribe("occupancy_wayarea", 1, &TPPNode::callback_wayarea, this);
   }
@@ -311,7 +303,7 @@ void TPPNode::subscribe_and_advertise_topics()
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
+  if (cPoint.lowerAreaPoints.empty() || input_source_ == InputSource::RadarDet)
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
@@ -434,9 +426,8 @@ void TPPNode::compute_velocity_kalman()
       track.box_.absSpeed = 0.f;
     }
 
-// DetectedObject.relSpeed
-#if USE_RADAR_REL_SPEED
-    if (track.box_.header.frame_id != "RadarFront")
+    // DetectedObject.relSpeed
+    if (input_source_ != InputSource::RadarDet)
     {
       MyPoint32 p_rel;
       track.box_center_.pos.get_point_rel(p_rel);
@@ -446,17 +437,6 @@ void TPPNode::compute_velocity_kalman()
       rel_v_rel.z = track.box_.track.relative_velocity.z;
       track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
     }
-#else
-    MyPoint32 p_rel;
-    track.box_center_.pos.get_point_rel(p_rel);  // m
-
-    Vector3_32 rel_v_rel;
-    rel_v_rel.x = track.box_.track.relative_velocity.x;  // km/h
-    rel_v_rel.y = track.box_.track.relative_velocity.y;  // km/h
-    rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
-
-    track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-#endif
 
     if (std::isnan(track.box_.relSpeed))
     {
@@ -510,6 +490,9 @@ void TPPNode::publish_tracking()
         {
           box.track.head = track.hist_.head_;
         }
+
+        // set length
+        box.track.length = track.hist_.len_;
 
         // set is_over_max_length
         if (track.hist_.len_ >= (unsigned short)track.hist_.max_len_)
@@ -884,8 +867,8 @@ void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
-  nh_.param<int>(domain + "occ_source", occ_source_, 0);
+  nh_.param<int>(domain + "input_source", input_source_, InputSource::CameraDetV2);
+  nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
@@ -909,6 +892,10 @@ void TPPNode::set_ros_params()
   nh_.param<int>(domain + "show_pp", show_pp_int, 0);
   mc_.show_pp = (unsigned int)show_pp_int;
 
+  int num_pp_input_min = 0;
+  nh_.param<int>(domain + "num_pp_input_min", num_pp_input_min, 0);
+  pp_.set_num_pp_input_min((std::size_t)std::max(num_pp_input_min, 0));
+
   double pp_obj_min_kmph = 0.;
   nh_.param<double>(domain + "pp_obj_min_kmph", pp_obj_min_kmph, 3.);
   pp_.set_pp_obj_min_kmph(pp_obj_min_kmph);
@@ -917,10 +904,10 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
   pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
 
-  set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_radar_tpp, 0.5f, 0.f, 0.f, 1.f);
-  set_ColorRGBA(mc_.color_camera_tpp, 0.5f, 0.5f, 0.5f, 1.f);
-  set_ColorRGBA(mc_.color_fusion_tpp, 0.f, 1.f, 1.f, 1.f);
+  set_ColorRGBA(mc_.color_lidar_tpp, 1.f, 1.f, 0.4f, 1.f);  // Unmellow Yellow (255, 255, 102)
+  set_ColorRGBA(mc_.color_radar_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color_camera_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color_fusion_tpp, 1.f, 1.f, 0.4f, 1.f);
 }
 
 int TPPNode::run()
@@ -969,14 +956,14 @@ int TPPNode::run()
       clock_t begin_time = clock();
 #endif
 
-// Tracking start ==========================================================================
+      // Tracking start ==========================================================================
 
 #if TTC_TEST
       seq_ = seq_cb_;
 #endif
 
       // MOT: SORT algorithm
-      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, use_tracking2d);
       compute_velocity_kalman();
 
       publish_tracking();
@@ -987,7 +974,7 @@ int TPPNode::run()
 
       // Tracking --> PP =========================================================================
 
-      pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_);
+      pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, input_source_);
       pp_.main(pp_objs_, ppss, mc_.show_pp, wayarea_);  // PP: autoregression of order 1 -- AR(1)
 
       publish_pp(pp_pub_, pp_objs_, 0, 0);
@@ -995,7 +982,7 @@ int TPPNode::run()
       publish_pp_grid(pp_grid_pub_, pp_objs_);
 #endif
 
-// PP end ==================================================================================
+      // PP end ==================================================================================
 
 #if FPS
       clock_t end_time = clock();
