@@ -49,13 +49,11 @@ public:
   // Functions
   void run();
   void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void pedestrian_event();
 
   // All buffer components
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
   std::vector<std::string> ped_info;
   int buffer_size = 60;
 
@@ -74,6 +72,14 @@ public:
   bool g_trigger = false;
   int count;
   std::ofstream file;
+  std::ofstream file_1;
+  std::ofstream file_2;
+  std::ofstream file_3;
+  std::ofstream file_4;
+  std::ofstream file_5;
+  std::ofstream file_6;
+  std::ofstream file_7;
+  std::ofstream file_8;
   struct winsize terminal_size;
 
   // Setup variables

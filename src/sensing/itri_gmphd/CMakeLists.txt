@@ -51,6 +51,7 @@ include_directories(
 )
 
 set(CPP_FILES
+    src/ros_gmphd.cpp
     src/demo_GMPHD-OGM.cpp
     src/GMPHD_OGM.cpp
     src/HungarianAlgorithm.cpp

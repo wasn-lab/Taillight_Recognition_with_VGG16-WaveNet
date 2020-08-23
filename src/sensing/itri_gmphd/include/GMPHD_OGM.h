@@ -353,7 +353,8 @@ public:
   void SetTotalFrames(int nFrames);
   GMPHDOGMparams GetParams();
 
-  vector<vector<float>> DoMOT(int iFrmCnt, const cv::Mat& img, const vector<vector<float>> dets);
+  //vector<vector<float>> DoMOT(int iFrmCnt, const cv::Mat& img, const vector<vector<float>> dets);
+  vector<vector<float>> DoMOT(int iFrmCnt, const vector<vector<float>> dets);
 
 public:
   vector<vector<BBTrk>> allLiveReliables;
@@ -405,11 +406,14 @@ private:
                       int iPredictionLevel);
 
   // Methods for D2T (FrmWise) and T2T (TrkWise) Association (Hierarchical Data Association)
-  void DataAssocFrmWise(int iFrmCnt, const cv::Mat& img, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps,
+  /*void DataAssocFrmWise(int iFrmCnt, const cv::Mat& img, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps,
+                        const cv::Mat& H, double P_survive = 0.99, int offset = FRAME_OFFSET,
+                        int dims_low = LOW_ASSOCIATION_DIMS);*/
+  void DataAssocFrmWise(int iFrmCnt, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps,
                         const cv::Mat& H, double P_survive = 0.99, int offset = FRAME_OFFSET,
                         int dims_low = LOW_ASSOCIATION_DIMS);
-  void DataAssocTrkWise(int iFrmCnt, cv::Mat& img, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live);
-
+  //void DataAssocTrkWise(int iFrmCnt, cv::Mat& img, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live);
+  void DataAssocTrkWise(int iFrmCnt, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live);
   // Affinity (Cost) Calculation
   float FrameWiseAffinity(BBDet ob, BBTrk& stat_temp, const int dims = 2);
   float TrackletWiseAffinity(BBTrk& stat_pred, const BBTrk& obs, const int& dims = 2);
