@@ -5,6 +5,7 @@
   <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
   <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" /> <!--NonGround_sensor_msgs2-->
   <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
+  <arg name="output/traffic_light" default="/perception/traffic_light_recognition/traffic_light_states" />
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
@@ -26,6 +27,7 @@
 	<remap from="output/objects" to="$(arg output/objects_topic)" />
         <remap from="input/lidar_no_ground" to="$(arg input/lidar_noground_topic)" />
 	<remap from="input/objects" to="$(arg input/objects_topic)" />
+	<remap from="output/traffic_light" to="$(arg output/traffic_light)" />
   </node>
 
   <!--path transfer node-->

@@ -11,6 +11,11 @@
 #include <autoware_perception_msgs/DynamicObject.h>
 #include <autoware_perception_msgs/DynamicObjectArray.h>
 #include <msgs/VehInfo.h>
+#include <msgs/Spat.h>
+#include <autoware_perception_msgs/LampState.h>
+#include <autoware_perception_msgs/TrafficLightState.h>
+#include <autoware_perception_msgs/TrafficLightStateArray.h>
+#include "msgs/Flag_Info.h"
 
 //For PCL
 #include <sensor_msgs/PointCloud2.h>
@@ -23,6 +28,7 @@ ros::Publisher enable_avoid_pub;
 ros::Publisher objects_pub;
 ros::Publisher nogroundpoints_pub;
 ros::Publisher twist_pub;
+ros::Publisher trafficlight_pub;
 
 static sensor_msgs::Imu imu_data_rad;
 
@@ -78,6 +84,107 @@ void imudataCallback(const sensor_msgs::Imu& msg)
   imu_data_rad = msg;
 }
 
+void trafficCallback(const msgs::Spat::ConstPtr& msg)
+{
+  int light_status = (int)(msg->signal_state);
+  double confidence = 1.0;
+  autoware_perception_msgs::LampState lampstate;
+  autoware_perception_msgs::TrafficLightState trafficlightstate;
+  autoware_perception_msgs::TrafficLightStateArray trafficlightstatearray;
+  trafficlightstatearray.header.frame_id = "map";
+  trafficlightstatearray.header.stamp = ros::Time::now();
+  trafficlightstate.id = 402079;
+  if (light_status == 129) // red
+  {
+    lampstate.type = autoware_perception_msgs::LampState::RED;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if(light_status == 130) // yellow
+  {
+    lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if(light_status == 48) // green straight + green right
+  {
+    lampstate.type = autoware_perception_msgs::LampState::UP;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+    lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if(light_status == 9) // red + green left
+  {
+    lampstate.type = autoware_perception_msgs::LampState::RED;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+    lampstate.type = autoware_perception_msgs::LampState::LEFT;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else // unknown
+  {
+    lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+    lampstate.confidence = 0.0;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  trafficlightstatearray.states.push_back(trafficlightstate);
+  // trafficlight_pub.publish(trafficlightstatearray);
+}
+
+void trafficDspaceCallback(const msgs::Flag_Info::ConstPtr& msg)
+{
+  int light_status = int(msg->Dspace_Flag02);
+  int countDown = int(msg->Dspace_Flag03);
+  double confidence = 1.0;
+  autoware_perception_msgs::LampState lampstate;
+  autoware_perception_msgs::TrafficLightState trafficlightstate;
+  autoware_perception_msgs::TrafficLightStateArray trafficlightstatearray;
+  trafficlightstatearray.header.frame_id = "map";
+  trafficlightstatearray.header.stamp = ros::Time::now();
+  trafficlightstate.id = 402079;
+  if (light_status == 129) // red
+  {
+    lampstate.type = autoware_perception_msgs::LampState::RED;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if(light_status == 130) // yellow
+  {
+    lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if(light_status == 48) // green straight + green right
+  {
+    lampstate.type = autoware_perception_msgs::LampState::UP;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+    lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else if(light_status == 9) // red + green left
+  {
+    lampstate.type = autoware_perception_msgs::LampState::RED;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+    lampstate.type = autoware_perception_msgs::LampState::LEFT;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  else // unknown
+  {
+    lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+    lampstate.confidence = 0.0;
+    trafficlightstate.lamp_states.push_back(lampstate);
+  }
+  trafficlightstatearray.states.push_back(trafficlightstate);
+  trafficlight_pub.publish(trafficlightstatearray);
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "planning_initial");
@@ -88,10 +195,13 @@ int main(int argc, char** argv)
   ros::Subscriber Lidnogroundpoint_sub = node.subscribe("input/lidar_no_ground", 1, LidnogroundpointCallback); // /LidarAll/NonGround2
   ros::Subscriber velocity_sub = node.subscribe("veh_info",1,currentVelocityCallback);
   ros::Subscriber imu_data_sub = node.subscribe("imu_data_rad",1,imudataCallback);
+  ros::Subscriber traffic_sub = node.subscribe("/traffic", 1, trafficCallback);
+  ros::Subscriber traffic_Dspace_sub = node.subscribe("/Flag_Info02", 1, trafficDspaceCallback);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
   objects_pub = node.advertise<autoware_perception_msgs::DynamicObjectArray>("output/objects", 1, true);
   nogroundpoints_pub = node.advertise<sensor_msgs::PointCloud2>("output/lidar_no_ground", 1, true);
   twist_pub = node.advertise<geometry_msgs::TwistStamped>("/localization/twist", 1, true);
+  trafficlight_pub = node.advertise<autoware_perception_msgs::TrafficLightStateArray>("output/traffic_light", 1, true);
   // enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
