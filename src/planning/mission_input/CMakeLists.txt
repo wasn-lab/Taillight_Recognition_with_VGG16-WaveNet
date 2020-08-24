@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   roslib
+  msgs
 #  car_model
 )
 
@@ -109,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lidarxyz2lla
-  CATKIN_DEPENDS roscpp rospy message_runtime tf2 tf2_ros
+  CATKIN_DEPENDS roscpp rospy message_runtime tf2 tf2_ros msgs
 #  DEPENDS system_lib
 )
 

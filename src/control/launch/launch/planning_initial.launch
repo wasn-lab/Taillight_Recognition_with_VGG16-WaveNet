@@ -1,6 +1,6 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-
+  
   <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
   <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
   <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" /> <!--NonGround_sensor_msgs2-->
