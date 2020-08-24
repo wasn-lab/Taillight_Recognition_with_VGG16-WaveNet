@@ -97,8 +97,7 @@ void get_goal_point()
   input_goal.pose.orientation.w = ori_w[0];
 
   goal_publisher.publish(input_goal);
-  std::cout << input_goal.pose.position.x << std::endl;
-
+  std::cout << "Set offline goal point!" << std::endl;
   ros::Rate loop_rate(0.5);
   ros::spinOnce();
   loop_rate.sleep();
@@ -119,9 +118,8 @@ void get_checkpoint_point()
     input_checkpoint.pose.orientation.y = ori_y[i];
     input_checkpoint.pose.orientation.z = ori_z[i];
     input_checkpoint.pose.orientation.w = ori_w[i];
-
     checkpoint_publisher.publish(input_checkpoint);
-    std::cout << i << std::endl;
+    std::cout << "Set offline checkpoint " << i << " !" << std::endl;
     ros::Rate loop_rate(0.5);
     ros::spinOnce();
     loop_rate.sleep();
@@ -144,8 +142,7 @@ void get_realtime_goal_point(int i)
   input_goal.pose.orientation.w = ori_w[i];
 
   goal_publisher.publish(input_goal);
-  std::cout << input_goal.pose.position.x << std::endl;
-
+  std::cout << "Set real time goal point!" << std::endl;
   ros::Rate loop_rate(0.5);
   loop_rate.sleep();
 }
@@ -165,7 +162,7 @@ void get_realtime_checkpoint_point(int i)
   input_checkpoint.pose.orientation.w = ori_w[i];
 
   checkpoint_publisher.publish(input_checkpoint);
-  std::cout << i << std::endl;
+  std::cout << "Set real time checkpoint " << i << " !" << std::endl;
   ros::Rate loop_rate(0.5);
   loop_rate.sleep();
 }
@@ -195,8 +192,7 @@ void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
     {
       if (Dspace_Flag[i] != Dspace_Flag_last[i])
       {
-        std::cout << "Dspace_Flag(3) : " << Dspace_Flag[3] << std::endl;
-        std::cout << "sum : " << sum << std::endl;
+        std::cout << "Bus Stop num : " << sum << std::endl;
         double bustop_id[sum] = {};
         int index = 0;
         for (int i = 0; i < 8; i++)
@@ -212,7 +208,7 @@ void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
         {
           get_realtime_checkpoint_point(bustop_id[i]);
         }
-        int round_count = msg->PX2_Flag01;
+        // int round_count = msg->PX2_Flag01;
         for (int j = 0; j < 8; j++)
         {
           Dspace_Flag_last[j] = Dspace_Flag[j];

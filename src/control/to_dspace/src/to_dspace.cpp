@@ -371,8 +371,8 @@ void chatterCallback_06(const msgs::CurrentTrajInfo::ConstPtr& msg)
 	frame.can_dlc = CAN_DLC;
 	frame.can_id  = 0x063;
 	frame.data[0] = (short int)(msg->LRturn);
-	frame.data[1] = (short int)(msg->Curvature*10000);
-	frame.data[2] = (short int)(msg->Curvature*10000)>>8;
+	frame.data[1] = (short int)(msg->Curvature*1000);
+	frame.data[2] = (short int)(msg->Curvature*1000)>>8;
 	frame.data[3] = (short int)(msg->Distoturn*100);
 	frame.data[4] = (short int)(msg->Distoturn*100)>>8;
 	nbytes = write(s, &frame, sizeof(struct can_frame));
@@ -413,8 +413,8 @@ void chatterCallback_06(const msgs::CurrentTrajInfo::ConstPtr& msg)
 	frame_1.can_dlc = CAN_DLC;
 	frame_1.can_id  = 0x064;
 	frame_1.data[0] = (short int)(msg->Uphill);
-	frame_1.data[1] = (short int)(msg->MaxSlope*10000);
-	frame_1.data[2] = (short int)(msg->MaxSlope*10000)>>8;
+	frame_1.data[1] = (short int)(msg->MaxSlope*1000);
+	frame_1.data[2] = (short int)(msg->MaxSlope*1000)>>8;
 	frame_1.data[3] = (short int)(msg->Distouphill*100);
 	frame_1.data[4] = (short int)(msg->Distouphill*100)>>8;
 	nbytes_1 = write(s_1, &frame_1, sizeof(struct can_frame));
