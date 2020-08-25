@@ -3,7 +3,11 @@
 cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>& cache_image, ros::Time target_time,
                                      const ros::Duration& duration_time)
 {
-  ros::Time begin_time = target_time - duration_time;
+  ros::Time begin_time = ros::Time(0);
+  if((target_time.sec - duration_time.sec) > 0)
+  {
+    begin_time = target_time - duration_time;
+  }
   ros::Time end_time = target_time + duration_time;
   std::vector<sensor_msgs::Image::ConstPtr> images = cache_image.getInterval(begin_time, end_time);
   cv::Mat out_mat;
@@ -43,7 +47,11 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZI>>& cache_lidar, ros::Time target_time,
                             const ros::Duration& duration_time)
 {
-  ros::Time begin_time = target_time - duration_time;
+  ros::Time begin_time = ros::Time(0);
+  if((target_time.sec - duration_time.sec) > 0)
+  {
+    begin_time = target_time - duration_time;
+  }
   ros::Time end_time = target_time + duration_time;
   std::vector<pcl::PointCloud<pcl::PointXYZI>::ConstPtr> lidars = cache_lidar.getInterval(begin_time, end_time);
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -83,7 +91,11 @@ pcl::PointCloud<pcl::PointXYZIL>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZIL>>& cache_lidar,
                             ros::Time target_time, const ros::Duration& duration_time)
 {
-  ros::Time begin_time = target_time - duration_time;
+  ros::Time begin_time = ros::Time(0);
+  if((target_time.sec - duration_time.sec) > 0)
+  {
+    begin_time = target_time - duration_time;
+  }
   ros::Time end_time = target_time + duration_time;
   std::vector<pcl::PointCloud<pcl::PointXYZIL>::ConstPtr> lidars = cache_lidar.getInterval(begin_time, end_time);
   pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ptr(new pcl::PointCloud<pcl::PointXYZIL>);

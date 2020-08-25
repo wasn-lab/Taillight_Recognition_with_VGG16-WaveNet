@@ -31,13 +31,12 @@
 
 using namespace std;
 
-
 ros::Publisher RadFrontPub;
 
 double imu_angular_velocity_z = 0;
 int do_rotate = 0;
 
-void callbackRadFront(const msgs::Rad::ConstPtr& msg)
+void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 {
   int m_rotate = do_rotate;
   msgs::Rad rad;
@@ -105,7 +104,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
       point.z = 0;
       point.speed = msg->radPoint[i].speed;
 
-      // Debug
+      // debug msg
       cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
 
       rad.radPoint.push_back(point);
@@ -115,6 +114,11 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   rad.radHeader.stamp = msg->radHeader.stamp;
   rad.radHeader.seq = msg->radHeader.seq;
   RadFrontPub.publish(rad);
+}
+
+void callbackAlphiFront(const msgs::Rad::ConstPtr& msg)
+{
+ 
 }
 
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
@@ -133,8 +137,11 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Rad_Filter");
+
+  ros::NodeHandle nh("~");
   ros::NodeHandle n;
-  ros::Subscriber RadFrontSub = n.subscribe("RadFrontDelphi", 1, callbackRadFront);
+  ros::Subscriber DelphiFrontSub = n.subscribe("RadFrontDelphi", 1, callbackDelphiFront);
+  ros::Subscriber AlphiFrontSub = n.subscribe("RadFrontAlpha", 1, callbackAlphiFront);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
