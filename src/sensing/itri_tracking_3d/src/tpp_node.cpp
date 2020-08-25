@@ -274,8 +274,8 @@ void TPPNode::subscribe_and_advertise_topics()
   }
   else if (in_source_ == 6)
   {
-    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
-    fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
+    fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
   }
   else if (in_source_ == 7)
   {
