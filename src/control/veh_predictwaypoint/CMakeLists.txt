@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   tf2
   tf2_ros
-  autoware_msgs
   roslib
   car_model
 )
