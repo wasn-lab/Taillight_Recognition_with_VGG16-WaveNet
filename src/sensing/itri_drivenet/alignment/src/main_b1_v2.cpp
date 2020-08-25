@@ -1246,7 +1246,9 @@ void buffer_monitor()
         // std::endl;
         
         if (!lidar_ssn_time_last_updated)
+        {
           lidar_ssn_time_last_updated = true;
+        }
         
         g_lidar_ssn_times.push_back(g_lidar_ssn_time_buffer.front());
         g_lidar_ssn_time_buffer.erase(g_lidar_ssn_time_buffer.begin());
