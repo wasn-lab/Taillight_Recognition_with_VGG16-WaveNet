@@ -1,26 +1,33 @@
 cmake_minimum_required(VERSION 2.8.3 FATAL_ERROR)
-project(lidars_grabber)
+project(lidars_decoder)
 
-find_package(CUDA)
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
+
+######################
+##       CUDA       ##
+######################
+find_package	        (CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
 set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
-include_directories( ${CUDA_INCLUDE_DIRS})
+include_directories     (${CUDA_INCLUDE_DIRS})
 message("CUDA found: ${CUDA_FOUND} CUDA version: ${CUDA_VERSION_STRING}")
+
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  msgs
   roscpp
   rospy
-  msgs
   libs
-  nodelet
-  car_model
+  sensor_msgs
   std_msgs
+  car_model
 )
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -84,7 +91,7 @@ include(CarModel)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs
+#   sensor_msgs#   std_msgs
 # )
 
 ################################################
@@ -118,8 +125,8 @@ include(CarModel)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-   LIBRARIES ${PROJECT_NAME}_b1_nodelet
-   CATKIN_DEPENDS roscpp rospy msgs nodelet
+#  LIBRARIES lidars_decoder
+#  CATKIN_DEPENDS msgs roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -130,13 +137,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
+  #include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/lidars_grabber.cpp
+#   src/${PROJECT_NAME}/lidars_decoder.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -147,7 +154,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/lidars_grabber_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/lidars_decoder_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -173,16 +180,23 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
+# catkin_install_python(PROGRAMS
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-## Mark executables and/or libraries for installation
-# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
+## Mark executables for installation
+## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
+# install(TARGETS ${PROJECT_NAME}_node
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark libraries for installation
+## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
+# install(TARGETS ${PROJECT_NAME}
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 # )
 
 ## Mark cpp header files for installation
@@ -199,18 +213,12 @@ include_directories(
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-#############
-## Testing ##
-#############
+######################
+##   Source file    ##
+######################
+set(SOURCES_SRCS
+)
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_lidars_grabber.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
 
 ######################
 ##    use define    ##
@@ -218,12 +226,6 @@ include_directories(
 set (CMAKE_CXX_FLAGS   "${CMAKE_CXX_FLAGS} -D_FORCE_INLINES")
 
 find_package(Eigen3)
-
-######################
-##       VTK        ##
-######################
-find_package        (VTK REQUIRED)
-
 ######################
 ##       PCL        ##
 ######################
@@ -232,49 +234,12 @@ include_directories	(${PCL_INCLUDE_DIRS})
 link_directories	(${PCL_LIBRARY_DIRS})
 add_definitions		(${PCL_DEFINITIONS})
 
-######################
-##       QT         ##
-######################
-find_package(Qt5 REQUIRED COMPONENTS Widgets Core)
-set  (QT_HEADERS src/UI/QtViewer.h)
-set  (QT_FORMS   src/UI/QtViewer.ui)
-QT5_WRAP_CPP (QT_HEADERS_MOC   ${QT_HEADERS})
-QT5_WRAP_UI  (QT_FORMS_HEADERS ${QT_FORMS})
-ADD_DEFINITIONS ( ${QT_DEFINITIONS})
-
-
-######################
-##   Source file    ##
-######################
-set(SOURCES_SRCS
-  src/GlobalVariable.cpp
-  src/UI/QtViewer.cpp)
-
 
 ######################
 ##      Vehicle     ##
 ######################
-cuda_add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
+add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} )
 add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-qt5_use_modules 		(${PROJECT_NAME}_b1 Widgets)
+target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} )
 
-if (CAR_MODEL_IS_HINO)
-  cuda_add_executable 	(${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-  add_dependencies		(${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
-  target_link_libraries 	(${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-  qt5_use_modules 		(${PROJECT_NAME}_hino Widgets)
 
-  cuda_add_executable 	(${PROJECT_NAME}_hino_v2 src/main_hino_v2.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-  add_dependencies		(${PROJECT_NAME}_hino_v2 ${catkin_EXPORTED_TARGETS})
-  target_link_libraries 	(${PROJECT_NAME}_hino_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-  qt5_use_modules 		(${PROJECT_NAME}_hino_v2 Widgets)
-endif()
-
-######################
-##      Nodelet     ##
-######################
-cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} )
-add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets)
