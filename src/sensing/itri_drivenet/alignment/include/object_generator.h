@@ -10,7 +10,7 @@
 
 /// util
 #include "point_preprocessing.h"
-#include "UserDefine.h" // CLUSTER_INFO struct
+#include "UserDefine.h"  // CLUSTER_INFO struct
 
 class ObjectGenerator
 {
