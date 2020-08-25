@@ -118,11 +118,11 @@ std::vector<pcl::visualization::Camera> g_cam;
 ros::Publisher g_object_pub;
 std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
-int g_object_wait_frame = 1;
+int g_object_wait_frame = 5;
 std::vector<std::vector<msgs::DetectedObjectArray>> g_object_buffer_arrs(g_cam_ids.size());
 
 /// sync camera and lidar
-int g_buffer_size = 120;
+int g_buffer_size = 180;
 std::vector<std::vector<ros::Time>> g_cam_times(g_cam_ids.size());
 std::vector<std::vector<ros::Time>> g_cam_single_times(g_cam_ids.size());
 std::vector<ros::Time> g_lidarall_times;
@@ -1126,7 +1126,7 @@ void buffer_monitor()
   bool lidarall_nonground_time_last_updated = false;
   bool lidar_ssn_time_last_updated = false;
   /// main loop
-  ros::Rate loop_rate(30);
+  ros::Rate loop_rate(60);
   while (ros::ok())
   {
     if (g_data_sync)
