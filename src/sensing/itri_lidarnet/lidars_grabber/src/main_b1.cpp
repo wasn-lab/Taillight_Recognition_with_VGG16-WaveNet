@@ -96,8 +96,9 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 
       delete (PointCloudEncoder);
 
-      compressedData.clear();
       compressedData.str("");
+      compressedData.clear();
+ 
     }
 
     //-------------------------- ring filter
@@ -196,8 +197,8 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 
       delete (PointCloudEncoder);
 
-      compressedData.clear();
       compressedData.str("");
+      compressedData.clear();
     }
 
     if (use_filter)
@@ -293,8 +294,9 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 
       delete (PointCloudEncoder);
 
-      compressedData.clear();
       compressedData.str("");
+      compressedData.clear();
+
     }
 
     // ring filter
