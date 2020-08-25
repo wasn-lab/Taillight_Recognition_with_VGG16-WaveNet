@@ -265,6 +265,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
       cout << "[Top->Gbr]: " << diff_time << "ms" << endl;
     }
+
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster");
@@ -298,7 +299,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 
     }
 
-    // For Localization
+    //------------------- For Localization
     pcl::PointCloud<pcl::PointXYZI>::Ptr localization_cloud(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::copyPointCloud(*input_cloud_tmp_ring, *localization_cloud);
     *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0.2, 0);
