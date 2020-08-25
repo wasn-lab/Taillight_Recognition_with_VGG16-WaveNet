@@ -41,9 +41,7 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
 
   // Check if these camera have data
   if(!check_data_1 || !check_data_2)
-  {
-    cout << check_data_1 << "," << check_data_2 << endl;    
-    
+  {    
     return ori_object_arrs;
   }
 
@@ -63,8 +61,13 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
     }
   } 
 
+  // cout << "Before box fusion:" << object_2.objects.size() << endl;
+  
   // Compare two arrays
   object_out = fusetwocamera(object_1, object_2);
+
+  // cout << "After box fusion:" << object_out.objects.size() << endl;
+  
 
   // Delete original array of left back
   for(size_t cam_id = 0; cam_id < ori_object_arrs.size(); cam_id++)
