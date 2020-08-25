@@ -16,8 +16,8 @@ double curvature = 0;
 double angle_diff_setting_distoturn = 0.3;
 double distoturn = 0;
 
-double z_diff_setting_in = 1.0;
-double z_diff_setting_out = 0.1;
+double z_diff_setting_in = 0.8;
+double z_diff_setting_out = 0.2;
 bool up_hill = false;
 double seg_size = 10;
 double max_slope = 0;

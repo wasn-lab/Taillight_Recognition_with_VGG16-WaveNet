@@ -105,12 +105,12 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
 void astar_callback(const nav_msgs::Path::ConstPtr& msg){
 	vector<Point> Position;
 	Point Pos;
-	int size = 50;
+	int size = 200;
 	if (msg->poses.size()<size){
 		size = msg->poses.size(); 
 	}
 
-	double Resolution = 50;
+	double Resolution = 10;
 	for(int i=1;i<size;i++){
 		for(int j=0;j<Resolution;j++){
 			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);

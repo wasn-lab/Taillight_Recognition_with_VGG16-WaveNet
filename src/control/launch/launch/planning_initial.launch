@@ -14,9 +14,13 @@
   <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
   <arg name="angle_diff_setting_out" default="0.3" />
   <arg name="angle_diff_setting_distoturn" default="0.3" />
-  <arg name="z_diff_setting_in" default="1.0" />
-  <arg name="z_diff_setting_out" default="0.1" />
+  <arg name="z_diff_setting_in" default="0.8" /><!--1.0-->
+  <arg name="z_diff_setting_out" default="0.2" /><!--0.1-->
   <arg name="slope_setting_distouphill" default="0.08" />
+
+  <arg name="wheel_dis" default="3.8" />
+  <arg name="predict_s_max" default="13.8" />
+  <arg name="predict_t" default="2.0" />
   
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
@@ -45,6 +49,13 @@
 	<param name="Look_ahead_time" value="$(arg Look_ahead_time)" />
 	<param name="Look_ahead_S0" value="$(arg Look_ahead_S0)" />
         <param name="wheel_dis" value="$(arg wheel_dis)" />
+  </node>
+
+  <!-- veh_predictwaypoint pub node-->
+  <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint"> <!--output="screen" -->
+        <param name="wheel_dis" value="$(arg wheel_dis)"/>
+        <param name="predict_s_max" value="$(arg predict_s_max)"/>
+        <param name="predict_t" value="$(arg predict_t)"/>
   </node>
 
 </launch>
