@@ -527,9 +527,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           for (unsigned int i = 0; i < keypoints.size(); i++)
           {
             cv::Point2f diff;
-            std::cout << "keypoints.size: " << keypoints.size()
-                      << "last_real_skeleton.size: " << skeleton_buffer.at(skeleton_index).last_real_skeleton.size()
-                      << std::endl;
             if (keypoint_is_detected(keypoints.at(i)) &&
                 keypoint_is_detected(skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i)))
             {
@@ -840,6 +837,10 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
   {
     return obj.crossProbability * 0.7;
   }
+  if (obj.facing_direction == 4)
+  {
+    return obj.crossProbability;
+  }
   // pedestrian in danger zone, force determine as Cross
   if (std::fabs(x - 303) < 100 * (y - 275) / 108)
   {
@@ -1094,7 +1095,14 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
 
     // box.x -= 0;
     // draw face direction
-    if (obj.facing_direction == 0)
+    if (obj.facing_direction == 4)  // no direction
+    {
+      id_print += "     ";
+      // facing left hand side
+      // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
+      // 4, false);
+    }
+    else if (obj.facing_direction == 0)
     {
       id_print += "left ";
       // facing left hand side
@@ -1270,15 +1278,13 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   }
   else
   {
-    // if left ear and left eye are detected and left eye is on the left side of left ear
-    if (keypoint_is_detected(keypoints.at(16)) && keypoint_is_detected(keypoints.at(18)) &&
-        keypoints.at(16).x < keypoints.at(18).x)
+    // if left ear and left eye are detected
+    if (keypoint_is_detected(keypoints.at(16)))
     {
       look_at_left = true;
     }
-    // if right ear and right eye are detected and right eye is on the right side of right ear
-    if (keypoint_is_detected(keypoints.at(15)) && keypoint_is_detected(keypoints.at(17)) &&
-        keypoints.at(15).x > keypoints.at(17).x)
+    // if right ear and right eye are detected
+    if (keypoint_is_detected(keypoints.at(15)))
     {
       look_at_right = true;
     }
@@ -1301,11 +1307,11 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   }
   else
   {
-    // facing car opposite side
-    return 3;
+    // no direction
+    return 4;
   }
-  // defalt: facing car opposite side
-  return 3;
+  // defalt: no direction
+  return 4;
 }
 
 /**
