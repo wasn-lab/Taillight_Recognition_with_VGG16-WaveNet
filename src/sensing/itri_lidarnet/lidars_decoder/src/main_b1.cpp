@@ -1,5 +1,23 @@
 
-#include "all_header.h"
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <omp.h>
+#include <thread>
+#include <mutex>
+
+#include <ros/ros.h>
+#include <std_msgs/Header.h>
+
+#include <pcl/common/time.h>
+#include <pcl/console/time.h>
+
+#include "UserDefine.h"
+#include "std_msgs/String.h"
+#include <pcl/compression/octree_pointcloud_compression.h>
+
 #include "pointcloud_format_conversion.h"
 #include "msgs/CompressedPointCloud.h"
 #include <sensor_msgs/PointCloud2.h>
@@ -10,17 +28,22 @@ ros::Publisher pub_LidarFrontLeft;
 ros::Publisher pub_LidarFrontRight;
 ros::Publisher pub_LidarFrontTop;
 
-mutex L_Lock;
-mutex R_Lock;
-mutex T_Lock;
+std::mutex L_Lock;
+std::mutex R_Lock;
+std::mutex T_Lock;
 
-StopWatch stopWatch_T;
+pcl::StopWatch stopWatch_L;
+pcl::StopWatch stopWatch_R;
+pcl::StopWatch stopWatch_T;
+
 
 bool pub_decompress = false;
 //------------------------------ Callback
 void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
 {
   L_Lock.lock();
+  stopWatch_L.reset();
+
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGBA>());
 
   stringstream msg_data_ss;
@@ -42,16 +65,21 @@ void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
 
   pub_LidarFrontLeft.publish(*sensor_pc2);
 
-  msg_data_ss.clear();
   msg_data_ss.str("");
+  msg_data_ss.clear();
+
 
   delete (PointCloudDecoder);
+
+  cout << "[L-Decode]:" << stopWatch_L.getTimeSeconds() << 's' << endl;
   L_Lock.unlock();
 }
 
 void cloud_cb_LidarFrontRight(msgs::CompressedPointCloud msg)
 {
   R_Lock.lock();
+  stopWatch_R.reset();
+
   pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGBA>());
 
   stringstream msg_data_ss;
@@ -73,10 +101,15 @@ void cloud_cb_LidarFrontRight(msgs::CompressedPointCloud msg)
 
   pub_LidarFrontRight.publish(*sensor_pc2);
 
+
+  msg_data_ss.str("");  
   msg_data_ss.clear();
-  msg_data_ss.str("");
+  
 
   delete (PointCloudDecoder);
+
+
+  cout << "[R-Decode]:" << stopWatch_R.getTimeSeconds() << 's' << endl;
   R_Lock.unlock();
 }
 
@@ -104,8 +137,10 @@ void cloud_cb_LidarFrontTop(msgs::CompressedPointCloud msg)
   pcl::toROSMsg(*XYZIR_tmp, *sensor_pc2);
 
   pub_LidarFrontTop.publish(*sensor_pc2);
-  msg_data_ss.clear();
+
   msg_data_ss.str("");
+  msg_data_ss.clear();
+  
 
   delete (PointCloudDecoder);
 
@@ -146,7 +181,6 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(3);
   spinner.start();
 
-  // TheadDetection_Pub.join();
   ros::waitForShutdown();
 
   return 0;
