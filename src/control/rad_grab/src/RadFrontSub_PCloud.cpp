@@ -127,7 +127,7 @@ int main(int argc, char** argv)
   PCloud_Alpha_left_pub = n.advertise<sensor_msgs::PointCloud2>("radar_alpha_left", 1);
   PCloud_Alpha_right_pub = n.advertise<sensor_msgs::PointCloud2>("radar_alpha_right", 1);
 
-  ros::Rate rate(100);
+  ros::Rate rate(20);
   while (ros::ok())
   {
     ros::spinOnce();
