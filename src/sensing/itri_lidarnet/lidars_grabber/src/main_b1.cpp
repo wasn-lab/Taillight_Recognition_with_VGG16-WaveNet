@@ -354,20 +354,20 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 
 
 // Point Cloud Compression Thread
-void Top_Compress(int argc, char** argv)
-{
+// void Top_Compress(int argc, char** argv)
+// {
 
-}
+// }
 
-void Left_Compress(int argc, char** argv)
-{
+// void Left_Compress(int argc, char** argv)
+// {
 
-}
+// }
 
-void Right_Compress(int argc, char** argv)
-{
+// void Right_Compress(int argc, char** argv)
+// {
 
-}
+// }
 
 
 void LidarAll_Publisher(int argc, char** argv)
@@ -523,9 +523,9 @@ int main(int argc, char** argv)
   thread ThreadDetection_UI(UI, argc, argv);
   thread ThreadDetection_Pub(LidarAll_Publisher, argc, argv);
 
-  thread Thread_Top_Compress(Top_Compress, argc, argv);
-  thread Thread_Left_Compress(Left_Compress, argc, argv);
-  thread Thread_Right_Compress(Right_Compress, argc, argv);
+  // thread Thread_Top_Compress(Top_Compress, argc, argv);
+  // thread Thread_Left_Compress(Left_Compress, argc, argv);
+  // thread Thread_Right_Compress(Right_Compress, argc, argv);
 
   ros::AsyncSpinner spinner(4);
   spinner.start();
@@ -533,9 +533,9 @@ int main(int argc, char** argv)
   ThreadDetection_UI.join();
   ThreadDetection_Pub.join();
 
-  Thread_Top_Compress.join();
-  Thread_Left_Compress.join();
-  Thread_Right_Compress.join();
+  // Thread_Top_Compress.join();
+  // Thread_Left_Compress.join();
+  // Thread_Right_Compress.join();
 
   ros::waitForShutdown();
 
