@@ -50,9 +50,8 @@ Lidar List:
 	<param name="use_filter" value="$(arg use_filter)"/>
 	<param name="use_roi" value="$(arg use_roi)"/>
 	<param name="use_shape_estimation" value="$(arg use_shape_estimation)"/>
+	<param name="pub_decompress" value="$(arg pub_decompress)" />
 
-	
-	<param name="pub_decompress" value="$(arg pub_decompress"/>
 	<rosparam param="debug_output">true</rosparam>
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
 
@@ -104,10 +103,12 @@ Lidar List:
 
 	<group if="$(eval arg('mode') == 9)">
 		<node pkg="lidars_decoder" 				type="lidars_decoder_b1" 			name="lidars_decoder_b1" 			output="screen" cwd="node" respawn="true"  />
+
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
 		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
 		<node pkg="lidar_squseg_v2_inference"   type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"   	output="screen" cwd="node" args="b1 X 0 1" /> 
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
+
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->
