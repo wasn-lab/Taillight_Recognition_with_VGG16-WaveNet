@@ -150,6 +150,7 @@ int main(int argc, char** argv)
   while (ros::ok())
   {
     ros::spinOnce();
+    std::cout << "====================== Radar Detection =================="<< std::endl;
     rate.sleep();
   }
   return 0;

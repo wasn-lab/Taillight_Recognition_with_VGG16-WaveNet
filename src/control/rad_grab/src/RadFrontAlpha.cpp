@@ -239,7 +239,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
       RadPub = n.advertise<msgs::Rad>("RadBackRight", 1);
       break;
     default:
-      cout << "NO FILTER FOUND!" << endl;
+      cout << "NO filter_id FOUND!" << endl;
       break;
   }
 }
