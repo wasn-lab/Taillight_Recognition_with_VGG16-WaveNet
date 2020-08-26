@@ -71,7 +71,7 @@ void callbackRadFrontAlpha(const msgs::Rad::ConstPtr& msg)
   msgtemp.header = msg->radHeader;
   msgtemp.header.seq = msg->radHeader.seq;
   msgtemp.header.frame_id = "alpha_front";
-  PCloud_pub.publish(msgtemp);
+  PCloud_Alpha_pub.publish(msgtemp);
 }
 
 void callbackRadFrontLeft(const msgs::Rad::ConstPtr& msg)
@@ -90,7 +90,7 @@ void callbackRadFrontLeft(const msgs::Rad::ConstPtr& msg)
   msgtemp.header = msg->radHeader;
   msgtemp.header.seq = msg->radHeader.seq;
   msgtemp.header.frame_id = "alpha_front_left";
-  PCloud_pub.publish(msgtemp);
+  PCloud_Alpha_left_pub.publish(msgtemp);
 }
 
 void callbackRadFrontRight(const msgs::Rad::ConstPtr& msg)
@@ -109,7 +109,7 @@ void callbackRadFrontRight(const msgs::Rad::ConstPtr& msg)
   msgtemp.header = msg->radHeader;
   msgtemp.header.seq = msg->radHeader.seq;
   msgtemp.header.frame_id = "alpha_front_right";
-  PCloud_pub.publish(msgtemp);
+  PCloud_Alpha_right_pub.publish(msgtemp);
 }
 
 int main(int argc, char** argv)

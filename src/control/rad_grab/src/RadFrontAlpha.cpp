@@ -120,7 +120,7 @@ int main(int argc, char** argv)
     printf("Error\n!");
   }
 
-  ros::init(argc, argv, "RadFrontAlpha");
+  ros::init(argc, argv, "RadAlpha");
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
   ros::Rate loop_rate(20);
