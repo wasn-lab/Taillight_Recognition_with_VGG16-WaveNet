@@ -240,8 +240,8 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     return;
   }
 
-  autoware_perception_msgs::DynamicObjectArray tmp_objects_whitout_map;
-  tmp_objects_whitout_map.header = in_objects->header;
+  autoware_perception_msgs::DynamicObjectArray tmp_objects_without_map;
+  tmp_objects_without_map.header = in_objects->header;
   DynamicObjectWithLanesArray prediction_input;
   prediction_input.header = in_objects->header;
 
@@ -260,7 +260,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
         object.semantic.type != autoware_perception_msgs::Semantic::BUS &&
         object.semantic.type != autoware_perception_msgs::Semantic::TRUCK)
     {
-      tmp_objects_whitout_map.objects.push_back(tmp_object.object);
+      tmp_objects_without_map.objects.push_back(tmp_object.object);
       continue;
     }
 
@@ -275,7 +275,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     {
       geometry_msgs::Point debug_point;
       tf2::doTransform(tmp_object.object.state.pose_covariance.pose.position, debug_point, debug_map2lidar_transform);
-      tmp_objects_whitout_map.objects.push_back(object);
+      tmp_objects_without_map.objects.push_back(object);
       continue;
     }
 
@@ -359,7 +359,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     {
       geometry_msgs::Point debug_point;
       tf2::doTransform(tmp_object.object.state.pose_covariance.pose.position, debug_point, debug_map2lidar_transform);
-      tmp_objects_whitout_map.objects.push_back(object);
+      tmp_objects_without_map.objects.push_back(object);
       continue;
     }
 
@@ -451,7 +451,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
   output.objects = out_objects_in_map;
 
   std::vector<autoware_perception_msgs::DynamicObject> out_objects_without_map;
-  map_based_prediction_->doLinearPrediction(tmp_objects_whitout_map, out_objects_without_map);
+  map_based_prediction_->doLinearPrediction(tmp_objects_without_map, out_objects_without_map);
   output.objects.insert(output.objects.begin(), out_objects_without_map.begin(), out_objects_without_map.end());
   pub_objects_.publish(output);
 }
