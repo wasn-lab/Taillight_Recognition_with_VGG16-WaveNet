@@ -18,7 +18,6 @@
   <arg name="z_diff_setting_out" default="0.2" /><!--0.1-->
   <arg name="slope_setting_distouphill" default="0.08" />
 
-  <arg name="wheel_dis" default="3.8" />
   <arg name="predict_s_max" default="13.8" />
   <arg name="predict_t" default="2.0" />
   
