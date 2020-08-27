@@ -100,15 +100,20 @@ private:
   double ego_vely_abs_kmph_ = 0.;
 
 #if PP_FILTER_DRIVABLE_AREA == 1
+  double expand_range_left = 3.5;
+  double expand_range_right = 0.;
+
   std::vector<cv::Point3f> lanelet2_route_left;
   std::vector<cv::Point3f> lanelet2_route_right;
+
+  std::vector<cv::Point2f> expanded_route_left;
+  std::vector<cv::Point2f> expanded_route_right;
 
   tf2_ros::Buffer tf_buffer;
   geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
                                                 geometry_msgs::Vector3 translation);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
-  bool drivable_area_filter(const msgs::BoxPoint box_point, const double expand_range_left,
-                            const double expand_range_right);
+  bool drivable_area_filter(const msgs::BoxPoint box_point);
 #endif
 
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);

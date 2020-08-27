@@ -111,11 +111,140 @@ void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::Con
     }
   }
 
-  // time_nav_path = std::to_string(start.toSec());
+  if (!lanelet2_route_left.empty() && !lanelet2_route_right.empty())
+  {
+    std::vector<cv::Point3f> lanelet2_route_left_temp(lanelet2_route_left);
+    std::vector<cv::Point3f> lanelet2_route_right_temp(lanelet2_route_right);
+    std::vector<cv::Point2f> route_left_transformed;
+    std::vector<cv::Point2f> route_right_transformed;
 
-  // #if PRINT_MESSAGE
-  //   std::cout << "Path buffer time cost: " << ros::Time::now() - start << std::endl;
-  // #endif
+    for (auto const& obj : lanelet2_route_left_temp)
+    {
+      cv::Point2f point;
+      point.x = obj.x;
+      point.y = obj.y;
+      route_left_transformed.push_back(point);
+    }
+
+    for (auto const& obj : lanelet2_route_right_temp)
+    {
+      cv::Point2f point;
+      point.x = obj.x;
+      point.y = obj.y;
+      route_right_transformed.push_back(point);
+    }
+
+    std::vector<cv::Point3f>().swap(lanelet2_route_left_temp);
+    std::vector<cv::Point3f>().swap(lanelet2_route_right_temp);
+
+    // expand warning zone for left bound
+    std::vector<cv::Point2f>().swap(expanded_route_left);
+    for (size_t i = 0; i < route_left_transformed.size(); i++)
+    {
+      if (i == 0)
+      {
+        double diff_x;
+        double diff_y;
+        diff_x = route_left_transformed[0].x - route_right_transformed[0].x;
+        diff_y = route_left_transformed[0].y - route_right_transformed[0].y;
+        double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+        cv::Point2f expand_point = route_left_transformed[i];
+        expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
+        expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
+        expanded_route_left.push_back(expand_point);
+      }
+      else if (i == route_left_transformed.size() - 1)
+      {
+        double diff_x;
+        double diff_y;
+        diff_x = route_left_transformed.back().x - route_right_transformed.back().x;
+        diff_y = route_left_transformed.back().y - route_right_transformed.back().y;
+        double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+        cv::Point2f expand_point = route_left_transformed[i];
+        expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
+        expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
+        expanded_route_left.push_back(expand_point);
+      }
+      else
+      {
+        double diff_x;
+        double diff_y;
+        diff_x = route_left_transformed[i + 1].x - route_left_transformed[i - 1].x;
+        diff_y = route_left_transformed[i + 1].y - route_left_transformed[i - 1].y;
+        double N_x = (-1) * diff_y;
+        double N_y = diff_x;
+        double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
+        cv::Point2f expand_point = route_left_transformed[i];
+        expand_point.x = expand_point.x + N_x / distance * expand_range_left;
+        expand_point.y = expand_point.y + N_y / distance * expand_range_left;
+        expanded_route_left.push_back(expand_point);
+      }
+    }
+    // expand warning zone for right bound
+    std::vector<cv::Point2f>().swap(expanded_route_right);
+    for (size_t i = 0; i < route_right_transformed.size(); i++)
+    {
+      if (i == 0)
+      {
+        double diff_x;
+        double diff_y;
+        diff_x = route_right_transformed[0].x - route_left_transformed[0].x;
+        diff_y = route_right_transformed[0].y - route_left_transformed[0].y;
+        double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+        cv::Point2f expand_point = route_right_transformed[i];
+        expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
+        expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
+        expanded_route_right.push_back(expand_point);
+      }
+      else if (i == route_left_transformed.size() - 1)
+      {
+        double diff_x;
+        double diff_y;
+        diff_x = route_right_transformed.back().x - route_left_transformed.back().x;
+        diff_y = route_right_transformed.back().y - route_left_transformed.back().y;
+        double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+        cv::Point2f expand_point = route_right_transformed[i];
+        expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
+        expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
+        expanded_route_right.push_back(expand_point);
+      }
+      else
+      {
+        double diff_x;
+        double diff_y;
+        diff_x = route_right_transformed[i + 1].x - route_right_transformed[i - 1].x;
+        diff_y = route_right_transformed[i + 1].y - route_right_transformed[i - 1].y;
+        double N_x = diff_y;
+        double N_y = (-1) * diff_x;
+        double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
+        cv::Point2f expand_point = route_right_transformed[i];
+        expand_point.x = expand_point.x + N_x / distance * expand_range_right;
+        expand_point.y = expand_point.y + N_y / distance * expand_range_right;
+        expanded_route_right.push_back(expand_point);
+      }
+    }
+
+    // route_right_transformed add into route_left_transformed reversed
+    while (!expanded_route_right.empty())
+    {
+      expanded_route_left.push_back(expanded_route_right.back());
+      expanded_route_right.pop_back();
+    }
+    expanded_route_left.push_back(expanded_route_left[0]);  // close the polygon
+
+    geometry_msgs::PolygonStamped polygon_marker;
+    polygon_marker.header.frame_id = "map";
+
+    for (auto const& obj : expanded_route_left)
+    {
+      geometry_msgs::Point32 polygon_point;
+      polygon_point.x = obj.x;
+      polygon_point.y = obj.y;
+      polygon_marker.polygon.points.push_back(polygon_point);
+    }
+
+    drivable_area_pub_.publish(polygon_marker);
+  }
 }
 #endif
 
@@ -590,17 +719,11 @@ bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& p
   }
 }
 
-bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point, const double expand_range_left,
-                                   const double expand_range_right)
+bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
 {
   cv::Point2f position;
   position.x = box_point.p0.x;
   position.y = box_point.p0.y;
-
-  // if (position.x > max_distance || position.x <= 1)
-  // {
-  //   return true;
-  // }
 
   if (lanelet2_route_left.empty() || lanelet2_route_right.empty())
   {
@@ -624,30 +747,6 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point, const double 
 
   double yaw = tf2::getYaw(tf_stamped.transform.rotation);
 
-  std::vector<cv::Point3f> lanelet2_route_left_temp(lanelet2_route_left);
-  std::vector<cv::Point3f> lanelet2_route_right_temp(lanelet2_route_right);
-  std::vector<cv::Point2f> route_left_transformed;
-  std::vector<cv::Point2f> route_right_transformed;
-
-  for (auto const& obj : lanelet2_route_left_temp)
-  {
-    cv::Point2f point;
-    point.x = obj.x;
-    point.y = obj.y;
-    route_left_transformed.push_back(point);
-  }
-
-  for (auto const& obj : lanelet2_route_right_temp)
-  {
-    cv::Point2f point;
-    point.x = obj.x;
-    point.y = obj.y;
-    route_right_transformed.push_back(point);
-  }
-
-  std::vector<cv::Point3f>().swap(lanelet2_route_left_temp);
-  std::vector<cv::Point3f>().swap(lanelet2_route_right_temp);
-
   geometry_msgs::PoseStamped point_in;
   point_in.pose.position.x = position.x;
   point_in.pose.position.y = position.y;
@@ -657,114 +756,6 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point, const double 
   point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped.transform.translation);
   position.x = point_out.pose.position.x;
   position.y = point_out.pose.position.y;
-
-  // expand warning zone for left bound
-  std::vector<cv::Point2f> expanded_route_left;
-  for (size_t i = 0; i < route_left_transformed.size(); i++)
-  {
-    if (i == 0)
-    {
-      double diff_x;
-      double diff_y;
-      diff_x = route_left_transformed[0].x - route_right_transformed[0].x;
-      diff_y = route_left_transformed[0].y - route_right_transformed[0].y;
-      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
-      cv::Point2f expand_point = route_left_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
-      expanded_route_left.push_back(expand_point);
-    }
-    else if (i == route_left_transformed.size() - 1)
-    {
-      double diff_x;
-      double diff_y;
-      diff_x = route_left_transformed.back().x - route_right_transformed.back().x;
-      diff_y = route_left_transformed.back().y - route_right_transformed.back().y;
-      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
-      cv::Point2f expand_point = route_left_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
-      expanded_route_left.push_back(expand_point);
-    }
-    else
-    {
-      double diff_x;
-      double diff_y;
-      diff_x = route_left_transformed[i + 1].x - route_left_transformed[i - 1].x;
-      diff_y = route_left_transformed[i + 1].y - route_left_transformed[i - 1].y;
-      double N_x = (-1) * diff_y;
-      double N_y = diff_x;
-      double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
-      cv::Point2f expand_point = route_left_transformed[i];
-      expand_point.x = expand_point.x + N_x / distance * expand_range_left;
-      expand_point.y = expand_point.y + N_y / distance * expand_range_left;
-      expanded_route_left.push_back(expand_point);
-    }
-  }
-  // expand warning zone for right bound
-  std::vector<cv::Point2f> expanded_route_right;
-  for (size_t i = 0; i < route_right_transformed.size(); i++)
-  {
-    if (i == 0)
-    {
-      double diff_x;
-      double diff_y;
-      diff_x = route_right_transformed[0].x - route_left_transformed[0].x;
-      diff_y = route_right_transformed[0].y - route_left_transformed[0].y;
-      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
-      cv::Point2f expand_point = route_right_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
-      expanded_route_right.push_back(expand_point);
-    }
-    else if (i == route_left_transformed.size() - 1)
-    {
-      double diff_x;
-      double diff_y;
-      diff_x = route_right_transformed.back().x - route_left_transformed.back().x;
-      diff_y = route_right_transformed.back().y - route_left_transformed.back().y;
-      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
-      cv::Point2f expand_point = route_right_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
-      expanded_route_right.push_back(expand_point);
-    }
-    else
-    {
-      double diff_x;
-      double diff_y;
-      diff_x = route_right_transformed[i + 1].x - route_right_transformed[i - 1].x;
-      diff_y = route_right_transformed[i + 1].y - route_right_transformed[i - 1].y;
-      double N_x = diff_y;
-      double N_y = (-1) * diff_x;
-      double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
-      cv::Point2f expand_point = route_right_transformed[i];
-      expand_point.x = expand_point.x + N_x / distance * expand_range_right;
-      expand_point.y = expand_point.y + N_y / distance * expand_range_right;
-      expanded_route_right.push_back(expand_point);
-    }
-  }
-
-  // route_right_transformed add into route_left_transformed reversed
-  while (!expanded_route_right.empty())
-  {
-    expanded_route_left.push_back(expanded_route_right.back());
-    expanded_route_right.pop_back();
-  }
-  expanded_route_left.push_back(expanded_route_left[0]);  // close the polygon
-
-  geometry_msgs::PolygonStamped polygon_merker;
-  polygon_merker.header.frame_id = "map";
-
-  for (auto const& obj : expanded_route_left)
-  {
-    geometry_msgs::Point32 polygon_point;
-    polygon_point.x = obj.x;
-    polygon_point.y = obj.y;
-    polygon_merker.polygon.points.push_back(polygon_point);
-  }
-
-  drivable_area_pub_.publish(polygon_merker);
 
   // all route, check ped in polygon or not
   // no need to filter peds in warning zone
@@ -920,7 +911,7 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
 
   for (auto& obj : objs)
   {
-    if (drivable_area_filter(obj.bPoint, 3.5, 0))
+    if (drivable_area_filter(obj.bPoint))
     {
       continue;
     }
