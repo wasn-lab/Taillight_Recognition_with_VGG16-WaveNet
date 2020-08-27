@@ -85,19 +85,6 @@ bool MapBasedPrediction::doPrediction(const DynamicObjectWithLanesArray& in_obje
   std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
   for (auto& object_with_lanes : in_objects.objects)
   {
-    const double min_lon_velocity_ms_for_map_based_prediction = 1;
-    if (std::fabs(object_with_lanes.object.state.twist_covariance.twist.linear.x) <
-        min_lon_velocity_ms_for_map_based_prediction)
-    {
-      autoware_perception_msgs::PredictedPath predicted_path;
-      getLinearPredictedPath(object_with_lanes.object.state.pose_covariance.pose,
-                             object_with_lanes.object.state.twist_covariance.twist, in_objects.header, predicted_path);
-      autoware_perception_msgs::DynamicObject tmp_object;
-      tmp_object = object_with_lanes.object;
-      tmp_object.state.predicted_paths.push_back(predicted_path);
-      out_objects.push_back(tmp_object);
-      continue;
-    }
     autoware_perception_msgs::DynamicObject tmp_object;
     tmp_object = object_with_lanes.object;
     for (const auto& path : object_with_lanes.lanes)
