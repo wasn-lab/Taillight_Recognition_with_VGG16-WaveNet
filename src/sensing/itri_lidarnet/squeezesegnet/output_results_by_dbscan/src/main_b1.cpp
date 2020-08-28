@@ -56,9 +56,11 @@ void callback_SSN(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     pcl_conversions::fromPCL(msg->header.stamp, rosTime);
 
     RosModuleB1::Send_LidarResults(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
+    RosModuleB1::Send_LidarResults_v2(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     RosModuleB1::Send_LidarResultsRVIZ(cur_cluster, cur_cluster_num);
-    // RosModuleB1::Send_LidarResultsRVIZ_abb(cur_cluster, cur_cluster_num);
-    // RosModuleB1::Send_LidarResultsRVIZ_obb(cur_cluster, cur_cluster_num);
+    RosModuleB1::Send_LidarResultsRVIZ_abb(cur_cluster, cur_cluster_num);
+    RosModuleB1::Send_LidarResultsRVIZ_obb(cur_cluster, cur_cluster_num);
+    RosModuleB1::Send_LidarResultsRVIZ_heading(cur_cluster, cur_cluster_num);
     RosModuleB1::Send_LidarResultsGrid(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     // auto start_time = chrono::high_resolution_clock::now();
     RosModuleB1::Send_LidarResultsEdge(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);

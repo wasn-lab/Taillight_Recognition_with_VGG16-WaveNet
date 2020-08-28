@@ -8,12 +8,17 @@ import logging
 import sys
 import subprocess
 import os
+import shutil
+from shapely.geometry import Point  # pylint: disable=import-error
+from shapely.geometry.polygon import Polygon  # pylint: disable=import-error
 
 from deeplab_mgr import DeeplabMgr, raw_image_pos_to_deeplab_pos
 from json_utils import read_json_file
 from image_utils import get_image_size
-from nn_labels import DRIVENET_CLASS_IDS, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID
+from nn_labels import (DRIVENET_CLASS_IDS, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID,
+                       YoloLabel)
 from yolo_bbox import yolo_format_in_bbox
+from find_roi_by_lane import find_roi_by_lane_instance
 
 REPO_DIR = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
 REPO_DIR = REPO_DIR.decode("utf-8").strip()
@@ -24,10 +29,12 @@ from iou_utils import calc_iou5  # pylint: disable=import-error
 
 
 class Validator():
-    def __init__(self, yolo_result_json, coef, weak_image_list, iou_threshold, with_deeplab):
+    def __init__(self, yolo_result_json, coef, weak_image_list, iou_threshold, with_deeplab, save_files, with_roi):
         self.iou_threshold = iou_threshold
         self.coef = coef
+        self.save_files = save_files
         self.with_deeplab = with_deeplab
+        self.with_roi = with_roi
         self.yolo_result = self.get_yolo_result(yolo_result_json)
         with io.open(weak_image_list, encoding="utf-8") as _fp:
             contents = _fp.read()
@@ -93,32 +100,84 @@ class Validator():
             bboxes.append([class_id, left_x, top_y, right_x, bottom_y])
         return bboxes
 
+    def within_roi(self, image_filename, x, y):
+        lane_instance_fn = image_filename[:-4] + "_lane_instance.png"
+        if not os.path.isfile(lane_instance_fn):
+            return False
+        roi = find_roi_by_lane_instance(lane_instance_fn)
+        if len(roi) <= 2:
+            return False
+        img_width, img_height = get_image_size(image_filename)
+        scale_x = img_width / 512
+        scale_y = img_height / 256
+        scaled_roi = []
+        for p in roi:
+            q = (p[0] * scale_x, p[1] * scale_y)
+            scaled_roi.append(q)
+
+        point = Point(x, y)
+        polygon = Polygon(scaled_roi)
+        return polygon.contains(point)
+
+    def bbox_within_roi(self, image_filename, gt_box):
+        if gt_box[0] == YoloLabel.PERSON:
+            return True
+        left_x, top_y, right_x, bottom_y = gt_box[1:]
+        return (self.within_roi(image_filename, left_x, top_y) and
+                self.within_roi(image_filename, right_x, top_y) and
+                self.within_roi(image_filename, left_x, bottom_y) and
+                self.within_roi(image_filename, right_x, bottom_y))
+
     def run(self):
         all_tp = 0
         all_fp = 0
         all_fn = 0
+        records = []
         for filename in self.weak_images:
+            logging.info("Analyze %s", filename)
             if self.with_deeplab:
                 true_positive, false_positive, false_negative = self.calc_tp_fp_fn(filename)
             else:
                 true_positive, false_positive, false_negative = self.calc_tp_fp_fn_only_edet(filename)
+            if self.save_files and true_positive + false_positive + false_negative > 0:
+                dest = "/tmp"
+                logging.warn("cp %s", filename)
+                shutil.copy(filename, dest)
+                shutil.copy(filename[:-4] + ".txt", dest)
             all_tp += true_positive
             all_fp += false_positive
             all_fn += false_negative
+            records.append("{},{},{},{}".format(true_positive, false_positive, false_negative, filename))
         logging.info("TP: %d, FP: %d, FN: %d", all_tp, all_fp, all_fn)
+        if all_tp + all_fp > 0:
+            precision = float(all_tp) / (all_tp + all_fp)
+            recall = float(all_tp) / (all_tp + all_fn)
+        else:
+            precision = 0
+            recall = 0
+        logging.info("precision: %f, recall: %f", precision, recall)
+        with io.open("records.log", "w") as _fp:
+            _fp.write("\n".join(records))
+            _fp.write("\n")
+        logging.warning("Write records.log")
 
     def calc_tp_fp_fn_only_edet(self, filename):
         yolo_bboxes = self.get_yolo_bboxes(filename)
         edet_bboxes = self.get_edet_bboxes(filename)
         gt_bboxes = self.get_gt_bboxes(filename)
         true_positive = 0
+        true_negative = 0
         false_negative = 0
         false_positive = 0
         img_width, img_height = get_image_size(filename)
         for gt_bbox in gt_bboxes:
+            if self.with_roi and not self.bbox_within_roi(filename, gt_bbox):
+                logging.info("Skip gtbox (type: %d), pos: %s", gt_bbox[0], gt_bbox[1:])
+                continue
+            if self.with_roi:
+                logging.info("gtbox (type: %d) in roi: %s", gt_bbox[0], gt_bbox[1:])
             yolo_match = False
             edet_match = False
-            deeplab_match = False
             for yolo_bbox in yolo_bboxes:
                 if calc_iou5(yolo_bbox, gt_bbox) >= self.iou_threshold:
                     logging.debug("Yolo match: %s with %s", yolo_bbox, gt_bbox)
@@ -131,16 +190,15 @@ class Validator():
                     break
             if yolo_match and not edet_match:
                 false_positive += 1
-            if not yolo_match:
-                if edet_match:
-                    true_positive += 1
-                else:
-                    false_negative += 1
-        logging.info("%s (%dx%d): true_positive: %d, false_positive:%d, false_negative: %d, groundtruth: %d",
-                     filename, img_width, img_height, true_positive, false_positive, false_negative, len(gt_bboxes))
+            elif not yolo_match and edet_match:
+                true_positive += 1
+            elif not yolo_match and not edet_match:
+                false_negative += 1
+            else:
+                true_negative += 1
+        logging.info("%s (%dx%d): true_positive: %d, false_positive:%d, false_negative: %d, true_negative: %d, groundtruth: %d",
+                     filename, img_width, img_height, true_positive, false_positive, false_negative, true_negative, len(gt_bboxes))
         return true_positive, false_positive, false_negative
-
-
 
     def calc_tp_fp_fn(self, filename):
         yolo_bboxes = self.get_yolo_bboxes(filename)
@@ -152,6 +210,11 @@ class Validator():
         false_positive = 0
         img_width, img_height = get_image_size(filename)
         for gt_bbox in gt_bboxes:
+            if self.with_roi and not self.bbox_within_roi(filename, gt_bbox):
+                logging.info("Skip gtbox (type: %d), pos: %s", gt_bbox[0], gt_bbox[1:])
+                continue
+            if self.with_roi:
+                logging.info("gtbox (type: %d) in roi: %s", gt_bbox[0], gt_bbox[1:])
             yolo_match = False
             edet_match = False
             deeplab_match = False
@@ -177,6 +240,8 @@ class Validator():
                         logging.debug("Deeplab match at (%d, %d) for gt_box %s", x, y, gt_bbox)
                         deeplab_match = True
                         break
+            if not deeplab_match:
+                logging.warn("Deeplab not match gt_box %s", gt_bbox)
             if yolo_match and (not edet_match) and (not deeplab_match):
                 false_positive += 1
 
@@ -199,9 +264,11 @@ def main():
     parser.add_argument("--iou-threshold", type=float, default=0.25)
     parser.add_argument("--weak-image-list", required=True)
     parser.add_argument("--with-deeplab", action="store_true")
+    parser.add_argument("--save-files", action="store_true")
+    parser.add_argument("--with-roi", action="store_true")
     args = parser.parse_args()
     obj = Validator(args.yolo_result_json, args.coef, args.weak_image_list,
-                    args.iou_threshold, args.with_deeplab)
+                    args.iou_threshold, args.with_deeplab, args.save_files, args.with_roi)
     obj.run()
 
 

@@ -20,8 +20,22 @@
 #include <linux/if_packet.h>
 #include <linux/if_ether.h> /* for ETH_P_CAN */
 #include <linux/can.h>      /* for struct can_frame */
+using namespace std;
 
-int alpha_radar_parsing(struct can_frame frame);
+void onInit(ros::NodeHandle nh, ros::NodeHandle n);
+int alpha_radar_parsing(struct can_frame frame, msgs::PointXYZV* point);
+
+vector<double> Alpha_Front_Center_Param;
+vector<double> Alpha_Front_Left_Param;
+vector<double> Alpha_Front_Right_Param;
+vector<double> Alpha_Side_Left_Param;
+vector<double> Alpha_Side_Right_Param;
+vector<double> Alpha_Back_Left_Param;
+vector<double> Alpha_Back_Right_Param;
+vector<double> Zero_Param(6, 0.0);
+
+struct can_frame current_frame;
+ros::Publisher RadPub;
 
 int main(int argc, char** argv)
 {
@@ -39,8 +53,8 @@ int main(int argc, char** argv)
   int opt;
   int send_one_frame = 0;
   int count = 0;
-  int line_count = 0;
 
+  // TODO : Add filter to socket
   s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
   if (s < 0)
   {
@@ -83,6 +97,7 @@ int main(int argc, char** argv)
 
   // alpha_radar_parsing(t_frame);
 
+  // ============ turn alpha radar on ===============
   struct can_frame s_frame;
   s_frame.can_id = 0xC2;
   s_frame.can_dlc = 8;
@@ -105,38 +120,57 @@ int main(int argc, char** argv)
     printf("Error\n!");
   }
 
-  ros::init(argc, argv, "AlphaRadFrontPub");
+  ros::init(argc, argv, "RadFrontAlpha");
   ros::NodeHandle n;
-  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("RadFrontAlpha", 1);
+  ros::NodeHandle nh("~");
   ros::Rate loop_rate(20);
 
-  float x, y, z, speed;
+  onInit(nh, n);
+
+  int err_count = 0;
+  msgs::Rad rad;
+
   while (ros::ok())
   {
+    rad.radHeader.stamp = ros::Time::now();
+    rad.radHeader.seq = seq++;
     count = 0;
-    std::cout << ros::Time::now() << std::endl;
-
+    err_count = 0;
+    msgs::PointXYZV point;
     while (1)
     {
       nbytes = read(s, &can_frame_tmp, sizeof(struct can_frame));
-      printf("[%04X] %d %02X %02X %02X %02X %02X %02X %02X %02X \n", can_frame_tmp.can_id, can_frame_tmp.can_dlc,
-             can_frame_tmp.data[0], can_frame_tmp.data[1], can_frame_tmp.data[2], can_frame_tmp.data[3],
-             can_frame_tmp.data[4], can_frame_tmp.data[5], can_frame_tmp.data[6], can_frame_tmp.data[7]);
-      int state = alpha_radar_parsing(can_frame_tmp);
-      count++;
+      // printf("[%04X] %d %02X %02X %02X %02X %02X %02X %02X %02X \n", can_frame_tmp.can_id, can_frame_tmp.can_dlc,
+      //        can_frame_tmp.data[0], can_frame_tmp.data[1], can_frame_tmp.data[2], can_frame_tmp.data[3],
+      //        can_frame_tmp.data[4], can_frame_tmp.data[5], can_frame_tmp.data[6], can_frame_tmp.data[7]);
 
-      if (state > 0)
+      printf("[%04X] [%04X] \n", can_frame_tmp.can_id, current_frame.can_id);
+
+      if (can_frame_tmp.can_id == current_frame.can_id)
       {
-        line_count = count;
-        while (line_count < 11)
+        int state = alpha_radar_parsing(can_frame_tmp, &point);
+        count++;
+        rad.radPoint.push_back(point);
+        // 0:Have the next data, 1:Last data, 2:No object, 3:Reserved
+        if (state > 0)
         {
-          line_count++;
-          std::cout << std::endl;
+          RadPub.publish(rad);
+          rad.radPoint.clear();
+          err_count = 0;
+          break;
         }
+      }
+      else
+      {
+        cout << "================== error ====================\n" << endl;
+        err_count++;
         break;
       }
     }
-
+    if (err_count > 0)
+    {
+      ros::shutdown();
+    }
     printf("********************  count = %d  ******************\n", count);
     ros::spinOnce();
     loop_rate.sleep();
@@ -145,7 +179,72 @@ int main(int argc, char** argv)
   return 0;
 }
 
-int alpha_radar_parsing(struct can_frame frame)
+void onInit(ros::NodeHandle nh, ros::NodeHandle n)
+{
+  if (!ros::param::has("/Alpha_Front_Center_Param"))
+  {
+    nh.setParam("Alpha_Front_Center_Param", Zero_Param);
+    nh.setParam("Alpha_Front_Left_Param", Zero_Param);
+    nh.setParam("Alpha_Front_Right_Param", Zero_Param);
+    nh.setParam("Alpha_Side_Left_Param", Zero_Param);
+    nh.setParam("Alpha_Side_Right_Param", Zero_Param);
+    nh.setParam("Alpha_Back_Left_Param", Zero_Param);
+    nh.setParam("Alpha_Back_Right_Param", Zero_Param);
+    cout << "NO STITCHING PARAMETER INPUT!" << endl;
+    cout << "Now is using [0,0,0,0,0,0] as stitching parameter!" << endl;
+  }
+  else
+  {
+    nh.param("/Alpha_Front_Center_Param", Alpha_Front_Center_Param, vector<double>());
+    nh.param("/Alpha_Front_Left_Param", Alpha_Front_Center_Param, vector<double>());
+    nh.param("/Alpha_Front_Right_Param", Alpha_Front_Center_Param, vector<double>());
+    nh.param("/Alpha_Side_Left_Param", Alpha_Front_Center_Param, vector<double>());
+    nh.param("/Alpha_Side_Right_Param", Alpha_Front_Center_Param, vector<double>());
+    nh.param("/Alpha_Back_Left_Param", Alpha_Front_Center_Param, vector<double>());
+    nh.param("/Alpha_Back_Right_Param", Alpha_Front_Center_Param, vector<double>());
+    cout << "STITCHING PARAMETER FIND!" << endl;
+  }
+
+  int filter_id = 0;
+  nh.getParam("filter_id", filter_id);
+
+  switch (filter_id)
+  {
+    case 1:
+      current_frame.can_id = 0xC1;
+      RadPub = n.advertise<msgs::Rad>("RadFrontAlpha", 1);
+      break;
+    case 2:
+      current_frame.can_id = 0xC2;
+      RadPub = n.advertise<msgs::Rad>("RadFrontLeft", 1);
+      break;
+    case 3:
+      current_frame.can_id = 0xC3;
+      RadPub = n.advertise<msgs::Rad>("RadFrontRight", 1);
+      break;
+    case 4:
+      current_frame.can_id = 0xC4;
+      RadPub = n.advertise<msgs::Rad>("RadSideLeft", 1);
+      break;
+    case 5:
+      current_frame.can_id = 0xC5;
+      RadPub = n.advertise<msgs::Rad>("RadSideRight", 1);
+      break;
+    case 6:
+      current_frame.can_id = 0xC6;
+      RadPub = n.advertise<msgs::Rad>("RadBackLeft", 1);
+      break;
+    case 7:
+      current_frame.can_id = 0xC7;
+      RadPub = n.advertise<msgs::Rad>("RadBackRight", 1);
+      break;
+    default:
+      cout << "NO FILTER FOUND!" << endl;
+      break;
+  }
+}
+
+int alpha_radar_parsing(struct can_frame frame, msgs::PointXYZV* point)
 {
   int id;
   int state;
@@ -216,8 +315,14 @@ int alpha_radar_parsing(struct can_frame frame)
 
   p = (((frame.data[4] & 0x07) << 2) | ((frame.data[5] & 0xc0) >> 6)) * 2;
 
-  std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
-            << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+  // std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
+  //           << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+
+  // fill data to msg
+  point->x = x;
+  point->y = y;
+  point->z = -1;
+  point->speed = vy;
 
   return state;
 }

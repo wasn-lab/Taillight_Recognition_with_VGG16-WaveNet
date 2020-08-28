@@ -48,7 +48,7 @@ function calc_accuracy {
 build_darknet_exe
 calc_accuracy
 if [[ "$1" == "all" ]]; then
-  python post_accuracy.py --log-file ${log_file}
+  python post_accuracy.py --log-file ${log_file} --id 1
 fi
 
 echo "All done!"
