@@ -102,30 +102,30 @@ void Track2DNode::subscribe_and_advertise_topics()
    */
   if (in_source_ == 0)
   {
-    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/front_bottom_60" << std::endl;   
-    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 2);
   }
   else if (in_source_ == 9)
   {
-    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/left_back_60" << std::endl;
-    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/left_back_60", 2);
   }
   else  if(in_source_ == 6)
   {
-    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/right_back_60" << std::endl;
-    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/right_back_60", 2);
   }
   else  if(in_source_ == 1)
   {
-    LOG_INFO << "Input Source: /CameraDetection/polygon" << std::endl;
+    LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/front_top_far_30" << std::endl;
-    camera_sub_ = nh_.subscribe("/CameraDetection/polygon", 1, &Track2DNode::callback_camera, this);
+    camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_top_far_30", 2);
   }
 }
