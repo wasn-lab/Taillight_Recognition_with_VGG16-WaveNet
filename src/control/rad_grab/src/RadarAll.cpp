@@ -116,7 +116,7 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
   RadFrontPub.publish(rad);
 }
 
-void callbackAlphiFront(const msgs::Rad::ConstPtr& msg)
+void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
 {
  
 }
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
   ros::Subscriber DelphiFrontSub = n.subscribe("RadFrontDelphi", 1, callbackDelphiFront);
-  ros::Subscriber AlphiFrontSub = n.subscribe("RadFrontAlpha", 1, callbackAlphiFront);
+  ros::Subscriber AlphiFrontSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFront);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
@@ -150,6 +150,7 @@ int main(int argc, char** argv)
   while (ros::ok())
   {
     ros::spinOnce();
+    std::cout << "====================== Radar Detection =================="<< std::endl;
     rate.sleep();
   }
   return 0;
