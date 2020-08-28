@@ -6,6 +6,7 @@ src/sensing/itri_lidarnet/libs/Matching/NDT
 src/sensing/itri_lidarnet/libs/Preprocess
 src/utilities/waymo_opendata
 src/utilities/weakness_detection/Yet-Another-EfficientDet-Pytorch
+src/utilities/weakness_detection/lanenet-lane-detection
 src/utilities/google-benchmark
 src/visualization/opengl_test/external
 src/visualization/opengl_test/include/GLM
