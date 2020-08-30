@@ -29,6 +29,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 ros::Publisher PCloud_pub;
+ros::Publisher PCloud_Alpha_pub;
+ros::Publisher PCloud_Alpha_left_pub;
+ros::Publisher PCloud_Alpha_right_pub;
 
 void callbackRadFront(const msgs::Rad::ConstPtr& msg)
 {
@@ -52,13 +55,79 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   PCloud_pub.publish(msgtemp);
 }
 
+void callbackRadFrontAlpha(const msgs::Rad::ConstPtr& msg)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointXYZI temp;
+
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    temp.x = msg->radPoint[i].x;
+    temp.y = -msg->radPoint[i].y;
+    cloud->points.push_back(temp);
+  }
+  sensor_msgs::PointCloud2 msgtemp;
+  pcl::toROSMsg(*cloud, msgtemp);
+  msgtemp.header = msg->radHeader;
+  msgtemp.header.seq = msg->radHeader.seq;
+  msgtemp.header.frame_id = "alpha_front";
+  PCloud_Alpha_pub.publish(msgtemp);
+}
+
+void callbackRadFrontLeft(const msgs::Rad::ConstPtr& msg)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointXYZI temp;
+
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    temp.x = msg->radPoint[i].x;
+    temp.y = -msg->radPoint[i].y;
+    cloud->points.push_back(temp);
+  }
+  sensor_msgs::PointCloud2 msgtemp;
+  pcl::toROSMsg(*cloud, msgtemp);
+  msgtemp.header = msg->radHeader;
+  msgtemp.header.seq = msg->radHeader.seq;
+  msgtemp.header.frame_id = "alpha_front_left";
+  PCloud_Alpha_left_pub.publish(msgtemp);
+}
+
+void callbackRadFrontRight(const msgs::Rad::ConstPtr& msg)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointXYZI temp;
+
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    temp.x = msg->radPoint[i].x;
+    temp.y = -msg->radPoint[i].y;
+    cloud->points.push_back(temp);
+  }
+  sensor_msgs::PointCloud2 msgtemp;
+  pcl::toROSMsg(*cloud, msgtemp);
+  msgtemp.header = msg->radHeader;
+  msgtemp.header.seq = msg->radHeader.seq;
+  msgtemp.header.frame_id = "alpha_front_right";
+  PCloud_Alpha_right_pub.publish(msgtemp);
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "RadFrontSub_PCloud");
   ros::NodeHandle n;
+
   ros::Subscriber RadFrontSub = n.subscribe("RadFront", 1, callbackRadFront);
+  ros::Subscriber RadFrontAlphaSub = n.subscribe("RadFrontAlpha", 1, callbackRadFrontAlpha);
+  ros::Subscriber RadFrontLeftSub = n.subscribe("RadFrontLeft", 1, callbackRadFrontLeft);
+  ros::Subscriber RadFrontRightSub = n.subscribe("RadFrontRight", 1, callbackRadFrontRight);
+
   PCloud_pub = n.advertise<sensor_msgs::PointCloud2>("radar_point_cloud", 1);
-  ros::Rate rate(100);
+  PCloud_Alpha_pub = n.advertise<sensor_msgs::PointCloud2>("radar_alpha", 1);
+  PCloud_Alpha_left_pub = n.advertise<sensor_msgs::PointCloud2>("radar_alpha_left", 1);
+  PCloud_Alpha_right_pub = n.advertise<sensor_msgs::PointCloud2>("radar_alpha_right", 1);
+
+  ros::Rate rate(20);
   while (ros::ok())
   {
     ros::spinOnce();

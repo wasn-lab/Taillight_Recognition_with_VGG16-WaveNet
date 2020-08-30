@@ -20,10 +20,13 @@
 #include <linux/if_packet.h>
 #include <linux/if_ether.h> /* for ETH_P_CAN */
 #include <linux/can.h>      /* for struct can_frame */
+#include <linux/can/raw.h>
+
 using namespace std;
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
-int alpha_radar_parsing(struct can_frame frame, msgs::PointXYZV* point);
+void turnRadarOn(int s);
+int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
 
 vector<double> Alpha_Front_Center_Param;
 vector<double> Alpha_Front_Left_Param;
@@ -42,6 +45,7 @@ int main(int argc, char** argv)
   uint32_t seq = 0;
 
   int s;
+  int rc;
   struct can_frame frame[64];
   struct can_frame can_frame_tmp;
 
@@ -54,11 +58,34 @@ int main(int argc, char** argv)
   int send_one_frame = 0;
   int count = 0;
 
-  // TODO : Add filter to socket
+  ros::init(argc, argv, "RadAlpha");
+  ros::NodeHandle n;
+  ros::NodeHandle nh("~");
+  ros::Rate loop_rate(20);
+
+  onInit(nh, n);
+  if (current_frame.can_id == 0x00)
+  {
+    perror("can filter error ");
+    return 1;
+  }
+
+  // Add filter to socket
+  struct can_filter rfilter[1];
+  rfilter[0].can_id = current_frame.can_id;
+  rfilter[0].can_mask = CAN_SFF_MASK;  //#define CAN_SFF_MASK 0x000007FFU
+
   s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
   if (s < 0)
   {
-    perror("socket");
+    perror("socke error ");
+    return 1;
+  }
+
+  rc = setsockopt(s, SOL_CAN_RAW, CAN_RAW_FILTER, &rfilter, sizeof(rfilter));  //設定規則
+  if (-1 == rc)
+  {
+    perror("setsockopt filter error ");
     return 1;
   }
 
@@ -79,59 +106,18 @@ int main(int argc, char** argv)
 
   if (bind(s, (struct sockaddr*)&sll, sizeof(sll)) < 0)
   {
-    perror("bind");
+    perror("bind error ");
     return 1;
   }
-  // // test frame x = -0.3 y = 1.4 p = 34
-  // struct can_frame t_frame;
-  // t_frame.can_id = 0xC1;
-  // t_frame.can_dlc = 8;
-  // t_frame.data[0] = 0x40;
-  // t_frame.data[1] = 0x7b;
-  // t_frame.data[2] = 0xfd;
-  // t_frame.data[3] = 0x00;
-  // t_frame.data[4] = 0x74;
-  // t_frame.data[5] = 0x40;
-  // t_frame.data[6] = 0x00;
-  // t_frame.data[7] = 0x00;
 
-  // alpha_radar_parsing(t_frame);
-
-  // ============ turn alpha radar on ===============
-  struct can_frame s_frame;
-  s_frame.can_id = 0xC2;
-  s_frame.can_dlc = 8;
-  s_frame.data[0] = 0x61;
-  s_frame.data[1] = 0x72;
-  s_frame.data[2] = 0x20;
-  s_frame.data[3] = 0x31;
-  s_frame.data[4] = 0x20;
-  s_frame.data[5] = 0x32;
-  s_frame.data[6] = 0x20;
-  s_frame.data[7] = 0x32;
-  int s_result = write(s, &s_frame, sizeof(s_frame));
-
-  s_frame.can_id = 0xC3;
-
-  s_result = write(s, &s_frame, sizeof(s_frame));
-
-  if (s_result != sizeof(s_frame))
-  {
-    printf("Error\n!");
-  }
-
-  ros::init(argc, argv, "RadFrontAlpha");
-  ros::NodeHandle n;
-  ros::NodeHandle nh("~");
-  ros::Rate loop_rate(20);
-
-  onInit(nh, n);
+  turnRadarOn(s);
 
   int err_count = 0;
   msgs::Rad rad;
 
   while (ros::ok())
   {
+    cout << "=========================================" << endl;
     rad.radHeader.stamp = ros::Time::now();
     rad.radHeader.seq = seq++;
     count = 0;
@@ -148,7 +134,7 @@ int main(int argc, char** argv)
 
       if (can_frame_tmp.can_id == current_frame.can_id)
       {
-        int state = alpha_radar_parsing(can_frame_tmp, &point);
+        int state = radarParsing(can_frame_tmp, &point);
         count++;
         rad.radPoint.push_back(point);
         // 0:Have the next data, 1:Last data, 2:No object, 3:Reserved
@@ -208,43 +194,84 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   int filter_id = 0;
   nh.getParam("filter_id", filter_id);
 
+  cout << "============id============  " << filter_id << endl;
+
   switch (filter_id)
   {
     case 1:
       current_frame.can_id = 0xC1;
-      RadPub = n.advertise<msgs::Rad>("RadFrontAlpha", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaFrontCenter", 1);
       break;
     case 2:
       current_frame.can_id = 0xC2;
-      RadPub = n.advertise<msgs::Rad>("RadFrontLeft", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaFrontLeft", 1);
       break;
     case 3:
       current_frame.can_id = 0xC3;
-      RadPub = n.advertise<msgs::Rad>("RadFrontRight", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaFrontRight", 1);
       break;
     case 4:
       current_frame.can_id = 0xC4;
-      RadPub = n.advertise<msgs::Rad>("RadSideLeft", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaSideLeft", 1);
       break;
     case 5:
       current_frame.can_id = 0xC5;
-      RadPub = n.advertise<msgs::Rad>("RadSideRight", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaSideRight", 1);
       break;
     case 6:
       current_frame.can_id = 0xC6;
-      RadPub = n.advertise<msgs::Rad>("RadBackLeft", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaBackLeft", 1);
       break;
     case 7:
       current_frame.can_id = 0xC7;
-      RadPub = n.advertise<msgs::Rad>("RadBackRight", 1);
+      RadPub = n.advertise<msgs::Rad>("AlphaBackRight", 1);
       break;
     default:
-      cout << "NO FILTER FOUND!" << endl;
+      current_frame.can_id = 0x00;
+      cout << "NO filter_id FOUND!" << endl;
       break;
+  }
+
+  // // test frame x = -0.3 y = 1.4 p = 34
+  // struct can_frame t_frame;
+  // t_frame.can_id = 0xC1;
+  // t_frame.can_dlc = 8;
+  // t_frame.data[0] = 0x40;
+  // t_frame.data[1] = 0x7b;
+  // t_frame.data[2] = 0xfd;
+  // t_frame.data[3] = 0x00;
+  // t_frame.data[4] = 0x74;
+  // t_frame.data[5] = 0x40;
+  // t_frame.data[6] = 0x00;
+  // t_frame.data[7] = 0x00;
+  // radarParsing(t_frame);
+}
+
+void turnRadarOn(int s)
+{
+
+  cout << "============ radar on ============  " << current_frame.can_id << endl;
+  // ============ turn alpha radar on ===============
+  struct can_frame s_frame;
+  s_frame.can_id = current_frame.can_id;
+  s_frame.can_dlc = 8;
+  s_frame.data[0] = 0x61;
+  s_frame.data[1] = 0x72;
+  s_frame.data[2] = 0x20;
+  s_frame.data[3] = 0x31;
+  s_frame.data[4] = 0x20;
+  s_frame.data[5] = 0x32;
+  s_frame.data[6] = 0x20;
+  s_frame.data[7] = 0x32;
+  int s_result = write(s, &s_frame, sizeof(s_frame));
+
+  if (s_result != sizeof(s_frame))
+  {
+    printf("Error\n!");
   }
 }
 
-int alpha_radar_parsing(struct can_frame frame, msgs::PointXYZV* point)
+int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 {
   int id;
   int state;
