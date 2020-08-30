@@ -5,115 +5,169 @@
 #include <sstream>
 #include <string.h>
 
-
 namespace ped
 {
-void BagToMOT::run()
+void ROSGMPHD::run()
 {
   pedestrian_event();
 }
 
-void BagToMOT::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
+void ROSGMPHD::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   count++;
   ros::Time start, stop;
   start = ros::Time::now();
-  
-  vector<vector<float>> seqDets;
+
+  vector<vector<float>> seq_dets_front;
+  vector<vector<float>> seq_dets_fov30;
+  vector<vector<float>> seq_dets_left_back;
+  vector<vector<float>> seq_dets_right_back;
 
   for (auto const& obj : msg->objects)
   {
-    // set msg infomation
-    msgs::PedObject obj_pub;
-    obj_pub.camInfo = obj.camInfo;
-    obj_pub.camInfo.u = obj.camInfo.u;
-    obj_pub.camInfo.v = obj.camInfo.v;
-    obj_pub.camInfo.width = obj.camInfo.width;
-    obj_pub.camInfo.height = obj.camInfo.height;
-    obj_pub.camInfo.prob = obj.camInfo.prob;
-
-    // Check object source is camera
-    if (obj.camInfo.width == 0 || obj_pub.camInfo.height == 0)
-    {
-      continue;
-    }
     /************* Make msg to GMPHD input ***************/
     vector<float> tmp_det;
     tmp_det.push_back((float)count);
-    tmp_det.push_back((float)obj_pub.camInfo.u);
-    tmp_det.push_back((float)obj_pub.camInfo.v);
-    tmp_det.push_back((float)obj_pub.camInfo.width);
-    tmp_det.push_back((float)obj_pub.camInfo.height);
-    tmp_det.push_back((float)obj_pub.camInfo.prob);
-    seqDets.push_back(tmp_det);
-  }
-  if (seqDets.empty())
-  {
-    vector<float> tmp_det;
-    tmp_det.push_back((float)count);
-    tmp_det.push_back((float)-1);
-    tmp_det.push_back((float)-1);
-    tmp_det.push_back((float)-1);
-    tmp_det.push_back((float)-1);
-    tmp_det.push_back((float)-1);
-    seqDets.push_back(tmp_det);
-  }
-  
-  /*   test   */
-  if(count==2 || true)
-  {
-    for(unsigned int _k = 0;_k<seqDets.size();_k++)
+    tmp_det.push_back((float)obj.camInfo.u);
+    tmp_det.push_back((float)obj.camInfo.v);
+    tmp_det.push_back((float)obj.camInfo.width);
+    tmp_det.push_back((float)obj.camInfo.height);
+    tmp_det.push_back((float)obj.camInfo.prob);
+    if (obj.camInfo.id == 0)  // front
     {
-      for(unsigned int _k2=0;_k2<seqDets[0].size();_k2++)
-      {
-        cout<<seqDets[_k][_k2]<<",";
-      }
-      cout<<endl;
+      seq_dets_front.push_back(tmp_det);
     }
-    cout<<"\nend\n";
+    if (obj.camInfo.id == 1)  // fov30
+    {
+      seq_dets_fov30.push_back(tmp_det);
+    }
+    if (obj.camInfo.id == 9)  // left back
+    {
+      seq_dets_left_back.push_back(tmp_det);
+    }
+    if (obj.camInfo.id == 6)  // right back
+    {
+      seq_dets_right_back.push_back(tmp_det);
+    }
+  }
+  vector<float> tmp_det;
+  tmp_det.push_back((float)count);
+  tmp_det.push_back((float)(-1));
+  tmp_det.push_back((float)(-1));
+  tmp_det.push_back((float)(-1));
+  tmp_det.push_back((float)(-1));
+  tmp_det.push_back((float)(-1));
+  if (seq_dets_front.empty())
+  {
+    seq_dets_front.push_back(tmp_det);
+  }
+  if (seq_dets_fov30.empty())
+  {
+    seq_dets_fov30.push_back(tmp_det);
+  }
+  if (seq_dets_left_back.empty())
+  {
+    seq_dets_left_back.push_back(tmp_det);
+  }
+  if (seq_dets_right_back.empty())
+  {
+    seq_dets_right_back.push_back(tmp_det);
+  }
+
+  /*   test   */
+  if (count == 2 || true)
+  {
+    for (unsigned int _k = 0; _k < seq_dets_front.size(); _k++)
+    {
+      for (unsigned int _k2 = 0; _k2 < seq_dets_front[0].size(); _k2++)
+      {
+        std::cout << seq_dets_front[_k][_k2] << ",";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << "\nend" << std::endl;
   }
   /*   test   */
-  
+
   /***** DoMOT *******/
-  tracker->SetTotalFrames(count);
-  vector<vector<float>> tracks = tracker->DoMOT(count-1, seqDets);
-  
+  tracker_front->SetTotalFrames(count);
+  vector<vector<float>> tracks_front = tracker_front->DoMOT(count - 1, seq_dets_front);
+  tracker_fov30->SetTotalFrames(count);
+  vector<vector<float>> tracks_fov30 = tracker_fov30->DoMOT(count - 1, seq_dets_fov30);
+  tracker_left_back->SetTotalFrames(count);
+  vector<vector<float>> tracks_left_back = tracker_left_back->DoMOT(count - 1, seq_dets_left_back);
+  tracker_right_back->SetTotalFrames(count);
+  vector<vector<float>> tracks_right_back = tracker_right_back->DoMOT(count - 1, seq_dets_right_back);
+
   /*   test   */
-  if(count==2  || true)
+  if (count == 2 || true)
   {
-    for(unsigned int _k = 0;_k<tracks.size();_k++)
+    for (unsigned int _k = 0; _k < tracks_front.size(); _k++)
     {
-      for(unsigned int _k2=0;_k2<tracks[0].size();_k2++)
+      for (unsigned int _k2 = 0; _k2 < tracks_front[0].size(); _k2++)
       {
-        cout<<tracks[_k][_k2]<<",";
+        std::cout << tracks_front[_k][_k2] << ",";
       }
-      cout<<endl;
+      std::cout << std::endl;
     }
   }
   /*   test   */
-  
-  
-  msgs::DetectedObjectArray pub_array;
-  pub_array.header = msg->header;
-  //copy vector
-  // pub_array.objects.assign(msg->objects.begin(),msg->objects.end());
+
+  msgs::DetectedObjectArray pub_array_front;
+  pub_array_front.header = msg->header;
+  msgs::DetectedObjectArray pub_array_fov30;
+  pub_array_fov30.header = msg->header;
+  msgs::DetectedObjectArray pub_array_left_back;
+  pub_array_left_back.header = msg->header;
+  msgs::DetectedObjectArray pub_array_right_back;
+  pub_array_right_back.header = msg->header;
 
   for (auto obj : msg->objects)
   {
     /******** compare & tracks to msg *********/
-    for(unsigned int i=0;i<tracks.size();i++)
+    for (unsigned int i = 0; i < tracks_front.size(); i++)
     {
-      if(obj.camInfo.u == tracks[i][1] &&	obj.camInfo.v == tracks[i][2] && obj.camInfo.width == tracks[i][3] && obj.camInfo.height == tracks[i][4])
+      if (obj.camInfo.u == tracks_front[i][1] && obj.camInfo.v == tracks_front[i][2] &&
+          obj.camInfo.width == tracks_front[i][3] && obj.camInfo.height == tracks_front[i][4])
       {
-        obj.track.id=tracks[i][0];
-        pub_array.objects.emplace_back(obj);
+        obj.track.id = tracks_front[i][0];
+        pub_array_front.objects.emplace_back(obj);
       }
-    }	
-
+    }
+    for (unsigned int i = 0; i < tracks_fov30.size(); i++)
+    {
+      if (obj.camInfo.u == tracks_fov30[i][1] && obj.camInfo.v == tracks_fov30[i][2] &&
+          obj.camInfo.width == tracks_fov30[i][3] && obj.camInfo.height == tracks_fov30[i][4])
+      {
+        obj.track.id = tracks_fov30[i][0];
+        pub_array_fov30.objects.emplace_back(obj);
+      }
+    }
+    for (unsigned int i = 0; i < tracks_left_back.size(); i++)
+    {
+      if (obj.camInfo.u == tracks_left_back[i][1] && obj.camInfo.v == tracks_left_back[i][2] &&
+          obj.camInfo.width == tracks_left_back[i][3] && obj.camInfo.height == tracks_left_back[i][4])
+      {
+        obj.track.id = tracks_left_back[i][0];
+        pub_array_left_back.objects.emplace_back(obj);
+      }
+    }
+    for (unsigned int i = 0; i < tracks_right_back.size(); i++)
+    {
+      if (obj.camInfo.u == tracks_right_back[i][1] && obj.camInfo.v == tracks_right_back[i][2] &&
+          obj.camInfo.width == tracks_right_back[i][3] && obj.camInfo.height == tracks_right_back[i][4])
+      {
+        obj.track.id = tracks_right_back[i][0];
+        pub_array_right_back.objects.emplace_back(obj);
+      }
+    }
   }
 
   /********* publish ************/
-  chatter_pub_front.publish(pub_array);
+  chatter_pub_front.publish(pub_array_front);
+  chatter_pub_fov30.publish(pub_array_fov30);
+  chatter_pub_left_back.publish(pub_array_left_back);
+  chatter_pub_right_back.publish(pub_array_right_back);
 
   stop = ros::Time::now();
   total_time += stop - start;
@@ -124,7 +178,7 @@ void BagToMOT::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 #endif
 }
 
-void BagToMOT::pedestrian_event()
+void ROSGMPHD::pedestrian_event()
 {
   // AsyncSpinner reference:
   //  https://gist.github.com/bgromov/45ebeced9e8067d9f13cceececc00d5b#file-test_spinner-cpp-L63
@@ -136,7 +190,7 @@ void BagToMOT::pedestrian_event()
 
   ros::Subscriber sub_1;  // nh_sub_1
 
-  sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &BagToMOT::chatter_callback,
+  sub_1 = nh_sub_1.subscribe("/CameraDetection", 1, &ROSGMPHD::chatter_callback,
                              this);  // /PathPredictionOutput is sub topic
 
   // Loop with 100 Hz rate
@@ -159,25 +213,32 @@ int main(int argc, char** argv)
   start = ros::Time::now();
   ros::init(argc, argv, "ros_gmphd");
 
-  ped::BagToMOT pe;
-  pe.count = 0;
+  ped::ROSGMPHD ros_gmphd;
   /************  Initial GMPHD param *****************/
   GMPHDOGMparams sceneParam;
-  //setting param
-  sceneParam.DET_MIN_CONF = -100;    // Detection Confidence Threshold
+  // setting param
+  sceneParam.DET_MIN_CONF = -100;     // Detection Confidence Threshold
   sceneParam.T2TA_MAX_INTERVAL = 80;  // T2TA Maximum Interval
-  sceneParam.TRACK_MIN_SIZE = 2;     // Track Minium Length
+  sceneParam.TRACK_MIN_SIZE = 2;      // Track Minium Length
   sceneParam.FRAMES_DELAY_SIZE = sceneParam.TRACK_MIN_SIZE - 1;
   sceneParam.GROUP_QUEUE_SIZE = sceneParam.TRACK_MIN_SIZE * 10;
   //
-  pe.tracker->SetParams(sceneParam);
+  ros_gmphd.tracker_front->SetParams(sceneParam);
+  ros_gmphd.tracker_fov30->SetParams(sceneParam);
+  ros_gmphd.tracker_left_back->SetParams(sceneParam);
+  ros_gmphd.tracker_right_back->SetParams(sceneParam);
 
   ros::NodeHandle nh1;
-  pe.chatter_pub_front = nh1.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 1);
+  ros_gmphd.chatter_pub_front = nh1.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 1);
+  ros::NodeHandle nh2;
+  ros_gmphd.chatter_pub_fov30 = nh2.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_top_far_30", 1);
+  ros::NodeHandle nh3;
+  ros_gmphd.chatter_pub_left_back = nh3.advertise<msgs::DetectedObjectArray>("/Tracking2D/left_back_60", 1);
+  ros::NodeHandle nh4;
+  ros_gmphd.chatter_pub_right_back = nh4.advertise<msgs::DetectedObjectArray>("/Tracking2D/right_back_60", 1);
   stop = ros::Time::now();
-  std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
-  
-  pe.run();
+  std::cout << "GMPHD started. Init time: " << stop - start << " sec" << std::endl;
+
+  ros_gmphd.run();
   return 0;
 }
-

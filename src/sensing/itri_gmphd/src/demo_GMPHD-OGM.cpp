@@ -70,22 +70,22 @@ cv::Scalar OBJECT_COLORS[7] = { cv::Scalar(255, 255, 0),   /*Person: Lite Blue*/
                                 cv::Scalar(0, 255, 255),   /*Bus: Yellow*/
                                 cv::Scalar(0, 255, 0),     /*Green*/
                                 cv::Scalar(255, 0, 0) /*Blue*/ };
-}
+}  // namespace SYM
 
 /**
-* @brief		The Function for Loading the Experimental Environments (including Datasets, Parameters,...)
-* @details
-* @param[in]	seqList		The file path of sequences' list txt	(e.g., seqs\\MOT15train.txt).
-* @param[in]	paramsFile	The file path of parameter txt			(e.g., params\\MOT15train.txt).
-* @param[out]	seqNames	The list of all sequneces' names from seqList file.
-* @param[out]	seqPaths	The folder path of all image sequences.
-* @param[out]	allDets		The detection results for the image sequences.
-* @param[out]	sceneParams The scene-parameters from paramsFile txt.
-* @return
-* @throws
-*/
-/*void LoadEnvSettings(const string seqFile, const string paramsFile, vector<string>& seqNames, vector<string>& seqPaths,
-                     vector<vector<vector<vector<float>>>>& allDets, vector<GMPHDOGMparams>& sceneParams);*/
+ * @brief		The Function for Loading the Experimental Environments (including Datasets, Parameters,...)
+ * @details
+ * @param[in]	seqList		The file path of sequences' list txt	(e.g., seqs\\MOT15train.txt).
+ * @param[in]	paramsFile	The file path of parameter txt			(e.g., params\\MOT15train.txt).
+ * @param[out]	seqNames	The list of all sequneces' names from seqList file.
+ * @param[out]	seqPaths	The folder path of all image sequences.
+ * @param[out]	allDets		The detection results for the image sequences.
+ * @param[out]	sceneParams The scene-parameters from paramsFile txt.
+ * @return
+ * @throws
+ */
+/*void LoadEnvSettings(const string seqFile, const string paramsFile, vector<string>& seqNames, vector<string>&
+   seqPaths, vector<vector<vector<vector<float>>>>& allDets, vector<GMPHDOGMparams>& sceneParams);*/
 void LoadEnvSettings(vector<string>& seqNames, vector<string>& seqPaths, vector<vector<vector<vector<float>>>>& allDets,
                      vector<GMPHDOGMparams>& sceneParams);
 // Read All Images' Path and Detections as strings
@@ -100,44 +100,44 @@ void ReadAllDetections(const vector<string> detTxts, vector<vector<vector<vector
 vector<string> SortAllDetections(const vector<string> allLines, int DB_TYPE = DB_TYPE_MOT17);
 
 /**
-* @brief		The Function for Testing the GMPHD-OGM tracker in All Scenes
-* @details
-* @param[in]	seqNames		The sequences' names.
-* @param[in]	imgRootPaths	The folder paths for the image sequences.
-* @param[in]	allSeqDets		THe detection results' for the image sequences.
-* @param[in]	sceneParams		The parameters for the GMPHD-OGM tracker on all the scenes.
-* @param[out]	totalProcSecs	The processing time (seconds) of the GMPHD-OGM tracker on all the scenes.
-* @return		int				The total number of all the image sequences.
-* @throws
-*/
+ * @brief		The Function for Testing the GMPHD-OGM tracker in All Scenes
+ * @details
+ * @param[in]	seqNames		The sequences' names.
+ * @param[in]	imgRootPaths	The folder paths for the image sequences.
+ * @param[in]	allSeqDets		THe detection results' for the image sequences.
+ * @param[in]	sceneParams		The parameters for the GMPHD-OGM tracker on all the scenes.
+ * @param[out]	totalProcSecs	The processing time (seconds) of the GMPHD-OGM tracker on all the scenes.
+ * @return		int				The total number of all the image sequences.
+ * @throws
+ */
 /*int DoBatchTest(const vector<string> seqNames, const vector<string> imgRootPaths,
                 const vector<vector<vector<vector<float>>>> allSeqDets, const vector<GMPHDOGMparams> sceneParams,
                 double& totalProcSecs);*/
 /**
-* @brief		The Function for Testing the GMPHD-OGM tracker in One Scene
-* @details
-* @param[in]	seqName			The name of a sequence.
-* @param[in]	imgFolderPath	The folder path of the image sequence.
-* @param[in]	seqDets			The detection results on the sequence.
-* @param[in]	params			The parameters for the GMPHD-OGM tracker on the scene.
-* @param[out]	procSecs		The processing time (seconds) of the GMPHD-OGM tracker on the scene.
-* @return		int				The number of the image sequence.
-* @throws
-*/
+ * @brief		The Function for Testing the GMPHD-OGM tracker in One Scene
+ * @details
+ * @param[in]	seqName			The name of a sequence.
+ * @param[in]	imgFolderPath	The folder path of the image sequence.
+ * @param[in]	seqDets			The detection results on the sequence.
+ * @param[in]	params			The parameters for the GMPHD-OGM tracker on the scene.
+ * @param[out]	procSecs		The processing time (seconds) of the GMPHD-OGM tracker on the scene.
+ * @return		int				The number of the image sequence.
+ * @throws
+ */
 int DoSequenceTest(const string seqName, const string imgFolderPath, const vector<vector<vector<float>>> seqDets,
                    const GMPHDOGMparams params, double& procSecs);
 // The Function for Approximating the Lost Tracks which were recovered by T2TA.
-//void InterpolateAllTracks(vector<vector<BBTrk>> inputTracks, vector<vector<BBTrk>>& outputTracks);
+// void InterpolateAllTracks(vector<vector<BBTrk>> inputTracks, vector<vector<BBTrk>>& outputTracks);
 /**
-* @brief	The Function for Writing the Tracking Results into a Text File
-* @details
-* @param
-* @param
-* @param
-* @return
-* @throws
-*/
-//void WriteTracksTxt(const int DB_TYPE, string train_or_test, string seqName, GMPHD_OGM* tracker);
+ * @brief	The Function for Writing the Tracking Results into a Text File
+ * @details
+ * @param
+ * @param
+ * @param
+ * @return
+ * @throws
+ */
+// void WriteTracksTxt(const int DB_TYPE, string train_or_test, string seqName, GMPHD_OGM* tracker);
 
 // Drawing Functions
 // Draw Detection and Tracking Results
@@ -147,7 +147,7 @@ int DoSequenceTest(const string seqName, const string imgFolderPath, const vecto
 /*void DrawDetBBS(cv::Mat& img, int iter, cv::Rect bb, double conf, double conf_th, int digits, cv::Scalar color,
                 int thick = 3);*/
 /// Draw the Tracking Bounding Box
-//void DrawTrkBBS(cv::Mat& img, cv::Rect rec, cv::Scalar color, int thick, int id, double fontScale, string type);
+// void DrawTrkBBS(cv::Mat& img, cv::Rect rec, cv::Scalar color, int thick, int id, double fontScale, string type);
 // Draw Frame Number and FPS
 /*void DrawFrameNumberAndFPS(int iFrameCnt, cv::Mat& img, double scale, int thick, int frameOffset = 0,
                            int frames_skip_interval = 1, double sec = -1.0);
@@ -164,24 +164,24 @@ int main_()
   // GMPHD-OGM tracker
   /// MOT15 or MOT17
   // MOT15train.txt, MOT17train_DPM.txt, MOT17train_FRCNN.txt, or MOT17train_SDP.txt
-  //string seqList = GMPHD_DIR;
-  //seqList += "seqs/" + SYM::DB_NAMES[DB_TYPE] + mode + "_" + detector + ".txt";
-  //string paramsFile = GMPHD_DIR;
-  //paramsFile += "params/" + SYM::DB_NAMES[DB_TYPE] + mode + "_" + detector + ".txt";
+  // string seqList = GMPHD_DIR;
+  // seqList += "seqs/" + SYM::DB_NAMES[DB_TYPE] + mode + "_" + detector + ".txt";
+  // string paramsFile = GMPHD_DIR;
+  // paramsFile += "params/" + SYM::DB_NAMES[DB_TYPE] + mode + "_" + detector + ".txt";
 
   vector<string> seqNames, imgRootPaths;
   vector<vector<vector<vector<float>>>> allDets;
   vector<GMPHDOGMparams> sceneParams;
 
-  //LoadEnvSettings(seqList, paramsFile, seqNames, imgRootPaths, allDets, sceneParams);
+  // LoadEnvSettings(seqList, paramsFile, seqNames, imgRootPaths, allDets, sceneParams);
   LoadEnvSettings(seqNames, imgRootPaths, allDets, sceneParams);
   // Test "One Image Sequences" or "Batch: More than One Image Sequences"
   int64 t_start = cv::getTickCount();
   double procSecsDoMOT = 0.0;
   // int totalProcFrames = DoSequenceTest(seqNames[2], imgRootPaths[2], allDets[2], sceneParams[2], procSecsDoMOT);
-  //int totalProcFrames = DoBatchTest(seqNames, imgRootPaths, allDets, sceneParams, procSecsDoMOT);
+  // int totalProcFrames = DoBatchTest(seqNames, imgRootPaths, allDets, sceneParams, procSecsDoMOT);
   int totalProcFrames = DoSequenceTest(seqNames[0], imgRootPaths[0], allDets[0], sceneParams[0], procSecsDoMOT);
-  
+
   int64 t_end = cv::getTickCount();
   float totalProcSecs = (float)((t_end - t_start) / cv::getTickFrequency());
 
@@ -194,30 +194,31 @@ int main_()
 }
 
 // The Function for Loading the Experimental Environments (including Datasets, Parameters,...)
-/*void LoadEnvSettings(const string seqList, const string paramsFile, vector<string>& seqNames, vector<string>& seqPaths,
-                     vector<vector<vector<vector<float>>>>& allDets, vector<GMPHDOGMparams>& sceneParams)*/
-void LoadEnvSettings(vector<string>& seqNames, vector<string>& seqPaths,vector<vector<vector<vector<float>>>>& allDets,
+/*void LoadEnvSettings(const string seqList, const string paramsFile, vector<string>& seqNames, vector<string>&
+   seqPaths, vector<vector<vector<vector<float>>>>& allDets, vector<GMPHDOGMparams>& sceneParams)*/
+void LoadEnvSettings(vector<string>& seqNames, vector<string>& seqPaths, vector<vector<vector<vector<float>>>>& allDets,
                      vector<GMPHDOGMparams>& sceneParams)
 {
-  //cout << "Images and detections are loaded: \"" << seqList << "\"" << endl;
+  // cout << "Images and detections are loaded: \"" << seqList << "\"" << endl;
   vector<string> detTxts;
-  //ReadAllSequences(seqList, seqNames, seqPaths, detTxts);
+  // ReadAllSequences(seqList, seqNames, seqPaths, detTxts);
   seqNames.push_back("ITRIMOT_L3");
   seqPaths.push_back("/home/wasn/Downloads/MOT2017/train/ITRIMOT_L3/img1/");
   detTxts.push_back("/home/wasn/Downloads/MOT2017/train/ITRIMOT_L3/det/det.txt");
   ReadAllDetections(detTxts, allDets);
 
   GMPHDOGMparams tParams;
-  tParams.DET_MIN_CONF = -100;    // Detection Confidence Threshold
+  tParams.DET_MIN_CONF = -100;     // Detection Confidence Threshold
   tParams.T2TA_MAX_INTERVAL = 80;  // T2TA Maximum Interval
-  tParams.TRACK_MIN_SIZE = 2;     // Track Minium Length
+  tParams.TRACK_MIN_SIZE = 2;      // Track Minium Length
   tParams.FRAMES_DELAY_SIZE = tParams.TRACK_MIN_SIZE - 1;
   tParams.GROUP_QUEUE_SIZE = tParams.TRACK_MIN_SIZE * 10;
   sceneParams.push_back(tParams);
   /*cout << "Scene parameters are loaded: \"" << paramsFile << "\"" << endl;
   sceneParams = ReadSceneOptParams(seqPaths.size(), paramsFile, MERGE_METRIC_OPT);*/
 }
-/*void ReadAllSequences(const string seqFile, vector<string>& seqNames, vector<string>& seqPaths, vector<string>& detTxts)
+/*void ReadAllSequences(const string seqFile, vector<string>& seqNames, vector<string>& seqPaths, vector<string>&
+detTxts)
 {
   vector<string> allLines;
   if (access(seqFile.c_str(), 0) == 0)
@@ -299,11 +300,11 @@ vector<GMPHDOGMparams> ReadSceneOptParams(int nums_of_scenes, string paramsFileP
   {
     boost::char_separator<char> bTok(", ");
     boost::tokenizer<boost::char_separator<char>> tokens(iter[0], bTok);*/
-    /*vector<string> vals;
-    for (const auto& t : tokens)
-    {
-      vals.push_back(t);
-    }*/
+/*vector<string> vals;
+for (const auto& t : tokens)
+{
+  vals.push_back(t);
+}*/
 /*
     GMPHDOGMparams tParams;
     //tParams.DET_MIN_CONF = boost::lexical_cast<double>(vals.at(1));    // Detection Confidence Threshold
@@ -315,7 +316,7 @@ vector<GMPHDOGMparams> ReadSceneOptParams(int nums_of_scenes, string paramsFileP
     tParams.FRAMES_DELAY_SIZE = tParams.TRACK_MIN_SIZE - 1;
     tParams.GROUP_QUEUE_SIZE = tParams.TRACK_MIN_SIZE * 10;
 */
-    // cout << tParams.DET_MIN_CONF << ", " << tParams.T2TA_MAX_INTERVAL << "," << tParams.TRACK_MIN_SIZE << endl;
+// cout << tParams.DET_MIN_CONF << ", " << tParams.T2TA_MAX_INTERVAL << "," << tParams.TRACK_MIN_SIZE << endl;
 /*
     if (vals.size() > 4)
       boost::lexical_cast<int>(vals.at(4));  // Optional Settings (IOU or L1L1 -> D2TA_T2TA : L1 or L2 norm)
@@ -419,7 +420,7 @@ void ReadAllDetections(const vector<string> detTxts, vector<vector<vector<vector
     vector<vector<float>> bbsFrame;
     vector<string>::iterator itLines;
     int iFrmCnt = 1;
-    //int cnt = 1;
+    // int cnt = 1;
     for (itLines = itSeqs[0].begin(); itLines != itSeqs[0].end(); ++itLines)
     {
       boost::char_separator<char> bTok(", ");
@@ -556,34 +557,34 @@ int DoSequenceTest(const string seqName, const string imgFolderPath, const vecto
     cv::Mat img = cv::imread(img_path);
     cv::Mat img_det = img.clone();
     cv::Mat img_trk = img.clone();
-    if(iFrmCnt==1)
+    if (iFrmCnt == 1)
     {
-      for(unsigned int _k = 0;_k<seqDets[iFrmCnt].size();_k++)
+      for (unsigned int _k = 0; _k < seqDets[iFrmCnt].size(); _k++)
       {
-        for(unsigned int _k2=0;_k2<seqDets[iFrmCnt][0].size();_k2++)
+        for (unsigned int _k2 = 0; _k2 < seqDets[iFrmCnt][0].size(); _k2++)
         {
-          cout<<seqDets[iFrmCnt][_k][_k2]<<",";
+          cout << seqDets[iFrmCnt][_k][_k2] << ",";
         }
-        cout<<endl;
+        cout << endl;
       }
-      cout<<"\nend\n";
+      cout << "\nend\n";
     }
     // Tracking
     double t_start = (double)cv::getTickCount();
-    //vector<vector<float>> tracks = tracker->DoMOT(iFrmCnt, img_trk, seqDets[iFrmCnt]);
+    // vector<vector<float>> tracks = tracker->DoMOT(iFrmCnt, img_trk, seqDets[iFrmCnt]);
     vector<vector<float>> tracks = tracker->DoMOT(iFrmCnt, seqDets[iFrmCnt]);
-    if(iFrmCnt==1)
+    if (iFrmCnt == 1)
     {
-      for(unsigned int _k = 0;_k<tracks.size();_k++)
+      for (unsigned int _k = 0; _k < tracks.size(); _k++)
       {
-        for(unsigned int _k2=0;_k2<tracks[0].size();_k2++)
+        for (unsigned int _k2 = 0; _k2 < tracks[0].size(); _k2++)
         {
-          cout<<tracks[_k][_k2]<<",";
+          cout << tracks[_k][_k2] << ",";
         }
-        cout<<endl;
+        cout << endl;
       }
     }
-	  double t_end = (double)cv::getTickCount();
+    double t_end = (double)cv::getTickCount();
     double sec = (t_end - t_start) / cv::getTickFrequency();
     procSecs += sec;
 
@@ -626,7 +627,7 @@ int DoSequenceTest(const string seqName, const string imgFolderPath, const vecto
   }
 
   // Write the Tracking Results into a txt file.
-  //WriteTracksTxt(DB_TYPE, mode, seqName, tracker);
+  // WriteTracksTxt(DB_TYPE, mode, seqName, tracker);
 
   // Free the tracker
   delete tracker;
@@ -899,9 +900,10 @@ int DoSequenceTest(const string seqName, const string imgFolderPath, const vecto
       bg = cv::Rect(rec.x - 5, rec.y - 40, bgRecWidth, bgRecHeight);
     }
     cv::rectangle(img, bg, cv::Scalar(50, 50, 50), -1);
-    cv::putText(img, strID, pt, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 255, 255)*//*color*//*, thick);
-  }
-  cv::rectangle(img, rec, color, thick);
+    cv::putText(img, strID, pt, cv::FONT_HERSHEY_SIMPLEX, fontScale, cv::Scalar(0, 255, 255)*/
+/*color*/ /*, thick);
+}
+cv::rectangle(img, rec, color, thick);
 }*/
 // Draw Frame Number on Image
 /*void DrawFrameNumberAndFPS(int iFrameCnt, cv::Mat& img, double scale, int thick, int frameOffset,

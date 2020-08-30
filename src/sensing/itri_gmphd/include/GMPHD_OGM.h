@@ -338,12 +338,12 @@ typedef struct bbDet
 } BBDet;
 
 /**
-* @brief	A Class for the GMPHD-OGM tracker
-* @details	Input: images and object detection results / Output: tracking results of the GMPHD-PHD tracker
-* @author	Young-min Song
-* @date		2019-10-11
-* @version	0.0.1
-*/
+ * @brief	A Class for the GMPHD-OGM tracker
+ * @details	Input: images and object detection results / Output: tracking results of the GMPHD-PHD tracker
+ * @author	Young-min Song
+ * @date		2019-10-11
+ * @version	0.0.1
+ */
 class GMPHD_OGM
 {
 public:
@@ -353,7 +353,7 @@ public:
   void SetTotalFrames(int nFrames);
   GMPHDOGMparams GetParams();
 
-  //vector<vector<float>> DoMOT(int iFrmCnt, const cv::Mat& img, const vector<vector<float>> dets);
+  // vector<vector<float>> DoMOT(int iFrmCnt, const cv::Mat& img, const vector<vector<float>> dets);
   vector<vector<float>> DoMOT(int iFrmCnt, const vector<vector<float>> dets);
 
 public:
@@ -409,10 +409,9 @@ private:
   /*void DataAssocFrmWise(int iFrmCnt, const cv::Mat& img, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps,
                         const cv::Mat& H, double P_survive = 0.99, int offset = FRAME_OFFSET,
                         int dims_low = LOW_ASSOCIATION_DIMS);*/
-  void DataAssocFrmWise(int iFrmCnt, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps,
-                        const cv::Mat& H, double P_survive = 0.99, int offset = FRAME_OFFSET,
-                        int dims_low = LOW_ASSOCIATION_DIMS);
-  //void DataAssocTrkWise(int iFrmCnt, cv::Mat& img, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live);
+  void DataAssocFrmWise(int iFrmCnt, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps, const cv::Mat& H,
+                        double P_survive = 0.99, int offset = FRAME_OFFSET, int dims_low = LOW_ASSOCIATION_DIMS);
+  // void DataAssocTrkWise(int iFrmCnt, cv::Mat& img, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live);
   void DataAssocTrkWise(int iFrmCnt, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live);
   // Affinity (Cost) Calculation
   float FrameWiseAffinity(BBDet ob, BBTrk& stat_temp, const int dims = 2);

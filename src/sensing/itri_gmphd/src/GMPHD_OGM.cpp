@@ -56,7 +56,7 @@ GMPHD_OGM::GMPHD_OGM()
 GMPHD_OGM::~GMPHD_OGM()
 {
 }
-//vector<vector<float>> GMPHD_OGM::DoMOT(int iFrmCnt, const cv::Mat& img, const vector<vector<float>> dets)
+// vector<vector<float>> GMPHD_OGM::DoMOT(int iFrmCnt, const cv::Mat& img, const vector<vector<float>> dets)
 vector<vector<float>> GMPHD_OGM::DoMOT(int iFrmCnt, const vector<vector<float>> dets)
 {
   /*if (this->sysFrmCnt == 0)
@@ -119,12 +119,12 @@ vector<vector<float>> GMPHD_OGM::DoMOT(int iFrmCnt, const vector<vector<float>> 
     {
       imgBatch[q + 1].copyTo(imgBatch[q]);
     }*/
-    //img.copyTo(imgBatch[this->params.FRAMES_DELAY_SIZE]);
+    // img.copyTo(imgBatch[this->params.FRAMES_DELAY_SIZE]);
     detsBatch[this->params.FRAMES_DELAY_SIZE] = detVec;
   }
   else if (this->sysFrmCnt < this->params.TRACK_MIN_SIZE)
   {
-    //img.copyTo(imgBatch[this->sysFrmCnt]);
+    // img.copyTo(imgBatch[this->sysFrmCnt]);
     detsBatch[this->sysFrmCnt] = detVec;
   }
 
@@ -135,8 +135,8 @@ vector<vector<float>> GMPHD_OGM::DoMOT(int iFrmCnt, const vector<vector<float>> 
     // Predict
     this->PredictFrmWise(iFrmCnt, liveTrkVec, F, Q, Ps, PREDICTION_LEVEL_LOW);
     // Data Association -> Update -> Pruning -> Merge
-    //this->DataAssocFrmWise(iFrmCnt, img, this->liveTrkVec, detVec, this->Ps, this->H, this->P_survive, FRAME_OFFSET);
-	this->DataAssocFrmWise(iFrmCnt, this->liveTrkVec, detVec, this->Ps, this->H, this->P_survive, FRAME_OFFSET);
+    // this->DataAssocFrmWise(iFrmCnt, img, this->liveTrkVec, detVec, this->Ps, this->H, this->P_survive, FRAME_OFFSET);
+    this->DataAssocFrmWise(iFrmCnt, this->liveTrkVec, detVec, this->Ps, this->H, this->P_survive, FRAME_OFFSET);
   }
   else if (this->sysFrmCnt == 0 || this->liveTrkVec.size() == 0)
   {
@@ -168,15 +168,15 @@ vector<vector<float>> GMPHD_OGM::DoMOT(int iFrmCnt, const vector<vector<float>> 
     /// Data Association -> Update Tracklets -> Occlusion Group Enerege Minimization (OGEM)
     if (!lostReliables.empty() && /*!obss.empty()*/ !liveReliables.empty())
     {
-      //cv::Mat img_latency = imgBatch[0].clone();  // image for no latent association tracking
-      //this->DataAssocTrkWise(iFrmCnt - this->params.FRAMES_DELAY_SIZE, img_latency, lostReliables, liveReliables);
-	  this->DataAssocTrkWise(iFrmCnt - this->params.FRAMES_DELAY_SIZE, lostReliables, liveReliables);
+      // cv::Mat img_latency = imgBatch[0].clone();  // image for no latent association tracking
+      // this->DataAssocTrkWise(iFrmCnt - this->params.FRAMES_DELAY_SIZE, img_latency, lostReliables, liveReliables);
+      this->DataAssocTrkWise(iFrmCnt - this->params.FRAMES_DELAY_SIZE, lostReliables, liveReliables);
       // this->DataAssocTrkWise(iFrmCnt - this->params.FRAMES_DELAY_SIZE, img_latency, lostReliables, obss);
 
       this->ArrangeRevivedTracklets(this->tracks_reliable,
                                     liveReliables);  // it can be tracks_unreliabe, liveUnreliables
       // this->ArrangeRevivedTracklets(this->tracks_reliable, obss);
-      //img_latency.release();
+      // img_latency.release();
     }
     if (!obss.empty())
       liveReliables.insert(std::end(liveReliables), std::begin(obss), std::end(obss));
@@ -382,10 +382,10 @@ void GMPHD_OGM::PredictFrmWise(int iFrmCnt, vector<BBTrk>& stats, const cv::Mat 
     }
   }
 }
-//void GMPHD_OGM::DataAssocFrmWise(int iFrmCnt, const cv::Mat& img, vector<BBTrk>& stats, vector<BBDet>& obss,
+// void GMPHD_OGM::DataAssocFrmWise(int iFrmCnt, const cv::Mat& img, vector<BBTrk>& stats, vector<BBDet>& obss,
 //                                 cv::Mat& Ps, const cv::Mat& H, double P_survive, int offset, int dims_low)
-void GMPHD_OGM::DataAssocFrmWise(int iFrmCnt, vector<BBTrk>& stats, vector<BBDet>& obss,
-                                 cv::Mat& Ps, const cv::Mat& H, double P_survive, int offset, int dims_low)
+void GMPHD_OGM::DataAssocFrmWise(int iFrmCnt, vector<BBTrk>& stats, vector<BBDet>& obss, cv::Mat& Ps, const cv::Mat& H,
+                                 double P_survive, int offset, int dims_low)
 {
   int nObs = obss.size();
   int mStats = stats.size();
@@ -859,7 +859,7 @@ cv::Point2f GMPHD_OGM::LinearMotionEstimation(map<int, vector<BBTrk>> tracks, in
 
   return v;
 }
-//void GMPHD_OGM::DataAssocTrkWise(int iFrmCnt, cv::Mat& img, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live)
+// void GMPHD_OGM::DataAssocTrkWise(int iFrmCnt, cv::Mat& img, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live)
 void GMPHD_OGM::DataAssocTrkWise(int iFrmCnt, vector<BBTrk>& stats_lost, vector<BBTrk>& obss_live)
 {
   double min_cost_dbl = DBL_MAX;
@@ -1384,18 +1384,18 @@ void GMPHD_OGM::UnifyNeighborGroups(vector<BBTrk> input_targets)
   this->groupsBatch[this->params.GROUP_QUEUE_SIZE - 1] = groups;
 }
 /**
-*	@brief
-*	@details
-*	@param int iFrmCnt input
-*	@param int group_min_id input
-*	@param cv::Rect group_rect input
-*	@param cv::Rect* objs output
-*	@param vector<RectID> groupRects input
-*	@param vector<BBTrk> liveReliables output
-*
-*	@return double the cost value between the objects in a group
-*
-*/
+ *	@brief
+ *	@details
+ *	@param int iFrmCnt input
+ *	@param int group_min_id input
+ *	@param cv::Rect group_rect input
+ *	@param cv::Rect* objs output
+ *	@param vector<RectID> groupRects input
+ *	@param vector<BBTrk> liveReliables output
+ *
+ *	@return double the cost value between the objects in a group
+ *
+ */
 vector<double[2]> GMPHD_OGM::MinimizeGroupCost(int iFrmCnt, int group_min_id, cv::Rect group_rect, vector<RectID>* objs,
                                                vector<RectID> groupRects, vector<BBTrk>& liveReliables)
 {
@@ -1861,8 +1861,8 @@ void GMPHD_OGM::SortTrackletsbyID(map<int, vector<BBTrk>>& tracksbyID, vector<BB
     // ArrangeTargetsVecsBatchesLiveLost �� ���� alive track �鸸 ���ִ� ����
     int id = targets.at(j).id;
 
-    // targets.at(j).fn = this->sysFrmCnt; // �̰� �� �ȳѾ� ������ �̽��׸���, ��.. prediction ���� framenumber�� update
-    // �������..
+    // targets.at(j).fn = this->sysFrmCnt; // �̰� �� �ȳѾ� ������ �̽��׸���, ��.. prediction ���� framenumber��
+    // update �������..
 
     vector<BBTrk> tracklet;
     tracklet.push_back(targets.at(j));
@@ -1950,7 +1950,7 @@ void GMPHD_OGM::ClassifyReliableTracklets2LiveLost(int iFrmCnt, const map<int, v
         ////}
         ////else {	// Other Scenes for DPM
         ////if (iterT->second.size() >= this->params.TRACK_MIN_SIZE && iterT->second.size() <=
-        ///this->params.T2TA_MAX_INTERVAL) {
+        /// this->params.T2TA_MAX_INTERVAL) {
         ////	obss.push_back(iterT->second.back());
         ////}
         ////else if (iterT->second.size() > this->params.T2TA_MAX_INTERVAL) {
@@ -2074,8 +2074,8 @@ void GMPHD_OGM::InitializeTrackletsContainters()
 // 				//printf("%d:(%d,%d,%d)\n",i*a*a +j*a+k,i*n,j*n,k*n);
 // 				if (i*a*a + j*a + k == MAX_OBJECTS) break;
 // 				color_tab[i*a*a + j*a + k] = CV_RGB(i*n, j*n, k*n);
-// 				cv::line(temp, cv::Point((i*a*a + j*a + k) * 40 + 20, 0), cv::Point((i*a*a + j*a + k) * 40 + 20, 32), CV_RGB(i*n,
-// j*n, k*n), 32);
+// 				cv::line(temp, cv::Point((i*a*a + j*a + k) * 40 + 20, 0), cv::Point((i*a*a + j*a + k) * 40 + 20, 32),
+// CV_RGB(i*n, j*n, k*n), 32);
 // 			}
 // 		}
 // 	}
@@ -2098,9 +2098,8 @@ void GMPHD_OGM::InitializeMatrices(cv::Mat& F, cv::Mat& Q, cv::Mat& Ps, cv::Mat&
   ��t = �����ÿ��� ��frame���� �� 1�̴�.
   */
   F = cv::Mat::eye(dims_state, dims_state, CV_64FC1);  // identity matrix
-  F.at<double>(0, 2) =
-      1.0;  /// 30.0; // 30fps�� ����, ���߿� ����Ҷ� St = St-1 + Vt-1��t (S : location)
-            /// ����
+  F.at<double>(0, 2) = 1.0;  /// 30.0; // 30fps�� ����, ���߿� ����Ҷ� St = St-1 + Vt-1��t (S :
+                             /// location) ����
   F.at<double>(1, 3) = 1.0;  /// 30.0; // Vt-1��t ���� 1/30 �� �������. Vt-1 (1frame�� �̵��ȼ� / 0.0333..), ��t =
                              /// 0.0333...
 

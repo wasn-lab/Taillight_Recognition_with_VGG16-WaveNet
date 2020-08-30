@@ -111,43 +111,43 @@ void BagToMOT::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
            << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       if (obj_pub.classId == 1)
       {
-        file_1 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_1 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 2)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 3)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 4)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 5)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 6)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 7)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
       if (obj_pub.classId == 8)
       {
-        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width << ","
-           << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
+        file_2 << count << ",-1," << obj_pub.camInfo.u << "," << obj_pub.camInfo.v << "," << obj_pub.camInfo.width
+               << "," << obj_pub.camInfo.height << "," << obj_pub.camInfo.prob << ",-1,-1,-1\n";
       }
     }
     file << count << ",-1,-1,-1,-1,-1,-1,-1,-1,-1\n";
