@@ -42,14 +42,11 @@ void BagToMOT::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
     cv::Mat matrix2;
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
-    std::vector<msgs::PedObject> pedObjs;
-    std::vector<msgs::DetectedObject> alertObjs;
-    pedObjs.reserve(msg->objects.end() - msg->objects.begin());
 
     for (auto const& obj : msg->objects)
     {
       // set msg infomation
-      msgs::PedObject obj_pub;
+      msgs::DetectedObject obj_pub;
       obj_pub.header = obj.header;
       obj_pub.header.frame_id = obj.header.frame_id;
       obj_pub.header.stamp = obj.header.stamp;

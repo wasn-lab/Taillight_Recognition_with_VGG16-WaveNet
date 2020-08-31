@@ -4,34 +4,21 @@
 #include "ros/ros.h"
 #include <ros/spinner.h>
 #include <ros/callback_queue.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <sensor_msgs/Image.h>
-#include <geometry_msgs/TransformStamped.h>
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
-#include "msgs/PedObject.h"
-#include "msgs/PedObjectArray.h"
 
 #include <opencv2/opencv.hpp>  // opencv general include file
-#include <opencv2/dnn.hpp>
-#include <opencv2/ml.hpp>  // opencv machine learning include file
 #include <cv_bridge/cv_bridge.h>
 #include <gmphd_def.h>
-#include <map>
 #include <boost/circular_buffer.hpp>
 // C++ std library dependencies
-#include <chrono>  // `std::chrono::` functions and classes, e.g. std::chrono::milliseconds
-#include <thread>  // std::this_thread
 #include <fstream>
-#include <sys/ioctl.h>
-#include <unistd.h>
 
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
 #define PRINT_MESSAGE 1
-
-#define M_PIl 3.141592653589793238462643383279502884L /* pi */
 
 namespace ped
 {
@@ -80,7 +67,6 @@ public:
   std::ofstream file_6;
   std::ofstream file_7;
   std::ofstream file_8;
-  struct winsize terminal_size;
 
   // Setup variables
   const double scaling_ratio_width = 0.3167;
