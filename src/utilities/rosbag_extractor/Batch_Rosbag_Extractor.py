@@ -10,7 +10,7 @@ import os
 import time
 import string
 import rospy
-import pypcd
+import pypcd  # pylint: disable=import-error
 from pypcd import PointCloud  # pylint: disable=no-name-in-module
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
