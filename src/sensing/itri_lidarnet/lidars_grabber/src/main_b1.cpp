@@ -316,7 +316,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     //   *localization_cloud_many += *localization_cloud;
     // }
     // localization_cloud_many->header.frame_id = "lidar";
-    // pub_LidarFrontTop_Localization.publish(*localization_cloud_many);
+    pub_LidarFrontTop_Localization.publish(*localization_cloud);
     
     
     // Ring Filter
