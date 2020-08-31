@@ -1475,7 +1475,7 @@ vector<double[2]> GMPHD_OGM::MinimizeGroupCost(int iFrmCnt, int group_min_id, cv
     bool bIC[2] = { false, false };
     for (int h = 0; h < 2; ++h)
     {
-      double costs[2] = { -1.0 * (log2l(w[0]) + lnc[h][0] + log2l(w[1]) + lnc[h][1]), 10000 };
+      double costs[2] = { -1.0 * (double)(log2l(w[0]) + lnc[h][0] + log2l(w[1]) + lnc[h][1]), 10000 };
       // printf("[Hypothesis %d]\n",h+1);
       for (int p = 0; p < 2; ++p)
       {
@@ -1655,7 +1655,7 @@ vector<double[2]> GMPHD_OGM::MinimizeGroupCost(int iFrmCnt, int group_min_id, cv
     bool bIC[6] = { false, false, false, false, false, false };
     for (int h = 0; h < 6; ++h)
     {
-      double costs[2] = { -1.0 * (log2l(w[0] * w[1] * w[2] * w[3] * w[4] * w[5]) + lnc[h][0] + lnc[h][1] + lnc[h][2] +
+      double costs[2] = { -1.0 * (double)(log2l(w[0] * w[1] * w[2] * w[3] * w[4] * w[5]) + lnc[h][0] + lnc[h][1] + lnc[h][2] +
                                   lnc[h][3] + lnc[h][4] + lnc[h][5]),
                           10000 };
 
