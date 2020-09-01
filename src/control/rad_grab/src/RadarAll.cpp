@@ -35,6 +35,7 @@ ros::Publisher RadFrontPub;
 
 double imu_angular_velocity_z = 0;
 int do_rotate = 0;
+int print_count = 0;
 
 void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 {
@@ -42,13 +43,17 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
   msgs::Rad rad;
   msgs::PointXYZV point;
 
-  //             _____
+  // 1: front center, 2: front left, 3: front right,
+  // 4: side left, 5: side right,
+  // 6: back left, 7: back right
+  //
+  //            2__1__3
+  //            4|   |5
   //             |   |
   //             |   |
   //             |   |
   //             |   |
-  //             |   |
-  //             |___|
+  //            6|___|7
   //
   //
 
@@ -118,7 +123,6 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 
 void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
 {
- 
 }
 
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
@@ -149,8 +153,13 @@ int main(int argc, char** argv)
   ros::Rate rate(20);
   while (ros::ok())
   {
+    print_count++;
+    if (print_count > 60)
+    {
+      std::cout << "=================================== Radar Detection ==============================" << std::endl;
+      print_count = 0;
+    }
     ros::spinOnce();
-    std::cout << "====================== Radar Detection =================="<< std::endl;
     rate.sleep();
   }
   return 0;
