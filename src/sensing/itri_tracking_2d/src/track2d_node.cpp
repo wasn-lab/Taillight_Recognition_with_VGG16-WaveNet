@@ -143,7 +143,7 @@ void Track2DNode::publish()
   {
     msgs::DetectedObject box = track.box_;
 
-    box.header = objs_header_;
+    // box.header = objs_header_;
 
     // init max_length, head, is_over_max_length
     box.track.max_length = 10;
