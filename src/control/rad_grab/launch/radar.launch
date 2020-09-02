@@ -1,10 +1,5 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-	<!-- nodes
-
-	<node pkg="rad_grab" type="radfront_delphi" name="radfront_delphi" output="screen" cwd="node" respawn="true" />
-	
- -->
 
 	<node pkg="rad_grab" type="radfrontsub_can" name="radfrontsub_can" output="screen" cwd="node" respawn="true" />
 	<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true" />
@@ -12,12 +7,13 @@
 
 	<!-- Global arg ************************************************************ -->
 	<arg name="radar_enable" default="1" />
-	<arg name="delphi_enable" default="1" />
+	<arg name="delphi_enable" default="0" />
 	<arg name="umec_enable" default="0" />
+	<arg name="alpha_test" default="1" />
 	<arg name="alpha_front_enable" default="0" />
 	<arg name="alpha_side_enable" default="0" />
-
-	<rosparam param="debug_output">true</rosparam>
+	<arg name="alpha_back_enable" default="0" />
+	<rosparam param="debug_message">0</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
 	<rosparam param="Delphi_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
@@ -31,73 +27,80 @@
 	<rosparam param="Alpha_Back_Left_Param">[1, 0, 0, 0, 0, 0]</rosparam>
 
 	<!-- ************ Radar Detection ************ -->
-	<group ns="RadarDetection" if="$(eval arg('radar_enable') != 0)">
+	<group if="$(eval arg('radar_enable') != 0)">
 
 		<node pkg="rad_grab" type="radar_all" name="radar_all" output="screen" cwd="node" respawn="true" />
 
 	</group>
 
 	<!-- ************ Delphi Front Center ************ -->
-	<group ns="DelphiFrontCenter" if="$(eval arg('delphi_enable') != 0)">
+	<group if="$(eval arg('delphi_enable') != 0)">
 
-		<node pkg="rad_grab" type="radfront_delphi" name="radfront_delphi" output="screen" cwd="node"/>
+		<node pkg="rad_grab" type="rad_delphi" name="radfront_delphi" output="screen" cwd="node" />
 
 	</group>
 
 	<!-- ************ Alpha Front Center ************ -->
-	<group ns="AlphaFrontCenter" if="$(eval arg('delphi_enable') != 0)">
+	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="1" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_front_center" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_fc_to_baselink" args="0 0 0 0 0 0 base_link rad_fc" />
 	</group>
 
-	<!-- ************ Alpha Front Left ************ -->
-	<group ns="AlphaFrontLeft" if="$(eval arg('alpha_front_enable') != 0)">
+	<!-- ************ Alpha Front Left ************ 45 degree to radian -->
+	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="2" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_front_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_fl_to_baselink" args="0 0 0 0 0 0 base_link rad_fl" />
 	</group>
 
 	<!-- ************ Alpha Front Right ************ -->
-	<group ns="AlphaFrontRight" if="$(eval arg('alpha_front_enable') != 0)">
+	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="3" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node" respawn="true">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_front_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_fr_to_baselink" args="0 0 0 0 0 0 base_link rad_fr" />
 	</group>
 
 	<!-- ************ Alpha Side Left ************ -->
-	<group ns="AlphaSideLeft" if="$(eval arg('alpha_side_enable') != 0)">
+	<group if="$(eval arg('alpha_test') != 0)">
 		<arg name="filter_id" default="4" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node" respawn="true">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_side_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sl_to_baselink" args="0 0 0 0 0 0 base_link rad_sl" />
 	</group>
 
 	<!-- ************ Alpha Side Right ************ -->
-	<group ns="AlphaSideRight" if="$(eval arg('alpha_side_enable') != 0)">
+	<group if="$(eval arg('alpha_test') != 0)">
 		<arg name="filter_id" default="5" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node" respawn="true">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_side_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sr_to_baselink" args="0 0 0 0 0 0 base_link rad_sr" />
 	</group>
 
 	<!-- ************ Alpha Back Left ************ -->
-	<group ns="AlphaBackLeft" if="$(eval arg('alpha_side_enable') != 0)">
+	<group if="$(eval arg('alpha_back_enable') != 0)">
 		<arg name="filter_id" default="6" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node" respawn="true">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_back_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="0 0 0 0 0 0 base_link rad_bl" />
 	</group>
 
 	<!-- ************ Alpha Back Right ************ -->
-	<group ns="AlphaBackRight" if="$(eval arg('alpha_side_enable') != 0)">
+	<group if="$(eval arg('alpha_back_enable') != 0)">
 		<arg name="filter_id" default="7" />
-		<node pkg="rad_grab" type="radfront_alpha" name="radfront_alpha" output="screen" cwd="node" respawn="true">
+		<node pkg="rad_grab" type="rad_alpha" name="rad_back_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_br_to_baselink" args="0 0 0 0 0 0 base_link rad_br" />
 	</group>
 
 
