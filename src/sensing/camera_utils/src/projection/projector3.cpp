@@ -148,7 +148,17 @@ bool Projector3::outOfFov(float x, float y, float z)
   }
   return false;
 }
-
+bool Projector3::outOfCoverage(float x, float y, float z)
+{
+  if(!coverage_mat.empty())
+  {
+    if (x < min_x || x > max_x || y < min_y || y > max_y)
+    {
+      return true;
+    }
+  }
+  return false;
+}
 void Projector3::readCameraParameters(const char* yml_filename)
 {
   cv::FileStorage fs;

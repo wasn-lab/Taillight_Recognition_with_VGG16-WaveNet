@@ -26,4 +26,4 @@ CoverageMat: !!opencv-matrix
    cols: 2
    dt: f
    data: [ 0., 50.,
-           -50., 50. ]
+           -20., 20. ]

@@ -39,3 +39,11 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   }
   return pixel_position;
 }
+bool Alignment::checkPointInCoverage(PointXYZI point)
+{
+  bool is_out_of_coverage = false;
+#if CAR_MODEL_IS_B1_V2
+  is_out_of_coverage = projector3_.outOfCoverage(point.x, point.y, point.z);
+#endif
+  return !is_out_of_coverage;
+}
