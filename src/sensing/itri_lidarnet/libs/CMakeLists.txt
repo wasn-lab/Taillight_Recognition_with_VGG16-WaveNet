@@ -359,7 +359,10 @@ set(SOURCES_SRCS
   shape_estimation/corrector/no_corrector.cpp
   Clustering/DBSCAN/CUDA/g_dbscan.cu
   Preprocess/Transform/Transform_CUDA.cu
-  Preprocess/VoxelGrid/VoxelGrid_CUDA.cu)
+  Preprocess/VoxelGrid/VoxelGrid_CUDA.cu
+  Format/pointcloud_format_conversion.cpp
+  )
+
 
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} ${TENSORFLOW_LIBRARIES})
