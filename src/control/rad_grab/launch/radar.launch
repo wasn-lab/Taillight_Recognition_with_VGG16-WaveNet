@@ -36,7 +36,7 @@
 	<!-- ************ Delphi Front Center ************ -->
 	<group if="$(eval arg('delphi_enable') != 0)">
 
-		<node pkg="rad_grab" type="rad_delphi" name="radfront_delphi" output="screen" cwd="node" />
+		<node pkg="rad_grab" type="radfront_delphi" name="radfront_delphi" output="screen" cwd="node" />
 
 	</group>
 
