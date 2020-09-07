@@ -7,7 +7,6 @@
 #include <target_planner/MM_TP_msg.h>
 #include <target_planner/UKF_MM_msg.h>
 #include <msgs/VehInfo.h>
-#include "msgs/CurrentTrajInfo.h"
 #include <cstdlib>
 #include <cmath>
 
@@ -49,10 +48,6 @@ nav_msgs::Path final_waypoints;
 
 double Look_ahead_time = 1.6;
 double Look_ahead_S0 = 3;
-double Look_ahead_time_right = 1.0;
-double Look_ahead_S0_right = 1.5;
-double Look_ahead_time_final = 1.6;
-double Look_ahead_S0_final = 3;
 double current_velocity_ = 0;
 double wheel_dis = 3.8;
 
@@ -72,7 +67,7 @@ bool checkInitialized()
 void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, double wheel_dis_, ros::Publisher target_pub, ros::Publisher vehicle_target_pub)
 { 
   double dis = 0.0;
-  double ahead_dis = current_velocity_ * Look_ahead_time_final + Look_ahead_S0_final;
+  double ahead_dis = current_velocity_ * Look_ahead_time + Look_ahead_S0;
   // std::cout << "ahead_dis : " << ahead_dis << std::endl;
   int waypoints_size = final_waypoints.poses.size();
   double diss_max = 100;
@@ -219,7 +214,7 @@ void ukfmm_callback(const target_planner::UKF_MM_msg::ConstPtr& UKFMMmsg)
   current_pose_ukf.pitch = current_pose.pitch;
   current_pose_ukf.yaw = UKFMMmsg->X_UKF_SLAM[2];
   current_pose_ukf.speed = UKFMMmsg->X_UKF_SLAM[4];
-  // Look_ahead_time = UKFMMmsg->Look_ahead_time;
+  Look_ahead_time = UKFMMmsg->Look_ahead_time;
   ukfmm_ini = true; 
 }
 
@@ -235,22 +230,6 @@ void currentVelocityCallback(const msgs::VehInfo::ConstPtr& msg)
   current_velocity_initialized_ = true;
 }
 
-void currentTrajInfoCallback(const msgs::CurrentTrajInfo::ConstPtr& msg)
-{
-  int LRturn_ = msg->LRturn;
-  if (LRturn_ == 2)
-  {
-    Look_ahead_time_final = Look_ahead_time_right;
-    Look_ahead_S0_final = Look_ahead_S0_right;
-  }
-  else
-  {
-    Look_ahead_time_final = Look_ahead_time;
-    Look_ahead_S0_final = Look_ahead_S0;
-  }
-  
-}
-
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "target_planner");
@@ -258,8 +237,6 @@ int main(int argc, char** argv)
 
   ros::param::get(ros::this_node::getName()+"/Look_ahead_time", Look_ahead_time);
   ros::param::get(ros::this_node::getName()+"/Look_ahead_S0", Look_ahead_S0);
-  ros::param::get(ros::this_node::getName()+"/Look_ahead_time_right", Look_ahead_time_right);
-  ros::param::get(ros::this_node::getName()+"/Look_ahead_S0_right", Look_ahead_S0_right);
   ros::param::get(ros::this_node::getName()+"/wheel_dis", wheel_dis);
   
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, currentposeCallback);
@@ -267,7 +244,6 @@ int main(int argc, char** argv)
   ros::Subscriber ukfmm_sub = node.subscribe("ukf_mm_topic", 1, ukfmm_callback);
   ros::Subscriber safety_waypoints_sub = node.subscribe("nav_path_astar_final", 1, final_waypoints_callback);
   ros::Subscriber velocity_sub = node.subscribe("veh_info",1,currentVelocityCallback);
-  ros::Subscriber current_traj_info_sub = node.subscribe("/current_trajectory_info",1,currentTrajInfoCallback);
   rear_target_pub = node.advertise<geometry_msgs::PoseStamped>("rear_target_point",1);
   rear_vehicle_target_pub = node.advertise<geometry_msgs::PoseStamped>("rear_vehicle_target_point",1);
   front_target_pub = node.advertise<geometry_msgs::PoseStamped>("front_target_point",1);

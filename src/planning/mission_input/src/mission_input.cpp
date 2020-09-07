@@ -65,21 +65,13 @@ double (&SEG_Z)[size_readtmp],double (&ORI_X)[size_readtmp],double (&ORI_Y)[size
     }
 }
 
-void Ini_route_01_bytxt()
+void Ini_obs_bytxt()
 {
   std::string fpname = ros::package::getPath("mission_input");
   std::string fpname_s = fpname + "/data/ITRI_route_01.txt"; // full route
 
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
-
-// void Ini_route_02_bytxt()
-// {
-//   std::string fpname = ros::package::getPath("mission_input");
-//   std::string fpname_s = fpname + "/data/ITRI_route_02.txt"; // full route
-
-//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-// }
 
 void Ini_busstop_bytxt()
 {
@@ -106,7 +98,7 @@ void get_goal_point()
 
   goal_publisher.publish(input_goal);
   std::cout << "Set offline goal point!" << std::endl;
-  ros::Rate loop_rate(2);
+  ros::Rate loop_rate(0.5);
   ros::spinOnce();
   loop_rate.sleep();
 }
@@ -128,7 +120,7 @@ void get_checkpoint_point()
     input_checkpoint.pose.orientation.w = ori_w[i];
     checkpoint_publisher.publish(input_checkpoint);
     std::cout << "Set offline checkpoint " << i << " !" << std::endl;
-    ros::Rate loop_rate(2);
+    ros::Rate loop_rate(0.5);
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -151,7 +143,7 @@ void get_realtime_goal_point(int i)
 
   goal_publisher.publish(input_goal);
   std::cout << "Set real time goal point!" << std::endl;
-  ros::Rate loop_rate(2);
+  ros::Rate loop_rate(0.5);
   loop_rate.sleep();
 }
 
@@ -171,7 +163,7 @@ void get_realtime_checkpoint_point(int i)
 
   checkpoint_publisher.publish(input_checkpoint);
   std::cout << "Set real time checkpoint " << i << " !" << std::endl;
-  ros::Rate loop_rate(2);
+  ros::Rate loop_rate(0.5);
   loop_rate.sleep();
 }
 
@@ -179,8 +171,7 @@ void offline_realtime_goal_setting()
 {
   if (ORGS == 0)
   {
-    Ini_route_01_bytxt();
-    // Ini_route_02_bytxt();
+    Ini_obs_bytxt();
     get_goal_point();
     get_checkpoint_point();
   }
