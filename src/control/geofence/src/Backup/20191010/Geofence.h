@@ -21,25 +21,24 @@
 #include <math.h>
 #include <string.h>
 #ifndef Geofence_COMMON_INCLUDES_
-#define Geofence_COMMON_INCLUDES_
+# define Geofence_COMMON_INCLUDES_
 #include "rtwtypes.h"
-#endif  // Geofence_COMMON_INCLUDES_
+#endif                                 // Geofence_COMMON_INCLUDES_
 
 // Macros for accessing real-time model data structure
 #ifndef rtmGetErrorStatus
-#define rtmGetErrorStatus(rtm) ((rtm)->errorStatus)
+# define rtmGetErrorStatus(rtm)        ((rtm)->errorStatus)
 #endif
 
 #ifndef rtmSetErrorStatus
-#define rtmSetErrorStatus(rtm, val) ((rtm)->errorStatus = (val))
+# define rtmSetErrorStatus(rtm, val)   ((rtm)->errorStatus = (val))
 #endif
 
 // Forward declaration for rtModel
 typedef struct tag_RTM RT_MODEL;
 
 // Block signals and states (default storage) for system '<Root>'
-typedef struct
-{
+typedef struct {
   real_T X_points_one[10201];
   real_T Y_points_one[10201];
   real_T X_points_two[10201];
@@ -52,33 +51,29 @@ typedef struct
 } DW;
 
 // External inputs (root inport signals with default storage)
-typedef struct
-{
-  real_T X_Poly[12];         // '<Root>/X_Poly'
-  real_T Y_Poly[12];         // '<Root>/Y_Poly'
-  real_T BoundingBox[1000];  // '<Root>/BoundingBox'
-  real_T OB_num;             // '<Root>/OB_num'
+typedef struct {
+  real_T X_Poly[12];                   // '<Root>/X_Poly'
+  real_T Y_Poly[12];                   // '<Root>/Y_Poly'
+  real_T BoundingBox[1000];            // '<Root>/BoundingBox'
+  real_T OB_num;                       // '<Root>/OB_num'
 } ExtU;
 
 // External outputs (root outports fed by signals with default storage)
-typedef struct
-{
-  real_T Trigger;    // '<Root>/Trigger'
-  real_T Range;      // '<Root>/Range'
-  real_T Obj_Speed;  // '<Root>/Obj_Speed'
+typedef struct {
+  real_T Trigger;                      // '<Root>/Trigger'
+  real_T Range;                        // '<Root>/Range'
+  real_T Obj_Speed;                    // '<Root>/Obj_Speed'
 } ExtY;
 
 // Real-time Model Data Structure
-struct tag_RTM
-{
-  const char_T* volatile errorStatus;
+struct tag_RTM {
+  const char_T * volatile errorStatus;
 };
 
 // Class declaration for model Geofence
-class untitled1ModelClass
-{
+class untitled1ModelClass {
   // public data and function members
-public:
+ public:
   // External inputs
   ExtU rtU;
 
@@ -98,10 +93,10 @@ public:
   ~untitled1ModelClass();
 
   // Real-Time Model get method
-  RT_MODEL* getRTM();
+  RT_MODEL * getRTM();
 
   // private data and function members
-private:
+ private:
   // Block signals and states
   DW rtDW;
 
@@ -126,7 +121,7 @@ private:
 //  '<Root>' : 'Geofence'
 //  '<S1>'   : 'Geofence/Calculator'
 
-#endif  // RTW_HEADER_Geofence_h_
+#endif                                 // RTW_HEADER_Geofence_h_
 
 //
 // File trailer for generated code.

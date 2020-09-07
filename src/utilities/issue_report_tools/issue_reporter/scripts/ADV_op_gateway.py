@@ -69,7 +69,6 @@ mqtt_subscription_list.append( (mqtt_advop_req_run_stop_subT, 2) )
 #------------------------#
 mqtt_advop_run_state_pubT = mqtt_msg_topic_namespace + '/run_state' #
 mqtt_advop_sys_ready_pubT = mqtt_msg_topic_namespace + '/sys_ready' #
-mqtt_advop_event_json_pubT = mqtt_msg_topic_namespace + '/event_json' #
 #------------------------#
 
 #------------------------------------------------------------#
@@ -221,19 +220,6 @@ def ros_advop_sys_ready_CB(msg):
     mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(msg.data), qos=2, retain=False)
     #
     set_timer_sys_ready()
-
-def ros_advop_event_json_CB(msg):
-    """
-    This is the callback function for sys_ready.
-    ** On receiving this message, bypass to MQTT interface.
-    """
-    event_json = msg.data #
-    print("[ADV_op_gateway] event_json = %s" % event_json)
-    if mqtt_client is None:
-        return
-    # Publish
-    mqtt_client.publish(mqtt_advop_event_json_pubT, payload=event_json, qos=2, retain=False)
-    #
 #------------------------------------------------------------#
 # end ROS callbacks
 
@@ -257,7 +243,6 @@ def main():
     rospy.Subscriber("Flag_Info02", Flag_Info, ros_Flag_02_CB)
     #
     rospy.Subscriber("ADV_op/sys_ready", Bool, ros_advop_sys_ready_CB)
-    rospy.Subscriber("ADV_op/event_json", String, ros_advop_event_json_CB)
     #-----------------------------#
 
 

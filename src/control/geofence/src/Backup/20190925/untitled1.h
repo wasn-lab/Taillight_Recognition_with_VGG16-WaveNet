@@ -21,25 +21,24 @@
 #include <math.h>
 #include <string.h>
 #ifndef untitled1_COMMON_INCLUDES_
-#define untitled1_COMMON_INCLUDES_
+# define untitled1_COMMON_INCLUDES_
 #include "rtwtypes.h"
-#endif  // untitled1_COMMON_INCLUDES_
+#endif                                 // untitled1_COMMON_INCLUDES_
 
 // Macros for accessing real-time model data structure
 #ifndef rtmGetErrorStatus
-#define rtmGetErrorStatus(rtm) ((rtm)->errorStatus)
+# define rtmGetErrorStatus(rtm)        ((rtm)->errorStatus)
 #endif
 
 #ifndef rtmSetErrorStatus
-#define rtmSetErrorStatus(rtm, val) ((rtm)->errorStatus = (val))
+# define rtmSetErrorStatus(rtm, val)   ((rtm)->errorStatus = (val))
 #endif
 
 // Forward declaration for rtModel
 typedef struct tag_RTM RT_MODEL;
 
 // Block signals and states (default storage) for system '<Root>'
-typedef struct
-{
+typedef struct {
   real_T X_points_one[10201];
   real_T Y_points_one[10201];
   real_T X_points_two[10201];
@@ -52,33 +51,29 @@ typedef struct
 } DW;
 
 // External inputs (root inport signals with default storage)
-typedef struct
-{
-  real_T Input[12];    // '<Root>/Input'
-  real_T Input1[12];   // '<Root>/Input1'
-  real_T Input2[400];  // '<Root>/Input2'
-  real_T Input3;       // '<Root>/Input3'
+typedef struct {
+  real_T Input[12];                    // '<Root>/Input'
+  real_T Input1[12];                   // '<Root>/Input1'
+  real_T Input2[400];                  // '<Root>/Input2'
+  real_T Input3;                       // '<Root>/Input3'
 } ExtU;
 
 // External outputs (root outports fed by signals with default storage)
-typedef struct
-{
-  real_T Output;   // '<Root>/Output'
-  real_T Output1;  // '<Root>/Output1'
-  real_T Output2;  // '<Root>/Output2'
+typedef struct {
+  real_T Output;                       // '<Root>/Output'
+  real_T Output1;                      // '<Root>/Output1'
+  real_T Output2;                      // '<Root>/Output2'
 } ExtY;
 
 // Real-time Model Data Structure
-struct tag_RTM
-{
-  const char_T* volatile errorStatus;
+struct tag_RTM {
+  const char_T * volatile errorStatus;
 };
 
 // Class declaration for model untitled1
-class untitled1ModelClass
-{
+class untitled1ModelClass {
   // public data and function members
-public:
+ public:
   // External inputs
   ExtU rtU;
 
@@ -98,10 +93,10 @@ public:
   ~untitled1ModelClass();
 
   // Real-Time Model get method
-  RT_MODEL* getRTM();
+  RT_MODEL * getRTM();
 
   // private data and function members
-private:
+ private:
   // Block signals and states
   DW rtDW;
 
@@ -126,7 +121,7 @@ private:
 //  '<Root>' : 'untitled1'
 //  '<S1>'   : 'untitled1/Boundary'
 
-#endif  // RTW_HEADER_untitled1_h_
+#endif                                 // RTW_HEADER_untitled1_h_
 
 //
 // File trailer for generated code.
