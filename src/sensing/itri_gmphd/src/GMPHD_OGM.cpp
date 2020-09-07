@@ -1655,8 +1655,8 @@ vector<double[2]> GMPHD_OGM::MinimizeGroupCost(int iFrmCnt, int group_min_id, cv
     bool bIC[6] = { false, false, false, false, false, false };
     for (int h = 0; h < 6; ++h)
     {
-      double costs[2] = { -1.0 * (double)(log2l(w[0] * w[1] * w[2] * w[3] * w[4] * w[5]) + lnc[h][0] + lnc[h][1] + lnc[h][2] +
-                                  lnc[h][3] + lnc[h][4] + lnc[h][5]),
+      double costs[2] = { -1.0 * (double)(log2l(w[0] * w[1] * w[2] * w[3] * w[4] * w[5]) + lnc[h][0] + lnc[h][1] +
+                                          lnc[h][2] + lnc[h][3] + lnc[h][4] + lnc[h][5]),
                           10000 };
 
       // printf("[Hypothesis %d]\n", h);
@@ -1861,8 +1861,8 @@ void GMPHD_OGM::SortTrackletsbyID(map<int, vector<BBTrk>>& tracksbyID, vector<BB
     // ArrangeTargetsVecsBatchesLiveLost �� ���� alive track �鸸 ���ִ� ����
     int id = targets.at(j).id;
 
-    // targets.at(j).fn = this->sysFrmCnt; // �̰� �� �ȳѾ� ������ �̽��׸���, ��.. prediction ���� framenumber��
-    // update �������..
+    // targets.at(j).fn = this->sysFrmCnt; // �̰� �� �ȳѾ� ������ �̽��׸���, ��.. prediction ����
+    // framenumber�� update �������..
 
     vector<BBTrk> tracklet;
     tracklet.push_back(targets.at(j));
@@ -2098,8 +2098,8 @@ void GMPHD_OGM::InitializeMatrices(cv::Mat& F, cv::Mat& Q, cv::Mat& Ps, cv::Mat&
   ��t = �����ÿ��� ��frame���� �� 1�̴�.
   */
   F = cv::Mat::eye(dims_state, dims_state, CV_64FC1);  // identity matrix
-  F.at<double>(0, 2) = 1.0;  /// 30.0; // 30fps�� ����, ���߿� ����Ҷ� St = St-1 + Vt-1��t (S :
-                             /// location) ����
+  F.at<double>(0, 2) = 1.0;  /// 30.0; // 30fps�� ����, ���߿� ����Ҷ� St = St-1 + Vt-1��t (S
+                             /// : location) ����
   F.at<double>(1, 3) = 1.0;  /// 30.0; // Vt-1��t ���� 1/30 �� �������. Vt-1 (1frame�� �̵��ȼ� / 0.0333..), ��t =
                              /// 0.0333...
 
