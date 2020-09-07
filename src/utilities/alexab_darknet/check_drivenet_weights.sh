@@ -8,6 +8,7 @@ readonly darknet_dir=$(dirname $(readlink -e $0))
 readonly drivenet_dir=${repo_dir}/src/sensing/itri_drivenet/drivenet
 readonly cfg_file=${drivenet_dir}/data/yolo/yolov3.cfg
 readonly weakness_detection_dir=${repo_dir}/src/utilities/weakness_detection
+export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages
 set +e
 git diff-index --quiet HEAD
 if [[ "$?" == "0" ]]; then
@@ -42,12 +43,12 @@ function build_darknet_exe {
 function dl_drivenet_weights {
   if [[ -f ${weights_fov60} ]]; then
     rm ${weights_fov60}
-    wget http://nas.itriadv.co:8888/git_data/B1/drivenet/yolov3_b1.weights -O ${weights_fov60}
   fi
+  wget http://nas.itriadv.co:8888/git_data/B1/drivenet/yolov3_b1.weights -O ${weights_fov60}
   if [[ -f ${weights_fov120} ]]; then
     rm ${weights_fov120}
-    wget http://nas.itriadv.co:8888/git_data/B1/drivenet/yolov3_fov120_b1.weights -O ${weights_fov120}
   fi
+  wget http://nas.itriadv.co:8888/git_data/B1/drivenet/yolov3_fov120_b1.weights -O ${weights_fov120}
 }
 
 function mr_test {
