@@ -112,7 +112,7 @@ void chatterCallback1(const msgs::DetectedObjectArray::ConstPtr& msg)
     msg->objects[i].track.forecasts[4].position.y << ")" << endl; cout << "PP.P2: (" <<
     msg->objects[i].track.forecasts[9].position.x << "," << msg->objects[i].track.forecasts[9].position.y << ")" <<
     endl;
-    
+    
       frame.can_id  = can_id_start+(i*NumOfID)+4 ;
       frame.data[0] = (short int)(msg->objects[i].track.forecasts[14].position.x*100);
       frame.data[1] = (short int)(msg->objects[i].track.forecasts[14].position.x*100)>>8;
@@ -189,7 +189,7 @@ void rt_OneStep(void)
     struct sockaddr_can addr;
     struct can_frame frame;
     struct ifreq ifr;
-    
+    
     const char *ifname = CAN_INTERFACE_NAME;
 
     if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
@@ -209,10 +209,10 @@ void rt_OneStep(void)
     {
       perror("Error in socket bind");
     }
-    
+    
     frame.can_dlc = CAN_DLC ;
     frame.can_id  = CAN_ID ;
-   
+   
     frame.data[0] = (short int)(rtObj.rtY.Output1*100);
     frame.data[1] = (short int)(rtObj.rtY.Output1*100)>>8;
     frame.data[2] = (short int)(Relative_Speed[Index-1]);

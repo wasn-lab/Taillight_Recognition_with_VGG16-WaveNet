@@ -66,12 +66,11 @@ int Deviate_Geofence_lastdis = 300;
 uint CPoint_Geofence_count = 0;
 int CPoint_Geofence_lastdis = 300;
 
-void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
-{
-  Heading = LTVmsg->heading;
-  SLAM_x = LTVmsg->x;
-  SLAM_y = LTVmsg->y;
-  SLAM_z = LTVmsg->z;
+void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg){
+	Heading = LTVmsg->heading;
+	SLAM_x = LTVmsg->x;
+	SLAM_y = LTVmsg->y;
+	SLAM_z = LTVmsg->z;
 }
 
 /*
@@ -201,56 +200,45 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
   CPoint_Geofence.setPath(Position);
 }
 
-void astar_callback(const nav_msgs::Path::ConstPtr& msg)
-{
-  vector<Point> Position;
-  Point Pos;
-  uint size = 200;
-  if (msg->poses.size() < size)
-  {
-    size = msg->poses.size();
-  }
 
-  double Resolution = 10;
-  for (uint i = 1; i < size; i++)
-  {
-    for (int j = 0; j < Resolution; j++)
-    {
-      Pos.X = msg->poses[i - 1].pose.position.x +
-              j * (1 / Resolution) * (msg->poses[i].pose.position.x - msg->poses[i - 1].pose.position.x);
-      Pos.Y = msg->poses[i - 1].pose.position.y +
-              j * (1 / Resolution) * (msg->poses[i].pose.position.y - msg->poses[i - 1].pose.position.y);
-      Position.push_back(Pos);
-    }
-  }
-  PCloud_Geofence.setPath(Position);
-  BBox_Geofence.setPath(Position);
-  Radar_Geofence.setPath(Position);
-  CPoint_Geofence.setPath(Position);
+void astar_callback(const nav_msgs::Path::ConstPtr& msg){
+	vector<Point> Position;
+	Point Pos;
+	uint size = 200;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+
+	double Resolution = 10;
+	for(uint i=1;i<size;i++){
+		for(int j=0;j<Resolution;j++){
+			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
+			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
+			Position.push_back(Pos);
+		}	
+	}
+	PCloud_Geofence.setPath(Position);
+	BBox_Geofence.setPath(Position);
+	Radar_Geofence.setPath(Position);
+	CPoint_Geofence.setPath(Position);
 }
 
-void astar_original_callback(const nav_msgs::Path::ConstPtr& msg)
-{
-  vector<Point> Position;
-  Point Pos;
-  uint size = 200;
-  if (msg->poses.size() < size)
-  {
-    size = msg->poses.size();
-  }
-  double Resolution = 10;
-  for (uint i = 1; i < size; i++)
-  {
-    for (int j = 0; j < Resolution; j++)
-    {
-      Pos.X = msg->poses[i - 1].pose.position.x +
-              j * (1 / Resolution) * (msg->poses[i].pose.position.x - msg->poses[i - 1].pose.position.x);
-      Pos.Y = msg->poses[i - 1].pose.position.y +
-              j * (1 / Resolution) * (msg->poses[i].pose.position.y - msg->poses[i - 1].pose.position.y);
-      Position.push_back(Pos);
-    }
-  }
-  PCloud_Geofence_original.setPath(Position);
+void astar_original_callback(const nav_msgs::Path::ConstPtr& msg){
+	vector<Point> Position;
+	Point Pos;
+	uint size = 200;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+	double Resolution = 10;
+	for(uint i=1;i<size;i++){
+		for(int j=0;j<Resolution;j++){
+			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
+			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
+			Position.push_back(Pos);
+		}	
+	}
+	PCloud_Geofence_original.setPath(Position);
 }
 
 void deviate_path_callback(const nav_msgs::Path::ConstPtr& msg)
@@ -599,261 +587,248 @@ int main(int argc, char** argv)
       cerr << "Please initialize all Radar parameters first" << endl;
     }
 
-    int main(int argc, char** argv)
-    {
-      ros::init(argc, argv, "Geofence");
-      ros::NodeHandle n;
-      ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
-      ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
-      ros::Subscriber AstarSub_original =
-          n.subscribe("nav_path_astar_base_30", 1, astar_original_callback);  // For objects on original path
-      ros::Subscriber deviate_path = n.subscribe("veh_predictpath", 1, deviate_path_callback);
+int main(int argc, char **argv){ 
 
-      ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
-      ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
-      // ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
-      // ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
-      ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
-      ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
+	
+	ros::init(argc, argv, "Geofence");
+	ros::NodeHandle n;
+	ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
+	ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
+	ros::Subscriber AstarSub_original = n.subscribe("nav_path_astar_base_30", 1, astar_original_callback);// For objects on original path
+	ros::Subscriber deviate_path = n.subscribe("veh_predictpath", 1, deviate_path_callback);
 
-#ifdef VIRTUAL
-      ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPCloud);
-#else
-      // ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPCloud);
-      ros::Subscriber BBoxGeofenceSub = n.subscribe("/CameraDetection/polygon", 1, chatterCallbackCPoint);
-#endif
-      Radar_marker = n.advertise<visualization_msgs::Marker>("RadarMarker", 1);
-      Geofence_line = n.advertise<visualization_msgs::Marker>("Geofence_line", 1);
-      ros::Publisher Geofence_PC = n.advertise<std_msgs::Float64>("Geofence_PC", 1);
-      ros::Publisher Geofence_original = n.advertise<std_msgs::Float64>("Geofence_original", 1);
-      ros::Rate loop_rate(20);
+	ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
+	ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
+	//ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
+	//ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
+	ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+	ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 
-      int s;
-      int nbytes;
-      struct sockaddr_can addr;
-      struct can_frame frame;
-      struct ifreq ifr;
-      const char* ifname = CAN_INTERFACE_NAME;
-      if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
-      {
-        perror("Error while opening socket");
-      }
-      strcpy(ifr.ifr_name, ifname);
-      ioctl(s, SIOCGIFINDEX, &ifr);
-      addr.can_family = AF_CAN;
-      addr.can_ifindex = ifr.ifr_ifindex;
-      if (bind(s, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-      {
-        perror("Error in socket bind");
-      }
-      frame.can_dlc = CAN_DLC;
+	#ifdef VIRTUAL
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("abs_virBB_array", 1, chatterCallbackPCloud);
+	#else
+		//ros::Subscriber BBoxGeofenceSub = n.subscribe("PathPredictionOutput", 1, chatterCallbackPCloud);
+		ros::Subscriber BBoxGeofenceSub = n.subscribe("/CameraDetection/polygon", 1, chatterCallbackCPoint);
+	#endif
+	Radar_marker = n.advertise<visualization_msgs::Marker>("RadarMarker", 1);
+	Geofence_line = n.advertise<visualization_msgs::Marker>("Geofence_line", 1);
+	ros::Publisher Geofence_PC = n.advertise<std_msgs::Float64>("Geofence_PC", 1);
+	ros::Publisher Geofence_original = n.advertise<std_msgs::Float64>("Geofence_original", 1);  
+	ros::Rate loop_rate(20);
 
-      while (ros::ok())
-      {
-        ros::spinOnce();
-        cout << "========PCloud========" << endl;
-        if (PCloud_Geofence.Calculator() == 0)
-        {
-          frame.can_id = 0x590;
-          cout << "Trigger: " << PCloud_Geofence.getTrigger() << " ";
-          cout << "Distance: " << setprecision(6) << PCloud_Geofence.getDistance() << "\t";
-          cout << "Distance_wide: " << setprecision(6) << PCloud_Geofence.getDistance_w() << "\t";
-          cout << "Speed: " << setprecision(6) << PCloud_Geofence.getObjSpeed() << endl;
-          cout << "(X,Y): "
-               << "(" << PCloud_Geofence.getNearest_X() << "," << PCloud_Geofence.getNearest_Y() << ")" << endl;
-          // cout << "Speed: " << PCloud_Geofence.Xpoly_one.size() << "\t" << PCloud_Geofence.Xpoly_two.size() << "\t"
-          // << PCloud_Geofence.Ypoly_one.size() << "\t" << PCloud_Geofence.Ypoly_two.size() << endl; cout <<
-          // "Pointcloud: " << PCloud_Geofence.PointCloud.size() << endl;
-          frame.data[0] = (short int)(PCloud_Geofence.getDistance() * 100);
-          frame.data[1] = (short int)(PCloud_Geofence.getDistance() * 100) >> 8;
-          frame.data[2] = (short int)(PCloud_Geofence.getObjSpeed() * 100);
-          frame.data[3] = (short int)(PCloud_Geofence.getObjSpeed() * 100) >> 8;
-          frame.data[4] = (short int)(PCloud_Geofence.getNearest_X() * 10);
-          frame.data[5] = (short int)(PCloud_Geofence.getNearest_X() * 10) >> 8;
-          frame.data[6] = (short int)(PCloud_Geofence.getNearest_Y() * 10);
-          frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y() * 10) >> 8;
-          nbytes = write(s, &frame, sizeof(struct can_frame));
-          printf("Wrote %d bytes\n", nbytes);
-          std_msgs::Float64 Geofence_temp;
-          Geofence_temp.data = PCloud_Geofence.getDistance_w();
-          Geofence_PC.publish(Geofence_temp);
-          int PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
-          if (PCloud_Geofence_lastdis - PCloud_Geofence.getDistance() > 200 && PCloud_Geofence_count < 10)
-          {
-            PCloud_Geofence_dis = PCloud_Geofence_lastdis;
-            PCloud_Geofence_count++;
-          }
-          else
-          {
-            PCloud_Geofence_dis = PCloud_Geofence.getDistance();
-            PCloud_Geofence_count = 0;
-          }
-          if (PCloud_Geofence_dis < 80)
-          {
-            Plot_geofence(PCloud_Geofence.findDirection());
-          }
-          PCloud_Geofence_lastdis = PCloud_Geofence_dis;
-        }
-        else
-        {
-          cerr << "Please initialize all PCloud parameters first" << endl;
-        }
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+	const char *ifname = CAN_INTERFACE_NAME;
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0){
+		perror("Error while opening socket");
+	}
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0){
+		perror("Error in socket bind");
+	}
+	frame.can_dlc = CAN_DLC ;	
 
-        if (PCloud_Geofence_original.Calculator() == 0)
-        {
-          cout << "Origianl path's geofence: " << PCloud_Geofence_original.getDistance() << endl;
-          std_msgs::Float64 Geofence_temp;
-          Geofence_temp.data = PCloud_Geofence_original.getDistance();
-          Geofence_original.publish(Geofence_temp);
-        }
-        else
-        {
-          cerr << "Please initialize PCloud original_path parameters first" << endl;
-        }
+	while (ros::ok())
+	{
+		ros::spinOnce();
+		cout << "========PCloud========" << endl;
+		if(PCloud_Geofence.Calculator()==0){
+			frame.can_id  = 0x590;
+			cout << "Trigger: " << PCloud_Geofence.getTrigger() << " ";
+ 			cout << "Distance: " <<  setprecision(6) <<PCloud_Geofence.getDistance() << "\t";
+			cout << "Distance_wide: " <<  setprecision(6) <<PCloud_Geofence.getDistance_w() << "\t";
+			cout << "Speed: " << setprecision(6) <<PCloud_Geofence.getObjSpeed() << endl;
+			cout << "(X,Y): " << "(" << PCloud_Geofence.getNearest_X() << "," << PCloud_Geofence.getNearest_Y() << ")" << endl;
+			//cout << "Speed: " << PCloud_Geofence.Xpoly_one.size() << "\t" << PCloud_Geofence.Xpoly_two.size() << "\t" << PCloud_Geofence.Ypoly_one.size() << "\t" << PCloud_Geofence.Ypoly_two.size() << endl;
+			//cout << "Pointcloud: " << PCloud_Geofence.PointCloud.size() << endl;
+			frame.data[0] = (short int)(PCloud_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(PCloud_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(PCloud_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(PCloud_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(PCloud_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(PCloud_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(PCloud_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(PCloud_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			std_msgs::Float64 Geofence_temp;
+			Geofence_temp.data = PCloud_Geofence.getDistance_w();
+			Geofence_PC.publish(Geofence_temp);
+			int PCloud_Geofence_dis = 300;//PCloud_Geofence.getDistance();
+			if (PCloud_Geofence_lastdis-PCloud_Geofence.getDistance() > 200 && PCloud_Geofence_count < 10)
+			{
+				PCloud_Geofence_dis = PCloud_Geofence_lastdis;
+				PCloud_Geofence_count++;
+			}
+			else
+			{
+				PCloud_Geofence_dis = PCloud_Geofence.getDistance();
+				PCloud_Geofence_count = 0;
+			}
+			if(PCloud_Geofence_dis<80)
+			{
+				Plot_geofence(PCloud_Geofence.findDirection());  
+			}
+			PCloud_Geofence_lastdis = PCloud_Geofence_dis;
+		}
+		else{
+			cerr << "Please initialize all PCloud parameters first" << endl;
+		}
+		
+		if(PCloud_Geofence_original.Calculator()==0){
+			cout << "Origianl path's geofence: " << PCloud_Geofence_original.getDistance() << endl;
+			std_msgs::Float64 Geofence_temp;
+			Geofence_temp.data = PCloud_Geofence_original.getDistance();
+			Geofence_original.publish(Geofence_temp); 
+		}
+		else{
+			cerr << "Please initialize PCloud original_path parameters first" << endl;
+		}
+		
+		if(Deviate_Geofence.Calculator()==0)
+		{
+			frame.can_id  = 0x593;
+			cout << "Deviate path's geofence: " << Deviate_Geofence.getDistance() << endl;
+			frame.data[0] = (short int)(Deviate_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(Deviate_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(Deviate_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(Deviate_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(Deviate_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(Deviate_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(Deviate_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(Deviate_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			int Deviate_Geofence_dis = 300;//Deviate_Geofence.getDistance();
+			if (Deviate_Geofence_lastdis-Deviate_Geofence.getDistance() > 200 && Deviate_Geofence_count < 10)
+			{
+				Deviate_Geofence_dis = Deviate_Geofence_lastdis;
+				Deviate_Geofence_count++;
+			}
+			else
+			{
+				Deviate_Geofence_dis = Deviate_Geofence.getDistance();
+				Deviate_Geofence_count = 0;
+			}
+			if(Deviate_Geofence_dis<80)
+			{
+				Plot_geofence(Deviate_Geofence.findDirection());  
+			}
+			Deviate_Geofence_lastdis = Deviate_Geofence_dis;
+		}
+		else{
+			cerr << "Please initialize deviate_path parameters first" << endl;
+		}
 
-        if (Deviate_Geofence.Calculator() == 0)
-        {
-          frame.can_id = 0x593;
-          cout << "Deviate path's geofence: " << Deviate_Geofence.getDistance() << endl;
-          frame.data[0] = (short int)(Deviate_Geofence.getDistance() * 100);
-          frame.data[1] = (short int)(Deviate_Geofence.getDistance() * 100) >> 8;
-          frame.data[2] = (short int)(Deviate_Geofence.getObjSpeed() * 100);
-          frame.data[3] = (short int)(Deviate_Geofence.getObjSpeed() * 100) >> 8;
-          frame.data[4] = (short int)(Deviate_Geofence.getNearest_X() * 10);
-          frame.data[5] = (short int)(Deviate_Geofence.getNearest_X() * 10) >> 8;
-          frame.data[6] = (short int)(Deviate_Geofence.getNearest_Y() * 10);
-          frame.data[7] = (short int)(Deviate_Geofence.getNearest_Y() * 10) >> 8;
-          nbytes = write(s, &frame, sizeof(struct can_frame));
-          printf("Wrote %d bytes\n", nbytes);
-          int Deviate_Geofence_dis = 300;  // Deviate_Geofence.getDistance();
-          if (Deviate_Geofence_lastdis - Deviate_Geofence.getDistance() > 200 && Deviate_Geofence_count < 10)
-          {
-            Deviate_Geofence_dis = Deviate_Geofence_lastdis;
-            Deviate_Geofence_count++;
-          }
-          else
-          {
-            Deviate_Geofence_dis = Deviate_Geofence.getDistance();
-            Deviate_Geofence_count = 0;
-          }
-          if (Deviate_Geofence_dis < 80)
-          {
-            Plot_geofence(Deviate_Geofence.findDirection());
-          }
-          Deviate_Geofence_lastdis = Deviate_Geofence_dis;
-        }
-        else
-        {
-          cerr << "Please initialize deviate_path parameters first" << endl;
-        }
 
-        /*
-        cout << "=========BBox=========" << endl;
-        if(BBox_Geofence.Calculator()==0){
-          frame.can_id  = 0x591;
-          cout << "Trigger: " << BBox_Geofence.getTrigger() << " ";
-          cout << "Distance: " <<  setprecision(6) << BBox_Geofence.getDistance() << "\t";
-          cout << "Farest: " <<  setprecision(6) << BBox_Geofence.getFarest() << "\t";
-          cout << "Speed: " << setprecision(6) << BBox_Geofence.getObjSpeed() << endl;
-          cout << "(X,Y): " << "(" << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << ")" <<
-        endl; frame.data[0] = (short int)(BBox_Geofence.getDistance()*100); frame.data[1] = (short
-        int)(BBox_Geofence.getDistance()*100)>>8; frame.data[2] = (short int)(BBox_Geofence.getObjSpeed()*100);
-          frame.data[3] = (short int)(BBox_Geofence.getObjSpeed()*100)>>8;
-          frame.data[4] = (short int)(BBox_Geofence.getNearest_X()*10);
-          frame.data[5] = (short int)(BBox_Geofence.getNearest_X()*10)>>8;
-          frame.data[6] = (short int)(BBox_Geofence.getNearest_Y()*10);
-          frame.data[7] = (short int)(BBox_Geofence.getNearest_Y()*10)>>8;
-          nbytes = write(s, &frame, sizeof(struct can_frame));
-          printf("Wrote %d bytes\n", nbytes);
-          //Publish_Marker(BBox_Geofence.getNearest_X(), BBox_Geofence.getNearest_Y());
-          if(BBox_Geofence.getDistance()<80)
-          {
-            Plot_geofence(BBox_Geofence.findDirection());
-          }
-        }
-        else{
-          cerr << "Please initialize all BBox parameters first" << endl;
-        }
-        */
+		/*
+		cout << "=========BBox=========" << endl;
+		if(BBox_Geofence.Calculator()==0){
+			frame.can_id  = 0x591;
+			cout << "Trigger: " << BBox_Geofence.getTrigger() << " ";
+ 			cout << "Distance: " <<  setprecision(6) << BBox_Geofence.getDistance() << "\t";
+			cout << "Farest: " <<  setprecision(6) << BBox_Geofence.getFarest() << "\t";
+			cout << "Speed: " << setprecision(6) << BBox_Geofence.getObjSpeed() << endl;
+			cout << "(X,Y): " << "(" << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << ")" << endl;
+			frame.data[0] = (short int)(BBox_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(BBox_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(BBox_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(BBox_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(BBox_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(BBox_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(BBox_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(BBox_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			//Publish_Marker(BBox_Geofence.getNearest_X(), BBox_Geofence.getNearest_Y());
+			if(BBox_Geofence.getDistance()<80)
+			{
+				Plot_geofence(BBox_Geofence.findDirection());  
+			}
+		}
+		else{
+			cerr << "Please initialize all BBox parameters first" << endl;
+		}
+		*/
 
-        cout << "=========CPoint(cam)=========" << endl;
-        if (CPoint_Geofence.Calculator() == 0)
-        {
-          frame.can_id = 0x591;
-          cout << "Trigger: " << CPoint_Geofence.getTrigger() << " ";
-          cout << "Distance: " << setprecision(6) << CPoint_Geofence.getDistance() << "\t";
-          cout << "Farest: " << setprecision(6) << CPoint_Geofence.getFarest() << "\t";
-          cout << "Speed: " << setprecision(6) << CPoint_Geofence.getObjSpeed() << endl;
-          cout << "(X,Y): "
-               << "(" << CPoint_Geofence.getNearest_X() << "," << CPoint_Geofence.getNearest_Y() << ")" << endl;
-          frame.data[0] = (short int)(CPoint_Geofence.getDistance() * 100);
-          frame.data[1] = (short int)(CPoint_Geofence.getDistance() * 100) >> 8;
-          frame.data[2] = (short int)(CPoint_Geofence.getObjSpeed() * 100);
-          frame.data[3] = (short int)(CPoint_Geofence.getObjSpeed() * 100) >> 8;
-          frame.data[4] = (short int)(CPoint_Geofence.getNearest_X() * 10);
-          frame.data[5] = (short int)(CPoint_Geofence.getNearest_X() * 10) >> 8;
-          frame.data[6] = (short int)(CPoint_Geofence.getNearest_Y() * 10);
-          frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y() * 10) >> 8;
-          nbytes = write(s, &frame, sizeof(struct can_frame));
-          printf("Wrote %d bytes\n", nbytes);
-          int CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
-          if (CPoint_Geofence_lastdis - CPoint_Geofence.getDistance() > 200 && CPoint_Geofence_count < 10)
-          {
-            CPoint_Geofence_dis = CPoint_Geofence_lastdis;
-            CPoint_Geofence_count++;
-          }
-          else
-          {
-            CPoint_Geofence_dis = CPoint_Geofence.getDistance();
-            CPoint_Geofence_count = 0;
-          }
-          if (CPoint_Geofence_dis < 80)
-          {
-            Plot_geofence_yellow(CPoint_Geofence.findDirection());
-          }
-          CPoint_Geofence_lastdis = CPoint_Geofence_dis;
-        }
-        else
-        {
-          cerr << "Please initialize all CPoint parameters first" << endl;
-        }
+		cout << "=========CPoint(cam)=========" << endl;
+		if(CPoint_Geofence.Calculator()==0){
+			frame.can_id  = 0x591;
+			cout << "Trigger: " << CPoint_Geofence.getTrigger() << " ";
+ 			cout << "Distance: " <<  setprecision(6) << CPoint_Geofence.getDistance() << "\t";
+			cout << "Farest: " <<  setprecision(6) << CPoint_Geofence.getFarest() << "\t";
+			cout << "Speed: " << setprecision(6) << CPoint_Geofence.getObjSpeed() << endl;
+			cout << "(X,Y): " << "(" << CPoint_Geofence.getNearest_X() << "," << CPoint_Geofence.getNearest_Y() << ")" << endl;
+			frame.data[0] = (short int)(CPoint_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(CPoint_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(CPoint_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(CPoint_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(CPoint_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(CPoint_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(CPoint_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			int CPoint_Geofence_dis = 300;//CPoint_Geofence.getDistance();
+			if (CPoint_Geofence_lastdis-CPoint_Geofence.getDistance() > 200 && CPoint_Geofence_count < 10)
+			{
+				CPoint_Geofence_dis = CPoint_Geofence_lastdis;
+				CPoint_Geofence_count++;
+			}
+			else
+			{
+				CPoint_Geofence_dis = CPoint_Geofence.getDistance();
+				CPoint_Geofence_count = 0;
+			}
+			if(CPoint_Geofence_dis<80)
+			{
+				Plot_geofence_yellow(CPoint_Geofence.findDirection());  
+			}
+			CPoint_Geofence_lastdis = CPoint_Geofence_dis;
+		}
+		else{
+			cerr << "Please initialize all CPoint parameters first" << endl;
+		}
 
-        cout << "========Radar=========" << endl;
-        if (Radar_Geofence.Calculator() == 0)
-        {
-          frame.can_id = 0x592;
-          cout << "Trigger: " << Radar_Geofence.getTrigger() << " ";
-          cout << "Distance: " << setprecision(6) << Radar_Geofence.getDistance() << "\t";
-          cout << "Speed: " << setprecision(6) << Radar_Geofence.getObjSpeed() << endl;
-          cout << "(X,Y): "
-               << "(" << Radar_Geofence.getNearest_X() << "," << Radar_Geofence.getNearest_Y() << ")" << endl
-               << endl;
-          frame.data[0] = (short int)(Radar_Geofence.getDistance() * 100);
-          frame.data[1] = (short int)(Radar_Geofence.getDistance() * 100) >> 8;
-          frame.data[2] = (short int)(Radar_Geofence.getObjSpeed() * 100);
-          frame.data[3] = (short int)(Radar_Geofence.getObjSpeed() * 100) >> 8;
-          frame.data[4] = (short int)(Radar_Geofence.getNearest_X() * 10);
-          frame.data[5] = (short int)(Radar_Geofence.getNearest_X() * 10) >> 8;
-          frame.data[6] = (short int)(Radar_Geofence.getNearest_Y() * 10);
-          frame.data[7] = (short int)(Radar_Geofence.getNearest_Y() * 10) >> 8;
-          nbytes = write(s, &frame, sizeof(struct can_frame));
-          printf("Wrote %d bytes\n", nbytes);
-          Publish_Marker_Radar(Radar_Geofence.getNearest_X(), Radar_Geofence.getNearest_Y());
-        }
-        else
-        {
-          cerr << "Please initialize all Radar parameters first" << endl;
-        }
-
-        frame.can_id = 0x599;
-        cout << "overtake_over: " << overtake_over_flag << " ";
-        frame.data[0] = (short int)(overtake_over_flag);
-        frame.data[1] = (short int)(overtake_over_flag) >> 8;
-        nbytes = write(s, &frame, sizeof(struct can_frame));
-        printf("Wrote %d bytes\n", nbytes);
-        cout << "******************************************" << endl;
-        loop_rate.sleep();
-      }
-      close(s);
-      return 0;
-    }
+		cout << "========Radar=========" << endl;
+		if(Radar_Geofence.Calculator()==0){
+			frame.can_id  = 0x592;
+			cout << "Trigger: " << Radar_Geofence.getTrigger() << " ";
+ 			cout << "Distance: " <<  setprecision(6) << Radar_Geofence.getDistance() << "\t";
+			cout << "Speed: " << setprecision(6) << Radar_Geofence.getObjSpeed() << endl;
+			cout << "(X,Y): " << "(" << Radar_Geofence.getNearest_X() << "," << Radar_Geofence.getNearest_Y() << ")" << endl << endl;
+			frame.data[0] = (short int)(Radar_Geofence.getDistance()*100);
+			frame.data[1] = (short int)(Radar_Geofence.getDistance()*100)>>8;
+			frame.data[2] = (short int)(Radar_Geofence.getObjSpeed()*100);
+			frame.data[3] = (short int)(Radar_Geofence.getObjSpeed()*100)>>8;
+			frame.data[4] = (short int)(Radar_Geofence.getNearest_X()*10);
+			frame.data[5] = (short int)(Radar_Geofence.getNearest_X()*10)>>8;
+			frame.data[6] = (short int)(Radar_Geofence.getNearest_Y()*10);
+			frame.data[7] = (short int)(Radar_Geofence.getNearest_Y()*10)>>8;
+			nbytes = write(s, &frame, sizeof(struct can_frame));
+			printf("Wrote %d bytes\n", nbytes);
+			Publish_Marker_Radar(Radar_Geofence.getNearest_X(), Radar_Geofence.getNearest_Y());
+			
+		}
+		else{
+			cerr << "Please initialize all Radar parameters first" << endl;
+		}
+		
+		frame.can_id  = 0x599;
+		cout << "overtake_over: " << overtake_over_flag << " ";
+		frame.data[0] = (short int)(overtake_over_flag);
+		frame.data[1] = (short int)(overtake_over_flag)>>8;
+		nbytes = write(s, &frame, sizeof(struct can_frame));
+		printf("Wrote %d bytes\n", nbytes);
+		cout << "******************************************" << endl;
+		loop_rate.sleep();	
+	}
+	close(s);
+	return 0;
+}

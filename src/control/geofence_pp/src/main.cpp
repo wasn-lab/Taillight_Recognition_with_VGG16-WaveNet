@@ -104,30 +104,25 @@ void chatterCallbackPoly(const msgs::DynamicPath::ConstPtr& msg)
   PedCross_Geofence.setPath(Position);
 }
 
-void astar_callback(const nav_msgs::Path::ConstPtr& msg)
-{
-  vector<Point> Position;
-  Point Pos;
-  int size = 200;
-  if (msg->poses.size() < size)
-  {
-    size = msg->poses.size();
-  }
 
-  double Resolution = 10;
-  for (int i = 1; i < size; i++)
-  {
-    for (int j = 0; j < Resolution; j++)
-    {
-      Pos.X = msg->poses[i - 1].pose.position.x +
-              j * (1 / Resolution) * (msg->poses[i].pose.position.x - msg->poses[i - 1].pose.position.x);
-      Pos.Y = msg->poses[i - 1].pose.position.y +
-              j * (1 / Resolution) * (msg->poses[i].pose.position.y - msg->poses[i - 1].pose.position.y);
-      Position.push_back(Pos);
-    }
-  }
-  BBox_Geofence.setPath(Position);
-  PedCross_Geofence.setPath(Position);
+void astar_callback(const nav_msgs::Path::ConstPtr& msg){
+	vector<Point> Position;
+	Point Pos;
+	int size = 200;
+	if (msg->poses.size()<size){
+		size = msg->poses.size(); 
+	}
+
+	double Resolution = 10;
+	for(int i=1;i<size;i++){
+		for(int j=0;j<Resolution;j++){
+			Pos.X = msg->poses[i-1].pose.position.x + j*(1/Resolution)*(msg->poses[i].pose.position.x - msg->poses[i-1].pose.position.x);
+			Pos.Y = msg->poses[i-1].pose.position.y + j*(1/Resolution)*(msg->poses[i].pose.position.y - msg->poses[i-1].pose.position.y);
+			Position.push_back(Pos);
+		}	
+	}
+	BBox_Geofence.setPath(Position);
+	PedCross_Geofence.setPath(Position);
 }
 
 void Plot_geofence(Point temp)
@@ -253,8 +248,8 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
         if (BBox_Geofence.getDistance() < 80)
         {
           // cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() <<
-          // endl; cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
-          // Plot geofence PP
+          // endl; cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl; Plot
+          // geofence PP
           if (BBox_Geofence.getDistance() < PP_Distance && BBox_Geofence.getDistance() > 3.8)
           {
             PP_Distance = BBox_Geofence.getDistance();
