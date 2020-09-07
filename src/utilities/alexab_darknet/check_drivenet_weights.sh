@@ -8,6 +8,7 @@ readonly darknet_dir=$(dirname $(readlink -e $0))
 readonly drivenet_dir=${repo_dir}/src/sensing/itri_drivenet/drivenet
 readonly cfg_file=${drivenet_dir}/data/yolo/yolov3.cfg
 readonly weakness_detection_dir=${repo_dir}/src/utilities/weakness_detection
+readonly now=$(date "+%Y%m%d%H%M%S")
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages
 set +e
 git diff-index --quiet HEAD
@@ -19,9 +20,9 @@ fi
 set -e
 
 if [[ "${USER}" == "icl_u300" ]]; then
-  readonly artifacts_dir=/home/artifacts/drivenet-weights-check/$(date "+%Y%m%d%H%M%S")
+  readonly artifacts_dir=/home/artifacts/drivenet-weights-check/${now}
 else
-  readonly artifacts_dir=/tmp/$(date "+%Y%m%d%H%M%S")
+  readonly artifacts_dir=/tmp/${now}
 fi
 
 readonly data_file_fov60=cfg/drivenet_fov60.data
@@ -80,6 +81,9 @@ dl_drivenet_weights
 bash drivenet_weights_mr_test/fov60/dl_jpg.sh
 mr_test fov60
 python3 drivenet_weights_mr_test/merge_fov60_120_result.py --artifacts-dir ${artifacts_dir} --branch-name ${branch_name} --commit-id ${commit_id} --repo-status ${repo_status}
-
+find ${artifacts_dir} -type d -exec chmod 755 {} \;
+find ${artifacts_dir} -type f -exec chmod 644 {} \;
+set +x
 echo "All done!"
+echo "Artifacts can be bound in http://ci.itriadv.co/artifacts/drivenet-weights-check/${now}"
 popd
