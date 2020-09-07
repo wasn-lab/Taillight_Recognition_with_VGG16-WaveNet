@@ -80,10 +80,13 @@ build_darknet_exe
 dl_drivenet_weights
 bash drivenet_weights_mr_test/fov60/dl_jpg.sh
 mr_test fov60
+set +e
 python3 drivenet_weights_mr_test/merge_fov60_120_result.py --artifacts-dir ${artifacts_dir} --branch-name ${branch_name} --commit-id ${commit_id} --repo-status ${repo_status}
+final_result=$?
 find ${artifacts_dir} -type d -exec chmod 755 {} \;
 find ${artifacts_dir} -type f -exec chmod 644 {} \;
 set +x
 echo "All done!"
 echo "Artifacts can be bound in http://ci.itriadv.co/artifacts/drivenet-weights-check/${now}"
 popd
+exit $final_result
