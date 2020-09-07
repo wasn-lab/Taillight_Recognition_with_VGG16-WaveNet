@@ -2,10 +2,20 @@
 set -x
 set -e
 readonly repo_dir=$(git rev-parse --show-toplevel)
+readonly commit_id=$(git rev-parse HEAD)
+readonly branch_name=$(git rev-parse --abbrev-ref HEAD)
 readonly darknet_dir=$(dirname $(readlink -e $0))
 readonly drivenet_dir=${repo_dir}/src/sensing/itri_drivenet/drivenet
 readonly cfg_file=${drivenet_dir}/data/yolo/yolov3.cfg
 readonly weakness_detection_dir=${repo_dir}/src/utilities/weakness_detection
+set +e
+git diff-index --quiet HEAD
+if [[ "$?" == "0" ]]; then
+  readonly repo_status="clean"
+else
+  readonly repo_status="dirty"
+fi
+set -e
 
 if [[ "${USER}" == "icl_u300" ]]; then
   readonly artifacts_dir=/home/artifacts/drivenet-weights-check/$(date "+%Y%m%d%H%M%S")
@@ -68,7 +78,7 @@ build_darknet_exe
 dl_drivenet_weights
 bash drivenet_weights_mr_test/fov60/dl_jpg.sh
 mr_test fov60
-python3 drivenet_weights_mr_test/merge_fov60_120_result.py --artifacts-dir ${artifacts_dir}
+python3 drivenet_weights_mr_test/merge_fov60_120_result.py --artifacts-dir ${artifacts_dir} --branch-name ${branch_name} --commit-id ${commit_id} --repo-status ${repo_status}
 
 echo "All done!"
 popd
