@@ -126,7 +126,8 @@ bool TrafficLightModule::modifyPathVelocity(autoware_planning_msgs::PathWithLane
       // if state is red, insert stop point into path
       if (
         highest_confidence_tl_state.lamp_states.front().type ==
-        autoware_perception_msgs::LampState::RED) {
+        autoware_perception_msgs::LampState::RED || highest_confidence_tl_state.lamp_states.front().type ==
+        autoware_perception_msgs::LampState::YELLOW) {
         if (!insertTargetVelocityPoint(input_path, stop_line, stop_margin_, 0.0, *path)) {
           continue;
         }
