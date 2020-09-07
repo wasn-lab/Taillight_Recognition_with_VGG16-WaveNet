@@ -15,6 +15,11 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontRight(new pcl::PointClou
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontTop(new pcl::PointCloud<pcl::PointXYZI>);
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarAll(new pcl::PointCloud<pcl::PointXYZI>);
 
+
+// test for distortion
+pcl::PointCloud<pcl::PointXYZI>::Ptr localization_cloud_many(new pcl::PointCloud<pcl::PointXYZI>);
+int cnt = 0 ;
+
 //---------------------------- Publisher
 // no-filter
 ros::Publisher pub_LidarFrontLeft;
@@ -303,7 +308,16 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     pcl::PointCloud<pcl::PointXYZI>::Ptr localization_cloud(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::copyPointCloud(*input_cloud_tmp_ring, *localization_cloud);
     *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0.2, 0);
+
+    // //ttttttttttest
+    // cnt += 1;
+    // if (cnt % 5 ==0)
+    // {
+    //   *localization_cloud_many += *localization_cloud;
+    // }
+    // localization_cloud_many->header.frame_id = "lidar";
     pub_LidarFrontTop_Localization.publish(*localization_cloud);
+    
     
     // Ring Filter
     if (use_filter)

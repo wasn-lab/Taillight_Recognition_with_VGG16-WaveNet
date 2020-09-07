@@ -37,6 +37,8 @@ vector<double> Alpha_Back_Left_Param;
 vector<double> Alpha_Back_Right_Param;
 vector<double> Zero_Param(6, 0.0);
 
+int debug_message = 0;
+
 struct can_frame current_frame;
 ros::Publisher RadPub;
 
@@ -117,7 +119,6 @@ int main(int argc, char** argv)
 
   while (ros::ok())
   {
-    cout << "=========================================" << endl;
     rad.radHeader.stamp = ros::Time::now();
     rad.radHeader.seq = seq++;
     count = 0;
@@ -130,7 +131,7 @@ int main(int argc, char** argv)
       //        can_frame_tmp.data[0], can_frame_tmp.data[1], can_frame_tmp.data[2], can_frame_tmp.data[3],
       //        can_frame_tmp.data[4], can_frame_tmp.data[5], can_frame_tmp.data[6], can_frame_tmp.data[7]);
 
-      printf("[%04X] [%04X] \n", can_frame_tmp.can_id, current_frame.can_id);
+      // printf("[%04X] [%04X] \n", can_frame_tmp.can_id, current_frame.can_id);
 
       if (can_frame_tmp.can_id == current_frame.can_id)
       {
@@ -157,7 +158,10 @@ int main(int argc, char** argv)
     {
       ros::shutdown();
     }
-    printf("********************  count = %d  ******************\n", count);
+    if (debug_message)
+    {
+      printf("[%04X] **********  count = %d  **********\n", can_frame_tmp.can_id, count);
+    }
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -191,10 +195,12 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
     cout << "STITCHING PARAMETER FIND!" << endl;
   }
 
+  nh.param("/debug_message", debug_message, 0);
+
   int filter_id = 0;
   nh.getParam("filter_id", filter_id);
 
-  cout << "============id============  " << filter_id << endl;
+  cout << "  ============id============  " << filter_id << endl;
 
   switch (filter_id)
   {
@@ -249,7 +255,6 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 
 void turnRadarOn(int s)
 {
-
   cout << "============ radar on ============  " << current_frame.can_id << endl;
   // ============ turn alpha radar on ===============
   struct can_frame s_frame;
