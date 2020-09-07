@@ -66,8 +66,7 @@ def main():
     result = _merge_check_result(args.artifacts_dir, args.commit_id, args.branch_name, args.repo_status)
     if result["num_violations"] > 0:
         logging.error("Find unexpected detection!")
-    return result["num_violations"]
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
