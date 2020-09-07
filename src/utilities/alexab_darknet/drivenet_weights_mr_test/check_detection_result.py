@@ -51,18 +51,16 @@ def _calc_violations(actual, expectation):
 def _check_detection_result(result_json):
     jdata = _read_json_file(result_json)
     docs = []
-    base_url = "http://ci.itriadv.co/"
     for doc in jdata:
         expectation = _get_expectation(doc["filename"])
         actual = [gen_bbox_by_yolo_object(_) for _ in doc["objects"]]
         nviolations = _calc_violations(actual, expectation)
-        org_image_components = doc["filename"].split("/")[2:]
-        org_image_url = base_url + "/".join(org_image_components)
+        filename = doc["filename"]
 
         rdoc = {"filename": doc["filename"],
                 "num_violations": nviolations,
-                "expect": org_image_url[:-4] + "_expect.jpg",
-                "actual": org_image_url[:-4] + "_yolo.jpg",
+                "expect": filename[:-4] + "_expect.jpg",
+                "actual": filename[:-4] + "_yolo.jpg",
                 "result": "PASS"}
         if nviolations > 0:
             logging.warn("%s: Unexpected detection result", doc["filename"])
