@@ -43,20 +43,6 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
   msgs::Rad rad;
   msgs::PointXYZV point;
 
-  // 1: front center, 2: front left, 3: front right,
-  // 4: side left, 5: side right,
-  // 6: back left, 7: back right
-  //
-  //            2__1__3
-  //            4|   |5
-  //             |   |
-  //             |   |
-  //             |   |
-  //             |   |
-  //            6|___|7
-  //
-  //
-
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
     int m_NeedAdd = 0;
@@ -123,6 +109,19 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 
 void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
 {
+  // 1: front center, 2: front left, 3: front right,
+  // 4: side left, 5: side right,
+  // 6: back left, 7: back right
+  //
+  //            2__1__3
+  //            4|   |5
+  //             |   |
+  //             |   |
+  //             |   |
+  //             |   |
+  //            6|___|7
+  //
+  //
 }
 
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
@@ -145,7 +144,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
   ros::Subscriber DelphiFrontSub = n.subscribe("RadFrontDelphi", 1, callbackDelphiFront);
-  ros::Subscriber AlphiFrontSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFront);
+  // ros::Subscriber AlphiFrontSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFront);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
