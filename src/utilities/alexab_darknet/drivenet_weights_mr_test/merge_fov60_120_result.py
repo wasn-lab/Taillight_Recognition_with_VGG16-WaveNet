@@ -48,6 +48,8 @@ def _merge_check_result(artifacts_dir, commit_id, branch_name, repo_status):
               "branch_name": branch_name,
               "job_url": _get_base_url(docs),
               }
+    for doc in result["test_cases"]:
+        doc.pop("filename", None)
     if num_violations > 0:
         result["result"] = "FAIL"
     output_file = os.path.join(artifacts_dir, "check_result.json")
