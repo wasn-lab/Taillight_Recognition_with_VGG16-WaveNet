@@ -10,7 +10,7 @@
 	<arg name="delphi_enable" default="1" />
 	<arg name="umec_enable" default="0" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="0" />
+	<arg name="alpha_front_enable" default="1" />
 	<arg name="alpha_side_enable" default="0" />
 	<arg name="alpha_back_enable" default="0" />
 	<rosparam param="debug_message">0</rosparam>
