@@ -225,7 +225,7 @@ int main(int argc, char** argv)
   fusion_pub = nh.advertise<msgs::DetectedObjectArray>("SensorFusion", 1);
 
   ros::Subscriber lidar_sub = nh.subscribe("LidarDetection", 1, callback_lidar);
-  ros::Subscriber camera_sub = nh.subscribe("CameraDetection/polygon", 1, callback_camera);
+  ros::Subscriber camera_sub = nh.subscribe("CameraDetection", 1, callback_camera);
 
   signal(SIGINT, MySigintHandler);
 

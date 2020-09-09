@@ -48,7 +48,7 @@ function save_images {
   done
 
   sleep 3  # wait for savers finish their jobs
-  killall image_saver
+  killall -s SIGINT image_saver
   set -e
   for cam_id in $cam_ids; do
     output_dir=${TMP_DIR}/raw/${cam_id}
