@@ -54,9 +54,9 @@ add_executable(radfront_delphi src/RadFrontDelphi.cpp)
 target_link_libraries(radfront_delphi ${catkin_LIBRARIES})
 add_dependencies(radfront_delphi ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(radfront_alpha src/RadFrontAlpha.cpp)
-target_link_libraries(radfront_alpha ${catkin_LIBRARIES})
-add_dependencies(radfront_alpha ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(rad_alpha src/RadAlpha.cpp)
+target_link_libraries(rad_alpha ${catkin_LIBRARIES})
+add_dependencies(rad_alpha ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(radar_all src/RadarAll.cpp)
 target_link_libraries(radar_all ${catkin_LIBRARIES})

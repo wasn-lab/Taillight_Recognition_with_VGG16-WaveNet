@@ -38,9 +38,7 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/visualization/point_cloud_color_handlers.h>
 
-#include <pcl/point_types.h>
 #include <pcl/conversions.h>
-
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
 
@@ -56,6 +54,10 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+#include "UserDefine.h"
+#include "std_msgs/String.h"
+#include <pcl/compression/octree_pointcloud_compression.h>
 
 using namespace std;
 using namespace pcl;

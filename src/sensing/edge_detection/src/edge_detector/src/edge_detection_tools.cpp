@@ -249,13 +249,13 @@ bool approximateProgressiveMorphological(const pcl::PointCloud<PointT>::ConstPtr
   // apmf.setMaxDistance(0.6);      // 0.2 //0.3
 
   // Wayne's Parameters
-  apmf.setCellSize(0.8);
-  apmf.setBase(1);  // 0.1
+  apmf.setCellSize(0.35);
+  apmf.setBase(2);  // 0.1
   apmf.setExponential(false);
   apmf.setMaxWindowSize(1.0);    // 3.0
   apmf.setSlope(0.9);            // 0.2 //1.0f
-  apmf.setInitialDistance(0.2);  // 0.12 //0.1
-  apmf.setMaxDistance(0.5);      // 0.2 //0.3
+  apmf.setInitialDistance(0.32);  // 0.12 //0.1
+  apmf.setMaxDistance(0.34);      // 0.2 //0.3
   
   apmf.setNumberOfThreads(2);
   apmf.extract(ground->indices);
@@ -301,6 +301,17 @@ bool extractParallelLine(const boost::shared_ptr<pcl::PointCloud<PointT> >& inpu
     return false;
   }
 }
+
+void radiusFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
+                  boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, double radius, int min_pts)
+{
+  pcl::RadiusOutlierRemoval<PointT> radiusF;
+  radiusF.setInputCloud(input_cloud);
+  radiusF.setRadiusSearch(radius);  // unit:m
+  radiusF.setMinNeighborsInRadius(min_pts);
+  radiusF.filter(*cloud_filtered);  // apply filter
+}
+
 
 void coFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
               boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, const std::string& co, float min_value,
@@ -437,6 +448,7 @@ float originToLine(const Eigen::VectorXf& model_coefficients)
   line_dir.normalize();                                           // norm of line dir
   return sqrt((line_pt - origin).cross(line_dir).squaredNorm());  // d = |a x B|/|B|
 }
+
 void setInputCloud(const CloudConstPtr input, boost::shared_ptr<pcl::PointCloud<PointT> > release_cloud)
 {
   *release_cloud = *input;

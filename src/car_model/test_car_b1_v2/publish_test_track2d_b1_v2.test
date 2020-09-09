@@ -1,12 +1,12 @@
 <launch>
     <include file="$(find itri_tracking_2d)/launch/track2d.launch"/>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-08-04-10-15-25_4_filtered.bag /CameraDetection/polygon:=/CameraDetection" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
-                - name: /Tracking2D/front_bottom_60
+                - name: /Tracking2D/front_top_far_30
                   timeout: 15
                   negative: False
         </rosparam>

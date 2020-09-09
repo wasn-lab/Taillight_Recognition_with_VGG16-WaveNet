@@ -120,7 +120,80 @@ PointCloud<PointT> NoiseFilter::runRadiusOutlierRemoval(typename PointCloud<Poin
   return out_cloud;
 }
 
-template PointCloud<PointXYZ> NoiseFilter::runRadiusOutlierRemoval<PointXYZ>(typename PointCloud<PointXYZ>::Ptr input,
+template PointCloud<PointXYZ> 
+NoiseFilter::runRadiusOutlierRemoval<PointXYZ>(typename PointCloud<PointXYZ>::Ptr input,
                                                                              double radius, int min_pts);
 template PointCloud<PointXYZI>
 NoiseFilter::runRadiusOutlierRemoval<PointXYZI>(typename PointCloud<PointXYZI>::Ptr input, double radius, int min_pts);
+
+
+PointCloud<PointXYZIR> NoiseFilter::runRingOutlierRemoval(PointCloud<PointXYZIR>::Ptr input, int ring_num, float threshold)
+{ 
+  pcl::PointCloud<pcl::PointXYZIR>::Ptr pcl_input(new pcl::PointCloud<pcl::PointXYZIR>);
+  pcl::copyPointCloud(*input, *pcl_input);
+  if (pcl_input->points.empty()) 
+  {
+    return *pcl_input;
+  }
+
+  std::vector<pcl::PointCloud<pcl::PointXYZIR>> pcl_input_ring_array;
+  pcl_input_ring_array.resize(ring_num);  // TODO
+
+  for (const auto& p : pcl_input->points) 
+  {
+    pcl_input_ring_array.at(p.ring).push_back(p);
+  }
+
+  pcl::PointCloud<pcl::PointXYZIR>::Ptr pcl_output(new pcl::PointCloud<pcl::PointXYZIR>);
+  pcl_output->points.reserve(pcl_input->points.size());
+
+  pcl::PointXYZIR p;
+  pcl::PointXYZIR p_forward;
+  pcl::PointXYZIR p_forward_forward;
+
+  for (int i=0; i < pcl_input_ring_array.size(); i++)
+  {
+    pcl_input_ring_array[i].points.push_back(pcl_input_ring_array[i].points.at(0));
+    pcl_input_ring_array[i].points.push_back(pcl_input_ring_array[i].points.at(1));
+  }
+
+  for (const auto & ring_pointcloud : pcl_input_ring_array)
+  {
+    if (ring_pointcloud.points.size() < 2) 
+    {
+      continue;
+    }
+
+    for (auto iter = std::begin(ring_pointcloud.points); iter != std::end(ring_pointcloud.points) - 1; ++iter) 
+    {
+      p.x = iter->x;
+      p.y = iter->y;
+      p.z = iter->z;
+      p.intensity = iter->intensity;
+      p.ring = iter->ring;
+      if (p_forward.x && p_forward_forward.x)
+      {
+        float diff_point_1 = std::sqrt(
+                        std::pow(p_forward.x - p.x, 2.0) +
+                        std::pow(p_forward.y - p.y, 2.0) +
+                        std::pow(p_forward.z - p.z, 2.0) );
+        
+        float diff_point_2 = std::sqrt(
+                        std::pow(p_forward.x - p_forward_forward.x, 2.0) +
+                        std::pow(p_forward.y - p_forward_forward.y, 2.0) +
+                        std::pow(p_forward.z - p_forward_forward.z, 2.0) );
+        
+        if( diff_point_1 <= threshold || diff_point_2 <= threshold )
+        {
+          pcl_output->points.push_back(p_forward);
+        }    
+      }
+      p_forward_forward = p_forward;
+      p_forward = p;    
+    }
+  }
+  pcl_output->header = input->header;
+  return *pcl_output;
+}
+
+
