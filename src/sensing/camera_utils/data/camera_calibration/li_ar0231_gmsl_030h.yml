@@ -1,0 +1,25 @@
+%YAML:1.0
+---
+image_width: 608
+image_height: 384
+camera_name: li_ar0231_gmsl_030h
+camera_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [1323.547376, 0., 360.812678, 0.,
+       1320.103222, 231.026430, 0., 0., 1.]
+distortion_model: plumb_bob
+distortion_coefficients: !!opencv-matrix
+  rows: 1
+  cols: 5
+  dt: d
+  data: [-0.383691, 0.32238, -0.002589, -0.008762, 0.000000]
+rectification_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix: !!opencv-matrix
+  rows: 3
+  cols: 4
+  data: [1293.663696, 0.000000, 360.733597, 0.000000, 0.000000, 1305.117310, 230.83050, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]

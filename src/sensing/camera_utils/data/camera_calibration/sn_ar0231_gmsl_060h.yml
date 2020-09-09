@@ -2,7 +2,7 @@
 ---
 image_width: 1920
 image_height: 1208
-camera_name: sf3325
+camera_name: sn_ar0231_gmsl_060h
 camera_matrix: !!opencv-matrix
   rows: 3
   cols: 3
