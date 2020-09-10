@@ -236,8 +236,8 @@ void TPPNode::subscribe_and_advertise_topics()
   }
   else if (input_source_ == InputSource::CameraDetV2)
   {
-    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection/polygon)" << std::endl;
-    fusion_sub_ = nh_.subscribe("CameraDetection/polygon", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
+    fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (input_source_ == InputSource::Tracking2D)
@@ -904,10 +904,10 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
   pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
 
-  set_ColorRGBA(mc_.color_lidar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_radar_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_camera_tpp, 0.f, 1.f, 1.f, 1.f);
-  set_ColorRGBA(mc_.color_fusion_tpp, 0.f, 1.f, 1.f, 1.f);
+  set_ColorRGBA(mc_.color_lidar_tpp, 1.f, 1.f, 0.4f, 1.f);  // Unmellow Yellow (255, 255, 102)
+  set_ColorRGBA(mc_.color_radar_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color_camera_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color_fusion_tpp, 1.f, 1.f, 0.4f, 1.f);
 }
 
 int TPPNode::run()
