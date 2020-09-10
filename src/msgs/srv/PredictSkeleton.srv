@@ -1,4 +1,4 @@
-Keypoint[] last_detected_keypoints
-Keypoint[] new_detected_keypoints
+Keypoints last_detected_keypoints
+Keypoints new_detected_keypoints
 ---
 Keypoints[] predicted_keypoints
