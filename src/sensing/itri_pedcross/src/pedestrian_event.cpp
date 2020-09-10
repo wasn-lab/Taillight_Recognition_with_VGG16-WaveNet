@@ -509,12 +509,32 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       if (skeleton_index == -1)  // if there is no data in skeleton buffer
       {
         keypoints = get_openpose_keypoint(croped_image);
+        msgs::PredictSkeleton srv_skip_frame;
+        // prepare data for skip_frame service
+        for (unsigned int i = 0; i < keypoints.size(); i++)
+        {
+          msgs::Keypoint new_keypoint;
+          new_keypoint.x = keypoints.at(i).x;
+          new_keypoint.y = keypoints.at(i).y;
+          srv_skip_frame.request.new_detected_keypoints.keypoint.emplace_back(new_keypoint);
+        }
+        // call skip_frame service
+        skip_frame_client.call(srv_skip_frame);
         SkeletonBuffer new_person;
         new_person.track_id = obj_pub.track.id;
-        new_person.calculated_skeleton.emplace_back(keypoints);
-        new_person.calculated_skeleton.emplace_back(keypoints);
-        new_person.calculated_skeleton.emplace_back(keypoints);
-        new_person.calculated_skeleton.emplace_back(keypoints);
+        // get data return from skip_frame service
+        for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
+        {
+          std::vector<cv::Point2f> predict_keypoints;
+          for(unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
+          {
+            cv::Point2f predict_keypoint;
+            predict_keypoint.x = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).x;
+            predict_keypoint.y = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).y;
+            predict_keypoints.emplace_back(predict_keypoint);
+          }
+          new_person.calculated_skeleton.emplace_back(predict_keypoints);
+        }
         new_person.last_real_skeleton.assign(keypoints.begin(), keypoints.end());
         skeleton_buffer.emplace_back(new_person);
       }
@@ -523,36 +543,36 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         if (skeleton_buffer.at(skeleton_index).calculated_skeleton.empty())
         {
           keypoints = get_openpose_keypoint(croped_image);
-          std::vector<cv::Point2f> keypoints_diff;
+          msgs::PredictSkeleton srv_skip_frame;
+          // prepare data for skip_frame service
+          for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).last_real_skeleton.size(); i++)
+          {
+            msgs::Keypoint new_keypoint;
+            new_keypoint.x = skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).x;
+            new_keypoint.y = skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).y;
+            srv_skip_frame.request.last_detected_keypoints.keypoint.emplace_back(new_keypoint);
+          }
           for (unsigned int i = 0; i < keypoints.size(); i++)
           {
-            cv::Point2f diff;
-            if (keypoint_is_detected(keypoints.at(i)) &&
-                keypoint_is_detected(skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i)))
-            {
-              diff.x = keypoints.at(i).x - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).x;
-              diff.y = keypoints.at(i).y - skeleton_buffer.at(skeleton_index).last_real_skeleton.at(i).y;
-              diff.x /= 5;
-              diff.y /= 5;
-            }
-            else
-            {
-              diff.x = 0;
-              diff.y = 0;
-            }
-            keypoints_diff.emplace_back(diff);
+            msgs::Keypoint new_keypoint;
+            new_keypoint.x = keypoints.at(i).x;
+            new_keypoint.y = keypoints.at(i).y;
+            srv_skip_frame.request.new_detected_keypoints.keypoint.emplace_back(new_keypoint);
           }
-
-          std::vector<cv::Point2f> keypoints_tmp;
-          keypoints_tmp.assign(keypoints.begin(), keypoints.end());
-          for (int predict_times = 0; predict_times < 4; predict_times++)
+          // call skip_frame service
+          skip_frame_client.call(srv_skip_frame);
+          // get data return from skip_frame service
+          for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
           {
-            for (unsigned int i = 0; i < keypoints_tmp.size(); i++)
+            std::vector<cv::Point2f> predict_keypoints;
+            for(unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
             {
-              keypoints_tmp.at(i).x += keypoints_diff.at(i).x;
-              keypoints_tmp.at(i).y += keypoints_diff.at(i).y;
+              cv::Point2f predict_keypoint;
+              predict_keypoint.x = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).x;
+              predict_keypoint.y = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).y;
+              predict_keypoints.emplace_back(predict_keypoint);
             }
-            skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(keypoints_tmp);
+            skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(predict_keypoints);
           }
 
           skeleton_buffer.at(skeleton_index).last_real_skeleton.assign(keypoints.begin(), keypoints.end());
@@ -1973,6 +1993,8 @@ int main(int argc, char** argv)
   nh.param<double>("/pedestrian_event/max_distance", pe.max_distance, 50);
   nh.param<double>("/pedestrian_event/danger_zone_distance", pe.danger_zone_distance, 2);
   nh.param<bool>("/pedestrian_event/use_2d_for_alarm", pe.use_2d_for_alarm, false);
+  
+  pe.skip_frame_client = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
 
   pe.front_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.left_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);

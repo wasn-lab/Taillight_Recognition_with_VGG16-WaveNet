@@ -16,6 +16,9 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
 #include "msgs/PedObjectArray.h"
+#include "msgs/PredictSkeleton.h"
+#include "msgs/Keypoints.h"
+#include "msgs/Keypoint.h"
 
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include <opencv2/dnn.hpp>
@@ -145,6 +148,7 @@ public:
   int buffer_size = 60;
 
   // ROS components
+  ros::ServiceClient skip_frame_client;
   ros::Publisher chatter_pub_front;
   ros::Publisher chatter_pub_left;
   ros::Publisher chatter_pub_right;
