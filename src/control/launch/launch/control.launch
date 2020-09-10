@@ -15,9 +15,10 @@
 	<node pkg="lidar_location_send" type="lidar_location_send" name="lidar_location_send" output="screen" cwd="node" respawn="true"  />
 	<node pkg="lidarxyz2lla" type="lidarxyz2lla_node" name="lidarxyz2lla_node" output="screen" cwd="node" respawn="true"  />
 	<node pkg="geofence" type="geofence" name="geofence" output="screen" cwd="node" respawn="true"  />
-	<node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  >
+	<!--node pkg="geofence_pp" type="geofence_pp" name="geofence_pp" output="screen" cwd="node" respawn="true"  >
 		<param name="pp_input_type" value="$(arg pp_input_type)" type="int"/>
-        </node>
+        </node-->
+	<node pkg="geofence_map_pp" type="geofence_map_pp" name="geofence_map_pp" output="screen" cwd="node" respawn="true"  />
         <node pkg="control_checker" type="control_checker" name="control_checker" output="screen" cwd="node" respawn="true"  />
 	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
 		<param name="Path_flag" value="0" type="int"/>
