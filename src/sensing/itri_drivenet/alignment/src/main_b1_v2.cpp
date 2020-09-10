@@ -1140,16 +1140,19 @@ void runInference()
       {
         g_is_data_sync = false;
         std::cout << "===== doInference once =====" << std::endl;
-        /// get results
+        std::thread get_point_in_image_fov_thread_2(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
+                                                    std::ref(cams_raw_points_ptr) /*, cam_pixels*/, g_image_w,
+                                                    g_image_h);
         for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
         {
           pcl::copyPointCloud(*lidar_ssn_ptr, *cams_points_ptr[cam_order]);
-          pcl::copyPointCloud(*lidarall_nonground_ptr, *cams_raw_points_ptr[cam_order]);
         }
         getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
                                  objects_2d_bbox_arrs, /*cams_bboxs_cube_min_max,*/ cams_bboxs_points);
+        get_point_in_image_fov_thread_2.join();
         getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels,
                                  objects_2d_bbox_arrs, /*cams_bboxs_cube_min_max,*/ cams_bboxs_points);
+
         if (g_is_display)
         {
           for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
