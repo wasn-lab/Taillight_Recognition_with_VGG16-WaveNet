@@ -3,8 +3,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
-
-using namespace std;
+#include <algorithm>
 
 struct Point
 {
@@ -25,18 +24,19 @@ public:
   double getObjSpeed();
   double getNearest_X();
   double getNearest_Y();
-  struct Point findDirection();
+  Point findDirection();
 
-  int setPointCloud(const vector<Point>& PointCloud, bool isLocal, double SLAM_x, double SLAM_y,
-                    double Heading);             // Update pointcloud, must set before fist execution of Calcuator
-  int setPath(const vector<Point>& PathPoints);  // Update Path points in absolute coordibate, must set before fist
-                                                 // execution of Calcuator
-  int Calculator();                              // Calculate geofence by currently set Poly and PointCloud
+  void setPointCloud(const std::vector<Point>& PointCloud, bool isLocal, double SLAM_x, double SLAM_y,
+                     double Heading);                  // Update pointcloud, must set before fist execution of Calcuator
+  void setPath(const std::vector<Point>& PathPoints);  // Update Path points in absolute coordibate, must set before
+                                                       // fist execution of Calcuator
+  int Calculator();                                    // Calculate geofence by currently set Poly and PointCloud
 
 private:
-  vector<Point> PathPoints;
-  vector<double> PathLength;
-  vector<Point> PointCloud;
+  double dist0 = 300.;
+  std::vector<Point> PathPoints;
+  std::vector<double> PathLength;
+  std::vector<Point> PointCloud;
   double Distance;       // Geofence distance
   double Distance_wide;  // for path planning
   double Farest;         // The farest point

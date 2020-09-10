@@ -27,6 +27,9 @@
   <exec_depend>msgs</exec_depend>
   <exec_depend>car_model</exec_depend>
 
+  <depend>tf2_ros</depend>
+  <depend>tf2_geometry_msgs</depend>
+
   <export>
   </export>
 </package>

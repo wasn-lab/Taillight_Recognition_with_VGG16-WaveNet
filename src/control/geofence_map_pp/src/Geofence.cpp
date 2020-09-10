@@ -1,19 +1,12 @@
-
-#include <iostream>
-#include <vector>
-#include <string>
-#include <cmath>
-#include <algorithm>
-#include "Geofence_Class.h"
+#include "Geofence.h"
 
 //#define BOUNDARY 1.2
 //#define DEBUG
 //#define TEST
-using namespace std;
 
 Geofence::Geofence(double Bound)
 {
-  cout << "Geofence is being created, Boundary = " << Bound << endl;
+  std::cout << "Geofence is being created, Boundary = " << Bound << std::endl;
   Boundary = Bound;
 }
 
@@ -46,46 +39,41 @@ double Geofence::getNearest_Y()
   return Nearest_Y;
 }
 
-struct Point Geofence::findDirection()
+Point Geofence::findDirection()
 {
-  Point temp;
+  Point p;
   double X_bar = 1000;
   double Y_bar = 1000;
-  for (int i = 1; i < this->PathLength.size(); i++)
+
+  for (size_t i = 1; i < this->PathLength.size(); i++)
   {
     if (this->PathLength[i] > this->Distance)
     {
-      // if(this->PathLength[i] > 10){
       X_bar = this->PathPoints[i].X - this->PathPoints[i - 1].X;
       Y_bar = this->PathPoints[i].Y - this->PathPoints[i - 1].Y;
-      temp.X = this->PathPoints[i].X;
-      temp.Y = this->PathPoints[i].Y;
-      // cout << "i: " << i << endl;
+      p.X = this->PathPoints[i].X;
+      p.Y = this->PathPoints[i].Y;
       break;
     }
   }
-  temp.Direction = atan2(Y_bar, X_bar);
-  /*
-  temp.Direction = acos((X_bar)/sqrt(pow(X_bar,2.0) + pow(Y_bar,2.0)));
-  if(Y_bar<0)
-  {
-      temp.Direction = -temp.Direction;
-  }
-  */
-  // temp.Direction = asin((X_bar)/sqrt(pow(X_bar,2.0) + pow(Y_bar,2.0)));
-  return temp;
+
+  p.Direction = atan2(Y_bar, X_bar);
+
+  return p;
 }
 
-int Geofence::setPath(const vector<Point>& PathPoints)
+void Geofence::setPath(const std::vector<Point>& PathPoints)
 {
-  this->PathPoints.clear();
-  this->PathLength.clear();
-  this->PathPoints = PathPoints;
+  std::vector<Point>().swap(this->PathPoints);
+  this->PathPoints.assign(PathPoints.begin(), PathPoints.end());
 
-  for (int i = 0; i < PathPoints.size(); i++)
+  std::vector<double>().swap(this->PathLength);
+
+  for (size_t i = 0; i < PathPoints.size(); i++)
   {
     double Segment;
     double Length_temp;
+
     if (i == 0)
     {
       Length_temp = 0.0;  // For first element
@@ -95,23 +83,26 @@ int Geofence::setPath(const vector<Point>& PathPoints)
       Segment = sqrt(pow((PathPoints[i].X - PathPoints[i - 1].X), 2) + pow((PathPoints[i].Y - PathPoints[i - 1].Y), 2));
       Length_temp = PathLength[i - 1] + Segment;
     }
+
     this->PathLength.push_back(Length_temp);
   }
-  return 0;
 }
 
-int Geofence::setPointCloud(const vector<Point>& PointCloud, bool isLocal, double SLAM_x, double SLAM_y, double Heading)
+void Geofence::setPointCloud(const std::vector<Point>& PointCloud, bool isLocal, double SLAM_x, double SLAM_y,
+                             double Heading)
 {
-  this->PointCloud.clear();
-  Point Point_temp;
-  if (isLocal == true)
+  std::vector<Point>().swap(this->PointCloud);
+  this->PointCloud.reserve(PointCloud.size());
+
+  Point p;
+  if (isLocal)
   {
-    for (int i = 0; i < PointCloud.size(); i++)
+    for (size_t i = 0; i < PointCloud.size(); i++)
     {
-      Point_temp.X = cos(Heading) * PointCloud[i].X - sin(Heading) * PointCloud[i].Y + SLAM_x;
-      Point_temp.Y = sin(Heading) * PointCloud[i].X + cos(Heading) * PointCloud[i].Y + SLAM_y;
-      Point_temp.Speed = PointCloud[i].Speed;
-      this->PointCloud.push_back(Point_temp);
+      p.X = cos(Heading) * PointCloud[i].X - sin(Heading) * PointCloud[i].Y + SLAM_x;
+      p.Y = sin(Heading) * PointCloud[i].X + cos(Heading) * PointCloud[i].Y + SLAM_y;
+      p.Speed = PointCloud[i].Speed;
+      this->PointCloud.push_back(p);
     }
   }
   else
@@ -121,7 +112,6 @@ int Geofence::setPointCloud(const vector<Point>& PointCloud, bool isLocal, doubl
 #ifdef TEST
   cout << "Size of PoinClout:" << PointCloud.size() << endl;
 #endif
-  return 0;
 }
 
 int Geofence::Calculator()
@@ -129,37 +119,46 @@ int Geofence::Calculator()
   // Check if all information is initialized
   if (PathPoints.size() < 1)
   {
-    cerr << "Path not initialized" << endl;
-    return 1;
-  }
-  if (PointCloud.size() < 1)
-  {
-    cerr << "PointCloud not initialized" << endl;
+    std::cerr << "Path not initialized" << std::endl;
     return 1;
   }
 
-  vector<double> P_Distance(PointCloud.size(), 300);    // Distance of every pointcloud (default 100)
-  vector<double> P_Distance_w(PointCloud.size(), 300);  // Distance of every pointcloud in wider range (default 100)
-  for (int i = 0; i < PointCloud.size(); i++)
+  if (PointCloud.size() < 1)
   {
-    vector<double> V_Distance(PathPoints.size(), 300);  // Vertical diatnce to the path
-    for (int j = 0; j < PathPoints.size(); j++)
+    std::cerr << "PointCloud not initialized" << std::endl;
+    return 1;
+  }
+
+  std::vector<double> P_Distance(PointCloud.size(), dist0);  // Distance of every pointcloud (default 100)
+  std::vector<double> P_Distance_w(PointCloud.size(),
+                                   dist0);  // Distance of every pointcloud in wider range (default 100)
+
+  for (size_t i = 0; i < PointCloud.size(); i++)
+  {
+    std::vector<double> V_Distance(PathPoints.size(), dist0);  // Vertical diatnce to the path
+
+    for (size_t j = 0; j < PathPoints.size(); j++)
     {
       V_Distance[j] = sqrt(pow(PointCloud[i].X - PathPoints[j].X, 2) + pow(PointCloud[i].Y - PathPoints[j].Y, 2));
     }
+
     int minElementIndex = std::min_element(V_Distance.begin(), V_Distance.end()) - V_Distance.begin();
     double minElement = *std::min_element(V_Distance.begin(), V_Distance.end());
+
     if (minElement < Boundary)
     {
       P_Distance[i] = PathLength[minElementIndex];
     }
+
     if (minElement < (Boundary + 0.5))
     {
       P_Distance_w[i] = PathLength[minElementIndex];
     }
   }
+
   int minElementIndex = std::min_element(P_Distance.begin(), P_Distance.end()) - P_Distance.begin();
   double minElement = *std::min_element(P_Distance.begin(), P_Distance.end());
+
   if (minElement < 99)
   {
     Trigger = true;
@@ -174,21 +173,22 @@ int Geofence::Calculator()
     Nearest_X = 3000;
     Nearest_Y = 3000;
   }
-  Distance = minElement;
+
+  Distance = minElement;  // key parameter to decide plot PP or not
 
   minElement = *std::min_element(P_Distance_w.begin(), P_Distance_w.end());
   Distance_wide = minElement;
 
   // Calculate farest point
-  for (int i = 0; i < P_Distance.size(); i++)
+  for (size_t i = 0; i < P_Distance.size(); i++)
   {
-    if (P_Distance[i] > 299)
+    if (P_Distance[i] >= dist0)
     {
       P_Distance[i] = -100;
     }
   }
-  int maxElementIndex = std::max_element(P_Distance.begin(), P_Distance.end()) - P_Distance.begin();
-  double maxElement = *std::max_element(P_Distance.begin(), P_Distance.end());
-  Farest = maxElement;
+
+  Farest = *std::max_element(P_Distance.begin(), P_Distance.end());
+
   return 0;
 }
