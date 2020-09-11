@@ -4,7 +4,7 @@ from msgs.msg import Keypoints
 from msgs.msg import Keypoint
 from msgs.srv import *
 
-predict_frames = 4
+predict_frames = 1
 gain = 5  # gain for Kalman Filter
 
 def keypoint_is_detected(keypoint):
