@@ -117,9 +117,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
       }
     }
   }
-
-/// record the 3d points
-#pragma omp parallel for collapse(2)
+  /// record the 3d points)
   for (int u = 0; u < image_w; u++)
   {
     for (int v = 0; v < image_h; v++)
@@ -127,13 +125,11 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
         cam_points.points[cloud_sizes] = point_cloud[u][v];
-#pragma omp critical
-        {
-          cloud_sizes++;
-        }
+        cloud_sizes++;
       }
     }
   }
+
   /// copy to destination
   cam_points.resize(cloud_sizes);
   *cams_points_ptr = cam_points;
@@ -149,7 +145,6 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
   /// create variable
   pcl::PointCloud<pcl::PointXYZI> cam_points;
-  int cloud_sizes = 0;
   pcl::PointCloud<pcl::PointXYZI> point_cloud_src;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointXYZI> point_vector_object;
@@ -263,12 +258,10 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
   for (size_t i = 0; i < point_vector_objects.size(); i++)
   {
     cam_points.points[i] = point_vector_objects[i];
-    cloud_sizes++;
   }
-  point_vector_objects.clear();
 
   /// copy to destination
-  cam_points.resize(cloud_sizes);
+  cam_points.resize(point_vector_objects.size());
   *cams_bbox_points_ptr = cam_points;
 }
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::DetectedObjectArray& remaining_objects,
@@ -282,7 +275,6 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
   /// create variable
   pcl::PointCloud<pcl::PointXYZI> cam_points;
-  int cloud_sizes = 0;
   pcl::PointCloud<pcl::PointXYZI> point_cloud_src;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointXYZI> point_vector_object;
@@ -415,12 +407,10 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   for (size_t i = 0; i < point_vector_objects.size(); i++)
   {
     cam_points.points[i] = point_vector_objects[i];
-    cloud_sizes++;
   }
-  point_vector_objects.clear();
 
   /// copy to destination
-  cam_points.resize(cloud_sizes);
+  cam_points.resize(point_vector_objects.size());
   *cams_bbox_points_ptr = cam_points;
 }
 
