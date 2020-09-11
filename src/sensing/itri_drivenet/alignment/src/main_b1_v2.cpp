@@ -621,6 +621,17 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<
   }
 }
 
+void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                                std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
+{
+// std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+#pragma omp parallel for
+  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+  {
+    getPointCloudInImageRectCoverage(lidarall_ptr, cams_points_ptr[cam_order], g_alignments[cam_order]);
+  }
+}
+
 void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                                 /*std::vector<std::vector<PixelPosition>>& cam_pixels,*/ int image_w, int image_h)
@@ -1140,19 +1151,19 @@ void runInference()
       {
         g_is_data_sync = false;
         std::cout << "===== doInference once =====" << std::endl;
+        std::thread getPointCloudInAllImageRectCoverage_1(getPointCloudInAllImageRectCoverage, lidar_ssn_ptr,
+                                                    std::ref(cams_points_ptr));
         std::thread get_point_in_image_fov_thread_2(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
                                                     std::ref(cams_raw_points_ptr) /*, cam_pixels*/, g_image_w,
                                                     g_image_h);
-        for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
-        {
-          pcl::copyPointCloud(*lidar_ssn_ptr, *cams_points_ptr[cam_order]);
-        }
+        getPointCloudInAllImageRectCoverage_1.join();
         getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
                                  objects_2d_bbox_arrs, /*cams_bboxs_cube_min_max,*/ cams_bboxs_points);
         get_point_in_image_fov_thread_2.join();
         getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels,
                                  objects_2d_bbox_arrs, /*cams_bboxs_cube_min_max,*/ cams_bboxs_points);
-
+        object_publisher(objects_2d_bbox_arrs, cams_bboxs_points, /*cams_bboxs_cube_min_max,*/ object_arrs[0].header);
+                
         if (g_is_display)
         {
           for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -1188,8 +1199,6 @@ void runInference()
             g_mats_process[cam_order] = cam_mats[cam_order].clone();
           }
         }
-
-        object_publisher(objects_2d_bbox_arrs, cams_bboxs_points, /*cams_bboxs_cube_min_max,*/ object_arrs[0].header);
 
         release(cam_pixels);
         release(cam_bboxs_class_id);

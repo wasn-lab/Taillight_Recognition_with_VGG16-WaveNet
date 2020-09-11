@@ -18,6 +18,9 @@
 #include "alignment.h"
 #include "cloud_cluster.h"
 
+void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                             pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
+                             Alignment& alignment);
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                              std::vector<DriveNet::PixelPosition>& cam_pixels, int image_w, int image_h,

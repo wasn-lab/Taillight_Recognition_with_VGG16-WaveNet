@@ -2,6 +2,33 @@
 
 using namespace DriveNet;
 
+void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                             pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
+                             Alignment& alignment)
+{
+  // std::cout << "===== getPointCloudInImageRectCoverage... =====" << std::endl;
+  /// create variable
+  pcl::PointCloud<pcl::PointXYZI> cam_points;
+  int cloud_sizes = 0;
+
+  /// copy from source
+  pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
+  cam_points = *cams_points_ptr;
+
+  /// find 3d points in image coverage
+  for (size_t i = 0; i < lidarall_ptr->size(); i++)
+  {
+    if (alignment.checkPointInCoverage(lidarall_ptr->points[i]))
+    {
+      cam_points.points[cloud_sizes] = lidarall_ptr->points[i];
+      cloud_sizes++;
+    }
+  }
+
+  /// copy to destination
+  cam_points.resize(cloud_sizes);
+  *cams_points_ptr = cam_points;
+}
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                              std::vector<PixelPosition>& cam_pixels, int image_w, int image_h, Alignment& alignment)
