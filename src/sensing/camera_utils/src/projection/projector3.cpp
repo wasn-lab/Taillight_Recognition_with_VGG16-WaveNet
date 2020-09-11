@@ -152,7 +152,7 @@ bool Projector3::outOfCoverage(float x, float y, float z)
 {
   if(!coverage_mat.empty())
   {
-    if (x < min_x || x > max_x || y < min_y || y > max_y)
+    if (x < min_x || x > max_x || y < min_y || y > max_y || z > 0)
     {
       return true;
     }

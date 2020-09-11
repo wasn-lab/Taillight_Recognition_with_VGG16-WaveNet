@@ -25,5 +25,5 @@ CoverageMat: !!opencv-matrix
    rows: 2
    cols: 2
    dt: f
-   data: [ 0., 100.,
-           -50., 50. ]
+   data: [ 10., 100.,
+           -15., 15. ]
