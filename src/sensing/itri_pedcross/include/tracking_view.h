@@ -52,7 +52,7 @@ public:
   void tracking_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void draw_tracking_with_detection();
   void pedestrian_event();
-  
+
   // All buffer components
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
   msgs::DetectedObjectArray latest_detection;

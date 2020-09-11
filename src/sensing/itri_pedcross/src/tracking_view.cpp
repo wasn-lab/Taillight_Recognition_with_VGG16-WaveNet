@@ -123,8 +123,7 @@ void TrackingView::draw_tracking_with_detection()
     cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), cv::FILLED);
     box.y = tem_y;
     std::string id_print = std::to_string(obj.track.id % 1000);
-    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_PLAIN, 1 /*font size*/, cv::Scalar(0, 0, 0), 1, 2,
-                false);
+    cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_PLAIN, 1 /*font size*/, cv::Scalar(0, 0, 0), 1, 2, false);
   }
   // make cv::Mat to sensor_msgs::Image
   sensor_msgs::ImageConstPtr viz_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
@@ -159,11 +158,11 @@ void TrackingView::pedestrian_event()
   ros::Subscriber sub_3;
 
   sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &TrackingView::detection_callback,
-                              this);  // /Tracking2D/front_bottom_60 is subscirbe topic
+                             this);  // /Tracking2D/front_bottom_60 is subscirbe topic
   sub_2 = nh_sub_2.subscribe("/Tracking2D/front_bottom_60", 1, &TrackingView::tracking_callback,
-                              this);  // /Tracking2D/left_back_60 is subscirbe topic
+                             this);  // /Tracking2D/left_back_60 is subscirbe topic
   sub_3 = nh_sub_3.subscribe("/cam/front_bottom_60", 1, &TrackingView::cache_image_callback,
-                              this);  // /Tracking2D/left_back_60 is subscirbe topic
+                             this);  // /Tracking2D/left_back_60 is subscirbe topic
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner_1.reset(new ros::AsyncSpinner(0, &queue_1));
@@ -217,7 +216,8 @@ int main(int argc, char** argv)
 
   tra::TrackingView tracking_view;
   ros::NodeHandle nh1;
-  tracking_view.chatter_pub = nh1.advertise<sensor_msgs::Image&>("/TrackingView/front_bottom_60", 1);  // /PedCross/DrawBBox is pub topic
+  tracking_view.chatter_pub =
+      nh1.advertise<sensor_msgs::Image&>("/TrackingView/front_bottom_60", 1);  // /PedCross/DrawBBox is pub topic
   tracking_view.image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(tracking_view.buffer_size);
   tracking_view.count = 0;
 

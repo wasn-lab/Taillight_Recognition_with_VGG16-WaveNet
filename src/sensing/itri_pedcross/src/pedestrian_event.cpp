@@ -526,7 +526,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
         {
           std::vector<cv::Point2f> predict_keypoints;
-          for(unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
+          for (unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
           {
             cv::Point2f predict_keypoint;
             predict_keypoint.x = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).x;
@@ -565,7 +565,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
           {
             std::vector<cv::Point2f> predict_keypoints;
-            for(unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
+            for (unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
             {
               cv::Point2f predict_keypoint;
               predict_keypoint.x = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).x;
@@ -1993,7 +1993,7 @@ int main(int argc, char** argv)
   nh.param<double>("/pedestrian_event/max_distance", pe.max_distance, 50);
   nh.param<double>("/pedestrian_event/danger_zone_distance", pe.danger_zone_distance, 2);
   nh.param<bool>("/pedestrian_event/use_2d_for_alarm", pe.use_2d_for_alarm, false);
-  
+
   pe.skip_frame_client = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
 
   pe.front_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
