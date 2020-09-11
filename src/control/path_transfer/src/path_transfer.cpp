@@ -6,6 +6,7 @@
 #include <msgs/CurrentTrajInfo.h>
 #include <vector>
 #include <cmath>
+#include <std_msgs/Empty.h>
 
 #define RT_PI 3.14159265358979323846
 
@@ -26,6 +27,7 @@ double distouphill = 0;
 
 ros::Publisher nav_path_pub;
 ros::Publisher currenttrajinfo_pub;
+ros::Publisher nav_path_heartbeat_pub;
 
 struct Point3D
 {
@@ -337,6 +339,9 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
     current_path.poses.push_back(current_posestamped);
   }
   nav_path_pub.publish(current_path);
+
+  std_msgs::Empty empty_msg;
+  nav_path_heartbeat_pub.publish(empty_msg);
 }
 
 int main(int argc, char** argv)
@@ -355,6 +360,7 @@ int main(int argc, char** argv)
   ros::Subscriber safety_waypoints_sub = node.subscribe("/planning/scenario_planning/trajectory", 1, transfer_callback);
   nav_path_pub = node.advertise<nav_msgs::Path>("nav_path_astar_final",1);
   currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
+  nav_path_heartbeat_pub = node.advertise<std_msgs::Empty>("nav_path_astar_final/heartbeat",1);
 
   ros::spin();
   return 0;
