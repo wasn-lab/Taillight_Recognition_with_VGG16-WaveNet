@@ -540,7 +540,8 @@ void displayLidarData()
       //     pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z,
       //                         cube_color[0], cube_color[1], cube_color[2], cube_id);  //, viewports[0]);
       //     pcl_viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
-      //                                             pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME, cube_id);
+      //                                             pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
+      //                                             cube_id);
       //     cube_cout++;
       //   }
       // }

@@ -3,8 +3,7 @@
 using namespace DriveNet;
 
 void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                             pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
-                             Alignment& alignment)
+                                      pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, Alignment& alignment)
 {
   // std::cout << "===== getPointCloudInImageRectCoverage... =====" << std::endl;
   /// create variable
