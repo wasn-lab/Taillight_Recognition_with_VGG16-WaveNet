@@ -49,13 +49,12 @@ bool use_filter = false;
 bool use_compress = false;
 bool use_roi = false;
 
-bool thread_heartbeat[3] = {false, false, false}; // {Left, Right, Top}
 bool heartBeat[5] = { false, false, false, false, false };  //{ FrontLeft, FrontRight, RearLeft, RearRight, FrontTop }
 
 void lidarAll_Pub(int lidarNum);
 
 //------------------------ Compressor
-void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher, int t_idx);
+void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher);
 
 
 //------------------------------ Callback
@@ -83,7 +82,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     if (use_compress)
     {
       thread t_LeftCompressor;  
-      t_LeftCompressor = thread{Compressor, input_cloud_tmp_ring, pub_LidarFrontLeft_Compress, 0};  
+      t_LeftCompressor = thread{Compressor, input_cloud_tmp_ring, pub_LidarFrontLeft_Compress};  
       t_LeftCompressor.detach();
     }
 
@@ -161,7 +160,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
     if (use_compress)
     {
       thread t_RightCompressor;  
-      t_RightCompressor = thread{Compressor, input_cloud_tmp_ring, pub_LidarFrontRight_Compress, 1};  
+      t_RightCompressor = thread{Compressor, input_cloud_tmp_ring, pub_LidarFrontRight_Compress};  
       t_RightCompressor.detach();
     }
 
@@ -237,7 +236,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     if (use_compress)
     { 
       thread t_TopCompressor;
-      t_TopCompressor = thread {Compressor, input_cloud_tmp_ring, pub_LidarFrontTop_Compress, 2};
+      t_TopCompressor = thread {Compressor, input_cloud_tmp_ring, pub_LidarFrontTop_Compress};
       t_TopCompressor.detach();
     }
 
@@ -294,12 +293,10 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 
 
 //---------------------------------------------------- Point Cloud Compression Thread
-void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher, int t_idx)
+void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher)
 {
   mutex Compressor_Lock;
   Compressor_Lock.lock();
-
-  thread_heartbeat[t_idx] = true;
   g_stopWatch_Compressor.reset();
 
   //--------------------------- compress start
@@ -333,7 +330,6 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
   {
     cout << "COMPRESSION DELAY ----------> " << g_stopWatch_Compressor.getTimeSeconds() << 's' << endl;
   }
-  thread_heartbeat[t_idx] = false;
   Compressor_Lock.unlock();
 }
 
