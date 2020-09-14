@@ -10,26 +10,15 @@ Boxfusion::~Boxfusion()
 
 Boxfusion::Boxfusion()
 {
-  constexpr int FB_left_top_x = 0;
-  constexpr int FB_left_top_y = 821;
-  constexpr int FB_right_bottom_x = 938;
-  constexpr int FB_right_bottom_y = 1207;
-
   front_bottom.LeftLinePoint1 = cv::Point(FB_left_top_x, FB_left_top_y);
   front_bottom.LeftLinePoint2 = cv::Point(FB_left_top_x, FB_right_bottom_y);
   front_bottom.RightLinePoint1 = cv::Point(FB_right_bottom_x, FB_left_top_y);
   front_bottom.RightLinePoint2 = cv::Point(FB_right_bottom_x, FB_right_bottom_y);
 
-  constexpr int LB_left_top_x = 1115;
-  constexpr int LB_left_top_y = 135;
-  constexpr int LB_right_bottom_x = 1832;
-  constexpr int LB_right_bottom_y = 340;
-
   left_back.LeftLinePoint1 = cv::Point(LB_left_top_x, LB_left_top_y);
   left_back.LeftLinePoint2 = cv::Point(LB_left_top_x, LB_right_bottom_y);
   left_back.RightLinePoint1 = cv::Point(LB_right_bottom_x, LB_left_top_y);
   left_back.RightLinePoint2 = cv::Point(LB_right_bottom_x, LB_right_bottom_y);
-
 }
 
 enum checkBoxStatus
@@ -139,8 +128,8 @@ msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj
         PixelPosition obj2_center_trans;        
         
         // Project left back camera to front bottom camera
-        obj2_center_trans.u = (((float)obj2_center.u - 1115)/717) * 938;
-        obj2_center_trans.v = (((float)obj2_center.v - 135)/205)*386 + 821;
+        obj2_center_trans.u = (((float)obj2_center.u - LB_left_top_x)/(LB_right_bottom_x - LB_left_top_x)) * FB_right_bottom_x;
+        obj2_center_trans.v = (((float)obj2_center.v - LB_left_top_y)/(LB_right_bottom_y - LB_left_top_y))*(FB_right_bottom_y - FB_left_top_y) + FB_left_top_y;
 
         // cout << obj2_center_trans.u << "," << obj2_center_trans.v << "," << obj1_center.u << "," << obj1_center.v << endl;
         
