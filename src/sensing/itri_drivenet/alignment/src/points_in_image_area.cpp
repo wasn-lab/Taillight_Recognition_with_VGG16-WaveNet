@@ -162,8 +162,9 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
     // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
-      if (alignment.checkPointInCoverage(point))
-      {
+      // if (alignment.checkPointInCoverage(point))
+
+      // {
         // get the 2d box
         std::vector<PixelPosition> bbox_positions(2);
         bbox_positions[0].u = obj_tmp.camInfo.u;
@@ -181,7 +182,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
           cam_pixels.push_back(pixel_position);
           point_vector_object.push_back(point);
         }
-      }
+      // }
     }
     // std::cout << "point_vector_object size: " << point_vector_object.size() << std::endl;
 
@@ -301,8 +302,8 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
     // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
-      if (alignment.checkPointInCoverage(point))
-      {
+      // if (alignment.checkPointInCoverage(point))
+      // {
         // get the 2d box
         std::vector<PixelPosition> bbox_positions(2);
         bbox_positions[0].u = obj_tmp.camInfo.u;
@@ -320,7 +321,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
           cam_pixels.push_back(pixel_position);
           point_vector_object.push_back(point);
         }
-      }
+      // }
     }
     // std::cout << "point_vector_object size: " << point_vector_object.size() << std::endl;
 
