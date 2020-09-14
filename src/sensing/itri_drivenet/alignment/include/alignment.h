@@ -37,6 +37,7 @@ public:
   ~Alignment() = default;
   void projectMatrixInit(camera::id cam_id);
   DriveNet::PixelPosition projectPointToPixel(pcl::PointXYZI point);
+  bool checkPointInCoverage(pcl::PointXYZI point);
 };
 
 #endif

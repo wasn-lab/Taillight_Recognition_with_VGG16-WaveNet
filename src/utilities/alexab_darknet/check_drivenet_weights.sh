@@ -50,6 +50,7 @@ function dl_drivenet_weights {
     rm ${weights_fov120}
   fi
   wget http://nas.itriadv.co:8888/git_data/B1/drivenet/yolov3_fov120_b1.weights -O ${weights_fov120}
+  md5sum ${weights_fov60} ${weights_fov120}
 }
 
 function mr_test {
@@ -64,7 +65,7 @@ function mr_test {
 
   find ${src_dir} -name "*.jpg" -exec cp {} ${dest_dir} \;
   find ${src_dir} -name "*.json" -exec cp {} ${dest_dir} \;
-  find ${dest_dir} -name "*.jpg" > ${dest_dir}/mr_images.txt
+  find ${dest_dir} -name "*.jpg" | grep -v _yolo.jpg | grep -v _expect.jpg > ${dest_dir}/mr_images.txt
   python3 ${weakness_detection_dir}/gen_yolo_detection_img.py --yolo-result-json ${dest_dir}/yolo_result.json --image-filenames ${dest_dir}/mr_images.txt
   for image_filename in `cat ${dest_dir}/mr_images.txt`; do
     python3 ${darknet_dir}/drivenet_weights_mr_test/draw_bbox.py -i ${image_filename} --output-dir ${dest_dir}
