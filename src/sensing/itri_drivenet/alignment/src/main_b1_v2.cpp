@@ -18,6 +18,7 @@
 #include "camera_params.h"
 #include "fusion_source_id.h"
 #include "alignment.h"
+#include "box_fusion.h"
 #include "visualization_util.h"
 #include <drivenet/object_label_util.h>
 #include "point_preprocessing.h"
@@ -46,6 +47,9 @@
 
 /// namespace
 using namespace DriveNet;
+
+Boxfusion g_box_fusion;
+
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
