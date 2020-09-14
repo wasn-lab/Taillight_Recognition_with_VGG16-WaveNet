@@ -10,17 +10,32 @@ Boxfusion::~Boxfusion()
 
 Boxfusion::Boxfusion()
 {
-  front_bottom.LeftLinePoint1 = cv::Point(0, 821);
-  front_bottom.LeftLinePoint2 = cv::Point(0, 1207);
-  front_bottom.RightLinePoint1 = cv::Point(938, 821);
-  front_bottom.RightLinePoint2 = cv::Point(938, 1207);
+  constexpr int FB_left_top_x = 0;
+  constexpr int FB_left_top_y = 821;
+  constexpr int FB_right_bottom_x = 938;
+  constexpr int FB_right_bottom_y = 1207;
 
-  left_back.LeftLinePoint1 = cv::Point(1115, 135);
-  left_back.LeftLinePoint2 = cv::Point(1115, 340);
-  left_back.RightLinePoint1 = cv::Point(1832, 135);
-  left_back.RightLinePoint2 = cv::Point(1832, 340);
+  front_bottom.LeftLinePoint1 = cv::Point(FB_left_top_x, FB_left_top_y);
+  front_bottom.LeftLinePoint2 = cv::Point(FB_left_top_x, FB_right_bottom_y);
+  front_bottom.RightLinePoint1 = cv::Point(FB_right_bottom_x, FB_left_top_y);
+  front_bottom.RightLinePoint2 = cv::Point(FB_right_bottom_x, FB_right_bottom_y);
+
+  constexpr int LB_left_top_x = 1115;
+  constexpr int LB_left_top_y = 135;
+  constexpr int LB_right_bottom_x = 1832;
+  constexpr int LB_right_bottom_y = 340;
+
+  left_back.LeftLinePoint1 = cv::Point(LB_left_top_x, LB_left_top_y);
+  left_back.LeftLinePoint2 = cv::Point(LB_left_top_x, LB_right_bottom_y);
+  left_back.RightLinePoint1 = cv::Point(LB_right_bottom_x, LB_left_top_y);
+  left_back.RightLinePoint2 = cv::Point(LB_right_bottom_x, LB_right_bottom_y);
 
 }
+
+enum checkBoxStatus
+{
+  InsideArea, OverLeftBound, OverRightBound
+};
 
 std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs, int camera_id_1, int camera_id_2)
 {
@@ -32,8 +47,14 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
   {
     for(const auto& obj : ori_object_arrs[cam_id].objects)
     {
-      if(obj.camInfo.id == camera_id_1)check_data_1 = true;
-      if(obj.camInfo.id == camera_id_2)check_data_2 = true;  
+      if(obj.camInfo.id == camera_id_1)
+      {
+        check_data_1 = true;
+      }
+      if(obj.camInfo.id == camera_id_2)
+      {
+        check_data_2 = true;  
+      }
       // cout << obj.camInfo.u << "," << obj.camInfo.v << endl;    
       
     }
@@ -140,9 +161,6 @@ msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj
 
 int Boxfusion::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
 {
-  int point0 = 0;
-  int point1 = 1;
-  int point2 = 2;
   /// right
   int c1 = (area.RightLinePoint1.x - area.RightLinePoint2.x) * (object_y2 - area.RightLinePoint2.y) -
            (object_x1 - area.RightLinePoint2.x) * (area.RightLinePoint1.y - area.RightLinePoint2.y);
@@ -152,24 +170,19 @@ int Boxfusion::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
 
   if (c1 > 0)
   {
-    return point2;
+    return checkBoxStatus::OverRightBound;
   }
   else if (c2 < 0)
   {
-    return point1;
+    return checkBoxStatus::OverLeftBound;
   }
   else
   {
-    return point0;
+    return checkBoxStatus::InsideArea;
   }
 }
 
 bool Boxfusion::pointcompare(PixelPosition front_bottom, PixelPosition projected)
 {
-  // cout << sqrt(pow((front_bottom.u - projected.u), 2) + pow((front_bottom.v - projected.v), 2)) << endl;
-  if(sqrt(pow((front_bottom.u - projected.u), 2) + pow((front_bottom.v - projected.v), 2)) < pixelthres)
-  {
-    return true;
-  }
-  return false;
+  return bool(sqrt(pow((front_bottom.u - projected.u), 2) + pow((front_bottom.v - projected.v), 2)) < pixelthres);
 }
