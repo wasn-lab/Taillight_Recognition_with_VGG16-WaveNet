@@ -48,7 +48,7 @@ def test():
         start = time.time()
         res = skip_frame_client.call(req, req)
         print(res)
-    except rospy.ServiceException, e:
+    except rospy.ServiceException, e:  # pylint: disable=syntax-error
         rospy.logwarn("Service call failed: %s"%e)
     stop = time.time()
     print("latency: " + str(stop - start))
