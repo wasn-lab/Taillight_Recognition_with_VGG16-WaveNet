@@ -462,10 +462,9 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
 {
   msgs::DetectedObjectArray msg_det_obj_arr;
   std::vector<msgs::DetectedObject> msg_objs;
-  float min_z = -3;
-  float max_z = -1.5;
+  // float min_z = -3;
+  // float max_z = -1.5;
 
-#pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_bboxs_points.size(); cam_order++)
   {
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
@@ -477,10 +476,6 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
       msg_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
       msg_obj.distance = 0;
       pcl::PointCloud<pcl::PointXYZI> points = cams_bboxs_points[cam_order][obj_index];
-
-      /// bbox- pcl
-      // MinMax3D cube = cams_bboxs_cube_min_max[cam_order][obj_index];
-      // msg_obj.bPoint = g_object_generator.minMax3dToBBox(cube);
 
       /// bbox- L-shape
       msgs::BoxPoint box_point;
@@ -499,26 +494,24 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
       }
 
       /// polygon - ApproxMVBB
-      pcl::PointCloud<pcl::PointXYZ> convex_points;
-      convex_points = g_object_generator.pointsToPolygon(points);
+      // pcl::PointCloud<pcl::PointXYZ> convex_points;
+      // convex_points = g_object_generator.pointsToPolygon(points);
 
-      /// polygon to DetectedObj.cPoint
-      if (!convex_points.empty())
-      {
-        msg_obj.cPoint.objectHigh = max_z - min_z;
-        for (auto& point : convex_points)
-        {
-          msgs::PointXYZ convex_point;
-          convex_point.x = point.x;
-          convex_point.y = point.y;
-          convex_point.z = min_z;
-          msg_obj.cPoint.lowerAreaPoints.push_back(convex_point);
-        }
-#pragma omp critical
-        {
-          msg_objs.push_back(msg_obj);
-        }
-      }
+      // /// polygon to DetectedObj.cPoint
+      // if (!convex_points.empty())
+      // {
+      //   msg_obj.cPoint.objectHigh = max_z - min_z;
+      //   for (auto& point : convex_points)
+      //   {
+      //     msgs::PointXYZ convex_point;
+      //     convex_point.x = point.x;
+      //     convex_point.y = point.y;
+      //     convex_point.z = min_z;
+      //     msg_obj.cPoint.lowerAreaPoints.push_back(convex_point);
+      //   }
+      // }
+
+      msg_objs.push_back(msg_obj);
     }
   }
   msg_det_obj_arr.header = std::move(msg_header);
