@@ -39,18 +39,17 @@ mutex L_Lock;
 mutex R_Lock;
 mutex T_Lock;
 
-StopWatch stopWatch;
-StopWatch stopWatch_L;
-StopWatch stopWatch_R;
-StopWatch stopWatch_T;
-StopWatch stopWatch_Compressor;
+StopWatch g_stopWatch_L;
+StopWatch g_stopWatch_R;
+StopWatch g_stopWatch_T;
+StopWatch g_stopWatch_Compressor;
 
 bool debug_output = false;
 bool use_filter = false;
 bool use_compress = false;
 bool use_roi = false;
 
-bool thread_heartbeat[6] = {false, false, false, false, false, false}; // {Left, Right, Top, Left2, Right2, Top2}
+bool thread_heartbeat[3] = {false, false, false}; // {Left, Right, Top}
 bool heartBeat[5] = { false, false, false, false, false };  //{ FrontLeft, FrontRight, RearLeft, RearRight, FrontTop }
 
 void lidarAll_Pub(int lidarNum);
@@ -65,7 +64,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
   L_Lock.lock();
   if (input_cloud->width * input_cloud->height > 100)
   {
-    stopWatch_L.reset();
+    g_stopWatch_L.reset();
     heartBeat[0] = true;
     // check data from hardware
     if (debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
@@ -134,7 +133,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       pub_LidarFrontLeft.publish(*cloudPtr_LidarFrontLeft);
 
-      cout << "[L-Gbr]: " << stopWatch_L.getTimeSeconds() << 's' << endl;
+      cout << "[L-Gbr]: " << g_stopWatch_L.getTimeSeconds() << 's' << endl;
     }
   }
   L_Lock.unlock();
@@ -145,7 +144,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
   R_Lock.lock();
   if (input_cloud->width * input_cloud->height > 100)
   {
-    stopWatch_R.reset();
+    g_stopWatch_R.reset();
     heartBeat[0] = true;
 
     // check data from hardware
@@ -211,7 +210,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       cloudPtr_LidarFrontRight->header.frame_id = "lidar";
       pub_LidarFrontRight.publish(*cloudPtr_LidarFrontRight);
     }
-    cout << "[R-Gbr]: " << stopWatch_R.getTimeSeconds() << 's' << endl;
+    cout << "[R-Gbr]: " << g_stopWatch_R.getTimeSeconds() << 's' << endl;
   }
   R_Lock.unlock();
 }
@@ -221,7 +220,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
   T_Lock.lock();
   if (input_cloud->width * input_cloud->height > 100)
   {
-    stopWatch_T.reset();
+    g_stopWatch_T.reset();
     heartBeat[4] = true;
 
     // check data from hardware
@@ -282,14 +281,13 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       }
 
       // assign
-      stopWatch.reset();
       *cloudPtr_LidarFrontTop = *input_cloud_tmp;
 
       // publish
       cloudPtr_LidarFrontTop->header.frame_id = "lidar";
       pub_LidarFrontTop.publish(*cloudPtr_LidarFrontTop);
     }
-    cout << "[T-Gbr]: " << stopWatch_T.getTimeSeconds() << 's' << endl;
+    cout << "[T-Gbr]: " << g_stopWatch_T.getTimeSeconds() << 's' << endl;
   }
   T_Lock.unlock();
 }
@@ -302,7 +300,7 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
   Compressor_Lock.lock();
 
   thread_heartbeat[t_idx] = true;
-  stopWatch_Compressor.reset();
+  g_stopWatch_Compressor.reset();
 
   //--------------------------- compress start
   bool showStatistics = false;
@@ -331,10 +329,10 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
   compressedData.clear();
   //------------------------- end of compress
   
-  // if(stopWatch_Compressor.getTimeSeconds()>0.05)
-  // {
-  //   cout << "COMPRESSION DELAY ----------> " << stopWatch_Compressor.getTimeSeconds() << 's' << endl;
-  // }
+  if(g_stopWatch_Compressor.getTimeSeconds()>0.05)
+  {
+    cout << "COMPRESSION DELAY ----------> " << g_stopWatch_Compressor.getTimeSeconds() << 's' << endl;
+  }
   thread_heartbeat[t_idx] = false;
   Compressor_Lock.unlock();
 }
@@ -343,7 +341,7 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
 //----------------------------------------------------- Publisher
 void LidarAll_Publisher(int argc, char** argv)
 {
-  ros::Rate loop_rate(20);  // 80Hz
+  ros::Rate loop_rate(20);  
   while (ros::ok())
   {
     lidarAll_Pub(4);
@@ -354,7 +352,6 @@ void LidarAll_Publisher(int argc, char** argv)
 
 void lidarAll_Pub(int lidarNum)
 {
-  // stopWatch.reset();
   //------ combine pointcloud
   *cloudPtr_LidarAll += *cloudPtr_LidarFrontLeft;
   *cloudPtr_LidarAll += *cloudPtr_LidarFrontRight;
