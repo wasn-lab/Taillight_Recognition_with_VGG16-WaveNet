@@ -4,6 +4,7 @@
 
 /// ros
 #include "ros/ros.h"
+#include <std_msgs/Empty.h>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
 #include <cv_bridge/cv_bridge.h>
@@ -117,6 +118,7 @@ std::vector<pcl::visualization::Camera> g_cam;
 
 /// object
 ros::Publisher g_object_pub;
+ros::Publisher g_heartbeat_pub;
 std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
 int g_object_wait_frame = 5;
@@ -523,6 +525,9 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
   msg_det_obj_arr.objects = msg_objs;
   g_object_pub.publish(msg_det_obj_arr);
+
+  std_msgs::Empty empty_msg;
+  g_heartbeat_pub.publish(empty_msg);
 }
 
 void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer) /*,
@@ -1470,6 +1475,7 @@ int main(int argc, char** argv)
 
     /// object publisher
     g_object_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
+    g_heartbeat_pub = nh.advertise<std_msgs::Empty>(camera::detect_result + std::string("/heartbeat"), 1);
   }
 
   /// class init
