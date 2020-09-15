@@ -28,8 +28,13 @@ static ros::Publisher g_pub_LidarFrontLeft;
 static ros::Publisher g_pub_LidarFrontRight;
 static ros::Publisher g_pub_LidarFrontTop;
 static ros::Publisher g_pub_LidarAll;
-static ros::Publisher g_pub_LidarFrontTop_Localization;
+
+static ros::Publisher g_pub_LidarFrontLeft_Raw_HeartBeat;
+static ros::Publisher g_pub_LidarFrontRight_Raw_HeartBeat;
+static ros::Publisher g_pub_LidarFrontTop_Raw_HeartBeat;
 static ros::Publisher g_pub_LidarAll_HeartBeat;
+
+static ros::Publisher g_pub_LidarFrontTop_Localization;
 
 static ros::Publisher g_pub_LidarFrontLeft_Compress;
 static ros::Publisher g_pub_LidarFrontRight_Compress;
@@ -60,9 +65,18 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
 void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_L_Lock.lock();
+
+  // -------------------Raw/heartbeat publisher
+  // check heartbeat by subcriber data receiver
+  std_msgs::Empty empty_msg;
+  g_pub_LidarFrontLeft_Raw_HeartBeat.publish(empty_msg);
+
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_L.reset();
+
+
+
 
     // check data from hardware
     if (g_debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
@@ -109,7 +123,6 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     }
     else
     {
-
       // Transfrom
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], LidarFrontLeft_Fine_Param[2],
@@ -139,6 +152,13 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_R_Lock.lock();
+
+  // -------------------Raw/heartbeat publisher
+  // check heartbeat by subcriber data receiver
+  std_msgs::Empty empty_msg;
+  g_pub_LidarFrontRight_Raw_HeartBeat.publish(empty_msg);
+
+
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_R.reset();
@@ -212,6 +232,12 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_T_Lock.lock();
+
+  // -------------------Raw/heartbeat publisher
+  // check heartbeat by subcriber data receiver
+  std_msgs::Empty empty_msg;
+  g_pub_LidarFrontTop_Raw_HeartBeat.publish(empty_msg);
+
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_T.reset();
@@ -469,6 +495,9 @@ int main(int argc, char** argv)
   g_pub_LidarAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
 
   // publisher - heartbeat
+  g_pub_LidarFrontLeft_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontLeft/Raw/heartbeat", 1);
+  g_pub_LidarFrontRight_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontRight/Raw/heartbeat", 1);
+  g_pub_LidarFrontTop_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontTop/Raw/heartbeat", 1);
   g_pub_LidarAll_HeartBeat = n.advertise<std_msgs::Empty>("/LidarAll/heartbeat", 1);
 
 
