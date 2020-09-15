@@ -16,7 +16,7 @@
   <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
   <arg name="angle_diff_setting_out" default="0.3" />
   <arg name="angle_diff_setting_distoturn" default="0.3" />
-  <arg name="z_diff_setting_in" default="0.8" /><!--1.0-->
+  <arg name="z_diff_setting_in" default="1.0" /><!--1.0-->
   <arg name="z_diff_setting_out" default="0.1" /><!--0.1-->
   <arg name="slope_setting_distouphill" default="0.08" />
 
