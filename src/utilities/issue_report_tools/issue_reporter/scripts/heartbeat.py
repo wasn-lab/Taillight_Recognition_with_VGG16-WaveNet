@@ -42,11 +42,13 @@ class Heartbeat():
             self.status = "ERROR"
             self.status_str = "Node {} crashed".format(self.module_name)
 
-
-    def heartbeat_cb(self, msg):
+    def update_heap(self):
         now = time.time()
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
         heapq.heappush(self.heap, now)
         rospy.logwarn("%s: fps: %f", self.module_name, self._get_fps())
+
+    def heartbeat_cb(self, msg):
+        self.update_heap()
