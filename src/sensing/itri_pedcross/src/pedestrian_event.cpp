@@ -599,8 +599,11 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           double max_h = max_y - min_y;
           for (unsigned int i = 0; i < keypoints.size(); i++)
           {
-            keypoints.at(i).x = (keypoints.at(i).x - min_x) / max_w * w_h_ratio;
-            keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
+            if (keypoints.at(i).x != 0 && keypoints.at(i).y != 0)
+            {
+              keypoints.at(i).x = (keypoints.at(i).x - min_x) / max_w * w_h_ratio;
+              keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
+            }
           }
         }
       }
