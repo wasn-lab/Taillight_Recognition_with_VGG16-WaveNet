@@ -1,4 +1,5 @@
 import configparser
+import pprint
 import rospy
 from heartbeat import Heartbeat
 
@@ -16,7 +17,11 @@ class FailSafeChecker():
                 cfg[module].getfloat("fps_low"),
                 cfg[module].getfloat("fps_high"))
 
+    def get_node_status(self):
+        return [self.heartbeats[_].to_dict() for _ in self.heartbeats]
+
     def run(self):
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
+            pprint.pprint(self.get_node_status())
             rate.sleep()
