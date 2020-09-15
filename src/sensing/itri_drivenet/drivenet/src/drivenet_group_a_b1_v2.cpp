@@ -3,6 +3,7 @@
 #include <thread>
 #include <future>
 #include <mutex>
+#include <std_msgs/Empty.h>
 
 #include "drivenet/drivenet_b1_v2.h"
 
@@ -57,6 +58,7 @@ std::mutex g_display_mutex;
 
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
 ros::Publisher g_lidar_repub;
 ros::Subscriber g_lidar_sub;
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
@@ -222,6 +224,8 @@ void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int c
   sensor_msgs::ImagePtr img_msg;
   img_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
   g_img_pubs[cam_order].publish(img_msg);
+  std_msgs::Empty empty_msg;
+  g_heartbeat_pubs[cam_order].publish(empty_msg);
 }
 
 int main(int argc, char** argv)
@@ -274,6 +278,8 @@ int main(int argc, char** argv)
     }
 
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
+    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    
   }
 
   // // occupancy grid map publisher
@@ -357,8 +363,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   }
   else if (g_cam_ids[cam_order] == camera::id::front_top_far_30)
   {
-    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x1, box.y2);
-    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x2, box.y2);
+    // l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x1, box.y2);
+    // r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x2, box.y2);
+    l_check = 0;
+    r_check = 0;
   }
 
   if (l_check == 0 && r_check == 0)

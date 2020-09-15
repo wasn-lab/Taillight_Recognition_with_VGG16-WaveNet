@@ -19,6 +19,7 @@ private:
   DisEstiParams* arr_params;
   CheckArea* ShrinkArea;
   cv::Point3d** align_FC60 /*, align_FL60, align_FR60*/;
+  cv::Point3d** align_FT30 /*, align_FL60, align_FR60*/;
 
   float Lidar_offset_x = 0;
   float Lidar_offset_y = 0;
