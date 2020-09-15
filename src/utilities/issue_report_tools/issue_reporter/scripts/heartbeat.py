@@ -1,9 +1,10 @@
 import time
 import heapq
 import rospy
+from message_utils import get_message_type_by_str
 
 class Heartbeat():
-    def __init__(self, module_name, topic, fps_low, fps_high):
+    def __init__(self, module_name, topic, message_type, fps_low, fps_high):
         # expected module stats
         self.module_name = module_name
         self.topic = topic
@@ -18,6 +19,9 @@ class Heartbeat():
         self.alive = False
         self.status = "UNKNOWN"
         self.status_str = ""
+
+        rospy.Subscriber(topic, get_message_type_by_str(message_type), self.heartbeat_cb)
+        rospy.logwarn("%s: subscribe %s", self.module_name, self.topic)
 
     def to_dict(self):
         return {"module": self.module_name,
