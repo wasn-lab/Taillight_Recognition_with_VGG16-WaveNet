@@ -105,8 +105,7 @@ class Heartbeat(object):
             self.status_str = "FPS too low: {:.2f}".format(fps)
         if fps == 0:
             self.status = "ERROR"
-            self.status_str = "Node {} is offline!".format(self.module_name)
-
+            self.status_str = "{} is offline! No message from {}".format(self.module_name, self.topic)
 
     def _update_heap(self):
         now = time.time()
