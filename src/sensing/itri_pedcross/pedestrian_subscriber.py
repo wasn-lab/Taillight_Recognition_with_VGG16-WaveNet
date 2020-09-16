@@ -9,7 +9,7 @@ from visualization_msgs.msg import MarkerArray
 from pedestrian_marker import pedestrian_marker_callback_final
 
 def listener_pedestrian():
-    rospy.init_node('node_name')
+    rospy.init_node('pedestrian_subscriber')
     rospy.Subscriber('/PedCross/Pedestrians/front_bottom_60', PedObjectArray, pedestrian_marker_callback_final)
     rospy.Subscriber('/PedCross/Pedestrians/front_top_far_30', PedObjectArray, pedestrian_marker_callback_final)
     rospy.Subscriber('/PedCross/Pedestrians/left_back_60', PedObjectArray, pedestrian_marker_callback_final)
