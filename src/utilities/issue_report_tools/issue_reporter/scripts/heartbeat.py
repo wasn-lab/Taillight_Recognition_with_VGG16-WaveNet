@@ -34,13 +34,15 @@ def localization_state_func(msg):
 
 
 class Heartbeat(object):
-    def __init__(self, module_name, topic, message_type, fps_low, fps_high, inspect_message_contents):
+    def __init__(self, module_name, topic, message_type, fps_low, fps_high, inspect_message_contents, latch):
         # expected module stats
         self.module_name = module_name
         self.topic = topic
         self.fps_low = fps_low
         self.fps_high = fps_high
+        self.latch = latch
         self.inspect_func = None
+        self.message_type = message_type
         if inspect_message_contents:
             if module_name == "localization_state":
                 rospy.logwarn("%s: register inspection function for message", module_name)
@@ -50,14 +52,18 @@ class Heartbeat(object):
         self.heap = []
         self.sampling_period_in_seconds = 30 / fps_low
         self.msg = None
+        self.got_latched_msg = False
 
         # runtime status
         self.alive = False
         self.status = "UNKNOWN"
         self.status_str = ""
 
-        rospy.logwarn("%s: subscribe %s with type %s", self.module_name, self.topic, message_type)
-        ret = rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
+        if not self.latch:
+            rospy.logwarn("%s: subscribe %s with type %s", self.module_name, self.topic, message_type)
+            ret = rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
+        else:
+            rospy.logwarn("%s: subscribe latched %s with type %s", self.module_name, self.topic, message_type)
 
     def to_dict(self):
         self._update_status()
@@ -72,6 +78,20 @@ class Heartbeat(object):
         if self.inspect_func is not None:
             self.status, self.status_str = self.inspect_func(self.msg)
             return
+        if self.latch:
+            self._update_status_latch()
+        else:
+            self._update_status_heartbeat()
+
+    def _update_status_latch(self):
+        if self.got_latched_msg:
+            self.status = "OK"
+            self.status_str = "{}: Got latched message.".format(self.topic)
+        else:
+            self.status = "ERROR"
+            self.status_str = "{}: not receiving latched message.".format(self.topic)
+
+    def _update_status_heartbeat(self):
         fps = self._get_fps()
         if fps >= self.fps_low and fps <= self.fps_high:
             self.status = "OK"
@@ -94,6 +114,16 @@ class Heartbeat(object):
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
         heapq.heappush(self.heap, now)
+
+    def update_latched_message(self):
+        self.got_latched_msg = False
+        ret = rospy.Subscriber(self.topic, get_message_type_by_str(self.message_type), self.cb_latch)
+        ret = None
+
+    def cb_latch(self, msg):
+        if self.inspect_func is not None:
+            self.msg = msg
+        self.got_latched_msg = True
 
     def heartbeat_cb(self, msg):
         if self.inspect_func is not None:
