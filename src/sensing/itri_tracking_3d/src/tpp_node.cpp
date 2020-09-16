@@ -113,6 +113,40 @@ void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::Con
 }
 #endif
 
+#if CREATE_BBOX_FROM_POLYGON == 1
+void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
+{
+  if (!obj.cPoint.lowerAreaPoints.empty())
+  {
+    float xmin = std::numeric_limits<float>::max();
+    float xmax = -std::numeric_limits<float>::max();
+    float ymin = std::numeric_limits<float>::max();
+    float ymax = -std::numeric_limits<float>::max();
+    float zmin = std::numeric_limits<float>::max();
+    float zmax = -std::numeric_limits<float>::max();
+
+    for (auto p : obj.cPoint.lowerAreaPoints)
+    {
+      xmin = (p.x < xmin) ? p.x : xmin;
+      xmax = (p.x > xmax) ? p.x : xmax;
+      ymin = (p.y < ymin) ? p.y : ymin;
+      ymax = (p.y > ymax) ? p.y : ymax;
+      zmin = (p.z < zmin) ? p.z : zmin;
+      zmax = (p.z > zmax) ? p.z : zmax;
+    }
+
+    init_BoxPoint(obj.bPoint.p0, xmin, ymax, zmin);
+    init_BoxPoint(obj.bPoint.p1, xmin, ymax, zmax);
+    init_BoxPoint(obj.bPoint.p2, xmin, ymin, zmax);
+    init_BoxPoint(obj.bPoint.p3, xmin, ymin, zmin);
+    init_BoxPoint(obj.bPoint.p4, xmax, ymax, zmin);
+    init_BoxPoint(obj.bPoint.p5, xmax, ymax, zmax);
+    init_BoxPoint(obj.bPoint.p6, xmax, ymin, zmax);
+    init_BoxPoint(obj.bPoint.p7, xmax, ymin, zmin);
+  }
+}
+#endif
+
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
@@ -171,6 +205,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     {
       obj.absSpeed = 0.f;
       obj.relSpeed = 0.f;
+
+#if CREATE_BBOX_FROM_POLYGON == 1
+      create_bbox_from_polygon(obj);
+#endif
     }
 
 #if VIRTUAL_INPUT

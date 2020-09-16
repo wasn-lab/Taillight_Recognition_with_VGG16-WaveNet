@@ -116,6 +116,10 @@ private:
   bool drivable_area_filter(const msgs::BoxPoint box_point);
 #endif
 
+#if CREATE_BBOX_FROM_POLYGON == 1
+  void create_bbox_from_polygon(msgs::DetectedObject& obj);
+#endif
+
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
   void init_velocity(msgs::TrackInfo& track);
