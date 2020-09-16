@@ -8,8 +8,8 @@ class FailSafeChecker():
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
-        cfg.read(cfg_ini)
         self.heartbeats = {}
+        cfg.read(cfg_ini)
         for module in cfg.sections():
             self.heartbeats[module] = Heartbeat(
                 module, cfg[module]["topic"],

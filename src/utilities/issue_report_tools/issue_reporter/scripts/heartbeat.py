@@ -3,7 +3,7 @@ import heapq
 import rospy
 from message_utils import get_message_type_by_str
 
-class Heartbeat():
+class Heartbeat(object):
     def __init__(self, module_name, topic, message_type, fps_low, fps_high):
         # expected module stats
         self.module_name = module_name
@@ -20,8 +20,8 @@ class Heartbeat():
         self.status = "UNKNOWN"
         self.status_str = ""
 
-        rospy.Subscriber(topic, get_message_type_by_str(message_type), self.heartbeat_cb)
-        rospy.logwarn("%s: subscribe %s", self.module_name, self.topic)
+        rospy.logwarn("%s: subscribe %s with type %s", self.module_name, self.topic, message_type)
+        ret = rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
 
     def to_dict(self):
         self._update_status()
@@ -33,9 +33,6 @@ class Heartbeat():
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_status(self):
-        self.status = "UNKNOWN"
-        self.status_str = "No unexpected events"
-
         fps = self._get_fps()
         if fps >= self.fps_low and fps <= self.fps_high:
             self.status = "OK"
