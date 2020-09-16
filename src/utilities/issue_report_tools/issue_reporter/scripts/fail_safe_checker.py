@@ -15,7 +15,8 @@ class FailSafeChecker():
                 module, cfg[module]["topic"],
                 cfg[module].get("message_type", "Empty"),
                 cfg[module].getfloat("fps_low"),
-                cfg[module].getfloat("fps_high"))
+                cfg[module].getfloat("fps_high"),
+                cfg[module].getboolean("inspect_message_contents"))
 
     def get_node_status(self):
         return [self.heartbeats[_].to_dict() for _ in self.heartbeats]
