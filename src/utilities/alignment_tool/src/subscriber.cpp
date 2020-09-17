@@ -107,14 +107,15 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_bottom_60", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/right_front_60", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
   while (ros::ok())
   {
-    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1], GlobalVariable::UI_PARA[2],
-                               GlobalVariable::UI_PARA[3], GlobalVariable::UI_PARA[4], GlobalVariable::UI_PARA[5]);
+    //0:1, 1:0.1, 2:0.1, 3:0.1, 4:1, 5:1
+    projector.setcameraMat(GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5],0,0);
+    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10,GlobalVariable::UI_PARA[2] * 10, GlobalVariable::UI_PARA[3] * 10,0,0);
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
@@ -126,7 +127,7 @@ void detection(int argc, char** argv)
     double scaleFactor = M_MID_temp.rows / 384;
     for (size_t i = 0; i < release_cloud->size(); i++)
     {
-      if (release_cloud->points[i].x > 1)
+      if (!projector.outOfFov(release_cloud->points[i].x, release_cloud->points[i].y, release_cloud->points[i].z))
       {
         std::vector<int> result = projector.project(
             (float)release_cloud->points[i].x, (float)release_cloud->points[i].y, (float)release_cloud->points[i].z);
@@ -134,42 +135,44 @@ void detection(int argc, char** argv)
         result[1] = result[1] * scaleFactor;
         if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
         {
-          int red_int_ = 0, gre_int_ = 0, blu_int_ = 0;
-          double depths_float_ = (double)release_cloud->points[i].x;
-          if (depths_float_ > 1)
+          double hight = (double)release_cloud->points[i].z;
+          if(hight > -2)
           {
-            if (depths_float_ <= 7)
+            cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 3, CV_RGB(0, 0, 0), -1, 8, 0);
+          }
+          int red_int = 0, gre_int = 0, blu_int = 0;
+          double depths_float = (double)release_cloud->points[i].x;
+            if (abs(depths_float) <= 7)
             {
-              red_int_ = 255;
-              gre_int_ = depths_float_ * 5;
-              blu_int_ = 0;
+              red_int = 255;
+              gre_int = abs(depths_float) * 5;
+              blu_int = 0;
             }
-            else if (depths_float_ <= 10)
+            else if (abs(depths_float) <= 10)
             {
-              red_int_ = 510 - (depths_float_ * 5);
-              gre_int_ = 255;
-              blu_int_ = 0;
+              red_int = 510 - (abs(depths_float) * 5);
+              gre_int = 255;
+              blu_int = 0;
             }
-            else if (depths_float_ <= 14)
+            else if (abs(depths_float) <= 14)
             {
-              red_int_ = 0;
-              gre_int_ = 255;
-              blu_int_ = (depths_float_ - 102) * 5;
+              red_int = 0;
+              gre_int = 255;
+              blu_int = (abs(depths_float) - 102) * 5;
             }
-            else if (depths_float_ <= 21)
+            else if (abs(depths_float) <= 21)
             {
-              red_int_ = 0;
-              gre_int_ = 1020 - (depths_float_ * 5);
-              blu_int_ = 255;
+              red_int = 0;
+              gre_int = 1020 - (abs(depths_float) * 5);
+              blu_int = 255;
             }
             else
             {
-              red_int_ = (depths_float_ - 204) * 5;
-              gre_int_ = 0;
-              blu_int_ = 255;
+              red_int = (abs(depths_float) - 204) * 5;
+              gre_int = 0;
+              blu_int = 255;
             }
-          }
-          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int_, gre_int_, blu_int_), -1, 8, 0);
+          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
         }
       }
     }

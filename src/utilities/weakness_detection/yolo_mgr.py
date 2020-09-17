@@ -1,22 +1,29 @@
 #!/usr/bin/env python
 import os
-import io
 import json
 import logging
 import datetime
+import sys
+import subprocess
 import multiprocessing
-from deeplab_mgr import DeeplabMgr, deeplab_pos_to_raw_pos, raw_image_pos_to_deeplab_pos
-from image_consts import DEEPLAB_MIN_Y, DEEPLAB_MAX_Y, DEEPLAB_IMAGE_WIDTH
-from yolo_bbox import YoloBBox
+from itertools import product
+from deeplab_mgr import (DeeplabMgr, deeplab_pos_to_raw_pos,
+                         raw_image_pos_to_deeplab_pos,
+                         get_deeplab_min_y,
+                         get_deeplab_max_y)
+from image_utils import get_image_size
+from image_consts import DEEPLAB_IMAGE_WIDTH
+from yolo_bbox import gen_bbox_by_yolo_object
 from nn_labels import DeeplabLabel, DEEPLAB_CLASS_ID_TO_YOLO_CLASS_ID, YOLO_CLASS_ID_TO_DEEPLAB_CLASS_ID
+from json_utils import read_json_file
+from efficientdet_mgr import EfficientDetMgr
 
-def read_result_json(filename):
-    if not os.path.isfile(filename):
-        logging.error("File not found: %s", filename)
-        return []
-    with io.open(filename, encoding="utf-8") as _fp:
-        jdata = json.load(_fp)
-    return jdata
+REPO_DIR = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
+REPO_DIR = REPO_DIR.decode("utf-8").strip()
+UTILITIES_IOU_DIR = os.path.join(REPO_DIR, "src", "utilities", "iou")
+sys.path.append(UTILITIES_IOU_DIR)
+
+from iou_utils import calc_iou_by_bbox # pylint: disable=import-error
 
 
 def _within_bboxes(yolo_bboxes, deeplab_class_id, deeplab_row, deeplab_col):
@@ -52,7 +59,8 @@ def _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename):
     # deeplab finds an object, but yolo does not:
     total_object_labels = 0
     num_labels_covered = 0
-    for row in range(DEEPLAB_MIN_Y, DEEPLAB_MAX_Y):
+    img_width, img_height = get_image_size(filename)
+    for row in range(get_deeplab_min_y(img_width, img_height), get_deeplab_max_y(img_width, img_height)):
         for col in range(DEEPLAB_IMAGE_WIDTH):
             deeplab_label = deeplab_mgr.get_label_by_xy(col, row)
             if deeplab_label == DeeplabLabel.BACKGROUND:
@@ -75,7 +83,7 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     """
     filename = yolo_frame["filename"]
     deeplab_mgr = DeeplabMgr(filename[:-4] + "_deeplab_labels.png")
-    bboxes = [YoloBBox(_) for _ in yolo_frame["objects"]]
+    bboxes = [gen_bbox_by_yolo_object(_) for _ in yolo_frame["objects"]]
     num_mismatch = _deeplab_covered_by_enough_bboxes(bboxes, deeplab_mgr, filename)
     # yolo finds an object, but deeplab does not:
     for bbox in bboxes:
@@ -85,20 +93,53 @@ def _cmpr_yolo_with_deeplab(yolo_frame):
     return num_mismatch
 
 
+def _cmpr_yolo_with_efficientdet_wrapper(args):
+    return _cmpr_yolo_with_efficientdet(*args)
+
+
+def _cmpr_yolo_with_efficientdet(yolo_frame, edet_coef):
+    filename = yolo_frame["filename"]
+    img_width, img_height = get_image_size(filename)
+    edet_mgr = EfficientDetMgr(filename[:-4] + "_efficientdet_d{}.json".format(edet_coef))
+    yolo_bboxes = [gen_bbox_by_yolo_object(_, img_width, img_height) for _ in yolo_frame["objects"]]
+    edet_bboxes = edet_mgr.get_bboxes()
+    num_mismatch = abs(len(yolo_bboxes) - len(edet_bboxes))
+    for ybox in yolo_bboxes:
+        match = False
+        for ebox in edet_bboxes:
+            iou = calc_iou_by_bbox(ybox, ebox)
+            if iou >= 0.25:
+                match = True
+        if not match:
+            num_mismatch += 1
+
+    for ebox in edet_bboxes:
+        match = False
+        for ybox in yolo_bboxes:
+            iou = calc_iou_by_bbox(ybox, ebox)
+            if iou >= 0.25:
+                match = True
+        if not match:
+            num_mismatch += 1
+    return num_mismatch
+
+
 class YoloMgr(object):
-    def __init__(self, json_file):
-        self.frames = read_result_json(json_file)
+    def __init__(self, json_file, edet_coef=4):
+        self.edet_coef = edet_coef
+        self.frames = read_json_file(json_file)
 
     def get_weakest_images(self, amount=0):
         """Move weakest images to |weakness_dir|"""
-        self.frames.sort(key=lambda x: x["deeplab_disagree"])
+        self.frames.sort(key=lambda x: x["disagree_level"])
         if amount <= 0:
             amount = int(len(self.frames) * 0.05) + 1
-        return [_["filename"] for _ in self.frames[-amount:]]
+        return [_["filename"] for _ in self.frames[-amount:] if _["disagree_level"] > 0]
 
     def save_weakness_logs(self, weakness_dir):
         now = datetime.datetime.now()
-        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(now.year, now.month, now.day, now.hour, now.minute)
+        filename = "{}{:02d}{:02d}{:02d}{:02d}.json".format(
+            now.year, now.month, now.day, now.hour, now.minute)
         output_file = os.path.join(weakness_dir, filename)
         contents = json.dumps(self.frames, sort_keys=True)
         with open(output_file, "w") as _fp:
@@ -108,9 +149,20 @@ class YoloMgr(object):
     def find_weakness_images(self):
         nproc = multiprocessing.cpu_count()
         pool = multiprocessing.Pool(nproc)
+
         res = pool.map(_cmpr_yolo_with_deeplab, self.frames)
         for idx, frame in enumerate(self.frames):
             frame["deeplab_disagree"] = res[idx]
 
+        res = pool.map(_cmpr_yolo_with_efficientdet_wrapper, product(self.frames, [self.edet_coef]))
+        for idx, frame in enumerate(self.frames):
+            frame["edet_disagree"] = res[idx]
+
         pool.close()
         pool.join()
+
+        for frame in self.frames:
+            frame["disagree_level"] = frame["edet_disagree"] * frame["deeplab_disagree"]
+            logging.warning("%s: deeplab: %d, edet: %d, level: %d",
+                frame["filename"], frame["deeplab_disagree"],
+                frame["edet_disagree"], frame["disagree_level"])

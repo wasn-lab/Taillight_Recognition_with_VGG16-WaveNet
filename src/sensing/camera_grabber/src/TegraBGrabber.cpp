@@ -100,7 +100,7 @@ bool TegraBGrabber::runPerception()
         }
         else
         {
-          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[i], num_src_bytes_, canvas[i], camera::raw_image_height,
+          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_distorted_[i], num_src_bytes_, canvas[i], camera::raw_image_height,
                                           camera::raw_image_width);
         }
       }

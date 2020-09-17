@@ -4,18 +4,19 @@
   <!-- Node parameters -->
 
   <!-- Input source -->
-  <!-- 1: /LidarDetection -->
-  <!-- 2: /RadarDetection -->
-  <!-- 3: /CamObjFrontCenter -->
-  <!-- 4: /abs_virBB_array -->
-  <!-- 5: /rel_virBB_array -->
-  <!-- 6: /CameraDetection/polygon -->  
-  <!-- otherwise: /SensorFusion -->
+  <!-- 1: LidarDet: /LidarDetection -->
+  <!-- 2: RadarDet: /RadarDetection -->
+  <!-- 3: CameraDetV1: /cam_obj/front_bottom_60 -->
+  <!-- 4: VirtualBBoxAbs: /abs_virBB_array -->
+  <!-- 5: VirtualBBoxRel: /rel_virBB_array -->
+  <!-- 6: CameraDetV2: /CameraDetection -->
+  <!-- 7: Tracking2D: /Tracking2D/front_bottom_60 -->
+  <!-- otherwise: Fusion: /SensorFusion -->
   <arg name="input_source" default="6" />
 
   <!-- Occupancy source -->
-  <!-- 1: /occupancy_wayarea -->
-  <!-- otherwise: /occupancy_grid_wayarea -->
+  <!-- 1: MapBased: /occupancy_wayarea -->
+  <!-- otherwise: PlannedPathBased: /occupancy_grid_wayarea -->
   <arg name="occ_source" default="0" />
 
   <!-- Input/Output FPS -->
@@ -28,7 +29,7 @@
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
-  <arg name="m_lifetime_sec" default="1.0" />
+  <arg name="m_lifetime_sec" default="0.15" />
 
   <!-- Rviz markers -->
   <arg name="gen_markers" default="True" />

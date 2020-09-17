@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   libs
   nodelet
   car_model
+  std_msgs
 )
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})

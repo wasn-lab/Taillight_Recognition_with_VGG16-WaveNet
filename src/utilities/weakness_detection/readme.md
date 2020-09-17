@@ -24,11 +24,15 @@ source ${venv_dir}/bin/activate
 pip install wheel
 pip install cython
 pip install numpy
-pip install pycocotools opencv-python tqdm tensorboard tensorboardX pyyaml webcolors
+pip install pycocotools tqdm tensorboard tensorboardX pyyaml webcolors tensorflow-gpu==1.13.1
 pip install torch==1.2.0
 pip install torchvision==0.4.0
 pip install matplotlib
 popd
 ```
 
+More if you need to run lanenet-lane-detection
+```
+pip install glog sklearn loguru
+```
 

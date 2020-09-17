@@ -5,7 +5,6 @@
 #include "kalman_trackers.h"
 #include "velocity.h"
 #include "path_predict.h"
-#include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
 #include "marker_gen.h"
@@ -34,9 +33,10 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = get_in_source();
-  int occ_source_ = 0;
-  bool use_ego_speed_ = get_ego_speed();
+  int input_source_ = InputSource::CameraDetV2;
+  int occ_source_ = OccupancySource::PlannedPathBased;
+
+  bool use_tracking2d = false;
 
   bool gen_markers_ = false;
   MarkerConfig mc_;

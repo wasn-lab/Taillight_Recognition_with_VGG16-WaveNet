@@ -57,8 +57,8 @@ const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 const int RESERVE_WAITING_TIMEOUT = 3 * 1000 * 1000;
 // UDP server udpate from queues freq 100ms
 const int UDP_SERVER_UPDATE_MICROSECONDS = 100 * 1000;
-// ROS update time: 500ms
-const int ROS_UPDATE_MICROSECONDS = 500 * 1000;
+// ROS update time: 100ms
+const int ROS_UPDATE_MICROSECONDS = 100 * 1000;
 // server status update time: 10 sec
 //const int SERVER_STATUS_UPDATE_MICROSECONDS = 10 * 1000 * 1000;
 
@@ -76,6 +76,7 @@ std::queue<std::string> q;
 std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
+std::queue<std::string> vkStatusQueue;
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
 std::queue<json> eventQueue2;
@@ -91,7 +92,11 @@ std::string mileJson;
 std::string eventJson;
 msgs::RouteInfo route_info;
 std::string board_list="00000000";
- int routeID = 2000;
+int routeID = 2000;
+
+
+long event_recv_count = 0;
+long event_send_count = 0;
 
 const static double PI = 3.14;
 // can data
@@ -101,14 +106,17 @@ double data[10] = { 0 };
 char buffer[1024];
 
 const static std::string PLATE = "ITRI-ADV";
-const static int FPS_KEY_LEN = 27;
+const static int FPS_KEY_LEN = 27 + 16;
 const static std::string keys[] = {
   "FPS_LidarAll",         "FPS_LidarDetection",   "FPS_camF_right",        "FPS_camF_center",     "FPS_camF_left",
   "FPS_camF_top",         "FPS_camR_front",       "FPS_camR_rear",         "FPS_camL_front",      "FPS_camL_rear",
   "FPS_camB_top",         "FPS_CamObjFrontRight", "FPS_CamObjFrontCenter", "FPS_CamObjFrontLeft", "FPS_CamObjFrontTop",
   "FPS_CamObjRightFront", "FPS_CamObjRightBack",  "FPS_CamObjLeftFront",   "FPS_CamObjLeftBack",  "FPS_CamObjBackTop",
   "FPS_current_pose",     "FPS_veh_info",         "FPS_dynamic_path_para", "FPS_Flag_Info01",     "FPS_Flag_Info02",
-  "FPS_Flag_Info03",      "FPS_V2X_msg",
+  "FPS_Flag_Info03",      "FPS_V2X_msg",          "FPS_camfront_bottom_60","FPS_camtop_close_120","FPS_camfront_top_far_30",
+  "FPS_camleft_back_60",  "FPS_camleft_front_60", "FPS_camright_back_60",  "FPS_camright_front_60","FPS_camback_top_120",
+  "FPS_cam_objfront_bottom_60","FPS_cam_objront_top_close_120","FPS_cam_objfront_top_far_30", "FPS_cam_objleft_back_60",
+  "FPS_cam_objleft_front_60",  "FPS_cam_objright_back_60",     "FPS_cam_objright_front_60",   "FPS_cam_objback_top_120"
 };
 
 struct pose
@@ -193,6 +201,8 @@ float emergency_exit; //緊急出口
 pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
 IMU imu;
+
+std::string current_spat = "";
 
 VehicelStatus vs;
 batteryInfo battery;
@@ -382,6 +392,7 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
   eventJson = input->data.c_str();
   json J0 = json::parse(eventJson);
   json J1;
+  
   J1["type"] = "M8.2.VK003";
   J1["deviceid"] = PLATE;
   J1["lat"] = gps.lidar_Lat;
@@ -390,7 +401,8 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
   J1["status"] = J0.at("status");
   J1["event_str"] = J0.at("event_str");
   J1["timestamp"] = J0.at("timestamp");
-
+  
+  
   if(event_queue_switch)
   {
     cout << " push to queue1 event: " << J1.dump() << endl;
@@ -405,6 +417,7 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
     eventQueue2.push(J1);
     mutex_event_2.unlock();
   }
+  event_recv_count ++;
 }
 
 std::string get_msg_type(int id)
@@ -639,7 +652,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["pressurediff"] = battery.voltage_deviation; //高低電壓差//0.0;
     J1["maxtbatteryposition"] = battery.lowest_number; //最低電池電壓 0.01V"454FG"; 
     J1["maxtemperature"] = battery.highest_temperature; //電池最高環境溫度//0.0;
-    J1["Signal"] = 1; //無資料
+    J1["Signal"] = current_spat; //無資料
     J1["CMS"] = 1; //無資料
     J1["setting"] = mode; // 自動/半自動/手動/鎖定
     J1["board_list"] = board_list;
@@ -684,7 +697,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["ArrivedStop"] = cuttent_arrive_stop.id; //目前來源 NextStop/Info
     J1["ArrivedStopStatus"] = cuttent_arrive_stop.status; //目前來源 NextStop/Info
     J1["round"] = cuttent_arrive_stop.round; //目前來源 BusStop/Round
-    J1["Signal"] = 1; //無資料
+    J1["Signal"] = current_spat; //無資料
     J1["CMS"] = 1; //無資料
     J1["setting"] = mode; 
     J1["EExit"] = emergency_exit; 
@@ -734,11 +747,16 @@ void sendRun(int argc, char** argv)
   UdpClient UDP_OBU_client;
   UdpClient UDP_VK_client;
   UdpClient UDP_TABLET_client;
+  UdpClient UDP_VK_FG_client;
+  
 
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
-  UDP_TABLET_client.initial("192.168.43.63", 9876);
+  UDP_TABLET_client.initial("192.168.1.3", 9876);
+  UDP_VK_FG_client.initial("140.134.128.42", 8888);
+  
+
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
   {
@@ -761,41 +779,58 @@ void sendRun(int argc, char** argv)
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
- 
+    
+    while (vkStatusQueue.size() != 0)
+    {
+      UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), true);
+      UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), true);
+      UDP_TABLET_client.send_obj_to_server(vkStatusQueue.front(), flag_show_udp_send);
+      vkStatusQueue.pop();
+    }
     mutex_queue.unlock();
 
    
-    if(event_queue_switch){
-      mutex_event_1.lock();
-      event_queue_switch = false;
-      while (eventQueue1.size() != 0)
-      {
-        cout << "send from q 1" << endl;
-        json j = eventQueue1.front();
-        string jstr = j.dump();
-        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
-        eventQueue1.pop();
-        
-      }
-      mutex_event_1.unlock();
-    }
-    else{
-      mutex_event_2.lock();
-      event_queue_switch = true;
-      while (eventQueue2.size() != 0)
-      {
-        cout << "send from q 2" << endl;  
-        json j = eventQueue2.front();
-        string jstr = j.dump();
-        UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
-        UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
-        eventQueue2.pop();
-      }
-      mutex_event_2.unlock();
-    }
-   
+    if(event_queue_switch)
+    {
+      if(eventQueue1.size() != 0){
+        mutex_event_1.lock();
+        event_queue_switch = false;
+      
+        while (eventQueue1.size() != 0)
+        {
+          json j = eventQueue1.front();
+          string jstr = j.dump();
+          cout << "++++++++++++++++++++++++++++++send from q 1 " << jstr << endl;
+          UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
+          eventQueue1.pop();
+        }
 
+        mutex_event_1.unlock();
+      }  
+    }//if(event_queue_switch)
+    else
+    {
+      if(eventQueue2.size() != 0){
+        mutex_event_2.lock();
+        event_queue_switch = true;
+    
+        while (eventQueue2.size() != 0)
+        {
+         
+          json j = eventQueue2.front();
+          string jstr = j.dump();
+          cout << "+++++++++++++++++++++++++++++++send from q 2 " << jstr << endl;
+          UDP_VK_client.send_obj_to_server(jstr, flag_show_udp_send);
+          UDP_TABLET_client.send_obj_to_server(jstr, flag_show_udp_send);
+          eventQueue2.pop();
+        }
+
+        mutex_event_2.unlock();
+      }//if(eventQueue2.size() != 0)
+    }//else
+    //cout << " receive event: " << event_recv_count << endl;
+    //cout << " send event: " << event_send_count << endl;
     boost::this_thread::sleep(boost::posix_time::microseconds(1000));
   }
 }
@@ -827,11 +862,12 @@ void receiveUDPRun(int argc, char** argv)
     UdpServer UDP_OBU_server(UDP_ADV_SRV_ADRR, UDP_ADV_SRV_PORT);
     //UdpServer UDP_OBU_server("192.168.43.204", UDP_ADV_SRV_PORT);
     int result = UDP_OBU_server.recv(buffer, sizeof(buffer));
-
+    current_spat = "";
     if (result != -1)
     {
       mutex_trafficLight.lock();
       std::string tempStr(buffer);
+      current_spat = tempStr;
       memset(buffer, 0, sizeof(buffer));
       trafficLightQueue.push(tempStr);
       mutex_trafficLight.unlock();
@@ -883,10 +919,11 @@ void sendROSRun(int argc, char** argv)
 void receiveRosRun(int argc, char** argv)
 {
   bool isBigBus = checkCommand(argc, argv, "-big");
+  bool isNewMap = checkCommand(argc, argv, "-newMap");
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI);
+                                     callbackEvent, callbackBI, isNewMap);
 
   while (ros::ok())
   {
@@ -911,14 +948,14 @@ void receiveRosRun(int argc, char** argv)
     {
       std::string temp_vk002 = get_jsonmsg_to_vk_server("M8.2.VK002");
       mutex_queue.lock();
-      vkQueue.push(temp_vk002);
+      vkStatusQueue.push(temp_vk002);
       mutex_queue.unlock();
     }
     else
     {
       std::string temp_vk001 = get_jsonmsg_to_vk_server("M8.2.VK001");
       mutex_queue.lock();
-      vkQueue.push(temp_vk001);
+      vkStatusQueue.push(temp_vk001);
       mutex_queue.unlock();
     }
 
@@ -1329,6 +1366,7 @@ int main(int argc, char** argv)
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
+
   msgs::StopInfoArray empty;
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);
   /*block main.*/

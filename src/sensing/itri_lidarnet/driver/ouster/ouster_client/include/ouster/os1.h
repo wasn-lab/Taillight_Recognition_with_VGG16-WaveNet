@@ -10,65 +10,73 @@
 #include <string>
 #include <vector>
 
-namespace ouster {
-namespace OS1 {
-
+namespace ouster
+{
+namespace OS1
+{
 const size_t lidar_packet_bytes = 12608;
 const size_t imu_packet_bytes = 48;
 
 struct client;
 
-enum client_state {
-    TIMEOUT = 0,
-    ERROR = 1,
-    LIDAR_DATA = 2,
-    IMU_DATA = 4,
-    EXIT = 8
+enum client_state
+{
+  TIMEOUT = 0,
+  ERROR = 1,
+  LIDAR_DATA = 2,
+  IMU_DATA = 4,
+  EXIT = 8
 };
 
-enum lidar_mode {
-    MODE_512x10 = 1,
-    MODE_512x20,
-    MODE_1024x10,
-    MODE_1024x20,
-    MODE_2048x10
+enum lidar_mode
+{
+  MODE_512x10 = 1,
+  MODE_512x20,
+  MODE_1024x10,
+  MODE_1024x20,
+  MODE_2048x10
 };
 
-struct version {
-    int16_t major;
-    int16_t minor;
-    int16_t patch;
+struct version
+{
+  int16_t major;
+  int16_t minor;
+  int16_t patch;
 };
 
-const version invalid_version = {0, 0, 0};
+const version invalid_version = { 0, 0, 0 };
 
 /**
  * Minimum supported version
  */
-const OS1::version min_version = {1, 9, 0};
+const OS1::version min_version = { 1, 9, 0 };
 
-inline bool operator==(const version& u, const version& v) {
-    return u.major == v.major && u.minor == v.minor && u.patch == v.patch;
+inline bool operator==(const version& u, const version& v)
+{
+  return u.major == v.major && u.minor == v.minor && u.patch == v.patch;
 }
 
-inline bool operator<(const version& u, const version& v) {
-    return (u.major < v.major) || (u.major == v.major && u.minor < v.minor) ||
-           (u.major == v.major && u.minor == v.minor && u.patch < v.patch);
+inline bool operator<(const version& u, const version& v)
+{
+  return (u.major < v.major) || (u.major == v.major && u.minor < v.minor) ||
+         (u.major == v.major && u.minor == v.minor && u.patch < v.patch);
 }
 
-inline bool operator<=(const version& u, const version& v) {
-    return u < v || u == v;
+inline bool operator<=(const version& u, const version& v)
+{
+  return u < v || u == v;
 }
 
-struct sensor_info {
-    std::string hostname;
-    std::string sn;
-    std::string fw_rev;
-    lidar_mode mode;
-    std::vector<double> beam_azimuth_angles;
-    std::vector<double> beam_altitude_angles;
-    std::vector<double> imu_to_sensor_transform;
-    std::vector<double> lidar_to_sensor_transform;
+struct sensor_info
+{
+  std::string hostname;
+  std::string sn;
+  std::string fw_rev;
+  lidar_mode mode;
+  std::vector<double> beam_azimuth_angles;
+  std::vector<double> beam_altitude_angles;
+  std::vector<double> imu_to_sensor_transform;
+  std::vector<double> lidar_to_sensor_transform;
 };
 
 /**
@@ -122,10 +130,8 @@ std::shared_ptr<client> init_client(int lidar_port = 7502, int imu_port = 7503);
  * @param imu_port port on which the sensor will send imu data
  * @return pointer owning the resources associated with the connection
  */
-std::shared_ptr<client> init_client(const std::string& hostname,
-                                    const std::string& udp_dest_host,
-                                    lidar_mode mode = MODE_1024x10,
-                                    int lidar_port = 7502, int imu_port = 7503);
+std::shared_ptr<client> init_client(const std::string& hostname, const std::string& udp_dest_host,
+                                    lidar_mode mode = MODE_1024x10, int lidar_port = 7502, int imu_port = 7503);
 
 /**
  * Block for up to timeout_sec until either data is ready or an error occurs.
@@ -135,7 +141,7 @@ std::shared_ptr<client> init_client(const std::string& hostname,
  * LIDAR_DATA) is true if lidar data is ready to read, and (s & IMU_DATA) is
  * true if imu data is ready to read
  */
-client_state poll_client(const client& cli, int timeout_sec = 1);
+client_state poll_client(const client& cli, int timeout_sec = 120);
 
 /**
  * Read lidar data from the sensor. Will not block.
@@ -172,5 +178,5 @@ std::string get_metadata(const client& cli);
  * @return a sensor_info struct populated with a subset of the metadata
  */
 sensor_info parse_metadata(const std::string& metadata);
-}
-}
+}  // namespace OS1
+}  // namespace ouster
