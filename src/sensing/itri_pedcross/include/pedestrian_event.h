@@ -16,6 +16,9 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
 #include "msgs/PedObjectArray.h"
+#include "msgs/PredictSkeleton.h"
+#include "msgs/Keypoints.h"
+#include "msgs/Keypoint.h"
 
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include <opencv2/dnn.hpp>
@@ -25,6 +28,7 @@
 #include <map>
 #include <boost/circular_buffer.hpp>
 #include <buffer.h>
+#include <skeleton_buffer.h>
 #include <openpose.h>
 #include <openpose_ros_io.h>
 #include <openpose_flags.h>
@@ -75,18 +79,33 @@ public:
   void run();
   void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
-  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void cache_crop_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg);
+  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
+                            boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache);
+  void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
+  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
+                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
+                     std::vector<SkeletonBuffer>& skeleton_buffer);
+  void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg);
+  void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
+                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
   float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
-                         ros::Time time);
+                         ros::Time time, Buffer& buffer);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
   float predict_rf(cv::Mat input_data);
-  float predict_rf_pose(cv::Mat input_data);
+  float predict_rf_pose(const cv::Mat& input_data);
   bool too_far(const msgs::BoxPoint box_point);
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
@@ -101,26 +120,43 @@ public:
   // OpenPose components
   int openPoseROS();
   std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
-  bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datumsPtr);
+  bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr);
   std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
   openpose_ros::OpenPose openPose;
   cv::dnn::Net net_openpose;
 
   // All buffer components
   msgs::VehInfo veh_info;
-  std::vector<geometry_msgs::PoseStamped> nav_path;
-  std::vector<geometry_msgs::PoseStamped> nav_path_transformed;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> crop_image_cache;
+  std::vector<cv::Point2f> nav_path;
+  std::string time_nav_path = "NA";
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache;
   std::vector<std::string> ped_info;
   std::string delay_from_camera = "NA";
   std::string chatter_callback_info = "Not running";
-  Buffer buffer;
+  Buffer buffer_front;
+  Buffer buffer_left;
+  Buffer buffer_right;
+  Buffer buffer_fov30;
+  // pair(track id, skeleton[x1,y1,x2,y2...])
+  std::vector<SkeletonBuffer> skeleton_buffer_front;
+  std::vector<SkeletonBuffer> skeleton_buffer_left;
+  std::vector<SkeletonBuffer> skeleton_buffer_right;
+  std::vector<SkeletonBuffer> skeleton_buffer_fov30;
   int buffer_size = 60;
 
   // ROS components
-  ros::Publisher chatter_pub;
-  ros::Publisher box_pub;
+  ros::ServiceClient skip_frame_client;
+  ros::Publisher chatter_pub_front;
+  ros::Publisher chatter_pub_left;
+  ros::Publisher chatter_pub_right;
+  ros::Publisher chatter_pub_fov30;
+  ros::Publisher box_pub_front;
+  ros::Publisher box_pub_left;
+  ros::Publisher box_pub_right;
+  ros::Publisher box_pub_fov30;
   ros::Publisher alert_pub;
   ros::Time total_time;
   tf2_ros::Buffer tfBuffer;
@@ -132,11 +168,21 @@ public:
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
   boost::shared_ptr<ros::AsyncSpinner> g_spinner_4;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_5;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_6;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_7;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_8;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_9;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_10;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_11;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_12;
+  boost::shared_ptr<ros::AsyncSpinner> g_spinner_13;
   bool g_enable = false;
   bool g_trigger = false;
   int count;
   std::ofstream file;
   struct winsize terminal_size;
+  double average_inference_time = 0;
 
   // Setup variables
   const int cross_threshold = 55;  // percentage
@@ -145,7 +191,7 @@ public:
   const int number_keypoints = 25;
   const int feature_num = 1174;
   const int frame_num = 10;
-  
+
   // ROS param
   bool show_probability = true;
   int input_source = 3;

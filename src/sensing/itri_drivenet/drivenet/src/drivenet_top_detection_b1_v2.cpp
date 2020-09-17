@@ -3,6 +3,8 @@
 #include <thread>
 #include <future>
 #include <mutex>
+#include <std_msgs/Empty.h>
+
 
 #include "drivenet/drivenet_b1_v2.h"
 
@@ -47,6 +49,7 @@ std::mutex g_display_mutex;
 
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
 // // grid map
@@ -198,6 +201,8 @@ void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int c
   sensor_msgs::ImagePtr img_msg;
   img_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
   g_img_pubs[cam_order].publish(img_msg);
+  std_msgs::Empty empty_msg;
+  g_heartbeat_pubs[cam_order].publish(empty_msg);
 }
 
 int main(int argc, char** argv)
@@ -242,6 +247,8 @@ int main(int argc, char** argv)
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
+    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+
   }
 
   // // occupancy grid map publisher
@@ -354,7 +361,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.width = box.x2 - box.x1;
   cam_info.height = box.y2 - box.y1;
   cam_info.prob = box.prob;
-  cam_info.id = translate_label(box.label);
+  cam_info.id = g_cam_ids[cam_order];
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info;
@@ -389,7 +396,7 @@ void* run_yolo(void* /*unused*/)
   cv::Mat m_display_tmp;
   cv::Scalar class_color;
 
-  ros::Rate r(30);
+  ros::Rate r(10);
   while (ros::ok() && !g_is_infer_stop)
   {
     bool is_data_vaild = true;

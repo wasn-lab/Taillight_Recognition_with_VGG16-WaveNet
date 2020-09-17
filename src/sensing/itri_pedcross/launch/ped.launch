@@ -6,7 +6,8 @@
   <!-- 1: camera front left -->
   <!-- 2: camera front right -->
   <!-- 3: tracking with camera front center -->
-  <arg name="input_source" default="3" />
+  <!-- 4: tracking with front/left/right cameras -->
+  <arg name="input_source" default="4" />
 
   <!-- Set max distance(m) to predict pedestrians -->
   <arg name="max_distance" default="70" />
@@ -25,8 +26,8 @@
   <arg name="show_probability" default="True" />
 
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
-  <node pkg="itri_pedcross" type="hrnet.py" name="hrnet" cwd="node" output="screen" />
-  <node pkg="itri_pedcross" type="pedestrian_subcriber.py" name="pedestrian_subcriber" cwd="node" output="screen" />
+  <node pkg="itri_pedcross" type="skip_frame_server.py" name="skip_frame_server" cwd="node" output="screen" />
+  <node pkg="itri_pedcross" type="pedestrian_subscriber.py" name="pedestrian_subscriber" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="itri_pedcross" name="pedestrian_event" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="max_distance" value="$(arg max_distance)" />

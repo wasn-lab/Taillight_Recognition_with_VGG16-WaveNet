@@ -36,13 +36,23 @@ void DistanceEstimation::init(const std::string& pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string fc60_json = pkgPath;
-    fc60_json.append("/data/alignment/fm60_0325.json");
+    fc60_json.append("/data/alignment/fm60_0528.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(fc60_json, align_FC60, img_al_h, img_al_w);
+
+    std::string ft30_json = pkgPath;
+    ft30_json.append("/data/alignment/ft30_0709.json");
+    align_FT30 = new cv::Point3d*[img_al_h];
+    for (int i = 0; i < img_al_h; i++)
+    {
+      align_FT30[i] = new cv::Point3d[img_al_w];
+    }
+    ReadDistanceFromJson(ft30_json, align_FT30, img_al_h, img_al_w);
+
   }
 }
 
@@ -713,7 +723,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     obstacle_l = 2.5; /*obstacle_w = 2.5;*/
   }                   // obstacle_l = 7
 
-  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 ||
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_far_30 ||
       cam_id == camera::id::back_top_120)
   {
     std::vector<int> points_src = { class_id, x1, x2, y2 };
@@ -728,7 +738,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   p3 = GetPointDist(x2, y2, cam_id);
   p3.x = p0.x;
 
-  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120)
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_far_30)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -825,6 +835,17 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       p0.x = align_FC60[x_loc][y_loc].x / 100;
       p0.y = align_FC60[x_loc][y_loc].y / 100;
       p0.z = align_FC60[x_loc][y_loc].z / 100;
+      return p0;
+    }
+
+    if (cam_id == camera::id::front_top_far_30)
+    {
+      y_loc = (int)((float)y_loc / img_w * img_al_w);
+      x_loc = (int)((float)x_loc / img_h * img_al_h);
+
+      p0.x = align_FT30[x_loc][y_loc].x / 100;
+      p0.y = align_FT30[x_loc][y_loc].y / 100;
+      p0.z = align_FT30[x_loc][y_loc].z / 100;
       return p0;
     }
   }
