@@ -89,7 +89,7 @@ class Heartbeat(object):
             self.status_str = "{}: Got latched message.".format(self.topic)
         else:
             self.status = "ERROR"
-            self.status_str = "{}: not receiving latched message.".format(self.topic)
+            self.status_str = "{}: No latched message.".format(self.topic)
 
     def _update_status_heartbeat(self):
         fps = self._get_fps()
