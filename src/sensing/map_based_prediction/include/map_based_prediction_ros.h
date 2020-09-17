@@ -18,6 +18,10 @@
 #define MAP_BASED_PREDICTION_ROS_H
 
 #include <unordered_map>
+#define HEARTBEAT 1
+#if HEARTBEAT == 1
+#include <std_msgs/Empty.h>
+#endif
 
 namespace tf2_ros
 {
@@ -77,6 +81,9 @@ private:
   ros::Subscriber sub_objects_;
   ros::Subscriber sub_map_;
   ros::Publisher pub_objects_;
+#if HEARTBEAT == 1
+  ros::Publisher pub_objects_heartbeat_;
+#endif
   ros::Publisher pub_markers_;
 
   std::unordered_map<std::string, std::vector<int>> uuid2laneids_;

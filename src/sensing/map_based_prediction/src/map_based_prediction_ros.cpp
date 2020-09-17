@@ -207,6 +207,9 @@ void MapBasedPredictionROS::createROSPubSub()
   sub_map_ = nh_.subscribe("/vector_map", 10, &MapBasedPredictionROS::mapCallback, this);
 
   pub_objects_ = nh_.advertise<autoware_perception_msgs::DynamicObjectArray>("objects", 1);
+#if HEARTBEAT == 1
+  pub_objects_heartbeat_ = nh_.advertise<std_msgs::Empty>("objects/heartbeat", 1);
+#endif
   pub_markers_ = nh_.advertise<visualization_msgs::MarkerArray>("objects_path_markers", 1);
 }
 
@@ -493,6 +496,10 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
   map_based_prediction_->doLinearPrediction(tmp_objects_without_map, out_objects_without_map);
   output.objects.insert(output.objects.begin(), out_objects_without_map.begin(), out_objects_without_map.end());
   pub_objects_.publish(output);
+#if HEARTBEAT == 1
+  std_msgs::Empty msg_heartbeat;
+  pub_objects_heartbeat_.publish(msg_heartbeat);
+#endif
 }
 
 void MapBasedPredictionROS::mapCallback(const autoware_lanelet2_msgs::MapBin& msg)
