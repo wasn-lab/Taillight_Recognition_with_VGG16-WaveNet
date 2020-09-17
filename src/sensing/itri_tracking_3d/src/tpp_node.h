@@ -13,6 +13,9 @@
 #include <tf2/utils.h>
 #include <geometry_msgs/PolygonStamped.h>
 #endif
+#if HEARTBEAT == 1
+#include <std_msgs/Empty.h>
+#endif
 
 #include <fstream>
 
@@ -69,6 +72,10 @@ private:
   ros::CallbackQueue queue_;
 
   ros::Publisher track3d_pub_;
+#if HEARTBEAT == 1
+  ros::Publisher track3d_pub_heartbeat_;
+#endif
+
 #if PP_FILTER_DRIVABLE_AREA == 1
   ros::Publisher drivable_area_pub_;
 #endif

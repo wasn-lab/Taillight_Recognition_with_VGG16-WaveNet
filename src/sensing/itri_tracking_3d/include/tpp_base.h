@@ -54,6 +54,8 @@
 #define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
+#define HEARTBEAT 1
+
 #define CYAN_CHAR "\033[36m"
 #define WHITE_CHAR "\033[37m"
 

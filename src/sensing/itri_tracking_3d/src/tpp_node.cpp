@@ -338,6 +338,10 @@ void TPPNode::subscribe_and_advertise_topics()
 
   track3d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
 
+#if HEARTBEAT == 1
+  track3d_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(topic + std::string("/heartbeat"), 1);
+#endif
+
   nh2_.setCallbackQueue(&queue_);
 
   // Note that we use different NodeHandle(nh2_) here
@@ -966,6 +970,11 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
   }
 
   pub.publish(msg);
+
+#if HEARTBEAT == 1
+  std_msgs::Empty msg_heartbeat;
+  track3d_pub_heartbeat_.publish(msg_heartbeat);
+#endif
 
   if (gen_markers_)
   {
