@@ -50,6 +50,17 @@ set(SOURCES_SRCS
 
 add_executable(${PROJECT_NAME} ${SOURCES_SRCS})
 
+if(EXISTS /usr/local/lib/libopencv_core.so)
+target_link_libraries(
+  ${PROJECT_NAME}
+  /usr/local/lib/libopencv_core.so
+  ${catkin_LIBRARIES}
+  glog
+  gflags
+  ${OpenCV_LIBRARIES}
+  hungarian
+)
+else()
 target_link_libraries(
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
@@ -58,5 +69,6 @@ target_link_libraries(
   ${OpenCV_LIBRARIES}
   hungarian
 )
+endif()
 
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})

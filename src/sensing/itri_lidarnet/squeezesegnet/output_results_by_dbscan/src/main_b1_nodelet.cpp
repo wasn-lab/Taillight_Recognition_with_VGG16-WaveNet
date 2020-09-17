@@ -68,6 +68,8 @@ public:
       RosModuleB1::Send_LidarResults(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
       RosModuleB1::Send_LidarResultsRVIZ(cur_cluster, cur_cluster_num);
       RosModuleB1::Send_LidarResultsGrid(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
+      RosModuleB1::Send_LidarResultsHeartBeat();
+      RosModuleB1::Send_LidarResultsGridHeartBeat();
       delete[] cur_cluster;
 
       if (debug_output)
