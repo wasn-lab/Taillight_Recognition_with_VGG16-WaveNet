@@ -144,6 +144,20 @@ void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
     init_BoxPoint(obj.bPoint.p7, xmax, ymin, zmin);
   }
 }
+void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint,
+                                       const std::string frame_id)
+{
+  if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
+  {
+    std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
+    cPoint.lowerAreaPoints.reserve(4);
+    cPoint.lowerAreaPoints.push_back(bPoint.p0);
+    cPoint.lowerAreaPoints.push_back(bPoint.p3);
+    cPoint.lowerAreaPoints.push_back(bPoint.p7);
+    cPoint.lowerAreaPoints.push_back(bPoint.p4);
+    cPoint.objectHigh = 4;
+  }
+}
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
@@ -208,6 +222,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       {
         create_bbox_from_polygon(obj);
       }
+      if (create_polygon_from_bbox_)
+      {
+        create_polygon_from_bbox(obj.bPoint, obj.cPoint, obj.header.frame_id);
+      }
     }
 
 #if VIRTUAL_INPUT
@@ -240,13 +258,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       {
         obj.relSpeed = mps_to_kmph(obj.relSpeed);
       }
-    }
-#endif
-
-#if FILL_CONVEX_HULL
-    for (auto& obj : KTs_.objs_)
-    {
-      fill_convex_hull(obj.bPoint, obj.cPoint, obj.header.frame_id);
     }
 #endif
 
@@ -350,20 +361,6 @@ void TPPNode::subscribe_and_advertise_topics()
   std::string topic5 = topic + "/drivable";
   drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
 #endif
-}
-
-void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
-{
-  if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
-  {
-    std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
-    cPoint.lowerAreaPoints.reserve(4);
-    cPoint.lowerAreaPoints.push_back(bPoint.p0);
-    cPoint.lowerAreaPoints.push_back(bPoint.p3);
-    cPoint.lowerAreaPoints.push_back(bPoint.p7);
-    cPoint.lowerAreaPoints.push_back(bPoint.p4);
-    cPoint.objectHigh = 4;
-  }
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)
@@ -1056,6 +1053,7 @@ void TPPNode::set_ros_params()
   num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
+  nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;

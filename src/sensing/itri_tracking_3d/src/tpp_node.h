@@ -119,7 +119,8 @@ private:
   bool create_bbox_from_polygon_ = false;
   void create_bbox_from_polygon(msgs::DetectedObject& obj);
 
-  void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
+  bool create_polygon_from_bbox_ = false;
+  void create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
   void init_velocity(msgs::TrackInfo& track);
 
