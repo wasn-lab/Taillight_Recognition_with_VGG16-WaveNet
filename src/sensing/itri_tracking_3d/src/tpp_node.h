@@ -37,6 +37,8 @@ private:
   int in_source_ = get_in_source();
   bool use_ego_speed_ = get_ego_speed();
 
+  bool show_runtime_ = false;
+
   bool use_tracking2d = false;
 
   bool gen_markers_ = false;

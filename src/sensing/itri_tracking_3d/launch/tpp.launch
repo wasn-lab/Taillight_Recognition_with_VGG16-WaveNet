@@ -18,6 +18,9 @@
   <arg name="input_fps" default="10.0" />
   <arg name="output_fps" default="10.0" />
 
+  <!-- Show running time of callback_fusion() and 3D tracking -->
+  <arg name="show_runtime" default="True" />
+
   <!-- Create bbox(bPoint) from polygon(cPoint) -->
   <arg name="create_bbox_from_polygon" default="False" />
 
@@ -42,6 +45,7 @@
     <param name="input_source" value="$(arg input_source)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
+    <param name="show_runtime" value="$(arg show_runtime)" />
     <param name="create_bbox_from_polygon" value="$(arg create_bbox_from_polygon)" />
     <param name="create_polygon_from_bbox" value="$(arg create_polygon_from_bbox)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />

@@ -54,7 +54,9 @@
 #define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
-#define FPS 0
+#define CYAN_CHAR "\033[36m"
+#define WHITE_CHAR "\033[37m"
+
 #define ENABLE_PROFILING_MODE 0
 
 // virtual input test

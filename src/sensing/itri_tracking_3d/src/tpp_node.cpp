@@ -161,16 +161,20 @@ void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::Conve
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
+  clock_t begin_time = -1;
+  clock_t end_time = -1;
+
+  if (show_runtime_)
+  {
+    begin_time = clock();
+  }
+
 #if DEBUG_CALLBACK
   LOG_INFO << "callback_fusion() start" << std::endl;
 #endif
 
 #if DEBUG_COMPACT
   LOG_INFO << "-----------------------------------------" << std::endl;
-#endif
-
-#if FPS
-  clock_t begin_time = clock();
 #endif
 
   objs_header_prev_ = objs_header_;
@@ -277,11 +281,12 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
   g_trigger = true;
 
-#if FPS
-  clock_t end_time = clock();
-  LOG_INFO << "Running time of callback_fusion(): " << clock_to_milliseconds(end_time - begin_time) << "ms"
-           << std::endl;
-#endif
+  if (show_runtime_)
+  {
+    end_time = clock();
+    LOG_INFO << "[RunTime] Callback: " << CYAN_CHAR << clock_to_milliseconds(end_time - begin_time) << "ms"
+             << WHITE_CHAR << std::endl;
+  }
 }
 
 void TPPNode::subscribe_and_advertise_topics()
@@ -972,9 +977,10 @@ void TPPNode::control_sleep(const double loop_interval)
 {
   loop_elapsed = ros::Time::now().toSec() - loop_begin;
 
-#if FPS
-  LOG_INFO << "Sleep " << loop_interval - loop_elapsed << " seconds" << std::endl;
-#endif
+  if (show_runtime_)
+  {
+    LOG_INFO << "Sleep " << loop_interval - loop_elapsed << " seconds" << std::endl;
+  }
 
   if (loop_elapsed > 0)
   {
@@ -1052,6 +1058,8 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
   num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
 
+  nh_.param<bool>(domain + "show_runtime", show_runtime_, false);
+
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
   nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
 
@@ -1090,6 +1098,14 @@ int TPPNode::run()
 
   while (ros::ok() && !done_with_profiling())
   {
+    clock_t begin_time = -1;
+    clock_t end_time = -1;
+
+    if (show_runtime_)
+    {
+      begin_time = clock();
+    }
+
 #if DEBUG_CALLBACK
     LOG_INFO << "ROS loop start" << std::endl;
 #endif
@@ -1107,10 +1123,6 @@ int TPPNode::run()
       LOG_INFO << "Tracking main process start" << std::endl;
 #endif
 
-#if FPS
-      clock_t begin_time = clock();
-#endif
-
       // Tracking start ==========================================================================
 
       // MOT: SORT algorithm
@@ -1122,13 +1134,14 @@ int TPPNode::run()
 
       // Tracking end ==================================================================================
 
-#if FPS
-      clock_t end_time = clock();
-      LOG_INFO << "Running time of Tracking PP main process: " << clock_to_milliseconds(end_time - begin_time) << "ms"
-               << std::endl;
-#endif
-
       g_trigger = false;
+
+      if (show_runtime_)
+      {
+        end_time = clock();
+        LOG_INFO << "[RunTime] 3D Tracking (" << KTs_.objs_.size() << " objs): " << CYAN_CHAR
+                 << clock_to_milliseconds(end_time - begin_time) << "ms" << WHITE_CHAR << std::endl;
+      }
     }
 
     ros::spinOnce();  // Process callback_fusion()
