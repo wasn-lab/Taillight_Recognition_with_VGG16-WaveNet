@@ -18,6 +18,9 @@
   <arg name="input_fps" default="10.0" />
   <arg name="output_fps" default="10.0" />
 
+  <!-- Create bbox(bPoint) from polygon (cPoint) -->
+  <arg name="create_bbox_from_polygon" default="False" />
+
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
@@ -36,6 +39,7 @@
     <param name="input_source" value="$(arg input_source)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
+    <param name="create_bbox_from_polygon" value="$(arg create_bbox_from_polygon)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
     <param name="gen_markers" value="$(arg gen_markers)" />
     <param name="show_classid" value="$(arg show_classid)" />

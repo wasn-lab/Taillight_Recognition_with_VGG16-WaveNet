@@ -113,7 +113,6 @@ void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::Con
 }
 #endif
 
-#if CREATE_BBOX_FROM_POLYGON == 1
 void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 {
   if (!obj.cPoint.lowerAreaPoints.empty())
@@ -145,7 +144,6 @@ void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
     init_BoxPoint(obj.bPoint.p7, xmax, ymin, zmin);
   }
 }
-#endif
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
@@ -206,9 +204,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       obj.absSpeed = 0.f;
       obj.relSpeed = 0.f;
 
-#if CREATE_BBOX_FROM_POLYGON == 1
-      create_bbox_from_polygon(obj);
-#endif
+      if (create_bbox_from_polygon_)
+      {
+        create_bbox_from_polygon(obj);
+      }
     }
 
 #if VIRTUAL_INPUT
@@ -1055,6 +1054,8 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
   num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+
+  nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
