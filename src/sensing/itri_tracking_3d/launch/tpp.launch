@@ -12,7 +12,7 @@
   <!-- 6: /CameraDetection -->
   <!-- 7: /Tracking2D/front_bottom_60 -->
   <!-- otherwise: /SensorFusion -->
-  <arg name="input_source" default="7" />
+  <arg name="input_source" default="6" />
 
   <!-- Input/Output FPS -->
   <arg name="input_fps" default="10.0" />
