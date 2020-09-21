@@ -158,9 +158,8 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_times[cam_order].push_back(msg->header.stamp);
-    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
-    // g_cam_single_time[cam_order].nsec <<
-    // std::endl;
+    // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_single_times[cam_order].back().sec << "." <<
+    // g_cam_single_times[cam_order].back().nsec << std::endl;
   }
 }
 
@@ -178,9 +177,8 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_times[cam_order].push_back(msg->header.stamp);
-    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
-    // g_cam_single_time[cam_order].nsec <<
-    // std::endl;
+    // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_single_times[cam_order].back().sec << "." <<
+    // g_cam_single_times[cam_order].back().nsec << std::endl;
   }
 }
 
@@ -198,9 +196,8 @@ void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_times[cam_order].push_back(msg->header.stamp);
-    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
-    // g_cam_single_time[cam_order].nsec <<
-    // std::endl;
+    // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_single_times[cam_order].back().sec << "." <<
+    // g_cam_single_times[cam_order].back().nsec << std::endl;
   }
 }
 
@@ -218,9 +215,8 @@ void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_times[cam_order].push_back(msg->header.stamp);
-    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
-    // g_cam_single_time[cam_order].nsec <<
-    // std::endl;
+    // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_single_times[cam_order].back().sec << "." <<
+    // g_cam_single_times[cam_order].back().nsec << std::endl;
   }
 }
 
@@ -238,9 +234,8 @@ void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_times[cam_order].push_back(msg->header.stamp);
-    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
-    // g_cam_single_time[cam_order].nsec <<
-    // std::endl;
+    // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_single_times[cam_order].back().sec << "." <<
+    // g_cam_single_times[cam_order].back().nsec << std::endl;
   }
 }
 
@@ -258,9 +253,8 @@ void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
     g_cam_single_times[cam_order].push_back(msg->header.stamp);
-    // std::cout << "camera time: " << g_cam_single_time[cam_order].sec << "." <<
-    // g_cam_single_time[cam_order].nsec <<
-    // std::endl;
+    // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_single_times[cam_order].back().sec << "." <<
+    // g_cam_single_times[cam_order].back().nsec << std::endl;
   }
 }
 //////////////////// for camera object
@@ -283,8 +277,9 @@ void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstP
     g_is_object_update[cam_order] = true;
     g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
   }
-  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-  // std::endl;
+
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
 }
 
 void callback_object_cam_front_top_far_30(const msgs::DetectedObjectArray::ConstPtr& msg)
@@ -306,8 +301,8 @@ void callback_object_cam_front_top_far_30(const msgs::DetectedObjectArray::Const
     g_is_object_update[cam_order] = true;
     g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
   }
-  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-  // std::endl;
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
 }
 
 void callback_object_cam_right_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
@@ -329,8 +324,8 @@ void callback_object_cam_right_back_60(const msgs::DetectedObjectArray::ConstPtr
     g_is_object_update[cam_order] = true;
     g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
   }
-  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-  // std::endl;
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
 }
 
 void callback_object_cam_left_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
@@ -352,8 +347,8 @@ void callback_object_cam_left_back_60(const msgs::DetectedObjectArray::ConstPtr&
     g_is_object_update[cam_order] = true;
     g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
   }
-  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-  // std::endl;
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
 }
 
 void callback_object_cam_right_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
@@ -375,8 +370,8 @@ void callback_object_cam_right_front_60(const msgs::DetectedObjectArray::ConstPt
     g_is_object_update[cam_order] = true;
     g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
   }
-  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-  // std::endl;
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
 }
 
 void callback_object_cam_left_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
@@ -398,8 +393,8 @@ void callback_object_cam_left_front_60(const msgs::DetectedObjectArray::ConstPtr
     g_is_object_update[cam_order] = true;
     g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
   }
-  // std::cout << "camera object: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-  // std::endl;
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
 }
 //////////////////// for LiDAR data
 void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
@@ -408,8 +403,6 @@ void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
   {
     std::lock_guard<std::mutex> lock(g_mutex_lidar_raw);
     *g_lidarall_ptr = *msg;
-    // std::cout << "lidarall: " << msg->header.stamp.sec << "." << msg->header.stamp.nsec <<
-    // std::endl;
   }
   else
   {
@@ -417,12 +410,9 @@ void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     pcl_conversions::fromPCL(msg->header.stamp, header_time);
     std::lock_guard<std::recursive_mutex> lock_lidar_time(g_mutex_lidar_time);
     g_lidarall_time_buffer.push_back(header_time);
-    // std::cout << "lidarall: " << header_time.sec << "." << header_time.nsec <<
+    // std::cout << "lidarall time: " << header_time.sec << "." << header_time.nsec <<
     // std::endl;
   }
-  // std::cout << "Point cloud size: " << g_lidarall_ptr->size() << std::endl;
-  // std::cout << "Lidar x: " << g_lidarall_ptr->points[0].x << ", y: " << g_lidarall_ptr->points[0].y << ", z: " <<
-  // g_lidarall_ptr->points[0].z << std::endl;
 }
 
 void callback_lidarall_nonground(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
@@ -438,7 +428,8 @@ void callback_lidarall_nonground(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr
     pcl_conversions::fromPCL(msg->header.stamp, header_time);
     std::lock_guard<std::recursive_mutex> lock_lidar_nonground_time(g_mutex_lidar_nonground_time);
     g_lidarall_nonground_time_buffer.push_back(header_time);
-    // ROS_INFO("lidarall nonground timestamp: %d.%d", header_time.sec, header_time.nsec);
+    // std::cout << "lidarall_nonground time: " << header_time.sec << "." << header_time.nsec <<
+    // std::endl;
   }
 }
 
@@ -455,7 +446,7 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     pcl_conversions::fromPCL(msg->header.stamp, header_time);
     std::lock_guard<std::recursive_mutex> lock_lidar_ssn_time(g_mutex_lidar_ssn_time);
     g_lidar_ssn_time_buffer.push_back(header_time);
-    // std::cout << "lidar ssn: " << header_time.sec << "." << header_time.nsec <<
+    // std::cout << "lidar ssn time: " << header_time.sec << "." << header_time.nsec <<
     // std::endl;
   }
 }
@@ -1245,7 +1236,7 @@ void buffer_monitor()
         {
           cam_single_time_last[cam_order] = g_cam_single_times[cam_order].front(); /* store last timestamp */
 
-          // std::cout  <<"cam_single_time_last[cam_order]:    " << cam_single_time_last[cam_order].sec << "." <<
+          // std::cout  << camera::topics[g_cam_ids[cam_order]] << " cam_single_time_last: " << cam_single_time_last[cam_order].sec << "." <<
           // cam_single_time_last[cam_order].nsec << " store" <<
           // std::endl;
 
@@ -1262,10 +1253,6 @@ void buffer_monitor()
           if (cam_single_time_last_updated)
           {
             g_cam_times[cam_order].push_back(cam_single_time_last[cam_order]);
-
-            // std::cout  <<"cam_single_time_last[cam_order]:    " << cam_single_time_last[cam_order].sec << "." <<
-            // cam_single_time_last[cam_order].nsec <<
-            // std::endl;
           }
           else
           {
@@ -1273,10 +1260,6 @@ void buffer_monitor()
           }
         }
       }
-
-      // std::cout << "buffer camera object: " << g_object_arrs[0].header.stamp.sec << "." <<
-      // g_object_arrs[0].header.stamp.nsec <<
-      // std::endl;
 
       std::lock_guard<std::recursive_mutex> lock_lidar_time(g_mutex_lidar_time);
       if (!g_lidarall_time_buffer.empty())
