@@ -60,6 +60,7 @@ def flat_nested_json_dict(json_dict, sep=".") -> dict:
     return flatted
 
 
+# convert input example in numpy format to torch tensor
 def example_convert_to_torch(example, dtype=torch.float32,
                              device=None) -> dict:
     device = device or torch.device("cuda:0")

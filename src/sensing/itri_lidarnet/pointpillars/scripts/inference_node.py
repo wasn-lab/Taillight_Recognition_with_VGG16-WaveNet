@@ -114,7 +114,7 @@ class Inference_node:
         # intensity_max = np.max(points[:,3])
         # print ("max: ", intensity_max)
         # points[:,3] = points[:,3] * 0
-        points[:,3] = points[:,3]  * 255/1500
+        points[:,3] = np.maximum(points[:,3]-1000, 0)  * 255/1500
         np.reshape(points, (msg.height, msg.width, -1))
         lidar_time = msg.header.stamp.secs
         #stamp = msg.header.stamp
