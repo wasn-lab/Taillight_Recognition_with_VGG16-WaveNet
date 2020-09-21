@@ -70,8 +70,8 @@ void Projector3::init(int camera_id)
 std::vector<int> Projector3::project(float x, float y, float z)
 {
   std::vector<int> result(2, -1);
-  if (!outOfFov(x,y,z))
-  {
+  // if (!outOfFov(x,y,z))
+  // {
     if (!projectionMatrix.empty())
     {
       std::vector<cv::Point3d> object_point;
@@ -85,7 +85,7 @@ std::vector<int> Projector3::project(float x, float y, float z)
     {
       std::cerr << " Projection Matrix is empty." << std::endl;
     }
-  }
+  // }
   return result;
 }
 
@@ -148,7 +148,17 @@ bool Projector3::outOfFov(float x, float y, float z)
   }
   return false;
 }
-
+bool Projector3::outOfCoverage(float x, float y, float z)
+{
+  if(!coverage_mat.empty())
+  {
+    if (x < min_x || x > max_x || y < min_y || y > max_y || z > 0)
+    {
+      return true;
+    }
+  }
+  return false;
+}
 void Projector3::readCameraParameters(const char* yml_filename)
 {
   cv::FileStorage fs;

@@ -25,7 +25,7 @@
 using namespace std;
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
-void turnRadarOn(int s);
+void turnRadarOn(int s, int type);
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
 
 vector<double> Alpha_Front_Center_Param;
@@ -112,7 +112,14 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  turnRadarOn(s);
+  if (current_frame.can_id == 0xC1)
+  {
+    turnRadarOn(s, 1);
+  }
+  else
+  {
+    turnRadarOn(s, 2);
+  }
 
   int err_count = 0;
   msgs::Rad rad;
@@ -121,6 +128,7 @@ int main(int argc, char** argv)
   {
     rad.radHeader.stamp = ros::Time::now();
     rad.radHeader.seq = seq++;
+    rad.radHeader.frame_id = "radar";
     count = 0;
     err_count = 0;
     msgs::PointXYZV point;
@@ -253,21 +261,41 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   // radarParsing(t_frame);
 }
 
-void turnRadarOn(int s)
+void turnRadarOn(int s, int type)
 {
   cout << "============ radar on ============  " << current_frame.can_id << endl;
   // ============ turn alpha radar on ===============
   struct can_frame s_frame;
   s_frame.can_id = current_frame.can_id;
   s_frame.can_dlc = 8;
-  s_frame.data[0] = 0x61;
-  s_frame.data[1] = 0x72;
-  s_frame.data[2] = 0x20;
-  s_frame.data[3] = 0x31;
-  s_frame.data[4] = 0x20;
-  s_frame.data[5] = 0x32;
-  s_frame.data[6] = 0x20;
-  s_frame.data[7] = 0x32;
+
+  switch (type)
+  {
+    // 1: front radar, 2: corner radar
+    case 1:
+      s_frame.data[0] = 0x61;
+      s_frame.data[1] = 0x72;
+      s_frame.data[2] = 0x20;
+      s_frame.data[3] = 0x31;
+      s_frame.data[4] = 0x20;
+      s_frame.data[5] = 0x36;
+      s_frame.data[6] = 0x20;
+      s_frame.data[7] = 0x32;
+      break;
+    case 2:
+      s_frame.data[0] = 0x61;
+      s_frame.data[1] = 0x72;
+      s_frame.data[2] = 0x20;
+      s_frame.data[3] = 0x31;
+      s_frame.data[4] = 0x20;
+      s_frame.data[5] = 0x32;
+      s_frame.data[6] = 0x20;
+      s_frame.data[7] = 0x32;
+      break;
+    default:
+      break;
+  }
+
   int s_result = write(s, &s_frame, sizeof(s_frame));
 
   if (s_result != sizeof(s_frame))
@@ -351,7 +379,7 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
   //           << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
 
   // fill data to msg
-  point->x = x;
+  point->x = -x;
   point->y = y;
   point->z = -1;
   point->speed = vy;

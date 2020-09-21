@@ -1602,7 +1602,7 @@ int main(int argc, char** argv)
 #endif
 
   // Subscribers
-  ros::Subscriber LidFrontTopSub = nh.subscribe("LidarFrontTop", 1, callbackLidFrontTop);
+  ros::Subscriber LidFrontTopSub = nh.subscribe("LidarFrontTop/Localization", 1, callbackLidFrontTop);
   ros::Subscriber subRvizPose = nh.subscribe("/initialpose", 1, rviz_initialpose_callback);
   ros::Subscriber mapMeaValueSub = nh.subscribe("map_mean_value", 1, map_mean_value_callback);
 
