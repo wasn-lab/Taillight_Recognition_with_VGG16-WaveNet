@@ -30,7 +30,7 @@ Lidar List:
     
 	<!-- Grabber & Preprocessing -->
 	<arg name="use_compress" default="false" />
-	<arg name="use_filter" default="false" />
+	<arg name="use_filter" default="true" />
 	<arg name="use_roi" default="false" />
 	
 	<!-- SSN and Shape -->
@@ -102,13 +102,13 @@ Lidar List:
 	</group>
 
 	<group if="$(eval arg('mode') == 9)">
+		<param name="use_compress" value="false" /> 
 		<node pkg="lidars_decoder" 				type="lidars_decoder_b1" 			name="lidars_decoder_b1" 			output="screen" cwd="node" respawn="true"  />
-
 		<node pkg="lidars_grabber" 				type="lidars_grabber_b1" 			name="lidars_grabber_b1" 			output="screen" cwd="node" respawn="true"  />
 		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
 		<node pkg="lidar_squseg_v2_inference"   type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"   	output="screen" cwd="node" args="b1 X 0 1" /> 
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
-
+		
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->

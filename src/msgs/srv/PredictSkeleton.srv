@@ -1,0 +1,4 @@
+Keypoints last_detected_keypoints
+Keypoints new_detected_keypoints
+---
+Keypoints[] predicted_keypoints
