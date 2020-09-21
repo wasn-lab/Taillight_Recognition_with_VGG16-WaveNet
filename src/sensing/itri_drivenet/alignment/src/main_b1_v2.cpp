@@ -1165,11 +1165,11 @@ void runInference()
 
         if (g_is_display)
         {
-          for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
-          {
-            *cams_bbox_points_ptr[cam_order] += *cams_bbox_raw_points_ptr[cam_order];
-            *cams_points_ptr[cam_order] += *cams_raw_points_ptr[cam_order];
-          }
+          // for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+          // {
+          //   *cams_bbox_points_ptr[cam_order] += *cams_bbox_raw_points_ptr[cam_order];
+          //   *cams_points_ptr[cam_order] += *cams_raw_points_ptr[cam_order];
+          // }
           /// draw results on image
           drawPointCloudOnImages(cam_mats, cam_pixels, cams_bbox_points_ptr);
           drawBoxOnImages(cam_mats, object_arrs);
