@@ -840,7 +840,7 @@ void getSyncLidarCameraData()
   std::cout << "getSyncLidarCameraData start." << std::endl;
   bool is_camera_update = false;
   bool is_lidar_update = false;
-  bool is_lidarall_nonground_update = false;
+  // bool is_lidarall_nonground_update = false;
   bool is_lidar_ssn_update = false;
   std::vector<std::vector<ros::Time>> cam_times_tmp(g_cam_ids.size());
   std::vector<ros::Time> lidarall_times_tmp;
@@ -1227,7 +1227,7 @@ void buffer_monitor()
   ros::Time lidar_ssn_time_last;
   bool cam_single_time_last_updated = false;
   bool lidarall_time_last_updated = false;
-  bool lidarall_nonground_time_last_updated = false;
+  // bool lidarall_nonground_time_last_updated = false;
   bool lidar_ssn_time_last_updated = false;
   /// main loop
   ros::Rate loop_rate(80);
