@@ -32,7 +32,7 @@
 #include <autoware_msgs/LaneArray.h>
 
 #include "libwaypoint_follower/libwaypoint_follower.h"
-#include "astar_search/astar_search.h"
+#include "astar_search_ai/astar_search_ai.h"
 
 #include <msgs/VehInfo.h>
 #include <msgs/Flag_Info.h>

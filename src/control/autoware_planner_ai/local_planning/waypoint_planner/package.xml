@@ -18,7 +18,7 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>vector_map</build_depend>
-  <build_depend>astar_search</build_depend>
+  <build_depend>astar_search_ai</build_depend>
   <build_depend>autoware_health_checker</build_depend>
   <build_depend>msgs</build_depend>
   <build_depend>car_model</build_depend>
@@ -29,7 +29,7 @@
   <run_depend>libwaypoint_follower</run_depend>
   <run_depend>autoware_msgs</run_depend>
   <run_depend>vector_map</run_depend>
-  <run_depend>astar_search</run_depend>
+  <run_depend>astar_search_ai</run_depend>
   <run_depend>autoware_health_checker</run_depend>
   <run_depend>msgs</run_depend>
   <run_depend>car_model</run_depend>

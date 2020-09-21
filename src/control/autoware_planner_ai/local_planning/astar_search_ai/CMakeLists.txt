@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(astar_search)
+project(astar_search_ai)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -18,7 +18,7 @@ include(CompilerFlags)
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES astar_search
+  LIBRARIES astar_search_ai
   CATKIN_DEPENDS
   roscpp
   tf
@@ -35,16 +35,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_library(astar_search
-  src/astar_search.cpp
-  src/astar_util.cpp
+add_library(astar_search_ai
+  src/astar_search_ai.cpp
+  src/astar_util_ai.cpp
 )
 
-target_link_libraries(astar_search
+target_link_libraries(astar_search_ai
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(astar_search
+add_dependencies(astar_search_ai
   ${catkin_EXPORTED_TARGETS}
 )
 
@@ -53,7 +53,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 	FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS astar_search
+install(TARGETS astar_search_ai
 	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "astar_search/astar_util.h"
+#include "astar_search_ai/astar_util_ai.h"
 
 WaveFrontNode::WaveFrontNode() : index_x(0), index_y(0), hc(0)
 {

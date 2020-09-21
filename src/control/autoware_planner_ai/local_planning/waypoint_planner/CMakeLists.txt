@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   libwaypoint_follower
   autoware_msgs
   #vector_map
-  astar_search
+  astar_search_ai
   msgs
   car_model
 )
@@ -28,7 +28,7 @@ catkin_package(
   autoware_msgs
   #vector_map
   msgs
-  astar_search
+  astar_search_ai
   car_model
 )
 
