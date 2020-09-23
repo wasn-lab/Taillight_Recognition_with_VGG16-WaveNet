@@ -14,6 +14,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include "gnss_utility/gnss_utility.h"
+#include "gnss_utility_utm/gnss_utility_utm.h"
 
 //------------------------------------------------------------------------------------------------------
 // Global Parameter
@@ -27,7 +28,11 @@ double T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3
 int LidXYZ2ENU_siwtch = 1;
 
 // twd972wgs84
-double shift_x,shift_y,shift_z;
+double twd97_shift_x,twd97_shift_y,twd97_shift_z;
+
+// utm2wgs84
+double utm_shift_x,utm_shift_y;
+int utm_zone;
 
 ros::Publisher lidarlla_pub;
 ros::Publisher lidarlla_wgs84_pub;
@@ -38,20 +43,25 @@ ros::Subscriber lidarlla_sub ;
 
 geodetic_converter::GeodeticConverter g_geodetic_converter;
 gnss_utility::gnss gnss_tf;
+gnss_utility_utm::gnss_utm gnss_utm_tf;
 
-// void testgnss()
-// {
-//     double lat;
-//     double lon;
-//     double E = 250000;
-//     double N = 2655023.12504066;
-//     bool pkm = false;
-    
-//     gnss_tf.TWD97toWGS84(E, N, &lat, &lon, pkm);
+// twd97 or utm
+// #define TWD97
+#define UTM
 
-//     std::cout << "test : " << lon << std::endl;
-//     std::cout << "test : " << lat << std::endl;
-// }
+void testgnss()
+{
+    int zone = 51; //taiwain 50 or 51
+	double lidar_E_utm = 302331.52; //302331.52;
+	double lidar_N_utm = 2741298.25; //2741298.25;
+	double lidar_U_utm = 0;
+
+    double lidar_lat_wgs84, lidar_lon_wgs84;
+	gnss_utm_tf.UTMXYToLatLon(lidar_E_utm, lidar_N_utm, zone, false, lidar_lat_wgs84, lidar_lon_wgs84);
+
+    std::cout << "test : " << lidar_lon_wgs84 << std::endl;
+    std::cout << "test : " << lidar_lat_wgs84 << std::endl;
+}
 
 void initial_para()
 {
@@ -202,13 +212,52 @@ void initial_para_1()
 	    read_tmp_1[read_index_1] = atof(token.c_str());
 	    read_index_1 += 1;
     }
-    shift_x = read_tmp_1[0];
-    shift_y = read_tmp_1[1];
-    shift_z = read_tmp_1[2];
+    twd97_shift_x = read_tmp_1[0];
+    twd97_shift_y = read_tmp_1[1];
+    twd97_shift_z = read_tmp_1[2];
 
-    std::cout << "shift_x : " << std::setprecision(20) << shift_x << std::endl;
-    std::cout << "shift_y : " << std::setprecision(20) << shift_y << std::endl;
-    std::cout << "shift_z : " << std::setprecision(20) << shift_z << std::endl;
+    std::cout << "twd97_shift_x : " << std::setprecision(20) << twd97_shift_x << std::endl;
+    std::cout << "twd97_shift_y : " << std::setprecision(20) << twd97_shift_y << std::endl;
+    std::cout << "twd97_shift_z : " << std::setprecision(20) << twd97_shift_z << std::endl;
+}
+
+void initial_para_2()
+{
+	double read_tmp_2[3];
+	int read_index_2 = 0;
+	std::string fname_2 = ros::package::getPath("lidarxyz2lla");
+	fname_2 += "/data/ITRI_ShiftLidarxyz2UTM.txt";
+  	std::cout << fname_2 << std::endl;
+
+  	std::ifstream fin_2;
+    char line_2[100];
+    memset( line_2, 0, sizeof(line_2));
+
+    fin_2.open(fname_2.c_str(),std::ios::in);
+    if(!fin_2) 
+    {
+        std::cout << "Fail to import txt" <<std::endl;
+        exit(1);
+    }
+
+    while(fin_2.getline(line_2,sizeof(line_2),',')) 
+    {
+		// fin_2.getline(line_2,sizeof(line_2),'\n');
+	    std::string nmea_str(line_2);
+	    std::stringstream ss(nmea_str);
+	    std::string token;
+
+	    getline(ss,token, ',');
+	    read_tmp_2[read_index_2] = atof(token.c_str());
+	    read_index_2 += 1;
+    }
+    utm_shift_x = read_tmp_2[0];
+    utm_shift_y = read_tmp_2[1];
+    utm_zone = read_tmp_2[2];
+
+    std::cout << "utm_shift_x : " << std::setprecision(20) << utm_shift_x << std::endl;
+    std::cout << "utm_shift_y : " << std::setprecision(20) << utm_shift_y << std::endl;
+    std::cout << "utm_zone : " << std::setprecision(20) << utm_zone << std::endl;
 }
 
 // void lidarxyztopicCallback(const lidarxyz2lla::LidXYZ::ConstPtr& lidarxyzmsg)
@@ -344,22 +393,34 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 	lidarllamsg.lidar_Alt = lidar_alt;
 	lidarlla_pub.publish(lidarllamsg);
 
-	// twd97 to wgs84
-	double lidar_E_twd97 = lidar_X + shift_x;
-	double lidar_N_twd97 = lidar_Y + shift_y;
-	double lidar_U_twd97 = lidar_Z + shift_z;
-	bool pkm = false;
-	double lidar_lon_wgs84,lidar_lat_wgs84;
-	double lidar_alt_wgs84 = lidar_U_twd97;
-
-	gnss_tf.TWD97toWGS84(lidar_E_twd97, lidar_N_twd97, &lidar_lat_wgs84, &lidar_lon_wgs84, pkm);
-
+    // wgs84 output
+	double lidar_lon_wgs84,lidar_lat_wgs84,lidar_alt_wgs84;
 	msgs::LidLLA lidarllamsg_wgs84;
-	lidarllamsg_wgs84.lidar_Lat = lidar_lat_wgs84;
+
+	#ifdef TWD97
+		// twd97 to wgs84
+		double lidar_E_twd97 = lidar_X + twd97_shift_x;
+		double lidar_N_twd97 = lidar_Y + twd97_shift_y;
+		double lidar_U_twd97 = lidar_Z + twd97_shift_z;
+		bool pkm = false;
+		lidar_alt_wgs84 = lidar_U_twd97;
+		gnss_tf.TWD97toWGS84(lidar_E_twd97, lidar_N_twd97, &lidar_lat_wgs84, &lidar_lon_wgs84, pkm);
+	#endif
+
+	#ifdef UTM
+		// utm to wgs84
+		int zone = utm_zone; //taiwain 50 or 51
+		double lidar_E_utm = lidar_X + utm_shift_x;
+		double lidar_N_utm = lidar_Y + utm_shift_y;
+		double lidar_U_utm = lidar_Z;
+		lidar_alt_wgs84 = lidar_U_utm;
+		gnss_utm_tf.UTMXYToLatLon(lidar_E_utm, lidar_N_utm, zone, false, lidar_lat_wgs84, lidar_lon_wgs84);
+	#endif
+
+    lidarllamsg_wgs84.lidar_Lat = lidar_lat_wgs84;
 	lidarllamsg_wgs84.lidar_Lon = lidar_lon_wgs84;
 	lidarllamsg_wgs84.lidar_Alt = lidar_alt_wgs84;
-	lidarlla_wgs84_pub.publish(lidarllamsg_wgs84);
-
+    lidarlla_wgs84_pub.publish(lidarllamsg_wgs84);
 	std::cout <<"lidar Lat wgs84 : "<< std::setprecision(20) << lidar_lat_wgs84 << std::endl;
 	std::cout <<"lidar Lon wgs84 : "<< std::setprecision(20) << lidar_lon_wgs84 << std::endl;
 	std::cout <<"lidar Alt wgs84 : "<< std::setprecision(20) << lidar_alt_wgs84 << std::endl;
@@ -385,9 +446,15 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 
 int main( int argc, char **argv )
 {
+	testgnss();
 	// initial parameter
 	initial_para();
-	initial_para_1();
+	#ifdef TWD97
+		initial_para_1();
+	#endif
+	#ifdef UTM
+		initial_para_2();
+	#endif
 	// ros initial
 	ros::init(argc, argv, "lidarxyz2lla");
 	ros::NodeHandle nh;

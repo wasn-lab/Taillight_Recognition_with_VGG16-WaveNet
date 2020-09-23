@@ -15,17 +15,6 @@
       <param name="is_ignoring_empty_obj"  value="true"/>
   </node>
 
-  <!-- Camera Polygon **************************************************************************** -->
-  <node name="m_CameraDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/CameraDetection"/>
-      <param name="red"   value="0.2"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="cam_poly"/>
-      <param name="delay_pos_x"  value="1.0"/>
-      <param name="is_ignoring_empty_obj"  value="true"/>
-  </node>
-
   <!-- Radar Polygon **************************************************************************** -->
   <node name="m_RadarDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/RadarDetection"/>
@@ -52,6 +41,28 @@
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
       <param name="blue"  value="0.4"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
+  </node>
+
+  <!-- Tracking 3D Polygon ************************************************************************* -->
+  <node name="m_Tracking_3d_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/Tracking3D"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.4"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
+  </node>
+
+  <!-- Tracking 2D Polygon ************************************************************************* -->
+  <node name="m_Tracking_2d_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/Tracking2D/front_bottom_60"/>
+      <param name="red"   value="0.87451"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>

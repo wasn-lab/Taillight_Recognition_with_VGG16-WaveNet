@@ -26,6 +26,7 @@ fi
 
 source devel/setup.bash
 
+python src/car_model/scripts/gen_drivenet_engine.py
 # cache *.engine for quick loading
 for engine in `find src/sensing -name "*.engine"`; do
   cat $engine > /dev/null 2>&1
