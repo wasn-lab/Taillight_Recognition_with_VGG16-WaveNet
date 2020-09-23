@@ -65,6 +65,8 @@
 #define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
+#define HEARTBEAT 1
+
 #define FPS 0
 #define ENABLE_PROFILING_MODE 0
 

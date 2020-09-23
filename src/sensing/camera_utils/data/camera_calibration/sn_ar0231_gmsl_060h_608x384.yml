@@ -1,0 +1,25 @@
+%YAML:1.0
+---
+image_width: 608
+image_height: 384
+camera_name: sn_ar0231_gmsl_060h_608x384
+camera_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: d
+  data: [580.039589, 0., 316.135059, 0.,
+       581.447685, 209.392896, 0., 0., 1.]
+distortion_model: plumb_bob
+distortion_coefficients: !!opencv-matrix
+  rows: 1
+  cols: 5
+  dt: d
+  data: [-0.297041, 0.084945, -0.001745, -0.003300, 0.000000]
+rectification_matrix: !!opencv-matrix
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix: !!opencv-matrix
+  rows: 3
+  cols: 4
+  data: [527.542969, 0.000000, 315.879305, 0.000000, 0.000000, 560.197510, 209.704385, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
