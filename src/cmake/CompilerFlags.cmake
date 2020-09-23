@@ -69,6 +69,7 @@ APPEND_GLOBAL_COMPILER_FLAGS(
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-result")
 if (COMPILER_IS_GNUCXX)
     APPEND_GLOBAL_COMPILER_FLAGS(-Wmaybe-uninitialized)
+    APPEND_GLOBAL_COMPILER_FLAGS(-fext-numeric-literals) # for map
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-discarded-qualifiers")
 endif ()
 

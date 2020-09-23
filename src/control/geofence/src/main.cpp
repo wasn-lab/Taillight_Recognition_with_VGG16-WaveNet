@@ -57,6 +57,15 @@ static uint overtake_over_flag;
 ros::Publisher Radar_marker;
 ros::Publisher Geofence_line;
 
+uint PCloud_Geofence_count = 0;
+int PCloud_Geofence_lastdis = 300;
+
+uint Deviate_Geofence_count = 0;
+int Deviate_Geofence_lastdis = 300;
+
+uint CPoint_Geofence_count = 0;
+int CPoint_Geofence_lastdis = 300;
+
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
 {
   Heading = LTVmsg->heading;
@@ -196,13 +205,13 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  uint size = 50;
+  uint size = 200;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
   }
 
-  double Resolution = 50;
+  double Resolution = 10;
   for (uint i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -224,12 +233,12 @@ void astar_original_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  uint size = 50;
+  uint size = 200;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
   }
-  double Resolution = 50;
+  double Resolution = 10;
   for (uint i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -457,10 +466,22 @@ int main(int argc, char** argv)
       std_msgs::Float64 Geofence_temp;
       Geofence_temp.data = PCloud_Geofence.getDistance_w();
       Geofence_PC.publish(Geofence_temp);
-      if (PCloud_Geofence.getDistance() < 80)
+      int PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
+      if (PCloud_Geofence_lastdis - PCloud_Geofence.getDistance() > 200 && PCloud_Geofence_count < 10)
+      {
+        PCloud_Geofence_dis = PCloud_Geofence_lastdis;
+        PCloud_Geofence_count++;
+      }
+      else
+      {
+        PCloud_Geofence_dis = PCloud_Geofence.getDistance();
+        PCloud_Geofence_count = 0;
+      }
+      if (PCloud_Geofence_dis < 80)
       {
         Plot_geofence(PCloud_Geofence.findDirection());
       }
+      PCloud_Geofence_lastdis = PCloud_Geofence_dis;
     }
     else
     {
@@ -493,10 +514,22 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(Deviate_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      if (Deviate_Geofence.getDistance() < 80)
+      int Deviate_Geofence_dis = 300;  // Deviate_Geofence.getDistance();
+      if (Deviate_Geofence_lastdis - Deviate_Geofence.getDistance() > 200 && Deviate_Geofence_count < 10)
+      {
+        Deviate_Geofence_dis = Deviate_Geofence_lastdis;
+        Deviate_Geofence_count++;
+      }
+      else
+      {
+        Deviate_Geofence_dis = Deviate_Geofence.getDistance();
+        Deviate_Geofence_count = 0;
+      }
+      if (Deviate_Geofence_dis < 80)
       {
         Plot_geofence(Deviate_Geofence.findDirection());
       }
+      Deviate_Geofence_lastdis = Deviate_Geofence_dis;
     }
     else
     {
@@ -553,10 +586,22 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      if (CPoint_Geofence.getDistance() < 80)
+      int CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
+      if (CPoint_Geofence_lastdis - CPoint_Geofence.getDistance() > 200 && CPoint_Geofence_count < 10)
+      {
+        CPoint_Geofence_dis = CPoint_Geofence_lastdis;
+        CPoint_Geofence_count++;
+      }
+      else
+      {
+        CPoint_Geofence_dis = CPoint_Geofence.getDistance();
+        CPoint_Geofence_count = 0;
+      }
+      if (CPoint_Geofence_dis < 80)
       {
         Plot_geofence_yellow(CPoint_Geofence.findDirection());
       }
+      CPoint_Geofence_lastdis = CPoint_Geofence_dis;
     }
     else
     {
