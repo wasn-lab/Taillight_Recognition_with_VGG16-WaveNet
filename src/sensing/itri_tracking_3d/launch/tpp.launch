@@ -1,0 +1,59 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- Node parameters -->
+
+  <!-- Input source -->
+  <!-- 1: /LidarDetection -->
+  <!-- 2: /RadarDetection -->
+  <!-- 3: /CamObjFrontCenter -->
+  <!-- 4: /abs_virBB_array -->
+  <!-- 5: /rel_virBB_array -->
+  <!-- 6: /CameraDetection -->
+  <!-- 7: /Tracking2D/front_bottom_60 -->
+  <!-- otherwise: /SensorFusion -->
+  <arg name="input_source" default="6" />
+
+  <!-- Input/Output FPS -->
+  <arg name="input_fps" default="10.0" />
+  <arg name="output_fps" default="10.0" />
+
+  <!-- Show running time of callback_fusion() and 3D tracking -->
+  <arg name="show_runtime" default="True" />
+
+  <!-- Create bbox(bPoint) from polygon(cPoint) -->
+  <arg name="create_bbox_from_polygon" default="False" />
+
+  <!-- Create polygon(cPoint) from bbox(bPoint) -->
+  <arg name="create_polygon_from_bbox" default="False" />
+
+  <!-- Rviz marker lifetime -->
+  <!-- 0: Auto-assign as (1 / output_fps) -->
+  <!-- other value: manually assign -->
+  <arg name="m_lifetime_sec" default="1.0" />
+
+  <!-- Rviz markers -->
+  <arg name="gen_markers" default="True" />
+  <arg name="show_classid" default="False" />
+  <arg name="show_tracktime" default="False" />
+  <arg name="show_source" default="False" />
+  <arg name="show_distance" default="False" />
+  <arg name="show_absspeed" default="True" />
+
+  <!-- Launch node -->
+  <node pkg="itri_tracking_3d" type="itri_tracking_3d" name="itri_tracking_3d" cwd="node" output="screen">
+    <param name="input_source" value="$(arg input_source)" />
+    <param name="input_fps" value="$(arg input_fps)" />
+    <param name="output_fps" value="$(arg output_fps)" />
+    <param name="show_runtime" value="$(arg show_runtime)" />
+    <param name="create_bbox_from_polygon" value="$(arg create_bbox_from_polygon)" />
+    <param name="create_polygon_from_bbox" value="$(arg create_polygon_from_bbox)" />
+    <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
+    <param name="gen_markers" value="$(arg gen_markers)" />
+    <param name="show_classid" value="$(arg show_classid)" />
+    <param name="show_tracktime" value="$(arg show_tracktime)" />
+    <param name="show_source" value="$(arg show_source)" />
+    <param name="show_distance" value="$(arg show_distance)" />
+    <param name="show_absspeed" value="$(arg show_absspeed)" />
+  </node>
+</launch>

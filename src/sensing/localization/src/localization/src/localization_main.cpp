@@ -26,6 +26,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 #include <memory>
 #include <pthread.h>
 #include <sstream>
@@ -67,6 +68,9 @@
 #define Wa 0.4
 #define Wb 0.3
 #define Wc 0.3
+
+#define RANGE_OF_NEIGHTBOR_POINT_IN_METER 0.5
+#define MIN_NEIGHBOR_PERCENTAGE_OF_VALID_POINT 0.001
 
 #if LOG
 std::ofstream myfile("log.csv");
@@ -128,7 +132,7 @@ static std::string pcd_name = "sub_map.pcd";
 
 // Default values localization mapping
 static int max_iter = 30;        // Maximum iterations 30 30
-static float ndt_res = 1.2;      // Resolution MAPPING 1.0 2.0
+static float ndt_res = 1.1;      // Resolution MAPPING 1.0 2.0
 static double step_size = 0.1;   // Step size 0.1  0.2
 static double trans_eps = 0.01;  // Transformation epsilon  0.01 0.02
 
@@ -290,6 +294,37 @@ bool heading_rate(float low, float high, float input)
   return ((input - high) * (input - low) <= 0);
 }
 
+int floatcomp(const void* elem1, const void* elem2)
+{
+    if(*(const double*)elem1 < *(const double*)elem2)
+        return -1;
+    return *(const double*)elem1 > *(const double*)elem2;
+}
+
+int is_valid_point(double* cloud_zArray, int total_point_num ,double zValue)
+{
+    // If #(points within 0.5m of the current point) < #(all points) * 1/1000 , it shuld be considered as noise point
+    int i;
+    int neighbor_num = 0;
+    double neighbor_percentage = 0.0;
+    int valid = 0;
+
+    for ( i = 0 ; i < total_point_num ; i++) {
+        if (fabs(cloud_zArray[i] - zValue) < RANGE_OF_NEIGHTBOR_POINT_IN_METER) {
+		neighbor_num++;		
+	}	
+    }
+    neighbor_num = neighbor_num - 1; // One point is zValue itself
+    neighbor_percentage = (double)(neighbor_num)/(double)(total_point_num);
+    
+    if (neighbor_percentage > MIN_NEIGHBOR_PERCENTAGE_OF_VALID_POINT) {
+	valid = 1;
+    }
+    printf("current_z = %f, neighbor_num = %d total_point_num = %d neighbor_percentage = %f valid = %d\n",zValue,neighbor_num,total_point_num,neighbor_percentage,valid);
+
+    return valid;
+}
+
 float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI center_p, double max_range)
 {
   std::cout << " finding z value ... " << std::endl;
@@ -299,6 +334,10 @@ float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI 
   int cnt_ = 0;
   double square_max_range = max_range * max_range;
   double diff_;
+  double* zArry;
+  int num_points;
+  int i;
+
   if (input.points.size() < 2)
   {
     std::cout << " Did not get map data, check the map_pub node. " << std::endl;
@@ -319,23 +358,41 @@ float find_z(const pcl::PointCloud<pcl::PointXYZI>& input, const pcl::PointXYZI 
     }
   }
 
-  if (ranged_scan.points.size() < 2)
+  num_points = ranged_scan.points.size();
+
+  if (num_points < 2)
   {
     std::cout << " Poor info of Z ... " << std::endl;
     return 999;
   }
-  else
-  {
-    for (int i = 0; i < ranged_scan.points.size(); i++)
-    {
-      if (ranged_scan.points[i].z < min_value)
-      {
-        min_value = ranged_scan.points[i].z;
-      }
-    }
-    std::cout << " find local Z = " << min_value << std::endl;
-    return min_value;
+
+  zArry = (double*)malloc( num_points * sizeof(double) );
+
+  for (i = 0; i < num_points; i++) {
+    zArry[i] = ranged_scan.points[i].z;
   }
+
+  qsort(zArry, num_points, sizeof(double), floatcomp);
+  
+  for (i = 0; i < num_points ; i++) {	
+    if (is_valid_point(zArry, num_points, zArry[i])) {
+        min_value = zArry[i];
+        break;
+    }
+  }
+    
+  //if not found, just return the smallest value
+  if (min_value == 999) {
+    min_value = zArry[0];
+  }
+
+  std::cout << " find local Z = " << min_value << std::endl;
+  if (zArry) {
+    free(zArry);
+  }
+  
+  return min_value;
+
 }
 
 void transformPoint(const struct pose& input_pose, struct pose& pose_output, const Eigen::Matrix4f& transform)
@@ -413,10 +470,11 @@ void rviz_initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::C
 {
   rviz_input_pose.x = initial_input->pose.pose.position.x;
   rviz_input_pose.y = initial_input->pose.pose.position.y;
-
+ 
   pcl::PointXYZI p_;
   p_.x = rviz_input_pose.x;
   p_.y = rviz_input_pose.y;
+
   if (p_.x < map_mean_value)
   {
     p_.z = 0;
@@ -612,6 +670,63 @@ static void gnss2local_callback(const geometry_msgs::PoseStamped::ConstPtr& inpu
 
   is_trimble_new = true;
 }
+
+static void gnss_twd97_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+  tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                        input->pose.orientation.w);
+  tf::Matrix3x3 gnss_m(gnss_q);
+
+  pose current_gnss_pose;
+  current_gnss_pose.x = input->pose.position.x-254545.56;
+  current_gnss_pose.y = input->pose.position.y-2740707.78;
+  current_gnss_pose.z = input->pose.position.z-137.89;
+  gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
+
+  current_gnss_pose.yaw *= -1;
+  current_gnss_pose.yaw += M_PI * 0.5;
+
+  static pose previous_gnss_pose = current_gnss_pose;
+  current_gnss2local_pose = current_gnss_pose;
+
+  previous_gnss_pose.x = current_gnss_pose.x;
+  previous_gnss_pose.y = current_gnss_pose.y;
+  previous_gnss_pose.z = current_gnss_pose.z;
+  previous_gnss_pose.roll = current_gnss_pose.roll;
+  previous_gnss_pose.pitch = current_gnss_pose.pitch;
+  previous_gnss_pose.yaw = current_gnss_pose.yaw;
+
+  is_trimble_new = true;
+}
+
+static void gnss_utm_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+{
+  tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
+                        input->pose.orientation.w);
+  tf::Matrix3x3 gnss_m(gnss_q);
+
+  pose current_gnss_pose;
+  current_gnss_pose.x = input->pose.position.x;
+  current_gnss_pose.y = input->pose.position.y;
+  current_gnss_pose.z = input->pose.position.z;
+  gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
+
+  current_gnss_pose.yaw *= -1;
+  current_gnss_pose.yaw += M_PI * 0.5;
+
+  static pose previous_gnss_pose = current_gnss_pose;
+  current_gnss2local_pose = current_gnss_pose;
+
+  previous_gnss_pose.x = current_gnss_pose.x;
+  previous_gnss_pose.y = current_gnss_pose.y;
+  previous_gnss_pose.z = current_gnss_pose.z;
+  previous_gnss_pose.roll = current_gnss_pose.roll;
+  previous_gnss_pose.pitch = current_gnss_pose.pitch;
+  previous_gnss_pose.yaw = current_gnss_pose.yaw;
+
+  is_trimble_new = true;
+}
+
 #endif
 
 static void callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -648,6 +763,7 @@ static void callbackLidFrontTop(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointXYZI p_;
     p_.x = current_gnss2local_pose.x;
     p_.y = current_gnss2local_pose.y;
+
     if (p_.x < map_mean_value)
     {
       p_.z = 0;
@@ -1405,7 +1521,12 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
   private_nh.getParam("use_rviz_", use_rviz_);
+  private_nh.getParam("lidar_height", lidar_height);
+  private_nh.getParam("ndt_res", ndt_res);
+
   std::cout << "use_rviz_: " << use_rviz_ << std::endl;
+  std::cout << "lidar_height: " << lidar_height << std::endl;
+  std::cout << "ndt_res: " << ndt_res << std::endl;
 
 #if MAPPING
 
@@ -1489,7 +1610,9 @@ int main(int argc, char** argv)
   ros::Subscriber sbg_sub = nh.subscribe("veh_info", 10, sbg_callback);
 #endif
 #if TRIMBLE
-  ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_data", 10, gnss2local_callback);
+  //ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_data", 10, gnss2local_callback);
+  //ros::Subscriber gnss2local_sub = nh.subscribe("gnss_twd97_data", 10, gnss_twd97_callback);
+  ros::Subscriber gnss2local_sub = nh.subscribe("gnss_utm_data", 10, gnss_utm_callback);
 #endif
   pthread_t thread;
   pthread_create(&thread, NULL, thread_func, NULL);
