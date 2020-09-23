@@ -22,5 +22,5 @@ class ItriMqttClient():
         client.subscribe("$SYS/#")
 
     def publish(self, topic, payload):
+        print("topic: {}, payload: {}".format(topic, payload))
         self.client.publish(topic, payload=payload, qos=2, retain=False)
-        return 0

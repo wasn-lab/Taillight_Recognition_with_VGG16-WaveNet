@@ -5,9 +5,8 @@ from fail_safe_checker import FailSafeChecker
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ini", default="fail_safe.ini")
-    parser.add_argument("--mqtt-ini", default="mqtt_b1_v2.ini")
     args = parser.parse_args()
-    checker = FailSafeChecker(args.ini, args.mqtt_ini)
+    checker = FailSafeChecker(args.ini)
     checker.run()
 
 if __name__ == "__main__":
