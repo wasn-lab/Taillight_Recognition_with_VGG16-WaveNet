@@ -108,13 +108,13 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  int size = 50;
+  int size = 200;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
   }
 
-  double Resolution = 50;
+  double Resolution = 10;
   for (int i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -253,8 +253,8 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
         if (BBox_Geofence.getDistance() < 80)
         {
           // cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() <<
-          // endl; cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl; Plot
-          // geofence PP
+          // endl; cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
+          // Plot geofence PP
           if (BBox_Geofence.getDistance() < PP_Distance && BBox_Geofence.getDistance() > 3.8)
           {
             PP_Distance = BBox_Geofence.getDistance();

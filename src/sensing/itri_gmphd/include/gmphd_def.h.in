@@ -1,7 +1,0 @@
-#ifndef __GMPHD_DEF_H__
-#define __GMPHD_DEF_H__
-
-#cmakedefine GMPHD_DIR "@GMPHD_DIR@"
-
-#endif
-
