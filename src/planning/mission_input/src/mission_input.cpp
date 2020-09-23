@@ -196,13 +196,13 @@ void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
   if (ORGS == 1)
   {
     int sum = msg->Dspace_Flag01 + msg->Dspace_Flag02 + msg->Dspace_Flag03 +	msg->Dspace_Flag04 + msg->Dspace_Flag05 +	msg->Dspace_Flag06 + msg->Dspace_Flag07 +	msg->Dspace_Flag08;
-    int Dspace_Flag[8] = {msg->Dspace_Flag01,msg->Dspace_Flag02,msg->Dspace_Flag03,msg->Dspace_Flag04,msg->Dspace_Flag05,msg->Dspace_Flag06,msg->Dspace_Flag07,msg->Dspace_Flag08};
+    float Dspace_Flag[8] = {msg->Dspace_Flag01,msg->Dspace_Flag02,msg->Dspace_Flag03,msg->Dspace_Flag04,msg->Dspace_Flag05,msg->Dspace_Flag06,msg->Dspace_Flag07,msg->Dspace_Flag08};
     for (int i = 0; i < 8; i++)
     {
       if (Dspace_Flag[i] != Dspace_Flag_last[i])
       {
         std::cout << "Bus Stop num : " << sum << std::endl;
-        double bustop_id[sum] = {};
+        double bustop_id[8] = {};
         int index = 0;
         for (int i = 0; i < 8; i++)
         {

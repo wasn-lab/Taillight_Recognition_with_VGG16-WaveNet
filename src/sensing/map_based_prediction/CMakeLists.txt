@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_based_prediction)
 
-add_compile_options(-std=c++14 -fext-numeric-literals)
-
 find_package(catkin REQUIRED COMPONENTS
   autoware_perception_msgs
   roscpp

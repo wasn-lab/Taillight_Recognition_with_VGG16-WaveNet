@@ -20,8 +20,6 @@ find_path(PUGIXML_INCLUDE_DIRS
   PATH_SUFFIXES pugixml
 )
 
-add_compile_options(-std=c++14 -fext-numeric-literals)
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   lanelet2_core

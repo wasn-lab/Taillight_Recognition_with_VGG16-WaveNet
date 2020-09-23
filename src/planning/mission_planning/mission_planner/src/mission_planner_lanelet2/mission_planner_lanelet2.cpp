@@ -66,7 +66,7 @@ bool isRouteLooped(const RouteSections & route_sections)
   return false;
 }
 
-constexpr double normalizeRadian(
+double normalizeRadian(
   const double rad, const double min_rad = -M_PI, const double max_rad = M_PI)
 {
   const auto value = std::fmod(rad, 2 * M_PI);
