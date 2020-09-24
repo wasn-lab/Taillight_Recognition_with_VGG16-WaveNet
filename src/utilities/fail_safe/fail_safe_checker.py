@@ -43,12 +43,34 @@ class FailSafeChecker():
         self.mqtt_client = ItriMqttClient(mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1"))
         self.mqtt_topic = mqtt_cfg["mqtt_topics"]["fail_safe"]
 
+        # counters for warn, error states. When the counter reaches 10,
+        # change the state into next level (warn->error, error->fatal)
+        self.warn_count = 0
+        self.error_count = 0
+
     def get_current_status(self):
         ret = {"states": [self.heartbeats[_].to_dict() for _ in self.heartbeats],
                "events": [],
                }
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
+
+        if ret["status"] == "WARN":
+            self.warn_count += 1
+        else:
+            self.warn_count = 0
+        if self.warn_count > 10:
+            ret["status"] = "ERROR"
+            ret["status_str"] = "WARN states more than 10 seconds"
+
+        if ret["status"] == "ERROR":
+            self.error_count += 1
+        else:
+            self.error_count = 0
+        if self.error_count > 10:
+            ret["status"] = "FATAL"
+            ret["status_str"] = "ERROR states more than 10 seconds"
+
         return ret
 
     def run(self):
