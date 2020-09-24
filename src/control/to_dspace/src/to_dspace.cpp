@@ -16,6 +16,7 @@ const double NumOfID = 5;
 #include "msgs/DetectedLight.h"
 #include "msgs/DetectedLightArray.h"
 #include "msgs/Spat.h"
+#include "msgs/CurrentTrajInfo.h"
 #include <iostream>
 #include <cstdlib>
 #include "ros/ros.h"
@@ -338,6 +339,94 @@ void chatterCallback_05(const msgs::Spat::ConstPtr& msg)
 
 }
 
+void chatterCallback_06(const msgs::CurrentTrajInfo::ConstPtr& msg)
+{
+	//LRturn
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x063;
+	frame.data[0] = (short int)(msg->LRturn);
+	frame.data[1] = (short int)(msg->Curvature*1000);
+	frame.data[2] = (short int)(msg->Curvature*1000)>>8;
+	frame.data[3] = (short int)(msg->Distoturn*100);
+	frame.data[4] = (short int)(msg->Distoturn*100)>>8;
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	cout << "LRturn: " << int(msg->LRturn) << endl;
+	cout << "Curvature: " << double(msg->Curvature) << endl;
+	cout << "Distoturn: " << int(msg->Distoturn) << endl;
+	close(s);
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+
+	//Uphill
+	int s_1;
+	int nbytes_1;
+	struct sockaddr_can addr_1;
+	struct can_frame frame_1;
+	struct ifreq ifr_1;
+
+	const char *ifname_1 = CAN_INTERFACE_NAME;
+
+	if((s_1 = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr_1.ifr_name, ifname_1);
+	ioctl(s_1, SIOCGIFINDEX, &ifr_1);
+
+	addr_1.can_family  = AF_CAN;
+	addr_1.can_ifindex = ifr_1.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname_1, ifr_1.ifr_ifindex);
+
+	if(bind(s_1, (struct sockaddr *)&addr_1, sizeof(addr_1)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame_1.can_dlc = CAN_DLC;
+	frame_1.can_id  = 0x064;
+	frame_1.data[0] = (short int)(msg->Uphill);
+	frame_1.data[1] = (short int)(msg->MaxSlope*1000);
+	frame_1.data[2] = (short int)(msg->MaxSlope*1000)>>8;
+	frame_1.data[3] = (short int)(msg->Distouphill*100);
+	frame_1.data[4] = (short int)(msg->Distouphill*100)>>8;
+	nbytes_1 = write(s_1, &frame_1, sizeof(struct can_frame));
+	cout << "Uphill: " << int(msg->Uphill) << endl;
+	cout << "MaxSlope: " << double(msg->MaxSlope) << endl;
+	cout << "Distouphill: " << int(msg->Distouphill) << endl;
+	close(s_1);
+	printf("Wrote %d bytes\n", nbytes_1);
+	//Close the SocketCAN
+
+}
+
 
 int main(int argc, char **argv)
 {
@@ -348,6 +437,7 @@ int main(int argc, char **argv)
   ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
   ros::Subscriber dSPACE_subscriber_04 = n.subscribe("LightResultOutput_ITRI_Campus", 1, chatterCallback_04);
   ros::Subscriber dSPACE_subscriber_05 = n.subscribe("/traffic", 1, chatterCallback_05);
+  ros::Subscriber dSPACE_subscriber_06 = n.subscribe("/current_trajectory_info", 1, chatterCallback_06);
   ros::spin();
   return 0;
 }

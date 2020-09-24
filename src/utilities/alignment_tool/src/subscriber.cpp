@@ -107,15 +107,15 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/right_front_60", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_top_close_120", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
   while (ros::ok())
   {
     //0:1, 1:0.1, 2:0.1, 3:0.1, 4:1, 5:1
-    projector.setcameraMat(GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5],0,0);
-    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10,GlobalVariable::UI_PARA[2] * 10, GlobalVariable::UI_PARA[3] * 10,0,0);
+    projector.setcameraMat(0,0,0,0);
+    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10,GlobalVariable::UI_PARA[2] * 10, GlobalVariable::UI_PARA[3] * 10,GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5]);
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 

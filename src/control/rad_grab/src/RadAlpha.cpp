@@ -379,7 +379,7 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
   //           << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
 
   // fill data to msg
-  point->x = x;
+  point->x = -x;
   point->y = y;
   point->z = -1;
   point->speed = vy;
