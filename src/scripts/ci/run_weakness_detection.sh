@@ -13,6 +13,14 @@ if [[ -d /usr/local/lib/python3.6/dist-packages/cv2 ]]; then
 fi
 
 for bag_path in $bags; do
+  hour=$(date "+%-H")
+  while [[ "$hour" -gt 9 && "$hour" -lt 19 ]]; do
+    # keep buildbot job alive
+    echo "No weak detection during work hours."
+    sleep 60
+    hour=$(date "+%-H")
+  done
+
   bag_basename=$(basename $bag_path)
   export TMP_DIR=${top_tmp_dir}/${bag_basename}
   if [[ ! -f ${TMP_DIR}/weak.tar.gz ]]; then

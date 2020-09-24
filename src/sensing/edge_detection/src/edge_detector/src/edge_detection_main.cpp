@@ -31,6 +31,8 @@
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Header.h>
+#include <std_msgs/Empty.h>
+
 
 static EdgeDetection TOPED;
 static EdgeDetection FRED;
@@ -72,6 +74,8 @@ static nav_msgs::OccupancyGrid out_occupancy_dense_grid;
 
 static ros::Publisher ring_edge_pointcloud_publisher;
 static sensor_msgs::PointCloud2 ring_edge_pointcloud_publisher_msg;
+static ros::Publisher pub_ring_edge_heartbeat;
+
 
 static bool is_FT_grid_new, is_FR_grid_new, is_FL_grid_new;
 static bool is_init_merged_map;
@@ -237,6 +241,10 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
         ring_edge_pointcloud_publisher_msg.header.frame_id = "base_link";
         ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
+        
+        // heartbeat
+        std_msgs::Empty empty_msg;
+        pub_ring_edge_heartbeat.publish(empty_msg);
       }
 
       scopedLock.unlock();
@@ -565,6 +573,10 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
     ring_edge_pointcloud_publisher_msg.header.frame_id = "base_link";
     ring_edge_pointcloud_publisher.publish(ring_edge_pointcloud_publisher_msg);
+    
+    // heartbeat
+    std_msgs::Empty empty_msg;
+    pub_ring_edge_heartbeat.publish(empty_msg);
   }
 #if PRINT_TIME
   check_ms = std::chrono::high_resolution_clock::now();
@@ -631,6 +643,7 @@ int main(int argc, char** argv)
   pub_occupancy_dense_grid = n.advertise<nav_msgs::OccupancyGrid>("occupancy_dense_grid", 1, true);
 
   ring_edge_pointcloud_publisher = n.advertise<sensor_msgs::PointCloud2>("ring_edge_point_cloud", 1, false);
+  pub_ring_edge_heartbeat = n.advertise<std_msgs::Empty>("/ring_edge_point_cloud/heartbeat", 1);
 
   ros::MultiThreadedSpinner s(3);
   ros::spin(s);

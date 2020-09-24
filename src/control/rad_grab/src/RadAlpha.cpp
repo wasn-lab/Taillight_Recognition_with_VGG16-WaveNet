@@ -25,7 +25,7 @@
 using namespace std;
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
-void turnRadarOn(int s);
+void turnRadarOn(int s, int type);
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
 
 vector<double> Alpha_Front_Center_Param;
@@ -36,6 +36,8 @@ vector<double> Alpha_Side_Right_Param;
 vector<double> Alpha_Back_Left_Param;
 vector<double> Alpha_Back_Right_Param;
 vector<double> Zero_Param(6, 0.0);
+
+int debug_message = 0;
 
 struct can_frame current_frame;
 ros::Publisher RadPub;
@@ -110,16 +112,23 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  turnRadarOn(s);
+  if (current_frame.can_id == 0xC1)
+  {
+    turnRadarOn(s, 1);
+  }
+  else
+  {
+    turnRadarOn(s, 2);
+  }
 
   int err_count = 0;
   msgs::Rad rad;
 
   while (ros::ok())
   {
-    cout << "=========================================" << endl;
     rad.radHeader.stamp = ros::Time::now();
     rad.radHeader.seq = seq++;
+    rad.radHeader.frame_id = "radar";
     count = 0;
     err_count = 0;
     msgs::PointXYZV point;
@@ -130,7 +139,7 @@ int main(int argc, char** argv)
       //        can_frame_tmp.data[0], can_frame_tmp.data[1], can_frame_tmp.data[2], can_frame_tmp.data[3],
       //        can_frame_tmp.data[4], can_frame_tmp.data[5], can_frame_tmp.data[6], can_frame_tmp.data[7]);
 
-      printf("[%04X] [%04X] \n", can_frame_tmp.can_id, current_frame.can_id);
+      // printf("[%04X] [%04X] \n", can_frame_tmp.can_id, current_frame.can_id);
 
       if (can_frame_tmp.can_id == current_frame.can_id)
       {
@@ -157,7 +166,10 @@ int main(int argc, char** argv)
     {
       ros::shutdown();
     }
-    printf("********************  count = %d  ******************\n", count);
+    if (debug_message)
+    {
+      printf("[%04X] **********  count = %d  **********\n", can_frame_tmp.can_id, count);
+    }
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -191,10 +203,12 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
     cout << "STITCHING PARAMETER FIND!" << endl;
   }
 
+  nh.param("/debug_message", debug_message, 0);
+
   int filter_id = 0;
   nh.getParam("filter_id", filter_id);
 
-  cout << "============id============  " << filter_id << endl;
+  cout << "  ============id============  " << filter_id << endl;
 
   switch (filter_id)
   {
@@ -247,22 +261,41 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   // radarParsing(t_frame);
 }
 
-void turnRadarOn(int s)
+void turnRadarOn(int s, int type)
 {
-
   cout << "============ radar on ============  " << current_frame.can_id << endl;
   // ============ turn alpha radar on ===============
   struct can_frame s_frame;
   s_frame.can_id = current_frame.can_id;
   s_frame.can_dlc = 8;
-  s_frame.data[0] = 0x61;
-  s_frame.data[1] = 0x72;
-  s_frame.data[2] = 0x20;
-  s_frame.data[3] = 0x31;
-  s_frame.data[4] = 0x20;
-  s_frame.data[5] = 0x32;
-  s_frame.data[6] = 0x20;
-  s_frame.data[7] = 0x32;
+
+  switch (type)
+  {
+    // 1: front radar, 2: corner radar
+    case 1:
+      s_frame.data[0] = 0x61;
+      s_frame.data[1] = 0x72;
+      s_frame.data[2] = 0x20;
+      s_frame.data[3] = 0x31;
+      s_frame.data[4] = 0x20;
+      s_frame.data[5] = 0x36;
+      s_frame.data[6] = 0x20;
+      s_frame.data[7] = 0x32;
+      break;
+    case 2:
+      s_frame.data[0] = 0x61;
+      s_frame.data[1] = 0x72;
+      s_frame.data[2] = 0x20;
+      s_frame.data[3] = 0x31;
+      s_frame.data[4] = 0x20;
+      s_frame.data[5] = 0x32;
+      s_frame.data[6] = 0x20;
+      s_frame.data[7] = 0x32;
+      break;
+    default:
+      break;
+  }
+
   int s_result = write(s, &s_frame, sizeof(s_frame));
 
   if (s_result != sizeof(s_frame))
@@ -346,7 +379,7 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
   //           << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
 
   // fill data to msg
-  point->x = x;
+  point->x = -x;
   point->y = y;
   point->z = -1;
   point->speed = vy;

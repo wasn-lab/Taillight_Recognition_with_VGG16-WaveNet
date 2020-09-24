@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
+#include <std_msgs/Empty.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <rosgraph_msgs/Clock.h>
 
@@ -785,6 +786,20 @@ static void Send_LidarResults_v2(CLUSTER_INFO* cluster_info, int cluster_size, r
     edge_contour_msg.header.stamp = rostime;
     edge_contour_msg.header.frame_id = frameId;
     edge_pub.publish(edge_contour_msg);
+  }
+
+  static void Send_LidarResultsHeartBeat()
+  {
+    static ros::Publisher hb_pub = ros::NodeHandle().advertise<std_msgs::Empty>("/LidarDetection/heartbeat", 1);
+    std_msgs::Empty empty_msg;
+    hb_pub.publish(empty_msg);
+  }
+
+  static void Send_LidarResultsGridHeartBeat()
+  {
+    static ros::Publisher grid_hb_pub = ros::NodeHandle().advertise<std_msgs::Empty>("/LidarDetection/grid/heartbeat", 1);
+    std_msgs::Empty empty_msg;
+    grid_hb_pub.publish(empty_msg);
   }
 };
 
