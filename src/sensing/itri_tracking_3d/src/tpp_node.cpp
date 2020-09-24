@@ -701,8 +701,8 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
       diff_y = route_left_transformed[0].y - route_right_transformed[0].y;
       double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
       cv::Point2f expand_point = route_left_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
+      expand_point.x = expand_point.x + diff_x / distance * expand_left_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_left_;
       expanded_route_left.push_back(expand_point);
     }
     else if (i == route_left_transformed.size() - 1)
@@ -713,8 +713,8 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
       diff_y = route_left_transformed.back().y - route_right_transformed.back().y;
       double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
       cv::Point2f expand_point = route_left_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_left;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_left;
+      expand_point.x = expand_point.x + diff_x / distance * expand_left_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_left_;
       expanded_route_left.push_back(expand_point);
     }
     else
@@ -727,8 +727,8 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
       double N_y = diff_x;
       double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
       cv::Point2f expand_point = route_left_transformed[i];
-      expand_point.x = expand_point.x + N_x / distance * expand_range_left;
-      expand_point.y = expand_point.y + N_y / distance * expand_range_left;
+      expand_point.x = expand_point.x + N_x / distance * expand_left_;
+      expand_point.y = expand_point.y + N_y / distance * expand_left_;
       expanded_route_left.push_back(expand_point);
     }
   }
@@ -744,8 +744,8 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
       diff_y = route_right_transformed[0].y - route_left_transformed[0].y;
       double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
       cv::Point2f expand_point = route_right_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
+      expand_point.x = expand_point.x + diff_x / distance * expand_right_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_right_;
       expanded_route_right.push_back(expand_point);
     }
     else if (i == route_left_transformed.size() - 1)
@@ -756,8 +756,8 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
       diff_y = route_right_transformed.back().y - route_left_transformed.back().y;
       double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
       cv::Point2f expand_point = route_right_transformed[i];
-      expand_point.x = expand_point.x + diff_x / distance * expand_range_right;
-      expand_point.y = expand_point.y + diff_y / distance * expand_range_right;
+      expand_point.x = expand_point.x + diff_x / distance * expand_right_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_right_;
       expanded_route_right.push_back(expand_point);
     }
     else
@@ -770,8 +770,8 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
       double N_y = (-1) * diff_x;
       double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
       cv::Point2f expand_point = route_right_transformed[i];
-      expand_point.x = expand_point.x + N_x / distance * expand_range_right;
-      expand_point.y = expand_point.y + N_y / distance * expand_range_right;
+      expand_point.x = expand_point.x + N_x / distance * expand_right_;
+      expand_point.y = expand_point.y + N_y / distance * expand_right_;
       expanded_route_right.push_back(expand_point);
     }
   }
@@ -1071,6 +1071,9 @@ void TPPNode::set_ros_params()
 
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
   nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
+
+  nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
+  nh_.param<double>(domain + "expand_right", expand_right_, 0.);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
