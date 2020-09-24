@@ -162,5 +162,22 @@
 /PedCross/3D_marker
 /Tracking2D
 
+#
+/traffic
+/gnss_utm_data
+/map/vector_map_marker
+/objects
+/planning/mission_planning/route_marker
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/blind_spot
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/intersection
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/stop_line
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/traffic_light
+/planning/scenario_planning/lane_driving/behavior_planning/path
+/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/marker
+/planning/scenario_planning/trajectory
+/veh_predictpath
+
 
 
