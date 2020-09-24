@@ -474,20 +474,20 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
       pcl::PointCloud<pcl::PointXYZI> points = cams_bboxs_points[cam_order][obj_index];
 
       /// bbox- L-shape
-      // msgs::BoxPoint box_point;
-      // box_point = g_object_generator.pointsToLShapeBBox(points, msg_obj.classId);
-      // if (!(box_point.p0.x == 0 && box_point.p0.y == 0 && box_point.p0.z == 0 && box_point.p6.x == 0 &&
-      //       box_point.p6.y == 0 && box_point.p6.z == 0))
-      // {
-      //   msg_obj.bPoint = box_point;
-      // }
-      // else
-      // {
-      //   /// bbox - pcl
-      //   MinMax3D cube_min_max;  // object min and max point
-      //   pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
-      //   msg_obj.bPoint = g_object_generator.minMax3dToBBox(cube_min_max);
-      // }
+      msgs::BoxPoint box_point;
+      box_point = g_object_generator.pointsToLShapeBBox(points, msg_obj.classId);
+      if (!(box_point.p0.x == 0 && box_point.p0.y == 0 && box_point.p0.z == 0 && box_point.p6.x == 0 &&
+            box_point.p6.y == 0 && box_point.p6.z == 0))
+      {
+        msg_obj.bPoint = box_point;
+      }
+      else
+      {
+        /// bbox - pcl
+        MinMax3D cube_min_max;  // object min and max point
+        pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
+        msg_obj.bPoint = g_object_generator.minMax3dToBBox(cube_min_max);
+      }
 
       /// polygon - ApproxMVBB
       pcl::PointCloud<pcl::PointXYZ> convex_points;
