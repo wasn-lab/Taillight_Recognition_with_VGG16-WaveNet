@@ -27,11 +27,6 @@ fi
 source devel/setup.bash
 
 python src/car_model/scripts/gen_drivenet_engine.py
-# cache *.engine for quick loading
-for engine in `find src/sensing -name "*.engine"`; do
-  cat $engine > /dev/null 2>&1
-done
-
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v2.test
 #rostest car_model publish_test_tpp_b1_v2.test
@@ -46,5 +41,4 @@ rostest car_model publish_test_geofence_pp_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
 rostest car_model publish_test_target_planner_b1_v2.test
 rostest car_model publish_test_drivenet_b1_v2_sidecam_3dobj.test
-
 popd
