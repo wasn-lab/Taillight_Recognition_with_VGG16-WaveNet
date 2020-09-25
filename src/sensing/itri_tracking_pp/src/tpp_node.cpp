@@ -255,6 +255,9 @@ void TPPNode::subscribe_and_advertise_topics()
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
+#if HEARTBEAT == 1
+  pp_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(topic + std::string("/heartbeat"), 1);
+#endif
 #if TO_GRIDMAP
   pp_grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("PathPredictionOutput/grid", 2);
 #endif
@@ -782,6 +785,10 @@ void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& 
   }
 
   pub.publish(msg);
+#if HEARTBEAT == 1
+  std_msgs::Empty msg_heartbeat;
+  pp_pub_heartbeat_.publish(msg_heartbeat);
+#endif
 
   if (gen_markers_)
   {
