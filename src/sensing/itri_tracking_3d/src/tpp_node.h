@@ -109,8 +109,8 @@ private:
   double ego_vely_abs_kmph_ = 0.;
 
 #if PP_FILTER_DRIVABLE_AREA == 1
-  double expand_range_left = 3.5;
-  double expand_range_right = 0.;
+  double expand_left_ = 2.2;
+  double expand_right_ = 0.;
 
   std::vector<cv::Point3f> lanelet2_route_left;
   std::vector<cv::Point3f> lanelet2_route_right;
