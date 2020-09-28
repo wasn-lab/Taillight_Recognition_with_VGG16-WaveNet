@@ -34,7 +34,8 @@ def localization_state_func(msg):
 
 
 class Heartbeat(object):
-    def __init__(self, module_name, topic, message_type, fps_low, fps_high, inspect_message_contents, latch):
+    def __init__(self, module_name, topic, message_type, fps_low, fps_high,
+                 inspect_message_contents, latch):
         # expected module stats
         self.module_name = module_name
         self.topic = topic
@@ -43,10 +44,10 @@ class Heartbeat(object):
         self.latch = latch
         self.inspect_func = None
         self.message_type = message_type
-        if inspect_message_contents:
-            if module_name == "localization_state":
-                rospy.logwarn("%s: register inspection function for message", module_name)
-                self.inspect_func = localization_state_func
+        self.inspect_message_contents = inspect_message_contents
+        if module_name == "localization_state":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = localization_state_func
 
         # internal variables:
         self.heap = []
@@ -60,10 +61,12 @@ class Heartbeat(object):
         self.status_str = ""
 
         if not self.latch:
-            rospy.logwarn("%s: subscribe %s with type %s", self.module_name, self.topic, message_type)
-            ret = rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
+            rospy.logwarn("%s: subscribe %s with type %s",
+                          self.module_name, self.topic, message_type)
+            rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
         else:
-            rospy.logwarn("%s: subscribe latched %s with type %s", self.module_name, self.topic, message_type)
+            rospy.logwarn("%s: subscribe latched %s with type %s",
+                          self.module_name, self.topic, message_type)
 
     def to_dict(self):
         self._update_status()
@@ -105,7 +108,8 @@ class Heartbeat(object):
             self.status_str = "FPS too low: {:.2f}".format(fps)
         if fps == 0:
             self.status = "ERROR"
-            self.status_str = "{} is offline! No message from {}".format(self.module_name, self.topic)
+            self.status_str = "{} is offline! No message from {}".format(
+                self.module_name, self.topic)
 
     def _update_heap(self):
         now = time.time()
@@ -116,8 +120,7 @@ class Heartbeat(object):
 
     def update_latched_message(self):
         self.got_latched_msg = False
-        ret = rospy.Subscriber(self.topic, get_message_type_by_str(self.message_type), self.cb_latch)
-        ret = None
+        rospy.Subscriber(self.topic, get_message_type_by_str(self.message_type), self.cb_latch)
 
     def cb_latch(self, msg):
         if self.inspect_func is not None:
@@ -125,6 +128,16 @@ class Heartbeat(object):
         self.got_latched_msg = True
 
     def heartbeat_cb(self, msg):
-        if self.inspect_func is not None:
+        if self.inspect_message_contents:
             self.msg = msg
         self._update_heap()
+
+    def get_ego_speed(self):
+        if self.msg is None:
+            rospy.logerr("%s: No ego_speed, not receive data yet", self.module_name)
+            return float("inf")
+
+        if self.module_name != "VehInfo":
+            raise ValueError("Do not call get_ego_speed() in module {}".format(self.module_name))
+
+        return self.msg.ego_speed

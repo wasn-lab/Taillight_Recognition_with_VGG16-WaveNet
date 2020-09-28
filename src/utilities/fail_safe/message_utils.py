@@ -1,5 +1,5 @@
 from std_msgs.msg import Bool, Empty, Int32
-from msgs.msg import DetectedObjectArray
+from msgs.msg import DetectedObjectArray, VehInfo
 
 def get_message_type_by_str(msg_name):
     if msg_name == "Empty":
@@ -10,3 +10,5 @@ def get_message_type_by_str(msg_name):
         return Bool
     if msg_name == "DetectedObjectArray":
         return DetectedObjectArray
+    if msg_name == "VehInfo":
+        return VehInfo

@@ -1,6 +1,7 @@
 import configparser
 import rospy
 import json
+import pprint
 from collections import Counter
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
@@ -21,6 +22,7 @@ def _overall_status_str(module_states):
 
 class FailSafeChecker():
     def __init__(self, cfg_ini, mqtt_ini):
+        self.debug_mode = False
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
@@ -47,6 +49,9 @@ class FailSafeChecker():
         # change the state into next level (warn->error, error->fatal)
         self.warn_count = 0
         self.error_count = 0
+
+    def set_debug_mode(self, mode):
+        self.debug_mode = mode
 
     def get_current_status(self):
         ret = {"states": [self.heartbeats[_].to_dict() for _ in self.heartbeats],
@@ -78,6 +83,8 @@ class FailSafeChecker():
         while not rospy.is_shutdown():
             for module in self.latched_modules:
                 self.heartbeats[module].update_latched_message()
-            jdata = json.dumps(self.get_current_status())
-            self.mqtt_client.publish(self.mqtt_topic, jdata)
+            current_status = self.get_current_status()
+            if self.debug_mode:
+                pprint.pprint(current_status)
+            self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
             rate.sleep()
