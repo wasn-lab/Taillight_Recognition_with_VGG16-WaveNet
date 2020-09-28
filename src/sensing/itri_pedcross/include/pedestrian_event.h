@@ -8,7 +8,10 @@
 #include <sensor_msgs/Image.h>
 #include <tf/tf.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/PolygonStamped.h>
+#include <geometry_msgs/Point32.h>
 #include <nav_msgs/Path.h>
 #include "msgs/VehInfo.h"
 #include "msgs/BoxPoint.h"
@@ -16,6 +19,7 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
 #include "msgs/PedObjectArray.h"
+#include "autoware_planning_msgs/Trajectory.h"
 #include "msgs/PredictSkeleton.h"
 #include "msgs/Keypoints.h"
 #include "msgs/Keypoint.h"
@@ -79,6 +83,8 @@ public:
   void run();
   void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
+  void lanelet2_trajectory_callback(const autoware_planning_msgs::Trajectory::ConstPtr& msg);
+  void lanelet2_route_callback(const visualization_msgs::MarkerArray::ConstPtr& msg);
   void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
@@ -104,9 +110,10 @@ public:
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
-  float predict_rf(cv::Mat input_data);
   float predict_rf_pose(const cv::Mat& input_data);
-  bool too_far(const msgs::BoxPoint box_point);
+  bool filter(const msgs::BoxPoint box_point, ros::Time time_stamp);
+  bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
+
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
   float adjust_probability(msgs::PedObject obj);
@@ -128,6 +135,9 @@ public:
   // All buffer components
   msgs::VehInfo veh_info;
   std::vector<cv::Point2f> nav_path;
+  std::vector<cv::Point3f> lanelet2_route_left;
+  std::vector<cv::Point3f> lanelet2_route_right;
+  std::vector<cv::Point2f> lanelet2_trajectory;
   std::string time_nav_path = "NA";
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
   boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache;
@@ -157,7 +167,11 @@ public:
   ros::Publisher box_pub_left;
   ros::Publisher box_pub_right;
   ros::Publisher box_pub_fov30;
-  ros::Publisher alert_pub;
+  ros::Publisher alert_pub_front;
+  ros::Publisher alert_pub_left;
+  ros::Publisher alert_pub_right;
+  ros::Publisher alert_pub_fov30;
+  ros::Publisher warning_zone_pub;
   ros::Time total_time;
   tf2_ros::Buffer tfBuffer;
 
