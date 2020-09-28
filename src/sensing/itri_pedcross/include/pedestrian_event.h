@@ -155,6 +155,15 @@ public:
   std::vector<SkeletonBuffer> skeleton_buffer_fov30;
   int buffer_size = 60;
 
+  // mutex for each bufffer component
+  std::mutex mu_veh_info;
+  std::mutex mu_lanelet2_route;
+  std::mutex mu_lanelet2_trajectory;
+  std::mutex mu_image_cache;
+  std::mutex mu_ped_info;
+  std::mutex mu_buffer;
+  std::mutex mu_skeleton_buffer;
+
   // ROS components
   ros::ServiceClient skip_frame_client;
   ros::Publisher chatter_pub_front;
