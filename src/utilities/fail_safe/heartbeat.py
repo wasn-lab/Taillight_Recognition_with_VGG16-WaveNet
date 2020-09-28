@@ -140,4 +140,4 @@ class Heartbeat(object):
         if self.module_name != "VehInfo":
             raise ValueError("Do not call get_ego_speed() in module {}".format(self.module_name))
 
-        return self.msg.ego_speed
+        return int(self.msg.ego_speed)
