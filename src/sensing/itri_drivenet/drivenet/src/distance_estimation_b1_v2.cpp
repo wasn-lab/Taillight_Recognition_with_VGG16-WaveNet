@@ -814,6 +814,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 
   return point8;
 }
+
 msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 {
   msgs::PointXYZ p0;
@@ -876,3 +877,45 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 
   return p0;
 }
+
+std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* box)
+{
+  std::vector<ITRI_Bbox> &box2 = *box;
+  for (auto const& box1 : *box)
+  {
+    for (uint i = 0; i < box2.size(); i++)
+    {
+      int status = 0;
+      if(box1.x1 == box2[i].x1 && box1.y1 == box2[i].y1)
+      {
+        continue;
+      }
+
+      if(box1.x1 < box2[i].x1 && box1.y1 < box2[i].y1 && box1.x2 > box2[i].x2 && box1.y2 > box2[i].y2)
+      {
+        status = 1;
+      }
+      else if(box1.x1 < box2[i].x1 && box1.x2 > box2[i].x1 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 && box1.x2 < box2[i].x2)
+      {
+        status = 2;
+      }
+      else if(box1.x1 < box2[i].x2 && box1.x2 > box2[i].x2 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 && box1.x1 > box2[i].x1)
+      {
+        status = 3;        
+      }
+
+      if(status == 2)
+      {
+        box2[i].x1 = box1.x2;
+      }
+      else if(status == 3)
+      {
+        box2[i].x2 = box1.x1;        
+      }    
+    }
+  }  
+  std::vector<ITRI_Bbox>* out = &box2;
+  
+  return out;
+}
+
