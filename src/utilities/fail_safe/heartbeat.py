@@ -107,9 +107,13 @@ class Heartbeat(object):
             self.status = "WARN"
             self.status_str = "FPS too low: {:.2f}".format(fps)
         if fps == 0:
-            self.status = "ERROR"
-            self.status_str = "{} is offline! No message from {}".format(
-                self.module_name, self.topic)
+            if self.moduel_name == "nav_path_astar_final":
+                self.status = "FATAL"
+                self.status_str = "Cannot update local path."
+            else:
+                self.status = "ERROR"
+                self.status_str = "{} is offline! No message from {}".format(
+                    self.module_name, self.topic)
 
     def _update_heap(self):
         now = time.time()
