@@ -2,6 +2,7 @@ import configparser
 import rospy
 import json
 import pprint
+import time
 from collections import Counter
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
@@ -56,6 +57,7 @@ class FailSafeChecker():
     def get_current_status(self):
         ret = {"states": [self.heartbeats[_].to_dict() for _ in self.heartbeats],
                "events": [],
+               "timestamp": time.time()
                }
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
