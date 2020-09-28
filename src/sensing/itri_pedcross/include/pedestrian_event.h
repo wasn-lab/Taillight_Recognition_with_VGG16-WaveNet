@@ -134,7 +134,6 @@ public:
 
   // All buffer components
   msgs::VehInfo veh_info;
-  std::vector<cv::Point2f> nav_path;
   std::vector<cv::Point3f> lanelet2_route_left;
   std::vector<cv::Point3f> lanelet2_route_right;
   std::vector<cv::Point2f> lanelet2_trajectory;
@@ -150,7 +149,6 @@ public:
   Buffer buffer_left;
   Buffer buffer_right;
   Buffer buffer_fov30;
-  // pair(track id, skeleton[x1,y1,x2,y2...])
   std::vector<SkeletonBuffer> skeleton_buffer_front;
   std::vector<SkeletonBuffer> skeleton_buffer_left;
   std::vector<SkeletonBuffer> skeleton_buffer_right;

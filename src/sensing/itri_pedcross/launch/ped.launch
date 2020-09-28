@@ -2,11 +2,11 @@
 
 <launch>
   <!-- pedcross input source -->
-  <!-- 0: camera front center -->
-  <!-- 1: camera front left -->
-  <!-- 2: camera front right -->
-  <!-- 3: tracking with camera front center -->
-  <!-- 4: tracking with front/left/right cameras -->
+  <!-- 0: N/A -->
+  <!-- 1: N/A -->
+  <!-- 2: N/A -->
+  <!-- 3: N/A -->
+  <!-- 4: tracking with front/left/right/fov30 cameras -->
   <arg name="input_source" default="4" />
 
   <!-- Set max distance(m) to predict pedestrians -->

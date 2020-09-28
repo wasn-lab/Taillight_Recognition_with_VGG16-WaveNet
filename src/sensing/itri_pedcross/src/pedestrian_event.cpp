@@ -332,45 +332,6 @@ void PedestrianEvent::lanelet2_trajectory_callback(const autoware_planning_msgs:
 #endif
 }
 
-void PedestrianEvent::nav_path_callback(const nav_msgs::Path::ConstPtr& msg)
-{
-  ros::Time start;
-  start = ros::Time::now();
-  nav_path.clear();
-  std::vector<cv::Point2f>().swap(nav_path);
-  nav_path.reserve(200);
-
-  for (auto const& obj : msg->poses)
-  {
-    geometry_msgs::TransformStamped transform_stamped;
-    try
-    {
-      transform_stamped = tfBuffer.lookupTransform("base_link", "map", msg->header.stamp, ros::Duration(0.5));
-#if PRINT_MESSAGE
-      std::cout << transform_stamped << std::endl;
-#endif
-    }
-    catch (tf2::TransformException& ex)
-    {
-      ROS_WARN("%s", ex.what());
-      ros::Duration(1.0).sleep();
-      continue;
-    }
-    geometry_msgs::PoseStamped point_out;
-    tf2::doTransform(obj, point_out, transform_stamped);
-
-    cv::Point2f point;
-    point.x = point_out.pose.position.x;
-    point.y = point_out.pose.position.y;
-    nav_path.emplace_back(point);
-  }
-
-  time_nav_path = std::to_string(start.toSec());
-#if PRINT_MESSAGE
-  std::cout << "Path buffer time cost: " << ros::Time::now() - start << std::endl;
-#endif
-}
-
 void PedestrianEvent::cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
   cache_image_callback(msg, front_image_cache);
@@ -741,39 +702,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         }
         obj_pub.facing_direction = get_facing_direction(keypoints);
         // obj_pub.body_direction = get_body_direction(keypoints);
-        /*
-              cv::Point p;
-              p.x = 303;
-              p.y = 275;
-              cv::Point p2;
-              p2.x = 303;
-              p2.y = 383;
-              cv::line(matrix2, p, p2, cv::Scalar(0, 0, 255), 1);
-              cv::Point p3;
-              p3.x = 403;
-              p3.y = 383;
-              cv::line(matrix2, p, p3, cv::Scalar(0, 0, 200), 1);
-              cv::Point p4;
-              p4.x = 503;
-              p4.y = 383;
-              cv::line(matrix2, p, p4, cv::Scalar(0, 0, 155), 1);
-              cv::Point p5;
-              p5.x = 603;
-              p5.y = 383;
-              cv::line(matrix2, p, p5, cv::Scalar(0, 0, 200), 1);
-              cv::Point p6;
-              p6.x = 203;
-              p6.y = 383;
-              cv::line(matrix2, p, p6, cv::Scalar(0, 0, 155), 1);
-              cv::Point p7;
-              p7.x = 53;
-              p7.y = 383;
-              cv::line(matrix2, p, p7, cv::Scalar(0, 0, 200), 1);
-              cv::Point p8;
-              p8.x = -247;
-              p8.y = 383;
-              cv::line(matrix2, p, p8, cv::Scalar(0, 0, 155), 1);
-        */
 
         // only for front camera
         if (from_camera == 0)
@@ -1053,11 +981,7 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
   {
     return obj.crossProbability * 0.8;
   }
-  // if (std::fabs(x-303)<300*(y-275)/108)
-  // {
-  // return obj.crossProbability*0.7;
-  // }
-  // std::fabs(x-303)>=300*(y-275)/108
+
   return obj.crossProbability * 0.7;
 }
 
@@ -1260,105 +1184,31 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     }
 
     std::string id_print = "[" + std::to_string(obj.track.id % 1000) + "]";
-    // cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0),
-    // 2, 4, false);
 
-    // box.x -= 0;
     // draw face direction
     if (obj.facing_direction == 4)  // no direction
     {
       id_print += "     ";
-      // facing left hand side
-      // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-      // 4, false);
     }
     else if (obj.facing_direction == 0)
     {
       id_print += "left ";
-      // facing left hand side
-      // cv::putText(matrix, "<-", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-      // 4, false);
     }
     else if (obj.facing_direction == 1)
     {
       id_print += "right";
-      // facing right hand side
-      // cv::putText(matrix, "->", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2,
-      // 4,
-      // 0);
     }
     else if (obj.facing_direction == 2)
     {
       id_print += "back ";
-      // facing car side
-      // cv::putText(matrix, "O", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-      // false);
     }
     else
     {
       id_print += "front";
-      // facing car opposite side
-      // cv::putText(matrix, "X", box.tl(), cv::FONT_HERSHEY_SIMPLEX, 1 /*font size*/, cv::Scalar(100, 220, 0), 2, 4,
-      // false);
     }
     cv::putText(matrix, id_print, box.tl(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 1, 2,
                 false);
 
-    //   cv::Rect box2 = box;
-    //   box.y += 30;
-    //   box2.y += 30;
-    //   box2.width = 0;
-    //   // draw left leg direction
-    //   if (obj.body_direction / 10 == 0)
-    //   {
-    //     // facing left hand side
-    //     cv::putText(matrix, "<-", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-    //   else if (obj.body_direction / 10 == 1)
-    //   {
-    //     // facing right hand side
-    //     cv::putText(matrix, "->", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-    //   else if (obj.body_direction / 10 == 2)
-    //   {
-    //     // facing car side
-    //     cv::putText(matrix, "O", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-    //   else
-    //   {
-    //     // facing car opposite side
-    //     cv::putText(matrix, "X", box2.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-
-    //   // draw right leg direction
-    //   if (obj.body_direction % 10 == 0)
-    //   {
-    //     // facing left hand side
-    //     cv::putText(matrix, "<-", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-    //   else if (obj.body_direction % 10 == 1)
-    //   {
-    //     // facing right hand side
-    //     cv::putText(matrix, "->", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-    //   else if (obj.body_direction % 10 == 2)
-    //   {
-    //     // facing car side
-    //     cv::putText(matrix, "O", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
-    //   else
-    //   {
-    //     // facing car opposite side
-    //     cv::putText(matrix, "X", box.br(), cv::FONT_HERSHEY_SIMPLEX, 0.5 /*font size*/, cv::Scalar(100, 220, 0), 2,
-    //     4, false);
-    //   }
     ped_info.insert(ped_info.begin(), id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) +
                                           " y: " + std::to_string((int)obj.bPoint.p0.y) +
                                           " keypoints number: " + std::to_string(keypoint_number));
@@ -2012,67 +1862,7 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_12;
   ros::Subscriber sub_13;
   ros::Subscriber sub_14;
-  if (input_source == 0)
-  {
-    sub_1 = nh_sub_1.subscribe("/cam_obj/front_bottom_60", 1, &PedestrianEvent::front_callback,
-                               this);  // /CamObjFrontCenter is sub topic
-    sub_2 = nh_sub_2.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
-                               this);  // /cam/F_center is sub topic
-    sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
-                               this);  // /cam/F_center is sub topic
-    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
-                               this);  // /cam/F_center is sub topic
-    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic*/
-    sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
-                               this);  // /cam/F_center is sub topic
-  }
-  else if (input_source == 1)
-  {
-    sub_1 = nh_sub_1.subscribe("/cam_obj/left_back_60", 1, &PedestrianEvent::front_callback,
-                               this);  // /CamObjFrontLeft is sub topic
-    sub_2 = nh_sub_2.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_front_image_callback,
-                               this);  // /cam/F_left is sub topic
-    sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
-                               this);  // /cam/F_center is sub topic
-    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
-                               this);  // /cam/F_center is sub topic
-    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic*/
-    sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
-                               this);  // /cam/F_center is sub topic
-  }
-  else if (input_source == 2)
-  {
-    sub_1 = nh_sub_1.subscribe("/cam_obj/right_back_60", 1, &PedestrianEvent::front_callback,
-                               this);  // /CamObjFrontRight is sub topic
-    sub_2 = nh_sub_2.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_front_image_callback,
-                               this);  // /cam/F_right is sub topic
-    sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
-                               this);  // /cam/F_center is sub topic
-    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
-                               this);  // /cam/F_center is sub topic
-    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic*/
-    sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
-                               this);  // /cam/F_center is sub topic
-  }
-  else if (input_source == 3)
-  {
-    sub_1 = nh_sub_1.subscribe("/Tracking2D", 1, &PedestrianEvent::front_callback,
-                               this);  // /PathPredictionOutput is sub topic
-    sub_2 = nh_sub_2.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
-                               this);  // /cam/F_right is sub topic
-    sub_3 = nh_sub_3.subscribe("/nav_path_astar_final", 1, &PedestrianEvent::nav_path_callback,
-                               this);  // /cam/F_center is sub topic
-    sub_4 = nh_sub_4.subscribe("/veh_info", 1, &PedestrianEvent::veh_info_callback,
-                               this);  // /cam/F_center is sub topic
-    /*sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60_crop", 1, &PedestrianEvent::cache_crop_image_callback,
-                               this);  // /cam/F_center is sub topic*/
-    sub_6 = nh_sub_6.subscribe("/PedCross/Pedestrians", 1, &PedestrianEvent::draw_ped_front_callback,
-                               this);  // /cam/F_center is sub topic
-  }
-  else  // if (input_source == 4)
+  if (input_source ==4)  // if (input_source == 4)
   {
     sub_1 = nh_sub_1.subscribe("/Tracking2D/front_bottom_60", 1, &PedestrianEvent::front_callback,
                                this);  // /Tracking2D/front_bottom_60 is subscirbe topic
