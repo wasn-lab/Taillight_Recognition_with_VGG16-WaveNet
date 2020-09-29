@@ -12,8 +12,8 @@ import cv2,os
 import numpy as np
 from opticalflow_motion_ros_20200828 import ObjectDetectionsWithOpticalFlow as optical
 import sys 
-#sys.path.append('/home/jason/gitlab/itriadv/devel/lib/python2.7/dist-packages')
-sys.path.append('/home/lipei/u-ros-system/itriadv/devel/lib/python2.7/dist-packages')
+sys.path.append('/home/jason/gitlab/itriadv/devel/lib/python2.7/dist-packages')
+#sys.path.append('/home/lipei/u-ros-system/itriadv/devel/lib/python2.7/dist-packages')
 
 from msgs.msg import DetectedObjectArray
 queue = []
