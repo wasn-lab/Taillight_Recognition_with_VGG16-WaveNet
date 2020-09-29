@@ -566,7 +566,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         std::vector<SkeletonBuffer> temp_skeleton_buffer;
         {
           std::lock_guard<std::mutex> lk(mu_skeleton_buffer);
-          temp_skeleton_buffer.assign(skeleton_buffer.begin(),skeleton_buffer.end());
+          temp_skeleton_buffer.assign(skeleton_buffer.begin(), skeleton_buffer.end());
         }
         for (unsigned int i = 0; i < temp_skeleton_buffer.size(); i++)
         {
@@ -685,7 +685,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           std::lock_guard<std::mutex> lk(mu_skeleton_buffer);
           skeleton_buffer.erase(skeleton_buffer.begin(), skeleton_buffer.end());
           std::vector<SkeletonBuffer>().swap(skeleton_buffer);
-          skeleton_buffer.assign(temp_skeleton_buffer.begin(),temp_skeleton_buffer.end());
+          skeleton_buffer.assign(temp_skeleton_buffer.begin(), temp_skeleton_buffer.end());
           temp_skeleton_buffer.erase(temp_skeleton_buffer.begin(), temp_skeleton_buffer.end());
           std::vector<SkeletonBuffer>().swap(temp_skeleton_buffer);
         }
@@ -1642,7 +1642,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
   {
     return true;
   }
-  
+
   geometry_msgs::TransformStamped transform_stamped;
   try
   {
@@ -1933,7 +1933,7 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_12;
   ros::Subscriber sub_13;
   ros::Subscriber sub_14;
-  if (input_source ==4)  // if (input_source == 4)
+  if (input_source == 4)  // if (input_source == 4)
   {
     sub_1 = nh_sub_1.subscribe("/Tracking2D/front_bottom_60", 1, &PedestrianEvent::front_callback,
                                this);  // /Tracking2D/front_bottom_60 is subscirbe topic
@@ -2192,10 +2192,14 @@ int main(int argc, char** argv)
   pe.box_pub_right =
       nh6.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh7;
-  pe.alert_pub_front = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_bottom_60", 1);  // /PedCross/DrawBBox is pub topic
-  pe.alert_pub_left = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
-  pe.alert_pub_right = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
-  pe.alert_pub_fov30 = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_top_far_30", 1);  // /PedCross/DrawBBox is pub topic
+  pe.alert_pub_front = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_bottom_60",
+                                                                1);  // /PedCross/DrawBBox is pub topic
+  pe.alert_pub_left =
+      nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
+  pe.alert_pub_right =
+      nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
+  pe.alert_pub_fov30 = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_top_far_30",
+                                                                1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh8;
   pe.warning_zone_pub =
       nh8.advertise<geometry_msgs::PolygonStamped>("/PedCross/Polygon", 1);  // /PedCross/DrawBBox is pub topic

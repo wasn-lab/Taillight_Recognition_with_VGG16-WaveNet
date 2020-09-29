@@ -79,14 +79,10 @@ void AlertCollector::alert_collector()
   ros::Subscriber sub_3;
   ros::Subscriber sub_4;
 
-  sub_1 = nh_sub_1.subscribe("/PedCross/Alert/front_bottom_60", 1, &AlertCollector::alert_front_callback,
-                             this);
-  sub_2 = nh_sub_2.subscribe("/PedCross/Alert/left_back_60", 1, &AlertCollector::alert_left_callback,
-                             this);
-  sub_3 = nh_sub_3.subscribe("/PedCross/Alert/right_back_60", 1, &AlertCollector::alert_right_callback,
-                             this);
-  sub_3 = nh_sub_4.subscribe("/PedCross/Alert/front_top_far_30", 1, &AlertCollector::alert_fov30_callback,
-                             this);
+  sub_1 = nh_sub_1.subscribe("/PedCross/Alert/front_bottom_60", 1, &AlertCollector::alert_front_callback, this);
+  sub_2 = nh_sub_2.subscribe("/PedCross/Alert/left_back_60", 1, &AlertCollector::alert_left_callback, this);
+  sub_3 = nh_sub_3.subscribe("/PedCross/Alert/right_back_60", 1, &AlertCollector::alert_right_callback, this);
+  sub_3 = nh_sub_4.subscribe("/PedCross/Alert/front_top_far_30", 1, &AlertCollector::alert_fov30_callback, this);
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
   g_spinner_1.reset(new ros::AsyncSpinner(0, &queue_1));
