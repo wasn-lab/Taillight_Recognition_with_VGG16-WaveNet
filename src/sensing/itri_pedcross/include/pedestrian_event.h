@@ -105,7 +105,7 @@ public:
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
-  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
+  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f>& keypoint, int id,
                          ros::Time time, Buffer& buffer);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
@@ -119,16 +119,13 @@ public:
   float adjust_probability(msgs::PedObject obj);
   int get_facing_direction(const std::vector<cv::Point2f>& keypoints);
   int get_body_direction(const std::vector<cv::Point2f>& keypoints);
-  double get_tranform_yaw(double x, double y, double z, double w);
-  geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
-                                                geometry_msgs::Vector3 translation);
   void display_on_terminal();
 
   // OpenPose components
   int openPoseROS();
-  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat& mat);
   bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr);
-  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
+  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat& input_image);
   openpose_ros::OpenPose openPose;
   cv::dnn::Net net_openpose;
 
