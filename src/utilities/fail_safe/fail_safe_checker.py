@@ -57,11 +57,11 @@ class FailSafeChecker():
         self.debug_mode = mode
 
     def get_current_status(self):
-        ret = {"states": [self.modules[_].to_dict() for _ in self.modules],
+        ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": [],
                "timestamp": time.time()
                }
-        ret["states"] += self.ctrl_info_03.get_status_in_list()
+        ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
 
