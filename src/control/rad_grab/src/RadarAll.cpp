@@ -6,7 +6,9 @@
 
 // For ROS
 #include "ros/ros.h"
-#include "std_msgs/Header.h"
+#include <std_msgs/Header.h>
+#include <std_msgs/Empty.h>
+
 #include "std_msgs/String.h"
 #include "msgs/Rad.h"
 #include "msgs/BoxPoint.h"
@@ -32,6 +34,7 @@
 using namespace std;
 
 ros::Publisher RadFrontPub;
+ros::Publisher HeartbeatPub;
 
 double imu_angular_velocity_z = 0;
 int do_rotate = 0;
@@ -137,6 +140,13 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
   }
 }
 
+void msgPublisher()
+{
+  std_msgs::Empty empty_msg;
+  HeartbeatPub.publish(empty_msg);
+}
+
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Rad_Filter");
@@ -148,6 +158,7 @@ int main(int argc, char** argv)
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
+  HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/Heartbeat", 1);
 
   ros::Rate rate(20);
   while (ros::ok())
@@ -158,6 +169,7 @@ int main(int argc, char** argv)
       std::cout << "=================================== Radar Detection ==============================" << std::endl;
       print_count = 0;
     }
+    msgPublisher();
     ros::spinOnce();
     rate.sleep();
   }
