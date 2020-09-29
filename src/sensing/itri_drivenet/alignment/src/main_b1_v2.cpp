@@ -998,7 +998,6 @@ void getSyncLidarCameraData()
           {
             sync_times_it = std::find(lidar_ssn_times_tmp.begin(), lidar_ssn_times_tmp.end(), sync_lidar_time);
             sync_time_index = std::distance(lidar_ssn_times_tmp.begin(), sync_times_it);
-            // std::cout << "lidar_ssn_times_tmp.size(): " << lidar_ssn_times_tmp.size() << std::endl;
             // std::cout << "lidar_ssn_times_tmp[sync_time_index]: " << sync_time_index << ":" << lidar_ssn_times_tmp[sync_time_index] <<
             // std::endl;
             if (sync_time_index == lidar_ssn_times_tmp.size())
@@ -1008,31 +1007,21 @@ void getSyncLidarCameraData()
               ros::Duration diff_time;
               bool have_candidate = false;
               std::vector<int> diff_time_nsec(lidar_ssn_times_tmp.size());
-              // std::cout << "sync_lidar_time: " << sync_lidar_time << std::endl;
               for (size_t i = 0; i < lidar_ssn_times_tmp.size(); i++)
               {
-                // std::cout << "lidar_ssn_times_tmp: " << lidar_ssn_times_tmp[i] << std::endl;
                 diff_time_nsec[i] = nsec_max_time.nsec;
-                // std::cout << "diff_time_nsec[i]: " << diff_time_nsec[i] << std::endl;
                 if(lidar_ssn_times_tmp[i] <= sync_lidar_time)
                 {
-                  // std::cout << "lidar_ssn_times_tmp[i] <= sync_lidar_time" << std::endl;
                   diff_time = sync_lidar_time - lidar_ssn_times_tmp[i];
-                  // std::cout << "diff_time: " << diff_time << std::endl;
                   if (diff_time.sec == 0)
                   {
-                    // std::cout << "diff_time.sec: " << diff_time.sec << std::endl;
                     if (diff_time < diff_max_time)
                     {
-                      // std::cout << "diff_time.nsec: " << diff_time.nsec << std::endl;
                       diff_time_nsec[i] = diff_time.nsec;
                       have_candidate = true;
-                      // std::cout << i << ": " << ssn_tmp[i] << " = " << lidar_ssn_times_tmp[i] << "-" << sync_lidar_time << std::endl;
                     }
                   }
                 }
-                // std::cout << "lidar_ssn_times_tmp[sync_time_index]: " << sync_time_index-i << ":" << lidar_ssn_times_tmp[sync_time_index-i] <<
-                // std::endl;
               }
               if(have_candidate)
               {
