@@ -926,7 +926,6 @@ void getSyncLidarCameraData()
 
           /// lidar
           ros::Time sync_lidar_time = lidarall_times_tmp[sync_time_index];
-          // std::cout << "sync_lidar_time: " << sync_lidar_time.sec << "." << sync_lidar_time.nsec << std::endl;
           if (sync_lidar_time == ros::Time(0))
           {
             for (size_t index = sync_time_index; index < lidarall_times_tmp.size(); index++)
@@ -944,6 +943,7 @@ void getSyncLidarCameraData()
           }
           else
           {
+            // std::cout << "sync_lidar_time: " << sync_time_index << " : " << sync_lidar_time.sec << "." << sync_lidar_time.nsec << std::endl;
             pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr =
                 getSpecificTimeLidarMessage(g_cache_lidarall, sync_lidar_time, duration_time);
             if (lidar_ptr != nullptr)
@@ -994,46 +994,93 @@ void getSyncLidarCameraData()
           //   }
           // }
           /// lidar ssn
-          sync_times_it = std::find(lidar_ssn_times_tmp.begin(), lidar_ssn_times_tmp.end(), sync_lidar_time);
-          sync_time_index = std::distance(lidar_ssn_times_tmp.begin(), sync_times_it);
-          // std::cout << "lidar_ssn_times_tmp[sync_time_index]: " << lidar_ssn_times_tmp[sync_time_index] <<
-          // std::endl;
-          if (sync_times_it != lidar_ssn_times_tmp.end())
+          if (is_lidar_update)
           {
-            ros::Time sync_lidar_ssn_time = lidar_ssn_times_tmp[sync_time_index];
-            // std::cout << "sync_lidar_ssn_time: " << sync_lidar_ssn_time.sec << "." << sync_lidar_ssn_time.nsec <<
+            sync_times_it = std::find(lidar_ssn_times_tmp.begin(), lidar_ssn_times_tmp.end(), sync_lidar_time);
+            sync_time_index = std::distance(lidar_ssn_times_tmp.begin(), sync_times_it);
+            // std::cout << "lidar_ssn_times_tmp.size(): " << lidar_ssn_times_tmp.size() << std::endl;
+            // std::cout << "lidar_ssn_times_tmp[sync_time_index]: " << sync_time_index << ":" << lidar_ssn_times_tmp[sync_time_index] <<
             // std::endl;
-
-            if (sync_lidar_ssn_time == ros::Time(0))
+            if (sync_time_index == lidar_ssn_times_tmp.size())
             {
-              for (size_t index = sync_time_index; index < lidar_ssn_times_tmp.size(); index++)
+              ros::Duration diff_max_time(0.1);
+              ros::Duration nsec_max_time(0.999999999);
+              ros::Duration diff_time;
+              bool have_candidate = false;
+              std::vector<int> diff_time_nsec(lidar_ssn_times_tmp.size());
+              // std::cout << "sync_lidar_time: " << sync_lidar_time << std::endl;
+              for (size_t i = 0; i < lidar_ssn_times_tmp.size(); i++)
               {
-                if (lidar_ssn_times_tmp[index] != ros::Time(0))
+                // std::cout << "lidar_ssn_times_tmp: " << lidar_ssn_times_tmp[i] << std::endl;
+                diff_time_nsec[i] = nsec_max_time.nsec;
+                // std::cout << "diff_time_nsec[i]: " << diff_time_nsec[i] << std::endl;
+                if(lidar_ssn_times_tmp[i] <= sync_lidar_time)
                 {
-                  sync_lidar_ssn_time = lidar_ssn_times_tmp[index];
-                  break;
+                  // std::cout << "lidar_ssn_times_tmp[i] <= sync_lidar_time" << std::endl;
+                  diff_time = sync_lidar_time - lidar_ssn_times_tmp[i];
+                  // std::cout << "diff_time: " << diff_time << std::endl;
+                  if (diff_time.sec == 0)
+                  {
+                    // std::cout << "diff_time.sec: " << diff_time.sec << std::endl;
+                    if (diff_time < diff_max_time)
+                    {
+                      // std::cout << "diff_time.nsec: " << diff_time.nsec << std::endl;
+                      diff_time_nsec[i] = diff_time.nsec;
+                      have_candidate = true;
+                      // std::cout << i << ": " << ssn_tmp[i] << " = " << lidar_ssn_times_tmp[i] << "-" << sync_lidar_time << std::endl;
+                    }
+                  }
+                }
+                // std::cout << "lidar_ssn_times_tmp[sync_time_index]: " << sync_time_index-i << ":" << lidar_ssn_times_tmp[sync_time_index-i] <<
+                // std::endl;
+              }
+              if(have_candidate)
+              {
+                std::vector<int>::iterator result_iter = std::min_element(diff_time_nsec.begin(), diff_time_nsec.end());
+                sync_time_index = std::distance(diff_time_nsec.begin(), result_iter);
+              }
+            }
+            // std::cout << "lidar_ssn_times_tmp[sync_time_index]: " << sync_time_index << ":" << lidar_ssn_times_tmp[sync_time_index] <<
+            // std::endl;
+            if (sync_time_index < lidar_ssn_times_tmp.size())
+            {
+              ros::Time sync_lidar_ssn_time = lidar_ssn_times_tmp[sync_time_index];
+              // std::cout << "sync_lidar_ssn_time: " << sync_lidar_ssn_time.sec << "." << sync_lidar_ssn_time.nsec <<
+              // std::endl;
+
+              if (sync_lidar_ssn_time == ros::Time(0))
+              {
+                for (size_t index = sync_time_index; index < lidar_ssn_times_tmp.size(); index++)
+                {
+                  if (lidar_ssn_times_tmp[index] != ros::Time(0))
+                  {
+                    sync_lidar_ssn_time = lidar_ssn_times_tmp[index];
+                    break;
+                  }
+                }
+              }
+              if (sync_lidar_ssn_time == ros::Time(0))
+              {
+                is_lidar_ssn_update = false;
+              }
+              else
+              {
+                // std::cout << "sync_lidar_ssn_time: " << sync_lidar_ssn_time.sec << "." << sync_lidar_ssn_time.nsec <<
+                // std::endl;
+                pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ssn_ptr =
+                    getSpecificTimeLidarMessage(g_cache_lidar_ssn, sync_lidar_ssn_time, duration_time);
+                if (lidar_ssn_ptr != nullptr)
+                {
+                  std::lock_guard<std::mutex> lock_lidar_ssn(g_mutex_lidar_ssn);
+                  *g_lidar_ssn_ptr = *lidar_ssn_ptr;
+                  is_lidar_ssn_update = true;
                 }
               }
             }
-            if (sync_lidar_ssn_time == ros::Time(0))
-            {
-              is_lidar_ssn_update = false;
-            }
             else
             {
-              pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ssn_ptr =
-                  getSpecificTimeLidarMessage(g_cache_lidar_ssn, sync_lidar_ssn_time, duration_time);
-              if (lidar_ssn_ptr != nullptr)
-              {
-                std::lock_guard<std::mutex> lock_lidar_ssn(g_mutex_lidar_ssn);
-                *g_lidar_ssn_ptr = *lidar_ssn_ptr;
-                is_lidar_ssn_update = true;
-              }
+              std::cout << "Not found the same timestamp in lidar ssn time buffer." << std::endl;
             }
-          }
-          else
-          {
-            std::cout << "Not found the same timestamp in lidar ssn time buffer." << std::endl;
           }
         }
         else
