@@ -1619,7 +1619,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
   position.x = box_point.p0.x;
   position.y = box_point.p0.y;
 
-  if (position.x > max_distance)
+  if (position.x > max_distance || position.x < -3)
   {
     return true;
   }
