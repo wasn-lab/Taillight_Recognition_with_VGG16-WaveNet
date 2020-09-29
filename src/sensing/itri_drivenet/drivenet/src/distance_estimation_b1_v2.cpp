@@ -890,6 +890,11 @@ std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* bo
       {
         continue;
       }
+      
+      // status 1: One of the box is fully inside another box.
+      // status 2: Box's left bottom point is in another box.
+      // status 3: Box's right bottom point is in another box.
+
 
       if(box1.x1 < box2[i].x1 && box1.y1 < box2[i].y1 && box1.x2 > box2[i].x2 && box1.y2 > box2[i].y2)
       {
