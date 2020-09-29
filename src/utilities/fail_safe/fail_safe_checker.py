@@ -19,7 +19,7 @@ def _overall_status(module_states):
 
 def _overall_status_str(module_states):
     mnames = [_["module"] for _ in module_states if _["status"] != "OK"]
-    return "Misbehaving moudles: {}".format(" ".join(mnames))
+    return "Misbehaving modules: {}".format(" ".join(mnames))
 
 
 class FailSafeChecker():
@@ -64,6 +64,10 @@ class FailSafeChecker():
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
+
+        if self.modules["3d_object_detection"].get_fps() + self.modules["LidarDetection"].get_fps() == 0:
+            ret["status"] = "FATAL"
+            ret["status_str"] += "; Cam/Lidar detection offline at the same time"
 
         if ret["status"] == "WARN":
             self.warn_count += 1

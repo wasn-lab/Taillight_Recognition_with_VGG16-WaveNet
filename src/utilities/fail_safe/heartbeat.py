@@ -74,7 +74,7 @@ class Heartbeat(object):
                 "status": self.status,
                 "status_str": self.status_str}
 
-    def _get_fps(self):
+    def get_fps(self):
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_status(self):
@@ -95,7 +95,7 @@ class Heartbeat(object):
             self.status_str = "{}: No latched message.".format(self.topic)
 
     def _update_status_heartbeat(self):
-        fps = self._get_fps()
+        fps = self.get_fps()
         if fps >= self.fps_low and fps <= self.fps_high:
             self.status = "OK"
             self.status_str = "FPS: {:.2f}".format(fps)
@@ -112,8 +112,7 @@ class Heartbeat(object):
                 self.status_str = "Cannot update local path."
             else:
                 self.status = "ERROR"
-                self.status_str = "{} is offline! No message from {}".format(
-                    self.module_name, self.topic)
+                self.status_str = "No message from {}".format(self.topic)
 
     def _update_heap(self):
         now = time.time()
