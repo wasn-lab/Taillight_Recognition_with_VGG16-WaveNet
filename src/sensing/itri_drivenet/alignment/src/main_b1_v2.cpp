@@ -906,7 +906,6 @@ void getSyncLidarCameraData()
 
               if (!message_mat.empty())
               {
-                std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
                 g_mats[cam_order] = message_mat;
                 is_cameras_update[cam_order] = true;
               }
@@ -946,7 +945,6 @@ void getSyncLidarCameraData()
                 getSpecificTimeLidarMessage(g_cache_lidarall, sync_lidar_time, duration_time);
             if (lidar_ptr != nullptr)
             {
-              std::lock_guard<std::mutex> lock_lidar_raw(g_mutex_lidar_raw);
               *g_lidarall_ptr = *lidar_ptr;
               is_lidar_update = true;
             }
@@ -1058,7 +1056,6 @@ void getSyncLidarCameraData()
                     getSpecificTimeLidarMessage(g_cache_lidar_ssn, sync_lidar_ssn_time, duration_time);
                 if (lidar_ssn_ptr != nullptr)
                 {
-                  std::lock_guard<std::mutex> lock_lidar_ssn(g_mutex_lidar_ssn);
                   *g_lidar_ssn_ptr = *lidar_ssn_ptr;
                   is_lidar_ssn_update = true;
                 }
@@ -1125,7 +1122,6 @@ void runInference()
       /// copy camera data
       for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
       {
-        std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
         cam_mats[cam_order] = g_mats[cam_order].clone();
 
         if (!g_data_sync)
@@ -1151,7 +1147,6 @@ void runInference()
       }
       else
       {
-        std::lock_guard<std::mutex> lock_objects_process(g_mutex_objects_process);
         object_arrs = g_object_arrs_process;
         is_object_update = g_is_object_update;
       }
@@ -1164,13 +1159,8 @@ void runInference()
       }
 
       /// copy lidar data
-      std::lock_guard<std::mutex> lock_lidar_raw(g_mutex_lidar_raw);
       pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
-
-      // std::lock_guard<std::mutex> lock_lidar_nonground(g_mutex_lidar_nonground);
       // pcl::copyPointCloud(*g_lidarall_nonground_ptr, *lidarall_nonground_ptr);
-
-      std::lock_guard<std::mutex> lock_lidar_ssn(g_mutex_lidar_ssn);
       pcl::copyPointCloud(*g_lidar_ssn_ptr, *lidar_ssn_ptr);
 
       if (!g_data_sync)
