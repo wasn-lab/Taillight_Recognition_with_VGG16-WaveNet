@@ -15,6 +15,7 @@ class CtrlInfo03(object):
         self.heap = []
         self.sampling_period_in_seconds = 30 / self.fps_low
         self.aeb_enable = False
+        self.acc_enable = False
         self.xbywire_enable = False
 
         # runtime status
@@ -22,17 +23,6 @@ class CtrlInfo03(object):
         self.status_str = ""
 
         rospy.Subscriber(CtrlInfo03.TOPIC, Flag_Info, self._cb)
-
-    def _get_xbywire_status(self):
-        if self.xbywire_enable:
-            status = "OK"
-            status_str = ""
-        else:
-            status = "FATAL"
-            status_str = "XByWire not enabled!"
-        return {"module": "XByWire",
-                "status": status,
-                "status_str": status_str}
 
     def _get_aeb_status(self):
         if self.aeb_enable:
@@ -45,8 +35,32 @@ class CtrlInfo03(object):
                 "status": status,
                 "status_str": status_str}
 
+    def _get_acc_status(self):
+        if self.acc_enable:
+            status = "OK"
+            status_str = ""
+        else:
+            status = "FATAL"
+            status_str = "ACC not enabled!"
+        return {"module": "ACC",
+                "status": status,
+                "status_str": status_str}
+
+    def _get_xbywire_status(self):
+        if self.xbywire_enable:
+            status = "OK"
+            status_str = ""
+        else:
+            status = "FATAL"
+            status_str = "XByWire not enabled!"
+        return {"module": "XByWire",
+                "status": status,
+                "status_str": status_str}
+
     def get_status_in_list(self):
-        ret = [self._get_aeb_status(), self._get_xbywire_status()]
+        ret = [self._get_acc_status(),
+               self._get_aeb_status(),
+               self._get_xbywire_status()]
         self._reset()
         return ret
 
@@ -54,6 +68,7 @@ class CtrlInfo03(object):
         fps = self._get_fps()
         if fps == 0:
             self.aeb_enable = False
+            self.acc_enable = False
             self.xbywire_enable = False
 
     def _get_fps(self):
@@ -70,3 +85,4 @@ class CtrlInfo03(object):
         self._update_heap()
         self.xbywire_enable = bool(int(msg.Dspace_Flag06))
         self.aeb_enable = bool(int(msg.Dspace_Flag07))
+        self.acc_enable = bool(int(msg.Dspace_Flag08))
