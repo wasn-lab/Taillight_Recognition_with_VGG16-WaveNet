@@ -15,6 +15,7 @@ class CtrlInfo03(object):
         self.heap = []
         self.sampling_period_in_seconds = 30 / self.fps_low
         self.aeb_enable = False
+        self.xbywire_enable = False
 
         # runtime status
         self.status = "UNKNOWN"
@@ -22,6 +23,16 @@ class CtrlInfo03(object):
 
         rospy.Subscriber(CtrlInfo03.TOPIC, Flag_Info, self._cb)
 
+    def _get_xbywire_status(self):
+        if self.xbywire_enable:
+            status = "OK"
+            status_str = ""
+        else:
+            status = "FATAL"
+            status_str = "XByWire not enabled!"
+        return {"module": "XByWire",
+                "status": status,
+                "status_str": status_str}
 
     def _get_aeb_status(self):
         if self.aeb_enable:
@@ -35,7 +46,7 @@ class CtrlInfo03(object):
                 "status_str": status_str}
 
     def get_status_in_list(self):
-        ret = [self._get_aeb_status()]
+        ret = [self._get_aeb_status(), self._get_xbywire_status()]
         self._reset()
         return ret
 
@@ -43,6 +54,7 @@ class CtrlInfo03(object):
         fps = self._get_fps()
         if fps == 0:
             self.aeb_enable = False
+            self.xbywire_enable = False
 
     def _get_fps(self):
         return len(self.heap) / self.sampling_period_in_seconds
@@ -56,4 +68,5 @@ class CtrlInfo03(object):
 
     def _cb(self, msg):
         self._update_heap()
+        self.xbywire_enable = bool(int(msg.Dspace_Flag06))
         self.aeb_enable = bool(int(msg.Dspace_Flag07))
