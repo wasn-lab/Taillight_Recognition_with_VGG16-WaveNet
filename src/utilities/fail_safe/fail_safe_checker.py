@@ -6,6 +6,7 @@ import time
 from collections import Counter
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
+from ctrl_info03 import CtrlInfo03
 
 
 def _overall_status(module_states):
@@ -27,11 +28,11 @@ class FailSafeChecker():
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
-        self.heartbeats = {}
+        self.modules = {}
         cfg.read(cfg_ini)
         self.latched_modules = []
         for module in cfg.sections():
-            self.heartbeats[module] = Heartbeat(
+            self.modules[module] = Heartbeat(
                 module, cfg[module]["topic"],
                 cfg[module].get("message_type", "Empty"),
                 cfg[module].getfloat("fps_low"),
@@ -40,6 +41,7 @@ class FailSafeChecker():
                 cfg[module].getboolean("latch"))
             if cfg[module].getboolean("latch"):
                 self.latched_modules.append(module)
+        self.ctrl_info_03 = CtrlInfo03()
 
         mqtt_cfg = configparser.ConfigParser()
         mqtt_cfg.read(mqtt_ini)
@@ -55,10 +57,11 @@ class FailSafeChecker():
         self.debug_mode = mode
 
     def get_current_status(self):
-        ret = {"states": [self.heartbeats[_].to_dict() for _ in self.heartbeats],
+        ret = {"states": [self.modules[_].to_dict() for _ in self.modules],
                "events": [],
                "timestamp": time.time()
                }
+        ret["states"] += self.ctrl_info_03.get_status_in_list()
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
 
@@ -84,7 +87,7 @@ class FailSafeChecker():
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             for module in self.latched_modules:
-                self.heartbeats[module].update_latched_message()
+                self.modules[module].update_latched_message()
             current_status = self.get_current_status()
             if self.debug_mode:
                 pprint.pprint(current_status)

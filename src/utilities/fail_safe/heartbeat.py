@@ -107,7 +107,7 @@ class Heartbeat(object):
             self.status = "WARN"
             self.status_str = "FPS too low: {:.2f}".format(fps)
         if fps == 0:
-            if self.moduel_name == "nav_path_astar_final":
+            if self.module_name == "nav_path_astar_final":
                 self.status = "FATAL"
                 self.status_str = "Cannot update local path."
             else:
