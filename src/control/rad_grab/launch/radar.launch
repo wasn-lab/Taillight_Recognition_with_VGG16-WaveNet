@@ -9,8 +9,9 @@
 	<arg name="radar_enable" default="1" />
 	<arg name="delphi_enable" default="1" />
 	<arg name="umec_enable" default="0" />
+	<arg name="cubtek_enable" default="0" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="1" />
+	<arg name="alpha_front_enable" default="0" />
 	<arg name="alpha_side_enable" default="0" />
 	<arg name="alpha_back_enable" default="0" />
 	<rosparam param="debug_message">1</rosparam>
@@ -18,6 +19,7 @@
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
 	<rosparam param="Delphi_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Umec_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
+	<rosparam param="Cubtek_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Alpha_Front_Center_Param">[1, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Alpha_Front_Right_Param">[1, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Alpha_Front_Left_Param">[1, 0, 0, 0, 0, 0]</rosparam>
@@ -36,7 +38,14 @@
 	<!-- ************ Delphi Front Center ************ -->
 	<group if="$(eval arg('delphi_enable') != 0)">
 
-		<node pkg="rad_grab" type="radfront_delphi" name="radfront_delphi" output="screen" cwd="node" />
+		<node pkg="rad_grab" type="rad_delphi" name="rad_delphi" output="screen" cwd="node" />
+
+	</group>
+
+	<!-- ************ Cubtek Front Center ************ -->
+	<group if="$(eval arg('cubtek_enable') != 0)">
+
+		<node pkg="rad_grab" type="rad_cubtek" name="rad_cubtek_front" output="screen" cwd="node" />
 
 	</group>
 

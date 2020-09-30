@@ -33,6 +33,8 @@
 
 using namespace std;
 
+void msgPublisher();
+
 ros::Publisher RadFrontPub;
 ros::Publisher HeartbeatPub;
 
@@ -108,6 +110,7 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
   rad.radHeader.stamp = msg->radHeader.stamp;
   rad.radHeader.seq = msg->radHeader.seq;
   RadFrontPub.publish(rad);
+  msgPublisher();
 }
 
 void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
@@ -153,12 +156,12 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
-  ros::Subscriber DelphiFrontSub = n.subscribe("RadFrontDelphi", 1, callbackDelphiFront);
+  ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
   // ros::Subscriber AlphiFrontSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFront);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
-  HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/Heartbeat", 1);
+  HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/heartbeat", 1);
 
   ros::Rate rate(20);
   while (ros::ok())
@@ -166,10 +169,9 @@ int main(int argc, char** argv)
     print_count++;
     if (print_count > 60)
     {
-      std::cout << "=================================== Radar Detection ==============================" << std::endl;
+      std::cout << "========================== Radar Detection ========================" << std::endl;
       print_count = 0;
     }
-    msgPublisher();
     ros::spinOnce();
     rate.sleep();
   }

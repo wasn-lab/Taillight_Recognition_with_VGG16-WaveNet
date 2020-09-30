@@ -50,9 +50,9 @@ add_definitions(${PCL_DEFINITIONS})
 ###########
 include_directories(${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
-add_executable(radfront_delphi src/RadFrontDelphi.cpp)
-target_link_libraries(radfront_delphi ${catkin_LIBRARIES})
-add_dependencies(radfront_delphi ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(rad_delphi src/RadDelphi.cpp)
+target_link_libraries(rad_delphi ${catkin_LIBRARIES})
+add_dependencies(rad_delphi ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(rad_alpha src/RadAlpha.cpp)
 target_link_libraries(rad_alpha ${catkin_LIBRARIES})
