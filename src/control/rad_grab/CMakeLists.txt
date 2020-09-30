@@ -62,9 +62,9 @@ add_executable(rad_cubtek src/RadCub.cpp)
 target_link_libraries(rad_cubtek ${catkin_LIBRARIES})
 add_dependencies(rad_cubtek ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(radar_all src/RadarAll.cpp)
-target_link_libraries(radar_all ${catkin_LIBRARIES})
-add_dependencies(radar_all ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(rad_all src/RadAll.cpp)
+target_link_libraries(rad_all ${catkin_LIBRARIES})
+add_dependencies(rad_all ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 #add_executable(radfrontsub_rviz src/RadFrontSub_rviz.cpp)
 #target_link_libraries(radfrontsub_rviz ${catkin_LIBRARIES})

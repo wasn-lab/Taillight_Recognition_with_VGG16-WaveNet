@@ -31,7 +31,7 @@
 	<!-- ************ Radar Detection ************ -->
 	<group if="$(eval arg('radar_enable') != 0)">
 
-		<node pkg="rad_grab" type="radar_all" name="radar_all" output="screen" cwd="node" respawn="true" />
+		<node pkg="rad_grab" type="rad_all" name="rad_all" output="screen" cwd="node" respawn="true" />
 
 	</group>
 

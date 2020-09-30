@@ -152,7 +152,7 @@ void msgPublisher()
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "Rad_Filter");
+  ros::init(argc, argv, "RadAll");
 
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
