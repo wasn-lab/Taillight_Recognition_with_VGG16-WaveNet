@@ -136,7 +136,8 @@ bool RosImagePubSub::send_image(const int topic_id, const cv::Mat& content_in)
 bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_in)
 {
   cv::Mat mat_img;
-  cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
+  //cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
+  mat_img = content_in; //Jason add 
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter

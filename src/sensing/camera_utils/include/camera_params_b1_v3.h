@@ -2,11 +2,11 @@
    CREATER: ICL U300
    DATE: Oct, 2019
  */
-#ifndef __CAMERA_PARAMS_B1_V2_H__
-#define __CAMERA_PARAMS_B1_V2_H__
+#ifndef __CAMERA_PARAMS_B1_V3_H__
+#define __CAMERA_PARAMS_B1_V3_H__
 
 #include "car_model.h"
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
+#if CAR_MODEL_IS_B1_V3
 #include <cmath>
 #include <string>
 
@@ -18,22 +18,21 @@ enum id
   begin = 0,
   front_bottom_60 = begin,  // 0
   front_top_far_30,         // 1
-  front_bottom_60_crop,     // 2
-  _dummy1,                  // 3  // NOLINT
-  front_top_close_120,      // 4
-  right_front_60,           // 5
-  right_back_60,            // 6
-  _dummy2,                  // 7  // NOLINT
-  left_front_60,            // 8
-  left_back_60,             // 9
-  back_top_120,             // 10
-  _dummy3,                  // 11  // NOLINT
-  num_ids                   // 12
+  _dummy1,                  // 2   // NOLINT
+  front_top_close_120,      // 3  
+  right_front_60,           // 4
+  right_back_60,            // 5
+  _dummy2,                  // 6   // NOLINT
+  left_front_60,            // 7  
+  left_back_60,             // 8
+  back_top_120,             // 9
+  _dummy3,                  // 10  // NOLINT
+  num_ids                   // 11                      
 };
 
 static_assert(id::begin == 0, "The first camera id is 0");
 static_assert(id::front_bottom_60 == 0, "The camera id 0 is also front_bottom_60");
-static_assert(id::num_ids == 12, "The number of ids is 12");
+static_assert(id::num_ids == 11, "The number of ids is 11");
 
 extern const std::string names[id::num_ids];
 extern const std::string topics[id::num_ids];
@@ -78,11 +77,6 @@ constexpr int image_crop_height = 314;
 constexpr int image_crop_xstart = 0;
 constexpr int image_crop_ystart = 692;
 
-// Parameters for crop image in grabber (for gstreamer camera)
-constexpr int image_crop_width_gstreamer = 1280;
-constexpr int image_crop_height_gstreamer = 314;
-constexpr int image_crop_xstart_gstreamer = 0;
-constexpr int image_crop_ystart_gstreamer = 392;
 
 // Parameters for resizing 1920x1208 to 608x608(yolov3 default size)
 constexpr double image_ratio_on_yolov3 = 608.0 / raw_image_width;
@@ -102,5 +96,5 @@ static_assert(yolov3_letterbox_visible_height + npp_top_border + npp_top_border 
 constexpr int top_border_608x384 = (yolov3_image_height - 384) / 2;
 constexpr int bottom_border_608x384 = top_border_608x384;
 }  // namespace camera
-#endif  // CAR_MODEL_IS_B1_V2
-#endif  // __CAMERA_PARAMS_B1_V2_H__
+#endif  // CAR_MODEL_IS_B1_V3
+#endif  // __CAMERA_PARAMS_B1_V3_H__

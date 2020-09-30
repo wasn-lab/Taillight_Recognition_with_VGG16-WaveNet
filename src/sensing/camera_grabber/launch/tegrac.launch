@@ -1,13 +1,13 @@
 <!-- -*- mode: XML -*- -->
 
 <launch>
-  <node name="camera_a_grabber"
+  <node name="camera_c_grabber"
     pkg="camera_grabber"
     type="camera_grabber_node"
     args="
     -mode c
     -expected_fps 22
-    -do_resize=false
+    -do_resize=true
     -do_crop=false
     "
     output="screen"

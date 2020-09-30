@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.1)
 project(car_model)
 
-set(CAR_MODEL "B1_V2" CACHE STRING "Car model (B1, B1_V2, C, HINO, OMNIBUS)")
-set_property(CACHE CAR_MODEL PROPERTY STRINGS B1 B1_V2 C HINO OMNIBUS)
+set(CAR_MODEL "B1_V2" CACHE STRING "Car model (B1, B1_V2, B1_V3, C, HINO, OMNIBUS)")
+set_property(CACHE CAR_MODEL PROPERTY STRINGS B1 B1_V2 B1_V3 C HINO OMNIBUS)
 
 set(CAR_MODEL_IS_B1 0)
 set(CAR_MODEL_IS_B1_V2 0)
+set(CAR_MODEL_IS_B1_V3 0)
 set(CAR_MODEL_IS_C 0)
 set(CAR_MODEL_IS_HINO 0)
 set(CAR_MODEL_IS_OMNIBUS 0)
@@ -14,6 +15,8 @@ if ("${CAR_MODEL}" STREQUAL "B1")
   set(CAR_MODEL_IS_B1 1)
 elseif ("${CAR_MODEL}" STREQUAL "B1_V2")
   set(CAR_MODEL_IS_B1_V2 1)
+elseif ("${CAR_MODEL}" STREQUAL "B1_V3")
+  set(CAR_MODEL_IS_B1_V3 1)
 elseif ("${CAR_MODEL}" STREQUAL "C")
   set(CAR_MODEL_IS_C 1)
 elseif ("${CAR_MODEL}" STREQUAL "HINO")
@@ -32,6 +35,13 @@ option(ENABLE_OPENROADNET "Enable open road detection" ON)
 option(ENABLE_PEDCROSS "Enable pedestrian crossing detection" ON)
 option(ENABLE_GOOGLE_BENCHMARK "Enable google benchmark for perf profiling" OFF)
 include(cmake/Options${CAR_MODEL}.cmake)
+
+if (CAR_MODEL_IS_B1_V3)
+  option(ENABLE_CAMERA_GSTREAMER_GRABBER "Enable camera gstreamer grabber" ON)
+else ()
+  option(ENABLE_CAMERA_GSTREAMER_GRABBER "Eable camera gstreamer grabber" OFF)
+endif ()
+
 
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
