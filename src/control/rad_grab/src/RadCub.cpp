@@ -60,7 +60,7 @@ int main(int argc, char** argv)
   int send_one_frame = 0;
   int count = 0;
 
-  ros::init(argc, argv, "RadAlpha");
+  ros::init(argc, argv, "RadCub");
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
   ros::Rate loop_rate(20);
