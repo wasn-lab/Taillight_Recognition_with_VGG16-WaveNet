@@ -2,11 +2,11 @@
 
 <launch>
   <!-- pedcross input source -->
-  <!-- 0: camera front center -->
-  <!-- 1: camera front left -->
-  <!-- 2: camera front right -->
-  <!-- 3: tracking with camera front center -->
-  <!-- 4: tracking with front/left/right cameras -->
+  <!-- 0: N/A -->
+  <!-- 1: N/A -->
+  <!-- 2: N/A -->
+  <!-- 3: N/A -->
+  <!-- 4: tracking with front/left/right/fov30 cameras -->
   <arg name="input_source" default="4" />
 
   <!-- Set max distance(m) to predict pedestrians -->
@@ -28,6 +28,7 @@
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
   <node pkg="itri_pedcross" type="skip_frame_server.py" name="skip_frame_server" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="pedestrian_subscriber.py" name="pedestrian_subscriber" cwd="node" output="screen" />
+  <node pkg="itri_pedcross" type="alert_collector" name="alert_collector" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="itri_pedcross" name="pedestrian_event" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="max_distance" value="$(arg max_distance)" />
