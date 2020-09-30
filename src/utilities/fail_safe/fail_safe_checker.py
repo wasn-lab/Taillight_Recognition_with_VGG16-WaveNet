@@ -1,12 +1,13 @@
 import configparser
-import rospy
 import json
 import pprint
 import time
 from collections import Counter
+import rospy
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info03 import CtrlInfo03
+from can_checker import CanChecker
 
 
 def _overall_status(module_states):
@@ -22,7 +23,7 @@ def _overall_status_str(module_states):
     return "Misbehaving modules: {}".format(" ".join(mnames))
 
 
-class FailSafeChecker():
+class FailSafeChecker(object):
     def __init__(self, cfg_ini, mqtt_ini):
         self.debug_mode = False
         rospy.init_node("FailSafeChecker")
@@ -42,6 +43,7 @@ class FailSafeChecker():
             if cfg[module].getboolean("latch"):
                 self.latched_modules.append(module)
         self.ctrl_info_03 = CtrlInfo03()
+        self.can_checker = CanChecker()
 
         mqtt_cfg = configparser.ConfigParser()
         mqtt_cfg.read(mqtt_ini)
@@ -52,6 +54,7 @@ class FailSafeChecker():
         # change the state into next level (warn->error, error->fatal)
         self.warn_count = 0
         self.error_count = 0
+        self.seq = 1
 
     def set_debug_mode(self, mode):
         self.debug_mode = mode
@@ -59,8 +62,10 @@ class FailSafeChecker():
     def get_current_status(self):
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": [],
-               "timestamp": time.time()
-               }
+               "seq": self.seq,
+               "timestamp": time.time()}
+        self.seq += 1
+        ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
