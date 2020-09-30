@@ -61,7 +61,7 @@ class FailSafeChecker(object):
 
     def get_current_status(self):
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
-               "events": [],
+               "events": self.ctrl_info_03.get_events_in_list(),
                "seq": self.seq,
                "timestamp": time.time()}
         self.seq += 1

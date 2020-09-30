@@ -4,8 +4,18 @@ import rospy
 from msgs.msg import Flag_Info
 
 
+# Flag05 contents in self-driving mode
+class BrakeStatus:
+    N_UNPRESSED = 0
+    Y_OVER_SPEED = 1  # for over-speed
+    Y_ANCHORING = 2  # maintaining static to prevent from sliding
+    Y_AEB = 3        # AEB event
+    Y_MANUAL_BRAKE = 4  # driver press brake pedal
+
+
 class CtrlInfo03(object):
     TOPIC = "/Flag_Info03"
+
     def __init__(self):
         # expected module stats
         self.fps_low = 1
@@ -17,6 +27,7 @@ class CtrlInfo03(object):
         self.aeb_enable = False
         self.acc_enable = False
         self.xbywire_enable = False
+        self.brake_status = BrakeStatus.N_UNPRESSED
 
         # runtime status
         self.status = "UNKNOWN"
@@ -57,6 +68,24 @@ class CtrlInfo03(object):
                 "status": status,
                 "status_str": status_str}
 
+    def get_events_in_list(self):
+        status = ""
+        status_str = ""
+        if self.brake_status == BrakeStatus.Y_AEB:
+            status = "FATAL"
+            status_str = "AEB event!"
+        elif self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
+            status = "FATAL"
+            status_str = "Disengage: Driver manually press brake pedals!"
+
+        if status:
+            doc = {"module": "AEB",
+                   "status": status,
+                   "status_str": status_str}
+            return [doc]
+        else:
+            return []
+
     def get_status_in_list(self):
         ret = [self._get_acc_status(),
                self._get_aeb_status(),
@@ -83,6 +112,7 @@ class CtrlInfo03(object):
 
     def _cb(self, msg):
         self._update_heap()
+        self.brake_status = int(msg.Dspace_Flag05)
         self.xbywire_enable = bool(int(msg.Dspace_Flag06))
         self.aeb_enable = bool(int(msg.Dspace_Flag07))
         self.acc_enable = bool(int(msg.Dspace_Flag08))
