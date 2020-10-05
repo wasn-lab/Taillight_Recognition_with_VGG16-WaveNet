@@ -741,9 +741,9 @@ void displayLidarData()
     pcl_viewer->removeAllShapes();
 
     /// draw points on pcl viewer
-    std::lock_guard<std::mutex> lock_lidar_process(g_mutex_lidar_process);
+    std::unique_lock<std::mutex> lock_lidar_process(g_mutex_lidar_process, std::adopt_lock);
     pcl_viewer->addPointCloud<pcl::PointXYZI>(g_lidarall_ptr_process, rgb_lidarall, "Cloud viewer");  //, viewports[0]);
-
+    lock_lidar_process.unlock();
     pcl_viewer->addLine<pcl::PointXYZI>(point_50m.p_min, point_50m.p_max, color_50m[2], color_50m[1], color_50m[0],
                                         "line-50m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_40m.p_min, point_40m.p_max, color_40m[2], color_40m[1], color_40m[0],
@@ -765,7 +765,7 @@ void displayLidarData()
       //                                           g_bbox_topic_names[cam_order], viewports[2]);
 
       /// bbox - pcl
-      // std::lock_guard<std::mutex> lock_cube(g_mutex_cube);  // mutex camera cube
+      // std::unique_lock<std::mutex> lock_cube(g_mutex_cube, std::adopt_lock); // mutex camera cube
       // if (!g_cams_bboxs_cube_min_max[cam_order].empty())
       // {
       //   int cube_cout = 0;
@@ -783,7 +783,8 @@ void displayLidarData()
       //     cube_cout++;
       //   }
       // }
-      std::lock_guard<std::mutex> lock_polygon(g_mutex_polygon);  // mutex camera polygon
+      // lock_cube.unlock();
+      std::unique_lock<std::mutex> lock_polygon(g_mutex_polygon, std::adopt_lock); // mutex camera polygon
       if (!g_cams_bboxs_points[cam_order].empty())
       {
         int polygon_cout = 0;
@@ -797,6 +798,7 @@ void displayLidarData()
           polygon_cout++;
         }
       }
+      lock_polygon.unlock();
     }
     pcl_viewer->spinOnce();
     loop_rate.sleep();
@@ -817,8 +819,9 @@ void displayCameraData()
     {
       if (!g_mats_process[cam_order].empty())
       {
-        std::lock_guard<std::mutex> lock_cams_process(g_mutex_cams_process);  // mutex camera
+        std::unique_lock<std::mutex> lock_cams_process(g_mutex_cams_process, std::adopt_lock); // mutex camera
         cv::imshow(g_cam_topic_names[cam_order], g_mats_process[cam_order]);
+        lock_cams_process.unlock();
       }
     }
     cv::waitKey(1);
@@ -1199,11 +1202,12 @@ void runInference()
           drawBoxOnImages(cam_mats, object_arrs);
 
           /// prepare point cloud visualization
-          std::lock_guard<std::mutex> lock_lidar_process(g_mutex_lidar_process);
+          std::unique_lock<std::mutex> lock_lidar_process(g_mutex_lidar_process, std::adopt_lock);
           pcl::copyPointCloud(*lidarall_ptr, *g_lidarall_ptr_process);
+        
 
-          std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points);
-          std::lock_guard<std::mutex> lock_objects_points(g_mutex_objects_points);
+          std::unique_lock<std::mutex> lock_cams_points(g_mutex_cams_points, std::adopt_lock);
+          std::unique_lock<std::mutex> lock_objects_points(g_mutex_objects_points, std::adopt_lock);
           for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
           {
             pcl::copyPointCloud(*cams_points_ptr[cam_order], *g_cams_points_ptr[cam_order]);
@@ -1212,15 +1216,21 @@ void runInference()
 
           // std::lock_guard<std::mutex> lock_cube(g_mutex_cube);
           // g_cams_bboxs_cube_min_max = cams_bboxs_cube_min_max;
-          std::lock_guard<std::mutex> lock_polygon(g_mutex_polygon);
+          std::unique_lock<std::mutex> lock_polygon(g_mutex_polygon, std::adopt_lock);
           g_cams_bboxs_points = cams_bboxs_points;
 
           /// prepare image visualization
-          std::lock_guard<std::mutex> lock_cams_process(g_mutex_cams_process);
+          std::unique_lock<std::mutex> lock_cams_process(g_mutex_cams_process, std::adopt_lock);
           for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
           {
             g_mats_process[cam_order] = cam_mats[cam_order].clone();
           }
+
+          lock_lidar_process.unlock();
+          lock_cams_points.unlock();
+          lock_objects_points.unlock();
+          lock_polygon.unlock();
+          lock_cams_process.unlock();
         }
 
         release(cam_pixels);
