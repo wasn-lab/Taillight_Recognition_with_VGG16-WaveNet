@@ -72,9 +72,9 @@ int main(int argc, char** argv)
     std::cout << "Create success !!" << std::endl;
   }
 
-  ros::init(argc, argv, "RadFrontDelphi");
+  ros::init(argc, argv, "RadDelphi");
   ros::NodeHandle n;
-  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("RadFrontDelphi", 1);
+  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("DelphiFront", 1);
   ros::Rate loop_rate(20);
 
   float x, y, z, speed;
