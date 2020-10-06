@@ -2,6 +2,7 @@ import time
 import heapq
 import rospy
 from std_msgs.msg import Int8MultiArray
+from status_level import OK, UNKNOWN, FATAL
 
 
 class CanChecker(object):
@@ -20,7 +21,7 @@ class CanChecker(object):
 
         # runtime status
         self.module_name = "CAN"
-        self.status = "UNKNOWN"
+        self.status = UNKNOWN
         self.status_str = ""
 
         rospy.Subscriber(CanChecker.TOPIC, Int8MultiArray, self._cb)
@@ -29,16 +30,16 @@ class CanChecker(object):
         if self.can_encoded_states:
             ndown = sum(self.can_encoded_states)
             if self.can_encoded_states[-1] == CanChecker.NORMAL and ndown == 0:
-                status = "OK"
+                status = OK
                 status_str = ""
             elif self.can_encoded_states[-1] == CanChecker.NORMAL and ndown > 0:
-                status = "FATAL"
+                status = FATAL
                 status_str = "CAN communication is not stable"
             else:
-                status = "FATAL"
+                status = FATAL
                 status_str = "CAN communication is down"
         else:
-            status = "FATAL"
+            status = FATAL
             status_str = "No message from {}".format(CanChecker.TOPIC)
         return {"module": self.module_name, "status": status, "status_str": status_str}
 

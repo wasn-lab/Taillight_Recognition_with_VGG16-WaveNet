@@ -2,32 +2,33 @@ import time
 import heapq
 import rospy
 from message_utils import get_message_type_by_str
+from status_level import OK, WARN, ERROR, FATAL, UNKNOWN
 
 def localization_state_func(msg):
     if msg is None:
-        return "UNKNOWN", "UNKNOWN"
+        return UNKNOWN, "UNKNOWN"
     state = msg.data
     low_gnss_frequency = (state & 1) > 0
     low_lidar_frequency = (state & 2) > 0
     low_pose_frequency = (state & 4) > 0
     pose_unstable = (state & 8) > 0
     status_strs = []
-    status = "OK"
+    status = OK
 
     if low_gnss_frequency:
-        status = "WARN"
+        status = WARN
         status_strs.append("low_gnss_frequency")
 
     if low_lidar_frequency:
-        status = "WARN"
+        status = WARN
         status_strs.append("low_lidar_frequency")
 
     if low_pose_frequency:
-        status = "WARN"
+        status = WARN
         status_strs.append("low_pose_frequency")
 
     if pose_unstable:
-        status = "FATAL"
+        status = FATAL
         status_strs.append("pose_unstable")
 
     return status, " ".join(status_strs)
@@ -57,7 +58,7 @@ class Heartbeat(object):
 
         # runtime status
         self.alive = False
-        self.status = "UNKNOWN"
+        self.status = UNKNOWN
         self.status_str = ""
 
         if not self.latch:
@@ -88,30 +89,30 @@ class Heartbeat(object):
 
     def _update_status_latch(self):
         if self.got_latched_msg:
-            self.status = "OK"
+            self.status = OK
             self.status_str = "{}: Got latched message.".format(self.topic)
         else:
-            self.status = "ERROR"
+            self.status = ERROR
             self.status_str = "{}: No latched message.".format(self.topic)
 
     def _update_status_heartbeat(self):
         fps = self.get_fps()
         if fps >= self.fps_low and fps <= self.fps_high:
-            self.status = "OK"
+            self.status = OK
             self.status_str = "FPS: {:.2f}".format(fps)
 
         if fps > self.fps_high:
-            self.status = "WARN"
+            self.status = WARN
             self.status_str = "FPS too high: {:.2f}".format(fps)
         if fps < self.fps_low:
-            self.status = "WARN"
+            self.status = WARN
             self.status_str = "FPS too low: {:.2f}".format(fps)
         if fps == 0:
             if self.module_name == "nav_path_astar_final":
-                self.status = "FATAL"
+                self.status = FATAL
                 self.status_str = "Cannot update local path."
             else:
-                self.status = "ERROR"
+                self.status = ERROR
                 self.status_str = "No message from {}".format(self.topic)
 
     def _update_heap(self):

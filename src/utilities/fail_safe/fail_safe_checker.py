@@ -2,25 +2,21 @@ import configparser
 import json
 import pprint
 import time
-from collections import Counter
 import rospy
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from action_emitter import ActionEmitter
+from status_level import OK, WARN, ERROR, FATAL
 
 
 def _overall_status(module_states):
-    counter = Counter([_["status"] for _ in module_states])
-    for key in ["FATAL", "ERROR", "WARN"]:
-        if counter[key] > 0:
-            return key
-    return "OK"
+    return max(_["status"] for _ in module_states)
 
 
 def _overall_status_str(module_states):
-    mnames = [_["module"] for _ in module_states if _["status"] != "OK"]
+    mnames = [_["module"] for _ in module_states if _["status"] != OK]
     return "Misbehaving modules: {}".format(" ".join(mnames))
 
 
@@ -72,24 +68,25 @@ class FailSafeChecker(object):
         ret["status"] = _overall_status(ret["states"])
         ret["status_str"] = _overall_status_str(ret["states"])
 
-        if self.modules["3d_object_detection"].get_fps() + self.modules["LidarDetection"].get_fps() == 0:
-            ret["status"] = "FATAL"
+        if (self.modules["3d_object_detection"].get_fps() +
+                self.modules["LidarDetection"].get_fps()) == 0:
+            ret["status"] = FATAL
             ret["status_str"] += "; Cam/Lidar detection offline at the same time"
 
-        if ret["status"] == "WARN":
+        if ret["status"] == WARN:
             self.warn_count += 1
         else:
             self.warn_count = 0
         if self.warn_count > 10:
-            ret["status"] = "ERROR"
+            ret["status"] = ERROR
             ret["status_str"] = "WARN states more than 10 seconds"
 
-        if ret["status"] == "ERROR":
+        if ret["status"] == ERROR:
             self.error_count += 1
         else:
             self.error_count = 0
         if self.error_count > 10:
-            ret["status"] = "FATAL"
+            ret["status"] = FATAL
             ret["status_str"] = "ERROR states more than 10 seconds"
 
         return ret
@@ -102,7 +99,7 @@ class FailSafeChecker(object):
             current_status = self.get_current_status()
             if self.debug_mode:
                 pprint.pprint(current_status)
-            if current_status["status"] != "OK":
+            if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
             self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
             rate.sleep()

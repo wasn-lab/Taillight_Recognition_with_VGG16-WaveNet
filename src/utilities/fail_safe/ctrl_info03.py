@@ -2,6 +2,7 @@ import time
 import heapq
 import rospy
 from msgs.msg import Flag_Info
+from status_level import OK, FATAL, UNKNOWN
 
 
 # Flag05 contents in self-driving mode
@@ -30,17 +31,17 @@ class CtrlInfo03(object):
         self.brake_status = BrakeStatus.N_UNPRESSED
 
         # runtime status
-        self.status = "UNKNOWN"
+        self.status = UNKNOWN
         self.status_str = ""
 
         rospy.Subscriber(CtrlInfo03.TOPIC, Flag_Info, self._cb)
 
     def _get_aeb_status(self):
         if self.aeb_enable:
-            status = "OK"
+            status = OK
             status_str = ""
         else:
-            status = "FATAL"
+            status = FATAL
             status_str = "AEB not enabled!"
         return {"module": "AEB",
                 "status": status,
@@ -48,10 +49,10 @@ class CtrlInfo03(object):
 
     def _get_acc_status(self):
         if self.acc_enable:
-            status = "OK"
+            status = OK
             status_str = ""
         else:
-            status = "FATAL"
+            status = FATAL
             status_str = "ACC not enabled!"
         return {"module": "ACC",
                 "status": status,
@@ -59,10 +60,10 @@ class CtrlInfo03(object):
 
     def _get_xbywire_status(self):
         if self.xbywire_enable:
-            status = "OK"
+            status = OK
             status_str = ""
         else:
-            status = "FATAL"
+            status = FATAL
             status_str = "XByWire not enabled!"
         return {"module": "XByWire",
                 "status": status,
@@ -72,10 +73,10 @@ class CtrlInfo03(object):
         status = ""
         status_str = ""
         if self.brake_status == BrakeStatus.Y_AEB:
-            status = "FATAL"
+            status = FATAL
             status_str = "AEB event!"
         elif self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
-            status = "FATAL"
+            status = FATAL
             status_str = "Disengage: Driver manually press brake pedals!"
 
         if status:
@@ -83,8 +84,7 @@ class CtrlInfo03(object):
                    "status": status,
                    "status_str": status_str}
             return [doc]
-        else:
-            return []
+        return []
 
     def get_status_in_list(self):
         ret = [self._get_acc_status(),
