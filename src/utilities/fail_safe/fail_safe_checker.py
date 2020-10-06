@@ -8,6 +8,7 @@ from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
+from action_emitter import ActionEmitter
 
 
 def _overall_status(module_states):
@@ -49,6 +50,7 @@ class FailSafeChecker(object):
         mqtt_cfg.read(mqtt_ini)
         self.mqtt_client = ItriMqttClient(mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1"))
         self.mqtt_topic = mqtt_cfg["mqtt_topics"]["fail_safe"]
+        self.action_emitter = ActionEmitter()
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -100,5 +102,7 @@ class FailSafeChecker(object):
             current_status = self.get_current_status()
             if self.debug_mode:
                 pprint.pprint(current_status)
+            if current_status["status"] != "OK":
+                self.action_emitter.backup_rosbag(current_status["status_str"])
             self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
             rate.sleep()
