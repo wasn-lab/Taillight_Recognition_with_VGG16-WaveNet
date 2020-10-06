@@ -12,6 +12,7 @@ ros::Publisher goal_publisher;
 ros::Publisher checkpoint_publisher;
 
 int ORGS = 0;
+int route_choose = 1;
 
 double seg_x[2000] = {};
 double seg_y[2000] = {};
@@ -73,13 +74,13 @@ void Ini_route_01_bytxt()
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
 
-// void Ini_route_02_bytxt()
-// {
-//   std::string fpname = ros::package::getPath("mission_input");
-//   std::string fpname_s = fpname + "/data/ITRI_route_02.txt"; // full route
+void Ini_route_02_bytxt()
+{
+  std::string fpname = ros::package::getPath("mission_input");
+  std::string fpname_s = fpname + "/data/ITRI_route_02.txt"; // full route - pass 51
 
-//   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
-// }
+  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+}
 
 void Ini_busstop_bytxt()
 {
@@ -179,8 +180,14 @@ void offline_realtime_goal_setting()
 {
   if (ORGS == 0)
   {
-    Ini_route_01_bytxt();
-    // Ini_route_02_bytxt();
+    if (route_choose == 1)
+    {
+      Ini_route_01_bytxt();
+    }
+    else
+    {
+      Ini_route_02_bytxt();
+    }
     get_goal_point();
     get_checkpoint_point();
   }
@@ -234,6 +241,7 @@ int main(int argc, char** argv)
   ros::NodeHandle node;
 
   ros::param::get(ros::this_node::getName()+"/ORGS", ORGS);
+  ros::param::get(ros::this_node::getName()+"/route_choose", route_choose);
   ros::Subscriber busstopinfo = node.subscribe("/BusStop/Info", 1, busstopinfoCallback);
   goal_publisher = node.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10, true);
   checkpoint_publisher = node.advertise<geometry_msgs::PoseStamped>("/checkpoint", 10, true);
