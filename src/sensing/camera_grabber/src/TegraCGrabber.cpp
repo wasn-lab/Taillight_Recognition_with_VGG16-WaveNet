@@ -23,7 +23,7 @@ TegraCGrabber::TegraCGrabber()
   , display_(&camera_buffer_)  
   , npp8u_ptrs_(cam_ids_.size())
   , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
-             camera::image_width)  // 720,1280 to 384,608
+             camera::image_width)  // 720,1280 to 342,608
   , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
   , ros_image(n)
   , video_capture_list(cam_ids_.size())  
@@ -33,19 +33,12 @@ TegraCGrabber::TegraCGrabber()
 
 void TegraCGrabber::InitParameters()
 {
-  for (size_t i = 0; i < cam_ids_.size(); i++)
-  {
-    int dummy;
-    npp8u_ptrs_[i] = nppiMalloc_8u_C3(camera::raw_image_width, camera::raw_image_height, &dummy);
-  }
+/* do nothing */
 }
 
 TegraCGrabber::~TegraCGrabber()
 {
-  for (size_t i = 0; i < cam_ids_.size(); i++)
-  {
-    nppiFree(npp8u_ptrs_[i]);
-  }
+/* do nothing */
 }
 
 
@@ -80,8 +73,8 @@ bool TegraCGrabber::gst_pipeline_init(int video_index)
             "video/x-raw, width=%d, height=%d, format=BGR ! "
             "appsink",
             video_index, 
-            camera::raw_image_width_gstreamer, camera::raw_image_height_gstreamer, 
-            camera::raw_image_width_gstreamer, camera::raw_image_height_gstreamer
+            camera::raw_image_width, camera::raw_image_height, 
+            camera::raw_image_width, camera::raw_image_height
             );
   }
 
@@ -107,7 +100,7 @@ bool TegraCGrabber::gst_pipeline_init(int video_index)
   return true;
 }
 
-void TegraCGrabber::initializeModulesGst(const bool do_resize, const bool do_crop)
+void TegraCGrabber::initializeModulesGst(const bool do_resize)
 {
   for (const auto cam_id : cam_ids_)
   {
@@ -117,7 +110,7 @@ void TegraCGrabber::initializeModulesGst(const bool do_resize, const bool do_cro
   
   camera_buffer_.initBuffer();
   resize_ = do_resize;
-  crop_ = do_crop;
+  
 
   //Gstreamer    
   for(unsigned int index = 0; index < cam_ids_.size(); index++)
@@ -147,16 +140,10 @@ bool TegraCGrabber::runPerceptionGst()
     ros::spinOnce();
           
     int cam_count = cam_ids_.size();
-/*
-    if(!crop_)
-    {
-      cam_count=cam_ids_.size()-1;
-    }
-*/
+
 
 #pragma omp parallel for    
-    //for (size_t i = 0; i < cam_count; ++i)
-    for (int i = 0; i < cam_count; ++i) //Jason
+    for (int i = 0; i < cam_count; ++i) 
     {
       if(!video_capture_list[i].read(canvas[i]))
       {
@@ -168,7 +155,7 @@ bool TegraCGrabber::runPerceptionGst()
         cv::imshow("MyCameraPreview", canvas[i]);
         cv::waitKey(1); // let imshow draw
 */
-        ros_image.send_image_rgb(cam_ids_[i], canvas[i]);
+        ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i]);
       }
     }
 

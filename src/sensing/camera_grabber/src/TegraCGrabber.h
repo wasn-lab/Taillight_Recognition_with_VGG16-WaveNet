@@ -11,7 +11,7 @@ class TegraCGrabber
 public:
   TegraCGrabber();
   ~TegraCGrabber();  
-  void initializeModulesGst(const bool do_resize, const bool do_crop);  
+  void initializeModulesGst(const bool do_resize);  
   bool runPerceptionGst();
   
   //Gstreamer
@@ -51,7 +51,7 @@ private:
   NPPResizer resizer_;
   int num_src_bytes_;
   bool resize_;
-  bool crop_;
+  
 
   // ROS publisher
   ros::NodeHandle n;

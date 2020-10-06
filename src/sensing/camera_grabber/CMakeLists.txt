@@ -67,19 +67,7 @@ else()
                HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
 endif()
 
-if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
-catkin_package(
-#  INCLUDE_DIRS include
-#   LIBRARIES
-   CATKIN_DEPENDS
-   roscpp
-   std_msgs
-   msgs
-   image_transport
-   cv_bridge
-#  DEPENDS system_lib
-)
-else ()
+
 catkin_package(
 #  INCLUDE_DIRS include
 #   LIBRARIES
@@ -92,7 +80,6 @@ catkin_package(
    camera_utils
 #  DEPENDS system_lib
 )
-endif()
 
 find_package(Glog)
 if (NOT GLOG_FOUND)

@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
   // do resize
   const bool do_resize = SensingSubSystem::do_resize();
-  const bool do_crop = SensingSubSystem::do_crop();
+ 
 
   if (mode == "c")
   {
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "camera_c_grabber");
     printf("Running Camera c grabber (gstreamer)\n");
     SensingSubSystem::TegraCGrabber app;
-    app.initializeModulesGst(do_resize, do_crop);
+    app.initializeModulesGst(do_resize);
     return app.runPerceptionGst();
   }
   else

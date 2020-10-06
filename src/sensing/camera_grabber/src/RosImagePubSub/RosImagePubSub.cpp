@@ -136,8 +136,8 @@ bool RosImagePubSub::send_image(const int topic_id, const cv::Mat& content_in)
 bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_in)
 {
   cv::Mat mat_img;
-  //cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
-  mat_img = content_in; //Jason add 
+  cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
+  
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
@@ -162,6 +162,34 @@ bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_i
   }
 }
 
+bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in)
+{
+  cv::Mat mat_img;
+  
+  mat_img = content_in; //always is BGR format 
+
+  std_msgs::Header header;  // empty header
+  // header.seq = sequence;			 // user defined counter
+  header.stamp = ros::Time::now();  // time
+  header.frame_id = "camera";       // camera id
+
+  sensor_msgs::Image img_msg;
+  cv_bridge::CvImage img_bridge;
+
+  img_bridge = cv_bridge::CvImage(header, "bgr8", mat_img);
+  img_bridge.toImageMsg(img_msg);  // from cv_bridge to sensor_msgs::Image
+
+  auto m_it = _image_publisher_map.find(topic_id);
+  if (m_it != _image_publisher_map.end())
+  {
+    _image_publisher_map[topic_id].publish(img_msg);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 //
 bool RosImagePubSub::add_a_sub(size_t id_in, const std::string& topic_name)
 {

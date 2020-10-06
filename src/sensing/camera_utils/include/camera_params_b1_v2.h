@@ -46,11 +46,6 @@ extern const std::string detect_result_occupancy_grid;
 // TODO: fill in the following parameters.
 constexpr int raw_image_width = 1920;
 constexpr int raw_image_height = 1208;
-
-// camera use Gstreamer
-constexpr int raw_image_width_gstreamer = 1280;
-constexpr int raw_image_height_gstreamer = 720;
-
 constexpr int raw_image_rows = raw_image_height;
 constexpr int raw_image_cols = raw_image_width;
 constexpr int num_raw_image_pixels = raw_image_width * raw_image_height;
@@ -77,12 +72,6 @@ constexpr int image_crop_width = 1920;
 constexpr int image_crop_height = 314;
 constexpr int image_crop_xstart = 0;
 constexpr int image_crop_ystart = 692;
-
-// Parameters for crop image in grabber (for gstreamer camera)
-constexpr int image_crop_width_gstreamer = 1280;
-constexpr int image_crop_height_gstreamer = 314;
-constexpr int image_crop_xstart_gstreamer = 0;
-constexpr int image_crop_ystart_gstreamer = 392;
 
 // Parameters for resizing 1920x1208 to 608x608(yolov3 default size)
 constexpr double image_ratio_on_yolov3 = 608.0 / raw_image_width;

@@ -7,8 +7,7 @@
     args="
     -mode c
     -expected_fps 22
-    -do_resize=true
-    -do_crop=false
+    -do_resize=true    
     "
     output="screen"
   />
