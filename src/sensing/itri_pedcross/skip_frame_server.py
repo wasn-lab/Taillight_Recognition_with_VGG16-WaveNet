@@ -124,7 +124,9 @@ def callback(req):
         return PredictSkeletonResponse(predicted_keypoints, back_predicted_keypoints)
 
 def listener():
+    global predict_frames
     rospy.init_node('skip_frame_server')
+    predict_frames = rospy.get_param('/skip_frame_server/skip_frame_number')
     rospy.Service("skip_frame", PredictSkeleton, callback)
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

@@ -113,6 +113,7 @@ public:
   float predict_rf_pose(const cv::Mat& input_data);
   bool filter(const msgs::BoxPoint box_point, ros::Time time_stamp);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
+  void clean_old_skeleton_buffer();
 
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
@@ -203,7 +204,7 @@ public:
   double average_inference_time = 0;
 
   // Setup variables
-  const int cross_threshold = 55;  // percentage
+  int cross_threshold = 55;  // percentage
   const double scaling_ratio_width = 0.3167;
   const double scaling_ratio_height = 0.3179;
   const int number_keypoints = 25;
