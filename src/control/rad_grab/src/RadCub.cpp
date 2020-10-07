@@ -60,7 +60,7 @@ int main(int argc, char** argv)
   int send_one_frame = 0;
   int count = 0;
 
-  ros::init(argc, argv, "RadAlpha");
+  ros::init(argc, argv, "RadCub");
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
   ros::Rate loop_rate(20);
@@ -209,56 +209,6 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   nh.getParam("filter_id", filter_id);
 
   cout << "  ============id============  " << filter_id << endl;
-
-  switch (filter_id)
-  {
-    case 1:
-      current_frame.can_id = 0xC1;
-      RadPub = n.advertise<msgs::Rad>("AlphaFrontCenter", 1);
-      break;
-    case 2:
-      current_frame.can_id = 0xC2;
-      RadPub = n.advertise<msgs::Rad>("AlphaFrontLeft", 1);
-      break;
-    case 3:
-      current_frame.can_id = 0xC3;
-      RadPub = n.advertise<msgs::Rad>("AlphaFrontRight", 1);
-      break;
-    case 4:
-      current_frame.can_id = 0xC4;
-      RadPub = n.advertise<msgs::Rad>("AlphaSideLeft", 1);
-      break;
-    case 5:
-      current_frame.can_id = 0xC5;
-      RadPub = n.advertise<msgs::Rad>("AlphaSideRight", 1);
-      break;
-    case 6:
-      current_frame.can_id = 0xC6;
-      RadPub = n.advertise<msgs::Rad>("AlphaBackLeft", 1);
-      break;
-    case 7:
-      current_frame.can_id = 0xC7;
-      RadPub = n.advertise<msgs::Rad>("AlphaBackRight", 1);
-      break;
-    default:
-      current_frame.can_id = 0x00;
-      cout << "NO filter_id FOUND!" << endl;
-      break;
-  }
-
-  // // test frame x = -0.3 y = 1.4 p = 34
-  // struct can_frame t_frame;
-  // t_frame.can_id = 0xC1;
-  // t_frame.can_dlc = 8;
-  // t_frame.data[0] = 0x40;
-  // t_frame.data[1] = 0x7b;
-  // t_frame.data[2] = 0xfd;
-  // t_frame.data[3] = 0x00;
-  // t_frame.data[4] = 0x74;
-  // t_frame.data[5] = 0x40;
-  // t_frame.data[6] = 0x00;
-  // t_frame.data[7] = 0x00;
-  // radarParsing(t_frame);
 }
 
 void turnRadarOn(int s, int type)
