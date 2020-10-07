@@ -608,7 +608,6 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats, std::vector<std::vector<
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     point_cloud = *cams_points_ptr[cam_order];
-    for (size_t i = 0; i < point_cloud.size(); i++)
     for (size_t i = 0; i < cam_pixels[cam_order].size(); i++)
     {
       int point_u = cam_pixels[cam_order][i].u;
