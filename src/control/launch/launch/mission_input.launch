@@ -2,7 +2,7 @@
 <launch>
 
   <arg name="ORGS" default="0" />
-  <arg name="route_choose" default="2" />
+  <arg name="route_choose" default="3" />
   
   <!-- mission input node-->
   <node pkg="mission_input" type="mission_input" name="mission_input" output="screen" >
