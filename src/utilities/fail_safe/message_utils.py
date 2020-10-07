@@ -1,14 +1,19 @@
+"""
+Return the corresponding class for a given msg_name
+"""
 from std_msgs.msg import Bool, Empty, Int32
-from msgs.msg import DetectedObjectArray, VehInfo
+from msgs.msg import DetectedObjectArray, VehInfo, BackendInfo
+
+MSG_TO_CLASS = {
+    "BackendInfo": BackendInfo,
+    "Bool": Bool,
+    "DetectedObjectArray": DetectedObjectArray,
+    "Empty": Empty,
+    "Int32": Int32,
+    "VehInfo": VehInfo}
 
 def get_message_type_by_str(msg_name):
-    if msg_name == "Empty":
-        return Empty
-    if msg_name == "Int32":
-        return Int32
-    if msg_name == "Bool":
-        return Bool
-    if msg_name == "DetectedObjectArray":
-        return DetectedObjectArray
-    if msg_name == "VehInfo":
-        return VehInfo
+    """Return the corresponding message type"""
+    if msg_name in MSG_TO_CLASS:
+        return MSG_TO_CLASS[msg_name]
+    raise ValueError("{}: Cannot map to a message type.".format(msg_name))
