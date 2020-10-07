@@ -10,7 +10,7 @@ void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point
   cv::Point center_point = cv::Point(point_u, point_v);
   float distance_x = point_x;
   cv::Scalar point_color = getDistColor(distance_x);
-  cv::circle(m_src, center_point, 1, point_color, -1, cv::LINE_8, 0);
+  cv::circle(m_src, center_point, 2, point_color, -1, cv::FILLED, 0);
 }
 
 void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects)
