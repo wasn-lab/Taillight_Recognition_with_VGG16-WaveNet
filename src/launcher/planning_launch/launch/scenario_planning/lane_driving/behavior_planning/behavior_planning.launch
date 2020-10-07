@@ -54,7 +54,7 @@
     <param name="launch_traffic_light" value="true" />
     <param name="launch_intersection" value="true" />
     <param name="launch_blind_spot" value="true" />
-    <param name="launch_bus_stop" value="true" />
+    <param name="launch_bus_stop" value="false" />
 
     <param name="forward_path_length" value="1000.0" />
     <param name="backward_path_length" value="5.0" />
