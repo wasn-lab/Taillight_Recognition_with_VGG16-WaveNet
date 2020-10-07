@@ -403,7 +403,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   }
   // std::cout << "remaining_objects.objects.size(): " << remaining_objects.objects.size() << std::endl;
 
-  removeDuplePoints(point_vector_objects);
+  // removeDuplePoints(point_vector_objects);
   for (size_t i = 0; i < point_vector_objects.size(); i++)
   {
     cam_points.points[i] = point_vector_objects[i];
