@@ -54,6 +54,9 @@ class FailSafeChecker(object):
         self.error_count = 0
         self.seq = 1
 
+    def _get_ego_speed(self):
+        return self.modules["veh_info"].get_ego_speed()
+
     def set_debug_mode(self, mode):
         self.debug_mode = mode
 

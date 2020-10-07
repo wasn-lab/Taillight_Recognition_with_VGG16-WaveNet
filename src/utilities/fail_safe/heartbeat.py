@@ -141,7 +141,7 @@ class Heartbeat(object):
             rospy.logerr("%s: No ego_speed, not receive data yet", self.module_name)
             return float("inf")
 
-        if self.module_name != "VehInfo":
+        if self.module_name != "veh_info":
             raise ValueError("Do not call get_ego_speed() in module {}".format(self.module_name))
 
         return int(self.msg.ego_speed)
