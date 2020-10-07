@@ -1199,7 +1199,7 @@ void runInference()
           // }
           /// draw results on image
           drawPointCloudOnImages(cam_mats, cam_pixels, cams_bbox_points_ptr);
-          drawBoxOnImages(cam_mats, object_arrs);
+          drawBoxOnImages(cam_mats, objects_2d_bbox_arrs);
 
           /// prepare point cloud visualization
           std::unique_lock<std::mutex> lock_lidar_process(g_mutex_lidar_process, std::adopt_lock);
