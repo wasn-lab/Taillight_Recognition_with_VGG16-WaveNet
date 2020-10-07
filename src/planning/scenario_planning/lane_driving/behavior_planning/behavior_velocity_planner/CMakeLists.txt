@@ -83,6 +83,23 @@ target_link_libraries(scene_module_stop_line
   ${catkin_LIBRARIES}
 )
 
+# Scene Module: Bus Stop
+add_library(scene_module_bus_stop STATIC
+  src/scene_module/bus_stop/manager.cpp
+  src/scene_module/bus_stop/scene.cpp
+  src/scene_module/bus_stop/debug.cpp
+)
+
+add_dependencies(scene_module_bus_stop
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(scene_module_bus_stop
+  scene_module_lib
+  ${catkin_LIBRARIES}
+)
+
 # Scene Module: Crosswalk
 add_library(scene_module_crosswalk STATIC
   src/scene_module/crosswalk/manager.cpp
@@ -167,6 +184,7 @@ target_link_libraries(scene_module_manager
   scene_module_intersection
   scene_module_traffic_light
   scene_module_blind_spot
+  scene_module_bus_stop
 )
 
 # Node
