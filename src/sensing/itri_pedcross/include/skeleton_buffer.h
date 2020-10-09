@@ -5,11 +5,11 @@ class SkeletonBuffer
 public:
   ros::Time timestamp;
   unsigned int track_id;
-  std::vector<cv::Point2f> previous_two_real_skeleton;
-  std::vector<cv::Point2f> previous_one_real_skeleton;
+  // calculated_skeleton is for storing skip frame predicted keypoints
   std::vector<std::vector<cv::Point2f>> calculated_skeleton;
-  std::vector<std::vector<cv::Point2f>> back_calculated_skeleton;
+  // stored_skeleton is for storing 10 frames keypoints for cross prediction
   std::vector<std::vector<cv::Point2f>> stored_skeleton;
 
   std::vector<double> history_distance_from_path;
+  std::vector<cv::Point2f> history_position;
 };

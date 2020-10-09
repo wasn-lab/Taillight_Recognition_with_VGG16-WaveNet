@@ -1,6 +1,7 @@
-Keypoints previous_two_keypoints
-Keypoints previous_one_keypoints
-Keypoints new_detected_keypoints
+# transfer stored_skeleton to skip frame server
+Keypoints[] original_keypoints
 ---
+# predict future keypoints for calculated_skeleton
 Keypoints[] predicted_keypoints
-Keypoints[] back_predicted_keypoints
+# return original_keypoints with back prediction
+Keypoints[] processed_keypoints
