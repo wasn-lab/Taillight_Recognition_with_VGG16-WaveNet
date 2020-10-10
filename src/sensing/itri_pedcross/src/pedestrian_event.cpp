@@ -382,27 +382,27 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
 void PedestrianEvent::front_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 0 for front
-  main_callback(msg, buffer_front, front_image_cache, 0, skeleton_buffer_front);
+  main_callback(msg, front_image_cache, 0, skeleton_buffer_front);
 }
 void PedestrianEvent::left_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 1 for left
-  main_callback(msg, buffer_left, left_image_cache, 1, skeleton_buffer_left);
+  main_callback(msg, left_image_cache, 1, skeleton_buffer_left);
 }
 
 void PedestrianEvent::right_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 2 for right
-  main_callback(msg, buffer_right, right_image_cache, 2, skeleton_buffer_right);
+  main_callback(msg, right_image_cache, 2, skeleton_buffer_right);
 }
 
 void PedestrianEvent::fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   // 3 for fov30
-  main_callback(msg, buffer_fov30, fov30_image_cache, 3, skeleton_buffer_fov30);
+  main_callback(msg, fov30_image_cache, 3, skeleton_buffer_fov30);
 }
 
-void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
+void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
                                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
                                     std::vector<SkeletonBuffer>& skeleton_buffer)
 {
@@ -632,11 +632,18 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               std::vector<cv::Point2f>().swap(predict_keypoints);
             }
 
-            if (!new_person.calculated_skeleton.empty())
+            std::vector<float> bbox;
+            bbox.emplace_back(0);
+            bbox.emplace_back(0);
+            bbox.emplace_back(0);
+            bbox.emplace_back(0);
+            for (int i = 0; i < frame_num - 1; i++)
             {
-              skeleton_buffer.emplace_back(new_person);
-              skeleton_index = skeleton_buffer.size() - 1;
+              new_person.data_bbox.emplace_back(bbox);
             }
+
+            skeleton_buffer.emplace_back(new_person);
+            skeleton_index = skeleton_buffer.size() - 1;
           }
           else  // if there is data in skeleton buffer
           {
@@ -730,40 +737,51 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               }
             }
           }
-        }
-        ros::Time inference_stop = ros::Time::now();
-        average_inference_time = average_inference_time * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
-
-        bool has_keypoint = false;
-        int count_points = 0;
-        int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-        unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
-        for (unsigned int i = 0; i < body_part_size; i++)
-        {
-          if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
+          std::vector<float> bbox;
+          bbox.emplace_back(obj.camInfo.u);
+          bbox.emplace_back(obj.camInfo.v);
+          bbox.emplace_back(obj.camInfo.u + obj.camInfo.width);
+          bbox.emplace_back(obj.camInfo.v + obj.camInfo.height);
+          skeleton_buffer.at(skeleton_index).data_bbox.emplace_back(bbox);
+          if (skeleton_buffer.at(skeleton_index).data_bbox.size() > frame_num)
           {
-            count_points++;
-            if (count_points >= 3)
+            skeleton_buffer.at(skeleton_index).data_bbox.erase(skeleton_buffer.at(skeleton_index).data_bbox.begin());
+          }
+          
+          ros::Time inference_stop = ros::Time::now();
+          average_inference_time = average_inference_time * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
+
+          bool has_keypoint = false;
+          int count_points = 0;
+          int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+          unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
+          for (unsigned int i = 0; i < body_part_size; i++)
+          {
+            if (keypoints.at(body_part[i]).x != 0 || keypoints.at(body_part[i]).y != 0)
             {
-              has_keypoint = true;
+              count_points++;
+              if (count_points >= 3)
+              {
+                has_keypoint = true;
+              }
             }
           }
-        }
-        if (has_keypoint)
-        {
-          obj_pub.crossProbability =
-              crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                               obj.camInfo.v + obj.camInfo.height, keypoints, obj.track.id, msg->header.stamp, buffer);
-        }
-        else
-        {
-          /*
-                    std::vector<cv::Point2f> no_keypoint;
-                    obj_pub.crossProbability =
-                        crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                          obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
-              msg->header.stamp);
-          */
+          if (has_keypoint)
+          {
+            obj_pub.crossProbability =
+                crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox, skeleton_buffer.at(skeleton_index).stored_skeleton, obj.track.id, msg->header.stamp);
+          }
+          else
+          {
+            /*
+                      std::vector<cv::Point2f> no_keypoint;
+                      obj_pub.crossProbability =
+                          crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
+                                            obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
+                msg->header.stamp);
+            */
+          }
+          clean_old_skeleton_buffer(skeleton_buffer);
         }
         obj_pub.facing_direction = get_facing_direction(keypoints);
         // obj_pub.body_direction = get_body_direction(keypoints);
@@ -1510,114 +1528,99 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
  * return
  * cross probability
  */
-float PedestrianEvent::crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2,
-                                        std::vector<cv::Point2f>& keypoint, int id, ros::Time time, Buffer& buffer)
+float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_array,
+                                        std::vector<std::vector<cv::Point2f>>& keypoint_array, int id, ros::Time time)
 {
   try
   {
     // initialize feature
     std::vector<float> feature;
 
-    // Add bbox to feature vector
-    float bbox[] = { bb_x1, bb_y1, bb_x2, bb_y2 };
-    feature.insert(feature.end(), bbox, bbox + sizeof(bbox) / sizeof(bbox[0]));
-
-    if (!keypoint.empty())
+    for (int index = 0; index < frame_num; index++)
     {
-      std::vector<float> keypoints_x;
-      std::vector<float> keypoints_y;
+      // Add bbox to feature vector
+      std::vector<float> bbox = bbox_array.at(index);
+      feature.insert(feature.end(), bbox.begin(), bbox.end());
 
-      // Get body keypoints we need
-      int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
-      int body_part_size = sizeof(body_part) / sizeof(*body_part);
-      for (int i = 0; i < body_part_size; i++)
+      std::vector<cv::Point2f> keypoint = keypoint_array.at(index);
+      if (!keypoint.empty())
       {
-        keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
-        keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
-      }
+        std::vector<float> keypoints_x;
+        std::vector<float> keypoints_y;
 
-      // Calculate x_distance, y_distance, distance, angle
-      for (int m = 0; m < body_part_size; m++)
-      {
-        for (int n = m + 1; n < body_part_size; n++)
+        // Get body keypoints we need
+        int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
+        int body_part_size = sizeof(body_part) / sizeof(*body_part);
+        for (int i = 0; i < body_part_size; i++)
         {
-          float dist_x, dist_y, dist, angle;
-          if (keypoints_x[m] != 0.0f && keypoints_y[m] != 0.0f && keypoints_x[n] != 0.0f && keypoints_y[n] != 0.0f)
-          {
-            dist_x = std::fabs(keypoints_x[m] - keypoints_x[n]);
-            dist_y = std::fabs(keypoints_y[m] - keypoints_y[n]);
-            dist = get_distance2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
-            angle = get_angle2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
-          }
-          else
-          {
-            dist_x = 0.0f;
-            dist_y = 0.0f;
-            dist = 0.0f;
-            angle = 0.0f;
-          }
-          float input[] = { dist_x, dist_y, dist, angle };
-          feature.insert(feature.end(), input, input + sizeof(input) / sizeof(input[0]));
+          keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
+          keypoints_y.insert(keypoints_y.end(), keypoint[body_part[i]].y);
         }
-      }
 
-      // Calculate 3 inner angles of each 3 keypoints
-      for (int m = 0; m < body_part_size; m++)
-      {
-        for (int n = m + 1; n < body_part_size; n++)
+        // Calculate x_distance, y_distance, distance, angle
+        for (int m = 0; m < body_part_size; m++)
         {
-          for (int k = n + 1; k < body_part_size; k++)
+          for (int n = m + 1; n < body_part_size; n++)
           {
-            float angle[3] = { 0.0f, 0.0f, 0.0f };
-            float* angle_ptr;
-            if ((keypoints_x[m] != 0.0f || keypoints_y[m] != 0.0f) &&
-                (keypoints_x[n] != 0.0f || keypoints_y[n] != 0.0f) &&
-                (keypoints_x[k] != 0.0f || keypoints_y[k] != 0.0f))
+            float dist_x, dist_y, dist, angle;
+            if (keypoints_x[m] != 0.0f && keypoints_y[m] != 0.0f && keypoints_x[n] != 0.0f && keypoints_y[n] != 0.0f)
             {
-              angle_ptr = get_triangle_angle(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n],
-                                             keypoints_x[k], keypoints_y[k]);
-              angle[0] = *angle_ptr;
-              angle[1] = *(angle_ptr + 1);
-              angle[2] = *(angle_ptr + 2);
+              dist_x = std::fabs(keypoints_x[m] - keypoints_x[n]);
+              dist_y = std::fabs(keypoints_y[m] - keypoints_y[n]);
+              dist = get_distance2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
+              angle = get_angle2(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n]);
             }
-            feature.insert(feature.end(), angle, angle + sizeof(angle) / sizeof(angle[0]));
+            else
+            {
+              dist_x = 0.0f;
+              dist_y = 0.0f;
+              dist = 0.0f;
+              angle = 0.0f;
+            }
+            float input[] = { dist_x, dist_y, dist, angle };
+            feature.insert(feature.end(), input, input + sizeof(input) / sizeof(input[0]));
           }
         }
+
+        // Calculate 3 inner angles of each 3 keypoints
+        for (int m = 0; m < body_part_size; m++)
+        {
+          for (int n = m + 1; n < body_part_size; n++)
+          {
+            for (int k = n + 1; k < body_part_size; k++)
+            {
+              float angle[3] = { 0.0f, 0.0f, 0.0f };
+              float* angle_ptr;
+              if ((keypoints_x[m] != 0.0f || keypoints_y[m] != 0.0f) &&
+                  (keypoints_x[n] != 0.0f || keypoints_y[n] != 0.0f) &&
+                  (keypoints_x[k] != 0.0f || keypoints_y[k] != 0.0f))
+              {
+                angle_ptr = get_triangle_angle(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n],
+                                              keypoints_x[k], keypoints_y[k]);
+                angle[0] = *angle_ptr;
+                angle[1] = *(angle_ptr + 1);
+                angle[2] = *(angle_ptr + 2);
+              }
+              feature.insert(feature.end(), angle, angle + sizeof(angle) / sizeof(angle[0]));
+            }
+          }
+        }
+        keypoints_x.clear();
+        std::vector<float>().swap(keypoints_x);
+        keypoints_y.clear();
+        std::vector<float>().swap(keypoints_y);
       }
-      keypoints_x.clear();
-      std::vector<float>().swap(keypoints_x);
-      keypoints_y.clear();
-      std::vector<float>().swap(keypoints_y);
-    }
-    else  // if keypoint is empty
-    {
-      float* zero_arr;
-      // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
-      int other_feature = feature_num - 4;
-      zero_arr = new float[other_feature]();
-      feature.insert(feature.begin(), zero_arr, zero_arr + sizeof(zero_arr) / sizeof(zero_arr[0]));
-      delete[] zero_arr;
+      else  // if keypoint is empty
+      {
+        float* zero_arr;
+        // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
+        int other_feature = feature_num - 4;
+        zero_arr = new float[other_feature]();
+        feature.insert(feature.begin(), zero_arr, zero_arr + sizeof(zero_arr) / sizeof(zero_arr[0]));
+        delete[] zero_arr;
+      }
     }
 
-    //  Buffer first frame
-    {
-      std::lock_guard<std::mutex> lk(mu_buffer);
-      if (buffer.timestamp == ros::Time(0))
-      {
-        buffer.timestamp = time;
-      }
-      //  new frame
-      else if (buffer.timestamp != time)
-      {
-        buffer.timestamp = time;
-        buffer.check_life();
-      }
-      feature = buffer.add(id, feature);
-
-#if PRINT_MESSAGE
-      buffer.display();
-#endif
-    }
     // Convert vector to array
     int total_feature_size = feature_num * frame_num;
     float feature_arr[total_feature_size];
@@ -1938,30 +1941,17 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
   }
 }
 
-/*
-void PedestrianEvent::clean_old_skeleton_buffer()
+void PedestrianEvent::clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer)
 {
-  vector<SkeletonBuffer>::iterator itr = skeleton_buffer_front.begin();
-  vector<SkeletonBuffer>::iterator tem = skeleton_buffer_front.begin();
-  while (itr != skeleton_buffer_front.end())
+  for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
   {
-    tem=itr;
-    itr++;
-    if (itr == v.end())
+    if (ros::Time(0) - skeleton_buffer.at(i).timestamp > ros::Duration(10))
     {
-      break;
-    }
-    else
-    {
-      tem = v.erase(tem);
-    }
-    if (ros::Time(0) - skeleton_buffer_front.at(i).timestamp > ros::Duration(10))
-    {
-      skeleton_buffer_front.erase(i);
+      skeleton_buffer.erase(skeleton_buffer.begin() + i);
+      i--;
     }
   }
 }
-*/
 
 void PedestrianEvent::pedestrian_event()
 {

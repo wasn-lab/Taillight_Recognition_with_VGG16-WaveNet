@@ -95,7 +95,7 @@ public:
   void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
+  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
                      boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
                      std::vector<SkeletonBuffer>& skeleton_buffer);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
@@ -105,15 +105,15 @@ public:
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
-  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f>& keypoint, int id,
-                         ros::Time time, Buffer& buffer);
+  float crossing_predict(std::vector<std::vector<float>>& bbox_array, std::vector<std::vector<cv::Point2f>>& keypoint_array, int id,
+                         ros::Time time);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
   float predict_rf_pose(const cv::Mat& input_data);
   bool filter(const msgs::BoxPoint box_point, ros::Time time_stamp);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
-  void clean_old_skeleton_buffer();
+  void clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer);
 
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
