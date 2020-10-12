@@ -3,6 +3,7 @@ import json
 import pprint
 import time
 import rospy
+from std_msgs.msg import String
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info03 import CtrlInfo03
@@ -21,8 +22,9 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, cfg_ini, mqtt_ini):
+    def __init__(self, vid, cfg_ini, mqtt_ini):
         self.debug_mode = False
+        self.vid = vid  # vehicle id
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
@@ -49,6 +51,8 @@ class FailSafeChecker(object):
         self.mqtt_client = ItriMqttClient(mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1"))
         self.mqtt_topic = mqtt_cfg["mqtt_topics"]["fail_safe"]
         self.action_emitter = ActionEmitter()
+        self.sensor_status_publisher = rospy.Publisher(
+            "/vehicle/report/itri/sensor_status", String, queue_size=1000)
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -99,15 +103,31 @@ class FailSafeChecker(object):
 
         return ret
 
+    def _get_all_sensor_status(self):
+        docs = {"vid": self.vid,
+                "camera": [],
+                "lidar": [],
+                "radar": []}
+        for mod_name in self.modules:
+            module = self.modules[mod_name]
+            if module.sensor_type is None:
+                continue
+            doc = module.get_sensor_status()
+            docs[module.sensor_type].append(doc)
+        return docs
+
     def run(self):
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             for module in self.latched_modules:
                 self.modules[module].update_latched_message()
             current_status = self.get_current_status()
+            sensor_status = self._get_all_sensor_status()
             if self.debug_mode:
                 pprint.pprint(current_status)
+                pprint.pprint(sensor_status)
             if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
             self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
+            self.sensor_status_publisher.publish(json.dumps(sensor_status))
             rate.sleep()

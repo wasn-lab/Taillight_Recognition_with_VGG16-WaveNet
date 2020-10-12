@@ -2,7 +2,7 @@ import time
 import heapq
 import rospy
 from message_utils import get_message_type_by_str
-from status_level import OK, WARN, ERROR, FATAL, UNKNOWN
+from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 
 def localization_state_func(msg):
     if msg is None:
@@ -138,6 +138,21 @@ class Heartbeat(object):
         if self.inspect_message_contents:
             self.msg = msg
         self._update_heap()
+
+    def get_sensor_status(self):
+        if self.sensor_type is None:
+            return {}
+        status = NORMAL
+        fps = self.get_fps()
+        if fps == 0:
+            status = OFF
+        elif fps < self.fps_low:
+            status = ALARM
+
+        return {"uid": self.sensor_uid,
+                "timestamp": int(time.time()),
+                "source_time": int(time.time()),
+                "status": status}
 
     def get_battery_info(self):
         if self.msg is None:

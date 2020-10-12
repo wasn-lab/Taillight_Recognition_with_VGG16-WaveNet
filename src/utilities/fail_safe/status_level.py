@@ -9,8 +9,16 @@ Definition for Fail-Safe levels:
 The level code increments by 10 for reserving the possible future extension.
 """
 
+
+# Used by fail-safe checker
 OK = 0
 WARN = 10
 ERROR = 20
 FATAL = 30
 UNKNOWN = -1
+
+# Used by Wistron data exchange protocol, published in /vehicle/report/*
+OFF = 0
+FAULT = 1
+ALARM = 2
+NORMAL = 3
