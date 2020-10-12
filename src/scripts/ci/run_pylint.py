@@ -23,7 +23,7 @@ def _run_pylint(affected_files):
             continue
         path, py_src = os.path.split(fname)
         os.chdir(path)
-        cmd = ["pylint", "-E", "--rcfile=" + rc_file, py_src]
+        cmd = ["pylint", "-E", "--rcfile=" + rc_file, "--disable=import-error", py_src]
         print(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)

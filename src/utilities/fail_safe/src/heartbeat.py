@@ -1,4 +1,3 @@
-# pylint: disable=import-error
 import time
 import heapq
 import rospy
