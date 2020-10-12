@@ -16,7 +16,7 @@ from std_msgs.msg import Bool, Float32, Header, Int32, Float32MultiArray
 
 
 REF_LINK = "map"
-SELF_LINK = "base_link"
+SELF_LINK = "rear_wheel"
 
 
 LANE_CHANGE = 0

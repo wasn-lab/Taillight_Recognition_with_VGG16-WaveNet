@@ -36,7 +36,7 @@ else:
 print('plot type = ' + PLOT_TYPE)
 
 PATH_ORIGIN_FRAME = "map"
-SELF_POSE_FRAME = "base_link"
+SELF_POSE_FRAME = "rear_wheel"
 
 class TrajectoryVisualizer():
 
