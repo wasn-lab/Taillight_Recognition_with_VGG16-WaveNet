@@ -1,0 +1,3 @@
+<launch>
+	<node name="fail_safe" pkg="fail_safe" type="run_fail_safe_checker.py" respawn="true" />
+</launch>
