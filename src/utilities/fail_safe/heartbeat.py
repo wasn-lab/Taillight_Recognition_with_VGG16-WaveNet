@@ -36,7 +36,8 @@ def localization_state_func(msg):
 
 class Heartbeat(object):
     def __init__(self, module_name, topic, message_type, fps_low, fps_high,
-                 inspect_message_contents, latch):
+                 inspect_message_contents, latch, sensor_type=None,
+                 sensor_uid=None):
         # expected module stats
         self.module_name = module_name
         self.topic = topic
@@ -46,6 +47,8 @@ class Heartbeat(object):
         self.inspect_func = None
         self.message_type = message_type
         self.inspect_message_contents = inspect_message_contents
+        self.sensor_type = sensor_type  # one of ["camera", "lidar", "radar"]
+        self.sensor_uid = sensor_uid  # Only used when sensor_type is defined.
         if module_name == "localization_state":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = localization_state_func

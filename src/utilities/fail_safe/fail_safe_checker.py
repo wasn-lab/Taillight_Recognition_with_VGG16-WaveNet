@@ -36,7 +36,9 @@ class FailSafeChecker(object):
                 cfg[module].getfloat("fps_low"),
                 cfg[module].getfloat("fps_high"),
                 cfg[module].getboolean("inspect_message_contents"),
-                cfg[module].getboolean("latch"))
+                cfg[module].getboolean("latch"),
+                cfg[module].get("sensor_type", None),
+                cfg[module].get("sensor_uid", None))
             if cfg[module].getboolean("latch"):
                 self.latched_modules.append(module)
         self.ctrl_info_03 = CtrlInfo03()
