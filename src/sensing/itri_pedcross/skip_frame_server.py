@@ -28,7 +28,7 @@ def callback(req):
     second_latest_openpose = req.original_keypoints[frame_num - 2 - predict_frames]
     # calculate predicted_keypoints
     diff = Keypoints()
-    for i in range(len(latest_openpose)):
+    for i in range(len(latest_openpose.keypoint)):
         diff_keypoint = Keypoint()
         if keypoint_is_detected(latest_openpose.keypoint[i]) and keypoint_is_detected(second_latest_openpose.keypoint[i]):
             diff_keypoint.x = (latest_openpose.keypoint[i].x - second_latest_openpose.keypoint[i].x) / gain
@@ -36,10 +36,10 @@ def callback(req):
         else:
             diff_keypoint.x = 0
             diff_keypoint.y = 0
-        diff.append(diff_keypoint)
+        diff.keypoint.append(diff_keypoint)
     for i in range(predict_frames):
         predict_keypoints = Keypoints()
-        for j in range(len(diff)):
+        for j in range(len(diff.keypoint)):
             predict_keypoint = Keypoint()
             predict_keypoint.x = latest_openpose.keypoint[j].x + diff.keypoint[j].x * (i + 1)
             predict_keypoint.y = latest_openpose.keypoint[j].y + diff.keypoint[j].y * (i + 1)
@@ -48,7 +48,7 @@ def callback(req):
     
     # calculate processed_keypoints
     diff = Keypoints()
-    for i in range(len(latest_openpose)):
+    for i in range(len(latest_openpose.keypoint)):
         diff_keypoint = Keypoint()
         if keypoint_is_detected(latest_openpose.keypoint[i]) and keypoint_is_detected(second_latest_openpose.keypoint[i]):
             diff_keypoint.x = (latest_openpose.keypoint[i].x - second_latest_openpose.keypoint[i].x) / (predict_frames + 1)
@@ -56,10 +56,10 @@ def callback(req):
         else:
             diff_keypoint.x = 0
             diff_keypoint.y = 0
-        diff.append(diff_keypoint)
+        diff.keypoint.append(diff_keypoint)
     for i in range(predict_frames):
         predict_keypoints = Keypoints()
-        for j in range(len(diff)):
+        for j in range(len(diff.keypoint)):
             # processed_keypoints = (original keypoints + interpolation keypoints) / 2
             processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x + second_latest_openpose.keypoint[j].x + diff.keypoint[j].x * (i + 1)) / 2
             processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].y = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].y + second_latest_openpose.keypoint[j].y + diff.keypoint[j].y * (i + 1)) / 2
