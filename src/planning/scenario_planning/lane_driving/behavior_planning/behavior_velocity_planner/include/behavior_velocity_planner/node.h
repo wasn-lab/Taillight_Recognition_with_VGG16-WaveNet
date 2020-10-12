@@ -59,6 +59,7 @@ private:
 
   // publisher
   ros::Publisher path_pub_;
+  ros::Publisher stop_reason_diag_pub_;
   ros::Publisher debug_viz_pub_;
 
   void publishDebugMarker(const autoware_planning_msgs::Path & path, const ros::Publisher & pub);

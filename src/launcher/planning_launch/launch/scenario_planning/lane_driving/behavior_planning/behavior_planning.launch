@@ -8,6 +8,8 @@
     <remap from="~input/vector_map" to="$(arg map_topic_name)" />
     <remap from="~input/perception" to="/perception/object_recognition/objects" />
     <remap from="~input/velocity" to="/localization/twist" />
+    <remap from="~input/lane_change_approval" to="/planning/scenario_planning/lane_driving/lane_change_approval" />
+    <remap from="~input/force_lane_change" to="/planning/scenario_planning/lane_driving/force_lane_change" />
     <remap from="~output/lane_change_path" to="path_with_lane_id" />
     <remap from="~output/lane_change_ready" to="/planning/scenario_planning/lane_driving/lane_change_ready" />
     <remap from="~output/lane_change_available" to="/planning/scenario_planning/lane_driving/lane_change_available" />
@@ -40,14 +42,8 @@
     <param name="intersection_search_distance" value="30.0" />
   </node>
 
-  <node pkg="behavior_velocity_planner" type="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
-    <remap from="~input/path_with_lane_id" to="path_with_lane_id" />
-    <remap from="~input/vector_map" to="$(arg map_topic_name)" />
-    <remap from="~input/vehicle_velocity" to="/localization/twist" />
-    <remap from="~input/dynamic_objects" to="/perception/object_recognition/objects" />
-    <remap from="~input/no_ground_pointcloud" to="/sensing/lidar/no_ground/pointcloud" />
-    <remap from="~input/traffic_light_states" to="/perception/traffic_light_recognition/traffic_light_states" />
-    <remap from="~output/path" to="path" />
+  <include file="$(find behavior_velocity_planner)/launch/behavior_velocity_planner.launch">
+  </include>
 
     <param name="launch_stop_line" value="true" />
     <param name="launch_crosswalk" value="true" />

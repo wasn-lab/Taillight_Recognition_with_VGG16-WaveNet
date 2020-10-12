@@ -22,6 +22,7 @@
 #include <lanelet2_extension/utility/message_conversion.h>
 #include <lanelet2_routing/Route.h>
 
+#include <diagnostic_msgs/DiagnosticStatus.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include <utilization/path_utilization.h>
@@ -32,7 +33,8 @@
 #include <scene_module/intersection/manager.h>
 #include <scene_module/stop_line/manager.h>
 #include <scene_module/traffic_light/manager.h>
-#include <scene_module/bus_stop/manager.h>
+#include <scene_module/detection_area/manager.h>
+//#include <scene_module/bus_stop/manager.h>
 
 namespace
 {
@@ -135,6 +137,8 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode()
 
   // Publishers
   path_pub_ = pnh_.advertise<autoware_planning_msgs::Path>("output/path", 1);
+  stop_reason_diag_pub_ =
+    pnh_.advertise<diagnostic_msgs::DiagnosticStatus>("output/stop_reason", 1);
   debug_viz_pub_ = pnh_.advertise<visualization_msgs::MarkerArray>("debug/path", 1);
 
   // Parameters
@@ -149,6 +153,7 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode()
   pnh_.param(
     "max_accel", planner_data_.max_stop_acceleration_threshold_,
     -5.0);  // TODO read min_acc in velocity_controller_param.yaml?
+  pnh_.param("delay_response_time", planner_data_.delay_response_time_, 1.3);
   // TODO(Kenji Miyake): get from additional vehicle_info?
   planner_data_.base_link2front = planner_data_.front_overhang + planner_data_.wheel_base;
 
@@ -163,8 +168,10 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode()
     planner_manager_.launchSceneModule(std::make_shared<IntersectionModuleManager>());
   if (getParam<bool>(pnh_, "launch_blind_spot", true))
     planner_manager_.launchSceneModule(std::make_shared<BlindSpotModuleManager>());
-  if (getParam<bool>(pnh_, "launch_bus_stop", true))
-    planner_manager_.launchSceneModule(std::make_shared<BusStopModuleManager>());
+//  if (getParam<bool>(pnh_, "launch_bus_stop", true))
+//    planner_manager_.launchSceneModule(std::make_shared<BusStopModuleManager>());
+  if (getParam<bool>(pnh_, "launch_detection_area", true))
+    planner_manager_.launchSceneModule(std::make_shared<DetectionAreaModuleManager>());
 }
 
 geometry_msgs::PoseStamped BehaviorVelocityPlannerNode::getCurrentPose()
@@ -256,7 +263,10 @@ void BehaviorVelocityPlannerNode::onTrafficLightStates(
   const autoware_perception_msgs::TrafficLightStateArray::ConstPtr & msg)
 {
   for (const auto & state : msg->states) {
-    planner_data_.traffic_light_id_map_[state.id] = {msg->header, state};
+    autoware_perception_msgs::TrafficLightStateStamped traffic_light_state;
+    traffic_light_state.header = msg->header;
+    traffic_light_state.state = state;
+    planner_data_.traffic_light_id_map_[state.id] = traffic_light_state;
   }
 }
 
@@ -288,6 +298,7 @@ void BehaviorVelocityPlannerNode::onTrigger(
   output_path_msg.drivable_area = input_path_msg.drivable_area;
 
   path_pub_.publish(output_path_msg);
+  stop_reason_diag_pub_.publish(planner_manager_.getStopReasonDiag());
   publishDebugMarker(output_path_msg, debug_viz_pub_);
 
   return;

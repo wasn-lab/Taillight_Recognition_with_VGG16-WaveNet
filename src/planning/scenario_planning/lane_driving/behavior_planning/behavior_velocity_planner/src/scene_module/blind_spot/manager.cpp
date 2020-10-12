@@ -15,6 +15,9 @@
  */
 #include <scene_module/blind_spot/manager.h>
 
+#include <lanelet2_core/primitives/BasicRegulatoryElements.h>
+
+#include "utilization/boost_geometry_helper.h"
 #include "utilization/util.h"
 
 namespace
@@ -46,6 +49,16 @@ std::set<int64_t> getLaneIdSetOnPath(const autoware_planning_msgs::PathWithLaneI
 
 }  // namespace
 
+BlindSpotModuleManager::BlindSpotModuleManager() : SceneModuleManagerInterface(getModuleName())
+{
+  ros::NodeHandle pnh("~");
+  const std::string ns(getModuleName());
+  auto & p = planner_param_;
+  pnh.param(ns + "/stop_line_margin", p.stop_line_margin, 1.0);
+  pnh.param(ns + "/backward_length", p.backward_length, 15.0);
+  pnh.param(ns + "/max_future_movement_time", p.max_future_movement_time, 10.0);
+}
+
 void BlindSpotModuleManager::launchNewModules(const autoware_planning_msgs::PathWithLaneId & path)
 {
   for (const auto & ll : getLaneletsOnPath(path, planner_data_->lanelet_map)) {
@@ -62,7 +75,8 @@ void BlindSpotModuleManager::launchNewModules(const autoware_planning_msgs::Path
       continue;
     }
 
-    registerModule(std::make_shared<BlindSpotModule>(module_id, lane_id, turn_direction));
+    registerModule(
+      std::make_shared<BlindSpotModule>(module_id, lane_id, planner_data_, planner_param_));
   }
 }
 
