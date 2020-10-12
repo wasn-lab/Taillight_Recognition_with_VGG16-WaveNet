@@ -31,8 +31,17 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+// For eigen
+#include <Eigen/Dense>
+
+#define PI_OVER_180 (0.0174532925)
+
 using namespace std;
 
+void callbackDelphiFront(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaFront(const msgs::Rad::ConstPtr& msg);
+void callbackIMU(const sensor_msgs::Imu::ConstPtr& input);
+void pointCalibration(float* x, float* y, float* z, int type);
 void msgPublisher();
 
 ros::Publisher RadFrontPub;
@@ -42,10 +51,11 @@ double imu_angular_velocity_z = 0;
 int do_rotate = 0;
 int print_count = 0;
 
+msgs::Rad delphiRad;
+
 void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 {
   int m_rotate = do_rotate;
-  msgs::Rad rad;
   msgs::PointXYZV point;
 
   for (int i = 0; i < msg->radPoint.size(); i++)
@@ -103,18 +113,20 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
       // debug msg
       cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
 
-      rad.radPoint.push_back(point);
+      delphiRad.radPoint.push_back(point);
     }
   }
-  std::cout << "Radar Data : " << rad.radPoint.size() << std::endl;
-  rad.radHeader.stamp = msg->radHeader.stamp;
-  rad.radHeader.seq = msg->radHeader.seq;
-  RadFrontPub.publish(rad);
+  std::cout << "Radar Data : " << delphiRad.radPoint.size() << std::endl;
+  delphiRad.radHeader.stamp = msg->radHeader.stamp;
+  delphiRad.radHeader.seq = msg->radHeader.seq;
+  RadFrontPub.publish(delphiRad);
+  delphiRad.radPoint.clear();
   msgPublisher();
 }
 
 void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
 {
+  // y: 往前 , x: 右正
   // 1: front center, 2: front left, 3: front right,
   // 4: side left, 5: side right,
   // 6: back left, 7: back right
@@ -143,12 +155,44 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
   }
 }
 
+void pointCalibration(float* x, float* y, float* z, int type)
+{
+  std::vector<float> params = { 0, -10, 0, 0.0, 0.0, 0.0 };  // (x,y,z,roll,pitch,yaw)
+
+  pcl::Normal pcl_normal(*x, *y, *z);
+	Eigen::Vector4f input;
+	input << pcl_normal.normal_x, pcl_normal.normal_y, pcl_normal.normal_z, 1;
+
+  Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
+  float tx = params[0];
+  float ty = params[1];
+  float tz = params[2];
+  float rx = params[3] * PI_OVER_180;
+  float ry = params[4] * PI_OVER_180;
+  float rz = params[5] * PI_OVER_180;
+
+  Eigen::AngleAxisf init_rotation_x(rx, Eigen::Vector3f::UnitX());
+  Eigen::AngleAxisf init_rotation_y(ry, Eigen::Vector3f::UnitY());
+  Eigen::AngleAxisf init_rotation_z(rz, Eigen::Vector3f::UnitZ());
+
+  Eigen::Translation3f init_translation(tx, ty, tz);
+
+  Eigen::Matrix4f init_guess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+
+  transform_1 = init_guess;
+  // std::cout << "1:" << std::endl << transform_1.matrix() << std::endl;
+  Eigen::Vector4f output_1 = transform_1 * input;
+  // std::cout << std::endl << output_1 << std::endl;
+  *x =  output_1.x();
+  *y =  output_1.y();
+  *z =  output_1.z();
+}
+
 void msgPublisher()
 {
   std_msgs::Empty empty_msg;
   HeartbeatPub.publish(empty_msg);
 }
-
 
 int main(int argc, char** argv)
 {
@@ -169,7 +213,13 @@ int main(int argc, char** argv)
     print_count++;
     if (print_count > 60)
     {
-      std::cout << "========================== Radar Detection ========================" << std::endl;
+      // float a = 5;
+      // float b = 5;
+      // float c = 5;
+      // alphaRadAlignment(&a, &b, &c);
+
+      // cout << a << ":" << b << ":" << c << endl;
+      std::cout << "================ Radar Detection ================" << std::endl;
       print_count = 0;
     }
     ros::spinOnce();
