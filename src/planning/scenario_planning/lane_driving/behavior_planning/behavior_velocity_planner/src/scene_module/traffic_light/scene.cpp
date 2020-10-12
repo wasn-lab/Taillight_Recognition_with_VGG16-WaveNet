@@ -277,8 +277,7 @@ bool TrafficLightModule::isStopRequired(
     return false;
   }
 
-  const std::string turn_direction = lane_.attribute("turn_direction");////
-  // const std::string turn_direction = lane_.attributeOr("turn_direction", "straight");////
+  const std::string turn_direction = lane_.attributeOr("turn_direction", "else");
   std::cout << "turn_direction : " << turn_direction << std::endl;
   if (turn_direction == "else") {
     return true;
