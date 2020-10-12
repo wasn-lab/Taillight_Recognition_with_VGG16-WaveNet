@@ -376,6 +376,7 @@ void PedestrianEvent::cache_image_callback(const sensor_msgs::Image::ConstPtr& m
   msg_decode.release();
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
+  std::cout << "Image buffer size: " << image_cache.size() << std::endl;
 #endif
 }
 
@@ -574,10 +575,11 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               skeleton_index = i;
             }
           }
-          
+
           if (skeleton_index == -1)  // if there is no data in skeleton buffer
           {
             SkeletonBuffer new_person;
+            new_person.timestamp = msg->header.stamp;
             new_person.track_id = obj_pub.track.id;
 
             keypoints = get_openpose_keypoint(croped_image);
@@ -673,6 +675,11 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               // call skip_frame service
               skip_frame_client.call(srv_skip_frame);
 
+              skeleton_buffer.at(skeleton_index).calculated_skeleton.clear();
+              std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).calculated_skeleton);
+              skeleton_buffer.at(skeleton_index).stored_skeleton.clear();
+              std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).stored_skeleton);
+
               // get predicted_keypoints return from skip_frame service
               for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
               {
@@ -692,6 +699,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               // get processed_keypoints return from skip_frame service
               for (unsigned int i = 0; i < srv_skip_frame.response.processed_keypoints.size(); i++)
               {
+                skeleton_buffer.at(skeleton_index).timestamp = msg->header.stamp;
                 std::vector<cv::Point2f> back_predict_keypoints;
                 for (unsigned int j = 0; j < srv_skip_frame.response.processed_keypoints.at(i).keypoint.size(); j++)
                 {
@@ -708,7 +716,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             else
             {
               skeleton_buffer.at(skeleton_index).stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
-              skeleton_buffer.at(skeleton_index).stored_skeleton.emplace_back(skeleton_buffer.at(skeleton_index).calculated_skeleton.at(0));
+              keypoints = skeleton_buffer.at(skeleton_index).calculated_skeleton.at(0);
               skeleton_buffer.at(skeleton_index).calculated_skeleton.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton.begin());
 
               keypoints = skeleton_buffer.at(skeleton_index).stored_skeleton.at(skeleton_buffer.at(skeleton_index).stored_skeleton.size() - 1);
@@ -735,6 +743,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
                 }
               }
+              skeleton_buffer.at(skeleton_index).stored_skeleton.emplace_back(keypoints);
             }
           }
           std::vector<float> bbox;
@@ -781,8 +790,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 msg->header.stamp);
             */
           }
-          clean_old_skeleton_buffer(skeleton_buffer);
+          clean_old_skeleton_buffer(skeleton_buffer, msg->header.stamp);
         }
+        
         obj_pub.facing_direction = get_facing_direction(keypoints);
         // obj_pub.body_direction = get_body_direction(keypoints);
 
@@ -865,6 +875,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               }
             }
           }
+
           // too close to planned path
           // from center to left and right 2 meters
           if (min_distance_from_path < danger_zone_distance)
@@ -1941,11 +1952,11 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
   }
 }
 
-void PedestrianEvent::clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer)
+void PedestrianEvent::clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer, ros::Time msg_timestamp)
 {
   for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
   {
-    if (ros::Time(0) - skeleton_buffer.at(i).timestamp > ros::Duration(10))
+    if (msg_timestamp - skeleton_buffer.at(i).timestamp > ros::Duration(10))
     {
       skeleton_buffer.erase(skeleton_buffer.begin() + i);
       i--;

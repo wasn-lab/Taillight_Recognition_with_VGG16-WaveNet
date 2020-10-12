@@ -113,7 +113,7 @@ public:
   float predict_rf_pose(const cv::Mat& input_data);
   bool filter(const msgs::BoxPoint box_point, ros::Time time_stamp);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
-  void clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer);
+  void clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer, ros::Time msg_timestamp);
 
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
