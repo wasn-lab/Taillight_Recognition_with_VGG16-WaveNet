@@ -83,7 +83,6 @@ std::mutex g_mutex_lidar_time;
 std::mutex g_mutex_lidar_nonground_time;
 std::mutex g_mutex_lidar_ssn_time;
 std::vector<std::mutex> g_mutex_cam_time(g_cam_ids.size());
-std::mutex g_mutex_cube;
 std::mutex g_mutex_polygon;
 
 /// params
@@ -141,7 +140,6 @@ std::vector<ros::Time> g_lidarall_nonground_time_buffer;
 std::vector<ros::Time> g_lidar_ssn_time_buffer;
 
 /// 3d cube
-// std::vector<std::vector<MinMax3D>> g_cams_bboxs_cube_min_max(g_cam_ids.size()); // bbox - pcl
 std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> g_cams_bboxs_points(g_cam_ids.size());
 
 //////////////////// for camera image
@@ -454,7 +452,7 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 
 void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
                       std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
-                      /*std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,*/ std_msgs::Header msg_header)
+                      std_msgs::Header msg_header)
 {
   msgs::DetectedObjectArray msg_det_obj_arr;
   std::vector<msgs::DetectedObject> msg_objs;
@@ -656,7 +654,6 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& obje
                               std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                               std::vector<std::vector<PixelPosition>>& cam_pixels,
                               std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
-                              /*std::vector<std::vector<MinMax3D>>& cams_bboxs_cube_min_max,*/  // bbox - pcl
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
 // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
@@ -766,45 +763,57 @@ void displayLidarData()
 
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      // std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points); // mutex camera points
+      // if (g_cams_points_ptr[cam_order]->empty())
+      // {
+      //   std::cout << "g_cams_points_ptr[cam_order].empty()" << std::endl;
+      // }
+      // std::unique_lock<std::mutex> lock_cams_points(g_mutex_cams_points, std::adopt_lock); // mutex camera points
       // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_points_ptr[cam_order], rgb_cams_points[cam_order],
       //                                           g_cam_topic_names[cam_order], viewports[1]);
+      // lock_cams_points.unlock();
       // std::lock_guard<std::mutex> lock_objects_points(g_mutex_objects_points); // mutex objects points
       // pcl_viewer->addPointCloud<pcl::PointXYZI>(g_cams_bbox_points_ptr[cam_order], rgb_cams_bbox_points[cam_order],
       //                                           g_bbox_topic_names[cam_order], viewports[2]);
 
-      /// bbox - pcl
-      // std::unique_lock<std::mutex> lock_cube(g_mutex_cube, std::adopt_lock); // mutex camera cube
-      // if (!g_cams_bboxs_cube_min_max[cam_order].empty())
-      // {
-      //   int cube_cout = 0;
-      //   for (const auto& cube : g_cams_bboxs_cube_min_max[cam_order])
-      //   {
-      //     std::string cube_id = "cube_cam" + std::to_string(cam_order) + "_" + std::to_string(cube_cout);
-      //     cv::Scalar cube_color = CvColor::white_;
-      //     cube_color = intToColor(static_cast<int>(cam_order));
-
-      //     pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z,
-      //                         cube_color[0], cube_color[1], cube_color[2], cube_id);  //, viewports[0]);
-      //     pcl_viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
-      //                                             pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
-      //                                             cube_id);
-      //     cube_cout++;
-      //   }
-      // }
-      // lock_cube.unlock();
       std::unique_lock<std::mutex> lock_polygon(g_mutex_polygon, std::adopt_lock); // mutex camera polygon
       if (!g_cams_bboxs_points[cam_order].empty())
       {
-        int polygon_cout = 0;
+        int cube_cout = 0;
+        // int polygon_cout = 0;
         for (const auto& points : g_cams_bboxs_points[cam_order])
         {
-          pcl::PointCloud<pcl::PointXYZI>::Ptr points_ptr = points.makeShared();
-          std::string polygon_id = "polygon_cam" + std::to_string(cam_order) + "_" + std::to_string(polygon_cout);
-          cv::Scalar polygon_color = CvColor::white_;
-          polygon_color = intToColor(static_cast<int>(cam_order));
-          pcl_viewer->addPolygon<pcl::PointXYZI>(points_ptr, 1, 0, 0, polygon_id);  //, viewports[0]);
-          polygon_cout++;
+          std::string cube_id = "cube_cam" + std::to_string(cam_order) + "_" + std::to_string(cube_cout);
+          cv::Scalar cube_color = CvColor::red_;
+          cube_color = intToColor(int(cube_cout%10));
+
+          MinMax3D cube;  // object min and max point
+          pcl::getMinMax3D(points, cube.p_min, cube.p_max);          
+          if ((cube.p_max.x - cube.p_min.x) == 0 &&  (cube.p_max.y - cube.p_min.y) == 0 && (cube.p_max.z - cube.p_min.z)== 0 )
+          {
+            // std::cout << "draw sphere" << std::endl;
+            pcl::PointXYZ single_point;
+            single_point.x = cube.p_min.x;
+            single_point.y = cube.p_min.y;
+            single_point.z = cube.p_min.z;
+            pcl_viewer->addSphere(single_point, 0.25, cube_color[2], cube_color[1], cube_color[0], "sphere");
+          }
+          else
+          {
+            // std::cout << "draw addCube" << std::endl;
+            pcl_viewer->addCube(cube.p_min.x, cube.p_max.x, cube.p_min.y, cube.p_max.y, cube.p_min.z, cube.p_max.z,
+                                cube_color[2], cube_color[1], cube_color[0], cube_id);  //, viewports[0]);
+            pcl_viewer->setShapeRenderingProperties(pcl::visualization::PCL_VISUALIZER_REPRESENTATION,
+                                          pcl::visualization::PCL_VISUALIZER_REPRESENTATION_WIREFRAME,
+                                          cube_id);
+          }
+          cube_cout++;
+          
+          // pcl::PointCloud<pcl::PointXYZI>::Ptr points_ptr = points.makeShared();
+          // std::string polygon_id = "polygon_cam" + std::to_string(cam_order) + "_" + std::to_string(polygon_cout);
+          // cv::Scalar polygon_color = CvColor::white_;
+          // polygon_color = intToColor(static_cast<int>(cam_order));
+          // pcl_viewer->addPolygon<pcl::PointXYZI>(points_ptr, 1, 0, 0, polygon_id);  //, viewports[0]);
+          // polygon_cout++;
         }
       }
       lock_polygon.unlock();
@@ -1115,7 +1124,6 @@ void runInference()
   std::vector<std::vector<PixelPosition>> cam_pixels(g_cam_ids.size());
   std::vector<std::vector<int>> cam_bboxs_class_id(g_cam_ids.size());
   std::vector<std::vector<int>> cam_bboxs_class_id_raw(g_cam_ids.size());
-  std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max(g_cam_ids.size());
   std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points(g_cam_ids.size());
 
   /// init
@@ -1223,8 +1231,6 @@ void runInference()
             pcl::copyPointCloud(*cams_bbox_points_ptr[cam_order], *g_cams_bbox_points_ptr[cam_order]);
           }
 
-          // std::lock_guard<std::mutex> lock_cube(g_mutex_cube);
-          // g_cams_bboxs_cube_min_max = cams_bboxs_cube_min_max;
           std::unique_lock<std::mutex> lock_polygon(g_mutex_polygon, std::adopt_lock);
           g_cams_bboxs_points = cams_bboxs_points;
 
@@ -1244,7 +1250,6 @@ void runInference()
 
         release(cam_pixels);
         release(cam_bboxs_class_id);
-        release(cams_bboxs_cube_min_max);
         release(cams_bboxs_points);
         release(cam_bboxs_class_id_raw);
       }
