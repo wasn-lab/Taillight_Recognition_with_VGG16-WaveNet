@@ -36,7 +36,6 @@ int main(int argc, char** argv)
   static struct sockaddr_ll sll;
   char* ifname = "can1";
   int ifindex;
-  int opt;
   int send_one_frame = 0;
   int count = 0;
 
