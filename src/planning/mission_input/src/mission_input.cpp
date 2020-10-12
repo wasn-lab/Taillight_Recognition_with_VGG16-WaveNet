@@ -82,6 +82,14 @@ void Ini_route_02_bytxt()
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
 
+void Ini_route_03_bytxt()
+{
+  std::string fpname = ros::package::getPath("mission_input");
+  std::string fpname_s = fpname + "/data/ITRI_route_03.txt"; // full route - pass 51 - end 14
+
+  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+}
+
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("mission_input");
@@ -184,10 +192,15 @@ void offline_realtime_goal_setting()
     {
       Ini_route_01_bytxt();
     }
-    else
+    else if (route_choose == 2)
     {
       Ini_route_02_bytxt();
     }
+    else
+    {
+      Ini_route_03_bytxt();
+    }
+    
     get_goal_point();
     get_checkpoint_point();
   }
