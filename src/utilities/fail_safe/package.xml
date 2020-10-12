@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>fail_safe_checker</name>
-  <version>0.1</version>
+  <name>fail_safe</name>
+  <version>0.0.1</version>
   <description>Fail-Safe checker</description>
 
   <maintainer email="chtseng@itri.org.tw">chtseng</maintainer>
@@ -10,15 +10,15 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
+  <build_depend>msgs</build_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>roscpp</exec_depend>
+  <build_export_depend>msgs</build_export_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>msgs</exec_depend>
 
 
   <export>
