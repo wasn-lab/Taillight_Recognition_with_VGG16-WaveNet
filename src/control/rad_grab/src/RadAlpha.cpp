@@ -27,6 +27,7 @@ using namespace std;
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
 void turnRadarOn(int s, int type);
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
+void frontRadFilter(msgs::Rad* rad);
 
 vector<double> Alpha_Front_Center_Param;
 vector<double> Alpha_Front_Left_Param;
@@ -41,6 +42,7 @@ int debug_message = 0;
 
 struct can_frame current_frame;
 ros::Publisher RadPub;
+int filter_distance = 6;
 
 int main(int argc, char** argv)
 {
@@ -114,6 +116,7 @@ int main(int argc, char** argv)
 
   if (current_frame.can_id == 0xC1)
   {
+    // the front radar has different enable code
     turnRadarOn(s, 1);
   }
   else
@@ -149,7 +152,12 @@ int main(int argc, char** argv)
         // 0:Have the next data, 1:Last data, 2:No object, 3:Reserved
         if (state > 0)
         {
+          if (current_frame.can_id == 0xC1)
+          {
+            frontRadFilter(&rad);
+          }
           RadPub.publish(rad);
+          count = (int)rad.radPoint.size();
           rad.radPoint.clear();
           err_count = 0;
           break;
@@ -304,6 +312,38 @@ void turnRadarOn(int s, int type)
   }
 }
 
+void frontRadFilter(msgs::Rad* rad)
+{
+  vector<msgs::PointXYZV> temp;
+  float closed_object = 200;
+
+  for (int i = 0; i < rad->radPoint.size(); i++)
+  {
+    if (rad->radPoint[i].y < closed_object)
+    {
+      if (rad->radPoint[i].y > 4)
+      {
+        closed_object = rad->radPoint[i].y;
+      }
+    }
+  }
+
+  for (int i = 0; i < rad->radPoint.size(); i++)
+  {
+    if (rad->radPoint[i].y < closed_object + filter_distance)
+    {
+      temp.push_back(rad->radPoint[i]);
+    }
+  }
+
+  rad->radPoint.clear();
+
+  for (int i = 0; i < temp.size(); i++)
+  {
+    rad->radPoint.push_back(temp[i]);
+  }
+}
+
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 {
   int id;
@@ -375,8 +415,11 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 
   p = (((frame.data[4] & 0x07) << 2) | ((frame.data[5] & 0xc0) >> 6)) * 2;
 
-  // std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
-  //           << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+  if (debug_message)
+  {
+    std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
+              << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+  }
 
   // fill data to msg
   point->x = -x;
