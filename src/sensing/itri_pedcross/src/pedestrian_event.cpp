@@ -854,6 +854,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
           }
           // store distance from plan path
+          /*
           {
             std::lock_guard<std::mutex> lk(mu_skeleton_buffer);
 
@@ -885,6 +886,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               }
             }
           }
+          */
 
           // too close to planned path
           // from center to left and right 2 meters
