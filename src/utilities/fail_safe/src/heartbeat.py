@@ -145,7 +145,6 @@ class Heartbeat(object):
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
-        heapq.heappush(self.heap, now)
 
     def update_latched_message(self):
         self.got_latched_msg = False
@@ -159,6 +158,7 @@ class Heartbeat(object):
     def heartbeat_cb(self, msg):
         if self.inspect_message_contents:
             self.msg = msg
+        heapq.heappush(self.heap, time.time())
         self._update_heap()
 
     def get_sensor_status(self):
