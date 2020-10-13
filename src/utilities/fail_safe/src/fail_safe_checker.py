@@ -109,6 +109,7 @@ class FailSafeChecker(object):
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
                 "camera": [],
+                "gps": [],
                 "lidar": [],
                 "radar": []}
         for mod_name in self.modules:
