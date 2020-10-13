@@ -13,6 +13,13 @@ void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point
   cv::circle(m_src, center_point, 1, point_color, -1, cv::FILLED, 0);
 }
 
+void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, int index)
+{
+  cv::Point center_point = cv::Point(point_u, point_v);
+  cv::Scalar point_color = intToColor(index);
+  cv::circle(m_src, center_point, 1, point_color, -1, cv::FILLED, 0);
+}
+
 void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects)
 {
   std::vector<cv::Point> cv_points(2);
