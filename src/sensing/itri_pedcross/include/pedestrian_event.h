@@ -105,8 +105,8 @@ public:
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
-  float crossing_predict(std::vector<std::vector<float>>& bbox_array, std::vector<std::vector<cv::Point2f>>& keypoint_array, int id,
-                         ros::Time time);
+  float crossing_predict(std::vector<std::vector<float>>& bbox_array,
+                         std::vector<std::vector<cv::Point2f>>& keypoint_array, int id, ros::Time time);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);

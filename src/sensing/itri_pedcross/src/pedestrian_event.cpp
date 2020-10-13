@@ -567,7 +567,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         std::vector<cv::Point2f> keypoints;
         {
           std::lock_guard<std::mutex> lk(mu_skeleton_buffer);
-          
+
           for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
           {
             if (skeleton_buffer.at(i).track_id == obj_pub.track.id)
@@ -651,7 +651,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           {
             if (skeleton_buffer.at(skeleton_index).calculated_skeleton.empty())
             {
-              skeleton_buffer.at(skeleton_index).stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
+              skeleton_buffer.at(skeleton_index)
+                  .stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
 
               keypoints = get_openpose_keypoint(croped_image);
 
@@ -715,11 +716,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
             else
             {
-              skeleton_buffer.at(skeleton_index).stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
+              skeleton_buffer.at(skeleton_index)
+                  .stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
               keypoints = skeleton_buffer.at(skeleton_index).calculated_skeleton.at(0);
-              skeleton_buffer.at(skeleton_index).calculated_skeleton.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton.begin());
+              skeleton_buffer.at(skeleton_index)
+                  .calculated_skeleton.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton.begin());
 
-              keypoints = skeleton_buffer.at(skeleton_index).stored_skeleton.at(skeleton_buffer.at(skeleton_index).stored_skeleton.size() - 1);
+              keypoints = skeleton_buffer.at(skeleton_index)
+                              .stored_skeleton.at(skeleton_buffer.at(skeleton_index).stored_skeleton.size() - 1);
 
               double w_h_ratio = (double)obj_pub.camInfo.width / (double)obj_pub.camInfo.height;
               double min_x = 0;
@@ -756,7 +760,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           {
             skeleton_buffer.at(skeleton_index).data_bbox.erase(skeleton_buffer.at(skeleton_index).data_bbox.begin());
           }
-          
+
           ros::Time inference_stop = ros::Time::now();
           average_inference_time = average_inference_time * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
 
@@ -778,7 +782,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           if (has_keypoint)
           {
             obj_pub.crossProbability =
-                crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox, skeleton_buffer.at(skeleton_index).stored_skeleton, obj.track.id, msg->header.stamp);
+                crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox,
+                                 skeleton_buffer.at(skeleton_index).stored_skeleton, obj.track.id, msg->header.stamp);
           }
           else
           {
@@ -792,7 +797,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           }
           clean_old_skeleton_buffer(skeleton_buffer, msg->header.stamp);
         }
-        
+
         obj_pub.facing_direction = get_facing_direction(keypoints);
         // obj_pub.body_direction = get_body_direction(keypoints);
 
@@ -851,7 +856,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           // store distance from plan path
           {
             std::lock_guard<std::mutex> lk(mu_skeleton_buffer);
-            
+
             for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
             {
               if (skeleton_buffer.at(i).track_id == obj_pub.track.id)
@@ -859,14 +864,19 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 skeleton_buffer.at(i).history_distance_from_path.emplace_back(min_distance_from_path);
                 if (skeleton_buffer.at(i).history_distance_from_path.size() > 10)
                 {
-                  skeleton_buffer.at(i).history_distance_from_path.erase(skeleton_buffer.at(i).history_distance_from_path.begin());
-                  if (skeleton_buffer.at(i).history_distance_from_path.at(skeleton_buffer.at(i).history_distance_from_path.size()-1)
-                  - skeleton_buffer.at(i).history_distance_from_path.at(0) < -0.5)
+                  skeleton_buffer.at(i).history_distance_from_path.erase(
+                      skeleton_buffer.at(i).history_distance_from_path.begin());
+                  if (skeleton_buffer.at(i).history_distance_from_path.at(
+                          skeleton_buffer.at(i).history_distance_from_path.size() - 1) -
+                          skeleton_buffer.at(i).history_distance_from_path.at(0) <
+                      -0.5)
                   {
                     obj_pub.crossProbability += 10;
                   }
-                  if (skeleton_buffer.at(i).history_distance_from_path.at(skeleton_buffer.at(i).history_distance_from_path.size()-1)
-                  - skeleton_buffer.at(i).history_distance_from_path.at(0) > 0.5)
+                  if (skeleton_buffer.at(i).history_distance_from_path.at(
+                          skeleton_buffer.at(i).history_distance_from_path.size() - 1) -
+                          skeleton_buffer.at(i).history_distance_from_path.at(0) >
+                      0.5)
                   {
                     obj_pub.crossProbability = -10;
                   }
@@ -1607,7 +1617,7 @@ float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_ar
                   (keypoints_x[k] != 0.0f || keypoints_y[k] != 0.0f))
               {
                 angle_ptr = get_triangle_angle(keypoints_x[m], keypoints_y[m], keypoints_x[n], keypoints_y[n],
-                                              keypoints_x[k], keypoints_y[k]);
+                                               keypoints_x[k], keypoints_y[k]);
                 angle[0] = *angle_ptr;
                 angle[1] = *(angle_ptr + 1);
                 angle[2] = *(angle_ptr + 2);
