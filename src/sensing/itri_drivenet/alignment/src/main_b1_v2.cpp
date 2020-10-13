@@ -900,7 +900,7 @@ void getSyncLidarCameraData()
         // std::cout << "--------------------------------------------------" << std::endl;
         if (objects_time[0] != ros::Time(0) && objects_time[0] != object_past_time)
         {
-          int sync_time_index = 0;
+          size_t sync_time_index = 0;
           std::vector<ros::Time>::iterator sync_times_it;
           std::vector<bool> is_cameras_update(g_cam_ids.size(), false);
           for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
