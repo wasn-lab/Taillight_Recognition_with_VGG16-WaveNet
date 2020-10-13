@@ -77,35 +77,39 @@ class FailSafeChecker(object):
         self.seq += 1
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
-        ret["status"] = _overall_status(ret["states"])
-        ret["status_str"] = _overall_status_str(ret["states"])
+        status = _overall_status(ret["states"])
+        status_str = _overall_status_str(ret["states"])
 
         if (self.modules["3d_object_detection"].get_fps() +
                 self.modules["LidarDetection"].get_fps()) == 0:
-            ret["status"] = FATAL
-            ret["status_str"] += "; Cam/Lidar detection offline at the same time"
+            status = FATAL
+            status_str += "; Cam/Lidar detection offline at the same time"
 
-        if ret["status"] == WARN:
+        if status == WARN:
             self.warn_count += 1
         else:
             self.warn_count = 0
-        if self.warn_count > 10:
-            ret["status"] = ERROR
-            ret["status_str"] = "WARN states more than 10 seconds"
+        if self.warn_count > 10 and self._get_ego_speed() > 0:
+            status = ERROR
+            status_str = "WARN states more than 10 seconds"
 
-        if ret["status"] == ERROR:
+        if status == ERROR:
             self.error_count += 1
         else:
             self.error_count = 0
         if self.error_count > 10:
-            ret["status"] = FATAL
-            ret["status_str"] = "ERROR states more than 10 seconds"
+            status = FATAL
+            status_str = "ERROR states more than 10 seconds"
+
+        ret["status"] = status
+        ret["status_str"] = status_str
 
         return ret
 
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
                 "camera": [],
+                "gps": [],
                 "lidar": [],
                 "radar": []}
         for mod_name in self.modules:

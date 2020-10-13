@@ -6,7 +6,7 @@ from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 
 def localization_state_func(msg):
     if msg is None:
-        return UNKNOWN, "UNKNOWN"
+        return ERROR, "No localizaton state message"
     state = msg.data
     low_gnss_frequency = (state & 1) > 0
     low_lidar_frequency = (state & 2) > 0
@@ -34,6 +34,21 @@ def localization_state_func(msg):
     return status, " ".join(status_strs)
 
 
+def backend_connection_state_func(msg):
+    status = ERROR
+    status_str = "No backend connection message"
+    if msg is not None:
+        connected = msg.data
+        if not connected:
+            status = ERROR
+            status_str = "Cannot connect to backend"
+        else:
+            status = OK
+            status_str = ""
+
+    return status, status_str
+
+
 class Heartbeat(object):
     def __init__(self, module_name, topic, message_type, fps_low, fps_high,
                  inspect_message_contents, latch, sensor_type=None,
@@ -52,6 +67,10 @@ class Heartbeat(object):
         if module_name == "localization_state":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = localization_state_func
+
+        if module_name == "backend_connection":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = backend_connection_state_func
 
         # internal variables:
         self.heap = []
@@ -82,7 +101,10 @@ class Heartbeat(object):
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_status(self):
+        self._update_heap()  # Clear out-of-date timestamps
         if self.inspect_func is not None:
+            if self.get_fps() == 0:
+                self.msg = None
             self.status, self.status_str = self.inspect_func(self.msg)
             return
         if self.latch:
@@ -123,7 +145,6 @@ class Heartbeat(object):
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
-        heapq.heappush(self.heap, now)
 
     def update_latched_message(self):
         self.got_latched_msg = False
@@ -137,6 +158,7 @@ class Heartbeat(object):
     def heartbeat_cb(self, msg):
         if self.inspect_message_contents:
             self.msg = msg
+        heapq.heappush(self.heap, time.time())
         self._update_heap()
 
     def get_sensor_status(self):
