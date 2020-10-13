@@ -37,7 +37,7 @@
   </node>
 
   <!--path transfer node-->
-  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" >
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer"><!-- output="screen" -->
         <param name="angle_diff_setting_in" value="$(arg angle_diff_setting_in)" />
 	<param name="angle_diff_setting_out" value="$(arg angle_diff_setting_out)" />
 	<param name="angle_diff_setting_distoturn" value="$(arg angle_diff_setting_distoturn)" />

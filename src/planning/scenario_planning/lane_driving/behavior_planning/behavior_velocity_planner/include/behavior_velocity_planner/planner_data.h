@@ -38,6 +38,9 @@
 #include <lanelet2_routing/RoutingGraphContainer.h>
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 
+#include <msgs/BusStop.h>
+#include <msgs/BusStopArray.h>
+
 
 struct PlannerData
 {
@@ -49,6 +52,7 @@ struct PlannerData
   autoware_perception_msgs::DynamicObjectArray::ConstPtr dynamic_objects;
   pcl::PointCloud<pcl::PointXYZ>::ConstPtr no_ground_pointcloud;
   lanelet::LaneletMapPtr lanelet_map;
+  msgs::BusStopArray::ConstPtr bus_stop_reserve;
 
   // other internal data
   std::map<int, autoware_perception_msgs::TrafficLightStateStamped> traffic_light_id_map_;

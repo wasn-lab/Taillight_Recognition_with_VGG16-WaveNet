@@ -38,20 +38,19 @@ std::vector<lanelet::TrafficSignConstPtr> getTrafficSignRegElemsOnPath(
 std::vector<lanelet::ConstLineString3d> getStopLinesOnPath(
   const autoware_planning_msgs::PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map)
 {
-  std::vector<lanelet::ConstLineString3d> stop_lines;
+  std::vector<lanelet::ConstLineString3d> bus_stops;
 
   for (const auto & traffic_sign_reg_elem : getTrafficSignRegElemsOnPath(path, lanelet_map)) {
     // Is stop sign?
     if (traffic_sign_reg_elem->type() != "bus_stop") {
       continue;
     }
-
     for (const auto & stop_line : traffic_sign_reg_elem->refLines()) {
-      stop_lines.push_back(stop_line);
+      bus_stops.push_back(stop_line);
     }
   }
 
-  return stop_lines;
+  return bus_stops;
 }
 
 std::set<int64_t> getStopLineIdSetOnPath(
@@ -78,10 +77,18 @@ BusStopModuleManager::BusStopModuleManager() : SceneModuleManagerInterface(getMo
 
 void BusStopModuleManager::launchNewModules(const autoware_planning_msgs::PathWithLaneId & path)
 {
-  for (const auto & stop_line : getStopLinesOnPath(path, planner_data_->lanelet_map)) {
+  msgs::BusStopArray::ConstPtr bus_stops_ = planner_data_->bus_stop_reserve;
+  for (const auto & stop_line : getStopLinesOnPath(path, planner_data_->lanelet_map)) 
+  {
     const auto module_id = stop_line.id();
-    if (!isModuleRegistered(module_id)) {
-      registerModule(std::make_shared<BusStopModule>(module_id, stop_line, planner_param_));
+    std::cout << "module id : " << module_id << std::endl;
+    for (int i=0; i < bus_stops_->busstops.size(); i++)
+    {
+      std::cout << "bus_stops_->busstops[i].BusStopId : " << bus_stops_->busstops[i].BusStopId << std::endl;
+      if (!isModuleRegistered(module_id) && module_id == bus_stops_->busstops[i].BusStopId) 
+      {
+        registerModule(std::make_shared<BusStopModule>(module_id, stop_line, planner_param_));
+      }
     }
   }
 }

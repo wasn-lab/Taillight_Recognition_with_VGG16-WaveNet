@@ -16,6 +16,8 @@
 #include <autoware_perception_msgs/TrafficLightState.h>
 #include <autoware_perception_msgs/TrafficLightStateArray.h>
 #include "msgs/Flag_Info.h"
+#include <msgs/BusStop.h>
+#include <msgs/BusStopArray.h>
 
 //For PCL
 #include <sensor_msgs/PointCloud2.h>
@@ -29,6 +31,7 @@ ros::Publisher objects_pub;
 ros::Publisher nogroundpoints_pub;
 ros::Publisher twist_pub;
 ros::Publisher trafficlight_pub;
+ros::Publisher busstop_pub;
 
 static sensor_msgs::Imu imu_data_rad;
 
@@ -185,6 +188,27 @@ void trafficDspaceCallback(const msgs::Flag_Info::ConstPtr& msg)
   trafficlight_pub.publish(trafficlightstatearray);
 }
 
+void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
+{
+  float Dspace_Flag[8] = {msg->Dspace_Flag01,msg->Dspace_Flag02,msg->Dspace_Flag03,msg->Dspace_Flag04,msg->Dspace_Flag05,msg->Dspace_Flag06,msg->Dspace_Flag07,msg->Dspace_Flag08};
+  float BuildingNum[8] = {11,51,71,58,14,0,0,0};
+  float BusStopID[8] = {402087,402140,402118,402125,402132,0,0,0};
+  msgs::BusStopArray busstoparray;
+  busstoparray.header.frame_id = "map";
+  busstoparray.header.stamp = ros::Time::now();
+  for (int i = 0; i < 8; i++)
+  {
+    if (Dspace_Flag[i] == 1)
+    {
+      msgs::BusStop busstop;
+      busstop.BuildingNum = BuildingNum[i];
+      busstop.BusStopId = BusStopID[i];
+      busstoparray.busstops.push_back(busstop);
+    }
+  }
+  busstop_pub.publish(busstoparray);
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "planning_initial");
@@ -197,11 +221,13 @@ int main(int argc, char** argv)
   ros::Subscriber imu_data_sub = node.subscribe("imu_data_rad",1,imudataCallback);
   ros::Subscriber traffic_sub = node.subscribe("/traffic", 1, trafficCallback);
   ros::Subscriber traffic_Dspace_sub = node.subscribe("/Flag_Info02", 1, trafficDspaceCallback);
+  ros::Subscriber busstop_info_sub = node.subscribe("/BusStop/Info", 1, busstopinfoCallback);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
   objects_pub = node.advertise<autoware_perception_msgs::DynamicObjectArray>("output/objects", 1, true);
   nogroundpoints_pub = node.advertise<sensor_msgs::PointCloud2>("output/lidar_no_ground", 1, true);
   twist_pub = node.advertise<geometry_msgs::TwistStamped>("/localization/twist", 1, true);
   trafficlight_pub = node.advertise<autoware_perception_msgs::TrafficLightStateArray>("output/traffic_light", 1, true);
+  busstop_pub = node.advertise<msgs::BusStopArray>("BusStop/Reserve", 1, true);
   // enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())

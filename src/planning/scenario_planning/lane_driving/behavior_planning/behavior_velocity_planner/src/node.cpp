@@ -134,6 +134,8 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode()
     pnh_.subscribe("input/vector_map", 10, &BehaviorVelocityPlannerNode::onLaneletMap, this);
   sub_traffic_light_states_ = pnh_.subscribe(
     "input/traffic_light_states", 10, &BehaviorVelocityPlannerNode::onTrafficLightStates, this);
+  sub_bus_stop_reserve_ = pnh_.subscribe(
+    "input/bus_stop_reserve", 10, &BehaviorVelocityPlannerNode::onBusStopReserve, this);
 
   // Publishers
   path_pub_ = pnh_.advertise<autoware_planning_msgs::Path>("output/path", 1);
@@ -191,6 +193,7 @@ bool BehaviorVelocityPlannerNode::isDataReady()
   if (!d.dynamic_objects) return false;
   if (!d.no_ground_pointcloud) return false;
   if (!d.lanelet_map) return false;
+  if (!d.bus_stop_reserve) return false;
 
   return true;
 }
@@ -268,6 +271,12 @@ void BehaviorVelocityPlannerNode::onTrafficLightStates(
     traffic_light_state.state = state;
     planner_data_.traffic_light_id_map_[state.id] = traffic_light_state;
   }
+}
+
+void BehaviorVelocityPlannerNode::onBusStopReserve(
+  const msgs::BusStopArray::ConstPtr & msg)
+{
+  planner_data_.bus_stop_reserve = msg;
 }
 
 void BehaviorVelocityPlannerNode::onTrigger(
