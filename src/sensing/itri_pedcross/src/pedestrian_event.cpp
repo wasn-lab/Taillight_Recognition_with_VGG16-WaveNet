@@ -2331,10 +2331,6 @@ int main(int argc, char** argv)
   pe.left_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.right_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
   pe.fov30_image_cache = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size);
-  pe.buffer_front.initial();
-  pe.buffer_left.initial();
-  pe.buffer_right.initial();
-  pe.buffer_fov30.initial();
 
   pe.openPoseROS();
 

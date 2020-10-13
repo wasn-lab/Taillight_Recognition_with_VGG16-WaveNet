@@ -31,7 +31,6 @@
 #include <ped_def.h>
 #include <map>
 #include <boost/circular_buffer.hpp>
-#include <buffer.h>
 #include <skeleton_buffer.h>
 #include <openpose.h>
 #include <openpose_ros_io.h>
@@ -143,10 +142,6 @@ public:
   std::vector<std::string> ped_info;
   std::string delay_from_camera = "NA";
   std::string chatter_callback_info = "Not running";
-  Buffer buffer_front;
-  Buffer buffer_left;
-  Buffer buffer_right;
-  Buffer buffer_fov30;
   std::vector<SkeletonBuffer> skeleton_buffer_front;
   std::vector<SkeletonBuffer> skeleton_buffer_left;
   std::vector<SkeletonBuffer> skeleton_buffer_right;
@@ -159,7 +154,6 @@ public:
   std::mutex mu_lanelet2_trajectory;
   std::mutex mu_image_cache;
   std::mutex mu_ped_info;
-  std::mutex mu_buffer;
   std::mutex mu_skeleton_buffer;
 
   // ROS components
