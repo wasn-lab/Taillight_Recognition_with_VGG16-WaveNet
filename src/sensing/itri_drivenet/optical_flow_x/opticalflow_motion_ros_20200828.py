@@ -76,8 +76,8 @@ class ObjectDetectionsWithOpticalFlow:
     def _optical_diffence(self, p0, p1, bbox_list):
         t = time.time()
         move = (p1 - p0)
-        if (move>50).any():
-            self.next_yolo = True
+        #if (move>50).any():
+        #    self.next_yolo = True
         move = move.reshape(-1, 2)
         x_move_median = np.nanmean(move[:, 0].reshape(-1, self.num_of_tracking_point), axis=1)
         y_move_median = np.nanmean(move[:, 1].reshape(-1, self.num_of_tracking_point), axis=1)
@@ -147,6 +147,7 @@ class ObjectDetectionsWithOpticalFlow:
         
     def __call__(self, image_current, image_next, boundingbox_list, num_of_tracking_point=10, resize=None, crop_threshold=None):
         tt = time.time()
+        self.next_yolo = False
         self.img1 = image_current
         self.img1_shape = self.img1.shape[0:2]
         self.img2 = image_next
@@ -159,7 +160,7 @@ class ObjectDetectionsWithOpticalFlow:
         self.output = copy.copy(boundingbox_list)
         self._grayscale()
         self.interger = True
-        self.next_yolo = False
+        
 
         if self.crop_thresh != None:
             self._bbox_group()
