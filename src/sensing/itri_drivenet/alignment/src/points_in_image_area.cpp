@@ -2,6 +2,32 @@
 
 using namespace DriveNet;
 
+void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                                      pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, Alignment& alignment)
+{
+  // std::cout << "===== getPointCloudInImageRectCoverage... =====" << std::endl;
+  /// create variable
+  pcl::PointCloud<pcl::PointXYZI> cam_points;
+  int cloud_sizes = 0;
+
+  /// copy from source
+  pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
+  cam_points = *cams_points_ptr;
+
+  /// find 3d points in image coverage
+  for (size_t i = 0; i < lidarall_ptr->size(); i++)
+  {
+    if (alignment.checkPointInCoverage(lidarall_ptr->points[i]))
+    {
+      cam_points.points[cloud_sizes] = lidarall_ptr->points[i];
+      cloud_sizes++;
+    }
+  }
+
+  /// copy to destination
+  cam_points.resize(cloud_sizes);
+  *cams_points_ptr = cam_points;
+}
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                              std::vector<PixelPosition>& cam_pixels, int image_w, int image_h, Alignment& alignment)
@@ -21,17 +47,21 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 #pragma omp parallel for
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
-    PixelPosition pixel_position{ -1, -1 };
-    pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);
-    if (pixel_position.u >= 0 && pixel_position.v >= 0)
+    if (alignment.checkPointInCoverage(lidarall_ptr->points[i]))
     {
-      if (point_cloud[pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
-          point_cloud[pixel_position.u][pixel_position.v].x == 0)
+      PixelPosition pixel_position{ -1, -1 };
+      pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);
+      if (pixel_position.u >= 0 && pixel_position.v >= 0)
       {
-        point_cloud[pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
+        if (point_cloud[pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
+            point_cloud[pixel_position.u][pixel_position.v].x == 0)
+        {
+          point_cloud[pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
+        }
       }
     }
   }
+
   /// record the 2d points(cam_pixels) and 3d points(cam_points)
   for (int u = 0; u < image_w; u++)
   {
@@ -73,19 +103,20 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
     PixelPosition pixel_position{ -1, -1 };
-    pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);
-    if (pixel_position.u >= 0 && pixel_position.v >= 0)
+    if (alignment.checkPointInCoverage(lidarall_ptr->points[i]))
     {
-      if (point_cloud[pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
-          point_cloud[pixel_position.u][pixel_position.v].x == 0)
+      pixel_position = alignment.projectPointToPixel(lidarall_ptr->points[i]);
+      if (pixel_position.u >= 0 && pixel_position.v >= 0)
       {
-        point_cloud[pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
+        if (point_cloud[pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
+            point_cloud[pixel_position.u][pixel_position.v].x == 0)
+        {
+          point_cloud[pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
+        }
       }
     }
   }
-
-/// record the 3d points
-#pragma omp parallel for collapse(2)
+  /// record the 3d points)
   for (int u = 0; u < image_w; u++)
   {
     for (int v = 0; v < image_h; v++)
@@ -93,13 +124,11 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
         cam_points.points[cloud_sizes] = point_cloud[u][v];
-#pragma omp critical
-        {
-          cloud_sizes++;
-        }
+        cloud_sizes++;
       }
     }
   }
+
   /// copy to destination
   cam_points.resize(cloud_sizes);
   *cams_points_ptr = cam_points;
@@ -107,19 +136,18 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<PixelPosition>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
-                           /*std::vector<MinMax3D>& cam_bboxs_cube_min_max,*/
+                           std::vector<std::vector<PixelPosition>>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
   /// create variable
   pcl::PointCloud<pcl::PointXYZI> cam_points;
-  int cloud_sizes = 0;
   pcl::PointCloud<pcl::PointXYZI> point_cloud_src;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointXYZI> point_vector_object;
   std::vector<pcl::PointXYZI> point_vector_objects;
+  std::vector<PixelPosition> cam_pixels_object;
 
   /// copy from source
   pcl::copyPointCloud(*cams_points_ptr, *cams_bbox_points_ptr);
@@ -131,26 +159,29 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
   {
     msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
-    // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
-      // get the 2d box
-      std::vector<PixelPosition> bbox_positions(2);
-      bbox_positions[0].u = obj_tmp.camInfo.u;
-      bbox_positions[0].v = obj_tmp.camInfo.v;
-      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-      transferPixelScaling(bbox_positions);
+      // if (alignment.checkPointInCoverage(point))
 
-      // get points in the 2d box
-      PixelPosition pixel_position{ -1, -1 };
-      pixel_position = alignment.projectPointToPixel(point);
-      if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-          pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-      {
-        cam_pixels.push_back(pixel_position);
-        point_vector_object.push_back(point);
-      }
+      // {
+        // get the 2d box
+        std::vector<PixelPosition> bbox_positions(2);
+        bbox_positions[0].u = obj_tmp.camInfo.u;
+        bbox_positions[0].v = obj_tmp.camInfo.v;
+        bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+        bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
+        transferPixelScaling(bbox_positions);
+
+        // get points in the 2d box
+        PixelPosition pixel_position{ -1, -1 };
+        pixel_position = alignment.projectPointToPixel(point);
+        if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
+            pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
+        {
+          cam_pixels_object.push_back(pixel_position);
+          point_vector_object.push_back(point);
+        }
+      // }
     }
     // std::cout << "point_vector_object size: " << point_vector_object.size() << std::endl;
 
@@ -168,7 +199,16 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
       // get points in the 3d box
       if (is_enable_default_3d_bbox)
       {
-        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr);
+        std::vector<int> inliers_remove;
+        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
+
+        if (!cloud_filtered_ptr->points.empty())
+        {   
+          for (int index = 0; index < inliers_remove.size(); index++)
+          { 
+            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
+          }
+        }
       }
       else
       {
@@ -192,27 +232,15 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
           cluster_points = cloud_cluster.getClusters(cloud_filtered_ptr, do_downsampling);
           for (const auto& points : cluster_points)
           {
-            /// bbox - pcl
-            // pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
-            // if(is_enable_default_3d_bbox)
-            // {
-            //   object_box bbox{};
-            //   bbox = getDefaultObjectBox(obj.classId);
-            //   cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
-            //   cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
-            //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
-            // }
-            // cam_bboxs_cube_min_max.push_back(cube_min_max);
             cam_bboxs_points.push_back(points);
           }
         }
         else
         {
-          /// bbox - pcl
-          // pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
-          // cam_bboxs_cube_min_max.push_back(cube_min_max);
           cam_bboxs_points.push_back(*cloud_filtered_ptr);
         }
+        cam_pixels.push_back(cam_pixels_object);
+        cam_pixels_object.clear();
         objects_2d_bbox.objects.push_back(obj_tmp);
 
         // concatenate the points of objects
@@ -226,30 +254,27 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
   for (size_t i = 0; i < point_vector_objects.size(); i++)
   {
     cam_points.points[i] = point_vector_objects[i];
-    cloud_sizes++;
   }
-  point_vector_objects.clear();
 
   /// copy to destination
-  cam_points.resize(cloud_sizes);
+  cam_points.resize(point_vector_objects.size());
   *cams_bbox_points_ptr = cam_points;
 }
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::DetectedObjectArray& remaining_objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<PixelPosition>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
-                           /*std::vector<MinMax3D>& cam_bboxs_cube_min_max,*/
+                           std::vector<std::vector<PixelPosition>>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
   /// create variable
   pcl::PointCloud<pcl::PointXYZI> cam_points;
-  int cloud_sizes = 0;
   pcl::PointCloud<pcl::PointXYZI> point_cloud_src;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointXYZI> point_vector_object;
   std::vector<pcl::PointXYZI> point_vector_objects;
+  std::vector<PixelPosition> cam_pixels_object;
 
   /// copy from source
   pcl::copyPointCloud(*cams_points_ptr, *cams_bbox_points_ptr);
@@ -270,26 +295,28 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   {
     msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
-    // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
-      // get the 2d box
-      std::vector<PixelPosition> bbox_positions(2);
-      bbox_positions[0].u = obj_tmp.camInfo.u;
-      bbox_positions[0].v = obj_tmp.camInfo.v;
-      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-      transferPixelScaling(bbox_positions);
+      // if (alignment.checkPointInCoverage(point))
+      // {
+        // get the 2d box
+        std::vector<PixelPosition> bbox_positions(2);
+        bbox_positions[0].u = obj_tmp.camInfo.u;
+        bbox_positions[0].v = obj_tmp.camInfo.v;
+        bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+        bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
+        transferPixelScaling(bbox_positions);
 
-      // get points in the 2d box
-      PixelPosition pixel_position{ -1, -1 };
-      pixel_position = alignment.projectPointToPixel(point);
-      if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-          pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-      {
-        cam_pixels.push_back(pixel_position);
-        point_vector_object.push_back(point);
-      }
+        // get points in the 2d box
+        PixelPosition pixel_position{ -1, -1 };
+        pixel_position = alignment.projectPointToPixel(point);
+        if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
+            pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
+        {
+          cam_pixels_object.push_back(pixel_position);
+          point_vector_object.push_back(point);
+        }
+      // }
     }
     // std::cout << "point_vector_object size: " << point_vector_object.size() << std::endl;
 
@@ -304,10 +331,19 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
       }
       point_vector_object.clear();
 
+      std::vector<int> inliers_remove;
+
       // get points in the 3d box
       if (is_enable_default_3d_bbox)
       {
-        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr);
+        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
+        if (!cloud_filtered_ptr->points.empty())
+        {   
+          for (int index = 0; index < inliers_remove.size(); index++)
+          { 
+            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
+          }
+        }
       }
       else
       {
@@ -331,27 +367,15 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
           cluster_points = cloud_cluster.getClusters(cloud_filtered_ptr, do_downsampling);
           for (const auto& points : cluster_points)
           {
-            /// bbox - pcl
-            // pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
-            // if(is_enable_default_3d_bbox)
-            // {
-            //   object_box bbox{};
-            //   bbox = getDefaultObjectBox(obj.classId);
-            //   cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
-            //   cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
-            //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
-            // }
-            // cam_bboxs_cube_min_max.push_back(cube_min_max);
             cam_bboxs_points.push_back(points);
           }
         }
         else
         {
-          /// bbox - pcl
-          // pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
-          // cam_bboxs_cube_min_max.push_back(cube_min_max);
           cam_bboxs_points.push_back(*cloud_filtered_ptr);
         }
+        cam_pixels.push_back(cam_pixels_object);
+        cam_pixels_object.clear();
         objects_2d_bbox.objects.push_back(obj_tmp);
 
         // concatenate the points of objects
@@ -375,17 +399,14 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   for (size_t i = 0; i < point_vector_objects.size(); i++)
   {
     cam_points.points[i] = point_vector_objects[i];
-    cloud_sizes++;
   }
-  point_vector_objects.clear();
-
   /// copy to destination
-  cam_points.resize(cloud_sizes);
+  cam_points.resize(point_vector_objects.size());
   *cams_bbox_points_ptr = cam_points;
 }
 
 void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int object_class_id,
-                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr)
+                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr,  std::vector<int>& inliers_remove)
 {
   // std::cout << "===== getPointCloudIn3DBox... =====" << std::endl;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -404,12 +425,34 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
       new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::LT, min_pt.x + bbox.length)));
 
   /// build the filter
-  pcl::ConditionalRemoval<pcl::PointXYZI> condrem;
+  pcl::ConditionalRemoval<pcl::PointXYZI> condrem(true);
   condrem.setCondition(range_cond);
   cloud_ptr = cloud_src.makeShared();
   condrem.setInputCloud(cloud_ptr);
   condrem.setKeepOrganized(false);
 
+  /// set input index
+  pcl::PointIndicesPtr inliers_input(new pcl::PointIndices);
+  if (!cloud_src.empty())
+  {
+    for (int i = 0; i< cloud_src.size(); i++)
+    {
+      inliers_input->indices.push_back(i);
+    }
+    condrem.setIndices(inliers_input);
+  }
   /// apply filter
   condrem.filter(*cloud_filtered_ptr);
+
+  /// get remove index
+  if (!inliers_input->indices.empty())
+  {
+    pcl::IndicesConstPtr indices_remove;
+    indices_remove = condrem.getRemovedIndices();
+    for(size_t i = 0; i< indices_remove->size(); i++)
+    {
+      // std::cout<<(*indices_remove)[i]<<": ";
+      inliers_remove.push_back((*indices_remove)[i]);
+    }
+  }
 }

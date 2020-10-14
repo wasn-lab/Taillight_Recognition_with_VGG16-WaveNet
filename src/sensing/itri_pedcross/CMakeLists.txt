@@ -91,6 +91,8 @@ set(CPP_FILES
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
+add_executable(tracking_view src/tracking_view.cpp)
+add_executable(alert_collector src/alert_collector.cpp)
 
 if(EXISTS /usr/local/lib/libopencv_core.so)
 target_link_libraries(
@@ -102,6 +104,13 @@ target_link_libraries(
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
+target_link_libraries(
+    tracking_view
+    /usr/local/lib/libopencv_core.so
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
 else()
 target_link_libraries(
     itri_pedcross
@@ -111,9 +120,24 @@ target_link_libraries(
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
+target_link_libraries(
+    tracking_view
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
 endif()
 
+target_link_libraries(
+    alert_collector
+    ${catkin_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
+
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
+add_dependencies(tracking_view ${catkin_EXPORTED_TARGETS})
+add_dependencies(alert_collector ${catkin_EXPORTED_TARGETS})
+
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
 
