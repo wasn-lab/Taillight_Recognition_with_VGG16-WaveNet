@@ -44,8 +44,10 @@ bool BusStopModule::modifyPathVelocity(
   bg::model::linestring<Point> bus_stop = {
     {bus_stop_[0].x(), bus_stop_[0].y()}, {bus_stop_[1].x(), bus_stop_[1].y()}};
 
-  if (state_ == State::APPROACH) {
-    for (size_t i = 0; i < path->points.size() - 1; ++i) {
+  if (state_ == State::APPROACH) 
+  {
+    for (size_t i = 0; i < path->points.size() - 1; ++i) 
+    {
       bg::model::linestring<Point> line = {
         {path->points.at(i).point.pose.position.x, path->points.at(i).point.pose.position.y},
         {path->points.at(i + 1).point.pose.position.x,
@@ -64,8 +66,10 @@ bool BusStopModule::modifyPathVelocity(
       point1 << collision_points.at(0).x(), collision_points.at(0).y();
       point2 << path->points.at(i).point.pose.position.x, path->points.at(i).point.pose.position.y;
       length_sum += (point2 - point1).norm();
-      for (size_t j = i; 0 < j; --j) {
-        if (stop_length < length_sum) {
+      for (size_t j = i; 0 < j; --j) 
+      {
+        if (stop_length < length_sum) 
+        {
           insert_stop_point_idx = j + 1;
           break;
         }
@@ -84,7 +88,8 @@ bool BusStopModule::modifyPathVelocity(
       stop_point_with_lane_id.point.pose.position.x = stop_point.x();
       stop_point_with_lane_id.point.pose.position.y = stop_point.y();
       stop_point_with_lane_id.point.twist.linear.x = 0.0;
-      if (stop_point_idx < first_stop_path_point_index_) {
+      if (stop_point_idx < first_stop_path_point_index_) 
+      {
         first_stop_path_point_index_ = stop_point_idx;
         debug_data_.first_stop_pose = stop_point_with_lane_id.point.pose;
       }
@@ -107,7 +112,9 @@ bool BusStopModule::modifyPathVelocity(
     if (dist < planner_param_.stop_check_dist && planner_data_->isVehicleStopping())
       state_ = State::STOP;
     return true;
-  } else if (state_ == State::STOP) {
+  } 
+  else if (state_ == State::STOP) 
+  {
     if (!planner_data_->isVehicleStopping()) state_ = State::START;
     /* get stop point and stop factor */
     autoware_planning_msgs::StopFactor stop_factor;

@@ -47,12 +47,10 @@
 #ifndef OBJECTS_TO_COSTMAP_H
 #define OBJECTS_TO_COSTMAP_H
 
-// headers in ROS
 #include <ros/ros.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 
-// headers in local directory
-#include "autoware_perception_msgs/DynamicObjectArray.h"
+#include <autoware_perception_msgs/DynamicObjectArray.h>
 
 class ObjectsToCostmap
 {

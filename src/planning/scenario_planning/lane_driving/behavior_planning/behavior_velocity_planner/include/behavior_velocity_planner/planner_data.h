@@ -73,7 +73,7 @@ struct PlannerData
   bool isVehicleStopping() const
   {
     if (!current_velocity) return false;
-    return current_velocity->twist.linear.x < 0.1;
+    return current_velocity->twist.linear.x < 0.5; // 0.1
   }
 
   std::shared_ptr<autoware_perception_msgs::TrafficLightStateStamped> getTrafficLightState(const int id) const
