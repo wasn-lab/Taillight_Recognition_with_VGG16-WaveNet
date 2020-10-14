@@ -38,9 +38,9 @@ class ros_detect_opticalflow:
         self.full_image_info = []
         self.full_bbox_info = []
         self.keep_data_object = []
-        topic_list = ['front_bottom_60','front_top_far_30','front_top_close_120','right_front_60','right_back_60',\
-                      'left_front_60','left_back_60','back_top_120']
-        self.inputTopic = topic_list[0] #rospy.get_param("~topic")
+        #topic_list = ['front_bottom_60','front_top_far_30','front_top_close_120','right_front_60','right_back_60',\
+        #              'left_front_60','left_back_60','back_top_120']
+        self.inputTopic = rospy.get_param("~topic")
         rospy.init_node('listener', anonymous=True)
         
     def ros_subscriber_image(self):
