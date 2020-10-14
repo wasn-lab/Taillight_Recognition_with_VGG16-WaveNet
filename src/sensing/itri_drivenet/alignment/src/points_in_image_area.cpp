@@ -420,7 +420,7 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   /// build the condition
   pcl::ConditionAnd<pcl::PointXYZI>::Ptr range_cond(new pcl::ConditionAnd<pcl::PointXYZI>());
   range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-      new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::GT, min_pt.x)));
+      new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::GT, min_pt.x - 0.0001)));
   range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
       new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::LT, min_pt.x + bbox.length)));
 
