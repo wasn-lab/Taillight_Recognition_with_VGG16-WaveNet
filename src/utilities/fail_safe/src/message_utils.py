@@ -1,7 +1,7 @@
 """
 Return the corresponding class for a given msg_name
 """
-from std_msgs.msg import Bool, Empty, Int32
+from std_msgs.msg import Bool, Empty, Float64, Int32
 from msgs.msg import DetectedObjectArray, VehInfo, BackendInfo
 
 MSG_TO_CLASS = {
@@ -9,6 +9,7 @@ MSG_TO_CLASS = {
     "Bool": Bool,
     "DetectedObjectArray": DetectedObjectArray,
     "Empty": Empty,
+    "Float64": Float64,
     "Int32": Int32,
     "VehInfo": VehInfo}
 

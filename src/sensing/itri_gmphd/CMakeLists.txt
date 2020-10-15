@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(itri_gmphd)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+include(CompilerFlags)
 
 set(CATKIN_REQUIRED_COMPONENTS
     roscpp
@@ -14,11 +15,7 @@ set(CATKIN_REQUIRED_COMPONENTS
     )
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-
 set(GMPHD_DIR ${Project_SOURCE_DIR}/sensing/itri_gmphd/)
-
-include(CompilerFlags)
 
 find_package(OpenCV
   PATHS /usr/local

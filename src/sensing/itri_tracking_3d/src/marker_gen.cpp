@@ -27,6 +27,14 @@ void MarkerGen::set_marker_attr(visualization_msgs::Marker& marker, const geomet
   marker.pose.orientation.w = 1.0;
 }
 
+void MarkerGen::copy_if_empty_time(ros::Time& stamp_to_check)
+{
+  if (stamp_to_check.sec == 0 && stamp_to_check.nsec == 0)
+  {
+    stamp_to_check = header_.stamp;
+  }
+}
+
 visualization_msgs::Marker MarkerGen::create_seq_marker(const unsigned int idx, const geometry_msgs::Point point)
 {
   visualization_msgs::Marker marker;
@@ -64,11 +72,9 @@ visualization_msgs::Marker MarkerGen::create_box_marker(const unsigned int idx, 
 {
   visualization_msgs::Marker marker;
 
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
+  copy_if_empty_time(obj_header.stamp);
+
   marker.header = obj_header;
-#endif
   marker.ns = "Track3D_b";
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.orientation.w = 1.0;
@@ -149,15 +155,13 @@ std::string MarkerGen::parse_source_id(unsigned int source_id)
 }
 
 visualization_msgs::Marker MarkerGen::create_trackid_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                            const msgs::DetectedObject& obj)
+                                                            msgs::DetectedObject obj)
 {
   visualization_msgs::Marker marker;
 
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
+  copy_if_empty_time(obj.header.stamp);
+
   marker.header = obj.header;
-#endif
   marker.ns = "Track3D_i";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
@@ -206,11 +210,9 @@ visualization_msgs::Marker MarkerGen::create_speed_marker(const unsigned int idx
 {
   visualization_msgs::Marker marker;
 
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
+  copy_if_empty_time(obj_header.stamp);
+
   marker.header = obj_header;
-#endif
   marker.ns = "Track3D_s";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
@@ -243,11 +245,9 @@ visualization_msgs::Marker MarkerGen::create_vel_marker(const unsigned int idx, 
 {
   visualization_msgs::Marker marker;
 
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
+  copy_if_empty_time(obj_header.stamp);
+
   marker.header = obj_header;
-#endif
   marker.ns = "Track3D_v";
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = idx;
