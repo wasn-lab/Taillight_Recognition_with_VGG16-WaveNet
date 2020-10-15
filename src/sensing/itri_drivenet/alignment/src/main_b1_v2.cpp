@@ -90,6 +90,7 @@ bool g_is_enable_default_3d_bbox = true;
 bool g_do_clustering = false;
 bool g_data_sync = true;  // trun on or trun off data sync function
 bool g_is_display = false;
+bool g_use_nonground_data = false;
 
 /// inference params
 bool g_is_data_sync = false;
@@ -851,7 +852,7 @@ void getSyncLidarCameraData()
   std::cout << "getSyncLidarCameraData start." << std::endl;
   bool is_camera_update = false;
   bool is_lidar_update = false;
-  // bool is_lidarall_nonground_update = false;
+  bool is_lidarall_nonground_update = false;
   bool is_lidar_ssn_update = false;
   std::vector<std::vector<ros::Time>> cam_times_tmp(g_cam_ids.size());
   std::vector<ros::Time> lidarall_times_tmp;
@@ -861,17 +862,29 @@ void getSyncLidarCameraData()
   ros::Time object_past_time = ros::Time(0);
   ros::Duration duration_time(3);
 
+  if (!g_use_nonground_data)
+  {
+    g_lidarall_nonground_times.push_back(ros::Time(0));
+  }
+
   ros::Rate loop_rate(20);
   while (ros::ok())
   {
-    if (!g_cam_times[0].empty() && !g_lidarall_times.empty() /*&& !g_lidarall_nonground_times.empty()*/ &&
+    if (!g_cam_times[0].empty() && !g_lidarall_times.empty() && !g_lidarall_nonground_times.empty() &&
         !g_lidar_ssn_times.empty() && !g_is_data_sync)
     {
       if (g_is_object_update[0])
       {
         is_camera_update = false;
         is_lidar_update = false;
-        // is_lidarall_nonground_update = false;
+        if (g_use_nonground_data)
+        {
+          is_lidarall_nonground_update = false;
+        }
+        else
+        {
+          is_lidarall_nonground_update = true;
+        }
         is_lidar_ssn_update = false;
         g_is_object_update[0] = false;
 
@@ -888,7 +901,10 @@ void getSyncLidarCameraData()
 
         lidarall_times_tmp = g_lidarall_times;
 
-        // lidarall_nonground_times_tmp = g_lidarall_nonground_times;
+        if(g_use_nonground_data)
+        {
+          lidarall_nonground_times_tmp = g_lidarall_nonground_times;
+        }
 
         lidar_ssn_times_tmp = g_lidar_ssn_times;
 
@@ -969,45 +985,49 @@ void getSyncLidarCameraData()
             }
           }
           /// lidar nonground
-          // sync_times_it =
-          //     std::find(lidarall_nonground_times_tmp.begin(), lidarall_nonground_times_tmp.end(), sync_lidar_time);
-          // sync_time_index = std::distance(lidarall_nonground_times_tmp.begin(), sync_times_it);
-          // // std::cout << "lidarall_nonground_times_tmp[sync_time_index]: " <<
-          // // lidarall_nonground_times_tmp[sync_time_index] << std::endl;
-          // if (sync_times_it != lidarall_nonground_times_tmp.end())
-          // {
-          //   ros::Time sync_lidarall_nonground_time = lidarall_nonground_times_tmp[sync_time_index];
-          //   // std::cout << "sync_lidarall_nonground_time: " << sync_lidarall_nonground_time.sec << "." <<
-          //   // sync_lidarall_nonground_time.nsec <<
-          //   // std::endl;
+          if (g_use_nonground_data)
+          {
+            sync_times_it =
+                std::find(lidarall_nonground_times_tmp.begin(), lidarall_nonground_times_tmp.end(), sync_lidar_time);
+            sync_time_index = std::distance(lidarall_nonground_times_tmp.begin(), sync_times_it);
+            // std::cout << "lidarall_nonground_times_tmp[sync_time_index]: " <<
+            // lidarall_nonground_times_tmp[sync_time_index] << std::endl;
+            if (sync_times_it != lidarall_nonground_times_tmp.end())
+            {
+              ros::Time sync_lidarall_nonground_time = lidarall_nonground_times_tmp[sync_time_index];
 
-          //   if (sync_lidarall_nonground_time == ros::Time(0))
-          //   {
-          //     for (size_t index = sync_time_index; index < lidarall_nonground_times_tmp.size(); index++)
-          //     {
-          //       if (lidarall_nonground_times_tmp[index] != ros::Time(0))
-          //       {
-          //         sync_lidarall_nonground_time = lidarall_nonground_times_tmp[index];
-          //         break;
-          //       }
-          //     }
-          //   }
-          //   if (sync_lidarall_nonground_time == ros::Time(0))
-          //   {
-          //     is_lidarall_nonground_update = false;
-          //   }
-          //   else
-          //   {
-          //     pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_nonground_ptr =
-          //         getSpecificTimeLidarMessage(g_cache_lidarall_nonground, sync_lidarall_nonground_time, duration_time);
-          //     if (lidarall_nonground_ptr != nullptr)
-          //     {
-          //       std::lock_guard<std::mutex> lock_lidar_nonground(g_mutex_lidar_nonground);
-          //       *g_lidarall_nonground_ptr = *lidarall_nonground_ptr;
-          //       is_lidarall_nonground_update = true;
-          //     }
-          //   }
-          // }
+              if (sync_lidarall_nonground_time == ros::Time(0))
+              {
+                for (size_t index = sync_time_index; index < lidarall_nonground_times_tmp.size(); index++)
+                {
+                  if (lidarall_nonground_times_tmp[index] != ros::Time(0))
+                  {
+                    sync_lidarall_nonground_time = lidarall_nonground_times_tmp[index];
+                    break;
+                  }
+                }
+              }
+              if (sync_lidarall_nonground_time == ros::Time(0))
+              {
+                is_lidarall_nonground_update = false;
+                std::cout << "Not found the same timestamp in lidar nonground time buffer." << std::endl;
+              }
+              else
+              {
+                // std::cout << "sync_lidarall_nonground_time: " << sync_lidarall_nonground_time.sec << "." <<
+                // sync_lidarall_nonground_time.nsec <<
+                // std::endl;
+                pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_nonground_ptr =
+                    getSpecificTimeLidarMessage(g_cache_lidarall_nonground, sync_lidarall_nonground_time, duration_time);
+                if (lidarall_nonground_ptr != nullptr)
+                {
+                  std::lock_guard<std::mutex> lock_lidar_nonground(g_mutex_lidar_nonground);
+                  *g_lidarall_nonground_ptr = *lidarall_nonground_ptr;
+                  is_lidarall_nonground_update = true;
+                }
+              }
+            }
+          }
           /// lidar ssn
           if (is_lidar_update)
           {
@@ -1091,7 +1111,7 @@ void getSyncLidarCameraData()
           std::cout << "Not found the same timestamp in camera time buffer." << std::endl;
         }
         object_past_time = objects_time[0];
-        if (is_camera_update && is_lidar_update /*&& is_lidarall_nonground_update*/ && is_lidar_ssn_update)
+        if (is_camera_update && is_lidar_update && is_lidarall_nonground_update && is_lidar_ssn_update)
         {
           g_is_data_sync = true;
         }
@@ -1195,16 +1215,23 @@ void runInference()
         /// get points on image
         std::thread getPointCloudInAllImageRectCoverage_1(getPointCloudInAllImageRectCoverage, lidar_ssn_ptr,
                                                           std::ref(cams_points_ptr));
-        // std::thread get_point_in_image_fov_thread_2(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
-        //                                             std::ref(cams_raw_points_ptr), g_image_w, g_image_h);
+        std::thread get_point_in_image_fov_thread_2;
+        if(g_use_nonground_data)
+        {
+          get_point_in_image_fov_thread_2 = std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
+                                                      std::ref(cams_raw_points_ptr), g_image_w, g_image_h);
+        }
         getPointCloudInAllImageRectCoverage_1.join();
 
         /// get points in bbox
         getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
                                  objects_2d_bbox_arrs, cams_bboxs_points);
-        // get_point_in_image_fov_thread_2.join();
-        // getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels,
-        //                          objects_2d_bbox_arrs, cams_bboxs_points);
+        if(g_use_nonground_data)
+        {
+          get_point_in_image_fov_thread_2.join();
+          getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels,
+                                 objects_2d_bbox_arrs, cams_bboxs_points);
+        }
 
         /// publish bbox or polygon
         object_publisher(objects_2d_bbox_arrs, cams_bboxs_points, object_arrs[0].header);
@@ -1261,7 +1288,7 @@ void buffer_monitor()
 {
   std::vector<ros::Time> cam_single_time_last(g_cam_ids.size());
   ros::Time lidarall_time_last = ros::Time(0);
-  // ros::Time lidarall_nonground_time_last = ros::Time(0);
+  ros::Time lidarall_nonground_time_last = ros::Time(0);
   ros::Time lidar_ssn_time_last = ros::Time(0);
   /// main loop
   ros::Rate loop_rate(20);
@@ -1297,16 +1324,20 @@ void buffer_monitor()
       }
       lock_lidar_time.unlock();
 
-      // std::unique_lock<std::mutex> lock_lidar_nonground_time(g_mutex_lidar_nonground_time, std::adopt_lock);
-      // if (!g_lidarall_nonground_time_buffer.empty())
-      // {
-      //   lidarall_nonground_time_last = g_lidarall_nonground_time_buffer.front();  // store last timestamp
-      //   // std::cout  <<"lidarall_nonground_time_last:    " << lidarall_nonground_time_last.sec << "." <<
-      //   // lidarall_nonground_time_last.nsec << " store" <<
-      //   // std::endl;
+      if(g_use_nonground_data)
+      {
+        std::unique_lock<std::mutex> lock_lidar_nonground_time(g_mutex_lidar_nonground_time, std::adopt_lock);
+        if (!g_lidarall_nonground_time_buffer.empty())
+        {
+          lidarall_nonground_time_last = g_lidarall_nonground_time_buffer.front();  // store last timestamp
+          // std::cout  <<"lidarall_nonground_time_last:    " << lidarall_nonground_time_last.sec << "." <<
+          // lidarall_nonground_time_last.nsec << " store" <<
+          // std::endl;
 
-      //   g_lidarall_nonground_time_buffer.erase(g_lidarall_nonground_time_buffer.begin());
-      // }
+          g_lidarall_nonground_time_buffer.erase(g_lidarall_nonground_time_buffer.begin());
+        }
+        lock_lidar_nonground_time.unlock();
+      }
 
       std::unique_lock<std::mutex> lock_lidar_ssn_time(g_mutex_lidar_ssn_time, std::adopt_lock);
       if (!g_lidar_ssn_time_buffer.empty())
@@ -1326,7 +1357,10 @@ void buffer_monitor()
         g_cam_times[cam_order].push_back(cam_single_time_last[cam_order]);
       }
       g_lidarall_times.push_back(lidarall_time_last);
-      // g_lidarall_nonground_times.push_back(lidarall_nonground_time_last);
+      if(g_use_nonground_data)
+      {
+        g_lidarall_nonground_times.push_back(lidarall_nonground_time_last);
+      }
       g_lidar_ssn_times.push_back(lidar_ssn_time_last);
       lock_data.unlock();
 
@@ -1340,9 +1374,11 @@ void buffer_monitor()
                                        g_cam_times[cam_order].begin() + g_buffer_size / 3);
         }
         g_lidarall_times.erase(g_lidarall_times.begin(), g_lidarall_times.begin() + g_buffer_size / 3);
-        // g_lidarall_nonground_times.erase(g_lidarall_nonground_times.begin(),
-        //                                  g_lidarall_nonground_times.begin() + g_buffer_size / 3);
-
+        if(g_use_nonground_data)
+        {
+          g_lidarall_nonground_times.erase(g_lidarall_nonground_times.begin(),
+                                          g_lidarall_nonground_times.begin() + g_buffer_size / 3);
+        }
         g_lidar_ssn_times.erase(g_lidar_ssn_times.begin(), g_lidar_ssn_times.begin() + g_buffer_size / 3);
         lock_data.unlock();
       }
@@ -1397,7 +1433,10 @@ int main(int argc, char** argv)
     }
 
     lidarall = nh.subscribe("/LidarAll", 1, callback_lidarall);
-    // lidarall_nonground = nh.subscribe("/LidarAll/NonGround", 1, callback_lidarall_nonground);
+    if(g_use_nonground_data)
+    {
+      lidarall_nonground = nh.subscribe("/LidarAll/NonGround", 1, callback_lidarall_nonground);
+    }
     lidar_ssn_sub = nh.subscribe("/squ_seg/result_cloud", 1, callback_ssn);
   }
   else
@@ -1418,10 +1457,13 @@ int main(int argc, char** argv)
     g_cache_lidarall.connectInput(sub_filter_lidarall);
     g_cache_lidarall.registerCallback(callback_lidarall);
 
-    // sub_filter_lidarall_nonground.subscribe(nh, "/LidarAll/NonGround", 1);
-    // g_cache_lidarall_nonground.setCacheSize(g_buffer_size);
-    // g_cache_lidarall_nonground.connectInput(sub_filter_lidarall_nonground);
-    // g_cache_lidarall_nonground.registerCallback(callback_lidarall_nonground);
+    if(g_use_nonground_data)
+    {
+      sub_filter_lidarall_nonground.subscribe(nh, "/LidarAll/NonGround", 1);
+      g_cache_lidarall_nonground.setCacheSize(g_buffer_size);
+      g_cache_lidarall_nonground.connectInput(sub_filter_lidarall_nonground);
+      g_cache_lidarall_nonground.registerCallback(callback_lidarall_nonground);
+    }
 
     sub_filter_lidar_ssn.subscribe(nh, "/squ_seg/result_cloud", 1);
     g_cache_lidar_ssn.setCacheSize(g_buffer_size);
