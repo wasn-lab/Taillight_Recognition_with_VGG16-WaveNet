@@ -111,6 +111,12 @@ bool BusStopModule::modifyPathVelocity(
     const double dist = std::sqrt(x * x + y * y);
     if (dist < planner_param_.stop_check_dist && planner_data_->isVehicleStopping())
       state_ = State::STOP;
+
+    /* get stop point and stop factor */
+    autoware_planning_msgs::StopFactor stop_factor;
+    stop_factor.stop_pose = debug_data_.first_stop_pose;
+    stop_factor.stop_factor_points.emplace_back(getCenterOfStopLine(bus_stop_));
+    planning_utils::appendStopReason(stop_factor, stop_reason);
     return true;
   } 
   else if (state_ == State::STOP) 

@@ -60,13 +60,16 @@ autoware_planning_msgs::PathWithLaneId BehaviorVelocityPlannerManager::planPathV
   int first_stop_path_point_index = static_cast<int>(output_path_msg.points.size() - 1);
   std::string stop_reason_msg("path_end");
 
-  for (const auto & scene_manager_ptr : scene_manager_ptrs_) {
+  for (const auto & scene_manager_ptr : scene_manager_ptrs_) 
+  {
     scene_manager_ptr->updateSceneModuleInstances(planner_data, input_path_msg);
     scene_manager_ptr->modifyPathVelocity(&output_path_msg);
     boost::optional<int> firstStopPathPointIndex = scene_manager_ptr->getFirstStopPathPointIndex();
 
-    if (firstStopPathPointIndex) {
-      if (firstStopPathPointIndex.get() < first_stop_path_point_index) {
+    if (firstStopPathPointIndex) 
+    {
+      if (firstStopPathPointIndex.get() < first_stop_path_point_index) 
+      {
         first_stop_path_point_index = firstStopPathPointIndex.get();
         stop_reason_msg = scene_manager_ptr->getModuleName();
       }

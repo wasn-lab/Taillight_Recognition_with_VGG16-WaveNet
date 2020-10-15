@@ -37,6 +37,7 @@
     <remap from="~input/bus_stop_reserve" to="$(arg input_bus_stop_topic_name)" />
     <remap from="~output/path" to="path" />
     <remap from="~output/stop_reasons" to="/planning/scenario_planning/status/stop_reasons" />
+    <remap from="~output/behavior_scene_register" to="/planning/scenario_planning/status/behavior_scene_register" />
     <remap from="~output/traffic_light_state" to="debug/traffic_light_state" />
 
     <param name="launch_stop_line" value="$(arg launch_stop_line)" />

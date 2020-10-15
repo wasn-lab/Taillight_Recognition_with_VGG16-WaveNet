@@ -29,6 +29,8 @@
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <msgs/BehaviorSceneRegister.h>
+
 class SceneModuleInterface
 {
 public:
@@ -63,6 +65,8 @@ public:
     pub_debug_ = private_nh_.advertise<visualization_msgs::MarkerArray>(ns, 20);
     pub_stop_reason_ =
       private_nh_.advertise<autoware_planning_msgs::StopReasonArray>("output/stop_reasons", 20);
+    pub_register_type_ =
+      private_nh_.advertise<msgs::BehaviorSceneRegister>("output/behavior_scene_register", 20, true);
   }
 
   virtual ~SceneModuleManagerInterface() = default;
@@ -140,6 +144,14 @@ protected:
     ROS_INFO("register task: module = %s, id = %lu", getModuleName(), scene_module->getModuleId());
     registered_module_id_set_.emplace(scene_module->getModuleId());
     scene_modules_.insert(scene_module);
+    
+    msgs::BehaviorSceneRegister register_;
+    register_.header.frame_id = "map";
+    register_.header.stamp = ros::Time::now();
+    register_.Module = getModuleName();
+    register_.ModuleId = scene_module->getModuleId();
+    register_.RegisterFlag = 1;
+    pub_register_type_.publish(register_);
   }
 
   void unregisterModule(const std::shared_ptr<SceneModuleInterface> & scene_module)
@@ -148,6 +160,14 @@ protected:
       "unregister task: module = %s, id = %lu", getModuleName(), scene_module->getModuleId());
     registered_module_id_set_.erase(scene_module->getModuleId());
     scene_modules_.erase(scene_module);
+
+    msgs::BehaviorSceneRegister unregister_;
+    unregister_.header.frame_id = "map";
+    unregister_.header.stamp = ros::Time::now();
+    unregister_.Module = getModuleName();
+    unregister_.ModuleId = scene_module->getModuleId();
+    unregister_.RegisterFlag = 0;
+    pub_register_type_.publish(unregister_);
   }
 
   std::set<std::shared_ptr<SceneModuleInterface>> scene_modules_;
@@ -161,4 +181,7 @@ protected:
   ros::NodeHandle private_nh_{"~"};
   ros::Publisher pub_debug_;
   ros::Publisher pub_stop_reason_;
+
+  // register and unregister pub
+  ros::Publisher pub_register_type_;
 };

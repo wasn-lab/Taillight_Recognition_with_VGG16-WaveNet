@@ -81,10 +81,10 @@ void BusStopModuleManager::launchNewModules(const autoware_planning_msgs::PathWi
   for (const auto & stop_line : getStopLinesOnPath(path, planner_data_->lanelet_map)) 
   {
     const auto module_id = stop_line.id();
-    std::cout << "module id : " << module_id << std::endl;
+    // std::cout << "module id : " << module_id << std::endl;
     for (int i=0; i < bus_stops_->busstops.size(); i++)
     {
-      std::cout << "bus_stops_->busstops[i].BusStopId : " << bus_stops_->busstops[i].BusStopId << std::endl;
+      // std::cout << "bus_stops_->busstops[i].BusStopId : " << bus_stops_->busstops[i].BusStopId << std::endl;
       if (!isModuleRegistered(module_id) && module_id == bus_stops_->busstops[i].BusStopId) 
       {
         registerModule(std::make_shared<BusStopModule>(module_id, stop_line, planner_param_));
