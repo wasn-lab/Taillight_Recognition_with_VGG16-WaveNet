@@ -136,7 +136,8 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<std::vector<PixelPosition>>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
+                           std::vector<std::vector<PixelPosition>>& cam_pixels,
+                           msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
@@ -164,23 +165,23 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
       // if (alignment.checkPointInCoverage(point))
 
       // {
-        // get the 2d box
-        std::vector<PixelPosition> bbox_positions(2);
-        bbox_positions[0].u = obj_tmp.camInfo.u;
-        bbox_positions[0].v = obj_tmp.camInfo.v;
-        bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-        bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-        transferPixelScaling(bbox_positions);
+      // get the 2d box
+      std::vector<PixelPosition> bbox_positions(2);
+      bbox_positions[0].u = obj_tmp.camInfo.u;
+      bbox_positions[0].v = obj_tmp.camInfo.v;
+      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
+      transferPixelScaling(bbox_positions);
 
-        // get points in the 2d box
-        PixelPosition pixel_position{ -1, -1 };
-        pixel_position = alignment.projectPointToPixel(point);
-        if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-            pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-        {
-          cam_pixels_object.push_back(pixel_position);
-          point_vector_object.push_back(point);
-        }
+      // get points in the 2d box
+      PixelPosition pixel_position{ -1, -1 };
+      pixel_position = alignment.projectPointToPixel(point);
+      if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
+          pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
+      {
+        cam_pixels_object.push_back(pixel_position);
+        point_vector_object.push_back(point);
+      }
       // }
     }
     // std::cout << "point_vector_object size: " << point_vector_object.size() << std::endl;
@@ -203,9 +204,9 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
         getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
 
         if (!cloud_filtered_ptr->points.empty())
-        {   
+        {
           for (int index = 0; index < inliers_remove.size(); index++)
-          { 
+          {
             cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
           }
         }
@@ -263,7 +264,8 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::DetectedObjectArray& remaining_objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<std::vector<PixelPosition>>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
+                           std::vector<std::vector<PixelPosition>>& cam_pixels,
+                           msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
@@ -299,23 +301,23 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
     {
       // if (alignment.checkPointInCoverage(point))
       // {
-        // get the 2d box
-        std::vector<PixelPosition> bbox_positions(2);
-        bbox_positions[0].u = obj_tmp.camInfo.u;
-        bbox_positions[0].v = obj_tmp.camInfo.v;
-        bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-        bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-        transferPixelScaling(bbox_positions);
+      // get the 2d box
+      std::vector<PixelPosition> bbox_positions(2);
+      bbox_positions[0].u = obj_tmp.camInfo.u;
+      bbox_positions[0].v = obj_tmp.camInfo.v;
+      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
+      transferPixelScaling(bbox_positions);
 
-        // get points in the 2d box
-        PixelPosition pixel_position{ -1, -1 };
-        pixel_position = alignment.projectPointToPixel(point);
-        if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-            pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-        {
-          cam_pixels_object.push_back(pixel_position);
-          point_vector_object.push_back(point);
-        }
+      // get points in the 2d box
+      PixelPosition pixel_position{ -1, -1 };
+      pixel_position = alignment.projectPointToPixel(point);
+      if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
+          pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
+      {
+        cam_pixels_object.push_back(pixel_position);
+        point_vector_object.push_back(point);
+      }
       // }
     }
     // std::cout << "point_vector_object size: " << point_vector_object.size() << std::endl;
@@ -338,9 +340,9 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
       {
         getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
         if (!cloud_filtered_ptr->points.empty())
-        {   
+        {
           for (int index = 0; index < inliers_remove.size(); index++)
-          { 
+          {
             cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
           }
         }
@@ -406,7 +408,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
 }
 
 void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int object_class_id,
-                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr,  std::vector<int>& inliers_remove)
+                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr, std::vector<int>& inliers_remove)
 {
   // std::cout << "===== getPointCloudIn3DBox... =====" << std::endl;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -420,7 +422,7 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   /// build the condition
   pcl::ConditionAnd<pcl::PointXYZI>::Ptr range_cond(new pcl::ConditionAnd<pcl::PointXYZI>());
   range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
-      new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::GT, min_pt.x)));
+      new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::GT, min_pt.x - 0.0001)));
   range_cond->addComparison(pcl::FieldComparison<pcl::PointXYZI>::ConstPtr(
       new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::LT, min_pt.x + bbox.length)));
 
@@ -435,7 +437,7 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   pcl::PointIndicesPtr inliers_input(new pcl::PointIndices);
   if (!cloud_src.empty())
   {
-    for (int i = 0; i< cloud_src.size(); i++)
+    for (int i = 0; i < cloud_src.size(); i++)
     {
       inliers_input->indices.push_back(i);
     }
@@ -449,7 +451,7 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   {
     pcl::IndicesConstPtr indices_remove;
     indices_remove = condrem.getRemovedIndices();
-    for(size_t i = 0; i< indices_remove->size(); i++)
+    for (size_t i = 0; i < indices_remove->size(); i++)
     {
       // std::cout<<(*indices_remove)[i]<<": ";
       inliers_remove.push_back((*indices_remove)[i]);
