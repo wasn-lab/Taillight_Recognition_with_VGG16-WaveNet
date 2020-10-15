@@ -3,6 +3,7 @@ import heapq
 import rospy
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
+from redzone_def import in_3d_roi
 
 def localization_state_func(msg):
     if msg is None:
@@ -49,6 +50,36 @@ def backend_connection_state_func(msg):
     return status, status_str
 
 
+__BPOINT_PIDS = ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7"]
+def __calc_center_by_3d_bpoint(bpoint):
+    # only calculate (x, y) now, as z is not so important
+    x, y = 0, 0
+    for pid in __BPOINT_PIDS:
+        x += bpoint.__getattribute__(pid).x
+        y += bpoint.__getattribute__(pid).y
+    return (x / 8.0, y / 8.0)
+
+
+def cam_object_detection_func(msg):
+    status = ERROR
+    status_str = "No camera 3d detection result"
+    if msg is not None:
+        status = OK
+        status_str = ""
+        seq = msg.header.seq
+        for obj in msg.objects:
+            center = __calc_center_by_3d_bpoint(obj.bPoint)
+            if not in_3d_roi(center[0], center[1]):
+                continue
+            prob = obj.camInfo.prob
+            if prob < 0.6:
+                status = WARN
+                status_str = ("Low confidence: classId: {}, prob: {}, "
+                              "center: ({:.2f}, {:.2f})").format(
+                              obj.classId, prob, center[0], center[1])
+    return status, status_str
+
+
 class Heartbeat(object):
     def __init__(self, module_name, topic, message_type, fps_low, fps_high,
                  inspect_message_contents, latch, sensor_type=None,
@@ -71,6 +102,10 @@ class Heartbeat(object):
         if module_name == "backend_connection":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = backend_connection_state_func
+
+        if module_name == "3d_object_detection":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = cam_object_detection_func
 
         # internal variables:
         self.heap = []
