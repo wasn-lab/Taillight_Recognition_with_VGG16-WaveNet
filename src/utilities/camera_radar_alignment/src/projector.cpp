@@ -31,14 +31,14 @@ std::vector<double> Projector::calculateCameraAngle(double h_camera, double x_p,
       {
         result[0] = camera_alpha;
         result[1] = camera_beta;
-        std::cout << "find angle, pitch: " << camera_alpha << ", yaw: " << camera_beta << std::endl;
-        break;
+        std::cout << "find camera angle, pitch: " << camera_alpha << ", yaw: " << camera_beta << std::endl;
+        return result;
       }
       if ( abs(pixel[0] - x_p) < 2 && abs(pixel[1] - y_p) < 2) 
       {
         result[0] = camera_alpha;
         result[1] = camera_beta;
-        std::cout << "find near angle, pitch: " << camera_alpha << ", yaw: " << camera_beta << std::endl;
+        std::cout << "find camera near angle, pitch: " << camera_alpha << ", yaw: " << camera_beta << std::endl;
       }
     }
   }
@@ -83,14 +83,14 @@ std::vector<double> Projector::calculateRadarAngle(double camera_alpha, double c
       {
         result[0] = radar_alpha;
         result[1] = radar_beta;
-        std::cout << "find angle, pitch: " << camera_alpha << ", yaw: " << camera_beta << std::endl;
-        break;
+        std::cout << "find radar angle, pitch: " << radar_alpha << ", yaw: " << radar_beta << std::endl;
+        return result;
       }
       if ( abs(pixel[0] - x_p) < 2 && abs(pixel[1] - y_p) < 2) 
       {
         result[0] = radar_alpha;
         result[1] = radar_beta;
-        std::cout << "find near angle, pitch: " << camera_alpha << ", yaw: " << camera_beta << std::endl;
+        std::cout << "find radar near angle, pitch: " << radar_alpha << ", yaw: " << radar_beta << std::endl;
       }
     }
   }

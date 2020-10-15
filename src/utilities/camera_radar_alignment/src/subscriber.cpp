@@ -60,6 +60,7 @@ void detection(int argc, char** argv)
 
   ros::Subscriber RadFrontSub = n.subscribe("/RadFront", 1, callbackRadar);
 
+  std::vector<double> camera_angle, radar_angle;
   while (ros::ok())
   {
     //0:1, 1:0.1, 2:0.1, 3:0.1, 4:1, 5:1
@@ -71,19 +72,36 @@ void detection(int argc, char** argv)
     cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 384), 0, 0, cv::INTER_LINEAR);
     double scaleFactor = M_MID_temp.rows / 384;
     cv::circle(M_MID_temp, cv::Point(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10), 3, CV_RGB(255, 0, 0), -1, 8, 0);
-    std::vector<double> camera_angle, radar_angle;
     if (GlobalVariable::UI_PARA[5] < 0 && GlobalVariable::UI_TESTING_BUTTOM == true)
     {
       GlobalVariable::UI_TESTING_BUTTOM = false;
       //double h_camera, double x_p, double y_p, double x_cw, double y_cw, double z_cw
-      camera_angle = projector.calculateCameraAngle(1.29, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2] * 10, GlobalVariable::UI_PARA[3] * 10, 
-                                                    GlobalVariable::UI_PARA[4]);
+      camera_angle = projector.calculateCameraAngle(1.29, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2]/10, GlobalVariable::UI_PARA[3]/10,  GlobalVariable::UI_PARA[4]/100);
     }else if (GlobalVariable::UI_PARA[5] > 0 && GlobalVariable::UI_TESTING_BUTTOM == true)
     {
       GlobalVariable::UI_TESTING_BUTTOM = false;
       //double camera_alpha, double camera_beta, double h_camera, double h_r, double x_p, double y_p, double x_r, double y_r, double L_x, double L_y
-      radar_angle = projector.calculateRadarAngle(camera_angle[0], camera_angle[1], 1.29, 0.53, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2], 
-                                                  GlobalVariable::UI_PARA[3], 0, 0);
+      radar_angle = projector.calculateRadarAngle(camera_angle[0], camera_angle[1], 1.29, 0.53, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2]/10, 
+                                                  -GlobalVariable::UI_PARA[3]/10, 0, 0);
+    }
+    if (!camera_angle.empty() && radar_angle.empty()) 
+    {
+      std::vector<int> test = projector.calculatePixel(camera_angle[0], camera_angle[1], 1.29, GlobalVariable::UI_PARA[2]/10, GlobalVariable::UI_PARA[3]/10, GlobalVariable::UI_PARA[4]/100);
+      //std::cout << test[0] << "," << test[1] << std::endl;
+      cv::circle(M_MID_temp, cv::Point(test[0], test[1]), 3, CV_RGB(0, 0, 255), -1, 8, 0);
+    }
+    if (!radar_angle.empty()) 
+    {
+      std::vector<int> test = projector.project(camera_angle[0], camera_angle[1], 1.29, radar_angle[0], radar_angle[1], 0.53, GlobalVariable::UI_PARA[2]/10, -GlobalVariable::UI_PARA[3]/10, 0,0);
+      //std::cout << test[0] << "," << test[1] << std::endl;
+      cv::circle(M_MID_temp, cv::Point(test[0], test[1]), 3, CV_RGB(0, 0, 255), -1, 8, 0);
+      for (size_t i = 0; i < radar_points.size(); i++)
+      {
+        //std::cout << radar_points[i].x << "," << radar_points[i].y << std::endl;
+        std::vector<int> result = projector.project(camera_angle[0], camera_angle[1], 1.29, radar_angle[0], radar_angle[1], 0.53, radar_points[i].y, -radar_points[i].x, 0,0);
+        cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 3, CV_RGB(0, 255, 0), -1, 8, 0);
+        //std::cout << result[0] << "," << result[1] << std::endl;
+      }
     }
 /*
     for (size_t i = 0; i < release_cloud->size(); i++)
