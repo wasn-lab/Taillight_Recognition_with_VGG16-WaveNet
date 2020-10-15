@@ -136,8 +136,7 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<PixelPosition>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
-                           /*std::vector<MinMax3D>& cam_bboxs_cube_min_max,*/
+                           std::vector<std::vector<PixelPosition>>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
@@ -148,6 +147,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointXYZI> point_vector_object;
   std::vector<pcl::PointXYZI> point_vector_objects;
+  std::vector<PixelPosition> cam_pixels_object;
 
   /// copy from source
   pcl::copyPointCloud(*cams_points_ptr, *cams_bbox_points_ptr);
@@ -159,7 +159,6 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
   {
     msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
-    // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
       // if (alignment.checkPointInCoverage(point))
@@ -179,7 +178,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
         if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
             pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
         {
-          cam_pixels.push_back(pixel_position);
+          cam_pixels_object.push_back(pixel_position);
           point_vector_object.push_back(point);
         }
       // }
@@ -200,7 +199,16 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
       // get points in the 3d box
       if (is_enable_default_3d_bbox)
       {
-        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr);
+        std::vector<int> inliers_remove;
+        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
+
+        if (!cloud_filtered_ptr->points.empty())
+        {   
+          for (int index = 0; index < inliers_remove.size(); index++)
+          { 
+            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
+          }
+        }
       }
       else
       {
@@ -224,27 +232,15 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
           cluster_points = cloud_cluster.getClusters(cloud_filtered_ptr, do_downsampling);
           for (const auto& points : cluster_points)
           {
-            /// bbox - pcl
-            // pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
-            // if(is_enable_default_3d_bbox)
-            // {
-            //   object_box bbox{};
-            //   bbox = getDefaultObjectBox(obj.classId);
-            //   cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
-            //   cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
-            //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
-            // }
-            // cam_bboxs_cube_min_max.push_back(cube_min_max);
             cam_bboxs_points.push_back(points);
           }
         }
         else
         {
-          /// bbox - pcl
-          // pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
-          // cam_bboxs_cube_min_max.push_back(cube_min_max);
           cam_bboxs_points.push_back(*cloud_filtered_ptr);
         }
+        cam_pixels.push_back(cam_pixels_object);
+        cam_pixels_object.clear();
         objects_2d_bbox.objects.push_back(obj_tmp);
 
         // concatenate the points of objects
@@ -267,8 +263,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::DetectedObjectArray& remaining_objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           std::vector<PixelPosition>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
-                           /*std::vector<MinMax3D>& cam_bboxs_cube_min_max,*/
+                           std::vector<std::vector<PixelPosition>>& cam_pixels, msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering)
 {
@@ -279,6 +274,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointXYZI> point_vector_object;
   std::vector<pcl::PointXYZI> point_vector_objects;
+  std::vector<PixelPosition> cam_pixels_object;
 
   /// copy from source
   pcl::copyPointCloud(*cams_points_ptr, *cams_bbox_points_ptr);
@@ -299,7 +295,6 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   {
     msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
-    // MinMax3D cube_min_max;  // object min and max point
     for (const auto& point : cam_points.points)
     {
       // if (alignment.checkPointInCoverage(point))
@@ -318,7 +313,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
         if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
             pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
         {
-          cam_pixels.push_back(pixel_position);
+          cam_pixels_object.push_back(pixel_position);
           point_vector_object.push_back(point);
         }
       // }
@@ -336,10 +331,19 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
       }
       point_vector_object.clear();
 
+      std::vector<int> inliers_remove;
+
       // get points in the 3d box
       if (is_enable_default_3d_bbox)
       {
-        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr);
+        getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
+        if (!cloud_filtered_ptr->points.empty())
+        {   
+          for (int index = 0; index < inliers_remove.size(); index++)
+          { 
+            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
+          }
+        }
       }
       else
       {
@@ -363,27 +367,15 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
           cluster_points = cloud_cluster.getClusters(cloud_filtered_ptr, do_downsampling);
           for (const auto& points : cluster_points)
           {
-            /// bbox - pcl
-            // pcl::getMinMax3D(points, cube_min_max.p_min, cube_min_max.p_max);
-            // if(is_enable_default_3d_bbox)
-            // {
-            //   object_box bbox{};
-            //   bbox = getDefaultObjectBox(obj.classId);
-            //   cube_min_max.p_max.x = cube_min_max.p_min.x + bbox.length;
-            //   cube_min_max.p_max.y = cube_min_max.p_min.y + bbox.width;
-            //   cube_min_max.p_max.z = cube_min_max.p_min.z + bbox.height;
-            // }
-            // cam_bboxs_cube_min_max.push_back(cube_min_max);
             cam_bboxs_points.push_back(points);
           }
         }
         else
         {
-          /// bbox - pcl
-          // pcl::getMinMax3D(*cloud_filtered_ptr, cube_min_max.p_min, cube_min_max.p_max);
-          // cam_bboxs_cube_min_max.push_back(cube_min_max);
           cam_bboxs_points.push_back(*cloud_filtered_ptr);
         }
+        cam_pixels.push_back(cam_pixels_object);
+        cam_pixels_object.clear();
         objects_2d_bbox.objects.push_back(obj_tmp);
 
         // concatenate the points of objects
@@ -408,14 +400,13 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
   {
     cam_points.points[i] = point_vector_objects[i];
   }
-
   /// copy to destination
   cam_points.resize(point_vector_objects.size());
   *cams_bbox_points_ptr = cam_points;
 }
 
 void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int object_class_id,
-                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr)
+                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr,  std::vector<int>& inliers_remove)
 {
   // std::cout << "===== getPointCloudIn3DBox... =====" << std::endl;
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -434,12 +425,34 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
       new pcl::FieldComparison<pcl::PointXYZI>("x", pcl::ComparisonOps::LT, min_pt.x + bbox.length)));
 
   /// build the filter
-  pcl::ConditionalRemoval<pcl::PointXYZI> condrem;
+  pcl::ConditionalRemoval<pcl::PointXYZI> condrem(true);
   condrem.setCondition(range_cond);
   cloud_ptr = cloud_src.makeShared();
   condrem.setInputCloud(cloud_ptr);
   condrem.setKeepOrganized(false);
 
+  /// set input index
+  pcl::PointIndicesPtr inliers_input(new pcl::PointIndices);
+  if (!cloud_src.empty())
+  {
+    for (int i = 0; i< cloud_src.size(); i++)
+    {
+      inliers_input->indices.push_back(i);
+    }
+    condrem.setIndices(inliers_input);
+  }
   /// apply filter
   condrem.filter(*cloud_filtered_ptr);
+
+  /// get remove index
+  if (!inliers_input->indices.empty())
+  {
+    pcl::IndicesConstPtr indices_remove;
+    indices_remove = condrem.getRemovedIndices();
+    for(size_t i = 0; i< indices_remove->size(); i++)
+    {
+      // std::cout<<(*indices_remove)[i]<<": ";
+      inliers_remove.push_back((*indices_remove)[i]);
+    }
+  }
 }
