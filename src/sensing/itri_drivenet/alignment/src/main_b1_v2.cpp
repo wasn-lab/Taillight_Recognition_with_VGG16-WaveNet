@@ -1257,7 +1257,10 @@ void runInference()
 
       /// copy lidar data
       pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
-      // pcl::copyPointCloud(*g_lidarall_nonground_ptr, *lidarall_nonground_ptr);
+      if (g_use_nonground_data)
+      {
+        pcl::copyPointCloud(*g_lidarall_nonground_ptr, *lidarall_nonground_ptr);
+      }
       pcl::copyPointCloud(*g_lidar_ssn_ptr, *lidar_ssn_ptr);
 
       if (!g_data_sync)
