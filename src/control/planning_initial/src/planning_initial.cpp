@@ -18,6 +18,7 @@
 #include "msgs/Flag_Info.h"
 #include <msgs/BusStop.h>
 #include <msgs/BusStopArray.h>
+#include <ros/package.h>
 
 //For PCL
 #include <sensor_msgs/PointCloud2.h>
@@ -39,6 +40,54 @@ static sensor_msgs::Imu imu_data_rad;
 
 double wheel_dis = 3.8;
 bool avoid_flag = 0;
+
+double busstop_BusStopNum[2000] = {};
+double busstop_BuildingNum[2000] = {};
+double busstop_BusStopId[2000] = {};
+int read_index = 0;
+bool busstop_ini = false;
+
+template <int size_readtmp>
+void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
+{
+  std::string fname = fpname;
+
+    std::ifstream fin;
+    char line[300];
+    memset( line, 0, sizeof(line));
+
+    fin.open(fname.c_str(),std::ios::in);
+    if(!fin) 
+    {
+        std::cout << "Fail to import txt" <<std::endl;
+        exit(1);
+    }
+
+    while(fin.getline(line,sizeof(line),'\n')) 
+    {
+      std::string nmea_str(line);
+      std::stringstream ss(nmea_str);
+      std::string token;
+
+      getline(ss,token, ',');
+      BusStop_BusStopNum[read_index] = atof(token.c_str());
+      getline(ss,token, ',');
+      BusStop_BuildingNum[read_index] = atof(token.c_str());
+      getline(ss,token, ',');
+      BusStop_BusStopId[read_index] = atof(token.c_str());
+      read_index += 1;
+    }
+}
+
+void Ini_busstop_bytxt()
+{
+  std::string fpname = ros::package::getPath("planning_initial");
+  std::string fpname_s = fpname + "/data/HDmap_bus_stop_info.txt"; // full route
+
+  read_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
+
+  busstop_ini = true;
+}
 
 void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
 {
@@ -191,22 +240,29 @@ void trafficDspaceCallback(const msgs::Flag_Info::ConstPtr& msg)
 void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
 {
   float Dspace_Flag[8] = {msg->Dspace_Flag01,msg->Dspace_Flag02,msg->Dspace_Flag03,msg->Dspace_Flag04,msg->Dspace_Flag05,msg->Dspace_Flag06,msg->Dspace_Flag07,msg->Dspace_Flag08};
-  float BuildingNum[8] = {11,51,71,58,14,0,0,0};
-  float BusStopID[8] = {402087,402140,402118,402125,402132,0,0,0};
+  // float BuildingNum[8] = {0,0,0,0,0,0,0,0}; //{11,51,71,58,14,0,0,0};
+  // float BusStopID[8] = {0,0,0,0,0,0,0,0}; //{402087,402140,402118,402125,402132,0,0,0};
   msgs::BusStopArray busstoparray;
   busstoparray.header.frame_id = "map";
   busstoparray.header.stamp = ros::Time::now();
-  for (int i = 0; i < 8; i++)
+  if (busstop_ini)
   {
-    if (Dspace_Flag[i] == 1)
+    if (read_index > 8)
     {
-      msgs::BusStop busstop;
-      busstop.BuildingNum = BuildingNum[i];
-      busstop.BusStopId = BusStopID[i];
-      busstoparray.busstops.push_back(busstop);
+      ROS_ERROR("Bus stop size error !");
     }
+    for (int i = 0; i < read_index; i++)
+    {
+      if (Dspace_Flag[i] == 1)
+      {
+        msgs::BusStop busstop;
+        busstop.BuildingNum = busstop_BuildingNum[i];
+        busstop.BusStopId = busstop_BusStopId[i];
+        busstoparray.busstops.push_back(busstop);
+      }
+    }
+    busstop_pub.publish(busstoparray);
   }
-  busstop_pub.publish(busstoparray);
 }
 
 int main(int argc, char** argv)
@@ -228,6 +284,8 @@ int main(int argc, char** argv)
   twist_pub = node.advertise<geometry_msgs::TwistStamped>("/localization/twist", 1, true);
   trafficlight_pub = node.advertise<autoware_perception_msgs::TrafficLightStateArray>("output/traffic_light", 1, true);
   busstop_pub = node.advertise<msgs::BusStopArray>("BusStop/Reserve", 1, true);
+
+  Ini_busstop_bytxt();
   // enable_avoid_pub = node.advertise<std_msgs::Bool>("enable_avoid", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
