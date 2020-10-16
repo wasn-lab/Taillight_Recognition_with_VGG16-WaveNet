@@ -5,7 +5,7 @@
 #include <opencv4/opencv2/highgui.hpp>
 
 
-#include "TegraCGrabber.h"
+#include "JetsonXavierGrabber.h"
 #include "grabber_args_parser.h"
 #include "camera_params.h"
 
@@ -17,9 +17,9 @@
 namespace SensingSubSystem
 {
 ///
-/// Class TegraCGrabber
+/// Class JetsonXavierGrabber
 ///
-TegraCGrabber::TegraCGrabber()
+JetsonXavierGrabber::JetsonXavierGrabber()
   : canvas(cam_ids_.size())
   , display_(&camera_buffer_)  
   , npp8u_ptrs_(cam_ids_.size())
@@ -32,7 +32,7 @@ TegraCGrabber::TegraCGrabber()
   InitParameters();
 }
 
-void TegraCGrabber::InitParameters()
+void JetsonXavierGrabber::InitParameters()
 {
 
   //----- initiate driver --------- 
@@ -42,7 +42,7 @@ void TegraCGrabber::InitParameters()
   std::string ar0231_sh_directory_path = camera_grabber_pkg_path + "/src/CameraGrabber";
   //std::cout << "ar0231_sh_directory_path : " << ar0231_sh_directory_path << std::endl;
 
-  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231.sh";
+  std::string ar0231_sh_file_path = camera_grabber_pkg_path + "/src/CameraGrabber/init_ar0231_driver.sh";
   //std::cout << "ar0231_sh_file_path : " << ar0231_sh_file_path << std::endl;
 
   // password selection
@@ -67,7 +67,7 @@ void TegraCGrabber::InitParameters()
 
 }
 
-TegraCGrabber::~TegraCGrabber()
+JetsonXavierGrabber::~JetsonXavierGrabber()
 {
 /* do nothing */
 }
@@ -79,7 +79,7 @@ TegraCGrabber::~TegraCGrabber()
 // Gstreamer funcstion
 //********************
 
-bool TegraCGrabber::gst_pipeline_init(int video_index)
+bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
 { 
   char caps[300];
    
@@ -132,7 +132,7 @@ bool TegraCGrabber::gst_pipeline_init(int video_index)
   return true;
 }
 
-bool TegraCGrabber::initializeModulesGst(const bool do_resize)
+bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
 {
   for (const auto cam_id : cam_ids_)
   {
@@ -160,7 +160,7 @@ bool TegraCGrabber::initializeModulesGst(const bool do_resize)
 }
 
 
-bool TegraCGrabber::runPerceptionGst()
+bool JetsonXavierGrabber::runPerceptionGst()
 {
   auto fps = SensingSubSystem::get_expected_fps();
   ros::Rate loop_rate(fps);  

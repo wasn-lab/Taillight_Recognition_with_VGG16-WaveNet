@@ -162,7 +162,7 @@ set(DEMO_MODE_SOURCE
   src/TegraBGrabber.cpp)
 else ()
 set(DEMO_MODE_SOURCE
-  src/TegraCGrabber.cpp)
+  src/JetsonXavierGrabber.cpp)
 endif()
 
 add_library(${PROJECT_NAME}_demo OBJECT ${DEMO_MODE_SOURCE})
@@ -182,7 +182,7 @@ if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 else()
  if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
   cuda_add_executable(
-      ${PROJECT_NAME}_node src/main_gstreamer.cpp
+      ${PROJECT_NAME}_node src/main_jetson_xavier.cpp
       $<TARGET_OBJECTS:${PROJECT_NAME}_demo>)
   target_link_libraries(${PROJECT_NAME}_node
       ${PROJECT_NAME}_framework      
