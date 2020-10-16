@@ -205,9 +205,9 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
 
         if (!cloud_filtered_ptr->points.empty())
         {
-          for (int index = 0; index < inliers_remove.size(); index++)
+          for (size_t index = 0; index < inliers_remove.size(); index++)
           {
-            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
+            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - static_cast<int>(index));
           }
         }
       }
@@ -341,9 +341,9 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
         getPointCloudIn3DBox(point_cloud_object, obj.classId, cloud_filtered_ptr, inliers_remove);
         if (!cloud_filtered_ptr->points.empty())
         {
-          for (int index = 0; index < inliers_remove.size(); index++)
+          for (size_t index = 0; index < inliers_remove.size(); index++)
           {
-            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - index);
+            cam_pixels_object.erase(cam_pixels_object.begin() + inliers_remove[index] - static_cast<int>(index));
           }
         }
       }
@@ -437,9 +437,9 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   pcl::PointIndicesPtr inliers_input(new pcl::PointIndices);
   if (!cloud_src.empty())
   {
-    for (int i = 0; i < cloud_src.size(); i++)
+    for (size_t i = 0; i < cloud_src.size(); i++)
     {
-      inliers_input->indices.push_back(i);
+      inliers_input->indices.push_back(static_cast<int>(i));
     }
     condrem.setIndices(inliers_input);
   }
