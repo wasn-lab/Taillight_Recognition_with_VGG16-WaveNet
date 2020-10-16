@@ -11,18 +11,18 @@
 	<arg name="umec_enable" default="0" />
 	<arg name="cubtek_enable" default="0" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="0" />
+	<arg name="alpha_front_enable" default="1" />
 	<arg name="alpha_side_enable" default="0" />
 	<arg name="alpha_back_enable" default="0" />
-	<rosparam param="debug_message">1</rosparam>
+	<rosparam param="debug_message">0</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
 	<rosparam param="Delphi_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Umec_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Cubtek_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Front_Center_Param">[1, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Front_Right_Param">[1, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Front_Left_Param">[1, 0, 0, 0, 0, 0]</rosparam>
+	<rosparam param="Alpha_Front_Center_Param">[-0.5 0 0 90.0 0 0]</rosparam>
+	<rosparam param="Alpha_Front_Right_Param">[-0.5 1 0 135 0 0]</rosparam>
+	<rosparam param="Alpha_Front_Left_Param">[-0.5 -1 0 45 0 0]</rosparam>
 	<rosparam param="Alpha_Side_Right_Param">[1, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Alpha_Side_Left_Param">[1, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Alpha_Back_Right_Param">[1, 0, 0, 0, 0, 0]</rosparam>
@@ -45,11 +45,12 @@
 	<!-- ************ Cubtek Front Center ************ -->
 	<group if="$(eval arg('cubtek_enable') != 0)">
 
-		<node pkg="rad_grab" type="rad_cubtek" name="rad_cubtek_front" output="screen" cwd="node" />
+		<node pkg="rad_grab" type="rad_cubtek" name="rad_cubtek" output="screen" cwd="node" />
 
 	</group>
 
 	<!-- ************ Alpha Front Center ************ -->
+	<!-- degree to radian : static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
 	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="1" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_front_center" output="screen" cwd="node">
@@ -58,7 +59,7 @@
 		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_fc_to_baselink" args="-0.5 0 0 1.57 0 0 base_link rad_fc" />
 	</group>
 
-	<!-- ************ Alpha Front Left ************ degree to radian -->
+	<!-- ************ Alpha Front Left ************** -->
 	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="2" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_front_left" output="screen" cwd="node">
@@ -73,7 +74,6 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_front_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
-		<!-- static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
 		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_fr_to_baselink" args="-0.5 -1 0 0.785 0 0 base_link rad_fr" />
 	</group>
 
@@ -83,7 +83,6 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_side_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sl_to_baselink" args="0 0 0 0 0 0 base_link rad_sl" />
 	</group>
 
 	<!-- ************ Alpha Side Right ************ -->
@@ -92,7 +91,6 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_side_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sr_to_baselink" args="0 0 0 0 0 0 base_link rad_sr" />
 	</group>
 
 	<!-- ************ Alpha Back Left ************ -->
@@ -101,7 +99,6 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="0 0 0 0 0 0 base_link rad_bl" />
 	</group>
 
 	<!-- ************ Alpha Back Right ************ -->
@@ -110,7 +107,6 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_br_to_baselink" args="0 0 0 0 0 0 base_link rad_br" />
 	</group>
 
 
