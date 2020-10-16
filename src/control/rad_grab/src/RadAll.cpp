@@ -39,19 +39,51 @@
 using namespace std;
 
 void callbackDelphiFront(const msgs::Rad::ConstPtr& msg);
-void callbackAlphaFront(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaFrontLeft(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaFrontRight(const msgs::Rad::ConstPtr& msg);
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input);
 void pointCalibration(float* x, float* y, float* z, int type);
+void onInit(ros::NodeHandle nh, ros::NodeHandle n);
+void transInitGuess(int type);
 void msgPublisher();
 
 ros::Publisher RadFrontPub;
+ros::Publisher RadAllPub;
 ros::Publisher HeartbeatPub;
 
 double imu_angular_velocity_z = 0;
 int do_rotate = 0;
 int print_count = 0;
 
+vector<float> Alpha_Front_Center_Param;
+vector<float> Alpha_Front_Left_Param;
+vector<float> Alpha_Front_Right_Param;
+vector<float> Alpha_Side_Left_Param;
+vector<float> Alpha_Side_Right_Param;
+vector<float> Alpha_Back_Left_Param;
+vector<float> Alpha_Back_Right_Param;
+vector<float> Zero_Param(6, 0.0);
+
 msgs::Rad delphiRad;
+msgs::Rad alphaRad;
+
+vector<msgs::PointXYZV> alphaAllVec;
+vector<msgs::PointXYZV> alphaFrontCenterVec;
+vector<msgs::PointXYZV> alphaFrontLeftVec;
+vector<msgs::PointXYZV> alphaFrontRightVec;
+vector<msgs::PointXYZV> alphaSideLeftVec;
+vector<msgs::PointXYZV> alphaSideRightVec;
+vector<msgs::PointXYZV> alphaBackLeftVec;
+vector<msgs::PointXYZV> alphaBackRightVec;
+
+Eigen::Matrix4f frontCenterInitGuess;
+Eigen::Matrix4f frontLeftInitGuess;
+Eigen::Matrix4f frontRightInitGuess;
+Eigen::Matrix4f sideLeftInitGuess;
+Eigen::Matrix4f sideRightInitGuess;
+Eigen::Matrix4f backLeftInitGuess;
+Eigen::Matrix4f backRightInitGuess;
 
 void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 {
@@ -124,7 +156,7 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
   msgPublisher();
 }
 
-void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
+void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg)
 {
   // y: 往前 , x: 右正
   // 1: front center, 2: front left, 3: front right,
@@ -140,6 +172,77 @@ void callbackAlphaFront(const msgs::Rad::ConstPtr& msg)
   //            6|___|7
   //
   //
+  // front radar must be exist for the 電阻
+  alphaRad.radHeader.stamp = msg->radHeader.stamp;
+  alphaRad.radHeader.seq = msg->radHeader.seq;
+
+  alphaFrontCenterVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    // cout << "ox : " << x << " oy : " << y << " oz : " << z << endl;
+
+    pointCalibration(&x, &y, &z, 1);
+
+    // cout << "tx : " << x << " ty : " << y << " tz : " << z << endl;
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaFrontCenterVec.push_back(point);
+  }
+  // cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+}
+
+void callbackAlphaFrontLeft(const msgs::Rad::ConstPtr& msg)
+{
+  alphaFrontLeftVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    pointCalibration(&x, &y, &z, 2);
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaFrontLeftVec.push_back(point);
+  }
+}
+
+void callbackAlphaFrontRight(const msgs::Rad::ConstPtr& msg)
+{
+  alphaFrontRightVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    pointCalibration(&x, &y, &z, 3);
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaFrontRightVec.push_back(point);
+  }
 }
 
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
@@ -157,19 +260,118 @@ void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
 
 void pointCalibration(float* x, float* y, float* z, int type)
 {
-  std::vector<float> params = { 0, -10, 0, 0.0, 0.0, 0.0 };  // (x,y,z,roll,pitch,yaw)
-
   pcl::Normal pcl_normal(*x, *y, *z);
-	Eigen::Vector4f input;
-	input << pcl_normal.normal_x, pcl_normal.normal_y, pcl_normal.normal_z, 1;
+  Eigen::Vector4f input;
+  input << pcl_normal.normal_x, pcl_normal.normal_y, pcl_normal.normal_z, 1;
+  Eigen::Vector4f output_1;
 
+  switch (type)
+  {
+    case 1:
+      output_1 = frontCenterInitGuess * input;
+      break;
+    case 2:
+      output_1 = frontLeftInitGuess * input;
+      break;
+    case 3:
+      output_1 = frontRightInitGuess * input;
+      break;
+    case 4:
+      output_1 = sideLeftInitGuess * input;
+      break;
+    case 5:
+      output_1 = sideRightInitGuess * input;
+      break;
+    case 6:
+      output_1 = backLeftInitGuess * input;
+      break;
+    case 7:
+      output_1 = backRightInitGuess * input;
+      break;
+    default:
+      break;
+  }
+
+  *x = output_1.x();
+  *y = output_1.y();
+  *z = output_1.z();
+}
+
+void transInitGuess(int type)
+{
+  // for(auto n : params) {
+  //   cout << n << endl;
+  // }
+
+  float tx;
+  float ty;
+  float tz;
+  float rx;
+  float ry;
+  float rz;
+
+  switch (type)
+  {
+    case 1:
+      tx = Alpha_Front_Center_Param[0];
+      ty = Alpha_Front_Center_Param[1];
+      tz = Alpha_Front_Center_Param[2];
+      rx = Alpha_Front_Center_Param[3] * PI_OVER_180;
+      ry = Alpha_Front_Center_Param[4] * PI_OVER_180;
+      rz = Alpha_Front_Center_Param[5] * PI_OVER_180;
+      break;
+    case 2:
+      tx = Alpha_Front_Left_Param[0];
+      ty = Alpha_Front_Left_Param[1];
+      tz = Alpha_Front_Left_Param[2];
+      rx = Alpha_Front_Left_Param[3] * PI_OVER_180;
+      ry = Alpha_Front_Left_Param[4] * PI_OVER_180;
+      rz = Alpha_Front_Left_Param[5] * PI_OVER_180;
+      break;
+    case 3:
+      tx = Alpha_Front_Right_Param[0];
+      ty = Alpha_Front_Right_Param[1];
+      tz = Alpha_Front_Right_Param[2];
+      rx = Alpha_Front_Right_Param[3] * PI_OVER_180;
+      ry = Alpha_Front_Right_Param[4] * PI_OVER_180;
+      rz = Alpha_Front_Right_Param[5] * PI_OVER_180;
+      break;
+    case 4:
+      tx = Alpha_Side_Left_Param[0];
+      ty = Alpha_Side_Left_Param[1];
+      tz = Alpha_Side_Left_Param[2];
+      rx = Alpha_Side_Left_Param[3] * PI_OVER_180;
+      ry = Alpha_Side_Left_Param[4] * PI_OVER_180;
+      rz = Alpha_Side_Left_Param[5] * PI_OVER_180;
+      break;
+    case 5:
+      tx = Alpha_Side_Right_Param[0];
+      ty = Alpha_Side_Right_Param[1];
+      tz = Alpha_Side_Right_Param[2];
+      rx = Alpha_Side_Right_Param[3] * PI_OVER_180;
+      ry = Alpha_Side_Right_Param[4] * PI_OVER_180;
+      rz = Alpha_Side_Right_Param[5] * PI_OVER_180;
+      break;
+    case 6:
+      tx = Alpha_Back_Left_Param[0];
+      ty = Alpha_Back_Left_Param[1];
+      tz = Alpha_Back_Left_Param[2];
+      rx = Alpha_Back_Left_Param[3] * PI_OVER_180;
+      ry = Alpha_Back_Left_Param[4] * PI_OVER_180;
+      rz = Alpha_Back_Left_Param[5] * PI_OVER_180;
+      break;
+    case 7:
+      tx = Alpha_Back_Right_Param[0];
+      ty = Alpha_Back_Right_Param[1];
+      tz = Alpha_Back_Right_Param[2];
+      rx = Alpha_Back_Right_Param[3] * PI_OVER_180;
+      ry = Alpha_Back_Right_Param[4] * PI_OVER_180;
+      rz = Alpha_Back_Right_Param[5] * PI_OVER_180;
+      break;
+    default:
+      break;
+  }
   Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
-  float tx = params[0];
-  float ty = params[1];
-  float tz = params[2];
-  float rx = params[3] * PI_OVER_180;
-  float ry = params[4] * PI_OVER_180;
-  float rz = params[5] * PI_OVER_180;
 
   Eigen::AngleAxisf init_rotation_x(rx, Eigen::Vector3f::UnitX());
   Eigen::AngleAxisf init_rotation_y(ry, Eigen::Vector3f::UnitY());
@@ -177,21 +379,92 @@ void pointCalibration(float* x, float* y, float* z, int type)
 
   Eigen::Translation3f init_translation(tx, ty, tz);
 
-  Eigen::Matrix4f init_guess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
-
-  transform_1 = init_guess;
-  // std::cout << "1:" << std::endl << transform_1.matrix() << std::endl;
-  Eigen::Vector4f output_1 = transform_1 * input;
-  // std::cout << std::endl << output_1 << std::endl;
-  *x =  output_1.x();
-  *y =  output_1.y();
-  *z =  output_1.z();
+  switch (type)
+  {
+    case 1:
+      frontCenterInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    case 2:
+      frontLeftInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    case 3:
+      frontRightInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    case 4:
+      sideLeftInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    case 5:
+      sideRightInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    case 6:
+      backLeftInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    case 7:
+      backRightInitGuess = (init_translation * init_rotation_x * init_rotation_y * init_rotation_z).matrix();
+      break;
+    default:
+      break;
+  }
 }
 
 void msgPublisher()
 {
   std_msgs::Empty empty_msg;
   HeartbeatPub.publish(empty_msg);
+}
+
+void alphaRadPub()
+{
+  alphaAllVec.clear();
+  for (int i = 0; i < alphaFrontCenterVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaFrontCenterVec[i]);
+  }
+
+  for (int i = 0; i < alphaFrontLeftVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaFrontLeftVec[i]);
+  }
+
+  for (int i = 0; i < alphaFrontRightVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaFrontRightVec[i]);
+  }
+
+  // std::cout << "Radar Data : " << alphaRad.radPoint.size() << std::endl;
+  // alphaRad.radHeader.stamp = msg->radHeader.stamp;
+  // alphaRad.radHeader.seq = msg->radHeader.seq;
+  // RadAllPub.publish(alphaRad);
+  // alphaRad.radPoint.clear();
+
+  // msgPublisher();
+}
+
+void onInit(ros::NodeHandle nh, ros::NodeHandle n)
+{
+  if (!ros::param::has("/Alpha_Front_Center_Param"))
+  {
+    nh.setParam("Alpha_Front_Center_Param", Zero_Param);
+    nh.setParam("Alpha_Front_Left_Param", Zero_Param);
+    nh.setParam("Alpha_Front_Right_Param", Zero_Param);
+    nh.setParam("Alpha_Side_Left_Param", Zero_Param);
+    nh.setParam("Alpha_Side_Right_Param", Zero_Param);
+    nh.setParam("Alpha_Back_Left_Param", Zero_Param);
+    nh.setParam("Alpha_Back_Right_Param", Zero_Param);
+    cout << "NO STITCHING PARAMETER INPUT!" << endl;
+    cout << "Now is using [0,0,0,0,0,0] as stitching parameter!" << endl;
+  }
+  else
+  {
+    nh.param("/Alpha_Front_Center_Param", Alpha_Front_Center_Param, vector<float>());
+    nh.param("/Alpha_Front_Left_Param", Alpha_Front_Left_Param, vector<float>());
+    nh.param("/Alpha_Front_Right_Param", Alpha_Front_Right_Param, vector<float>());
+    nh.param("/Alpha_Side_Left_Param", Alpha_Side_Left_Param, vector<float>());
+    nh.param("/Alpha_Side_Right_Param", Alpha_Side_Right_Param, vector<float>());
+    nh.param("/Alpha_Back_Left_Param", Alpha_Back_Left_Param, vector<float>());
+    nh.param("/Alpha_Back_Right_Param", Alpha_Back_Right_Param, vector<float>());
+    cout << "STITCHING PARAMETER FIND!" << endl;
+  }
 }
 
 int main(int argc, char** argv)
@@ -201,22 +474,33 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
   ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
-  // ros::Subscriber AlphiFrontSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFront);
+  // ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
+  // ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
+  // ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
+  RadAllPub = n.advertise<msgs::Rad>("RadAll", 1);
   HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/heartbeat", 1);
+
+  onInit(nh, n);
+
+  for (int i = 1; i < 8; i++)
+  {
+    transInitGuess(i);
+  }
 
   ros::Rate rate(20);
   while (ros::ok())
   {
     print_count++;
+    alphaRadPub();
     if (print_count > 60)
     {
       // float a = 5;
       // float b = 5;
       // float c = 5;
-      // alphaRadAlignment(&a, &b, &c);
+      // pointCalibration(&a, &b, &c, 1);
 
       // cout << a << ":" << b << ":" << c << endl;
       std::cout << "================ Radar Detection ================" << std::endl;

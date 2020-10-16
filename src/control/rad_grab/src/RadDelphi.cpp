@@ -23,6 +23,8 @@
 
 void delphi_radar_parsing(struct can_frame frame, float* x, float* y, float* z, float* speed);
 
+int debug_message = 0;
+
 int main(int argc, char** argv)
 {
   uint32_t seq = 0;
@@ -73,10 +75,13 @@ int main(int argc, char** argv)
 
   ros::init(argc, argv, "RadDelphi");
   ros::NodeHandle n;
+  ros::NodeHandle nh("~");
+
   ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("DelphiFront", 1);
   ros::Rate loop_rate(20);
 
   float x, y, z, speed;
+
   while (ros::ok())
   {
     msgs::Rad rad;
@@ -84,8 +89,8 @@ int main(int argc, char** argv)
     rad.radHeader.seq = seq++;
     msgs::PointXYZV point;
 
-    double radar_angle;
-    double temp[3], radar_xyz[3], camera_xyz[3];
+    // double radar_angle;
+    // double temp[3], radar_xyz[3], camera_xyz[3];
     count = 0;
     for (i = 0; i < 64; i++)
     {
@@ -103,7 +108,7 @@ int main(int argc, char** argv)
 
     printf("********************  count = %d  ******************\n", count);
     std_msgs::Header h = rad.radHeader;
-    printf("h.seq: %d, h.stamp: %d.%d\n", h.seq, h.stamp.sec, h.stamp.nsec);
+    // printf("h.seq: %d, h.stamp: %d.%d\n", h.seq, h.stamp.sec, h.stamp.nsec);
 
     for (i = 0; i < count; i++)
     {
@@ -182,7 +187,7 @@ void delphi_radar_parsing(struct can_frame frame, float* x, float* y, float* z, 
       int mode = (frame.data[6] & 0xC0) >> 6;
       printf("[%04X] %02X %02X %02X %02X %02X %02X %02X %02X \n", frame.can_id, frame.data[0], frame.data[1],
              frame.data[2], frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
-      printf("       x : %f, y : %f, speed : %f\n", &x, &y, &speed);
+      printf("       x : %f, y : %f, speed : %f\n", *x, *y, *speed);
       printf("       fRange = %4.1f  ,fAngle = %4.1f \n", fRange, fAngle);
       printf("       Coming : %d, change : %d, width : %d, mode : %d\n", frame.data[0] & 0x01,
              (frame.data[0] & 0x02) >> 1, ((frame.data[4] & 0x3C) >> 2), ((frame.data[6] & 0xC0) >> 6));
