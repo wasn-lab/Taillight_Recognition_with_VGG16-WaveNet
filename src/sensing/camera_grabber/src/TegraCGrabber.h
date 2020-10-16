@@ -11,7 +11,7 @@ class TegraCGrabber
 public:
   TegraCGrabber();
   ~TegraCGrabber();  
-  void initializeModulesGst(const bool do_resize);  
+  bool initializeModulesGst(const bool do_resize);  
   bool runPerceptionGst();
   
   //Gstreamer
@@ -26,11 +26,14 @@ protected:
 #elif CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
   const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30, camera::id::front_bottom_60_crop }; 
 #elif CAR_MODEL_IS_B1_V3 //Camera use Gstreamer
+
   const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30,
                                    
                                    camera::id::front_top_close_120, camera::id::right_front_60,
                                    camera::id::right_back_60, camera::id::left_front_60,
-                                   camera::id::left_back_60 , camera::id::back_top_120 };
+                                   camera::id::left_back_60, camera::id::back_top_120  };
+
+
 #elif CAR_MODEL_IS_HINO
   const std::vector<int> cam_ids_{ camera::id::left_60, camera::id::front_60, camera::id::right_60,
                                    camera::id::left_30, camera::id::front_30, camera::id::right_30 };
@@ -41,6 +44,7 @@ protected:
 
   BufferConfig camera_buffer_;
   DisplayConfig display_;
+ 
 
   
   

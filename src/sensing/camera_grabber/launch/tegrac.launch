@@ -7,7 +7,8 @@
     args="
     -mode c
     -expected_fps 22
-    -do_resize=true    
+    -do_resize=true
+    -password nvidia    
     "
     output="screen"
   />

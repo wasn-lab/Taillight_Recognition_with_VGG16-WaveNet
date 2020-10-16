@@ -185,8 +185,7 @@ else()
       ${PROJECT_NAME}_node src/main_gstreamer.cpp
       $<TARGET_OBJECTS:${PROJECT_NAME}_demo>)
   target_link_libraries(${PROJECT_NAME}_node
-      ${PROJECT_NAME}_framework
-      ${GRABBER_LIBRARY}
+      ${PROJECT_NAME}_framework      
       ${DRIVEWORKS_LIBRARY})
   add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_demo ${PROJECT_NAME}_framework)
  endif ()

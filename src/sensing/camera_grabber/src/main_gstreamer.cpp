@@ -23,13 +23,17 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "camera_c_grabber");
     printf("Running Camera c grabber (gstreamer)\n");
     SensingSubSystem::TegraCGrabber app;
-    app.initializeModulesGst(do_resize);
+    if(app.initializeModulesGst(do_resize) == false)
+    {
+      //std::cout <<"initializeModulesGst fail" << std::endl;
+      return -1;
+    }
     return app.runPerceptionGst();
   }
   else
   {
     LOG(WARNING) << "Unknown or unsupported mode: " << mode;
-    return 0;
+    return -1;
   }
    
 }
