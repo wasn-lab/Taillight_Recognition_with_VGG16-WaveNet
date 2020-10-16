@@ -104,6 +104,9 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
@@ -114,6 +117,9 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
@@ -124,6 +130,9 @@ void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
@@ -134,6 +143,9 @@ void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
@@ -144,6 +156,9 @@ void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
@@ -154,6 +169,9 @@ void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
@@ -164,15 +182,20 @@ void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
   cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
   std::lock_guard<std::mutex> lock_cams(g_mutex_cams[cam_order]);
   g_mats[cam_order] = cv_ptr->image;
+
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
+  // << msg->header.stamp.nsec << std::endl;
 }
 
 void callback_lidarall(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
 {
   std::lock_guard<std::mutex> lock(g_mutex_lidar_raw);
   *g_lidarall_ptr = *msg;
-  // std::cout << "Point cloud size: " << g_lidarall_ptr->size() << std::endl;
-  // std::cout << "Lidar x: " << g_lidarall_ptr->points[0].x << ", y: " << g_lidarall_ptr->points[0].y << ", z: " <<
-  // g_lidarall_ptr->points[0].z << std::endl;
+
+  // ros::Time header_time;
+  // pcl_conversions::fromPCL(msg->header.stamp, header_time);
+  // std::cout << "lidarall time: " << header_time.sec << "." << header_time.nsec <<
+  // std::endl;
 }
 
 void pclViewerInitializer(const boost::shared_ptr<pcl::visualization::PCLVisualizer>& pcl_viewer)
