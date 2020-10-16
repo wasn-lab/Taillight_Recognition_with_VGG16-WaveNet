@@ -1397,89 +1397,25 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
  * 1 for facing right
  * 2 for facing car side
  * 3 for facing car opposite side
+ * 4 for no direction
  */
 int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoints)
 {
-  bool look_at_left = false;
-  bool look_at_right = false;
-  bool only_left_ear = false;
-  bool only_right_ear = false;
-  // if no left eye but left ear is detected
-  if (!keypoint_is_detected(keypoints.at(16)) && keypoint_is_detected(keypoints.at(18)))
+  std::cout<<keypoint_is_detected(keypoints.at(16))<<","<<keypoint_is_detected(keypoints.at(18))<<","<<
+  keypoint_is_detected(keypoints.at(15))<<","<<keypoint_is_detected(keypoints.at(17))<<",";
+  bool left_ear = keypoint_is_detected(keypoints.at(18));
+  bool left_eye = keypoint_is_detected(keypoints.at(16));
+  bool right_ear = keypoint_is_detected(keypoints.at(17));
+  bool right_eye = keypoint_is_detected(keypoints.at(15));
+  bool face_detection[4] = {right_ear, right_eye, left_eye, left_ear};
+  for (int i = 0; i < 16; i++)
   {
-    only_left_ear = true;
-  }
-  // if no right eye but right ear is detected
-  if (!keypoint_is_detected(keypoints.at(15)) && keypoint_is_detected(keypoints.at(17)))
-  {
-    only_right_ear = true;
-  }
-  // if no eye detected
-  if (only_left_ear || only_right_ear)
-  {
-    if (only_left_ear && !only_right_ear)
+    if (face_detection[0] == direction_table[i][0] && face_detection[1] == direction_table[i][1] &&
+    face_detection[2] == direction_table[i][2] && face_detection[3] == direction_table[i][3])
     {
-      // if only left ear
-      return 0;
-    }
-    if (!only_left_ear && only_right_ear)
-    {
-      // if only right ear
-      return 1;
-    }
-    if (only_left_ear && only_right_ear)
-    {
-      // if both ears detected
-      if (keypoints.at(17).x > keypoints.at(18).x)
-      {
-        // if right ear is on the right side of left ear
-        // that is facing car opposite side
-        return 3;
-      }
-      else
-      {
-        // if right ear is on the left side of left ear
-        // that is facing car side
-        return 2;
-      }
+      return direction_table[i][4];
     }
   }
-  else
-  {
-    // if left ear and left eye are detected
-    if (keypoint_is_detected(keypoints.at(16)))
-    {
-      look_at_left = true;
-    }
-    // if right ear and right eye are detected
-    if (keypoint_is_detected(keypoints.at(15)))
-    {
-      look_at_right = true;
-    }
-  }
-
-  if (look_at_left && !look_at_right)
-  {
-    // facing left hand side
-    return 0;
-  }
-  else if (!look_at_left && look_at_right)
-  {
-    // facing right hand side
-    return 1;
-  }
-  else if (look_at_left && look_at_right)
-  {
-    // facing car side
-    return 2;
-  }
-  else
-  {
-    // no direction
-    return 4;
-  }
-  // defalt: no direction
-  return 4;
 }
 
 /**
