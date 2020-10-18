@@ -1537,18 +1537,29 @@ vector<double[2]> GMPHD_OGM::MinimizeGroupCost(int iFrmCnt, int group_min_id, cv
 
       vector<BBTrk> track;
       int tSize = this->tracksbyID[groupRects[v].id].size();
-      for (int fr = 0;; fr++)
-      {
-        this->tracksbyID[groupRects[v].id][tSize - 1 - fr].id = groupRects[hypotheses[hIdx_min][v]].id;
-        track.push_back(this->tracksbyID[groupRects[v].id][tSize - 1 - fr]);
-        this->tracksbyID[groupRects[v].id].pop_back();
-        if (this->tracksbyID[groupRects[v].id][tSize - 1 - fr].fn == sysFrmCnt - this->params.FRAMES_DELAY_SIZE)
-        {
-          this->tracksbyID[groupRects[v].id][tSize - 1 - fr].rec =
-              this->cvMergeRects(this->tracksbyID[groupRects[v].id][tSize - 1 - fr].rec, rects_copy[v], 0.5);
+      if (this->tracksbyID[groupRects[v].id].size() == 0)
+				printf("[%d] Group %d is empty.!! 1\n",this->sysFrmCnt, groupRects[v].id);
+
+			int fr = 0;
+			for (;; fr++) {
+				int idx_r = tSize - 1 - fr;
+
+				this->tracksbyID[groupRects[v].id][idx_r].id = groupRects[hypotheses[hIdx_min][v]].id;
+				track.push_back(this->tracksbyID[groupRects[v].id][idx_r]);
+
+				if ((this->tracksbyID[groupRects[v].id].size() - 1) < idx_r)
+					printf("[%d] Out of range (track size %d - 1 < index %d). 2\n", this->sysFrmCnt, this->tracksbyID[groupRects[v].id].size(), idx_r);
+				if (idx_r < 0)
+					printf("[%d] Out of range (index %d < 0). 2\n", this->sysFrmCnt, idx_r);
+
+				if (this->tracksbyID[groupRects[v].id][idx_r].fn == sysFrmCnt - this->params.FRAMES_DELAY_SIZE) {
+					this->tracksbyID[groupRects[v].id][idx_r].rec = this->cvMergeRects(this->tracksbyID[groupRects[v].id][idx_r].rec, rects_copy[v], 0.5);
           break;
         }
       }
+      for(int pc=0;pc<fr;++fr)
+				this->tracksbyID[groupRects[v].id].pop_back();
+
       this->tracksbyID[groupRects[hypotheses[hIdx_min][v]].id].insert(
           this->tracksbyID[groupRects[hypotheses[hIdx_min][v]].id].end(), track.begin(), track.end());
       this->liveTrkVec[idices[v]].id = groupRects[hypotheses[hIdx_min][v]].id;
@@ -1725,18 +1736,28 @@ vector<double[2]> GMPHD_OGM::MinimizeGroupCost(int iFrmCnt, int group_min_id, cv
 
       vector<BBTrk> track;
       int tSize = this->tracksbyID[groupRects[v].id].size();
-      for (int fr = 0;; fr++)
-      {
-        this->tracksbyID[groupRects[v].id][tSize - 1 - fr].id = groupRects[hypotheses[hIdx_min][v]].id;
-        track.push_back(this->tracksbyID[groupRects[v].id][tSize - 1 - fr]);
-        this->tracksbyID[groupRects[v].id].pop_back();
-        if (this->tracksbyID[groupRects[v].id][tSize - 1 - fr].fn == sysFrmCnt - this->params.FRAMES_DELAY_SIZE)
-        {
-          this->tracksbyID[groupRects[v].id][tSize - 1 - fr].rec =
-              this->cvMergeRects(this->tracksbyID[groupRects[v].id][tSize - 1 - fr].rec, rects_copy[v], 0.5);
+      if (this->tracksbyID[groupRects[v].id].size() == 0)
+				printf("[%d] Group %d is empty. 2\n", this->sysFrmCnt, groupRects[v].id);
+      int fr = 0;
+			for (;; fr++) {
+				int idx_r = tSize - 1 - fr; // reverse iterated index
+
+				this->tracksbyID[groupRects[v].id][idx_r].id = groupRects[hypotheses[hIdx_min][v]].id;
+				track.push_back(this->tracksbyID[groupRects[v].id][idx_r]);
+
+				if ((this->tracksbyID[groupRects[v].id].size()-1) < idx_r)
+					printf("[%d] Out of range (track size %d - 1 < index %d). 2\n", this->sysFrmCnt, this->tracksbyID[groupRects[v].id].size(), idx_r);
+				if (idx_r < 0)
+					printf("[%d] Out of range (index %d < 0). 2\n", this->sysFrmCnt, idx_r);
+
+				if (this->tracksbyID[groupRects[v].id][idx_r].fn == sysFrmCnt - this->params.FRAMES_DELAY_SIZE) {
+					this->tracksbyID[groupRects[v].id][idx_r].rec = this->cvMergeRects(this->tracksbyID[groupRects[v].id][idx_r].rec, rects_copy[v], 0.5);
           break;
         }
       }
+      for (int pc=0;pc<fr;++pc)
+				this->tracksbyID[groupRects[v].id].pop_back();
+
       this->tracksbyID[groupRects[hypotheses[hIdx_min][v]].id].insert(
           this->tracksbyID[groupRects[hypotheses[hIdx_min][v]].id].end(), track.begin(), track.end());
       this->liveTrkVec[idices[v]].id = groupRects[hypotheses[hIdx_min][v]].id;
