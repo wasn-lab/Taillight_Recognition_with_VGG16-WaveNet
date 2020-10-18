@@ -3,10 +3,11 @@ import heapq
 import rospy
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
+from redzone_def import in_3d_roi
 
 def localization_state_func(msg):
     if msg is None:
-        return UNKNOWN, "UNKNOWN"
+        return ERROR, "No localizaton state message"
     state = msg.data
     low_gnss_frequency = (state & 1) > 0
     low_lidar_frequency = (state & 2) > 0
@@ -34,6 +35,51 @@ def localization_state_func(msg):
     return status, " ".join(status_strs)
 
 
+def backend_connection_state_func(msg):
+    status = ERROR
+    status_str = "No backend connection message"
+    if msg is not None:
+        connected = msg.data
+        if not connected:
+            status = ERROR
+            status_str = "Cannot connect to backend"
+        else:
+            status = OK
+            status_str = ""
+
+    return status, status_str
+
+
+__BPOINT_PIDS = ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7"]
+def __calc_center_by_3d_bpoint(bpoint):
+    # only calculate (x, y) now, as z is not so important
+    x, y = 0, 0
+    for pid in __BPOINT_PIDS:
+        x += bpoint.__getattribute__(pid).x
+        y += bpoint.__getattribute__(pid).y
+    return (x / 8.0, y / 8.0)
+
+
+def cam_object_detection_func(msg):
+    status = ERROR
+    status_str = "No camera 3d detection result"
+    if msg is not None:
+        status = OK
+        status_str = ""
+        seq = msg.header.seq
+        for obj in msg.objects:
+            center = __calc_center_by_3d_bpoint(obj.bPoint)
+            if not in_3d_roi(center[0], center[1]):
+                continue
+            prob = obj.camInfo.prob
+            if prob < 0.6:
+                status = WARN
+                status_str = ("Low confidence: classId: {}, prob: {}, "
+                              "center: ({:.2f}, {:.2f})").format(
+                              obj.classId, prob, center[0], center[1])
+    return status, status_str
+
+
 class Heartbeat(object):
     def __init__(self, module_name, topic, message_type, fps_low, fps_high,
                  inspect_message_contents, latch, sensor_type=None,
@@ -52,6 +98,14 @@ class Heartbeat(object):
         if module_name == "localization_state":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = localization_state_func
+
+        if module_name == "backend_connection":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = backend_connection_state_func
+
+        if module_name == "3d_object_detection":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = cam_object_detection_func
 
         # internal variables:
         self.heap = []
@@ -82,7 +136,10 @@ class Heartbeat(object):
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_status(self):
+        self._update_heap()  # Clear out-of-date timestamps
         if self.inspect_func is not None:
+            if self.get_fps() == 0:
+                self.msg = None
             self.status, self.status_str = self.inspect_func(self.msg)
             return
         if self.latch:
@@ -123,7 +180,6 @@ class Heartbeat(object):
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
-        heapq.heappush(self.heap, now)
 
     def update_latched_message(self):
         self.got_latched_msg = False
@@ -137,6 +193,7 @@ class Heartbeat(object):
     def heartbeat_cb(self, msg):
         if self.inspect_message_contents:
             self.msg = msg
+        heapq.heappush(self.heap, time.time())
         self._update_heap()
 
     def get_sensor_status(self):
