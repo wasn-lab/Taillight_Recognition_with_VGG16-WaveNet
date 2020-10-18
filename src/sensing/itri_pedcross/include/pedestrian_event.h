@@ -48,7 +48,7 @@
 
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
-#define PRINT_MESSAGE 0
+#define PRINT_MESSAGE 1
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -88,8 +88,6 @@ public:
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
-                            boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache);
   void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
@@ -122,97 +120,99 @@ public:
   void display_on_terminal();
 
   // OpenPose components
-  int openPoseROS();
-  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat& mat);
+  int openposeROS();
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> create_datum(cv::Mat& mat);
   bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr);
   std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat& input_image);
-  openpose_ros::OpenPose openPose;
-  cv::dnn::Net net_openpose;
+  openpose_ros::OpenPose openpose_;
 
   // All buffer components
-  msgs::VehInfo veh_info;
-  std::vector<cv::Point3f> lanelet2_route_left;
-  std::vector<cv::Point3f> lanelet2_route_right;
-  std::vector<cv::Point2f> lanelet2_trajectory;
-  std::string time_nav_path = "NA";
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache;
-  std::vector<std::string> ped_info;
-  std::string delay_from_camera = "NA";
-  std::string chatter_callback_info = "Not running";
-  std::vector<SkeletonBuffer> skeleton_buffer_front;
-  std::vector<SkeletonBuffer> skeleton_buffer_left;
-  std::vector<SkeletonBuffer> skeleton_buffer_right;
-  std::vector<SkeletonBuffer> skeleton_buffer_fov30;
-  int buffer_size = 60;
+  msgs::VehInfo veh_info_;
+  std::vector<cv::Point3f> lanelet2_route_left_;
+  std::vector<cv::Point3f> lanelet2_route_right_;
+  std::vector<cv::Point2f> lanelet2_trajectory_;
+  std::string time_nav_path_ = "NA";
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache_;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache_;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache_;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache_;
+  std::vector<std::string> ped_info_;
+  std::string delay_from_camera_ = "NA";
+  std::string chatter_callback_info_ = "Not running";
+  std::vector<SkeletonBuffer> skeleton_buffer_front_;
+  std::vector<SkeletonBuffer> skeleton_buffer_left_;
+  std::vector<SkeletonBuffer> skeleton_buffer_right_;
+  std::vector<SkeletonBuffer> skeleton_buffer_fov30_;
+  int buffer_size_ = 60;
 
   // mutex for each bufffer component
-  std::mutex mu_veh_info;
-  std::mutex mu_lanelet2_route;
-  std::mutex mu_lanelet2_trajectory;
-  std::mutex mu_image_cache;
-  std::mutex mu_ped_info;
-  std::mutex mu_skeleton_buffer;
+  std::mutex mu_veh_info_;
+  std::mutex mu_lanelet2_route_;
+  std::mutex mu_lanelet2_trajectory_;
+  std::mutex mu_time_nav_path_;
+  std::mutex mu_front_image_cache_;
+  std::mutex mu_fov30_image_cache_;
+  std::mutex mu_left_image_cache_;
+  std::mutex mu_right_image_cache_;
+  std::mutex mu_ped_info_;
+  std::mutex mu_delay_from_camera_;
+  std::mutex mu_chatter_callback_info_;
+  std::mutex mu_skeleton_buffer_;
 
   // ROS components
-  ros::ServiceClient skip_frame_client;
-  ros::Publisher chatter_pub_front;
-  ros::Publisher chatter_pub_left;
-  ros::Publisher chatter_pub_right;
-  ros::Publisher chatter_pub_fov30;
-  ros::Publisher box_pub_front;
-  ros::Publisher box_pub_left;
-  ros::Publisher box_pub_right;
-  ros::Publisher box_pub_fov30;
-  ros::Publisher alert_pub_front;
-  ros::Publisher alert_pub_left;
-  ros::Publisher alert_pub_right;
-  ros::Publisher alert_pub_fov30;
-  ros::Publisher warning_zone_pub;
-  ros::Time total_time;
-  tf2_ros::Buffer tfBuffer;
+  ros::ServiceClient skip_frame_client_;
+  ros::Publisher chatter_pub_front_;
+  ros::Publisher chatter_pub_left_;
+  ros::Publisher chatter_pub_right_;
+  ros::Publisher chatter_pub_fov30_;
+  ros::Publisher box_pub_front_;
+  ros::Publisher box_pub_left_;
+  ros::Publisher box_pub_right_;
+  ros::Publisher box_pub_fov30_;
+  ros::Publisher alert_pub_front_;
+  ros::Publisher alert_pub_left_;
+  ros::Publisher alert_pub_right_;
+  ros::Publisher alert_pub_fov30_;
+  ros::Publisher warning_zone_pub_;
+  ros::Time total_time_;
+  tf2_ros::Buffer tf_buffer_;
 
   // Variables
-  cv::Ptr<cv::ml::RTrees> rf;
-  cv::Ptr<cv::ml::RTrees> rf_pose;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_1;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_4;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_5;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_6;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_7;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_8;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_9;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_10;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_11;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_12;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_13;
-  bool g_enable = false;
-  bool g_trigger = false;
-  int count;
-  std::ofstream file;
-  struct winsize terminal_size;
-  double average_inference_time = 0;
+  cv::Ptr<cv::ml::RTrees> rf_pose_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_1_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_2_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_3_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_4_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_5_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_6_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_7_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_8_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_9_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_10_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_11_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_12_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_13_;
+  bool spinner_trigger_ = false;
+  int count_;
+  std::ofstream file_;
+  double average_inference_time_ = 0;
 
   // Setup variables
-  int cross_threshold = 55;  // percentage
-  const double scaling_ratio_width = 0.3167;
-  const double scaling_ratio_height = 0.3179;
-  const int number_keypoints = 25;
-  const int feature_num = 1174;
-  const int frame_num = 10;
+  const double scaling_ratio_width_ = 0.3167;
+  const double scaling_ratio_height_ = 0.3179;
+  const unsigned int number_keypoints_ = 25;
+  const unsigned int feature_num_ = 1174;
+  const unsigned int frame_num_ = 10;
 
   // ROS param
-  bool show_probability = true;
-  int input_source = 3;
-  double max_distance = 50;
-  double danger_zone_distance = 2;
-  bool use_2d_for_alarm = false;
+  int cross_threshold_ = 55;  // percentage
+  bool show_probability_ = true;
+  int input_source_ = 3;
+  double max_distance_ = 50;
+  double danger_zone_distance_ = 2;
+  bool use_2d_for_alarm_ = false;
 
-  int direction_table[16][5] = {
+  int direction_table_[16][5] = {
     {0,0,0,0,4},
     {1,0,0,0,1},
     {0,1,0,0,1},
