@@ -1,6 +1,6 @@
 #pragma once
 
-namespace control_command
+namespace fail_safe_command
 {
 enum TargetId
 {
@@ -21,4 +21,4 @@ enum ActionId
   turn_off = 0,
   turn_on = 1,
 };
-};  // namespace control_command
+};  // namespace fail_safe_command
