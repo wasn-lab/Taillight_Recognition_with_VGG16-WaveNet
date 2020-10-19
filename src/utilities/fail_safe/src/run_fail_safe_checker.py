@@ -10,7 +10,7 @@ def main():
     src_dir = os.path.join(pkg_dir, "src")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--vid", default="b1", help="vehicle id")
+    parser.add_argument("--vid", default="itriadv", help="vehicle id (usu license plate)")
     parser.add_argument("--ini", default=os.path.join(src_dir, "fail_safe.ini"))
     parser.add_argument("--mqtt-ini", default=os.path.join(src_dir, "mqtt_b1_v2.ini"))
     parser.add_argument("--mqtt-fqdn", default=None, help="Use the mqtt fqdn given in command line.")

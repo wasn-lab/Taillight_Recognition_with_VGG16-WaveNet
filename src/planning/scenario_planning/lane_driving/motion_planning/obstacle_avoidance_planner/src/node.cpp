@@ -64,7 +64,7 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner()
 
   pnh_.param<bool>("is_publishing_clearance_map", is_publishing_clearance_map_, false);
   pnh_.param<bool>("is_showing_debug_info", is_showing_debug_info_, true);
-  pnh_.param<bool>("enable_avoidance", enable_avoidance_, true);
+  pnh_.param<bool>("enable_avoidance", enable_avoidance_, false);
 
   qp_param_ = std::make_unique<QPParam>();
   traj_param_ = std::make_unique<TrajectoryParam>();
