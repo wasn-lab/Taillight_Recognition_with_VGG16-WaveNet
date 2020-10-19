@@ -11,10 +11,11 @@
 	<arg name="umec_enable" default="0" />
 	<arg name="cubtek_enable" default="0" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="0" />
-	<arg name="alpha_side_enable" default="0" />
-	<arg name="alpha_back_enable" default="0" />
+	<arg name="alpha_front_enable" default="1" />
+	<arg name="alpha_side_enable" default="1" />
+	<arg name="alpha_back_enable" default="1" />
 	<rosparam param="debug_message">1</rosparam>
+	<rosparam param="raw_message">0</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
 	<rosparam param="Delphi_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
@@ -32,6 +33,7 @@
 	<group if="$(eval arg('radar_enable') != 0)">
 
 		<node pkg="rad_grab" type="rad_all" name="rad_all" output="screen" cwd="node" respawn="true" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_all_to_baselink" args="0 0 0 0 0 0 base_link radar_alpha" />
 
 	</group>
 
@@ -83,6 +85,7 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_side_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sl_to_baselink" args="-0.5 -1 0 0 0 0 base_link rad_sl" />
 	</group>
 
 	<!-- ************ Alpha Side Right ************ -->
@@ -91,6 +94,7 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_side_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sr_to_baselink" args="-0.5 -1 0 0 0 0 base_link rad_sr" />
 	</group>
 
 	<!-- ************ Alpha Back Left ************ -->
@@ -99,6 +103,7 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="0 -1 0 0 0 0 base_link rad_bl" />
 	</group>
 
 	<!-- ************ Alpha Back Right ************ -->
@@ -107,6 +112,7 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_br_to_baselink" args="0 -1 0 0 0 0 base_link rad_br" />
 	</group>
 
 

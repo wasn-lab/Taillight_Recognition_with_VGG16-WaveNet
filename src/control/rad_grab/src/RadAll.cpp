@@ -42,6 +42,10 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg);
 void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg);
 void callbackAlphaFrontLeft(const msgs::Rad::ConstPtr& msg);
 void callbackAlphaFrontRight(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaSideLeft(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg);
+void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg);
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input);
 void pointCalibration(float* x, float* y, float* z, int type);
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
@@ -50,12 +54,14 @@ void msgPublisher();
 
 ros::Publisher RadFrontPub;
 ros::Publisher RadAllPub;
+ros::Publisher RadAllPCLPub;
 ros::Publisher HeartbeatPub;
 
 double imu_angular_velocity_z = 0;
 int do_rotate = 0;
 int print_count = 0;
 int debug_message = 0;
+int raw_message = 0;
 
 vector<float> Alpha_Front_Center_Param;
 vector<float> Alpha_Front_Left_Param;
@@ -143,7 +149,7 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
       point.z = 0;
       point.speed = msg->radPoint[i].speed;
 
-      if (debug_message)
+      if (raw_message)
       {
         cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
       }
@@ -247,6 +253,92 @@ void callbackAlphaFrontRight(const msgs::Rad::ConstPtr& msg)
     point.speed = msg->radPoint[i].speed;
 
     alphaFrontRightVec.push_back(point);
+  }
+}
+void callbackAlphaSideLeft(const msgs::Rad::ConstPtr& msg)
+{
+  alphaSideLeftVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    pointCalibration(&x, &y, &z, 2);
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaSideLeftVec.push_back(point);
+  }
+}
+
+void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg)
+{
+  alphaSideRightVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    pointCalibration(&x, &y, &z, 3);
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaSideRightVec.push_back(point);
+  }
+}
+void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg)
+{
+  alphaBackLeftVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    pointCalibration(&x, &y, &z, 2);
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaBackLeftVec.push_back(point);
+  }
+}
+
+void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg)
+{
+  alphaBackRightVec.clear();
+  for (int i = 0; i < msg->radPoint.size(); i++)
+  {
+    msgs::PointXYZV point;
+
+    float x = msg->radPoint[i].x;
+    float y = msg->radPoint[i].y;
+    float z = msg->radPoint[i].z;
+
+    pointCalibration(&x, &y, &z, 3);
+
+    point.x = x;
+    point.y = y;
+    point.z = z;
+    point.speed = msg->radPoint[i].speed;
+
+    alphaBackRightVec.push_back(point);
   }
 }
 
@@ -420,6 +512,9 @@ void msgPublisher()
 
 void alphaRadPub()
 {
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointXYZI temp;
+
   alphaAllVec.clear();
   for (int i = 0; i < alphaFrontCenterVec.size(); i++)
   {
@@ -436,15 +531,50 @@ void alphaRadPub()
     alphaAllVec.push_back(alphaFrontRightVec[i]);
   }
 
+  for (int i = 0; i < alphaSideLeftVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaSideLeftVec[i]);
+  }
+
+  for (int i = 0; i < alphaSideRightVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaSideRightVec[i]);
+  }
+
+  for (int i = 0; i < alphaBackLeftVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaBackLeftVec[i]);
+  }
+
+  for (int i = 0; i < alphaBackRightVec.size(); i++)
+  {
+    alphaAllVec.push_back(alphaBackRightVec[i]);
+  }
+
   for (int i = 0; i < alphaAllVec.size(); i++)
   {
     alphaRad.radPoint.push_back(alphaAllVec[i]);
+
+    // for rviz drawing
+    temp.x = alphaAllVec[i].x;
+    temp.y = -alphaAllVec[i].y;
+    cloud->points.push_back(temp);
   }
+
+  sensor_msgs::PointCloud2 msgtemp;
+  pcl::toROSMsg(*cloud, msgtemp);
+  msgtemp.header = alphaRad.radHeader;
+  msgtemp.header.seq = alphaRad.radHeader.seq;
+  msgtemp.header.frame_id = "radar_alpha";
+  RadAllPCLPub.publish(msgtemp);
+
+  RadAllPub.publish(alphaRad);
+
   if (debug_message)
   {
     std::cout << "Alpha Radar Data : " << alphaRad.radPoint.size() << std::endl;
   }
-  RadAllPub.publish(alphaRad);
+
   alphaRad.radPoint.clear();
 
   // msgPublisher();
@@ -453,6 +583,7 @@ void alphaRadPub()
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
   nh.param("/debug_message", debug_message, 0);
+  nh.param("/raw_message", raw_message, 0);
 
   if (!ros::param::has("/Alpha_Front_Center_Param"))
   {
@@ -489,10 +620,16 @@ int main(int argc, char** argv)
   ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
   ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
   ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
+  ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
+  ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
+  ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
+  ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
+
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
   RadAllPub = n.advertise<msgs::Rad>("RadAll", 1);
+  RadAllPCLPub = n.advertise<sensor_msgs::PointCloud2>("RadAlphaPCL", 1);
   HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/heartbeat", 1);
 
   onInit(nh, n);

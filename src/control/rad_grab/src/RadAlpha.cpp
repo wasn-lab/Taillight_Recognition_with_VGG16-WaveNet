@@ -29,8 +29,8 @@ void turnRadarOn(int s, int type);
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
 void frontRadFilter(msgs::Rad* rad);
 
-int print_count = 100;
 int debug_message = 0;
+int raw_message = 0;
 
 struct can_frame current_frame;
 ros::Publisher RadPub;
@@ -163,13 +163,6 @@ int main(int argc, char** argv)
       ros::shutdown();
     }
 
-    print_count++;
-    if (print_count > 60 && !debug_message)
-    {
-      printf("========= alpha [%04X] count : %d\n", can_frame_tmp.can_id, count);
-      print_count = 0;
-    }
-
     if (debug_message)
     {
       printf("========= alpha [%04X] count : %d\n", can_frame_tmp.can_id, count);
@@ -184,6 +177,7 @@ int main(int argc, char** argv)
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
   nh.param("/debug_message", debug_message, 0);
+  nh.param("/raw_message", raw_message, 0);
 
   int filter_id = 0;
   nh.getParam("filter_id", filter_id);
@@ -387,7 +381,7 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 
   p = (((frame.data[4] & 0x07) << 2) | ((frame.data[5] & 0xc0) >> 6)) * 2;
 
-  if (debug_message)
+  if (raw_message)
   {
     std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
               << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;

@@ -24,6 +24,7 @@
 void delphi_radar_parsing(struct can_frame frame, float* x, float* y, float* z, float* speed);
 
 int debug_message = 0;
+int raw_message = 0;
 
 int main(int argc, char** argv)
 {
@@ -77,6 +78,9 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
   ros::NodeHandle nh("~");
 
+  nh.param("/debug_message", debug_message, 0);
+  nh.param("/raw_message", raw_message, 0);
+
   ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("DelphiFront", 1);
   ros::Rate loop_rate(20);
 
@@ -105,8 +109,11 @@ int main(int argc, char** argv)
         }
       }
     }
+    if (debug_message)
+    {
+      printf("*******  Delphi count = %d  *******\n", count);
+    }
 
-    printf("********************  count = %d  ******************\n", count);
     std_msgs::Header h = rad.radHeader;
     // printf("h.seq: %d, h.stamp: %d.%d\n", h.seq, h.stamp.sec, h.stamp.nsec);
 
@@ -185,12 +192,15 @@ void delphi_radar_parsing(struct can_frame frame, float* x, float* y, float* z, 
       *y = fRange * sin(fAngle / 180 * M_PI);
       *z = 0.2;
       int mode = (frame.data[6] & 0xC0) >> 6;
-      printf("[%04X] %02X %02X %02X %02X %02X %02X %02X %02X \n", frame.can_id, frame.data[0], frame.data[1],
-             frame.data[2], frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
-      printf("       x : %f, y : %f, speed : %f\n", *x, *y, *speed);
-      printf("       fRange = %4.1f  ,fAngle = %4.1f \n", fRange, fAngle);
-      printf("       Coming : %d, change : %d, width : %d, mode : %d\n", frame.data[0] & 0x01,
-             (frame.data[0] & 0x02) >> 1, ((frame.data[4] & 0x3C) >> 2), ((frame.data[6] & 0xC0) >> 6));
+      if (raw_message)
+      {
+        printf("[%04X] %02X %02X %02X %02X %02X %02X %02X %02X \n", frame.can_id, frame.data[0], frame.data[1],
+               frame.data[2], frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
+        printf("       x : %f, y : %f, speed : %f\n", *x, *y, *speed);
+        printf("       fRange = %4.1f  ,fAngle = %4.1f \n", fRange, fAngle);
+        printf("       Coming : %d, change : %d, width : %d, mode : %d\n", frame.data[0] & 0x01,
+               (frame.data[0] & 0x02) >> 1, ((frame.data[4] & 0x3C) >> 2), ((frame.data[6] & 0xC0) >> 6));
+      }
       if (mode == 0)
       {
         *speed = 85;
