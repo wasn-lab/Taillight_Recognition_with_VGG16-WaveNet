@@ -546,7 +546,8 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
     ofs.open(fname, std::ios_base::app);
 
     ofs << "#1 time stamp (s), "  //
-        << "#2 track id, "        //
+        << "#2-1 track id, "      //
+        << "#2-2 class id, "      //
         << "#3 dt (s), "          //
 #if VIRTUAL_INPUT
         << "#4-1 GT bbox center x (m), "  //
@@ -562,14 +563,46 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << "#10 rel vx (km/h), "                       //
         << "#11 rel vy (km/h), "                       //
         << "#12 rel speed (km/h), "                    //
-        << "#13 ppx in 5 ticks (m), "                  //
-        << "#14 ppy in 5 ticks (m), "                  //
-        << "#15 ppx in 10 ticks (m), "                 //
-        << "#16 ppy in 10 ticks (m), "                 //
-        << "#17 ppx in 15 ticks (m), "                 //
-        << "#18 ppy in 15 ticks (m), "                 //
-        << "#19 ppx in 20 ticks (m), "                 //
-        << "#20 ppy in 20 ticks (m), "                 //
+        << "#PPx in 1 tick (m), "                      //
+        << "#PPy in 1 tick (m), "                      //
+        << "#PPx in 2 ticks (m), "                     //
+        << "#PPy in 2 ticks (m), "                     //
+        << "#PPx in 3 ticks (m), "                     //
+        << "#PPy in 3 ticks (m), "                     //
+        << "#PPx in 4 ticks (m), "                     //
+        << "#PPy in 4 ticks (m), "                     //
+        << "#PPx in 5 ticks (m), "                     //
+        << "#PPy in 5 ticks (m), "                     //
+        << "#PPx in 6 ticks (m), "                     //
+        << "#PPy in 6 ticks (m), "                     //
+        << "#PPx in 7 ticks (m), "                     //
+        << "#PPy in 7 ticks (m), "                     //
+        << "#PPx in 8 ticks (m), "                     //
+        << "#PPy in 8 ticks (m), "                     //
+        << "#PPx in 9 ticks (m), "                     //
+        << "#PPy in 9 ticks (m), "                     //
+        << "#PPx in 10 ticks (m), "                    //
+        << "#PPy in 10 ticks (m), "                    //
+        << "#PPx in 11 ticks (m), "                    //
+        << "#PPy in 11 ticks (m), "                    //
+        << "#PPx in 12 ticks (m), "                    //
+        << "#PPy in 12 ticks (m), "                    //
+        << "#PPx in 13 ticks (m), "                    //
+        << "#PPy in 13 ticks (m), "                    //
+        << "#PPx in 14 ticks (m), "                    //
+        << "#PPy in 14 ticks (m), "                    //
+        << "#PPx in 15 ticks (m), "                    //
+        << "#PPy in 15 ticks (m), "                    //
+        << "#PPx in 16 ticks (m), "                    //
+        << "#PPy in 16 ticks (m), "                    //
+        << "#PPx in 17 ticks (m), "                    //
+        << "#PPy in 17 ticks (m), "                    //
+        << "#PPx in 18 ticks (m), "                    //
+        << "#PPy in 18 ticks (m), "                    //
+        << "#PPx in 19 ticks (m), "                    //
+        << "#PPy in 19 ticks (m), "                    //
+        << "#PPx in 20 ticks (m), "                    //
+        << "#PPy in 20 ticks (m), "                    //
         << "#21 ego x abs (m), "                       //
         << "#22 ego y abs (m), "                       //
         << "#23 ego z abs (m), "                       //
@@ -591,7 +624,8 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   {
     ofs << std::fixed                          //
         << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
-        << obj.track.id << ", "                // #2 track id
+        << obj.track.id << ", "                // #2-1 track id
+        << obj.classId << ", "                 // #2-2 class id
         << dt_s.toSec() << ", "                // #3 dt (s)
 #if VIRTUAL_INPUT
         << gt_x_ << ", "  // #4-1 GT bbox center x (m)
@@ -610,17 +644,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 
     if (obj.track.is_ready_prediction)
     {
-      // #13 ppx in 5 ticks (m)
-      // #14 ppy in 5 ticks (m)
-      // #15 ppx in 10 ticks (m)
-      // #16 ppy in 10 ticks (m)
-      // #17 ppx in 15 ticks (m)
-      // #18 ppy in 15 ticks (m)
-      // #19 ppx in 20 ticks (m)
-      // #20 ppy in 20 ticks (m)
-      for (unsigned int j = 0; j < num_forecasts_; j = j + 5)
+      // #PP1x~PP20y ppx in 1~20 ticks (m)
+      // #PP1y~PP20y ppy in 1~20 ticks (m)
+      for (unsigned int i = 0; i < num_forecasts_; i++)
       {
-        ofs << ", " << obj.track.forecasts[j].position.x << ", " << obj.track.forecasts[j].position.y;
+        ofs << ", " << obj.track.forecasts[i].position.x << ", " << obj.track.forecasts[i].position.y;
       }
 
       ofs << ", "                //
