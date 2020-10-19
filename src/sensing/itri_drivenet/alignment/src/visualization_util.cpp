@@ -39,9 +39,9 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
     cv_points[1].x = pixel_positions[1].u;
     cv_points[1].y = pixel_positions[1].v;
 
-    color = intToColor(int(obj_count%10));
+    color = intToColor(int(obj_count % 10));
     cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
-    obj_count ++;
+    obj_count++;
   }
 }
 
