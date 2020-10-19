@@ -31,8 +31,8 @@ protected:
                                    
                                    camera::id::front_top_close_120, camera::id::right_front_60,
                                    camera::id::right_back_60, camera::id::left_front_60,
-                                   camera::id::left_back_60, camera::id::back_top_120};
-                                   
+                                   camera::id::left_back_60};
+                                   //, camera::id::back_top_120
 
 
 #elif CAR_MODEL_IS_HINO
