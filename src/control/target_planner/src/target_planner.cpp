@@ -56,6 +56,11 @@ double Look_ahead_S0_final = 3;
 double current_velocity_ = 0;
 double wheel_dis = 3.8;
 
+// shift target point
+double target_left_shift = 0;
+int LRturn_ = 0;
+double Distoturn_ = 0;
+
 bool current_pose_ini = false;
 bool ukfmm_ini = true;
 bool final_path_ini = false;
@@ -135,6 +140,21 @@ void targetplanner(pose pose, targetpoint& target, targetpoint& vehicle_target, 
   target.z = final_waypoints.poses[index].pose.position.z + (final_waypoints.poses[index-1].pose.position.z - final_waypoints.poses[index].pose.position.z)*diff/dis_waypoints;
   // std::cout << "target_x : " << target_x << std::endl;
   // std::cout << "target_y : " << target_y << std::endl;
+
+  // shift target point
+  if (LRturn_ == 2 && Distoturn_ < 15)
+  {
+    target.x = target.x;
+    target.y = target.y;
+  }
+  else
+  {
+    double vec_x = -(final_waypoints.poses[index].pose.position.y - final_waypoints.poses[index-1].pose.position.y)/dis_waypoints;
+    double vec_y = (final_waypoints.poses[index].pose.position.x - final_waypoints.poses[index-1].pose.position.x)/dis_waypoints;
+    target.x = target.x + vec_x*target_left_shift;
+    target.y = target.y + vec_y*target_left_shift;
+  }
+
   geometry_msgs::PoseStamped target_pose;
   target_pose.header.frame_id = "map";
   target_pose.header.stamp = ros::Time::now();
@@ -237,7 +257,8 @@ void currentVelocityCallback(const msgs::VehInfo::ConstPtr& msg)
 
 void currentTrajInfoCallback(const msgs::CurrentTrajInfo::ConstPtr& msg)
 {
-  int LRturn_ = msg->LRturn;
+  LRturn_ = msg->LRturn;
+  Distoturn_ = msg->Distoturn;
   if (LRturn_ == 2)
   {
     Look_ahead_time_final = Look_ahead_time_right;
@@ -261,6 +282,7 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName()+"/Look_ahead_time_right", Look_ahead_time_right);
   ros::param::get(ros::this_node::getName()+"/Look_ahead_S0_right", Look_ahead_S0_right);
   ros::param::get(ros::this_node::getName()+"/wheel_dis", wheel_dis);
+  ros::param::get(ros::this_node::getName()+"/target_left_shift", target_left_shift);
   
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, currentposeCallback);
   ros::Subscriber rear_current_pose_sub = node.subscribe("rear_current_pose", 1, rear_currentposeCallback);
