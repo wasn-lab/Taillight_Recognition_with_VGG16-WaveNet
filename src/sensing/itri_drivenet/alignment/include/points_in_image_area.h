@@ -18,12 +18,17 @@
 #include "alignment.h"
 #include "cloud_cluster.h"
 
+void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                                      std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, std::vector<Alignment>& alignment);
 void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                       pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, Alignment& alignment);
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                              std::vector<DriveNet::PixelPosition>& cam_pixels, int image_w, int image_h,
                              Alignment& alignment);
+void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                             int image_w, int image_h, std::vector<Alignment>& alignment);
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, int image_w, int image_h,
                              Alignment& alignment);

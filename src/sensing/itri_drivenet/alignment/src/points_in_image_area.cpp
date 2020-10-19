@@ -2,30 +2,48 @@
 
 using namespace DriveNet;
 
+void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                                      std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, std::vector<Alignment>& alignment)
+{
+  // std::cout << "===== getPointCloudInAllImageRectCoverage... =====" << std::endl;
+  /// create variable
+  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
+
+  /// find 3d points in image coverage
+  for (size_t i = 0; i < lidarall_ptr->size(); i++)
+  {
+    for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+    {
+      if (alignment[cam_order].checkPointInCoverage(lidarall_ptr->points[i]))
+      {
+        cam_points[cam_order].push_back(lidarall_ptr->points[i]);
+      }
+    }
+  }
+  /// copy to destination
+  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+  {
+    *cams_points_ptr[cam_order] = cam_points[cam_order];
+  }
+}
+
 void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                       pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, Alignment& alignment)
 {
   // std::cout << "===== getPointCloudInImageRectCoverage... =====" << std::endl;
   /// create variable
   pcl::PointCloud<pcl::PointXYZI> cam_points;
-  int cloud_sizes = 0;
-
-  /// copy from source
-  pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
-  cam_points = *cams_points_ptr;
 
   /// find 3d points in image coverage
   for (size_t i = 0; i < lidarall_ptr->size(); i++)
   {
     if (alignment.checkPointInCoverage(lidarall_ptr->points[i]))
     {
-      cam_points.points[cloud_sizes] = lidarall_ptr->points[i];
-      cloud_sizes++;
+      cam_points.push_back(lidarall_ptr->points[i]);
     }
   }
 
   /// copy to destination
-  cam_points.resize(cloud_sizes);
   *cams_points_ptr = cam_points;
 }
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
@@ -83,6 +101,57 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   *cams_points_ptr = cam_points;
 }
 
+void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                             int image_w, int image_h, std::vector<Alignment>& alignment)
+{
+  // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
+  /// create variable
+  std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
+  std::vector<std::vector<std::vector<pcl::PointXYZI>>> point_cloud(cams_points_ptr.size(),
+      std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
+
+/// find 3d points in image coverage
+#pragma omp parallel for collapse(2)
+  for (size_t i = 0; i < lidarall_ptr->size(); i++)
+  {
+    for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+    {
+      if (alignment[cam_order].checkPointInCoverage(lidarall_ptr->points[i]))
+      {
+        PixelPosition pixel_position = alignment[cam_order].projectPointToPixel(lidarall_ptr->points[i]);
+        if (pixel_position.u >= 0 && pixel_position.v >= 0)
+        {
+          if (point_cloud[cam_order][pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
+              point_cloud[cam_order][pixel_position.u][pixel_position.v].x == 0)
+          {
+            point_cloud[cam_order][pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];
+          }
+        }
+      }
+    }
+  }
+
+  /// record the 3d points)
+  for (int u = 0; u < image_w; u++)
+  {
+    for (int v = 0; v < image_h; v++)
+    {
+      for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+      {
+        if (point_cloud[cam_order][u][v].x != 0 && point_cloud[cam_order][u][v].y != 0 && point_cloud[cam_order][u][v].z != 0)
+        {
+          cam_points[cam_order].push_back(point_cloud[cam_order][u][v]);
+        }
+      }
+    }
+  }
+  /// copy to destination
+  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+  {
+    *cams_points_ptr[cam_order] = cam_points[cam_order];
+  }
+}
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                              /*std::vector<PixelPosition>& cam_pixels,*/ int image_w, int image_h, Alignment& alignment)
@@ -90,13 +159,8 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
   /// create variable
   pcl::PointCloud<pcl::PointXYZI> cam_points;
-  int cloud_sizes = 0;
   std::vector<std::vector<pcl::PointXYZI>> point_cloud(
       std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
-
-  /// copy from source
-  pcl::copyPointCloud(*lidarall_ptr, *cams_points_ptr);
-  cam_points = *cams_points_ptr;
 
 /// find 3d points in image coverage
 #pragma omp parallel for
@@ -123,14 +187,11 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
     {
       if (point_cloud[u][v].x != 0 && point_cloud[u][v].y != 0 && point_cloud[u][v].z != 0)
       {
-        cam_points.points[cloud_sizes] = point_cloud[u][v];
-        cloud_sizes++;
+        cam_points.push_back(point_cloud[u][v]);
       }
     }
   }
-
   /// copy to destination
-  cam_points.resize(cloud_sizes);
   *cams_points_ptr = cam_points;
 }
 void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,

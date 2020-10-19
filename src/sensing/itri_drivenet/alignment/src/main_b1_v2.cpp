@@ -628,8 +628,7 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats,
     }
   }
 }
-
-void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+void getPointCloudInAllImageRectCoverage_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                          std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
 {
 // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
@@ -640,7 +639,7 @@ void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::
   }
 }
 
-void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+void getPointCloudInAllImageFOV_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, int image_w,
                                 int image_h)
 {
@@ -1274,16 +1273,17 @@ void runInference()
       {
         g_is_data_sync = false;
         std::cout << "===== doInference once =====" << std::endl;
+
         /// get points on image
-        std::thread getPointCloudInAllImageRectCoverage_1(getPointCloudInAllImageRectCoverage, lidar_ssn_ptr,
-                                                          std::ref(cams_points_ptr));
+        std::thread get_point_in_image_fov_thread_1(getPointCloudInAllImageRectCoverage, lidar_ssn_ptr,
+                                                          std::ref(cams_points_ptr), std::ref(g_alignments));
+        get_point_in_image_fov_thread_1.join();  
         std::thread get_point_in_image_fov_thread_2;
         if (g_use_nonground_data)
         {
           get_point_in_image_fov_thread_2 = std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
-                                                        std::ref(cams_raw_points_ptr), g_image_w, g_image_h);
+                                                        std::ref(cams_points_ptr_tmp), g_image_w, g_image_h, std::ref(g_alignments));
         }
-        getPointCloudInAllImageRectCoverage_1.join();
 
         /// get points in bbox
         getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
