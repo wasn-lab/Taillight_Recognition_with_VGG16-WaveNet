@@ -55,6 +55,7 @@ ros::Publisher HeartbeatPub;
 double imu_angular_velocity_z = 0;
 int do_rotate = 0;
 int print_count = 0;
+int debug_message = 0;
 
 vector<float> Alpha_Front_Center_Param;
 vector<float> Alpha_Front_Left_Param;
@@ -142,13 +143,17 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
       point.z = 0;
       point.speed = msg->radPoint[i].speed;
 
-      // debug msg
-      cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
-
+      if (debug_message)
+      {
+        cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
+      }
       delphiRad.radPoint.push_back(point);
     }
   }
-  std::cout << "Radar Data : " << delphiRad.radPoint.size() << std::endl;
+  if (debug_message)
+  {
+    cout << "Delphi Radar Data : " << delphiRad.radPoint.size() << endl;
+  }
   delphiRad.radHeader.stamp = msg->radHeader.stamp;
   delphiRad.radHeader.seq = msg->radHeader.seq;
   RadFrontPub.publish(delphiRad);
@@ -431,17 +436,24 @@ void alphaRadPub()
     alphaAllVec.push_back(alphaFrontRightVec[i]);
   }
 
-  // std::cout << "Radar Data : " << alphaRad.radPoint.size() << std::endl;
-  // alphaRad.radHeader.stamp = msg->radHeader.stamp;
-  // alphaRad.radHeader.seq = msg->radHeader.seq;
-  // RadAllPub.publish(alphaRad);
-  // alphaRad.radPoint.clear();
+  for (int i = 0; i < alphaAllVec.size(); i++)
+  {
+    alphaRad.radPoint.push_back(alphaAllVec[i]);
+  }
+  if (debug_message)
+  {
+    std::cout << "Alpha Radar Data : " << alphaRad.radPoint.size() << std::endl;
+  }
+  RadAllPub.publish(alphaRad);
+  alphaRad.radPoint.clear();
 
   // msgPublisher();
 }
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
+  nh.param("/debug_message", debug_message, 0);
+
   if (!ros::param::has("/Alpha_Front_Center_Param"))
   {
     nh.setParam("Alpha_Front_Center_Param", Zero_Param);
@@ -474,9 +486,9 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
   ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
-  // ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
-  // ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
-  // ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
+  ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
+  ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
+  ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
   RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
@@ -503,7 +515,8 @@ int main(int argc, char** argv)
       // pointCalibration(&a, &b, &c, 1);
 
       // cout << a << ":" << b << ":" << c << endl;
-      std::cout << "================ Radar Detection ================" << std::endl;
+      cout << "=== Radar Detection === A : " << alphaRad.radPoint.size() << " D : " << delphiRad.radPoint.size()
+           << endl;
       print_count = 0;
     }
     ros::spinOnce();

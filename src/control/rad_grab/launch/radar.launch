@@ -11,10 +11,10 @@
 	<arg name="umec_enable" default="0" />
 	<arg name="cubtek_enable" default="0" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="1" />
+	<arg name="alpha_front_enable" default="0" />
 	<arg name="alpha_side_enable" default="0" />
 	<arg name="alpha_back_enable" default="0" />
-	<rosparam param="debug_message">0</rosparam>
+	<rosparam param="debug_message">1</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
 	<rosparam param="Delphi_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
