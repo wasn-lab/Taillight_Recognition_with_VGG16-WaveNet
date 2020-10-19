@@ -137,7 +137,6 @@ bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_i
 {
   cv::Mat mat_img;
   cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
-  
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
@@ -165,8 +164,8 @@ bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_i
 bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in)
 {
   cv::Mat mat_img;
-  
-  mat_img = content_in; //always is BGR format 
+
+  mat_img = content_in;  // always is BGR format
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
