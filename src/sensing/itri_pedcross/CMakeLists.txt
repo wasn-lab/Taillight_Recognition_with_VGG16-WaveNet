@@ -81,8 +81,6 @@ link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
 set(CPP_FILES
     src/pedestrian_event.cpp
-    src/buffer.cpp
-    src/buffer_node.cpp
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
