@@ -27,6 +27,10 @@
   <!-- Create polygon(cPoint) from bbox(bPoint) -->
   <arg name="create_polygon_from_bbox" default="False" />
 
+  <!-- PP filter of drivable area: width (meter) to be expanded from the host lane -->
+  <arg name="expand_left" default="2.2" />
+  <arg name="expand_right" default="0.0" />
+
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
@@ -48,6 +52,8 @@
     <param name="show_runtime" value="$(arg show_runtime)" />
     <param name="create_bbox_from_polygon" value="$(arg create_bbox_from_polygon)" />
     <param name="create_polygon_from_bbox" value="$(arg create_polygon_from_bbox)" />
+    <param name="expand_left" value="$(arg expand_left)" />
+    <param name="expand_right" value="$(arg expand_right)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
     <param name="gen_markers" value="$(arg gen_markers)" />
     <param name="show_classid" value="$(arg show_classid)" />
