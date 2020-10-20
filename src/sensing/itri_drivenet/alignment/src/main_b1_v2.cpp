@@ -1282,7 +1282,7 @@ void runInference()
         if (g_use_nonground_data)
         {
           get_point_in_image_fov_thread_2 = std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
-                                                        std::ref(cams_points_ptr_tmp), g_image_w, g_image_h, std::ref(g_alignments));
+                                                        std::ref(cams_raw_points_ptr), g_image_w, g_image_h, std::ref(g_alignments));
         }
 
         /// get points in bbox
