@@ -430,7 +430,6 @@ void chatterCallback_06(const msgs::CurrentTrajInfo::ConstPtr& msg)
 
 void chatterCallback_07(const msgs::BehaviorSceneRegister::ConstPtr& msg)
 {
-	//LRturn
 	int s;
 	int nbytes;
 	struct sockaddr_can addr;
