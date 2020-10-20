@@ -22,7 +22,7 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, vid, cfg_ini, mqtt_ini):
+    def __init__(self, vid, cfg_ini, mqtt_ini, mqtt_fqdn):
         self.debug_mode = False
         self.vid = vid  # vehicle id
         rospy.init_node("FailSafeChecker")
@@ -48,7 +48,10 @@ class FailSafeChecker(object):
 
         mqtt_cfg = configparser.ConfigParser()
         mqtt_cfg.read(mqtt_ini)
-        self.mqtt_client = ItriMqttClient(mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1"))
+        if mqtt_fqdn is None:
+            mqtt_fqdn = mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1")
+        self.mqtt_client = ItriMqttClient(
+            mqtt_fqdn, mqtt_cfg["mqtt_broker"].getint("port", 1883))
         self.mqtt_topic = mqtt_cfg["mqtt_topics"]["fail_safe"]
         self.action_emitter = ActionEmitter()
         self.sensor_status_publisher = rospy.Publisher(

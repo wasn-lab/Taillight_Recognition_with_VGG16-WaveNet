@@ -25,8 +25,16 @@
   <!-- false: not show probability -->
   <arg name="show_probability" default="True" />
 
+  <!-- Set C/NC threshold (in percentage) -->
+  <arg name="crossing_threshold" default="55" />
+
+  <!-- Set skip frame nuber -->
+  <arg name="skip_frame_number" default="1" />
+
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
-  <node pkg="itri_pedcross" type="skip_frame_server.py" name="skip_frame_server" cwd="node" output="screen" />
+  <node pkg="itri_pedcross" type="skip_frame_server.py" name="skip_frame_server" cwd="node" output="screen">
+    <param name="skip_frame_number" value="$(arg skip_frame_number)" />
+  </node>
   <node pkg="itri_pedcross" type="pedestrian_subscriber.py" name="pedestrian_subscriber" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="alert_collector" name="alert_collector" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="itri_pedcross" name="pedestrian_event" cwd="node" output="screen">
@@ -35,5 +43,6 @@
     <param name="danger_zone_distance" value="$(arg danger_zone_distance)" />
     <param name="use_2d_for_alarm" value="$(arg use_2d_for_alarm)" />
     <param name="show_probability" value="$(arg show_probability)" />
+    <param name="crossing_threshold" value="$(arg crossing_threshold)" />
   </node>
 </launch>
