@@ -454,7 +454,7 @@ void occgridwayareaCallback(const nav_msgs::OccupancyGrid& costmap)
 void avoidstatesubCallback(const msgs::Flag_Info& msg)
 {
   double avoid_state_index_ = msg.Dspace_Flag03;
-  std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
+  // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
   bool enable_avoidance = false;
   // if (avoid_state_index_ == 1)
   // {
