@@ -40,10 +40,10 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-
-#include <grid_map_msgs/GridMap.h>
 #include <grid_map_cv/grid_map_cv.hpp>
 #include <grid_map_ros/grid_map_ros.hpp>
+
+#include <grid_map_msgs/GridMap.h>
 
 namespace object_map
 {

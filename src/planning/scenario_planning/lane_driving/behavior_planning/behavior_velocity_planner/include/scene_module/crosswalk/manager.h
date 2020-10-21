@@ -43,17 +43,20 @@
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_extension/utility/query.h>
 
-#include <scene_module/crosswalk/scene.h>
+#include <scene_module/crosswalk/scene_crosswalk.h>
+#include <scene_module/crosswalk/scene_walkway.h>
 #include <scene_module/scene_module_interface.h>
 
 class CrosswalkModuleManager : public SceneModuleManagerInterface
 {
 public:
-  CrosswalkModuleManager() : SceneModuleManagerInterface(getModuleName()) {}
+  CrosswalkModuleManager();
 
   const char * getModuleName() override { return "crosswalk"; }
 
 private:
+  CrosswalkModule::PlannerParam crosswalk_planner_param_;
+  WalkwayModule::PlannerParam walkway_planner_param_;
   void launchNewModules(const autoware_planning_msgs::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(

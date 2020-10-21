@@ -23,6 +23,7 @@ const double NumOfID = 5;
 #include "std_msgs/Float64.h"
 #include "std_msgs/Bool.h"
 //#include "std_msgs/String.h"
+#include <msgs/BehaviorSceneRegister.h>
 
 
 //For CAN BUS
@@ -427,6 +428,49 @@ void chatterCallback_06(const msgs::CurrentTrajInfo::ConstPtr& msg)
 
 }
 
+void chatterCallback_07(const msgs::BehaviorSceneRegister::ConstPtr& msg)
+{
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x065;
+	frame.data[0] = (short int)(msg->StopZone);
+	frame.data[1] = (short int)(msg->BusStopNum);
+	frame.data[2] = (short int)(msg->Distance*1000);
+	frame.data[3] = (short int)(msg->Distance*1000)>>8;
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	cout << "StopZone: " << int(msg->StopZone) << endl;
+	cout << "BusStopNum: " << int(msg->BusStopNum) << endl;
+	cout << "Stop_Distance: " << double(msg->Distance) << endl;
+	close(s);
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+}
+
 
 int main(int argc, char **argv)
 {
@@ -438,6 +482,7 @@ int main(int argc, char **argv)
   ros::Subscriber dSPACE_subscriber_04 = n.subscribe("LightResultOutput_ITRI_Campus", 1, chatterCallback_04);
   ros::Subscriber dSPACE_subscriber_05 = n.subscribe("/traffic", 1, chatterCallback_05);
   ros::Subscriber dSPACE_subscriber_06 = n.subscribe("/current_trajectory_info", 1, chatterCallback_06);
+  ros::Subscriber dSPACE_subscriber_07 = n.subscribe("/bus_stop_register_info", 1, chatterCallback_07);
   ros::spin();
   return 0;
 }

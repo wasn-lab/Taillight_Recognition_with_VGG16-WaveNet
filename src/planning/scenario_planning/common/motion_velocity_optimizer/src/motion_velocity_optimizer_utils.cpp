@@ -199,6 +199,25 @@ void setZeroVelocity(autoware_planning_msgs::Trajectory & trajectory)
   return;
 }
 
+double getMaxVelocity(const autoware_planning_msgs::Trajectory & trajectory)
+{
+  double max_vel = 0.0;
+  for (auto & tp : trajectory.points) {
+    if (tp.twist.linear.x > max_vel) max_vel = tp.twist.linear.x;
+  }
+  return max_vel;
+}
+
+double getMaxAbsVelocity(const autoware_planning_msgs::Trajectory & trajectory)
+{
+  double max_vel = 0.0;
+  for (auto & tp : trajectory.points) {
+    double abs_vel = std::fabs(tp.twist.linear.x);
+    if (abs_vel > max_vel) max_vel = abs_vel;
+  }
+  return max_vel;
+}
+
 void mininumVelocityFilter(const double & min_vel, autoware_planning_msgs::Trajectory & trajectory)
 {
   for (auto & tp : trajectory.points) {

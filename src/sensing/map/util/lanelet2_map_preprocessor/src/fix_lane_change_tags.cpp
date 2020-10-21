@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 #include <ros/ros.h>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -39,77 +40,70 @@ void printUsage()
 using lanelet::utils::getId;
 using lanelet::utils::to2D;
 
-bool loadLaneletMap(const std::string& llt_map_path, lanelet::LaneletMapPtr& lanelet_map_ptr,
-                    lanelet::Projector& projector)
+bool loadLaneletMap(
+  const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
+  lanelet::Projector & projector)
 {
   lanelet::LaneletMapPtr lanelet_map;
   lanelet::ErrorMessages errors;
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
-  for (const auto& error : errors)
-  {
+  for (const auto & error : errors) {
     ROS_ERROR_STREAM(error);
   }
-  if (!errors.empty())
-  {
+  if (!errors.empty()) {
     return false;
   }
   std::cout << "Loaded Lanelet2 map" << std::endl;
   return true;
 }
 
-bool exists(std::unordered_set<lanelet::Id>& set, lanelet::Id element)
+bool exists(std::unordered_set<lanelet::Id> & set, lanelet::Id element)
 {
   return std::find(set.begin(), set.end(), element) != set.end();
 }
 
-lanelet::Lanelets convertToVector(lanelet::LaneletMapPtr& lanelet_map_ptr)
+lanelet::Lanelets convertToVector(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   lanelet::Lanelets lanelets;
-  for (lanelet::Lanelet lanelet : lanelet_map_ptr->laneletLayer)
-  {
+  for (lanelet::Lanelet lanelet : lanelet_map_ptr->laneletLayer) {
     lanelets.push_back(lanelet);
   }
   return lanelets;
 }
-void fixTags(lanelet::LaneletMapPtr& lanelet_map_ptr)
+void fixTags(lanelet::LaneletMapPtr & lanelet_map_ptr)
 {
   auto lanelets = convertToVector(lanelet_map_ptr);
   lanelet::traffic_rules::TrafficRulesPtr trafficRules =
-      lanelet::traffic_rules::TrafficRulesFactory::create(lanelet::Locations::Germany, lanelet::Participants::Vehicle);
+    lanelet::traffic_rules::TrafficRulesFactory::create(
+      lanelet::Locations::Germany, lanelet::Participants::Vehicle);
   lanelet::routing::RoutingGraphUPtr routingGraph =
-      lanelet::routing::RoutingGraph::build(*lanelet_map_ptr, *trafficRules);
+    lanelet::routing::RoutingGraph::build(*lanelet_map_ptr, *trafficRules);
 
-  for (auto& llt : lanelets)
-  {
-    if (!routingGraph->conflicting(llt).empty())
-    {
+  for (auto & llt : lanelets) {
+    if (!routingGraph->conflicting(llt).empty()) {
       continue;
     }
     llt.attributes().erase("turn_direction");
-    if (!!routingGraph->adjacentRight(llt))
-    {
+    if (!!routingGraph->adjacentRight(llt)) {
       llt.rightBound().attributes()["lane_change"] = "yes";
     }
-    if (!!routingGraph->adjacentLeft(llt))
-    {
+    if (!!routingGraph->adjacentLeft(llt)) {
       llt.leftBound().attributes()["lane_change"] = "yes";
     }
   }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
   ros::init(argc, argv, "merge_lines");
   ros::NodeHandle pnh("~");
 
-  if (!pnh.hasParam("llt_map_path"))
-  {
+  if (!pnh.hasParam("llt_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("output_path"))
-  {
+  if (!pnh.hasParam("output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
@@ -121,8 +115,7 @@ int main(int argc, char* argv[])
   lanelet::LaneletMapPtr llt_map_ptr(new lanelet::LaneletMap);
   lanelet::projection::MGRSProjector projector;
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector))
-  {
+  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
 

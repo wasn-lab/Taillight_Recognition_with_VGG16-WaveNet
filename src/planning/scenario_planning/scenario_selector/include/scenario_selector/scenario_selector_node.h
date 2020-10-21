@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #pragma once
 
 #include <deque>
 #include <memory>
 #include <string>
 
+#include <lanelet2_core/LaneletMap.h>
+#include <lanelet2_routing/RoutingGraph.h>
+#include <lanelet2_traffic_rules/TrafficRules.h>
 #include <ros/ros.h>
-
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
@@ -30,10 +33,6 @@
 #include <autoware_planning_msgs/Scenario.h>
 #include <autoware_planning_msgs/Trajectory.h>
 #include <geometry_msgs/TwistStamped.h>
-
-#include <lanelet2_core/LaneletMap.h>
-#include <lanelet2_routing/RoutingGraph.h>
-#include <lanelet2_traffic_rules/TrafficRules.h>
 
 struct Input
 {

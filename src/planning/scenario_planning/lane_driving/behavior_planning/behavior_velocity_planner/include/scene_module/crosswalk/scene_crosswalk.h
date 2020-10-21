@@ -43,35 +43,32 @@
 #include <lanelet2_routing/RoutingGraph.h>
 #include <lanelet2_routing/RoutingGraphContainer.h>
 
+#include <scene_module/crosswalk/util.h>
 #include <scene_module/scene_module_interface.h>
 
 class CrosswalkModule : public SceneModuleInterface
 {
 public:
-  struct DebugData
+  struct PlannerParam
   {
-    double base_link2front;
-    std::vector<Eigen::Vector3d> collision_points;
-    std::vector<geometry_msgs::Pose> stop_poses;
-    std::vector<geometry_msgs::Pose> slow_poses;
-    std::vector<std::vector<Eigen::Vector3d>> collision_lines;
-    std::vector<std::vector<Eigen::Vector3d>> crosswalk_polygons;
-    std::vector<std::vector<Eigen::Vector3d>> stop_polygons;
-    std::vector<std::vector<Eigen::Vector3d>> slow_polygons;
+    double stop_margin;
+    double slow_margin;
+    double slow_velocity;
+    double stop_dynamic_object_prediction_time_margin;
   };
 
-public:
-  CrosswalkModule(const int64_t module_id, const lanelet::ConstLanelet & crosswalk);
+  CrosswalkModule(
+    const int64_t module_id, const lanelet::ConstLanelet & crosswalk,
+    const PlannerParam & planner_param);
 
-  bool modifyPathVelocity(autoware_planning_msgs::PathWithLaneId * path) override;
+  bool modifyPathVelocity(
+    autoware_planning_msgs::PathWithLaneId * path,
+    autoware_planning_msgs::StopReason * stop_reason) override;
 
   visualization_msgs::MarkerArray createDebugMarkerArray() override;
 
 private:
-  bool getBackwordPointFromBasePoint(
-    const Eigen::Vector2d & line_point1, const Eigen::Vector2d & line_point2,
-    const Eigen::Vector2d & base_point, const double backward_length,
-    Eigen::Vector2d & output_point);
+  int64_t module_id_;
 
   bool checkSlowArea(
     const autoware_planning_msgs::PathWithLaneId & input,
@@ -87,24 +84,17 @@ private:
       polygon,
     const autoware_perception_msgs::DynamicObjectArray::ConstPtr & objects_ptr,
     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & no_ground_pointcloud_ptr,
-    autoware_planning_msgs::PathWithLaneId & output);
+    autoware_planning_msgs::PathWithLaneId & output, bool * insert_stop);
 
-  bool insertTargetVelocityPoint(
-    const autoware_planning_msgs::PathWithLaneId & input,
-    const boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double>, false> &
-      polygon,
-    const double & margin, const double & velocity,
-    autoware_planning_msgs::PathWithLaneId & output);
+  bool isTargetType(const autoware_perception_msgs::DynamicObject & obj);
 
-  enum class State { APPROARCH, INSIDE, GO_OUT };
+  enum class State { APPROACH, INSIDE, GO_OUT };
 
   lanelet::ConstLanelet crosswalk_;
   State state_;
 
   // Parameter
-  const double stop_margin_ = 1.0;
-  const double stop_dynamic_object_prediction_time_margin_ = 3.0;
-  const double slow_margin_ = 2.0;
+  PlannerParam planner_param_;
 
   // Debug
   DebugData debug_data_;
