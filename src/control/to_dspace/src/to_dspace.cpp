@@ -460,8 +460,8 @@ void chatterCallback_07(const msgs::BehaviorSceneRegister::ConstPtr& msg)
 	frame.can_id  = 0x065;
 	frame.data[0] = (short int)(msg->StopZone);
 	frame.data[1] = (short int)(msg->BusStopNum);
-	frame.data[2] = (short int)(msg->Distance*1000);
-	frame.data[3] = (short int)(msg->Distance*1000)>>8;
+	frame.data[2] = (short int)(msg->Distance*100);
+	frame.data[3] = (short int)(msg->Distance*100)>>8;
 	nbytes = write(s, &frame, sizeof(struct can_frame));
 	cout << "StopZone: " << int(msg->StopZone) << endl;
 	cout << "BusStopNum: " << int(msg->BusStopNum) << endl;
