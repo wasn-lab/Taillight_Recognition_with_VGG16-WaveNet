@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(path_transfer)
+project(occ_grid_lane)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   tf2
   tf2_ros
-  autoware_planning_msgs
+  grid_map_ros
   car_model
 )
 
@@ -56,10 +56,13 @@ include(CompilerFlags)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
+ #add_message_files(
+   #FILES
    #msg
-# )
+   #MM_TP_msg.msg
+   #UKF_MM_msg.msg
+   #MM_TP_input_msg.msg
+ #)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -78,8 +81,9 @@ include(CompilerFlags)
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   std_msgs
-   nav_msgs
+ #  std_msgs
+ #  nav_msgs
+ #  autoware_msgs
  )
 
 ################################################
@@ -127,7 +131,6 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${Eigen_INCLUDE_DIRS}
 )
 ## Declare a C++ library
 # add_library(geodetic_conv include/geodetic_utils/geodetic_conv.hpp
@@ -140,7 +143,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(path_transfer src/path_transfer.cpp)
+add_executable(occ_grid_lane src/occ_grid_lane.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,9 +156,9 @@ add_executable(path_transfer src/path_transfer.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(path_transfer ${catkin_LIBRARIES})
-add_dependencies(path_transfer ${catkin_EXPORTED_TARGETS} )
-add_dependencies(path_transfer ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(occ_grid_lane ${catkin_LIBRARIES})
+add_dependencies(occ_grid_lane ${catkin_EXPORTED_TARGETS} )
+add_dependencies(occ_grid_lane ${${PROJECT_NAME}_EXPORTED_TARGETS})
 #############
 ## Install ##
 #############

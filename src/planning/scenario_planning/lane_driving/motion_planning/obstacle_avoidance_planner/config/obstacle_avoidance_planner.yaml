@@ -35,8 +35,10 @@ coef_y_cosntrain_search_resolution: 0.5
 keep_space_shape_x: 2.0
 keep_space_shape_y: 2.0
 
-is_publishing_clearance_map: false
+is_publishing_clearance_map: true
 enable_avoidance: false
+use_freespace: true
+disable_lane_constrain: true
 num_sampling_points: 100
 num_joint_buffer_points: 3
 num_offset_for_begin_idx: 2

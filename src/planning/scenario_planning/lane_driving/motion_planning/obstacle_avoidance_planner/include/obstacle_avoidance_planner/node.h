@@ -15,6 +15,9 @@
  */
 #ifndef NODE_H
 #define NODE_H
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#include <nav_msgs/OccupancyGrid.h>
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace cv
 {
@@ -61,6 +64,10 @@ class EBPathOptimizer;
 struct QPParam;
 struct TrajectoryParam;
 struct ConstrainParam;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+static nav_msgs::OccupancyGrid drivable_rect;
+static nav_msgs::OccupancyGrid freespace_rect;
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 class ObstacleAvoidancePlanner
 {
@@ -68,6 +75,12 @@ private:
   bool is_publishing_clearance_map_;
   bool is_showing_debug_info_;
   bool enable_avoidance_;
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  bool use_freespace_;
+  bool disable_lane_constrain_;
+  bool drivable_rect_ini = false;
+  bool freespace_rect_ini = false;
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
   const int min_num_points_for_getting_yaw_;
 
   // params outside logic
@@ -105,12 +118,20 @@ private:
   ros::Subscriber objects_sub_;
   ros::Subscriber state_sub_;
   ros::Subscriber is_avoidance_sub_;
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  ros::Subscriber get_rect;
+  ros::Subscriber get_rect_freespace;
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   // callback functions
   void pathCallback(const autoware_planning_msgs::Path & msg);
   void objectsCallback(const autoware_perception_msgs ::DynamicObjectArray & msg);
   void stateCallback(const autoware_system_msgs::AutowareState & msg);
   void enableAvoidanceCallback(const std_msgs::Bool & msg);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  void getRectCallback(const nav_msgs::OccupancyGrid & occupancy_grid);
+  void getRectfreespaceCallback(const nav_msgs::OccupancyGrid & occupancy_grid);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   void initialize();
 
@@ -139,6 +160,9 @@ private:
 
   autoware_planning_msgs::Trajectory generateTrajectory(
     const autoware_planning_msgs::Path & in_path);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  autoware_planning_msgs::Path generateDrivableArea(const autoware_planning_msgs::Path & path);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   std::vector<autoware_planning_msgs::TrajectoryPoint> convertPointsToTrajectory(
     const std::vector<autoware_planning_msgs::PathPoint> & path_points,

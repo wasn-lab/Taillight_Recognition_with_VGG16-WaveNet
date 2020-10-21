@@ -26,9 +26,9 @@
     <param name="minimum_lane_change_length" value="12.0" />
     <param name="prediction_duration" value="8.0" />
     <param name="prediction_time_resolution" value="0.5" />
-    <param name="drivable_area_resolution" value="0.1" />
-    <param name="drivable_area_width" value="100.0" />
-    <param name="drivable_area_height" value="50.0" />
+    <param name="drivable_area_resolution" value="0.2" /><!--0.1-->
+    <param name="drivable_area_width" value="50.0" /><!--100.0-->
+    <param name="drivable_area_height" value="30.0" /><!--50.0-->
     <param name="static_obstale_velocity_thresh" value="0.1" />
     <param name="enable_abort_lane_change" value="true" />
   </node>

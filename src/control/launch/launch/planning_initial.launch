@@ -1,11 +1,14 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-  
+
   <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
   <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
   <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" /> <!--NonGround_sensor_msgs2-->
   <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
   <arg name="output/traffic_light" default="/perception/traffic_light_recognition/traffic_light_states" />
+
+  <arg name="right_waylength" default="3" />
+  <arg name="left_waylength" default="6" />
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
@@ -48,6 +51,12 @@
         <param name="z_diff_setting_in" value="$(arg z_diff_setting_in)" />
         <param name="z_diff_setting_out" value="$(arg z_diff_setting_out)" />
 	<param name="slope_setting_distouphill" value="$(arg slope_setting_distouphill)" />
+  </node>
+
+  <!-- Grid map fusion pub node-->
+  <node pkg="occ_grid_lane" type="occ_grid_lane" name="occ_grid_lane" output="screen" >
+	<param name="right_waylength" value="$(arg right_waylength)" />
+	<param name="left_waylength" value="$(arg left_waylength)" />
   </node>
     
   <!-- target pub node -->
