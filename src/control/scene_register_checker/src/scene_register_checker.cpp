@@ -136,8 +136,15 @@ void bus_stop_()
   ros::Duration time_check = bus_stop_register_.header.stamp - nearest_bus_stop.header.stamp;
   if (time_check.toSec() < 0.5)
   {
-    bus_stop_register_.StopZone = 1;
     bus_stop_register_.Distance = sqrt((current_pose.x-nearest_bus_stop.x)*(current_pose.x-nearest_bus_stop.x) + (current_pose.y-nearest_bus_stop.y)*(current_pose.y-nearest_bus_stop.y));
+    if (bus_stop_register_.Distance > 20)
+    {
+      bus_stop_register_.StopZone = 0;
+    }
+    else
+    {
+      bus_stop_register_.StopZone = 1;
+    }
   }
   else
   {
@@ -145,7 +152,7 @@ void bus_stop_()
     bus_stop_register_.ModuleId =  {};
     bus_stop_register_.BusStopNum = 99;
     bus_stop_register_.StopZone = 0;
-    bus_stop_register_.Distance = 1000;
+    bus_stop_register_.Distance = 100;
   }
   bus_stop_register_pub.publish(bus_stop_register_);
 }
