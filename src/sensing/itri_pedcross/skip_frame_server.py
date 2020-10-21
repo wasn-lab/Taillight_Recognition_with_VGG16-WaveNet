@@ -62,6 +62,7 @@ def callback(req):
         for i in range(predict_frames):
             predict_keypoints = Keypoints()
             for j in range(len(diff.keypoint)):
+                # Do back prediction only when both latest_openpose and second_latest_openpose are detected
                 if keypoint_is_detected(diff.keypoint[j]):
                     # processed_keypoints = (original keypoints + interpolation keypoints) / 2
                     processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x + second_latest_openpose.keypoint[j].x + diff.keypoint[j].x * (i + 1)) / 2
