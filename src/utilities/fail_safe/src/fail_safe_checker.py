@@ -22,14 +22,14 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, vid, cfg_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, vid, heartbeat_ini, mqtt_ini, mqtt_fqdn):
         self.debug_mode = False
         self.vid = vid  # vehicle id
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
         self.modules = {}
-        cfg.read(cfg_ini)
+        cfg.read(heartbeat_ini)
         self.latched_modules = []
         for module in cfg.sections():
             self.modules[module] = Heartbeat(

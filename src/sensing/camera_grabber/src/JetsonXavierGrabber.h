@@ -1,18 +1,21 @@
-#ifndef __TEGRA_A_GRABBER__
-#define __TEGRA_A_GRABBER__
+#ifndef __TEGRA_C_GRABBER__
+#define __TEGRA_C_GRABBER__
 
 #include "CameraGrabber.h"
 #include "camera_params.h"
 
 namespace SensingSubSystem
 {
-class TegraAGrabber
+class JetsonXavierGrabber
 {
 public:
-  TegraAGrabber();
-  ~TegraAGrabber();
-  void initializeModules(const bool do_resize, const bool do_crop);
-  bool runPerception();
+  JetsonXavierGrabber();
+  ~JetsonXavierGrabber();
+  bool initializeModulesGst(const bool do_resize);
+  bool runPerceptionGst();
+
+  // Gstreamer
+  bool gst_pipeline_init(int video_index);
 
 protected:
   void InitParameters();
@@ -22,6 +25,14 @@ protected:
 #elif CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
   const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30,
                                    camera::id::front_bottom_60_crop };
+#elif CAR_MODEL_IS_B1_V3  // Camera use Gstreamer
+
+  const std::vector<int> cam_ids_{ camera::id::front_bottom_60,     camera::id::front_top_far_30,
+
+                                   camera::id::front_top_close_120, camera::id::right_front_60,
+                                   camera::id::right_back_60,       camera::id::left_front_60,
+                                   camera::id::left_back_60,        camera::id::back_top_120 };
+
 #elif CAR_MODEL_IS_HINO
   const std::vector<int> cam_ids_{ camera::id::left_60, camera::id::front_60, camera::id::right_60,
                                    camera::id::left_30, camera::id::front_30, camera::id::right_30 };
@@ -35,16 +46,17 @@ protected:
 
 private:
   // Sensing Modules
-  MultiGMSLCameraGrabber* grabber;
   std::vector<Npp8u*> npp8u_ptrs_;
   NPPResizer resizer_;
   int num_src_bytes_;
   bool resize_;
-  bool crop_;
 
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
+
+  // Gstream
+  std::vector<cv::VideoCapture> video_capture_list;
 };
 }  // namespace SensingSubSystem
 
