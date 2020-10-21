@@ -548,13 +548,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         std::cout << "Track ID: " << obj.track.id << std::endl;
 #endif
 
-        // Check object source is camera
-        if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
-        {
-          continue;
-        }
-        count_peds++;
-
         cv::Mat croped_image;
         // resize from 1920*1208 to 608*384
         obj_pub.camInfo.u *= scaling_ratio_width_;
@@ -573,6 +566,12 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
         }
 
+        // check bounding box is legal
+	      if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
+        {
+          continue;
+        }
+        count_peds++;
 #if PRINT_MESSAGE
         std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
                   << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
