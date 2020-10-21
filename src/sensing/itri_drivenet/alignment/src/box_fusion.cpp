@@ -104,7 +104,9 @@ msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj
     for (const auto& obj_1 : obj1.objects)
     {
       if (obj_1.classId != obj_2.classId)
+      {
         continue;
+      }
 
       PixelPosition obj1_center, obj2_center;
       std::vector<PixelPosition> bbox_positions1(2);
@@ -148,7 +150,9 @@ msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj
       }
     }
     if (!success)
+    {
       out.objects.push_back(obj_2);
+    }
   }
 
   return out;
