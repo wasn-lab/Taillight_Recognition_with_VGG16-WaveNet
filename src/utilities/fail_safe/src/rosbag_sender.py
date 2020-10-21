@@ -53,11 +53,13 @@ class RosbagSender(object):
                 os.environ["HOME"], "rosbag_files", "backup")
         else:
             self.rosbag_backup_dir = rosbag_backup_dir
+        print("rosbag backup dir: {}".format(self.rosbag_backup_dir))
+        print("backend server fqdn: {}, user_name: {}".format(self.fqdn, self.user_name))
 
     def run(self):
         while True:
             self.send_if_having_bags()
-            time.sleep(15)
+            time.sleep(1)
 
     def send_if_having_bags(self):
         if self.proc and self.proc.poll() is None:
