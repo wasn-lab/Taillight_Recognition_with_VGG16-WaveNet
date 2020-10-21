@@ -628,9 +628,8 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats,
     }
   }
 }
-
-void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                                         std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
+void getPointCloudInAllImageRectCoverage_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                                              std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
 {
 // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
 #pragma omp parallel for
@@ -640,9 +639,9 @@ void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::
   }
 }
 
-void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                                std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, int image_w,
-                                int image_h)
+void getPointCloudInAllImageFOV_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
+                                     std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, int image_w,
+                                     int image_h)
 {
 // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
 #pragma omp parallel for
@@ -651,29 +650,11 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
     getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order], image_w, image_h, g_alignments[cam_order]);
   }
 }
-
-void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& objects,
-                              std::vector<msgs::DetectedObjectArray>& remaining_objects,
-                              const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
-                              std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
-                              std::vector<std::vector<std::vector<PixelPosition>>>& cam_pixels,
-                              std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
-                              std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
-{
-// std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
-#pragma omp parallel for
-  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
-  {
-    getPointCloudInBoxFOV(objects[cam_order], remaining_objects[cam_order], cams_points_ptr[cam_order],
-                          cams_bbox_points_ptr[cam_order], cam_pixels[cam_order], objects_2d_bbox[cam_order],
-                          cams_bboxs_points[cam_order], g_alignments[cam_order], g_cloud_clusters[cam_order],
-                          g_is_enable_default_3d_bbox, g_do_clustering);
-  }
-}
 void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& remaining_objects,
                               const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                               std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
-                              std::vector<std::vector<std::vector<PixelPosition>>>& cam_pixels,
+                              const std::vector<std::vector<PixelPosition>>& cam_pixels_cam,
+                              std::vector<std::vector<std::vector<PixelPosition>>>& cam_pixels_obj,
                               std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
@@ -682,11 +663,31 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& rema
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInBoxFOV(remaining_objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
-                          cam_pixels[cam_order], objects_2d_bbox[cam_order], cams_bboxs_points[cam_order],
-                          g_alignments[cam_order], g_cloud_clusters[cam_order], g_is_enable_default_3d_bbox,
-                          g_do_clustering);
+                          cam_pixels_cam[cam_order], cam_pixels_obj[cam_order], objects_2d_bbox[cam_order],
+                          cams_bboxs_points[cam_order], g_alignments[cam_order], g_cloud_clusters[cam_order],
+                          g_is_enable_default_3d_bbox, g_do_clustering, g_is_display);
   }
 }
+void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& objects,
+                              std::vector<msgs::DetectedObjectArray>& remaining_objects,
+                              const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                              std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
+                              const std::vector<std::vector<PixelPosition>>& cam_pixels_cam,
+                              std::vector<std::vector<std::vector<PixelPosition>>>& cam_pixels_obj,
+                              std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
+                              std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
+{
+// std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
+#pragma omp parallel for
+  for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
+  {
+    getPointCloudInBoxFOV(objects[cam_order], remaining_objects[cam_order], cams_points_ptr[cam_order],
+                          cams_bbox_points_ptr[cam_order], cam_pixels_cam[cam_order], cam_pixels_obj[cam_order],
+                          objects_2d_bbox[cam_order], cams_bboxs_points[cam_order], g_alignments[cam_order],
+                          g_cloud_clusters[cam_order], g_is_enable_default_3d_bbox, g_do_clustering, g_is_display);
+  }
+}
+
 template <typename T>
 void release(std::vector<T>& input_vector)
 {
@@ -1198,9 +1199,9 @@ void runInference()
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_raw_points_ptr(g_cam_ids.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_points_ptr(g_cam_ids.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_raw_points_ptr(g_cam_ids.size());
-  std::vector<std::vector<std::vector<PixelPosition>>> cam_pixels(g_cam_ids.size());
-  std::vector<std::vector<int>> cam_bboxs_class_id(g_cam_ids.size());
-  std::vector<std::vector<int>> cam_bboxs_class_id_raw(g_cam_ids.size());
+  std::vector<std::vector<PixelPosition>> cam_pixels_cam(g_cam_ids.size());
+  std::vector<std::vector<PixelPosition>> cam_raw_pixels_cam(g_cam_ids.size());
+  std::vector<std::vector<std::vector<PixelPosition>>> cam_pixels_obj(g_cam_ids.size());
   std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>> cams_bboxs_points(g_cam_ids.size());
 
   /// init
@@ -1274,25 +1275,29 @@ void runInference()
       {
         g_is_data_sync = false;
         std::cout << "===== doInference once =====" << std::endl;
+
         /// get points on image
-        std::thread getPointCloudInAllImageRectCoverage_1(getPointCloudInAllImageRectCoverage, lidar_ssn_ptr,
-                                                          std::ref(cams_points_ptr));
+        std::thread get_point_in_image_fov_thread_1(getPointCloudInAllImageFOV, lidar_ssn_ptr,
+                                                    std::ref(cams_points_ptr), std::ref(cam_pixels_cam), g_image_w,
+                                                    g_image_h, std::ref(g_alignments));
+
         std::thread get_point_in_image_fov_thread_2;
         if (g_use_nonground_data)
         {
-          get_point_in_image_fov_thread_2 = std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
-                                                        std::ref(cams_raw_points_ptr), g_image_w, g_image_h);
+          get_point_in_image_fov_thread_2 =
+              std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr, std::ref(cams_raw_points_ptr),
+                          std::ref(cam_raw_pixels_cam), g_image_w, g_image_h, std::ref(g_alignments));
         }
-        getPointCloudInAllImageRectCoverage_1.join();
+        get_point_in_image_fov_thread_1.join();
 
         /// get points in bbox
-        getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels,
-                                 objects_2d_bbox_arrs, cams_bboxs_points);
+        getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr,
+                                 cam_pixels_cam, cam_pixels_obj, objects_2d_bbox_arrs, cams_bboxs_points);
         if (g_use_nonground_data)
         {
           get_point_in_image_fov_thread_2.join();
-          getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_pixels,
-                                   objects_2d_bbox_arrs, cams_bboxs_points);
+          getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr,
+                                   cam_raw_pixels_cam, cam_pixels_obj, objects_2d_bbox_arrs, cams_bboxs_points);
         }
 
         /// publish bbox or polygon
@@ -1301,7 +1306,7 @@ void runInference()
         if (g_is_display)
         {
           /// draw results on image
-          drawPointCloudOnImages(cam_mats, cam_pixels, cams_bboxs_points);
+          drawPointCloudOnImages(cam_mats, cam_pixels_obj, cams_bboxs_points);
           drawBoxOnImages(cam_mats, objects_2d_bbox_arrs);
 
           /// prepare raw data for point cloud visualization
@@ -1336,10 +1341,10 @@ void runInference()
           lock_cams_process.unlock();
         }
 
-        release(cam_pixels);
-        release(cam_bboxs_class_id);
+        release(cam_pixels_cam);
+        release(cam_raw_pixels_cam);
+        release(cam_pixels_obj);
         release(cams_bboxs_points);
-        release(cam_bboxs_class_id_raw);
       }
     }
     loop_rate.sleep();
