@@ -1,10 +1,7 @@
 import time
 import os
-import rospkg
 import subprocess
-import io
 import re
-import psutil
 
 __BAG_NAME_RGX = re.compile(
     r".*(?P<year>[\d]{4})\-(?P<month>[\d]{2})\-(?P<day>[\d]{2})\-.*\.bag")
