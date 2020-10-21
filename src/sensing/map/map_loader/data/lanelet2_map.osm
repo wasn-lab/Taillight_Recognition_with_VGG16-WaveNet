@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <osm generator="VMB">
-<MetaInfo format_version="1" map_version="7"/>
+<MetaInfo format_version="1" map_version="8"/>
 <node id="393867" lat="24.772792143842857" lon="121.04473002273795">
 <tag k="mgrs_code" v="51RUH023412"/>
 <tag k="local_x" v="2307.910820863326"/>
