@@ -19,7 +19,8 @@
 #include "cloud_cluster.h"
 
 void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                                      std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, std::vector<Alignment>& alignment);
+                                         std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                                         std::vector<Alignment>& alignment);
 void getPointCloudInImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                                       pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, Alignment& alignment);
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
@@ -27,9 +28,9 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
                              std::vector<DriveNet::PixelPosition>& cam_pixels, int image_w, int image_h,
                              Alignment& alignment);
 void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
-                             std::vector<std::vector<DriveNet::PixelPosition>>& cam_pixels, int image_w, int image_h,
-                             std::vector<Alignment>& alignment);
+                                std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                                std::vector<std::vector<DriveNet::PixelPosition>>& cam_pixels, int image_w, int image_h,
+                                std::vector<Alignment>& alignment);
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, int image_w, int image_h,
                              Alignment& alignment);
@@ -52,5 +53,5 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering,
                            bool do_display);
 void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int object_class_id,
-                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr,  std::vector<int>& inliers_remove);
+                          pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud_filtered_ptr, std::vector<int>& inliers_remove);
 #endif

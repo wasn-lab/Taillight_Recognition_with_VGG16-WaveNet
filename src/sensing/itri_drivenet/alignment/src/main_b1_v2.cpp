@@ -629,7 +629,7 @@ void drawPointCloudOnImages(std::vector<cv::Mat>& mats,
   }
 }
 void getPointCloudInAllImageRectCoverage_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                                         std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
+                                              std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr)
 {
 // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
 #pragma omp parallel for
@@ -640,8 +640,8 @@ void getPointCloudInAllImageRectCoverage_loop(const pcl::PointCloud<pcl::PointXY
 }
 
 void getPointCloudInAllImageFOV_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                                std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, int image_w,
-                                int image_h)
+                                     std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, int image_w,
+                                     int image_h)
 {
 // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
 #pragma omp parallel for
@@ -663,9 +663,9 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& rema
   for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
   {
     getPointCloudInBoxFOV(remaining_objects[cam_order], cams_points_ptr[cam_order], cams_bbox_points_ptr[cam_order],
-                          cam_pixels_cam[cam_order], cam_pixels_obj[cam_order], objects_2d_bbox[cam_order], cams_bboxs_points[cam_order],
-                          g_alignments[cam_order], g_cloud_clusters[cam_order], g_is_enable_default_3d_bbox,
-                          g_do_clustering, g_is_display);
+                          cam_pixels_cam[cam_order], cam_pixels_obj[cam_order], objects_2d_bbox[cam_order],
+                          cams_bboxs_points[cam_order], g_alignments[cam_order], g_cloud_clusters[cam_order],
+                          g_is_enable_default_3d_bbox, g_do_clustering, g_is_display);
   }
 }
 void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& objects,
@@ -1278,26 +1278,26 @@ void runInference()
 
         /// get points on image
         std::thread get_point_in_image_fov_thread_1(getPointCloudInAllImageFOV, lidar_ssn_ptr,
-                                                          std::ref(cams_points_ptr), std::ref(cam_pixels_cam),
-                                                          g_image_w, g_image_h, std::ref(g_alignments));
- 
+                                                    std::ref(cams_points_ptr), std::ref(cam_pixels_cam), g_image_w,
+                                                    g_image_h, std::ref(g_alignments));
+
         std::thread get_point_in_image_fov_thread_2;
         if (g_use_nonground_data)
         {
-          get_point_in_image_fov_thread_2 = std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr,
-                                                        std::ref(cams_raw_points_ptr), std::ref(cam_raw_pixels_cam),
-                                                        g_image_w, g_image_h, std::ref(g_alignments));                                           
+          get_point_in_image_fov_thread_2 =
+              std::thread(getPointCloudInAllImageFOV, lidarall_nonground_ptr, std::ref(cams_raw_points_ptr),
+                          std::ref(cam_raw_pixels_cam), g_image_w, g_image_h, std::ref(g_alignments));
         }
-        get_point_in_image_fov_thread_1.join(); 
+        get_point_in_image_fov_thread_1.join();
 
         /// get points in bbox
-        getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr, cam_pixels_cam, cam_pixels_obj,
-                                 objects_2d_bbox_arrs, cams_bboxs_points);
+        getPointCloudInAllBoxFOV(object_arrs, remaining_object_arrs, cams_points_ptr, cams_bbox_points_ptr,
+                                 cam_pixels_cam, cam_pixels_obj, objects_2d_bbox_arrs, cams_bboxs_points);
         if (g_use_nonground_data)
         {
-          get_point_in_image_fov_thread_2.join();   
-          getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr, cam_raw_pixels_cam, cam_pixels_obj,
-                                   objects_2d_bbox_arrs, cams_bboxs_points);
+          get_point_in_image_fov_thread_2.join();
+          getPointCloudInAllBoxFOV(remaining_object_arrs, cams_raw_points_ptr, cams_bbox_raw_points_ptr,
+                                   cam_raw_pixels_cam, cam_pixels_obj, objects_2d_bbox_arrs, cams_bboxs_points);
         }
 
         /// publish bbox or polygon

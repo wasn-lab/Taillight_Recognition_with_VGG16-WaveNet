@@ -3,7 +3,8 @@
 using namespace DriveNet;
 
 void getPointCloudInAllImageRectCoverage(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                                      std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr, std::vector<Alignment>& alignment)
+                                         std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                                         std::vector<Alignment>& alignment)
 {
   // std::cout << "===== getPointCloudInAllImageRectCoverage... =====" << std::endl;
   /// create variable
@@ -102,15 +103,15 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 }
 
 void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
-                             std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
-                             std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h,
-                             std::vector<Alignment>& alignment)
+                                std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
+                                std::vector<std::vector<PixelPosition>>& cam_pixels, int image_w, int image_h,
+                                std::vector<Alignment>& alignment)
 {
   // std::cout << "===== getPointCloudInImageFOV... =====" << std::endl;
   /// create variable
   std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
-  std::vector<std::vector<std::vector<pcl::PointXYZI>>> point_cloud(cams_points_ptr.size(),
-      std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
+  std::vector<std::vector<std::vector<pcl::PointXYZI>>> point_cloud(
+      cams_points_ptr.size(), std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
   PixelPosition pixel_position{ -1, -1 };
 
 /// find 3d points in image coverage
@@ -141,7 +142,8 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
     {
       for (size_t cam_order = 0; cam_order < cams_points_ptr.size(); cam_order++)
       {
-        if (point_cloud[cam_order][u][v].x != 0 && point_cloud[cam_order][u][v].y != 0 && point_cloud[cam_order][u][v].z != 0)
+        if (point_cloud[cam_order][u][v].x != 0 && point_cloud[cam_order][u][v].y != 0 &&
+            point_cloud[cam_order][u][v].z != 0)
         {
           cam_points[cam_order].push_back(point_cloud[cam_order][u][v]);
           pixel_position.u = u;
@@ -200,14 +202,12 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
   *cams_points_ptr = cam_points;
 }
 
-void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
-                           const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
-                           pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
-                           const std::vector<PixelPosition>& cam_pixels_cam,
-                           std::vector<std::vector<PixelPosition>>& cam_pixels_obj,
-                           msgs::DetectedObjectArray& objects_2d_bbox,
-                           std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
-                           CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering, bool do_display)
+void getPointCloudInBoxFOV(
+    const msgs::DetectedObjectArray& objects, const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
+    pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr, const std::vector<PixelPosition>& cam_pixels_cam,
+    std::vector<std::vector<PixelPosition>>& cam_pixels_obj, msgs::DetectedObjectArray& objects_2d_bbox,
+    std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment, CloudCluster& cloud_cluster,
+    bool is_enable_default_3d_bbox, bool do_clustering, bool do_display)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
   /// create variable
@@ -294,7 +294,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
         }
         objects_2d_bbox.objects.push_back(obj_tmp);
 
-        if(do_display)
+        if (do_display)
         {
           cam_pixels_obj.push_back(cam_pixels_object);
           cam_pixels_object.clear();
@@ -312,7 +312,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
     }
   }
 
-  if(do_display)
+  if (do_display)
   {
     removeDuplePoints(point_vector_objects);
     for (size_t i = 0; i < point_vector_objects.size(); i++)
@@ -372,7 +372,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
       if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
           pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
       {
-        if(do_display)
+        if (do_display)
         {
           cam_pixels_object.push_back(pixel_position);
         }
@@ -426,7 +426,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
         }
         objects_2d_bbox.objects.push_back(obj_tmp);
 
-        if(do_display)
+        if (do_display)
         {
           cam_pixels_obj.push_back(cam_pixels_object);
           cam_pixels_object.clear();
