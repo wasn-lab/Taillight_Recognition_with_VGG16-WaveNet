@@ -36,7 +36,7 @@ keep_space_shape_x: 2.0
 keep_space_shape_y: 2.0
 
 is_publishing_clearance_map: false
-enable_avoidance: true
+enable_avoidance: false
 num_sampling_points: 100
 num_joint_buffer_points: 3
 num_offset_for_begin_idx: 2
