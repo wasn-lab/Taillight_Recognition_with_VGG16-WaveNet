@@ -62,7 +62,7 @@ std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
 ros::Publisher g_lidar_repub;
 ros::Subscriber g_lidar_sub;
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
-std::vector<msgs::DetectedObjectArray> g_doas;
+std::vector<msgs::DetectedObjectArray_SB> g_doas;
 // // grid map
 // ros::Publisher g_occupancy_grid_publisher;
 
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
       g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/LidarAll_re", 2);
     }
 
-    g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
+    g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray_SB>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
     
   }
@@ -343,11 +343,13 @@ void* run_interp(void* /*unused*/)
   pthread_exit(nullptr);
 }
 
-msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
+msgs::DetectedObject_SB run_dist(ITRI_Bbox box, int cam_order)
 {
-  msgs::DetectedObject det_obj;
+  msgs::DetectedObject_SB det_obj;
   msgs::BoxPoint box_point;
+  std::vector<msgs::CamInfo> cam_info_vector;
   msgs::CamInfo cam_info;
+  
 
   int l_check = 2;
   int r_check = 2;
@@ -397,8 +399,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
+  cam_info_vector.push_back(cam_info);
+
   det_obj.classId = translate_label(box.label);
-  det_obj.camInfo = cam_info;
+  det_obj.camInfo = cam_info_vector;
   det_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return det_obj;
@@ -486,8 +490,8 @@ void* run_yolo(void* /*unused*/)
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);
 
     // publish results
-    msgs::DetectedObjectArray doa;
-    std::vector<msgs::DetectedObject> v_do;
+    msgs::DetectedObjectArray_SB doa;
+    std::vector<msgs::DetectedObject_SB> v_do;
     // grid map init
     // grid_map::GridMap costmap_ = g_cosmap_gener.initGridMap();
 
@@ -512,8 +516,8 @@ void* run_yolo(void* /*unused*/)
 
       tmp_b_bx = g_dist_est.MergeBbox(tmp_b_bx);
 
-      msgs::DetectedObject det_obj;
-      std::vector<std::future<msgs::DetectedObject>> pool;
+      msgs::DetectedObject_SB det_obj;
+      std::vector<std::future<msgs::DetectedObject_SB>> pool;
       for (auto const& box : *tmp_b_bx)
       {
         if (translate_label(box.label) == 0)
@@ -538,12 +542,12 @@ void* run_yolo(void* /*unused*/)
         v_do.push_back(det_obj);
         if (g_img_result_publish || g_display_flag)
         {
-          int x1 = det_obj.camInfo.u;
-          int y1 = det_obj.camInfo.v;
+          int x1 = det_obj.camInfo[0].u;
+          int y1 = det_obj.camInfo[0].v;
           PixelPosition position_1{ x1, y1 };
           transferPixelScaling(position_1);
 
-          float class_id = det_obj.camInfo.id;
+          float class_id = det_obj.camInfo[0].id;
           class_color = get_common_label_color(class_id);
 
           if (g_debug_flag)

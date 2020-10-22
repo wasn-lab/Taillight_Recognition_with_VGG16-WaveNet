@@ -20,6 +20,6 @@ ConvexPoint cPoint
 TrackInfo track
 uint16 fusionSourceId
 
-CamInfo camInfo
+CamInfo[] camInfo
 RadarInfo radarInfo
 LidarInfo lidarInfo

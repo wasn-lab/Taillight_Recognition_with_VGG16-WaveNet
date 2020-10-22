@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include <std_msgs/Empty.h>
 #include <msgs/DetectedObjectArray.h>
+#include <msgs/DetectedObjectArray_SB.h>
 #include <msgs/DetectedObject.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>

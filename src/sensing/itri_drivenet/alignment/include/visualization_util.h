@@ -3,6 +3,7 @@
 
 /// ros
 #include <msgs/DetectedObjectArray.h>
+#include <msgs/DetectedObjectArray_SB.h>
 #include <msgs/DetectedObject.h>
 
 /// opencv
