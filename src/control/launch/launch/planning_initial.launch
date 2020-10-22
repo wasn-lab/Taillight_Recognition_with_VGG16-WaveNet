@@ -12,6 +12,7 @@
   <arg name="Look_ahead_time_right" default="1.0" />
   <arg name="Look_ahead_S0_right" default="1.5" />
   <arg name="wheel_dis" default="3.8" />
+  <arg name="target_left_shift" default="0.0" />
 
   <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
   <arg name="angle_diff_setting_out" default="0.3" />
@@ -52,6 +53,7 @@
 	<param name="Look_ahead_time_right" value="$(arg Look_ahead_time_right)" />
 	<param name="Look_ahead_S0_right" value="$(arg Look_ahead_S0_right)" />
         <param name="wheel_dis" value="$(arg wheel_dis)" />
+        <param name="target_left_shift" value="$(arg target_left_shift)"/>
   </node>
 
   <!-- veh_predictwaypoint pub node-->

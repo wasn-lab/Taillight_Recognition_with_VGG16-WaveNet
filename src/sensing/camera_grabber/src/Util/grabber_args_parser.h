@@ -11,6 +11,7 @@ int get_expected_fps();
 bool should_feed_608();
 bool do_resize();
 bool do_crop();
+std::string get_password();
 }  // namespace SensingSubSystem
 
 #endif  //__SENSING_GRABBER_PARSER_H__
