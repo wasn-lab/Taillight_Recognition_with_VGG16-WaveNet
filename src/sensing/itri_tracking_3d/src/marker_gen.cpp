@@ -155,7 +155,7 @@ std::string MarkerGen::parse_source_id(unsigned int source_id)
 }
 
 visualization_msgs::Marker MarkerGen::create_trackid_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                            msgs::DetectedObject obj)
+                                                            msgs::DetectedObject_SB obj)
 {
   visualization_msgs::Marker marker;
 
@@ -275,7 +275,7 @@ visualization_msgs::Marker MarkerGen::create_vel_marker(const unsigned int idx, 
   return marker;
 }
 
-void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_id_.markers);
   std::vector<visualization_msgs::Marker>().swap(m_speed_.markers);
@@ -287,7 +287,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   {
     geometry_msgs::Point point = text_marker_position(obj.bPoint.p1, obj.bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, obj));
-    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.relSpeed, obj.absSpeed));
+    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.speed_rel, obj.speed_abs));
   }
 
   geometry_msgs::Point point_seq = init_Point(-20, 0, 0);
@@ -297,7 +297,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   mc_.pub_speed.publish(m_speed_);
 }
 
-void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_box_.markers);
   m_box_.markers.reserve(objs.size());
@@ -310,7 +310,7 @@ void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::De
   mc_.pub_bbox.publish(m_box_);
 }
 
-void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_vel_.markers);
   m_vel_.markers.reserve(objs.size());
@@ -325,7 +325,7 @@ void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::De
   mc_.pub_vel.publish(m_vel_);
 }
 
-void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject>& objs,
+void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject_SB>& objs,
                                 MarkerConfig mc)
 {
   set_config(mc, mc_);

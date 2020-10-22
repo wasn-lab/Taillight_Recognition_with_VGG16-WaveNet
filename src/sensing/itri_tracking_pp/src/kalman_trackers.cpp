@@ -2,7 +2,7 @@
 
 namespace tpp
 {
-void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center,
+void KalmanTrackers::new_tracker(const msgs::DetectedObject_SB& box, BoxCenter& box_center,
                                  const std::vector<BoxCorner>& box_corners)
 {
   KalmanTracker track;

@@ -56,7 +56,7 @@ class Node:
             "/Tracking3D_aw", DynamicObjectArray, queue_size=1)
         # Subscribers
         self.track3d_sub = rospy.Subscriber(
-            "/Tracking3D", DetectedObjectArray, self.track3d_callback)
+            "/Tracking3D", DetectedObjectArray_SB, self.track3d_callback)
 
     def run(self):
         rospy.spin()

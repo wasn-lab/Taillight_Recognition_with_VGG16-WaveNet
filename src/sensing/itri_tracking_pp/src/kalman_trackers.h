@@ -5,7 +5,7 @@
 #include "kalman_tracker.h"
 #include "hungarian.h"
 #include <vector>
-#include <msgs/DetectedObject.h>
+#include <msgs/DetectedObject_SB.h>
 #include "utils.h"
 
 namespace tpp
@@ -14,7 +14,7 @@ class KalmanTrackers
 {
 public:
   std_msgs::Header header_;
-  std::vector<msgs::DetectedObject> objs_;
+  std::vector<msgs::DetectedObject_SB> objs_;
   std::vector<KalmanTracker> tracks_;
 
   KalmanTrackers()
@@ -125,7 +125,8 @@ private:
   void give_ids_to_unassociated_objs();
   void correct_duplicate_track_ids();
 
-  void new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center, const std::vector<BoxCorner>& box_corners);
+  void new_tracker(const msgs::DetectedObject_SB& box, BoxCenter& box_center,
+                   const std::vector<BoxCorner>& box_corners);
   void correct_tracker(KalmanTracker& track, const float x_measure, const float y_measure);
 
   void update_associated_trackers();

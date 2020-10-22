@@ -19,7 +19,7 @@ public:
   {
   }
 
-  void marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject>& objs, MarkerConfig mc,
+  void marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject_SB>& objs, MarkerConfig mc,
                        std::vector<std::vector<PPLongDouble> >& ppss);
 
 private:
@@ -58,7 +58,7 @@ private:
   std::string parse_source_id(unsigned int source_id);
 
   visualization_msgs::Marker create_trackid_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                   const msgs::DetectedObject& obj);
+                                                   const msgs::DetectedObject_SB& obj);
 
   visualization_msgs::Marker create_speed_marker(const unsigned int idx, const geometry_msgs::Point point,
                                                  std_msgs::Header obj_header, const float relspeed,
@@ -75,14 +75,14 @@ private:
                                                const float vy, std_msgs::Header obj_header);
 
   // process markers
-  void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
+  void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs);
 
-  void process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
+  void process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs);
 
-  void process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
+  void process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs,
                          std::vector<std::vector<PPLongDouble> >& ppss);
 
-  void process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
+  void process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs);
 };
 }  // namespace tpp
 
