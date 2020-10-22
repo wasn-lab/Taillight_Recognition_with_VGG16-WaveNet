@@ -201,7 +201,8 @@ void PedestrianEvent::display_on_terminal()
         }
         else if (i == 9)
         {
-          line << "danger_zone_distance: " << danger_zone_distance_ << "   use_2d_for_alarm: " << use_2d_for_alarm_;
+          line << "danger_zone_distance: " << danger_zone_distance_ << "   use_2d_for_alarm: " 
+               << use_2d_for_alarm_ << "   skip_frame_number: " << skip_frame_number_;
         }
         else  // i >= 11
         {
@@ -463,6 +464,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     ros::Time inference_start, inference_stop;
     ros::Time start, stop;
     start = ros::Time::now();
+    int count_peds = 0;
 
     // keep original image
     cv::Mat matrix;
@@ -476,6 +478,39 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 
     for (auto const& obj : msg->objects)
     {
+      // Only first object need to check raw image
+      if (!get_timestamp)
+      {
+        if (obj.header.stamp.toSec() > 1)
+        {
+          msgs_timestamp = obj.header.stamp;
+        }
+        else
+        {
+          msgs_timestamp = msg->header.stamp;
+        }
+        std::lock_guard<std::mutex> lk(mu_front_image_cache_);
+        std::lock_guard<std::mutex> lk2(mu_fov30_image_cache_);
+        std::lock_guard<std::mutex> lk3(mu_left_image_cache_);
+        std::lock_guard<std::mutex> lk4(mu_right_image_cache_);
+        // compare and get the raw image
+        for (int i = image_cache.size() - 1; i >= 0; i--)
+        {
+          if (image_cache[i].first <= msgs_timestamp || i == 0)
+          {
+#if PRINT_MESSAGE
+            std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
+#endif
+
+            matrix = image_cache[i].second;
+            // for drawing bbox and keypoints
+            matrix.copyTo(matrix2);
+            get_timestamp = true;
+            break;
+          }
+        }
+      }
+
       if (obj.classId != 1)
       {  // 1 for people
         continue;
@@ -513,45 +548,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         std::cout << "Track ID: " << obj.track.id << std::endl;
 #endif
 
-        // Check object source is camera
-        if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
-        {
-          continue;
-        }
-
-        // Only first object need to check raw image
-        if (!get_timestamp)
-        {
-          if (obj.header.stamp.toSec() > 1)
-          {
-            msgs_timestamp = obj.header.stamp;
-          }
-          else
-          {
-            msgs_timestamp = msg->header.stamp;
-          }
-          std::lock_guard<std::mutex> lk(mu_front_image_cache_);
-          std::lock_guard<std::mutex> lk2(mu_fov30_image_cache_);
-          std::lock_guard<std::mutex> lk3(mu_left_image_cache_);
-          std::lock_guard<std::mutex> lk4(mu_right_image_cache_);
-          // compare and get the raw image
-          for (int i = image_cache.size() - 1; i >= 0; i--)
-          {
-            if (image_cache[i].first <= msgs_timestamp || i == 0)
-            {
-#if PRINT_MESSAGE
-              std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
-#endif
-
-              matrix = image_cache[i].second;
-              // for drawing bbox and keypoints
-              matrix.copyTo(matrix2);
-              get_timestamp = true;
-              break;
-            }
-          }
-        }
-
         cv::Mat croped_image;
         // resize from 1920*1208 to 608*384
         obj_pub.camInfo.u *= scaling_ratio_width_;
@@ -570,6 +566,12 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
         }
 
+        // check bounding box is legal
+	      if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
+        {
+          continue;
+        }
+        count_peds++;
 #if PRINT_MESSAGE
         std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
                   << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
@@ -970,8 +972,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 std::lock_guard<std::mutex> lk(mu_veh_info_);
 #if DUMP_LOG
                 // print distance
-                file_ << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
-                     << veh_info_.ego_speed << "\n";
+                // file_ << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
+                    //  << veh_info_.ego_speed << "\n";
 #endif
 #if PRINT_MESSAGE
                 std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
@@ -1046,7 +1048,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 
     alert_obj_array.header = msg->header;
     alert_obj_array.header.frame_id = msg->header.frame_id;
-    alert_obj_array.header.stamp = msg->header.stamp;
+    alert_obj_array.header.stamp = msgs_timestamp;
     alert_obj_array.objects.assign(alert_objs.begin(), alert_objs.end());
     if (from_camera == 0)  // front
     {
@@ -1069,7 +1071,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     // ped_obj_array.raw_image = img_msg;
     ped_obj_array.header = msg->header;
     ped_obj_array.header.frame_id = msg->header.frame_id;
-    ped_obj_array.header.stamp = msg->header.stamp;
+    ped_obj_array.header.stamp = msgs_timestamp;
     ped_obj_array.objects.assign(ped_objs.begin(), ped_objs.end());
     if (from_camera == 0)  // front
     {
@@ -1108,6 +1110,11 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     std::lock_guard<std::mutex> lk2(mu_delay_from_camera_);
     total_time_ += stop - start;
     delay_from_camera_ = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
+#if DUMP_LOG
+    // print inference time
+    file_ << ros::Time::now() << "," << count_peds << "," << (inference_stop - inference_start).toSec() 
+          << "," << delay_from_camera_ << "\n";
+#endif
 #if PRINT_MESSAGE
     std::cout << "Delay from camera: " << delay_from_camera_ << std::endl;
     std::cout << "Camera source: " << from_camera << std::endl;
@@ -2326,6 +2333,7 @@ int main(int argc, char** argv)
   nh.param<double>("/pedestrian_event/danger_zone_distance", pe.danger_zone_distance_, 2);
   nh.param<bool>("/pedestrian_event/use_2d_for_alarm", pe.use_2d_for_alarm_, false);
   nh.param<int>("/pedestrian_event/crossing_threshold", pe.cross_threshold_, 55);
+  nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
 
