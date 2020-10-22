@@ -159,20 +159,19 @@ cv::Mat getOnlyObjectsClearanceMap(
   const std::vector<autoware_perception_msgs::DynamicObject> & objects,
   const nav_msgs::OccupancyGrid & occupancy_grid, const double max_avoiding_objects_velocity_ms, bool use_freespace)
 {
-  cv::Mat objects_image = drawObstalcesOnImage(
-    objects, occupancy_grid.info, clearance_map, max_avoiding_objects_velocity_ms);
-
   cv::Mat only_objects_clearance_map;
   ///////////////////////////////////////////////////////////////////////////////////////////////////
   if (use_freespace)
   {
     cv::distanceTransform(clearance_map, only_objects_clearance_map, cv::DIST_L2, 5);
   }
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
   else
   {
+    cv::Mat objects_image = drawObstalcesOnImage(
+    objects, occupancy_grid.info, clearance_map, max_avoiding_objects_velocity_ms);
     cv::distanceTransform(objects_image, only_objects_clearance_map, cv::DIST_L2, 5);
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////
   return only_objects_clearance_map;
 }
 
