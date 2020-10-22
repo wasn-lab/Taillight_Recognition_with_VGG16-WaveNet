@@ -82,7 +82,7 @@ class RosbagSender(object):
         ]
         for bag in bags:
             ymd = _get_bag_ymd(bag)  # backup dir name in backend
-            dir_name = "{}/{}".format(self.vid, ymd)
+            dir_name = "/{}/{}".format(self.vid, ymd)
             ftp_cmds += [
                 "mkdir -p {}".format(dir_name),
                 "cd {}".format(dir_name),
