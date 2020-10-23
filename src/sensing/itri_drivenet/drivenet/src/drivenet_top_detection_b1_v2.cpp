@@ -1,4 +1,3 @@
-#include <iostream>
 #include <pthread.h>
 #include <thread>
 #include <future>
@@ -397,7 +396,7 @@ void* run_yolo(void* /*unused*/)
   cv::Mat m_display_tmp;
   cv::Scalar class_color;
 
-  ros::Rate r(5);
+  ros::Rate r(10);
   while (ros::ok() && !g_is_infer_stop)
   {
     bool is_data_vaild = true;
