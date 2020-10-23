@@ -147,11 +147,14 @@ void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstP
     if (msg->stop_reasons[i].reason == "\"BusStop\"")
     {
       nearest_bus_stop.header = msg->header;
-      nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
-      nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
-      nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
-      bus_stop_ini = true;
-      break;
+      if (!msg->stop_reasons[i].stop_factors.empty())
+      {
+        nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
+        nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
+        nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
+        bus_stop_ini = true;
+        break;
+      }
     }
   }
 }

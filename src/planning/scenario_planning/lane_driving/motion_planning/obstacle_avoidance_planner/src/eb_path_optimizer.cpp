@@ -121,10 +121,10 @@ std::vector<autoware_planning_msgs::TrajectoryPoint> EBPathOptimizer::generateOp
   cv::Mat clearance_map = process_cv::getClearanceMap(path.drivable_area, drivable_area, objects);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////
-  cv::Mat freespace_area = process_cv::getDrivableAreaInCV(freespace_grid);
   cv::Mat clearance_map_;
   if (use_freespace && freespace_rect_ini)
   {
+    cv::Mat freespace_area = process_cv::getDrivableAreaInCV(freespace_grid);
     clearance_map_ = freespace_area;
   }
   else
