@@ -4,8 +4,8 @@ Header header
 uint16 classId
 
 float32 distance
-float32 speed_abs
-float32 speed_rel
+float64 speed_abs
+float64 speed_rel
 
 PointXYZ center_point
 PointXYZ center_point_gps
