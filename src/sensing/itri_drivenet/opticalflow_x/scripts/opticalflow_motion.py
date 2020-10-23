@@ -129,6 +129,7 @@ class ObjectDetectionsWithOpticalFlow:
                      for i in range(len(self.extreme_small_box))]
              
         p0_crop = np.array(np.expand_dims(self._get_tracking_points(box_small), axis=1))
+        # pylint: disable=too-many-function-args
         p1_crop = np.array([self._calcOpticalFlowPyrLK(img1_crop[i], img2_crop[i], p0_crop[i*3:((i+1)*3),:])
                             for i in range(int(len(p0_crop)/3))]).reshape(-1,1,2)
 
