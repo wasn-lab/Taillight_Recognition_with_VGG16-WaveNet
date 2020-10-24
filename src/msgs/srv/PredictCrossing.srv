@@ -1,0 +1,6 @@
+# transfer stored_skeleton to pedcross tf server
+Keypoints[] keypoints
+---
+# predict result
+float32 result_0
+float32 result_1
