@@ -5,8 +5,10 @@
 // Third-party dependencies
 #include "ped_tf_def.h"
 #include "ros/ros.h"
+#include <tensorflow/c/c_api.h>  // TensorFlow C API header.
 #include "tf_utils.hpp"
 #include <scope_guard.hpp>
+#include "msgs/PredictCrossing.h"
 // Command-line user interface
 // OpenPose dependencies
 #include <iostream>
@@ -17,70 +19,40 @@
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
 
-int main()
+const std::vector<std::int64_t> INPUT_DIMS = { 1, FRAME_NUM, FEATURE_NUM };
+
+TF_Graph* g_graph = nullptr;
+TF_Status* g_status = nullptr;
+TF_SessionOptions* g_options = nullptr;
+TF_Session* g_sess = nullptr;
+
+bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Response& res)
 {
-  std::cout << "Load graph testing..." << std::endl;
-
-  auto graph = tf_utils::LoadGraph((PED_TF_MODEL_DIR + std::string("/keras_2.2.4_model.pb")).c_str(), nullptr, nullptr);
-  SCOPE_EXIT
-  {
-    tf_utils::DeleteGraph(graph);
-  };  // Auto-delete on scope exit.
-  if (graph == nullptr)
-  {
-    std::cout << "Can't load graph" << std::endl;
-    return 0;
-  }
-
+  ros::Time start = ros::Time::now();
   std::cout << "Init input_op testing..." << std::endl;
-  auto input_op = TF_Output{ TF_GraphOperationByName(graph, "modelInput"), 0 };
+  auto input_op = TF_Output{ TF_GraphOperationByName(g_graph, "modelInput"), 0 };
   if (input_op.oper == nullptr)
   {
     std::cout << "Can't init input_op" << std::endl;
-    return 2;
   }
+
+  std::cout << "Init Output_op testing..." << std::endl;
+  auto out_op = TF_Output{ TF_GraphOperationByName(g_graph, "dense_3/Sigmoid"), 0 };
+  if (out_op.oper == nullptr)
+  {
+    std::cout << "Can't init out_op" << std::endl;
+  }
+
+  std::cout << "Create Output_tensor ..." << std::endl;
+  TF_Tensor* output_tensor = nullptr;
+  SCOPE_EXIT
+  {
+    tf_utils::DeleteTensor(output_tensor);
+  };  // Auto-delete on scope exit.
 
   std::cout << "Getting key points..." << std::endl;
 
-  const std::vector<std::int64_t> input_dims = { 1, FRAME_NUM, FEATURE_NUM };
-  
-
-    std::cout << "Init Output_op testing..." << std::endl;
-    auto out_op = TF_Output{ TF_GraphOperationByName(graph, "dense_3/Sigmoid"), 0 };
-    if (out_op.oper == nullptr)
-    {
-      std::cout << "Can't init out_op" << std::endl;
-      return 3;
-    }
-
-    std::cout << "Create Output_tensor ..." << std::endl;
-    TF_Tensor* output_tensor = nullptr;
-    SCOPE_EXIT
-    {
-      tf_utils::DeleteTensor(output_tensor);
-    };  // Auto-delete on scope exit.
-
-    auto status = TF_NewStatus();
-    SCOPE_EXIT
-    {
-      TF_DeleteStatus(status);
-    };  // Auto-delete on scope exit.
-    auto options = TF_NewSessionOptions();
-
-    std::cout << "Creating New session ..." << std::endl;
-    auto sess = TF_NewSession(graph, options, status);
-    TF_DeleteSessionOptions(options);
-
-    if (TF_GetCode(status) != TF_OK)
-    {
-      return 4;
-    }
-    ros::Time::init();
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-  for (int i = 0; i < 10; i++)
-  {
-    ros::Time start = ros::Time::now();
-    std::vector<float> input_vals = { 0.7350157728706624 + 0.1 * (float)i,
+  std::vector<float> input_vals = { 0.7350157728706624,
                                     0.6055555555555555,
                                     0.7812828601472135,
                                     0.825925925925926,
@@ -11820,51 +11792,89 @@ int main()
                                     0.046719251833246496,
                                     3.0209675037914265,
                                     0.07390589796511993 };
-  
-    std::cout << "Create Input_tensor testing..." << std::endl;
-    auto input_tensor = tf_utils::CreateTensor(TF_FLOAT, input_dims, input_vals);
-    SCOPE_EXIT
-    {
-      tf_utils::DeleteTensor(input_tensor);
-    };  // Auto-delete on scope exit.
-    std::cout << "Running session ..." << std::endl;
-    TF_SessionRun(sess,
-                  nullptr,                      // Run options.
-                  &input_op, &input_tensor, 1,  // Input tensors, input tensor values, number of inputs.
-                  &out_op, &output_tensor, 1,   // Output tensors, output tensor values, number of outputs.
-                  nullptr, 0,                   // Target operations, number of targets.
-                  nullptr,                      // Run metadata.
-                  status                        // Output status.
-    );
 
-    std::cout << "Getting Output ..." << std::endl;
-    auto data = static_cast<float*>(TF_TensorData(output_tensor));
-    ros::Time stop = ros::Time::now();
+  std::cout << "Create Input_tensor testing..." << std::endl;
+  auto input_tensor = tf_utils::CreateTensor(TF_FLOAT, INPUT_DIMS, input_vals);
+  SCOPE_EXIT
+  {
+    tf_utils::DeleteTensor(input_tensor);
+  };  // Auto-delete on scope exit.
+  std::cout << "Running session ..." << std::endl;
+  TF_SessionRun(g_sess,
+                nullptr,                      // Run options.
+                &input_op, &input_tensor, 1,  // Input tensors, input tensor values, number of inputs.
+                &out_op, &output_tensor, 1,   // Output tensors, output tensor values, number of outputs.
+                nullptr, 0,                   // Target operations, number of targets.
+                nullptr,                      // Run metadata.
+                g_status                      // Output status.
+  );
 
-    std::cout << "Output vals: " << data[0] << ", " << data[1] << ", " << stop - start << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  std::cout << "Getting Output ..." << std::endl;
+  auto data = static_cast<float*>(TF_TensorData(output_tensor));
+  ros::Time stop = ros::Time::now();
+
+  std::cout << "Output vals: " << data[0] << ", " << data[1] << ", " << stop - start << std::endl;
+
+  if (TF_GetCode(g_status) != TF_OK)
+  {
+    std::cout << "Error run session";
   }
-    if (TF_GetCode(status) != TF_OK)
-    {
-      std::cout << "Error run session";
-      return 5;
-    }
 
-    TF_CloseSession(sess, status);
-    if (TF_GetCode(status) != TF_OK)
-    {
-      std::cout << "Error close session";
-      return 6;
-    }
+  return true;
+}
 
-    TF_DeleteSession(sess, status);
-    if (TF_GetCode(status) != TF_OK)
-    {
-      std::cout << "Error delete session";
-      return 7;
-    }
+int main(int argc, char** argv)
+{
+  ros::Time::init();
+  ros::Time start = ros::Time::now();
 
-    
-  
+  std::cout << "Load graph testing..." << std::endl;
+
+  g_graph = tf_utils::LoadGraph((PED_TF_MODEL_DIR + std::string("/keras_2.2.4_model.pb")).c_str(), nullptr, nullptr);
+  SCOPE_EXIT
+  {
+    tf_utils::DeleteGraph(g_graph);
+  };  // Auto-delete on scope exit.
+  if (g_graph == nullptr)
+  {
+    std::cout << "Can't load graph" << std::endl;
+  }
+
+  g_status = TF_NewStatus();
+  SCOPE_EXIT
+  {
+    TF_DeleteStatus(g_status);
+  };  // Auto-delete on scope exit.
+  g_options = TF_NewSessionOptions();
+
+  std::cout << "Creating New session ..." << std::endl;
+  g_sess = TF_NewSession(g_graph, g_options, g_status);
+  if (TF_GetCode(g_status) != TF_OK)
+  {
+    std::cout << "Can't create New session" << std::endl;
+  }
+
+  ros::init(argc, argv, "pedcross_tf_server");
+  ros::NodeHandle n;
+  ros::ServiceServer service = n.advertiseService("pedcross_tf", callback);
+
+  ros::Time stop = ros::Time::now();
+  std::cout << "PedCross TF Server started. Init time: " << stop - start << " sec" << std::endl;
+  ros::spin();
+
+  TF_DeleteSessionOptions(g_options);
+
+  TF_CloseSession(g_sess, g_status);
+  if (TF_GetCode(g_status) != TF_OK)
+  {
+    std::cout << "Error close session";
+  }
+
+  TF_DeleteSession(g_sess, g_status);
+  if (TF_GetCode(g_status) != TF_OK)
+  {
+    std::cout << "Error delete session";
+  }
+
   return 0;
 }
