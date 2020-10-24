@@ -99,6 +99,6 @@ endif()
 
 add_dependencies(itri_pedcross_tf ${catkin_EXPORTED_TARGETS})
 
-configure_file(include/ped_def.h.in
-               ${PROJECT_BINARY_DIR}/include/ped_def.h)
+configure_file(include/ped_tf_def.h.in
+               ${PROJECT_BINARY_DIR}/include/ped_tf_def.h)
 
