@@ -1,4 +1,5 @@
-# transfer stored_skeleton to pedcross tf server
+# transfer bbox and stored_skeleton to pedcross tf server
+CamInfo[] bboxes
 Keypoints[] keypoints
 ---
 # predict result

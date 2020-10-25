@@ -14,4 +14,6 @@ public:
 
   std::vector<double> history_distance_from_path;
   std::vector<cv::Point2f> history_position;
+
+  cv::Mat image_for_optical_flow;
 };

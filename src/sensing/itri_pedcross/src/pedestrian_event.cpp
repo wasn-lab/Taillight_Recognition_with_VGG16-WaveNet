@@ -201,8 +201,8 @@ void PedestrianEvent::display_on_terminal()
         }
         else if (i == 9)
         {
-          line << "danger_zone_distance: " << danger_zone_distance_ << "   use_2d_for_alarm: " 
-               << use_2d_for_alarm_ << "   skip_frame_number: " << skip_frame_number_;
+          line << "danger_zone_distance: " << danger_zone_distance_ << "   use_2d_for_alarm: " << use_2d_for_alarm_
+               << "   skip_frame_number: " << skip_frame_number_;
         }
         else  // i >= 11
         {
@@ -567,7 +567,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         }
 
         // check bounding box is legal
-	      if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
+        if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
         {
           continue;
         }
@@ -818,7 +818,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           }
 
           inference_stop = ros::Time::now();
-          
+
           bool has_keypoint = false;
           int count_points = 0;
           int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
@@ -836,9 +836,36 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           }
           if (has_keypoint)
           {
-            obj_pub.crossProbability =
-                crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox,
-                                 skeleton_buffer.at(skeleton_index).stored_skeleton, obj.track.id, msg->header.stamp);
+            obj_pub.crossProbability = crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox,
+                                                        skeleton_buffer.at(skeleton_index).stored_skeleton);
+
+            msgs::PredictCrossing srv_pedcorss_tf;
+            // prepare bboxes for ros service
+            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).data_bbox.size(); i++)
+            {
+              msgs::CamInfo msgs_bbox;
+              msgs_bbox.u = skeleton_buffer.at(skeleton_index).data_bbox.at(i).at(0);
+              msgs_bbox.v = skeleton_buffer.at(skeleton_index).data_bbox.at(i).at(1);
+              msgs_bbox.width = skeleton_buffer.at(skeleton_index).data_bbox.at(i).at(2) - msgs_bbox.u;
+              msgs_bbox.height = skeleton_buffer.at(skeleton_index).data_bbox.at(i).at(3) - msgs_bbox.v;
+              srv_pedcorss_tf.request.bboxes.emplace_back(msgs_bbox);
+            }
+            // prepare keypoints for ros service
+            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton.size(); i++)
+            {
+              msgs::Keypoints msgs_keypoints;
+              for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton.at(i).size(); j++)
+              {
+                msgs::Keypoint msgs_keypoint;
+                msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton.at(i).at(j).x;
+                msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton.at(i).at(j).y;
+                msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
+              }
+              srv_pedcorss_tf.request.keypoints.emplace_back(msgs_keypoints);
+            }
+            tf_client_.call(srv_pedcorss_tf);
+            // std::cout << "predict: " << obj_pub.crossProbability << ", LSTM: " << srv_pedcorss_tf.response.result_0
+            // << std::endl;
           }
           else
           {
@@ -973,7 +1000,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #if DUMP_LOG
                 // print distance
                 // file_ << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
-                    //  << veh_info_.ego_speed << "\n";
+                //  << veh_info_.ego_speed << "\n";
 #endif
 #if PRINT_MESSAGE
                 std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
@@ -1089,7 +1116,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     {
       chatter_pub_fov30_.publish(ped_obj_array);
     }
-    
 
     alert_objs.clear();
     std::vector<msgs::DetectedObject>().swap(alert_objs);
@@ -1099,21 +1125,21 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     matrix2.release();
 
     stop = ros::Time::now();
-    
+
     std::lock_guard<std::mutex> lk(mu_chatter_callback_info_);
     average_inference_time_ = average_inference_time_ * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
     count_++;
     chatter_callback_info_ = "Cost time: " + std::to_string((stop - start).toSec()) +
-                            "(sec) OpenPose inference time: " + std::to_string(average_inference_time_) +
-                            "(sec) Loop: " + std::to_string(count_);
-    
+                             "(sec) OpenPose inference time: " + std::to_string(average_inference_time_) +
+                             "(sec) Loop: " + std::to_string(count_);
+
     std::lock_guard<std::mutex> lk2(mu_delay_from_camera_);
     total_time_ += stop - start;
     delay_from_camera_ = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 #if DUMP_LOG
     // print inference time
-    file_ << ros::Time::now() << "," << count_peds << "," << (inference_stop - inference_start).toSec() 
-          << "," << delay_from_camera_ << "\n";
+    file_ << ros::Time::now() << "," << count_peds << "," << (inference_stop - inference_start).toSec() << ","
+          << delay_from_camera_ << "\n";
 #endif
 #if PRINT_MESSAGE
     std::cout << "Delay from camera: " << delay_from_camera_ << std::endl;
@@ -1432,8 +1458,8 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
 
     std::lock_guard<std::mutex> lk(mu_ped_info_);
     ped_info_.insert(ped_info_.begin(), id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) +
-                                          " y: " + std::to_string((int)obj.bPoint.p0.y) +
-                                          " keypoints number: " + std::to_string(keypoint_number));
+                                            " y: " + std::to_string((int)obj.bPoint.p0.y) +
+                                            " keypoints number: " + std::to_string(keypoint_number));
     if (ped_info_.size() > 40)
     {
       ped_info_.erase(ped_info_.end() - 1);
@@ -1480,11 +1506,11 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   bool left_eye = keypoint_is_detected(keypoints.at(16));
   bool right_ear = keypoint_is_detected(keypoints.at(17));
   bool right_eye = keypoint_is_detected(keypoints.at(15));
-  bool face_detection[4] = {right_ear, right_eye, left_eye, left_ear};
+  bool face_detection[4] = { right_ear, right_eye, left_eye, left_ear };
   for (int i = 0; i < 16; i++)
   {
     if (face_detection[0] == direction_table_[i][0] && face_detection[1] == direction_table_[i][1] &&
-    face_detection[2] == direction_table_[i][2] && face_detection[3] == direction_table_[i][3])
+        face_detection[2] == direction_table_[i][2] && face_detection[3] == direction_table_[i][3])
     {
       return direction_table_[i][4];
     }
@@ -1562,7 +1588,7 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
  * cross probability
  */
 float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_array,
-                                        std::vector<std::vector<cv::Point2f>>& keypoint_array, int id, ros::Time time)
+                                        std::vector<std::vector<cv::Point2f>>& keypoint_array)
 {
   try
   {
@@ -2287,41 +2313,41 @@ int main(int argc, char** argv)
   tf2_ros::TransformListener tf_listener(pe.tf_buffer_);
   std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
   pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
-                                                                                   "yml"));
+                                                                                    "yml"));
 
   ros::NodeHandle nh1;
   pe.chatter_pub_front_ = nh1.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_bottom_60",
-                                                             1);  // /PedCross/Pedestrians is pub topic
+                                                              1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub_front_ =
       nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/front_bottom_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh3;
   pe.chatter_pub_left_ = nh3.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/left_back_60",
-                                                            1);  // /PedCross/Pedestrians is pub topic
+                                                             1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh4;
   pe.box_pub_left_ =
       nh4.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh5;
   pe.chatter_pub_right_ = nh5.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/right_back_60",
-                                                             1);  // /PedCross/Pedestrians is pub topic
+                                                              1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh6;
   pe.box_pub_right_ =
       nh6.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh7;
   pe.alert_pub_front_ = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_bottom_60",
-                                                                1);  // /PedCross/DrawBBox is pub topic
+                                                                 1);  // /PedCross/DrawBBox is pub topic
   pe.alert_pub_left_ =
       nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
   pe.alert_pub_right_ =
       nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
   pe.alert_pub_fov30_ = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_top_far_30",
-                                                                1);  // /PedCross/DrawBBox is pub topic
+                                                                 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh8;
   pe.warning_zone_pub_ =
       nh8.advertise<geometry_msgs::PolygonStamped>("/PedCross/Polygon", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh9;
   pe.chatter_pub_fov30_ = nh9.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_top_far_30",
-                                                             1);  // /PedCross/Pedestrians is pub topic
+                                                              1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh10;
   pe.box_pub_fov30_ =
       nh10.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/front_top_far_30", 1);  // /PedCross/DrawBBox is pub topic
@@ -2336,6 +2362,7 @@ int main(int argc, char** argv)
   nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
+  pe.tf_client_ = nh.serviceClient<msgs::PredictCrossing>("pedcross_tf");
 
   pe.front_image_cache_ = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size_);
   pe.left_image_cache_ = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size_);
