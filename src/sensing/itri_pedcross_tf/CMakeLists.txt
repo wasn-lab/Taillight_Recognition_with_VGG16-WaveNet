@@ -31,10 +31,17 @@ set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
 set(TENSORFLOW_LIBRARIES tensorflow)
 message("TF found: ${TENSORFLOW_LIBRARIES}")
 
-find_package(OpenCV
-  PATHS /usr/local
-  NO_DEFAULT_PATH
-)
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
 
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
@@ -83,7 +90,7 @@ target_link_libraries(
     itri_pedcross_tf
     /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
@@ -91,7 +98,7 @@ else()
 target_link_libraries(
     itri_pedcross_tf
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
