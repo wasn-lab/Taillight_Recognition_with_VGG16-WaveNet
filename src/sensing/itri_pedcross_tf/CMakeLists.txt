@@ -80,7 +80,7 @@ link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
 set(CPP_FILES
     src/tf_utils.cpp
-    src/Predict_test.cpp
+    src/predict.cpp
 )
 
 add_executable(itri_pedcross_tf ${CPP_FILES})

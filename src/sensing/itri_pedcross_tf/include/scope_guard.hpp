@@ -32,6 +32,7 @@
 #ifndef NEARGYE_SCOPE_GUARD_HPP
 #define NEARGYE_SCOPE_GUARD_HPP
 
+#include <cxxabi.h>
 #include <cstddef>
 #include <new>
 #include <type_traits>

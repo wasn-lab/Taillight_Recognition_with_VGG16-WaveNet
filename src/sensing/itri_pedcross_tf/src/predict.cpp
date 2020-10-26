@@ -266,7 +266,7 @@ int main(int argc, char** argv)
   {
     TF_DeleteStatus(g_status);
   };  // Auto-delete on scope exit.
-  g_options = TF_NewSessionOptions();
+  g_options = tf_utils::CreateSessionOptions(0.1, nullptr);
 
   std::cout << "Creating New session ..." << std::endl;
   g_sess = TF_NewSession(g_graph, g_options, g_status);
