@@ -53,9 +53,9 @@ Boxfusion g_box_fusion;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60/*, camera::id::front_top_far_30,
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
                                          camera::id::right_back_60,   camera::id::left_back_60,
-                                         camera::id::right_front_60,  camera::id::left_front_60*/ };
+                                         camera::id::right_front_60,  camera::id::left_front_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -89,7 +89,7 @@ std::mutex g_mutex_polygon;
 bool g_is_enable_default_3d_bbox = true;
 bool g_do_clustering = false;
 bool g_data_sync = true;  // trun on or trun off data sync function
-bool g_is_display = true;
+bool g_is_display = false;
 bool g_use_nonground_data = false;
 
 /// inference params
