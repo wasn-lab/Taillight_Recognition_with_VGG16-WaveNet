@@ -9,8 +9,7 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObject.h"
-#include "msgs/DetectedObjectArray.h"
+#include "msgs/DetectedObjectArray_SB.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
 #include "msgs/PointXYZ.h"
@@ -158,7 +157,7 @@ void Plot_geofence(Point temp)
   // cout << "============" << temp.Direction << "============" << endl;
 }
 
-void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
+void chatterCallbackPP(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointXYZI temp;
@@ -217,24 +216,24 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
         // cout << "x:" << Point_temp.X << endl;
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
         // cout << "y:" <<Point_temp.Y << endl;
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         /*
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p0.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p0.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p3.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p3.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p4.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p4.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p7.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p7.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         */
         // cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y
@@ -272,7 +271,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
   }
 }
 
-void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg)
+void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   PP_Stop_PedCross = 0;
   PP_Distance_PedCross = 100;
@@ -289,7 +288,7 @@ void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg)
         // cout << "x:" << Point_temp.X << endl;
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
         // cout << "y:" <<Point_temp.Y << endl;
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         // cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y
         // << endl;

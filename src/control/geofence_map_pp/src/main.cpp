@@ -7,7 +7,7 @@
 
 // For itriadv
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObjectArray.h"
+#include "msgs/DetectedObjectArray_SB.h"
 #include <autoware_perception_msgs/DynamicObjectArray.h>
 #include "msgs/PointXYZV.h"
 #include "msgs/LocalizationToVeh.h"
@@ -165,7 +165,7 @@ void Plot_geofence(Point temp)
   PP_geofence_line.publish(line_list);
 }
 
-void publishPPCloud(const msgs::DetectedObjectArray::ConstPtr& msg, const int numForecastsOfObject)
+void publishPPCloud(const msgs::DetectedObjectArray_SB::ConstPtr& msg, const int numForecastsOfObject)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
   cloud->points.reserve(msg->objects.size() * numForecastsOfObject);
@@ -191,7 +191,8 @@ void publishPPCloud(const msgs::DetectedObjectArray::ConstPtr& msg, const int nu
   PPCloud_pub.publish(msg_pub);
 }
 
-void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp_stop, int& pp_distance, int& pp_speed)
+void plotPP(const msgs::DetectedObjectArray_SB::ConstPtr& msg, Geofence& g, int& pp_stop, int& pp_distance,
+            int& pp_speed)
 {
   for (const auto& obj : msg->objects)
   {
@@ -204,7 +205,7 @@ void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp
         p_vec.reserve(1);
         p.X = forecast.position.x;
         p.Y = forecast.position.y;
-        p.Speed = obj.relSpeed;
+        p.Speed = obj.speed_rel;
         p_vec.push_back(p);
 
         bool isLocal = true;  // setPointCloud(): no TF
@@ -240,7 +241,7 @@ void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp
   }
 }
 
-void callbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callbackPP(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   publishPPCloud(msg, 20);  // require TF /base_link
   PP_Stop = 0;
@@ -249,7 +250,7 @@ void callbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
   plotPP(msg, BBox_Geofence, PP_Stop, PP_Distance, PP_Speed);  // require TF /map
 }
 
-void callbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callbackPP_PedCross(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   PP_Stop_PedCross = 0;
   PP_Distance_PedCross = 100;
