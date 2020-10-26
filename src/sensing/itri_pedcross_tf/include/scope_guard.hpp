@@ -90,7 +90,7 @@ inline int uncaught_exceptions() noexcept
 }
 #elif (defined(__clang__) || defined(__GNUC__)) && __cplusplus < 201700L
 struct __cxa_eh_globals;
-extern "C" __cxa_eh_globals* __cxa_get_globals() noexcept;
+__cxa_eh_globals* __cxa_get_globals() noexcept;
 inline int uncaught_exceptions() noexcept
 {
   return *(
