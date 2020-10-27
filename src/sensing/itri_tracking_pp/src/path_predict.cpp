@@ -2,7 +2,7 @@
 
 namespace tpp
 {
-void PathPredict::callback_tracking(std::vector<msgs::DetectedObject_SB>& pp_objs_, const float ego_x_abs,
+void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_, const float ego_x_abs,
                                     const float ego_y_abs, const float ego_z_abs, const float ego_heading,
                                     const int input_source)
 {
@@ -558,7 +558,7 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
 #endif
 }
 
-void PathPredict::main(std::vector<msgs::DetectedObject_SB>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
+void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
                        const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea)
 {
   show_pp_ = show_pp;

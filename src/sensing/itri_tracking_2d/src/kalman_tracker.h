@@ -3,7 +3,7 @@
 
 #include "track2d.h"
 #include "track_hist.h"
-#include <msgs/DetectedObject_SB.h>
+#include <msgs/DetectedObject.h>
 #include <opencv2/video/tracking.hpp>
 
 namespace track2d
@@ -23,7 +23,7 @@ public:
 
   cv::KalmanFilter kalman_;
 
-  msgs::DetectedObject_SB box_;
+  msgs::DetectedObject box_;
   TrackHist hist_;
 
   BoxCenter box_center_;

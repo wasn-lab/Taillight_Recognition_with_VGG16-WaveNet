@@ -2,7 +2,7 @@
 
 namespace track2d
 {
-void KalmanTrackers::new_tracker(const msgs::DetectedObject_SB& box, BoxCenter& box_center)
+void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center)
 {
   KalmanTracker track;
 
