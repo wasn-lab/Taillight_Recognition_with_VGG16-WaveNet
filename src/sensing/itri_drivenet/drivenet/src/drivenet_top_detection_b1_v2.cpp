@@ -51,7 +51,7 @@ std::mutex g_display_mutex;
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
-std::vector<msgs::DetectedObjectArray> g_doas;
+std::vector<msgs::DetectedObjectArray_SB> g_doas;
 // // grid map
 // ros::Publisher g_occupancy_grid_publisher;
 
@@ -246,7 +246,7 @@ int main(int argc, char** argv)
     {
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
-    g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
+    g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray_SB>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
 
   }
@@ -312,17 +312,18 @@ void* run_interp(void* /*unused*/)
   pthread_exit(nullptr);
 }
 
-msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
+msgs::DetectedObject_SB run_dist(ITRI_Bbox box, int cam_order)
 {
-  msgs::DetectedObject det_obj;
+  msgs::DetectedObject_SB det_obj;
   msgs::BoxPoint box_point;
+  std::vector<msgs::CamInfo> cam_info_vector;  
   msgs::CamInfo cam_info;
 
-  int l_check = 2;
-  int r_check = 2;
+  // int l_check = 2;
+  // int r_check = 2;
   float distance = -1;
   det_obj.distance = distance;
-
+  /*
   if (g_cam_ids[cam_order] == camera::id::front_top_close_120)
   {
     l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x1, box.y2);
@@ -333,28 +334,26 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::back_top_120], box.x1, box.y2);
     r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::back_top_120], box.x2, box.y2);
   }
+  */
 
-  if (l_check == 0 && r_check == 0)
+  box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
+
+  std::vector<float> left_point(2);
+  std::vector<float> right_point(2);
+  left_point[0] = box_point.p0.x;
+  right_point[0] = box_point.p3.x;
+  left_point[1] = box_point.p0.y;
+  right_point[1] = box_point.p3.y;
+  if (left_point[0] == 0 && left_point[1] == 0)
   {
-    box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
-
-    std::vector<float> left_point(2);
-    std::vector<float> right_point(2);
-    left_point[0] = box_point.p0.x;
-    right_point[0] = box_point.p3.x;
-    left_point[1] = box_point.p0.y;
-    right_point[1] = box_point.p3.y;
-    if (left_point[0] == 0 && left_point[1] == 0)
-    {
-      distance = -1;
-    }
-    else
-    {
-      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
-      det_obj.bPoint = box_point;
-    }
-    det_obj.distance = distance;
+    distance = -1;
   }
+  else
+  {
+    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+    det_obj.bPoint = box_point;
+  }
+  det_obj.distance = distance;
 
   cam_info.u = box.x1;
   cam_info.v = box.y1;
@@ -363,8 +362,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
+  cam_info_vector.push_back(cam_info);  
+
   det_obj.classId = translate_label(box.label);
-  det_obj.camInfo = cam_info;
+  det_obj.camInfo = cam_info_vector;
   det_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return det_obj;
@@ -451,8 +452,8 @@ void* run_yolo(void* /*unused*/)
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);
 
     // publish results
-    msgs::DetectedObjectArray doa;
-    std::vector<msgs::DetectedObject> v_do;
+    msgs::DetectedObjectArray_SB doa;
+    std::vector<msgs::DetectedObject_SB> v_do;
     // grid map init
     // grid_map::GridMap costmap_ = g_cosmap_gener.initGridMap();
 
@@ -475,8 +476,8 @@ void* run_yolo(void* /*unused*/)
         m_display = *mat_srcs_tmp[cam_order];
       }
 
-      msgs::DetectedObject det_obj;
-      std::vector<std::future<msgs::DetectedObject>> pool;
+      msgs::DetectedObject_SB det_obj;
+      std::vector<std::future<msgs::DetectedObject_SB>> pool;
       for (auto const& box : *tmp_b_bx)
       {
         if (translate_label(box.label) == 0)

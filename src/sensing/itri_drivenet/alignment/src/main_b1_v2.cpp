@@ -6,6 +6,7 @@
 #include "ros/ros.h"
 #include <std_msgs/Empty.h>
 #include <msgs/DetectedObjectArray.h>
+#include <msgs/DetectedObjectArray_SB.h>
 #include <msgs/DetectedObject.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
@@ -13,6 +14,8 @@
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/cache.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 /// package
 #include "camera_params.h"
@@ -123,10 +126,10 @@ std::vector<pcl::visualization::Camera> g_cam;
 /// object
 ros::Publisher g_object_pub;
 ros::Publisher g_heartbeat_pub;
-std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
-std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
+std::vector<msgs::DetectedObjectArray_SB> g_object_arrs(g_cam_ids.size());
+std::vector<msgs::DetectedObjectArray_SB> g_object_arrs_process(g_cam_ids.size());
 int g_object_wait_frame = 5;
-std::vector<std::vector<msgs::DetectedObjectArray>> g_object_buffer_arrs(g_cam_ids.size());
+std::vector<std::vector<msgs::DetectedObjectArray_SB>> g_object_buffer_arrs(g_cam_ids.size());
 
 /// sync camera and lidar
 int g_buffer_size = 180;
@@ -263,7 +266,7 @@ void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 //////////////////// for camera object
-void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
@@ -287,7 +290,7 @@ void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstP
   // msg->header.stamp.nsec << std::endl;
 }
 
-void callback_object_cam_front_top_far_30(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_front_top_far_30(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
   int cam_order = std::distance(g_cam_ids.begin(), it);
@@ -310,7 +313,7 @@ void callback_object_cam_front_top_far_30(const msgs::DetectedObjectArray::Const
   // msg->header.stamp.nsec << std::endl;
 }
 
-void callback_object_cam_right_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_right_back_60(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
@@ -333,7 +336,7 @@ void callback_object_cam_right_back_60(const msgs::DetectedObjectArray::ConstPtr
   // msg->header.stamp.nsec << std::endl;
 }
 
-void callback_object_cam_left_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_left_back_60(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
@@ -356,7 +359,7 @@ void callback_object_cam_left_back_60(const msgs::DetectedObjectArray::ConstPtr&
   // msg->header.stamp.nsec << std::endl;
 }
 
-void callback_object_cam_right_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_right_front_60(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
@@ -379,7 +382,7 @@ void callback_object_cam_right_front_60(const msgs::DetectedObjectArray::ConstPt
   // msg->header.stamp.nsec << std::endl;
 }
 
-void callback_object_cam_left_front_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+void callback_object_cam_left_front_60(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
@@ -456,12 +459,12 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
   }
 }
 
-void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
+void object_publisher(std::vector<msgs::DetectedObjectArray_SB>& objects_2d_bbox,
                       std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
                       std_msgs::Header msg_header)
 {
-  msgs::DetectedObjectArray msg_det_obj_arr;
-  std::vector<msgs::DetectedObject> msg_objs;
+  msgs::DetectedObjectArray_SB msg_det_obj_arr;
+  std::vector<msgs::DetectedObject_SB> msg_objs;
   float min_z = -3;
   float max_z = -1.5;
 
@@ -470,7 +473,7 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
   {
     for (size_t obj_index = 0; obj_index < cams_bboxs_points[cam_order].size(); obj_index++)
     {
-      msgs::DetectedObject msg_obj;
+      msgs::DetectedObject_SB msg_obj;
       msg_obj.header = objects_2d_bbox[cam_order].objects[obj_index].header;
       msg_obj.classId = objects_2d_bbox[cam_order].objects[obj_index].classId;
       msg_obj.camInfo = objects_2d_bbox[cam_order].objects[obj_index].camInfo;
@@ -480,11 +483,34 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
 
       /// bbox- L-shape
       msgs::BoxPoint box_point;
-      box_point = g_object_generator.pointsToLShapeBBox(points, msg_obj.classId);
+      OrientedBBox obb;
+      g_object_generator.pointsToLShapeBBox(points, msg_obj.classId, obb, box_point);
       if (!(box_point.p0.x == 0 && box_point.p0.y == 0 && box_point.p0.z == 0 && box_point.p6.x == 0 &&
             box_point.p6.y == 0 && box_point.p6.z == 0))
       {
         msg_obj.bPoint = box_point;
+
+        /// center_point
+        msg_obj.center_point.x = obb.obb_center.x;
+        msg_obj.center_point.y = obb.obb_center.y;
+        msg_obj.center_point.z = obb.obb_center.z;
+
+        /// Quatanion heading
+        tf2::Quaternion quat_from_yaw;
+        quat_from_yaw.setRPY(0, 0, obb.obb_orient);
+
+        geometry_msgs::Quaternion quat_msg;
+        quat_msg = tf2::toMsg(quat_from_yaw);
+
+        msg_obj.heading.x = quat_msg.x;
+        msg_obj.heading.y = quat_msg.y;
+        msg_obj.heading.z = quat_msg.z;
+        msg_obj.heading.w = quat_msg.w;
+
+        /// BoxSize dimension
+        msg_obj.dimension.length = obb.obb_dx;
+        msg_obj.dimension.width = obb.obb_dy;
+        msg_obj.dimension.height = obb.obb_dz;
       }
       else
       {
@@ -596,7 +622,7 @@ void alignmentInitializer()
   }
 }
 
-void drawBoxOnImages(std::vector<cv::Mat>& mats, std::vector<msgs::DetectedObjectArray>& objects)
+void drawBoxOnImages(std::vector<cv::Mat>& mats, std::vector<msgs::DetectedObjectArray_SB>& objects)
 {
   // std::cout << "===== drawBoxOnImages... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < mats.size(); cam_order++)
@@ -650,12 +676,12 @@ void getPointCloudInAllImageFOV_loop(const pcl::PointCloud<pcl::PointXYZI>::Ptr&
     getPointCloudInImageFOV(lidarall_ptr, cams_points_ptr[cam_order], image_w, image_h, g_alignments[cam_order]);
   }
 }
-void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& remaining_objects,
+void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray_SB>& remaining_objects,
                               const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                               std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                               const std::vector<std::vector<PixelPosition>>& cam_pixels_cam,
                               std::vector<std::vector<std::vector<PixelPosition>>>& cam_pixels_obj,
-                              std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
+                              std::vector<msgs::DetectedObjectArray_SB>& objects_2d_bbox,
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
 // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
@@ -668,13 +694,13 @@ void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& rema
                           g_is_enable_default_3d_bbox, g_do_clustering, g_is_display);
   }
 }
-void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray>& objects,
-                              std::vector<msgs::DetectedObjectArray>& remaining_objects,
+void getPointCloudInAllBoxFOV(const std::vector<msgs::DetectedObjectArray_SB>& objects,
+                              std::vector<msgs::DetectedObjectArray_SB>& remaining_objects,
                               const std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_points_ptr,
                               std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr>& cams_bbox_points_ptr,
                               const std::vector<std::vector<PixelPosition>>& cam_pixels_cam,
                               std::vector<std::vector<std::vector<PixelPosition>>>& cam_pixels_obj,
-                              std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
+                              std::vector<msgs::DetectedObjectArray_SB>& objects_2d_bbox,
                               std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points)
 {
 // std::cout << "===== getPointCloudInAllBoxFOV... =====" << std::endl;
@@ -1189,9 +1215,9 @@ void runInference()
   std::vector<bool> is_object_update(g_cam_ids.size());
   bool is_data_ready = true;
   std::vector<cv::Mat> cam_mats(g_cam_ids.size());
-  std::vector<msgs::DetectedObjectArray> object_arrs(g_cam_ids.size());
-  std::vector<msgs::DetectedObjectArray> remaining_object_arrs(g_cam_ids.size());
-  std::vector<msgs::DetectedObjectArray> objects_2d_bbox_arrs(g_cam_ids.size());
+  std::vector<msgs::DetectedObjectArray_SB> object_arrs(g_cam_ids.size());
+  std::vector<msgs::DetectedObjectArray_SB> remaining_object_arrs(g_cam_ids.size());
+  std::vector<msgs::DetectedObjectArray_SB> objects_2d_bbox_arrs(g_cam_ids.size());
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_nonground_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ssn_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -1469,7 +1495,7 @@ int main(int argc, char** argv)
 
   /// message_filters Subscriber
   std::vector<message_filters::Subscriber<sensor_msgs::Image>> cam_filter_subs(g_cam_ids.size());
-  std::vector<message_filters::Subscriber<msgs::DetectedObjectArray>> object_filter_subs(g_cam_ids.size());
+  std::vector<message_filters::Subscriber<msgs::DetectedObjectArray_SB>> object_filter_subs(g_cam_ids.size());
   message_filters::Subscriber<pcl::PointCloud<pcl::PointXYZI>> sub_filter_lidarall;
   message_filters::Subscriber<pcl::PointCloud<pcl::PointXYZI>> sub_filter_lidarall_nonground;
   message_filters::Subscriber<pcl::PointCloud<pcl::PointXYZIL>> sub_filter_lidar_ssn;
@@ -1479,7 +1505,7 @@ int main(int argc, char** argv)
     callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_right_back_60,
     callback_cam_left_back_60,    callback_cam_right_front_60,   callback_cam_left_front_60
   };
-  static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
+  static void (*f_callbacks_object[])(const msgs::DetectedObjectArray_SB::ConstPtr&) = {
     callback_object_cam_front_bottom_60, callback_object_cam_front_top_far_30, callback_object_cam_right_back_60,
     callback_object_cam_left_back_60,    callback_object_cam_right_front_60,   callback_object_cam_left_front_60
   };
@@ -1539,7 +1565,7 @@ int main(int argc, char** argv)
     g_cache_lidar_ssn.registerCallback(callback_ssn);
 
     /// object publisher
-    g_object_pub = nh.advertise<msgs::DetectedObjectArray>(camera::detect_result, 8);
+    g_object_pub = nh.advertise<msgs::DetectedObjectArray_SB>(camera::detect_result, 8);
     g_heartbeat_pub = nh.advertise<std_msgs::Empty>(camera::detect_result + std::string("/heartbeat"), 1);
   }
 

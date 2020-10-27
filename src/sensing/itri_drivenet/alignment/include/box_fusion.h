@@ -6,6 +6,7 @@
 #include <camera_params.h>
 #include "drivenet/image_preprocessing.h"
 #include <msgs/DetectedObjectArray.h>
+#include <msgs/DetectedObjectArray_SB.h>
 #include <msgs/DetectedObject.h>
 
 struct CheckArea

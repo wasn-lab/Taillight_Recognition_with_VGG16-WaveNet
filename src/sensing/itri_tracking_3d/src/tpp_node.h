@@ -50,7 +50,7 @@ private:
   std_msgs::Header objs_header_;
   std_msgs::Header objs_header_prev_;
 
-  std::vector<msgs::DetectedObject> track3d_objs_;
+  std::vector<msgs::DetectedObject_SB> track3d_objs_;
 
 #if VIRTUAL_INPUT
   double gt_x_ = 0.;
@@ -83,7 +83,7 @@ private:
   MarkerGen mg_;
 
   ros::Subscriber fusion_sub_;
-  void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
+  void callback_fusion(const msgs::DetectedObjectArray_SB::ConstPtr& input);
 
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
@@ -126,14 +126,14 @@ private:
 #endif
 
   bool create_bbox_from_polygon_ = false;
-  void create_bbox_from_polygon(msgs::DetectedObject& obj);
+  void create_bbox_from_polygon(msgs::DetectedObject_SB& obj);
 
   bool create_polygon_from_bbox_ = false;
   void create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject.relSpeed:
+  // compute DetectedObject_SB.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 
@@ -146,7 +146,7 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
+  void publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject_SB>& objs, const unsigned int pub_offset,
                          const float time_offset);
 
   void set_ros_params();
@@ -154,7 +154,7 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
 
-  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
+  void save_output_to_txt(const std::vector<msgs::DetectedObject_SB>& objs);
 };
 }  // namespace tpp
 

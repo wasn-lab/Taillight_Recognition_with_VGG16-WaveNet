@@ -149,7 +149,7 @@ std::string MarkerGen::parse_source_id(unsigned int source_id)
 }
 
 visualization_msgs::Marker MarkerGen::create_trackid_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                            const msgs::DetectedObject& obj)
+                                                            const msgs::DetectedObject_SB& obj)
 {
   visualization_msgs::Marker marker;
 
@@ -351,7 +351,7 @@ visualization_msgs::Marker MarkerGen::create_vel_marker(const unsigned int idx, 
   return marker;
 }
 
-void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_id_.markers);
   std::vector<visualization_msgs::Marker>().swap(m_speed_.markers);
@@ -363,7 +363,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   {
     geometry_msgs::Point point = text_marker_position(obj.bPoint.p1, obj.bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, obj));
-    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.relSpeed, obj.absSpeed));
+    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.speed_rel, obj.speed_abs));
   }
 
   geometry_msgs::Point point_seq = init_Point(-20, 0, 0);
@@ -373,7 +373,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   mc_.pub_speed.publish(m_speed_);
 }
 
-void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_box_.markers);
   m_box_.markers.reserve(objs.size());
@@ -386,7 +386,7 @@ void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::De
   mc_.pub_bbox.publish(m_box_);
 }
 
-void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
+void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs,
                                   std::vector<std::vector<PPLongDouble> >& ppss)
 {
   std::vector<visualization_msgs::Marker>().swap(m_pp_.markers);
@@ -417,7 +417,7 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
         else if (mc_.show_pp == 2 || mc_.show_pp == 3)
         {
           m_pp_.markers.push_back(create_pp_marker_ellipse(idx++, objs[i].track.forecasts[j].position, objs[i].header,
-                                                           ppss[i][j], j, objs[i].absSpeed));
+                                                           ppss[i][j], j, objs[i].speed_abs));
         }
       }
 
@@ -434,7 +434,7 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
   mc_.pub_pp.publish(m_pp_);
 }
 
-void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
+void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject_SB>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_vel_.markers);
   m_vel_.markers.reserve(objs.size());
@@ -449,7 +449,7 @@ void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::De
   mc_.pub_vel.publish(m_vel_);
 }
 
-void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject>& objs,
+void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject_SB>& objs,
                                 MarkerConfig mc, std::vector<std::vector<PPLongDouble> >& ppss)
 {
   set_config(mc, mc_);

@@ -2,7 +2,7 @@
 
 namespace tpp
 {
-void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_, const float ego_x_abs,
+void PathPredict::callback_tracking(std::vector<msgs::DetectedObject_SB>& pp_objs_, const float ego_x_abs,
                                     const float ego_y_abs, const float ego_z_abs, const float ego_heading,
                                     const int input_source)
 {
@@ -33,7 +33,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         pp_objs_[i].track.is_ready_prediction = true;
 
         // PP filter 1: object absolute speed
-        if (pp_objs_[i].absSpeed < pp_obj_min_kmph_ && pp_objs_[i].absSpeed > pp_obj_max_kmph_)
+        if (pp_objs_[i].speed_abs < pp_obj_min_kmph_ && pp_objs_[i].speed_abs > pp_obj_max_kmph_)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;
@@ -558,7 +558,7 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
 #endif
 }
 
-void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
+void PathPredict::main(std::vector<msgs::DetectedObject_SB>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
                        const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea)
 {
   show_pp_ = show_pp;
@@ -660,7 +660,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
 
 #if PP_VERTICES_VIA_SPEED == 1
-        pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].absSpeed);
+        pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].speed_abs);
 
         unsigned int k = num_forecasts_ + j * 4;
 
