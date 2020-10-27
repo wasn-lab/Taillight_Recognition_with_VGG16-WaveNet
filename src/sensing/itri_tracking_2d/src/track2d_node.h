@@ -41,9 +41,9 @@ private:
   ros::Publisher track2d_pub_;
 
   ros::Subscriber camera_sub_;
-  void callback_camera(const msgs::DetectedObjectArray::ConstPtr& input);
+  void callback_camera(const msgs::DetectedObjectArray_SB::ConstPtr& input);
 
-  msgs::DetectedObjectArray track2d_obj_array;
+  msgs::DetectedObjectArray_SB track2d_obj_array;
 
   bool is_legal_dt_ = false;
 

@@ -2,7 +2,7 @@
 
 namespace track2d
 {
-void KalmanTrackers::new_tracker(const msgs::DetectedObject& box, BoxCenter& box_center)
+void KalmanTrackers::new_tracker(const msgs::DetectedObject_SB& box, BoxCenter& box_center)
 {
   KalmanTracker track;
 
@@ -97,7 +97,7 @@ void KalmanTrackers::extract_2dbox_centers()
   for (unsigned i = 0; i < objs_.size(); i++)
   {
     BoxCenter box_center;
-    extract_2dbox_center(box_center, objs_[i].camInfo);
+    extract_2dbox_center(box_center, objs_[i].camInfo[0]);
     box_centers_.push_back(box_center);
   }
 }
