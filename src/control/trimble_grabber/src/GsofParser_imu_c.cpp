@@ -60,6 +60,7 @@
 #include <tf/tf.h>
 
 #include "gnss_utility/gnss_utility.h"
+#include "gnss_utility_utm/gnss_utility_utm.h"
 
 #define SERVER_PORT 8888
 #define BUFF_LEN 1024
@@ -72,6 +73,7 @@ typedef signed short S16;
 typedef char U8;
 
 gnss_utility::gnss gnss_tf;
+gnss_utility_utm::gnss_utm gnss_utm_tf;
 
 // A few global variables needed for collecting full GSOF packets from
 // multiple Trimcomm packets.
@@ -80,6 +82,9 @@ int gsofDataIndex;
 
 int ENU2LidXYZ_siwtch = 1;
 
+double utm_shift_x,utm_shift_y;
+int utm_zone;
+
 double x_LiDAR, y_LiDAR, z_LiDAR, heading_LiDAR;
 double base_lon,base_lat,base_h,T[3],R[3][3],T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3];
 static sensor_msgs::Imu imu_data;
@@ -87,6 +92,7 @@ static sensor_msgs::Imu imu_data_rad;
 static geometry_msgs::PoseStamped gnss_data;
 static geometry_msgs::PoseStamped gnss2local_data;
 static geometry_msgs::PoseStamped gnss_twd97_data;
+static geometry_msgs::PoseStamped gnss_utm_data;
 
 static tf::Quaternion q_;
 static ros::Publisher imu_pub;
@@ -95,6 +101,7 @@ static ros::Publisher gnss_pub;
 static ros::Publisher gnss2local_pub;
 static ros::Publisher gnss_twd97_pub;
 static ros::Publisher gnss_speed_pub;
+static ros::Publisher gnss_utm_pub;
 
 
 int close(int fd);
@@ -110,6 +117,25 @@ int close(int fd);
 
 //     std::cout << "test : " << E << std::endl;
 //     std::cout << "test : " << N << std::endl;
+// }
+
+// void testgnss()
+// {
+//     std::cout << "test : "<< std::endl;
+//     double lat = 24.773650;
+//     double lon = 121.044950;
+//     double E,N;
+//     bool pkm = false;
+    
+//     gnss_utm_tf.LatLonToUTMXY(lat, lon, 51, E, N);
+
+//     std::cout << "test : " << E << std::endl;
+//     std::cout << "test : " << N << std::endl;
+
+//         gnss_utm_data.pose.position.x = E - 300000;
+//         gnss_utm_data.pose.position.y = N - 2700000;
+//         gnss_utm_data.pose.position.z = 0;
+//         gnss_utm_pub.publish(gnss_utm_data);
 // }
 
 /**********************************************************************/
@@ -231,6 +257,45 @@ void initial_para()
         std::cout << "init_long : " << std::setprecision(20) << base_lon << std::endl;
         std::cout << "init_lat : " << std::setprecision(20) << base_lat << std::endl;
         std::cout << "init_alt : " << std::setprecision(20) << base_h << std::endl;
+}
+
+void initial_para_1()
+{
+    double read_tmp_1[3];
+    int read_index_1 = 0;
+    std::string fname_1 = ros::package::getPath("trimble_gps_imu_pub");
+    fname_1 += "/data/ITRI_ShiftUTM2Lidarxyz.txt";
+    std::cout << fname_1 << std::endl;
+    
+    std::ifstream fin_1;
+    char line_1[100];
+    memset( line_1, 0, sizeof(line_1));
+
+    fin_1.open(fname_1.c_str(),std::ios::in);
+    if(!fin_1) 
+    {
+        std::cout << "Fail to import txt" <<std::endl;
+        exit(1);
+    }
+
+    while(fin_1.getline(line_1,sizeof(line_1),',')) 
+    {
+        // fin_1.getline(line_1,sizeof(line_1),'\n');
+        std::string nmea_str(line_1);
+        std::stringstream ss(nmea_str);
+        std::string token;
+
+        getline(ss,token, ',');
+        read_tmp_1[read_index_1] = atof(token.c_str());
+        read_index_1 += 1;
+    }
+    utm_shift_x = read_tmp_1[0];
+    utm_shift_y = read_tmp_1[1];
+    utm_zone = read_tmp_1[2];
+
+    std::cout << "utm_shift_x : " << std::setprecision(20) << utm_shift_x << std::endl;
+    std::cout << "utm_shift_y : " << std::setprecision(20) << utm_shift_y << std::endl;
+    std::cout << "utm_zone : " << std::setprecision(20) << utm_zone << std::endl;
 }
 
 /**********************************************************************/
@@ -1473,7 +1538,16 @@ void processINSFullNavigation( int length, char *pData )
         gnss_twd97_data.pose.orientation.w = gnss_twd97_q.w();
         gnss_twd97_pub.publish(gnss_twd97_data);
         
+        // WGS84 to UTM
+        double UTM_E,UTM_N;
+        int zone = utm_zone;
+        gnss_utm_tf.LatLonToUTMXY(Latitude, Longitude, zone, UTM_E, UTM_N);
 
+        gnss_utm_data = gnss_data;
+        gnss_utm_data.pose.position.x = UTM_E + utm_shift_x;
+        gnss_utm_data.pose.position.y = UTM_N + utm_shift_y;
+        gnss_utm_data.pose.position.z = Altitude;
+        gnss_utm_pub.publish(gnss_utm_data);
 }
 
 /**********************************************************************/
@@ -1862,7 +1936,8 @@ int main( int argc, char **argv )
  * handler.
  */
 {
-		initial_para();
+	initial_para();
+        initial_para_1();
         ros::init(argc, argv, "imu");
         ros::NodeHandle n;
         imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 20);
@@ -1870,6 +1945,7 @@ int main( int argc, char **argv )
         gnss_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_data", 20);
         gnss2local_pub = n.advertise<geometry_msgs::PoseStamped>("gnss2local_data", 20);
         gnss_twd97_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_twd97_data", 20);
+        gnss_utm_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_utm_data", 20);
         gnss_speed_pub = n.advertise<std_msgs::Float64>("gnss_speed_data", 20);
 
         int server_fd, ret;

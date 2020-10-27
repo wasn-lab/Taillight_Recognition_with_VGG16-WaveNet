@@ -81,8 +81,6 @@ link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
 set(CPP_FILES
     src/pedestrian_event.cpp
-    src/buffer.cpp
-    src/buffer_node.cpp
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
@@ -92,6 +90,7 @@ set(CPP_FILES
 
 add_executable(itri_pedcross ${CPP_FILES})
 add_executable(tracking_view src/tracking_view.cpp)
+add_executable(alert_collector src/alert_collector.cpp)
 
 if(EXISTS /usr/local/lib/libopencv_core.so)
 target_link_libraries(
@@ -108,7 +107,6 @@ target_link_libraries(
     /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
-    ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 else()
@@ -124,12 +122,20 @@ target_link_libraries(
     tracking_view
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
-    ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 endif()
 
+target_link_libraries(
+    alert_collector
+    ${catkin_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
+
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
+add_dependencies(tracking_view ${catkin_EXPORTED_TARGETS})
+add_dependencies(alert_collector ${catkin_EXPORTED_TARGETS})
+
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
-add_dependencies(tracking_view ${catkin_EXPORTED_TARGETS})
+

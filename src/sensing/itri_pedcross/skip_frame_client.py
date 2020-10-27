@@ -46,7 +46,7 @@ def test():
         req.keypoint.append(keypoint)
         # call server (last_detected_keypoints, new_detected_keypoints)
         start = time.time()
-        res = skip_frame_client.call(req, req)
+        res = skip_frame_client.call(req, req, req)
         print(res)
     except rospy.ServiceException:
         rospy.logwarn("Service call failed.")
