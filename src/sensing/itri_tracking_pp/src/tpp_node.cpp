@@ -92,7 +92,7 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 }
 #endif
 
-void TPPNode::callback_fusion(const msgs::DetectedObjectArray_SB::ConstPtr& input)
+void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
   LOG_INFO << "callback_fusion() start" << std::endl;
@@ -131,7 +131,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray_SB::ConstPtr& inpu
     LOG_INFO << "=============================================" << std::endl;
 #endif
 
-    std::vector<msgs::DetectedObject_SB>().swap(KTs_.objs_);
+    std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
 
 #if INPUT_ALL_CLASS
     KTs_.objs_.assign(input->objects.begin(), input->objects.end());
@@ -254,7 +254,7 @@ void TPPNode::subscribe_and_advertise_topics()
     set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
 
-  pp_pub_ = nh_.advertise<msgs::DetectedObjectArray_SB>(topic, 2);
+  pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
 #if HEARTBEAT == 1
   pp_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(topic + std::string("/heartbeat"), 1);
 #endif
@@ -414,7 +414,7 @@ void TPPNode::compute_velocity_kalman()
              << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
 #endif
 
-// DetectedObject_SB.speed_abs
+// DetectedObject.speed_abs
 #if USE_RADAR_ABS_SPEED == 0
     track.box_.speed_abs = track.box_.track.absolute_velocity.speed;  // km/h
 #else
@@ -429,7 +429,7 @@ void TPPNode::compute_velocity_kalman()
       track.box_.speed_abs = 0.f;
     }
 
-    // DetectedObject_SB.speed_rel
+    // DetectedObject.speed_rel
     if (input_source_ != InputSource::RadarDet)
     {
       MyPoint32 p_rel;
@@ -457,7 +457,7 @@ void TPPNode::push_to_vector(BoxCenter a, std::vector<MyPoint32>& b)
 
 void TPPNode::publish_tracking()
 {
-  std::vector<msgs::DetectedObject_SB>().swap(pp_objs_);
+  std::vector<msgs::DetectedObject>().swap(pp_objs_);
   pp_objs_.reserve(KTs_.tracks_.size());
 
   for (const auto& track : KTs_.tracks_)
@@ -471,7 +471,7 @@ void TPPNode::publish_tracking()
       {
 #endif  // NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX
 
-        msgs::DetectedObject_SB box = track.box_;
+        msgs::DetectedObject box = track.box_;
 
         // init max_length, head, is_over_max_length
         box.track.max_length = 10;
@@ -528,7 +528,7 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
-void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject_SB>& objs)
+void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
   std::stringstream ss;
@@ -673,7 +673,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject_SB>& obj
 }
 
 #if TTC_TEST
-float TPPNode::closest_distance_of_obj_pivot(const msgs::DetectedObject_SB& obj)
+float TPPNode::closest_distance_of_obj_pivot(const msgs::DetectedObject& obj)
 {
   float dist_c = euclidean_distance((obj.bPoint.p0.x + obj.bPoint.p6.x) / 2, (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2);
   float dist_p0 = euclidean_distance(obj.bPoint.p0.x, obj.bPoint.p0.y);
@@ -684,7 +684,7 @@ float TPPNode::closest_distance_of_obj_pivot(const msgs::DetectedObject_SB& obj)
   return std::min(std::min(std::min(std::min(dist_c, dist_p0), dist_p3), dist_p4), dist_p7);
 }
 
-void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject_SB>& objs)
+void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
   std::stringstream ss;
@@ -757,7 +757,7 @@ void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject_SB>& objs)
 #endif
 
 #if TO_GRIDMAP
-void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject_SB>& objs)
+void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr in_points(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -789,7 +789,7 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
 }
 #endif
 
-void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject_SB>& objs, const unsigned int pub_offset,
+void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
 #if SAVE_OUTPUT_TXT
@@ -800,7 +800,7 @@ void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject_SB
   save_ttc_to_csv(objs);
 #endif
 
-  msgs::DetectedObjectArray_SB msg;
+  msgs::DetectedObjectArray msg;
 
   msg.header = objs_header_;
   msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);

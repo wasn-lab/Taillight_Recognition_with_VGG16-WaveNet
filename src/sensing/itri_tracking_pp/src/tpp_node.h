@@ -44,7 +44,7 @@ private:
   std_msgs::Header objs_header_;
   std_msgs::Header objs_header_prev_;
 
-  std::vector<msgs::DetectedObject_SB> pp_objs_;
+  std::vector<msgs::DetectedObject> pp_objs_;
   std::vector<std::vector<PPLongDouble> > ppss;
 
 #if VIRTUAL_INPUT
@@ -81,7 +81,7 @@ private:
   MarkerGen mg_;
 
   ros::Subscriber fusion_sub_;
-  void callback_fusion(const msgs::DetectedObjectArray_SB::ConstPtr& input);
+  void callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input);
 
   ros::Subscriber wayarea_sub_;
   void callback_wayarea(const nav_msgs::OccupancyGrid& input);
@@ -122,7 +122,7 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject_SB.speed_rel:
+  // compute DetectedObject.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 
@@ -135,10 +135,10 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject_SB>& objs, const unsigned int pub_offset,
+  void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                   const float time_offset);
 #if TO_GRIDMAP
-  void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject_SB>& objs);
+  void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs);
 #endif
 
   void set_ros_params();
@@ -146,10 +146,10 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
 
-  void save_output_to_txt(const std::vector<msgs::DetectedObject_SB>& objs);
+  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 #if TTC_TEST
-  float closest_distance_of_obj_pivot(const msgs::DetectedObject_SB& obj);
-  void save_ttc_to_csv(std::vector<msgs::DetectedObject_SB>& objs);
+  float closest_distance_of_obj_pivot(const msgs::DetectedObject& obj);
+  void save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs);
 #endif
 };
 }  // namespace tpp

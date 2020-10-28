@@ -30,8 +30,8 @@
 #include <msgs/TrackState.h>
 #include <msgs/PathPrediction.h>
 #include <msgs/TrackInfo.h>
-#include <msgs/DetectedObject_SB.h>
-#include <msgs/DetectedObjectArray_SB.h>
+#include <msgs/DetectedObject.h>
+#include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
 #include "detected_object_class_id.h"

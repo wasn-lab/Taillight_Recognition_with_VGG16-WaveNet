@@ -12,7 +12,6 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <msgs/DetectedObjectArray.h>
-#include <msgs/DetectedObjectArray_SB.h>
 
 /// drivenet
 #include "drivenet/trt_yolo_interface.h"

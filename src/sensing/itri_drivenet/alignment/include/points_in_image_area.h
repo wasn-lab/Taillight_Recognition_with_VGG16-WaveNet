@@ -9,7 +9,6 @@
 
 /// ros
 #include <msgs/DetectedObjectArray.h>
-#include <msgs/DetectedObjectArray_SB.h>
 #include <msgs/DetectedObject.h>
 
 /// util
@@ -35,21 +34,21 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
 void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
                              pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr, int image_w, int image_h,
                              Alignment& alignment);
-void getPointCloudInBoxFOV(const msgs::DetectedObjectArray_SB& objects,
+void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
                            const std::vector<DriveNet::PixelPosition>& cam_pixels_cam,
                            std::vector<std::vector<DriveNet::PixelPosition>>& cam_pixels_obj,
-                           msgs::DetectedObjectArray_SB& objects_2d_bbox,
+                           msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering,
                            bool do_display);
-void getPointCloudInBoxFOV(const msgs::DetectedObjectArray_SB& objects, msgs::DetectedObjectArray_SB& remaining_objects,
+void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::DetectedObjectArray& remaining_objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
                            const std::vector<DriveNet::PixelPosition>& cam_pixels_cam,
                            std::vector<std::vector<DriveNet::PixelPosition>>& cam_pixels_obj,
-                           msgs::DetectedObjectArray_SB& objects_2d_bbox,
+                           msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering,
                            bool do_display);

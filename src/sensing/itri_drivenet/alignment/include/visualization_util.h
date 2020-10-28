@@ -3,7 +3,6 @@
 
 /// ros
 #include <msgs/DetectedObjectArray.h>
-#include <msgs/DetectedObjectArray_SB.h>
 #include <msgs/DetectedObject.h>
 
 /// opencv
@@ -26,7 +25,7 @@ private:
 public:
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x);
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, int index);
-  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject_SB>& objects);
+  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects);
   cv::Scalar getDistColor(float distance_in_meters);
   MinMax3D getDistLinePoint(float x_dist, float y_dist, float z_dist);
 };

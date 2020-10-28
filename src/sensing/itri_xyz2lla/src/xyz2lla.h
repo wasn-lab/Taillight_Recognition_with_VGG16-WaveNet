@@ -6,7 +6,7 @@
 #include <ros/package.h>
 #include <fstream>
 #include <tf/tf.h>
-#include <msgs/DetectedObjectArray_SB.h>
+#include <msgs/DetectedObjectArray.h>
 
 #include "gnss_utility/gnss_utility.h"
 #include "gnss_utility_utm/gnss_utility_utm.h"
@@ -77,7 +77,7 @@ private:
 
   void convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_alt_wgs84, double& out_E, double& out_N,
                double& out_U, const double in_x, const double in_y, const double in_z);
-  void callbackTracking(const msgs::DetectedObjectArray_SB::ConstPtr& input);
+  void callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input);
 };
 }  // namespace xyz2lla
 #endif  // __XYZ2LLA_H__

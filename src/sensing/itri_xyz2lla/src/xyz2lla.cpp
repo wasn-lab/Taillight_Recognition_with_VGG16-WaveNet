@@ -313,9 +313,9 @@ void XYZ2LLA::convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_
 #endif
 }
 
-void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray_SB::ConstPtr& input)
+void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
 {
-  msgs::DetectedObjectArray_SB out;
+  msgs::DetectedObjectArray out;
   out.header = input->header;
   out.objects.assign(input->objects.begin(), input->objects.end());
 
@@ -371,7 +371,7 @@ int XYZ2LLA::run()
 #endif
 
   sub_xyz2lla_ = nh_.subscribe("Tracking3D", 1, &XYZ2LLA::callbackTracking, this);
-  pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray_SB>("Tracking3D/xyz2lla", 1);
+  pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking3D/xyz2lla", 1);
 
   ros::spin();
 

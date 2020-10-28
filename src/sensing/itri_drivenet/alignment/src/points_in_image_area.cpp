@@ -203,9 +203,9 @@ void getPointCloudInImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidaral
 }
 
 void getPointCloudInBoxFOV(
-    const msgs::DetectedObjectArray_SB& objects, const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
+    const msgs::DetectedObjectArray& objects, const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
     pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr, const std::vector<PixelPosition>& cam_pixels_cam,
-    std::vector<std::vector<PixelPosition>>& cam_pixels_obj, msgs::DetectedObjectArray_SB& objects_2d_bbox,
+    std::vector<std::vector<PixelPosition>>& cam_pixels_obj, msgs::DetectedObjectArray& objects_2d_bbox,
     std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment, CloudCluster& cloud_cluster,
     bool is_enable_default_3d_bbox, bool do_clustering, bool do_display)
 {
@@ -222,7 +222,7 @@ void getPointCloudInBoxFOV(
   /// main
   for (auto& obj : objects.objects)
   {
-    msgs::DetectedObject_SB obj_tmp = obj;
+    msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
     int pixel_index = 0;
     for (const auto& pixel_position : cam_pixels_cam)
@@ -327,12 +327,12 @@ void getPointCloudInBoxFOV(
   }
 }
 
-void getPointCloudInBoxFOV(const msgs::DetectedObjectArray_SB& objects, msgs::DetectedObjectArray_SB& remaining_objects,
+void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::DetectedObjectArray& remaining_objects,
                            const pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_points_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr& cams_bbox_points_ptr,
                            const std::vector<PixelPosition>& cam_pixels_cam,
                            std::vector<std::vector<PixelPosition>>& cam_pixels_obj,
-                           msgs::DetectedObjectArray_SB& objects_2d_bbox,
+                           msgs::DetectedObjectArray& objects_2d_bbox,
                            std::vector<pcl::PointCloud<pcl::PointXYZI>>& cam_bboxs_points, Alignment& alignment,
                            CloudCluster& cloud_cluster, bool is_enable_default_3d_bbox, bool do_clustering,
                            bool do_display)
@@ -358,7 +358,7 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray_SB& objects, msgs::De
 
   for (const auto& obj : objects.objects)
   {
-    msgs::DetectedObject_SB obj_tmp = obj;
+    msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
     int pixel_index = 0;
     for (const auto& pixel_position : cam_pixels_cam)
