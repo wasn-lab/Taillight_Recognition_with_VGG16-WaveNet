@@ -194,14 +194,14 @@ bool ROS_API::_set_up_topics(){
         ros_interface.add_a_topic( int(MSG_ID::camera_left_rear), "cam/L_rear", int(M_TYPE::Image), true, 2, 20, "GUI_base");
         ros_interface.add_a_topic( int(MSG_ID::camera_rear_center), "cam/B_top", int(M_TYPE::Image), true, 2, 20, "GUI_base");
 
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_bottom_60), "cam/front_bottom_60", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_top_close_120), "cam/top_close_120", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_front_top_far_30), "cam/front_top_far_30", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_back_60), "cam/left_back_60", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_left_front_60), "cam/left_front_60", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_back_60), "cam/right_back_60", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_right_front_60), "cam/right_front_60", int(M_TYPE::Image), true, 2, 20, "GUI_base");
-        ros_interface.add_a_topic( int(MSG_ID::camera_back_top_120), "cam/back_top_120", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_bottom_60), "cam/front_bottom_60/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_top_close_120), "cam/top_close_120/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_front_top_far_30), "cam/front_top_far_30/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_back_60), "cam/left_back_60/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_left_front_60), "cam/left_front_60/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_back_60), "cam/right_back_60/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_right_front_60), "cam/right_front_60/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
+        ros_interface.add_a_topic( int(MSG_ID::camera_back_top_120), "cam/back_top_120/heartbeat", int(M_TYPE::Image), true, 2, 20, "GUI_base");
     #endif
 
 

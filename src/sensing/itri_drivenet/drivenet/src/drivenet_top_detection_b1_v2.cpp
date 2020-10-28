@@ -1,4 +1,3 @@
-#include <iostream>
 #include <pthread.h>
 #include <thread>
 #include <future>
@@ -50,6 +49,7 @@ std::mutex g_display_mutex;
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
 // // grid map
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
-
+    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -435,6 +435,13 @@ void* run_yolo(void* /*unused*/)
     mat_order_tmp = g_mat_order;
     dist_cols_tmp = g_dist_cols;
     dist_rows_tmp = g_dist_rows;
+
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
+      std_msgs::Header header_msg;
+      header_msg = headers_tmp[cam_order];
+      g_time_info_pubs[cam_order].publish(header_msg);
+    }
 
     // reset data
     reset_data();
