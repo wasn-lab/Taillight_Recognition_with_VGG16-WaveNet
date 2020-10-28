@@ -62,7 +62,7 @@ class Node:
         self.polygon_pub = rospy.Publisher(self.inputTopic + "/poly", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
-        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray_SB, self.detection_callback)
+        self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
         self.is_showing_track_id_sub = rospy.Subscriber("/d_viz/req_show_track_id", Bool, self.req_show_track_id_CB)
 
