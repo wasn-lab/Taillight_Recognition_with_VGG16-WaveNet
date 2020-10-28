@@ -227,7 +227,7 @@ public:
     static ros::Publisher LidarDetection_pub =
         ros::NodeHandle().advertise<msgs::DetectedObjectArray>("/LidarDetection", 1);
 
-    msgs::DetectedObjectArray_SB msgObjArr;
+    msgs::DetectedObjectArray msgObjArr;
     msgObjArr.header.frame_id = "lidar";
 
     for (int i = 0; i < cluster_size; i++)
