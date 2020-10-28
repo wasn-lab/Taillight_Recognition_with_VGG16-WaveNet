@@ -9,7 +9,7 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObjectArray_SB.h"
+#include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
 #include "msgs/PointXYZ.h"
@@ -157,7 +157,7 @@ void Plot_geofence(Point temp)
   // cout << "============" << temp.Direction << "============" << endl;
 }
 
-void chatterCallbackPP(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
+void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointXYZI temp;
@@ -271,7 +271,7 @@ void chatterCallbackPP(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
   }
 }
 
-void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
+void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   PP_Stop_PedCross = 0;
   PP_Distance_PedCross = 100;

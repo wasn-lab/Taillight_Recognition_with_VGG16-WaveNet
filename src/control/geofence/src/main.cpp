@@ -9,7 +9,7 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObjectArray_SB.h"
+#include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
 #include "msgs/PointXYZ.h"
@@ -84,7 +84,7 @@ void overtake_over_Callback(const std_msgs::Int32::ConstPtr& msg)
   overtake_over_flag = msg->data;
 }
 
-void chatterCallbackPCloud(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
+void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   Point Point_temp;
   vector<Point> PointCloud_temp;
@@ -118,7 +118,7 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
 #endif
 }
 
-void chatterCallbackCPoint(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
+void chatterCallbackCPoint(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   Point Point_temp;
   vector<Point> PointCloud_temp;
@@ -135,7 +135,7 @@ void chatterCallbackCPoint(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
   CPoint_Geofence.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);
 }
 
-void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray_SB::ConstPtr& msg)
+void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   Point Point_temp;
   vector<Point> PointCloud_temp;
