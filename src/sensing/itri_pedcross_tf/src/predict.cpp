@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>  // opencv general include file
+#include "camera_params_b1_v2.h"
 
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
@@ -95,10 +96,10 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   for (unsigned int i = 0; i < req.bboxes.size(); i++)
   {
     std::vector<float> bbox;
-    bbox.emplace_back(req.bboxes.at(i).u / 608);
-    bbox.emplace_back(req.bboxes.at(i).v / 384);
-    bbox.emplace_back((req.bboxes.at(i).u + req.bboxes.at(i).width) / 608);
-    bbox.emplace_back((req.bboxes.at(i).v + req.bboxes.at(i).height) / 384);
+    bbox.emplace_back(req.bboxes.at(i).u / camera::image_width);
+    bbox.emplace_back(req.bboxes.at(i).v / camera::image_height);
+    bbox.emplace_back((req.bboxes.at(i).u + req.bboxes.at(i).width) / camera::image_width);
+    bbox.emplace_back((req.bboxes.at(i).v + req.bboxes.at(i).height) / camera::image_height);
     bbox_array.emplace_back(bbox);
     bbox.clear();
     std::vector<float>().swap(bbox);

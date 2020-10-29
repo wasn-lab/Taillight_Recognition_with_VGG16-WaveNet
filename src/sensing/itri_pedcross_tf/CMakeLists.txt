@@ -11,7 +11,8 @@ set(CATKIN_REQUIRED_COMPONENTS
     msgs
     car_model
     cv_bridge
-    image_transport)
+    image_transport
+    camera_utils)
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -74,6 +75,8 @@ include_directories(
     ${GLOG_INCLUDE_DIR}
     ${PROJECT_BINARY_DIR}/include
     ${TENSORFLOW_INCLUDE_DIR}
+    ${camera_utils_SOURCE_DIR}/include
+    ${car_model_BINARY_DIR}/include
     src/
 )
 link_directories(${TENSORFLOW_ROOT_DIR}/lib)
@@ -93,7 +96,8 @@ target_link_libraries(
     ${OpenCV_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
-    ${TENSORFLOW_LIBRARIES})
+    ${TENSORFLOW_LIBRARIES}
+    camera_utils)
 else()
 target_link_libraries(
     itri_pedcross_tf
@@ -101,7 +105,8 @@ target_link_libraries(
     ${OpenCV_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
-    ${TENSORFLOW_LIBRARIES})
+    ${TENSORFLOW_LIBRARIES}
+    camera_utils)
 endif()
 
 add_dependencies(itri_pedcross_tf ${catkin_EXPORTED_TARGETS})
