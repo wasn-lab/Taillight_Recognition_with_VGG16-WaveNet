@@ -32,7 +32,7 @@ float get_distance2(float x1, float y1, float x2, float y2)
   return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
-// return degree with line formed by two points and vertical line
+// return radius with line formed by two points and vertical line
 float get_angle2(float x1, float y1, float x2, float y2)
 {
   return M_PI / 2 - std::atan2(std::fabs(y1 - y2), std::fabs(x1 - x2));
@@ -75,10 +75,12 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   ros::Time start = ros::Time::now();
 
   std::vector<std::vector<cv::Point2f>> keypoint_array;
+  keypoint_array.reserve(req.keypoints.size());
   // get processed_keypoints return from skip_frame service
   for (unsigned int i = 0; i < req.keypoints.size(); i++)
   {
     std::vector<cv::Point2f> back_predict_keypoints;
+    back_predict_keypoints.reserve(req.keypoints.at(i).keypoint.size());
     for (unsigned int j = 0; j < req.keypoints.at(i).keypoint.size(); j++)
     {
       cv::Point2f back_predict_keypoint;
@@ -92,10 +94,12 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   }
 
   std::vector<std::vector<float>> bbox_array;
+  bbox_array.reserve(req.bboxes.size());
   // get processed_keypoints return from skip_frame service
   for (unsigned int i = 0; i < req.bboxes.size(); i++)
   {
     std::vector<float> bbox;
+    bbox.reserve(4);
     bbox.emplace_back(req.bboxes.at(i).u / camera::image_width);
     bbox.emplace_back(req.bboxes.at(i).v / camera::image_height);
     bbox.emplace_back((req.bboxes.at(i).u + req.bboxes.at(i).width) / camera::image_width);
@@ -107,6 +111,7 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
 
   // initialize feature
   std::vector<float> feature;
+  feature.reserve(FEATURE_NUM * FRAME_NUM);
 
   for (unsigned int index = 0; index < FRAME_NUM; index++)
   {
@@ -123,6 +128,8 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
       // Get body keypoints we need
       int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
       int body_part_size = sizeof(body_part) / sizeof(*body_part);
+      keypoints_x.reserve(body_part_size);
+      keypoints_y.reserve(body_part_size);
       for (int i = 0; i < body_part_size; i++)
       {
         keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
