@@ -2333,8 +2333,7 @@ int main(int argc, char** argv)
   ped::PedestrianEvent pe;
   tf2_ros::TransformListener tf_listener(pe.tf_buffer_);
   std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
-  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
-                                                                                    "yml"));
+  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
 
   ros::NodeHandle nh1;
   pe.chatter_pub_front_ = nh1.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_bottom_60",
