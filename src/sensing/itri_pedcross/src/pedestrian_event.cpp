@@ -485,10 +485,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         {
           msgs_timestamp = obj.header.stamp;
         }
-        else
+        else if (msg->header.stamp.toSec() > 1)
         {
           msgs_timestamp = msg->header.stamp;
         }
+        else
+        {
+          msgs_timestamp = ros::Time::now();
+        }
+
         std::lock_guard<std::mutex> lk(mu_front_image_cache_);
         std::lock_guard<std::mutex> lk2(mu_fov30_image_cache_);
         std::lock_guard<std::mutex> lk3(mu_left_image_cache_);
@@ -1106,7 +1111,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     // ped_obj_array.raw_image = img_msg;
     ped_obj_array.header = msg->header;
     ped_obj_array.header.frame_id = msg->header.frame_id;
-    ped_obj_array.header.stamp = msgs_timestamp;
+    if (msgs_timestamp.toSec() > 1)
+    {
+      ped_obj_array.header.stamp = msgs_timestamp;
+    }
+    else
+    {
+      ped_obj_array.header.stamp = msg->header.stamp;
+    }
+    
     ped_obj_array.objects.assign(ped_objs.begin(), ped_objs.end());
     if (from_camera == 0)  // front
     {
@@ -1264,7 +1277,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
 
   cv::Mat matrix;
   cv::Mat matrix2;
-  ros::Time msgs_timestamp = ros::Time(0);
+  ros::Time msgs_timestamp = ros::Time::now();
   if (!msg->objects.empty())
   {
     if (msg->objects[0].header.stamp.toSec() > 1)
@@ -1276,7 +1289,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       msgs_timestamp = msg->header.stamp;
     }
   }
-  else
+  else if (msg->header.stamp.toSec() > 1)
   {
     msgs_timestamp = msg->header.stamp;
   }
