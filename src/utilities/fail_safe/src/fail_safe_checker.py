@@ -22,14 +22,14 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, vid, cfg_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, vid, heartbeat_ini, mqtt_ini, mqtt_fqdn):
         self.debug_mode = False
         self.vid = vid  # vehicle id
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
         self.modules = {}
-        cfg.read(cfg_ini)
+        cfg.read(heartbeat_ini)
         self.latched_modules = []
         for module in cfg.sections():
             self.modules[module] = Heartbeat(
@@ -66,13 +66,11 @@ class FailSafeChecker(object):
     def _get_ego_speed(self):
         return self.modules["veh_info"].get_ego_speed()
 
-    def _get_battery_info(self):
-        return self.modules["backend_info"].get_battery_info()
-
     def set_debug_mode(self, mode):
         self.debug_mode = mode
 
     def get_current_status(self):
+        """Collect states from the components of the car"""
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": self.ctrl_info_03.get_events_in_list(),
                "seq": self.seq,
@@ -124,6 +122,7 @@ class FailSafeChecker(object):
         return docs
 
     def run(self):
+        """Send out aggregated info to backend server every second."""
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             for module in self.latched_modules:
@@ -131,8 +130,8 @@ class FailSafeChecker(object):
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
             if self.debug_mode:
-                pprint.pprint(current_status)
                 pprint.pprint(sensor_status)
+                pprint.pprint(current_status)
             if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
             self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))

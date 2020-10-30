@@ -34,7 +34,7 @@ Lidar List:
 	<arg name="use_roi" default="false" />
 	
 	<!-- SSN and Shape -->
-	<arg name="use_shape_estimation" default="false" />
+	<arg name="use_shape_estimation" default="true" />
 
 	<!-- Ouster Setting -->
 	<arg name="set_group_1" default="/LidarFrontTop"/>
