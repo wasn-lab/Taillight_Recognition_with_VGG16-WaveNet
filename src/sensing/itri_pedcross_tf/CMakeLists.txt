@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(itri_pedcross)
+project(itri_pedcross_tf)
 
 set(CATKIN_REQUIRED_COMPONENTS
     message_generation
@@ -11,7 +11,8 @@ set(CATKIN_REQUIRED_COMPONENTS
     msgs
     car_model
     cv_bridge
-    image_transport)
+    image_transport
+    camera_utils)
 find_package(catkin REQUIRED COMPONENTS ${CATKIN_REQUIRED_COMPONENTS})
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -24,7 +25,7 @@ endif ()
 
 include(CompilerFlags)
 
-set(PED_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross/models)
+set(PED_TF_MODEL_DIR ${Project_SOURCE_DIR}/sensing/itri_pedcross_tf/models)
 
 set(TENSORFLOW_ROOT_DIR ${Project_SOURCE_DIR}/dl_data/assets)
 set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
@@ -41,13 +42,6 @@ find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 if (NOT ${OpenCV_FOUND})
   message("OpenCV not found. Skip building ${PROJECT_NAME}")
   return ()
-endif ()
-
-find_package(openpose)
-
-if (NOT openpose_LIBRARY)
-  message(STATUS "Openpose not found. Follow ${CMAKE_CURRENT_LIST_DIR}/install_openpose.sh to install it. Skip building ${PROJECT_NAME}.")
-  return()
 endif ()
 
 find_package(GFlags)
@@ -76,72 +70,47 @@ include_directories(
     include
     ${catkin_INCLUDE_DIRS}
     ${CUDA_INCLUDE_DIRS}
-    ${openpose_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
-    ${CAFFE_INCLUDE_DIRS}
     ${GFLAGS_INCLUDE_DIR}
     ${GLOG_INCLUDE_DIR}
     ${PROJECT_BINARY_DIR}/include
     ${TENSORFLOW_INCLUDE_DIR}
+    ${camera_utils_SOURCE_DIR}/include
+    ${car_model_BINARY_DIR}/include
     src/
 )
 link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
 set(CPP_FILES
-    src/pedestrian_event.cpp
-    src/openpose.cpp
-    src/openpose_flags.cpp
-    src/openpose_ros_io.cpp
+    src/tf_utils.cpp
+    src/predict.cpp
 )
 
-add_executable(itri_pedcross ${CPP_FILES})
-add_executable(tracking_view src/tracking_view.cpp)
-add_executable(alert_collector src/alert_collector.cpp)
+add_executable(itri_pedcross_tf ${CPP_FILES})
 
 if(EXISTS /usr/local/lib/libopencv_core.so)
 target_link_libraries(
-    itri_pedcross
+    itri_pedcross_tf
     /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
     ${OpenCV_LIBRARIES}
-    ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
-    ${TENSORFLOW_LIBRARIES})
-target_link_libraries(
-    tracking_view
-    /usr/local/lib/libopencv_core.so
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBRARIES}
-    ${GFLAGS_LIBRARY}
-    ${GLOG_LIBRARY})
+    ${TENSORFLOW_LIBRARIES}
+    camera_utils)
 else()
 target_link_libraries(
-    itri_pedcross
+    itri_pedcross_tf
     ${catkin_LIBRARIES}
     ${OpenCV_LIBRARIES}
-    ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
-    ${TENSORFLOW_LIBRARIES})
-target_link_libraries(
-    tracking_view
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBRARIES}
-    ${GFLAGS_LIBRARY}
-    ${GLOG_LIBRARY})
+    ${TENSORFLOW_LIBRARIES}
+    camera_utils)
 endif()
 
-target_link_libraries(
-    alert_collector
-    ${catkin_LIBRARIES}
-    ${GFLAGS_LIBRARY}
-    ${GLOG_LIBRARY})
+add_dependencies(itri_pedcross_tf ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
-add_dependencies(tracking_view ${catkin_EXPORTED_TARGETS})
-add_dependencies(alert_collector ${catkin_EXPORTED_TARGETS})
-
-configure_file(include/ped_def.h.in
-               ${PROJECT_BINARY_DIR}/include/ped_def.h)
+configure_file(include/ped_tf_def.h.in
+               ${PROJECT_BINARY_DIR}/include/ped_tf_def.h)
 
