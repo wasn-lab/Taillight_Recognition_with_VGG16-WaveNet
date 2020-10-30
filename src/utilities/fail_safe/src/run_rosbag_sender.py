@@ -22,6 +22,7 @@ def main():
     _rate = cfg["ftp"].getint("upload_rate", 1000000)
     sender = RosbagSender(cfg["ftp"]["fqdn"], cfg["ftp"]["port"],
                            cfg["ftp"]["user_name"],
+                           cfg["ftp"]["password"],
                            cfg["rosbag"]["backup_dir"],
                            vid=args.vid,
                            upload_rate=_rate)
