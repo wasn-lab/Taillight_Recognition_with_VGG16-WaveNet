@@ -47,8 +47,8 @@
 //#include <tf_utils.hpp>
 
 #define USE_2D_FOR_ALARM 0
-#define DUMP_LOG 0
-#define PRINT_MESSAGE 1
+#define DUMP_LOG 1
+#define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -211,6 +211,7 @@ public:
   double max_distance_ = 50;
   double danger_zone_distance_ = 2;
   bool use_2d_for_alarm_ = false;
+  int skip_frame_number_ = 1;
 
   int direction_table_[16][5] = {
     {0,0,0,0,4},
