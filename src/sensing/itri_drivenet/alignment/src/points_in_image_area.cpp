@@ -112,7 +112,6 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
   std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
   std::vector<std::vector<std::vector<pcl::PointXYZI>>> point_cloud(
       cams_points_ptr.size(), std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
-  PixelPosition pixel_position{ -1, -1 };
 
 /// find 3d points in image coverage
 #pragma omp parallel for collapse(2)
@@ -122,6 +121,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
     {
       if (alignment[cam_order].checkPointInCoverage(lidarall_ptr->points[i]))
       {
+        PixelPosition pixel_position{ -1, -1 };
         pixel_position = alignment[cam_order].projectPointToPixel(lidarall_ptr->points[i]);
         if (pixel_position.u >= 0 && pixel_position.v >= 0)
         {
@@ -134,6 +134,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
       }
     }
   }
+  PixelPosition pixel_position_tmp{ -1, -1 };
 
   /// record the 3d points)
   for (int u = 0; u < image_w; u++)
@@ -146,9 +147,9 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
             point_cloud[cam_order][u][v].z != 0)
         {
           cam_points[cam_order].push_back(point_cloud[cam_order][u][v]);
-          pixel_position.u = u;
-          pixel_position.v = v;
-          cam_pixels[cam_order].push_back(pixel_position);
+          pixel_position_tmp.u = u;
+          pixel_position_tmp.v = v;
+          cam_pixels[cam_order].push_back(pixel_position_tmp);
         }
       }
     }
