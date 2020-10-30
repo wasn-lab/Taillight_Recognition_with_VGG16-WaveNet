@@ -112,7 +112,6 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
   std::vector<pcl::PointCloud<pcl::PointXYZI>> cam_points(cams_points_ptr.size());
   std::vector<std::vector<std::vector<pcl::PointXYZI>>> point_cloud(
       cams_points_ptr.size(), std::vector<std::vector<pcl::PointXYZI>>(image_w, std::vector<pcl::PointXYZI>(image_h)));
-  PixelPosition pixel_position{ -1, -1 };
 
 /// find 3d points in image coverage
 #pragma omp parallel for collapse(2)
@@ -122,6 +121,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
     {
       if (alignment[cam_order].checkPointInCoverage(lidarall_ptr->points[i]))
       {
+        PixelPosition pixel_position{ -1, -1 };
         pixel_position = alignment[cam_order].projectPointToPixel(lidarall_ptr->points[i]);
         if (pixel_position.u >= 0 && pixel_position.v >= 0)
         {
@@ -134,6 +134,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
       }
     }
   }
+  PixelPosition pixel_position_tmp{ -1, -1 };
 
   /// record the 3d points)
   for (int u = 0; u < image_w; u++)
@@ -146,9 +147,9 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
             point_cloud[cam_order][u][v].z != 0)
         {
           cam_points[cam_order].push_back(point_cloud[cam_order][u][v]);
-          pixel_position.u = u;
-          pixel_position.v = v;
-          cam_pixels[cam_order].push_back(pixel_position);
+          pixel_position_tmp.u = u;
+          pixel_position_tmp.v = v;
+          cam_pixels[cam_order].push_back(pixel_position_tmp);
         }
       }
     }
@@ -225,16 +226,17 @@ void getPointCloudInBoxFOV(
     msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
     int pixel_index = 0;
+
+    // get the 2d box
+    std::vector<PixelPosition> bbox_positions(2);
+    bbox_positions[0].u = obj_tmp.camInfo.u;
+    bbox_positions[0].v = obj_tmp.camInfo.v;
+    bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+    bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
+    transferPixelScaling(bbox_positions);
+
     for (const auto& pixel_position : cam_pixels_cam)
     {
-      // get the 2d box
-      std::vector<PixelPosition> bbox_positions(2);
-      bbox_positions[0].u = obj_tmp.camInfo.u;
-      bbox_positions[0].v = obj_tmp.camInfo.v;
-      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-      transferPixelScaling(bbox_positions);
-
       // get points in the 2d box
       if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
           pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
@@ -358,16 +360,17 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
     msgs::DetectedObject obj_tmp = obj;
     obj_tmp.header = objects.header;
     int pixel_index = 0;
+
+    // get the 2d box
+    std::vector<PixelPosition> bbox_positions(2);
+    bbox_positions[0].u = obj_tmp.camInfo.u;
+    bbox_positions[0].v = obj_tmp.camInfo.v;
+    bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
+    bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
+    transferPixelScaling(bbox_positions);
+
     for (const auto& pixel_position : cam_pixels_cam)
     {
-      // get the 2d box
-      std::vector<PixelPosition> bbox_positions(2);
-      bbox_positions[0].u = obj_tmp.camInfo.u;
-      bbox_positions[0].v = obj_tmp.camInfo.v;
-      bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-      bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-      transferPixelScaling(bbox_positions);
-
       // get points in the 2d box
       if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
           pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
