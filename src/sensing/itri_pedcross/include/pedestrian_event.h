@@ -8,7 +8,10 @@
 #include <sensor_msgs/Image.h>
 #include <tf/tf.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/PolygonStamped.h>
+#include <geometry_msgs/Point32.h>
 #include <nav_msgs/Path.h>
 #include "msgs/VehInfo.h"
 #include "msgs/BoxPoint.h"
@@ -16,6 +19,11 @@
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PedObject.h"
 #include "msgs/PedObjectArray.h"
+#include "autoware_planning_msgs/Trajectory.h"
+#include "msgs/PredictSkeleton.h"
+#include "msgs/Keypoints.h"
+#include "msgs/Keypoint.h"
+#include "msgs/PredictCrossing.h"
 
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include <opencv2/dnn.hpp>
@@ -24,7 +32,7 @@
 #include <ped_def.h>
 #include <map>
 #include <boost/circular_buffer.hpp>
-#include <buffer.h>
+#include <skeleton_buffer.h>
 #include <openpose.h>
 #include <openpose_ros_io.h>
 #include <openpose_flags.h>
@@ -40,7 +48,7 @@
 //#include <tf_utils.hpp>
 
 #define USE_2D_FOR_ALARM 0
-#define DUMP_LOG 0
+#define DUMP_LOG 1
 #define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
@@ -75,18 +83,19 @@ public:
   void run();
   void veh_info_callback(const msgs::VehInfo::ConstPtr& msg);
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
+  void lanelet2_trajectory_callback(const autoware_planning_msgs::Trajectory::ConstPtr& msg);
+  void lanelet2_route_callback(const visualization_msgs::MarkerArray::ConstPtr& msg);
   void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void cache_image_callback(const sensor_msgs::Image::ConstPtr& msg,
-                            boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache);
   void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
   void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg, Buffer& buffer,
-                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
+  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
+                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
+                     std::vector<SkeletonBuffer>& skeleton_buffer);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
@@ -94,99 +103,123 @@ public:
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
-  float crossing_predict(float bb_x1, float bb_y1, float bb_x2, float bb_y2, std::vector<cv::Point2f> keypoint, int id,
-                         ros::Time time, Buffer& buffer);
+  float crossing_predict(std::vector<std::vector<float>>& bbox_array,
+                         std::vector<std::vector<cv::Point2f>>& keypoint_array);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
-  float predict_rf(cv::Mat input_data);
   float predict_rf_pose(const cv::Mat& input_data);
-  bool too_far(const msgs::BoxPoint box_point);
+  bool filter(const msgs::BoxPoint box_point, ros::Time time_stamp);
+  bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
+  void clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer, ros::Time msg_timestamp);
+
   // void draw_pedestrians(cv::Mat matrix);
   bool keypoint_is_detected(cv::Point2f keypoint);
   float adjust_probability(msgs::PedObject obj);
   int get_facing_direction(const std::vector<cv::Point2f>& keypoints);
   int get_body_direction(const std::vector<cv::Point2f>& keypoints);
-  double get_tranform_yaw(double x, double y, double z, double w);
-  geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
-                                                geometry_msgs::Vector3 translation);
   void display_on_terminal();
 
   // OpenPose components
-  int openPoseROS();
-  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> createDatum(cv::Mat mat);
+  int openposeROS();
+  std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> create_datum(cv::Mat& mat);
   bool display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr);
-  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat input_image);
-  openpose_ros::OpenPose openPose;
-  cv::dnn::Net net_openpose;
+  std::vector<cv::Point2f> get_openpose_keypoint(cv::Mat& input_image);
+  openpose_ros::OpenPose openpose_;
 
   // All buffer components
-  msgs::VehInfo veh_info;
-  std::vector<cv::Point2f> nav_path;
-  std::string time_nav_path = "NA";
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache;
-  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache;
-  std::vector<std::string> ped_info;
-  std::string delay_from_camera = "NA";
-  std::string chatter_callback_info = "Not running";
-  Buffer buffer_front;
-  Buffer buffer_left;
-  Buffer buffer_right;
-  Buffer buffer_fov30;
-  int buffer_size = 60;
+  msgs::VehInfo veh_info_;
+  std::vector<cv::Point3f> lanelet2_route_left_;
+  std::vector<cv::Point3f> lanelet2_route_right_;
+  std::vector<cv::Point2f> lanelet2_trajectory_;
+  std::string time_nav_path_ = "NA";
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> front_image_cache_;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> fov30_image_cache_;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> left_image_cache_;
+  boost::circular_buffer<std::pair<ros::Time, cv::Mat>> right_image_cache_;
+  std::vector<std::string> ped_info_;
+  std::string delay_from_camera_ = "NA";
+  std::string chatter_callback_info_ = "Not running";
+  std::vector<SkeletonBuffer> skeleton_buffer_front_;
+  std::vector<SkeletonBuffer> skeleton_buffer_left_;
+  std::vector<SkeletonBuffer> skeleton_buffer_right_;
+  std::vector<SkeletonBuffer> skeleton_buffer_fov30_;
+  int buffer_size_ = 60;
+
+  // mutex for each bufffer component
+  std::mutex mu_veh_info_;
+  std::mutex mu_lanelet2_route_;
+  std::mutex mu_lanelet2_trajectory_;
+  std::mutex mu_time_nav_path_;
+  std::mutex mu_front_image_cache_;
+  std::mutex mu_fov30_image_cache_;
+  std::mutex mu_left_image_cache_;
+  std::mutex mu_right_image_cache_;
+  std::mutex mu_ped_info_;
+  std::mutex mu_delay_from_camera_;
+  std::mutex mu_chatter_callback_info_;
+  std::mutex mu_skeleton_buffer_;
 
   // ROS components
-  ros::Publisher chatter_pub_front;
-  ros::Publisher chatter_pub_left;
-  ros::Publisher chatter_pub_right;
-  ros::Publisher chatter_pub_fov30;
-  ros::Publisher box_pub_front;
-  ros::Publisher box_pub_left;
-  ros::Publisher box_pub_right;
-  ros::Publisher box_pub_fov30;
-  ros::Publisher alert_pub;
-  ros::Time total_time;
-  tf2_ros::Buffer tfBuffer;
+  ros::ServiceClient skip_frame_client_;
+  ros::ServiceClient tf_client_;
+  ros::Publisher chatter_pub_front_;
+  ros::Publisher chatter_pub_left_;
+  ros::Publisher chatter_pub_right_;
+  ros::Publisher chatter_pub_fov30_;
+  ros::Publisher box_pub_front_;
+  ros::Publisher box_pub_left_;
+  ros::Publisher box_pub_right_;
+  ros::Publisher box_pub_fov30_;
+  ros::Publisher alert_pub_front_;
+  ros::Publisher alert_pub_left_;
+  ros::Publisher alert_pub_right_;
+  ros::Publisher alert_pub_fov30_;
+  ros::Publisher warning_zone_pub_;
+  ros::Time total_time_;
+  tf2_ros::Buffer tf_buffer_;
 
   // Variables
-  cv::Ptr<cv::ml::RTrees> rf;
-  cv::Ptr<cv::ml::RTrees> rf_pose;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_1;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_2;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_3;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_4;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_5;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_6;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_7;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_8;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_9;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_10;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_11;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_12;
-  boost::shared_ptr<ros::AsyncSpinner> g_spinner_13;
-  bool g_enable = false;
-  bool g_trigger = false;
-  int count;
-  std::ofstream file;
-  struct winsize terminal_size;
-  double average_inference_time = 0;
+  cv::Ptr<cv::ml::RTrees> rf_pose_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_1_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_2_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_3_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_4_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_5_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_6_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_7_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_8_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_9_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_10_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_11_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_12_;
+  boost::shared_ptr<ros::AsyncSpinner> async_spinner_13_;
+  bool spinner_trigger_ = false;
+  int count_;
+  std::ofstream file_;
+  double average_inference_time_ = 0;
 
   // Setup variables
-  const int cross_threshold = 55;  // percentage
-  const double scaling_ratio_width = 0.3167;
-  const double scaling_ratio_height = 0.3179;
-  const int number_keypoints = 25;
-  const int feature_num = 1174;
-  const int frame_num = 10;
+  const double scaling_ratio_width_ = 0.3167;
+  const double scaling_ratio_height_ = 0.3179;
+  const unsigned int number_keypoints_ = 25;
+  const unsigned int feature_num_ = 1174;
+  const unsigned int frame_num_ = 10;
 
   // ROS param
-  bool show_probability = true;
-  int input_source = 3;
-  double max_distance = 50;
-  double danger_zone_distance = 2;
-  bool use_2d_for_alarm = false;
+  int cross_threshold_ = 55;  // percentage
+  bool show_probability_ = true;
+  int input_source_ = 3;
+  double max_distance_ = 50;
+  double danger_zone_distance_ = 2;
+  bool use_2d_for_alarm_ = false;
+  int skip_frame_number_ = 1;
+
+  int direction_table_[16][5] = {
+    { 0, 0, 0, 0, 4 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 1 }, { 0, 0, 1, 0, 0 }, { 1, 0, 1, 0, 4 },
+    { 0, 1, 1, 0, 2 }, { 1, 1, 1, 0, 1 }, { 0, 0, 0, 1, 0 }, { 1, 0, 0, 1, 3 }, { 0, 1, 0, 1, 4 }, { 1, 1, 0, 1, 2 },
+    { 0, 0, 1, 1, 0 }, { 1, 0, 1, 1, 2 }, { 0, 1, 1, 1, 0 }, { 1, 1, 1, 1, 2 },
+  };
 };
 }  // namespace ped
 

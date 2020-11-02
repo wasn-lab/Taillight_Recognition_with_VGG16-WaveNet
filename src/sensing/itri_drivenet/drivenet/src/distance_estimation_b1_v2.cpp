@@ -43,6 +43,16 @@ void DistanceEstimation::init(const std::string& pkgPath, int mode)
       align_FC60[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(fc60_json, align_FC60, img_al_h, img_al_w);
+
+    std::string ft30_json = pkgPath;
+    ft30_json.append("/data/alignment/ft30_0709.json");
+    align_FT30 = new cv::Point3d*[img_al_h];
+    for (int i = 0; i < img_al_h; i++)
+    {
+      align_FT30[i] = new cv::Point3d[img_al_w];
+    }
+    ReadDistanceFromJson(ft30_json, align_FT30, img_al_h, img_al_w);
+
   }
 }
 
@@ -713,7 +723,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
     obstacle_l = 2.5; /*obstacle_w = 2.5;*/
   }                   // obstacle_l = 7
 
-  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120 ||
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_far_30 ||
       cam_id == camera::id::back_top_120)
   {
     std::vector<int> points_src = { class_id, x1, x2, y2 };
@@ -728,7 +738,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
   p3 = GetPointDist(x2, y2, cam_id);
   p3.x = p0.x;
 
-  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_close_120)
+  if (cam_id == camera::id::front_bottom_60 || cam_id == camera::id::front_top_far_30)
   {
     /// Camera Perspective   ///  Spec view
     ///   p5------p6         ///   p5------p6
@@ -804,6 +814,7 @@ msgs::BoxPoint DistanceEstimation::Get3dBBox(int x1, int y1, int x2, int y2, int
 
   return point8;
 }
+
 msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 {
   msgs::PointXYZ p0;
@@ -825,6 +836,17 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
       p0.x = align_FC60[x_loc][y_loc].x / 100;
       p0.y = align_FC60[x_loc][y_loc].y / 100;
       p0.z = align_FC60[x_loc][y_loc].z / 100;
+      return p0;
+    }
+
+    if (cam_id == camera::id::front_top_far_30)
+    {
+      y_loc = (int)((float)y_loc / img_w * img_al_w);
+      x_loc = (int)((float)x_loc / img_h * img_al_h);
+
+      p0.x = align_FT30[x_loc][y_loc].x / 100;
+      p0.y = align_FT30[x_loc][y_loc].y / 100;
+      p0.z = align_FT30[x_loc][y_loc].z / 100;
       return p0;
     }
   }
@@ -855,3 +877,64 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 
   return p0;
 }
+
+std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* box)
+{
+  std::vector<ITRI_Bbox> &box2 = *box;
+  for (auto const& box1 : *box)
+  {
+    for (uint i = 0; i < box2.size(); i++)
+    {
+      int status = 0;
+      if(box1.x1 == box2[i].x1 && box1.y1 == box2[i].y1)
+      {
+        continue;
+      }
+      
+      // status 1: One of the box is fully inside another box.
+      // status 2: Box's left bottom point is in another box.
+      // status 3: Box's right bottom point is in another box.
+
+
+      if(box1.x1 < box2[i].x1 && box1.y1 < box2[i].y1 && box1.x2 > box2[i].x2 && box1.y2 > box2[i].y2)
+      {
+        status = 1;
+      }
+      else if(box1.x1 < box2[i].x1 && box1.x2 > box2[i].x1 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 && box1.x2 < box2[i].x2)
+      {
+        status = 2;
+      }
+      else if(box1.x1 < box2[i].x2 && box1.x2 > box2[i].x2 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 && box1.x1 > box2[i].x1)
+      {
+        status = 3;        
+      }
+
+      if(status == 2)
+      {
+        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box2[i].x2 - box1.x2) * (box2[i].y2 - box2[i].y1))
+        {
+          box2[i].y2 = box1.y1;
+        }
+        else
+        {
+          box2[i].x1 = box1.x2;
+        }
+      }
+      else if(status == 3)
+      {
+        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box1.x1 - box2[i].x1) * (box2[i].y2 - box2[i].y1))
+        {
+          box2[i].y2 = box1.y1;
+        }
+        else
+        {
+          box2[i].x2 = box1.x1;
+        }
+      }    
+    }
+  }  
+  std::vector<ITRI_Bbox>* out = &box2;
+  
+  return out;
+}
+

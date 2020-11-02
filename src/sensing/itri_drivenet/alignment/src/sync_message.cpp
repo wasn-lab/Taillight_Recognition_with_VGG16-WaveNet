@@ -4,7 +4,7 @@ cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>&
                                      const ros::Duration& duration_time)
 {
   ros::Time begin_time = ros::Time(0);
-  if((target_time.sec - duration_time.sec) > 0)
+  if ((target_time.sec - duration_time.sec) > 0)
   {
     begin_time = target_time - duration_time;
   }
@@ -48,7 +48,7 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
                             const ros::Duration& duration_time)
 {
   ros::Time begin_time = ros::Time(0);
-  if((target_time.sec - duration_time.sec) > 0)
+  if ((target_time.sec - duration_time.sec) > 0)
   {
     begin_time = target_time - duration_time;
   }
@@ -78,11 +78,13 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
     }
     else
     {
+      lidar_ptr = nullptr;
       std::cout << "Not found the same timestamp in lidar buffer." << std::endl;
     }
   }
   else
   {
+    lidar_ptr = nullptr;
     std::cout << "Not found any message in lidar buffer." << std::endl;
   }
   return lidar_ptr;
@@ -92,7 +94,7 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
                             ros::Time target_time, const ros::Duration& duration_time)
 {
   ros::Time begin_time = ros::Time(0);
-  if((target_time.sec - duration_time.sec) > 0)
+  if ((target_time.sec - duration_time.sec) > 0)
   {
     begin_time = target_time - duration_time;
   }
@@ -123,11 +125,13 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
     else
     {
       std::cout << "Not found the same timestamp in lidar buffer." << std::endl;
+      lidar_ptr = nullptr;
     }
   }
   else
   {
     std::cout << "Not found any message in lidar buffer." << std::endl;
+    lidar_ptr = nullptr;
   }
   return lidar_ptr;
 }

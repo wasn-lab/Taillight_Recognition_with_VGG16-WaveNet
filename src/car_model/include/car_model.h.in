@@ -4,6 +4,7 @@
 #cmakedefine CAR_MODEL "@CAR_MODEL@"
 #cmakedefine01 CAR_MODEL_IS_B1
 #cmakedefine01 CAR_MODEL_IS_B1_V2
+#cmakedefine01 CAR_MODEL_IS_B1_V3
 #cmakedefine01 CAR_MODEL_IS_C
 #cmakedefine01 CAR_MODEL_IS_HINO
 #cmakedefine01 CAR_MODEL_IS_OMNIBUS
@@ -19,6 +20,7 @@ enum Id
 {
   B1,
   B1_V2,
+  B1_V3,
   Hino,
   Omnibus,
   Num,

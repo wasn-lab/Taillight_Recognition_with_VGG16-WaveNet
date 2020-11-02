@@ -57,6 +57,8 @@ void callback_SSN(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 
     RosModuleB1::Send_LidarResults(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     RosModuleB1::Send_LidarResults_v2(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
+    RosModuleB1::Send_LidarResults_SB(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
+    
     RosModuleB1::Send_LidarResultsRVIZ(cur_cluster, cur_cluster_num);
     RosModuleB1::Send_LidarResultsRVIZ_abb(cur_cluster, cur_cluster_num);
     RosModuleB1::Send_LidarResultsRVIZ_obb(cur_cluster, cur_cluster_num);
@@ -66,6 +68,8 @@ void callback_SSN(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
     RosModuleB1::Send_LidarResultsEdge(cur_cluster, cur_cluster_num, rosTime, msg->header.frame_id);
     // auto end_time = chrono::high_resolution_clock::now();
     // cout << "[EDGE]: " << chrono::duration_cast<chrono::microseconds>(end_time - start_time).count() << endl;
+    RosModuleB1::Send_LidarResultsHeartBeat();
+    RosModuleB1::Send_LidarResultsGridHeartBeat();
     delete[] cur_cluster;
 
     if (debug_output)

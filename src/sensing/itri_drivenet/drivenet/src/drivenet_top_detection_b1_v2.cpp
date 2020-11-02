@@ -1,8 +1,9 @@
-#include <iostream>
 #include <pthread.h>
 #include <thread>
 #include <future>
 #include <mutex>
+#include <std_msgs/Empty.h>
+
 
 #include "drivenet/drivenet_b1_v2.h"
 
@@ -47,6 +48,8 @@ std::mutex g_display_mutex;
 
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
 // // grid map
@@ -198,6 +201,8 @@ void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int c
   sensor_msgs::ImagePtr img_msg;
   img_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
   g_img_pubs[cam_order].publish(img_msg);
+  std_msgs::Empty empty_msg;
+  g_heartbeat_pubs[cam_order].publish(empty_msg);
 }
 
 int main(int argc, char** argv)
@@ -242,6 +247,8 @@ int main(int argc, char** argv)
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
+    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -389,7 +396,7 @@ void* run_yolo(void* /*unused*/)
   cv::Mat m_display_tmp;
   cv::Scalar class_color;
 
-  ros::Rate r(30);
+  ros::Rate r(10);
   while (ros::ok() && !g_is_infer_stop)
   {
     bool is_data_vaild = true;
@@ -427,6 +434,13 @@ void* run_yolo(void* /*unused*/)
     mat_order_tmp = g_mat_order;
     dist_cols_tmp = g_dist_cols;
     dist_rows_tmp = g_dist_rows;
+
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
+      std_msgs::Header header_msg;
+      header_msg = headers_tmp[cam_order];
+      g_time_info_pubs[cam_order].publish(header_msg);
+    }
 
     // reset data
     reset_data();

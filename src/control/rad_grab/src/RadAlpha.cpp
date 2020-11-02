@@ -27,20 +27,15 @@ using namespace std;
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
 void turnRadarOn(int s, int type);
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
+void frontRadFilter(msgs::Rad* rad);
 
-vector<double> Alpha_Front_Center_Param;
-vector<double> Alpha_Front_Left_Param;
-vector<double> Alpha_Front_Right_Param;
-vector<double> Alpha_Side_Left_Param;
-vector<double> Alpha_Side_Right_Param;
-vector<double> Alpha_Back_Left_Param;
-vector<double> Alpha_Back_Right_Param;
-vector<double> Zero_Param(6, 0.0);
-
+int print_count = 100;
 int debug_message = 0;
 
 struct can_frame current_frame;
 ros::Publisher RadPub;
+int filter_distance = 6;
+int filter_min = 4;
 
 int main(int argc, char** argv)
 {
@@ -114,6 +109,7 @@ int main(int argc, char** argv)
 
   if (current_frame.can_id == 0xC1)
   {
+    // the front radar has different enable code
     turnRadarOn(s, 1);
   }
   else
@@ -123,23 +119,18 @@ int main(int argc, char** argv)
 
   int err_count = 0;
   msgs::Rad rad;
+  rad.radHeader.frame_id = "radar";
 
   while (ros::ok())
   {
     rad.radHeader.stamp = ros::Time::now();
     rad.radHeader.seq = seq++;
-    rad.radHeader.frame_id = "radar";
     count = 0;
     err_count = 0;
     msgs::PointXYZV point;
     while (1)
     {
       nbytes = read(s, &can_frame_tmp, sizeof(struct can_frame));
-      // printf("[%04X] %d %02X %02X %02X %02X %02X %02X %02X %02X \n", can_frame_tmp.can_id, can_frame_tmp.can_dlc,
-      //        can_frame_tmp.data[0], can_frame_tmp.data[1], can_frame_tmp.data[2], can_frame_tmp.data[3],
-      //        can_frame_tmp.data[4], can_frame_tmp.data[5], can_frame_tmp.data[6], can_frame_tmp.data[7]);
-
-      // printf("[%04X] [%04X] \n", can_frame_tmp.can_id, current_frame.can_id);
 
       if (can_frame_tmp.can_id == current_frame.can_id)
       {
@@ -149,7 +140,12 @@ int main(int argc, char** argv)
         // 0:Have the next data, 1:Last data, 2:No object, 3:Reserved
         if (state > 0)
         {
+          if (current_frame.can_id == 0xC1)
+          {
+            frontRadFilter(&rad);
+          }
           RadPub.publish(rad);
+          count = (int)rad.radPoint.size();
           rad.radPoint.clear();
           err_count = 0;
           break;
@@ -157,7 +153,7 @@ int main(int argc, char** argv)
       }
       else
       {
-        cout << "================== error ====================\n" << endl;
+        cout << "================== error ====================" << endl;
         err_count++;
         break;
       }
@@ -166,9 +162,17 @@ int main(int argc, char** argv)
     {
       ros::shutdown();
     }
+
+    print_count++;
+    if (print_count > 60 && !debug_message)
+    {
+      printf("========= alpha [%04X] count : %d\n", can_frame_tmp.can_id, count);
+      print_count = 0;
+    }
+
     if (debug_message)
     {
-      printf("[%04X] **********  count = %d  **********\n", can_frame_tmp.can_id, count);
+      printf("========= alpha [%04X] count : %d\n", can_frame_tmp.can_id, count);
     }
     ros::spinOnce();
     loop_rate.sleep();
@@ -179,36 +183,12 @@ int main(int argc, char** argv)
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
-  if (!ros::param::has("/Alpha_Front_Center_Param"))
-  {
-    nh.setParam("Alpha_Front_Center_Param", Zero_Param);
-    nh.setParam("Alpha_Front_Left_Param", Zero_Param);
-    nh.setParam("Alpha_Front_Right_Param", Zero_Param);
-    nh.setParam("Alpha_Side_Left_Param", Zero_Param);
-    nh.setParam("Alpha_Side_Right_Param", Zero_Param);
-    nh.setParam("Alpha_Back_Left_Param", Zero_Param);
-    nh.setParam("Alpha_Back_Right_Param", Zero_Param);
-    cout << "NO STITCHING PARAMETER INPUT!" << endl;
-    cout << "Now is using [0,0,0,0,0,0] as stitching parameter!" << endl;
-  }
-  else
-  {
-    nh.param("/Alpha_Front_Center_Param", Alpha_Front_Center_Param, vector<double>());
-    nh.param("/Alpha_Front_Left_Param", Alpha_Front_Center_Param, vector<double>());
-    nh.param("/Alpha_Front_Right_Param", Alpha_Front_Center_Param, vector<double>());
-    nh.param("/Alpha_Side_Left_Param", Alpha_Front_Center_Param, vector<double>());
-    nh.param("/Alpha_Side_Right_Param", Alpha_Front_Center_Param, vector<double>());
-    nh.param("/Alpha_Back_Left_Param", Alpha_Front_Center_Param, vector<double>());
-    nh.param("/Alpha_Back_Right_Param", Alpha_Front_Center_Param, vector<double>());
-    cout << "STITCHING PARAMETER FIND!" << endl;
-  }
-
   nh.param("/debug_message", debug_message, 0);
 
   int filter_id = 0;
   nh.getParam("filter_id", filter_id);
 
-  cout << "  ============id============  " << filter_id << endl;
+  cout << "============id============  " << filter_id << endl;
 
   switch (filter_id)
   {
@@ -264,7 +244,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 void turnRadarOn(int s, int type)
 {
   cout << "============ radar on ============  " << current_frame.can_id << endl;
-  // ============ turn alpha radar on ===============
+
   struct can_frame s_frame;
   s_frame.can_id = current_frame.can_id;
   s_frame.can_dlc = 8;
@@ -301,6 +281,38 @@ void turnRadarOn(int s, int type)
   if (s_result != sizeof(s_frame))
   {
     printf("Error\n!");
+  }
+}
+
+void frontRadFilter(msgs::Rad* rad)
+{
+  vector<msgs::PointXYZV> temp;
+  float closed_object = 200;
+
+  for (int i = 0; i < rad->radPoint.size(); i++)
+  {
+    if (rad->radPoint[i].y < closed_object)
+    {
+      if (rad->radPoint[i].y > filter_min)
+      {
+        closed_object = rad->radPoint[i].y;
+      }
+    }
+  }
+
+  for (int i = 0; i < rad->radPoint.size(); i++)
+  {
+    if (rad->radPoint[i].y < closed_object + filter_distance)
+    {
+      temp.push_back(rad->radPoint[i]);
+    }
+  }
+
+  rad->radPoint.clear();
+
+  for (int i = 0; i < temp.size(); i++)
+  {
+    rad->radPoint.push_back(temp[i]);
   }
 }
 
@@ -375,11 +387,14 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 
   p = (((frame.data[4] & 0x07) << 2) | ((frame.data[5] & 0xc0) >> 6)) * 2;
 
-  // std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
-  //           << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+  if (debug_message)
+  {
+    std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
+              << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+  }
 
   // fill data to msg
-  point->x = x;
+  point->x = -x;
   point->y = y;
   point->z = -1;
   point->speed = vy;

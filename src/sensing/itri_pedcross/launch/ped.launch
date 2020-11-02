@@ -2,11 +2,11 @@
 
 <launch>
   <!-- pedcross input source -->
-  <!-- 0: camera front center -->
-  <!-- 1: camera front left -->
-  <!-- 2: camera front right -->
-  <!-- 3: tracking with camera front center -->
-  <!-- 4: tracking with front/left/right cameras -->
+  <!-- 0: N/A -->
+  <!-- 1: N/A -->
+  <!-- 2: N/A -->
+  <!-- 3: N/A -->
+  <!-- 4: tracking with front/left/right/fov30 cameras -->
   <arg name="input_source" default="4" />
 
   <!-- Set max distance(m) to predict pedestrians -->
@@ -25,14 +25,24 @@
   <!-- false: not show probability -->
   <arg name="show_probability" default="True" />
 
+  <!-- Set C/NC threshold (in percentage) -->
+  <arg name="crossing_threshold" default="55" />
+
+  <!-- Set skip frame nuber -->
+  <arg name="skip_frame_number" default="1" />
+
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
-  <node pkg="itri_pedcross" type="hrnet.py" name="hrnet" cwd="node" output="screen" />
-  <node pkg="itri_pedcross" type="pedestrian_subcriber.py" name="pedestrian_subcriber" cwd="node" output="screen" />
+  <node pkg="itri_pedcross" type="skip_frame_server.py" name="skip_frame_server" cwd="node" output="screen">
+    <param name="skip_frame_number" value="$(arg skip_frame_number)" />
+  </node>
+  <node pkg="itri_pedcross" type="pedestrian_subscriber.py" name="pedestrian_subscriber" cwd="node" output="screen" />
+  <node pkg="itri_pedcross" type="alert_collector" name="alert_collector" cwd="node" output="screen" />
   <node pkg="itri_pedcross" type="itri_pedcross" name="pedestrian_event" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="max_distance" value="$(arg max_distance)" />
     <param name="danger_zone_distance" value="$(arg danger_zone_distance)" />
     <param name="use_2d_for_alarm" value="$(arg use_2d_for_alarm)" />
     <param name="show_probability" value="$(arg show_probability)" />
+    <param name="crossing_threshold" value="$(arg crossing_threshold)" />
   </node>
 </launch>

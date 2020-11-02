@@ -377,8 +377,8 @@ int main(int argc, char **argv)
     Publisher[3] = n.advertise<msgs::Flag_Info>("Flag_Info04", 1);
     Publisher[4] = n.advertise<msgs::Flag_Info>("Flag_Info05", 1);
     Publisher[5] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
-    Publisher[6] = n.advertise<msgs::Flag_Info>("/Ego_speed/kph", 1);
-    Publisher[7] = n.advertise<msgs::Flag_Info>("/Ego_speed/ms", 1);
+    Publisher[6] = n.advertise<std_msgs::Float64>("/Ego_speed/kph", 1);
+    Publisher[7] = n.advertise<std_msgs::Float64>("/Ego_speed/ms", 1);
 
     ros::Publisher Publisher_Backend;
     Publisher_Backend = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
