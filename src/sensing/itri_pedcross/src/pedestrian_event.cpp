@@ -720,12 +720,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             // if there is data in skeleton buffer but calculated_skeleton is already empty
             if (skeleton_buffer.at(skeleton_index).calculated_skeleton_.empty())
             {
-              if (!skeleton_buffer.at(skeleton_index).stored_skeleton_.empty())
-              {
-                skeleton_buffer.at(skeleton_index)
-                    .stored_skeleton_.erase(skeleton_buffer.at(skeleton_index).stored_skeleton_.begin());
-              }
-
               keypoints = get_openpose_keypoint(croped_image);
 
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
@@ -792,6 +786,11 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   std::vector<cv::Point2f>().swap(back_predict_keypoints);
                 }
               }
+              if (skeleton_buffer.at(skeleton_index).stored_skeleton_.size() > frame_num_)
+              {
+                skeleton_buffer.at(skeleton_index)
+                    .stored_skeleton_.erase(skeleton_buffer.at(skeleton_index).stored_skeleton_.begin());
+              }
             }
             else  // there is data in skeleton_buffer and still has calculated_skeleton
             {
@@ -842,6 +841,25 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             skeleton_buffer.at(skeleton_index).data_bbox_.erase(skeleton_buffer.at(skeleton_index).data_bbox_.begin());
           }
 
+          // // do optical flow
+          // if (skeleton_buffer.at(skeleton_index).image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).image_for_optical_flow_.rows != 0)
+          // {
+          //   cv::resize(skeleton_buffer.at(skeleton_index).image_for_optical_flow_, skeleton_buffer.at(skeleton_index).image_for_optical_flow_, cv::Size(croped_image.cols, croped_image.rows));
+          //   std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
+          //   cv::imwrite(image_filename + "_pre.jpg", skeleton_buffer.at(skeleton_index).image_for_optical_flow_);
+          //   cv::imwrite(image_filename + "_now.jpg", croped_image);
+          // }
+          // if (skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.rows != 0)
+          // {
+          //   cv::resize(skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_, skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_, cv::Size(matrix.cols, matrix.rows));
+          //   std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
+          //   cv::imwrite(image_filename + "_full_pre.jpg", skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_);
+          //   cv::imwrite(image_filename + "_full_now.jpg", matrix);
+          // }
+
+          // skeleton_buffer.at(skeleton_index).image_for_optical_flow_ = croped_image;
+          // skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_ = matrix;
+
           inference_stop = ros::Time::now();
 
           bool has_keypoint = false;
@@ -891,13 +909,13 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             if (tf_client_.call(srv_pedcorss_tf))
             {
               obj_pub.crossProbability = srv_pedcorss_tf.response.result_0;
-              std::cout << "predict (LSTM): " << obj_pub.crossProbability << srv_pedcorss_tf.response.result_0 << std::endl;
+              // std::cout << "predict (LSTM): " << obj_pub.crossProbability << srv_pedcorss_tf.response.result_0 << std::endl;
             }
             else
             {
               obj_pub.crossProbability = crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox_,
                                                         skeleton_buffer.at(skeleton_index).stored_skeleton_);
-              std::cout << "predict (RF): " << obj_pub.crossProbability << std::endl;
+              // std::cout << "predict (RF): " << obj_pub.crossProbability << std::endl;
             }
           }
           clean_old_skeleton_buffer(skeleton_buffer, msg->header.stamp);

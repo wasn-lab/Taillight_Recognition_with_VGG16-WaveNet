@@ -16,4 +16,5 @@ public:
   std::vector<cv::Point2f> history_position_;
 
   cv::Mat image_for_optical_flow_;
+  cv::Mat full_image_for_optical_flow_;
 };
