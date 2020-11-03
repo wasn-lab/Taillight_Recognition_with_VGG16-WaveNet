@@ -5,9 +5,9 @@ import rospkg
 import rospy
 from std_msgs.msg import Empty
 
-class FakeHeartbeatGenerator():
+class MockHeartbeatGenerator():
     def __init__(self, hearbeat_ini):
-        rospy.init_node("FakeHeartbeatGenerator")
+        rospy.init_node("MockHeartbeatGenerator")
         cfg = configparser.ConfigParser()
         cfg.read(hearbeat_ini)
         self.publishers = []
@@ -35,7 +35,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--heartbeat-ini", default=os.path.join(src_dir, "heartbeat.ini"))
     args = parser.parse_args()
-    gnr = FakeHeartbeatGenerator(args.heartbeat_ini)
+    gnr = MockHeartbeatGenerator(args.heartbeat_ini)
     gnr.run()
 
 
