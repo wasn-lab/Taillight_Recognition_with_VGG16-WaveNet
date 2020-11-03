@@ -227,28 +227,18 @@ void getPointCloudInBoxFOV(
     obj_tmp.header = objects.header;
     int pixel_index = 0;
 
-    // get the 2d box
-    std::vector<PixelPosition> bbox_positions(2);
-    bbox_positions[0].u = obj_tmp.camInfo.u;
-    bbox_positions[0].v = obj_tmp.camInfo.v;
-    bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-    bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-    transferPixelScaling(bbox_positions);
-
-    for (const auto& pixel_position : cam_pixels_cam)
+    for(size_t i = 0; i < obj_tmp.camInfo.size(); i++)
     {
-      // get points in the 2d box
-      if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-          pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-      {
-        // get the 2d box
-        std::vector<PixelPosition> bbox_positions(2);
-        bbox_positions[0].u = obj_tmp.camInfo[i].u;
-        bbox_positions[0].v = obj_tmp.camInfo[i].v;
-        bbox_positions[1].u = obj_tmp.camInfo[i].u + obj_tmp.camInfo[i].width;
-        bbox_positions[1].v = obj_tmp.camInfo[i].v + obj_tmp.camInfo[i].height;
-        transferPixelScaling(bbox_positions);
+      // get the 2d box
+      std::vector<PixelPosition> bbox_positions(2);
+      bbox_positions[0].u = obj_tmp.camInfo[i].u;
+      bbox_positions[0].v = obj_tmp.camInfo[i].v;
+      bbox_positions[1].u = obj_tmp.camInfo[i].u + obj_tmp.camInfo[i].width;
+      bbox_positions[1].v = obj_tmp.camInfo[i].v + obj_tmp.camInfo[i].height;
+      transferPixelScaling(bbox_positions);
 
+      for (const auto& pixel_position : cam_pixels_cam)
+      {
         // get points in the 2d box
         if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
             pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
@@ -374,28 +364,18 @@ void getPointCloudInBoxFOV(const msgs::DetectedObjectArray& objects, msgs::Detec
     obj_tmp.header = objects.header;
     int pixel_index = 0;
 
-    // get the 2d box
-    std::vector<PixelPosition> bbox_positions(2);
-    bbox_positions[0].u = obj_tmp.camInfo.u;
-    bbox_positions[0].v = obj_tmp.camInfo.v;
-    bbox_positions[1].u = obj_tmp.camInfo.u + obj_tmp.camInfo.width;
-    bbox_positions[1].v = obj_tmp.camInfo.v + obj_tmp.camInfo.height;
-    transferPixelScaling(bbox_positions);
-
-    for (const auto& pixel_position : cam_pixels_cam)
+    for(size_t i = 0; i < obj_tmp.camInfo.size(); i++)
     {
-      // get points in the 2d box
-      if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
-          pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
-      {
-        // get the 2d box
-        std::vector<PixelPosition> bbox_positions(2);
-        bbox_positions[0].u = obj_tmp.camInfo[i].u;
-        bbox_positions[0].v = obj_tmp.camInfo[i].v;
-        bbox_positions[1].u = obj_tmp.camInfo[i].u + obj_tmp.camInfo[i].width;
-        bbox_positions[1].v = obj_tmp.camInfo[i].v + obj_tmp.camInfo[i].height;
-        transferPixelScaling(bbox_positions);
+      // get the 2d box
+      std::vector<PixelPosition> bbox_positions(2);
+      bbox_positions[0].u = obj_tmp.camInfo[i].u;
+      bbox_positions[0].v = obj_tmp.camInfo[i].v;
+      bbox_positions[1].u = obj_tmp.camInfo[i].u + obj_tmp.camInfo[i].width;
+      bbox_positions[1].v = obj_tmp.camInfo[i].v + obj_tmp.camInfo[i].height;
+      transferPixelScaling(bbox_positions);
 
+      for (const auto& pixel_position : cam_pixels_cam)
+      {
         // get points in the 2d box
         if (pixel_position.u >= bbox_positions[0].u && pixel_position.v >= bbox_positions[0].v &&
             pixel_position.u <= bbox_positions[1].u && pixel_position.v <= bbox_positions[1].v)
