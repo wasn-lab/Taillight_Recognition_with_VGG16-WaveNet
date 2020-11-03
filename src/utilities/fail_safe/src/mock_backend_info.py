@@ -15,7 +15,7 @@ class MockBackendInfoGenerator():
         cnt = 0
         while not rospy.is_shutdown():
             if cnt == 0:
-                rospy.logwarn("publish fake backend info")
+                rospy.logwarn("publish mock /Backend/Info")
             cnt += 1
             if cnt == 100:
                 cnt = 0
