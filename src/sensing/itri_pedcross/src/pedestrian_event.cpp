@@ -835,8 +835,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           bbox.emplace_back(obj.camInfo[0].v);
           bbox.emplace_back(obj.camInfo[0].u + obj.camInfo[0].width);
           bbox.emplace_back(obj.camInfo[0].v + obj.camInfo[0].height);
-          skeleton_buffer.at(skeleton_index).data_bbox.emplace_back(bbox);
-          if (skeleton_buffer.at(skeleton_index).data_bbox.size() > frame_num_)
+          skeleton_buffer.at(skeleton_index).data_bbox_.emplace_back(bbox);
+          if (skeleton_buffer.at(skeleton_index).data_bbox_.size() > frame_num_)
           {
             skeleton_buffer.at(skeleton_index).data_bbox_.erase(skeleton_buffer.at(skeleton_index).data_bbox_.begin());
           }
