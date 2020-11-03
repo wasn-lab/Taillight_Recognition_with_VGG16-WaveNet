@@ -30,14 +30,6 @@ class MockCtrlInfo03Generator():
 
 def main():
     parser = argparse.ArgumentParser()
-    # gross voltage:
-    #    > 355: OK
-    #    355 ~ 350: WARN, need to recharge
-    #    < 350: FATAL, the car has to stop
-    # lowest_voltage:
-    #    > 3.25: OK
-    #    3.25 ~ 3.2: WARN, need to recharge
-    #    < 3.2: FATAL, the car has to stop
     parser.add_argument("--enable-aeb", action="store_true")
     parser.add_argument("--enable-acc", action="store_true")
     parser.add_argument("--enable-xbywire", action="store_true")
