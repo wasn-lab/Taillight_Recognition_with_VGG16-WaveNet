@@ -862,7 +862,7 @@ void getSyncLidarCameraData()
   bool is_lidar_update = false;
   bool is_lidarall_nonground_update = false;
   bool is_lidar_ssn_update = false;
-  bool use_system_time = true;
+  bool use_system_time = false;
   std::vector<std::vector<ros::Time>> cam_times_tmp(g_cam_ids.size());
   std::vector<ros::Time> lidarall_times_tmp;
   std::vector<ros::Time> lidarall_nonground_times_tmp;
