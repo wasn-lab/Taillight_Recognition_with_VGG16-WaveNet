@@ -3,7 +3,7 @@ import rospy
 from msgs.msg import Flag_Info
 
 class MockCtrlInfo03Generator():
-    """Use to generate fake backend info, esp for battery info"""
+    """Use to generate fake ctrl_info03"""
     def __init__(self, enable_aeb, enable_acc, enable_xbywire, fps):
         rospy.init_node("MockCtrlInfo03Generator")
         self.enable_aeb = enable_aeb

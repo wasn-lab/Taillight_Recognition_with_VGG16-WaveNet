@@ -3,7 +3,7 @@ import rospy
 from std_msgs.msg import Int8MultiArray
 
 class MockControlCheckerGenerator():
-    """Use to generate fake backend info, esp for battery info"""
+    """Use to generate fake control checker message"""
     def __init__(self, enable_can, fps):
         rospy.init_node("MockControlCheckerGenerator")
         self.enable_can = enable_can
