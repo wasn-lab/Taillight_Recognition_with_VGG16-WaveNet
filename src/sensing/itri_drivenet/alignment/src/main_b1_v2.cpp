@@ -119,6 +119,7 @@ pcl::PointCloud<pcl::PointXYZIL>::Ptr g_lidar_ssn_ptr(new pcl::PointCloud<pcl::P
 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> g_cams_points_ptr(g_cam_ids.size());
 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> g_cams_bbox_points_ptr(g_cam_ids.size());
 std::vector<pcl::visualization::Camera> g_cam;
+ros::Time g_lidar_header_time;
 
 /// object
 ros::Publisher g_object_pub;
@@ -458,12 +459,15 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 
 void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
                       std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
-                      std_msgs::Header msg_header)
+                      ros::Time ros_time)
 {
   msgs::DetectedObjectArray msg_det_obj_arr;
   std::vector<msgs::DetectedObject> msg_objs;
   float min_z = -3;
   float max_z = -1.5;
+
+  std_msgs::Header msg_header;
+  msg_header.stamp = ros_time;
 
 #pragma omp parallel for
   for (size_t cam_order = 0; cam_order < cams_bboxs_points.size(); cam_order++)
@@ -1198,6 +1202,7 @@ void runInference()
   std::vector<msgs::DetectedObjectArray> object_arrs(g_cam_ids.size());
   std::vector<msgs::DetectedObjectArray> remaining_object_arrs(g_cam_ids.size());
   std::vector<msgs::DetectedObjectArray> objects_2d_bbox_arrs(g_cam_ids.size());
+  ros::Time lidar_header_time;
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_nonground_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ssn_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -1263,6 +1268,7 @@ void runInference()
       }
 
       /// copy lidar data
+      lidar_header_time = g_lidar_header_time;
       pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
       if (g_use_nonground_data)
       {
@@ -1307,7 +1313,7 @@ void runInference()
         }
 
         /// publish bbox or polygon
-        object_publisher(objects_2d_bbox_arrs, cams_bboxs_points, object_arrs[0].header);
+        object_publisher(objects_2d_bbox_arrs, cams_bboxs_points, lidar_header_time);
 
         if (g_is_display)
         {
