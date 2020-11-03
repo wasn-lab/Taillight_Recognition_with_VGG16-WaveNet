@@ -76,31 +76,62 @@ void detection(int argc, char** argv)
     {
       GlobalVariable::UI_TESTING_BUTTOM = false;
       //double h_camera, double x_p, double y_p, double x_cw, double y_cw, double z_cw
-      camera_angle = projector.calculateCameraAngle(1.29, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2]/10, GlobalVariable::UI_PARA[3]/10,  GlobalVariable::UI_PARA[4]/100);
+      camera_angle = projector.calculateCameraAngle(1.29, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2]/10, GlobalVariable::UI_PARA[3]/10,  GlobalVariable::UI_PARA[4]/100, false);
     }else if (GlobalVariable::UI_PARA[5] > 0 && GlobalVariable::UI_TESTING_BUTTOM == true)
     {
       GlobalVariable::UI_TESTING_BUTTOM = false;
       //double camera_alpha, double camera_beta, double h_camera, double h_r, double x_p, double y_p, double x_r, double y_r, double L_x, double L_y
-      radar_angle = projector.calculateRadarAngle(camera_angle[0], camera_angle[1], 1.29, 0.53, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2]/10, 
-                                                  -GlobalVariable::UI_PARA[3]/10, 0, 0);
-    }
-    if (!camera_angle.empty() && radar_angle.empty()) 
-    {
-      std::vector<int> test = projector.calculatePixel(camera_angle[0], camera_angle[1], 1.29, GlobalVariable::UI_PARA[2]/10, GlobalVariable::UI_PARA[3]/10, GlobalVariable::UI_PARA[4]/100);
-      //std::cout << test[0] << "," << test[1] << std::endl;
-      cv::circle(M_MID_temp, cv::Point(test[0], test[1]), 3, CV_RGB(0, 0, 255), -1, 8, 0);
+      radar_angle = projector.calculateRadarAngle(camera_angle[0], camera_angle[1], 1.29, 0.63, GlobalVariable::UI_PARA[4]/100, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10, GlobalVariable::UI_PARA[2]/10, 
+                                                  GlobalVariable::UI_PARA[3]/10, 0, 0, false);
     }
     if (!radar_angle.empty()) 
     {
-      std::vector<int> test = projector.project(camera_angle[0], camera_angle[1], 1.29, radar_angle[0], radar_angle[1], 0.53, GlobalVariable::UI_PARA[2]/10, -GlobalVariable::UI_PARA[3]/10, 0,0);
-      //std::cout << test[0] << "," << test[1] << std::endl;
-      cv::circle(M_MID_temp, cv::Point(test[0], test[1]), 3, CV_RGB(0, 0, 255), -1, 8, 0);
       for (size_t i = 0; i < radar_points.size(); i++)
       {
-        //std::cout << radar_points[i].x << "," << radar_points[i].y << std::endl;
-        std::vector<int> result = projector.project(camera_angle[0], camera_angle[1], 1.29, radar_angle[0], radar_angle[1], 0.53, radar_points[i].y, -radar_points[i].x, 0,0);
+        std::vector<int> result = projector.project(camera_angle[0], camera_angle[1], 1.29, radar_angle[0], radar_angle[1], 0.63, 0, radar_points[i].y, radar_points[i].x, 0, 0, false);
         cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 3, CV_RGB(0, 255, 0), -1, 8, 0);
-        //std::cout << result[0] << "," << result[1] << std::endl;
+        std::vector<int> result_undist = projector.project(camera_angle[0], camera_angle[1], 1.29, radar_angle[0], radar_angle[1], 0.63, 0, radar_points[i].y, radar_points[i].x, 0, 0, true);
+        cv::circle(M_MID_temp, cv::Point(result_undist[0], result_undist[1]), 3, CV_RGB(0, 0, 255), -1, 8, 0);
+      }
+    }
+    for (size_t i = 0; i < radar_points.size(); i++)
+    {
+      std::vector<int> result = projector.project(1.29, 0.63, radar_points[i].y, radar_points[i].x, 0, 0);
+      if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
+      {
+        int red_int = 0, gre_int = 0, blu_int = 0;
+        double depths_float = (double)radar_points[i].x;
+          if (abs(depths_float) <= 5)
+          {
+            red_int = 255;
+            gre_int = abs(depths_float) * 5;
+            blu_int = 0;
+          }
+          else if (abs(depths_float) <= 10)
+          {
+            red_int = 510 - (abs(depths_float) * 5);
+            gre_int = 255;
+            blu_int = 0;
+          }
+          else if (abs(depths_float) <= 15)
+          {
+            red_int = 0;
+            gre_int = 255;
+            blu_int = (abs(depths_float) - 102) * 5;
+          }
+          else if (abs(depths_float) <= 20)
+          {
+            red_int = 0;
+            gre_int = 1020 - (abs(depths_float) * 5);
+            blu_int = 255;
+          }
+          else
+          {
+            red_int = (abs(depths_float) - 204) * 5;
+            gre_int = 0;
+            blu_int = 255;
+          }
+        cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 4, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
       }
     }
 /*
@@ -155,10 +186,6 @@ void detection(int argc, char** argv)
       }
     }
 */
-    // cv::namedWindow("OPENCV_LIDAR_WINDOW_MID", CV_WINDOW_NORMAL);
-    // cv::resizeWindow("OPENCV_LIDAR_WINDOW_MID", 1280, 720);
-    // cv::imshow("OPENCV_LIDAR_WINDOW_MID", M_MID);
-    // cv::waitKey(1);
     cv::namedWindow("Alignment_view", cv::WINDOW_NORMAL);
     cv::imshow("Alignment_view", M_MID_temp);
     cv::waitKey(1);

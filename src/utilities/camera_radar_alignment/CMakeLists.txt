@@ -70,6 +70,7 @@ QT5_WRAP_CPP            (QT_HEADERS_MOC   ${QT_HEADERS})
 QT5_WRAP_UI             (QT_FORMS_HEADERS ${QT_FORMS})
 ADD_DEFINITIONS         (${QT_DEFINITIONS})
 
+catkin_package()
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})

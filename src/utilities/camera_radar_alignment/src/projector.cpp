@@ -16,7 +16,7 @@ void Projector::init()
   readCameraParameters(file_path);
 }
 
-std::vector<double> Projector::calculateCameraAngle(double h_camera, double x_p, double y_p, double x_cw, double y_cw, double z_cw)
+std::vector<double> Projector::calculateCameraAngle(double h_camera, double x_p, double y_p, double x_cw, double y_cw, double z_cw, bool debug)
 {
   std::vector<double> result(2);
   for (int i = -900; i < 901; i++)
@@ -25,7 +25,7 @@ std::vector<double> Projector::calculateCameraAngle(double h_camera, double x_p,
     {
       double camera_alpha = ((double)i / 10.0) / 180.0 * M_PI;
       double camera_beta = ((double)j / 10.0) / 180.0 * M_PI;
-      std::vector<int> pixel = calculatePixel(camera_alpha, camera_beta, h_camera, x_cw, y_cw, z_cw);
+      std::vector<int> pixel = calculatePixel(camera_alpha, camera_beta, h_camera, x_cw, y_cw, z_cw, debug);
 
       if (pixel[0] == x_p && pixel[1] == y_p) 
       {
@@ -45,7 +45,7 @@ std::vector<double> Projector::calculateCameraAngle(double h_camera, double x_p,
   return result;
 }
 
-std::vector<int> Projector::calculatePixel(double camera_alpha, double camera_beta, double h_camera, double x_cw, double y_cw, double z_cw)
+std::vector<int> Projector::calculatePixel(double camera_alpha, double camera_beta, double h_camera, double x_cw, double y_cw, double z_cw, bool debug)
 {
   double x_c, y_c, z_c, x_c_yaw, z_c_yaw, r_image_x, r_image_y;
   double f_x = cameraMat.at<double>(0, 0);
@@ -60,16 +60,31 @@ std::vector<int> Projector::calculatePixel(double camera_alpha, double camera_be
   //yaw rotation
   x_c_yaw = z_c * sin(camera_beta) + x_c * cos(camera_beta);
   z_c_yaw = z_c * cos(camera_beta) - x_c * sin(camera_beta);
+  if (debug)
+  {
+    r_image_x = (x_c_yaw / z_c_yaw) * f_x + c_x;
+    r_image_y = (y_c / z_c_yaw) * f_y + c_y;
+    result[0] = (int)r_image_x;
+    result[1] = (int)r_image_y;
+    return result;
+  }
+  //distortion
+  double x = x_c_yaw / z_c_yaw;
+  double y = y_c / z_c_yaw;
+  double r = sqrt(pow(x, 2) + pow(y, 2));
+  double k = (1 + pow(r, 2) * distCoeff.at<double>(0, 0) + pow(r, 4) * distCoeff.at<double>(0, 1)); 
+  double x_p = k * x + (2 * distCoeff.at<double>(0, 2) * x * y + distCoeff.at<double>(0, 3) * (pow(r, 2) + 2 * pow(x, 2)));
+  double y_p = k * y + (distCoeff.at<double>(0, 2) * (pow(r, 2) + 2 * pow(y, 2)) + 2 * distCoeff.at<double>(0, 3) * x * y);
   //pixel transform
-  r_image_x = (x_c_yaw / z_c_yaw) * f_x + c_x;
-  r_image_y = (y_c / z_c_yaw) * f_y + c_y;
+  r_image_x = x_p * f_x + c_x;
+  r_image_y = y_p * f_y + c_y;
   result[0] = (int)r_image_x;
   result[1] = (int)r_image_y;
   
   return result;
 }
 
-std::vector<double> Projector::calculateRadarAngle(double camera_alpha, double camera_beta, double h_camera, double h_r, double x_p, double y_p, double x_r, double y_r, double L_x, double L_y)
+std::vector<double> Projector::calculateRadarAngle(double camera_alpha, double camera_beta, double h_camera, double h_r, double h_o, double x_p, double y_p, double x_r, double y_r, double L_x, double L_y, bool debug)
 {
   std::vector<double> result(2);
   for (int i = -900; i < 901; i++)
@@ -78,7 +93,7 @@ std::vector<double> Projector::calculateRadarAngle(double camera_alpha, double c
     {
       double radar_alpha = ((double)i / 10.0) / 180.0 * M_PI;
       double radar_beta = ((double)j / 10.0) / 180.0 * M_PI;
-      std::vector<int> pixel = project(camera_alpha, camera_beta, h_camera, radar_alpha, radar_beta, h_r, x_r, y_r, L_x, L_y);
+      std::vector<int> pixel = project(camera_alpha, camera_beta, h_camera, radar_alpha, radar_beta, h_r, h_o, x_r, y_r, L_x, L_y, debug);
       if (pixel[0] == x_p && pixel[1] == y_p) 
       {
         result[0] = radar_alpha;
@@ -98,23 +113,52 @@ std::vector<double> Projector::calculateRadarAngle(double camera_alpha, double c
 }
 
 
-std::vector<int> Projector::project(double camera_alpha, double camera_beta, double h_camera, double radar_alpha, double radar_beta, double h_r, double x_r, double y_r, double L_x, double L_y)
+std::vector<int> Projector::project(double camera_alpha, double camera_beta, double h_camera, double radar_alpha, double radar_beta, double h_r, double h_o, double x_r, double y_r, double L_x, double L_y, bool debug)
 {
-  double x_rw, y_rw, z_rw, z_r, x_rw_yaw, y_rw_yaw, x_c, y_c, z_c, r_image_x, r_image_y;
-  double f_x = cameraMat.at<double>(0, 0);
-  double f_y = cameraMat.at<double>(1, 1);
-  double c_x = cameraMat.at<double>(0, 2);
-  double c_y = cameraMat.at<double>(1, 2);
+  double x_rw, y_rw, z_rw, z_r, x_rw_yaw, y_rw_yaw;
   //pitch rotation
+/*
   z_r = h_r/cos(radar_alpha);
   x_rw = x_r;
   y_rw = y_r * cos(radar_alpha) + z_r * sin(radar_alpha) + h_r * sin(radar_alpha);
   z_rw = -y_r * sin(radar_alpha) + h_r;
+*/
+  z_r = 0;
+  x_rw = x_r;
+  y_rw = y_r * cos(radar_alpha) - z_r * sin(radar_alpha);
+  if (h_o > 0)
+  {
+    z_rw = y_r * sin(radar_alpha) + z_r * cos(radar_alpha) + h_o;
+  }
+  else
+  {
+    z_rw = y_r * sin(radar_alpha) + z_r * cos(radar_alpha) + h_r;
+  }
   //yaw rotation
   x_rw_yaw = x_rw * cos(radar_beta) - y_rw * sin(radar_beta) - L_x;
-  y_rw_yaw = x_rw * sin(radar_beta) - y_rw * cos(radar_beta) + L_y;
+  y_rw_yaw = x_rw * sin(radar_beta) + y_rw * cos(radar_beta) + L_y;
   //pixel transform
-  std::vector<int> pixel = calculatePixel(camera_alpha, camera_beta, h_camera, x_rw_yaw, y_rw_yaw, z_rw);
+  std::vector<int> pixel = calculatePixel(camera_alpha, camera_beta, h_camera, x_rw_yaw, y_rw_yaw, z_rw, debug);
+  return pixel;
+}
+
+std::vector<int> Projector::project(double h_camera,double h_r,double x_r, double y_r, double L_x, double L_y)
+{
+  std::vector<int> pixel(2);
+  if(!radarMat.empty())
+  {
+    double x_rw, y_rw, z_rw, z_r, x_rw_yaw, y_rw_yaw;
+    //pitch rotation
+    z_r = 0;
+    x_rw = x_r;
+    y_rw = y_r * cos(radarMat.at<double>(0, 2)) - z_r * sin(radarMat.at<double>(0, 2));
+    z_rw = y_r * sin(radarMat.at<double>(0, 2)) + z_r * cos(radarMat.at<double>(0, 2)) + h_r;
+    //yaw rotation
+    x_rw_yaw = x_rw * cos(radarMat.at<double>(0, 3)) - y_rw * sin(radarMat.at<double>(0, 3)) - L_x;
+    y_rw_yaw = x_rw * sin(radarMat.at<double>(0, 3)) + y_rw * cos(radarMat.at<double>(0, 3)) + L_y;
+    //pixel transform
+    pixel = calculatePixel(radarMat.at<double>(0, 0), radarMat.at<double>(0, 1), h_camera, x_rw_yaw, y_rw_yaw, z_rw, false);
+  }
   return pixel;
 }
 
@@ -142,6 +186,7 @@ void Projector::readCameraParameters(const char* yml_filename)
   fs["CameraMat"] >> cameraMat;
   fs["DistCoeff"] >> distCoeff;
   fs["ImageSize"] >> ImageSize;
+  fs["RadarMat"] >> radarMat;
   cv::hconcat(rotationMat, translationVec, projectionMatrix);
   projectionMatrix = cameraMat * projectionMatrix;
 
@@ -154,6 +199,7 @@ void Projector::readCameraParameters(const char* yml_filename)
   std::cout << "rotationVec = " << std::endl << " " << rotationVec << std::endl << std::endl;
   std::cout << "translationVec = " << std::endl << " " << translationVec << std::endl << std::endl;
   std::cout << "Camera Matrix = " << std::endl << " " << cameraMat << std::endl << std::endl;
+  std::cout << "Radar Matrix = " << std::endl << " " << radarMat << std::endl << std::endl;
   std::cout << "Distortion Coefficients = " << std::endl << " " << distCoeff << std::endl << std::endl;
   std::cout << " =============================== " << std::endl;
 
