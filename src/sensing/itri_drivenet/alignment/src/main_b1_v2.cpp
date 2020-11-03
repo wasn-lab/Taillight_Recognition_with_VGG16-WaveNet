@@ -458,8 +458,7 @@ void callback_ssn(const pcl::PointCloud<pcl::PointXYZIL>::ConstPtr& msg)
 }
 
 void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
-                      std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points,
-                      ros::Time ros_time)
+                      std::vector<std::vector<pcl::PointCloud<pcl::PointXYZI>>>& cams_bboxs_points, ros::Time ros_time)
 {
   msgs::DetectedObjectArray msg_det_obj_arr;
   std::vector<msgs::DetectedObject> msg_objs;
@@ -1004,7 +1003,7 @@ void getSyncLidarCameraData()
               {
                 diff_time_lidar = ros::Duration(0);
                 diff_time_lidar_nsec[i] = nsec_max_time.nsec;
-                
+
                 if (lidarall_times_tmp[i] <= sync_lidar_time)
                 {
                   diff_time_lidar = sync_lidar_time - lidarall_times_tmp[i];
@@ -1157,7 +1156,8 @@ void getSyncLidarCameraData()
                 }
                 else
                 {
-                  // std::cout << "sync_lidar_ssn_time: " << sync_lidar_ssn_time.sec << "." << sync_lidar_ssn_time.nsec <<
+                  // std::cout << "sync_lidar_ssn_time: " << sync_lidar_ssn_time.sec << "." << sync_lidar_ssn_time.nsec
+                  // <<
                   // std::endl;
                   pcl::PointCloud<pcl::PointXYZIL>::Ptr lidar_ssn_ptr =
                       getSpecificTimeLidarMessage(g_cache_lidar_ssn, sync_lidar_ssn_time, duration_time);
