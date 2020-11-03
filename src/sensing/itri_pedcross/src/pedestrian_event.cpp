@@ -201,8 +201,8 @@ void PedestrianEvent::display_on_terminal()
         }
         else if (i == 9)
         {
-          line << "danger_zone_distance: " << danger_zone_distance_ << "   use_2d_for_alarm: " 
-               << use_2d_for_alarm_ << "   skip_frame_number: " << skip_frame_number_;
+          line << "danger_zone_distance: " << danger_zone_distance_ << "   use_2d_for_alarm: " << use_2d_for_alarm_
+               << "   skip_frame_number: " << skip_frame_number_;
         }
         else  // i >= 11
         {
@@ -475,6 +475,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     std::vector<msgs::PedObject> ped_objs;
     std::vector<msgs::DetectedObject> alert_objs;
     ped_objs.reserve(msg->objects.end() - msg->objects.begin());
+    alert_objs.reserve(msg->objects.end() - msg->objects.begin());
 
     for (auto const& obj : msg->objects)
     {
@@ -485,10 +486,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         {
           msgs_timestamp = obj.header.stamp;
         }
-        else
+        else if (msg->header.stamp.toSec() > 1)
         {
           msgs_timestamp = msg->header.stamp;
         }
+        else
+        {
+          msgs_timestamp = ros::Time::now();
+        }
+
         std::lock_guard<std::mutex> lk(mu_front_image_cache_);
         std::lock_guard<std::mutex> lk2(mu_fov30_image_cache_);
         std::lock_guard<std::mutex> lk3(mu_left_image_cache_);
@@ -567,7 +573,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         }
 
         // check bounding box is legal
-	      if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
+        if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
         {
           continue;
         }
@@ -626,7 +632,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 
           for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
           {
-            if (skeleton_buffer.at(i).track_id == obj_pub.track.id)
+            if (skeleton_buffer.at(i).track_id_ == obj_pub.track.id)
             {
               skeleton_index = i;
             }
@@ -635,8 +641,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           if (skeleton_index == -1)  // if there is no data in skeleton buffer
           {
             SkeletonBuffer new_person;
-            new_person.timestamp = msg->header.stamp;
-            new_person.track_id = obj_pub.track.id;
+            new_person.timestamp_ = msg->header.stamp;
+            new_person.track_id_ = obj_pub.track.id;
 
             keypoints = get_openpose_keypoint(croped_image);
 
@@ -649,23 +655,24 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             {
               zero_keypoints.emplace_back(zero_keypoint);
             }
-            new_person.stored_skeleton.reserve(frame_num_);
+            new_person.stored_skeleton_.reserve(frame_num_);
             for (unsigned int i = 0; i < frame_num_ - 1; i++)
             {
-              new_person.stored_skeleton.emplace_back(zero_keypoints);
+              new_person.stored_skeleton_.emplace_back(zero_keypoints);
             }
-            new_person.stored_skeleton.emplace_back(keypoints);
+            new_person.stored_skeleton_.emplace_back(keypoints);
 
             msgs::PredictSkeleton srv_skip_frame;
 
-            for (unsigned int i = 0; i < new_person.stored_skeleton.size(); i++)
+            for (unsigned int i = 0; i < new_person.stored_skeleton_.size(); i++)
             {
               msgs::Keypoints msgs_keypoints;
-              for (unsigned int j = 0; j < new_person.stored_skeleton.at(i).size(); j++)
+              msgs_keypoints.keypoint.reserve(new_person.stored_skeleton_.at(i).size());
+              for (unsigned int j = 0; j < new_person.stored_skeleton_.at(i).size(); j++)
               {
                 msgs::Keypoint msgs_keypoint;
-                msgs_keypoint.x = new_person.stored_skeleton.at(i).at(j).x;
-                msgs_keypoint.y = new_person.stored_skeleton.at(i).at(j).y;
+                msgs_keypoint.x = new_person.stored_skeleton_.at(i).at(j).x;
+                msgs_keypoint.y = new_person.stored_skeleton_.at(i).at(j).y;
                 msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
               }
               srv_skip_frame.request.original_keypoints.emplace_back(msgs_keypoints);
@@ -678,6 +685,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
             {
               std::vector<cv::Point2f> predict_keypoints;
+              predict_keypoints.reserve(srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size());
               for (unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
               {
                 cv::Point2f predict_keypoint;
@@ -685,45 +693,48 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 predict_keypoint.y = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).y;
                 predict_keypoints.emplace_back(predict_keypoint);
               }
-              new_person.calculated_skeleton.emplace_back(predict_keypoints);
+              new_person.calculated_skeleton_.emplace_back(predict_keypoints);
               predict_keypoints.clear();
               std::vector<cv::Point2f>().swap(predict_keypoints);
             }
 
             std::vector<float> bbox;
+            bbox.reserve(4);
             bbox.emplace_back(0);
             bbox.emplace_back(0);
             bbox.emplace_back(0);
             bbox.emplace_back(0);
             for (unsigned int i = 0; i < frame_num_ - 1; i++)
             {
-              new_person.data_bbox.emplace_back(bbox);
+              new_person.data_bbox_.emplace_back(bbox);
             }
+            // last bbox will add after.
+            bbox.clear();
+            std::vector<float>().swap(bbox);
 
             skeleton_buffer.emplace_back(new_person);
             skeleton_index = skeleton_buffer.size() - 1;
           }
           else  // if there is data in skeleton buffer
           {
-            if (skeleton_buffer.at(skeleton_index).calculated_skeleton.empty())
+            // if there is data in skeleton buffer but calculated_skeleton is already empty
+            if (skeleton_buffer.at(skeleton_index).calculated_skeleton_.empty())
             {
-              skeleton_buffer.at(skeleton_index)
-                  .stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
-
               keypoints = get_openpose_keypoint(croped_image);
 
-              skeleton_buffer.at(skeleton_index).stored_skeleton.emplace_back(keypoints);
+              skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
 
               msgs::PredictSkeleton srv_skip_frame;
 
-              for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton.size(); i++)
+              for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton_.size(); i++)
               {
                 msgs::Keypoints msgs_keypoints;
-                for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton.at(i).size(); j++)
+                msgs_keypoints.keypoint.reserve(skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size());
+                for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size(); j++)
                 {
                   msgs::Keypoint msgs_keypoint;
-                  msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton.at(i).at(j).x;
-                  msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton.at(i).at(j).y;
+                  msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).x;
+                  msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).y;
                   msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
                 }
                 srv_skip_frame.request.original_keypoints.emplace_back(msgs_keypoints);
@@ -732,15 +743,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               // call skip_frame service
               skip_frame_client_.call(srv_skip_frame);
 
-              skeleton_buffer.at(skeleton_index).calculated_skeleton.clear();
-              std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).calculated_skeleton);
-              skeleton_buffer.at(skeleton_index).stored_skeleton.clear();
-              std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).stored_skeleton);
+              skeleton_buffer.at(skeleton_index).calculated_skeleton_.clear();
+              std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).calculated_skeleton_);
 
               // get predicted_keypoints return from skip_frame service
               for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
               {
                 std::vector<cv::Point2f> predict_keypoints;
+                predict_keypoints.reserve(srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size());
                 for (unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
                 {
                   cv::Point2f predict_keypoint;
@@ -748,39 +758,52 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   predict_keypoint.y = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).y;
                   predict_keypoints.emplace_back(predict_keypoint);
                 }
-                skeleton_buffer.at(skeleton_index).calculated_skeleton.emplace_back(predict_keypoints);
+                skeleton_buffer.at(skeleton_index).calculated_skeleton_.emplace_back(predict_keypoints);
                 predict_keypoints.clear();
                 std::vector<cv::Point2f>().swap(predict_keypoints);
               }
 
-              // get processed_keypoints return from skip_frame service
-              for (unsigned int i = 0; i < srv_skip_frame.response.processed_keypoints.size(); i++)
+              // replace original stored_skeleton only when service return size is correct
+              if (srv_skip_frame.response.processed_keypoints.size() == frame_num_)
               {
-                skeleton_buffer.at(skeleton_index).timestamp = msg->header.stamp;
-                std::vector<cv::Point2f> back_predict_keypoints;
-                for (unsigned int j = 0; j < srv_skip_frame.response.processed_keypoints.at(i).keypoint.size(); j++)
+                skeleton_buffer.at(skeleton_index).stored_skeleton_.clear();
+                std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).stored_skeleton_);
+                // get processed_keypoints return from skip_frame service
+                for (unsigned int i = 0; i < srv_skip_frame.response.processed_keypoints.size(); i++)
                 {
-                  cv::Point2f back_predict_keypoint;
-                  back_predict_keypoint.x = srv_skip_frame.response.processed_keypoints.at(i).keypoint.at(j).x;
-                  back_predict_keypoint.y = srv_skip_frame.response.processed_keypoints.at(i).keypoint.at(j).y;
-                  back_predict_keypoints.emplace_back(back_predict_keypoint);
+                  skeleton_buffer.at(skeleton_index).timestamp_ = msg->header.stamp;
+                  std::vector<cv::Point2f> back_predict_keypoints;
+                  back_predict_keypoints.reserve(srv_skip_frame.response.processed_keypoints.at(i).keypoint.size());
+                  for (unsigned int j = 0; j < srv_skip_frame.response.processed_keypoints.at(i).keypoint.size(); j++)
+                  {
+                    cv::Point2f back_predict_keypoint;
+                    back_predict_keypoint.x = srv_skip_frame.response.processed_keypoints.at(i).keypoint.at(j).x;
+                    back_predict_keypoint.y = srv_skip_frame.response.processed_keypoints.at(i).keypoint.at(j).y;
+                    back_predict_keypoints.emplace_back(back_predict_keypoint);
+                  }
+                  skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(back_predict_keypoints);
+                  back_predict_keypoints.clear();
+                  std::vector<cv::Point2f>().swap(back_predict_keypoints);
                 }
-                skeleton_buffer.at(skeleton_index).stored_skeleton.emplace_back(back_predict_keypoints);
-                back_predict_keypoints.clear();
-                std::vector<cv::Point2f>().swap(back_predict_keypoints);
+              }
+              if (skeleton_buffer.at(skeleton_index).stored_skeleton_.size() > frame_num_)
+              {
+                skeleton_buffer.at(skeleton_index)
+                    .stored_skeleton_.erase(skeleton_buffer.at(skeleton_index).stored_skeleton_.begin());
               }
             }
-            else
+            else  // there is data in skeleton_buffer and still has calculated_skeleton
             {
+              if (!skeleton_buffer.at(skeleton_index).stored_skeleton_.empty())
+              {
+                skeleton_buffer.at(skeleton_index)
+                    .stored_skeleton_.erase(skeleton_buffer.at(skeleton_index).stored_skeleton_.begin());
+              }
+              keypoints = skeleton_buffer.at(skeleton_index).calculated_skeleton_.at(0);
               skeleton_buffer.at(skeleton_index)
-                  .stored_skeleton.erase(skeleton_buffer.at(skeleton_index).stored_skeleton.begin());
-              keypoints = skeleton_buffer.at(skeleton_index).calculated_skeleton.at(0);
-              skeleton_buffer.at(skeleton_index)
-                  .calculated_skeleton.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton.begin());
+                  .calculated_skeleton_.erase(skeleton_buffer.at(skeleton_index).calculated_skeleton_.begin());
 
-              keypoints = skeleton_buffer.at(skeleton_index)
-                              .stored_skeleton.at(skeleton_buffer.at(skeleton_index).stored_skeleton.size() - 1);
-
+              // to fit camInfo u, v, width, height
               double w_h_ratio = (double)obj_pub.camInfo.width / (double)obj_pub.camInfo.height;
               double min_x = 0;
               double min_y = 0;
@@ -803,22 +826,42 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
                 }
               }
-              skeleton_buffer.at(skeleton_index).stored_skeleton.emplace_back(keypoints);
+              skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
             }
           }
           std::vector<float> bbox;
+          bbox.reserve(4);
           bbox.emplace_back(obj.camInfo.u);
           bbox.emplace_back(obj.camInfo.v);
           bbox.emplace_back(obj.camInfo.u + obj.camInfo.width);
           bbox.emplace_back(obj.camInfo.v + obj.camInfo.height);
-          skeleton_buffer.at(skeleton_index).data_bbox.emplace_back(bbox);
-          if (skeleton_buffer.at(skeleton_index).data_bbox.size() > frame_num_)
+          skeleton_buffer.at(skeleton_index).data_bbox_.emplace_back(bbox);
+          if (skeleton_buffer.at(skeleton_index).data_bbox_.size() > frame_num_)
           {
-            skeleton_buffer.at(skeleton_index).data_bbox.erase(skeleton_buffer.at(skeleton_index).data_bbox.begin());
+            skeleton_buffer.at(skeleton_index).data_bbox_.erase(skeleton_buffer.at(skeleton_index).data_bbox_.begin());
           }
 
+          // // do optical flow
+          // if (skeleton_buffer.at(skeleton_index).image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).image_for_optical_flow_.rows != 0)
+          // {
+          //   cv::resize(skeleton_buffer.at(skeleton_index).image_for_optical_flow_, skeleton_buffer.at(skeleton_index).image_for_optical_flow_, cv::Size(croped_image.cols, croped_image.rows));
+          //   std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
+          //   cv::imwrite(image_filename + "_pre.jpg", skeleton_buffer.at(skeleton_index).image_for_optical_flow_);
+          //   cv::imwrite(image_filename + "_now.jpg", croped_image);
+          // }
+          // if (skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.rows != 0)
+          // {
+          //   cv::resize(skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_, skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_, cv::Size(matrix.cols, matrix.rows));
+          //   std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
+          //   cv::imwrite(image_filename + "_full_pre.jpg", skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_);
+          //   cv::imwrite(image_filename + "_full_now.jpg", matrix);
+          // }
+
+          // skeleton_buffer.at(skeleton_index).image_for_optical_flow_ = croped_image;
+          // skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_ = matrix;
+
           inference_stop = ros::Time::now();
-          
+
           bool has_keypoint = false;
           int count_points = 0;
           int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
@@ -836,19 +879,44 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           }
           if (has_keypoint)
           {
-            obj_pub.crossProbability =
-                crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox,
-                                 skeleton_buffer.at(skeleton_index).stored_skeleton, obj.track.id, msg->header.stamp);
-          }
-          else
-          {
-            /*
-                      std::vector<cv::Point2f> no_keypoint;
-                      obj_pub.crossProbability =
-                          crossing_predict(obj.camInfo.u, obj.camInfo.v, obj.camInfo.u + obj.camInfo.width,
-                                            obj.camInfo.v + obj.camInfo.height, no_keypoint, obj.track.id,
-                msg->header.stamp);
-            */
+            msgs::PredictCrossing srv_pedcorss_tf;
+            srv_pedcorss_tf.request.bboxes.reserve(skeleton_buffer.at(skeleton_index).data_bbox_.size());
+            // prepare bboxes for ros service
+            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).data_bbox_.size(); i++)
+            {
+              msgs::CamInfo msgs_bbox;
+              msgs_bbox.u = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(0);
+              msgs_bbox.v = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(1);
+              msgs_bbox.width = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(2) - msgs_bbox.u;
+              msgs_bbox.height = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(3) - msgs_bbox.v;
+              srv_pedcorss_tf.request.bboxes.emplace_back(msgs_bbox);
+            }
+            // prepare keypoints for ros service
+            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton_.size(); i++)
+            {
+              msgs::Keypoints msgs_keypoints;
+              msgs_keypoints.keypoint.reserve(skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size());
+              for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size(); j++)
+              {
+                msgs::Keypoint msgs_keypoint;
+                msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).x;
+                msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).y;
+                msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
+              }
+              srv_pedcorss_tf.request.keypoints.emplace_back(msgs_keypoints);
+            }
+            // automatically switch from LSTM and Random Forest
+            if (tf_client_.call(srv_pedcorss_tf))
+            {
+              obj_pub.crossProbability = srv_pedcorss_tf.response.result_0;
+              // std::cout << "predict (LSTM): " << obj_pub.crossProbability << srv_pedcorss_tf.response.result_0 << std::endl;
+            }
+            else
+            {
+              obj_pub.crossProbability = crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox_,
+                                                        skeleton_buffer.at(skeleton_index).stored_skeleton_);
+              // std::cout << "predict (RF): " << obj_pub.crossProbability << std::endl;
+            }
           }
           clean_old_skeleton_buffer(skeleton_buffer, msg->header.stamp);
         }
@@ -973,7 +1041,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #if DUMP_LOG
                 // print distance
                 // file_ << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
-                    //  << veh_info_.ego_speed << "\n";
+                //  << veh_info_.ego_speed << "\n";
 #endif
 #if PRINT_MESSAGE
                 std::cout << "same, distance: " << distance_from_car << " id: " << obj_pub.track.id
@@ -1031,6 +1099,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           }
         }
 
+        obj_pub.keypoints.reserve(keypoints.size());
         for (auto point : keypoints)
         {
           msgs::Keypoint kp;
@@ -1071,7 +1140,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     // ped_obj_array.raw_image = img_msg;
     ped_obj_array.header = msg->header;
     ped_obj_array.header.frame_id = msg->header.frame_id;
-    ped_obj_array.header.stamp = msgs_timestamp;
+    if (msgs_timestamp.toSec() > 1)
+    {
+      ped_obj_array.header.stamp = msgs_timestamp;
+    }
+    else
+    {
+      ped_obj_array.header.stamp = msg->header.stamp;
+    }
+    
     ped_obj_array.objects.assign(ped_objs.begin(), ped_objs.end());
     if (from_camera == 0)  // front
     {
@@ -1089,7 +1166,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     {
       chatter_pub_fov30_.publish(ped_obj_array);
     }
-    
 
     alert_objs.clear();
     std::vector<msgs::DetectedObject>().swap(alert_objs);
@@ -1099,21 +1175,21 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     matrix2.release();
 
     stop = ros::Time::now();
-    
+
     std::lock_guard<std::mutex> lk(mu_chatter_callback_info_);
     average_inference_time_ = average_inference_time_ * 0.9 + (inference_stop - inference_start).toSec() * 0.1;
     count_++;
     chatter_callback_info_ = "Cost time: " + std::to_string((stop - start).toSec()) +
-                            "(sec) OpenPose inference time: " + std::to_string(average_inference_time_) +
-                            "(sec) Loop: " + std::to_string(count_);
-    
+                             "(sec) OpenPose inference time: " + std::to_string(average_inference_time_) +
+                             "(sec) Loop: " + std::to_string(count_);
+
     std::lock_guard<std::mutex> lk2(mu_delay_from_camera_);
     total_time_ += stop - start;
     delay_from_camera_ = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
 #if DUMP_LOG
     // print inference time
-    file_ << ros::Time::now() << "," << count_peds << "," << (inference_stop - inference_start).toSec() 
-          << "," << delay_from_camera_ << "\n";
+    file_ << ros::Time::now() << "," << count_peds << "," << (inference_stop - inference_start).toSec() << ","
+          << delay_from_camera_ << "\n";
 #endif
 #if PRINT_MESSAGE
     std::cout << "Delay from camera: " << delay_from_camera_ << std::endl;
@@ -1230,7 +1306,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
 
   cv::Mat matrix;
   cv::Mat matrix2;
-  ros::Time msgs_timestamp = ros::Time(0);
+  ros::Time msgs_timestamp = ros::Time::now();
   if (!msg->objects.empty())
   {
     if (msg->objects[0].header.stamp.toSec() > 1)
@@ -1242,7 +1318,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       msgs_timestamp = msg->header.stamp;
     }
   }
-  else
+  else if (msg->header.stamp.toSec() > 1)
   {
     msgs_timestamp = msg->header.stamp;
   }
@@ -1284,6 +1360,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(100, 100, 100), 2);
     }
     std::vector<cv::Point2f> keypoints;
+    keypoints.reserve(obj.keypoints.size());
     int keypoint_number = 0;
     for (auto const& point : obj.keypoints)
     {
@@ -1301,6 +1378,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     // draw keypoints on raw image
     int body_part[17] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 };
     unsigned int body_part_size = sizeof(body_part) / sizeof(*body_part);
+    keypoints.reserve(body_part_size);
     for (unsigned int i = 0; i < body_part_size; i++)
     {
       keypoints.at(body_part[i]).x = keypoints.at(body_part[i]).x * obj.camInfo.height;
@@ -1432,8 +1510,8 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
 
     std::lock_guard<std::mutex> lk(mu_ped_info_);
     ped_info_.insert(ped_info_.begin(), id_print + " " + probability + " x: " + std::to_string((int)obj.bPoint.p0.x) +
-                                          " y: " + std::to_string((int)obj.bPoint.p0.y) +
-                                          " keypoints number: " + std::to_string(keypoint_number));
+                                            " y: " + std::to_string((int)obj.bPoint.p0.y) +
+                                            " keypoints number: " + std::to_string(keypoint_number));
     if (ped_info_.size() > 40)
     {
       ped_info_.erase(ped_info_.end() - 1);
@@ -1480,11 +1558,11 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   bool left_eye = keypoint_is_detected(keypoints.at(16));
   bool right_ear = keypoint_is_detected(keypoints.at(17));
   bool right_eye = keypoint_is_detected(keypoints.at(15));
-  bool face_detection[4] = {right_ear, right_eye, left_eye, left_ear};
+  bool face_detection[4] = { right_ear, right_eye, left_eye, left_ear };
   for (int i = 0; i < 16; i++)
   {
     if (face_detection[0] == direction_table_[i][0] && face_detection[1] == direction_table_[i][1] &&
-    face_detection[2] == direction_table_[i][2] && face_detection[3] == direction_table_[i][3])
+        face_detection[2] == direction_table_[i][2] && face_detection[3] == direction_table_[i][3])
     {
       return direction_table_[i][4];
     }
@@ -1562,12 +1640,13 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
  * cross probability
  */
 float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_array,
-                                        std::vector<std::vector<cv::Point2f>>& keypoint_array, int id, ros::Time time)
+                                        std::vector<std::vector<cv::Point2f>>& keypoint_array)
 {
   try
   {
     // initialize feature
     std::vector<float> feature;
+    feature.reserve(frame_num_ * feature_num_);
 
     for (unsigned int index = 0; index < frame_num_; index++)
     {
@@ -1584,6 +1663,8 @@ float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_ar
         // Get body keypoints we need
         int body_part[13] = { 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14 };
         int body_part_size = sizeof(body_part) / sizeof(*body_part);
+        keypoints_x.reserve(body_part_size);
+        keypoints_y.reserve(body_part_size);
         for (int i = 0; i < body_part_size; i++)
         {
           keypoints_x.insert(keypoints_x.end(), keypoint[body_part[i]].x);
@@ -1779,6 +1860,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
   }
   std::vector<cv::Point2f> route_left_transformed;
   std::vector<cv::Point2f> route_right_transformed;
+  route_left_transformed.reserve(lanelet2_route_left_temp.size());
   for (auto const& obj : lanelet2_route_left_temp)
   {
     cv::Point2f point;
@@ -1786,6 +1868,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
     point.y = obj.y;
     route_left_transformed.push_back(point);
   }
+  route_right_transformed.reserve(lanelet2_route_right_temp.size());
   for (auto const& obj : lanelet2_route_right_temp)
   {
     cv::Point2f point;
@@ -1808,6 +1891,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
   // expand warning zone for left bound
   double expand_range_left = 5;
   std::vector<cv::Point2f> expanded_route_left;
+  expanded_route_left.reserve(route_left_transformed.size() + route_right_transformed.size() + 1);
   for (unsigned int i = 0; i < route_left_transformed.size(); i++)
   {
     if (i == 0)
@@ -1852,6 +1936,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
   // expand warning zone for right bound
   double expand_range_right = 2;
   std::vector<cv::Point2f> expanded_route_right;
+  expanded_route_right.reserve(route_right_transformed.size());
   for (unsigned int i = 0; i < route_right_transformed.size(); i++)
   {
     if (i == 0)
@@ -1909,6 +1994,7 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
 
   geometry_msgs::PolygonStamped polygon_merker;
   polygon_merker.header.frame_id = "map";
+  polygon_merker.polygon.points.reserve(expanded_route_left.size());
   for (auto const& obj : expanded_route_left)
   {
     geometry_msgs::Point32 polygon_point;
@@ -1944,6 +2030,8 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
   double testy = position.y;
   std::vector<double> vertx;
   std::vector<double> verty;
+  vertx.reserve(nvert);
+  verty.reserve(nvert);
   for (auto const& obj : polygon)
   {
     vertx.emplace_back(obj.x);
@@ -1978,7 +2066,7 @@ void PedestrianEvent::clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& ske
 {
   for (unsigned int i = 0; i < skeleton_buffer.size(); i++)
   {
-    if (msg_timestamp - skeleton_buffer.at(i).timestamp > ros::Duration(10))
+    if (msg_timestamp - skeleton_buffer.at(i).timestamp_ > ros::Duration(10))
     {
       skeleton_buffer.erase(skeleton_buffer.begin() + i);
       i--;
@@ -2286,42 +2374,41 @@ int main(int argc, char** argv)
   ped::PedestrianEvent pe;
   tf2_ros::TransformListener tf_listener(pe.tf_buffer_);
   std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
-  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
-                                                                                   "yml"));
+  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml"));
 
   ros::NodeHandle nh1;
   pe.chatter_pub_front_ = nh1.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_bottom_60",
-                                                             1);  // /PedCross/Pedestrians is pub topic
+                                                              1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh2;
   pe.box_pub_front_ =
       nh2.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/front_bottom_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh3;
   pe.chatter_pub_left_ = nh3.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/left_back_60",
-                                                            1);  // /PedCross/Pedestrians is pub topic
+                                                             1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh4;
   pe.box_pub_left_ =
       nh4.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh5;
   pe.chatter_pub_right_ = nh5.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/right_back_60",
-                                                             1);  // /PedCross/Pedestrians is pub topic
+                                                              1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh6;
   pe.box_pub_right_ =
       nh6.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh7;
   pe.alert_pub_front_ = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_bottom_60",
-                                                                1);  // /PedCross/DrawBBox is pub topic
+                                                                 1);  // /PedCross/DrawBBox is pub topic
   pe.alert_pub_left_ =
       nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/left_back_60", 1);  // /PedCross/DrawBBox is pub topic
   pe.alert_pub_right_ =
       nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/right_back_60", 1);  // /PedCross/DrawBBox is pub topic
   pe.alert_pub_fov30_ = nh7.advertise<msgs::DetectedObjectArray>("/PedCross/Alert/front_top_far_30",
-                                                                1);  // /PedCross/DrawBBox is pub topic
+                                                                 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh8;
   pe.warning_zone_pub_ =
       nh8.advertise<geometry_msgs::PolygonStamped>("/PedCross/Polygon", 1);  // /PedCross/DrawBBox is pub topic
   ros::NodeHandle nh9;
   pe.chatter_pub_fov30_ = nh9.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_top_far_30",
-                                                             1);  // /PedCross/Pedestrians is pub topic
+                                                              1);  // /PedCross/Pedestrians is pub topic
   ros::NodeHandle nh10;
   pe.box_pub_fov30_ =
       nh10.advertise<sensor_msgs::Image&>("/PedCross/DrawBBox/front_top_far_30", 1);  // /PedCross/DrawBBox is pub topic
@@ -2336,6 +2423,7 @@ int main(int argc, char** argv)
   nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
+  pe.tf_client_ = nh.serviceClient<msgs::PredictCrossing>("pedcross_tf");
 
   pe.front_image_cache_ = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size_);
   pe.left_image_cache_ = boost::circular_buffer<std::pair<ros::Time, cv::Mat>>(pe.buffer_size_);
