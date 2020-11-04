@@ -140,4 +140,7 @@ class FailSafeChecker(object):
                 self.action_emitter.backup_rosbag(current_status["status_str"])
             self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
+            if self.warn_count + self.error_count > 0:
+                rospy.logwarn("warn_count: %d, error_count: %d",
+                              self.warn_count, self.error_count)
             rate.sleep()
