@@ -86,6 +86,10 @@ class FailSafeChecker(object):
             status = FATAL
             status_str += "; Cam/Lidar detection offline at the same time"
 
+        if status == OK:
+            self.warn_count = 0
+            self.error_count = 0
+
         if status == WARN:
             self.warn_count += 1
         else:
