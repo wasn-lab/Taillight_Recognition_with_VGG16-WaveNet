@@ -315,11 +315,12 @@ void XYZ2LLA::convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_
 
 void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
 {
-  msgs::DetectedObjectArray out;
-  out.header = input->header;
-  out.objects.assign(input->objects.begin(), input->objects.end());
+  msgs::DetectedObjectArray output;
+  output.header = input->header;
+  output.objects.assign(input->objects.begin(), input->objects.end());
 
-  for (auto& obj : out.objects)
+  // compute center_point_gps
+  for (auto& obj : output.objects)
   {
     double out_lat = 0.;
     double out_lon = 0.;
@@ -333,7 +334,8 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
     obj.center_point_gps.z = out_alt;
   }
 
-  for (auto& obj : out.objects)
+  // compute heading_enu
+  for (auto& obj : output.objects)
   {
     tf::Quaternion rot(obj.heading.x, obj.heading.y, obj.heading.z, obj.heading.w);
     tf::Vector3 vec(1, 0, 0);
@@ -354,6 +356,8 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
     obj.heading_enu.z = R.z();
     obj.heading_enu.w = R.w();
   }
+
+  pub_xyz2lla_.publish(output);
 }
 
 int XYZ2LLA::run()
