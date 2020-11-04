@@ -6,7 +6,7 @@
     type="camera_grabber_node"
     args="
     -mode a
-    -expected_fps 30
+    -expected_fps 20
     -do_resize=true
     -do_crop=false
     "
