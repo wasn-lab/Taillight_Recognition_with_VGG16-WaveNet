@@ -125,7 +125,7 @@ void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lida
         pixel_position = alignment[cam_order].projectPointToPixel(lidarall_ptr->points[i]);
         if (pixel_position.u >= 0 && pixel_position.v >= 0)
         {
-          if (point_cloud[cam_order][pixel_position.u][pixel_position.v].x > lidarall_ptr->points[i].x ||
+          if (point_cloud[cam_order][pixel_position.u][pixel_position.v].x < lidarall_ptr->points[i].x ||
               point_cloud[cam_order][pixel_position.u][pixel_position.v].x == 0)
           {
             point_cloud[cam_order][pixel_position.u][pixel_position.v] = lidarall_ptr->points[i];

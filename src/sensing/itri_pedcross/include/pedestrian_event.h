@@ -159,6 +159,8 @@ public:
   std::mutex mu_delay_from_camera_;
   std::mutex mu_chatter_callback_info_;
   std::mutex mu_skeleton_buffer_;
+  std::mutex mu_using_LSTM_;
+  std::mutex mu_tf_error_;
 
   // ROS components
   ros::ServiceClient skip_frame_client_;
@@ -198,6 +200,8 @@ public:
   int count_;
   std::ofstream file_;
   double average_inference_time_ = 0;
+  bool using_LSTM_ = false;
+  bool tf_error_ = false;
 
   // Setup variables
   const double scaling_ratio_width_ = 0.3167;
