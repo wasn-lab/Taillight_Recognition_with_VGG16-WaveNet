@@ -1,0 +1,66 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  
+  <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
+  <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
+  <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" /> <!--NonGround_sensor_msgs2-->
+  <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
+  <arg name="output/traffic_light" default="/perception/traffic_light_recognition/traffic_light_states" />
+
+  <arg name="Look_ahead_time" default="1.6" />
+  <arg name="Look_ahead_S0" default="3" />
+  <arg name="Look_ahead_time_right" default="1.0" />
+  <arg name="Look_ahead_S0_right" default="1.5" />
+  <arg name="wheel_dis" default="3.8" />
+  <arg name="target_left_shift" default="0.0" />
+
+  <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
+  <arg name="angle_diff_setting_out" default="0.3" />
+  <arg name="angle_diff_setting_distoturn" default="0.3" />
+  <arg name="z_diff_setting_in" default="1.0" /><!--1.0-->
+  <arg name="z_diff_setting_out" default="0.1" /><!--0.1-->
+  <arg name="slope_setting_distouphill" default="0.08" />
+
+  <arg name="predict_s_max" default="13.8" />
+  <arg name="predict_t" default="2.0" />
+  
+  <!--tf rear_wheel-->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
+
+  <!-- planning initial node-->
+  <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" >
+	<remap from="output/lidar_no_ground" to="$(arg output/lidar_noground_topic)" />
+	<remap from="output/objects" to="$(arg output/objects_topic)" />
+        <remap from="input/lidar_no_ground" to="$(arg input/lidar_noground_topic)" />
+	<remap from="input/objects" to="$(arg input/objects_topic)" />
+	<remap from="output/traffic_light" to="$(arg output/traffic_light)" />
+  </node>
+
+  <!--path transfer node-->
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" >
+        <param name="angle_diff_setting_in" value="$(arg angle_diff_setting_in)" />
+	<param name="angle_diff_setting_out" value="$(arg angle_diff_setting_out)" />
+	<param name="angle_diff_setting_distoturn" value="$(arg angle_diff_setting_distoturn)" />
+        <param name="z_diff_setting_in" value="$(arg z_diff_setting_in)" />
+        <param name="z_diff_setting_out" value="$(arg z_diff_setting_out)" />
+	<param name="slope_setting_distouphill" value="$(arg slope_setting_distouphill)" />
+  </node>
+    
+  <!-- target pub node-->
+  <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" >
+	<param name="Look_ahead_time" value="$(arg Look_ahead_time)" />
+	<param name="Look_ahead_S0" value="$(arg Look_ahead_S0)" />
+	<param name="Look_ahead_time_right" value="$(arg Look_ahead_time_right)" />
+	<param name="Look_ahead_S0_right" value="$(arg Look_ahead_S0_right)" />
+        <param name="wheel_dis" value="$(arg wheel_dis)" />
+        <param name="target_left_shift" value="$(arg target_left_shift)"/>
+  </node>
+
+  <!-- veh_predictwaypoint pub node-->
+  <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint"> <!--output="screen" -->
+        <param name="wheel_dis" value="$(arg wheel_dis)"/>
+        <param name="predict_s_max" value="$(arg predict_s_max)"/>
+        <param name="predict_t" value="$(arg predict_t)"/>
+  </node>
+
+</launch>

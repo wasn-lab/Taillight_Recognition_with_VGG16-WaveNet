@@ -11,6 +11,8 @@
 #include "camera_params_b1.h"
 #elif CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_OMNIBUS
 #include "camera_params_b1_v2.h"
+#elif CAR_MODEL_IS_B1_V3
+#include "camera_params_b1_v3.h"
 #elif CAR_MODEL_IS_HINO
 #include "camera_params_hino.h"
 #elif CAR_MODEL_IS_C

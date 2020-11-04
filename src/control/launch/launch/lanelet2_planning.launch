@@ -1,0 +1,7 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <include file="$(find map_launch)/launch/map.launch"/>
+  <include file="$(find planning_launch)/launch/planning.launch"/>
+
+</launch>

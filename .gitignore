@@ -41,7 +41,10 @@ src/sensing/camera_utils/data/left_120.json
 src/sensing/camera_utils/data/right_120.json
 src/sensing/itri_pedcross/models/
 src/sensing/itri_pedcross/openpose/
+src/sensing/itri_pedcross_tf/models/
 src/bags/
 src/dl_data/assets/
 src/sensing/itri_lidarnet/lidars_grabber/src/UI/Makefile
+src/utilities/alexab_darknet/drivenet_dataset
+src/utilities/alexab_darknet/build
 src/sensing/deeplab/weights

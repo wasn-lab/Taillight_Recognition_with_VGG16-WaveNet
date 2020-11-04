@@ -14,12 +14,11 @@ fi
 
 for bag_path in $bags; do
   hour=$(date "+%-H")
-  while [[ "$hour" -gt 9 && "$hour" -lt 19 ]]; do
+  if [[ "$hour" -gt 9 && "$hour" -lt 19 ]]; then
     # keep buildbot job alive
     echo "No weak detection during work hours."
-    sleep 60
-    hour=$(date "+%-H")
-  done
+    exit 0
+  fi
 
   bag_basename=$(basename $bag_path)
   export TMP_DIR=${top_tmp_dir}/${bag_basename}

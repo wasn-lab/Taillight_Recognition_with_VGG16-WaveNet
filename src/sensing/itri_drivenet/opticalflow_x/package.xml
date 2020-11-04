@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>opticalflow_x</name>
+  <version>1.0.0</version>
+  <description>opticalflow speedup</description>
+  <maintainer email="lipei.wang@itri.org.tw">lipei</maintainer>
+  <license>ITRI</license>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
