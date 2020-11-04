@@ -358,6 +358,10 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
   }
 
   pub_xyz2lla_.publish(output);
+#if HEARTBEAT == 1
+  std_msgs::Empty output_heartbeat;
+  pub_xyz2lla_heartbeat_.publish(output_heartbeat);
+#endif
 }
 
 int XYZ2LLA::run()
@@ -374,8 +378,13 @@ int XYZ2LLA::run()
   initParamUTM();
 #endif
 
+  std::string out_topic = "Tracking3D/xyz2lla";
+
   sub_xyz2lla_ = nh_.subscribe("Tracking3D", 1, &XYZ2LLA::callbackTracking, this);
-  pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking3D/xyz2lla", 1);
+  pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 1);
+#if HEARTBEAT == 1
+  pub_xyz2lla_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);
+#endif
 
   ros::Rate loop_rate(10);
   while (ros::ok())

@@ -6,6 +6,7 @@
 #include <ros/package.h>
 #include <fstream>
 #include <tf/tf.h>
+#include <std_msgs/Empty.h>
 #include <msgs/DetectedObjectArray.h>
 
 #include "gnss_utility/gnss_utility.h"
@@ -14,6 +15,7 @@
 #define TWD97 0
 #define UTM 1
 #define DEBUG 0
+#define HEARTBEAT 1
 
 namespace xyz2lla
 {
@@ -32,8 +34,11 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  ros::Publisher pub_xyz2lla_;
   ros::Subscriber sub_xyz2lla_;
+  ros::Publisher pub_xyz2lla_;
+#if HEARTBEAT == 1
+  ros::Publisher pub_xyz2lla_heartbeat_;
+#endif
 
   std::string root_ = "itri_xyz2lla";
 
