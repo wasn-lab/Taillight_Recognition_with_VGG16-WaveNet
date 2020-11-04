@@ -58,7 +58,7 @@ void XYZ2LLA::initParam()
   lat0_ = read_tmp[1];
   alt0_ = read_tmp[2];
 
-  if (XYZ2ENU_siwtch_ == 0)
+  if (XYZ2ENU_switch_ == false)
   {
     int idx = 3;
     for (int i = 0; i < 3; i++)
@@ -209,7 +209,7 @@ void XYZ2LLA::convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_
 {
   double R_final[3][3], T_final[3];
 
-  if (XYZ2ENU_siwtch_ == 0)
+  if (XYZ2ENU_switch_ == false)
   {
     for (int i = 0; i < 3; i++)
     {

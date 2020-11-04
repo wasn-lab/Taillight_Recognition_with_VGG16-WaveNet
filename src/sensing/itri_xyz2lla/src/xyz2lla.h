@@ -53,7 +53,7 @@ private:
   double R4_[3][3];
   double R5_[3][3];
 
-  int XYZ2ENU_siwtch_ = 1;
+  bool XYZ2ENU_switch_ = true;
 
   // twd97-to-wgs84
   double twd97_shift_x_;
