@@ -42,7 +42,7 @@ TegraAGrabber::~TegraAGrabber()
   }
 }
 
-void TegraAGrabber::initializeModules(const bool do_resize, const bool do_crop)
+void TegraAGrabber::initializeModules(const bool do_resize)//, const bool do_crop)
 {
   for (const auto cam_id : cam_ids_)
   {
