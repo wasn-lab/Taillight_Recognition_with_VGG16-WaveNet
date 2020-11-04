@@ -12,15 +12,6 @@ def _get_stamp_filename(fullpath):
     return fullpath[:-4] + ".stamp"
 
 
-def _get_backend_password():
-    """Use environment variable to avoid leak of password shown in the git repo"""
-    passwd = os.environ.get("LFTP_PASSWORD", "")
-    if not passwd:
-        print(("Please set LFTP_PASSWORD environment variable so that "
-               "we can upload rosbags to backend server"))
-    return passwd
-
-
 def _get_bag_ymd(bag):
     """Return the 8-char {year}{month}{day} string encoded in |bag|."""
     match = __BAG_NAME_RGX.match(bag)
@@ -35,7 +26,7 @@ def _get_bag_ymd(bag):
 
 # Send backup rosbag (where abnormal events/states happens) to the backend server
 class RosbagSender(object):
-    def __init__(self, fqdn, port, user_name, rosbag_backup_dir, vid="itriadv", upload_rate=1000000):
+    def __init__(self, fqdn, port, user_name, password, rosbag_backup_dir, vid="itriadv", upload_rate=1000000):
         """
         Currently we use FTP protocol to send rosbags
         """
@@ -44,6 +35,7 @@ class RosbagSender(object):
         self.vid = vid
         self.proc = None
         self.user_name = user_name
+        self.password = password
         self.upload_rate = upload_rate
         if not rosbag_backup_dir:
             self.rosbag_backup_dir = os.path.join(
@@ -71,14 +63,10 @@ class RosbagSender(object):
         self._send_bags()
 
     def _generate_lftp_scripts(self, bags):
-        passwd = _get_backend_password()
-        if not passwd:
-            return
-
         ftp_cmds = [
             "set ssl:verify-certificate no",
             "set net:limit-total-rate 0:{}".format(self.upload_rate),
-            "open --env-password -p {} -u {} {}".format(self.port, self.user_name, self.fqdn),
+            "open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         for bag in bags:
             ymd = _get_bag_ymd(bag)  # backup dir name in backend

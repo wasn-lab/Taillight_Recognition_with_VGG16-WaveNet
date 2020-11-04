@@ -25,8 +25,10 @@ def callback(req):
     if predict_frames == 0:
         return PredictSkeletonResponse(predicted_keypoints, processed_keypoints)
     
-    latest_openpose = req.original_keypoints[frame_num - 1]
-    second_latest_openpose = req.original_keypoints[frame_num - 2 - predict_frames]
+    latest_openpose = processed_keypoints[len(processed_keypoints) - 1]
+    second_latest_openpose = processed_keypoints[len(processed_keypoints) - 2 - predict_frames]
+    if len(processed_keypoints) > frame_num:
+        del processed_keypoints[0]
     # calculate predicted_keypoints
     diff = Keypoints()
     for i in range(len(latest_openpose.keypoint)):

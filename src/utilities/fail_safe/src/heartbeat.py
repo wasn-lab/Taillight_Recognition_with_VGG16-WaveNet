@@ -50,6 +50,27 @@ def backend_connection_state_func(msg):
     return status, status_str
 
 
+def backend_info_func(msg):
+    status = ERROR
+    status_str = "No backend info message"
+    if msg is not None:
+        gross_voltage = msg.gross_voltage
+        lowest_voltage = msg.lowest_volage
+        status = OK
+        status_str = ""
+        if gross_voltage < 350 or lowest_voltage < 3.2:
+            status = ERROR
+            status_str = ("Battery too low: gross voltage is {}, "
+                          "lowest voltage is {}").format(
+                              gross_voltage, lowest_voltage)
+        elif gross_voltage < 355 or lowest_voltage < 3.25:
+            status = WARN
+            status_str = ("Low battery: gross voltage is {}, "
+                          "lowest voltage is {}").format(
+                              gross_voltage, lowest_voltage)
+    return status, status_str
+
+
 __BPOINT_PIDS = ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7"]
 def __calc_center_by_3d_bpoint(bpoint):
     # only calculate (x, y) now, as z is not so important
@@ -66,7 +87,6 @@ def cam_object_detection_func(msg):
     if msg is not None:
         status = OK
         status_str = ""
-        seq = msg.header.seq
         for obj in msg.objects:
             center = __calc_center_by_3d_bpoint(obj.bPoint)
             if not in_3d_roi(center[0], center[1]):
@@ -76,7 +96,7 @@ def cam_object_detection_func(msg):
                 status = WARN
                 status_str = ("Low confidence: classId: {}, prob: {}, "
                               "center: ({:.2f}, {:.2f})").format(
-                              obj.classId, prob, center[0], center[1])
+                                  obj.classId, prob, center[0], center[1])
     return status, status_str
 
 
@@ -106,6 +126,10 @@ class Heartbeat(object):
         if module_name == "3d_object_detection":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = cam_object_detection_func
+
+        if module_name == "backend_info":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = backend_info_func
 
         # internal variables:
         self.heap = []
@@ -210,14 +234,6 @@ class Heartbeat(object):
                 "timestamp": int(time.time()),
                 "source_time": int(time.time()),
                 "status": status}
-
-    def get_battery_info(self):
-        if self.msg is None:
-            rospy.logerr("%s: not receive data yet", self.module_name)
-            return {}
-        return {
-            "gross_voltage": self.msg.gross_voltage,
-            "gross_current": self.msg.gross_current}
 
     def get_ego_speed(self):
         if self.msg is None:
