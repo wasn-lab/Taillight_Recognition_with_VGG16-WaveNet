@@ -159,7 +159,8 @@ add_dependencies(${PROJECT_NAME}_framework ${catkin_EXPORTED_TARGETS})
 if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 set(DEMO_MODE_SOURCE
   src/TegraAGrabber.cpp
-  src/TegraBGrabber.cpp)
+  src/TegraBGrabber.cpp
+  src/DriveXavierGrabber.cpp)
 else ()
 set(DEMO_MODE_SOURCE
   src/JetsonXavierGrabber.cpp)

@@ -34,6 +34,14 @@ int main(int argc, char** argv)
     app.initializeModules(do_resize);
     return app.runPerception();
   }
+  else if (mode == "all")
+  {
+    ros::init(argc, argv, "camera_all_grabber");
+    printf("Running Camera all grabber\n");
+    SensingSubSystem::DriveXavierGrabber app;
+    app.initializeModules(do_resize);
+    return app.runPerception();
+  }
   else
   {
     LOG(WARNING) << "Unknown or unsupported mode: " << mode;
