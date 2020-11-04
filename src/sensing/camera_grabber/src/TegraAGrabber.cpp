@@ -70,6 +70,7 @@ bool TegraAGrabber::runPerception()
 
     // Using default stream for retreiving latest image
     grabber->retrieveNextFrame();
+    ros_time_ = ros::Time::now();
 
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[0], grabber->getCurrentFrameData(0),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
@@ -143,7 +144,7 @@ bool TegraAGrabber::runPerception()
     // }
     for (size_t i = 0; i < cam_count; ++i)
     {
-      ros_image.send_image_rgb(cam_ids_[i], canvas[i]);
+      ros_image.send_image_rgb(cam_ids_[i], canvas[i], ros_time_);
     }
 
     loop_rate.sleep();

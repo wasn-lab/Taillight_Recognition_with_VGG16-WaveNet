@@ -45,6 +45,7 @@ private:
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
+  ros::Time ros_time_;
 };
 }  // namespace SensingSubSystem
 
