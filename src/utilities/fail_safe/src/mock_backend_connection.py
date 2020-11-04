@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import rospy
 from std_msgs.msg import Bool
@@ -28,7 +29,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--connected", action="store_true")
     parser.add_argument("--fps", type=int, default=10)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     gnr = MockBackendConnectionGenerator(args.connected, args.fps)
     gnr.run()
 

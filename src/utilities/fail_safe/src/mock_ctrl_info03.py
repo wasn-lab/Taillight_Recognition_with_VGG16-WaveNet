@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import rospy
 from msgs.msg import Flag_Info
@@ -34,7 +35,7 @@ def main():
     parser.add_argument("--enable-acc", action="store_true")
     parser.add_argument("--enable-xbywire", action="store_true")
     parser.add_argument("--fps", type=int, default=10)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     gnr = MockCtrlInfo03Generator(args.enable_aeb, args.enable_acc, args.enable_xbywire, args.fps)
     gnr.run()
 

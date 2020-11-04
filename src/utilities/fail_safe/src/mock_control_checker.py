@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import rospy
 from std_msgs.msg import Int8MultiArray
@@ -32,7 +33,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--enable-can", action="store_true")
     parser.add_argument("--fps", type=int, default=10)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     gnr = MockControlCheckerGenerator(args.enable_can, args.fps)
     gnr.run()
 

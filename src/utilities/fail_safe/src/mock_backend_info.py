@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import rospy
 from msgs.msg import BackendInfo
@@ -37,7 +38,7 @@ def main():
     #    < 3.2: FATAL, the car has to stop
     parser.add_argument("--gross-voltage", type=float, default=356.0)
     parser.add_argument("--lowest-voltage", type=float, default=3.26)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     gnr = MockBackendInfoGenerator(args.gross_voltage, args.lowest_voltage)
     gnr.run()
 

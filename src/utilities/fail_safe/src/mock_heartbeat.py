@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import configparser
 import argparse
 import os
@@ -34,7 +35,7 @@ def main():
     src_dir = os.path.join(pkg_dir, "src")
     parser = argparse.ArgumentParser()
     parser.add_argument("--heartbeat-ini", default=os.path.join(src_dir, "heartbeat.ini"))
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     gnr = MockHeartbeatGenerator(args.heartbeat_ini)
     gnr.run()
 
