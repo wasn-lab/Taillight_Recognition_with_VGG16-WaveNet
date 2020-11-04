@@ -11,7 +11,7 @@ class TegraAGrabber
 public:
   TegraAGrabber();
   ~TegraAGrabber();
-  void initializeModules(const bool do_resize, const bool do_crop);
+  void initializeModules(const bool do_resize);//, const bool do_crop);
   bool runPerception();
 
 protected:

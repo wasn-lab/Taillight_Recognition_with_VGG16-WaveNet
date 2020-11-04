@@ -142,7 +142,7 @@ bool TegraAGrabber::runPerception()
     // {
     //   cam_count = cam_ids_.size() - 1;
     // }
-    for (size_t i = 0; i < cam_count; ++i)
+    for (int i = 0; i < cam_count; ++i)
     {
       ros_image.send_image_rgb(cam_ids_[i], canvas[i], ros_time_);
     }

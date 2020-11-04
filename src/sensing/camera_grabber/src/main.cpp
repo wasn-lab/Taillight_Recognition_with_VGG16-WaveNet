@@ -3,6 +3,7 @@
 #include <glog/logging.h>
 #include "TegraAGrabber.h"
 #include "TegraBGrabber.h"
+#include "DriveXavierGrabber.h"
 #include "Util/ProgramArguments.hpp"
 #include "grabber_args_parser.h"
 
