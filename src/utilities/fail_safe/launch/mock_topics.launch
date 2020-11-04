@@ -2,6 +2,8 @@
   <node name="MockBackendConnectionGenerator" pkg="fail_safe" type="mock_backend_connection.py" args="--connected" respawn="true" />
   <node name="MockBackendInfoGenerator" pkg="fail_safe" type="mock_backend_info.py" args="" respawn="true" />
   <node name="MockControlCheckerGenerator" pkg="fail_safe" type="mock_control_checker.py" args="--enable-can" respawn="true" />
-  <node name="MockCtrlInfo03Generator" pkg="fail_safe" type="mock_ctrl_info03.py" args="--enable-aeb --enable-acc --enable-xbywire" respawn="true" />
+<!-- Flag_Info03 is usu. inclued in bag. Add double dash to args because roslaunch cannot parse it in comments.
+  <node name="MockCtrlInfo03Generator" pkg="fail_safe" type="mock_ctrl_info03.py" args="enable-aeb enable-acc enable-xbywire" respawn="true" />
+-->
   <node name="MockHeartbeatGenerator" pkg="fail_safe" type="mock_heartbeat.py" args="" respawn="true" />
 </launch>
