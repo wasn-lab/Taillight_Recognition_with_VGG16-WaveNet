@@ -377,7 +377,12 @@ int XYZ2LLA::run()
   sub_xyz2lla_ = nh_.subscribe("Tracking3D", 1, &XYZ2LLA::callbackTracking, this);
   pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>("Tracking3D/xyz2lla", 1);
 
-  ros::spin();
+  ros::Rate loop_rate(10);
+  while (ros::ok())
+  {
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
 
   return 0;
 }
