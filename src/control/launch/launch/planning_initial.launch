@@ -1,11 +1,14 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-  
+
   <arg name="output/lidar_noground_topic" default="/sensing/lidar/no_ground/pointcloud" />
   <arg name="output/objects_topic" default="/perception/object_recognition/objects" />
   <arg name="input/lidar_noground_topic" default="ring_edge_point_cloud" /> <!--NonGround_sensor_msgs2-->
   <arg name="input/objects_topic" default="objects" /><!--objects Tracking3D_aw-->
   <arg name="output/traffic_light" default="/perception/traffic_light_recognition/traffic_light_states" />
+
+  <arg name="right_waylength" default="3" />
+  <arg name="left_waylength" default="6" />
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
@@ -27,7 +30,7 @@
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
-  <!-- planning initial node-->
+  <!-- planning initial node -->
   <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" >
 	<remap from="output/lidar_no_ground" to="$(arg output/lidar_noground_topic)" />
 	<remap from="output/objects" to="$(arg output/objects_topic)" />
@@ -35,9 +38,13 @@
 	<remap from="input/objects" to="$(arg input/objects_topic)" />
 	<remap from="output/traffic_light" to="$(arg output/traffic_light)" />
   </node>
+  
+  <!-- scene_register_checker node -->
+  <node pkg="scene_register_checker" type="scene_register_checker" name="scene_register_checker" output="screen" >
+  </node>
 
-  <!--path transfer node-->
-  <node pkg="path_transfer" type="path_transfer" name="path_transfer" output="screen" >
+  <!-- path transfer node -->
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer"><!-- output="screen" -->
         <param name="angle_diff_setting_in" value="$(arg angle_diff_setting_in)" />
 	<param name="angle_diff_setting_out" value="$(arg angle_diff_setting_out)" />
 	<param name="angle_diff_setting_distoturn" value="$(arg angle_diff_setting_distoturn)" />
@@ -45,8 +52,14 @@
         <param name="z_diff_setting_out" value="$(arg z_diff_setting_out)" />
 	<param name="slope_setting_distouphill" value="$(arg slope_setting_distouphill)" />
   </node>
+
+  <!-- Grid map fusion pub node-->
+  <node pkg="occ_grid_lane" type="occ_grid_lane" name="occ_grid_lane" output="screen" >
+	<param name="right_waylength" value="$(arg right_waylength)" />
+	<param name="left_waylength" value="$(arg left_waylength)" />
+  </node>
     
-  <!-- target pub node-->
+  <!-- target pub node -->
   <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" >
 	<param name="Look_ahead_time" value="$(arg Look_ahead_time)" />
 	<param name="Look_ahead_S0" value="$(arg Look_ahead_S0)" />
@@ -56,7 +69,7 @@
         <param name="target_left_shift" value="$(arg target_left_shift)"/>
   </node>
 
-  <!-- veh_predictwaypoint pub node-->
+  <!-- veh_predictwaypoint pub node -->
   <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint"> <!--output="screen" -->
         <param name="wheel_dis" value="$(arg wheel_dis)"/>
         <param name="predict_s_max" value="$(arg predict_s_max)"/>

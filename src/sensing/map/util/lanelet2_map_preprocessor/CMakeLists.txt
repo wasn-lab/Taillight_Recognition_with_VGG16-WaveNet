@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(lanelet2_map_preprocessor)
+
+add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
   lanelet2_extension
@@ -38,3 +40,17 @@ target_link_libraries(remove_unreferenced_geometry ${catkin_LIBRARIES})
 add_executable(fix_lane_change_tags src/fix_lane_change_tags.cpp)
 add_dependencies(fix_lane_change_tags ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(fix_lane_change_tags ${catkin_LIBRARIES})
+
+## Install executables and/or libraries
+install(
+  TARGETS
+    fix_z_value_by_pcd
+    transform_maps
+    merge_close_lines
+    merge_close_points
+    remove_unreferenced_geometry
+    fix_lane_change_tags
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

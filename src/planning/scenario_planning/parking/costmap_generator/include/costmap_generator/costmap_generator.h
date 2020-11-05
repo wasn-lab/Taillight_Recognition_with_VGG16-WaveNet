@@ -50,24 +50,22 @@
 #include <memory>
 #include <string>
 
-#include <ros/ros.h>
-
-#include <grid_map_msgs/GridMap.h>
+#include <costmap_generator/objects_to_costmap.h>
+#include <costmap_generator/points_to_costmap.h>
+#include <lanelet2_extension/utility/message_conversion.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
-#include <grid_map_ros/GridMapRosConverter.hpp>
-#include <grid_map_ros/grid_map_ros.hpp>
-
+#include <ros/ros.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
+#include <grid_map_ros/GridMapRosConverter.hpp>
+#include <grid_map_ros/grid_map_ros.hpp>
 
 #include <autoware_lanelet2_msgs/MapBin.h>
 #include <autoware_perception_msgs/DynamicObjectArray.h>
 #include <autoware_planning_msgs/Scenario.h>
-#include <costmap_generator/objects_to_costmap.h>
-#include <costmap_generator/points_to_costmap.h>
-#include <lanelet2_extension/utility/message_conversion.h>
+#include <grid_map_msgs/GridMap.h>
 
 class CostmapGenerator
 {
