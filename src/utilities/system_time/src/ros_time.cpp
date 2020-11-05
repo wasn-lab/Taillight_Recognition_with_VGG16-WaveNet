@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "ros_time_test_" + host_name);
   ros::NodeHandle nh;
 
-  ros::Rate loop_rate(30)
+  ros::Rate loop_rate(30);
   while(ros::ok())
   {
     ros::Time t1 = ros::Time::now();
