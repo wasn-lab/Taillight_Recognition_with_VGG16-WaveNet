@@ -20,8 +20,6 @@ const int NumOfTopic = 8;
 #include "msgs/VehInfo.h"
 #include <ros/ros.h>
 
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
@@ -452,7 +450,7 @@ int main(int argc, char **argv)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher);;
+            ProcessFrame(frame, Publisher);
         }
         Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);
