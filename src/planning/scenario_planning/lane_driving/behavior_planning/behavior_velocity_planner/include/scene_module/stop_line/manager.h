@@ -40,11 +40,12 @@
 class StopLineModuleManager : public SceneModuleManagerInterface
 {
 public:
-  StopLineModuleManager() : SceneModuleManagerInterface(getModuleName()) {}
+  StopLineModuleManager();
 
   const char * getModuleName() override { return "stop_line"; }
 
 private:
+  StopLineModule::PlannerParam planner_param_;
   void launchNewModules(const autoware_planning_msgs::PathWithLaneId & path) override;
 
   std::function<bool(const std::shared_ptr<SceneModuleInterface> &)> getModuleExpiredFunction(

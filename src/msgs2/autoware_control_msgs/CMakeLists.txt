@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(autoware_control_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   DIRECTORY msg
   FILES
+    GateMode.msg
     ControlCommand.msg
     ControlCommandStamped.msg
 )

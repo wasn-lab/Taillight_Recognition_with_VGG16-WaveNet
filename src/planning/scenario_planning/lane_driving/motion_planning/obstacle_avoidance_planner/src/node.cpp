@@ -61,10 +61,20 @@ ObstacleAvoidancePlanner::ObstacleAvoidancePlanner()
     pnh_.subscribe("/autoware/state", 10, &ObstacleAvoidancePlanner::stateCallback, this);
   is_avoidance_sub_ = pnh_.subscribe(
     "enable_avoidance", 10, &ObstacleAvoidancePlanner::enableAvoidanceCallback, this);
+///////////////////////////////////////////////////////////////////////////////////////////////////
+  get_rect = pnh_.subscribe(
+    "/occupancy_grid_wayarea_maporigin", 10, &ObstacleAvoidancePlanner::getRectCallback, this);
+  get_rect_freespace = pnh_.subscribe(
+    "/occupancy_grid_maporigin", 10, &ObstacleAvoidancePlanner::getRectfreespaceCallback, this);
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
   pnh_.param<bool>("is_publishing_clearance_map", is_publishing_clearance_map_, false);
-  pnh_.param<bool>("is_showing_debug_info", is_showing_debug_info_, true);
+  pnh_.param<bool>("is_showing_debug_info", is_showing_debug_info_, false);
   pnh_.param<bool>("enable_avoidance", enable_avoidance_, false);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  pnh_.param<bool>("use_freespace", use_freespace_, false);
+  pnh_.param<bool>("disable_lane_constrain", disable_lane_constrain_, false);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   qp_param_ = std::make_unique<QPParam>();
   traj_param_ = std::make_unique<TrajectoryParam>();
@@ -140,7 +150,18 @@ void ObstacleAvoidancePlanner::pathCallback(const autoware_planning_msgs::Path &
   if (!current_ego_pose_ptr_) {
     return;
   }
-  autoware_planning_msgs::Trajectory output_trajectory_msg = generateTrajectory(msg);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  autoware_planning_msgs::Path msg_modify;
+  if (enable_avoidance_ && disable_lane_constrain_ && drivable_rect_ini)
+  {
+    msg_modify = generateDrivableArea(msg);
+  }
+  else
+  {
+    msg_modify = msg;
+  }
+  autoware_planning_msgs::Trajectory output_trajectory_msg = generateTrajectory(msg_modify);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
   trajectory_pub_.publish(output_trajectory_msg);
 }
 
@@ -159,6 +180,23 @@ void ObstacleAvoidancePlanner::enableAvoidanceCallback(const std_msgs::Bool & ms
 {
   enable_avoidance_ = msg.data;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+void ObstacleAvoidancePlanner::getRectCallback(const nav_msgs::OccupancyGrid & occupancy_grid)
+{
+  drivable_rect = occupancy_grid;
+  drivable_rect_ini = true;
+}
+
+void ObstacleAvoidancePlanner::getRectfreespaceCallback(const nav_msgs::OccupancyGrid & occupancy_grid)
+{
+  freespace_rect = occupancy_grid;
+  freespace_rect_ini = true;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 // End ROS callback functions
 
 autoware_planning_msgs::Trajectory ObstacleAvoidancePlanner::generateTrajectory(
@@ -187,6 +225,27 @@ autoware_planning_msgs::Trajectory ObstacleAvoidancePlanner::generateTrajectory(
   return output;
 }
 
+autoware_planning_msgs::Path ObstacleAvoidancePlanner::generateDrivableArea(const autoware_planning_msgs::Path & path)
+{
+  autoware_planning_msgs::Path path_modify = path;
+
+  // disable lane constrain
+  path_modify.drivable_area = drivable_rect;
+
+  // return 0
+  // int height = path_modify.drivable_area.info.height;
+  // int width = path_modify.drivable_area.info.width;
+  // for (int i = 0; i < height; i++)
+  // {
+  //   for (int j = 0; j < width; j++)
+  //   {
+  //     int og_index = i * width + j;
+  //     path_modify.drivable_area.data[og_index] = 0;
+  //   }
+  // }
+  return path_modify;
+}
+
 std::vector<autoware_planning_msgs::TrajectoryPoint>
 ObstacleAvoidancePlanner::generateOptimizedTrajectory(
   const geometry_msgs::Pose & ego_pose, const autoware_planning_msgs::Path & path)
@@ -200,8 +259,10 @@ ObstacleAvoidancePlanner::generateOptimizedTrajectory(
   prev_replanned_time_ptr_ = std::make_unique<ros::Time>(ros::Time::now());
 
   DebugData debug_data;
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
   const auto trajectory_points = eb_path_optimizer_ptr_->generateOptimizedTrajectory(
-    enable_avoidance_, ego_pose, path, prev_traj_points_ptr_, in_objects_ptr_->objects, debug_data);
+    enable_avoidance_, ego_pose, path, prev_traj_points_ptr_, in_objects_ptr_->objects, debug_data, freespace_rect, use_freespace_, freespace_rect_ini);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
 
   debug_markers_pub_.publish(getDebugVisualizationMarker(
     debug_data.interpolated_points, trajectory_points, debug_data.straight_points,
