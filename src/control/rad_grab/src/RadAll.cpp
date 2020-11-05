@@ -169,21 +169,6 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
 
 void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg)
 {
-  // y: 往前 , x: 右正
-  // 1: front center, 2: front left, 3: front right,
-  // 4: side left, 5: side right,
-  // 6: back left, 7: back right
-  //
-  //            2__1__3
-  //            4|   |5
-  //             |   |
-  //             |   |
-  //             |   |
-  //             |   |
-  //            6|___|7
-  //
-  //
-  // front radar must be exist for the 電阻
   alphaRad.radHeader.stamp = msg->radHeader.stamp;
   alphaRad.radHeader.seq = msg->radHeader.seq;
 
@@ -266,7 +251,7 @@ void callbackAlphaSideLeft(const msgs::Rad::ConstPtr& msg)
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 2);
+    pointCalibration(&x, &y, &z, 4);
 
     point.x = x;
     point.y = y;
@@ -288,7 +273,7 @@ void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg)
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 3);
+    pointCalibration(&x, &y, &z, 5);
 
     point.x = x;
     point.y = y;
@@ -309,7 +294,7 @@ void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg)
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 2);
+    pointCalibration(&x, &y, &z, 6);
 
     point.x = x;
     point.y = y;
@@ -331,7 +316,7 @@ void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg)
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 3);
+    pointCalibration(&x, &y, &z, 7);
 
     point.x = x;
     point.y = y;
@@ -646,12 +631,14 @@ int main(int argc, char** argv)
     alphaRadPub();
     if (print_count > 60)
     {
+      // ===============for test code start
       // float a = 5;
       // float b = 5;
       // float c = 5;
       // pointCalibration(&a, &b, &c, 1);
-
       // cout << a << ":" << b << ":" << c << endl;
+      // ===============for test code end
+
       cout << "=== Radar Detection === A : " << alphaRad.radPoint.size() << " D : " << delphiRad.radPoint.size()
            << endl;
       print_count = 0;

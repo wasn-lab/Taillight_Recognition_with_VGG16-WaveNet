@@ -37,6 +37,22 @@ ros::Publisher RadPub;
 int filter_distance = 6;
 int filter_min = 4;
 
+// y: 往前 , x: 右正
+// 1: front center, 2: front left, 3: front right,
+// 4: side left, 5: side right,
+// 6: back left, 7: back right
+//
+//            2__1__3
+//            4|   |5
+//             |   |
+//             |   |
+//             |   |
+//             |   |
+//            6|___|7
+//
+//
+// front radar must be exist for the 電阻
+
 int main(int argc, char** argv)
 {
   uint32_t seq = 0;
@@ -381,11 +397,11 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 
   p = (((frame.data[4] & 0x07) << 2) | ((frame.data[5] & 0xc0) >> 6)) * 2;
 
-  if (raw_message)
-  {
+  // if (raw_message)
+  // {
     std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
               << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
-  }
+  // }
 
   // fill data to msg
   point->x = -x;
