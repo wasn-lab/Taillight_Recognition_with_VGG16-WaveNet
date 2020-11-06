@@ -129,7 +129,7 @@ class ros_detect_opticalflow:
 
                     for res in info1[0]:
                         data_copy_temp[data_object_i].camInfo.u =  int(round(res['box'][0]*size_scale[0])) if res['box'][0] >=0 else 0
-                        data_copy_temp[data_object_i].camInfo.v = int(round(res['box'][1]*size_scale[1]))
+                        data_copy_temp[data_object_i].camInfo.v = int(round(res['box'][1]*size_scale[1])) if res['box'][1] >=0 else 0
                         data_copy_temp[data_object_i].camInfo.width = int(round((res['box'][2]-res['box'][0])*size_scale[2]))
                         data_copy_temp[data_object_i].camInfo.height = int(round((res['box'][3]-res['box'][1])*size_scale[3]))
                         data_object_i += 1
