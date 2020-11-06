@@ -28,7 +28,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n);
 void turnRadarOn(int s, int type);
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point);
 void frontRadFilter(msgs::Rad* rad);
-
+void cornerRadFilter(msgs::Rad* rad);
 int debug_message = 0;
 int raw_message = 0;
 
@@ -159,6 +159,8 @@ int main(int argc, char** argv)
           if (current_frame.can_id == 0xC1)
           {
             frontRadFilter(&rad);
+          } else {
+            cornerRadFilter(&rad);
           }
           RadPub.publish(rad);
           count = (int)rad.radPoint.size();
@@ -326,6 +328,28 @@ void frontRadFilter(msgs::Rad* rad)
   }
 }
 
+void cornerRadFilter(msgs::Rad* rad)
+{
+  // clear 0.0 的radar point
+  vector<msgs::PointXYZV> temp;
+  float closed_object = 0.1;
+
+  for (int i = 0; i < rad->radPoint.size(); i++)
+  {
+    if (abs(rad->radPoint[i].x) > closed_object)
+    {
+      temp.push_back(rad->radPoint[i]);
+    }
+  }
+
+  rad->radPoint.clear();
+
+  for (int i = 0; i < temp.size(); i++)
+  {
+    rad->radPoint.push_back(temp[i]);
+  }
+}
+
 int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 {
   int id;
@@ -399,8 +423,8 @@ int radarParsing(struct can_frame frame, msgs::PointXYZV* point)
 
   // if (raw_message)
   // {
-    std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
-              << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
+  std::cout << "id : " << id << ", state : " << state << ", track : " << trackid << ", p : " << p << ", x : " << x
+            << ", y : " << y << ", vx : " << vx << ", vy : " << vy << std::endl;
   // }
 
   // fill data to msg
