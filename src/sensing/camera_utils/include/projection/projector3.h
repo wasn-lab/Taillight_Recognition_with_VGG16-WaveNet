@@ -27,5 +27,6 @@ public:
   void init(int camera_id);
   std::vector<int> project(float x, float y, float z);
   bool outOfFov(float x, float y, float z);
+  bool outOfCoverage(float x, float y, float z);
 };
 #endif

@@ -14,7 +14,7 @@ if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/auto_record_2020-04-14-16-41-15_89.bag
   || ! -f ${bag_dir}/lidar_raw_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/edge_detection_2020-04-13-17-45-48_0.bag
-  || ! -f ${bag_dir}/localization_raw_2020-04-13-17-45-48_0.bag
+  || ! -f ${bag_dir}/localization_raw_2020-09-24-17-02-06.bag
   || ! -f ${bag_dir}/rad_grab_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/ukf_mm_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/target_planner_2020-04-13-17-45-48_0.bag
@@ -26,11 +26,7 @@ fi
 
 source devel/setup.bash
 
-# cache *.engine for quick loading
-for engine in `find src/sensing -name "*.engine"`; do
-  cat $engine > /dev/null 2>&1
-done
-
+python src/car_model/scripts/gen_drivenet_engine.py
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v2.test
 #rostest car_model publish_test_tpp_b1_v2.test
@@ -45,5 +41,4 @@ rostest car_model publish_test_geofence_pp_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
 rostest car_model publish_test_target_planner_b1_v2.test
 rostest car_model publish_test_drivenet_b1_v2_sidecam_3dobj.test
-
 popd

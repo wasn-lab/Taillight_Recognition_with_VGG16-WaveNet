@@ -10,8 +10,8 @@ import os
 import time
 import string
 import rospy
-import pypcd
-from pypcd import PointCloud  # pylint: disable=no-name-in-module
+import pypcd  # pylint: disable=import-error
+from pypcd import PointCloud  # pylint: disable=import-error, no-name-in-module
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
 from os.path import getsize
@@ -27,25 +27,24 @@ bridge = [CvBridge(), CvBridge(), CvBridge(),
 
 check_first = True
 
+cam_topics = ['/cam/front_bottom_60', '/cam/front_top_far_30',
+    '/cam/front_top_close_120', '/cam/right_front_60', '/cam/right_back_60',
+    '/cam/left_front_60', '/cam/left_back_60', '/cam/back_top_120']
+
 
 def read_topic_return_msg(msg, type, contain):
     if type == 0:  # lidar
         pc = pypcd.PointCloud.from_msg(msg)  # pylint: disable=no-member
         return pc
-    # if type == 1: #cam
-    #     try:
-    #         img = contain.compressed_imgmsg_to_cv2(msg,'bgr8')
-    #     except CvBridgeError as e:
-    #         print(e)
-    #     return img
-    if type == 1:  # cam
+
+    if type == 1:  # camera
         try:
             img = contain.imgmsg_to_cv2(msg, 'bgr8')
         except CvBridgeError as e:
             print(e)
         return img
 
-    if type == 2:  # rad
+    if type == 2:  # radar
         rad_points = msg.radPoint
         rad_points_list = []
         for one_point in rad_points:
@@ -69,7 +68,7 @@ def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
             compression='ascii')
         print("{}.pcd ok.".format(filename))
 
-    if type == 1:  # cam
+    if type == 1:  # camera
         if not os.path.exists(outdir + pathname + "_camera_" + campos):
             os.makedirs(outdir + pathname + "_camera_" + campos)
         cv2.imwrite(
@@ -85,7 +84,7 @@ def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
             msg)
         print("{}.jpg ok.".format(filename + '_camera_' + campos))
 
-    if type == 2:  # rad
+    if type == 2:  # radar
         if not os.path.exists(outdir + pathname + "_radar"):
             os.makedirs(outdir + pathname + "_radar")
         with open("{}{}{}.txt".format(outdir, pathname+"_radar/" ,filename), "w") as f:
@@ -157,17 +156,28 @@ def main():
         txt_input = input
     str_in = ""
     try:
-        str_in = txt_input('Mode(1: in 1FPS, 2: in 10FPS):\n')
+        str_in = txt_input('Input FPS (1, 2, 5, 10):\n')
     except EOFError:
         str_in = "1"
     try:
-        id_in = int(str_in)
-        if id_in == 1:
-            print("Mode 1 selected: 1FPS.\n")
-        else:
-            print("Mode 2 selected: 10FPS.\n")
+        fps_input = int(str_in)
+        if fps_input != 1 and fps_input != 2 and fps_input != 5 and fps_input != 10:
+        	fps_input = 1
+
+        fps_inv = 10
+        if fps_input == 1:
+            fps_inv = 10
+        elif fps_input == 2:
+            fps_inv = 5
+        elif fps_input == 5:
+            fps_inv = 2
+        elif fps_input == 10:
+            fps_inv = 1
+
+        print("FPS %d selected.\n", fps_input)
+            
     except BaseException:
-        id_in = None
+        fps_input = None
         exit()
 
     print ("** Start Extracting**")
@@ -214,45 +224,31 @@ def main():
                                 if not os.path.exists(outdir):
                                     os.makedirs(outdir)
 
-                                # wtf main loop
+                                # main loop
                                 for topic, msg, t in bag.read_messages():
-                                    # if topic == "/LidarAll":
-                                    #     print("A: " + topic)
-                                    # Update LidarAll time
                                     if topic == "/LidarAll":
-                                        # pc = PointCloud.from_msg(msg)
-                                        # timeint = msg.header.stamp.secs
-                                        # datearray = time.localtime(timeint)
-                                        # datestr = time.strftime(
-                                        #     "%Y-%m-%d-%H-%M-%S", datearray)
-                                        if id_in == 1:
-                                            timestr = str(
-                                                msg.header.stamp.secs)
+                                        if fps_input == 1:
+                                            timestr = str(msg.header.stamp.secs)
                                         else:
-                                            timestr = str(
-                                                msg.header.stamp.secs) + str(msg.header.stamp.nsecs)[0]
-                                        if timestr != last_timestr:
-                                            time_tick = True
-                                        else:
-                                            time_tick = False
-                                        # print(time_tick)
+                                            timestr = str(msg.header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
 
-                                    if not time_tick:
-                                        if topic == "/LidarAll":
-                                            lidarall_msg = read_topic_return_msg(
-                                                msg, 0, "")
-                                            if check_first:
-                                                datestr_lidar = filename + "_lidar/"
-                                                if os.path.exists(
-                                                        outdir + datestr_lidar + timestr + '.pcd'):
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            lidarall_msg, 0, outdir, timestr, filename)
-                                                    except BaseException:
-                                                        print(
-                                                            "LidarAll cant save.")
+                                        lidarall_msg = read_topic_return_msg(msg, 0, "")
+                                        if check_first:
+                                            datestr_lidar = filename + "_lidar/"
+                                            if os.path.exists(outdir + datestr_lidar + timestr + '.pcd'):
+                                                pass
+                                            else:
+                                                try:
+                                                    read_msg_and_save(lidarall_msg, 0, outdir, timestr, filename)
+                                                except BaseException:
+                                                    print("LidarAll cant save.")
+
+                                    if topic in cam_topics:
+                                        if fps_input == 1:
+                                            timestr = str(msg.header.stamp.secs)
+                                        else:
+                                            timestr = str(msg.header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+
                                         read_topic_and_save_camera(
                                             topic, msg, outdir, filename, timestr, 0, "/cam/front_bottom_60", "a0", "A0")
                                         read_topic_and_save_camera(
@@ -265,95 +261,30 @@ def main():
                                             topic, msg, outdir, filename, timestr, 5, "/cam/right_back_60", "b2", "B2")
                                         read_topic_and_save_camera(
                                             topic, msg, outdir, filename, timestr, 6, "/cam/left_front_60", "c0", "C0")
+
                                         read_topic_and_save_camera(
                                             topic, msg, outdir, filename, timestr, 7, "/cam/left_back_60", "c1", "C1")
                                         read_topic_and_save_camera(
                                             topic, msg, outdir, filename, timestr, 8, "/cam/back_top_120", "c2", "C2")
 
-                                        if topic == "/RadFront":
-                                            rad_msg = read_topic_return_msg(
-                                                msg, 2, "")
-                                            if check_first:
-                                                datestr_radar = filename + "_radar/"
-                                                if os.path.exists(
-                                                        outdir + datestr_radar + timestr + '_rad.txt'):
-                                                    pass
-                                                elif timestr == "":
-                                                    pass
-                                                else:
-                                                    try:
-                                                        read_msg_and_save(
-                                                            rad_msg, 2, outdir, timestr + "_rad", filename)
-                                                    except BaseException:
-                                                        print(
-                                                            "rad cant save.")
+                                    if topic == "/RadFront":
+                                        if fps_input == 1:
+                                            timestr = str(msg.radHeader.stamp.secs)
+                                        else:
+                                            timestr = str(msg.radHeader.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
 
-                                    # elif time_tick:
-                                    #     if check_first:
-                                    #         pass
-                                    #     else:
-                                    #         # save first and update new
-                                    #         time_tick = False
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 lidarall_msg, 0, outdir, last_timestr, filename)
-                                    #         except BaseException:
-                                    #             print("lidar cant save.")
-
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camA0_msg, 1, outdir, last_timestr, filename, "a0")
-                                    #         except BaseException:
-                                    #             print("CamA0 cant save.")
-
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camA1_msg, 1, outdir, last_timestr, filename, "a1")
-                                    #         except BaseException:
-                                    #             print("CamA1 cant save.")
-
-                                    #         # try:
-                                    #         #     read_msg_and_save(camA2_msg, 1, outdir, last_timestr, filename, "a2")
-                                    #         # except:
-                                    #         #     print("CamA2 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camB0_msg, 1, outdir, last_timestr, filename, "b0")
-                                    #         except BaseException:
-                                    #             print("CamB0 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camB1_msg, 1, outdir, last_timestr, filename, "b1")
-                                    #         except BaseException:
-                                    #             print("CamB1 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camB2_msg, 1, outdir, last_timestr, filename, "b2")
-                                    #         except BaseException:
-                                    #             print("CamB2 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camC0_msg, 1, outdir, last_timestr, filename, "c0")
-                                    #         except BaseException:
-                                    #             print("CamC0 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camC1_msg, 1, outdir, last_timestr, filename, "c1")
-                                    #         except BaseException:
-                                    #             print("CamC1 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 camC2_msg, 1, outdir, last_timestr, filename, "c2")
-                                    #         except BaseException:
-                                    #             print("CamC2 cant save.")
-                                    #         try:
-                                    #             read_msg_and_save(
-                                    #                 rad_msg, 2, outdir, last_timestr + "_rad")
-                                    #         except BaseException:
-                                    #             print("rad cant save.")
-                                    last_timestr = timestr
-                                    # last_datestr = datestr
-
+                                        rad_msg = read_topic_return_msg(msg, 2, "")
+                                        if check_first:
+                                            datestr_radar = filename + "_radar/"
+                                            if os.path.exists(outdir + datestr_radar + timestr + '_rad.txt'):
+                                                pass
+                                            elif timestr == "":
+                                                pass
+                                            else:
+                                                try:
+                                                    read_msg_and_save(rad_msg, 2, outdir, timestr + "_rad", filename)
+                                                except BaseException:
+                                                    print("rad cant save.")
     print ("** Finish Extracting **")
 
 

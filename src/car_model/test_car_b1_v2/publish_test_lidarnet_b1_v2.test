@@ -4,19 +4,19 @@
       <arg name="mps" value="0" />
     </include>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-03-10-10-48-39_41.bag -d 15" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-03-10-10-48-39_41.bag -l" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
                 - name: /LidarAll
-                  timeout: 30
+                  timeout: 60
                   negative: False
                 - name: /LidarDetection
-                  timeout: 30
+                  timeout: 60
                   negative: False
                 - name: /LidarDetection/grid
-                  timeout: 30
+                  timeout: 60
                   negative: False
         </rosparam>
     </test>
