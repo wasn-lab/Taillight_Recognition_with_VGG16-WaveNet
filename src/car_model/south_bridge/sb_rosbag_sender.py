@@ -43,7 +43,7 @@ def get_bag_filenames(bag_dir):
 
 
 def convert_to_sb_bag_name(bag_fullpath, seq):
-    path, bag_fn = os.path.split(bag_fullpath)
+    _, bag_fn = os.path.split(bag_fullpath)
     match = BAG_RGX.search(bag_fn)
     if not match:
         logging.warn("Cannot parse filename: %s", bag_fullpath)
@@ -65,7 +65,7 @@ def get_bag_yymmdd(bag):
     path, bag_fn = os.path.split(bag)
     match = BAG_RGX.search(bag_fn)
     if not match:
-        logging.warn("Cannot parse filename: %s", bag_fullpath)
+        logging.warn("Cannot parse filename: %s", bag)
         return "999999"
     year = match.expand(r"\g<year>")
     month = match.expand(r"\g<month>")
@@ -84,7 +84,9 @@ def gen_sftp_cmd(bag, idx):
     sftp_dir_name = "{}_{}_camera_{}_1".format(cfg["company_name"], cfg["vid"], yymmdd)
     dest_bag = convert_to_sb_bag_name(bag, idx)
     sftp_cmds = [
-        "open -p " + cfg["port"] + " -u " + cfg["account"] + "," + cfg["password"] + " sftp://{}".format(cfg["sftp_ip"]),
+        ("open -p " + cfg["port"] + " -u " +
+         cfg["account"] + "," + cfg["password"] +
+         " sftp://{}".format(cfg["sftp_ip"])),
         "mkdir -p {}/{}".format(cfg["vid"], sftp_dir_name),
         "cd {}/{}".format(cfg["vid"], sftp_dir_name),
         "put -c {} -o {}".format(bag, dest_bag),
