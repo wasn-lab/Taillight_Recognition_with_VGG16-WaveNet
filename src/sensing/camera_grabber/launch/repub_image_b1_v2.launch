@@ -1,0 +1,9 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <node name="camera_grabber_repub_node"
+    pkg="camera_grabber"
+    type="camera_grabber_repub_node"
+    output="screen"
+  />
+</launch>

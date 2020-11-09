@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(camera_grabber)
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,15 +18,40 @@ find_package(catkin REQUIRED COMPONENTS
   camera_utils
 )
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CompilerFlags)
-include(CarModel)
+catkin_package(
+#  INCLUDE_DIRS include
+#   LIBRARIES
+   CATKIN_DEPENDS
+   roscpp
+   std_msgs
+   msgs
+   image_transport
+   cv_bridge
+   camera_utils
+#  DEPENDS system_lib
+)
 
+## common directories
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${camera_utils_SOURCE_DIR}/include
+  ${car_model_BINARY_DIR}/include)
+
+## 1. create repub image node
+if (CAR_MODEL_IS_B1_V2)
+  add_executable(
+      ${PROJECT_NAME}_repub_node src/image_repub_b1_v2.cpp)
+  target_link_libraries(${PROJECT_NAME}_repub_node ${catkin_LIBRARIES} camera_utils)
+  add_dependencies(${PROJECT_NAME}_repub_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+endif ()
+
+## 2. create camera grabber node
 if (NOT ${ENABLE_CAMERA_GRABBER})
   message("camera_grabber is disable in car ${CAR_MODEL}")
   return ()
 endif ()
 
+## Find CUDA
 find_package(CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
@@ -34,7 +62,7 @@ if (COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-attribute=format")
 endif ()
 
-## System dependencies are found with CMake's conventions
+## Find OpenCV
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 
 
@@ -67,37 +95,19 @@ else()
                HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
 endif()
 
-
-catkin_package(
-#  INCLUDE_DIRS include
-#   LIBRARIES
-   CATKIN_DEPENDS
-   roscpp
-   std_msgs
-   msgs
-   image_transport
-   cv_bridge
-   camera_utils
-#  DEPENDS system_lib
-)
-
+## Find Glog
 find_package(Glog)
 if (NOT GLOG_FOUND)
   message(FATAL_ERROR "glog not found. Please run\n sudo apt-get install libgoogle-glog-dev")
 endif()
 
+## Find GFlags
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
   message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
 endif ()
 
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
 if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 include_directories(
   ${OpenCV_INCLUDE_DIRS}
@@ -108,7 +118,6 @@ include_directories(
   src/Util
   src/CameraGrabber
   src/RosImagePubSub
-  ${catkin_INCLUDE_DIRS}
   ${DRIVENET_INCLUDE}  
 )
 else ()
@@ -121,7 +130,6 @@ include_directories(
   src/Util
   src/CameraGrabber
   src/RosImagePubSub
-  ${catkin_INCLUDE_DIRS}
   ${DRIVENET_INCLUDE}
   ${GSTREAMER_INCLUDE_DIRS}
 )
