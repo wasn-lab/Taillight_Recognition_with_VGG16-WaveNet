@@ -48,7 +48,7 @@
 /// namespace
 using namespace DriveNet;
 
-Boxfusion g_box_fusion;
+Boxfusion_ g_box_fusion;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2

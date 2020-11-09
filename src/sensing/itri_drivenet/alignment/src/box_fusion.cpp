@@ -3,11 +3,11 @@
 using namespace std;
 using namespace DriveNet;
 
-Boxfusion::~Boxfusion()
+Boxfusion_::~Boxfusion_()
 {
 }
 
-Boxfusion::Boxfusion()
+Boxfusion_::Boxfusion_()
 {
   front_bottom.LeftLinePoint1 = cv::Point(FB_left_top_x, FB_left_top_y);
   front_bottom.LeftLinePoint2 = cv::Point(FB_left_top_x, FB_right_bottom_y);
@@ -27,7 +27,12 @@ enum checkBoxStatus
   OverRightBound
 };
 
-std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::DetectedObject> input_obj_arrs)
+enum overlapped
+{
+  OverLapped = 99
+};
+
+std::vector<msgs::DetectedObject> Boxfusion_::multiCamBoxFuse(std::vector<msgs::DetectedObject>& input_obj_arrs)
 {
 
   auto overlap1D = [](float x1min, float x1max, float x2min, float x2max) -> float {
@@ -38,7 +43,7 @@ std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::D
     }
     return x1max < x2min ? 0 : std::min(x1max, x2max) - x2min;
   };
-  auto computeIoU = [&overlap1D](msgs::DetectedObject obj1, msgs::DetectedObject obj2) -> float {
+  auto computeIoU = [&overlap1D](msgs::DetectedObject& obj1, msgs::DetectedObject& obj2) -> float {
     float overlapX = overlap1D(obj1.bPoint.p0.x, obj1.bPoint.p2.x, obj2.bPoint.p0.x, obj2.bPoint.p2.x);
     float overlapY = overlap1D(obj1.bPoint.p0.y, obj1.bPoint.p2.y, obj2.bPoint.p0.y, obj2.bPoint.p2.y);
     float area1 = abs(obj1.bPoint.p2.x - obj1.bPoint.p0.x) * abs(obj1.bPoint.p2.y - obj1.bPoint.p0.y);
@@ -60,7 +65,7 @@ std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::D
     {
       if(/*input_copy1[j].classId != input_copy1[i].classId || */
       /*input_copy1[i].camInfo.id == input_copy1[j].camInfo.id ||*/
-      input_copy1[j].classId == 99 || input_copy1[i].classId == 99 || i == j)
+      input_copy1[j].classId == overlapped::OverLapped || input_copy1[i].classId == overlapped::OverLapped || i == j)
       {
         continue;
       }
@@ -71,9 +76,9 @@ std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::D
       {
         if(abs(input_copy1[i].bPoint.p2.x - input_copy1[i].bPoint.p0.x) * abs(input_copy1[i].bPoint.p2.y - input_copy1[i].bPoint.p0.y) > abs(input_copy1[j].bPoint.p2.x - input_copy1[j].bPoint.p0.x) * abs(input_copy1[j].bPoint.p2.y - input_copy1[j].bPoint.p0.y))
         {
-          input_copy1[i].classId = 99;
+          input_copy1[i].classId = overlapped::OverLapped;
         }else{
-          input_copy1[j].classId = 99;
+          input_copy1[j].classId = overlapped::OverLapped;
         }
       }
     }
@@ -86,7 +91,7 @@ std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::D
   // Delete box
   for(uint a = 0; a < input_copy1.size(); a++)
   {
-    if(input_copy1[a].classId != 99)
+    if(input_copy1[a].classId != overlapped::OverLapped)
     {
       output.push_back(input_copy1[a]);
     }
@@ -97,7 +102,7 @@ std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::D
   return output;
 }
 
-std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs,
+std::vector<msgs::DetectedObjectArray> Boxfusion_::boxfuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs,
                                                           int camera_id_1, int camera_id_2)
 {
   bool check_data_1 = false;
@@ -164,7 +169,7 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
   return ori_object_arrs;
 }
 
-msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj1, msgs::DetectedObjectArray obj2)
+msgs::DetectedObjectArray Boxfusion_::fusetwocamera(msgs::DetectedObjectArray obj1, msgs::DetectedObjectArray obj2)
 {
   msgs::DetectedObjectArray out;
   for (const auto& obj_2 : obj2.objects)
@@ -228,7 +233,7 @@ msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj
   return out;
 }
 
-int Boxfusion::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
+int Boxfusion_::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
 {
   /// right
   int c1 = (area.RightLinePoint1.x - area.RightLinePoint2.x) * (object_y2 - area.RightLinePoint2.y) -
@@ -251,7 +256,7 @@ int Boxfusion::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
   }
 }
 
-bool Boxfusion::pointcompare(PixelPosition front_bottom, PixelPosition projected)
+bool Boxfusion_::pointcompare(PixelPosition front_bottom, PixelPosition projected)
 {
   return bool(sqrt(pow((front_bottom.u - projected.u), 2) + pow((front_bottom.v - projected.v), 2)) < pixelthres);
 }
