@@ -72,7 +72,7 @@ bool DriveXavierGrabber::runPerception()
     // Using default stream for retreiving latest image
     grabber->retrieveNextFrame();
     ros_time_ = ros::Time::now();
-    
+
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[0], grabber->getCurrentFrameData(0),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[1], grabber->getCurrentFrameData(1),

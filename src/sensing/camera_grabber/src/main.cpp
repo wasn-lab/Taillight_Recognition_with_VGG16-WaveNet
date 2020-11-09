@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "camera_a_grabber");
     printf("Running Camera a grabber\n");
     SensingSubSystem::TegraAGrabber app;
-    app.initializeModules(do_resize);//, do_crop);
+    app.initializeModules(do_resize);  //, do_crop);
     return app.runPerception();
   }
   else if (mode == "b")
