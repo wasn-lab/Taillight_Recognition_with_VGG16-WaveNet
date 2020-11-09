@@ -546,9 +546,13 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
       }
     }
   }
+  std::vector<msgs::DetectedObject> msg_objs_after_fusion;
+  msg_objs_after_fusion = g_box_fusion.multiCamBoxFuse(msg_objs);
+  
   msg_det_obj_arr.header = std::move(msg_header);
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
-  msg_det_obj_arr.objects = msg_objs;
+  // msg_det_obj_arr.objects = msg_objs;
+  msg_det_obj_arr.objects = msg_objs_after_fusion;
   g_object_pub.publish(msg_det_obj_arr);
 
   std_msgs::Empty empty_msg;
