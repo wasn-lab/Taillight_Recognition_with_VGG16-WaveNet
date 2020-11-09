@@ -36,23 +36,22 @@ void printUsage()
 {
   ROS_ERROR_STREAM("Usage:");
   ROS_ERROR_STREAM("rosrun map_loader lanelet2_map_loader [.OSM]");
-  ROS_ERROR_STREAM("rosrun map_loader lanelet2_map_loader download [X] [Y]: WARNING not implemented");
+  ROS_ERROR_STREAM(
+    "rosrun map_loader lanelet2_map_loader download [X] [Y]: WARNING not implemented");
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "lanelet_map_loader");
   ros::NodeHandle pnh("~");
 
-  if (argc < 2)
-  {
+  if (argc < 2) {
     printUsage();
     return EXIT_FAILURE;
   }
 
   std::string mode(argv[1]);
-  if (mode == "download" && argc < 4)
-  {
+  if (mode == "download" && argc < 4) {
     printUsage();
     return EXIT_FAILURE;
   }
@@ -64,21 +63,23 @@ int main(int argc, char** argv)
   lanelet::projection::MGRSProjector projector;
   lanelet::LaneletMapPtr map = lanelet::load(lanelet2_filename, projector, &errors);
 
-  for (const auto& error : errors)
-  {
+  for (const auto & error : errors) {
     ROS_ERROR_STREAM(error);
   }
-  if (!errors.empty())
-  {
+  if (!errors.empty()) {
     return EXIT_FAILURE;
   }
 
-  lanelet::utils::overwriteLaneletsCenterline(map, false);
+  double center_line_resolution;
+  pnh.param<double>("center_line_resolution", center_line_resolution, 5.0);
+  lanelet::utils::overwriteLaneletsCenterline(map, center_line_resolution, false);
 
   std::string format_version, map_version;
-  lanelet::io_handlers::AutowareOsmParser::parseVersions(lanelet2_filename, &format_version, &map_version);
+  lanelet::io_handlers::AutowareOsmParser::parseVersions(
+    lanelet2_filename, &format_version, &map_version);
 
-  ros::Publisher map_bin_pub = pnh.advertise<autoware_lanelet2_msgs::MapBin>("output/lanelet2_map", 1, true);
+  ros::Publisher map_bin_pub =
+    pnh.advertise<autoware_lanelet2_msgs::MapBin>("output/lanelet2_map", 1, true);
   autoware_lanelet2_msgs::MapBin map_bin_msg;
   map_bin_msg.header.stamp = ros::Time::now();
   map_bin_msg.header.frame_id = "map";
