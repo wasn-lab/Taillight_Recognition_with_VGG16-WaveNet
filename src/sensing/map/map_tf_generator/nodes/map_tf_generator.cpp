@@ -24,12 +24,11 @@ typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 std::string map_frame_ = "map";
 std::string viewer_frame_ = "viewer";
 
-void Callback(const PointCloud::ConstPtr& clouds)
+void Callback(const PointCloud::ConstPtr & clouds)
 {
   const unsigned int sum = clouds->points.size();
-  double coordinate[3] = { 0, 0, 0 };
-  for (int i = 0; i < sum; i++)
-  {
+  double coordinate[3] = {0, 0, 0};
+  for (int i = 0; i < sum; i++) {
     coordinate[0] += clouds->points[i].x;
     coordinate[1] += clouds->points[i].y;
     coordinate[2] += clouds->points[i].z;
@@ -55,12 +54,13 @@ void Callback(const PointCloud::ConstPtr& clouds)
   static tf2_ros::StaticTransformBroadcaster static_broadcaster;
   static_broadcaster.sendTransform(static_transformStamped);
 
-  ROS_INFO_STREAM("broadcast static tf. map_frame:" << map_frame_ << ", viewer_frame:" << viewer_frame_
-                                                    << ", x:" << coordinate[0] << ", y:" << coordinate[1]
-                                                    << ", z:" << coordinate[2]);
+  ROS_INFO_STREAM(
+    "broadcast static tf. map_frame:" << map_frame_ << ", viewer_frame:" << viewer_frame_
+                                      << ", x:" << coordinate[0] << ", y:" << coordinate[1]
+                                      << ", z:" << coordinate[2]);
 }
 
-int main(int argc, char** argv)
+int main(int argc, char ** argv)
 {
   ros::init(argc, argv, "map_tf_generator");
   ros::NodeHandle nh;

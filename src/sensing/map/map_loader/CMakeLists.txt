@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(map_loader)
 
 add_compile_options(-std=c++14)
@@ -14,19 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 
-find_package(PCL REQUIRED COMPONENTS io)
-
-# See: https://github.com/ros-perception/perception_pcl/blob/lunar-devel/pcl_ros/CMakeLists.txt#L10-L22
-if (NOT "${PCL_LIBRARIES}" STREQUAL "")
-    # For debian: https://github.com/ros-perception/perception_pcl/issues/139
-    list(REMOVE_ITEM PCL_IO_LIBRARIES
-      "vtkGUISupportQt"
-      "vtkGUISupportQtOpenGL"
-      "vtkGUISupportQtSQL"
-      "vtkGUISupportQtWebkit"
-      "vtkViewsQt"
-      "vtkRenderingQt")
-endif ()
+find_package(Boost REQUIRED COMPONENTS filesystem)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -35,16 +23,18 @@ catkin_package(
     std_msgs
     tf2_geometry_msgs
     visualization_msgs
+  DEPENDS
+    Boost
 )
 
 include_directories(
   include
+  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
-  ${PCL_IO_INCLUDE_DIRS}
 )
 
 add_executable(pointcloud_map_loader src/pointcloud_map_loader/main.cpp src/pointcloud_map_loader/pointcloud_map_loader_node.cpp)
-target_link_libraries(pointcloud_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES})
+target_link_libraries(pointcloud_map_loader ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(pointcloud_map_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(lanelet2_map_loader src/lanelet2_map_loader/lanelet2_map_loader.cpp)

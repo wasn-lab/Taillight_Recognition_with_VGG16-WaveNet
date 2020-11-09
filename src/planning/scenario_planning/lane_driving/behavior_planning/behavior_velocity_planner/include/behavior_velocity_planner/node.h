@@ -28,6 +28,9 @@
 #include <behavior_velocity_planner/planner_data.h>
 #include <behavior_velocity_planner/planner_manager.h>
 
+#include <msgs/BusStop.h>
+#include <msgs/BusStopArray.h>
+
 class BehaviorVelocityPlannerNode
 {
 public:
@@ -48,6 +51,7 @@ private:
   ros::Subscriber sub_no_ground_pointcloud_;
   ros::Subscriber sub_vehicle_velocity_;
   ros::Subscriber sub_traffic_light_states_;
+  ros::Subscriber sub_bus_stop_reserve_;
   ros::Subscriber sub_lanelet_map_;
 
   void onTrigger(const autoware_planning_msgs::PathWithLaneId & input_path_msg);
@@ -56,9 +60,11 @@ private:
   void onVehicleVelocity(const geometry_msgs::TwistStamped::ConstPtr & msg);
   void onLaneletMap(const autoware_lanelet2_msgs::MapBin::ConstPtr & msg);
   void onTrafficLightStates(const autoware_perception_msgs::TrafficLightStateArray::ConstPtr & msg);
+  void onBusStopReserve(const msgs::BusStopArray::ConstPtr & msg);
 
   // publisher
   ros::Publisher path_pub_;
+  ros::Publisher stop_reason_diag_pub_;
   ros::Publisher debug_viz_pub_;
 
   void publishDebugMarker(const autoware_planning_msgs::Path & path, const ros::Publisher & pub);
