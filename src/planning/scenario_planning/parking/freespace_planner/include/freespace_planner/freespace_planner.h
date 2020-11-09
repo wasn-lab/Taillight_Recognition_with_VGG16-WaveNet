@@ -39,21 +39,18 @@
 #include <string>
 #include <vector>
 
+#include <astar_search/astar_search.h>
 #include <ros/ros.h>
-
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <nav_msgs/OccupancyGrid.h>
 
 #include <autoware_planning_msgs/Route.h>
 #include <autoware_planning_msgs/Scenario.h>
 #include <autoware_planning_msgs/Trajectory.h>
-
-#include "astar_search/astar_search.h"
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 struct NodeParam
 {
