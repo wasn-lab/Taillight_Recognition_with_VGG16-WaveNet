@@ -83,7 +83,7 @@ class FailSafeChecker(object):
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         # pedcross is still under heavy development
-        # ret["states"] += self.pedcross_alert.get_status_in_list()
+        ret["states"] += self.pedcross_alert.get_status_in_list()
         status = _overall_status(ret["states"])
         status_str = _overall_status_str(ret["states"])
 
