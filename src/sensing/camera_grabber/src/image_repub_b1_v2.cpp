@@ -41,10 +41,8 @@ int g_raw_image_h = camera::raw_image_height;
 std::vector<cv::Mat> g_mats(g_cam_ids.size());
 
 /// publish image message
-void image_publisher(const cv::Mat& image, const std_msgs::Header& header, image_transport::Publisher& img_pub)
+void image_publisher(image_transport::Publisher& img_pub, const sensor_msgs::Image::ConstPtr& img_msg)
 {
-  sensor_msgs::ImagePtr img_msg;
-  img_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
   img_pub.publish(img_msg);
 }
 //////////////////// for camera image
@@ -53,10 +51,7 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
 
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
@@ -67,10 +62,8 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
+  image_publisher(cam_pubs[cam_order], msg);
 
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -80,10 +73,7 @@ void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_close_120);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -93,10 +83,7 @@ void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -106,10 +93,7 @@ void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -119,10 +103,7 @@ void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -132,10 +113,7 @@ void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -145,10 +123,7 @@ void callback_cam_back_top_120(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::back_top_120);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-  g_mats[cam_order] = cv_ptr->image;
-
-  image_publisher(g_mats[cam_order], msg->header, cam_pubs[cam_order]);
+  image_publisher(cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
