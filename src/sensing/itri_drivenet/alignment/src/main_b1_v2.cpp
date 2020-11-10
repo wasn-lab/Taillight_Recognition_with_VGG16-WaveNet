@@ -1508,7 +1508,7 @@ int main(int argc, char** argv)
     /// ros Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order], 1, f_callbacks_cam[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order] + std::string("/raw"), 1, f_callbacks_cam[cam_order]);
       object_subs[cam_order] = nh.subscribe(g_bbox_topic_names[cam_order], 1, f_callbacks_object[cam_order]);
     }
 
@@ -1524,7 +1524,7 @@ int main(int argc, char** argv)
     /// message_filters Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order], 1);
+      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order]+ std::string("/raw"), 1);
       g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
       g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
       g_cache_image[cam_order].setCacheSize(g_buffer_size);

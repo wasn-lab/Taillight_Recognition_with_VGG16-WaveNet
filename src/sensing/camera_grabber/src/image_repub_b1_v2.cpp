@@ -154,7 +154,7 @@ int main(int argc, char** argv)
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order], 1, f_callbacks_cam[cam_order]);
-    cam_pubs[cam_order] = it.advertise(g_cam_topic_names[cam_order] + "/repub", 1);
+    cam_pubs[cam_order] = it.advertise(g_cam_topic_names[cam_order], 1);
   }
 
   /// main loop start
