@@ -31,7 +31,8 @@ bool g_display = false;
 
 /// ros
 std::vector<std::string> g_cam_topic_names(g_cam_ids.size());
-std::vector<image_transport::Publisher> cam_pubs(g_cam_ids.size());
+std::vector<image_transport::Publisher> g_cam_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
 
 /// image
 int g_image_w = camera::image_width;
@@ -44,6 +45,8 @@ std::vector<cv::Mat> g_mats(g_cam_ids.size());
 void image_publisher(image_transport::Publisher& img_pub, const sensor_msgs::Image::ConstPtr& img_msg)
 {
   img_pub.publish(img_msg);
+  std_msgs::Empty empty_msg;
+  g_heartbeat_pubs[cam_order].publish(empty_msg);
 }
 //////////////////// for camera image
 void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
@@ -51,7 +54,7 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_bottom_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
 
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
@@ -62,7 +65,7 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
 
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
@@ -73,7 +76,7 @@ void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_close_120);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -83,7 +86,7 @@ void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -93,7 +96,7 @@ void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -103,7 +106,7 @@ void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_front_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -113,7 +116,7 @@ void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -123,7 +126,7 @@ void callback_cam_back_top_120(const sensor_msgs::Image::ConstPtr& msg)
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::back_top_120);
   int cam_order = std::distance(g_cam_ids.begin(), it);
 
-  image_publisher(cam_pubs[cam_order], msg);
+  image_publisher(g_cam_pubs[cam_order], msg);
   // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "."
   // << msg->header.stamp.nsec << std::endl;
 }
@@ -154,7 +157,8 @@ int main(int argc, char** argv)
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order], 1, f_callbacks_cam[cam_order]);
-    cam_pubs[cam_order] = it.advertise(g_cam_topic_names[cam_order], 1);
+    g_cam_pubs[cam_order] = it.advertise(g_cam_topic_names[cam_order], 1);
+    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(g_cam_topic_names[cam_order] + std::string("/heartbeat"), 1);
   }
 
   /// main loop start

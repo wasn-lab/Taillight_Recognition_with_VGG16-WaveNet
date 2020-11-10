@@ -113,7 +113,7 @@ bool RosImagePubSub::add_a_pub(size_t id_in, const std::string& topic_name)
 {
   auto result = _image_publisher_map.emplace(id_in, _ros_it.advertise(topic_name + std::string("/raw"), 1));
   _heartbeat_publisher_map.emplace(id_in,
-                                   _nh_ptr.advertise<std_msgs::Empty>(topic_name + std::string("/heartbeat"), 1));
+                                   _nh_ptr.advertise<std_msgs::Empty>(topic_name + std::string("/raw/heartbeat"), 1));
   return result.second;
 }
 
