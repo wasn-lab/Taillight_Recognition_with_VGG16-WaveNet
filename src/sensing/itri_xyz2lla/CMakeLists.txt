@@ -8,8 +8,10 @@ find_package(
   catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  tf2_geometry_msgs
   msgs
   gnss_utility
+  tf2_ros
 )
 
 catkin_package(CATKIN_DEPENDS)

@@ -322,13 +322,63 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
   // compute center_point_gps
   for (auto& obj : output.objects)
   {
+    obj.center_point_gps.x = obj.center_point.x;
+    obj.center_point_gps.y = obj.center_point.y;
+    obj.center_point_gps.z = obj.center_point.z;
+
+    if (obj.header.frame_id != "map")
+    {
+      geometry_msgs::TransformStamped tf_stamped;
+      frame_id_source_ = obj.header.frame_id;
+
+      try
+      {
+        tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, obj.header.stamp);
+      }
+      catch (tf2::TransformException& ex1)
+      {
+        ROS_WARN("%s", ex1.what());
+        try
+        {
+          tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+        }
+        catch (tf2::TransformException& ex2)
+        {
+          ROS_WARN("%s", ex2.what());
+          return;
+        }
+      }
+
+      // TF (lidar-to-map) for object pose
+      geometry_msgs::Pose pose_in_lidar;
+      pose_in_lidar.position.x = obj.center_point.x;
+      pose_in_lidar.position.y = obj.center_point.y;
+      pose_in_lidar.position.z = obj.center_point.z;
+      pose_in_lidar.orientation.x = 0;
+      pose_in_lidar.orientation.y = 0;
+      pose_in_lidar.orientation.z = 0;
+      pose_in_lidar.orientation.w = 1;
+
+      geometry_msgs::Pose pose_in_map;
+      tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped);
+      obj.center_point_gps.x = pose_in_map.position.x;
+      obj.center_point_gps.y = pose_in_map.position.y;
+      obj.center_point_gps.z = pose_in_map.position.z;
+    }
+
     double out_lat = 0.;
     double out_lon = 0.;
     double out_alt = 0.;
     double out_E = 0.;
     double out_N = 0.;
     double out_U = 0.;
-    convert(out_lat, out_lon, out_alt, out_E, out_N, out_U, obj.center_point.x, obj.center_point.y, obj.center_point.z);
+    convert(out_lat, out_lon, out_alt, out_E, out_N, out_U, obj.center_point_gps.x, obj.center_point_gps.y,
+            obj.center_point_gps.z);
+    // #if DEBUG == 1
+    std::cout << "out Lat : " << std::setprecision(20) << out_lat << std::endl;
+    std::cout << "out Lon : " << std::setprecision(20) << out_lon << std::endl;
+    std::cout << "out Alt : " << std::setprecision(20) << out_alt << std::endl;
+    // #endif
     obj.center_point_gps.x = out_lat;
     obj.center_point_gps.y = out_lon;
     obj.center_point_gps.z = out_alt;
@@ -385,6 +435,8 @@ int XYZ2LLA::run()
 #if HEARTBEAT == 1
   pub_xyz2lla_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);
 #endif
+
+  tf2_ros::TransformListener tf_listener(tf_buffer_);
 
   ros::Rate loop_rate(10);
   while (ros::ok())
