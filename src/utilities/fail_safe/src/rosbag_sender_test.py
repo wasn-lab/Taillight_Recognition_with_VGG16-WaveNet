@@ -2,7 +2,7 @@ import unittest
 import time
 import configparser
 import os
-from rosbag_sender import RosbagSender, _get_bag_ymd
+from rosbag_sender import RosbagSender
 
 class RosbagSenderTest(unittest.TestCase):
     def setUp(self):
@@ -11,7 +11,7 @@ class RosbagSenderTest(unittest.TestCase):
         cfg_file = os.path.join(cur_path, "rosbag_sender.ini")
         cfg.read(cfg_file)
         self.sender = RosbagSender(cfg["ftp"]["fqdn"], cfg["ftp"]["port"],
-            "U300", "/media/chtseng/Sandisk/rosbag_files/backup")
+            "U300", None, "/media/chtseng/Sandisk/rosbag_files/backup")
 
     @unittest.skipIf(True, "")
     def test_1(self):
