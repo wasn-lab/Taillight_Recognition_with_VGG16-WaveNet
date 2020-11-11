@@ -9,12 +9,12 @@
 	
 		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_fr_to_baselink" args="-0.5 -1 0 0.785 0 0 base_link rad_fr" />
 	
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sl_to_baselink" args="-0.5 -1 0 0 0 0 base_link rad_sl" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sl_to_baselink" args="-0.5 1 0 3.925 0 0 base_link rad_sl" />
 	
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sr_to_baselink" args="-0.5 -1 0 0 0 0 base_link rad_sr" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_sr_to_baselink" args="-0.5 -1 0 -0.785 0 0 base_link rad_sr" />
 	
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="0 -1 0 0 0 0 base_link rad_bl" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="6 1 0 0 0 0 base_link rad_bl" />
 	
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_br_to_baselink" args="0 -1 0 0 0 0 base_link rad_br" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_br_to_baselink" args="-6 -1 0 -0.785 0 0 base_link rad_br" />
 
 </launch>

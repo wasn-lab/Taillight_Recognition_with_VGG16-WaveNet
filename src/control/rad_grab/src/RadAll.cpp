@@ -30,6 +30,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/common/transforms.h>
 
 // For eigen
 #include <Eigen/Dense>
@@ -61,7 +62,8 @@ double imu_angular_velocity_z = 0;
 int do_rotate = 0;
 int print_count = 0;
 int debug_message = 0;
-int raw_message = 0;
+int alpha_raw_message = 0;
+int delphi_raw_message = 0;
 
 vector<float> Alpha_Front_Center_Param;
 vector<float> Alpha_Front_Left_Param;
@@ -149,7 +151,7 @@ void callbackDelphiFront(const msgs::Rad::ConstPtr& msg)
       point.z = 0;
       point.speed = msg->radPoint[i].speed;
 
-      if (raw_message)
+      if (delphi_raw_message)
       {
         cout << "X: " << point.x << ", Y: " << point.y << ", Speed: " << point.speed << endl;
       }
@@ -173,157 +175,385 @@ void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg)
   alphaRad.radHeader.seq = msg->radHeader.seq;
 
   alphaFrontCenterVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    // cout << "ox : " << x << " oy : " << y << " oz : " << z << endl;
-
-    pointCalibration(&x, &y, &z, 1);
-
-    // cout << "tx : " << x << " ty : " << y << " tz : " << z << endl;
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
-
-    alphaFrontCenterVec.push_back(point);
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
   }
-  // cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+
+  float tx = Alpha_Front_Center_Param[0];
+  float ty = -Alpha_Front_Center_Param[1];
+  float tz = Alpha_Front_Center_Param[2];
+  float rx = Alpha_Front_Center_Param[5] * PI_OVER_180;
+  float ry = Alpha_Front_Center_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Front_Center_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+
+    alphaFrontCenterVec.push_back(data);
+  }
 }
 
 void callbackAlphaFrontLeft(const msgs::Rad::ConstPtr& msg)
 {
   alphaFrontLeftVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 2);
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
+  }
 
-    alphaFrontLeftVec.push_back(point);
+  float tx = Alpha_Front_Left_Param[0];
+  float ty = -Alpha_Front_Left_Param[1];
+  float tz = Alpha_Front_Left_Param[2];
+  float rx = Alpha_Front_Left_Param[5] * PI_OVER_180;
+  float ry = Alpha_Front_Left_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Front_Left_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+
+    alphaFrontLeftVec.push_back(data);
   }
 }
 
 void callbackAlphaFrontRight(const msgs::Rad::ConstPtr& msg)
 {
   alphaFrontRightVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 3);
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
+  }
 
-    alphaFrontRightVec.push_back(point);
+  float tx = Alpha_Front_Right_Param[0];
+  float ty = -Alpha_Front_Right_Param[1];
+  float tz = Alpha_Front_Right_Param[2];
+  float rx = Alpha_Front_Right_Param[5] * PI_OVER_180;
+  float ry = Alpha_Front_Right_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Front_Right_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+
+    alphaFrontRightVec.push_back(data);
   }
 }
+
 void callbackAlphaSideLeft(const msgs::Rad::ConstPtr& msg)
 {
   alphaSideLeftVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 4);
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
+  }
 
-    alphaSideLeftVec.push_back(point);
+  float tx = Alpha_Side_Left_Param[0];
+  float ty = -Alpha_Side_Left_Param[1];
+  float tz = Alpha_Side_Left_Param[2];
+  float rx = Alpha_Side_Left_Param[5] * PI_OVER_180;
+  float ry = Alpha_Side_Left_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Side_Left_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+
+    if(y > -1.25)
+    {
+    } else {
+      alphaSideLeftVec.push_back(data);
+    }
+
   }
 }
 
 void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg)
 {
   alphaSideRightVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 5);
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
+  }
 
-    alphaSideRightVec.push_back(point);
+  float tx = Alpha_Side_Right_Param[0];
+  float ty = -Alpha_Side_Right_Param[1];
+  float tz = Alpha_Side_Right_Param[2];
+  float rx = Alpha_Side_Right_Param[5] * PI_OVER_180;
+  float ry = Alpha_Side_Right_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Side_Right_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+    if(y < 1.25)
+    {
+    } else {
+      alphaSideRightVec.push_back(data);
+    }
   }
 }
 void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg)
 {
   alphaBackLeftVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 6);
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
+  }
 
-    alphaBackLeftVec.push_back(point);
+  float tx = Alpha_Back_Left_Param[0];
+  float ty = -Alpha_Back_Left_Param[1];
+  float tz = Alpha_Back_Left_Param[2];
+  float rx = Alpha_Back_Left_Param[5] * PI_OVER_180;
+  float ry = Alpha_Back_Left_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Back_Left_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+
+    alphaBackLeftVec.push_back(data);
   }
 }
 
 void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg)
 {
   alphaBackRightVec.clear();
+  pcl::PointCloud<pcl::PointXYZI> temp_array;
+  pcl::PointCloud<pcl::PointXYZI> out_cloud;
+
   for (int i = 0; i < msg->radPoint.size(); i++)
   {
-    msgs::PointXYZV point;
+    pcl::PointXYZI point;
 
     float x = msg->radPoint[i].x;
     float y = msg->radPoint[i].y;
     float z = msg->radPoint[i].z;
 
-    pointCalibration(&x, &y, &z, 7);
-
     point.x = x;
     point.y = y;
     point.z = z;
-    point.speed = msg->radPoint[i].speed;
+    point.intensity = msg->radPoint[i].speed;
+    temp_array.points.push_back(point);
+  }
 
-    alphaBackRightVec.push_back(point);
+  float tx = Alpha_Back_Right_Param[0];
+  float ty = -Alpha_Back_Right_Param[1];
+  float tz = Alpha_Back_Right_Param[2];
+  float rx = Alpha_Back_Right_Param[5] * PI_OVER_180;
+  float ry = Alpha_Back_Right_Param[4] * PI_OVER_180;
+  float rz = -Alpha_Back_Right_Param[3] * PI_OVER_180;
+
+  Eigen::Affine3f mr = Eigen::Affine3f::Identity();
+
+  mr.translation() << tx, ty, tz;
+  mr.rotate(Eigen::AngleAxisf(rx, Eigen::Vector3f::UnitX()));  // The angle of rotation in radians
+  mr.rotate(Eigen::AngleAxisf(ry, Eigen::Vector3f::UnitY()));
+  mr.rotate(Eigen::AngleAxisf(rz, Eigen::Vector3f::UnitZ()));
+  pcl::PointCloud<pcl::PointXYZI>::Ptr output_Ptr = temp_array.makeShared();
+  pcl::transformPointCloud(*output_Ptr, out_cloud, mr);  // no cuda
+
+  for (int i = 0; i < out_cloud.points.size(); i++)
+  {
+    msgs::PointXYZV data;
+
+    float x = out_cloud.points[i].x;
+    float y = out_cloud.points[i].y;
+    float z = out_cloud.points[i].z;
+
+    data.x = x;
+    data.y = y;
+    data.z = z;
+    data.speed = out_cloud.points[i].intensity;
+
+    alphaBackRightVec.push_back(data);
   }
 }
 
@@ -381,10 +611,6 @@ void pointCalibration(float* x, float* y, float* z, int type)
 
 void transInitGuess(int type)
 {
-  // for(auto n : params) {
-  //   cout << n << endl;
-  // }
-
   float tx;
   float ty;
   float tz;
@@ -540,10 +766,21 @@ void alphaRadPub()
   {
     alphaRad.radPoint.push_back(alphaAllVec[i]);
 
-    // for rviz drawing
-    temp.x = alphaAllVec[i].x;
-    temp.y = -alphaAllVec[i].y;
-    cloud->points.push_back(temp);
+    if (abs(alphaAllVec[i].x) > 0.3)
+    {
+      // for rviz drawing
+      temp.x = alphaAllVec[i].x;
+      temp.y = -alphaAllVec[i].y;
+      cloud->points.push_back(temp);
+      if (alpha_raw_message)
+      {
+        cout << "X: " << temp.x << ", Y: " << temp.y << endl;
+      }
+    }
+  }
+  if (alpha_raw_message)
+  {
+    cout << "========================================" << endl;
   }
 
   sensor_msgs::PointCloud2 msgtemp;
@@ -568,7 +805,8 @@ void alphaRadPub()
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
   nh.param("/debug_message", debug_message, 0);
-  nh.param("/raw_message", raw_message, 0);
+  nh.param("/delphi_raw_message", delphi_raw_message, 0);
+  nh.param("/alpha_raw_message", alpha_raw_message, 0);
 
   if (!ros::param::has("/Alpha_Front_Center_Param"))
   {
@@ -601,18 +839,18 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
-  ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
-  ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
-  ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
-  ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
-  ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
+  // ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
+  // ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
+  // ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
+  // ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
+  // ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
   ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
-  ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
-  ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
+  // ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
+  // ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
 
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
-  RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
+  // RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
   RadAllPub = n.advertise<msgs::Rad>("RadAll", 1);
   RadAllPCLPub = n.advertise<sensor_msgs::PointCloud2>("RadAlphaPCL", 1);
   HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/heartbeat", 1);

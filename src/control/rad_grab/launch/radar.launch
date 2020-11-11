@@ -1,33 +1,40 @@
 <!-- -*- mode: XML -*- -->
 <launch>
 
-	<node pkg="rad_grab" type="radfrontsub_can" name="radfrontsub_can" output="screen" cwd="node" respawn="true" />
-	<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true" />
-	<node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true" />
-
 	<!-- Global arg ************************************************************ -->
 	<arg name="radar_enable" default="1" />
-	<arg name="delphi_enable" default="1" />
+	<arg name="radar_detection" default="0" />
+	<arg name="delphi_enable" default="0" />
 	<arg name="umec_enable" default="0" />
 	<arg name="cubtek_enable" default="0" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="1" />
-	<arg name="alpha_side_enable" default="1" />
-	<arg name="alpha_back_enable" default="1" />
-	<rosparam param="debug_message">1</rosparam>
-	<rosparam param="raw_message">1</rosparam>
+	<arg name="alpha_front_enable" default="0" />
+	<arg name="alpha_side_enable" default="0" />
+	<arg name="alpha_back_enable" default="0" />
+	<rosparam param="debug_message">0</rosparam>
+	<rosparam param="alpha_raw_message">1</rosparam>
+	<rosparam param="delphi_raw_message">0</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
 	<rosparam param="Delphi_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Umec_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Cubtek_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Front_Center_Param">[-0.5 0 0 90.0 0 0]</rosparam>
-	<rosparam param="Alpha_Front_Right_Param">[-0.5 1 0 135 0 0]</rosparam>
-	<rosparam param="Alpha_Front_Left_Param">[-0.5 -1 0 45 0 0]</rosparam>
-	<rosparam param="Alpha_Side_Right_Param">[1, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Side_Left_Param">[1, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Back_Right_Param">[1, 0, 0, 0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Back_Left_Param">[1, 0, 0, 0, 0, 0]</rosparam>
+	<rosparam param="Alpha_Front_Center_Param">[-0.5, 0, 0, 90.0, 0, 0]</rosparam>
+	<rosparam param="Alpha_Front_Left_Param">[-0.5, 1, 0, 135, 0, 0]</rosparam>
+	<rosparam param="Alpha_Front_Right_Param">[-0.5, -1, 0, 45, 0, 0]</rosparam>
+	<rosparam param="Alpha_Side_Left_Param">[-0.5, 1, 0, 225, 0, 0]</rosparam>
+	<rosparam param="Alpha_Side_Right_Param">[-0.5, -1, 0, -45, 0, 0]</rosparam>
+	<rosparam param="Alpha_Back_Left_Param">[6, 1, 0, 0, 225, 0]</rosparam>
+	<rosparam param="Alpha_Back_Right_Param">[-6, -1, 0, -45, 0, 0]</rosparam>
+
+	<!-- ************ Radar Detection ************ -->
+	<group if="$(eval arg('radar_detection') != 0)">
+
+		<node pkg="rad_grab" type="radfrontsub_can" name="radfrontsub_can" output="screen" cwd="node" respawn="true" />
+		<node pkg="rad_grab" type="radfrontsub_bbox" name="radfrontsub_bbox" output="screen" cwd="node" respawn="true" />
+		<node pkg="rad_grab" type="radfrontsub_pcloud" name="radfrontsub_pcloud" output="screen" cwd="node" respawn="true" />
+
+	</group>
 
 	<!-- ************ Radar Detection ************ -->
 	<group if="$(eval arg('radar_enable') != 0)">
