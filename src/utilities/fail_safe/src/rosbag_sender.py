@@ -2,6 +2,7 @@ import time
 import os
 import subprocess
 import re
+from sb_param_utils import get_license_plate_number
 
 __BAG_NAME_RGX = re.compile(
     r".*(?P<year>[\d]{4})\-(?P<month>[\d]{2})\-(?P<day>[\d]{2})\-.*\.bag")
@@ -26,13 +27,13 @@ def _get_bag_ymd(bag):
 
 # Send backup rosbag (where abnormal events/states happens) to the backend server
 class RosbagSender(object):
-    def __init__(self, fqdn, port, user_name, password, rosbag_backup_dir, vid="itriadv", upload_rate=1000000):
+    def __init__(self, fqdn, port, user_name, password, rosbag_backup_dir, upload_rate=1000000):
         """
         Currently we use FTP protocol to send rosbags
         """
         self.fqdn = fqdn
         self.port = port
-        self.vid = vid
+        self.license_plate_number = get_license_plate_number()
         self.proc = None
         self.user_name = user_name
         self.password = password
@@ -70,7 +71,7 @@ class RosbagSender(object):
         ]
         for bag in bags:
             ymd = _get_bag_ymd(bag)  # backup dir name in backend
-            dir_name = "/{}/{}".format(self.vid, ymd)
+            dir_name = "/{}/{}".format(self.license_plate_number, ymd)
             ftp_cmds += [
                 "mkdir -p {}".format(dir_name),
                 "cd {}".format(dir_name),
