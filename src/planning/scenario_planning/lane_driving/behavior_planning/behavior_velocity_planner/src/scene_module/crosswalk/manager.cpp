@@ -51,13 +51,39 @@ std::set<int64_t> getCrosswalkIdSetOnPath(
 
 }  // namespace
 
+CrosswalkModuleManager::CrosswalkModuleManager() : SceneModuleManagerInterface(getModuleName())
+{
+  ros::NodeHandle pnh("~");
+  const std::string ns(getModuleName());
+
+  // for crosswalk parameters
+  auto & cp = crosswalk_planner_param_;
+  pnh.param(ns + "/crosswalk/stop_margin", cp.stop_margin, 1.0);
+  pnh.param(ns + "/crosswalk/slow_margin", cp.slow_margin, 2.0);
+  pnh.param(ns + "/crosswalk/slow_velocity", cp.slow_velocity, 5.0 / 3.6);
+  pnh.param(
+    ns + "/crosswalk/stop_dynamic_object_prediction_time_margin",
+    cp.stop_dynamic_object_prediction_time_margin, 3.0);
+
+  // for walkway parameters
+  auto & wp = walkway_planner_param_;
+  pnh.param(ns + "/walkway/stop_margin", wp.stop_margin, 1.0);
+}
+
 void CrosswalkModuleManager::launchNewModules(const autoware_planning_msgs::PathWithLaneId & path)
 {
   for (const auto & crosswalk :
        getCrosswalksOnPath(path, planner_data_->lanelet_map, planner_data_->overall_graphs)) {
     const auto module_id = crosswalk.id();
     if (!isModuleRegistered(module_id)) {
-      registerModule(std::make_shared<CrosswalkModule>(module_id, crosswalk));
+      registerModule(
+        std::make_shared<CrosswalkModule>(module_id, crosswalk, crosswalk_planner_param_));
+      if (
+        crosswalk.attributeOr(lanelet::AttributeNamesString::Subtype, std::string("")) ==
+        lanelet::AttributeValueString::Walkway) {
+        registerModule(
+          std::make_shared<WalkwayModule>(module_id, crosswalk, walkway_planner_param_));
+      }
     }
   }
 }

@@ -27,6 +27,7 @@
 #include <autoware_lanelet2_msgs/MapBin.h>
 #include <autoware_perception_msgs/DynamicObjectArray.h>
 #include <autoware_perception_msgs/TrafficLightStateArray.h>
+#include <autoware_perception_msgs/TrafficLightStateStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -37,12 +38,9 @@
 #include <lanelet2_routing/RoutingGraphContainer.h>
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
 
-// TODO(Kenji Miyake): Add msg
-struct TrafficLightStateStamped
-{
-  std_msgs::Header header;
-  autoware_perception_msgs::TrafficLightState traffic_light_state;
-};
+#include <msgs/BusStop.h>
+#include <msgs/BusStopArray.h>
+
 
 struct PlannerData
 {
@@ -54,9 +52,10 @@ struct PlannerData
   autoware_perception_msgs::DynamicObjectArray::ConstPtr dynamic_objects;
   pcl::PointCloud<pcl::PointXYZ>::ConstPtr no_ground_pointcloud;
   lanelet::LaneletMapPtr lanelet_map;
+  msgs::BusStopArray::ConstPtr bus_stop_reserve;
 
   // other internal data
-  std::map<int, TrafficLightStateStamped> traffic_light_id_map_;
+  std::map<int, autoware_perception_msgs::TrafficLightStateStamped> traffic_light_id_map_;
   lanelet::traffic_rules::TrafficRulesPtr traffic_rules;
   lanelet::routing::RoutingGraphPtr routing_graph;
   std::shared_ptr<const lanelet::routing::RoutingGraphContainer> overall_graphs;
@@ -69,18 +68,19 @@ struct PlannerData
 
   // additional parameters
   double max_stop_acceleration_threshold_;
+  double delay_response_time_;
 
   bool isVehicleStopping() const
   {
     if (!current_velocity) return false;
-    return current_velocity->twist.linear.x < 0.1;
+    return current_velocity->twist.linear.x < 0.5; // 0.1
   }
 
-  std::shared_ptr<TrafficLightStateStamped> getTrafficLightState(const int id) const
+  std::shared_ptr<autoware_perception_msgs::TrafficLightStateStamped> getTrafficLightState(const int id) const
   {
     if (traffic_light_id_map_.count(id) == 0) {
       return {};
     }
-    return std::make_shared<TrafficLightStateStamped>(traffic_light_id_map_.at(id));
+    return std::make_shared<autoware_perception_msgs::TrafficLightStateStamped>(traffic_light_id_map_.at(id));
   }
 };

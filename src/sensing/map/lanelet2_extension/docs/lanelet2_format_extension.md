@@ -5,6 +5,10 @@ About the basics of the default format, please refer to main [Lanelet2 repositor
 In addition to default Lanelet2 Format, users should add following mandatory/optional tags to their osm lanelet files as explained in reset of this document. 
 Users may use `autoware_lanelet2_validation` [node](../README.md#nodes) to check if their maps are valid. 
 
+There are also [extra regulatory elements](./ExtraRegulatoryElements) added for Autoware:
+* Detection Area
+* Road Marking
+
 ## Mandatory Tags
 ### Elevation Tags
 Elevation("ele") information for points(`node`) is optional in default Lanelet2 format.
