@@ -90,10 +90,26 @@ void Ini_route_03_bytxt()
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
 
+void Ini_route_04_bytxt()
+{
+  std::string fpname = ros::package::getPath("mission_input");
+  std::string fpname_s = fpname + "/data/ITRI_route_04.txt"; // full route - pass 51 - end 14
+
+  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+}
+
+void Ini_route_05_bytxt()
+{
+  std::string fpname = ros::package::getPath("mission_input");
+  std::string fpname_s = fpname + "/data/ITRI_route_05.txt"; // full route - pass 51 - end 14
+
+  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+}
+
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_busstop.txt"; // full route
+  std::string fpname_s = fpname + "/data/ITRI_busstop.txt";
 
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
@@ -196,9 +212,17 @@ void offline_realtime_goal_setting()
     {
       Ini_route_02_bytxt();
     }
-    else
+    else if (route_choose == 3)
     {
       Ini_route_03_bytxt();
+    }
+    else if (route_choose == 4)
+    {
+      Ini_route_04_bytxt();
+    }
+    else
+    {
+      Ini_route_05_bytxt();
     }
     
     get_goal_point();

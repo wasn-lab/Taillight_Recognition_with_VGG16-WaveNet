@@ -137,6 +137,7 @@ void register_callback(const msgs::BehaviorSceneRegister::ConstPtr& msg)
   {
     bus_stop_register(msg);
   }
+  // if (msg->Module == "bus_stop")
 }
 
 void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstPtr& msg)
