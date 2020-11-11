@@ -24,7 +24,7 @@
 	<rosparam param="Alpha_Front_Right_Param">[-0.5, -1, 0, 45, 0, 0]</rosparam>
 	<rosparam param="Alpha_Side_Left_Param">[-0.5, 1, 0, 225, 0, 0]</rosparam>
 	<rosparam param="Alpha_Side_Right_Param">[-0.5, -1, 0, -45, 0, 0]</rosparam>
-	<rosparam param="Alpha_Back_Left_Param">[6, 1, 0, 0, 225, 0]</rosparam>
+	<rosparam param="Alpha_Back_Left_Param">[6, 1, 0, 225, 0, 0]</rosparam>
 	<rosparam param="Alpha_Back_Right_Param">[-6, -1, 0, -45, 0, 0]</rosparam>
 
 	<!-- ************ Radar Detection ************ -->
@@ -110,7 +110,7 @@
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 		</node>
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="6 1 0 0 0 0 base_link rad_bl" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_bl_to_baselink" args="6 1 0 3.925 0 0 base_link rad_bl" />
 	</group>
 
 	<!-- ************ Alpha Back Right ************ -->
