@@ -18,10 +18,6 @@ class RosbagSenderTest(unittest.TestCase):
         bags = self.sender.get_unsent_rosbag_filenames()
         self.assertTrue(len(bags) > 0)
 
-    def test_2(self):
-        bag = "/media/chtseng/Sandisk/rosbag_files/backup/auto_record_2020-10-06-16-26-50_27.bag"
-        self.assertEqual(_get_bag_ymd(bag), "20201006")
-
     def test_run(self):
         self.sender.run();
 
