@@ -3,6 +3,7 @@ Send backup rosbag files to backend.
 """
 from __future__ import print_function
 import time
+import datetime
 import os
 import io
 import subprocess
@@ -57,12 +58,12 @@ class RosbagSender(object):
     def run(self):
         while True:
             self.send_if_having_bags()
-            time.sleep(1)
+            time.sleep(3)
 
     def send_if_having_bags(self):
         bags = self.get_unsent_rosbag_filenames()
         if not bags:
-            print("No bags to upload")
+            print("{}: No bags to upload".format(datetime.datetime.now()))
             return
         self.send_bags(bags)
 
