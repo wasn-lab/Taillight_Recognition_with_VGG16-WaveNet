@@ -28,9 +28,9 @@ class RosbagSenderTest(unittest.TestCase):
         filename = self.sender._generate_lftp_script(bag)
         with io.open(filename) as _fp:
             contents = _fp.read()
-        print(contents)
         self.assertTrue(bag in contents)
 
+    @unittest.skip("Manually enabled test item")
     def test_send_bags(self):
         bags = [
             "/media/chtseng/Sandisk/rosbag_files/backup/auto_record_2020-10-06-16-24-20_17.bag",
