@@ -12,9 +12,12 @@
 
 ros::Publisher bus_stop_register_pub;
 ros::Publisher bus_stop_register_array_pub;
+ros::Publisher traffic_light_register_pub;
+ros::Publisher traffic_light_register_array_pub;
 
 // msgs::BehaviorSceneRegister bus_stop_register_;
 msgs::BehaviorSceneRegisterArray bus_stop_register_array_;
+msgs::BehaviorSceneRegisterArray traffic_light_register_array_;
 
 struct pose
 {
@@ -40,8 +43,10 @@ struct pose_with_header
     std_msgs::Header header;
 };
 pose_with_header nearest_bus_stop;
+pose_with_header nearest_traffic_light;
 
 bool bus_stop_ini = false;
+bool traffic_light_ini = false;
 
 double busstop_BusStopNum[2000] = {};
 double busstop_BuildingNum[2000] = {};
@@ -91,53 +96,104 @@ void Ini_busstop_bytxt()
   busstop_txt_ini = true;
 }
 
-void bus_stop_register(const msgs::BehaviorSceneRegister::ConstPtr& msg)
+// void bus_stop_register(const msgs::BehaviorSceneRegister::ConstPtr& msg)
+// {
+//   bus_stop_register_array_.header.frame_id = "map";
+//   bus_stop_register_array_.header.stamp = ros::Time::now();
+
+//   if (msg->RegisterFlag == 1)
+//   {
+//     msgs::BehaviorSceneRegister bus_stop_register_;
+//     bus_stop_register_.header.frame_id = "map";
+//     bus_stop_register_.header.stamp = ros::Time::now();
+//     bus_stop_register_.Module =  msg->Module;
+//     bus_stop_register_.ModuleId =  msg->ModuleId;
+//     bus_stop_register_.RegisterFlag = msg->RegisterFlag;
+//     for (int i=0; i<read_index; i++)
+//     {
+//       std::cout << "bus_stop_register_.ModuleId : " << bus_stop_register_.ModuleId << std::endl;
+//       std::cout << "busstop_BusStopId[" << i << "] : " << busstop_BusStopId[i] << std::endl;
+//       if (bus_stop_register_.ModuleId == busstop_BusStopId[i])
+//       {
+//         bus_stop_register_.BusStopNum = busstop_BusStopNum[i];
+//       }
+//     }
+//     bus_stop_register_array_.registers.push_back(bus_stop_register_);
+//   }
+//   else if (msg->RegisterFlag == 0)
+//   {
+//     int index = 0;
+//     for (int i=0; i<bus_stop_register_array_.registers.size(); i++)
+//     {
+//       if (bus_stop_register_array_.registers[i].ModuleId == msg->ModuleId)
+//       {
+//         index = i;
+//         break;
+//       }
+//     }
+//     bus_stop_register_array_.registers.erase(bus_stop_register_array_.registers.begin() + index);
+//   }
+//   bus_stop_register_array_pub.publish(bus_stop_register_array_);
+// }
+
+void scence_register(const msgs::BehaviorSceneRegister::ConstPtr& msg, msgs::BehaviorSceneRegisterArray& register_array_, bool is_busstop, ros::Publisher register_array_pub)
 {
-  bus_stop_register_array_.header.frame_id = "map";
-  bus_stop_register_array_.header.stamp = ros::Time::now();
+  register_array_.header.frame_id = "map";
+  register_array_.header.stamp = ros::Time::now();
 
   if (msg->RegisterFlag == 1)
   {
-    msgs::BehaviorSceneRegister bus_stop_register_;
-    bus_stop_register_.header.frame_id = "map";
-    bus_stop_register_.header.stamp = ros::Time::now();
-    bus_stop_register_.Module =  msg->Module;
-    bus_stop_register_.ModuleId =  msg->ModuleId;
-    bus_stop_register_.RegisterFlag = msg->RegisterFlag;
-    for (int i=0; i<read_index; i++)
+    msgs::BehaviorSceneRegister register_;
+    register_.header.frame_id = "map";
+    register_.header.stamp = ros::Time::now();
+    register_.Module =  msg->Module;
+    register_.ModuleId =  msg->ModuleId;
+    register_.RegisterFlag = msg->RegisterFlag;
+    if (is_busstop)
     {
-      std::cout << "bus_stop_register_.ModuleId : " << bus_stop_register_.ModuleId << std::endl;
-      std::cout << "busstop_BusStopId[" << i << "] : " << busstop_BusStopId[i] << std::endl;
-      if (bus_stop_register_.ModuleId == busstop_BusStopId[i])
+      for (int i=0; i<read_index; i++)
       {
-        bus_stop_register_.BusStopNum = busstop_BusStopNum[i];
+        std::cout << "busstop_register_.ModuleId : " << register_.ModuleId << std::endl;
+        std::cout << "busstop_BusStopId[" << i << "] : " << busstop_BusStopId[i] << std::endl;
+        if (register_.ModuleId == busstop_BusStopId[i])
+        {
+          register_.BusStopNum = busstop_BusStopNum[i];
+        }
       }
     }
-    bus_stop_register_array_.registers.push_back(bus_stop_register_);
+    else
+    {
+      register_.BusStopNum = 99;
+    }
+    register_array_.registers.push_back(register_);
   }
   else if (msg->RegisterFlag == 0)
   {
     int index = 0;
-    for (int i=0; i<bus_stop_register_array_.registers.size(); i++)
+    for (int i=0; i<register_array_.registers.size(); i++)
     {
-      if (bus_stop_register_array_.registers[i].ModuleId == msg->ModuleId)
+      if (register_array_.registers[i].ModuleId == msg->ModuleId)
       {
         index = i;
         break;
       }
     }
-    bus_stop_register_array_.registers.erase(bus_stop_register_array_.registers.begin() + index);
+    register_array_.registers.erase(register_array_.registers.begin() + index);
   }
-  bus_stop_register_array_pub.publish(bus_stop_register_array_);
+  register_array_pub.publish(register_array_);
 }
 
 void register_callback(const msgs::BehaviorSceneRegister::ConstPtr& msg)
 {
   if (msg->Module == "bus_stop")
   {
-    bus_stop_register(msg);
+    // bus_stop_register(msg);
+    scence_register(msg,bus_stop_register_array_,true, bus_stop_register_array_pub);
   }
-  // if (msg->Module == "bus_stop")
+  if (msg->Module == "traffic_light")
+  {
+    scence_register(msg,traffic_light_register_array_,false, traffic_light_register_array_pub);
+  }
 }
 
 void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstPtr& msg)
@@ -150,67 +206,107 @@ void stop_reasons_callback(const autoware_planning_msgs::StopReasonArray::ConstP
       nearest_bus_stop.header = msg->header;
       if (!msg->stop_reasons[i].stop_factors.empty())
       {
-        nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
-        nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
-        nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
+        // nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
+        // nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
+        // nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
+        nearest_bus_stop.x = msg->stop_reasons[i].stop_factors[0].stop_pose.position.x;
+        nearest_bus_stop.y = msg->stop_reasons[i].stop_factors[0].stop_pose.position.y;
+        nearest_bus_stop.z = msg->stop_reasons[i].stop_factors[0].stop_pose.position.z;
         bus_stop_ini = true;
+        break;
+      }
+    }
+    if (msg->stop_reasons[i].reason == "\"TrafficLight\"")
+    {
+      nearest_traffic_light.header = msg->header;
+      if (!msg->stop_reasons[i].stop_factors.empty())
+      {
+        // nearest_traffic_light.x = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].x;
+        // nearest_traffic_light.y = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].y;
+        // nearest_traffic_light.z = msg->stop_reasons[i].stop_factors[0].stop_factor_points[0].z;
+        nearest_traffic_light.x = msg->stop_reasons[i].stop_factors[0].stop_pose.position.x;
+        nearest_traffic_light.y = msg->stop_reasons[i].stop_factors[0].stop_pose.position.y;
+        nearest_traffic_light.z = msg->stop_reasons[i].stop_factors[0].stop_pose.position.z;
+        traffic_light_ini = true;
         break;
       }
     }
   }
 }
 
-void bus_stop_()
-{
-  msgs::BehaviorSceneRegister bus_stop_register_;
+// void bus_stop_()
+// {
+//   msgs::BehaviorSceneRegister bus_stop_register_;
 
-  if (bus_stop_register_array_.registers.empty())
+//   if (bus_stop_register_array_.registers.empty())
+//   {
+//     bus_stop_register_.header.frame_id = "map";
+//     bus_stop_register_.header.stamp = ros::Time::now();
+//     bus_stop_register_.Module =  "bus_stop";
+//     bus_stop_register_.ModuleId =  {};
+//     bus_stop_register_.BusStopNum = 99;
+//     bus_stop_register_.StopZone = 0;
+//     bus_stop_register_.Distance = 100; 
+//   } 
+//   else
+//   {
+//     bus_stop_register_ = bus_stop_register_array_.registers[0];
+//     bus_stop_register_.header.frame_id = "map";
+//     bus_stop_register_.header.stamp = ros::Time::now();
+//     bus_stop_register_.Distance = sqrt((current_pose.x-nearest_bus_stop.x)*(current_pose.x-nearest_bus_stop.x) + (current_pose.y-nearest_bus_stop.y)*(current_pose.y-nearest_bus_stop.y));
+//     if (bus_stop_register_.Distance > 20)
+//     {
+//       bus_stop_register_.StopZone = 0;
+//     }
+//     else
+//     {
+//       bus_stop_register_.StopZone = 1;
+//     }
+//   }
+//   bus_stop_register_pub.publish(bus_stop_register_);
+// }
+
+void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nearst_pose, ros::Publisher register_pub, std::string Module)
+{
+  msgs::BehaviorSceneRegister register_;
+
+  if (register_array_.registers.empty())
   {
-    bus_stop_register_.header.frame_id = "map";
-    bus_stop_register_.header.stamp = ros::Time::now();
-    bus_stop_register_.Module =  "bus_stop";
-    bus_stop_register_.ModuleId =  {};
-    bus_stop_register_.BusStopNum = 99;
-    bus_stop_register_.StopZone = 0;
-    bus_stop_register_.Distance = 100; 
+    register_.header.frame_id = "map";
+    register_.header.stamp = ros::Time::now();
+    register_.Module =  Module;
+    register_.ModuleId =  {};
+    register_.BusStopNum = 99;
+    register_.StopZone = 0;
+    register_.Distance = 200; 
   } 
   else
   {
-    bus_stop_register_ = bus_stop_register_array_.registers[0];
-    bus_stop_register_.header.frame_id = "map";
-    bus_stop_register_.header.stamp = ros::Time::now();
-    bus_stop_register_.Distance = sqrt((current_pose.x-nearest_bus_stop.x)*(current_pose.x-nearest_bus_stop.x) + (current_pose.y-nearest_bus_stop.y)*(current_pose.y-nearest_bus_stop.y));
-    if (bus_stop_register_.Distance > 20)
+    register_ = register_array_.registers[0];
+    register_.header.frame_id = "map";
+    register_.header.stamp = ros::Time::now();
+    if (nearst_pose.x == 0 && nearst_pose.y == 0 && nearst_pose.z == 0)
     {
-      bus_stop_register_.StopZone = 0;
+      register_.Distance = 200;
     }
     else
     {
-      bus_stop_register_.StopZone = 1;
+      register_.Distance = sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
+    }
+    // if (Module == "traffic_light")
+    // {
+    //   register_.Distance = std::fabs(register_.Distance - 17);
+    // }
+    if (register_.Distance > 20)
+    {
+      register_.StopZone = 0;
+    }
+    else
+    {
+      register_.StopZone = 1;
     }
   }
-  // ros::Duration time_check = bus_stop_register_.header.stamp - nearest_bus_stop.header.stamp;
-  // if (time_check.toSec() < 0.5)
-  // {
-  //   bus_stop_register_.Distance = sqrt((current_pose.x-nearest_bus_stop.x)*(current_pose.x-nearest_bus_stop.x) + (current_pose.y-nearest_bus_stop.y)*(current_pose.y-nearest_bus_stop.y));
-  //   if (bus_stop_register_.Distance > 20)
-  //   {
-  //     bus_stop_register_.StopZone = 0;
-  //   }
-  //   else
-  //   {
-  //     bus_stop_register_.StopZone = 1;
-  //   }
-  // }
-  // else
-  // {
-  //   bus_stop_register_.Module =  {};
-  //   bus_stop_register_.ModuleId =  {};
-  //   bus_stop_register_.BusStopNum = 99;
-  //   bus_stop_register_.StopZone = 0;
-  //   bus_stop_register_.Distance = 100;
-  // }
-  bus_stop_register_pub.publish(bus_stop_register_);
+  register_pub.publish(register_);
 }
 
 void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
@@ -232,8 +328,10 @@ void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& PSmsg)
   }
   if (busstop_txt_ini)
   {
-    bus_stop_();
+    // bus_stop_();
+    run(bus_stop_register_array_, nearest_bus_stop, bus_stop_register_pub, "bus_stop");
   }
+  run(traffic_light_register_array_, nearest_traffic_light, traffic_light_register_pub, "traffic_light");
 }
 
 int main(int argc, char** argv)
@@ -243,9 +341,11 @@ int main(int argc, char** argv)
 
   ros::Subscriber behavior_scene_register_sub = node.subscribe("/planning/scenario_planning/status/behavior_scene_register", 1, register_callback);
   ros::Subscriber stop_reasons_sub = node.subscribe("/planning/scenario_planning/status/stop_reasons", 1, stop_reasons_callback);
-  ros::Subscriber current_pose_sub = node.subscribe("/current_pose", 1, current_pose_callback);
+  ros::Subscriber current_pose_sub = node.subscribe("/rear_current_pose", 1, current_pose_callback);
   bus_stop_register_pub = node.advertise<msgs::BehaviorSceneRegister>("/bus_stop_register_info",1);
   bus_stop_register_array_pub = node.advertise<msgs::BehaviorSceneRegisterArray>("/bus_stop_register_array_info",1);
+  traffic_light_register_pub = node.advertise<msgs::BehaviorSceneRegister>("/traffic_light_register_info",1);
+  traffic_light_register_array_pub = node.advertise<msgs::BehaviorSceneRegisterArray>("/traffic_light_register_array_info",1);
 
   Ini_busstop_bytxt();
 
