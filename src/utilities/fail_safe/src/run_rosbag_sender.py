@@ -18,12 +18,11 @@ def main():
     cfg = configparser.ConfigParser()
     cfg.read(args.rosbag_sender_ini)
 
-    _rate = cfg["ftp"].getint("upload_rate", 1000000)
     sender = RosbagSender(cfg["ftp"]["fqdn"], cfg["ftp"]["port"],
                           cfg["ftp"]["user_name"],
                           cfg["ftp"]["password"],
                           cfg["rosbag"]["backup_dir"],
-                          upload_rate=_rate)
+                          cfg["ftp"]["upload_rate"])
 
     sender.run()
 

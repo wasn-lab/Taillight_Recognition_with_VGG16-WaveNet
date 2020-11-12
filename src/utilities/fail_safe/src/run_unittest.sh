@@ -7,3 +7,4 @@ python rosbag_utils_test.py
 python sb_param_utils_test.py
 python vk221_3_test.py
 python vk221_4_test.py
+python rosbag_sender_test.py
