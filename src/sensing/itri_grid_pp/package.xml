@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<package>
+    <name>itri_grid_pp</name>
+    <version>0.0.0</version>
+    <description>ITRI Grid-based Path Prediction package</description>
+    <maintainer email="chinghao.liu@itri.org.tw">Ching-Hao Liu</maintainer>
+    <license>ITRI</license>
+    <buildtool_depend>catkin</buildtool_depend>
+</package>
