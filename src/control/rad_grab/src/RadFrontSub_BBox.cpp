@@ -75,6 +75,10 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
       Box_temp.bPoint.p7.y = -msg->radPoint[i].y + m_depth;
       Box_temp.bPoint.p7.z = msg->radPoint[i].z;
 
+      Box_temp.center_point.x = msg->radPoint[i].x;
+      Box_temp.center_point.y = -msg->radPoint[i].y;
+      Box_temp.center_point.z = msg->radPoint[i].z;
+
       BBox.objects.push_back(Box_temp);
 
       // cout << "x = " << Box_temp.bPoint.p0.x << ", y = " << Box_temp.bPoint.p0.y << ", speed = " << Box_temp.relSpeed
