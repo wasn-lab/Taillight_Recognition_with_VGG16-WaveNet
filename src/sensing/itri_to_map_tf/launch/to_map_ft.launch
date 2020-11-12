@@ -1,0 +1,6 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- Launch node -->
+  <node pkg="itri_to_map_tf" type="itri_to_map_tf" name="itri_to_map_tf" output="screen" clear_params="true"/>
+</launch>
