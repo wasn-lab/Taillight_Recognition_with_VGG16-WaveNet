@@ -1,5 +1,10 @@
 Header header
 
 bool is_in_n10_0
+int64 obj_in_n10_0
+
 bool is_in_0_70_incoming
+int64 obj_in_0_70_incoming
+
 bool is_in_n40_n10_incoming
+int64 obj_in_n40_n10_incoming
