@@ -33,7 +33,7 @@ class SBParamUtilsTest(unittest.TestCase):
 
         rospy.delete_param(param_name)
         actual = get_license_plate_number()
-        self.assertEqual(actual, "ITRI_ADVTEST")
+        self.assertEqual(actual, "ITRI-ADV")
 
         if org_val:
             rospy.set_param(param_name, org_val)
