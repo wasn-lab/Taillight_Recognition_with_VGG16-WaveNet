@@ -70,7 +70,6 @@ class ros_detect_opticalflow:
         rospy.spin()
 
     def yolo_callback(self,data):
-        print('yolo_bbox_time',self.yolo_bbox_time)
         self.yolo_len += 1
         self.yolo_bbox_time.append(data.header.stamp)    
         self.keep_data_object.append(data.objects)
@@ -217,7 +216,7 @@ class ros_detect_opticalflow:
             self.check_status_every_sec()
             if not self.first_yolo:
                 if len(self.keep_yolo_time) >0 and len(self.yolo_bbox_time) >0:
-                    print('first',self.keep_yolo_time,self.yolo_bbox_time,self.img_timestamp)
+                    #print('first',self.keep_yolo_time,self.yolo_bbox_time,self.img_timestamp)
                     duplicate_yolo_img_time = np.nonzero(np.isin(self.keep_yolo_time, self.img_timestamp))[0]
                     if len(duplicate_yolo_img_time)>0:
                        self.keep_yolo_time = self.keep_yolo_time[duplicate_yolo_img_time[0]:]
@@ -285,43 +284,46 @@ class ros_detect_opticalflow:
                         #yolo
                         if len(self.yolo_bbox_time)>0 and len(self.img_timestamp) >0:
                             if self.keep_yolo_time[0] in self.yolo_bbox_time:
-                                #print('yolo')
-                                self.temp_img_len = self.img_len
-                                self.temp_yolo_len = self.yolo_len
-                                self.frame_counter = 0
-                                yolo_result_index = self.yolo_bbox_time.index(self.keep_yolo_time[0])
-                                yolo_index = self.img_timestamp.index(self.keep_yolo_time[0])
-                                self.img_list = self.img_list[yolo_index:]
-                                self.img_timestamp = self.img_timestamp[yolo_index+1:]
-                                
-                                img1 = self.bridge.imgmsg_to_cv2(self.img_list[self.frame_counter][0], "bgr8")
-                                self.img_list = self.img_list[1:]
+                                if self.keep_yolo_time[0] not in self.img_timestamp:
+                                    self.keep_yolo_time = self.keep_yolo_time[1:]
+                                else:
+                                    #print('yolo')
+                                    self.temp_img_len = self.img_len
+                                    self.temp_yolo_len = self.yolo_len
+                                    self.frame_counter = 0
+                                    yolo_result_index = self.yolo_bbox_time.index(self.keep_yolo_time[0])
+                                    yolo_index = self.img_timestamp.index(self.keep_yolo_time[0])
+                                    self.img_list = self.img_list[yolo_index:]
+                                    self.img_timestamp = self.img_timestamp[yolo_index+1:]
 
-                                res_list = []
-                                for obj in self.keep_data_object[yolo_result_index]:
-                                    scale_bbox_info = np.array([int(obj.camInfo.u),\
-                                                                int(obj.camInfo.v),\
-                                                                int(obj.camInfo.u)+int(obj.camInfo.width),\
-                                                                int(obj.camInfo.v)+int(obj.camInfo.height)])
-                                    scale_bbox_info = scale_bbox_info*size_scale
-                                    res = {
-                                            'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
-                                                    int(scale_bbox_info[2]), int(scale_bbox_info[3])],
-                                            'category': int(obj.classId),
-                                            'confidence': float(obj.camInfo.prob)
-                                          }
-                                    res_list.append(res)  
+                                    img1 = self.bridge.imgmsg_to_cv2(self.img_list[self.frame_counter][0], "bgr8")
+                                    self.img_list = self.img_list[1:]
+
+                                    res_list = []
+                                    for obj in self.keep_data_object[yolo_result_index]:
+                                        scale_bbox_info = np.array([int(obj.camInfo.u),\
+                                                                    int(obj.camInfo.v),\
+                                                                    int(obj.camInfo.u)+int(obj.camInfo.width),\
+                                                                    int(obj.camInfo.v)+int(obj.camInfo.height)])
+                                        scale_bbox_info = scale_bbox_info*size_scale
+                                        res = {
+                                                'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
+                                                        int(scale_bbox_info[2]), int(scale_bbox_info[3])],
+                                                'category': int(obj.classId),
+                                                'confidence': float(obj.camInfo.prob)
+                                              }
+                                        res_list.append(res)  
 
 
-                                full_image_info = [img1,res_list,"YOLO",self.keep_yolo_time[0]]
-                                self.ros_publisher_debug_img(full_image_info)
-                                full_bbox_info = [res_list,"YOLO",self.keep_yolo_time[0],\
-                                                            self.keep_data_object[yolo_result_index]]       
-                                self.ros_publisher_optical_bbox(full_bbox_info)
-                                y_len +=1
-                                self.yolo_bbox_time = self.yolo_bbox_time[(yolo_result_index+1):]
-                                self.keep_data_object = self.keep_data_object[(yolo_result_index+1):]
-                                self.keep_yolo_time = self.keep_yolo_time[1:]
+                                    full_image_info = [img1,res_list,"YOLO",self.keep_yolo_time[0]]
+                                    self.ros_publisher_debug_img(full_image_info)
+                                    full_bbox_info = [res_list,"YOLO",self.keep_yolo_time[0],\
+                                                                self.keep_data_object[yolo_result_index]]       
+                                    self.ros_publisher_optical_bbox(full_bbox_info)
+                                    y_len +=1
+                                    self.yolo_bbox_time = self.yolo_bbox_time[(yolo_result_index+1):]
+                                    self.keep_data_object = self.keep_data_object[(yolo_result_index+1):]
+                                    self.keep_yolo_time = self.keep_yolo_time[1:]
 
             rate.sleep()
 
