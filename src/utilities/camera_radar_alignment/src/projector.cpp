@@ -99,6 +99,7 @@ std::vector<double> Projector::calculateRadarAngle(double camera_alpha, double c
         result[0] = radar_alpha;
         result[1] = radar_beta;
         std::cout << "find radar angle, pitch: " << radar_alpha << ", yaw: " << radar_beta << std::endl;
+      std::vector<int> pixel = project(camera_alpha, camera_beta, h_camera, radar_alpha, radar_beta, h_r, h_o, x_r, y_r, L_x, L_y, true);
         return result;
       }
       if ( abs(pixel[0] - x_p) < 2 && abs(pixel[1] - y_p) < 2) 
@@ -136,13 +137,15 @@ std::vector<int> Projector::project(double camera_alpha, double camera_beta, dou
   }
   //yaw rotation
   x_rw_yaw = x_rw * cos(radar_beta) - y_rw * sin(radar_beta) - L_x;
-  y_rw_yaw = x_rw * sin(radar_beta) + y_rw * cos(radar_beta) + L_y;
+  y_rw_yaw = x_rw * sin(radar_beta) + y_rw * cos(radar_beta) - L_y;
+  if(debug)
+  std::cout << x_rw_yaw << ", " << y_rw_yaw << ", " << z_rw << std::endl;
   //pixel transform
   std::vector<int> pixel = calculatePixel(camera_alpha, camera_beta, h_camera, x_rw_yaw, y_rw_yaw, z_rw, debug);
   return pixel;
 }
 
-std::vector<int> Projector::project(double h_camera,double h_r,double x_r, double y_r, double L_x, double L_y)
+std::vector<int> Projector::project(double x_r, double y_r, double L_x, double L_y)
 {
   std::vector<int> pixel(2);
   if(!radarMat.empty())
@@ -151,13 +154,13 @@ std::vector<int> Projector::project(double h_camera,double h_r,double x_r, doubl
     //pitch rotation
     z_r = 0;
     x_rw = x_r;
-    y_rw = y_r * cos(radarMat.at<double>(0, 2)) - z_r * sin(radarMat.at<double>(0, 2));
-    z_rw = y_r * sin(radarMat.at<double>(0, 2)) + z_r * cos(radarMat.at<double>(0, 2)) + h_r;
+    y_rw = y_r * cos(radarMat.at<double>(0, 4)) - z_r * sin(radarMat.at<double>(0, 4));
+    z_rw = y_r * sin(radarMat.at<double>(0, 4)) + z_r * cos(radarMat.at<double>(0, 4)) + radarMat.at<double>(0, 1);
     //yaw rotation
-    x_rw_yaw = x_rw * cos(radarMat.at<double>(0, 3)) - y_rw * sin(radarMat.at<double>(0, 3)) - L_x;
-    y_rw_yaw = x_rw * sin(radarMat.at<double>(0, 3)) + y_rw * cos(radarMat.at<double>(0, 3)) + L_y;
+    x_rw_yaw = x_rw * cos(radarMat.at<double>(0, 5)) - y_rw * sin(radarMat.at<double>(0, 5)) - L_x;
+    y_rw_yaw = x_rw * sin(radarMat.at<double>(0, 5)) + y_rw * cos(radarMat.at<double>(0, 5)) - L_y;
     //pixel transform
-    pixel = calculatePixel(radarMat.at<double>(0, 0), radarMat.at<double>(0, 1), h_camera, x_rw_yaw, y_rw_yaw, z_rw, false);
+    pixel = calculatePixel(radarMat.at<double>(0, 2), radarMat.at<double>(0, 3), radarMat.at<double>(0, 0), x_rw_yaw, y_rw_yaw, z_rw, false);
   }
   return pixel;
 }

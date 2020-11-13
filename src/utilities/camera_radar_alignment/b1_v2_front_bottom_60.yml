@@ -32,6 +32,6 @@ CoverageMat: !!opencv-matrix
            -50., 50. ]
 RadarMat: !!opencv-matrix
    rows: 1
-   cols: 4
+   cols: 6
    dt: d
-   data: [-0.0855211, -0.0261799, 0., -0.0279253]
+   data: [1.29, 0.63, -0.0855211, -0.0261799, 0., -0.0279253]
