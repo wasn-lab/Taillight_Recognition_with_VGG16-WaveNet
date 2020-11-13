@@ -1,1 +1,0 @@
-set(ENABLE_PEDCROSS OFF)
