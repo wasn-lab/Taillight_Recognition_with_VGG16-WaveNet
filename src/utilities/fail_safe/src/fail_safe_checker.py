@@ -11,6 +11,7 @@ from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL
+from sb_param_utils import get_vid
 
 
 def _overall_status(module_states):
@@ -23,9 +24,9 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, vid, heartbeat_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, heartbeat_ini, mqtt_ini, mqtt_fqdn):
         self.debug_mode = False
-        self.vid = vid  # vehicle id
+        self.vid = get_vid()  # vehicle id
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
