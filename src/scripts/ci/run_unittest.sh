@@ -29,5 +29,11 @@ then
 fi
 
 popd
+
+pushd $repo_dir
+source devel/setup.bash
+src/utilities/fail_safe/src/run_unittest.sh
+popd
+
 echo "ALL done!"
 exit 0

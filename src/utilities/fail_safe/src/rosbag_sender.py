@@ -1,38 +1,48 @@
+"""
+Send backup rosbag files to backend.
+"""
+from __future__ import print_function
 import time
+import datetime
 import os
+import io
 import subprocess
-import re
+from sb_param_utils import get_license_plate_number
+from rosbag_utils import get_bag_yymmdd
+from vk221_3 import notify_backend_with_new_bag
+from vk221_4 import notify_backend_with_uploaded_bag
 
-__BAG_NAME_RGX = re.compile(
-    r".*(?P<year>[\d]{4})\-(?P<month>[\d]{2})\-(?P<day>[\d]{2})\-.*\.bag")
 _BACKUP_ROSBAG_LFTP_SCRIPT = "/tmp/backup_rosbag_lftp_script.txt"
+
 
 def _get_stamp_filename(fullpath):
     """.stamp file indicate if we already send the corresponding bag."""
     return fullpath[:-4] + ".stamp"
 
 
-def _get_bag_ymd(bag):
-    """Return the 8-char {year}{month}{day} string encoded in |bag|."""
-    match = __BAG_NAME_RGX.match(bag)
-    if not match:
-        return "20200101"
-    year = match.expand(r"\g<year>")
-    month = match.expand(r"\g<month>")
-    day = match.expand(r"\g<day>")
-    return year + month + day
+def _send_bag_by_lftp(lftp_script_file):
+    shell_cmd = ["lftp", "-f", lftp_script_file]
+    print(" ".join(shell_cmd))
+    try:
+        ret = subprocess.check_call(shell_cmd)
+    except subprocess.CalledProcessError:
+        print("Fail to upload bag file. lftp_script contents:")
+        with io.open(lftp_script_file) as _fp:
+            print(_fp.read())
+        ret = 1
+    return ret
 
 
 
-# Send backup rosbag (where abnormal events/states happens) to the backend server
+
 class RosbagSender(object):
-    def __init__(self, fqdn, port, user_name, password, rosbag_backup_dir, vid="itriadv", upload_rate=1000000):
+    def __init__(self, fqdn, port, user_name, password, rosbag_backup_dir, upload_rate):
         """
         Currently we use FTP protocol to send rosbags
         """
         self.fqdn = fqdn
         self.port = port
-        self.vid = vid
+        self.license_plate_number = get_license_plate_number()
         self.proc = None
         self.user_name = user_name
         self.password = password
@@ -48,35 +58,40 @@ class RosbagSender(object):
     def run(self):
         while True:
             self.send_if_having_bags()
-            time.sleep(1)
+            time.sleep(3)
 
     def send_if_having_bags(self):
-        if self.proc and self.proc.poll() is None:
-            # bag is still uploading
-            return
         bags = self.get_unsent_rosbag_filenames()
         if not bags:
-            print("No bags to upload")
+            print("{}: No bags to upload".format(datetime.datetime.now()))
             return
-        print("Send to backend: {}".format(" ".join(bags)))
-        self._generate_lftp_scripts(bags)
-        self._send_bags()
+        self.send_bags(bags)
 
-    def _generate_lftp_scripts(self, bags):
+    def send_bags(self, bags):
+        bags.sort()
+        for bag in bags:
+            print("notify backend: {} is ready to be uploaded".format(bag))
+            notify_backend_with_new_bag(bag)
+            lftp_script_filename = self._generate_lftp_script(bag)
+            ret = _send_bag_by_lftp(lftp_script_filename)
+            if ret == 0:
+                print("notify backend: {} has been uploaded successfuly".format(bag))
+                notify_backend_with_uploaded_bag(bag)
+
+    def _generate_lftp_script(self, bag):
         ftp_cmds = [
             "set ssl:verify-certificate no",
             "set net:limit-total-rate 0:{}".format(self.upload_rate),
             "open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
-        for bag in bags:
-            ymd = _get_bag_ymd(bag)  # backup dir name in backend
-            dir_name = "/{}/{}".format(self.vid, ymd)
-            ftp_cmds += [
-                "mkdir -p {}".format(dir_name),
-                "cd {}".format(dir_name),
-                "put -c {}".format(bag),
-                "!touch {}".format(_get_stamp_filename(bag)),
-            ]
+        ymd = get_bag_yymmdd(bag)  # backup dir name in backend
+        dir_name = "/{}/{}".format(self.license_plate_number, ymd)
+        ftp_cmds += [
+            "mkdir -p {}".format(dir_name),
+            "cd {}".format(dir_name),
+            "put -c {}".format(bag),
+            "!touch {}".format(_get_stamp_filename(bag)),
+        ]
         ftp_cmds += ["bye"]
 
         if os.path.isfile(_BACKUP_ROSBAG_LFTP_SCRIPT):
@@ -85,10 +100,7 @@ class RosbagSender(object):
         with open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w") as _fp:
             _fp.write("\n".join(ftp_cmds))
             _fp.write("\n")
-
-    def _send_bags(self):
-        shell_cmd = ["lftp", "-f", _BACKUP_ROSBAG_LFTP_SCRIPT]
-        self.proc = subprocess.Popen(shell_cmd)
+        return _BACKUP_ROSBAG_LFTP_SCRIPT
 
     def get_unsent_rosbag_filenames(self):
         """Return a list of bag files that are not sent back"""
