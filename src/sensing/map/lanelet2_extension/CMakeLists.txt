@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(lanelet2_extension)
 
 find_package(PkgConfig)
@@ -19,6 +19,8 @@ find_path(PUGIXML_INCLUDE_DIRS
   NAMES pugixml.hpp
   PATH_SUFFIXES pugixml
 )
+
+add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -60,6 +62,7 @@ add_library( lanelet2_extension_lib
   lib/message_conversion.cpp
   lib/mgrs_projector.cpp
   lib/query.cpp
+  lib/road_marking.cpp
   lib/utilities.cpp
   lib/visualization.cpp
 )
