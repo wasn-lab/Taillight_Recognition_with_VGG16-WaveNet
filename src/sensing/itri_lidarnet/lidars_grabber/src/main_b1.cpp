@@ -300,6 +300,9 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       // assign
       *g_cloudPtr_LidarFrontTop = *input_cloud_tmp;
 
+      // print valid pointcloud counts
+      cout << "----------------> Top Valid Points Count: " << g_cloudPtr_LidarFrontTop->size() << endl;
+
       // publish
       g_cloudPtr_LidarFrontTop->header.frame_id = "lidar";
       g_pub_LidarFrontTop.publish(*g_cloudPtr_LidarFrontTop);
