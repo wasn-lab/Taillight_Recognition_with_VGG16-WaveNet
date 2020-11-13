@@ -254,11 +254,19 @@ set(SOURCES_SRCS
 ######################
 ##      Vehicle     ##
 ######################
+# b1
 cuda_add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
 add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
 target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 qt5_use_modules 		(${PROJECT_NAME}_b1 Widgets)
 
+# c1
+cuda_add_executable 	(${PROJECT_NAME}_c1 src/main_c1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
+add_dependencies		(${PROJECT_NAME}_c1 ${catkin_EXPORTED_TARGETS})
+target_link_libraries 	(${PROJECT_NAME}_c1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+qt5_use_modules 		(${PROJECT_NAME}_c1 Widgets)
+
+# hino
 if (CAR_MODEL_IS_HINO)
   cuda_add_executable 	(${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
   add_dependencies		(${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
