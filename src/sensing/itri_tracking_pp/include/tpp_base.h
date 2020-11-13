@@ -146,7 +146,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_bbox;
   ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 

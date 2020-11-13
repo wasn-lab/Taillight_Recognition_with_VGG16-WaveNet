@@ -291,9 +291,6 @@ void TPPNode::subscribe_and_advertise_topics()
 
   if (gen_markers_)
   {
-    std::string topic1 = topic + "/markers";
-    mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
-
     std::string topic3 = topic + "/id";
     mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
 

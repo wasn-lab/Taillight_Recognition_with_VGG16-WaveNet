@@ -280,7 +280,6 @@ void set_ColorRGBA(std_msgs::ColorRGBA& c, const float r, const float g, const f
 
 void set_config(const MarkerConfig& in, MarkerConfig& out)
 {
-  out.pub_bbox = in.pub_bbox;
   out.pub_pp = in.pub_pp;
   out.pub_vel = in.pub_vel;
   out.pub_id = in.pub_id;
