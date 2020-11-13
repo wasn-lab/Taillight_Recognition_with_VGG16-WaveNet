@@ -10,13 +10,22 @@ void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point
   cv::Point center_point = cv::Point(point_u, point_v);
   float distance_x = point_x;
   cv::Scalar point_color = getDistColor(distance_x);
-  cv::circle(m_src, center_point, 1, point_color, -1, cv::LINE_8, 0);
+  cv::circle(m_src, center_point, 1, point_color, -1, cv::FILLED, 0);
+}
+
+void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, int index)
+{
+  cv::Point center_point = cv::Point(point_u, point_v);
+  cv::Scalar point_color = intToColor(index);
+  cv::circle(m_src, center_point, 1, point_color, -1, cv::FILLED, 0);
 }
 
 void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects)
 {
   std::vector<cv::Point> cv_points(2);
   std::vector<PixelPosition> pixel_positions(2);
+  int obj_count = 0;
+  cv::Scalar color = CvColor::white_;
   for (const auto& obj : objects)
   {
     pixel_positions[0].u = obj.camInfo.u;
@@ -29,7 +38,10 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
     cv_points[0].y = pixel_positions[0].v;
     cv_points[1].x = pixel_positions[1].u;
     cv_points[1].y = pixel_positions[1].v;
-    cv::rectangle(m_src, cv_points[0], cv_points[1], CvColor::white_, 1, cv::LINE_8);
+
+    color = intToColor(int(obj_count % 10));
+    cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
+    obj_count++;
   }
 }
 
@@ -60,7 +72,7 @@ cv::Scalar Visualization::getDistColor(float distance_in_meters)
   }
   else
   {
-    color = CvColor::white_;
+    color = CvColor::black_;
   }
   return color;
 }

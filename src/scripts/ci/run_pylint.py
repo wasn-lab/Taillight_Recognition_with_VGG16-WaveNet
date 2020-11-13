@@ -7,12 +7,13 @@ import os
 import subprocess
 import sys
 import logging
-from ci_utils import get_affected_files, is_external_package
+from ci_utils import get_affected_files, is_external_package, get_repo_path
 
 
 def _run_pylint(affected_files):
     num_fail = 0
-    rc_file = "src/scripts/ci/pylintrc"
+    repo_path = get_repo_path()
+    rc_file = os.path.join(repo_path, "src/scripts/ci/pylintrc")
     for fname in affected_files:
         if not os.path.isfile(fname):
             continue
@@ -20,7 +21,9 @@ def _run_pylint(affected_files):
             continue
         if is_external_package(fname):
             continue
-        cmd = ["pylint", "-E", "--rcfile=" + rc_file, fname]
+        path, py_src = os.path.split(fname)
+        os.chdir(path)
+        cmd = ["pylint", "-E", "--rcfile=" + rc_file, "--disable=import-error", py_src]
         print(" ".join(cmd))
         try:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
@@ -31,6 +34,7 @@ def _run_pylint(affected_files):
         output = output.decode("utf-8")
         if output:
             print(output)
+        os.chdir(repo_path)
     return num_fail
 
 def main():

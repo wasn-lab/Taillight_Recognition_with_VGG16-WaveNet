@@ -156,11 +156,44 @@
 /gnss_twd97_data
 
 
-# Pedcross
-/PedCross/Alert
+# Pedcross (old)
+# /PedCross/Alert
 /PedCross/Pedestrians
-/PedCross/3D_marker
+# /PedCross/3D_marker
 /Tracking2D
+# Pedcross (new, 2020/09/28)
+/PedCross/Alert
+/PedCross/Alert/front_bottom_60
+/PedCross/Alert/left_back_60
+/PedCross/Alert/right_back_60
+/PedCross/Alert/front_top_far_30
+/PedCross/Pedestrians/front_bottom_60
+/PedCross/Pedestrians/left_back_60
+/PedCross/Pedestrians/right_back_60
+/PedCross/Pedestrians/front_top_far_30
+/PedCross/Polygon
+/PedCross/3D_marker
+/Tracking2D/front_bottom_60
+/Tracking2D/left_back_60
+/Tracking2D/right_back_60
+/Tracking2D/front_top_far_30
+
+#
+/traffic
+/gnss_utm_data
+/map/vector_map_marker
+/objects
+/planning/mission_planning/route_marker
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/blind_spot
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/intersection
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/path
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/stop_line
+/planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/traffic_light
+/planning/scenario_planning/lane_driving/behavior_planning/path
+/planning/scenario_planning/lane_driving/motion_planning/obstacle_stop_planner/debug/marker
+/planning/scenario_planning/trajectory
+/veh_predictpath
 
 
 
