@@ -22,7 +22,6 @@
 
 #-- 8-camera version
 /cam/front_bottom_60
-/cam/front_bottom_60_crop
 /cam/front_top_close_120
 /cam/front_top_far_30
 /cam/left_back_60
@@ -67,7 +66,6 @@
 #
 
 # Camera polygon
-/CameraDetection/polygon
 /CameraDetection
 
 /current_pose
