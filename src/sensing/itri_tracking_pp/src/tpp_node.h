@@ -86,10 +86,6 @@ private:
   ros::Subscriber wayarea_sub_;
   void callback_wayarea(const nav_msgs::OccupancyGrid& input);
 
-#if OUTPUT_MAP_TF == 1
-  std::string frame_id_target_ = "map";
-#endif
-
 #if TTC_TEST == 0
   tf2_ros::Buffer tf_buffer_;
 #endif
@@ -110,6 +106,9 @@ private:
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
 #endif
+
+  std::string frame_id_source_ = "base_link";
+  std::string frame_id_target_ = "map";
 
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
