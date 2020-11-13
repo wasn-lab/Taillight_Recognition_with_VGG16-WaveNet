@@ -73,6 +73,8 @@
 // virtual input test
 #define VIRTUAL_INPUT 0
 #define SAME_OBJ_MARKER_HEADER 0
+
+#define OUTPUT_MAP_TF 0
 #define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation

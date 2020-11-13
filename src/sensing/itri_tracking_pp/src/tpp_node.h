@@ -86,6 +86,14 @@ private:
   ros::Subscriber wayarea_sub_;
   void callback_wayarea(const nav_msgs::OccupancyGrid& input);
 
+#if OUTPUT_MAP_TF == 1
+  std::string frame_id_target_ = "map";
+#endif
+
+#if TTC_TEST == 0
+  tf2_ros::Buffer tf_buffer_;
+#endif
+
 #if TTC_TEST
   unsigned int seq_ = 0;
   unsigned int seq_cb_ = 0;
@@ -144,9 +152,13 @@ private:
   void set_ros_params();
   void subscribe_and_advertise_topics();
   void get_current_ego_data_main();
-  void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
+  void get_current_ego_data(const ros::Time fusion_stamp);
 
-  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
+#if OUTPUT_MAP_TF == 1
+  void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped);
+  void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
+#endif
+  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename);
 #if TTC_TEST
   float closest_distance_of_obj_pivot(const msgs::DetectedObject& obj);
   void save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs);
