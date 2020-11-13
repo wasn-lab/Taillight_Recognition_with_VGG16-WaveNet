@@ -1,4 +1,5 @@
 import unittest
+# import pprint
 from jira_utils import (
     get_issue_contents, generate_issue_contents, post_issue,
     PROJECT_ID_P_S3, ISSUE_TYPE_ID_BUG, PROJECT_ID_SCM)
@@ -6,8 +7,11 @@ from jira_utils import (
 
 class JiraUtilsTest(unittest.TestCase):
     def test_get_issue_contents(self):
-        issue_id = "SCM-32"
+        issue_id = "S3-229"
         resp = get_issue_contents(issue_id)
+        # jdata = resp.json()
+        # pprint.pprint(jdata)
+        # self.assertEqual(jdata["fields"]["labels"], ["FieldTest"])
         self.assertEqual(resp.status_code, 200)
 
     def test_generate_issue_contents(self):
@@ -31,7 +35,7 @@ class JiraUtilsTest(unittest.TestCase):
     def test_post_issue(self):
         ret = post_issue(
             PROJECT_ID_P_S3,
-            "Test fail safe auto issue report",
+            "[auto report] Test fail safe auto issue report",
             "Description of fail safe auto issue report",
             ISSUE_TYPE_ID_BUG)
         self.assertEqual(ret, 0)

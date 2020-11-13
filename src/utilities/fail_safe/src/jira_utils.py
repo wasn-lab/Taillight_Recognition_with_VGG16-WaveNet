@@ -53,6 +53,7 @@ def generate_issue_contents(project_id, summary, description, issue_type_id):
             "project": {"id": project_id},
             "summary": summary,
             "description": description,
+            "labels": ["FieldTest"],
             "issuetype": {"id": issue_type_id}}}
 
 def post_issue(project_id, summary, description, issue_type_id):
