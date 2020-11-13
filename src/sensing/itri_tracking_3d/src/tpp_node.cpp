@@ -641,7 +641,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   geometry_msgs::TransformStamped tf_stamped;
   try
   {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
 #if PRINT_MESSAGE
     std::cout << tf_stamped << std::endl;
 #endif
@@ -1022,14 +1022,14 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   try
   {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
+    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+      tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {

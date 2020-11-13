@@ -93,6 +93,9 @@ private:
   void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
 #endif
 
+  std::string frame_id_source_ = "base_link";
+  std::string frame_id_target_ = "map";
+
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
   double loop_elapsed = 0.;  // seconds
