@@ -184,6 +184,13 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_.frame_id = "lidar";
 #endif
 
+  frame_id_source_ = "base_link";
+
+  if (objs_header_.frame_id != "lidar" && objs_header_.frame_id != "base_link")
+  {
+    frame_id_source_ = objs_header_.frame_id;
+  }
+
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
