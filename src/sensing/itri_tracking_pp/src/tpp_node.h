@@ -71,6 +71,9 @@ private:
   ros::CallbackQueue queue_;
 
   ros::Publisher pp_pub_;
+#if HEARTBEAT == 1
+  ros::Publisher pp_pub_heartbeat_;
+#endif
 #if TO_GRIDMAP
   ros::Publisher pp_grid_pub_;
 #endif

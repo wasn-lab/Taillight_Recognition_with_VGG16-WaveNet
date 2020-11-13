@@ -1,0 +1,43 @@
+<launch>
+
+  <!-- front_bottom_60 ************************************************************************** -->
+  <node name="front_bottom_60" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="front_bottom_60"/>
+  </node>
+
+  <!-- front_top_far_30 ************************************************************************** -->
+  <node name="front_top_far_30" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="front_top_far_30"/>
+  </node>
+  
+  <!-- front_top_close_120 ************************************************************************** -->
+  <node name="front_top_close_120" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="front_top_close_120"/>
+  </node>
+
+  <!-- right_front_60 ************************************************************************** -->
+  <node name="right_front_60" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="right_front_60"/>
+  </node>
+
+  <!-- right_back_60 ************************************************************************** -->
+  <node name="right_back_60" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="right_back_60"/>
+  </node>
+
+  <!-- left_front_60 ************************************************************************** -->
+  <node name="left_front_60" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="left_front_60"/>
+  </node>
+
+  <!-- left_back_60 ************************************************************************** -->
+  <node name="left_back_60" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="left_back_60"/>
+  </node>
+
+  <!-- back_top_120 ************************************************************************** -->
+  <node name="back_top_120" pkg="opticalflow_x" type="opticalflow_main.py" output="screen">
+      <param name="topic" value="back_top_120"/>
+  </node>
+
+</launch>

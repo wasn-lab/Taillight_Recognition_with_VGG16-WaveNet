@@ -21,6 +21,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_msgs/Empty.h>
 
 
 class ImageTransfer{
@@ -61,11 +62,12 @@ private:
 class RosImagePubSub{
 public:
 
-    RosImagePubSub(ros::NodeHandle &nh_in);
+    RosImagePubSub(ros::NodeHandle nh_in);
     // Publishers
     bool add_a_pub(size_t id_in, const std::string &topic_name);
     bool send_image(const int topic_id, const cv::Mat &content_in);
 	bool send_image_rgb(const int topic_id, const cv::Mat &content_in);
+    bool send_image_rgb_gstreamer(const int topic_id, const cv::Mat &content_in);
     // Subscribers
     bool add_a_sub(size_t id_in, const std::string &topic_name);
     bool get_image(const int topic_id, cv::Mat &content_out);
@@ -83,7 +85,7 @@ private:
 
 
     // Handle with default namespace
-    ros::NodeHandle *_nh_ptr;
+    ros::NodeHandle _nh_ptr;
     // ROS image transport (similar to  node handle, but for images)
     image_transport::ImageTransport _ros_it;
 
@@ -91,6 +93,7 @@ private:
     std::map<size_t, image_transport::Subscriber> _image_subscriber_map;
     // Image publishers
     std::map<size_t, image_transport::Publisher> _image_publisher_map;
+    std::map<size_t, ros::Publisher> _heartbeat_publisher_map;
 
 
     // ImageTransfer

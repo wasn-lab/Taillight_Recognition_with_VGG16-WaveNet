@@ -62,12 +62,12 @@ void chatterCallback_06(const msgs::Flag_Info::ConstPtr& msg)
 	counter[5] = 0;
 }
 
-void chatterCallback_07(const msgs::Flag_Info::ConstPtr& msg)
+void chatterCallback_07(const std_msgs::Float64::ConstPtr& msg)
 {
 	counter[6] = 0;
 }
 
-void chatterCallback_08(const msgs::Flag_Info::ConstPtr& msg)
+void chatterCallback_08(const std_msgs::Float64::ConstPtr& msg)
 {
 	counter[7] = 0;
 }
@@ -130,13 +130,13 @@ int main(int argc, char **argv)
 		else{
 			checker.data[3] = 0;
 		}
-		if (counter[4]>timeout){
-			cout << "Flag_Info05 time out." << endl;
-			checker.data[4] = 1;
-		}
-		else{
+		// if (counter[4]>timeout){
+		// 	cout << "Flag_Info05 time out." << endl;
+		// 	checker.data[4] = 1;
+		// }
+		// else{
 			checker.data[4] = 0;
-		}
+		// }
 		if (counter[5]>timeout){
 			cout << "/NextStop/Info time out." << endl;
 			checker.data[5] = 1;
