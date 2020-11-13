@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <scenario_selector/scenario_selector_node.h>
 
 #include <string>
@@ -171,10 +172,10 @@ std::string ScenarioSelectorNode::selectScenarioByPosition()
   const auto is_in_parking_lot = isInParkingLot(lanelet_map_ptr_, current_pose_->pose);
 
   if (current_scenario_ == autoware_planning_msgs::Scenario::Empty) {
-    if (is_in_lane) {
-      return autoware_planning_msgs::Scenario::LaneDriving;
-    } else {
+    if (is_in_parking_lot) {
       return autoware_planning_msgs::Scenario::Parking;
+    } else {
+      return autoware_planning_msgs::Scenario::LaneDriving;
     }
   }
 

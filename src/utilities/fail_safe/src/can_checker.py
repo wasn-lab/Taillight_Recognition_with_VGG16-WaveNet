@@ -54,6 +54,7 @@ class CanChecker(object):
             self.can_encoded_states = []
 
     def _get_fps(self):
+        self._update_heap()
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_heap(self):
@@ -61,10 +62,10 @@ class CanChecker(object):
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
-        heapq.heappush(self.heap, now)
 
     def _cb(self, msg):
         self._update_heap()
+        heapq.heappush(self.heap, time.time())
         if self.can_encoded_states:
             self.can_encoded_states.pop(0)
         self.can_encoded_states.append(CanChecker.NORMAL if sum(msg.data) == 0 else CanChecker.DOWN)

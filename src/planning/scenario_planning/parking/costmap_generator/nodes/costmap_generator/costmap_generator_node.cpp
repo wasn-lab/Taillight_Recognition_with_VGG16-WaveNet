@@ -45,12 +45,13 @@
  ********************/
 
 #include <costmap_generator/costmap_generator.h>
-#include <costmap_generator/object_map_utils.hpp>
 
 #include <lanelet2_extension/utility/message_conversion.h>
 #include <lanelet2_extension/utility/query.h>
 #include <lanelet2_extension/utility/utilities.h>
 #include <lanelet2_extension/visualization/visualization.h>
+
+#include <costmap_generator/object_map_utils.hpp>
 
 namespace
 {
