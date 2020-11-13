@@ -27,6 +27,81 @@ enum checkBoxStatus
   OverRightBound
 };
 
+enum overlapped
+{
+  OverLapped = 99
+};
+
+std::vector<msgs::DetectedObject> Boxfusion::multiCamBoxFuse(std::vector<msgs::DetectedObject>& input_obj_arrs)
+{
+
+  auto overlap1D = [](float x1min, float x1max, float x2min, float x2max) -> float {
+    if (x1min > x2min)
+    {
+      std::swap(x1min, x2min);
+      std::swap(x1max, x2max);
+    }
+    return x1max < x2min ? 0 : std::min(x1max, x2max) - x2min;
+  };
+  auto computeIoU = [&overlap1D](msgs::DetectedObject& obj1, msgs::DetectedObject& obj2) -> float {
+    float overlapX = overlap1D(obj1.bPoint.p0.x, obj1.bPoint.p2.x, obj2.bPoint.p0.x, obj2.bPoint.p2.x);
+    float overlapY = overlap1D(obj1.bPoint.p0.y, obj1.bPoint.p2.y, obj2.bPoint.p0.y, obj2.bPoint.p2.y);
+    float area1 = abs(obj1.bPoint.p2.x - obj1.bPoint.p0.x) * abs(obj1.bPoint.p2.y - obj1.bPoint.p0.y);
+    float area2 = abs(obj2.bPoint.p2.x - obj2.bPoint.p0.x) * abs(obj2.bPoint.p2.y - obj2.bPoint.p0.y);    
+    float overlap2D = overlapX * overlapY;   
+    float u = area1 + area2 - overlap2D;
+    
+    return u == 0 ? 0 : overlap2D / u;
+  };
+
+  std::vector<msgs::DetectedObject> input_copy1;
+
+  input_copy1.assign(input_obj_arrs.begin(), input_obj_arrs.end());    
+  
+  // Compare 3D bounding boxes
+  for(uint i = 0; i < input_copy1.size(); i++)
+  {
+    for(uint j = 0; j < input_copy1.size(); j++)
+    {
+      if(/*input_copy1[j].classId != input_copy1[i].classId || */
+      /*input_copy1[i].camInfo.id == input_copy1[j].camInfo.id ||*/
+      input_copy1[j].classId == overlapped::OverLapped || input_copy1[i].classId == overlapped::OverLapped || i == j)
+      {
+        continue;
+      }
+      float overlap = abs(computeIoU(input_copy1[i], input_copy1[j]));
+      // if(overlap != 0)std::cout << overlap << std::endl;        
+      
+      if(overlap > iou_threshold_)
+      {
+        if(abs(input_copy1[i].bPoint.p2.x - input_copy1[i].bPoint.p0.x) * abs(input_copy1[i].bPoint.p2.y - input_copy1[i].bPoint.p0.y) > abs(input_copy1[j].bPoint.p2.x - input_copy1[j].bPoint.p0.x) * abs(input_copy1[j].bPoint.p2.y - input_copy1[j].bPoint.p0.y))
+        {
+          input_copy1[i].classId = overlapped::OverLapped;
+        }else{
+          input_copy1[j].classId = overlapped::OverLapped;
+        }
+      }
+    }
+  }
+
+  std::vector<msgs::DetectedObject> output;
+  
+  // std::cout << "Before:" << input_copy1.size() << std::endl;        
+  
+  // Delete box
+  for(uint a = 0; a < input_copy1.size(); a++)
+  {
+    if(input_copy1[a].classId != overlapped::OverLapped)
+    {
+      output.push_back(input_copy1[a]);
+    }
+  }
+
+  // std::cout << "After:" << output.size() << std::endl;        
+  
+  return output;
+}
+
 std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs,
                                                           int camera_id_1, int camera_id_2)
 {
@@ -183,5 +258,5 @@ int Boxfusion::CheckPointInArea(CheckArea area, int object_x1, int object_y2)
 
 bool Boxfusion::pointcompare(PixelPosition front_bottom, PixelPosition projected)
 {
-  return bool(sqrt(pow((front_bottom.u - projected.u), 2) + pow((front_bottom.v - projected.v), 2)) < pixelthres);
+  return bool(sqrt(pow((front_bottom.u - projected.u), 2) + pow((front_bottom.v - projected.v), 2)) < pixelthres_);
 }

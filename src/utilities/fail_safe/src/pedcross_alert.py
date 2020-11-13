@@ -1,18 +1,15 @@
 import time
 import heapq
 import rospy
-from msgs.msg import PedObjectArray
+from msgs.msg import DetectedObjectArray
 from status_level import OK, WARN, UNKNOWN
 
 
 class PedCrossAlert(object):
-    TOPICS = ["/PedCross/Pedestrians/front_bottom_60",
-              "/PedCross/Pedestrians/front_top_far_30",
-              "/PedCross/Pedestrians/left_back_60",
-              "/PedCross/Pedestrians/right_back_60"]
+    TOPIC = "/PedCross/Alert"
     def __init__(self):
         # internal variables:
-        self.fps_low = 10
+        self.fps_low = 1.0
         self.heap = []
         self.sampling_period_in_seconds = 30 / self.fps_low
         self.pedcrossing = False
@@ -21,8 +18,7 @@ class PedCrossAlert(object):
         self.status = UNKNOWN
         self.status_str = ""
 
-        for topic in PedCrossAlert.TOPICS:
-            rospy.Subscriber(topic, PedObjectArray, self._cb)
+        rospy.Subscriber(PedCrossAlert.TOPIC, DetectedObjectArray, self._cb)
 
     def get_events_in_list(self):
         if self.pedcrossing:
@@ -43,6 +39,7 @@ class PedCrossAlert(object):
             doc = {"module": "pedcross",
                    "status": WARN,
                    "status_str": "low fps: {}".format(fps)}
+        self.pedcrossing = False;
         return [doc]
 
     def _get_fps(self):
@@ -58,7 +55,6 @@ class PedCrossAlert(object):
     def _cb(self, msg):
         self._update_heap()
         heapq.heappush(self.heap, time.time())
-        for pedobj in msg.objects:
-            if pedobj.crossProbability > 0.6:
-                self.pedcrossing = True
-
+        for obj in msg.objects:
+            # Crossing pedestrian is indicated in TrackInfo.is_ready_prediction
+            self.pedcrossing = self.pedcrossing or obj.track.is_ready_prediction
