@@ -8,6 +8,8 @@
 
 	<include file="$(find alignment)/launch/b1_v2_3d_object_detection.launch"/>
 
+        <include file="$(find camera_grabber)/launch/repub_image_b1_v2.launch"/>
+
 	<node name="drivenet"
 		pkg="drivenet"
 		type="drivenet_util_node_img_repub"/>
