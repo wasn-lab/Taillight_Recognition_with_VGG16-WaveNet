@@ -20,7 +20,7 @@ if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/target_planner_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/lidarxyz2lla_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag
-  || ! -f ${bag_dir}/auto_record_2020-08-04-10-15-25_4_filtered.bag ]]; then
+  || ! -f ${bag_dir}/tracking_2d_2020-11-16-15-02-12.bag ]]; then
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
