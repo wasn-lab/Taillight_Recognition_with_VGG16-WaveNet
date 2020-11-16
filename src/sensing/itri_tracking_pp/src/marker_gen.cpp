@@ -363,7 +363,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   {
     geometry_msgs::Point point = text_marker_position(obj.bPoint.p1, obj.bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, obj));
-    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.relSpeed, obj.absSpeed));
+    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.speed_rel, obj.speed_abs));
   }
 
   geometry_msgs::Point point_seq = init_Point(-20, 0, 0);
@@ -417,7 +417,7 @@ void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::Det
         else if (mc_.show_pp == 2 || mc_.show_pp == 3)
         {
           m_pp_.markers.push_back(create_pp_marker_ellipse(idx++, objs[i].track.forecasts[j].position, objs[i].header,
-                                                           ppss[i][j], j, objs[i].absSpeed));
+                                                           ppss[i][j], j, objs[i].speed_abs));
         }
       }
 

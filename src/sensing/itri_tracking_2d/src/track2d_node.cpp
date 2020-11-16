@@ -59,7 +59,7 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
     KTs_.objs_.reserve(input->objects.size());
     for (unsigned i = 0; i < input->objects.size(); i++)
     {
-      if (input->objects[i].camInfo.id == in_source_)
+      if (input->objects[i].camInfo[0].id == in_source_)
       {
         KTs_.objs_.push_back(input->objects[i]);
       }
@@ -103,7 +103,7 @@ void Track2DNode::subscribe_and_advertise_topics()
   if (in_source_ == 0)
   {
     LOG_INFO << "Input Source: /CameraDetection" << std::endl;
-    LOG_INFO << "Output Topic: /Tracking2D/front_bottom_60" << std::endl;   
+    LOG_INFO << "Output Topic: /Tracking2D/front_bottom_60" << std::endl;
     camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 2);
   }
@@ -114,14 +114,14 @@ void Track2DNode::subscribe_and_advertise_topics()
     camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/left_back_60", 2);
   }
-  else  if(in_source_ == 6)
+  else if (in_source_ == 6)
   {
     LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/right_back_60" << std::endl;
     camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/right_back_60", 2);
   }
-  else  if(in_source_ == 1)
+  else if (in_source_ == 1)
   {
     LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/front_top_far_30" << std::endl;

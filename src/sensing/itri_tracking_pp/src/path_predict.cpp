@@ -33,7 +33,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         pp_objs_[i].track.is_ready_prediction = true;
 
         // PP filter 1: object absolute speed
-        if (pp_objs_[i].absSpeed < pp_obj_min_kmph_ && pp_objs_[i].absSpeed > pp_obj_max_kmph_)
+        if (pp_objs_[i].speed_abs < pp_obj_min_kmph_ && pp_objs_[i].speed_abs > pp_obj_max_kmph_)
         {
           pp_objs_[i].track.is_ready_prediction = false;
           continue;
@@ -660,7 +660,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         pp_objs_[i].track.forecasts[j].correlation_xy = pps[j].corr_xy;
 
 #if PP_VERTICES_VIA_SPEED == 1
-        pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].absSpeed);
+        pp_vertices(pps[j], pp_objs_[i].track.forecasts[j], j, pp_objs_[i].speed_abs);
 
         unsigned int k = num_forecasts_ + j * 4;
 
