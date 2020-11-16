@@ -133,6 +133,7 @@ class Node:
         obj_count = 0
         for i, _obj in enumerate(objects):
             #_prob = _obj.camInfo.prob
+            _prob = 0.0
             if _prob == 0.0:
                 continue
             if len(_obj.cPoint.lowerAreaPoints) == 0:
