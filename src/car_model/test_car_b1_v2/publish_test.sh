@@ -12,6 +12,7 @@ fi
 
 if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/auto_record_2020-04-14-16-41-15_89.bag
+  || ! -f ${bag_dir}/geofence_pp_2020-11-16-16-35-39.bag  
   || ! -f ${bag_dir}/lidar_raw_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/edge_detection_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/localization_raw_2020-09-24-17-02-06.bag

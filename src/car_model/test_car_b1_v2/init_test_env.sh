@@ -16,6 +16,7 @@ set -e
 make -j pcd_saver video_saver image_saver
 make auto_record_2020-03-10-10-48-39_41.bag
 make auto_record_2020-04-14-16-41-15_89.bag
+make geofence_pp_2020-11-16-16-35-39.bag
 make lidar_raw_2020-03-10-10-48-39_41.bag
 make edge_detection_2020-04-13-17-45-48_0.bag
 make localization_raw_2020-09-24-17-02-06.bag
