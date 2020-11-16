@@ -483,10 +483,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     start = ros::Time::now();
     int count_peds = 0;
 
-    // keep original image
+    // raw image
     cv::Mat matrix;
-    // for painting
-    cv::Mat matrix2;
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
     std::vector<msgs::PedObject> ped_objs;
@@ -525,9 +523,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
 #endif
 
-            matrix = image_cache[i].second;
-            // for drawing bbox and keypoints
-            matrix.copyTo(matrix2);
+            image_cache[i].second.copyTo(matrix);
             get_timestamp = true;
             break;
           }
@@ -1201,7 +1197,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     ped_objs.clear();
     std::vector<msgs::PedObject>().swap(ped_objs);
     matrix.release();
-    matrix2.release();
 
     stop = ros::Time::now();
 
@@ -1334,7 +1329,6 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   }
 
   cv::Mat matrix;
-  cv::Mat matrix2;
   ros::Time msgs_timestamp = ros::Time::now();
   if (!msg->objects.empty())
   {
@@ -1364,10 +1358,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
         std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
 #endif
 
-        matrix2 = image_cache[i].second;
-        // for drawing bbox and keypoints
-        matrix2.copyTo(matrix);
-        // frame_timestamp = msgs_timestamp;
+        image_cache[i].second.copyTo(matrix);
         break;
       }
     }
@@ -1570,7 +1561,6 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   }
 
   matrix.release();
-  matrix2.release();
 }
 
 /**
