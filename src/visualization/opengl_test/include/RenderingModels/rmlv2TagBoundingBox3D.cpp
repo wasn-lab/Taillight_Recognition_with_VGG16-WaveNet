@@ -79,7 +79,7 @@ void rmlv2TagBoundingBox3D::update_GL_data(){
     size_t _j = 0;
     for (size_t i = 0; i < num_box; i++)
     {
-        std::string _s_tag( "#" + std::to_string( msg_out_ptr->objects[i].camInfo.id ) );
+        std::string _s_tag( "#" + std::to_string( msg_out_ptr->objects[i].camInfo[0].id ) );
 
         // _point_1_ptr = &(msg_out_ptr->objects[i].bPoint.p0);
         // text_list.emplace_back(
