@@ -77,6 +77,7 @@ class FailSafeChecker(object):
 
     def set_debug_mode(self, mode):
         self.debug_mode = mode
+        self.issue_reporter.set_debug_mode(mode)
 
     def get_current_status(self):
         """Collect states from the components of the car"""
@@ -146,7 +147,7 @@ class FailSafeChecker(object):
 
     def report_issue_if_necessary(self, current_status):
         if not self.is_self_driving():
-            logging.info("Do not post issue in non-self-driving mode")
+            rospy.logwarn("Do not post issue in non-self-driving mode")
             return
         for doc in current_status["events"]:
             if doc["status"] != OK:
