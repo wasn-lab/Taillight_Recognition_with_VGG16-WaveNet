@@ -113,11 +113,11 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
   {
     for (const auto& obj : ori_object_arrs[cam_id].objects)
     {
-      if (obj.camInfo.id == camera_id_1)
+      if (obj.camInfo[0].id == camera_id_1)
       {
         check_data_1 = true;
       }
-      if (obj.camInfo.id == camera_id_2)
+      if (obj.camInfo[0].id == camera_id_2)
       {
         check_data_2 = true;
       }
@@ -137,11 +137,11 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
   {
     for (const auto& obj : ori_object_arrs[cam_id].objects)
     {
-      if (obj.camInfo.id == camera_id_1)
+      if (obj.camInfo[0].id == camera_id_1)
       {
         object_1.objects.push_back(obj);
       }
-      else if (obj.camInfo.id == camera_id_2)
+      else if (obj.camInfo[0].id == camera_id_2)
       {
         object_2.objects.push_back(obj);
       }
@@ -158,7 +158,7 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::boxfuse(std::vector<msgs::Dete
   // Delete original array of left back
   for (size_t cam_id = 0; cam_id < ori_object_arrs.size(); cam_id++)
   {
-    if (ori_object_arrs[cam_id].objects[0].camInfo.id == camera_id_2)
+    if (ori_object_arrs[cam_id].objects[0].camInfo[0].id == camera_id_2)
     {
       ori_object_arrs.erase(ori_object_arrs.begin() + cam_id);
       break;
@@ -185,18 +185,18 @@ msgs::DetectedObjectArray Boxfusion::fusetwocamera(msgs::DetectedObjectArray obj
 
       PixelPosition obj1_center, obj2_center;
       std::vector<PixelPosition> bbox_positions1(2);
-      bbox_positions1[0].u = obj_1.camInfo.u;
-      bbox_positions1[0].v = obj_1.camInfo.v;
-      bbox_positions1[1].u = obj_1.camInfo.u + obj_1.camInfo.width;
-      bbox_positions1[1].v = obj_1.camInfo.v + obj_1.camInfo.height;
+      bbox_positions1[0].u = obj_1.camInfo[0].u;
+      bbox_positions1[0].v = obj_1.camInfo[0].v;
+      bbox_positions1[1].u = obj_1.camInfo[0].u + obj_1.camInfo[0].width;
+      bbox_positions1[1].v = obj_1.camInfo[0].v + obj_1.camInfo[0].height;
       obj1_center.u = (bbox_positions1[0].u + bbox_positions1[1].u) / 2;
       obj1_center.v = bbox_positions1[1].v;
 
       std::vector<PixelPosition> bbox_positions2(2);
-      bbox_positions2[0].u = obj_2.camInfo.u;
-      bbox_positions2[0].v = obj_2.camInfo.v;
-      bbox_positions2[1].u = obj_2.camInfo.u + obj_2.camInfo.width;
-      bbox_positions2[1].v = obj_2.camInfo.v + obj_2.camInfo.height;
+      bbox_positions2[0].u = obj_2.camInfo[0].u;
+      bbox_positions2[0].v = obj_2.camInfo[0].v;
+      bbox_positions2[1].u = obj_2.camInfo[0].u + obj_2.camInfo[0].width;
+      bbox_positions2[1].v = obj_2.camInfo[0].v + obj_2.camInfo[0].height;
       obj2_center.u = (bbox_positions2[0].u + bbox_positions2[1].u) / 2;
       obj2_center.v = bbox_positions2[1].v;
 

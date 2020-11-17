@@ -28,24 +28,24 @@ void ROSGMPHD::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
     /************* Make msg to GMPHD input ***************/
     vector<float> tmp_det;
     tmp_det.push_back((float)count);
-    tmp_det.push_back((float)obj.camInfo.u);
-    tmp_det.push_back((float)obj.camInfo.v);
-    tmp_det.push_back((float)obj.camInfo.width);
-    tmp_det.push_back((float)obj.camInfo.height);
-    tmp_det.push_back((float)obj.camInfo.prob);
-    if (obj.camInfo.id == 0)  // front
+    tmp_det.push_back((float)obj.camInfo[0].u);
+    tmp_det.push_back((float)obj.camInfo[0].v);
+    tmp_det.push_back((float)obj.camInfo[0].width);
+    tmp_det.push_back((float)obj.camInfo[0].height);
+    tmp_det.push_back((float)obj.camInfo[0].prob);
+    if (obj.camInfo[0].id == 0)  // front
     {
       seq_dets_front.push_back(tmp_det);
     }
-    if (obj.camInfo.id == 1)  // fov30
+    if (obj.camInfo[0].id == 1)  // fov30
     {
       seq_dets_fov30.push_back(tmp_det);
     }
-    if (obj.camInfo.id == 9)  // left back
+    if (obj.camInfo[0].id == 9)  // left back
     {
       seq_dets_left_back.push_back(tmp_det);
     }
-    if (obj.camInfo.id == 6)  // right back
+    if (obj.camInfo[0].id == 6)  // right back
     {
       seq_dets_right_back.push_back(tmp_det);
     }
@@ -127,8 +127,8 @@ void ROSGMPHD::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
     /******** compare & tracks to msg *********/
     for (unsigned int i = 0; i < tracks_front.size(); i++)
     {
-      if (obj.camInfo.u == tracks_front[i][1] && obj.camInfo.v == tracks_front[i][2] &&
-          obj.camInfo.width == tracks_front[i][3] && obj.camInfo.height == tracks_front[i][4])
+      if (obj.camInfo[0].u == tracks_front[i][1] && obj.camInfo[0].v == tracks_front[i][2] &&
+          obj.camInfo[0].width == tracks_front[i][3] && obj.camInfo[0].height == tracks_front[i][4])
       {
         obj.track.id = tracks_front[i][0];
         pub_array_front.objects.emplace_back(obj);
@@ -136,8 +136,8 @@ void ROSGMPHD::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
     }
     for (unsigned int i = 0; i < tracks_fov30.size(); i++)
     {
-      if (obj.camInfo.u == tracks_fov30[i][1] && obj.camInfo.v == tracks_fov30[i][2] &&
-          obj.camInfo.width == tracks_fov30[i][3] && obj.camInfo.height == tracks_fov30[i][4])
+      if (obj.camInfo[0].u == tracks_fov30[i][1] && obj.camInfo[0].v == tracks_fov30[i][2] &&
+          obj.camInfo[0].width == tracks_fov30[i][3] && obj.camInfo[0].height == tracks_fov30[i][4])
       {
         obj.track.id = tracks_fov30[i][0];
         pub_array_fov30.objects.emplace_back(obj);
@@ -145,8 +145,8 @@ void ROSGMPHD::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
     }
     for (unsigned int i = 0; i < tracks_left_back.size(); i++)
     {
-      if (obj.camInfo.u == tracks_left_back[i][1] && obj.camInfo.v == tracks_left_back[i][2] &&
-          obj.camInfo.width == tracks_left_back[i][3] && obj.camInfo.height == tracks_left_back[i][4])
+      if (obj.camInfo[0].u == tracks_left_back[i][1] && obj.camInfo[0].v == tracks_left_back[i][2] &&
+          obj.camInfo[0].width == tracks_left_back[i][3] && obj.camInfo[0].height == tracks_left_back[i][4])
       {
         obj.track.id = tracks_left_back[i][0];
         pub_array_left_back.objects.emplace_back(obj);
@@ -154,8 +154,8 @@ void ROSGMPHD::chatter_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
     }
     for (unsigned int i = 0; i < tracks_right_back.size(); i++)
     {
-      if (obj.camInfo.u == tracks_right_back[i][1] && obj.camInfo.v == tracks_right_back[i][2] &&
-          obj.camInfo.width == tracks_right_back[i][3] && obj.camInfo.height == tracks_right_back[i][4])
+      if (obj.camInfo[0].u == tracks_right_back[i][1] && obj.camInfo[0].v == tracks_right_back[i][2] &&
+          obj.camInfo[0].width == tracks_right_back[i][3] && obj.camInfo[0].height == tracks_right_back[i][4])
       {
         obj.track.id = tracks_right_back[i][0];
         pub_array_right_back.objects.emplace_back(obj);
