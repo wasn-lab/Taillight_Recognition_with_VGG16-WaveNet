@@ -29,7 +29,7 @@ Lidar List:
 	<arg name="hardware_enable" default="true" />
     
 	<!-- Grabber & Preprocessing -->
-	<arg name="use_compress" default="false" />
+	<arg name="use_compress" default="true" />
 	<arg name="use_filter" default="false" />
 	<arg name="use_roi" default="false" />
 	
