@@ -5,7 +5,6 @@ from jira_utils import PROJECT_ID_SCM, ISSUE_TYPE_ID_TASK
 from status_level import OK, WARN
 
 
-
 class IssueReporterTest(unittest.TestCase):
     def test_post_issue(self):
         reporter = IssueReporter()
