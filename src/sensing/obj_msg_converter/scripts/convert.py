@@ -100,7 +100,7 @@ class Node:
             out_obj.semantic.type = self.classid_convert(in_obj.classId)
             # print('in_obj.classId = {0}; out_obj.semantic.type = {1}'.format(in_obj.classId, out_obj.semantic.type))
 
-            out_obj.semantic.confidence = in_obj.camInfo.prob
+            out_obj.semantic.confidence = in_obj.camInfo[0].prob
 
             out_obj.state.pose_covariance.pose.position.x = (
                 in_obj.bPoint.p0.x + in_obj.bPoint.p7.x) / 2

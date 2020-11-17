@@ -70,6 +70,7 @@ class ros_detect_opticalflow:
         rospy.spin()
 
     def yolo_callback(self,data):
+        #print('yolo_bbox_time',self.yolo_bbox_time)
         self.yolo_len += 1
         self.yolo_bbox_time.append(data.header.stamp)    
         self.keep_data_object.append(data.objects)
@@ -123,15 +124,16 @@ class ros_detect_opticalflow:
         else:
             data_object_i = 0
             for res in info1[0]:
-                self.data_copy_temp[data_object_i].camInfo.u =  \
-                    int(round(res['box'][0]*size_scale[0])) if res['box'][0] >=0 else 0
-                self.data_copy_temp[data_object_i].camInfo.v = \
-                    int(round(res['box'][1]*size_scale[1])) if res['box'][1] >=0 else 0
-                self.data_copy_temp[data_object_i].camInfo.width = \
-                    int(round((res['box'][2]-res['box'][0])*size_scale[2]))
-                self.data_copy_temp[data_object_i].camInfo.height = \
-                    int(round((res['box'][3]-res['box'][1])*size_scale[3]))
+                self.data_copy_temp[data_object_i].camInfo[0].u =  \
+                   int(round(res['box'][0]*size_scale[0])) if res['box'][0] >=0 else 0
+                self.data_copy_temp[data_object_i].camInfo[0].v = \
+                   int(round(res['box'][1]*size_scale[1])) if res['box'][1] >=0 else 0
+                self.data_copy_temp[data_object_i].camInfo[0].width = \
+                   int(round((res['box'][2]-res['box'][0])*size_scale[2]))
+                self.data_copy_temp[data_object_i].camInfo[0].height = \
+                   int(round((res['box'][3]-res['box'][1])*size_scale[3]))
                 data_object_i += 1
+
             self.publish_bbox(tracking_bbox_publish,info1[2],self.data_copy_temp)
 
 
@@ -233,18 +235,19 @@ class ros_detect_opticalflow:
                             img1 = self.bridge.imgmsg_to_cv2(self.img_list[yolo_index][0], "bgr8")
                             res_list = []
                             for obj in self.keep_data_object[yolo_result_index]:
-                                scale_bbox_info = np.array([int(obj.camInfo.u),\
-                                                            int(obj.camInfo.v),\
-                                                            int(obj.camInfo.u)+int(obj.camInfo.width),\
-                                                            int(obj.camInfo.v)+int(obj.camInfo.height)])
+                                scale_bbox_info = np.array([int(obj.camInfo[0].u),\
+                                                            int(obj.camInfo[0].v),\
+                                                            int(obj.camInfo[0].u)+int(obj.camInfo[0].width),\
+                                                            int(obj.camInfo[0].v)+int(obj.camInfo[0].height)])
                                 scale_bbox_info = scale_bbox_info*size_scale
                                 res = {
                                         'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
                                                 int(scale_bbox_info[2]), int(scale_bbox_info[3])],
                                         'category': int(obj.classId),
-                                        'confidence': float(obj.camInfo.prob)
+                                        'confidence': float(obj.camInfo[0].prob)
                                       }
                                 res_list.append(res)  
+  
                             full_image_info = [img1,res_list,"YOLO",\
                                                self.keep_yolo_time[duplicate_yolo_time[0]]]
                             self.ros_publisher_debug_img(full_image_info)
@@ -301,19 +304,18 @@ class ros_detect_opticalflow:
 
                                     res_list = []
                                     for obj in self.keep_data_object[yolo_result_index]:
-                                        scale_bbox_info = np.array([int(obj.camInfo.u),\
-                                                                    int(obj.camInfo.v),\
-                                                                    int(obj.camInfo.u)+int(obj.camInfo.width),\
-                                                                    int(obj.camInfo.v)+int(obj.camInfo.height)])
+                                        scale_bbox_info = np.array([int(obj.camInfo[0].u),\
+                                                                    int(obj.camInfo[0].v),\
+                                                                    int(obj.camInfo[0].u)+int(obj.camInfo[0].width),\
+                                                                    int(obj.camInfo[0].v)+int(obj.camInfo[0].height)])
                                         scale_bbox_info = scale_bbox_info*size_scale
                                         res = {
                                                 'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
                                                         int(scale_bbox_info[2]), int(scale_bbox_info[3])],
                                                 'category': int(obj.classId),
-                                                'confidence': float(obj.camInfo.prob)
+                                                'confidence': float(obj.camInfo[0].prob)
                                               }
                                         res_list.append(res)  
-
 
                                     full_image_info = [img1,res_list,"YOLO",self.keep_yolo_time[0]]
                                     self.ros_publisher_debug_img(full_image_info)

@@ -4,22 +4,21 @@ Header header
 uint16 classId
 
 float32 distance
+float64 speed_abs
+float64 speed_rel
 
-# absolute speed
-float32 absSpeed
-# speed of "'relative velocity on relative coordinate'  //
-# projecting onto object-to-ego-vehicle vector"
-float32 relSpeed
+PointXYZ center_point
+PointXYZ center_point_gps
+Quaternion heading
+Quaternion heading_enu
+BoxSize dimension
 
 BoxPoint bPoint
 ConvexPoint cPoint
-Quaternion bOrient
 
 TrackInfo track
-
-# detection source, see include/fusion_source_id.h for definition.'
 uint16 fusionSourceId
 
-CamInfo camInfo
+CamInfo[] camInfo
 RadarInfo radarInfo
 LidarInfo lidarInfo
