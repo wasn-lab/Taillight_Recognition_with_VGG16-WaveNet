@@ -1,9 +1,7 @@
 #!/bin/bash
 set -x
 set -e
-if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
-	export PATH=/usr/local/llvm-6.0.0/bin:$PATH
-fi
+
 export CC=clang
 export CXX=clang++
 

@@ -2,15 +2,12 @@
 set -x
 set -e
 
-if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
-	export PATH=/usr/local/llvm-6.0.0/bin:$PATH
-fi
 export CC=clang
 export CXX=clang++
 
-export build_dir=build_clang_b1
-export devel_dir=devel_clang_b1
-export EXTRA_CATKIN_ARGS="-DCAR_MODEL=B1 ${EXTRA_CATKIN_ARGS}"
+export build_dir=build_clang_c1
+export devel_dir=devel_clang_c1
+export EXTRA_CATKIN_ARGS="-DCAR_MODEL=C1 ${EXTRA_CATKIN_ARGS}"
 readonly build_type="${build_type:-Release}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
