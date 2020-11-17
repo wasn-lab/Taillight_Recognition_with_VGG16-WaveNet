@@ -51,9 +51,6 @@ private:
   // create markers
   visualization_msgs::Marker create_seq_marker(const unsigned int idx, const geometry_msgs::Point point);
 
-  visualization_msgs::Marker create_box_marker(const unsigned int idx, const msgs::BoxPoint bbox,
-                                               std_msgs::Header obj_header);
-
   std::string parse_class_id(unsigned int class_id);
   std::string parse_source_id(unsigned int source_id);
 
@@ -76,8 +73,6 @@ private:
 
   // process markers
   void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
-
-  void process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
 
   void process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
                          std::vector<std::vector<PPLongDouble> >& ppss);
