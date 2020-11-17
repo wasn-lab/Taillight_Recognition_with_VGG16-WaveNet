@@ -38,7 +38,7 @@ std::vector<cv::Point> getCVPolygonFromPolygon(
 cv::Mat getOnlyObjectsClearanceMap(
   const cv::Mat & clearance_map,
   const std::vector<autoware_perception_msgs::DynamicObject> & objects,
-  const nav_msgs::OccupancyGrid & occupancy_grid, const double max_avoiding_objects_velocity_ms);
+  const nav_msgs::OccupancyGrid & occupancy_grid, const double max_avoiding_objects_velocity_ms, bool use_freespace);
 
 cv::Mat getDrivableAreaInCV(const nav_msgs::OccupancyGrid & occupancy_grid);
 

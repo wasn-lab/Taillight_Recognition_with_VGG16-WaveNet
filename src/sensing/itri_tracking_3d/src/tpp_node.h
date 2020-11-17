@@ -93,6 +93,9 @@ private:
   void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
 #endif
 
+  std::string frame_id_source_ = "base_link";
+  std::string frame_id_target_ = "map";
+
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
   double loop_elapsed = 0.;  // seconds
@@ -133,7 +136,7 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject.relSpeed:
+  // compute DetectedObject.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 

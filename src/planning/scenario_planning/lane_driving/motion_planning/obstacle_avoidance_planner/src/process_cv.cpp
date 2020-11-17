@@ -54,10 +54,19 @@ cv::Mat drawObstalcesOnImage(
   cv::Mat objects_image = cv::Mat::ones(clearance_map.rows, clearance_map.cols, CV_8UC1) * 255;
   std::vector<std::vector<cv::Point>> cv_polygons;
   for (const auto & object : objects) {
+    std::cout << "get objects" << std::endl;
     float clearance = std::numeric_limits<float>::lowest();
+    // std::cout << "map_info.resolution : " << map_info.resolution << std::endl;
+    // std::cout << "map_info.resolution : " << map_info.height << std::endl;
+    geometry_msgs::Point relative_p =
+    util::transformToRelativeCoordinate2D(object.state.pose_covariance.pose.position, map_info.origin);
+    std::cout << "object.state.pose_covariance.pose.position : " << object.state.pose_covariance.pose.position << std::endl;
+    // std::cout << "map_info.origin : " << map_info.origin << std::endl;
+    // std::cout << "relative_p : " << relative_p << std::endl;
     std::shared_ptr<geometry_msgs::Point> image_point_ptr =
       util::transformMapToImagePtr(object.state.pose_covariance.pose.position, map_info);
     if (image_point_ptr) {
+      std::cout << "image_point_ptr" << std::endl;
       clearance = clearance_map.ptr<float>((int)image_point_ptr->y)[(int)image_point_ptr->x];
     } else {
       continue;
@@ -66,10 +75,14 @@ cv::Mat drawObstalcesOnImage(
       object.state.twist_covariance.twist.linear.x * object.state.twist_covariance.twist.linear.x +
       object.state.twist_covariance.twist.linear.y * object.state.twist_covariance.twist.linear.y +
       object.state.twist_covariance.twist.linear.z * object.state.twist_covariance.twist.linear.z);
+      // std::cout << "vel : " << vel << std::endl;
+      // std::cout << "clearance : " << clearance << std::endl;
     if (vel < max_avoiding_objects_velocity_ms && clearance > 0) {
       if (object.shape.type == object.shape.BOUNDING_BOX) {
+        std::cout << "-----boundingbox-----" << std::endl;
         cv_polygons.push_back(getCVPolygonFromBoundingBox(object, map_info));
       } else if (object.shape.type == object.shape.POLYGON) {
+        std::cout << "-----polygon-----" << std::endl;
         cv_polygons.push_back(getCVPolygonFromPolygon(object, map_info));
       } else if (object.shape.type == object.shape.CYLINDER) {
         cv::circle(
@@ -144,13 +157,21 @@ std::vector<cv::Point> getCVPolygonFromPolygon(
 cv::Mat getOnlyObjectsClearanceMap(
   const cv::Mat & clearance_map,
   const std::vector<autoware_perception_msgs::DynamicObject> & objects,
-  const nav_msgs::OccupancyGrid & occupancy_grid, const double max_avoiding_objects_velocity_ms)
+  const nav_msgs::OccupancyGrid & occupancy_grid, const double max_avoiding_objects_velocity_ms, bool use_freespace)
 {
-  cv::Mat objects_image = drawObstalcesOnImage(
-    objects, occupancy_grid.info, clearance_map, max_avoiding_objects_velocity_ms);
-
   cv::Mat only_objects_clearance_map;
-  cv::distanceTransform(objects_image, only_objects_clearance_map, cv::DIST_L2, 5);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  if (use_freespace)
+  {
+    cv::distanceTransform(clearance_map, only_objects_clearance_map, cv::DIST_L2, 5);
+  }
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  else
+  {
+    cv::Mat objects_image = drawObstalcesOnImage(
+    objects, occupancy_grid.info, clearance_map, max_avoiding_objects_velocity_ms);
+    cv::distanceTransform(objects_image, only_objects_clearance_map, cv::DIST_L2, 5);
+  }
   return only_objects_clearance_map;
 }
 
@@ -169,7 +190,46 @@ cv::Mat getClearanceMap(
   const std::vector<autoware_perception_msgs::DynamicObject> & objects)
 {
   cv::Mat clearance_map;
+
+  // cv::Mat tmpp = drivable_area;
+  // for(int i=0;i<drivable_area.rows;i++)
+	// {
+	// 	for(int j=0;j<drivable_area.cols;j++)
+	// 	{
+  //     tmpp.at<uchar>(i,j) = 255;
+  //   }
+  // }
+  // cv::distanceTransform(tmpp, clearance_map, cv::DIST_L2, 5);
   cv::distanceTransform(drivable_area, clearance_map, cv::DIST_L2, 5);
+
+  // cv::Mat distShow;
+	// distShow = cv::Mat::zeros(clearance_map.size(),CV_8UC1); //定义细化后的字符轮廓
+	// for(int i=0;i<clearance_map.rows;i++)
+	// {
+	// 	for(int j=0;j<clearance_map.cols;j++)
+	// 	{
+	// 		if(i == clearance_map.rows-1 && j == clearance_map.cols-1)
+	// 		{
+	// 			distShow.at<uchar>(i,j) = 255;   //符合距离大于最大值一定比例条件的点设为255
+	// 		}
+  //     else if(clearance_map.at<float>(i,j) > 0 && clearance_map.at<float>(i,j) <= 10)
+	// 		{
+	// 			distShow.at<uchar>(i,j) = clearance_map.at<float>(i,j) * 10;   //符合距离大于最大值一定比例条件的点设为255
+	// 		}
+  //     else if(clearance_map.at<float>(i,j) > 10 && clearance_map.at<float>(i,j) <= 15)
+	// 		{
+	// 			distShow.at<uchar>(i,j) = 110;   //符合距离大于最大值一定比例条件的点设为255
+	// 		}
+  //     else if(clearance_map.at<float>(i,j) > 15)
+	// 		{
+	// 			distShow.at<uchar>(i,j) = 255;   //符合距离大于最大值一定比例条件的点设为255
+	// 		}
+  //     else
+  //     {
+  //       distShow.at<uchar>(i,j) = 0;
+  //     }
+	// 	}
+	// }
   return clearance_map;
 }
 }  // namespace process_cv

@@ -9,7 +9,6 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
@@ -93,27 +92,23 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg)
   {
     Point_temp.X = msg->objects[i].bPoint.p0.x;
     Point_temp.Y = msg->objects[i].bPoint.p0.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p3.x;
     Point_temp.Y = msg->objects[i].bPoint.p3.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p4.x;
     Point_temp.Y = msg->objects[i].bPoint.p4.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p7.x;
     Point_temp.Y = msg->objects[i].bPoint.p7.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
-    Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x +
-                    msg->objects[i].bPoint.p7.x) /
-                   4;
-    Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y +
-                    msg->objects[i].bPoint.p7.y) /
-                   4;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.X = msg->objects[i].center_point.x;  // lidar_TF
+    Point_temp.Y = msg->objects[i].center_point.y;  // lidar_TF
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
   }
 #ifdef VIRTUAL
@@ -133,7 +128,7 @@ void chatterCallbackCPoint(const msgs::DetectedObjectArray::ConstPtr& msg)
     {
       Point_temp.X = msg->objects[i].cPoint.lowerAreaPoints[j].x;
       Point_temp.Y = msg->objects[i].cPoint.lowerAreaPoints[j].y;
-      Point_temp.Speed = msg->objects[i].relSpeed;
+      Point_temp.Speed = msg->objects[i].speed_rel;
       PointCloud_temp.push_back(Point_temp);
     }
   }
@@ -148,27 +143,23 @@ void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg)
   {
     Point_temp.X = msg->objects[i].bPoint.p0.x;
     Point_temp.Y = msg->objects[i].bPoint.p0.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p3.x;
     Point_temp.Y = msg->objects[i].bPoint.p3.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p4.x;
     Point_temp.Y = msg->objects[i].bPoint.p4.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p7.x;
     Point_temp.Y = msg->objects[i].bPoint.p7.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
-    Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x +
-                    msg->objects[i].bPoint.p7.x) /
-                   4;
-    Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y +
-                    msg->objects[i].bPoint.p7.y) /
-                   4;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.X = msg->objects[i].center_point.x;  // lidar_TF
+    Point_temp.Y = msg->objects[i].center_point.y;  // lidar_TF
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
   }
   Radar_Geofence.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);

@@ -541,7 +541,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       obj_pub.header.frame_id = obj.header.frame_id;
       obj_pub.header.stamp = obj.header.stamp;
       obj_pub.classId = obj.classId;
-      obj_pub.camInfo = obj.camInfo;
+      obj_pub.camInfo = obj.camInfo[0];
       obj_pub.bPoint = obj.bPoint;
       obj_pub.track.id = obj.track.id;
 
@@ -843,11 +843,10 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
           }
           std::vector<float> bbox;
-          bbox.reserve(4);
-          bbox.emplace_back(obj_pub.camInfo.u);
-          bbox.emplace_back(obj_pub.camInfo.v);
-          bbox.emplace_back(obj_pub.camInfo.u + obj_pub.camInfo.width);
-          bbox.emplace_back(obj_pub.camInfo.v + obj_pub.camInfo.height);
+          bbox.emplace_back(obj_pub.camInfo[0].u);
+          bbox.emplace_back(obj_pub.camInfo[0].v);
+          bbox.emplace_back(obj_pub.camInfo[0].u + obj_pub.camInfo[0].width);
+          bbox.emplace_back(obj_pub.camInfo[0].v + obj_pub.camInfo[0].height);
           skeleton_buffer.at(skeleton_index).data_bbox_.emplace_back(bbox);
           if (skeleton_buffer.at(skeleton_index).data_bbox_.size() > frame_num_)
           {
