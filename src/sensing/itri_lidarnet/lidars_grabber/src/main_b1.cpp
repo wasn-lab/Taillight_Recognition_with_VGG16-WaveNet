@@ -9,6 +9,7 @@
 #include "pointcloud_format_conversion.h"
 #include "msgs/CompressedPointCloud.h"
 #include <std_msgs/Empty.h>
+#include "car_model.h"
 
 //----------------------------- Stitching
 vector<double> LidarFrontLeft_Fine_Param;
@@ -88,7 +89,11 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     //-------------------------- sensor_msg to pcl XYZIR
     pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud_tmp(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
+#if CAR_MODEL_IS_C1
+    *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster");
+#else
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "velodyne");
+#end
 
 
     //-------------------------- compress thread
