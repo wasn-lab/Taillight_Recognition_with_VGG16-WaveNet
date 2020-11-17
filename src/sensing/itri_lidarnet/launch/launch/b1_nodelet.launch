@@ -52,7 +52,7 @@ Lidar List:
 	<node pkg="nodelet" type="nodelet" name="lidars_nodelet_manager"  args="manager" output="screen"/>
 	
 	<!-- Grabber Nodelet -->
-	<node pkg="nodelet" type="nodelet" name="LidarsGrabberB1_Nodelet" args="load lidars_grabber_b1_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	  
+	<node pkg="nodelet" type="nodelet" name="LidarsGrabber_Nodelet" args="load lidars_grabber_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	  
 	
 	<!-- Preprocessing Nodelet -->
 	<node pkg="nodelet" type="nodelet" name="LidarsPreprocessingB1_Nodelet" args="load lidars_preprocessing_b1_nodelet/LidarsNodelet lidars_nodelet_manager" output="screen"></node>	

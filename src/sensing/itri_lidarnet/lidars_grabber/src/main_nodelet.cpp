@@ -9,7 +9,7 @@
 #include "CuboidFilter.h"
 
 //===== Function
-namespace lidars_grabber_b1_nodelet
+namespace lidars_grabber_nodelet
 {
 //===== Declare
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloudPtr_LidarFrontLeft(new pcl::PointCloud<pcl::PointXYZI>);
@@ -394,4 +394,4 @@ private:
 
 }  // namespace lidars_grabber_b1_nodelet
 
-PLUGINLIB_EXPORT_CLASS(lidars_grabber_b1_nodelet::LidarsNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(lidars_grabber_nodelet::LidarsNodelet, nodelet::Nodelet);

@@ -118,7 +118,7 @@ include(CarModel)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-   LIBRARIES ${PROJECT_NAME}_b1_nodelet
+   LIBRARIES ${PROJECT_NAME}_nodelet
    CATKIN_DEPENDS roscpp rospy msgs nodelet
 #  DEPENDS system_lib
 )
@@ -132,6 +132,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${car_model_BINARY_DIR}/include
 )
 
 ## Declare a C++ library
@@ -254,35 +255,16 @@ set(SOURCES_SRCS
 ######################
 ##      Vehicle     ##
 ######################
-# b1
-cuda_add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-qt5_use_modules 		(${PROJECT_NAME}_b1 Widgets)
-
-# c1
-cuda_add_executable 	(${PROJECT_NAME}_c1 src/main_c1.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-add_dependencies		(${PROJECT_NAME}_c1 ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_c1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-qt5_use_modules 		(${PROJECT_NAME}_c1 Widgets)
-
-# hino
-if (CAR_MODEL_IS_HINO)
-  cuda_add_executable 	(${PROJECT_NAME}_hino src/main_hino.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-  add_dependencies		(${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS})
-  target_link_libraries 	(${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-  qt5_use_modules 		(${PROJECT_NAME}_hino Widgets)
-
-  cuda_add_executable 	(${PROJECT_NAME}_hino_v2 src/main_hino_v2.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
-  add_dependencies		(${PROJECT_NAME}_hino_v2 ${catkin_EXPORTED_TARGETS})
-  target_link_libraries 	(${PROJECT_NAME}_hino_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-  qt5_use_modules 		(${PROJECT_NAME}_hino_v2 Widgets)
-endif()
+# main
+cuda_add_executable 	(${PROJECT_NAME} src/main.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC})
+add_dependencies		(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+target_link_libraries 	(${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+qt5_use_modules 		(${PROJECT_NAME} Widgets)
 
 ######################
 ##      Nodelet     ##
 ######################
-cuda_add_library	  (${PROJECT_NAME}_b1_nodelet src/main_b1_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} )
-add_dependencies	  (${PROJECT_NAME}_b1_nodelet ${${PROJECT_NAME}_b1_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries (${PROJECT_NAME}_b1_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-qt5_use_modules 		(${PROJECT_NAME}_b1_nodelet Widgets)
+cuda_add_library	  (${PROJECT_NAME}_nodelet src/main_nodelet.cpp ${SOURCES_SRCS} ${QT_FORMS_HEADERS} ${QT_HEADERS_MOC} )
+add_dependencies	  (${PROJECT_NAME}_nodelet ${${PROJECT_NAME}_nodelet_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries (${PROJECT_NAME}_nodelet ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+qt5_use_modules 		(${PROJECT_NAME}_nodelet Widgets)
