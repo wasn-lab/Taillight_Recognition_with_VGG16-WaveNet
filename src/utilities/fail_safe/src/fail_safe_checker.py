@@ -12,6 +12,8 @@ from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL
 from sb_param_utils import get_vid
+from jira_utils import (generate_issue_contents, post_issue,
+                        PROJECT_ID_P_S3, ISSUE_TYPE_ID_BUG)
 
 
 def _overall_status(module_states):
@@ -59,6 +61,8 @@ class FailSafeChecker(object):
         self.action_emitter = ActionEmitter()
         self.sensor_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
+        self.fail_safe_status_publisher = rospy.Publisher(
+            "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -148,8 +152,12 @@ class FailSafeChecker(object):
                 pprint.pprint(current_status)
             if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
-            self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
+
+            current_status_json = json.dumps(current_status)
+            self.mqtt_client.publish(self.mqtt_topic, current_status_json)
+            self.fail_safe_status_publisher.publish(current_status_json)
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
+
             if self.warn_count + self.error_count > 0:
                 rospy.logwarn("warn_count: %d, error_count: %d",
                               self.warn_count, self.error_count)
