@@ -14,7 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>  // opencv general include file
-#include "camera_params_b1_v2.h"
+#include "camera_params.h"
 
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
