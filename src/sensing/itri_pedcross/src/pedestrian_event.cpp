@@ -843,10 +843,10 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
           }
           std::vector<float> bbox;
-          bbox.emplace_back(obj_pub.camInfo[0].u);
-          bbox.emplace_back(obj_pub.camInfo[0].v);
-          bbox.emplace_back(obj_pub.camInfo[0].u + obj_pub.camInfo[0].width);
-          bbox.emplace_back(obj_pub.camInfo[0].v + obj_pub.camInfo[0].height);
+          bbox.emplace_back(obj_pub.camInfo.u);
+          bbox.emplace_back(obj_pub.camInfo.v);
+          bbox.emplace_back(obj_pub.camInfo.u + obj_pub.camInfo.width);
+          bbox.emplace_back(obj_pub.camInfo.v + obj_pub.camInfo.height);
           skeleton_buffer.at(skeleton_index).data_bbox_.emplace_back(bbox);
           if (skeleton_buffer.at(skeleton_index).data_bbox_.size() > frame_num_)
           {
