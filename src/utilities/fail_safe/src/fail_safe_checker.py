@@ -8,8 +8,10 @@ from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
+from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL
+from sb_param_utils import get_vid
 
 
 def _overall_status(module_states):
@@ -22,9 +24,9 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, vid, heartbeat_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, heartbeat_ini, mqtt_ini, mqtt_fqdn):
         self.debug_mode = False
-        self.vid = vid  # vehicle id
+        self.vid = get_vid()  # vehicle id
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
@@ -44,6 +46,7 @@ class FailSafeChecker(object):
             if cfg[module].getboolean("latch"):
                 self.latched_modules.append(module)
         self.ctrl_info_03 = CtrlInfo03()
+        self.pedcross_alert = PedCrossAlert()
         self.can_checker = CanChecker()
 
         mqtt_cfg = configparser.ConfigParser()
@@ -71,6 +74,8 @@ class FailSafeChecker(object):
 
     def get_current_status(self):
         """Collect states from the components of the car"""
+        ego_speed = self._get_ego_speed()
+
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": self.ctrl_info_03.get_events_in_list(),
                "seq": self.seq,
@@ -78,19 +83,28 @@ class FailSafeChecker(object):
         self.seq += 1
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
+        # pedcross is still under heavy development
+        ret["states"] += self.pedcross_alert.get_status_in_list()
         status = _overall_status(ret["states"])
         status_str = _overall_status_str(ret["states"])
+
+        if ego_speed > 0:
+            ret["events"] += self.pedcross_alert.get_events_in_list()
 
         if (self.modules["3d_object_detection"].get_fps() +
                 self.modules["LidarDetection"].get_fps()) == 0:
             status = FATAL
             status_str += "; Cam/Lidar detection offline at the same time"
 
+        if status == OK:
+            self.warn_count = 0
+            self.error_count = 0
+
         if status == WARN:
             self.warn_count += 1
         else:
             self.warn_count = 0
-        if self.warn_count > 10 and self._get_ego_speed() > 0:
+        if self.warn_count > 10 and ego_speed > 0:
             status = ERROR
             status_str = "WARN states more than 10 seconds"
 
@@ -130,10 +144,13 @@ class FailSafeChecker(object):
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
             if self.debug_mode:
-                pprint.pprint(sensor_status)
+                # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)
             if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
             self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
+            if self.warn_count + self.error_count > 0:
+                rospy.logwarn("warn_count: %d, error_count: %d",
+                              self.warn_count, self.error_count)
             rate.sleep()

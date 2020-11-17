@@ -133,7 +133,7 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject.relSpeed:
+  // compute DetectedObject.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 

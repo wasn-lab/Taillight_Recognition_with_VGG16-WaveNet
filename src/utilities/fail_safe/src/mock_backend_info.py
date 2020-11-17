@@ -1,11 +1,12 @@
+#!/usr/bin/env python
 import argparse
 import rospy
 from msgs.msg import BackendInfo
 
-class FakeBackendInfoGenerator():
+class MockBackendInfoGenerator():
     """Use to generate fake backend info, esp for battery info"""
     def __init__(self, gross_voltage, lowest_voltage):
-        rospy.init_node("FakeBackendInfoGenerator")
+        rospy.init_node("MockBackendInfoGenerator")
         self.gross_voltage = gross_voltage
         self.lowest_voltage = lowest_voltage
         self.publisher = rospy.Publisher("/Backend/Info", BackendInfo, queue_size=1)
@@ -15,7 +16,7 @@ class FakeBackendInfoGenerator():
         cnt = 0
         while not rospy.is_shutdown():
             if cnt == 0:
-                rospy.logwarn("publish fake backend info")
+                rospy.logwarn("publish mock /Backend/Info")
             cnt += 1
             if cnt == 100:
                 cnt = 0
@@ -37,8 +38,8 @@ def main():
     #    < 3.2: FATAL, the car has to stop
     parser.add_argument("--gross-voltage", type=float, default=356.0)
     parser.add_argument("--lowest-voltage", type=float, default=3.26)
-    args = parser.parse_args()
-    gnr = FakeBackendInfoGenerator(args.gross_voltage, args.lowest_voltage)
+    args = parser.parse_known_args()[0]
+    gnr = MockBackendInfoGenerator(args.gross_voltage, args.lowest_voltage)
     gnr.run()
 
 
