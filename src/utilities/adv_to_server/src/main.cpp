@@ -87,6 +87,7 @@ boost::mutex mutex_trafficLight;
 boost::mutex mutex_event_1;
 boost::mutex mutex_event_2;
 boost::mutex mutex_mqtt;
+boost::mutex mutex_sensor;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
@@ -101,7 +102,7 @@ std::queue<json> mqttGNSSQueue;
 std::queue<json> mqttBSMQueue;
 std::queue<json> mqttECUQueue;
 std::queue<json> mqttIMUQueue;
-
+std::queue<json> mqttSensorQueue;
 
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
@@ -116,6 +117,7 @@ json fps_json_ = { { "key", 0 } };
 std::string VK102Response;
 std::string mileJson;
 std::string eventJson;
+std::string statusJson;
 msgs::RouteInfo route_info;
 std::string board_list="00000000";
 int routeID = 2000;
@@ -547,6 +549,17 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
 }
 
 
+void callbackSersorStatus(const std_msgs::String::ConstPtr& input)
+{
+  using namespace std;
+  mutex_sensor.lock();
+  json J1 = json::parse(input->data.c_str());
+  J1["vid"] = "dc5360f91e74";
+  mqttSensorQueue.push(J1.dump());
+  mutex_sensor.unlock();
+}
+
+
 /*========================= ROS callbacks end =========================*/
 
 /*========================= json parsers begin =========================*/
@@ -788,6 +801,15 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= json parsers end =========================*/
 
 /*========================= thread runnables begin =========================*/
+void mqtt_pubish(std::string msg)
+{
+  if(isMqttConnected){
+      std::string topic = "vehicle/report/dc5360f91e74";
+      std::cout << "publish "  << msg << std::endl;
+      mqttPub.publish(topic, msg);
+    }
+}
+
 void sendRun(int argc, char** argv)
 {
   using namespace std;
@@ -839,6 +861,7 @@ void sendRun(int argc, char** argv)
 
     mutex_mqtt.lock();
     json J1;
+    std::string states;
     J1["vid"] = "dc5360f91e74";
     json gnss_list = json::array();
     json bsm_list = json::array();
@@ -884,13 +907,15 @@ void sendRun(int argc, char** argv)
       }
       J1["imu"] = imu_list;
     }
-
-    if(isMqttConnected){
-      std::string topic = "vehicle/report/dc5360f91e74";
-      std::string msg = J1.dump();
-      std::cout << "publish "  << msg << std::endl;
-      mqttPub.publish(topic, msg);
+    if(mqttSensorQueue.size() != 0){
+       mutex_sensor.lock();
+       states = mqttSensorQueue.front();
+       mqttSensorQueue.pop();
+       mutex_sensor.unlock();
+       mqtt_pubish(states);
     }
+
+    mqtt_pubish(J1.dump());
     mutex_mqtt.unlock();
 
 
@@ -1027,7 +1052,7 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, isNewMap);
+                                     callbackEvent, callbackBI, callbackSersorStatus, isNewMap);
 
   while (ros::ok())
   {
