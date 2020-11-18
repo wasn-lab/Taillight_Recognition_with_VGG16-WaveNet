@@ -30,7 +30,7 @@
 #include <climits>
 #include <cmath>
 #include <vector>
-#include <pcap.h>
+
 #include "ros/ros.h"
 
 #include "std_msgs/MultiArrayLayout.h"
