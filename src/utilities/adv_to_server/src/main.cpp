@@ -1126,6 +1126,8 @@ void receiveRosRun(int argc, char** argv)
     mqttECUQueue.push(ecu_steer_obj);
     mqttECUQueue.push(ecu_geer_obj);
     mqttECUQueue.push(ecu_rpm_obj);
+    mqttECUQueue.push(ecu_mileage_obj);
+    mqttECUQueue.push(ecu_mode_obj);
     mqttECUQueue.push(ecu_engineload_obj);
     mqttECUQueue.push(ecu_dtc_obj);
 
@@ -1545,7 +1547,7 @@ json genMqttECUMsg(ecu_type type)
       ecu["vin"] = "";
       break;
     case ecu_type::mileage:
-      ecu["mileage"] = -1.0;
+      ecu["total_mileage"] = -1.0;
       break;
     case ecu_type::operation_speed:
       ecu["operation_speed"] = -1.0;
