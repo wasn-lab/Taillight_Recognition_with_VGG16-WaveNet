@@ -15,6 +15,8 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 #include "std_msgs/String.h"
+#include "Transmission/MqttClient.h"
+#include <chrono>
 
 bool flag_show_udp_send = true;
 bool event_queue_switch = true;
@@ -62,12 +64,25 @@ const int ROS_UPDATE_MICROSECONDS = 100 * 1000;
 // server status update time: 10 sec
 //const int SERVER_STATUS_UPDATE_MICROSECONDS = 10 * 1000 * 1000;
 
+enum ecu_type
+{
+  accelerator,
+  brake_pos,
+  steering_wheel_angle,
+  speed,
+  rpm,
+  dtc,
+  gear_state,
+  engine_load
+};
+
 // locks
 boost::mutex mutex_queue;
 boost::mutex mutex_ros;
 boost::mutex mutex_trafficLight;
 boost::mutex mutex_event_1;
 boost::mutex mutex_event_2;
+boost::mutex mutex_mqtt;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
@@ -77,6 +92,13 @@ std::queue<std::string> obuQueue;
 
 std::queue<std::string> vkQueue;
 std::queue<std::string> vkStatusQueue;
+
+std::queue<json> mqttGNSSQueue;
+std::queue<json> mqttBSMQueue;
+std::queue<json> mqttECUQueue;
+std::queue<json> mqttIMUQueue;
+
+
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
 std::queue<json> eventQueue2;
@@ -94,6 +116,8 @@ msgs::RouteInfo route_info;
 std::string board_list="00000000";
 int routeID = 2000;
 
+MqttClient mqttPub;
+bool isMqttConnected = false;
 
 long event_recv_count = 0;
 long event_send_count = 0;
@@ -144,6 +168,9 @@ struct IMU
   double Gyrox;
   double Gyroy;
   double Gyroz;
+  double Ax;
+  double Ay;
+  double Az;
 };
 
 struct VehicelStatus
@@ -207,6 +234,22 @@ std::string current_spat = "";
 VehicelStatus vs;
 batteryInfo battery;
 
+
+void getCurrentPath(){
+  char cwd[PATH_MAX];
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    printf("Current working dir: %s\n", cwd);
+  } else {
+    perror("getcwd() error");
+  }
+}
+
+json genMqttGnssMsg();
+json genMqttBmsMsg();
+json genMqttECUMsg(ecu_type);
+json genMqttIMUMsg();
+
+
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
 {
@@ -266,6 +309,7 @@ void callback_detObj(const msgs::DetectedObjectArray& input)
 
 void callback_gps(const msgs::LidLLA& input)
 {
+  std::cout << "callback gps " << std::endl;
   mutex_ros.lock();
   gps = input;
   mutex_ros.unlock();
@@ -789,7 +833,63 @@ void sendRun(int argc, char** argv)
     }
     mutex_queue.unlock();
 
-   
+    mutex_mqtt.lock();
+    json J1;
+    J1["vid"] = "dc5360f91e74";
+    json gnss_list = json::array();
+    json bsm_list = json::array();
+    json ecu_list = json::array();
+    json imu_list = json::array();
+    if(mqttGNSSQueue.size() !=0)
+    {
+      while(mqttGNSSQueue.size() != 0)
+      {
+        json gnss = mqttGNSSQueue.front();
+        gnss_list.push_back(gnss);
+        mqttGNSSQueue.pop();
+      }
+      J1["gnss"] = gnss_list;
+    }
+
+    if(mqttBSMQueue.size() != 0)
+    {
+      while(mqttBSMQueue.size() != 0){
+        json bsm = mqttBSMQueue.front();
+        bsm_list.push_back(bsm);
+        mqttBSMQueue.pop();
+      }
+      J1["bms"] = bsm_list;
+    }
+
+    if(mqttECUQueue.size() != 0)
+    {
+      while(mqttECUQueue.size() != 0){
+        json ecu = mqttECUQueue.front();
+        ecu_list.push_back(ecu);
+        mqttECUQueue.pop();
+      }
+      J1["ecu"] = ecu_list;
+    }
+
+    if(mqttIMUQueue.size() != 0)
+    {
+      while(mqttIMUQueue.size() != 0){
+        json jimu = mqttIMUQueue.front();
+        imu_list.push_back(jimu);
+        mqttIMUQueue.pop();
+      }
+      J1["imu"] = imu_list;
+    }
+
+    if(isMqttConnected){
+      std::string topic = "vehicle/report/dc5360f91e74";
+      std::string msg = J1.dump();
+      std::cout << "publish "  << msg << std::endl;
+      mqttPub.publish(topic, msg);
+    }
+    mutex_mqtt.unlock();
+
+
     if(event_queue_switch)
     {
       if(eventQueue1.size() != 0){
@@ -831,7 +931,7 @@ void sendRun(int argc, char** argv)
     }//else
     //cout << " receive event: " << event_recv_count << endl;
     //cout << " send event: " << event_send_count << endl;
-    boost::this_thread::sleep(boost::posix_time::microseconds(1000));
+    boost::this_thread::sleep(boost::posix_time::microseconds(100*1000));
   }
 }
 
@@ -928,10 +1028,10 @@ void receiveRosRun(int argc, char** argv)
   while (ros::ok())
   {
     mutex_ros.lock();
-
     std::string temp_adv001 = get_jsonmsg_ros("M8.2.adv001");
     mutex_queue.lock();
     q.push(temp_adv001);
+
     mutex_queue.unlock();
 
     std::string temp_adv003 = get_jsonmsg_ros("M8.2.adv003");
@@ -968,6 +1068,38 @@ void receiveRosRun(int argc, char** argv)
     mutex_queue.lock();
     vkQueue.push(temp_VK006);
     mutex_queue.unlock();
+
+
+    mutex_mqtt.lock();
+    json gnssobj = genMqttGnssMsg();
+    json bsmobj  = genMqttBmsMsg();
+    json ecu_acc_obj = genMqttECUMsg(ecu_type::accelerator);
+    json ecu_brk_obj = genMqttECUMsg(ecu_type::brake_pos);
+    json ecu_speed_obj = genMqttECUMsg(ecu_type::speed);
+    json ecu_steer_obj = genMqttECUMsg(ecu_type::steering_wheel_angle);
+    json ecu_geer_obj = genMqttECUMsg(ecu_type::gear_state);
+    json ecu_rpm_obj = genMqttECUMsg(ecu_type::rpm);
+    json ecu_engineload_obj = genMqttECUMsg(ecu_type::engine_load);
+    json ecu_dtc_obj = genMqttECUMsg(ecu_type::dtc);
+    json imuobj = genMqttIMUMsg();
+
+
+    mqttGNSSQueue.push(gnssobj);
+    mqttBSMQueue.push(bsmobj);
+
+    mqttECUQueue.push(ecu_acc_obj);
+    mqttECUQueue.push(ecu_brk_obj);
+    mqttECUQueue.push(ecu_speed_obj);
+    mqttECUQueue.push(ecu_steer_obj);
+    mqttECUQueue.push(ecu_geer_obj);
+    mqttECUQueue.push(ecu_rpm_obj);
+    mqttECUQueue.push(ecu_engineload_obj);
+    mqttECUQueue.push(ecu_dtc_obj);
+
+    mqttIMUQueue.push(imuobj);
+
+    mutex_mqtt.unlock();
+
 
     mutex_ros.unlock();
 
@@ -1313,6 +1445,139 @@ void tcpServerRun(int argc, char** argv)
     }
   }
 }
+
+json genMqttGnssMsg()
+{
+  using namespace std::chrono;
+  json gnss;
+  uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  //uint64_t source_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+  double lat = gps.lidar_Lat;
+  double lon = gps.lidar_Lon;
+  double alt = gps.lidar_Alt;
+  gnss["coord"] = {lat, lon,alt};
+  gnss["speed"] = -1;
+  gnss["heading"] = current_gnss_pose.yaw * 180 / PI;
+  gnss["timestamp"] = timestamp_ms;
+  gnss["source_time"] = timestamp_ms;
+  return gnss;
+}
+
+json genMqttBmsMsg()
+{
+  using namespace std::chrono;
+  uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  json bsm;
+  bsm["uid"] = PLATE;
+  bsm["current"] = battery.gross_current;
+  bsm["voltage"] = battery.gross_voltage;
+  bsm["capacity"] =vs.battery;
+  bsm["design_capacity"] = -1 ;
+  bsm["timestamp"] = timestamp_ms;
+  bsm["source_time"] = timestamp_ms;
+  return bsm;
+}
+
+json genMqttECUMsg(ecu_type type)
+{
+
+  using namespace std::chrono;
+  uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  json ecu;
+
+  switch(type){
+    case ecu_type::accelerator:
+      ecu["accelerator_pos"] = data[4];
+      break;
+    case ecu_type::brake_pos:
+      ecu["brake_pos"] = data[5];
+      ecu["parking_brake_status"] = vs.hand_brake;
+      break;
+    case ecu_type::dtc:
+
+      ecu["dtc"] = "test";
+      break;
+    case ecu_type::engine_load:
+      ecu["engine_load"] = -1.0;
+      ecu["coolant_temp"] = -1.0;
+      ecu["control_module_voltage"] = -1.0;
+      ecu["intake_temp"] = -1.0;
+      ecu["vin"] = "";
+      ecu["engine_load"] = -1;
+      ecu["run_time"] = -1;
+      break;
+    case ecu_type::gear_state:
+      ecu["gear_state"] = "";
+      break;
+    case ecu_type::rpm:
+      ecu["rpm"] =vs.rotating_speed;
+      break;
+    case ecu_type::speed:
+      ecu["speed"] = data[0];
+      break;
+    case ecu_type::steering_wheel_angle:
+      ecu["steering_wheel_angle"] = vs.steering_wheel;
+      break;
+  }
+  ecu["timestamp"] = timestamp_ms;
+  ecu["source_time"] = timestamp_ms;
+  return ecu;
+}
+
+json genMqttIMUMsg()
+{
+  using namespace std::chrono;
+  uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  json jimu;
+  jimu["uid"] = PLATE;
+  jimu["gyro_x"] = imu.Gyrox;
+  jimu["gyro_y"] = imu.Gyroy;
+  jimu["gyro_z"] = imu.Gyroz;
+  jimu["roll_rate"] = current_gnss_pose.roll;
+  jimu["pitch_rate"] = current_gnss_pose.pitch;
+  jimu["yaw_rate"] = current_gnss_pose.yaw;
+  jimu["acc_x"] = imu.Gx;
+  jimu["acc_y"] = imu.Gy;
+  jimu["acc_z"] = imu.Gz;
+  jimu["d2xdt"] = -1.0;
+  jimu["d2ydt"] = -1.0;
+  jimu["d2zdt"] = -1.0;
+  jimu["timestamp"] = timestamp_ms;
+  jimu["source_time"] = timestamp_ms;
+  return jimu;
+}
+
+static void on_mqtt_connect(struct mosquitto* client, void* obj, int rc)
+{
+  std::string result;
+  std::string topic = "vehicle/report/dc5360f91e74";
+  switch (rc)
+  {
+    case 0:
+      result = ": success";
+      isMqttConnected = true;
+      break;
+    case 1:
+      result = ": connection refused (unacceptable protocol version)";
+      break;
+    case 2:
+      result = ": connection refused (identifier rejected)";
+      break;
+    case 3:
+      result = ": connection refused (broker unavailable)";
+      break;
+    default:
+      result = ": unknown error";
+  }
+  std::cout << "on_Connect result= " << rc << result << std::endl;
+}
+
+void mqttPubRun(int argc, char** argv)
+{
+  mqttPub.setOnConneclCallback(on_mqtt_connect);
+  mqttPub.connect();
+}
+
 /*========================= thread runnables end =========================*/
 
 int main(int argc, char** argv)
@@ -1367,6 +1632,8 @@ int main(int argc, char** argv)
     flag_show_udp_send = false;
     boost::thread ThreadTCPServer(tcpServerRun, argc, argv);
   }
+
+  boost::thread ThreadMQTTSend(mqttPubRun, argc, argv);
 
   msgs::StopInfoArray empty;
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);

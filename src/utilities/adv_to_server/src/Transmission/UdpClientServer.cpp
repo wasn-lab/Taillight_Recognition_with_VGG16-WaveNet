@@ -127,8 +127,8 @@ int UdpClient::send_obj_to_server(const std::string& str, bool show)
   size_t msg_length = strlen(msg);
   if (show)
   {
-    std::cout << "send to : " + f_addr + ":" + to_string(f_port) << std::endl;
-    std::cout << "msg : " + str << std::endl;
+    //std::cout << "send to : " + f_addr + ":" + to_string(f_port) << std::endl;
+    //std::cout << "msg : " + str << std::endl;
   }
   int result = sendto(f_socket, msg, msg_length, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
   if (result < 0)

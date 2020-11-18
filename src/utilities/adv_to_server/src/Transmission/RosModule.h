@@ -103,7 +103,7 @@ class RosModuleTraffic
     static void
     publishTraffic(std::string topic, msgs::Spat input)
     {
-      std::cout << "publishTraffic topic " << topic <<  std::endl;
+      //std::cout << "publishTraffic topic " << topic <<  std::endl;
       ros::NodeHandle n;
       static ros::Publisher traffic_pub = n.advertise<msgs::Spat>(topic, 1000);
       traffic_pub.publish(input);
@@ -112,7 +112,7 @@ class RosModuleTraffic
     static void
     publishServerStatus(std::string topic, bool input)
     {
-      std::cout << "publishServerStatus topic " << topic << " , input " << input << std::endl;
+      //std::cout << "publishServerStatus topic " << topic << " , input " << input << std::endl;
       ros::NodeHandle n;
       static ros::Publisher server_status_pub = n.advertise<std_msgs::Bool>(topic, 1000);
       std_msgs::Bool msg;
@@ -123,7 +123,7 @@ class RosModuleTraffic
     static void
     publishReserve(std::string topic, msgs::StopInfoArray msg)
     {
-      std::cout << "publishReserve topic " << topic  << std::endl;
+      //std::cout << "publishReserve topic " << topic  << std::endl;
       ros::NodeHandle n;
       static ros::Publisher reserve_status_pub = n.advertise<msgs::StopInfoArray>(topic, 1000);
       short count = 0;
@@ -145,7 +145,7 @@ class RosModuleTraffic
     static void
     publishRoute(std::string topic, msgs::RouteInfo msg)
     {
-      std::cout << "publishReserve topic " << topic  << std::endl;
+      //std::cout << "publishReserve topic " << topic  << std::endl;
       ros::NodeHandle n;
       static ros::Publisher route_pub = n.advertise<msgs::RouteInfo>(topic, 1000);
       short count = 0;
