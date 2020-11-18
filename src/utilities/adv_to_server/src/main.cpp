@@ -105,7 +105,7 @@ double data[10] = { 0 };
 // traffic light buffer
 char buffer[1024];
 
-std::string PLATE = "ITRI-ADV123";
+std::string PLATE = "ITRI-ADV";
 const static int FPS_KEY_LEN = 27 + 16;
 const static std::string keys[] = {
   "FPS_LidarAll",         "FPS_LidarDetection",   "FPS_camF_right",        "FPS_camF_center",     "FPS_camF_left",
