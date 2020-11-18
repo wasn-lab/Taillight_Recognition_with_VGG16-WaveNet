@@ -1512,7 +1512,7 @@ int main(int argc, char** argv)
     /// ros Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order] + std::string("/raw"), 1, f_callbacks_cam[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order], 1, f_callbacks_cam[cam_order]);
       object_subs[cam_order] = nh.subscribe(g_bbox_topic_names[cam_order], 1, f_callbacks_object[cam_order]);
     }
 
