@@ -73,7 +73,11 @@ enum ecu_type
   rpm,
   dtc,
   gear_state,
-  engine_load
+  engine_load,
+  mileage,
+  driving_mode,
+  operation_speed,
+  emergency_stop
 };
 
 // locks
@@ -1081,6 +1085,10 @@ void receiveRosRun(int argc, char** argv)
     json ecu_rpm_obj = genMqttECUMsg(ecu_type::rpm);
     json ecu_engineload_obj = genMqttECUMsg(ecu_type::engine_load);
     json ecu_dtc_obj = genMqttECUMsg(ecu_type::dtc);
+    json ecu_mileage_obj = genMqttECUMsg(ecu_type::mileage);
+    json ecu_mode_obj = genMqttECUMsg(ecu_type::driving_mode);
+    json ecu_operation_speed_obj = genMqttECUMsg(ecu_type::operation_speed);
+    json ecu_emergency_stop_obj = genMqttECUMsg(ecu_type::emergency_stop);
     json imuobj = genMqttIMUMsg();
 
 
@@ -1455,8 +1463,8 @@ json genMqttGnssMsg()
   double lat = gps.lidar_Lat;
   double lon = gps.lidar_Lon;
   double alt = gps.lidar_Alt;
-  gnss["coord"] = {lat, lon,alt};
-  gnss["speed"] = -1;
+  gnss["coord"] = {lat, lon, alt};
+  //gnss["speed"] = -1; remove speed
   gnss["heading"] = current_gnss_pose.yaw * 180 / PI;
   gnss["timestamp"] = timestamp_ms;
   gnss["source_time"] = timestamp_ms;
@@ -1491,33 +1499,40 @@ json genMqttECUMsg(ecu_type type)
       break;
     case ecu_type::brake_pos:
       ecu["brake_pos"] = data[5];
-      ecu["parking_brake_status"] = vs.hand_brake;
-      break;
-    case ecu_type::dtc:
-
-      ecu["dtc"] = "test";
-      break;
-    case ecu_type::engine_load:
-      ecu["engine_load"] = -1.0;
-      ecu["coolant_temp"] = -1.0;
-      ecu["control_module_voltage"] = -1.0;
-      ecu["intake_temp"] = -1.0;
-      ecu["vin"] = "";
-      ecu["engine_load"] = -1;
-      ecu["run_time"] = -1;
-      break;
-    case ecu_type::gear_state:
-      ecu["gear_state"] = "";
-      break;
-    case ecu_type::rpm:
-      ecu["rpm"] =vs.rotating_speed;
-      break;
-    case ecu_type::speed:
-      ecu["speed"] = data[0];
       break;
     case ecu_type::steering_wheel_angle:
       ecu["steering_wheel_angle"] = vs.steering_wheel;
       break;
+    case ecu_type::speed:
+      ecu["speed"] = data[0];
+      break;
+    case ecu_type::rpm:
+      ecu["rpm"] =vs.rotating_speed;
+      break;
+    case ecu_type::gear_state:
+      ecu["gear_state"] = "1";
+      break;
+    case ecu_type::dtc:
+      ecu["dtc"] = "test";
+      break;
+    case ecu_type::engine_load:
+      ecu["engine_load"] = -1.0;
+      ecu["vin"] = "";
+      break;
+    case ecu_type::mileage:
+      ecu["mileage"] = -1.0;
+      break;
+    case ecu_type::operation_speed:
+      ecu["operation_speed"] = -1.0;
+      ecu["maximum_speed"] = 35;
+      break;
+    case ecu_type::driving_mode:
+      ecu["driving_mode"] = 1;
+      break;
+    case ecu_type::emergency_stop:
+      ecu["emergency_stop"] = 1;
+      break;
+
   }
   ecu["timestamp"] = timestamp_ms;
   ecu["source_time"] = timestamp_ms;
@@ -1530,18 +1545,20 @@ json genMqttIMUMsg()
   uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   json jimu;
   jimu["uid"] = PLATE;
-  jimu["gyro_x"] = imu.Gyrox;
-  jimu["gyro_y"] = imu.Gyroy;
-  jimu["gyro_z"] = imu.Gyroz;
+  //jimu["gyro_x"] = imu.Gyrox;
+  //jimu["gyro_y"] = imu.Gyroy;
+  //jimu["gyro_z"] = imu.Gyroz;
+  jimu["gyro"] = {imu.Gyrox, imu.Gyroy, imu.Gyroz};
   jimu["roll_rate"] = current_gnss_pose.roll;
   jimu["pitch_rate"] = current_gnss_pose.pitch;
   jimu["yaw_rate"] = current_gnss_pose.yaw;
-  jimu["acc_x"] = imu.Gx;
-  jimu["acc_y"] = imu.Gy;
-  jimu["acc_z"] = imu.Gz;
-  jimu["d2xdt"] = -1.0;
-  jimu["d2ydt"] = -1.0;
-  jimu["d2zdt"] = -1.0;
+  //jimu["acc_x"] = imu.Gx;
+  //jimu["acc_y"] = imu.Gy;
+  //jimu["acc_z"] = imu.Gz;
+  //jimu["acc"] = {imu.Gx, imu.Gy, imu.Gz};
+  //jimu["d2xdt"] = -1.0;
+  //jimu["d2ydt"] = -1.0;
+  //jimu["d2zdt"] = -1.0;
   jimu["timestamp"] = timestamp_ms;
   jimu["source_time"] = timestamp_ms;
   return jimu;
