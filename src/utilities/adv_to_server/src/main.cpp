@@ -149,6 +149,7 @@ const static std::string keys[] = {
   "FPS_cam_objleft_front_60",  "FPS_cam_objright_back_60",     "FPS_cam_objright_front_60",   "FPS_cam_objback_top_120"
 };
 
+
 struct pose
 {
   double x;
@@ -235,6 +236,8 @@ pose current_gnss_pose;
 ArriveStop cuttent_arrive_stop;
 IMU imu;
 
+double base_mileage;
+double delta_mileage;
 std::string current_spat = "";
 
 VehicelStatus vs;
@@ -546,6 +549,7 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   battery.highest_temperature = input->highest_temperature; //電池最高環境溫度
   mode = input->mode; //模式 自動/半自動/手動/鎖定
   emergency_exit = input->emergency_exit; //緊急出口
+  delta_mileage = input->mileage;
 }
 
 
@@ -787,6 +791,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     {
       json J0 = json::parse(mileJson);
       J1["mileage_info"] = J0;
+
     }
     catch (std::exception& e)
     {
@@ -1155,15 +1160,18 @@ void getServerStatusRun(int argc, char** argv)
     // TCP_VK_client.initial("192.168.43.24", 8765);
     TCP_VK_client.connectServer();
     json J1;
-    J1["type"] = "M8.2.VK005";
+    J1["type"] = "M8.2.VK008";
     J1["deviceid"] = "ITRI-ADV";
     std::string jsonString = J1.dump();
     const char* msg = jsonString.c_str();
     TCP_VK_client.sendRequest(msg, strlen(msg));
     TCP_VK_client.recvResponse(buffer_f, buff_size);
     std::string response(buffer_f);
+    std::cout << "=======Response: " << response << std::endl;
     json J2;
     J2 = json::parse(response);
+    base_mileage = J2["totle_delta_km"];
+
     // connect to server success.
     RosModuleTraffic::publishServerStatus(TOPIC_SERCER_STATUS, true);
   }
@@ -1547,7 +1555,7 @@ json genMqttECUMsg(ecu_type type)
       ecu["vin"] = "";
       break;
     case ecu_type::mileage:
-      ecu["total_mileage"] = -1.0;
+      ecu["total_mileage"] = base_mileage + delta_mileage;
       break;
     case ecu_type::operation_speed:
       ecu["operation_speed"] = -1.0;
