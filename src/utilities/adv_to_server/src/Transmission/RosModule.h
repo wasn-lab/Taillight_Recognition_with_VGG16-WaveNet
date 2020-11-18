@@ -37,6 +37,16 @@ class RosModuleTraffic
 
     }
 
+    static std::string getPlate(){
+        ros::NodeHandle n;
+        std::string plate;
+        if(n.getParam("license_plate_number", plate)){
+            return plate;
+        }else{
+            return "unknown";
+        }
+    }
+
     static void
     RegisterCallBack (void
                       (*cb1) (const msgs::DetectedObjectArray&),
