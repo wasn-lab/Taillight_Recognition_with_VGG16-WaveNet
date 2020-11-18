@@ -534,6 +534,10 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
       convert(obj.bPoint.p6, tf_stamped);
       convert(obj.bPoint.p7, tf_stamped);
 
+      tf_map_orig_x_ = tf_stamped.transform.translation.x;
+      tf_map_orig_y_ = tf_stamped.transform.translation.y;
+      tf_map_orig_z_ = tf_stamped.transform.translation.z;
+
       if (!obj.cPoint.lowerAreaPoints.empty())
       {
         for (auto p : obj.cPoint.lowerAreaPoints)
@@ -595,61 +599,84 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#6-1 bbox center x -- kalman-filtered (m), "  //
         << "#6-2 bbox center y -- kalman-filtered (m), "  //
         << "#6-3 bbox center z -- kalman-filtered (m), "  //
-        << "#7 abs vx (km/h), "                           //
-        << "#8 abs vy (km/h), "                           //
-        << "#9 abs speed (km/h), "                        //
-        << "#10 rel vx (km/h), "                          //
-        << "#11 rel vy (km/h), "                          //
-        << "#12 rel speed (km/h), "                       //
-        << "#PPx in 1 tick (m), "                         //
-        << "#PPy in 1 tick (m), "                         //
-        << "#PPx in 2 ticks (m), "                        //
-        << "#PPy in 2 ticks (m), "                        //
-        << "#PPx in 3 ticks (m), "                        //
-        << "#PPy in 3 ticks (m), "                        //
-        << "#PPx in 4 ticks (m), "                        //
-        << "#PPy in 4 ticks (m), "                        //
-        << "#PPx in 5 ticks (m), "                        //
-        << "#PPy in 5 ticks (m), "                        //
-        << "#PPx in 6 ticks (m), "                        //
-        << "#PPy in 6 ticks (m), "                        //
-        << "#PPx in 7 ticks (m), "                        //
-        << "#PPy in 7 ticks (m), "                        //
-        << "#PPx in 8 ticks (m), "                        //
-        << "#PPy in 8 ticks (m), "                        //
-        << "#PPx in 9 ticks (m), "                        //
-        << "#PPy in 9 ticks (m), "                        //
-        << "#PPx in 10 ticks (m), "                       //
-        << "#PPy in 10 ticks (m), "                       //
-        << "#PPx in 11 ticks (m), "                       //
-        << "#PPy in 11 ticks (m), "                       //
-        << "#PPx in 12 ticks (m), "                       //
-        << "#PPy in 12 ticks (m), "                       //
-        << "#PPx in 13 ticks (m), "                       //
-        << "#PPy in 13 ticks (m), "                       //
-        << "#PPx in 14 ticks (m), "                       //
-        << "#PPy in 14 ticks (m), "                       //
-        << "#PPx in 15 ticks (m), "                       //
-        << "#PPy in 15 ticks (m), "                       //
-        << "#PPx in 16 ticks (m), "                       //
-        << "#PPy in 16 ticks (m), "                       //
-        << "#PPx in 17 ticks (m), "                       //
-        << "#PPy in 17 ticks (m), "                       //
-        << "#PPx in 18 ticks (m), "                       //
-        << "#PPy in 18 ticks (m), "                       //
-        << "#PPx in 19 ticks (m), "                       //
-        << "#PPy in 19 ticks (m), "                       //
-        << "#PPx in 20 ticks (m), "                       //
-        << "#PPy in 20 ticks (m), "                       //
-        << "#21 ego x abs (m), "                          //
-        << "#22 ego y abs (m), "                          //
-        << "#23 ego z abs (m), "                          //
-        << "#24 ego heading (rad), "                      //
-        << "#25 kf Q1, "                                  //
-        << "#26 kf Q2, "                                  //
-        << "#27 kf Q3, "                                  //
-        << "#28 kf R, "                                   //
-        << "#29 kf P0\n";
+        << "#7 abs vx (km/h), "                        //
+        << "#8 abs vy (km/h), "                        //
+        << "#9 abs speed (km/h), "                     //
+        << "#10 rel vx (km/h), "                       //
+        << "#11 rel vy (km/h), "                       //
+        << "#12 rel speed (km/h), "                    //
+        << "#PPx in 1 tick (m), "                      //
+        << "#PPy in 1 tick (m), "                      //
+        << "#PPx in 2 ticks (m), "                     //
+        << "#PPy in 2 ticks (m), "                     //
+        << "#PPx in 3 ticks (m), "                     //
+        << "#PPy in 3 ticks (m), "                     //
+        << "#PPx in 4 ticks (m), "                     //
+        << "#PPy in 4 ticks (m), "                     //
+        << "#PPx in 5 ticks (m), "                     //
+        << "#PPy in 5 ticks (m), "                     //
+        << "#PPx in 6 ticks (m), "                     //
+        << "#PPy in 6 ticks (m), "                     //
+        << "#PPx in 7 ticks (m), "                     //
+        << "#PPy in 7 ticks (m), "                     //
+        << "#PPx in 8 ticks (m), "                     //
+        << "#PPy in 8 ticks (m), "                     //
+        << "#PPx in 9 ticks (m), "                     //
+        << "#PPy in 9 ticks (m), "                     //
+        << "#PPx in 10 ticks (m), "                    //
+        << "#PPy in 10 ticks (m), "                    //
+        << "#PPx in 11 ticks (m), "                    //
+        << "#PPy in 11 ticks (m), "                    //
+        << "#PPx in 12 ticks (m), "                    //
+        << "#PPy in 12 ticks (m), "                    //
+        << "#PPx in 13 ticks (m), "                    //
+        << "#PPy in 13 ticks (m), "                    //
+        << "#PPx in 14 ticks (m), "                    //
+        << "#PPy in 14 ticks (m), "                    //
+        << "#PPx in 15 ticks (m), "                    //
+        << "#PPy in 15 ticks (m), "                    //
+        << "#PPx in 16 ticks (m), "                    //
+        << "#PPy in 16 ticks (m), "                    //
+        << "#PPx in 17 ticks (m), "                    //
+        << "#PPy in 17 ticks (m), "                    //
+        << "#PPx in 18 ticks (m), "                    //
+        << "#PPy in 18 ticks (m), "                    //
+        << "#PPx in 19 ticks (m), "                    //
+        << "#PPy in 19 ticks (m), "                    //
+        << "#PPx in 20 ticks (m), "                    //
+        << "#PPy in 20 ticks (m), "                    //
+        << "#PPx in 21 ticks (m), "                    //
+        << "#PPy in 21 ticks (m), "                    //
+        << "#PPx in 22 ticks (m), "                    //
+        << "#PPy in 22 ticks (m), "                    //
+        << "#PPx in 23 ticks (m), "                    //
+        << "#PPy in 23 ticks (m), "                    //
+        << "#PPx in 24 ticks (m), "                    //
+        << "#PPy in 24 ticks (m), "                    //
+        << "#PPx in 25 ticks (m), "                    //
+        << "#PPy in 25 ticks (m), "                    //
+        << "#PPx in 26 ticks (m), "                    //
+        << "#PPy in 26 ticks (m), "                    //
+        << "#PPx in 27 ticks (m), "                    //
+        << "#PPy in 27 ticks (m), "                    //
+        << "#PPx in 28 ticks (m), "                    //
+        << "#PPy in 28 ticks (m), "                    //
+        << "#PPx in 29 ticks (m), "                    //
+        << "#PPy in 29 ticks (m), "                    //
+        << "#PPx in 30 ticks (m), "                    //
+        << "#PPy in 30 ticks (m), "                    //
+        << "#21 ego x abs (m), "                       //
+        << "#22 ego y abs (m), "                       //
+        << "#23 ego z abs (m), "                       //
+        << "#24 ego heading (rad), "                   //
+        << "#25 kf Q1, "                               //
+        << "#26 kf Q2, "                               //
+        << "#27 kf Q3, "                               //
+        << "#28 kf R, "                                //
+        << "#29 kf P0, "                               //
+        << "#31 tf_map_orig_x, "                       //
+        << "#32 tf_map_orig_y, "                       //
+        << "#33 tf_map_orig_z\n";
   }
   else
   {
@@ -675,11 +702,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << obj.center_point.x << ", "             // #6-1 bbox center x -- kalman-filtered (m)
         << obj.center_point.y << ", "             // #6-2 bbox center y -- kalman-filtered (m)
         << obj.center_point.z << ", "             // #6-3 bbox center z -- kalman-filtered (m)
-        << obj.track.absolute_velocity.x << ", "  // #7 abs vx (km/h)
-        << obj.track.absolute_velocity.y << ", "  // #8 abs vy (km/h)
-        << obj.speed_abs << ", "                  // #9 abs speed (km/h)
-        << obj.track.relative_velocity.x << ", "  // #10 rel vx (km/h)
-        << obj.track.relative_velocity.y << ", "  // #11 rel vy (km/h)
+        << obj.track.absolute_velocity.x << ", "            // #7 abs vx (km/h)
+        << obj.track.absolute_velocity.y << ", "            // #8 abs vy (km/h)
+        << obj.speed_abs << ", "                             // #9 abs speed (km/h)
+        << obj.track.relative_velocity.x << ", "            // #10 rel vx (km/h)
+        << obj.track.relative_velocity.y << ", "            // #11 rel vy (km/h)
         << obj.speed_rel;                         // #12 rel speed (km/h)
 
     if (obj.track.is_ready_prediction)
@@ -703,6 +730,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
           << KTs_.get_Q3() << ", "  // #27 kf Q3
           << KTs_.get_R() << ", "   // #28 kf R
           << KTs_.get_P0();         // #29 kf P0
+
+      ofs << ", "                    //
+          << tf_map_orig_x_ << ", "  // #31 tf_map_orig_x
+          << tf_map_orig_y_ << ", "  // #32 tf_map_orig_y
+          << tf_map_orig_z_;         // #33 tf_map_orig_z
     }
 
     ofs << "\n";

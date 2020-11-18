@@ -31,6 +31,10 @@ public:
   int run();
 
 private:
+  double tf_map_orig_x_ = 0.;
+  double tf_map_orig_y_ = 0.;
+  double tf_map_orig_z_ = 0.;
+
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
   int input_source_ = InputSource::CameraDetV2;
