@@ -88,6 +88,7 @@ boost::mutex mutex_event_1;
 boost::mutex mutex_event_2;
 boost::mutex mutex_mqtt;
 boost::mutex mutex_sensor;
+boost::mutex mutex_do;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
@@ -103,6 +104,7 @@ std::queue<json> mqttBSMQueue;
 std::queue<json> mqttECUQueue;
 std::queue<json> mqttIMUQueue;
 std::queue<json> mqttSensorQueue;
+std::queue<json> mqttDOQueue;
 
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
@@ -111,6 +113,7 @@ std::queue<json> eventQueue2;
 TcpServer server;
 
 msgs::DetectedObjectArray detObjArray;
+msgs::DetectedObjectArray trackingObjArray;
 msgs::LidLLA gps;
 msgs::VehInfo vehInfo;
 json fps_json_ = { { "key", 0 } };
@@ -257,7 +260,7 @@ json genMqttGnssMsg();
 json genMqttBmsMsg();
 json genMqttECUMsg(ecu_type);
 json genMqttIMUMsg();
-
+json getMqttDOMsg();
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, std::string command)
@@ -561,6 +564,14 @@ void callbackSersorStatus(const std_msgs::String::ConstPtr& input)
   J1["vid"] = "dc5360f91e74";
   mqttSensorQueue.push(J1.dump());
   mutex_sensor.unlock();
+}
+
+void callbackTracking(const msgs::DetectedObjectArray& input)
+{
+  mutex_do.lock();
+  trackingObjArray = input;
+  mutex_do.unlock();
+  
 }
 
 
@@ -867,6 +878,7 @@ void sendRun(int argc, char** argv)
     mutex_mqtt.lock();
     json J1;
     std::string states;
+    json detectObject;
     J1["vid"] = "dc5360f91e74";
     json gnss_list = json::array();
     json bsm_list = json::array();
@@ -918,6 +930,13 @@ void sendRun(int argc, char** argv)
        mqttSensorQueue.pop();
        mutex_sensor.unlock();
        mqtt_pubish(states);
+    }
+    if(mqttDOQueue.size() != 0){
+        mutex_do.lock();
+        detectObject = mqttDOQueue.front();
+        mqttDOQueue.pop();
+        mutex_do.unlock();
+        mqtt_pubish(detectObject.dump());
     }
 
     mqtt_pubish(J1.dump());
@@ -1057,7 +1076,7 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, callbackSersorStatus, isNewMap);
+                                     callbackEvent, callbackBI, callbackSersorStatus, callbackTracking, isNewMap);
 
   while (ros::ok())
   {
@@ -1120,6 +1139,7 @@ void receiveRosRun(int argc, char** argv)
     json ecu_operation_speed_obj = genMqttECUMsg(ecu_type::operation_speed);
     json ecu_emergency_stop_obj = genMqttECUMsg(ecu_type::emergency_stop);
     json imuobj = genMqttIMUMsg();
+    json DOobj = getMqttDOMsg();
 
 
     mqttGNSSQueue.push(gnssobj);
@@ -1138,6 +1158,8 @@ void receiveRosRun(int argc, char** argv)
     mqttECUQueue.push(ecu_dtc_obj);
 
     mqttIMUQueue.push(imuobj);
+
+    mqttDOQueue.push(DOobj);
 
     mutex_mqtt.unlock();
 
@@ -1598,6 +1620,45 @@ json genMqttIMUMsg()
   jimu["timestamp"] = timestamp_ms;
   jimu["source_time"] = timestamp_ms;
   return jimu;
+}
+
+json getMqttDOMsg(){
+    using namespace std::chrono;
+    uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    json DO;
+    json objArray;
+    for (size_t i = 0; i < trackingObjArray.objects.size(); i++)
+    {
+         json obj;
+         obj["classification"] = trackingObjArray.objects[i].classId;
+         obj["tid"] = trackingObjArray.objects[i].track.id;
+         obj["do_cordinate"] = {    
+            trackingObjArray.objects[i].center_point_gps.x,
+            trackingObjArray.objects[i].center_point_gps.y, 
+            trackingObjArray.objects[i].center_point_gps.z 
+         };
+         obj["do_heading"] = {
+            trackingObjArray.objects[i].heading_enu.x,
+            trackingObjArray.objects[i].heading_enu.y,
+            trackingObjArray.objects[i].heading_enu.z,
+            trackingObjArray.objects[i].heading_enu.w,
+         };
+         obj["do_dimension"] = {
+             trackingObjArray.objects[i].dimension.length,
+             trackingObjArray.objects[i].dimension.width,
+             trackingObjArray.objects[i].dimension.height,
+         };
+         objArray.push_back(obj);
+    }
+    if (objArray.size() == 0){
+        DO["obj"] = json::array();
+    }else{
+        DO["obj"] = objArray;
+    }
+    DO["timestamp"] = timestamp_ms;
+    DO["source_time"] = timestamp_ms;
+    return DO;
+
 }
 
 static void on_mqtt_connect(struct mosquitto* client, void* obj, int rc)
