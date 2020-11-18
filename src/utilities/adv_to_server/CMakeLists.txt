@@ -5,6 +5,7 @@ project(adv_to_server)
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
 
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -92,6 +93,10 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+find_package(Mosquitto)
+if (NOT MOSQUITTO_FOUND)
+  message(FATAL_ERROR "libmosquitto-dev not found. Run\n  sudo apt-get install libmosquitto-dev")
+endif()
 ###########
 ## Build ##
 ###########
@@ -101,18 +106,8 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  #${OpenCV_INCLUDE_DIRS}
+  ${MOSQUITTO_INCLUDE_DIR}
 )
-
-#link_directories(
-##    lib
-#)
-
-set(Mosquitto_libs
-  libmosquitto.so
-  libmosquitto.so.1
-)
-
 
 
 #message(STATUS ${OpenCV_INCLUDE_DIRS})
@@ -185,5 +180,5 @@ add_executable( adv_to_server src/main.cpp  ${SOURCES_SRCS})
 add_dependencies(adv_to_server msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #add_dependencies( fps_talker msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #target_link_libraries ( adv_to_server ${catkin_LIBRARIES}  ${Mosquitto_libs})
-target_link_libraries ( adv_to_server ${catkin_LIBRARIES} ${Mosquitto_libs})
+target_link_libraries ( adv_to_server ${catkin_LIBRARIES} ${MOSQUITTO_LIBRARY})
 
