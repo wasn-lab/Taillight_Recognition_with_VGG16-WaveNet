@@ -1133,6 +1133,7 @@ void receiveRosRun(int argc, char** argv)
     mqttECUQueue.push(ecu_rpm_obj);
     mqttECUQueue.push(ecu_mileage_obj);
     mqttECUQueue.push(ecu_mode_obj);
+    mqttECUQueue.push(ecu_operation_speed_obj);
     mqttECUQueue.push(ecu_engineload_obj);
     mqttECUQueue.push(ecu_dtc_obj);
 
