@@ -104,6 +104,17 @@ include_directories(
   #${OpenCV_INCLUDE_DIRS}
 )
 
+link_directories(
+    lib
+)
+
+set(Mosquitto_libs
+  libmosquitto.so
+  libmosquitto.so.1
+)
+
+
+
 #message(STATUS ${OpenCV_INCLUDE_DIRS})
 ## Declare a cpp library
 # add_library(camera_info
@@ -173,6 +184,6 @@ add_executable( adv_to_server src/main.cpp  ${SOURCES_SRCS})
 #add_executable( fps_talker src/talker.cpp)
 add_dependencies(adv_to_server msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #add_dependencies( fps_talker msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries ( adv_to_server ${catkin_LIBRARIES} )
+target_link_libraries ( adv_to_server ${catkin_LIBRARIES}  ${Mosquitto_libs})
 
 
