@@ -31,33 +31,37 @@ namespace lanelet
 {
 namespace utils
 {
-lanelet::LineString3d generateFineCenterline(const lanelet::ConstLanelet& lanelet_obj, const double resolution = 5.0);
+lanelet::LineString3d generateFineCenterline(
+  const lanelet::ConstLanelet & lanelet_obj, const double resolution = 5.0);
 
 /**
  * @brief  Apply a patch for centerline because the original implementation
  * doesn't have enough quality
  */
-void overwriteLaneletsCenterline(lanelet::LaneletMapPtr lanelet_map, const bool force_overite = false);
+void overwriteLaneletsCenterline(
+  lanelet::LaneletMapPtr lanelet_map, const double resolution = 5.0, const bool force_overwrite = false);
 
-lanelet::ConstLanelets getConflictingLanelets(const lanelet::routing::RoutingGraphConstPtr& graph,
-                                              const lanelet::ConstLanelet& lanelet);
+lanelet::ConstLanelets getConflictingLanelets(
+  const lanelet::routing::RoutingGraphConstPtr & graph, const lanelet::ConstLanelet & lanelet);
 
-bool lineStringWithWidthToPolygon(const lanelet::ConstLineString3d& linestring, lanelet::ConstPolygon3d* polygon);
+bool lineStringWithWidthToPolygon(
+  const lanelet::ConstLineString3d & linestring, lanelet::ConstPolygon3d * polygon);
 
-double getLaneletLength2d(const lanelet::ConstLanelet& lanelet);
-double getLaneletLength3d(const lanelet::ConstLanelet& lanelet);
-double getLaneletLength2d(const lanelet::ConstLanelets& lanelet_sequence);
-double getLaneletLength3d(const lanelet::ConstLanelets& lanelet_sequence);
+double getLaneletLength2d(const lanelet::ConstLanelet & lanelet);
+double getLaneletLength3d(const lanelet::ConstLanelet & lanelet);
+double getLaneletLength2d(const lanelet::ConstLanelets & lanelet_sequence);
+double getLaneletLength3d(const lanelet::ConstLanelets & lanelet_sequence);
 
-lanelet::ArcCoordinates getArcCoordinates(const lanelet::ConstLanelets& lanelet_sequence,
-                                          const geometry_msgs::Pose& pose);
+lanelet::ArcCoordinates getArcCoordinates(
+  const lanelet::ConstLanelets & lanelet_sequence, const geometry_msgs::Pose & pose);
 
-lanelet::ConstLineString3d getClosestSegment(const lanelet::BasicPoint2d& search_pt,
-                                             const lanelet::ConstLineString3d& linestring);
+lanelet::ConstLineString3d getClosestSegment(
+  const lanelet::BasicPoint2d & search_pt, const lanelet::ConstLineString3d & linestring);
 
-lanelet::CompoundPolygon3d getPolygonFromArcLength(const lanelet::ConstLanelets& lanelets, const double s1,
-                                                   const double s2);
-double getLaneletAngle(const lanelet::ConstLanelet& lanelet, const geometry_msgs::Point& search_point);
+lanelet::CompoundPolygon3d getPolygonFromArcLength(
+  const lanelet::ConstLanelets & lanelets, const double s1, const double s2);
+double getLaneletAngle(
+  const lanelet::ConstLanelet & lanelet, const geometry_msgs::Point & search_point);
 
 }  // namespace utils
 }  // namespace lanelet

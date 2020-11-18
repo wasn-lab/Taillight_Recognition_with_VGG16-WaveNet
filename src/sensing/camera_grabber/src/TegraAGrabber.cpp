@@ -103,39 +103,40 @@ bool TegraAGrabber::runPerception()
                                       camera::raw_image_width);
     }
 
-     npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
-                                     camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
-     if (crop_){
-         //resizer_.resize(npp8u_ptrs_[2], canvas[2]);
-int dummy;
-Npp8u* aDst = nppiMalloc_8u_C3(camera::image_crop_width, camera::image_crop_height, &dummy);
-
-Npp8u* const aSrc = npp8u_ptrs_[2] + camera::raw_image_cols * 3*camera::image_crop_ystart+camera::image_crop_xstart ;
-	
-
-  	nppiCopy_8u_C3R(aSrc,  camera::raw_image_cols * 3, aDst,  camera::raw_image_cols * 3,
-                                   {.width = camera::image_crop_width, .height = camera::image_crop_height });
-
-npp_wrapper::npp8u_ptr_to_cvmat(aDst, camera::image_crop_height * camera::image_crop_width * 3, canvas[2], camera::image_crop_height,
-                                      camera::image_crop_width);
-nppiFree(aDst);
-     }
-/*
-else
+    npp_wrapper::npp8u_ptr_c4_to_c3(static_cast<const Npp8u*>(camera_buffer_.cams_ptr->frames_GPU[2]),
+                                    camera::raw_image_rows, camera::raw_image_cols, npp8u_ptrs_[2]);
+    if (crop_)
     {
-      npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[2], num_src_bytes_, canvas[2], camera::raw_image_height,
-                                      camera::raw_image_width);
+      // resizer_.resize(npp8u_ptrs_[2], canvas[2]);
+      int dummy;
+      Npp8u* aDst = nppiMalloc_8u_C3(camera::image_crop_width, camera::image_crop_height, &dummy);
+
+      Npp8u* const aSrc =
+          npp8u_ptrs_[2] + camera::raw_image_cols * 3 * camera::image_crop_ystart + camera::image_crop_xstart;
+
+      nppiCopy_8u_C3R(aSrc, camera::raw_image_cols * 3, aDst, camera::raw_image_cols * 3,
+                      {.width = camera::image_crop_width, .height = camera::image_crop_height });
+
+      npp_wrapper::npp8u_ptr_to_cvmat(aDst, camera::image_crop_height * camera::image_crop_width * 3, canvas[2],
+                                      camera::image_crop_height, camera::image_crop_width);
+      nppiFree(aDst);
     }
-*/
+    /*
+    else
+        {
+          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[2], num_src_bytes_, canvas[2], camera::raw_image_height,
+                                          camera::raw_image_width);
+        }
+    */
 
     // end image processing
 
     // return camera grabber
     grabber->returnCameraFrame();
     int cam_count = cam_ids_.size();
-    if(!crop_)
+    if (!crop_)
     {
-      cam_count=cam_ids_.size()-1;
+      cam_count = cam_ids_.size() - 1;
     }
     for (size_t i = 0; i < cam_count; ++i)
     {

@@ -9,10 +9,12 @@
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PolygonStamped.h>
 #include <std_msgs/Bool.h>
+#include "std_msgs/Float64.h"
 
 ros::Publisher veh_predictpath_pub;
 ros::Publisher veh_predictpath_rel_pub;
 ros::Publisher vehbb_pub;
+ros::Publisher overshoot_dis_pub;
 
 #define RT_PI 3.14159265358979323846
 
@@ -112,6 +114,9 @@ void outofpathcheck(geometry_msgs::PolygonStamped veh_poly, bool& flag)
     {
       flag = true;
     }
+    std_msgs::Float64 overshoot_dis;
+    overshoot_dis.data = (min_value[0] + min_value[1])/2;
+    overshoot_dis_pub.publish(overshoot_dis);
   } 
 }
 
@@ -362,6 +367,7 @@ int main(int argc, char** argv)
   vehbb_pub = node.advertise<geometry_msgs::PolygonStamped>("veh_bb", 10, true);
   veh_predictpath_pub = node.advertise<nav_msgs::Path>("veh_predictpath", 10, true);
   veh_predictpath_rel_pub = node.advertise<nav_msgs::Path>("veh_predictpath_rel", 10, true);
+  overshoot_dis_pub = node.advertise<std_msgs::Float64>("veh_overshoot_dis", 10, true);
   // ros::Rate loop_rate(0.0001);
   // while (ros::ok())
   // { 

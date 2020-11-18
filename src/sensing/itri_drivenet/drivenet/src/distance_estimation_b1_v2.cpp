@@ -911,11 +911,25 @@ std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* bo
 
       if(status == 2)
       {
-        box2[i].x1 = box1.x2;
+        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box2[i].x2 - box1.x2) * (box2[i].y2 - box2[i].y1))
+        {
+          box2[i].y2 = box1.y1;
+        }
+        else
+        {
+          box2[i].x1 = box1.x2;
+        }
       }
       else if(status == 3)
       {
-        box2[i].x2 = box1.x1;        
+        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box1.x1 - box2[i].x1) * (box2[i].y2 - box2[i].y1))
+        {
+          box2[i].y2 = box1.y1;
+        }
+        else
+        {
+          box2[i].x2 = box1.x1;
+        }
       }    
     }
   }  

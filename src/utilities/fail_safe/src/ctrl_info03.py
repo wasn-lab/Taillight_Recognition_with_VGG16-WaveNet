@@ -101,6 +101,7 @@ class CtrlInfo03(object):
             self.xbywire_enable = False
 
     def _get_fps(self):
+        self._update_heap()
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_heap(self):
@@ -108,10 +109,10 @@ class CtrlInfo03(object):
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
-        heapq.heappush(self.heap, now)
 
     def _cb(self, msg):
         self._update_heap()
+        heapq.heappush(self.heap, time.time())
         self.brake_status = int(msg.Dspace_Flag05)
         self.xbywire_enable = bool(int(msg.Dspace_Flag06))
         self.aeb_enable = bool(int(msg.Dspace_Flag07))

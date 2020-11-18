@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(autoware_planning_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -20,6 +20,9 @@ add_message_files(
     Route.msg
     RouteSection.msg
     Scenario.msg
+    StopFactor.msg
+    StopReason.msg
+    StopReasonArray.msg
     Trajectory.msg
     TrajectoryPoint.msg
 )

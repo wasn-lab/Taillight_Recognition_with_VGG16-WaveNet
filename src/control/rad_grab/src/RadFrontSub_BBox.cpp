@@ -41,7 +41,7 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
   {
     if (msg->radPoint[i].speed < 80)
     {
-      Box_temp.relSpeed = msg->radPoint[i].speed;
+      Box_temp.speed_rel = msg->radPoint[i].speed;
 
       Box_temp.bPoint.p0.x = msg->radPoint[i].x - m_radio;
       Box_temp.bPoint.p0.y = -msg->radPoint[i].y - m_radio;
@@ -74,6 +74,10 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
       Box_temp.bPoint.p7.x = msg->radPoint[i].x + m_radio;
       Box_temp.bPoint.p7.y = -msg->radPoint[i].y + m_depth;
       Box_temp.bPoint.p7.z = msg->radPoint[i].z;
+
+      Box_temp.center_point.x = msg->radPoint[i].x;
+      Box_temp.center_point.y = -msg->radPoint[i].y;
+      Box_temp.center_point.z = msg->radPoint[i].z;
 
       BBox.objects.push_back(Box_temp);
 

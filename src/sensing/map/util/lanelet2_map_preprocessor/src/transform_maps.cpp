@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+
 #include <ros/ros.h>
 
 #include <lanelet2_core/LaneletMap.h>
@@ -40,42 +41,42 @@ void printUsage()
             << "pcd_output_path" << std::endl;
 }
 
-bool loadLaneletMap(const std::string& llt_map_path, lanelet::LaneletMapPtr& lanelet_map_ptr,
-                    lanelet::Projector& projector)
+bool loadLaneletMap(
+  const std::string & llt_map_path, lanelet::LaneletMapPtr & lanelet_map_ptr,
+  lanelet::Projector & projector)
 {
   lanelet::LaneletMapPtr lanelet_map;
   lanelet::ErrorMessages errors;
   lanelet_map_ptr = lanelet::load(llt_map_path, "autoware_osm_handler", projector, &errors);
 
-  for (const auto& error : errors)
-  {
+  for (const auto & error : errors) {
     ROS_ERROR_STREAM(error);
   }
-  if (!errors.empty())
-  {
+  if (!errors.empty()) {
     return false;
   }
   std::cout << "Loaded Lanelet2 map" << std::endl;
   return true;
 }
 
-bool loadPCDMap(const std::string& pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr& pcd_map_ptr)
+bool loadPCDMap(const std::string & pcd_map_path, pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr)
 {
   if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_map_path, *pcd_map_ptr) == -1)  //* load the file
   {
     PCL_ERROR("Couldn't read file test_pcd.pcd \n");
     return false;
   }
-  std::cout << "Loaded " << pcd_map_ptr->width * pcd_map_ptr->height << " data points." << std::endl;
+  std::cout << "Loaded " << pcd_map_ptr->width * pcd_map_ptr->height << " data points."
+            << std::endl;
   return true;
 }
 
-void transformMaps(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcd_map_ptr, lanelet::LaneletMapPtr& lanelet_map_ptr,
-                   const Eigen::Affine3d affine)
+void transformMaps(
+  pcl::PointCloud<pcl::PointXYZ>::Ptr & pcd_map_ptr, lanelet::LaneletMapPtr & lanelet_map_ptr,
+  const Eigen::Affine3d affine)
 {
   {
-    for (lanelet::Point3d pt : lanelet_map_ptr->pointLayer)
-    {
+    for (lanelet::Point3d pt : lanelet_map_ptr->pointLayer) {
       Eigen::Vector3d eigen_pt(pt.x(), pt.y(), pt.z());
       auto transformed_pt = affine * eigen_pt;
       pt.x() = transformed_pt.x();
@@ -85,8 +86,7 @@ void transformMaps(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcd_map_ptr, lanelet::La
   }
 
   {
-    for (auto& pt : pcd_map_ptr->points)
-    {
+    for (auto & pt : pcd_map_ptr->points) {
       Eigen::Vector3d eigen_pt(pt.x, pt.y, pt.z);
       auto transformed_pt = affine * eigen_pt;
       pt.x = transformed_pt.x();
@@ -96,8 +96,9 @@ void transformMaps(pcl::PointCloud<pcl::PointXYZ>::Ptr& pcd_map_ptr, lanelet::La
   }
 }
 
-Eigen::Affine3d createAffineMatrixFromXYZRPY(const double x, const double y, const double z, const double roll,
-                                             const double pitch, const double yaw)
+Eigen::Affine3d createAffineMatrixFromXYZRPY(
+  const double x, const double y, const double z, const double roll, const double pitch,
+  const double yaw)
 {
   double roll_rad = roll * M_PI / 180.0;
   double pitch_rad = pitch * M_PI / 180.0;
@@ -105,33 +106,30 @@ Eigen::Affine3d createAffineMatrixFromXYZRPY(const double x, const double y, con
 
   Eigen::Translation<double, 3> trans(x, y, z);
   Eigen::Matrix3d rot;
-  rot = Eigen::AngleAxisd(yaw_rad, Eigen::Vector3d::UnitZ()) * Eigen::AngleAxisd(pitch_rad, Eigen::Vector3d::UnitY()) *
+  rot = Eigen::AngleAxisd(yaw_rad, Eigen::Vector3d::UnitZ()) *
+        Eigen::AngleAxisd(pitch_rad, Eigen::Vector3d::UnitY()) *
         Eigen::AngleAxisd(roll_rad, Eigen::Vector3d::UnitX());
   return trans * rot;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
   ros::init(argc, argv, "lanelet_map_height_adjuster");
   ros::NodeHandle pnh("~");
 
-  if (!pnh.hasParam("llt_map_path"))
-  {
+  if (!pnh.hasParam("llt_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("pcd_map_path"))
-  {
+  if (!pnh.hasParam("pcd_map_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("llt_output_path"))
-  {
+  if (!pnh.hasParam("llt_output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
-  if (!pnh.hasParam("pcd_output_path"))
-  {
+  if (!pnh.hasParam("pcd_output_path")) {
     printUsage();
     return EXIT_FAILURE;
   }
@@ -161,24 +159,19 @@ int main(int argc, char* argv[])
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr pcd_map_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
-  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector))
-  {
+  if (!loadLaneletMap(llt_map_path, llt_map_ptr, projector)) {
     return EXIT_FAILURE;
   }
-  if (!loadPCDMap(pcd_map_path, pcd_map_ptr))
-  {
+  if (!loadPCDMap(pcd_map_path, pcd_map_ptr)) {
     return EXIT_FAILURE;
   }
   Eigen::Affine3d affine = createAffineMatrixFromXYZRPY(x, y, z, roll, pitch, yaw);
 
   std::string mgrs_grid;
-  if (pnh.hasParam("mgrs_grid"))
-  {
+  if (pnh.hasParam("mgrs_grid")) {
     pnh.param("mgrs_grid", mgrs_grid, mgrs_grid);
     projector.setMGRSCode(mgrs_grid);
-  }
-  else
-  {
+  } else {
     std::cout << "no mgrs code set. using last projected grid instead" << std::endl;
     mgrs_grid = projector.getProjectedMGRSGrid();
   }

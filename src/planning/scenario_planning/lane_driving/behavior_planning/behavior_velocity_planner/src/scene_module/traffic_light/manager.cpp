@@ -19,10 +19,11 @@
 
 namespace
 {
-std::vector<lanelet::TrafficLightConstPtr> getTrafficLightRegElemsOnPath(
+std::unordered_map<lanelet::TrafficLightConstPtr, lanelet::ConstLanelet>
+getTrafficLightRegElemsOnPath(
   const autoware_planning_msgs::PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map)
 {
-  std::vector<lanelet::TrafficLightConstPtr> traffic_light_reg_elems;
+  std::unordered_map<lanelet::TrafficLightConstPtr, lanelet::ConstLanelet> traffic_light_reg_elems;
 
   for (const auto & p : path.points) {
     const auto lane_id = p.lane_ids.at(0);
@@ -30,48 +31,89 @@ std::vector<lanelet::TrafficLightConstPtr> getTrafficLightRegElemsOnPath(
 
     const auto tls = ll.regulatoryElementsAs<const lanelet::TrafficLight>();
     for (const auto & tl : tls) {
-      traffic_light_reg_elems.push_back(tl);
+      traffic_light_reg_elems.insert(std::make_pair(tl, ll));
     }
   }
 
   return traffic_light_reg_elems;
 }
 
-std::set<int64_t> getStopLineIdSetOnPath(
+std::set<int64_t> getLaneletIdSetOnPath(
   const autoware_planning_msgs::PathWithLaneId & path, const lanelet::LaneletMapPtr lanelet_map)
 {
-  std::set<int64_t> stop_line_id_set;
-
+  std::set<int64_t> lanelet_id_set;
   for (const auto & traffic_light_reg_elem : getTrafficLightRegElemsOnPath(path, lanelet_map)) {
-    const auto stop_line = traffic_light_reg_elem->stopLine();
-    if (stop_line) {
-      stop_line_id_set.insert(stop_line->id());
-    }
+    lanelet_id_set.insert(traffic_light_reg_elem.second.id());
   }
-
-  return stop_line_id_set;
+  return lanelet_id_set;
 }
 
 }  // namespace
+
+TrafficLightModuleManager::TrafficLightModuleManager()
+: SceneModuleManagerInterface(getModuleName())
+{
+  ros::NodeHandle pnh("~");
+  const std::string ns(getModuleName());
+  auto & p = planner_param_;
+  pnh.param(ns + "/stop_margin", p.stop_margin, 0.0);
+  pnh.param(ns + "/tl_state_timeout", p.tl_state_timeout, 1.0);
+  pub_tl_state_ = pnh.advertise<autoware_perception_msgs::TrafficLightStateStamped>(
+    "output/traffic_light_state", 1);
+}
+
+void TrafficLightModuleManager::modifyPathVelocity(autoware_planning_msgs::PathWithLaneId * path)
+{
+  visualization_msgs::MarkerArray debug_marker_array;
+  autoware_planning_msgs::StopReasonArray stop_reason_array;
+  autoware_perception_msgs::TrafficLightStateStamped tl_state;
+  stop_reason_array.header.frame_id = "map";
+  stop_reason_array.header.stamp = ros::Time::now();
+  first_stop_path_point_index_ = static_cast<int>(path->points.size());
+  for (const auto & scene_module : scene_modules_) {
+    autoware_planning_msgs::StopReason stop_reason;
+    std::shared_ptr<TrafficLightModule> traffc_light_scene_module(std::dynamic_pointer_cast<TrafficLightModule>(scene_module));
+    traffc_light_scene_module->setPlannerData(planner_data_);
+    traffc_light_scene_module->modifyPathVelocity(path, &stop_reason);
+    stop_reason_array.stop_reasons.emplace_back(stop_reason);
+    if (traffc_light_scene_module->getFirstStopPathPointIndex() < first_stop_path_point_index_) {
+      first_stop_path_point_index_ = traffc_light_scene_module->getFirstStopPathPointIndex();
+      if (traffc_light_scene_module->getTrafficLightModuleState() != TrafficLightModule::State::GO_OUT) {
+        tl_state = traffc_light_scene_module->getTrafficLightState();
+      }
+    }
+    for (const auto & marker : traffc_light_scene_module->createDebugMarkerArray().markers) {
+      debug_marker_array.markers.push_back(marker);
+    }
+  }
+  if (!stop_reason_array.stop_reasons.empty()) {
+    pub_stop_reason_.publish(stop_reason_array);
+  }
+  pub_debug_.publish(debug_marker_array);
+  if (!tl_state.state.lamp_states.empty()) {
+    pub_tl_state_.publish(tl_state);
+  }
+}
 
 void TrafficLightModuleManager::launchNewModules(
   const autoware_planning_msgs::PathWithLaneId & path)
 {
   for (const auto & traffic_light_reg_elem :
        getTrafficLightRegElemsOnPath(path, planner_data_->lanelet_map)) {
-    const auto stop_line = traffic_light_reg_elem->stopLine();
+    const auto stop_line = traffic_light_reg_elem.first->stopLine();
 
     if (!stop_line) {
       ROS_FATAL(
         "No stop line at traffic_light_reg_elem_id = %ld, please fix the map!",
-        traffic_light_reg_elem->id());
+        traffic_light_reg_elem.first->id());
       continue;
     }
 
-    // Use stop_line_id as module_id because some traffic lights may indicate the same stop line
-    const auto module_id = stop_line->id();
+    // Use lanelet_id to unregister module when the route is changed
+    const auto module_id = traffic_light_reg_elem.second.id();
     if (!isModuleRegistered(module_id)) {
-      registerModule(std::make_shared<TrafficLightModule>(module_id, *traffic_light_reg_elem));
+      registerModule(std::make_shared<TrafficLightModule>(
+        module_id, *(traffic_light_reg_elem.first), traffic_light_reg_elem.second, planner_param_));
     }
   }
 }
@@ -80,9 +122,9 @@ std::function<bool(const std::shared_ptr<SceneModuleInterface> &)>
 TrafficLightModuleManager::getModuleExpiredFunction(
   const autoware_planning_msgs::PathWithLaneId & path)
 {
-  const auto stop_line_id_set = getStopLineIdSetOnPath(path, planner_data_->lanelet_map);
+  const auto lanelet_id_set = getLaneletIdSetOnPath(path, planner_data_->lanelet_map);
 
-  return [stop_line_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
-    return stop_line_id_set.count(scene_module->getModuleId()) == 0;
+  return [lanelet_id_set](const std::shared_ptr<SceneModuleInterface> & scene_module) {
+    return lanelet_id_set.count(scene_module->getModuleId()) == 0;
   };
 }

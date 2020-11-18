@@ -17,7 +17,13 @@
 
 #include <vector>
 
+#include <boost/assign/list_of.hpp>
 #include <boost/geometry.hpp>
+#include <boost/geometry/algorithms/area.hpp>
+#include <boost/geometry/algorithms/disjoint.hpp>
+#include <boost/geometry/algorithms/distance.hpp>
+#include <boost/geometry/algorithms/equals.hpp>
+#include <boost/geometry/algorithms/intersection.hpp>
 #include <boost/geometry/geometries/linestring.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -25,7 +31,9 @@
 #include <boost/geometry/geometries/segment.hpp>
 
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Polygon.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf2/utils.h>
 
 #include <autoware_planning_msgs/PathPoint.h>
 #include <autoware_planning_msgs/PathPointWithLaneId.h>
@@ -96,6 +104,64 @@ inline Polygon2d lines2polygon(const LineString2d & left_line, const LineString2
   return polygon;
 }
 
+inline Polygon2d obj2polygon(const geometry_msgs::Pose & pose, const geometry_msgs::Vector3 & shape)
+{
+  //rename
+  const double x = pose.position.x;
+  const double y = pose.position.y;
+  const double h = shape.x;
+  const double w = shape.y;
+  const double yaw = tf2::getYaw(pose.orientation);
+
+  // create base polygon
+  Polygon2d obj_poly;
+  boost::geometry::exterior_ring(obj_poly) = boost::assign::list_of<Point2d>(h / 2.0, w / 2.0)(
+    -h / 2.0, w / 2.0)(-h / 2.0, -w / 2.0)(h / 2.0, -w / 2.0)(h / 2.0, w / 2.0);
+
+  // rotate polygon(yaw)
+  boost::geometry::strategy::transform::rotate_transformer<boost::geometry::radian, double, 2, 2>
+    rotate(-yaw);  // anti-clockwise -> :clockwise rotation
+  Polygon2d rotate_obj_poly;
+  boost::geometry::transform(obj_poly, rotate_obj_poly, rotate);
+
+  // translate polygon(x, y)
+  boost::geometry::strategy::transform::translate_transformer<double, 2, 2> translate(x, y);
+  Polygon2d translate_obj_poly;
+  boost::geometry::transform(rotate_obj_poly, translate_obj_poly, translate);
+  return translate_obj_poly;
+}
+
+inline double calcOverlapAreaRate(const Polygon2d & target, const Polygon2d & base)
+{
+  /* OverlapAreaRate: common area(target && base) / target area */
+
+  if (boost::geometry::within(target, base)) {
+    //target is within base, common area = target area
+    return 1.0;
+  }
+
+  if (!boost::geometry::intersects(target, base)) {
+    //target and base has not intersect area
+    return 0.0;
+  }
+
+  //calculate intersect polygon
+  std::vector<Polygon2d> intersects;
+  boost::geometry::intersection(target, base, intersects);
+
+  //calculate area of polygon
+  double intersect_area = 0.0;
+  for (const auto intersect : intersects) {
+    intersect_area += boost::geometry::area(intersect);
+  }
+  const double target_area = boost::geometry::area(target);
+  //specification of boost1.65
+  //common area is not intersect area
+  const double common_area = target_area - intersect_area;
+
+  return common_area / target_area;
+}
+
 inline std::vector<Segment2d> makeSegments(const LineString2d & ls)
 {
   std::vector<Segment2d> segments;
@@ -103,4 +169,37 @@ inline std::vector<Segment2d> makeSegments(const LineString2d & ls)
     segments.emplace_back(ls.at(i), ls.at(i + 1));
   }
   return segments;
+}
+
+inline geometry_msgs::Polygon toGeomMsg(const Polygon2d & polygon)
+{
+  geometry_msgs::Polygon polygon_msg;
+  geometry_msgs::Point32 point_msg;
+  for (const auto & p : polygon.outer()) {
+    point_msg.x = p.x();
+    point_msg.y = p.y();
+    polygon_msg.points.push_back(point_msg);
+  }
+  return polygon_msg;
+}
+
+inline Polygon2d toBoostPoly(const geometry_msgs::Polygon & polygon)
+{
+  Polygon2d boost_poly;
+  for (const auto point : polygon.points) {
+    const Point2d point2d(point.x, point.y);
+    boost_poly.outer().push_back(point2d);
+  }
+  return boost_poly;
+}
+
+inline Polygon2d toBoostPoly(const lanelet::BasicPolygon2d & polygon)
+{
+  Polygon2d boost_poly;
+  for (const auto vec : polygon) {
+    const Point2d point2d(vec.x(), vec.y());
+    boost_poly.outer().push_back(point2d);
+  }
+
+  return boost_poly;
 }

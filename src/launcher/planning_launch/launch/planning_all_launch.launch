@@ -1,0 +1,27 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+    <!-- vehicle description module -->
+      <include file="$(find vehicle_launch)/launch/vehicle_description/vehicle_description.launch">
+      </include>
+
+    <!-- lanelet2 map module -->
+      <include file="$(find map_launch)/launch/map.launch">
+      </include>
+
+    <!-- planning initial module -->
+      <include file="$(find control)/launch/planning_initial.launch">
+      </include>
+
+    <!-- planning module -->
+      <include file="$(find planning_launch)/launch/planning.launch">
+      </include>
+
+    <!-- mission input module -->
+      <arg name="ORGS" default="0" />
+      <arg name="route_choose" default="2" />
+      <include file="$(find control)/launch/mission_input.launch" pass_all_args="true">
+        <param name="ORGS" value="$(arg ORGS)" />
+        <param name="route_choose" value="$(arg route_choose)" />
+      </include>
+
+</launch>

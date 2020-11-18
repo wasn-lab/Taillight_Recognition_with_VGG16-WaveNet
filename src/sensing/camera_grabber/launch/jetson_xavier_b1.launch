@@ -1,0 +1,14 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <node name="jetson_xavier_grabber"
+    pkg="camera_grabber"
+    type="camera_grabber_node"
+    args="    
+    -expected_fps 22
+    -do_resize=true
+    -password nvidia    
+    "
+    output="screen"
+  />
+</launch>

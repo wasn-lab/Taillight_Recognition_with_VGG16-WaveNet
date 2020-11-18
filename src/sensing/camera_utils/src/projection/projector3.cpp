@@ -70,8 +70,8 @@ void Projector3::init(int camera_id)
 std::vector<int> Projector3::project(float x, float y, float z)
 {
   std::vector<int> result(2, -1);
-  // if (!outOfFov(x,y,z))
-  // {
+  if (!outOfFov(x,y,z))
+  {
     if (!projectionMatrix.empty())
     {
       std::vector<cv::Point3d> object_point;
@@ -85,7 +85,7 @@ std::vector<int> Projector3::project(float x, float y, float z)
     {
       std::cerr << " Projection Matrix is empty." << std::endl;
     }
-  // }
+  }
   return result;
 }
 

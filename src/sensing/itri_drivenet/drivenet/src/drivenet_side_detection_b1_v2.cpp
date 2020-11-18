@@ -50,6 +50,7 @@ std::mutex g_display_mutex;
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
 // // grid map
@@ -301,7 +302,7 @@ int main(int argc, char** argv)
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
-    
+    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -369,13 +370,15 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 {
   msgs::DetectedObject det_obj;
   msgs::BoxPoint box_point;
+  std::vector<msgs::CamInfo> cam_info_vector;  
   msgs::CamInfo cam_info;
 
-  int l_check = 2;
-  int r_check = 2;
+  
+  // int l_check = 2;
+  // int r_check = 2;
   float distance = -1;
   det_obj.distance = distance;
-
+  /*
   if (g_cam_ids[cam_order] == camera::id::right_front_60)
   {
     l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_front_60], box.x1, box.y2);
@@ -396,28 +399,27 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::left_back_60], box.x1, box.y2);
     r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::left_back_60], box.x2, box.y2);
   }
+  */
 
-  if (l_check == 0 && r_check == 0)
+  box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
+
+  std::vector<float> left_point(2);
+  std::vector<float> right_point(2);
+  left_point[0] = box_point.p0.x;
+  right_point[0] = box_point.p3.x;
+  left_point[1] = box_point.p0.y;
+  right_point[1] = box_point.p3.y;
+  if (left_point[0] == 0 && left_point[1] == 0)
   {
-    box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
-
-    std::vector<float> left_point(2);
-    std::vector<float> right_point(2);
-    left_point[0] = box_point.p0.x;
-    right_point[0] = box_point.p3.x;
-    left_point[1] = box_point.p0.y;
-    right_point[1] = box_point.p3.y;
-    if (left_point[0] == 0 && left_point[1] == 0)
-    {
-      distance = -1;
-    }
-    else
-    {
-      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
-      det_obj.bPoint = box_point;
-    }
-    det_obj.distance = distance;
+    distance = -1;
   }
+  else
+  {
+    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+    det_obj.bPoint = box_point;
+  }
+  det_obj.distance = distance;
+  
 
   cam_info.u = box.x1;
   cam_info.v = box.y1;
@@ -426,8 +428,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
+  cam_info_vector.push_back(cam_info);  
+
   det_obj.classId = translate_label(box.label);
-  det_obj.camInfo = cam_info;
+  det_obj.camInfo = cam_info_vector;
   det_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return det_obj;
@@ -498,6 +502,13 @@ void* run_yolo(void* /*unused*/)
     dist_cols_tmp = g_dist_cols;
     dist_rows_tmp = g_dist_rows;
 
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
+      std_msgs::Header header_msg;
+      header_msg = headers_tmp[cam_order];
+      g_time_info_pubs[cam_order].publish(header_msg);
+    }
+
     // reset data
     reset_data();
 
@@ -537,6 +548,8 @@ void* run_yolo(void* /*unused*/)
         }
         m_display = *mat_srcs_tmp[cam_order];
       }
+
+      tmp_b_bx = g_dist_est.MergeBbox(tmp_b_bx);
 
       msgs::DetectedObject det_obj;
       std::vector<std::future<msgs::DetectedObject>> pool;

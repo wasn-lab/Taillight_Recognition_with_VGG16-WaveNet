@@ -10,6 +10,7 @@ DEFINE_int32(expected_fps, 30, "Expected frames per seconds, default: 30");
 DEFINE_bool(feed_608, true, "Resize image size from 1920x1208 to 608x608, default: true");
 DEFINE_bool(do_resize, true, "Resize image size, default: true");
 DEFINE_bool(do_crop, true, "Crop image, default: true");
+DEFINE_string(password, "nvidia", "Specify the sudo password for ar0231 camera driver , default: nivida");
 
 std::string get_mode()
 {
@@ -34,6 +35,11 @@ bool do_resize()
 bool do_crop()
 {
   return FLAGS_do_crop;
+}
+
+std::string get_password()
+{
+  return FLAGS_password;
 }
 
 };  // namespace
