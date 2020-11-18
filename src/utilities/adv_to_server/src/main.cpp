@@ -879,7 +879,8 @@ void sendRun(int argc, char** argv)
     json J1;
     std::string states;
     json detectObject;
-    J1["vid"] = "dc5360f91e74";
+    std::string vid = "dc5360f91e74";
+    J1["vid"] = vid;
     json gnss_list = json::array();
     json bsm_list = json::array();
     json ecu_list = json::array();
@@ -933,10 +934,13 @@ void sendRun(int argc, char** argv)
     }
     if(mqttDOQueue.size() != 0){
         mutex_do.lock();
+        json DO;
         detectObject = mqttDOQueue.front();
+        DO["vid"] = vid;
+        DO["DO"] = detectObject;
         mqttDOQueue.pop();
         mutex_do.unlock();
-        mqtt_pubish(detectObject.dump());
+        mqtt_pubish(DO.dump());
     }
 
     mqtt_pubish(J1.dump());
@@ -1625,6 +1629,7 @@ json genMqttIMUMsg()
 json getMqttDOMsg(){
     using namespace std::chrono;
     uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    json detect;
     json DO;
     json objArray;
     for (size_t i = 0; i < trackingObjArray.objects.size(); i++)
