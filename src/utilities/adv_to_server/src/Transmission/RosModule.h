@@ -74,6 +74,8 @@ class RosModuleTraffic
                       (*cb12) (const msgs::BackendInfo::ConstPtr&),
                       void
                       (*cb13) (const std_msgs::String::ConstPtr&),
+                      void
+                      (*cb14) (const msgs::DetectedObjectArray&),
                       bool isNewMap)
     {
       ros::NodeHandle n;
@@ -101,6 +103,7 @@ class RosModuleTraffic
       static ros::Subscriber checker = n.subscribe("/ADV_op/event_json", 1000, cb11);
       static ros::Subscriber backendInfo = n.subscribe("Backend/Info", 1, cb12);
       static ros::Subscriber sensor_status = n.subscribe("/vehicle/report/itri/sensor_status", 1, cb13);
+      static ros::Subscriber tracking = n.subscribe("/Tracking3D/xyz2lla", 100, cb14);
     }
 
     static void
