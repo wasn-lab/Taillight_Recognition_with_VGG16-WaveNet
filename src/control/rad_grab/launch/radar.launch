@@ -20,12 +20,12 @@
 	<rosparam param="Umec_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Cubtek_Front_Center_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	<rosparam param="Alpha_Front_Center_Param">[-0.5, 0, 0, 90.0, 0, 0]</rosparam>
-	<rosparam param="Alpha_Front_Left_Param">[-0.5, 1, 0, 135, 0, 0]</rosparam>
-	<rosparam param="Alpha_Front_Right_Param">[-0.5, -1, 0, 45, 0, 0]</rosparam>
-	<rosparam param="Alpha_Side_Left_Param">[-0.5, 1, 0, 225, 0, 0]</rosparam>
-	<rosparam param="Alpha_Side_Right_Param">[-0.5, -1, 0, -45, 0, 0]</rosparam>
-	<rosparam param="Alpha_Back_Left_Param">[6, 1, 0, 225, 0, 0]</rosparam>
-	<rosparam param="Alpha_Back_Right_Param">[-6, -1, 0, -45, 0, 0]</rosparam>
+	<rosparam param="Alpha_Front_Left_Param">[-0.5, 1, 0, 145, 0, 0]</rosparam>
+	<rosparam param="Alpha_Front_Right_Param">[0.5, -1, 0, 33, 0, 0]</rosparam>
+	<rosparam param="Alpha_Side_Left_Param">[0, 0.4, 0, 235, 0, 0]</rosparam>
+	<rosparam param="Alpha_Side_Right_Param">[-0.3, -1, 0, -45, 0, 0]</rosparam>
+	<rosparam param="Alpha_Back_Left_Param">[-6, 0.7, 0, 225, 0, 0]</rosparam>
+	<rosparam param="Alpha_Back_Right_Param">[-6, -1, 0, -30, 0, 0]</rosparam>
 
 	<!-- ************ Radar Detection ************ -->
 	<group if="$(eval arg('radar_detection') != 0)">

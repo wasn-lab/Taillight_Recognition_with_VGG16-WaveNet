@@ -21,6 +21,7 @@
 #include "msgs/PointXYZV.h"
 #include "msgs/TrackInfo.h"
 #include "sensor_msgs/Imu.h"
+#include "msgs/RadObject.h"
 #include "msgs/LocalizationToVeh.h"
 #include <cstring>
 #include <visualization_msgs/Marker.h>
@@ -47,6 +48,7 @@ void callbackAlphaSideLeft(const msgs::Rad::ConstPtr& msg);
 void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg);
 void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg);
 void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg);
+void callbackCubtekFront(const msgs::RadObject::ConstPtr& msg);
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input);
 void pointCalibration(float* x, float* y, float* z, int type);
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
@@ -56,6 +58,8 @@ void msgPublisher();
 ros::Publisher RadFrontPub;
 ros::Publisher RadAllPub;
 ros::Publisher RadAllPCLPub;
+ros::Publisher RadCubtekPub;
+ros::Publisher RadCubtekPCLPub;
 ros::Publisher HeartbeatPub;
 
 double imu_angular_velocity_z = 0;
@@ -557,6 +561,11 @@ void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg)
   }
 }
 
+void callbackCubtekFront(const msgs::RadObject::ConstPtr& msg)
+{
+  
+}
+
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
 {
   imu_angular_velocity_z = input->angular_velocity.z;
@@ -731,36 +740,43 @@ void alphaRadPub()
   {
     alphaAllVec.push_back(alphaFrontCenterVec[i]);
   }
+  alphaFrontCenterVec.clear();
 
   for (int i = 0; i < alphaFrontLeftVec.size(); i++)
   {
     alphaAllVec.push_back(alphaFrontLeftVec[i]);
   }
+  alphaFrontLeftVec.clear();
 
   for (int i = 0; i < alphaFrontRightVec.size(); i++)
   {
     alphaAllVec.push_back(alphaFrontRightVec[i]);
   }
+  alphaFrontRightVec.clear();
 
   for (int i = 0; i < alphaSideLeftVec.size(); i++)
   {
     alphaAllVec.push_back(alphaSideLeftVec[i]);
   }
+  alphaSideLeftVec.clear();
 
   for (int i = 0; i < alphaSideRightVec.size(); i++)
   {
     alphaAllVec.push_back(alphaSideRightVec[i]);
   }
+  alphaSideRightVec.clear();
 
   for (int i = 0; i < alphaBackLeftVec.size(); i++)
   {
     alphaAllVec.push_back(alphaBackLeftVec[i]);
   }
+  alphaBackLeftVec.clear();
 
   for (int i = 0; i < alphaBackRightVec.size(); i++)
   {
     alphaAllVec.push_back(alphaBackRightVec[i]);
   }
+  alphaBackRightVec.clear();
 
   for (int i = 0; i < alphaAllVec.size(); i++)
   {
@@ -840,13 +856,14 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
   // ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
-  // ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
-  // ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
-  // ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
-  // ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
+  ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
+  ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
+  ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
+  ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
   ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
-  // ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
-  // ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
+  ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
+  ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
+  // ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
 
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
