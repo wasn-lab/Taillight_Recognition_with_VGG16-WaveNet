@@ -41,7 +41,7 @@ include_directories(
 if (CAR_MODEL_IS_B1_V2)
   add_executable(
       ${PROJECT_NAME}_repub_node src/image_repub_b1_v2.cpp)
-  target_link_libraries(${PROJECT_NAME}_repub_node ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}_repub_node ${catkin_LIBRARIES} camera_utils)
   add_dependencies(${PROJECT_NAME}_repub_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif ()
 
