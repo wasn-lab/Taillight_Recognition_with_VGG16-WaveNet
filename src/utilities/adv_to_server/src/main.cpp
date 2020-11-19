@@ -89,6 +89,7 @@ boost::mutex mutex_event_2;
 boost::mutex mutex_mqtt;
 boost::mutex mutex_sensor;
 boost::mutex mutex_do;
+boost::mutex mutex_fail_safe;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
@@ -105,6 +106,7 @@ std::queue<json> mqttECUQueue;
 std::queue<json> mqttIMUQueue;
 std::queue<json> mqttSensorQueue;
 std::queue<json> mqttDOQueue;
+std::queue<std::string> mqttFailSafeQueue;
 
 std::queue<std::string> trafficLightQueue;
 std::queue<json> eventQueue1;
@@ -574,6 +576,14 @@ void callbackTracking(const msgs::DetectedObjectArray& input)
   
 }
 
+void callbackFailSafe(const std_msgs::String::ConstPtr& input)
+{
+  json J1 = json::parse(input->data.c_str());
+  mutex_fail_safe.lock();
+  mqttFailSafeQueue.push(J1.dump()); 
+  mutex_fail_safe.unlock();
+}
+
 
 /*========================= ROS callbacks end =========================*/
 
@@ -821,7 +831,7 @@ void mqtt_pubish(std::string msg)
 {
   if(isMqttConnected){
       std::string topic = "vehicle/report/dc5360f91e74";
-      std::cout << "publish "  << msg << std::endl;
+      //std::cout << "publish "  << msg << std::endl;
       mqttPub.publish(topic, msg);
     }
 }
@@ -834,14 +844,14 @@ void sendRun(int argc, char** argv)
   UdpClient UDP_VK_client;
   UdpClient UDP_TABLET_client;
   UdpClient UDP_VK_FG_client;
-  
+  UdpClient UDP_VK_FAIL_SAFE_client;
 
   UDP_Back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   UDP_OBU_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
   UDP_VK_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_PORT);
   UDP_TABLET_client.initial("192.168.1.3", 9876);
   UDP_VK_FG_client.initial("140.134.128.42", 8888);
-  
+  UDP_VK_FAIL_SAFE_client.initial(UDP_VK_SRV_ADRR, 55554);
 
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
@@ -941,6 +951,15 @@ void sendRun(int argc, char** argv)
         mqttDOQueue.pop();
         mutex_do.unlock();
         mqtt_pubish(DO.dump());
+    }
+
+    if(mqttFailSafeQueue.size() != 0)
+    {
+        std::string fail_safe = mqttFailSafeQueue.front();
+        json j1 = json::parse(fail_safe);
+        j1["type"] = "M8.2.VK003.2";
+        j1["deviceid"] = PLATE;
+        UDP_VK_FAIL_SAFE_client.send_obj_to_server(j1.dump(), true);
     }
 
     mqtt_pubish(J1.dump());
@@ -1080,7 +1099,7 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, callbackSersorStatus, callbackTracking, isNewMap);
+                                     callbackEvent, callbackBI, callbackSersorStatus, callbackTracking, callbackFailSafe, isNewMap);
 
   while (ros::ok())
   {
