@@ -31,6 +31,13 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+## Find CUDA
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 ## common directories
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -48,13 +55,6 @@ endif ()
 ## 2. create camera grabber node
 if (NOT ${ENABLE_CAMERA_GRABBER})
   message("camera_grabber is disable in car ${CAR_MODEL}")
-  return ()
-endif ()
-
-## Find CUDA
-find_package(CUDA)
-if (NOT ${CUDA_FOUND})
-  message("CUDA not found. Skip building ${PROJECT_NAME}")
   return ()
 endif ()
 
