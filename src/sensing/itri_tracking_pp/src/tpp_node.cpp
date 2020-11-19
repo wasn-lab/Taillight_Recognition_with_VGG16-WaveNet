@@ -599,84 +599,36 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#6-1 bbox center x -- kalman-filtered (m), "  //
         << "#6-2 bbox center y -- kalman-filtered (m), "  //
         << "#6-3 bbox center z -- kalman-filtered (m), "  //
-        << "#7 abs vx (km/h), "                        //
-        << "#8 abs vy (km/h), "                        //
-        << "#9 abs speed (km/h), "                     //
-        << "#10 rel vx (km/h), "                       //
-        << "#11 rel vy (km/h), "                       //
-        << "#12 rel speed (km/h), "                    //
-        << "#PPx in 1 tick (m), "                      //
-        << "#PPy in 1 tick (m), "                      //
-        << "#PPx in 2 ticks (m), "                     //
-        << "#PPy in 2 ticks (m), "                     //
-        << "#PPx in 3 ticks (m), "                     //
-        << "#PPy in 3 ticks (m), "                     //
-        << "#PPx in 4 ticks (m), "                     //
-        << "#PPy in 4 ticks (m), "                     //
-        << "#PPx in 5 ticks (m), "                     //
-        << "#PPy in 5 ticks (m), "                     //
-        << "#PPx in 6 ticks (m), "                     //
-        << "#PPy in 6 ticks (m), "                     //
-        << "#PPx in 7 ticks (m), "                     //
-        << "#PPy in 7 ticks (m), "                     //
-        << "#PPx in 8 ticks (m), "                     //
-        << "#PPy in 8 ticks (m), "                     //
-        << "#PPx in 9 ticks (m), "                     //
-        << "#PPy in 9 ticks (m), "                     //
-        << "#PPx in 10 ticks (m), "                    //
-        << "#PPy in 10 ticks (m), "                    //
-        << "#PPx in 11 ticks (m), "                    //
-        << "#PPy in 11 ticks (m), "                    //
-        << "#PPx in 12 ticks (m), "                    //
-        << "#PPy in 12 ticks (m), "                    //
-        << "#PPx in 13 ticks (m), "                    //
-        << "#PPy in 13 ticks (m), "                    //
-        << "#PPx in 14 ticks (m), "                    //
-        << "#PPy in 14 ticks (m), "                    //
-        << "#PPx in 15 ticks (m), "                    //
-        << "#PPy in 15 ticks (m), "                    //
-        << "#PPx in 16 ticks (m), "                    //
-        << "#PPy in 16 ticks (m), "                    //
-        << "#PPx in 17 ticks (m), "                    //
-        << "#PPy in 17 ticks (m), "                    //
-        << "#PPx in 18 ticks (m), "                    //
-        << "#PPy in 18 ticks (m), "                    //
-        << "#PPx in 19 ticks (m), "                    //
-        << "#PPy in 19 ticks (m), "                    //
-        << "#PPx in 20 ticks (m), "                    //
-        << "#PPy in 20 ticks (m), "                    //
-        << "#PPx in 21 ticks (m), "                    //
-        << "#PPy in 21 ticks (m), "                    //
-        << "#PPx in 22 ticks (m), "                    //
-        << "#PPy in 22 ticks (m), "                    //
-        << "#PPx in 23 ticks (m), "                    //
-        << "#PPy in 23 ticks (m), "                    //
-        << "#PPx in 24 ticks (m), "                    //
-        << "#PPy in 24 ticks (m), "                    //
-        << "#PPx in 25 ticks (m), "                    //
-        << "#PPy in 25 ticks (m), "                    //
-        << "#PPx in 26 ticks (m), "                    //
-        << "#PPy in 26 ticks (m), "                    //
-        << "#PPx in 27 ticks (m), "                    //
-        << "#PPy in 27 ticks (m), "                    //
-        << "#PPx in 28 ticks (m), "                    //
-        << "#PPy in 28 ticks (m), "                    //
-        << "#PPx in 29 ticks (m), "                    //
-        << "#PPy in 29 ticks (m), "                    //
-        << "#PPx in 30 ticks (m), "                    //
-        << "#PPy in 30 ticks (m), "                    //
-        << "#21 ego x abs (m), "                       //
-        << "#22 ego y abs (m), "                       //
-        << "#23 ego z abs (m), "                       //
-        << "#24 ego heading (rad), "                   //
-        << "#25 kf Q1, "                               //
-        << "#26 kf Q2, "                               //
-        << "#27 kf Q3, "                               //
-        << "#28 kf R, "                                //
-        << "#29 kf P0, "                               //
-        << "#31 tf_map_orig_x, "                       //
-        << "#32 tf_map_orig_y, "                       //
-        << "#33 tf_map_orig_z\n";
+
+        << "#11 abs vx (km/h), "     //
+        << "#12 abs vy (km/h), "     //
+        << "#13 abs speed (km/h), "  //
+        << "#14 rel vx (km/h), "     //
+        << "#15 rel vy (km/h), "     //
+        << "#16 rel speed (km/h), "  //
+
+        << "#21 ego x abs (m), "      //
+        << "#22 ego y abs (m), "      //
+        << "#23 ego z abs (m), "      //
+        << "#24 ego heading (rad), "  //
+
+        << "#31 tf_map_orig_x, "  //
+        << "#32 tf_map_orig_y, "  //
+        << "#33 tf_map_orig_z, "  //
+
+        << "#41 kf Q1, "  //
+        << "#42 kf Q2, "  //
+        << "#43 kf Q3, "  //
+        << "#44 kf R, "   //
+        << "#45 kf P0";
+
+    for (unsigned int i = 1; i < num_forecasts_ + 1; i++)
+    {
+      ofs << ", #PPx in " << i << " tick (m)";
+      ofs << ", #PPy in " << i << " tick (m)";
+    }
+
+    ofs << "\n";
   }
   else
   {
@@ -702,39 +654,39 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << obj.center_point.x << ", "             // #6-1 bbox center x -- kalman-filtered (m)
         << obj.center_point.y << ", "             // #6-2 bbox center y -- kalman-filtered (m)
         << obj.center_point.z << ", "             // #6-3 bbox center z -- kalman-filtered (m)
-        << obj.track.absolute_velocity.x << ", "            // #7 abs vx (km/h)
-        << obj.track.absolute_velocity.y << ", "            // #8 abs vy (km/h)
-        << obj.speed_abs << ", "                             // #9 abs speed (km/h)
-        << obj.track.relative_velocity.x << ", "            // #10 rel vx (km/h)
-        << obj.track.relative_velocity.y << ", "            // #11 rel vy (km/h)
-        << obj.speed_rel;                         // #12 rel speed (km/h)
+
+        << obj.track.absolute_velocity.x << ", "  // #11 abs vx (km/h)
+        << obj.track.absolute_velocity.y << ", "  // #12 abs vy (km/h)
+        << obj.speed_abs << ", "                   // #13 abs speed (km/h)
+        << obj.track.relative_velocity.x << ", "  // #14 rel vx (km/h)
+        << obj.track.relative_velocity.y << ", "  // #15 rel vy (km/h)
+        << obj.speed_rel;                          // #16 rel speed (km/h)
+
+    ofs << ", "                //
+        << ego_x_abs_ << ", "  // #21 ego x abs
+        << ego_y_abs_ << ", "  // #22 ego y abs
+        << ego_z_abs_ << ", "  // #23 ego z abs
+        << ego_heading_;       // #24 ego heading (rad)
+
+    ofs << ", "                    //
+        << tf_map_orig_x_ << ", "  // #31 tf_map_orig_x
+        << tf_map_orig_y_ << ", "  // #32 tf_map_orig_y
+        << tf_map_orig_z_;         // #33 tf_map_orig_z
+
+    ofs << ", "                   //
+        << KTs_.get_Q1() << ", "  // #41 kf Q1
+        << KTs_.get_Q2() << ", "  // #42 kf Q2
+        << KTs_.get_Q3() << ", "  // #43 kf Q3
+        << KTs_.get_R() << ", "   // #44 kf R
+        << KTs_.get_P0();         // #45 kf P0
 
     if (obj.track.is_ready_prediction)
     {
-      // #PP1x~PP20y ppx in 1~20 ticks (m)
-      // #PP1y~PP20y ppy in 1~20 ticks (m)
       for (unsigned int i = 0; i < num_forecasts_; i++)
       {
-        ofs << ", " << obj.track.forecasts[i].position.x << ", " << obj.track.forecasts[i].position.y;
+        ofs << ", " << obj.track.forecasts[i].position.x;  // #PPx in i+1 ticks (m)
+        ofs << ", " << obj.track.forecasts[i].position.y;  // #PPy in i+1 ticks (m)
       }
-
-      ofs << ", "                //
-          << ego_x_abs_ << ", "  // #21 ego x abs
-          << ego_y_abs_ << ", "  // #22 ego y abs
-          << ego_z_abs_ << ", "  // #23 ego z abs
-          << ego_heading_;       // #24 ego heading (rad)
-
-      ofs << ", "                   //
-          << KTs_.get_Q1() << ", "  // #25 kf Q1
-          << KTs_.get_Q2() << ", "  // #26 kf Q2
-          << KTs_.get_Q3() << ", "  // #27 kf Q3
-          << KTs_.get_R() << ", "   // #28 kf R
-          << KTs_.get_P0();         // #29 kf P0
-
-      ofs << ", "                    //
-          << tf_map_orig_x_ << ", "  // #31 tf_map_orig_x
-          << tf_map_orig_y_ << ", "  // #32 tf_map_orig_y
-          << tf_map_orig_z_;         // #33 tf_map_orig_z
     }
 
     ofs << "\n";
