@@ -1,27 +1,24 @@
-#ifndef __TEGRA_B_GRABBER__
-#define __TEGRA_B_GRABBER__
+#ifndef __DRIVE_XAVIER_GRABBER__
+#define __DRIVE_XAVIER_GRABBER__
 
 #include "CameraGrabber.h"
 
 namespace SensingSubSystem
 {
-class TegraBGrabber
+class DriveXavierGrabber
 {
 public:
-  TegraBGrabber();
-  ~TegraBGrabber();
+  DriveXavierGrabber();
+  ~DriveXavierGrabber();
   void initializeModules(const bool do_resize);
   bool runPerception();
 
 protected:
   void InitParameters();
 
-#if CAR_MODEL_IS_B1
-  const std::vector<int> cam_ids_{ camera::id::top_front_120,      camera::id::top_right_front_120,
-                                   camera::id::top_right_rear_120, camera::id::top_left_front_120,
-                                   camera::id::top_left_rear_120,  camera::id::top_rear_120 };
-#elif CAR_MODEL_IS_B1_V2
-  const std::vector<int> cam_ids_{ camera::id::front_top_close_120, camera::id::right_front_60,
+#if CAR_MODEL_IS_B1_V2
+  const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30, 
+                                   camera::id::front_top_close_120, camera::id::right_front_60,
                                    camera::id::right_back_60,       camera::id::left_front_60,
                                    camera::id::left_back_60,        camera::id::back_top_120 };
 #else

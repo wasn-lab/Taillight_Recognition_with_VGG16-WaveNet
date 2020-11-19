@@ -86,7 +86,7 @@ class RosbagSender(object):
             "open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend
-        dir_name = "/{}/{}".format(self.license_plate_number, ymd)
+        dir_name = "/Share/ADV/Rosbag/fail_safe/{}/{}".format(self.license_plate_number, ymd)
         ftp_cmds += [
             "mkdir -p {}".format(dir_name),
             "cd {}".format(dir_name),
