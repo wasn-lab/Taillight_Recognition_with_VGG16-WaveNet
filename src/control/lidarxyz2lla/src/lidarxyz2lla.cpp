@@ -446,7 +446,8 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 
 int main( int argc, char **argv )
 {
-	testgnss();
+	// testgnss();
+	
 	// initial parameter
 	initial_para();
 	#ifdef TWD97
