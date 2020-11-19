@@ -1,0 +1,6 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- Launch node -->
+  <node pkg="itri_xyz2lla" type="itri_xyz2lla" name="itri_xyz2lla" cwd="node" output="screen"/>
+</launch>

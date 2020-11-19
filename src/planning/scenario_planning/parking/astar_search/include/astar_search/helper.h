@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #pragma once
 
 constexpr double deg2rad(const double deg) { return deg * M_PI / 180.0; }

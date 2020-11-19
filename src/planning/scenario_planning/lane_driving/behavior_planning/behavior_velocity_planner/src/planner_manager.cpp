@@ -15,6 +15,35 @@
  */
 
 #include <behavior_velocity_planner/planner_manager.h>
+#include <boost/format.hpp>
+
+namespace
+{
+std::string jsonDumpsPose(const geometry_msgs::Pose & pose)
+{
+  const std::string json_dumps_pose =
+    (boost::format(
+       R"({"position":{"x":%lf,"y":%lf,"z":%lf},"orientation":{"w":%lf,"x":%lf,"y":%lf,"z":%lf}})") %
+     pose.position.x % pose.position.y % pose.position.z % pose.orientation.w % pose.orientation.x %
+     pose.orientation.y % pose.orientation.z)
+      .str();
+  return json_dumps_pose;
+}
+
+diagnostic_msgs::DiagnosticStatus makeStopReasonDiag(
+  const std::string stop_reason, const geometry_msgs::Pose & stop_pose)
+{
+  diagnostic_msgs::DiagnosticStatus stop_reason_diag;
+  diagnostic_msgs::KeyValue stop_reason_diag_kv;
+  stop_reason_diag.level = diagnostic_msgs::DiagnosticStatus::OK;
+  stop_reason_diag.name = "stop_reason";
+  stop_reason_diag.message = stop_reason;
+  stop_reason_diag_kv.key = "stop_pose";
+  stop_reason_diag_kv.value = jsonDumpsPose(stop_pose);
+  stop_reason_diag.values.push_back(stop_reason_diag_kv);
+  return stop_reason_diag;
+}
+}  // namespace
 
 void BehaviorVelocityPlannerManager::launchSceneModule(
   const std::shared_ptr<SceneModuleManagerInterface> & scene_module_manager_ptr)
@@ -27,10 +56,33 @@ autoware_planning_msgs::PathWithLaneId BehaviorVelocityPlannerManager::planPathV
   const autoware_planning_msgs::PathWithLaneId & input_path_msg)
 {
   autoware_planning_msgs::PathWithLaneId output_path_msg = input_path_msg;
-  for (const auto & scene_manager_ptr : scene_manager_ptrs_) {
+
+  int first_stop_path_point_index = static_cast<int>(output_path_msg.points.size() - 1);
+  std::string stop_reason_msg("path_end");
+
+  for (const auto & scene_manager_ptr : scene_manager_ptrs_) 
+  {
     scene_manager_ptr->updateSceneModuleInstances(planner_data, input_path_msg);
     scene_manager_ptr->modifyPathVelocity(&output_path_msg);
+    boost::optional<int> firstStopPathPointIndex = scene_manager_ptr->getFirstStopPathPointIndex();
+
+    if (firstStopPathPointIndex) 
+    {
+      if (firstStopPathPointIndex.get() < first_stop_path_point_index) 
+      {
+        first_stop_path_point_index = firstStopPathPointIndex.get();
+        stop_reason_msg = scene_manager_ptr->getModuleName();
+      }
+    }
   }
 
+  stop_reason_diag_ = makeStopReasonDiag(
+    stop_reason_msg, output_path_msg.points[first_stop_path_point_index].point.pose);
+
   return output_path_msg;
+}
+
+diagnostic_msgs::DiagnosticStatus BehaviorVelocityPlannerManager::getStopReasonDiag()
+{
+  return stop_reason_diag_;
 }

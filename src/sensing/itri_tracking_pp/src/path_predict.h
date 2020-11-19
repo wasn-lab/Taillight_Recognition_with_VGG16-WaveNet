@@ -66,7 +66,7 @@ private:
   unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
-  std::size_t num_pp_input_min_ = 6;
+  std::size_t num_pp_input_min_ = 4;
   const std::size_t num_pp_input_max_ = 20;
 
   static constexpr float pp_allow_x_min_m = -10.f;

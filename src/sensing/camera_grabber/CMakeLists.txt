@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(camera_grabber)
 
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
+include(CompilerFlags)
+include(CarModel)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,18 +18,43 @@ find_package(catkin REQUIRED COMPONENTS
   camera_utils
 )
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
-include(CompilerFlags)
-include(CarModel)
+catkin_package(
+#  INCLUDE_DIRS include
+#   LIBRARIES
+   CATKIN_DEPENDS
+   roscpp
+   std_msgs
+   msgs
+   image_transport
+   cv_bridge
+   camera_utils
+#  DEPENDS system_lib
+)
 
-if (NOT ${ENABLE_CAMERA_GRABBER})
-  message("camera_grabber is disable in car ${CAR_MODEL}")
-  return ()
-endif ()
-
+## Find CUDA
 find_package(CUDA)
 if (NOT ${CUDA_FOUND})
   message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+## common directories
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${camera_utils_SOURCE_DIR}/include
+  ${car_model_BINARY_DIR}/include)
+
+## 1. create repub image node
+if (CAR_MODEL_IS_B1_V2)
+  add_executable(
+      ${PROJECT_NAME}_repub_node src/image_repub_b1_v2.cpp)
+  target_link_libraries(${PROJECT_NAME}_repub_node ${catkin_LIBRARIES} camera_utils)
+  add_dependencies(${PROJECT_NAME}_repub_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+endif ()
+
+## 2. create camera grabber node
+if (NOT ${ENABLE_CAMERA_GRABBER})
+  message("camera_grabber is disable in car ${CAR_MODEL}")
   return ()
 endif ()
 
@@ -34,13 +62,21 @@ if (COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-attribute=format")
 endif ()
 
-## System dependencies are found with CMake's conventions
+## Find OpenCV
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 
 
+if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 ## Find Driveworks 2.0
 find_library(DRIVEWORKS_LIBRARY driveworks
   HINTS /usr/local/driveworks-2.0/ /usr/local/driveworks/ PATH_SUFFIXES lib lib/x64)
+else ()
+## Find Gstreamer
+find_package(PkgConfig) #finding pkg-config is a helper tool
+#using pkg-config to getting Gstreamer
+pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
+endif ()
+
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   find_library(DRIVEWORKS_LIBRARY libdriveworks.so
@@ -59,37 +95,20 @@ else()
                HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
 endif()
 
-
-catkin_package(
-#  INCLUDE_DIRS include
-#   LIBRARIES
-   CATKIN_DEPENDS
-   roscpp
-   std_msgs
-   msgs
-   image_transport
-   cv_bridge
-   camera_utils
-#  DEPENDS system_lib
-)
-
+## Find Glog
 find_package(Glog)
 if (NOT GLOG_FOUND)
   message(FATAL_ERROR "glog not found. Please run\n sudo apt-get install libgoogle-glog-dev")
 endif()
 
+## Find GFlags
 find_package(GFlags)
 if (NOT GFLAGS_FOUND)
   message(FATAL_ERROR "libgflags not found. Please run\n apt-get install libgflags-dev")
 endif ()
 
 
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
+if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${car_model_BINARY_DIR}/include
@@ -99,9 +118,22 @@ include_directories(
   src/Util
   src/CameraGrabber
   src/RosImagePubSub
-  ${catkin_INCLUDE_DIRS}
-  ${DRIVENET_INCLUDE}
+  ${DRIVENET_INCLUDE}  
 )
+else ()
+include_directories(
+  ${OpenCV_INCLUDE_DIRS}
+  ${car_model_BINARY_DIR}/include
+  ${camera_utils_SOURCE_DIR}/include
+  ${GLOG_INCLUDE_DIRS}
+  src/Framework
+  src/Util
+  src/CameraGrabber
+  src/RosImagePubSub
+  ${DRIVENET_INCLUDE}
+  ${GSTREAMER_INCLUDE_DIRS}
+)
+endif ()
 
 set(FRAMEWORK_SOURCES
   src/Framework/CameraPerception.cpp
@@ -111,25 +143,42 @@ set(FRAMEWORK_SOURCES
   src/Util/grabber_args_parser.cpp
   src/RosImagePubSub/RosImagePubSub.cpp)
 
+if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 set(FRAMEWORK_DEPS
     ${GLOG_LIBRARIES}
     ${GFLAGS_LIBRARIES}
     ${OpenCV_LIBS}
     camera_utils
     ${catkin_LIBRARIES})
+else ()
+set(FRAMEWORK_DEPS
+    ${GLOG_LIBRARIES}
+    ${GFLAGS_LIBRARIES}
+    ${OpenCV_LIBS}
+    camera_utils
+    ${catkin_LIBRARIES}
+    ${GSTREAMER_LIBRARIES})
+endif()
 
 cuda_add_library(${PROJECT_NAME}_framework STATIC ${FRAMEWORK_SOURCES})
 target_link_libraries(${PROJECT_NAME}_framework ${FRAMEWORK_DEPS})
 add_dependencies(${PROJECT_NAME}_framework ${catkin_EXPORTED_TARGETS})
 
+if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 set(DEMO_MODE_SOURCE
   src/TegraAGrabber.cpp
-  src/TegraBGrabber.cpp)
+  src/TegraBGrabber.cpp
+  src/DriveXavierGrabber.cpp)
+else ()
+set(DEMO_MODE_SOURCE
+  src/JetsonXavierGrabber.cpp)
+endif()
 
 add_library(${PROJECT_NAME}_demo OBJECT ${DEMO_MODE_SOURCE})
 add_dependencies(${PROJECT_NAME}_demo ${PROJECT_NAME}_framework ${catkin_EXPORTED_TARGETS})
 
-if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
+ if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
   cuda_add_executable(
       ${PROJECT_NAME}_node src/main.cpp
       $<TARGET_OBJECTS:${PROJECT_NAME}_demo>)
@@ -138,4 +187,14 @@ if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
       ${GRABBER_LIBRARY}
       ${DRIVEWORKS_LIBRARY})
   add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_demo ${PROJECT_NAME}_framework)
+ endif ()
+else()
+ if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+  cuda_add_executable(
+      ${PROJECT_NAME}_node src/main_jetson_xavier.cpp
+      $<TARGET_OBJECTS:${PROJECT_NAME}_demo>)
+  target_link_libraries(${PROJECT_NAME}_node
+      ${PROJECT_NAME}_framework)
+  add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_demo ${PROJECT_NAME}_framework)
+ endif ()
 endif ()

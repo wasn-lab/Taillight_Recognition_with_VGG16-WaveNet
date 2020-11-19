@@ -100,7 +100,7 @@ class Node:
             out_obj.semantic.type = self.classid_convert(in_obj.classId)
             # print('in_obj.classId = {0}; out_obj.semantic.type = {1}'.format(in_obj.classId, out_obj.semantic.type))
 
-            out_obj.semantic.confidence = in_obj.camInfo.prob
+            out_obj.semantic.confidence = in_obj.camInfo[0].prob
 
             out_obj.state.pose_covariance.pose.position.x = (
                 in_obj.bPoint.p0.x + in_obj.bPoint.p7.x) / 2
@@ -113,13 +113,20 @@ class Node:
             out_obj.state.twist_covariance.twist.linear.y = in_obj.track.absolute_velocity.y
             out_obj.state.twist_covariance.twist.linear.z = in_obj.track.absolute_velocity.z
 
-            if out_obj.state.twist_covariance.twist.linear.x == 0:
-                out_obj.state.twist_covariance.twist.linear.x = -0.01
+            vec3_x = in_obj.track.absolute_velocity.x
+            vec3_y = in_obj.track.absolute_velocity.y
+            vec3_z = in_obj.track.absolute_velocity.z
 
-            vec3 = [
-                out_obj.state.twist_covariance.twist.linear.x,
-                out_obj.state.twist_covariance.twist.linear.y,
-                out_obj.state.twist_covariance.twist.linear.z]
+            if vec3_x == 0:
+                vec3_x = -0.0001
+
+            if vec3_y == 0:
+                vec3_y = -0.0001
+
+            if vec3_z == 0:
+                vec3_z = -0.0001
+
+            vec3 = [vec3_x, vec3_y, vec3_z]
 
             q = vector3d_to_quaternion(vec3)
             out_obj.state.pose_covariance.pose.orientation = Quaternion(

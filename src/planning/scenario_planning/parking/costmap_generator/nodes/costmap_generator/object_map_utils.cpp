@@ -32,7 +32,7 @@
  *
  */
 
-#include "costmap_generator/object_map_utils.hpp"
+#include <costmap_generator/object_map_utils.hpp>
 
 namespace object_map
 {

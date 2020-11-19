@@ -40,6 +40,8 @@ private:
 
   void set_marker_attr(visualization_msgs::Marker& marker, const geometry_msgs::Point point);
 
+  void copy_if_empty_time(ros::Time& stamp_to_check);
+
   // marker arrays
   visualization_msgs::MarkerArray m_id_;
   visualization_msgs::MarkerArray m_speed_;
@@ -56,7 +58,7 @@ private:
   std::string parse_source_id(unsigned int source_id);
 
   visualization_msgs::Marker create_trackid_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                   const msgs::DetectedObject& obj);
+                                                   msgs::DetectedObject obj);
 
   visualization_msgs::Marker create_speed_marker(const unsigned int idx, const geometry_msgs::Point point,
                                                  std_msgs::Header obj_header, const float relspeed,

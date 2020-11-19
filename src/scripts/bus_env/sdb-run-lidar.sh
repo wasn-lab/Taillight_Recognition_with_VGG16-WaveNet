@@ -20,6 +20,8 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_g
 sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh;exec bash"'
 sleep 2
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_fail_safe_checker.sh;exec bash"'
+sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fusion.sh;exec bash"'
 sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_pp.sh;exec bash"'

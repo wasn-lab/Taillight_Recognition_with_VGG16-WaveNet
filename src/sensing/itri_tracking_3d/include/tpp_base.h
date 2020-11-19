@@ -63,7 +63,6 @@
 
 // virtual input test
 #define VIRTUAL_INPUT 0
-#define SAME_OBJ_MARKER_HEADER 0
 #define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
@@ -99,7 +98,7 @@
 #define O_P std::setprecision(8)
 
 #define USE_GLOG 0
-#if USE_GLOG
+#if USE_GLOG == 1
 #include "glog/logging.h"
 #define LOG_INFO LOG(INFO)
 #define LOG_WARNING LOG(WARNING)
