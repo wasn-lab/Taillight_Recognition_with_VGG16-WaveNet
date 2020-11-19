@@ -41,6 +41,7 @@ private:
   int occ_source_ = OccupancySource::PlannedPathBased;
 
   bool save_output_txt_ = false;
+  bool output_tf_map_ = false;
 
   bool use_tracking2d = false;
 
@@ -143,10 +144,10 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
 
-#if OUTPUT_MAP_TF == 1
+  // output bbox and pp points in tf_map
   void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped);
   void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
-#endif
+
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename);
 };
 }  // namespace tpp

@@ -479,7 +479,6 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
-#if OUTPUT_MAP_TF == 1
 void TPPNode::convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped)
 {
   // TF (lidar-to-map) for object pose
@@ -566,7 +565,6 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
     }
   }
 }
-#endif
 
 void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename)
 {
@@ -737,14 +735,15 @@ void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& 
     save_output_to_txt(objs, "../../../tracking_rpp_output_tf_lidar.txt");
   }
 
-#if OUTPUT_MAP_TF == 1
-  convert_all_to_map_tf(objs);
-
-  if (save_output_txt_)
+  if (output_tf_map_)
   {
-    save_output_to_txt(objs, "../../../tracking_rpp_output_tf_map.txt");
+    convert_all_to_map_tf(objs);
+
+    if (save_output_txt_)
+    {
+      save_output_to_txt(objs, "../../../tracking_rpp_output_tf_map.txt");
+    }
   }
-#endif
 
   msgs::DetectedObjectArray msg;
 
@@ -850,7 +849,9 @@ void TPPNode::set_ros_params()
   std::string domain = "/itri_tracking_pp/";
   nh_.param<int>(domain + "input_source", input_source_, InputSource::CameraDetV2);
   nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
+
   nh_.param<bool>(domain + "save_output_txt", save_output_txt_, false);
+  nh_.param<bool>(domain + "output_tf_map", output_tf_map_, false);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
