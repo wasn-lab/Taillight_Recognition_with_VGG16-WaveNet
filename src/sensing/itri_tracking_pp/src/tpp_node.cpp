@@ -732,15 +732,18 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
 void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
-#if SAVE_OUTPUT_TXT == 1
-  save_output_to_txt(objs, "../../../tracking_rpp_output_tf_lidar.txt");
-#endif
+  if (save_output_txt_)
+  {
+    save_output_to_txt(objs, "../../../tracking_rpp_output_tf_lidar.txt");
+  }
 
 #if OUTPUT_MAP_TF == 1
   convert_all_to_map_tf(objs);
-#if SAVE_OUTPUT_TXT == 1
-  save_output_to_txt(objs, "../../../tracking_rpp_output_tf_map.txt");
-#endif
+
+  if (save_output_txt_)
+  {
+    save_output_to_txt(objs, "../../../tracking_rpp_output_tf_map.txt");
+  }
 #endif
 
   msgs::DetectedObjectArray msg;
@@ -847,6 +850,7 @@ void TPPNode::set_ros_params()
   std::string domain = "/itri_tracking_pp/";
   nh_.param<int>(domain + "input_source", input_source_, InputSource::CameraDetV2);
   nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
+  nh_.param<bool>(domain + "save_output_txt", save_output_txt_, false);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);

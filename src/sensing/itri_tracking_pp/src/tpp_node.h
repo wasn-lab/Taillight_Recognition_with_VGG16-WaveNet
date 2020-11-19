@@ -40,6 +40,8 @@ private:
   int input_source_ = InputSource::CameraDetV2;
   int occ_source_ = OccupancySource::PlannedPathBased;
 
+  bool save_output_txt_ = false;
+
   bool use_tracking2d = false;
 
   bool gen_markers_ = false;
