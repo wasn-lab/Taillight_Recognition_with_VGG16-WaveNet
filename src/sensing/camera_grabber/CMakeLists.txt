@@ -15,13 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   cv_bridge
   car_model
+  camera_utils
 )
-
-find_package(camera_utils)                
-if (NOT ${camera_utils_FOUND})
-  message("camera_utils not found. Skip building ${PROJECT_NAME}")
-  return ()
-endif ()
 
 catkin_package(
 #  INCLUDE_DIRS include
