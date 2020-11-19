@@ -1,12 +1,12 @@
-#include "TegraBGrabber.h"
+#include "DriveXavierGrabber.h"
 #include "grabber_args_parser.h"
 
 namespace SensingSubSystem
 {
 ///
-/// Class TegraBGrabber
+/// Class DriveXavierGrabber
 ///
-TegraBGrabber::TegraBGrabber()
+DriveXavierGrabber::DriveXavierGrabber()
   : canvas(cam_ids_.size())
   , grabber(nullptr)
   , npp8u_ptrs_(cam_ids_.size())
@@ -20,7 +20,7 @@ TegraBGrabber::TegraBGrabber()
   InitParameters();
 }
 
-void TegraBGrabber::InitParameters()
+void DriveXavierGrabber::InitParameters()
 {
   int dummy;
   for (size_t i = 0; i < cam_ids_.size(); i++)
@@ -30,7 +30,7 @@ void TegraBGrabber::InitParameters()
   }
 }
 
-TegraBGrabber::~TegraBGrabber()
+DriveXavierGrabber::~DriveXavierGrabber()
 {
   if (grabber != nullptr)
   {
@@ -44,14 +44,14 @@ TegraBGrabber::~TegraBGrabber()
   }
 }
 
-void TegraBGrabber::initializeModules(const bool do_resize)
+void DriveXavierGrabber::initializeModules(const bool do_resize)
 {
   for (const auto cam_id : cam_ids_)
   {
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
   }
 
-  grabber = new MultiGMSLCameraGrabber("000001110111");
+  grabber = new MultiGMSLCameraGrabber("001101110111");
   grabber->initializeCameras();
   camera_buffer_.initBuffer();
   resize_ = do_resize;
@@ -59,7 +59,7 @@ void TegraBGrabber::initializeModules(const bool do_resize)
   std::cout << "init done!\n" << std::endl;
 }
 
-bool TegraBGrabber::runPerception()
+bool DriveXavierGrabber::runPerception()
 {
   auto fps = SensingSubSystem::get_expected_fps();
 
@@ -72,6 +72,11 @@ bool TegraBGrabber::runPerception()
     // Using default stream for retreiving latest image
     grabber->retrieveNextFrame();
     ros_time_ = ros::Time::now();
+
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[0], grabber->getCurrentFrameData(0),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
+    cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[1], grabber->getCurrentFrameData(1),
+               MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
 
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[4], grabber->getCurrentFrameData(4),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
