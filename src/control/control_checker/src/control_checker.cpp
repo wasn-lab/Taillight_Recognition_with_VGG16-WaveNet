@@ -27,10 +27,6 @@ int timeout = 15;
 int const num_of_checker = 9; //一共有追蹤幾個topic
 int counter[num_of_checker];
 
-
-
-
-
 void chatterCallback_01(const msgs::Flag_Info::ConstPtr& msg)
 {
 	//cout << "counter reset" << endl;
@@ -123,13 +119,13 @@ int main(int argc, char **argv)
 		else{
 			checker.data[2] = 0;
 		}
-		if (counter[3]>timeout){
-			cout << "Flag_Info04 time out." << endl;
-			checker.data[3] = 1;
-		}
-		else{
+		// if (counter[3]>timeout){
+		// 	cout << "Flag_Info04 time out." << endl;
+		// 	checker.data[3] = 1;
+		// }
+		// else{
 			checker.data[3] = 0;
-		}
+		// }
 		// if (counter[4]>timeout){
 		// 	cout << "Flag_Info05 time out." << endl;
 		// 	checker.data[4] = 1;
@@ -144,20 +140,20 @@ int main(int argc, char **argv)
 		else{
 			checker.data[5] = 0;
 		}
-		if (counter[6]>timeout){
-			cout << "/Ego_speed/kph time out." << endl;
-			checker.data[6] = 1;
-		}
-		else{
+		// if (counter[6]>timeout){
+		// 	cout << "/Ego_speed/kph time out." << endl;
+		// 	checker.data[6] = 1;
+		// }
+		// else{
 			checker.data[6] = 0;
-		}
-		if (counter[7]>timeout){
-			cout << "/Ego_speed/ms time out." << endl;
-			checker.data[7] = 1;
-		}
-		else{
+		// }
+		// if (counter[7]>timeout){
+		// 	cout << "/Ego_speed/ms time out." << endl;
+		// 	checker.data[7] = 1;
+		// }
+		// else{
 			checker.data[7] = 0;
-		}
+		// }
 		if (counter[8]>timeout){
 			cout << "Backend/Info time out." << endl;
 			checker.data[8] = 1;
@@ -171,9 +167,6 @@ int main(int argc, char **argv)
 	for(int i=0;i<checker.data.size();i++){
 		cout << int(checker.data[i]) << endl;
 	}
-
   
   return 0;
 }
-
-
