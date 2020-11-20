@@ -248,6 +248,7 @@ std::string current_spat = "";
 VehicelStatus vs;
 batteryInfo battery;
 
+
 json genMqttGnssMsg();
 json genMqttBmsMsg();
 json genMqttECUMsg(ecu_type);
@@ -283,8 +284,7 @@ char* log_Time()
 
 bool convertBoolean(int state)
 {
-  if(state == 0) return false;
-  return true;
+  return state != 0;
 }
 /*=========================tools end=========================*/
 
@@ -384,7 +384,7 @@ void callbackBusStopInfo(const msgs::Flag_Info::ConstPtr& input)
   J1["plate"] = PLATE;
   J1["status"] = 0;
   J1["route_id"] = routeID;
-  if (stopids.size() == 0)
+  if (stopids.empty())
   {
     J1["bus_stops"] = json::array();
   }
@@ -833,26 +833,26 @@ void sendRun(int argc, char** argv)
   while (true)
   {
     mutex_queue.lock();
-    while (q.size() != 0)
+    while (!q.empty())
     {
       UDP_Back_client.send_obj_to_server(q.front(), flag_show_udp_send);
       q.pop();
     }
 
-    while (obuQueue.size() != 0)
+    while (!obuQueue.empty())
     {
       UDP_OBU_client.send_obj_to_server(obuQueue.front(), flag_show_udp_send);
       obuQueue.pop();
     }
 
-    while (vkQueue.size() != 0)
+    while (!vkQueue.empty())
     {
       UDP_VK_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       vkQueue.pop();
     }
     
-    while (vkStatusQueue.size() != 0)
+    while (!vkStatusQueue.empty())
     {
       UDP_VK_client.send_obj_to_server(vkStatusQueue.front(), true);
       UDP_VK_FG_client.send_obj_to_server(vkStatusQueue.front(), true);
@@ -873,7 +873,7 @@ void sendRun(int argc, char** argv)
     json imu_list = json::array();
     if(mqttGNSSQueue.size() !=0)
     {
-      while(mqttGNSSQueue.size() != 0)
+      while(!mqttGNSSQueue.empty())
       {
         json gnss = mqttGNSSQueue.front();
         gnss_list.push_back(gnss);
@@ -882,9 +882,9 @@ void sendRun(int argc, char** argv)
       J1["gnss"] = gnss_list;
     }
 
-    if(mqttBSMQueue.size() != 0)
+    if(!mqttBSMQueue.empty())
     {
-      while(mqttBSMQueue.size() != 0){
+      while(!mqttBSMQueue.empty()){
         json bsm = mqttBSMQueue.front();
         bsm_list.push_back(bsm);
         mqttBSMQueue.pop();
@@ -892,9 +892,9 @@ void sendRun(int argc, char** argv)
       J1["bms"] = bsm_list;
     }
 
-    if(mqttECUQueue.size() != 0)
+    if(!mqttECUQueue.empty())
     {
-      while(mqttECUQueue.size() != 0){
+      while(!mqttECUQueue.empty()){
         json ecu = mqttECUQueue.front();
         ecu_list.push_back(ecu);
         mqttECUQueue.pop();
@@ -902,23 +902,23 @@ void sendRun(int argc, char** argv)
       J1["ecu"] = ecu_list;
     }
 
-    if(mqttIMUQueue.size() != 0)
+    if(!mqttIMUQueue.empty())
     {
-      while(mqttIMUQueue.size() != 0){
+      while(!mqttIMUQueue.empty()){
         json jimu = mqttIMUQueue.front();
         imu_list.push_back(jimu);
         mqttIMUQueue.pop();
       }
       J1["imu"] = imu_list;
     }
-    if(mqttSensorQueue.size() != 0){
+    if(!mqttSensorQueue.empty()){
        mutex_sensor.lock();
        states = mqttSensorQueue.front();
        mqttSensorQueue.pop();
        mutex_sensor.unlock();
        mqtt_pubish(states);
     }
-    if(mqttDOQueue.size() != 0){
+    if(!mqttDOQueue.empty()){
         mutex_do.lock();
         json DO;
         detectObject = mqttDOQueue.front();
@@ -929,7 +929,7 @@ void sendRun(int argc, char** argv)
         mqtt_pubish(DO.dump());
     }
 
-    if(mqttFailSafeQueue.size() != 0)
+    if(!mqttFailSafeQueue.empty())
     {
         std::string fail_safe = mqttFailSafeQueue.front();
         json j1 = json::parse(fail_safe);
@@ -944,11 +944,11 @@ void sendRun(int argc, char** argv)
 
     if(event_queue_switch)
     {
-      if(eventQueue1.size() != 0){
+      if(!eventQueue1.empty()){
         mutex_event_1.lock();
         event_queue_switch = false;
       
-        while (eventQueue1.size() != 0)
+        while (!eventQueue1.empty())
         {
           json j = eventQueue1.front();
           string jstr = j.dump();
@@ -963,11 +963,11 @@ void sendRun(int argc, char** argv)
     }//if(event_queue_switch)
     else
     {
-      if(eventQueue2.size() != 0){
+      if(!eventQueue2.empty()){
         mutex_event_2.lock();
         event_queue_switch = true;
     
-        while (eventQueue2.size() != 0)
+        while (!eventQueue2.empty())
         {
          
           json j = eventQueue2.front();
@@ -1035,7 +1035,7 @@ void sendROSRun(int argc, char** argv)
   while (ros::ok())
   {
     mutex_trafficLight.lock();
-    while (trafficLightQueue.size() != 0)
+    while (!trafficLightQueue.empty())
     {
       std::string trafficMsg = trafficLightQueue.front();
       trafficLightQueue.pop();
