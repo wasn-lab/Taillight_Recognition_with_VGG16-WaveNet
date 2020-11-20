@@ -248,16 +248,6 @@ std::string current_spat = "";
 VehicelStatus vs;
 batteryInfo battery;
 
-
-void getCurrentPath(){
-  char cwd[PATH_MAX];
-  if (getcwd(cwd, sizeof(cwd)) != NULL) {
-    printf("Current working dir: %s\n", cwd);
-  } else {
-    perror("getcwd() error");
-  }
-}
-
 json genMqttGnssMsg();
 json genMqttBmsMsg();
 json genMqttECUMsg(ecu_type);
@@ -269,7 +259,7 @@ bool checkCommand(int argc, char** argv, std::string command)
 {
   for (int i = 0; i < argc; i++)
   {
-    if (command.compare(argv[i]) == 0)
+    if (command == argv[i])
     {
       return true;
     }
