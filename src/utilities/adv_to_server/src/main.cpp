@@ -281,20 +281,6 @@ char* log_Time()
   return szTime;
 }
 
-std::time_t convertStrToTimeStamp(std::string time)
-{
-  std::tm t{};
-  std::istringstream ss(time);
-
-  ss >> std::get_time(&t, "%Y-%m-%d %H:%M:%S");
-  if (ss.fail())
-  {
-    throw std::runtime_error{ "failed to parse time string" };
-  }
-  std::time_t time_stamp = mktime(&t);
-  return time_stamp;
-}
-
 bool convertBoolean(int state)
 {
   if(state == 0) return false;
