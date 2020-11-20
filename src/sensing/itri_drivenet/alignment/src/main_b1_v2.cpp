@@ -126,7 +126,7 @@ ros::Publisher g_object_pub;
 ros::Publisher g_heartbeat_pub;
 std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
-int g_object_wait_frame = 5;
+int g_object_wait_frame = 1;
 std::vector<std::vector<msgs::DetectedObjectArray>> g_object_buffer_arrs(g_cam_ids.size());
 
 /// sync camera and lidar
