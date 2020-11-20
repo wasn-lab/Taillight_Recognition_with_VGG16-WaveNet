@@ -1443,7 +1443,7 @@ void VK104callback(json reqJson)
 }
 
 //route api
-void route(std::string request)
+void route(const std::string &request)
 {
   using namespace std;
   string type;
@@ -1650,7 +1650,7 @@ json getMqttDOMsg(){
          };
          objArray.push_back(obj);
     }
-    if (objArray.size() == 0){
+    if (objArray.empty()){
         DO["obj"] = json::array();
     }else{
         DO["obj"] = objArray;
