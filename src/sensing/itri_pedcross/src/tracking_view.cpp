@@ -77,10 +77,10 @@ void TrackingView::draw_tracking_with_detection()
   for (const auto& obj : latest_detection.objects)
   {
     cv::Rect box;
-    box.x = obj.camInfo.u * scaling_ratio_width;
-    box.y = obj.camInfo.v * scaling_ratio_height;
-    box.width = obj.camInfo.width * scaling_ratio_width;
-    box.height = obj.camInfo.height * scaling_ratio_height;
+    box.x = obj.camInfo[0].u * scaling_ratio_width;
+    box.y = obj.camInfo[0].v * scaling_ratio_height;
+    box.width = obj.camInfo[0].width * scaling_ratio_width;
+    box.height = obj.camInfo[0].height * scaling_ratio_height;
     if (box.x + box.width > matrix.cols)
     {
       box.width = matrix.cols - box.x;
@@ -96,10 +96,10 @@ void TrackingView::draw_tracking_with_detection()
   for (const auto& obj : latest_tracking.objects)
   {
     cv::Rect box;
-    box.x = obj.camInfo.u * scaling_ratio_width;
-    box.y = obj.camInfo.v * scaling_ratio_height;
-    box.width = obj.camInfo.width * scaling_ratio_width;
-    box.height = obj.camInfo.height * scaling_ratio_height;
+    box.x = obj.camInfo[0].u * scaling_ratio_width;
+    box.y = obj.camInfo[0].v * scaling_ratio_height;
+    box.width = obj.camInfo[0].width * scaling_ratio_width;
+    box.height = obj.camInfo[0].height * scaling_ratio_height;
     if (box.x + box.width > matrix.cols)
     {
       box.width = matrix.cols - box.x;

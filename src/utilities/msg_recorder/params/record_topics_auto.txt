@@ -145,8 +145,6 @@
 /LightResultOutput
 
 #
-/RadFront
-/RadFrontFilter
 /PP_geofence_line
 /Geofence_line # marker
 /gnss_speed_data
@@ -194,4 +192,23 @@
 /veh_predictpath
 
 
+/DelphiFront
+/AlphaFrontCenter
+/AlphaFrontLeft
+/AlphaFrontRight
+/AlphaSideLeft
+/AlphaSideRight
+/AlphaBackLeft
+/AlphaBackRight
+/CubtekFront
+/RadFront
+/RadFrontFilter
+/RadAlpha
+/RadAlphaPCL
+
+
+/traffic_light_register_info
+/control_checker
+/BusStop/Info
+/avoidpath_reach_goal
 
