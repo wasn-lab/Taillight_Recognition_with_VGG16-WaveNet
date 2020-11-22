@@ -287,7 +287,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   {
     geometry_msgs::Point point = text_marker_position(obj.bPoint.p1, obj.bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, obj));
-    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.relSpeed, obj.absSpeed));
+    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.speed_rel, obj.speed_abs));
   }
 
   geometry_msgs::Point point_seq = init_Point(-20, 0, 0);

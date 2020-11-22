@@ -33,8 +33,6 @@ def _send_bag_by_lftp(lftp_script_file):
     return ret
 
 
-
-
 class RosbagSender(object):
     def __init__(self, fqdn, port, user_name, password, rosbag_backup_dir, upload_rate):
         """
@@ -70,13 +68,16 @@ class RosbagSender(object):
     def send_bags(self, bags):
         bags.sort()
         for bag in bags:
+            _, bag_base_name = os.path.split(bag)
             print("notify backend: {} is ready to be uploaded".format(bag))
-            notify_backend_with_new_bag(bag)
+            jret = notify_backend_with_new_bag(bag_base_name)
+            print(jret)
             lftp_script_filename = self._generate_lftp_script(bag)
             ret = _send_bag_by_lftp(lftp_script_filename)
             if ret == 0:
                 print("notify backend: {} has been uploaded successfuly".format(bag))
-                notify_backend_with_uploaded_bag(bag)
+                jret = notify_backend_with_uploaded_bag(bag_base_name)
+                print(jret)
 
     def _generate_lftp_script(self, bag):
         ftp_cmds = [
@@ -85,7 +86,7 @@ class RosbagSender(object):
             "open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend
-        dir_name = "/{}/{}".format(self.license_plate_number, ymd)
+        dir_name = "/Share/ADV/Rosbag/fail_safe/{}/{}".format(self.license_plate_number, ymd)
         ftp_cmds += [
             "mkdir -p {}".format(dir_name),
             "cd {}".format(dir_name),

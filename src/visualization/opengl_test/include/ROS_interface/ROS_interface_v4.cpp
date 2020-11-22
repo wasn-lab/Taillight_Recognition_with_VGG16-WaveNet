@@ -1284,7 +1284,7 @@ void ROS_INTERFACE::_ITRI3DBoundingBox_CB(const msgs::LidRoi::ConstPtr& msg, con
     for (size_t i=0; i < msg->lidRoiBox.size(); ++i ){
         auto &_data_obj = _data_ptr->objects[i];
         auto &_msg_obj = msg->lidRoiBox[i];
-        _data_obj.camInfo.id = i; // Use the sequence number as id
+        _data_obj.camInfo[0].id = i; // Use the sequence number as id
         _data_obj.classId = 0; // _msg_obj.cls;
         //
         _data_obj.bPoint.p0 = _msg_obj.p0;
@@ -1342,12 +1342,12 @@ void ROS_INTERFACE::_ITRICamObj_CB(const msgs::CamObj::ConstPtr& msg, const MSG:
     for (size_t i=0; i < msg->camObj.size(); ++i ){
         auto &_data_obj = _data_ptr->objects[i];
         auto &_msg_obj = msg->camObj[i];
-        _data_obj.camInfo.u = _msg_obj.x;
-        _data_obj.camInfo.v = _msg_obj.y;
-        _data_obj.camInfo.width = _msg_obj.width;
-        _data_obj.camInfo.height = _msg_obj.height;
-        _data_obj.camInfo.id = _msg_obj.id;
-        _data_obj.camInfo.prob = _msg_obj.prob;
+        _data_obj.camInfo[0].u = _msg_obj.x;
+        _data_obj.camInfo[0].v = _msg_obj.y;
+        _data_obj.camInfo[0].width = _msg_obj.width;
+        _data_obj.camInfo[0].height = _msg_obj.height;
+        _data_obj.camInfo[0].id = _msg_obj.id;
+        _data_obj.camInfo[0].prob = _msg_obj.prob;
         //
         _data_obj.classId = _msg_obj.cls;
         _data_obj.distance = _msg_obj.distance;
