@@ -18,12 +18,17 @@ DistCoeff: !!opencv-matrix
    rows: 1
    cols: 5
    dt: d
-   data: [ 0,0,0,0,0 ]
+   data: [ -0.383691, 0.32238, -0.002589, -0.008762, 0.000000 ]
 ImageSize: [ 608, 384 ]
 ReprojectionError: 2.8142819089541871e-01
 CoverageMat: !!opencv-matrix
    rows: 2
    cols: 2
    dt: f
-   data: [ 10., 100.,
-           -15., 15. ]
+   data: [ 0., 50.,
+           -50., 50. ]
+RadarMat: !!opencv-matrix
+   rows: 1
+   cols: 6
+   dt: d
+   data: [2.4, 0.63, 0.075, -0.03, 0., -0.0279253]
