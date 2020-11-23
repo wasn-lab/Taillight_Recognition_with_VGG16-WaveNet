@@ -159,10 +159,10 @@ std::vector<std::vector<double>> fusion()
       {
         double scale_u = 608.0 / 1920.0;
         double scale_v = 384.0 / 1208.0;
-        double u = camera_objects.objects[j].camInfo.u;
-        double v = camera_objects.objects[j].camInfo.v;
-        double width = camera_objects.objects[j].camInfo.width;
-        double height = camera_objects.objects[j].camInfo.height;
+        double u = camera_objects.objects[j].camInfo[0].u;
+        double v = camera_objects.objects[j].camInfo[0].v;
+        double width = camera_objects.objects[j].camInfo[0].width;
+        double height = camera_objects.objects[j].camInfo[0].height;
         double center_u = (u + width / 2) * scale_u;
         double center_v = (v + height / 2) * scale_v;
         double v_max = (v + height) * scale_v;
