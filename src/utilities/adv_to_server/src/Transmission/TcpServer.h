@@ -30,7 +30,7 @@
 #include <climits>
 #include <cmath>
 #include <vector>
-#include <pcap.h>
+
 #include "ros/ros.h"
 
 #include "std_msgs/MultiArrayLayout.h"
@@ -64,7 +64,7 @@ public:
   //開始監聽
   int start_listening();
   //等待並讀取資料
-  int wait_and_accept(void (*cb)(std::string));
+  int wait_and_accept(void (*cb)(const std::string&));
   //回覆資料
   int send_json(std::string json);
 

@@ -11,7 +11,7 @@ class TegraAGrabber
 public:
   TegraAGrabber();
   ~TegraAGrabber();
-  void initializeModules(const bool do_resize, const bool do_crop);
+  void initializeModules(const bool do_resize);  //, const bool do_crop);
   bool runPerception();
 
 protected:
@@ -20,8 +20,8 @@ protected:
   // TODO: fill in the correct camera id.
   const std::vector<int> cam_ids_{ camera::id::right_60, camera::id::front_60, camera::id::left_60 };
 #elif CAR_MODEL_IS_B1_V2
-  const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30,
-                                   camera::id::front_bottom_60_crop };
+  const std::vector<int> cam_ids_{ camera::id::front_bottom_60, camera::id::front_top_far_30 };  //,
+                                                                                                 // camera::id::front_bottom_60_crop };
 #else
 #error "car model is not well defined"
 #endif
@@ -37,11 +37,12 @@ private:
   NPPResizer resizer_;
   int num_src_bytes_;
   bool resize_;
-  bool crop_;
+  // bool crop_;
 
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
+  ros::Time ros_time_;
 };
 }  // namespace SensingSubSystem
 

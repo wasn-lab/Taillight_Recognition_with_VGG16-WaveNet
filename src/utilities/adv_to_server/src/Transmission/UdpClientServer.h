@@ -30,7 +30,7 @@
 #include <climits>
 #include <cmath>
 #include <vector>
-#include <pcap.h>
+
 using json = nlohmann::json;
 
 class udp_client_server_runtime_error : public std::runtime_error
