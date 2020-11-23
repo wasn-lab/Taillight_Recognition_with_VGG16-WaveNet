@@ -4,7 +4,7 @@ DATE: Nov, 2020
 */
 #include "camera_params.h"
 
-#if CAR_MODEL_IS_B1_V3
+#if CAR_MODEL_IS_C1
 namespace camera
 {
 const std::string names[id::num_ids] = {
@@ -59,4 +59,4 @@ const std::string detect_result_occupancy_grid = "/CameraDetection/occupancy_gri
 
 }  // namespace camera
 
-#endif  // CAR_MODEL_IS_B1_V3
+#endif  // CAR_MODEL_IS_C1
