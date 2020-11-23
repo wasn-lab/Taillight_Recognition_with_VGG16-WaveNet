@@ -80,7 +80,7 @@ int TcpServer::start_listening()
 }
 
 // wait connect request and accept and read request data
-int TcpServer::wait_and_accept(void (*cb)(string))
+int TcpServer::wait_and_accept(void (*cb)(const string&))
 {
   while (true)
   {

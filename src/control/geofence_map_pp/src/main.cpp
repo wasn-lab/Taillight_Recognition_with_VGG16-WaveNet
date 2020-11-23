@@ -191,7 +191,8 @@ void publishPPCloud(const msgs::DetectedObjectArray::ConstPtr& msg, const int nu
   PPCloud_pub.publish(msg_pub);
 }
 
-void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp_stop, int& pp_distance, int& pp_speed)
+void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp_stop, int& pp_distance,
+            int& pp_speed)
 {
   for (const auto& obj : msg->objects)
   {
@@ -204,7 +205,7 @@ void plotPP(const msgs::DetectedObjectArray::ConstPtr& msg, Geofence& g, int& pp
         p_vec.reserve(1);
         p.X = forecast.position.x;
         p.Y = forecast.position.y;
-        p.Speed = obj.relSpeed;
+        p.Speed = obj.speed_rel;
         p_vec.push_back(p);
 
         bool isLocal = true;  // setPointCloud(): no TF

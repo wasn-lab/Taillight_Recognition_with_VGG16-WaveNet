@@ -6,11 +6,14 @@ import rospy
 from std_msgs.msg import String
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
+from ctrl_info02 import CtrlInfo02
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL
+from sb_param_utils import get_vid
+from issue_reporter import IssueReporter, generate_issue_description
 
 
 def _overall_status(module_states):
@@ -23,9 +26,9 @@ def _overall_status_str(module_states):
 
 
 class FailSafeChecker(object):
-    def __init__(self, vid, heartbeat_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, heartbeat_ini, mqtt_ini, mqtt_fqdn):
         self.debug_mode = False
-        self.vid = vid  # vehicle id
+        self.vid = get_vid()  # vehicle id
         rospy.init_node("FailSafeChecker")
         rospy.logwarn("Init FailSafeChecker")
         cfg = configparser.ConfigParser()
@@ -45,8 +48,10 @@ class FailSafeChecker(object):
             if cfg[module].getboolean("latch"):
                 self.latched_modules.append(module)
         self.ctrl_info_03 = CtrlInfo03()
+        self.ctrl_info_02 = CtrlInfo02()
         self.pedcross_alert = PedCrossAlert()
         self.can_checker = CanChecker()
+        self.issue_reporter = IssueReporter()
 
         mqtt_cfg = configparser.ConfigParser()
         mqtt_cfg.read(mqtt_ini)
@@ -58,6 +63,8 @@ class FailSafeChecker(object):
         self.action_emitter = ActionEmitter()
         self.sensor_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
+        self.fail_safe_status_publisher = rospy.Publisher(
+            "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -70,6 +77,7 @@ class FailSafeChecker(object):
 
     def set_debug_mode(self, mode):
         self.debug_mode = mode
+        self.issue_reporter.set_debug_mode(mode)
 
     def get_current_status(self):
         """Collect states from the components of the car"""
@@ -83,7 +91,7 @@ class FailSafeChecker(object):
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         # pedcross is still under heavy development
-        # ret["states"] += self.pedcross_alert.get_status_in_list()
+        ret["states"] += self.pedcross_alert.get_status_in_list()
         status = _overall_status(ret["states"])
         status_str = _overall_status_str(ret["states"])
 
@@ -134,6 +142,28 @@ class FailSafeChecker(object):
             docs[module.sensor_type].append(doc)
         return docs
 
+    def is_self_driving(self):
+        return self.ctrl_info_02.is_self_driving()
+
+    def report_issue_if_necessary(self, current_status):
+        if not self.is_self_driving():
+            rospy.logwarn("Do not post issue in non-self-driving mode")
+            return
+        for doc in current_status["events"]:
+            if doc["status"] != OK:
+                summary = "[Auto Report] {}: {}".format(
+                    doc["module"], doc["status_str"])
+                desc = generate_issue_description(doc["status"], doc["status_str"])
+                self.issue_reporter.post_issue(summary, desc)
+                return
+        if current_status["status"] != OK:
+            summary = "[Auto Report] {}".format(
+                current_status["status_str"])
+            desc = generate_issue_description(
+                current_status["status"], current_status["status_str"])
+            self.issue_reporter.post_issue(summary, desc)
+
+
     def run(self):
         """Send out aggregated info to backend server every second."""
         rate = rospy.Rate(1)
@@ -147,8 +177,13 @@ class FailSafeChecker(object):
                 pprint.pprint(current_status)
             if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
-            self.mqtt_client.publish(self.mqtt_topic, json.dumps(current_status))
+
+            self.report_issue_if_necessary(current_status)
+            current_status_json = json.dumps(current_status)
+            self.mqtt_client.publish(self.mqtt_topic, current_status_json)
+            self.fail_safe_status_publisher.publish(current_status_json)
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
+
             if self.warn_count + self.error_count > 0:
                 rospy.logwarn("warn_count: %d, error_count: %d",
                               self.warn_count, self.error_count)
