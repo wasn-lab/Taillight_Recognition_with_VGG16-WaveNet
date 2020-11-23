@@ -31,7 +31,7 @@ DEFINE_string(caffemodel_path, "",
 DEFINE_string(output_resolution, "-1x-1",
               "The image resolution (display and output). Use \"-1x-1\" to force the program to use the"
               " input image resolution.");
-DEFINE_int32(num_gpu, -1,
+DEFINE_int32(num_gpu, 1,
              "The number of GPU devices to use. If negative, it will use all the available GPUs in your"
              " machine.");
 DEFINE_int32(num_gpu_start, 0, "GPU device start number.");
