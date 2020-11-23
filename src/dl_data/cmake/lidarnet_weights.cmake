@@ -60,6 +60,26 @@ download_file(
     DESTINATION "${LIDARNET_V2_WEIGHTS_DIR}/SqueezeSegNet/b1/P180deg.pb"
     MD5 b796ab75ebc7c022ff74d92b995d3e6c)
 
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/PointPillars/C1/Car/pfe.onnx"
+    DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/car/pfe.onnx"
+    MD5 86e283c08f3b7f4b41f95f167949ac00)
+
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/PointPillars/C1/Car/rpn.onnx"
+    DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/car/rpn.onnx"
+    MD5 97d3cd297adaa0c7929fbba093eaacb4)
+
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/PointPillars/C1/Ped_Cyc/pfe.onnx"
+    DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/ped_cyc/pfe.onnx"
+    MD5 89d6b99414581c17fa545b6897f0c0c0)
+
+download_file(
+    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/PointPillars/C1/Ped_Cyc/rpn.onnx"
+    DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/ped_cyc/rpn.onnx"
+    MD5 c0f4c1ec518e6c84ddd2b966c544f9f8)
+
 #download_file(
 #    URL "http://118.163.54.109:8888/Share/ADV/LiDAR_Models/SqueezeSegNet_v2/b1/N90deg.pb"
 #    DESTINATION "${LIDARNET_WEIGHTS_DIR}/SqueezeSegNet/b1/N90deg.pb"
