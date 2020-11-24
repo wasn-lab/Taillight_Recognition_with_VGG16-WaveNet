@@ -17,6 +17,27 @@ pcl::PointCloud<pcl::PointXYZ> ObjectGenerator::pointsToPolygon(const pcl::Point
 
   return convex_points;
 }
+OrientedBBox ObjectGenerator::clusterToOrientedBBox(const CLUSTER_INFO& cluster_vector)
+{
+  OrientedBBox obb;
+  if (!cluster_vector.obb_vertex.empty())
+  {
+    /// center_point
+    obb.obb_center.x = cluster_vector.obb_center.x;
+    obb.obb_center.y = cluster_vector.obb_center.y;
+    obb.obb_center.z = cluster_vector.obb_center.z;
+
+    /// Quatanion heading
+    obb.obb_orient = cluster_vector.obb_orient;
+
+    /// BoxSize dimension
+    obb.obb_dx = cluster_vector.obb_dx;
+    obb.obb_dy = cluster_vector.obb_dy;
+    obb.obb_dz = cluster_vector.obb_dz;
+  }
+  return obb;
+}
+
 msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(const CLUSTER_INFO& cluster_vector)
 {
   msgs::BoxPoint box_point;
@@ -57,7 +78,7 @@ msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(const CLUSTER_INFO& cluster_ve
   return box_point;
 }
 
-msgs::BoxPoint ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::PointXYZI>& cloud, const int class_id)
+void ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::PointXYZI>& cloud, const int class_id, OrientedBBox& obb, msgs::BoxPoint& box_point)
 {
   /// Preprocessing
   CLUSTER_INFO cluster_vector;
@@ -103,10 +124,8 @@ msgs::BoxPoint ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::Po
     estimator.getShapeAndPose(nnClassID::Car, cluster_vector, do_apply_filter);
   }
 
-  msgs::BoxPoint box_point;
+  obb = clusterToOrientedBBox(cluster_vector);
   box_point = clusterToBoxPoint(cluster_vector);
-
-  return box_point;
 }
 msgs::BoxPoint ObjectGenerator::minMax3dToBBox(MinMax3D& cube)
 {

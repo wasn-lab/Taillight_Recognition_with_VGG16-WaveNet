@@ -112,7 +112,8 @@ RosImagePubSub::RosImagePubSub(ros::NodeHandle nh_in) : _nh_ptr(nh_in), _ros_it(
 bool RosImagePubSub::add_a_pub(size_t id_in, const std::string& topic_name)
 {
   auto result = _image_publisher_map.emplace(id_in, _ros_it.advertise(topic_name, 1));
-  auto result1 = _heartbeat_publisher_map.emplace(id_in, _nh_ptr.advertise<std_msgs::Empty>(topic_name + std::string("/heartbeat"), 1));
+  _heartbeat_publisher_map.emplace(id_in,
+                                   _nh_ptr.advertise<std_msgs::Empty>(topic_name + std::string("/heartbeat"), 1));
   return result.second;
 }
 
@@ -134,15 +135,15 @@ bool RosImagePubSub::send_image(const int topic_id, const cv::Mat& content_in)
   }
 }
 
-bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_in)
+bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_in, ros::Time ros_time)
 {
   cv::Mat mat_img;
   cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
-  header.stamp = ros::Time::now();  // time
-  header.frame_id = "camera";       // camera id
+  header.stamp = ros_time;     // time
+  header.frame_id = "camera";  // camera id
 
   sensor_msgs::Image img_msg;
   cv_bridge::CvImage img_bridge;
