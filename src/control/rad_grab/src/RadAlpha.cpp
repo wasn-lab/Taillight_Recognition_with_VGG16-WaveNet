@@ -156,14 +156,14 @@ int main(int argc, char** argv)
         // 0:Have the next data, 1:Last data, 2:No object, 3:Reserved
         if (state > 0)
         {
-          if (current_frame.can_id == 0xC1)
-          {
-            frontRadFilter(&rad);
-          }
-          else
-          {
-            cornerRadFilter(&rad);
-          }
+          // if (current_frame.can_id == 0xC1)
+          // {
+          //   frontRadFilter(&rad);
+          // }
+          // else
+          // {
+          //   cornerRadFilter(&rad);
+          // }
           RadPub.publish(rad);
           count = (int)rad.radPoint.size();
           rad.radPoint.clear();

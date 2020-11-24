@@ -22,9 +22,6 @@ set(rqt_image_view_INCLUDE_DIRECTORIES
   include
   "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}"
 )
-if(NOT EXISTS "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}")
-  file(MAKE_DIRECTORY "${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION}")
-endif()
 
 ## Generate messages in the 'msg' folder
 #add_message_files(
@@ -73,6 +70,7 @@ QT5_WRAP_CPP            (QT_HEADERS_MOC   ${QT_HEADERS})
 QT5_WRAP_UI             (QT_FORMS_HEADERS ${QT_FORMS})
 ADD_DEFINITIONS         (${QT_DEFINITIONS})
 
+catkin_package()
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
