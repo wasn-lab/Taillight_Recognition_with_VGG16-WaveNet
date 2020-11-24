@@ -24,7 +24,17 @@ void PCDSaverNodeImpl::save(const sensor_msgs::PointCloud2ConstPtr& in_pcd_messa
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr pcd_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*in_pcd_message, *pcd_ptr);
-  LOG(INFO) << "write " << fname << " points: " << pcd_ptr->points.size();
+  LOG(INFO) << "write " << fname << ", points: " << pcd_ptr->points.size() << ", width: " << in_pcd_message->width
+            << ", height: " << in_pcd_message->height << ", is_dense: " << static_cast<bool>(in_pcd_message->is_dense)
+            << ", point_step: " << in_pcd_message->point_step << ", raw_step: " << in_pcd_message->row_step
+            << ", num_fields: " << in_pcd_message->fields.size();
+  for (int i = 0; i < in_pcd_message->fields.size(); i++)
+  {
+    LOG(INFO) << "fields[" << i << "]:"
+              << " name: " << in_pcd_message->fields[i].name
+              << ", datatype: " << static_cast<int>(in_pcd_message->fields[i].datatype)
+              << ", offset: " << in_pcd_message->fields[i].offset << ", count: " << in_pcd_message->fields[i].count;
+  }
 
   pcl::io::savePCDFileASCII(fname, *pcd_ptr);
 }
