@@ -31,8 +31,6 @@ class ros_detect_opticalflow:
         self.temp_yolo_len = None
         self.frame_counter = 0
         self.yolo_timestamp_len = 0
-        self.temp_img_len = None
-        self.temp_yolo_len = None
         self.first_yolo = False
         self.img_timestamp = []
         self.img_list = []
@@ -41,6 +39,9 @@ class ros_detect_opticalflow:
         self.keep_data_object = []
         rospy.init_node('listener', anonymous=True)
         self.inputTopic = rospy.get_param("~topic")
+        self.raw_img_size = np.array([1920 ,1208 ,1920 ,1208])
+        self.yolo_img_size = np.array([608, 384 ,608, 384])
+        self.size_scale = np.true_divide(self.raw_img_size,self.yolo_img_size)  
 
         
     def ros_subscriber_image(self):
@@ -88,11 +89,7 @@ class ros_detect_opticalflow:
             cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)      
             
             
-    def debug_img(self, debug_img_publish, full_image_info):
-        raw_img_size = np.array([1920 ,1208 ,1920 ,1208])
-        yolo_img_size = np.array([608, 384 ,608, 384])
-        size_scale = np.true_divide(raw_img_size,yolo_img_size)      
-        rate = rospy.Rate(20)
+    def debug_img(self, debug_img_publish, full_image_info):    
         info1 = full_image_info
         if info1[2] == "YOLO":
             for res in info1[1]:
@@ -111,11 +108,7 @@ class ros_detect_opticalflow:
             cv2.putText(info1[0], "{}".format(info1[2]), (10, 30), 0, 1,[0, 225, 0], 2, cv2.LINE_AA)
             self.publish_image(debug_img_publish,info1[3],info1[0])
     
-    def tracking_bbox(self, tracking_bbox_publish, full_bbox_info):
-        raw_img_size = np.array([1920 ,1208 ,1920 ,1208])
-        yolo_img_size = np.array([608, 384 ,608, 384])
-        size_scale = np.true_divide(raw_img_size,yolo_img_size)      
-        rate = rospy.Rate(20)
+    def tracking_bbox(self, tracking_bbox_publish, full_bbox_info):   
         info1 = full_bbox_info
         if info1[1] == "YOLO":
             self.publish_bbox(tracking_bbox_publish,info1[2],info1[3])
@@ -124,13 +117,13 @@ class ros_detect_opticalflow:
             data_object_i = 0
             for res in info1[0]:
                 self.data_copy_temp[data_object_i].camInfo.u =  \
-                    int(round(res['box'][0]*size_scale[0])) if res['box'][0] >=0 else 0
+                    int(round(res['box'][0]*self.size_scale[0])) if res['box'][0] >=0 else 0
                 self.data_copy_temp[data_object_i].camInfo.v = \
-                    int(round(res['box'][1]*size_scale[1])) if res['box'][1] >=0 else 0
+                    int(round(res['box'][1]*self.size_scale[1])) if res['box'][1] >=0 else 0
                 self.data_copy_temp[data_object_i].camInfo.width = \
-                    int(round((res['box'][2]-res['box'][0])*size_scale[2]))
+                    int(round((res['box'][2]-res['box'][0])*self.size_scale[2]))
                 self.data_copy_temp[data_object_i].camInfo.height = \
-                    int(round((res['box'][3]-res['box'][1])*size_scale[3]))
+                    int(round((res['box'][3]-res['box'][1])*self.size_scale[3]))
                 data_object_i += 1
             self.publish_bbox(tracking_bbox_publish,info1[2],self.data_copy_temp)
 
@@ -161,33 +154,31 @@ class ros_detect_opticalflow:
         tracking_bbox_publish.publish(bbox_temp)    
         
     def check_status_every_sec(self):
-        #while not rospy.is_shutdown():
-            #print('hello lipei',self.same_times,self.last_temp_img_len ,self.temp_img_len,self.img_len)
-            if self.temp_img_len == self.img_len:
-                if self.last_temp_img_len == self.temp_img_len:
-                    self.same_times += 1 
-                if self.same_times > 2:
-                    self.same_times = 0
-                    self.img_len = 0
-                    self.last_temp_img_len = None
-                    self.temp_img_len = None
-                    self.temp_yolo_len = None
-                    self.yolo_len = 0
-                    self.frame_counter = 0
-                    self.yolo_timestamp_len = 0
-                    self.first_yolo = False
-                    self.img_timestamp = []
-                    self.img_list = []
-                    self.keep_yolo_time = []
-                    self.yolo_bbox_time = []
-                    self.keep_data_object = []
-                    self.first_yolo = False
-                    self.yolo_detected = False
-            else:
+        if self.temp_img_len == self.img_len:
+            if self.last_temp_img_len == self.temp_img_len:
+                self.same_times += 1 
+            if self.same_times > 2:
                 self.same_times = 0
-                self.temp_img_len =self.img_len
-            self.last_temp_img_len = self.temp_img_len
-            #time.sleep(1)
+                self.img_len = 0
+                self.last_temp_img_len = None
+                self.temp_img_len = None
+                self.temp_yolo_len = None
+                self.yolo_len = 0
+                self.frame_counter = 0
+                self.yolo_timestamp_len = 0
+                self.first_yolo = False
+                self.img_timestamp = []
+                self.img_list = []
+                self.keep_yolo_time = []
+                self.yolo_bbox_time = []
+                self.keep_data_object = []
+                self.first_yolo = False
+                self.yolo_detected = False
+        else:
+            self.same_times = 0
+            self.temp_img_len =self.img_len
+        self.last_temp_img_len = self.temp_img_len
+        #time.sleep(1)
 
 
     def run(self):
@@ -197,20 +188,15 @@ class ros_detect_opticalflow:
         yolo_thread = threading.Thread(target = self.ros_subscriber_yolo)
         yolo_timestamp_thread = threading.Thread(target = self.ros_subscriber_yolo_timestamp)
         
-        
         img_thread.start()
         yolo_thread.start()
         yolo_timestamp_thread.start()
-
 
         opt_len = 0
         y_len = 0
         self.first_yolo = False
         self.yolo_detected = False
 
-        raw_img_size = np.array([1920 ,1208 ,1920 ,1208])
-        yolo_img_size = np.array([608, 384 ,608, 384])
-        size_scale = np.true_divide(yolo_img_size,raw_img_size)      
         rate = rospy.Rate(20)          
         while not rospy.is_shutdown():
             self.check_status_every_sec()
@@ -237,7 +223,7 @@ class ros_detect_opticalflow:
                                                             int(obj.camInfo.v),\
                                                             int(obj.camInfo.u)+int(obj.camInfo.width),\
                                                             int(obj.camInfo.v)+int(obj.camInfo.height)])
-                                scale_bbox_info = scale_bbox_info*size_scale
+                                scale_bbox_info = scale_bbox_info*self.size_scale
                                 res = {
                                         'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
                                                 int(scale_bbox_info[2]), int(scale_bbox_info[3])],
@@ -261,7 +247,8 @@ class ros_detect_opticalflow:
                             y_len +=1
 
             else:
-                if len(self.keep_yolo_time) >0 and len(self.img_timestamp)>0:
+                if len(self.keep_yolo_time) >0 and len(self.img_timestamp)>0 \
+                   and len(self.img_timestamp)>=self.frame_counter:
                     #optical
                     if self.img_timestamp[self.frame_counter] < self.keep_yolo_time[0]:
                         #print('opt')
@@ -305,7 +292,7 @@ class ros_detect_opticalflow:
                                                                     int(obj.camInfo.v),\
                                                                     int(obj.camInfo.u)+int(obj.camInfo.width),\
                                                                     int(obj.camInfo.v)+int(obj.camInfo.height)])
-                                        scale_bbox_info = scale_bbox_info*size_scale
+                                        scale_bbox_info = scale_bbox_info*self.size_scale
                                         res = {
                                                 'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
                                                         int(scale_bbox_info[2]), int(scale_bbox_info[3])],
@@ -348,4 +335,3 @@ class ros_detect_opticalflow:
 if __name__ == '__main__':
     A = ros_detect_opticalflow()
     A.run()
-    
