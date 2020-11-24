@@ -365,54 +365,6 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /LaneToDecisionOutput/markers
-      Name: Markers_Lane
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /LightToDecisionOutput/markers
-      Name: Markers_Light
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /SignToDecisionOutput/markers
-      Name: Markers_Sign
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /LaneToDecisionOutput/delay
-      Name: Delays_Lane
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /LightToDecisionOutput/delay
-      Name: Delays_Light
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/MarkerArray
-      Enabled: false
-      Marker Topic: /SignToDecisionOutput/delay
-      Name: Delays_Sign
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
     - Class: rviz/Image
       Enabled: false
       Image Topic: /cam/front_top_far_30/detect_image

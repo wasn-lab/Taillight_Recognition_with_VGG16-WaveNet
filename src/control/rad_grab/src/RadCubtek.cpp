@@ -27,6 +27,13 @@
 #include <linux/can.h>      /* for struct can_frame */
 #include <linux/can/raw.h>
 
+// For PCL
+#include <sensor_msgs/PointCloud2.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl_conversions/pcl_conversions.h>
+
+
 using namespace std;
 
 void onInit(ros::NodeHandle nh, ros::NodeHandle n);
@@ -38,6 +45,7 @@ int radar_object_num = 16;
 int radar_object_data = radar_object_num * 2;
 struct can_frame current_frame;
 ros::Publisher RadPub;
+ros::Publisher RadPCLPub;
 
 int main(int argc, char** argv)
 {
@@ -62,6 +70,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
 
   RadPub = n.advertise<msgs::RadObjectArray>("CubtekFront", 1);
+  RadPCLPub = n.advertise<sensor_msgs::PointCloud2>("CubtekFrontPCL", 1);
 
   onInit(nh, n);
 
@@ -159,6 +168,25 @@ int main(int argc, char** argv)
 
     RadPub.publish(radArray);
 
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointXYZI temp;
+
+    for (int i = 0; i < radArray.objects.size(); i++)
+    {
+      // for rviz drawing
+      temp.x = radArray.objects[i].px;
+      temp.y = -radArray.objects[i].py;
+      temp.z = -2;
+      cloud->points.push_back(temp);
+    }
+
+    sensor_msgs::PointCloud2 msgtemp;
+    pcl::toROSMsg(*cloud, msgtemp);
+    msgtemp.header = radArray.header;
+    msgtemp.header.seq = radArray.header.seq;
+    msgtemp.header.frame_id = "radar_cubtek";
+    RadPCLPub.publish(msgtemp);
+
     print_count++;
     if (print_count > 60)
     {
@@ -231,7 +259,7 @@ void radarParsing(struct can_frame first, struct can_frame second, msgs::RadObje
 
   // fill data to msg
   rad_obj->px = px;
-  rad_obj->py = py;
+  rad_obj->py = py - 0.5;
   rad_obj->vx = vx;
   rad_obj->vy = vy;
   rad_obj->track_id = track_id;

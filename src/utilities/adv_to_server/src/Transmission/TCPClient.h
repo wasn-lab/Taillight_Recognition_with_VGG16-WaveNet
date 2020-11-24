@@ -22,7 +22,7 @@
 #include <climits>
 #include <cmath>
 #include <vector>
-#include <pcap.h>
+
 
 class tcp_client_runtime_error : public std::runtime_error
 {
