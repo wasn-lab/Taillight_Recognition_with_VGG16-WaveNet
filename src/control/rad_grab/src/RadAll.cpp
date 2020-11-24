@@ -856,15 +856,15 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
-  // ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
+  ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
   ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
-  // ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
-  // ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
-  // ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
-  // ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
-  // ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
-  // ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
-  // ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
+  ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
+  ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
+  ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
+  ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
+  ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
+  ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
+  ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
 
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
