@@ -194,7 +194,6 @@ void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg)
     point.y = y;
     point.z = z;
     point.intensity = msg->radPoint[i].speed;
-    
     temp_array.points.push_back(point);
   }
 
@@ -773,15 +772,27 @@ void alphaRadPub()
 
   for (int i = 0; i < alphaAllVec.size(); i++)
   {
-    alphaRad.radPoint.push_back(alphaAllVec[i]);
+    float x = alphaAllVec[i].x;
+    float y = abs(alphaAllVec[i].y);
 
-    // for rviz drawing
-    temp.x = alphaAllVec[i].x;
-    temp.y = -alphaAllVec[i].y;
-    cloud->points.push_back(temp);
-    if (alpha_raw_message)
+    if ((x < 0.6) && (x > -6))
     {
-      cout << "X: " << temp.x << ", Y: " << temp.y << endl;
+      if (y < 1.2)
+      {
+        continue;
+      }
+    }
+
+    {
+      // for rviz drawing
+      temp.x = alphaAllVec[i].x;
+      temp.y = -alphaAllVec[i].y;
+      cloud->points.push_back(temp);
+      if (alpha_raw_message)
+      {
+        cout << "X: " << temp.x << ", Y: " << temp.y << endl;
+      }
+      alphaRad.radPoint.push_back(alphaAllVec[i]);
     }
   }
   if (alpha_raw_message)
@@ -845,15 +856,15 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
-  ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
+  // ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
   ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
-  ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
-  ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
-  ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
-  ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
-  ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
-  ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
-  ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
+  // ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
+  // ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
+  // ros::Subscriber AlphiSideLeftSub = n.subscribe("AlphaSideLeft", 1, callbackAlphaSideLeft);
+  // ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
+  // ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
+  // ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
+  // ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
 
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
