@@ -805,6 +805,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
     geometry_msgs::Point32 polygon_point;
     polygon_point.x = obj.x;
     polygon_point.y = obj.y;
+    polygon_point.z = -3.1;
     polygon_marker.polygon.points.push_back(polygon_point);
   }
 
