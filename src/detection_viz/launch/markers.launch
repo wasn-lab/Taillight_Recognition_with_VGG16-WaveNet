@@ -108,6 +108,11 @@
       <param name="is_tracking_mode"  value="true"/>
   </node>
 
+  <!-- PP Ellipse **************************************************************************** -->
+  <node name="m_PP_ellipse" pkg="detection_viz" type="gen_pp_ellipse.py" output="screen" clear_params="true">
+      <param name="in_topic" value="/PathPredictionOutput"/>
+  </node>
+
   <!-- virbb bbox ******************************************************************************* -->
   <node name="m_virbb" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/abs_virBB_array"/>
