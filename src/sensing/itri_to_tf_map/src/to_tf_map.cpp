@@ -115,7 +115,6 @@ void ToTFMap::callbackDetection(const msgs::DetectedObjectArray::ConstPtr& input
   output.objects.assign(input->objects.begin(), input->objects.end());
   convert_all_to_map_tf(output.objects);
 
-  std::cout << "AAA" << std::endl;
   pub_to_tf_map_.publish(output);
 }
 
