@@ -29,16 +29,19 @@ class Node:
     def __init__(self):
         rospy.init_node("itri_grid_pp")
 
-        out_topic = "lane_event"
-        self.pub_grid_pp = rospy.Publisher(out_topic, LaneEvent, queue_size=1)
+        self.tracking_topic = rospy.get_param("~tracking_topic")
+        self.radar_topic = rospy.get_param("~radar_topic")
+        self.out_topic = rospy.get_param("~out_topic")
+
+        self.pub_grid_pp = rospy.Publisher(self.out_topic, LaneEvent, queue_size=1)
         self.pub_grid_pp_signal = rospy.Publisher(
-            out_topic + "/signal", MarkerArray, queue_size=1)
+            self.out_topic + "/signal", MarkerArray, queue_size=1)
         self.sub_track3d = rospy.Subscriber(
-            "Tracking3D",
+            self.tracking_topic,
             DetectedObjectArray,
             self.callback_track3d)
         self.sub_radar = rospy.Subscriber(
-            "RadarDetection",
+            self.radar_topic,
             DetectedObjectArray,
             self.callback_track3d)
 
