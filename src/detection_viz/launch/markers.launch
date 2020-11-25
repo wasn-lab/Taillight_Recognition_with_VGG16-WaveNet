@@ -13,6 +13,7 @@
       <param name="delay_prefix"  value="lidar"/>
       <param name="delay_pos_x"  value="3.0"/>
       <param name="is_ignoring_empty_obj"  value="true"/>
+      <param name="show_heading"  value="true"/>
   </node>
 
   <!-- Camera Polygon **************************************************************************** -->
@@ -23,6 +24,7 @@
       <param name="blue"  value="1.0"/>
       <param name="delay_prefix"  value="cam_poly"/>
       <param name="delay_pos_x"  value="-1.0"/>
+      <param name="show_heading"  value="true"/>
   </node>
 
   <!-- Radar Polygon **************************************************************************** -->
@@ -33,6 +35,7 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="radar"/>
       <param name="delay_pos_x"  value="-1.0"/>
+      <param name="show_heading"  value="false"/>
   </node>
 
   <!-- Fusion Polygon *************************************************************************** -->
@@ -43,6 +46,7 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="fusion"/>
       <param name="delay_pos_x"  value="-3.0"/>
+      <param name="show_heading"  value="true"/>
   </node>
 
   <!-- Tracking Polygon ************************************************************************* -->
@@ -54,7 +58,7 @@
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>
-      <param name="is_showing_heading"  value="false"/>
+      <param name="show_heading"  value="true"/>
   </node>
   <!-- Tracking BBox **************************************************************************** -->
   <node name="m_Tracking_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
@@ -76,7 +80,7 @@
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>
-      <param name="is_showing_heading"  value="false"/>
+      <param name="show_heading"  value="true"/>
   </node>
   <!-- Tracking 3D BBox **************************************************************************** -->
   <node name="m_Tracking_3d_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
@@ -98,7 +102,7 @@
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>
-      <param name="is_showing_heading"  value="false"/>
+      <param name="show_heading"  value="true"/>
   </node>
   <!-- Tracking BBox **************************************************************************** -->
   <node name="m_Tracking_2d_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">

@@ -35,7 +35,7 @@ class Node:
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
-        self.is_showing_heading = rospy.get_param("~is_showing_heading", False)
+        self.show_heading = rospy.get_param("~show_heading", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
@@ -293,7 +293,7 @@ class Node:
         self.polygon_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
 
-        if self.is_showing_heading:
+        if self.show_heading:
             heading_list = self.create_heading_list(message.header, _objects, idx)
             idx += len(_objects)
             self.heading_pub.publish(heading_list)
@@ -416,13 +416,18 @@ class Node:
     def create_heading_list(self, header, objects, idx):
         marker_arr = MarkerArray()
 
-        for _i in range(len(objects)):
-            obj = objects[_i]
+        for obj in objects:
             marker = Marker()
             marker.header.frame_id = header.frame_id
             marker.header.stamp = header.stamp
             marker.ns = self.inputTopic
+
+            marker.id = idx
+            idx += 1
+            marker.type = Marker.ARROW
             marker.action = Marker.ADD
+
+            marker.lifetime = rospy.Duration(0.2)
 
             marker.pose.position.x = obj.center_point.x
             marker.pose.position.y = obj.center_point.y
@@ -432,12 +437,9 @@ class Node:
             marker.pose.orientation.z = obj.heading.z
             marker.pose.orientation.w = obj.heading.w
 
-            marker.id = idx + _i
-            marker.type = Marker.ARROW
             marker.scale.x = 3
             marker.scale.y = 0.2
             marker.scale.z = 0.2
-            marker.lifetime = rospy.Duration(0.1)
             marker.color.r = self.c_red
             marker.color.g = self.c_green
             marker.color.b = self.c_blue
