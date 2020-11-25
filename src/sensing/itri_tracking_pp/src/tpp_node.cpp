@@ -114,9 +114,9 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #if INPUT_ALL_CLASS
       KTs_.objs_.push_back(obj);
 #else
-      if (input->objects[i].classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-          input->objects[i].classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-          input->objects[i].classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
       {
         KTs_.objs_.push_back(obj);
       }
