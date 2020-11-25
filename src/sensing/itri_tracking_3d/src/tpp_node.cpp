@@ -805,7 +805,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
     geometry_msgs::Point32 polygon_point;
     polygon_point.x = obj.x;
     polygon_point.y = obj.y;
-    polygon_point.z = -3.1;
+    polygon_point.z = ground_z_;
     polygon_marker.polygon.points.push_back(polygon_point);
   }
 
@@ -1088,6 +1088,7 @@ void TPPNode::set_ros_params()
 
   nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
   nh_.param<double>(domain + "expand_right", expand_right_, 0.);
+  nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
