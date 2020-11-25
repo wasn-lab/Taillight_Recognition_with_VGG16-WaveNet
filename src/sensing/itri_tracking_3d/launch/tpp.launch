@@ -30,6 +30,7 @@
   <!-- PP filter of drivable area: width (meter) to be expanded from the host lane -->
   <arg name="expand_left" default="2.2" />
   <arg name="expand_right" default="0.0" />
+  <arg name="ground_z" default="-3.1" />
 
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
@@ -61,5 +62,6 @@
     <param name="show_source" value="$(arg show_source)" />
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
+    <param name="ground_z" value="$(arg ground_z)" />
   </node>
 </launch>

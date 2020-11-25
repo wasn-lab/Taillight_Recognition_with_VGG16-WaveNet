@@ -56,8 +56,8 @@ void transInitGuess(int type);
 void msgPublisher();
 
 ros::Publisher RadFrontPub;
-ros::Publisher RadAllPub;
-ros::Publisher RadAllPCLPub;
+ros::Publisher RadAlphaPub;
+ros::Publisher RadAlphaPCLPub;
 ros::Publisher RadCubtekPub;
 ros::Publisher RadCubtekPCLPub;
 ros::Publisher HeartbeatPub;
@@ -194,6 +194,7 @@ void callbackAlphaFrontCenter(const msgs::Rad::ConstPtr& msg)
     point.y = y;
     point.z = z;
     point.intensity = msg->radPoint[i].speed;
+    
     temp_array.points.push_back(point);
   }
 
@@ -388,12 +389,7 @@ void callbackAlphaSideLeft(const msgs::Rad::ConstPtr& msg)
     data.z = z;
     data.speed = out_cloud.points[i].intensity;
 
-    if(y > -1.25)
-    {
-    } else {
-      alphaSideLeftVec.push_back(data);
-    }
-
+    alphaSideLeftVec.push_back(data);
   }
 }
 
@@ -415,6 +411,7 @@ void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg)
     point.y = y;
     point.z = z;
     point.intensity = msg->radPoint[i].speed;
+
     temp_array.points.push_back(point);
   }
 
@@ -446,11 +443,7 @@ void callbackAlphaSideRight(const msgs::Rad::ConstPtr& msg)
     data.y = y;
     data.z = z;
     data.speed = out_cloud.points[i].intensity;
-    if(y < 1.25)
-    {
-    } else {
-      alphaSideRightVec.push_back(data);
-    }
+    alphaSideRightVec.push_back(data);
   }
 }
 void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg)
@@ -471,6 +464,7 @@ void callbackAlphaBackLeft(const msgs::Rad::ConstPtr& msg)
     point.y = y;
     point.z = z;
     point.intensity = msg->radPoint[i].speed;
+
     temp_array.points.push_back(point);
   }
 
@@ -563,7 +557,6 @@ void callbackAlphaBackRight(const msgs::Rad::ConstPtr& msg)
 
 void callbackCubtekFront(const msgs::RadObject::ConstPtr& msg)
 {
-  
 }
 
 void callbackIMU(const sensor_msgs::Imu::ConstPtr& input)
@@ -782,16 +775,13 @@ void alphaRadPub()
   {
     alphaRad.radPoint.push_back(alphaAllVec[i]);
 
-    if (abs(alphaAllVec[i].x) > 0.3)
+    // for rviz drawing
+    temp.x = alphaAllVec[i].x;
+    temp.y = -alphaAllVec[i].y;
+    cloud->points.push_back(temp);
+    if (alpha_raw_message)
     {
-      // for rviz drawing
-      temp.x = alphaAllVec[i].x;
-      temp.y = -alphaAllVec[i].y;
-      cloud->points.push_back(temp);
-      if (alpha_raw_message)
-      {
-        cout << "X: " << temp.x << ", Y: " << temp.y << endl;
-      }
+      cout << "X: " << temp.x << ", Y: " << temp.y << endl;
     }
   }
   if (alpha_raw_message)
@@ -804,9 +794,9 @@ void alphaRadPub()
   msgtemp.header = alphaRad.radHeader;
   msgtemp.header.seq = alphaRad.radHeader.seq;
   msgtemp.header.frame_id = "radar_alpha";
-  RadAllPCLPub.publish(msgtemp);
+  RadAlphaPCLPub.publish(msgtemp);
 
-  RadAllPub.publish(alphaRad);
+  RadAlphaPub.publish(alphaRad);
 
   if (debug_message)
   {
@@ -855,7 +845,7 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh("~");
   ros::NodeHandle n;
-  // ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
+  ros::Subscriber DelphiFrontSub = n.subscribe("DelphiFront", 1, callbackDelphiFront);
   ros::Subscriber AlphiFrontCenterSub = n.subscribe("AlphaFrontCenter", 1, callbackAlphaFrontCenter);
   ros::Subscriber AlphiFrontLeftSub = n.subscribe("AlphaFrontLeft", 1, callbackAlphaFrontLeft);
   ros::Subscriber AlphiFrontRightSub = n.subscribe("AlphaFrontRight", 1, callbackAlphaFrontRight);
@@ -863,13 +853,13 @@ int main(int argc, char** argv)
   ros::Subscriber AlphiSideRightSub = n.subscribe("AlphaSideRight", 1, callbackAlphaSideRight);
   ros::Subscriber AlphiBackLeftSub = n.subscribe("AlphaBackLeft", 1, callbackAlphaBackLeft);
   ros::Subscriber AlphiBackRightSub = n.subscribe("AlphaBackRight", 1, callbackAlphaBackRight);
-  // ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
+  ros::Subscriber CubtekFrontSub = n.subscribe("CubtekFront", 1, callbackCubtekFront);
 
   ros::Subscriber IMURadSub = n.subscribe("imu_data_rad", 1, callbackIMU);
 
-  // RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
-  RadAllPub = n.advertise<msgs::Rad>("RadAll", 1);
-  RadAllPCLPub = n.advertise<sensor_msgs::PointCloud2>("RadAlphaPCL", 1);
+  RadFrontPub = n.advertise<msgs::Rad>("RadFront", 1);
+  RadAlphaPub = n.advertise<msgs::Rad>("RadAlpha", 1);
+  RadAlphaPCLPub = n.advertise<sensor_msgs::PointCloud2>("RadAlphaPCL", 1);
   HeartbeatPub = n.advertise<std_msgs::Empty>("RadFront/heartbeat", 1);
 
   onInit(nh, n);
