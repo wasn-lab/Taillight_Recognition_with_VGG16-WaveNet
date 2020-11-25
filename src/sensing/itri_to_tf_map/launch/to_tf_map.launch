@@ -1,0 +1,11 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <arg name="in_topic" default="Tracking3D" />
+  <arg name="num_forecasts" default="20" />
+
+  <node pkg="itri_to_tf_map" type="itri_to_tf_map" name="itri_to_tf_map" output="screen" clear_params="true">
+    <param name="in_topic" type="str" value="$(arg in_topic)" />
+    <param name="num_forecasts" type="int" value="$(arg num_forecasts)" />
+  </node>
+</launch>
