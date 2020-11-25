@@ -1,0 +1,11 @@
+<launch>
+	# Node
+	<node name="vehicle_signal_detection" pkg="itri_vehicle_signal" type="detection.py" output="screen">
+		<param name="model_file" value="$(find itri_vehicle_signal)/data/lstm-features.hdf5" />
+		<param name="right_icon" value="$(find itri_vehicle_signal)/scripts/right_arrow_v2_33x29.bmp" />
+		<param name="warning_icon" value="$(find itri_vehicle_signal)/scripts/warning_v2_30x30.bmp" />
+		<param name="extrenal_pkg_path" value="$(find itri_vehicle_signal)/scripts/external/lib/python3/dist-packages" />
+	</node>
+
+</launch>
+
