@@ -70,9 +70,9 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
           }
 
           // PP filter 5: object size x & y
-          if (pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-              pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-              pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+          if (pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+              pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+              pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
           {
             if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
             {
