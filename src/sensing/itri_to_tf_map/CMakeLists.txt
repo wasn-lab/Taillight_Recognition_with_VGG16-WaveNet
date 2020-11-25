@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(itri_to_map_tf)
+project(itri_to_tf_map)
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 include(CompilerFlags)
@@ -22,7 +22,7 @@ include_directories(
 
 set(SOURCES_SRCS
   src/main.cpp
-  src/to_map_tf.cpp
+  src/to_tf_map.cpp
 )
 
 add_executable(

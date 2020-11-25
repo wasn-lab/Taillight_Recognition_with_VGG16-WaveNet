@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>itri_to_map_tf</name>
+  <name>itri_to_tf_map</name>
   <version>0.0.0</version>
-  <description>ITRI TF:lidar-to-map package</description>
+  <description>ITRI to_tf_map package</description>
   <maintainer email="chinghao.liu@itri.org.tw">Ching-Hao Liu</maintainer>
   <license>TODO</license>
 

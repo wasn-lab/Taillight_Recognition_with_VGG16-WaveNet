@@ -1,5 +1,5 @@
-#ifndef __TO_MAP_TF_H__
-#define __TO_MAP_TF_H__
+#ifndef __to_tf_map_H__
+#define __to_tf_map_H__
 
 #include "ros/ros.h"
 #include <tf/tf.h>
@@ -8,16 +8,16 @@
 #include <msgs/PointXYZ.h>
 #include <msgs/DetectedObjectArray.h>
 
-namespace to_map_tf
+namespace to_tf_map
 {
-class ToMapTF
+class ToTFMap
 {
 public:
-  ToMapTF()
+  ToTFMap()
   {
   }
 
-  ~ToMapTF()
+  ~ToTFMap()
   {
   }
 
@@ -25,15 +25,20 @@ public:
 
 private:
   ros::NodeHandle nh_;
+
   ros::Subscriber sub_detection_;
-  ros::Publisher pub_to_map_tf_;
+  ros::Publisher pub_to_tf_map_;
+
+  std::string in_topic_ = "";
+  int num_forecasts_ = 20;
 
   tf2_ros::Buffer tf_buffer_;
+  std::string frame_id_source_ = "base_link";
   std::string frame_id_target_ = "map";
-  std::string frame_id_source_ = "lidar";
 
   void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped);
+  void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
   void callbackDetection(const msgs::DetectedObjectArray::ConstPtr& input);
 };
-}  // namespace to_map_tf
-#endif  // __TO_MAP_TF_H__
+}  // namespace to_tf_map
+#endif  // __to_tf_map_H__
