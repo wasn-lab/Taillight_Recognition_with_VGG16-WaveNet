@@ -252,12 +252,6 @@ void TPPNode::subscribe_and_advertise_topics()
     std::string topic4 = topic + "/speed";
     mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
 
-    if (mc_.show_pp >= 1 && mc_.show_pp <= 3)
-    {
-      std::string topic6 = topic + "/pp";
-      mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
-    }
-
     std::string topic7 = topic + "/vel";
     mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
   }
@@ -886,10 +880,6 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "show_distance", mc_.show_distance, false);
   nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, false);
 
-  int show_pp_int = 0;
-  nh_.param<int>(domain + "show_pp", show_pp_int, 0);
-  mc_.show_pp = (unsigned int)show_pp_int;
-
   int num_pp_input_min = 0;
   nh_.param<int>(domain + "num_pp_input_min", num_pp_input_min, 0);
   pp_.set_num_pp_input_min((std::size_t)std::max(num_pp_input_min, 0));
@@ -966,7 +956,7 @@ int TPPNode::run()
       // Tracking --> PP =========================================================================
 
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, input_source_);
-      pp_.main(pp_objs_, ppss, mc_.show_pp, wayarea_);  // PP: autoregression of order 1 -- AR(1)
+      pp_.main(pp_objs_, ppss, wayarea_);  // PP: autoregression of order 1 -- AR(1)
 
       publish_pp(pp_pub_, pp_objs_, 0, 0);
 #if TO_GRIDMAP
