@@ -3,6 +3,7 @@ import unittest
 from sb_rosbag_sender import get_default_bag_dir, get_bag_filenames, convert_to_sb_bag_name, get_sb_config, get_bag_yymmdd, gen_sftp_cmd
 
 class SBRosbagSenderTest(unittest.TestCase):
+    @unittest.skip("No invocation in MR pipeline")
     def test_get_bag_filenames(self):
         bag_dir = get_default_bag_dir()
         actual = get_bag_filenames(bag_dir)

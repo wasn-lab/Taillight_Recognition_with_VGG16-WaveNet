@@ -70,9 +70,9 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
           }
 
           // PP filter 5: object size x & y
-          if (pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-              pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-              pp_objs_[i].fusionSourceId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+          if (pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+              pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+              pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
           {
             if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
             {
@@ -501,12 +501,9 @@ void PathPredict::confidence_threshold(const unsigned int confidence_lv)
 void PathPredict::confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
                                           std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
 {
-  if (show_pp_ >= 1 && show_pp_ <= 3)
+  for (unsigned i = 0; i < num_forecasts_; i++)
   {
-    for (unsigned i = 0; i < num_forecasts_; i++)
-    {
-      confidence_ellipse(pps[i], confidence_thr_);
-    }
+    confidence_ellipse(pps[i], confidence_thr_);
   }
 }
 
@@ -559,10 +556,8 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
 }
 
 void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-                       const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea)
+                       const nav_msgs::OccupancyGrid& wayarea)
 {
-  show_pp_ = show_pp;
-
 #if PP_WAYAREA == 1
   float wayarea_xlen = (wayarea.info.width - 1) * wayarea.info.resolution;
   float wayarea_ylen = (wayarea.info.height - 1) * wayarea.info.resolution;
