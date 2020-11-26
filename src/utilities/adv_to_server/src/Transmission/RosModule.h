@@ -43,7 +43,7 @@ class RosModuleTraffic
         if(n.getParam("/south_bridge/license_plate_number", plate)){
             return plate;
         }else{
-            return "unknown";
+            return "DEFAULT-ITRI-ADV";
         }
     }
 
