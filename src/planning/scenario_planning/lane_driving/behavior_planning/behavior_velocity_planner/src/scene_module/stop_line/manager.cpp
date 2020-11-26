@@ -68,12 +68,20 @@ std::set<int64_t> getStopLineIdSetOnPath(
 
 }  // namespace
 
+StopLineModuleManager::StopLineModuleManager() : SceneModuleManagerInterface(getModuleName()) {
+  ros::NodeHandle pnh("~");
+  const std::string ns(getModuleName());
+  auto & p = planner_param_;
+  pnh.param(ns + "/stop_margin", p.stop_margin, 0.0);
+  pnh.param(ns + "/stop_check_dist", p.stop_check_dist, 2.0);
+}
+
 void StopLineModuleManager::launchNewModules(const autoware_planning_msgs::PathWithLaneId & path)
 {
   for (const auto & stop_line : getStopLinesOnPath(path, planner_data_->lanelet_map)) {
     const auto module_id = stop_line.id();
     if (!isModuleRegistered(module_id)) {
-      registerModule(std::make_shared<StopLineModule>(module_id, stop_line));
+      registerModule(std::make_shared<StopLineModule>(module_id, stop_line, planner_param_));
     }
   }
 }

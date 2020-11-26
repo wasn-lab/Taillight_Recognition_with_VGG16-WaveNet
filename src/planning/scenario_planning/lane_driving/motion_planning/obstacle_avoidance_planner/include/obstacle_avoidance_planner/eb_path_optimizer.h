@@ -311,7 +311,9 @@ public:
     const autoware_planning_msgs::Path & path,
     const std::unique_ptr<std::vector<autoware_planning_msgs::TrajectoryPoint>> &
       prev_optimized_points,
-    const std::vector<autoware_perception_msgs::DynamicObject> & objects, DebugData & debug_data);
+///////////////////////////////////////////////////////////////////////////////////////////////////
+    const std::vector<autoware_perception_msgs::DynamicObject> & objects, DebugData & debug_data, const nav_msgs::OccupancyGrid & freespace_grid, const bool use_freespace, const bool freespace_rect_ini);
 };
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif

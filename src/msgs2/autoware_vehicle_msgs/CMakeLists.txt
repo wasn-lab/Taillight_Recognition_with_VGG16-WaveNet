@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(autoware_vehicle_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -20,6 +20,7 @@ add_message_files(
     Steering.msg
     RawVehicleCommand.msg
     RawControlCommand.msg
+    RawControlCommandStamped.msg
 )
 
 ## Generate added messages and services with any dependencies listed here

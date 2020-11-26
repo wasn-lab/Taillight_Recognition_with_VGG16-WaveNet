@@ -31,10 +31,18 @@ set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
 set(TENSORFLOW_LIBRARIES tensorflow)
 message("TF found: ${TENSORFLOW_LIBRARIES}")
 
-find_package(OpenCV
-  PATHS /usr/local
-  NO_DEFAULT_PATH
-)
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 find_package(openpose)
 
 if (NOT openpose_LIBRARY)
@@ -84,8 +92,6 @@ set(CPP_FILES
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
-    #src/tf_utils.cpp
-    #src/Predict_test.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
@@ -97,7 +103,7 @@ target_link_libraries(
     itri_pedcross
     /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
@@ -106,14 +112,14 @@ target_link_libraries(
     tracking_view
     /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 else()
 target_link_libraries(
     itri_pedcross
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
@@ -121,7 +127,7 @@ target_link_libraries(
 target_link_libraries(
     tracking_view
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY})
 endif()

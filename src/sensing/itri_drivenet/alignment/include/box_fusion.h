@@ -22,7 +22,8 @@ private:
   int image_w_ = camera::image_width;
   int image_h_ = camera::image_height;
   CheckArea front_bottom, left_back;
-  int pixelthres = 40;
+  int pixelthres_ = 40;
+  float iou_threshold_ = 0;
 
   static constexpr int FB_left_top_x = 0;
   static constexpr int FB_left_top_y = 821;
@@ -42,6 +43,8 @@ public:
   msgs::DetectedObjectArray fusetwocamera(msgs::DetectedObjectArray obj1, msgs::DetectedObjectArray obj2);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);
   bool pointcompare(DriveNet::PixelPosition front_bottom, DriveNet::PixelPosition projected);
+  std::vector<msgs::DetectedObject> multiCamBoxFuse(std::vector<msgs::DetectedObject>& input_obj_arrs);
+  
 };
 
 #endif

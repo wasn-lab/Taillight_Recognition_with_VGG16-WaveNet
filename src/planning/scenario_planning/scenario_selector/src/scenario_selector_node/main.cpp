@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <ros/ros.h>
 
+#include <ros/ros.h>
 #include <scenario_selector/scenario_selector_node.h>
 
 int main(int argc, char * argv[])

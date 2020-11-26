@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <autoware_planning_msgs/Trajectory.h>
+#include <autoware_planning_msgs/Path.h>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Pose.h>
 #include <tf/tf.h>
@@ -26,6 +27,7 @@ double slope_setting_distouphill = 0.08;
 double distouphill = 0;
 
 ros::Publisher nav_path_pub;
+ros::Publisher nav_path_base_pub;
 ros::Publisher currenttrajinfo_pub;
 ros::Publisher nav_path_heartbeat_pub;
 
@@ -339,10 +341,32 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
     current_path.poses.push_back(current_posestamped);
   }
   nav_path_pub.publish(current_path);
-
+  
   std_msgs::Empty empty_msg;
   nav_path_heartbeat_pub.publish(empty_msg);
 }
+
+void transfer_path_callback(const autoware_planning_msgs::Path& path)
+{
+  nav_msgs::Path current_path;
+  geometry_msgs::PoseStamped current_posestamped;
+
+  current_posestamped.header.frame_id = path.header.frame_id;
+  current_posestamped.header.stamp = ros::Time::now();
+  current_path.header.frame_id = path.header.frame_id;
+  current_path.header.stamp = ros::Time::now();
+ 
+  int path_size = path.points.size();
+  for (int i = 0; i < path_size; i++)
+  {
+    current_posestamped.pose.position.x = path.points[i].pose.position.x;
+    current_posestamped.pose.position.y = path.points[i].pose.position.y;
+    current_posestamped.pose.position.z = path.points[i].pose.position.z; 
+    current_path.poses.push_back(current_posestamped);
+  }
+  nav_path_base_pub.publish(current_path);
+}
+
 
 int main(int argc, char** argv)
 {
@@ -358,7 +382,9 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName()+"/slope_setting_distouphill", slope_setting_distouphill);
 
   ros::Subscriber safety_waypoints_sub = node.subscribe("/planning/scenario_planning/trajectory", 1, transfer_callback);
+  ros::Subscriber base_path_sub = node.subscribe("/planning/scenario_planning/lane_driving/behavior_planning/path", 1, transfer_path_callback);
   nav_path_pub = node.advertise<nav_msgs::Path>("nav_path_astar_final",1);
+  nav_path_base_pub = node.advertise<nav_msgs::Path>("nav_path_astar_base_30",1);
   currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
   nav_path_heartbeat_pub = node.advertise<std_msgs::Empty>("nav_path_astar_final/heartbeat",1);
 

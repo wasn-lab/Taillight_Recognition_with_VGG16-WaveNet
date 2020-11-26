@@ -49,7 +49,7 @@ bool calcClosestIndex(
   double yaw_pose = tf2::getYaw(pose.orientation);
   closest = -1;
 
-  for (int i = 0; i < (int)path.points.size(); ++i) {
+  for (int i = 0; i < static_cast<int>(path.points.size()); ++i) {
     const double dist_squared = calcSquaredDist2d(getPose(path, i), pose);
 
     /* check distance threshold */
@@ -79,6 +79,37 @@ template bool calcClosestIndex<autoware_planning_msgs::PathWithLaneId>(
 template bool calcClosestIndex<autoware_planning_msgs::Path>(
   const autoware_planning_msgs::Path & path, const geometry_msgs::Pose & pose, int & closest,
   double dist_thr, double angle_thr);
+
+template <class T>
+bool calcClosestIndex(
+  const T & path, const geometry_msgs::Point & point, int & closest, double dist_thr)
+{
+  double dist_squared_min = std::numeric_limits<double>::max();
+  closest = -1;
+
+  for (int i = 0; i < static_cast<int>(path.points.size()); ++i) {
+    const double dist_squared = calcSquaredDist2d(getPose(path, i), point);
+
+    /* check distance threshold */
+    if (dist_squared > dist_thr * dist_thr) continue;
+
+    if (dist_squared < dist_squared_min) {
+      dist_squared_min = dist_squared;
+      closest = i;
+    }
+  }
+
+  return closest == -1 ? false : true;
+}
+template bool calcClosestIndex<autoware_planning_msgs::Trajectory>(
+  const autoware_planning_msgs::Trajectory & path, const geometry_msgs::Point & point,
+  int & closest, double dist_thr);
+template bool calcClosestIndex<autoware_planning_msgs::PathWithLaneId>(
+  const autoware_planning_msgs::PathWithLaneId & path, const geometry_msgs::Point & point,
+  int & closest, double dist_thr);
+template bool calcClosestIndex<autoware_planning_msgs::Path>(
+  const autoware_planning_msgs::Path & path, const geometry_msgs::Point & point, int & closest,
+  double dist_thr);
 
 geometry_msgs::Pose transformRelCoordinate2D(
   const geometry_msgs::Pose & target, const geometry_msgs::Pose & origin)
@@ -120,10 +151,54 @@ geometry_msgs::Pose transformAbsCoordinate2D(
 }
 
 double calcJudgeLineDist(
-  double velocity, double max_accel, double margin)  // TODO: also consider jerk
+  const double velocity, const double max_stop_acceleration,
+  const double delay_response_time)  // TODO: also consider jerk
 {
-  double judge_line_dist = (velocity * velocity) / (2.0 * (-max_accel)) + margin;
+  double judge_line_dist =
+    (velocity * velocity) / (2.0 * (-max_stop_acceleration)) + delay_response_time * velocity;
   return judge_line_dist;
+}
+
+autoware_planning_msgs::StopReason initializeStopReason(const std::string & stop_reason)
+{
+  autoware_planning_msgs::StopReason stop_reason_msg;
+  stop_reason_msg.reason = stop_reason;
+  return stop_reason_msg;
+}
+
+void appendStopReason(
+  const autoware_planning_msgs::StopFactor stop_factor,
+  autoware_planning_msgs::StopReason * stop_reason)
+{
+  stop_reason->stop_factors.emplace_back(stop_factor);
+}
+
+std::vector<geometry_msgs::Point> toRosPoints(
+  const autoware_perception_msgs::DynamicObjectArray & object)
+{
+  std::vector<geometry_msgs::Point> points;
+  for (const auto obj : object.objects) {
+    points.emplace_back(obj.state.pose_covariance.pose.position);
+  }
+  return points;
+}
+
+geometry_msgs::Point toRosPoint(const pcl::PointXYZ & pcl_point)
+{
+  geometry_msgs::Point point;
+  point.x = pcl_point.x;
+  point.y = pcl_point.y;
+  point.z = pcl_point.z;
+  return point;
+}
+
+geometry_msgs::Point toRosPoint(const Point2d & boost_point, const double z)
+{
+  geometry_msgs::Point point;
+  point.x = boost_point.x();
+  point.y = boost_point.y();
+  point.z = z;
+  return point;
 }
 
 }  // namespace planning_utils

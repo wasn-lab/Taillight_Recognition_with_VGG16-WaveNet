@@ -23,6 +23,7 @@
 #include "msgs/PredictSkeleton.h"
 #include "msgs/Keypoints.h"
 #include "msgs/Keypoint.h"
+#include "msgs/PredictCrossing.h"
 
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include <opencv2/dnn.hpp>
@@ -47,8 +48,8 @@
 //#include <tf_utils.hpp>
 
 #define USE_2D_FOR_ALARM 0
-#define DUMP_LOG 0
-#define PRINT_MESSAGE 1
+#define DUMP_LOG 1
+#define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
 #include "glog/logging.h"
@@ -103,7 +104,7 @@ public:
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
   void pedestrian_event();
   float crossing_predict(std::vector<std::vector<float>>& bbox_array,
-                         std::vector<std::vector<cv::Point2f>>& keypoint_array, int id, ros::Time time);
+                         std::vector<std::vector<cv::Point2f>>& keypoint_array);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
   float get_angle2(float x1, float y1, float x2, float y2);
@@ -158,9 +159,12 @@ public:
   std::mutex mu_delay_from_camera_;
   std::mutex mu_chatter_callback_info_;
   std::mutex mu_skeleton_buffer_;
+  std::mutex mu_using_LSTM_;
+  std::mutex mu_tf_error_;
 
   // ROS components
   ros::ServiceClient skip_frame_client_;
+  ros::ServiceClient tf_client_;
   ros::Publisher chatter_pub_front_;
   ros::Publisher chatter_pub_left_;
   ros::Publisher chatter_pub_right_;
@@ -196,6 +200,8 @@ public:
   int count_;
   std::ofstream file_;
   double average_inference_time_ = 0;
+  bool using_LSTM_ = false;
+  bool tf_error_ = false;
 
   // Setup variables
   const double scaling_ratio_width_ = 0.3167;
@@ -211,24 +217,12 @@ public:
   double max_distance_ = 50;
   double danger_zone_distance_ = 2;
   bool use_2d_for_alarm_ = false;
+  int skip_frame_number_ = 1;
 
   int direction_table_[16][5] = {
-    {0,0,0,0,4},
-    {1,0,0,0,1},
-    {0,1,0,0,1},
-    {1,1,0,0,1},
-    {0,0,1,0,0},
-    {1,0,1,0,4},
-    {0,1,1,0,2},
-    {1,1,1,0,1},
-    {0,0,0,1,0},
-    {1,0,0,1,3},
-    {0,1,0,1,4},
-    {1,1,0,1,2},
-    {0,0,1,1,0},
-    {1,0,1,1,2},
-    {0,1,1,1,0},
-    {1,1,1,1,2},
+    { 0, 0, 0, 0, 4 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 1 }, { 0, 0, 1, 0, 0 }, { 1, 0, 1, 0, 4 },
+    { 0, 1, 1, 0, 2 }, { 1, 1, 1, 0, 1 }, { 0, 0, 0, 1, 0 }, { 1, 0, 0, 1, 3 }, { 0, 1, 0, 1, 4 }, { 1, 1, 0, 1, 2 },
+    { 0, 0, 1, 1, 0 }, { 1, 0, 1, 1, 2 }, { 0, 1, 1, 1, 0 }, { 1, 1, 1, 1, 2 },
   };
 };
 }  // namespace ped
