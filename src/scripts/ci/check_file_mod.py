@@ -35,8 +35,12 @@ def _check_fmod(affected_files):
             exes.append(fname)
     if exes:
         logging.error("File type is executable: %s", " ".join(exes))
-        print("Run")
+        print("To fix it, do the following steps:")
+        print("  cd /path/itriadv")
         print("  chmod 644 {}".format(" ".join(exes)))
+        print("  git add -A")
+        print("  git commit")
+        print("  git push")
     else:
         print("file mode check passed.")
     return len(exes)
