@@ -7,6 +7,7 @@ import re
 import logging
 import subprocess
 import time
+from car_model_helper import get_car_model
 
 BAG_RGX = re.compile(
     r".+_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})-"
@@ -14,8 +15,13 @@ BAG_RGX = re.compile(
 
 
 def _get_ini_filename():
+    car_model = get_car_model()
+    inis = {"B1_V2": "sb_b1.ini",
+            "B1_V3": "sb_b1.ini",
+            "C1": "sb_c1.ini"}
+
     cur_dir = os.path.dirname(os.path.abspath(__file__))
-    ini_file = os.path.join(cur_dir, "sb.ini")
+    ini_file = os.path.join(cur_dir, inis[car_model])
     if not os.path.isfile(ini_file):
         logging.error("Cannot find ini file: %s", ini_file)
     return ini_file
