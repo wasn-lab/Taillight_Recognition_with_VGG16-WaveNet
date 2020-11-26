@@ -14,7 +14,7 @@ def main():
         print(" ".join(cmd))
         output = subprocess.check_output(cmd)
         print(output)
-    cmd = ["rosparam", "set", "car_model", get_car_model()]
+    cmd = ["rosparam", "set", "/car_model", get_car_model()]
     print(" ".join(cmd))
     output = subprocess.check_output(cmd)
     print(output)

@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Send rosbag when car is not in service.
+The bags are for constructing Taiwan HD-map.
+"""
 import argparse
 import configparser
 import io
