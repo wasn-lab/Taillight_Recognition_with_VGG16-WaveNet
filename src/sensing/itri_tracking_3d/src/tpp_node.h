@@ -111,6 +111,8 @@ private:
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
 
+  double ground_z_ = -3.1;
+
 #if PP_FILTER_DRIVABLE_AREA == 1
   double expand_left_ = 2.2;
   double expand_right_ = 0.;
