@@ -118,13 +118,13 @@ class ros_detect_opticalflow:
             data_object_i = 0
             for res in info1[0]:
                 self.data_copy_temp[data_object_i].camInfo[0].u =  \
-                   int(round(res['box'][0]*size_scale[0])) if res['box'][0] >=0 else 0
+                   int(round(res['box'][0]*self.size_scale[0])) if res['box'][0] >=0 else 0
                 self.data_copy_temp[data_object_i].camInfo[0].v = \
-                   int(round(res['box'][1]*size_scale[1])) if res['box'][1] >=0 else 0
+                   int(round(res['box'][1]*self.size_scale[1])) if res['box'][1] >=0 else 0
                 self.data_copy_temp[data_object_i].camInfo[0].width = \
-                   int(round((res['box'][2]-res['box'][0])*size_scale[2]))
+                   int(round((res['box'][2]-res['box'][0])*self.size_scale[2]))
                 self.data_copy_temp[data_object_i].camInfo[0].height = \
-                   int(round((res['box'][3]-res['box'][1])*size_scale[3]))
+                   int(round((res['box'][3]-res['box'][1])*self.size_scale[3]))
                 data_object_i += 1
 
             self.publish_bbox(tracking_bbox_publish,info1[2],self.data_copy_temp)
@@ -225,7 +225,7 @@ class ros_detect_opticalflow:
                                                             int(obj.camInfo[0].v),\
                                                             int(obj.camInfo[0].u)+int(obj.camInfo[0].width),\
                                                             int(obj.camInfo[0].v)+int(obj.camInfo[0].height)])
-                                scale_bbox_info = scale_bbox_info*size_scale
+                                scale_bbox_info = scale_bbox_info*self.size_scale
                                 res = {
                                         'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
                                                 int(scale_bbox_info[2]), int(scale_bbox_info[3])],
@@ -295,7 +295,7 @@ class ros_detect_opticalflow:
                                                                     int(obj.camInfo[0].v),\
                                                                     int(obj.camInfo[0].u)+int(obj.camInfo[0].width),\
                                                                     int(obj.camInfo[0].v)+int(obj.camInfo[0].height)])
-                                        scale_bbox_info = scale_bbox_info*size_scale
+                                        scale_bbox_info = scale_bbox_info*self.size_scale
                                         res = {
                                                 'box': [int(scale_bbox_info[0]), int(scale_bbox_info[1]),\
                                                         int(scale_bbox_info[2]), int(scale_bbox_info[3])],
