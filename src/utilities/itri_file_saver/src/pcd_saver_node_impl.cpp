@@ -25,7 +25,13 @@ void PCDSaverNodeImpl::save(const sensor_msgs::PointCloud2ConstPtr& in_pcd_messa
   pcl::PCDWriter writer;
   pcl::PCLPointCloud2 pc2;
   pcl_conversions::toPCL(*in_pcd_message, pc2);
-  writer.writeASCII(fname, pc2);
+
+  if (pcd_saver::save_as_ascii()) {
+    writer.writeASCII(fname, pc2);
+  } else {
+    // writer.writeBinary(fname, pc2);
+    writer.writeBinaryCompressed(fname, pc2);
+  }
 
   auto width = in_pcd_message->width;
   auto height = in_pcd_message->height;
