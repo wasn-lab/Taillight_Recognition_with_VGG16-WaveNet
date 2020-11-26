@@ -3,11 +3,11 @@
 <launch>
   <!-- Node parameters -->
 
-  <!-- Input source -->
-  <!-- 0: /CameraDetection/polygon -->
-  <!-- 1: /cam_obj/front_bottom_60 -->
-  <!-- 2: /cam_obj/left_back_60 -->
-  <!-- others: /cam_obj/right_back_60 -->
+  <!-- Input source ,Output topic -->
+  <!-- 0: /CameraDetection ,/Tracking2D/front_bottom_60 -->
+  <!-- 1: /CameraDetection ,/Tracking2D/front_top_far_30 -->
+  <!-- 6: /CameraDetection ,/Tracking2D/right_back_60 -->
+  <!-- 9: /CameraDetection ,/Tracking2D/left_back_60 -->
   <arg name="input_source" default="1" />
 
   <!-- Output FPS -->

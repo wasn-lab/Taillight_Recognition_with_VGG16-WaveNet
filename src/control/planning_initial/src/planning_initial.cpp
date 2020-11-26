@@ -278,7 +278,7 @@ void imudataCallback(const sensor_msgs::Imu& msg)
 
 void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
-  int light_status = (int)(msg->signal_state);
+  int light_status = (int)(msg->spat_state);
   double confidence = 1.0;
   autoware_perception_msgs::LampState lampstate;
   autoware_perception_msgs::TrafficLightState trafficlightstate;
@@ -300,6 +300,9 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   }
   else if(light_status == 48) // green straight + green right
   {
+    lampstate.type = autoware_perception_msgs::LampState::GREEN;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
     lampstate.type = autoware_perception_msgs::LampState::UP;
     lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
@@ -322,7 +325,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     lampstate.confidence = 0.0;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
-  trafficlightstatearray.states.push_back(trafficlightstate);
+  // trafficlightstatearray.states.push_back(trafficlightstate);
   // trafficlight_pub.publish(trafficlightstatearray);
 }
 
@@ -351,6 +354,9 @@ void trafficDspaceCallback(const msgs::Flag_Info::ConstPtr& msg)
   }
   else if(light_status == 48) // green straight + green right
   {
+    lampstate.type = autoware_perception_msgs::LampState::GREEN;
+    lampstate.confidence = confidence;
+    trafficlightstate.lamp_states.push_back(lampstate);
     lampstate.type = autoware_perception_msgs::LampState::UP;
     lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
@@ -497,7 +503,7 @@ int main(int argc, char** argv)
   // ros::Rate loop_rate(10);
   // while (ros::ok())
   // { 
-  //   objectsPub();
+    // objectsPub();
   //   ros::spinOnce();
   //   loop_rate.sleep();   
   // }
