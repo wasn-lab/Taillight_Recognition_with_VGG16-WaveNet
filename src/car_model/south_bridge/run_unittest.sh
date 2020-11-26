@@ -2,7 +2,7 @@
 readonly repo_dir=$(git rev-parse --show-toplevel)
 set -e
 set -x
-cd ${repo_dir}/src/car_model/south_bridge
+pushd ${repo_dir}/src/car_model/south_bridge
 python car_model_helper.py
 python sb_rosbag_sender_test.py
-
+popd

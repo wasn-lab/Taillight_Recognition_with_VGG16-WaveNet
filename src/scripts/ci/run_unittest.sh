@@ -32,6 +32,7 @@ popd
 
 pushd $repo_dir
 source devel/setup.bash
+src/car_model/south_bridge/run_unittest.sh
 src/utilities/fail_safe/src/run_unittest.sh
 popd
 
