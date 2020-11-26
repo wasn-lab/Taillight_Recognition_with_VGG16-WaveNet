@@ -804,7 +804,7 @@ void mqtt_pubish(std::string msg)
 {
   if(isMqttConnected){
       std::string topic = "vehicle/report/dc5360f91e74";
-      std::cout << "publish "  << msg << std::endl;
+      ///std::cout << "publish "  << msg << std::endl;
       mqttPub.publish(topic, msg);
     }
 }
@@ -930,10 +930,13 @@ void sendRun(int argc, char** argv)
 
     if(!mqttFailSafeQueue.empty())
     {
+	mutex_fail_safe.lock();
         std::string fail_safe = mqttFailSafeQueue.front();
         json j1 = json::parse(fail_safe);
         j1["type"] = "M8.2.VK003.2";
         j1["deviceid"] = PLATE;
+	mqttFailSafeQueue.pop();
+	mutex_fail_safe.unlock();
         UDP_VK_FAIL_SAFE_client.send_obj_to_server(j1.dump(), true);
     }
 

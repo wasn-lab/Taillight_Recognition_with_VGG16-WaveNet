@@ -14,9 +14,9 @@
 #define MQTT_CLIENT_KEY "/home/roger/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.key"
 */
 
-#define MQTT_CA_CRT "src/utilities/adv_to_server/src/Transmission/TLS/ca.crt"
-#define MQTT_CLIENT_CRT "src/utilities/adv_to_server/src/Transmission/TLS/client.crt"
-#define MQTT_CLIENT_KEY "src/utilities/adv_to_server/src/Transmission/TLS/client.key"
+#define MQTT_CA_CRT "/home/nvidia/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/ca.crt"
+#define MQTT_CLIENT_CRT "/home/nvidia/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.crt"
+#define MQTT_CLIENT_KEY "/home/nvidia/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.key"
 
 #include <iostream>
 #include "mosquitto.h"

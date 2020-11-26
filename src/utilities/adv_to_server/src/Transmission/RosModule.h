@@ -43,7 +43,7 @@ class RosModuleTraffic
         if(n.getParam("license_plate_number", plate)){
             return plate;
         }else{
-            return "unknown";
+            return "ITRI-ADV";
         }
     }
 
