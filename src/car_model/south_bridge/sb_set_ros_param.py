@@ -3,16 +3,7 @@ import subprocess
 import io
 import os
 from sb_rosbag_sender import get_sb_config
-
-
-def get_car_model():
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    car_model_text = os.path.join(
-        cur_dir, "..", "..", "..",
-        "build", "car_model", "scripts", "car_model.txt")
-    with io.open(car_model_text) as _fp:
-        car_model = _fp.read()
-    return car_model
+from car_model_helper import get_car_model
 
 
 def main():
@@ -23,6 +14,10 @@ def main():
         print(" ".join(cmd))
         output = subprocess.check_output(cmd)
         print(output)
+    cmd = ["rosparam", "set", "car_model", get_car_model()]
+    print(" ".join(cmd))
+    output = subprocess.check_output(cmd)
+    print(output)
 
 
 if __name__ == "__main__":
