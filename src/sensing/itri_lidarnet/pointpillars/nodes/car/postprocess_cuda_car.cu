@@ -199,9 +199,11 @@ void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float
                                                               dev_sorted_filtered_box, dev_sorted_filtered_dir, dev_sorted_box_for_nms,
                                                               NUM_BOX_CORNERS_, NUM_OUTPUT_BOX_FEATURE_);
 
-  int keep_inds[host_filter_count[0]] = {0};
+  //int keep_inds[host_filter_count[0]] = {0};
+  std::unique_ptr<int[]> keep_inds{new int[host_filter_count[0]]{0}};
+
   int out_num_objects = 0;
-  nms_cuda_ptr_->doNMSCuda(host_filter_count[0], dev_sorted_box_for_nms, keep_inds, out_num_objects);
+  nms_cuda_ptr_->doNMSCuda(host_filter_count[0], dev_sorted_box_for_nms, keep_inds.get(), out_num_objects);
 
 
   float host_filtered_box[host_filter_count[0]*NUM_OUTPUT_BOX_FEATURE_];
