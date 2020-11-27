@@ -40,10 +40,10 @@ class RosModuleTraffic
     static std::string getPlate(){
         ros::NodeHandle n;
         std::string plate;
-        if(n.getParam("license_plate_number", plate)){
+        if(n.getParam("/south_bridge/license_plate_number", plate)){
             return plate;
         }else{
-            return "unknown";
+            return "DEFAULT-ITRI-ADV";
         }
     }
 

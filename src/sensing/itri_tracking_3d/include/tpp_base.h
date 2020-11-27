@@ -33,6 +33,8 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
+#include "detected_object_class_id.h"
+
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
