@@ -318,19 +318,21 @@ void PointPillars_Ped_Cyc::generateAnchors(float* anchors_px_, float* anchors_py
   float x_offset = MIN_X_RANGE_ + PILLAR_X_SIZE_ / 2; // 2020/10/13 from *1.0f to *0.5f
   float y_offset = MIN_Y_RANGE_ + PILLAR_Y_SIZE_ / 2;
 
-  float anchor_x_count[NUM_ANCHOR_X_INDS_] = { 0 };
+  // float anchor_x_count[NUM_ANCHOR_X_INDS_] = { 0 };
+  std::unique_ptr<float[]> anchor_x_count{new float[NUM_ANCHOR_X_INDS_]{0}};
   for (size_t i = 0; i < NUM_ANCHOR_X_INDS_; i++)
   {
     anchor_x_count[i] = float(i) * x_stride + x_offset;
   }
-  float anchor_y_count[NUM_ANCHOR_Y_INDS_] = { 0 };
+  //float anchor_y_count[NUM_ANCHOR_Y_INDS_] = { 0 };
+  std::unique_ptr<float[]> anchor_y_count{new float[NUM_ANCHOR_Y_INDS_]{0}};
   for (size_t i = 0; i < NUM_ANCHOR_Y_INDS_; i++)
   {
     anchor_y_count[i] = float(i) * y_stride + y_offset;
   }
 
-  float anchor_r_count[NUM_ANCHOR_R_INDS_] = { 0, M_PI / 2 };
-
+  //float anchor_r_count[NUM_ANCHOR_R_INDS_] = { 0, M_PI / 2 };
+  std::unique_ptr<float[]> anchor_r_count{new float[NUM_ANCHOR_R_INDS_]{ 0, M_PI / 2}};
   // np.meshgrid
   for (size_t y = 0; y < NUM_ANCHOR_Y_INDS_; y++)
   {
@@ -382,8 +384,11 @@ void PointPillars_Ped_Cyc::convertAnchors2BoxAnchors(float* anchors_px, float* a
                                              float* box_anchors_max_x_, float* box_anchors_max_y_)
 {
   // flipping box's dimension
-  float flipped_anchors_dx[NUM_ANCHOR_] = { 0 };
-  float flipped_anchors_dy[NUM_ANCHOR_] = { 0 };
+  // float flipped_anchors_dx[NUM_ANCHOR_] = { 0 };
+  // float flipped_anchors_dy[NUM_ANCHOR_] = { 0 };
+  std::unique_ptr<float[]> flipped_anchors_dx{new float[NUM_ANCHOR_]{0}};
+  std::unique_ptr<float[]> flipped_anchors_dy{new float[NUM_ANCHOR_]{0}};
+
   for (size_t x = 0; x < NUM_ANCHOR_X_INDS_; x++)
   {
     for (size_t y = 0; y < NUM_ANCHOR_Y_INDS_; y++)
@@ -485,9 +490,15 @@ void PointPillars_Ped_Cyc::onnxToTRTModel(const std::string& model_file,        
 
 void PointPillars_Ped_Cyc::preprocessCPU(const float* in_points_array, const int in_num_points)
 {
-  int x_coors[MAX_NUM_PILLARS_] = { 0 };
-  int y_coors[MAX_NUM_PILLARS_] = { 0 };
-  float num_points_per_pillar[MAX_NUM_PILLARS_] = { 0 };
+  // int x_coors[MAX_NUM_PILLARS_] = { 0 };
+  // int y_coors[MAX_NUM_PILLARS_] = { 0 };
+  // float num_points_per_pillar[MAX_NUM_PILLARS_] = { 0 };
+
+  std::unique_ptr<int[]> x_coors{new int[MAX_NUM_PILLARS_]{0}};
+  std::unique_ptr<int[]> y_coors{new int[MAX_NUM_PILLARS_]{0}};
+  std::unique_ptr<float[]> num_points_per_pillar{new float[MAX_NUM_PILLARS_]{0}};
+
+
   float* pillar_x = new float[MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_];
   float* pillar_y = new float[MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_];
   float* pillar_z = new float[MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_];
@@ -499,7 +510,7 @@ void PointPillars_Ped_Cyc::preprocessCPU(const float* in_points_array, const int
 
   float* sparse_pillar_map = new float[NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_];
 
-  preprocess_points_ptr_->preprocess(in_points_array, in_num_points, x_coors, y_coors, num_points_per_pillar, pillar_x,
+  preprocess_points_ptr_->preprocess(in_points_array, in_num_points, x_coors.get(), y_coors.get(), num_points_per_pillar.get(), pillar_x,
                                      pillar_y, pillar_z, pillar_i, x_coors_for_sub_shaped, y_coors_for_sub_shaped,
                                      pillar_feature_mask, sparse_pillar_map, host_pillar_count_);
 
@@ -515,15 +526,15 @@ void PointPillars_Ped_Cyc::preprocessCPU(const float* in_points_array, const int
   GPU_CHECK(cudaMemset(dev_sparse_pillar_map_, 0, NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(int)));
 
   // clang-format off
-  GPU_CHECK(cudaMemcpy(dev_x_coors_, x_coors, MAX_NUM_PILLARS_ * sizeof(int), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_y_coors_, y_coors, MAX_NUM_PILLARS_ * sizeof(int), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_x_coors_, x_coors.get(), MAX_NUM_PILLARS_ * sizeof(int), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_y_coors_, y_coors.get(), MAX_NUM_PILLARS_ * sizeof(int), cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_pillar_x_, pillar_x, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_pillar_y_, pillar_y, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_pillar_z_, pillar_z, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_pillar_i_, pillar_i, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float),cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_x_coors_for_sub_shaped_, x_coors_for_sub_shaped, MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_y_coors_for_sub_shaped_, y_coors_for_sub_shaped,MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dev_num_points_per_pillar_, num_points_per_pillar, MAX_NUM_PILLARS_ * sizeof(float),cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dev_num_points_per_pillar_, num_points_per_pillar.get(), MAX_NUM_PILLARS_ * sizeof(float),cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_pillar_feature_mask_, pillar_feature_mask,MAX_NUM_PILLARS_ * MAX_NUM_POINTS_PER_PILLAR_ * sizeof(float), cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dev_sparse_pillar_map_, sparse_pillar_map,NUM_INDS_FOR_SCAN_ * NUM_INDS_FOR_SCAN_ * sizeof(float), cudaMemcpyHostToDevice));
   // clang-format on

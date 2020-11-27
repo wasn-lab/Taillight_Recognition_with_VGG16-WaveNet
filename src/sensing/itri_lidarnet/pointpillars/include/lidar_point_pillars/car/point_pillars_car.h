@@ -32,6 +32,7 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <memory>
 
 // headers in TensorRT
 #include "NvInfer.h"
