@@ -17,6 +17,7 @@
 // headers in STL
 #include <cmath>
 #include <iostream>
+#include <memory>
 
 // headers in local files
 #include "lidar_point_pillars/ped_cyc/preprocess_points_ped_cyc.h"
@@ -79,8 +80,11 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
                                   float* pillar_feature_mask, float* sparse_pillar_map, int* host_pillar_count)
 {
   int pillar_count = 0;
-  float x_coors_for_sub[MAX_NUM_PILLARS_] = { 0 };
-  float y_coors_for_sub[MAX_NUM_PILLARS_] = { 0 };
+  // float x_coors_for_sub[MAX_NUM_PILLARS_] = { 0 };
+  // float y_coors_for_sub[MAX_NUM_PILLARS_] = { 0 };
+  std::unique_ptr<float[]> x_coors_for_sub{new float[MAX_NUM_PILLARS_]{0}};
+  std::unique_ptr<float[]> y_coors_for_sub{new float[MAX_NUM_PILLARS_]{0}};
+
   // init variables
   int coor_to_pillaridx[GRID_Y_SIZE_ * GRID_X_SIZE_];
   initializeVariables(coor_to_pillaridx, sparse_pillar_map, pillar_x, pillar_y, pillar_z, pillar_i,
