@@ -28,7 +28,6 @@
 #include <tf/transform_datatypes.h>
 
 // headers in local files
-// #include "autoware_pointpillars_msgs/DetectedObjectArray.h"
 #include <std_msgs/Float64.h>
 #include "msgs/DetectedObjectArray.h"
 #include "lidar_point_pillars/car/point_pillars_ros_car.h"

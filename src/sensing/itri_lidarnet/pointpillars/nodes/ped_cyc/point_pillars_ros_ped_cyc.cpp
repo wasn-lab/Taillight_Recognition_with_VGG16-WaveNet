@@ -47,7 +47,7 @@ PointPillarsROS_Ped_Cyc::PointPillarsROS_Ped_Cyc()
   , NUM_POINT_FEATURE_(4)
   , OUTPUT_NUM_BOX_FEATURE_(7)
   , TRAINED_SENSOR_HEIGHT_(1.73f)
-  , NORMALIZING_INTENSITY_VALUE_(1.0f) // 2020/10/13 from 255.0f to 1.0f
+  , NORMALIZING_INTENSITY_VALUE_(1.0f)
   , BASELINK_FRAME_("base_link")
 {
   //ros related param
