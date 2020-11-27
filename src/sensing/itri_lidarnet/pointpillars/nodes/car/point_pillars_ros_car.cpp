@@ -87,107 +87,111 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
   msgs::DetectedObjectArray MsgObjArr;
   MsgObjArr.header = in_header;
   int num_objects = detections.size() / OUTPUT_NUM_BOX_FEATURE_;
-  for (size_t i = 0; i < num_objects; i++)
+  if (num_objects > 0)
   {
-    msgs::DetectedObject object;
 
-    float center_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 0];
-    float center_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
-    float center_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 2];
-    
-    float dimension_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4];
-    float dimension_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3];
-    float dimension_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5];
-
-    object.center_point.x = center_x;
-    object.center_point.y = center_y;
-    object.center_point.z = center_z;
-
-    // heading
-    float yaw = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 6];
-    yaw += M_PI/2;
-    yaw = std::atan2(std::sin(yaw), std::cos(yaw));
-    geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(-yaw);
-    object.heading.x = q.x;
-    object.heading.y = q.y;
-    object.heading.z = q.z;
-    object.heading.w = q.w;
-
-    // dimension
-    object.dimension.length = dimension_x;
-    object.dimension.width = dimension_y;
-    object.dimension.height = dimension_z;
-
-    // bPoint
-    visualization_msgs::Marker box;
-    std::vector<Eigen::Vector3f> p;
-    p.resize(8);
-    float x = dimension_x/2.0f;
-    float y = dimension_y/2.0f;
-    float z = dimension_z/2.0f;
-    p[0] = Eigen::Vector3f(-x, -y, -z);
-    p[1] = Eigen::Vector3f(-x, y, -z);
-    p[2] = Eigen::Vector3f( -x, y, z);
-    p[3] = Eigen::Vector3f( -x, -y, z);
-    p[4] = Eigen::Vector3f( x, -y, -z);
-    p[5] = Eigen::Vector3f( x, y, -z);
-    p[6] = Eigen::Vector3f( x, y, z);
-    p[7] = Eigen::Vector3f(x, -y, z);
-    Eigen::Vector3f center(center_x, center_y, center_z);
-    Eigen::Quaternionf quat(q.w, q.x, q.y, q.z);
-    for (int i = 0; i < 8; i++)
+    for (size_t i = 0; i < num_objects; i++)
     {
-      p[i] = quat * p[i];
-      p[i] += center;
+      msgs::DetectedObject object;
+
+      float center_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 0];
+      float center_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
+      float center_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 2];
+      
+      float dimension_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4];
+      float dimension_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3];
+      float dimension_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5];
+
+      object.center_point.x = center_x;
+      object.center_point.y = center_y;
+      object.center_point.z = center_z;
+
+      // heading
+      float yaw = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 6];
+      yaw += M_PI/2;
+      yaw = std::atan2(std::sin(yaw), std::cos(yaw));
+      geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(-yaw);
+      object.heading.x = q.x;
+      object.heading.y = q.y;
+      object.heading.z = q.z;
+      object.heading.w = q.w;
+
+      // dimension
+      object.dimension.length = dimension_x;
+      object.dimension.width = dimension_y;
+      object.dimension.height = dimension_z;
+
+      // bPoint
+      visualization_msgs::Marker box;
+      std::vector<Eigen::Vector3f> p;
+      p.resize(8);
+      float x = dimension_x/2.0f;
+      float y = dimension_y/2.0f;
+      float z = dimension_z/2.0f;
+      p[0] = Eigen::Vector3f(-x, -y, -z);
+      p[1] = Eigen::Vector3f(-x, y, -z);
+      p[2] = Eigen::Vector3f( -x, y, z);
+      p[3] = Eigen::Vector3f( -x, -y, z);
+      p[4] = Eigen::Vector3f( x, -y, -z);
+      p[5] = Eigen::Vector3f( x, y, -z);
+      p[6] = Eigen::Vector3f( x, y, z);
+      p[7] = Eigen::Vector3f(x, -y, z);
+      Eigen::Vector3f center(center_x, center_y, center_z);
+      Eigen::Quaternionf quat(q.w, q.x, q.y, q.z);
+      for (int i = 0; i < 8; i++)
+      {
+        p[i] = quat * p[i];
+        p[i] += center;
+      }
+
+      object.bPoint.p0.x = p[0](0);
+      object.bPoint.p0.y = p[0](1);
+      object.bPoint.p0.z = p[0](2);
+
+      object.bPoint.p1.x = p[1](0);
+      object.bPoint.p1.y = p[1](1);
+      object.bPoint.p1.z = p[1](2);
+
+      object.bPoint.p2.x = p[2](0);
+      object.bPoint.p2.y = p[2](1);
+      object.bPoint.p2.z = p[2](2);
+
+      object.bPoint.p3.x = p[3](0);
+      object.bPoint.p3.y = p[3](1);
+      object.bPoint.p3.z = p[3](2);
+
+      object.bPoint.p4.x = p[4](0);
+      object.bPoint.p4.y = p[4](1);
+      object.bPoint.p4.z = p[4](2);
+
+      object.bPoint.p5.x = p[5](0);
+      object.bPoint.p5.y = p[5](1);
+      object.bPoint.p5.z = p[5](2);
+
+      object.bPoint.p6.x = p[6](0);
+      object.bPoint.p6.y = p[6](1);
+      object.bPoint.p6.z = p[6](2);
+
+      object.bPoint.p7.x = p[7](0);
+      object.bPoint.p7.y = p[7](1);
+      object.bPoint.p7.z = p[7](2);
+
+      // if (baselink_support_)
+      // {
+      //   object.pose = getTransformedPose(object.pose, angle_transform_inversed_);
+      // }
+
+      // base info
+      object.header = in_header;
+      object.classId = 1;
+      object.fusionSourceId = 2;
+
+      // pub
+      MsgObjArr.objects.push_back(object);
     }
-
-    object.bPoint.p0.x = p[0](0);
-    object.bPoint.p0.y = p[0](1);
-    object.bPoint.p0.z = p[0](2);
-
-    object.bPoint.p1.x = p[1](0);
-    object.bPoint.p1.y = p[1](1);
-    object.bPoint.p1.z = p[1](2);
-
-    object.bPoint.p2.x = p[2](0);
-    object.bPoint.p2.y = p[2](1);
-    object.bPoint.p2.z = p[2](2);
-
-    object.bPoint.p3.x = p[3](0);
-    object.bPoint.p3.y = p[3](1);
-    object.bPoint.p3.z = p[3](2);
-
-    object.bPoint.p4.x = p[4](0);
-    object.bPoint.p4.y = p[4](1);
-    object.bPoint.p4.z = p[4](2);
-
-    object.bPoint.p5.x = p[5](0);
-    object.bPoint.p5.y = p[5](1);
-    object.bPoint.p5.z = p[5](2);
-
-    object.bPoint.p6.x = p[6](0);
-    object.bPoint.p6.y = p[6](1);
-    object.bPoint.p6.z = p[6](2);
-
-    object.bPoint.p7.x = p[7](0);
-    object.bPoint.p7.y = p[7](1);
-    object.bPoint.p7.z = p[7](2);
-
-    // if (baselink_support_)
-    // {
-    //   object.pose = getTransformedPose(object.pose, angle_transform_inversed_);
-    // }
-
-    // base info
-    object.header = in_header;
-    object.classId = 1;
-    object.fusionSourceId = 2;
-
-    // pub
-    MsgObjArr.objects.push_back(object);
+    pub_objects_.publish(MsgObjArr);
+    std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
   }
-  pub_objects_.publish(MsgObjArr);
-  std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
 }
 
 void PointPillarsROS_Car::getBaselinkToLidarTF(const std::string& target_frameid)
