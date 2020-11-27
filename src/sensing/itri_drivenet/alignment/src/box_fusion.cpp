@@ -197,7 +197,7 @@ float Boxfusion::iou_compare_with_heading(msgs::DetectedObject& obj1, msgs::Dete
   float areaRect2 = rect2.size.width * rect2.size.height;
   vector<cv::Point2f> vertices;
 
-  int intersectionType = cv::rotatedRectangleIntersection(rect1, rect2, vertices);
+  cv::rotatedRectangleIntersection(rect1, rect2, vertices);
   if (vertices.size() == 0)
   {
     return 0.0;

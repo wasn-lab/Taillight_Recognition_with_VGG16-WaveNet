@@ -5,6 +5,7 @@
 #include "car_model.h"
 #include <camera_params.h>
 #include "drivenet/image_preprocessing.h"
+#include <opencv2/imgproc/imgproc.hpp>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
 #include <msgs/BoxPoint.h>
