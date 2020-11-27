@@ -11,7 +11,7 @@ void PedestrianEvent::run()
 
 void PedestrianEvent::display_on_terminal()
 {
-  while (ros::ok() && !PRINT_MESSAGE)
+  while (ros::ok() && !PRINT_MESSAGE && false)
   {
     struct winsize terminal_size;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
@@ -722,8 +722,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               new_person.data_bbox_.emplace_back(bbox);
             }
             // last bbox will add after.
-            bbox.clear();
-            std::vector<float>().swap(bbox);
 
             obj_pub.using_skip_frame = 0;
             skeleton_buffer.emplace_back(new_person);
@@ -1446,12 +1444,15 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
+      std::cout<<obj.using_skip_frame<<std::endl;
       if (obj.using_skip_frame == 1)
       {
+        std::cout<<"true"<<std::endl;
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
       }
       else
       {
+        std::cout<<"false"<<std::endl;
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
       }
     }
@@ -2149,7 +2150,6 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
         (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
     {
       c = 1 + c;
-      ;
     }
   }
   vertx.clear();

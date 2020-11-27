@@ -24,4 +24,4 @@ uint16 body_direction
 sensor_msgs/Image cropped_image
 Keypoint[] keypoints
 
-uint16 using_skip_frame
+bool using_skip_frame
