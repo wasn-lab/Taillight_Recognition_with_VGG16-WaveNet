@@ -83,7 +83,6 @@ int main(int argc, char **argv)
 	checker.data.resize(num_of_checker);
 	ros::init(argc, argv, "control_checker");
 	ros::NodeHandle n;
-	ros::NodeHandle n1;
 	ros::Rate rate(10);
 	ros::Subscriber checker01 = n.subscribe("Flag_Info01", 1, chatterCallback_01);
 	ros::Subscriber checker02 = n.subscribe("Flag_Info02", 1, chatterCallback_02);
@@ -94,8 +93,9 @@ int main(int argc, char **argv)
 	ros::Subscriber checker07 = n.subscribe("/Ego_speed/kph", 1, chatterCallback_07);
 	ros::Subscriber checker08 = n.subscribe("/Ego_speed/ms", 1, chatterCallback_08);
 	ros::Subscriber checker09 = n.subscribe("Backend/Info", 1, chatterCallback_09);
-	ros::Publisher checker_output = n1.advertise<std_msgs::Int8MultiArray>("control_checker", 1);;
-	while(ros::ok()){
+	ros::Publisher checker_output = n.advertise<std_msgs::Int8MultiArray>("control_checker", 1);
+	while(ros::ok())
+	{
 		ros::spinOnce();
 		//cout << "counter:" << endl << counter01 << endl << counter02 << endl << counter03 << endl << counter04 << endl << counter05 << endl << counter06 << endl << counter07 << endl << counter08 << endl << counter09 <<endl;
 		for(int i=0;i<num_of_checker;i++){
