@@ -49,10 +49,10 @@ class MultimodalGenerativeCVAE(object):
         self.state = self.hyperparams['state']
         self.pred_state = self.hyperparams['pred_state'][node_type]
         self.state_length = int(np.sum([len(entity_dims) for entity_dims in self.state[node_type].values()]))
-        # if self.hyperparams['incl_robot_node']:
-        #     self.robot_state_length = int(
-        #         np.sum([len(entity_dims) for entity_dims in self.state[env.robot_type].values()])
-        #     )
+        if self.hyperparams['incl_robot_node']:
+            self.robot_state_length = int(
+                np.sum([len(entity_dims) for entity_dims in self.state[env.robot_type].values()])
+            )
         self.pred_state_length = int(np.sum([len(entity_dims) for entity_dims in self.pred_state.values()]))
 
         edge_types_str = [DirectedEdge.get_str_from_types(*edge_type) for edge_type in self.edge_types]
