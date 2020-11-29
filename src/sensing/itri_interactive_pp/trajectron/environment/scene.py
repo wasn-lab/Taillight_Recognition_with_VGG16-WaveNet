@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-from .scene_graph import TemporalSceneGraph, SceneGraph
+from scene_graph import TemporalSceneGraph, SceneGraph
 from .node import MultiNode
 
 

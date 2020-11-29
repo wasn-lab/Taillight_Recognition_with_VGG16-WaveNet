@@ -78,7 +78,7 @@ def create_marker(text, position, id = 0 ,duration = 0.5, color=[1.0,1.0,1.0]):
 def vehicle_marker_callback_final(data):
     pub = rospy.Publisher('/IPP/Marker', MarkerArray, queue_size=1) # pedestrian_marker is TOPIC
     #rospy.init_node('pedestrian_marker', anonymous=True)
-    print data.header.frame_id
+    #print(data.header.frame_id)
     markerArray = MarkerArray()
     for element in data.objects:
 

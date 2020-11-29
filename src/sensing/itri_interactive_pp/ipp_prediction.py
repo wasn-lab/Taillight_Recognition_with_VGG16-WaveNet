@@ -308,8 +308,8 @@ def predict(data):
     timesteps = np.array([buffer.current_time])
     # print timesteps
     # print buffer.current_time
-    print '===='
-    print 'current_time : ',buffer.current_time
+    print('====')
+    print('current_time : ',buffer.current_time)
     
     # for node in scene.nodes:
     #     if node.id == '1754':
