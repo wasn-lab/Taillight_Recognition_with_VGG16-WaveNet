@@ -203,6 +203,7 @@ class DoubleHeaderNumpyArray(object):
         self.double_header_lookup = OrderedDict()
         self.tree_header_lookup = OrderedDict()
         for i, header_item in enumerate(header):
+            # print 'header : ', header_item
             self.double_header_lookup[header_item] = i
             if header_item[0] not in self.tree_header_lookup:
                 self.tree_header_lookup[header_item[0]] = dict()
@@ -224,6 +225,13 @@ class DoubleHeaderNumpyArray(object):
 
     def __getitem__(self, item):
         rows, columns = item
+        if len(columns) > 1:
+            # print columns
+            columns = list()
+            state_list = ['position','velocity','acceleration']
+            for state_type in state_list:
+                columns.append({state_type : ['x','y']})
+            columns.append({'heading':['angle','radian']})
         data_integer_indices = list()
         if type(columns) is dict:
             for h1, h2s in columns.items():
@@ -232,8 +240,12 @@ class DoubleHeaderNumpyArray(object):
             return self.data[rows, data_integer_indices]
         elif type(columns) is list:
             for column in columns:
-                assert type(column) is tuple, "If Index is list it hast to be list of double header tuples."
-                data_integer_indices.append(self.double_header_lookup[column])
+                # assert type(column) is tuple, "If Index is list it has to be list of double header tuples."
+                # print column
+                h1, h2s = column.items()[-1]
+                # print h1, h2s
+                for h2 in h2s:
+                    data_integer_indices.append(self.double_header_lookup[(h1, h2)])
             return self.data[rows, data_integer_indices]
         elif type(columns) is tuple:
             return self.data[rows, self.double_header_lookup[columns]]

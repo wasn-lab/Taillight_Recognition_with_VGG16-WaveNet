@@ -1,3 +1,4 @@
+# coding=utf-8
 import torch
 import numpy as np
 import collections
@@ -85,29 +86,40 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
     """
 
     # Node
+    np.set_printoptions(suppress=True)
+    torch.set_printoptions(sci_mode=False)
+    
     timestep_range_x = np.array([t - max_ht, t])
     timestep_range_y = np.array([t + 1, t + max_ft])
-
     x = node.get(timestep_range_x, state[node.type])
-    y = node.get(timestep_range_y, pred_state[node.type])
+    # y = node.get(timestep_range_y, pred_state[node.type])
+    y = None
     first_history_index = (max_ht - node.history_points_at(t)).clip(0)
-
     _, std = env.get_standardize_params(state[node.type], node.type)
     std[0:2] = env.attention_radius[(node.type, node.type)]
     rel_state = np.zeros_like(x[0])
     rel_state[0:2] = np.array(x)[-1, 0:2]
+
+    # print 'get node state : ',x[-1,:]
+
     x_st = env.standardize(x, state[node.type], node.type, mean=rel_state, std=std)
-    if list(pred_state[node.type].keys())[0] == 'position':  # If we predict position we do it relative to current pos
-        y_st = env.standardize(y, pred_state[node.type], node.type, mean=rel_state[0:2])
-    else:
-        y_st = env.standardize(y, pred_state[node.type], node.type)
+    y_st = None
+    # if list(pred_state[node.type].keys())[0] == 'position':  # If we predict position we do it relative to current pos
+    #     y_st = env.standardize(y, pred_state[node.type], node.type, mean=rel_state[0:2])
+    # else:
+    #     y_st = env.standardize(y, pred_state[node.type], node.type)
 
     x_t = torch.tensor(x, dtype=torch.float)
-    y_t = torch.tensor(y, dtype=torch.float)
+    # y_t = torch.tensor(y, dtype=torch.float)
+    y_t = None
     x_st_t = torch.tensor(x_st, dtype=torch.float)
-    y_st_t = torch.tensor(y_st, dtype=torch.float)
-
+    # y_st_t = torch.tensor(y_st, dtype=torch.float)
+    y_st_t = None
+    
+    # if node.id == '1754':
+    # print 'x_t: ',"\n",x_t
     # Neighbors
+    
     neighbors_data_st = None
     neighbors_edge_value = None
     if hyperparams['edge_encoding']:
@@ -151,41 +163,41 @@ def get_node_timestep_data(env, scene, t, node, state, pred_state,
 
     # Robot
     robot_traj_st_t = None
-    timestep_range_r = np.array([t, t + max_ft])
-    if hyperparams['incl_robot_node']:
-        x_node = node.get(timestep_range_r, state[node.type])
-        if scene.non_aug_scene is not None:
-            robot = scene.get_node_by_id(scene.non_aug_scene.robot.id)
-        else:
-            robot = scene.robot
-        robot_type = robot.type
-        robot_traj = robot.get(timestep_range_r, state[robot_type], padding=0.0)
-        robot_traj_st_t = get_relative_robot_traj(env, state, x_node, robot_traj, node.type, robot_type)
+    # timestep_range_r = np.array([t, t + max_ft])
+    # if hyperparams['incl_robot_node']:
+    #     x_node = node.get(timestep_range_r, state[node.type])
+    #     if scene.non_aug_scene is not None:
+    #         robot = scene.get_node_by_id(scene.non_aug_scene.robot.id)
+    #     else:
+    #         robot = scene.robot
+    #     robot_type = robot.type
+    #     robot_traj = robot.get(timestep_range_r, state[robot_type], padding=0.0)
+    #     robot_traj_st_t = get_relative_robot_traj(env, state, x_node, robot_traj, node.type, robot_type)
 
     # Map
     map_tuple = None
-    if hyperparams['use_map_encoding']:
-        if node.type in hyperparams['map_encoder']:
-            if node.non_aug_node is not None:
-                x = node.non_aug_node.get(np.array([t]), state[node.type])
-            me_hyp = hyperparams['map_encoder'][node.type]
-            if 'heading_state_index' in me_hyp:
-                heading_state_index = me_hyp['heading_state_index']
-                # We have to rotate the map in the opposit direction of the agent to match them
-                if type(heading_state_index) is list:  # infer from velocity or heading vector
-                    heading_angle = -np.arctan2(x[-1, heading_state_index[1]],
-                                                x[-1, heading_state_index[0]]) * 180 / np.pi
-                else:
-                    heading_angle = -x[-1, heading_state_index] * 180 / np.pi
-            else:
-                heading_angle = None
+    # if hyperparams['use_map_encoding']:
+    #     if node.type in hyperparams['map_encoder']:
+    #         if node.non_aug_node is not None:
+    #             x = node.non_aug_node.get(np.array([t]), state[node.type])
+    #         me_hyp = hyperparams['map_encoder'][node.type]
+    #         if 'heading_state_index' in me_hyp:
+    #             heading_state_index = me_hyp['heading_state_index']
+    #             # We have to rotate the map in the opposit direction of the agent to match them
+    #             if type(heading_state_index) is list:  # infer from velocity or heading vector
+    #                 heading_angle = -np.arctan2(x[-1, heading_state_index[1]],
+    #                                             x[-1, heading_state_index[0]]) * 180 / np.pi
+    #             else:
+    #                 heading_angle = -x[-1, heading_state_index] * 180 / np.pi
+    #         else:
+    #             heading_angle = None
 
-            scene_map = scene.map[node.type]
-            map_point = x[-1, :2]
+    #         scene_map = scene.map[node.type]
+    #         map_point = x[-1, :2]
 
 
-            patch_size = hyperparams['map_encoder'][node.type]['patch_size']
-            map_tuple = (scene_map, map_point, heading_angle, patch_size)
+    #         patch_size = hyperparams['map_encoder'][node.type]['patch_size']
+    #         map_tuple = (scene_map, map_point, heading_angle, patch_size)
 
     return (first_history_index, x_t, y_t, x_st_t, y_st_t, neighbors_data_st,
             neighbors_edge_value, robot_traj_st_t, map_tuple)
@@ -208,7 +220,7 @@ def get_timesteps_data(env, scene, t, node_type, state, pred_state,
     :param hyperparams: Model hyperparameters
     :return:
     """
-    # print(node_type)
+    # print(state)
     nodes_per_ts = scene.present_nodes(t,
                                        type=node_type,
                                        min_history_timesteps=min_ht,
@@ -226,6 +238,7 @@ def get_timesteps_data(env, scene, t, node_type, state, pred_state,
             present_nodes = nodes_per_ts[timestep]
             # print(present_nodes)
             for node in present_nodes:
+                # print(node.data.data)
                 nodes.append(node)
                 out_timesteps.append(timestep)
                 batch.append(get_node_timestep_data(env, scene, timestep, node, state, pred_state,

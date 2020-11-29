@@ -68,9 +68,9 @@ class Node(object):
         Transforms timestamp from scene into timeframe of node data.
 
         :param scene_ts: Scene timesteps
-        :return: ts: Transformed timesteps, paddingl: Number of timesteps in scene range which are not available in
-                node data before data is available. paddingu: Number of timesteps in scene range which are not
-                available in node data after data is available.
+        :return: ts: Transformed timesteps, 
+                paddingl: Number of timesteps in scene range which are not available in node data before data is available.
+                paddingu: Number of timesteps in scene range which are not available in node data after data is available.
         """
         paddingl = (self.first_timestep - scene_ts[0]).clip(0)
         paddingu = (scene_ts[1] - self.last_timestep).clip(0)
@@ -106,11 +106,22 @@ class Node(object):
         if tr_scene.size == 1:
             tr_scene = np.array([tr_scene[0], tr_scene[0]])
         length = tr_scene[1] - tr_scene[0] + 1  # tr is inclusive
+        
         # print tr_scene
+        
         tr, paddingl, paddingu = self.scene_ts_to_node_ts(tr_scene)
+        
+        # print 'data : ',self.data.data
+        # print 'tr : ', tr[0], tr[1]
+        # print 'state : ',state
+        
         data_array = self.data[tr[0]:tr[1] + 1, state]
         padded_data_array = np.full((length, data_array.shape[1]), fill_value=padding)
         padded_data_array[paddingl:length - paddingu] = data_array
+        
+        # if self.id == '1754':
+        # print 'padding1 : ',paddingl,' length-paddingu : ',length - paddingu
+        # print "convert array : ", "\n",padded_data_array
         return padded_data_array
 
     @property
@@ -214,7 +225,7 @@ class MultiNode(Node):
         if node is None:
             state_length = sum([len(entity_dims) for entity_dims in state.values()])
             return np.full((length, state_length), fill_value=padding)
-
+        print 'state : ', state
         data_array = node.data[tr[0]:tr[1] + 1, state]
         padded_data_array = np.full((length, data_array.shape[1]), fill_value=padding)
         padded_data_array[paddingl:length - paddingu] = data_array

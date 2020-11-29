@@ -411,7 +411,7 @@ class MultimodalGenerativeCVAE(object):
 
         x, x_r_t, y_e, y_r, y = None, None, None, None, None
         initial_dynamics = dict()
-
+        
         batch_size = inputs.shape[0]
 
         #########################################
@@ -422,16 +422,23 @@ class MultimodalGenerativeCVAE(object):
         node_pos = inputs[:, -1, 0:2]
         node_vel = inputs[:, -1, 2:4]
 
+        # print 'node_present_state \n', node_present_state
+        
         node_history_st = inputs_st
         node_present_state_st = inputs_st[:, -1]
+        
         node_pos_st = inputs_st[:, -1, 0:2]
         node_vel_st = inputs_st[:, -1, 2:4]
+        
+        # print 'inputs :',' '.join(str(x) for x in inputs[:, -1])
+        # print 'node_present_state\n', node_present_state
+        # print 'From inputs get node_pos : ', str(node_pos)
 
         n_s_t0 = node_present_state_st
 
         initial_dynamics['pos'] = node_pos
         initial_dynamics['vel'] = node_vel
-
+        
         self.dynamic.set_initial_condition(initial_dynamics)
 
         if self.hyperparams['incl_robot_node']:
@@ -520,13 +527,13 @@ class MultimodalGenerativeCVAE(object):
         if mode == ModeKeys.TRAIN or mode == ModeKeys.EVAL:
             y_e = self.encode_node_future(mode, node_present, y)
         
-        if self.debug:
-            self.assertion(x)
-            # self.assertion(x_r_t)
-            # self.assertion(y_e)
-            # self.assertion(y_r)
-            # self.assertion(y)
-            self.assertion(n_s_t0)
+        # if self.debug:
+        #     self.assertion(x)
+        #     # self.assertion(x_r_t)
+        #     # self.assertion(y_e)
+        #     # self.assertion(y_r)
+        #     # self.assertion(y)
+        #     self.assertion(n_s_t0)
 
         return x, x_r_t, y_e, y_r, y, n_s_t0
 
@@ -832,6 +839,7 @@ class MultimodalGenerativeCVAE(object):
         :param gmm_mode: If True: The mode of the GMM is sampled.
         :return: GMM2D. If mode is Predict, also samples from the GMM.
         """
+        np.set_printoptions(threshold=np.inf)
         ph = prediction_horizon
         pred_dim = self.pred_state_length
 
@@ -918,6 +926,7 @@ class MultimodalGenerativeCVAE(object):
                 a_sample = a_dist.mode()
             else:
                 a_sample = a_dist.rsample()
+            # print "state : ", x,"\na_sample : ", a_sample
             sampled_future = self.dynamic.integrate_samples(a_sample, x)
             return y_dist, sampled_future
         else:
@@ -1020,7 +1029,7 @@ class MultimodalGenerativeCVAE(object):
         :return:
         """
         mode = ModeKeys.PREDICT
-
+        # print 'inputs : ', inputs
         x, x_nr_t, _, y_r, _, n_s_t0 = self.obtain_encoded_tensors(mode=mode,
                                                                     inputs=inputs,
                                                                     inputs_st=inputs_st,

@@ -1,8 +1,10 @@
-# -*- coding: UTF-8 -*-
+# coding=utf-8
 import rospy
 from std_msgs.msg import String
 from msgs.msg import DetectedObjectArray
 from msgs.msg import DetectedObject
+from msgs.msg import PathPrediction
+from msgs.msg import PointXY
 import math
 import tf2_ros
 import tf2_geometry_msgs
@@ -14,6 +16,7 @@ import json
 import torch
 import numpy as np
 import pandas as pd
+import time
 
 sys.path.insert(0,"./trajectron")
 from tqdm import tqdm
@@ -24,11 +27,7 @@ import utils
 from scipy.interpolate import RectBivariateSpline
 from environment import Environment, Scene, derivative_of, Node
 
-
-#tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
-#tf_listener = tf2_ros.TransformListener(tf_buffer)
 current_frame = 0
-count = 0
 past_obj = []
 tf_buffer = None
 tf_listener = None
@@ -40,62 +39,6 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
-
-FREQUENCY = 2
-dt = 1 / FREQUENCY
-data_columns_vehicle = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration', 'heading'], ['x', 'y']])
-data_columns_vehicle = data_columns_vehicle.append(pd.MultiIndex.from_tuples([('heading', '°'), ('heading', 'd°')]))
-data_columns_vehicle = data_columns_vehicle.append(pd.MultiIndex.from_product([['velocity', 'acceleration'], ['norm']]))
-
-data_columns_pedestrian = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y']])
-
-# buffer = pd.DataFrame(columns=['frame_id',
-#                                  'type',
-#                                  'node_id',
-#                                  'robot',
-#                                  'x', 'y', 'z',
-#                                  'length',
-#                                  'width',
-#                                  'height',
-#                                  'heading'])
-standardization = {
-    'PEDESTRIAN': {
-        'position': {
-            'x': {'mean': 0, 'std': 1},
-            'y': {'mean': 0, 'std': 1}
-        },
-        'velocity': {
-            'x': {'mean': 0, 'std': 2},
-            'y': {'mean': 0, 'std': 2}
-        },
-        'acceleration': {
-            'x': {'mean': 0, 'std': 1},
-            'y': {'mean': 0, 'std': 1}
-        }
-    },
-    'VEHICLE': {
-        'position': {
-            'x': {'mean': 0, 'std': 80},
-            'y': {'mean': 0, 'std': 80}
-        },
-        'velocity': {
-            'x': {'mean': 0, 'std': 15},
-            'y': {'mean': 0, 'std': 15},
-            'norm': {'mean': 0, 'std': 15}
-        },
-        'acceleration': {
-            'x': {'mean': 0, 'std': 4},
-            'y': {'mean': 0, 'std': 4},
-            'norm': {'mean': 0, 'std': 4}
-        },
-        'heading': {
-            'x': {'mean': 0, 'std': 1},
-            'y': {'mean': 0, 'std': 1},
-            '°': {'mean': 0, 'std': np.pi},
-            'd°': {'mean': 0, 'std': 1}
-        }
-    }
-}
 
 class parameter():
     def __init__(self):
@@ -111,9 +54,9 @@ class buffer_data():
     def __init__(self):
         
         '''
-            scene 隨時間更新的input
-            current_time 當前最新的frame_id
+
         '''
+
         self.buffer_frame = pd.DataFrame(columns=['frame_id',
                                  'type',
                                  'node_id',
@@ -126,6 +69,44 @@ class buffer_data():
                                  'heading_rad'])
         # self.scene = None
         self.current_time = None
+        standardization  = {
+            'PEDESTRIAN': {
+                'position': {
+                    'x': {'mean': 0, 'std': 1},
+                    'y': {'mean': 0, 'std': 1}
+                },
+                'velocity': {
+                    'x': {'mean': 0, 'std': 2},
+                    'y': {'mean': 0, 'std': 2}
+                },
+                'acceleration': {
+                    'x': {'mean': 0, 'std': 1},
+                    'y': {'mean': 0, 'std': 1}
+                }
+            },
+            'VEHICLE': {
+                'position': {
+                    'x': {'mean': 0, 'std': 80},
+                    'y': {'mean': 0, 'std': 80}
+                },
+                'velocity': {
+                    'x': {'mean': 0, 'std': 15},
+                    'y': {'mean': 0, 'std': 15},
+                    'norm': {'mean': 0, 'std': 15}
+                },
+                'acceleration': {
+                    'x': {'mean': 0, 'std': 4},
+                    'y': {'mean': 0, 'std': 4},
+                    'norm': {'mean': 0, 'std': 4}
+                },
+                'heading': {
+                    'x': {'mean': 0, 'std': 1},
+                    'y': {'mean': 0, 'std': 1},
+                    'angle': {'mean': 0, 'std': np.pi},
+                    'radian': {'mean': 0, 'std': 1}
+                }
+            }
+        }
         self.env = Environment(node_type_list=['VEHICLE', 'PEDESTRIAN'], standardization=standardization)
         self.attention_radius = dict()
         self.attention_radius[(self.env.NodeType.PEDESTRIAN, self.env.NodeType.PEDESTRIAN)] = 10.0
@@ -133,8 +114,13 @@ class buffer_data():
         self.attention_radius[(self.env.NodeType.VEHICLE, self.env.NodeType.PEDESTRIAN)] = 20.0
         self.attention_radius[(self.env.NodeType.VEHICLE, self.env.NodeType.VEHICLE)] = 30.0
         self.env.attention_radius = self.attention_radius
+        self.data_columns_vehicle = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration', 'heading'], ['x', 'y']])
+        self.data_columns_vehicle = self.data_columns_vehicle.append(pd.MultiIndex.from_tuples([('heading','angle'), ('heading', 'radian')]))
+        self.data_columns_vehicle = self.data_columns_vehicle.append(pd.MultiIndex.from_product([['velocity', 'acceleration'], ['norm']]))
+        self.data_columns_pedestrian = pd.MultiIndex.from_product([['position', 'velocity', 'acceleration'], ['x', 'y']])
 
     def update_buffer(self,data):
+        
         '''
             data : pd.series
         '''
@@ -147,37 +133,27 @@ class buffer_data():
         # If frame_id < current_time - 11 remove the data
         last_time = self.current_time - 11
         self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= last_time]
+        # print(self.buffer_frame)
         self.buffer_frame.sort_values('frame_id', inplace=True)
 
     def present_all_data(self):
-        # print('buffer_length : ', len(self.buffer_frame))
-        print self.buffer_frame
+        print('buffer_length : ', len(self.buffer_frame))
+        # print self.buffer_frame[self.buffer_frame['node_id']=='1754']
         # for i in range(len(self.buffer)):
         #     print('Frame_index : ', i)
         #     print(self.buffer[i])
 
     def create_scene(self,present_node_id):
-
-        """
-            present_node_id : 當前所偵測到的物件id
-        """
-        #處理資料依照當前的frame所偵測到的node_id 創建 scene_graph
-        
         max_timesteps = self.buffer_frame['frame_id'].max()
         # print max_timesteps
-
-        scene = Scene(timesteps=max_timesteps + 1, dt=0.15)
-        
-
-        for node_id in present_node_id:
+        scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
+        for node_id in pd.unique(self.buffer_frame['node_id']):
             node_frequency_multiplier = 1
             node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
 
-            # 如果沒有兩個點以上的歷史軌跡則跳過
             if node_df['x'].shape[0] < 2:
                 continue
             
-            # 全部的frame都要連續
             if not np.all(np.diff(node_df['frame_id']) == 1):
                 # print('Occlusion')
                 continue  # TODO Make better
@@ -186,60 +162,16 @@ class buffer_data():
             x = node_values[:, 0]
             y = node_values[:, 1]
             heading = node_df['heading_ang'].values
-            
-            # Kalman filter Agent
-            # if node_df.iloc[0]['type'] == env.NodeType.VEHICLE and not node_id == 'ego':
-            #     vx = derivative_of(x, self.scene.dt)
-            #     vy = derivative_of(y, self.scene.dt)
-            #     velocity = np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1)
-
-            #     filter_veh = NonlinearKinematicBicycle(dt=self.scene.dt, sMeasurement=1.0)
-            #     P_matrix = None
-            #     #卡爾曼
-            #     for i in range(len(x)):
-            #         if i == 0:  # initalize KF
-            #             # initial P_matrix
-            #             P_matrix = np.identity(4)
-            #         elif i < len(x):
-            #             # assign new est values
-            #             x[i] = x_vec_est_new[0][0]
-            #             y[i] = x_vec_est_new[1][0]
-            #             heading[i] = x_vec_est_new[2][0]
-            #             velocity[i] = x_vec_est_new[3][0]
-
-            #         if i < len(x) - 1:  # no action on last data
-            #             # filtering
-            #             x_vec_est = np.array([[x[i]],
-            #                                 [y[i]],
-            #                                 [heading[i]],
-            #                                 [velocity[i]]])
-            #             z_new = np.array([[x[i + 1]],
-            #                             [y[i + 1]],
-            #                             [heading[i + 1]],
-            #                             [velocity[i + 1]]])
-            #             x_vec_est_new, P_matrix_new = filter_veh.predict_and_update(
-            #                 x_vec_est=x_vec_est,
-            #                 u_vec=np.array([[0.], [0.]]),
-            #                 P_matrix=P_matrix,
-            #                 z_new=z_new
-            #             )
-            #             P_matrix = P_matrix_new
-
-            #     if pl < 1.0:  # vehicle is "not" moving
-            #         x = x[0].repeat(max_timesteps + 1)
-            #         y = y[0].repeat(max_timesteps + 1)
-            #         heading = heading[0].repeat(max_timesteps + 1)
-            
             # TODO rewrite self.scene.dt to real delta time
             vx = derivative_of(x, scene.dt)
             vy = derivative_of(y, scene.dt)
             ax = derivative_of(vx, scene.dt)
             ay = derivative_of(vy, scene.dt)
-
+            # print("Dt: ",scene.dt,"Vx : ", vx,"Vy : ", vy,"Ax : ", ax,"Ax : ", ay)  
             if node_df.iloc[0]['type'] == self.env.NodeType.VEHICLE:
                 v = np.stack((vx, vy), axis=-1)
-                v_norm = np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
-                heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 1.))
+                v_norm = np.linalg.norm(np.stack((vx, vy), axis=-1), axis= -1, keepdims=True)
+                heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
                 heading_x = heading_v[:, 0]
                 heading_y = heading_v[:, 1]
 
@@ -253,9 +185,9 @@ class buffer_data():
                             ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
                             ('heading', 'x'): heading_x,
                             ('heading', 'y'): heading_y,
-                            ('heading', '°'): heading,
-                            ('heading', 'd°'): node_df['heading_rad'].values}
-                node_data = pd.DataFrame(data_dict, columns=data_columns_vehicle)
+                            ('heading', 'angle'): heading,
+                            ('heading', 'radian'): node_df['heading_rad'].values}
+                node_data = pd.DataFrame(data_dict, columns=self.data_columns_vehicle)
             else:
                 data_dict = {('position', 'x'): x,
                             ('position', 'y'): y,
@@ -263,41 +195,44 @@ class buffer_data():
                             ('velocity', 'y'): vy,
                             ('acceleration', 'x'): ax,
                             ('acceleration', 'y'): ay}
-                node_data = pd.DataFrame(data_dict, columns=data_columns_pedestrian)
+                node_data = pd.DataFrame(data_dict, columns=self.data_columns_pedestrian)
 
             node = Node(node_type=node_df.iloc[0]['type'], node_id=node_id, data=node_data, frequency_multiplier=node_frequency_multiplier)
             node.first_timestep = node_df['frame_id'].iloc[0]
             scene.nodes.append(node)
+
         return scene
-            # print(node)
 
 def transform_data(buffer,data):
     # calculate heading part
-    global count, past_obj, tf_buffer, tf_listener, current_frame
+    global past_obj, tf_buffer, tf_listener, current_frame
     present_id_list = []
-    count = count + 1
-    current_frame = current_frame + 1
+    
 
     buffer.current_time = current_frame
 
     for obj in data.objects:
+        # if obj.track.id != 1754:
+        #     continue
         category = None
         if obj.classId == 1:
             category = buffer.env.NodeType.PEDESTRIAN
+            type_ = "PEDESTRIAN"
         elif obj.classId == 2 or obj.classId == 3 or obj.classId == 4:
             category = buffer.env.NodeType.VEHICLE
+            type_ = "VEHICLE"
         else:
             continue
         x = (obj.bPoint.p0.x + obj.bPoint.p1.x + obj.bPoint.p2.x + obj.bPoint.p3.x + obj.bPoint.p4.x + obj.bPoint.p5.x + obj.bPoint.p6.x + obj.bPoint.p7.x) / 8
         y = (obj.bPoint.p0.y + obj.bPoint.p1.y + obj.bPoint.p2.y + obj.bPoint.p3.y + obj.bPoint.p4.y + obj.bPoint.p5.y + obj.bPoint.p6.y + obj.bPoint.p7.y) / 8
         z = (obj.bPoint.p0.z + obj.bPoint.p1.z + obj.bPoint.p2.z + obj.bPoint.p3.z + obj.bPoint.p4.z + obj.bPoint.p5.z + obj.bPoint.p6.z + obj.bPoint.p7.z) / 8
         # transform from base_link to map
-        transform = tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
-        pose_stamped = PoseStamped()
-        pose_stamped.pose.position.x = x
-        pose_stamped.pose.position.y = y
-        pose_stamped.pose.position.z = z
-        pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
+        # transform = tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
+        # pose_stamped = PoseStamped()
+        # pose_stamped.pose.position.x = x
+        # pose_stamped.pose.position.y = y
+        # pose_stamped.pose.position.z = z
+        # pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
         length = math.sqrt(math.pow((obj.bPoint.p4.x - obj.bPoint.p0.x), 2) + math.pow((obj.bPoint.p4.y - obj.bPoint.p0.y), 2))
         width = math.sqrt(math.pow((obj.bPoint.p3.x - obj.bPoint.p0.x), 2) + math.pow((obj.bPoint.p3.y - obj.bPoint.p0.y), 2))
@@ -332,6 +267,8 @@ def transform_data(buffer,data):
                 if heading > 180:
                     heading = heading - 360
                 heading_rad = math.radians(heading)
+        info = str(current_frame) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
+        past_obj.append(info)
         # if diff_x != 0:
         #    print(diff_x,diff_y,diff_y/diff_x,heading)
 
@@ -347,10 +284,11 @@ def transform_data(buffer,data):
                         'height': height,
                         'heading_ang': heading,
                         'heading_rad': heading_rad})
-        # print node_data
+        # if obj.track.id==1754:
+        #     print node_data
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
-
+    current_frame = current_frame + 1
     buffer.refresh_buffer()
     
     return present_id_list
@@ -358,17 +296,33 @@ def transform_data(buffer,data):
 def predict(data):
     global hyperparams,buffer
     # print buffer
-    ph = 8
+    ph = 2
     present_id = transform_data(buffer,data)
     present_id = map(str,present_id)
     scene = buffer.create_scene(present_id)
-    # print scene.nodes
+    
     scene.calculate_scene_graph(buffer.env.attention_radius,
                                         hyperparams['edge_addition_filter'],
                                         hyperparams['edge_removal_filter'])
-
-    timesteps = np.arange(scene.timesteps)
-    # print(buffer.scene)
+    
+    timesteps = np.array([buffer.current_time])
+    # print timesteps
+    # print buffer.current_time
+    print '===='
+    print 'current_time : ',buffer.current_time
+    
+    # for node in scene.nodes:
+    #     if node.id == '1754':
+    #         print "node_id: ",node.id
+    #         print "node_data_x: ",node.data.data[-1:,0]
+    #         print "node_data_y: ",node.data.data[-1:,1]
+            # print "node_data_vx: ",node.data.data[-1:,2]
+            # print "node_data_vy: ",node.data.data[-1:,3]
+            # print "node_data_ax: ",node.data.data[-1:,4]
+            # print "node_data_ay: ",node.data.data[-1:,5]
+            # print "node_data_heading_angle: ",node.data.data[-1:,8]
+            # print "node_data_heading_radian: ",node.data.data[-1:,9]
+            
     predictions = eval_stg.predict(scene,
                                         timesteps,
                                         ph,
@@ -378,14 +332,43 @@ def predict(data):
                                         z_mode=True,
                                         gmm_mode=True,
                                         full_dist=False)
+                                        
+    if len(predictions.keys())<1:
+        return
+    t = predictions.keys()[-1]
 
-    print predictions
-# def data_structure():
+    # for t in predictions.keys():
+    #     for node in predictions[t].keys():
+    #         if node.id == '1754':
+    #             print('Predict: ', predictions[t][node][:][0][0])
+
+    # print '===='
+    for index, node in enumerate(predictions[t].keys()):
+        for obj in data.objects:
+            if obj.track.id == int(node.id):
+                print 'object id', obj.track.id
+                print 'node id', node.id
+                for prediction_x_y in predictions[t][node][:][0][0]:
+
+                    forecasts_item = PathPrediction()
+                    forecasts_item.position.x = np.float32(prediction_x_y[0])
+                    forecasts_item.position.y = np.float32(prediction_x_y[1])
+
+                    obj.track.forecasts.append(forecasts_item)
+                    obj.track.is_ready_prediction = True
+                break
+            else:
+                continue
+
+    pub = rospy.Publisher('/IPP/Alert', DetectedObjectArray, queue_size=1) # /IPP/Alert is TOPIC
+    pub.publish(data)
+
+    print '===='
 
 def listener_ipp():
     global tf_buffer, tf_listener
     rospy.init_node('ipp_transform_data')
-    rospy.Subscriber('/Tracking2D/front_bottom_60', DetectedObjectArray, predict)
+    rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)
     # spin() simply keeps python from exiting until this node is stopped

@@ -28,7 +28,7 @@ class Unicycle(Dynamic):
         v = x[3]
         dphi = u[0]
         a = u[1]
-
+        # print 'state : ', x
         mask = torch.abs(dphi) <= 1e-2
         dphi = ~mask * dphi + (mask) * 1
 
@@ -63,12 +63,12 @@ class Unicycle(Dynamic):
         p_0 = self.initial_conditions['pos'].unsqueeze(1)
         v_0 = self.initial_conditions['vel'].unsqueeze(1)
         phi_0 = torch.atan2(v_0[..., 1], v_0[..., 0])
-
+        # print 'p_0 : ', p_0
         phi_0 = phi_0 + torch.tanh(self.p0_model(torch.cat((x, phi_0), dim=-1)))
 
         u = torch.stack([control_samples[..., 0], control_samples[..., 1]], dim=0)
         x = torch.stack([p_0[..., 0], p_0[..., 1], phi_0, torch.norm(v_0, dim=-1)], dim = 0).squeeze(dim=-1)
-
+        
         mus_list = []
         for t in range(ph):
             x = self.dynamic(x, u[..., t])
