@@ -4,8 +4,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
-from model.components import *
-from model.model_utils import *
+from model.components.additive_attention import AdditiveAttention
+from model.components.map_encoder import CNNMapEncoder
+from model.components.discrete_latent import DiscreteLatent
+from model.components.additive_attention import TemporallyBatchedAdditiveAttention
+from model.components.gmm2d import GMM2D
+from model.model_utils import rsetattr
+from model.model_utils import rgetattr
+from model.model_utils import CustomLR
+from model.model_utils import sigmoid_anneal
+from model.model_utils import exp_anneal
+from model.model_utils import ModeKeys
+from model.model_utils import run_lstm_on_variable_length_seqs
+from model.model_utils import unpack_RNN_state
 import model.dynamics as dynamic_module
 from environment.scene_graph import DirectedEdge
 

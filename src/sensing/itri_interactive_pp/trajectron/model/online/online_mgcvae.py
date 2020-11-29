@@ -4,8 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from collections import defaultdict, Counter
-from model.components import *
-from model.model_utils import *
+from model.components.additive_attention import TemporallyBatchedAdditiveAttention
+from model.model_utils import ModeKeys
 import model.dynamics as dynamic_module
 from model.mgcvae import MultimodalGenerativeCVAE
 from environment.scene_graph import DirectedEdge

@@ -7,7 +7,7 @@ from ncls import NCLS
 
 
 class Node(object):
-    def __init__(self, node_type, node_id, data, length=None, width=None, height=None, first_timestep=0,
+    def __init__(self, node_type, node_id, data=None, length=None, width=None, height=None, first_timestep=0,
                  is_robot=False, description="", frequency_multiplier=1, non_aug_node=None):
         self.type = node_type
         self.id = node_id
