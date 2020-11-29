@@ -98,7 +98,7 @@ def get_rotation_matrix2d(
         raise ValueError("Input scale must be a B tensor. Got {}"
                          .format(scale.shape))
     if not (center.shape[0] == angle.shape[0] == scale.shape[0]):
-        raise ValueError("Inputs must have same batch size dimension. Got {}"
+        raise ValueError("Inputs must have same batch size dimension. Got {}{}{}"
                          .format(center.shape, angle.shape, scale.shape))
     # convert radian and apply scale
     scaled_rotation: torch.Tensor = angle_to_rotation_matrix(angle) * scale.view(-1, 1, 1)

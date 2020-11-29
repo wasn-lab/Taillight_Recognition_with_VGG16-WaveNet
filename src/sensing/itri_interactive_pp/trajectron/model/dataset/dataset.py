@@ -1,6 +1,6 @@
 from torch.utils import data
 import numpy as np
-from .preprocessing import get_node_timestep_data
+from preprocessing import get_node_timestep_data
 
 
 class EnvironmentDataset(object):

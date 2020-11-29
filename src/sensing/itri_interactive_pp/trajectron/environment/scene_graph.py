@@ -3,7 +3,7 @@ from scipy.spatial.distance import pdist, squareform
 import scipy.signal as ss
 from collections import defaultdict
 import warnings
-from .node import Node
+from node import Node
 
 
 class Edge(object):

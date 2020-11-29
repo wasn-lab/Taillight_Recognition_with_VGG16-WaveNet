@@ -25,6 +25,3 @@ class Dynamic(object):
 
     def integrate_distribution(self, dist, x):
         raise NotImplementedError
-
-    def create_graph(self, xz_size):
-        pass

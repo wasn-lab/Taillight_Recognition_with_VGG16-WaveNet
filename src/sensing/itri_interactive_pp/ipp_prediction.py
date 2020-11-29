@@ -346,8 +346,8 @@ def predict(data):
     for index, node in enumerate(predictions[t].keys()):
         for obj in data.objects:
             if obj.track.id == int(node.id):
-                print 'object id', obj.track.id
-                print 'node id', node.id
+                print('object id', obj.track.id)
+                print('node id', node.id)
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()
@@ -363,7 +363,7 @@ def predict(data):
     pub = rospy.Publisher('/IPP/Alert', DetectedObjectArray, queue_size=1) # /IPP/Alert is TOPIC
     pub.publish(data)
 
-    print '===='
+    print('====')
 
 def listener_ipp():
     global tf_buffer, tf_listener
@@ -397,11 +397,11 @@ if __name__ == '__main__':
           loading_model_part
         ===================== '''
 
-    print 'Loading model...'
+    print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
     buffer = buffer_data()
-    print 'Complete loading model!'
+    print('Complete loading model!')
 
     # for i in range(10):
     #     heading = math.atan(i*(-1))

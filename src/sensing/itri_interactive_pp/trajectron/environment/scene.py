@@ -1,7 +1,7 @@
 import copy
 import numpy as np
 from scene_graph import TemporalSceneGraph, SceneGraph
-from .node import MultiNode
+from node import MultiNode
 
 
 class Scene(object):

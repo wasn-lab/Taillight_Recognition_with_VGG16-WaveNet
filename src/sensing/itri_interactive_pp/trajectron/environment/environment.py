@@ -1,7 +1,7 @@
 import json
 import numpy as np
 from itertools import product
-from .node_type import NodeTypeEnum
+from node_type import NodeTypeEnum
 
 
 class Environment(object):

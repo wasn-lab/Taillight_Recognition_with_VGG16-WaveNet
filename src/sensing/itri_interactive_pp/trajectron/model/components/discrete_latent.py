@@ -22,7 +22,7 @@ class DiscreteLatent(object):
         logits_separated_mean_zero = logits_separated - torch.mean(logits_separated, dim=-1, keepdim=True)
         if self.z_logit_clip is not None and mode == ModeKeys.TRAIN:
             c = self.z_logit_clip
-            logits = torch.clamp(logits_separated_mean_zero, min=-c, max=c)
+            logits = torch.clamp(logits_separated_mean_zero, min=-1*c, max=c)
         else:
             logits = logits_separated_mean_zero
 
