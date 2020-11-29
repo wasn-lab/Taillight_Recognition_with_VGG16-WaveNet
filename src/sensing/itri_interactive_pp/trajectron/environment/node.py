@@ -225,7 +225,7 @@ class MultiNode(Node):
         if node is None:
             state_length = sum([len(entity_dims) for entity_dims in state.values()])
             return np.full((length, state_length), fill_value=padding)
-        print 'state : ', state
+        # print 'state : ', state
         data_array = node.data[tr[0]:tr[1] + 1, state]
         padded_data_array = np.full((length, data_array.shape[1]), fill_value=padding)
         padded_data_array[paddingl:length - paddingu] = data_array
