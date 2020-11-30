@@ -483,10 +483,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     start = ros::Time::now();
     int count_peds = 0;
 
-    // keep original image
+    // raw image
     cv::Mat matrix;
-    // for painting
-    cv::Mat matrix2;
     bool get_timestamp = false;
     ros::Time msgs_timestamp;
     std::vector<msgs::PedObject> ped_objs;
@@ -525,9 +523,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
 #endif
 
-            matrix = image_cache[i].second;
-            // for drawing bbox and keypoints
-            matrix.copyTo(matrix2);
+            image_cache[i].second.copyTo(matrix);
             get_timestamp = true;
             break;
           }
@@ -582,15 +578,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         // Avoid index out of bounds
         if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
         {
-          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u - 1;
         }
-        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
+        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows - 1)
         {
           obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
         }
 
         // check bounding box is legal
-        if (obj_pub.camInfo.width == 0 || obj_pub.camInfo.height == 0)
+        if (obj_pub.camInfo.width < 1 || obj_pub.camInfo.height < 1)
         {
           continue;
         }
@@ -847,10 +843,10 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
           }
           std::vector<float> bbox;
-          bbox.emplace_back(obj.camInfo[0].u);
-          bbox.emplace_back(obj.camInfo[0].v);
-          bbox.emplace_back(obj.camInfo[0].u + obj.camInfo[0].width);
-          bbox.emplace_back(obj.camInfo[0].v + obj.camInfo[0].height);
+          bbox.emplace_back(obj_pub.camInfo.u);
+          bbox.emplace_back(obj_pub.camInfo.v);
+          bbox.emplace_back(obj_pub.camInfo.u + obj_pub.camInfo.width);
+          bbox.emplace_back(obj_pub.camInfo.v + obj_pub.camInfo.height);
           skeleton_buffer.at(skeleton_index).data_bbox_.emplace_back(bbox);
           if (skeleton_buffer.at(skeleton_index).data_bbox_.size() > frame_num_)
           {
@@ -858,19 +854,90 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           }
 
           // do optical flow
+          // std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
           // if (skeleton_buffer.at(skeleton_index).image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).image_for_optical_flow_.rows != 0)
           // {
           //   cv::resize(skeleton_buffer.at(skeleton_index).image_for_optical_flow_, skeleton_buffer.at(skeleton_index).image_for_optical_flow_, cv::Size(croped_image.cols, croped_image.rows));
-          //   std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
-          //   cv::imwrite(image_filename + "_pre.jpg", skeleton_buffer.at(skeleton_index).image_for_optical_flow_);
-          //   cv::imwrite(image_filename + "_now.jpg", croped_image);
+          //   cv::imwrite("crop/" + image_filename + "_pre.jpg", skeleton_buffer.at(skeleton_index).image_for_optical_flow_);
+          //   cv::imwrite("crop/" + image_filename + "_now.jpg", croped_image);
           // }
           // if (skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.rows != 0)
           // {
           //   cv::resize(skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_, skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_, cv::Size(matrix.cols, matrix.rows));
-          //   std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
-          //   cv::imwrite(image_filename + "_full_pre.jpg", skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_);
-          //   cv::imwrite(image_filename + "_full_now.jpg", matrix);
+          //   cv::imwrite("full/" + image_filename + "_full_pre.jpg", skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_);
+          //   cv::imwrite("full/" + image_filename + "_full_now.jpg", matrix);
+          // }
+
+          // // area for crop image
+          // if (skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.rows != 0)
+          // {
+          //   cv::Rect extended_box;
+          //   std::cout<< "data_bbox_ -1: u:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(0))
+          //             << " v:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(1))
+          //             << " u2:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(2))
+          //             << " v2:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(3)) << std::endl;
+          //   std::cout<< "data_bbox_ -2: u:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(0))
+          //             << " v:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(1))
+          //             << " u2:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(2))
+          //             << " v2:" << int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(3)) << std::endl;
+          //   extended_box.x = std::min(int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(0)), 
+          //                     int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(0)));
+          //   extended_box.y = std::min(int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(1)), 
+          //                     int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(1)));
+          //   extended_box.width = std::max(int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(2) - 
+          //                     skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(0)),
+          //                     int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(2) - 
+          //                     skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(0)));
+          //   extended_box.height = std::max(int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(3) - 
+          //                     skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(1)),
+          //                     int(skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 2).at(3) - 
+          //                     skeleton_buffer.at(skeleton_index).data_bbox_.at(skeleton_buffer.at(skeleton_index).data_bbox_.size() - 1).at(1)));
+          //   std::cout<< "extended_box: u:" << extended_box.x
+          //             << " v:" << extended_box.y
+          //             << " w:" << extended_box.width
+          //             << " h:" << extended_box.height << std::endl;
+          //   // extend area of crop image
+          //   int extend_range = extended_box.height / 4;
+          //   extended_box.x -= extend_range;
+          //   extended_box.y -= extend_range;
+          //   extended_box.width += extend_range;
+          //   extended_box.width += extend_range;
+          //   extended_box.height += extend_range;
+          //   extended_box.height += extend_range;
+
+          //   std::cout<< "extended_box after: u:" << extended_box.x
+          //             << " v:" << extended_box.y
+          //             << " w:" << extended_box.width
+          //             << " h:" << extended_box.height << std::endl;
+
+          //   // check if out of range
+          //   if (extended_box.x < 0)
+          //   {
+          //     extended_box.x = 0;
+          //   }
+          //   if (extended_box.y < 0)
+          //   {
+          //     extended_box.y = 0;
+          //   }
+          //   if (extended_box.x + extended_box.width > 607)
+          //   {
+          //     extended_box.width = 607 - extended_box.x;
+          //   }
+          //   if (extended_box.y + extended_box.height > 383)
+          //   {
+          //     extended_box.height = 383 - extended_box.y;
+          //   }
+          //   std::cout<< "extended_box check: u:" << extended_box.x
+          //             << " v:" << extended_box.y
+          //             << " w:" << extended_box.width
+          //             << " h:" << extended_box.height << std::endl;
+          //   if (extended_box.x >= 0 && extended_box.y >= 0 && extended_box.width > 0 && extended_box.height > 0)
+          //   {
+          //     cv::Mat extended_image_pre = skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_(extended_box);
+          //     cv::imwrite("extend/" + image_filename + "_extended_pre.jpg", extended_image_pre);
+          //     cv::Mat extended_image_now = matrix(extended_box);
+          //     cv::imwrite("extend/" + image_filename + "_extended_now.jpg", extended_image_now);
+          //   }
           // }
 
           // skeleton_buffer.at(skeleton_index).image_for_optical_flow_ = croped_image;
@@ -1200,7 +1267,6 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     ped_objs.clear();
     std::vector<msgs::PedObject>().swap(ped_objs);
     matrix.release();
-    matrix2.release();
 
     stop = ros::Time::now();
 
@@ -1333,7 +1399,6 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   }
 
   cv::Mat matrix;
-  cv::Mat matrix2;
   ros::Time msgs_timestamp = ros::Time::now();
   if (!msg->objects.empty())
   {
@@ -1363,10 +1428,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
         std::cout << "GOT CHA !!!!! time: " << image_cache[i].first << " , " << msgs_timestamp << std::endl;
 #endif
 
-        matrix2 = image_cache[i].second;
-        // for drawing bbox and keypoints
-        matrix2.copyTo(matrix);
-        // frame_timestamp = msgs_timestamp;
+        image_cache[i].second.copyTo(matrix);
         break;
       }
     }
@@ -1569,7 +1631,6 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   }
 
   matrix.release();
-  matrix2.release();
 }
 
 /**

@@ -101,6 +101,11 @@ Lidar List:
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
+	<group if="$(eval arg('mode') == 6)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node"  />
+		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
+	</group>
+
 	<group if="$(eval arg('mode') == 9)">
 		<param name="use_compress" value="false" /> 
 		<node pkg="lidars_decoder" 				type="lidars_decoder_b1" 			name="lidars_decoder_b1" 			output="screen" cwd="node" respawn="true"  />
@@ -224,7 +229,7 @@ Lidar List:
 
 <!-- ************ Front-Top: Ouster64 ************ -->
     <group ns="$(arg set_group_1)" if="$(arg hardware_enable)">
-        <arg name="os1_hostname" default="192.168.0.224" doc="hostname or IP in dotted decimal form of the sensor"/>
+        <arg name="os1_hostname" default="192.168.0.225" doc="hostname or IP in dotted decimal form of the sensor"/>
         <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
         <arg name="os1_lidar_port" default="7524" doc="port to which the sensor should send lidar data"/>
         <arg name="os1_imu_port" default="7504" doc="port to which the sensor should send imu data"/>

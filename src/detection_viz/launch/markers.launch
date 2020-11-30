@@ -4,7 +4,7 @@
   <node name="bus_footprint" pkg="detection_viz" type="bus_footprint.py" output="screen"/>
 
 
-  <!-- Lidar Polygon **************************************************************************** -->
+  <!-- Lidar Polygon **************************************************************************** 
   <node name="m_LidarDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/LidarDetection"/>
       <param name="red"   value="0.0"/>
@@ -13,6 +13,29 @@
       <param name="delay_prefix"  value="lidar"/>
       <param name="delay_pos_x"  value="3.0"/>
       <param name="is_ignoring_empty_obj"  value="true"/>
+  </node>
+  -->
+  
+  <!-- Lidar bbox Car **************************************************************************** -->
+  <node name="m_LidarDetection_bbox_car" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/LidarDetection/Car"/>
+      <param name="red"   value="0.2"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="lidar_bbox"/>
+      <param name="delay_pos_x"  value="3.0"/>
+      <param name="is_using_costmap_listener"  value="True"/>
+  </node>
+
+  <!-- Lidar bbox Ped & Cyc **************************************************************************** -->
+  <node name="m_LidarDetection_bbox_pedcyc" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/LidarDetection/Ped_Cyc"/>
+      <param name="red"   value="0.2"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="lidar_bbox"/>
+      <param name="delay_pos_x"  value="2.0"/>
+      <param name="is_using_costmap_listener"  value="True"/>
   </node>
 
   <!-- Camera Polygon **************************************************************************** -->
@@ -116,17 +139,6 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="fusion"/>
       <param name="delay_pos_x"  value="5.0"/>
-  </node>
-
-  <!-- Lidar bbox **************************************************************************** -->
-  <node name="m_LidarDetection_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
-      <param name="topic" value="/LidarDetection"/>
-      <param name="red"   value="0.2"/>
-      <param name="green" value="1.0"/>
-      <param name="blue"  value="1.0"/>
-      <param name="delay_prefix"  value="lidar_bbox"/>
-      <param name="delay_pos_x"  value="3.0"/>
-      <param name="is_using_costmap_listener"  value="True"/>
   </node>
 
   <!-- Camera bbox **************************************************************************** -->
