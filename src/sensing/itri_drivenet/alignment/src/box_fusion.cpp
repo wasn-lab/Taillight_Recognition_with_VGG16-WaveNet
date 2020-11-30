@@ -35,7 +35,7 @@ enum overlapped
 std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs::DetectedObject>& input_obj_arrs)
 {
 
-  auto overlap1D = [](float x1min, float x1max, float x2min, float x2max) -> float {
+  auto overlap_1d = [](float x1min, float x1max, float x2min, float x2max) -> float {
     if (x1min > x2min)
     {
       std::swap(x1min, x2min);
@@ -43,15 +43,15 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
     }
     return x1max < x2min ? 0 : std::min(x1max, x2max) - x2min;
   };
-  auto computeIoU = [&overlap1D](msgs::DetectedObject& obj1, msgs::DetectedObject& obj2) -> float {
-    float overlapX = overlap1D(obj1.bPoint.p0.x, obj1.bPoint.p6.x, obj2.bPoint.p0.x, obj2.bPoint.p6.x);
-    float overlapY = overlap1D(obj1.bPoint.p0.y, obj1.bPoint.p6.y, obj2.bPoint.p0.y, obj2.bPoint.p6.y);
+  auto compute_iou = [&overlap_1d](msgs::DetectedObject& obj1, msgs::DetectedObject& obj2) -> float {
+    float overlap_x = overlap_1d(obj1.bPoint.p0.x, obj1.bPoint.p6.x, obj2.bPoint.p0.x, obj2.bPoint.p6.x);
+    float overlap_y = overlap_1d(obj1.bPoint.p0.y, obj1.bPoint.p6.y, obj2.bPoint.p0.y, obj2.bPoint.p6.y);
     float area1 = abs(obj1.bPoint.p6.x - obj1.bPoint.p0.x) * abs(obj1.bPoint.p6.y - obj1.bPoint.p0.y);
     float area2 = abs(obj2.bPoint.p6.x - obj2.bPoint.p0.x) * abs(obj2.bPoint.p6.y - obj2.bPoint.p0.y);    
-    float overlap2D = overlapX * overlapY;   
-    float u = area1 + area2 - overlap2D;
+    float overlap_2d = overlap_x * overlap_y;   
+    float u = area1 + area2 - overlap_2d;
     
-    return u == 0 ? 0 : overlap2D / u;
+    return u == 0 ? 0 : overlap_2d / u;
   };
 
   std::vector<msgs::DetectedObject> input_copy1;
@@ -75,7 +75,7 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
         continue;
       }
       // Algo 1: Use no heading
-      float overlap = abs(computeIoU(no_oriented[i], no_oriented[j]));
+      float overlap = abs(compute_iou(no_oriented[i], no_oriented[j]));
 
       // Algo 2: Use IoU comparison with heading(still working)
       // float overlap2 = iou_compare_with_heading(input_copy1[i], input_copy1[j]);      
@@ -193,12 +193,12 @@ float Boxfusion::iou_compare_with_heading(msgs::DetectedObject& obj1, msgs::Dete
   // float calcIOU(cv::RotatedRect rect1, cv::RotatedRect rect2) {
     std::cout << "#########" << std::endl;
     
-  float areaRect1 = rect1.size.width * rect1.size.height;
-  float areaRect2 = rect2.size.width * rect2.size.height;
+  float area_rect1 = rect1.size.width * rect1.size.height;
+  float area_rect2 = rect2.size.width * rect2.size.height;
   vector<cv::Point2f> vertices;
 
   cv::rotatedRectangleIntersection(rect1, rect2, vertices);
-  if (vertices.size() == 0)
+  if (vertices.empty())
   {
     return 0.0;
   }
@@ -209,7 +209,7 @@ float Boxfusion::iou_compare_with_heading(msgs::DetectedObject& obj1, msgs::Dete
 
     cv::convexHull(cv::Mat(vertices), order_pts, true);
     double area = cv::contourArea(order_pts);
-    float inner = (float) (area / (areaRect1 + areaRect2 - area + 0.0001));
+    auto inner = (float) (area / (area_rect1 + area_rect2 - area + 0.0001));
     std::cout << inner << std::endl;
     return inner;
   }
@@ -222,9 +222,10 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::box_fuse(std::vector<msgs::Det
   bool check_data_2 = false;
 
   msgs::DetectedObjectArray object_1, object_2, object_out;
-  for (size_t cam_id = 0; cam_id < ori_object_arrs.size(); cam_id++)
+  // for (size_t cam_id = 0; cam_id < ori_object_arrs.size(); cam_id++)
+  for (auto& object_arrs: ori_object_arrs)
   {
-    for (const auto& obj : ori_object_arrs[cam_id].objects)
+    for (const auto& obj : object_arrs.objects)
     {
       if (obj.camInfo[0].id == camera_id_1)
       {
@@ -246,9 +247,10 @@ std::vector<msgs::DetectedObjectArray> Boxfusion::box_fuse(std::vector<msgs::Det
 
   //
 
-  for (size_t cam_id = 0; cam_id < ori_object_arrs.size(); cam_id++)
+  // for (size_t cam_id = 0; cam_id < ori_object_arrs.size(); cam_id++)
+  for (auto& object_arrs: ori_object_arrs)
   {
-    for (const auto& obj : ori_object_arrs[cam_id].objects)
+    for (const auto& obj : object_arrs.objects)
     {
       if (obj.camInfo[0].id == camera_id_1)
       {
@@ -296,7 +298,8 @@ msgs::DetectedObjectArray Boxfusion::fuse_two_camera(msgs::DetectedObjectArray o
         continue;
       }
 
-      PixelPosition obj1_center, obj2_center;
+      PixelPosition obj1_center{-1, -1};
+      PixelPosition obj2_center{-1, -1};
       std::vector<PixelPosition> bbox_positions1(2);
       bbox_positions1[0].u = obj_1.camInfo[0].u;
       bbox_positions1[0].v = obj_1.camInfo[0].v;
@@ -317,7 +320,7 @@ msgs::DetectedObjectArray Boxfusion::fuse_two_camera(msgs::DetectedObjectArray o
       if (check_point_in_area(front_bottom, obj1_center.u, bbox_positions1[1].v) == 0 &&
           check_point_in_area(left_back, obj2_center.u, bbox_positions2[1].v) == 0)
       {
-        PixelPosition obj2_center_trans;
+        PixelPosition obj2_center_trans{-1, -1};
 
         // Project left back camera to front bottom camera
         obj2_center_trans.u =
