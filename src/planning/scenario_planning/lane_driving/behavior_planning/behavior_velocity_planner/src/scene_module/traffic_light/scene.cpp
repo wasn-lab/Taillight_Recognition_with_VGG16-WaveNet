@@ -152,17 +152,23 @@ bool TrafficLightModule::modifyPathVelocity(
   geometry_msgs::PoseStamped self_pose = planner_data_->current_pose;
 
   // check state
-  if (state_ == State::GO_OUT) {
+  if (state_ == State::GO_OUT) 
+  {
     return true;
-  } else if (state_ == State::APPROACH) {
-    if (!getHighestConfidenceTrafficLightState(traffic_lights, tl_state_)) {
+  } 
+  else if (state_ == State::APPROACH) 
+  {
+    if (!getHighestConfidenceTrafficLightState(traffic_lights, tl_state_)) 
+    {
       // Don't stop when UNKNOWN or TIMEOUT as discussed at #508
       return true;
     }
 
     // Check Traffic Light
-    if (isStopRequired(tl_state_.state)) {
-      for (size_t i = 0; i < lanelet_stop_line.size() - 1; i++) {
+    if (isStopRequired(tl_state_.state)) 
+    {
+      for (size_t i = 0; i < lanelet_stop_line.size() - 1; i++) 
+      {
         const Line stop_line = {
           {lanelet_stop_line[i].x(), lanelet_stop_line[i].y()},
           {lanelet_stop_line[i + 1].x(), lanelet_stop_line[i + 1].y()}};
@@ -190,22 +196,28 @@ bool TrafficLightModule::modifyPathVelocity(
         size_t stop_line_point_idx;
         if (!createTargetPoint(
               input_path, stop_line, planner_param_.stop_margin, stop_line_point_idx,
-              stop_line_point)) {
+              stop_line_point)) 
+        {
           continue;
         }
         // judge pass or stop
+        // bool tmp = insertTargetVelocityPoint(input_path, stop_line, planner_param_.stop_margin, 0.0, *path);///////////////////////
         if (
           (calcSignedArcLength(input_path, self_pose.pose, stop_line_point) <
            pass_judge_line_distance + planner_data_->base_link2front) &&
-          (3.0 /* =10.8km/h */ < self_twist_ptr->twist.linear.x)) {
+          (3.0 /* =10.8km/h */ < self_twist_ptr->twist.linear.x)) 
+        {
           ROS_WARN_THROTTLE(
             1.0, "[traffic_light] vehicle is over stop border (%f m)",
             pass_judge_line_distance + planner_data_->base_link2front);
           return true;
-        } else {
+        } 
+        else 
+        {
           // Add Stop WayPoint
           if (!insertTargetVelocityPoint(
-                input_path, stop_line, planner_param_.stop_margin, 0.0, *path)) {
+                input_path, stop_line, planner_param_.stop_margin, 0.0, *path)) 
+          {
             ROS_WARN("[traffic_light] cannot insert stop waypoint");
             continue;
           }
@@ -218,11 +230,17 @@ bool TrafficLightModule::modifyPathVelocity(
         planning_utils::appendStopReason(stop_factor, stop_reason);
         return true;
       }
-    } else {
+    } 
+    else 
+    {
+      /* get stop point and stop factor */
+      autoware_planning_msgs::StopFactor stop_factor;
+      stop_factor.stop_pose = debug_data_.first_stop_pose;
+      stop_factor.stop_factor_points = debug_data_.traffic_light_points;
+      planning_utils::appendStopReason(stop_factor, stop_reason);
       return true;
     }
   }
-
   return false;
 }
 

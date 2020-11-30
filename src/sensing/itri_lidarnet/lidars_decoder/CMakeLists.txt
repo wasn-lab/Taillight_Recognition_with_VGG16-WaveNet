@@ -238,8 +238,8 @@ add_definitions		(${PCL_DEFINITIONS})
 ######################
 ##      Vehicle     ##
 ######################
-add_executable 	(${PROJECT_NAME}_b1 src/main_b1.cpp ${SOURCES_SRCS} )
-add_dependencies		(${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS})
-target_link_libraries 	(${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} )
+add_executable 	(${PROJECT_NAME} src/main.cpp ${SOURCES_SRCS} )
+add_dependencies		(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
+target_link_libraries 	(${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} )
 
 

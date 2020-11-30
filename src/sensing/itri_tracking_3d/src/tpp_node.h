@@ -93,6 +93,9 @@ private:
   void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
 #endif
 
+  std::string frame_id_source_ = "base_link";
+  std::string frame_id_target_ = "map";
+
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
   double loop_elapsed = 0.;  // seconds
@@ -107,6 +110,8 @@ private:
   double ego_speed_kmph_ = 0.;
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
+
+  double ground_z_ = -3.1;
 
 #if PP_FILTER_DRIVABLE_AREA == 1
   double expand_left_ = 2.2;

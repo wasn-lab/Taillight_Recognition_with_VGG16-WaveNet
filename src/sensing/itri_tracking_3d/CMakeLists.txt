@@ -6,7 +6,6 @@ include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  geometry_msgs
   tf2_geometry_msgs
   std_msgs
   msgs
@@ -34,6 +33,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIR}
+  ${msgs_SOURCE_DIR}/include
   ${hungarian_SOURCE_DIR}/src     
 )
 

@@ -184,6 +184,13 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_.frame_id = "lidar";
 #endif
 
+  frame_id_source_ = "base_link";
+
+  if (objs_header_.frame_id != "lidar" && objs_header_.frame_id != "base_link")
+  {
+    frame_id_source_ = objs_header_.frame_id;
+  }
+
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
@@ -204,18 +211,27 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
 
-#if INPUT_ALL_CLASS
-    KTs_.objs_.assign(input->objects.begin(), input->objects.end());
-#else
     KTs_.objs_.reserve(input->objects.size());
-    for (unsigned i = 0; i < input->objects.size(); i++)
+
+    for (const auto& obj : input->objects)
     {
-      if (input->objects[i].classId >= 1 && input->objects[i].classId <= 3)
+      if (obj.bPoint.p0.x == 0 && obj.bPoint.p0.y == 0 && obj.bPoint.p0.z == 0 && obj.bPoint.p6.x == 0 &&
+          obj.bPoint.p6.y == 0 && obj.bPoint.p6.z == 0)
       {
-        KTs_.objs_.push_back(input->objects[i]);
+        continue;
       }
-    }
+
+#if INPUT_ALL_CLASS
+      KTs_.objs_.push_back(obj);
+#else
+      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      {
+        KTs_.objs_.push_back(obj);
+      }
 #endif
+    }
 
     for (auto& obj : KTs_.objs_)
     {
@@ -353,9 +369,6 @@ void TPPNode::subscribe_and_advertise_topics()
 
   if (gen_markers_)
   {
-    std::string topic1 = topic + "/markers";
-    mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
-
     std::string topic2 = topic + "/id";
     mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
 
@@ -641,7 +654,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   geometry_msgs::TransformStamped tf_stamped;
   try
   {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
 #if PRINT_MESSAGE
     std::cout << tf_stamped << std::endl;
 #endif
@@ -792,6 +805,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
     geometry_msgs::Point32 polygon_point;
     polygon_point.x = obj.x;
     polygon_point.y = obj.y;
+    polygon_point.z = ground_z_;
     polygon_marker.polygon.points.push_back(polygon_point);
   }
 
@@ -1022,14 +1036,14 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   try
   {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
+    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+      tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -1074,6 +1088,7 @@ void TPPNode::set_ros_params()
 
   nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
   nh_.param<double>(domain + "expand_right", expand_right_, 0.);
+  nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;

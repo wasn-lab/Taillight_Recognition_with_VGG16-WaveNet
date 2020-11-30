@@ -33,6 +33,8 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
+#include "detected_object_class_id.h"
+
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -98,7 +100,7 @@
 #define O_P std::setprecision(8)
 
 #define USE_GLOG 0
-#if USE_GLOG
+#if USE_GLOG == 1
 #include "glog/logging.h"
 #define LOG_INFO LOG(INFO)
 #define LOG_WARNING LOG(WARNING)
@@ -126,7 +128,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_bbox;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
