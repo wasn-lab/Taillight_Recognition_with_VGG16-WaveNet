@@ -318,7 +318,7 @@ def main():
                                         tf_msg = read_topic_return_msg(msg, 3, "")
                                         if check_first:
                                             datestr_tf = filename + "_tf/"
-                                            if os.path.exists(outdir + datestr_tf + timestr + '_tf.txt'):
+                                            if os.path.exists(outdir + datestr_tf + timestr + '_tf.csv'):
                                                 pass
                                             elif timestr == "":
                                                 pass
@@ -326,7 +326,7 @@ def main():
                                                 try:
                                                     read_msg_and_save(tf_msg, 3, outdir, timestr + "_tf", filename)
                                                 except BaseException:
-                                                    print("rad cant save.")
+                                                    print("tf cant save.")
     print ("** Finish Extracting **")
 
 
