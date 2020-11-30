@@ -23,7 +23,6 @@ from environment.scene_graph import DirectedEdge
 
 class MultimodalGenerativeCVAE(object):
     def __init__(self,
-                #  env,
                  node_type,
                  model_registrar,
                  hyperparams,
@@ -33,7 +32,6 @@ class MultimodalGenerativeCVAE(object):
         
         self.debug = True
         self.hyperparams = hyperparams
-        # self.env = env
         self.node_type = node_type
         self.model_registrar = model_registrar
         self.log_writer = log_writer
@@ -49,10 +47,6 @@ class MultimodalGenerativeCVAE(object):
         self.state = self.hyperparams['state']
         self.pred_state = self.hyperparams['pred_state'][node_type]
         self.state_length = int(np.sum([len(entity_dims) for entity_dims in self.state[node_type].values()]))
-        if self.hyperparams['incl_robot_node']:
-            self.robot_state_length = int(
-                np.sum([len(entity_dims) for entity_dims in self.state[env.robot_type].values()])
-            )
         self.pred_state_length = int(np.sum([len(entity_dims) for entity_dims in self.pred_state.values()]))
 
         edge_types_str = [DirectedEdge.get_str_from_types(*edge_type) for edge_type in self.edge_types]
@@ -62,7 +56,6 @@ class MultimodalGenerativeCVAE(object):
         dyn_limits = hyperparams['dynamic'][self.node_type]['limits']
         self.dynamic = dynamic_class(0.5, dyn_limits, device,
                                      self.model_registrar, self.x_size, self.node_type)
-        # self.env.scenes[0].dt = 0.5
 
     def assertion(self, obj):
         assert isinstance(obj,type(torch.tensor(0)))
