@@ -66,7 +66,11 @@ void MqttClient::setTLS()
 {
   int rc = mosquitto_tls_opts_set(client, 1, "tlsv1.1", NULL);
   std::cout << "mosquitto_tls_opts_set rc: " << rc << std::endl;
-  rc = mosquitto_tls_set(client, MQTT_CA_CRT, NULL, MQTT_CLIENT_CRT, MQTT_CLIENT_KEY, 0);
+  std::string path = ros::package::getPath("adv_to_server");
+  MQTT_CA_CRT = path + "/src/Transmission/TLS/ca.crt";
+  MQTT_CLIENT_CRT = path + "/src/Transmission/TLS/client.crt";
+  MQTT_CLIENT_KEY = path + "/src/Transmission/TLS/client.key";
+  rc = mosquitto_tls_set(client, MQTT_CA_CRT.c_str(), NULL, MQTT_CLIENT_CRT.c_str(), MQTT_CLIENT_KEY.c_str(), 0);
   std::cout << "mosquitto_tls_set rc: " << rc << std::endl;
   rc = mosquitto_tls_insecure_set(client, false);
   std::cout << "mosquitto_tls_insecure_set rc: " << rc << std::endl;

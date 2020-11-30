@@ -14,12 +14,15 @@
 #define MQTT_CLIENT_KEY "/home/roger/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.key"
 */
 
-#define MQTT_CA_CRT "/home/nvidia/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/ca.crt"
-#define MQTT_CLIENT_CRT "/home/nvidia/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.crt"
-#define MQTT_CLIENT_KEY "/home/nvidia/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.key"
+/*
+#define MQTT_CA_CRT "~/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/ca.crt"
+#define MQTT_CLIENT_CRT "~/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.crt"
+#define MQTT_CLIENT_KEY "~/itriadv/src/utilities/adv_to_server/src/Transmission/TLS/client.key"
+*/
 
 #include <iostream>
 #include "mosquitto.h"
+#include <ros/package.h>
 
 class MqttClient
 {
@@ -37,6 +40,9 @@ private:
   std::string broker_host;
   int broker_port;
   int broker_keep_alive;
+  std::string MQTT_CA_CRT;
+  std::string MQTT_CLIENT_CRT;
+  std::string MQTT_CLIENT_KEY;
 };
 
 #endif  // MQTTCLIENT_H_
