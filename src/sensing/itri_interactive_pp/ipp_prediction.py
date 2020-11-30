@@ -233,8 +233,6 @@ def transform_data(buffer, data):
     buffer.current_time = current_frame
 
     for obj in data.objects:
-        # if obj.track.id != 1754:
-        #     continue
         category = None
         if obj.classId == 1:
             category = buffer.env.NodeType.PEDESTRIAN
@@ -244,12 +242,9 @@ def transform_data(buffer, data):
             type_ = "VEHICLE"
         else:
             continue
-        x = (obj.bPoint.p0.x + obj.bPoint.p1.x + obj.bPoint.p2.x + obj.bPoint.p3.x +
-             obj.bPoint.p4.x + obj.bPoint.p5.x + obj.bPoint.p6.x + obj.bPoint.p7.x) / 8
-        y = (obj.bPoint.p0.y + obj.bPoint.p1.y + obj.bPoint.p2.y + obj.bPoint.p3.y +
-             obj.bPoint.p4.y + obj.bPoint.p5.y + obj.bPoint.p6.y + obj.bPoint.p7.y) / 8
-        z = (obj.bPoint.p0.z + obj.bPoint.p1.z + obj.bPoint.p2.z + obj.bPoint.p3.z +
-             obj.bPoint.p4.z + obj.bPoint.p5.z + obj.bPoint.p6.z + obj.bPoint.p7.z) / 8
+        x = obj.center_point.x
+        y = obj.center_point.y
+        z = obj.center_point.z
         # transform from base_link to map
         # transform = tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
         # pose_stamped = PoseStamped()
@@ -333,8 +328,7 @@ def transform_data(buffer, data):
                                'height': height,
                                'heading_ang': heading,
                                'heading_rad': heading_rad})
-        # if obj.track.id==1754:
-        #     print node_data
+        
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
     current_frame = current_frame + 1

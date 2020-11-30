@@ -96,25 +96,6 @@ class MultimodalGenerativeCVAE(object):
                            model_if_absent=nn.Linear(self.state_length,
                                                      self.hyperparams['enc_rnn_dim_future']))
 
-        ############################
-        #   Robot Future Encoder   #
-        ############################
-        # We'll create this here, but then later check if we're next to the robot.
-        # Based on that, we'll factor this into the computation graph (or not).
-        if self.hyperparams['incl_robot_node']:
-            self.add_submodule('robot_future_encoder',
-                               model_if_absent=nn.LSTM(input_size=self.robot_state_length,
-                                                       hidden_size=self.hyperparams['enc_rnn_dim_future'],
-                                                       bidirectional=True,
-                                                       batch_first=True))
-            # These are related to how you initialize states for the robot future encoder.
-            self.add_submodule('robot_future_encoder/initial_h',
-                               model_if_absent=nn.Linear(self.robot_state_length,
-                                                         self.hyperparams['enc_rnn_dim_future']))
-            self.add_submodule('robot_future_encoder/initial_c',
-                               model_if_absent=nn.Linear(self.robot_state_length,
-                                                         self.hyperparams['enc_rnn_dim_future']))
-
         if self.hyperparams['edge_encoding']:
             ##############################
             #   Edge Influence Encoder   #
@@ -219,10 +200,8 @@ class MultimodalGenerativeCVAE(object):
         ####################
         #   Decoder LSTM   #
         ####################
-        if self.hyperparams['incl_robot_node']:
-            decoder_input_dims = self.pred_state_length + self.robot_state_length + z_size + x_size
-        else:
-            decoder_input_dims = self.pred_state_length + z_size + x_size
+        
+        decoder_input_dims = self.pred_state_length + z_size + x_size
 
         self.add_submodule(self.node_type + '/decoder/state_action',
                            model_if_absent=nn.Sequential(

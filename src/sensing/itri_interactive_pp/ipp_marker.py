@@ -82,7 +82,7 @@ def vehicle_marker_callback_final(data):
     markerArray = MarkerArray()
     for element in data.objects:
 
-    	if element.track.is_ready_prediction and element.track.id == 1754:
+    	if element.track.is_ready_prediction:
             print(element.track.id)
             x =(element.bPoint.p0.x + element.bPoint.p1.x + element.bPoint.p2.x + element.bPoint.p3.x + element.bPoint.p4.x + element.bPoint.p5.x + element.bPoint.p6.x + element.bPoint.p7.x) / 8
             y =(element.bPoint.p0.y + element.bPoint.p1.y + element.bPoint.p2.y + element.bPoint.p3.y + element.bPoint.p4.y + element.bPoint.p5.y + element.bPoint.p6.y + element.bPoint.p7.y) / 8
