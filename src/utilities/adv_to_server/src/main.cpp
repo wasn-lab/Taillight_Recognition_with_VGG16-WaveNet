@@ -909,7 +909,7 @@ void sendRun(int argc, char** argv)
       J1["imu"] = imu_list;
     }
 
-    if(!mqttSensorQueue.empty()){
+    while(!mqttSensorQueue.empty()){
        mutex_sensor.lock();
        states = mqttSensorQueue.front();
        mqttSensorQueue.pop();
@@ -917,7 +917,7 @@ void sendRun(int argc, char** argv)
        mqtt_pubish(states);
     }
 
-    if(!mqttDOQueue.empty()){
+    while(!mqttDOQueue.empty()){
         mutex_do.lock();
         json DO;
         detectObject = mqttDOQueue.front();
@@ -928,15 +928,15 @@ void sendRun(int argc, char** argv)
         mqtt_pubish(DO.dump());
     }
 
-    if(!mqttFailSafeQueue.empty())
+    while(!mqttFailSafeQueue.empty())
     {
-	mutex_fail_safe.lock();
+	    mutex_fail_safe.lock();
         std::string fail_safe = mqttFailSafeQueue.front();
         json j1 = json::parse(fail_safe);
         j1["type"] = "M8.2.VK003.2";
         j1["deviceid"] = PLATE;
-	mqttFailSafeQueue.pop();
-	mutex_fail_safe.unlock();
+	    mqttFailSafeQueue.pop();
+	    mutex_fail_safe.unlock();
         UDP_VK_FAIL_SAFE_client.send_obj_to_server(j1.dump(), true);
     }
 
