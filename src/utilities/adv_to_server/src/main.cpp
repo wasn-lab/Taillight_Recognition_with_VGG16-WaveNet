@@ -1635,7 +1635,7 @@ json getMqttDOMsg(){
          json obj;
          obj["classification"] = trackingObjArray.objects[i].classId;
          obj["tid"] = trackingObjArray.objects[i].track.id;
-         obj["do_cordinate"] = {    
+         obj["do_coordinate"] = {    
             trackingObjArray.objects[i].center_point_gps.x,
             trackingObjArray.objects[i].center_point_gps.y, 
             trackingObjArray.objects[i].center_point_gps.z 
