@@ -1,0 +1,11 @@
+<launch>
+  <arg name="tracking_topic" default="Tracking3D" />
+  <arg name="radar_topic" default="AlphaDetection" />
+  <arg name="out_topic" default="lane_event" />
+
+  <node pkg="itri_grid_pp" type="grid_pp.py" name="itri_grid_pp" output="screen" clear_params="true">
+    <param name="tracking_topic" value="$(arg tracking_topic)" />
+    <param name="radar_topic" value="$(arg radar_topic)" />
+    <param name="out_topic" value="$(arg out_topic)" />
+  </node>
+</launch>

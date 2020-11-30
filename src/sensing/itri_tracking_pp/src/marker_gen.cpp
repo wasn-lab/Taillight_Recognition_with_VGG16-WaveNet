@@ -206,82 +206,6 @@ visualization_msgs::Marker MarkerGen::create_speed_marker(const unsigned int idx
   return marker;
 }
 
-visualization_msgs::Marker MarkerGen::create_pp_marker_ellipse(const unsigned int idx, const msgs::PointXY pos,
-                                                               std_msgs::Header obj_header, const PPLongDouble pp,
-                                                               const unsigned int forecast_seq,
-                                                               const float abs_speed_kmph)
-{
-  visualization_msgs::Marker marker;
-
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
-  marker.header = obj_header;
-#endif
-  marker.ns = "PPOutput_pp1";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.id = idx;
-  marker.type = visualization_msgs::Marker::CYLINDER;
-
-  double scale = abs_speed_kmph * (forecast_seq + 1) / 200.;
-  marker.scale.x = scale;
-  marker.scale.y = scale;
-  marker.scale.z = 0.1;
-
-  marker.pose.position.x = pos.x;
-  marker.pose.position.y = pos.y;
-  marker.pose.position.z = 0.;
-
-  marker.pose.orientation = tf2::toMsg(pp.q1);
-
-  marker.lifetime = ros::Duration(mc_.lifetime_sec);
-
-  marker.color.r = 0.8;
-  marker.color.g = 0.9 - forecast_seq * 0.035;
-  marker.color.b = 0.0;
-  marker.color.a = 0.3 - forecast_seq * 0.005;
-
-  return marker;
-}
-
-visualization_msgs::Marker MarkerGen::create_pp_marker_point(const unsigned int idx, const msgs::PointXY pos,
-                                                             std_msgs::Header obj_header)
-{
-  visualization_msgs::Marker marker;
-
-#if SAME_OBJ_MARKER_HEADER
-  marker.header = header_;
-#else
-  marker.header = obj_header;
-#endif
-  marker.ns = "PPOutput_pp2";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.id = idx;
-  marker.type = visualization_msgs::Marker::CYLINDER;
-
-  marker.scale.x = 0.3;
-  marker.scale.y = 0.3;
-  marker.scale.z = 0.1;
-
-  marker.pose.position.x = pos.x;
-  marker.pose.position.y = pos.y;
-  marker.pose.position.z = 0.1;
-
-  marker.pose.orientation.x = 0;
-  marker.pose.orientation.y = 0;
-  marker.pose.orientation.z = 0;
-  marker.pose.orientation.w = 1;
-
-  marker.lifetime = ros::Duration(mc_.lifetime_sec);
-
-  marker.color.r = 1.0;
-  marker.color.g = 1.0;
-  marker.color.b = 0.0;
-  marker.color.a = 1.0;
-
-  return marker;
-}
-
 visualization_msgs::Marker MarkerGen::create_vel_marker(const unsigned int idx, const geometry_msgs::Point point,
                                                         const float vx, const float vy, std_msgs::Header obj_header)
 {
@@ -341,54 +265,6 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   mc_.pub_speed.publish(m_speed_);
 }
 
-void MarkerGen::process_pp_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs,
-                                  std::vector<std::vector<PPLongDouble> >& ppss)
-{
-  std::vector<visualization_msgs::Marker>().swap(m_pp_.markers);
-
-  if (mc_.show_pp == 1 || mc_.show_pp == 2)
-  {
-    m_pp_.markers.reserve(objs.size() * num_forecasts_);
-  }
-  else if (mc_.show_pp == 3)
-  {
-    m_pp_.markers.reserve(objs.size() * num_forecasts_ * 5);
-  }
-  else
-  {
-    return;
-  }
-
-  for (unsigned i = 0; i < objs.size(); i++)
-  {
-    if (objs[i].track.is_ready_prediction)
-    {
-      for (int j = (int)num_forecasts_ - 1; j >= 0; j--)
-      {
-        if (mc_.show_pp == 1)
-        {
-          m_pp_.markers.push_back(create_pp_marker_point(idx++, objs[i].track.forecasts[j].position, objs[i].header));
-        }
-        else if (mc_.show_pp == 2 || mc_.show_pp == 3)
-        {
-          m_pp_.markers.push_back(create_pp_marker_ellipse(idx++, objs[i].track.forecasts[j].position, objs[i].header,
-                                                           ppss[i][j], j, objs[i].speed_abs));
-        }
-      }
-
-      if (mc_.show_pp == 3)
-      {
-        for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
-        {
-          m_pp_.markers.push_back(create_pp_marker_point(idx++, objs[i].track.forecasts[j].position, objs[i].header));
-        }
-      }
-    }
-  }
-
-  mc_.pub_pp.publish(m_pp_);
-}
-
 void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
 {
   std::vector<visualization_msgs::Marker>().swap(m_vel_.markers);
@@ -414,11 +290,6 @@ void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector
   unsigned int idx = 1;
 
   process_text_marker(idx, objs);
-
-  if (mc_.show_pp > 0)
-  {
-    process_pp_marker(idx, objs, ppss);
-  }
 
   process_vel_marker(idx, objs);
 }

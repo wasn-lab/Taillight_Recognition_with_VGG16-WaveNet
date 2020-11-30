@@ -11,7 +11,7 @@ void PedestrianEvent::run()
 
 void PedestrianEvent::display_on_terminal()
 {
-  while (ros::ok() && !PRINT_MESSAGE)
+  while (ros::ok() && !PRINT_MESSAGE && false)
   {
     struct winsize terminal_size;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
@@ -722,9 +722,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               new_person.data_bbox_.emplace_back(bbox);
             }
             // last bbox will add after.
-            bbox.clear();
-            std::vector<float>().swap(bbox);
 
+            obj_pub.using_skip_frame = 0;
             skeleton_buffer.emplace_back(new_person);
             skeleton_index = skeleton_buffer.size() - 1;
           }
@@ -804,6 +803,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 skeleton_buffer.at(skeleton_index)
                     .stored_skeleton_.erase(skeleton_buffer.at(skeleton_index).stored_skeleton_.begin());
               }
+              obj_pub.using_skip_frame = 0;
             }
             else  // there is data in skeleton_buffer and still has calculated_skeleton
             {
@@ -840,6 +840,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 }
               }
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
+              obj_pub.using_skip_frame = 1;
             }
           }
           std::vector<float> bbox;
@@ -1443,7 +1444,17 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
-      cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
+      std::cout<<obj.using_skip_frame<<std::endl;
+      if (obj.using_skip_frame == 1)
+      {
+        std::cout<<"true"<<std::endl;
+        cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
+      }
+      else
+      {
+        std::cout<<"false"<<std::endl;
+        cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
+      }
     }
     else
     {
@@ -2085,17 +2096,18 @@ bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stam
   std::vector<cv::Point2f>().swap(expanded_route_right);
   expanded_route_left.push_back(expanded_route_left[0]);  // close the polygon
 
-  geometry_msgs::PolygonStamped polygon_merker;
-  polygon_merker.header.frame_id = "map";
-  polygon_merker.polygon.points.reserve(expanded_route_left.size());
+  geometry_msgs::PolygonStamped polygon_marker;
+  polygon_marker.header.frame_id = "map";
+  polygon_marker.polygon.points.reserve(expanded_route_left.size());
   for (auto const& obj : expanded_route_left)
   {
     geometry_msgs::Point32 polygon_point;
     polygon_point.x = obj.x;
     polygon_point.y = obj.y;
-    polygon_merker.polygon.points.push_back(polygon_point);
+    polygon_point.z = -5;
+    polygon_marker.polygon.points.push_back(polygon_point);
   }
-  warning_zone_pub_.publish(polygon_merker);
+  warning_zone_pub_.publish(polygon_marker);
   // all route, check ped in polygon or not
   // no need to filter peds in warning zone
   if (check_in_polygon(position, expanded_route_left))
@@ -2138,7 +2150,6 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
         (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
     {
       c = 1 + c;
-      ;
     }
   }
   vertx.clear();
