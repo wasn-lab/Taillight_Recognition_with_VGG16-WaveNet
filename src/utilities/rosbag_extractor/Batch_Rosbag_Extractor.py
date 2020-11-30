@@ -54,6 +54,21 @@ def read_topic_return_msg(msg, type, contain):
             rad_points_list.append(tempStr)
         return rad_points_list
 
+    if type == 3:  # tf
+        tf_transforms = msg.transforms
+        tf_transforms_list = []
+        for one_transform in tf_transforms:
+            tf_transforms_list.append('source frame_id, target frame_id, translation x, y, z, rotation x, y, z, w\n')
+            if one_transform.child_frame_id != '/base_link' or one_transform.header.frame_id != '/map':
+                continue
+            tempStr = one_transform.child_frame_id + ", " + one_transform.header.frame_id +\
+                ", " + str(one_transform.transform.translation.x) + ", " + str(one_transform.transform.translation.y) + \
+                ", " + str(one_transform.transform.translation.z) + ", " + str(one_transform.transform.rotation.x) + \
+                ", " + str(one_transform.transform.rotation.y) + ", " + str(one_transform.transform.rotation.z) + \
+                ", " + str(one_transform.transform.rotation.w) + "\n"
+            tf_transforms_list.append(tempStr)
+        return tf_transforms_list
+
 
 def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
     if type == 0:  # lidar
@@ -92,6 +107,14 @@ def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
                 f.write(line)
         print("{}.txt ok.".format(filename))
 
+    if type == 3:  # tf
+        if msg:
+            if not os.path.exists(outdir + pathname + "_tf"):
+                os.makedirs(outdir + pathname + "_tf")
+            with open("{}{}{}.csv".format(outdir, pathname+"_tf/" ,filename), "w") as f:
+                for line in msg:
+                    f.write(line)
+            print("{}.csv ok.".format(filename))
 
 def read_topic_and_save_camera(
         in_topicname,
@@ -283,6 +306,25 @@ def main():
                                             else:
                                                 try:
                                                     read_msg_and_save(rad_msg, 2, outdir, timestr + "_rad", filename)
+                                                except BaseException:
+                                                    print("rad cant save.")
+
+                                    if topic == "/tf":
+                                        if fps_input == 1:
+                                            timestr = str(msg.transforms[0].header.stamp.secs)
+                                        else:
+                                            timestr = str(msg.transforms[0].header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+
+                                        tf_msg = read_topic_return_msg(msg, 3, "")
+                                        if check_first:
+                                            datestr_tf = filename + "_tf/"
+                                            if os.path.exists(outdir + datestr_tf + timestr + '_tf.txt'):
+                                                pass
+                                            elif timestr == "":
+                                                pass
+                                            else:
+                                                try:
+                                                    read_msg_and_save(tf_msg, 3, outdir, timestr + "_tf", filename)
                                                 except BaseException:
                                                     print("rad cant save.")
     print ("** Finish Extracting **")
