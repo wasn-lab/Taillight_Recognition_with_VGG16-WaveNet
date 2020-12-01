@@ -3,6 +3,7 @@ API for interacting with jira.
 """
 import logging
 import json
+# import pprint
 import requests
 from requests.auth import HTTPBasicAuth
 # from sb_param_utils import get_license_plate_number
@@ -56,6 +57,7 @@ def generate_issue_contents(project_id, summary, description, issue_type_id):
             "labels": ["FieldTest"],
             "issuetype": {"id": issue_type_id}}}
 
+
 def post_issue(project_id, summary, description, issue_type_id):
     """
     Post issue to jira server.
@@ -76,5 +78,65 @@ def post_issue(project_id, summary, description, issue_type_id):
         verify=False)
     if resp.status_code / 100 != 2:
         logging.warning("Fail to post issue, server response: %s", resp.text)
+        return 1
+    return 0
+
+
+def resolve_issue(issue_id, action_id="5"):
+    """
+    Resolve issue to jira server.
+
+    Args:
+    issue_id (str) -- Issue id such as "S3-241"
+    action_id (str) -- Id for transition
+                           In the JIRA page, hovering your mouse to the
+                           resolve button, watch the url to get the value of
+                           the action_id.
+    Return 0 if success, 1 otherwise.
+    """
+    url = ("{}/rest/api/latest/issue/{}/transitions?"
+           "expand=transitions.fields").format(JIRA_BASE_URL, issue_id)
+    req_headers = {"Content-Type": "application/json"}
+    contents = {"update": {},
+                "transition": {"id": action_id},
+                "fields": {"resolution": {"name": "Done"}}}
+    resp = requests.post(
+        url, data=json.dumps(contents),
+        headers=req_headers,
+        auth=HTTPBasicAuth(JIRA_USER, JIRA_PASSWORD),
+        verify=False)
+    logging.warn("status_code: %d", resp.status_code)
+    if resp.status_code / 100 != 2:
+        logging.warning("Fail to post issue, server response: %s", resp.text)
+        return 1
+    return 0
+
+def close_issue(issue_id, action_id="701"):
+    """
+    Resolve issue to jira server.
+
+    Args:
+    issue_id (str) -- Issue id such as "S3-241"
+    action_id (str) -- Id for transition
+                           In the JIRA page, hovering your mouse to the
+                           resolve button, watch the url to get the value of
+                           the action_id.
+    Return 0 if success, 1 otherwise.
+    """
+    url = ("{}/rest/api/latest/issue/{}/transitions?"
+           "expand=transitions.fields").format(JIRA_BASE_URL, issue_id)
+    req_headers = {"Content-Type": "application/json"}
+    contents = {"update": {},
+                "transition": {"id": action_id},
+                "fields": {}}
+    resp = requests.post(
+        url, data=json.dumps(contents),
+        headers=req_headers,
+        auth=HTTPBasicAuth(JIRA_USER, JIRA_PASSWORD),
+        verify=False)
+    logging.warn("status_code: %d", resp.status_code)
+    if resp.status_code / 100 != 2:
+        logging.warning(("Fail to post issue, status_code: %d, "
+                         "server response: %s"), resp.status_code, resp.text)
         return 1
     return 0
