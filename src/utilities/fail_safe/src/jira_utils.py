@@ -37,10 +37,10 @@ def generate_issue_contents(project_id, summary, description, issue_type_id):
     Generate issue contents that jira server expects
     """
     if project_id not in ALLOWED_PROJECT_IDS:
-        logging.error("unexpted project id: %s", project_id)
+        logging.error("unexpected project id: %s", project_id)
         return {}
     if issue_type_id not in ALLOWED_ISSUE_TYPE_IDS:
-        logging.error("unexpted issue type id: %s", issue_type_id)
+        logging.error("unexpected issue type id: %s", issue_type_id)
         return {}
 
     if not summary:
