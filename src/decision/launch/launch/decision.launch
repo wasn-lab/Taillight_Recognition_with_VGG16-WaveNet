@@ -11,7 +11,7 @@
   <arg name="target_left_shift" default="0.0" />
 
   <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
-  <arg name="angle_diff_setting_out" default="0.3" />
+  <arg name="angle_diff_setting_out" default="0.15" /><!--0.3-->
   <arg name="angle_diff_setting_distoturn" default="0.3" />
   <arg name="z_diff_setting_in" default="1.0" /><!--1.0-->
   <arg name="z_diff_setting_out" default="0.1" /><!--0.1-->

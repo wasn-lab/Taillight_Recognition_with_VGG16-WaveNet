@@ -139,28 +139,28 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
 	}
     break;
 
-    // case 0x351:
-	// {
-    //     std_msgs::Float64 speed_kph;
-    //     std_msgs::Float64 speed_ms ;
-	//     msgs::Flag_Info msg_temp;
-    //     speed_kph.data = frame.data[0];
-    //     Publisher[6].publish(speed_kph);
-    //     cout << "speed_kph: " << speed_kph.data << endl;
-    //     speed_ms.data = speed_kph.data/3.6;
-    //     Publisher[7].publish(speed_ms);
-    //     cout << "speed_ms: " << speed_ms.data << endl;
-	// 	msg_temp.Dspace_Flag01 = frame.data[0];
-	// 	msg_temp.Dspace_Flag02 = frame.data[1];
-	// 	msg_temp.Dspace_Flag03 = frame.data[2];
-	// 	msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
-	// 	msg_temp.Dspace_Flag05 = frame.data[5];
-	// 	msg_temp.Dspace_Flag06 = frame.data[6];
-	// 	msg_temp.Dspace_Flag07 = frame.data[7];
-	//     Publisher[3].publish(msg_temp);
-	//     return 1;
-	// }
-    // break;
+    case 0x351:
+	{
+        std_msgs::Float64 speed_kph;
+        std_msgs::Float64 speed_ms ;
+	    msgs::Flag_Info msg_temp;
+        speed_kph.data = frame.data[0];
+        Publisher[6].publish(speed_kph);
+        cout << "speed_kph: " << speed_kph.data << endl;
+        speed_ms.data = speed_kph.data/3.6;
+        Publisher[7].publish(speed_ms);
+        cout << "speed_ms: " << speed_ms.data << endl;
+		msg_temp.Dspace_Flag01 = frame.data[0];
+		msg_temp.Dspace_Flag02 = frame.data[1];
+		msg_temp.Dspace_Flag03 = frame.data[2];
+		msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag05 = frame.data[5];
+		msg_temp.Dspace_Flag06 = frame.data[6];
+		msg_temp.Dspace_Flag07 = frame.data[7];
+	    Publisher[3].publish(msg_temp);
+	    return 1;
+	}
+    break;
 
     case 0x301:
     {
