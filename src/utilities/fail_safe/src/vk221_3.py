@@ -17,5 +17,5 @@ def build_vk221_3_url(bag, plate=None):
 
 def notify_backend_with_new_bag(bag, plate=None):
     url = build_vk221_3_url(bag, plate)
-    resp = requests.post(url)
+    resp = requests.post(url.encode("utf-8"))
     return resp.json()

@@ -91,7 +91,7 @@ def cam_object_detection_func(msg):
             center = __calc_center_by_3d_bpoint(obj.bPoint)
             if not in_3d_roi(center[0], center[1]):
                 continue
-            prob = obj.camInfo.prob
+            prob = 0.99 # TODO: get value from msg
             if prob < 0.6:
                 status = WARN
                 status_str = ("Low confidence: classId: {}, prob: {}, "
