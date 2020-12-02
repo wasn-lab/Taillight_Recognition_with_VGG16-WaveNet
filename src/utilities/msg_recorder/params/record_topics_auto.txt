@@ -1,4 +1,3 @@
-/LidarAll
 /LidarFrontRight/Raw
 /LidarFrontLeft/Raw
 /LidarRearRight/Raw
