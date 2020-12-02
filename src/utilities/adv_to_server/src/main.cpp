@@ -1246,7 +1246,7 @@ bool checkStopID(unsigned short in_stop_id, unsigned short out_stop_id)
 */
 
 // response
-void VK102callback(std::string request)
+void VK102callback(const std::string& request)
 {
   using namespace std;
   json J1;
