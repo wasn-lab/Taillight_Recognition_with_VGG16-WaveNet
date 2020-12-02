@@ -1,4 +1,15 @@
 # coding=utf-8
+
+import sys
+import os
+import json
+import torch
+import numpy as np
+import pandas as pd
+import time
+
+sys.path.insert(0, "./trajectron")
+
 from environment import Environment, Scene, derivative_of, Node
 from scipy.interpolate import RectBivariateSpline
 import utils
@@ -16,16 +27,6 @@ import math
 import tf2_ros
 import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
-
-import sys
-import os
-import json
-import torch
-import numpy as np
-import pandas as pd
-import time
-
-sys.path.insert(0, "./trajectron")
 
 current_frame = 0
 past_obj = []
