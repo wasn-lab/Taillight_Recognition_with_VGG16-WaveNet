@@ -255,7 +255,7 @@ json genMqttIMUMsg();
 json getMqttDOMsg();
 
 /*=========================tools begin=========================*/
-bool checkCommand(int argc, char** argv, std::string command)
+bool checkCommand(int argc, char** argv, const std::string& command)
 {
   for (int i = 0; i < argc; i++)
   {
