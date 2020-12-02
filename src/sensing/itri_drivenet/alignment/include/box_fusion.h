@@ -5,8 +5,10 @@
 #include "car_model.h"
 #include <camera_params.h>
 #include "drivenet/image_preprocessing.h"
+#include <opencv2/imgproc/imgproc.hpp>
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/DetectedObject.h>
+#include <msgs/BoxPoint.h>
 
 struct CheckArea
 {
@@ -22,7 +24,8 @@ private:
   int image_w_ = camera::image_width;
   int image_h_ = camera::image_height;
   CheckArea front_bottom, left_back;
-  int pixelthres = 40;
+  int pixelthres_ = 40;
+  float iou_threshold_ = 0;
 
   static constexpr int FB_left_top_x = 0;
   static constexpr int FB_left_top_y = 821;
@@ -37,11 +40,17 @@ private:
 public:
   Boxfusion();
   ~Boxfusion();
-  std::vector<msgs::DetectedObjectArray> boxfuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs,
+  std::vector<msgs::DetectedObjectArray> box_fuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs,
                                                  int camera_id_1, int camera_id_2);
-  msgs::DetectedObjectArray fusetwocamera(msgs::DetectedObjectArray obj1, msgs::DetectedObjectArray obj2);
-  int CheckPointInArea(CheckArea area, int object_x1, int object_y2);
-  bool pointcompare(DriveNet::PixelPosition front_bottom, DriveNet::PixelPosition projected);
+  msgs::DetectedObjectArray fuse_two_camera(msgs::DetectedObjectArray obj1, msgs::DetectedObjectArray obj2);
+  int check_point_in_area(CheckArea area, int object_x1, int object_y2);
+  bool point_compare(DriveNet::PixelPosition front_bottom, DriveNet::PixelPosition projected);
+  std::vector<msgs::DetectedObject> multi_cambox_fuse(std::vector<msgs::DetectedObject>& input_obj_arrs);
+  float iou_compare_with_heading(msgs::DetectedObject& obj1, msgs::DetectedObject& obj2);
+  msgs::BoxPoint redefine_bounding_box(msgs::BoxPoint origin_box);
+  
+  
+  
 };
 
 #endif

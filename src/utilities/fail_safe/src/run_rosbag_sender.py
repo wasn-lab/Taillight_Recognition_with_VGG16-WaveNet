@@ -12,20 +12,17 @@ def main():
     src_dir = os.path.join(pkg_dir, "src")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--vid", default="itriadv")
     parser.add_argument("--rosbag-sender-ini", default=os.path.join(src_dir, "rosbag_sender.ini"))
     args = parser.parse_known_args()[0]
 
     cfg = configparser.ConfigParser()
     cfg.read(args.rosbag_sender_ini)
 
-    _rate = cfg["ftp"].getint("upload_rate", 1000000)
     sender = RosbagSender(cfg["ftp"]["fqdn"], cfg["ftp"]["port"],
                           cfg["ftp"]["user_name"],
                           cfg["ftp"]["password"],
                           cfg["rosbag"]["backup_dir"],
-                          vid=args.vid,
-                          upload_rate=_rate)
+                          cfg["ftp"]["upload_rate"])
 
     sender.run()
 

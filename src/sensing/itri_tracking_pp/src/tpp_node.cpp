@@ -44,44 +44,6 @@ void TPPNode::callback_wayarea(const nav_msgs::OccupancyGrid& input)
   wayarea_ = input;
 }
 
-#if TTC_TEST
-void TPPNode::callback_seq(const std_msgs::Int32::ConstPtr& input)
-{
-  seq_cb_ = input->data;
-
-#if DEBUG_DATA_IN
-  std::cout << "seq_cb_ = " << seq_cb_ << std::endl;
-#endif
-}
-
-void TPPNode::callback_localization(const visualization_msgs::Marker::ConstPtr& input)
-{
-#if DEBUG_CALLBACK
-  LOG_INFO << "callback_localization() start" << std::endl;
-#endif
-
-  vel_.set_ego_x_abs(input->pose.position.x);
-  vel_.set_ego_y_abs(input->pose.position.y);
-
-  double roll, pitch, yaw;
-  quaternion_to_rpy(roll, pitch, yaw, input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
-                    input->pose.orientation.w) vel_.set_ego_heading(yaw);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_x = " << vel_.get_ego_x_abs() << "  ego_y = " << vel_.get_ego_y_abs()
-           << "  ego_heading = " << vel_.get_ego_heading() << std::endl;
-#endif
-}
-
-void TPPNode::callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input)
-{
-  vel_.set_ego_speed_kmph(input->data);
-
-#if DEBUG_DATA_IN
-  LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
-#endif
-}
-#else  // TTC_TEST == 0
 void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 {
   vel_.set_ego_speed_kmph(input->ego_speed * 3.6);
@@ -90,7 +52,6 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
   LOG_INFO << "ego_speed_kmph = " << vel_.get_ego_speed_kmph() << std::endl;
 #endif
 }
-#endif
 
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
@@ -113,6 +74,13 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
   objs_header_.frame_id = "lidar";
 #endif
 
+  frame_id_source_ = "base_link";
+
+  if (objs_header_.frame_id != "lidar" && objs_header_.frame_id != "base_link")
+  {
+    frame_id_source_ = objs_header_.frame_id;
+  }
+
   double objs_header_stamp_ = objs_header_.stamp.toSec();
   double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
 
@@ -133,18 +101,27 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
 
-#if INPUT_ALL_CLASS
-    KTs_.objs_.assign(input->objects.begin(), input->objects.end());
-#else
     KTs_.objs_.reserve(input->objects.size());
-    for (unsigned i = 0; i < input->objects.size(); i++)
+
+    for (const auto& obj : input->objects)
     {
-      if (input->objects[i].classId >= 1 && input->objects[i].classId <= 3)
+      if (obj.bPoint.p0.x == 0 && obj.bPoint.p0.y == 0 && obj.bPoint.p0.z == 0 && obj.bPoint.p6.x == 0 &&
+          obj.bPoint.p6.y == 0 && obj.bPoint.p6.z == 0)
       {
-        KTs_.objs_.push_back(input->objects[i]);
+        continue;
       }
-    }
+
+#if INPUT_ALL_CLASS
+      KTs_.objs_.push_back(obj);
+#else
+      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      {
+        KTs_.objs_.push_back(obj);
+      }
 #endif
+    }
 
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
@@ -157,15 +134,15 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     for (auto& obj : KTs_.objs_)
     {
       obj.header.frame_id = "lidar";
-      obj.absSpeed = 0.f;
+      obj.speed_abs = 0.f;
 
       if (input_source_ == InputSource::RadarDet)
       {
-        obj.relSpeed = mps_to_kmph(obj.relSpeed);
+        obj.speed_rel = mps_to_kmph(obj.speed_rel);
       }
       else
       {
-        obj.relSpeed = 0.f;
+        obj.speed_rel = 0.f;
       }
     }
 
@@ -274,30 +251,15 @@ void TPPNode::subscribe_and_advertise_topics()
     wayarea_sub_ = nh2_.subscribe("occupancy_grid_wayarea", 1, &TPPNode::callback_wayarea, this);
   }
 
-#if TTC_TEST
-  seq_sub_ = nh2_.subscribe("sequence_ID", 1, &TPPNode::callback_seq, this);
-  localization_sub_ = nh2_.subscribe("player_vehicle", 1, &TPPNode::callback_localization, this);
-  ego_speed_kmph_sub_ = nh2_.subscribe("player_vehicle_speed", 1, &TPPNode::callback_ego_speed_kmph, this);
-#else
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-#endif
 
   if (gen_markers_)
   {
-    std::string topic1 = topic + "/markers";
-    mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
-
     std::string topic3 = topic + "/id";
     mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
 
     std::string topic4 = topic + "/speed";
     mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
-
-    if (mc_.show_pp >= 1 && mc_.show_pp <= 3)
-    {
-      std::string topic6 = topic + "/pp";
-      mc_.pub_pp = nh_.advertise<visualization_msgs::MarkerArray>(topic6, 2);
-    }
 
     std::string topic7 = topic + "/vel";
     mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
@@ -414,22 +376,22 @@ void TPPNode::compute_velocity_kalman()
              << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
 #endif
 
-// DetectedObject.absSpeed
+// DetectedObject.speed_abs
 #if USE_RADAR_ABS_SPEED == 0
-    track.box_.absSpeed = track.box_.track.absolute_velocity.speed;  // km/h
+    track.box_.speed_abs = track.box_.track.absolute_velocity.speed;  // km/h
 #else
     MyPoint32 p_abs;
     box_center_.pos.get_point_abs(p_abs);
-    track.box_.absSpeed = compute_radar_absolute_velocity(track.box_.relSpeed,  //
-                                                          p_abs.x, p_abs.y);
+    track.box_.speed_abs = compute_radar_absolute_velocity(track.box_.speed_rel,  //
+                                                           p_abs.x, p_abs.y);
 #endif
 
-    if (std::isnan(track.box_.absSpeed))
+    if (std::isnan(track.box_.speed_abs))
     {
-      track.box_.absSpeed = 0.f;
+      track.box_.speed_abs = 0.f;
     }
 
-    // DetectedObject.relSpeed
+    // DetectedObject.speed_rel
     if (input_source_ != InputSource::RadarDet)
     {
       MyPoint32 p_rel;
@@ -438,12 +400,12 @@ void TPPNode::compute_velocity_kalman()
       rel_v_rel.x = track.box_.track.relative_velocity.x;
       rel_v_rel.y = track.box_.track.relative_velocity.y;
       rel_v_rel.z = track.box_.track.relative_velocity.z;
-      track.box_.relSpeed = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
+      track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
     }
 
-    if (std::isnan(track.box_.relSpeed))
+    if (std::isnan(track.box_.speed_rel))
     {
-      track.box_.relSpeed = 0.f;
+      track.box_.speed_rel = 0.f;
     }
   }
 }
@@ -528,11 +490,96 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
-void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
+#if OUTPUT_MAP_TF == 1
+void TPPNode::convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped)
+{
+  // TF (lidar-to-map) for object pose
+  geometry_msgs::Pose pose_in_lidar;
+  pose_in_lidar.position.x = p.x;
+  pose_in_lidar.position.y = p.y;
+  pose_in_lidar.position.z = p.z;
+  pose_in_lidar.orientation.x = 0;
+  pose_in_lidar.orientation.y = 0;
+  pose_in_lidar.orientation.z = 0;
+  pose_in_lidar.orientation.w = 1;
+
+  geometry_msgs::Pose pose_in_map;
+  tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped);
+  p.x = pose_in_map.position.x;
+  p.y = pose_in_map.position.y;
+  p.z = pose_in_map.position.z;
+}
+
+void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
+{
+  for (auto& obj : objs)
+  {
+    if (obj.header.frame_id != frame_id_target_)
+    {
+      geometry_msgs::TransformStamped tf_stamped;
+
+      try
+      {
+        tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, obj.header.stamp);
+      }
+      catch (tf2::TransformException& ex1)
+      {
+        ROS_WARN("%s", ex1.what());
+        try
+        {
+          tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+        }
+        catch (tf2::TransformException& ex2)
+        {
+          ROS_WARN("%s", ex2.what());
+          return;
+        }
+      }
+
+      convert(obj.bPoint.p0, tf_stamped);
+      convert(obj.bPoint.p1, tf_stamped);
+      convert(obj.bPoint.p2, tf_stamped);
+      convert(obj.bPoint.p3, tf_stamped);
+      convert(obj.bPoint.p4, tf_stamped);
+      convert(obj.bPoint.p5, tf_stamped);
+      convert(obj.bPoint.p6, tf_stamped);
+      convert(obj.bPoint.p7, tf_stamped);
+
+      if (!obj.cPoint.lowerAreaPoints.empty())
+      {
+        for (auto p : obj.cPoint.lowerAreaPoints)
+        {
+          convert(p, tf_stamped);
+        }
+      }
+
+      if (obj.track.is_ready_prediction)
+      {
+        for (unsigned int i = 0; i < num_forecasts_; i++)
+        {
+          msgs::PointXYZ p;
+          p.x = obj.track.forecasts[i].position.x;
+          p.y = obj.track.forecasts[i].position.y;
+          p.z = 0.;
+
+          convert(p, tf_stamped);
+
+          obj.track.forecasts[i].position.x = p.x;
+          obj.track.forecasts[i].position.y = p.y;
+        }
+      }
+
+      obj.header.frame_id = frame_id_target_;
+    }
+  }
+}
+#endif
+
+void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename)
 {
   std::ofstream ofs;
   std::stringstream ss;
-  ss << "../../../tracking_output.txt";
+  ss << out_filename;
   std::string fname = ss.str();
 
   if (objs.empty())
@@ -637,10 +684,10 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2 << ", "  // #6-2 kalman-filtered bbox center y (m)
         << obj.track.absolute_velocity.x << ", "            // #7 abs vx (km/h)
         << obj.track.absolute_velocity.y << ", "            // #8 abs vy (km/h)
-        << obj.absSpeed << ", "                             // #9 abs speed (km/h)
+        << obj.speed_abs << ", "                            // #9 abs speed (km/h)
         << obj.track.relative_velocity.x << ", "            // #10 rel vx (km/h)
         << obj.track.relative_velocity.y << ", "            // #11 rel vy (km/h)
-        << obj.relSpeed;                                    // #12 rel speed (km/h)
+        << obj.speed_rel;                                   // #12 rel speed (km/h)
 
     if (obj.track.is_ready_prediction)
     {
@@ -671,90 +718,6 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 
   ofs.close();
 }
-
-#if TTC_TEST
-float TPPNode::closest_distance_of_obj_pivot(const msgs::DetectedObject& obj)
-{
-  float dist_c = euclidean_distance((obj.bPoint.p0.x + obj.bPoint.p6.x) / 2, (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2);
-  float dist_p0 = euclidean_distance(obj.bPoint.p0.x, obj.bPoint.p0.y);
-  float dist_p3 = euclidean_distance(obj.bPoint.p3.x, obj.bPoint.p3.y);
-  float dist_p4 = euclidean_distance(obj.bPoint.p4.x, obj.bPoint.p4.y);
-  float dist_p7 = euclidean_distance(obj.bPoint.p7.x, obj.bPoint.p7.y);
-
-  return std::min(std::min(std::min(std::min(dist_c, dist_p0), dist_p3), dist_p4), dist_p7);
-}
-
-void TPPNode::save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs)
-{
-  std::ofstream ofs;
-  std::stringstream ss;
-  ss << "../../../ttc_output.csv";
-  std::string fname = ss.str();
-
-  if (objs.empty())
-  {
-    std::cout << "objs is empty. No output to .csv." << std::endl;
-    return;
-  }
-
-  if (!test_file_exist(fname))
-  {
-    ofs.open(fname, std::ios_base::app);
-
-    ofs << "Frame number,"              //
-        << "Timestamp,"                 //
-        << "dt (sec),"                  //
-        << "Track ID,"                  //
-        << "Distance of SV & POV (m),"  //
-        << "SV abs. speed (km/h),"      //
-        << "POV abs. speed (km/h),"     //
-        << "POV rel. speed (km/h),"     //
-        << "TTC (sec)\n";
-  }
-  else
-  {
-    ofs.open(fname, std::ios_base::app);
-  }
-
-  ros::Duration dt_s(0, dt_);
-
-  for (const auto& obj : objs)
-  {
-    float dist_m = closest_distance_of_obj_pivot(obj);  //  Distance of SV & POV (m)
-    double ttc_s = (obj.relSpeed < 0) ? (dist_m * 3.6f) / -obj.relSpeed : -1.;
-
-    if (ttc_s != -1.)
-    {
-      ofs << seq_ << ","                        // Frame number
-          << objs_header_.stamp.toSec() << ","  // Timestamp
-          << dt_s.toSec() << ", "               // dt (sec)
-          << obj.track.id << ","                // Track ID
-          << dist_m << ","                      // Distance of SV & POV (m)
-          << ego_speed_kmph_ << ","             // SV abs. speed (km/h)
-          << obj.absSpeed << ","                // POV abs. speed (km/h)
-          << obj.relSpeed << ","                // POV rel. speed (km/h)
-          << ttc_s << "\n";                     // TTC (sec)
-
-      if (ttc_s >= 0.)
-        LOG_INFO << fixed << setprecision(3)  //
-                 << "Seq: " << seq_ << "   Track ID: " << obj.track.id << "   dist = " << dist_m << "m   TTC: " << ttc_s
-                 << "s (rel. speed = " << obj.relSpeed << " km/h)" << std::endl;
-      else
-        LOG_INFO << fixed << setprecision(3)  //
-                 << "Seq: " << seq_ << "   Track ID: " << obj.track.id << "   dist = " << dist_m << "m   TTC: ERROR!"
-                 << std::endl;
-    }
-    else
-    {
-      LOG_INFO << fixed << setprecision(3)  //
-               << "Seq: " << seq_ << "   Track ID: " << obj.track.id << "   dist = " << dist_m << "m   TTC: X"
-               << std::endl;
-    }
-  }
-
-  ofs.close();
-}
-#endif
 
 #if TO_GRIDMAP
 void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs)
@@ -792,12 +755,15 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
 void TPPNode::publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset)
 {
-#if SAVE_OUTPUT_TXT
-  save_output_to_txt(objs);
+#if SAVE_OUTPUT_TXT == 1
+  save_output_to_txt(objs, "../../../tracking_rpp_output_tf_lidar.txt");
 #endif
 
-#if TTC_TEST
-  save_ttc_to_csv(objs);
+#if OUTPUT_MAP_TF == 1
+  convert_all_to_map_tf(objs);
+#if SAVE_OUTPUT_TXT == 1
+  save_output_to_txt(objs, "../../../tracking_rpp_output_tf_map.txt");
+#endif
 #endif
 
   msgs::DetectedObjectArray msg;
@@ -856,21 +822,21 @@ void TPPNode::get_current_ego_data_main()
   ego_vely_abs_kmph_ = vel_.get_ego_vely_kmph_abs();
 }
 
-void TPPNode::get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp)
+void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 {
   geometry_msgs::TransformStamped tf_stamped;
   bool is_warning = false;
 
   try
   {
-    tf_stamped = tf_buffer.lookupTransform("map", "lidar", fusion_stamp);
+    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer.lookupTransform("map", "lidar", ros::Time(0));
+      tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -923,10 +889,6 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "show_distance", mc_.show_distance, false);
   nh_.param<bool>(domain + "show_absspeed", mc_.show_absspeed, false);
 
-  int show_pp_int = 0;
-  nh_.param<int>(domain + "show_pp", show_pp_int, 0);
-  mc_.show_pp = (unsigned int)show_pp_int;
-
   int num_pp_input_min = 0;
   nh_.param<int>(domain + "num_pp_input_min", num_pp_input_min, 0);
   pp_.set_num_pp_input_min((std::size_t)std::max(num_pp_input_min, 0));
@@ -961,10 +923,7 @@ int TPPNode::run()
 
   g_trigger = true;
 
-#if TTC_TEST == 0
-  tf2_ros::Buffer tf_buffer;
-  tf2_ros::TransformListener tf_listener(tf_buffer);
-#endif
+  tf2_ros::TransformListener tf_listener(tf_buffer_);
 
   ros::Rate loop_rate(output_fps);
 
@@ -976,12 +935,12 @@ int TPPNode::run()
 
     if (!is_legal_dt_)
     {
-      tf_buffer.clear();
+      tf_buffer_.clear();
     }
 
     if (g_trigger && is_legal_dt_)
     {
-      get_current_ego_data(tf_buffer, KTs_.header_.stamp);  // sync data
+      get_current_ego_data(KTs_.header_.stamp);  // sync data
 
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;
@@ -992,10 +951,6 @@ int TPPNode::run()
 #endif
 
       // Tracking start ==========================================================================
-
-#if TTC_TEST
-      seq_ = seq_cb_;
-#endif
 
       // MOT: SORT algorithm
       KTs_.kalman_tracker_main(dt_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, use_tracking2d);
@@ -1010,7 +965,7 @@ int TPPNode::run()
       // Tracking --> PP =========================================================================
 
       pp_.callback_tracking(pp_objs_, ego_x_abs_, ego_y_abs_, ego_z_abs_, ego_heading_, input_source_);
-      pp_.main(pp_objs_, ppss, mc_.show_pp, wayarea_);  // PP: autoregression of order 1 -- AR(1)
+      pp_.main(pp_objs_, ppss, wayarea_);  // PP: autoregression of order 1 -- AR(1)
 
       publish_pp(pp_pub_, pp_objs_, 0, 0);
 #if TO_GRIDMAP

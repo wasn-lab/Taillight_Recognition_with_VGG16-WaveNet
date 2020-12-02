@@ -163,7 +163,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
   cv::Mat diff(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
   cv::Mat diffcolor(height, width, CV_8UC1);
 
-  cv::namedWindow("MyCameraPreview", cv::WindowFlags::WINDOW_AUTOSIZE);
+  // cv::namedWindow("MyCameraPreview", cv::WindowFlags::WINDOW_AUTOSIZE);
 
   while (ros::ok())
   {

@@ -67,36 +67,6 @@ geometry_msgs::Point MarkerGen::text_marker_position(const MyPoint32 p1, const M
   return p;
 }
 
-visualization_msgs::Marker MarkerGen::create_box_marker(const unsigned int idx, const msgs::BoxPoint bbox,
-                                                        std_msgs::Header obj_header)
-{
-  visualization_msgs::Marker marker;
-
-  copy_if_empty_time(obj_header.stamp);
-
-  marker.header = obj_header;
-  marker.ns = "Track3D_b";
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.orientation.w = 1.0;
-  marker.id = idx;
-  marker.type = visualization_msgs::Marker::LINE_LIST;
-  marker.scale.x = 0.2;
-  marker.lifetime = ros::Duration(mc_.lifetime_sec);
-  set_ColorRGBA(marker.color, mc_.color);
-
-  std::vector<MyPoint32> point_list = { bbox.p0, bbox.p1, bbox.p2, bbox.p3, bbox.p4, bbox.p5, bbox.p6, bbox.p7 };
-
-  marker.points.reserve(box_order.size());
-  for (const auto i : box_order)
-  {
-    geometry_msgs::Point point_msg;
-    convert_MyPoint32_to_Point(point_msg, point_list[i]);
-    marker.points.push_back(point_msg);
-  }
-
-  return marker;
-}
-
 std::string MarkerGen::parse_class_id(unsigned int class_id)
 {
   std::string class_name;
@@ -287,7 +257,7 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
   {
     geometry_msgs::Point point = text_marker_position(obj.bPoint.p1, obj.bPoint.p2, 2.);
     m_id_.markers.push_back(create_trackid_marker(idx++, point, obj));
-    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.relSpeed, obj.absSpeed));
+    m_speed_.markers.push_back(create_speed_marker(idx++, point, obj.header, obj.speed_rel, obj.speed_abs));
   }
 
   geometry_msgs::Point point_seq = init_Point(-20, 0, 0);
@@ -295,19 +265,6 @@ void MarkerGen::process_text_marker(unsigned int& idx, const std::vector<msgs::D
 
   mc_.pub_id.publish(m_id_);
   mc_.pub_speed.publish(m_speed_);
-}
-
-void MarkerGen::process_box_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
-{
-  std::vector<visualization_msgs::Marker>().swap(m_box_.markers);
-  m_box_.markers.reserve(objs.size());
-
-  for (const auto& obj : objs)
-  {
-    m_box_.markers.push_back(create_box_marker(idx++, obj.bPoint, obj.header));
-  }
-
-  mc_.pub_bbox.publish(m_box_);
 }
 
 void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs)
@@ -335,7 +292,6 @@ void MarkerGen::marker_gen_main(const std_msgs::Header header, const std::vector
   unsigned int idx = 1;
 
   process_text_marker(idx, objs);
-  process_box_marker(idx, objs);
   process_vel_marker(idx, objs);
 }
 }  // namespace tpp

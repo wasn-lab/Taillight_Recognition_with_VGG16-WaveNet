@@ -248,11 +248,11 @@ class Node:
         # self.checker_abs_latency.update(current_latency)
         # self.checker_timeout.update()
         #
-        avg_prob, d_min_prob, d_min = self.get_confidence_scores(_objects)
+        #avg_prob, d_min_prob, d_min = self.get_confidence_scores(_objects)
         # if d_min_prob > 0.0 and d_min_prob < 1.0:
         #     print("avg_prob = %f, d_min_prob = %f, d_min = %f" % (avg_prob, d_min_prob, d_min))
-        self.checker_nearProb.update(d_min_prob)
-        self.checker_avgProb.update(avg_prob)
+        #self.checker_nearProb.update(d_min_prob)
+        #self.checker_avgProb.update(avg_prob)
         #-------------------------------------------#
 
 
@@ -279,8 +279,8 @@ class Node:
                 for i in range(len(_objects)):
                     # Decide the source of id
                     obj_id = _objects[i].track.id if self.is_showing_track_id else i
-                    prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
-                    box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].bPoint, obj_id, prob=prob_ ) )
+                    #prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
+                    #box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].bPoint, obj_id, prob=prob_ ) )
                     idx += 1
         #
         self.box_mark_pub.publish(box_list)
