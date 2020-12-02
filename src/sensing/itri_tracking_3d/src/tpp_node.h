@@ -9,10 +9,8 @@
 #include "ego_param.h"
 #include "marker_gen.h"
 #include <visualization_msgs/MarkerArray.h>
-#if PP_FILTER_DRIVABLE_AREA == 1
 #include <tf2/utils.h>
 #include <geometry_msgs/PolygonStamped.h>
-#endif
 #if HEARTBEAT == 1
 #include <std_msgs/Empty.h>
 #endif
@@ -76,9 +74,7 @@ private:
   ros::Publisher track3d_pub_heartbeat_;
 #endif
 
-#if PP_FILTER_DRIVABLE_AREA == 1
   ros::Publisher drivable_area_pub_;
-#endif
 
   MarkerGen mg_;
 
@@ -88,10 +84,8 @@ private:
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
 
-#if PP_FILTER_DRIVABLE_AREA == 1
   ros::Subscriber lanelet2_route_sub_;
   void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
-#endif
 
   std::string frame_id_source_ = "base_link";
   std::string frame_id_target_ = "map";
@@ -114,7 +108,7 @@ private:
 
   double ground_z_ = -3.1;
 
-#if PP_FILTER_DRIVABLE_AREA == 1
+  bool drivable_area_filter_ = true;
   double expand_left_ = 2.2;
   double expand_right_ = 0.;
 
@@ -128,7 +122,6 @@ private:
                                                 geometry_msgs::Vector3 translation);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
   bool drivable_area_filter(const msgs::BoxPoint box_point);
-#endif
 
   bool create_bbox_from_polygon_ = false;
   void create_bbox_from_polygon(msgs::DetectedObject& obj);

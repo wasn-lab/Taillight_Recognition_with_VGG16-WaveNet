@@ -48,7 +48,6 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 #endif
 }
 
-#if PP_FILTER_DRIVABLE_AREA == 1
 void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input)
 {
   std::cout << *input << std::endl;
@@ -111,7 +110,6 @@ void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::Con
     }
   }
 }
-#endif
 
 void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 {
@@ -362,10 +360,8 @@ void TPPNode::subscribe_and_advertise_topics()
 
   // Note that we use different NodeHandle(nh2_) here
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-#if PP_FILTER_DRIVABLE_AREA == 1
   lanelet2_route_sub_ =
       nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
-#endif
 
   if (gen_markers_)
   {
@@ -379,10 +375,8 @@ void TPPNode::subscribe_and_advertise_topics()
     mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
   }
 
-#if PP_FILTER_DRIVABLE_AREA == 1
   std::string topic5 = topic + "/drivable";
   drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
-#endif
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)
@@ -598,7 +592,6 @@ void TPPNode::publish_tracking()
   }
 }
 
-#if PP_FILTER_DRIVABLE_AREA == 1
 geometry_msgs::Point TPPNode::get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
                                                        geometry_msgs::Vector3 translation)
 {
@@ -824,7 +817,6 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   // no need to filter
   return false;
 }
-#endif
 
 inline bool test_file_exist(const std::string& name)
 {
@@ -960,23 +952,26 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
   msg.header = objs_header_;
   msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);
 
-#if PP_FILTER_DRIVABLE_AREA == 1
-  msg.objects.reserve(objs.size());
-
-  for (auto& obj : objs)
+  if (drivable_area_filter_)
   {
-    if (drivable_area_filter(obj.bPoint))
+    msg.objects.reserve(objs.size());
+
+    for (auto& obj : objs)
     {
-      continue;
-    }
-    else
-    {
-      msg.objects.push_back(obj);
+      if (drivable_area_filter(obj.bPoint))
+      {
+        continue;
+      }
+      else
+      {
+        msg.objects.push_back(obj);
+      }
     }
   }
-#else
-  msg.objects.assign(objs.begin(), objs.end());
-#endif
+  else
+  {
+    msg.objects.assign(objs.begin(), objs.end());
+  }
 
   for (auto& obj : msg.objects)
   {
@@ -1086,10 +1081,9 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
   nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
 
-#if PP_FILTER_DRIVABLE_AREA == 1
+  nh_.param<bool>(domain + "drivable_area_filter", drivable_area_filter_, true);
   nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
   nh_.param<double>(domain + "expand_right", expand_right_, 0.);
-#endif
   nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
