@@ -22,7 +22,7 @@ void UdpClient::initial(const std::string& addr, int port)
   f_port = port;
   f_addr = addr;
 
-  addrinfo hints;
+  addrinfo hints{};
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_DGRAM;
