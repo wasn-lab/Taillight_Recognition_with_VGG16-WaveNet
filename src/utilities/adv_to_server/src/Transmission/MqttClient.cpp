@@ -43,7 +43,7 @@ int MqttClient::connect()
   return rc;
 }
 
-int MqttClient::publish(std::string topic, std::string msg)
+int MqttClient::publish(const std::string& topic, const std::string& msg)
 {
   int* msg_id = NULL;
   const char* topic_name = topic.c_str();

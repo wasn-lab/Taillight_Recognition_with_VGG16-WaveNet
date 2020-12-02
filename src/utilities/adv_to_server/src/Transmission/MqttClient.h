@@ -30,7 +30,7 @@ public:
   MqttClient();
   ~MqttClient();
   int connect();
-  int publish(std::string topic, std::string msg);
+  int publish(const std::string& topic, const std::string& msg);
   int subscribe(const std::string& topic);
   void setOnConneclCallback(void (*on_connect)(struct mosquitto* , void* , int ));
 private:
