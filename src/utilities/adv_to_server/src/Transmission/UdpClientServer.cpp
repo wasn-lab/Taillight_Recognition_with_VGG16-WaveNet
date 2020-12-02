@@ -181,7 +181,7 @@ UdpServer::UdpServer(const std::string& addr, int port) : f_port(port), f_addr(a
   char decimal_port[16];
   snprintf(decimal_port, sizeof(decimal_port), "%d", f_port);
   decimal_port[sizeof(decimal_port) / sizeof(decimal_port[0]) - 1] = '\0';
-  struct addrinfo hints;
+  struct addrinfo hints{};
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_DGRAM;
