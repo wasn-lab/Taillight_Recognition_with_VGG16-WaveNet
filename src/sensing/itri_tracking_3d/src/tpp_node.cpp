@@ -654,7 +654,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   geometry_msgs::TransformStamped tf_stamped;
   try
   {
-    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
 #if PRINT_MESSAGE
     std::cout << tf_stamped << std::endl;
 #endif
@@ -1036,14 +1036,14 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   try
   {
-    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
+    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+      tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -1086,8 +1086,10 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
   nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
 
+#if PP_FILTER_DRIVABLE_AREA == 1
   nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
   nh_.param<double>(domain + "expand_right", expand_right_, 0.);
+#endif
   nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
@@ -1119,7 +1121,7 @@ int TPPNode::run()
 
   g_trigger = true;
 
-  tf2_ros::TransformListener tf_listener(tf_buffer);
+  tf2_ros::TransformListener tf_listener(tf_buffer_);
 
   ros::Rate loop_rate(output_fps);
 
@@ -1139,7 +1141,7 @@ int TPPNode::run()
 
     if (!is_legal_dt_)
     {
-      tf_buffer.clear();
+      tf_buffer_.clear();
     }
 
     if (g_trigger && is_legal_dt_)

@@ -95,6 +95,7 @@ private:
 
   std::string frame_id_source_ = "base_link";
   std::string frame_id_target_ = "map";
+  tf2_ros::Buffer tf_buffer_;
 
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
@@ -123,7 +124,6 @@ private:
   std::vector<cv::Point2f> expanded_route_left;
   std::vector<cv::Point2f> expanded_route_right;
 
-  tf2_ros::Buffer tf_buffer;
   geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
                                                 geometry_msgs::Vector3 translation);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
