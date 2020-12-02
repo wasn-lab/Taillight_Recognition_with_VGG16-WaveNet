@@ -868,7 +868,7 @@ void sendRun(int argc, char** argv)
     json bsm_list = json::array();
     json ecu_list = json::array();
     json imu_list = json::array();
-    if(mqttGNSSQueue.size() !=0)
+    if(!mqttGNSSQueue.empty())
     {
       while(!mqttGNSSQueue.empty())
       {
