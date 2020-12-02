@@ -255,7 +255,7 @@ json genMqttIMUMsg();
 json getMqttDOMsg();
 
 /*=========================tools begin=========================*/
-bool checkCommand(int argc, char** argv, std::string command)
+bool checkCommand(int argc, char** argv, const std::string& command)
 {
   for (int i = 0; i < argc; i++)
   {
@@ -270,7 +270,7 @@ bool checkCommand(int argc, char** argv, std::string command)
 char* log_Time()
 {
   struct tm* ptm;
-  struct timeb stTimeb;
+  struct timeb stTimeb{};
   static char szTime[24];
 
   ftime(&stTimeb);
@@ -804,7 +804,7 @@ void mqtt_pubish(std::string msg)
 {
   if(isMqttConnected){
       std::string topic = "vehicle/report/dc5360f91e74";
-      std::cout << "publish "  << msg << std::endl;
+      ///std::cout << "publish "  << msg << std::endl;
       mqttPub.publish(topic, msg);
     }
 }
@@ -868,7 +868,7 @@ void sendRun(int argc, char** argv)
     json bsm_list = json::array();
     json ecu_list = json::array();
     json imu_list = json::array();
-    if(mqttGNSSQueue.size() !=0)
+    if(!mqttGNSSQueue.empty())
     {
       while(!mqttGNSSQueue.empty())
       {
@@ -909,7 +909,7 @@ void sendRun(int argc, char** argv)
       J1["imu"] = imu_list;
     }
 
-    if(!mqttSensorQueue.empty()){
+    while(!mqttSensorQueue.empty()){
        mutex_sensor.lock();
        states = mqttSensorQueue.front();
        mqttSensorQueue.pop();
@@ -917,7 +917,7 @@ void sendRun(int argc, char** argv)
        mqtt_pubish(states);
     }
 
-    if(!mqttDOQueue.empty()){
+    while(!mqttDOQueue.empty()){
         mutex_do.lock();
         json DO;
         detectObject = mqttDOQueue.front();
@@ -928,12 +928,15 @@ void sendRun(int argc, char** argv)
         mqtt_pubish(DO.dump());
     }
 
-    if(!mqttFailSafeQueue.empty())
+    while(!mqttFailSafeQueue.empty())
     {
+	    mutex_fail_safe.lock();
         std::string fail_safe = mqttFailSafeQueue.front();
         json j1 = json::parse(fail_safe);
         j1["type"] = "M8.2.VK003.2";
         j1["deviceid"] = PLATE;
+	    mqttFailSafeQueue.pop();
+	    mutex_fail_safe.unlock();
         UDP_VK_FAIL_SAFE_client.send_obj_to_server(j1.dump(), true);
     }
 
@@ -1243,7 +1246,7 @@ bool checkStopID(unsigned short in_stop_id, unsigned short out_stop_id)
 */
 
 // response
-void VK102callback(std::string request)
+void VK102callback(const std::string& request)
 {
   using namespace std;
   json J1;
@@ -1632,7 +1635,7 @@ json getMqttDOMsg(){
          json obj;
          obj["classification"] = trackingObjArray.objects[i].classId;
          obj["tid"] = trackingObjArray.objects[i].track.id;
-         obj["do_cordinate"] = {    
+         obj["do_coordinate"] = {    
             trackingObjArray.objects[i].center_point_gps.x,
             trackingObjArray.objects[i].center_point_gps.y, 
             trackingObjArray.objects[i].center_point_gps.z 
