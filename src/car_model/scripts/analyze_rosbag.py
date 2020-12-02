@@ -23,6 +23,7 @@ def _analyze(bag_filename):
         nmsgs = doc["message_count"]
         doc["avg_msg_size_in_bytes"] = float(nbytes) / max(nmsgs, 1)
         total_bytes += nbytes
+    topic_info.sort(key=lambda x: x["num_bytes"])
     pprint.pprint(topic_info)
     print("Total bytes: {}".format(total_bytes))
     print("-" * 30)
