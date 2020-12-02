@@ -270,7 +270,7 @@ bool checkCommand(int argc, char** argv, const std::string& command)
 char* log_Time()
 {
   struct tm* ptm;
-  struct timeb stTimeb;
+  struct timeb stTimeb{};
   static char szTime[24];
 
   ftime(&stTimeb);
