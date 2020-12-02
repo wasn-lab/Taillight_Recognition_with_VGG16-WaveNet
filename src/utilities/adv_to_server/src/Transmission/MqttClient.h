@@ -31,7 +31,7 @@ public:
   ~MqttClient();
   int connect();
   int publish(std::string topic, std::string msg);
-  int subscribe(std::string topic);
+  int subscribe(const std::string& topic);
   void setOnConneclCallback(void (*on_connect)(struct mosquitto* , void* , int ));
 private:
   void setTLS();

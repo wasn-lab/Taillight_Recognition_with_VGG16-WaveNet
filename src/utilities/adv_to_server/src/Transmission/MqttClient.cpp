@@ -56,7 +56,7 @@ int MqttClient::publish(std::string topic, std::string msg)
   return rc;
 }
 
-int MqttClient::subscribe(std::string topic)
+int MqttClient::subscribe(const std::string& topic)
 {
   std::cout << "to do" << std::endl;
   return 1;
