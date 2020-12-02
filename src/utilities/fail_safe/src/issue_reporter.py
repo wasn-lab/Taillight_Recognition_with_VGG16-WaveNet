@@ -26,7 +26,7 @@ to retrieve related bag files.
 
 class IssueReporter():
     def __init__(self):
-        self.last_posts = {}  # "summary": time (float)
+        self.lastest_issue_post_time = 0
         self.min_post_time_interval = 60  # Don't post same issue within 60s
         self.project_id = PROJECT_ID_P_S3
         self.issue_type_id = ISSUE_TYPE_ID_BUG
@@ -43,14 +43,17 @@ class IssueReporter():
     def set_debug_mode(self, mode):
         self.debug_mode = mode
 
+    def _is_repeated_issue(self):
+        now = time.time()
+        prev_post_time = self.lastest_issue_post_time
+        self.lastest_issue_post_time = now
+        return bool(now - prev_post_time <= self.min_post_time_interval)
+
     def post_issue(self, summary, description, dry_run=False):
         """
         Returns 1 if actually post an issue. 0 otherwise.
         """
-        last_post = self.last_posts.get(summary, 0)
-        now = time.time()
-        self.last_posts[summary] = now
-        if now - last_post <= self.min_post_time_interval:
+        if self._is_repeated_issue():
             logging.warn("%s: Does not post repeated issue", summary)
             return 0
 
