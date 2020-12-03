@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import unittest
 import rospy
 from sb_param_utils import get_vid, get_license_plate_number
@@ -33,7 +34,7 @@ class SBParamUtilsTest(unittest.TestCase):
 
         rospy.delete_param(param_name)
         actual = get_license_plate_number()
-        self.assertEqual(actual, "ITRI-ADV")
+        self.assertEqual(actual, u"試0002")
 
         if org_val:
             rospy.set_param(param_name, org_val)
