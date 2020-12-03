@@ -22,7 +22,7 @@ void XYZ2LLA::initParam()
   double read_tmp[63];
   int read_index = 0;
   std::string fname = ros::package::getPath(root_);
-  fname += "/data/ITRI_NEW_XYZ2ENU_sec.txt";
+  fname += path_param_xyz_to_enu;
 #if DEBUG == 1
   std::cout << fname << std::endl;
 #endif
@@ -123,7 +123,7 @@ void XYZ2LLA::initParamTWD97()
   double read_tmp_1[3];
   int read_index_1 = 0;
   std::string fname_1 = ros::package::getPath(root_);
-  fname_1 += "/data/ITRI_ShiftXYZ2TWD97.txt";
+  fname_1 += path_param_xyz_to_twd97;
 #if DEBUG == 1
   std::cout << fname_1 << std::endl;
 #endif
@@ -166,7 +166,7 @@ void XYZ2LLA::initParamUTM()
   double read_tmp_2[3];
   int read_index_2 = 0;
   std::string fname_2 = ros::package::getPath(root_);
-  fname_2 += "/data/ITRI_ShiftXYZ2UTM.txt";
+  fname_2 += path_param_xyz_to_utm;
 #if DEBUG == 1
   std::cout << fname_2 << std::endl;
 #endif
