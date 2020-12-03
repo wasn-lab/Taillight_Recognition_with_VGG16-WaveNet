@@ -603,16 +603,20 @@ geometry_msgs::Point TPPNode::get_transform_coordinate(geometry_msgs::Point orig
 
 bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon)
 {
-  int nvert = polygon.size();
-  double testx = position.x;
-  double testy = position.y;
   std::vector<double> vertx;
   std::vector<double> verty;
+  vertx.reserve(polygon.size());
+  verty.reserve(polygon.size());
+
   for (auto const& obj : polygon)
   {
     vertx.push_back(obj.x);
     verty.push_back(obj.y);
   }
+
+  int nvert = polygon.size();
+  double testx = position.x;
+  double testy = position.y;
 
   int i, j, c = 0;
   for (i = 0, j = nvert - 1; i < nvert; j = i++)
@@ -623,6 +627,7 @@ bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& p
       c = 1 + c;
     }
   }
+
   if (c % 2 == 0)
   {
     return true;
