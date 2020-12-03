@@ -328,9 +328,18 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
 
     if (obj.header.frame_id != "map")
     {
-      geometry_msgs::TransformStamped tf_stamped;
-      frame_id_source_ = obj.header.frame_id;
+      // assign frame_id_source_
+      if (obj.header.frame_id == "lidar" || obj.header.frame_id == "base_link")
+      {
+        frame_id_source_ = "base_link";
+      }
+      else
+      {
+        frame_id_source_ = obj.header.frame_id;
+      }
 
+      // get tf_stamped: base_link-to-map
+      geometry_msgs::TransformStamped tf_stamped;
       try
       {
         tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, obj.header.stamp);
@@ -349,18 +358,18 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
         }
       }
 
-      // TF (lidar-to-map) for object pose
-      geometry_msgs::Pose pose_in_lidar;
-      pose_in_lidar.position.x = obj.center_point.x;
-      pose_in_lidar.position.y = obj.center_point.y;
-      pose_in_lidar.position.z = obj.center_point.z;
-      pose_in_lidar.orientation.x = 0;
-      pose_in_lidar.orientation.y = 0;
-      pose_in_lidar.orientation.z = 0;
-      pose_in_lidar.orientation.w = 1;
+      // TF (base_link-to-map) for object pose
+      geometry_msgs::Pose pose_in_base_link;
+      pose_in_base_link.position.x = obj.center_point.x;
+      pose_in_base_link.position.y = obj.center_point.y;
+      pose_in_base_link.position.z = obj.center_point.z;
+      pose_in_base_link.orientation.x = 0;
+      pose_in_base_link.orientation.y = 0;
+      pose_in_base_link.orientation.z = 0;
+      pose_in_base_link.orientation.w = 1;
 
       geometry_msgs::Pose pose_in_map;
-      tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped);
+      tf2::doTransform(pose_in_base_link, pose_in_map, tf_stamped);
       obj.center_point_gps.x = pose_in_map.position.x;
       obj.center_point_gps.y = pose_in_map.position.y;
       obj.center_point_gps.z = pose_in_map.position.z;
