@@ -648,6 +648,10 @@ void KalmanTrackers::update_boxes()
 
       track.box_.bPoint.p7.x = track.box_corners_[2].new_x_rel;
       track.box_.bPoint.p7.y = track.box_corners_[2].new_y_rel;
+
+      track.box_.center_point.x = (track.box_.bPoint.p0.x + track.box_.bPoint.p6.x) / 2;
+      track.box_.center_point.y = (track.box_.bPoint.p0.y + track.box_.bPoint.p6.y) / 2;
+      track.box_.center_point.z = (track.box_.bPoint.p0.z + track.box_.bPoint.p6.z) / 2;
     }
   }
 }
