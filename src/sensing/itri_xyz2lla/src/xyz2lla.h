@@ -44,9 +44,13 @@ private:
 
   tf2_ros::Buffer tf_buffer_;
   std::string frame_id_target_ = "map";
-  std::string frame_id_source_ = "lidar";
+  std::string frame_id_source_ = "base_link";
 
   std::string root_ = "itri_xyz2lla";
+
+  std::string path_param_xyz_to_enu = "/data/ITRI_NEW_XYZ2ENU_sec.txt";
+  std::string path_param_xyz_to_twd97 = "/data/ITRI_ShiftXYZ2TWD97.txt";
+  std::string path_param_xyz_to_utm = "/data/ITRI_ShiftXYZ2UTM.txt";
 
   double lat0_ = 0.;  // initial latitude
   double lon0_ = 0.;  // initial longitude

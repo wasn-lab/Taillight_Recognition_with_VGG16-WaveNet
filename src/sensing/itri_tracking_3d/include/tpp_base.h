@@ -33,6 +33,8 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
+#include "detected_object_class_id.h"
+
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
@@ -92,8 +94,6 @@
 // when a tracked bbox shrinks severely in a sudden, replace it with the previous (larger) bbox
 #define PREVENT_SHRINK_BBOX 0
 
-#define PP_FILTER_DRIVABLE_AREA 1
-
 #define O_FIX std::setiosflags(std::ios::fixed)
 #define O_P std::setprecision(8)
 
@@ -126,7 +126,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_bbox;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;

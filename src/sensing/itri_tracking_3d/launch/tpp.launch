@@ -28,8 +28,10 @@
   <arg name="create_polygon_from_bbox" default="False" />
 
   <!-- PP filter of drivable area: width (meter) to be expanded from the host lane -->
+  <arg name="drivable_area_filter" default="True" />
   <arg name="expand_left" default="2.2" />
   <arg name="expand_right" default="0.0" />
+  <arg name="ground_z" default="-3.1" />
 
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
@@ -52,6 +54,7 @@
     <param name="show_runtime" value="$(arg show_runtime)" />
     <param name="create_bbox_from_polygon" value="$(arg create_bbox_from_polygon)" />
     <param name="create_polygon_from_bbox" value="$(arg create_polygon_from_bbox)" />
+    <param name="drivable_area_filter" value="$(arg drivable_area_filter)" />
     <param name="expand_left" value="$(arg expand_left)" />
     <param name="expand_right" value="$(arg expand_right)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
@@ -61,5 +64,6 @@
     <param name="show_source" value="$(arg show_source)" />
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
+    <param name="ground_z" value="$(arg ground_z)" />
   </node>
 </launch>

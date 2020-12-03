@@ -21,7 +21,7 @@ class CtrlInfo02(object):
     def is_self_driving(self):
         if self.msg is None:
             return False
-        return True if int(self.msg.Flag08) == 1 else False
+        return True if int(self.msg.Dspace_Flag08) == 1 else False
 
     def _reset(self):
         fps = self._get_fps()

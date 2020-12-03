@@ -37,7 +37,7 @@ public:
                          const float ego_z_abs, const float ego_heading, const int input_source);
 
   void main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-            const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea);
+            const nav_msgs::OccupancyGrid& wayarea);
 
   void set_input_shift_m(const long double shift_m)
   {
@@ -63,7 +63,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
   int input_source_ = InputSource::CameraDetV2;
-  unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
   std::size_t num_pp_input_min_ = 4;
