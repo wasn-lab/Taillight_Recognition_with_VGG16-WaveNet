@@ -28,20 +28,11 @@ import tf2_ros
 import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
 
-current_frame = 0
-prediction_horizon = None
-past_obj = []
-tf_buffer = None
-tf_listener = None
-hyperparams = None
-buffer = None
-
 seed = 0
 np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
-
 
 class parameter():
     def __init__(self):
@@ -56,10 +47,6 @@ class parameter():
 
 class buffer_data():
     def __init__(self):
-        '''
-
-        '''
-
         self.buffer_frame = pd.DataFrame(columns=['frame_id',
                                                   'type',
                                                   'node_id',
@@ -70,7 +57,6 @@ class buffer_data():
                                                   'height',
                                                   'heading_ang',
                                                   'heading_rad'])
-        # self.scene = None
         self.current_time = None
         standardization = {
             'PEDESTRIAN': {
@@ -228,8 +214,7 @@ class buffer_data():
 
 
 def transform_data(buffer, data):
-    # calculate heading part
-    global past_obj, tf_buffer, tf_listener, current_frame
+    global current_frame
     present_id_list = []
 
     buffer.current_time = current_frame
@@ -247,14 +232,21 @@ def transform_data(buffer, data):
         x = obj.center_point.x
         y = obj.center_point.y
         z = obj.center_point.z
+        
         # transform from base_link to map
-        # transform = tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
-        # pose_stamped = PoseStamped()
-        # pose_stamped.pose.position.x = x
-        # pose_stamped.pose.position.y = y
-        # pose_stamped.pose.position.z = z
-        # pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
+        if absolute_coordinate:
+            transform = tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
+            pose_stamped = PoseStamped()
+            pose_stamped.pose.position.x = x
+            pose_stamped.pose.position.y = y
+            pose_stamped.pose.position.z = z
+            pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
+            x = pose_transformed.pose.position.x
+            y = pose_transformed.pose.position.y
+            z = pose_transformed.pose.position.z
+
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
+        
         length = math.sqrt(
             math.pow(
                 (obj.bPoint.p4.x -
@@ -282,9 +274,6 @@ def transform_data(buffer, data):
                 (obj.bPoint.p1.y -
                  obj.bPoint.p0.y),
                 2))
-        # x = pose_transformed.pose.position.x
-        # y = pose_transformed.pose.position.y
-        # z = pose_transformed.pose.position.z
         diff_x = 0
         diff_y = 0
         heading = 0
@@ -315,6 +304,7 @@ def transform_data(buffer, data):
         info = str(current_frame) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + "," + \
             str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
         past_obj.append(info)
+        
         # if diff_x != 0:
         #    print(diff_x,diff_y,diff_y/diff_x,heading)
 
@@ -340,9 +330,6 @@ def transform_data(buffer, data):
 
 
 def predict(data):
-    global hyperparams, buffer, prediction_horizon
-    # print buffer
-    ph = prediction_horizon
     present_id = transform_data(buffer, data)
     present_id = map(str, present_id)
     scene = buffer.create_scene(present_id)
@@ -371,7 +358,7 @@ def predict(data):
 
     predictions = eval_stg.predict(scene,
                                    timesteps,
-                                   ph,
+                                   prediction_horizon,
                                    buffer.env,
                                    num_samples=1,
                                    min_future_timesteps=8,
@@ -392,8 +379,8 @@ def predict(data):
     for index, node in enumerate(predictions[t].keys()):
         for obj in data.objects:
             if obj.track.id == int(node.id):
-                print('object id', obj.track.id)
-                print('node id', node.id)
+                # print('object id', obj.track.id)
+                # print('node id', node.id)
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()
@@ -416,9 +403,8 @@ def predict(data):
 
 
 def listener_ipp():
-    global tf_buffer, tf_listener, prediction_horizon
+    global tf_buffer, tf_listener
     rospy.init_node('ipp_transform_data')
-    prediction_horizon = rospy.get_param('/object_path_prediction/prediction_horizon')
     rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)
@@ -441,20 +427,19 @@ def load_model(model_dir, ts=100):
 
 
 if __name__ == '__main__':
-    # global buffer
-    #global tf_buffer, tf_listener
-    # tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
-    #tf_listener = tf2_ros.TransformListener(tf_buffer)
-
     ''' =====================
           loading_model_part
         ===================== '''
-
+    global prediction_horizon, absolute_coordinate, buffer, past_obj, current_frame
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
     buffer = buffer_data()
     print('Complete loading model!')
+    prediction_horizon = rospy.get_param('/object_path_prediction/prediction_horizon')
+    absolute_coordinate = rospy.get_param('/object_path_prediction/coordinate_type')
+    current_frame = 0
+    past_obj = []
 
     # for i in range(10):
     #     heading = math.atan(i*(-1))

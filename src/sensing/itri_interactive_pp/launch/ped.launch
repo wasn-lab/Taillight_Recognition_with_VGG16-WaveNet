@@ -6,11 +6,13 @@
   <!-- 2: tracking 3d -->
   <arg name="input_topic" default="1" />
 
-  <!-- Set max distance(m) to predict pedestrians -->
+  <!-- Set time to prediction (2fps)-->
   <arg name="prediction_horizon" default="4" />
 
-  <!-- Set danger zone distance(m) to planned path -->
-  <!--arg name="danger_zone_distance" default="2" /-->
+  <!-- Set type of coordinate in input_data and marker-->
+  <!-- 1: absolute coordinate map_based -->
+  <!-- 2: relative coordinate ego-based -->
+  <arg name="coordinate_type" default="1" />
 
   <!-- rviz markers -->
   <!-- true : use 2d for danger zone -->
@@ -28,10 +30,9 @@
   </node>
   <node pkg="itri_interactive_pp" type="ipp_prediction.py" name="object_path_prediction" cwd="node" output="screen" >
     <param name="prediction_horizon" value="$(arg prediction_horizon)" />
+    <param name="coordinate_type" value="$(arg coordinate_type)" />
   </node>  
   <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen">
-    <!--param name="danger_zone_distance" value="$(arg danger_zone_distance)" /-->
-    <!--param name="use_2d_for_alarm" value="$(arg use_2d_for_alarm)" /-->
-    <!--param name="show_probability" value="$(arg show_probability)" /-->
+    <param name="coordinate_type" value="$(arg coordinate_type)" />
   </node>
 </launch>
