@@ -1,3 +1,4 @@
+#! /usr/bin/python2.7
 import rospy
 import tf2_ros
 import tf2_geometry_msgs
@@ -33,8 +34,12 @@ def publish_msg(data):
 
 def listener_ipp():
     global tf_buffer, tf_listener
+    input_source = rospy.get_param('/filter/input_topic')
+    {
+        1 : lambda: rospy.Subscriber('/Tracking2D/front_bottom_60', DetectedObjectArray, publish_msg),
+        2 : lambda: rospy.Subscriber('/Tracking3D', DetectedObjectArray, publish_msg),
+    }
     rospy.init_node('ipp_delay_data')
-    rospy.Subscriber('/Tracking2D/front_bottom_60', DetectedObjectArray, publish_msg)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)
     # spin() simply keeps python from exiting until this node is stopped

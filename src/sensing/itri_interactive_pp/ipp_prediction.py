@@ -1,5 +1,5 @@
+#! /usr/bin/python2.7
 # coding=utf-8
-
 import sys
 import os
 import json
@@ -29,6 +29,7 @@ import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
 
 current_frame = 0
+prediction_horizon = None
 past_obj = []
 tf_buffer = None
 tf_listener = None
@@ -339,9 +340,9 @@ def transform_data(buffer, data):
 
 
 def predict(data):
-    global hyperparams, buffer
+    global hyperparams, buffer, prediction_horizon
     # print buffer
-    ph = 2
+    ph = prediction_horizon
     present_id = transform_data(buffer, data)
     present_id = map(str, present_id)
     scene = buffer.create_scene(present_id)
@@ -415,8 +416,9 @@ def predict(data):
 
 
 def listener_ipp():
-    global tf_buffer, tf_listener
+    global tf_buffer, tf_listener, prediction_horizon
     rospy.init_node('ipp_transform_data')
+    prediction_horizon = rospy.get_param('/object_path_prediction/prediction_horizon')
     rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)

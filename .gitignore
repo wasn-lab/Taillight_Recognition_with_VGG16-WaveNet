@@ -51,3 +51,4 @@ src/utilities/alexab_darknet/build
 src/sensing/deeplab/weights
 src/sensing/itri_interactive_pp/models
 src/sensing/itri_interactive_pp/other
+src/sensing/itri_interactive_pp/sandbox

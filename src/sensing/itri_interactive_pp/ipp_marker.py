@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python2.7
 import rospy
 from std_msgs.msg import String
 from msgs.msg import DetectedObjectArray
