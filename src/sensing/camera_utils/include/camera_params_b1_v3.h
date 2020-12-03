@@ -63,6 +63,21 @@ constexpr int image_cols = raw_image_width;
 constexpr int num_image_pixels = image_width * image_height;
 constexpr int num_image_bytes = image_width * image_height * 3;
 
+// Parameters for resizing 1280x720 to 608x608(yolov3 default size)
+constexpr double image_ratio_on_yolov3 = 608.0 / raw_image_width;
+constexpr double inv_image_ratio_on_yolov3 = raw_image_width / 608.0;
+constexpr int yolov3_letterbox_visible_height = image_ratio_on_yolov3 * raw_image_height;  // 382
+constexpr int left_border = std::abs(raw_image_width * image_ratio_on_yolov3 - yolov3_image_width) / 2;
+constexpr int right_border = left_border;
+constexpr int top_border = std::abs(raw_image_height * image_ratio_on_yolov3 - yolov3_image_height) / 2;
+static_assert(top_border == 133, "top border should be 133");
+constexpr int bottom_border = top_border;
+// NPP library has different rounding from opencv.
+constexpr int npp_top_border = top_border;
+constexpr int npp_bottom_border = npp_top_border;
+static_assert(yolov3_letterbox_visible_height + npp_top_border + npp_top_border == yolov3_image_height,
+              "visible height + border should be 608");
+
 }  // namespace camera
 #endif  // CAR_MODEL_IS_B1_V3
 #endif  // __CAMERA_PARAMS_B1_V3_H__

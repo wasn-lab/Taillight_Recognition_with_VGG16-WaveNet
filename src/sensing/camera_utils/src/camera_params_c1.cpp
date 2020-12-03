@@ -16,7 +16,6 @@ const std::string names[id::num_ids] = {
   "left_front_60",
   "left_back_60",
   "back_top_120",
-  "",
 };
 
 const std::string topics[id::num_ids] = {
@@ -28,7 +27,6 @@ const std::string topics[id::num_ids] = {
   "/cam/left_front_60",
   "/cam/left_back_60",
   "/cam/back_top_120",
-  "",
 };
 
 const std::string topics_obj[id::num_ids] = {
@@ -40,7 +38,6 @@ const std::string topics_obj[id::num_ids] = {
   "/cam_obj/left_front_60",
   "/cam_obj/left_back_60",
   "/cam_obj/back_top_120",
-  "",
 };
 
 const bool distortion[id::num_ids] = {
