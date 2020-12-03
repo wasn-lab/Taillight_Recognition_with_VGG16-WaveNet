@@ -859,28 +859,20 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << "#6-1 bbox center x -- kalman-filtered (m), "  //
         << "#6-2 bbox center y -- kalman-filtered (m), "  //
         << "#6-3 bbox center z -- kalman-filtered (m), "  //
-        << "#7 abs vx (km/h), "                          //
-        << "#8 abs vy (km/h), "                          //
-        << "#9 abs speed (km/h), "                       //
-        << "#10 rel vx (km/h), "                         //
-        << "#11 rel vy (km/h), "                         //
-        << "#12 rel speed (km/h), "                      //
-        << "#13 ppx in 5 ticks (m), "                    //
-        << "#14 ppy in 5 ticks (m), "                    //
-        << "#15 ppx in 10 ticks (m), "                   //
-        << "#16 ppy in 10 ticks (m), "                   //
-        << "#17 ppx in 15 ticks (m), "                   //
-        << "#18 ppy in 15 ticks (m), "                   //
-        << "#19 ppx in 20 ticks (m), "                   //
-        << "#20 ppy in 20 ticks (m), "                   //
-        << "#21 ego x abs (m), "                         //
-        << "#22 ego y abs (m), "                         //
-        << "#23 ego z abs (m), "                         //
-        << "#24 ego heading (rad), "                     //
-        << "#25 kf Q1, "                                 //
-        << "#26 kf Q2, "                                 //
-        << "#27 kf Q3, "                                 //
-        << "#28 kf R, "                                  //
+        << "#7 abs vx (km/h), "                           //
+        << "#8 abs vy (km/h), "                           //
+        << "#9 abs speed (km/h), "                        //
+        << "#10 rel vx (km/h), "                          //
+        << "#11 rel vy (km/h), "                          //
+        << "#12 rel speed (km/h), "                       //
+        << "#21 ego x abs (m), "                          //
+        << "#22 ego y abs (m), "                          //
+        << "#23 ego z abs (m), "                          //
+        << "#24 ego heading (rad), "                      //
+        << "#25 kf Q1, "                                  //
+        << "#26 kf Q2, "                                  //
+        << "#27 kf Q3, "                                  //
+        << "#28 kf R, "                                   //
         << "#29 kf P0\n";
   }
   else
@@ -911,38 +903,17 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << obj.speed_abs << ", "                  // #9 abs speed (km/h)
         << obj.track.relative_velocity.x << ", "  // #10 rel vx (km/h)
         << obj.track.relative_velocity.y << ", "  // #11 rel vy (km/h)
-        << obj.speed_rel;                         // #12 rel speed (km/h)
+        << obj.speed_rel << ", "                  // #12 rel speed (km/h)
+        << ego_x_abs_ << ", "                     // #21 ego x abs
+        << ego_y_abs_ << ", "                     // #22 ego y abs
+        << ego_z_abs_ << ", "                     // #23 ego z abs
+        << ego_heading_ << ", "                   // #24 ego heading (rad)
+        << KTs_.get_Q1() << ", "                  // #25 kf Q1
+        << KTs_.get_Q2() << ", "                  // #26 kf Q2
+        << KTs_.get_Q3() << ", "                  // #27 kf Q3
+        << KTs_.get_R() << ", "                   // #28 kf R
+        << KTs_.get_P0() << "\n";                 // #29 kf P0
 
-    if (obj.track.is_ready_prediction)
-    {
-      // #13 ppx in 5 ticks (m)
-      // #14 ppy in 5 ticks (m)
-      // #15 ppx in 10 ticks (m)
-      // #16 ppy in 10 ticks (m)
-      // #17 ppx in 15 ticks (m)
-      // #18 ppy in 15 ticks (m)
-      // #19 ppx in 20 ticks (m)
-      // #20 ppy in 20 ticks (m)
-      for (unsigned int j = 0; j < num_forecasts_; j = j + 5)
-      {
-        ofs << ", " << obj.track.forecasts[j].position.x << ", " << obj.track.forecasts[j].position.y;
-      }
-
-      ofs << ", "                //
-          << ego_x_abs_ << ", "  // #21 ego x abs
-          << ego_y_abs_ << ", "  // #22 ego y abs
-          << ego_z_abs_ << ", "  // #23 ego z abs
-          << ego_heading_;       // #24 ego heading (rad)
-
-      ofs << ", "                   //
-          << KTs_.get_Q1() << ", "  // #25 kf Q1
-          << KTs_.get_Q2() << ", "  // #26 kf Q2
-          << KTs_.get_Q3() << ", "  // #27 kf Q3
-          << KTs_.get_R() << ", "   // #28 kf R
-          << KTs_.get_P0();         // #29 kf P0
-    }
-
-    ofs << "\n";
     std::cout << "[Produced] time = " << obj.header.stamp << ", track_id = " << obj.track.id << std::endl;
   }
 
