@@ -457,9 +457,10 @@ int XYZ2LLA::run()
   initParamUTM();
 #endif
 
-  std::string out_topic = "Tracking3D/xyz2lla";
+  std::string in_topic = "Tracking3D";
+  std::string out_topic = in_topic + "/xyz2lla";
 
-  sub_xyz2lla_ = nh_.subscribe("Tracking3D", 1, &XYZ2LLA::callbackTracking, this);
+  sub_xyz2lla_ = nh_.subscribe(in_topic, 1, &XYZ2LLA::callbackTracking, this);
   pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 1);
 #if HEARTBEAT == 1
   pub_xyz2lla_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);
