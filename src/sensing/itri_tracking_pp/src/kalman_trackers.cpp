@@ -139,9 +139,9 @@ void KalmanTrackers::extract_box_centers()
     extract_box_center(box_center, objs_[i].bPoint);
     box_centers_.push_back(box_center);
 
-    objs_[i].lidarInfo.boxCenter.x = (objs_[i].bPoint.p0.x + objs_[i].bPoint.p6.x) / 2;
-    objs_[i].lidarInfo.boxCenter.y = (objs_[i].bPoint.p0.y + objs_[i].bPoint.p6.y) / 2;
-    objs_[i].lidarInfo.boxCenter.z = (objs_[i].bPoint.p0.z + objs_[i].bPoint.p6.z) / 2;
+    objs_[i].lidarInfo.boxCenter.x = objs_[i].center_point.x;
+    objs_[i].lidarInfo.boxCenter.y = objs_[i].center_point.y;
+    objs_[i].lidarInfo.boxCenter.z = objs_[i].center_point.z;
   }
 }
 

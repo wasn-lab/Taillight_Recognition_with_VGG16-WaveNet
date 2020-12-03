@@ -853,32 +853,34 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << "#4-1 GT bbox center x (m), "  //
         << "#4-2 GT bbox center y (m), "  //
 #endif
-        << "#5-1 input bbox center x (m), "            //
-        << "#5-2 input bbox center y (m), "            //
-        << "#6-1 kalman-filtered bbox center x (m), "  //
-        << "#6-2 kalman-filtered bbox center y (m), "  //
-        << "#7 abs vx (km/h), "                        //
-        << "#8 abs vy (km/h), "                        //
-        << "#9 abs speed (km/h), "                     //
-        << "#10 rel vx (km/h), "                       //
-        << "#11 rel vy (km/h), "                       //
-        << "#12 rel speed (km/h), "                    //
-        << "#13 ppx in 5 ticks (m), "                  //
-        << "#14 ppy in 5 ticks (m), "                  //
-        << "#15 ppx in 10 ticks (m), "                 //
-        << "#16 ppy in 10 ticks (m), "                 //
-        << "#17 ppx in 15 ticks (m), "                 //
-        << "#18 ppy in 15 ticks (m), "                 //
-        << "#19 ppx in 20 ticks (m), "                 //
-        << "#20 ppy in 20 ticks (m), "                 //
-        << "#21 ego x abs (m), "                       //
-        << "#22 ego y abs (m), "                       //
-        << "#23 ego z abs (m), "                       //
-        << "#24 ego heading (rad), "                   //
-        << "#25 kf Q1, "                               //
-        << "#26 kf Q2, "                               //
-        << "#27 kf Q3, "                               //
-        << "#28 kf R, "                                //
+        << "#5-1 bbox center x -- input (m), "            //
+        << "#5-2 bbox center y -- input (m), "            //
+        << "#5-3 bbox center z -- input (m), "            //
+        << "#6-1 bbox center x -- kalman-filtered (m), "  //
+        << "#6-2 bbox center y -- kalman-filtered (m), "  //
+        << "#6-3 bbox center z -- kalman-filtered (m), "  //
+        << "#7 abs vx (km/h), "                          //
+        << "#8 abs vy (km/h), "                          //
+        << "#9 abs speed (km/h), "                       //
+        << "#10 rel vx (km/h), "                         //
+        << "#11 rel vy (km/h), "                         //
+        << "#12 rel speed (km/h), "                      //
+        << "#13 ppx in 5 ticks (m), "                    //
+        << "#14 ppy in 5 ticks (m), "                    //
+        << "#15 ppx in 10 ticks (m), "                   //
+        << "#16 ppy in 10 ticks (m), "                   //
+        << "#17 ppx in 15 ticks (m), "                   //
+        << "#18 ppy in 15 ticks (m), "                   //
+        << "#19 ppx in 20 ticks (m), "                   //
+        << "#20 ppy in 20 ticks (m), "                   //
+        << "#21 ego x abs (m), "                         //
+        << "#22 ego y abs (m), "                         //
+        << "#23 ego z abs (m), "                         //
+        << "#24 ego heading (rad), "                     //
+        << "#25 kf Q1, "                                 //
+        << "#26 kf Q2, "                                 //
+        << "#27 kf Q3, "                                 //
+        << "#28 kf R, "                                  //
         << "#29 kf P0\n";
   }
   else
@@ -898,16 +900,18 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << gt_x_ << ", "  // #4-1 GT bbox center x (m)
         << gt_y_ << ", "  // #4-2 GT bbox center y (m)
 #endif
-        << obj.lidarInfo.boxCenter.x << ", "                // #5-1 input bbox center x (m)
-        << obj.lidarInfo.boxCenter.y << ", "                // #5-2 input bbox center y (m)
-        << (obj.bPoint.p0.x + obj.bPoint.p6.x) / 2 << ", "  // #6-1 kalman-filtered bbox center x (m)
-        << (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2 << ", "  // #6-2 kalman-filtered bbox center y (m)
-        << obj.track.absolute_velocity.x << ", "            // #7 abs vx (km/h)
-        << obj.track.absolute_velocity.y << ", "            // #8 abs vy (km/h)
-        << obj.speed_abs << ", "                            // #9 abs speed (km/h)
-        << obj.track.relative_velocity.x << ", "            // #10 rel vx (km/h)
-        << obj.track.relative_velocity.y << ", "            // #11 rel vy (km/h)
-        << obj.speed_rel;                                   // #12 rel speed (km/h)
+        << obj.lidarInfo.boxCenter.x << ", "      // #5-1 bbox center x -- input (m)
+        << obj.lidarInfo.boxCenter.y << ", "      // #5-2 bbox center y -- input (m)
+        << obj.lidarInfo.boxCenter.z << ", "      // #5-3 bbox center z -- input (m)
+        << obj.center_point.x << ", "             // #6-1 bbox center x -- kalman-filtered (m)
+        << obj.center_point.y << ", "             // #6-2 bbox center y -- kalman-filtered (m)
+        << obj.center_point.z << ", "             // #6-3 bbox center z -- kalman-filtered (m)
+        << obj.track.absolute_velocity.x << ", "  // #7 abs vx (km/h)
+        << obj.track.absolute_velocity.y << ", "  // #8 abs vy (km/h)
+        << obj.speed_abs << ", "                  // #9 abs speed (km/h)
+        << obj.track.relative_velocity.x << ", "  // #10 rel vx (km/h)
+        << obj.track.relative_velocity.y << ", "  // #11 rel vy (km/h)
+        << obj.speed_rel;                         // #12 rel speed (km/h)
 
     if (obj.track.is_ready_prediction)
     {
