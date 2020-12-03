@@ -1,6 +1,6 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-  <arg name="input_topic" default="/LidarAll" />
+  <arg name="input_topic" default="/LidarAll/NonGround" />
   <arg name="baselink_support" default="false" />
   <arg name="reproduce_result_mode" default="false" />
 

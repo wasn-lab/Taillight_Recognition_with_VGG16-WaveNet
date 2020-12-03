@@ -361,6 +361,7 @@ set(SOURCES_SRCS
   Preprocess/Transform/Transform_CUDA.cu
   Preprocess/VoxelGrid/VoxelGrid_CUDA.cu
   Format/pointcloud_format_conversion.cpp
+  Compression/pc2_compressor.cpp
   )
 
 
