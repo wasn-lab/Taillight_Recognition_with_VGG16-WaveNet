@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Send backup rosbag files to backend.
 """
@@ -89,26 +90,26 @@ class RosbagSender(object):
 
     def _generate_lftp_script(self, bag):
         ftp_cmds = [
-            "set ssl:verify-certificate no",
-            "set net:limit-total-rate 0:{}".format(self.upload_rate),
-            "open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
+            u"set ssl:verify-certificate no",
+            u"set net:limit-total-rate 0:{}".format(self.upload_rate),
+            u"open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend
-        dir_name = "/Share/ADV/Rosbag/fail_safe/{}/{}".format(self.license_plate_number, ymd)
+        dir_name = u"/Share/ADV/Rosbag/fail_safe/{}/{}".format(self.license_plate_number, ymd)
         ftp_cmds += [
-            "mkdir -p {}".format(dir_name),
-            "cd {}".format(dir_name),
-            "put -c {}".format(bag),
-            "!touch {}".format(_get_stamp_filename(bag)),
+            u"mkdir -p {}".format(dir_name),
+            u"cd {}".format(dir_name),
+            u"put -c {}".format(bag),
+            u"!touch {}".format(_get_stamp_filename(bag)),
         ]
-        ftp_cmds += ["bye"]
+        ftp_cmds += [u"bye"]
 
         if os.path.isfile(_BACKUP_ROSBAG_LFTP_SCRIPT):
             os.unlink(_BACKUP_ROSBAG_LFTP_SCRIPT)
 
-        with open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w") as _fp:
-            _fp.write("\n".join(ftp_cmds))
-            _fp.write("\n")
+        with io.open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w", encoding="utf-8") as _fp:
+            _fp.write(u"\n".join(ftp_cmds))
+            _fp.write(u"\n")
         return _BACKUP_ROSBAG_LFTP_SCRIPT
 
     def get_unsent_rosbag_filenames(self):

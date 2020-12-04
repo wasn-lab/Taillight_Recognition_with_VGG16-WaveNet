@@ -2,8 +2,10 @@
 """
 API for notifying that we have a new bag to be uploaded to backend.
 """
+from __future__ import print_function
 import os
 import requests
+# import logging
 from sb_param_utils import get_license_plate_number
 from backend_info import WEBAPI_BASE_URL
 
