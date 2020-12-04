@@ -1,7 +1,8 @@
 import unittest
 # import pprint
 from jira_utils import (
-    get_issue_contents, generate_issue_contents, post_issue,
+    get_issue_contents, generate_issue_contents, post_issue, resolve_issue,
+    close_issue,
     PROJECT_ID_P_S3, ISSUE_TYPE_ID_BUG, PROJECT_ID_SCM)
 
 
@@ -38,6 +39,16 @@ class JiraUtilsTest(unittest.TestCase):
             "[auto report] Test fail safe auto issue report",
             "Description of fail safe auto issue report",
             ISSUE_TYPE_ID_BUG)
+        self.assertEqual(ret, 0)
+
+    @unittest.skip("Manual test")
+    def test_resolve_issue(self):
+        ret = resolve_issue("S3-241")
+        self.assertEqual(ret, 0)
+
+    @unittest.skip("Manual test")
+    def test_close_issue(self):
+        ret = close_issue("S3-241")
         self.assertEqual(ret, 0)
 
 if __name__ == "__main__":
