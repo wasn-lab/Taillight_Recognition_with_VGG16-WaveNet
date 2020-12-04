@@ -5,7 +5,6 @@
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
-                <!-- ensure program does not crash -->
                 - name: /fail_safe/rosbag_sender/heartbeat
                   timeout: 15
                   negative: False
