@@ -42,4 +42,21 @@ rostest car_model publish_test_geofence_pp_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
 rostest car_model publish_test_target_planner_b1_v2.test
 rostest car_model publish_test_drivenet_b1_v2_sidecam_3dobj.test
+
+
+readonly rosbag_backup_dir=${HOME}/rosbag_files/backup
+
+# fail_safe nodes should work with and without ~/rosbag_files/backup
+if [[ -d ${rosbag_backup_dir} ]]; then
+  rm -rf ${rosbag_backup_dir}
+fi
+rostest car_model publish_test_fail_safe_b1_v2.test
+
+mkdir -p ${rosbag_backup_dir}
+touch ${rosbag_backup_dir}/auto_record_2020-10-06-16-20-50_3.bag
+rostest car_model publish_test_fail_safe_b1_v2.test
+if [[ -d ${rosbag_backup_dir} ]]; then
+  rm -rf ${rosbag_backup_dir}
+fi
+
 popd

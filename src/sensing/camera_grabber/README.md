@@ -21,15 +21,20 @@ sudo ln -s opencv4/ opencv
 ```
 ### Compile 
 
-
+**CAR_MODEL = B1_V3:**
 ```
 catkin_make -DCATKIN_WHITELIST_PACKAGES="msgs;camera_utils;car_model;camera_grabber;dl_data" -DCAR_MODEL=B1_V3
+```
+
+**CAR_MODEL = C1:**
+```
+catkin_make -DCATKIN_WHITELIST_PACKAGES="msgs;camera_utils;car_model;camera_grabber;dl_data" -DCAR_MODEL=C1
 ```
 
 ### How to run
 
 
-**CAR_MODEL = B1_V3:**
+**CAR_MODEL = B1_V3 or C1:**
 
 ```
 source ./devel/setup.bash
@@ -66,7 +71,7 @@ nvidia (default)
 ### How to evaluate results
 
 
-**CAR_MODEL = B1_V3:**
+**CAR_MODEL = B1_V3 or C1:**
 
 ```
 use rqt_image_view to view following topic

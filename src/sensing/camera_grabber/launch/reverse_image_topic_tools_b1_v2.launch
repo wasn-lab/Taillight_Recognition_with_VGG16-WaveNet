@@ -1,0 +1,51 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <node name="front_bottom_60_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/front_bottom_60 /cam/front_bottom_60/raw"
+    output="screen"
+  />
+  <node name="front_top_far_30_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/front_top_far_30 /cam/front_top_far_30/raw"
+    output="screen"
+  />
+  <node name="front_top_close_120_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/front_top_close_120 /cam/front_top_close_120/raw"
+    output="screen"
+  />
+  <node name="right_front_60_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/right_front_60 /cam/right_front_60/raw"
+    output="screen"
+  />
+  <node name="right_back_60_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/right_back_60 /cam/right_back_60/raw"
+    output="screen"
+  />
+  <node name="left_front_60_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/left_front_60 /cam/left_front_60/raw"
+    output="screen"
+  />
+  <node name="left_back_60_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/left_back_60 /cam/left_back_60/raw"
+    output="screen"
+  />
+  <node name="back_top_120_relay"
+    pkg="topic_tools"
+    type="relay"
+    args="/cam/back_top_120 /cam/back_top_120/raw"
+    output="screen"
+  />
+</launch>

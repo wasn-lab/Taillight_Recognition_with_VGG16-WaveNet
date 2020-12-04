@@ -143,6 +143,11 @@
       <param name="in_topic" value="/PathPredictionOutput"/>
   </node>
 
+  <!-- LaneEvent Grid **************************************************************************** -->
+  <node name="m_LaneEvent_grid" pkg="detection_viz" type="gen_lane_event_grid.py" output="screen" clear_params="true">
+      <param name="in_topic" value="/lane_event"/>
+  </node>
+
   <!-- virbb bbox ******************************************************************************* -->
   <node name="m_virbb" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/abs_virBB_array"/>
