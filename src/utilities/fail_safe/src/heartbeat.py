@@ -86,12 +86,13 @@ def cam_object_detection_func(msg):
     status_str = "No camera 3d detection result"
     if msg is not None:
         status = OK
-        status_str = ""
+        status_str = "OK"
         for obj in msg.objects:
             center = __calc_center_by_3d_bpoint(obj.bPoint)
             if not in_3d_roi(center[0], center[1]):
+                print("object not in 3d_roi")
                 continue
-            prob = 0.99 # TODO: get value from msg
+            prob = max(cam_instance.prob for cam_instance in obj.camInfo)
             if prob < 0.6:
                 status = WARN
                 status_str = ("Low confidence: classId: {}, prob: {}, "
