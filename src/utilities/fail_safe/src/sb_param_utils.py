@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import configparser
 import os
 import rospy

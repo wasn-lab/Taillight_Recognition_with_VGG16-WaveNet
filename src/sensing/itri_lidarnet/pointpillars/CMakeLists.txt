@@ -124,7 +124,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${NVINFER}
     ${NVONNXPARSERS}
     ${CUDA_LIBRARIES}
-    ${CUDA_CUBLAS_LIBRARIES}
+    # ${CUDA_CUBLAS_LIBRARIES}
     ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
     gpu_point_pillars_lib_car
@@ -179,7 +179,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     ${NVINFER}
     ${NVONNXPARSERS}
     ${CUDA_LIBRARIES}
-    ${CUDA_CUBLAS_LIBRARIES}
+    # ${CUDA_CUBLAS_LIBRARIES}
     ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
     gpu_point_pillars_lib_ped_cyc
