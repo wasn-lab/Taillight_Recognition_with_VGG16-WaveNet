@@ -52,6 +52,8 @@ configure_file(
     scripts/car_model.py.in
     ${PROJECT_BINARY_DIR}/scripts/car_model.py)
 
+file(WRITE ${PROJECT_BINARY_DIR}/scripts/car_model.txt ${CAR_MODEL})
+
 add_subdirectory(test)
 if (CAR_MODEL_IS_B1_V2)
   add_subdirectory(test_car_b1_v2)
