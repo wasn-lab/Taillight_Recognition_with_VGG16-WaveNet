@@ -1,0 +1,14 @@
+<launch>
+    <include file="$(find fail_safe)/launch/rosbag_sender.launch">
+    </include>
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                <!-- ensure program does not crash -->
+                - name: /fail_safe/rosbag_sender/heartbeat
+                  timeout: 15
+                  negative: False
+        </rosparam>
+    </test>
+</launch>

@@ -8,6 +8,8 @@ import datetime
 import os
 import io
 import subprocess
+import rospy
+from std_msgs.msg import Empty
 from sb_param_utils import get_license_plate_number
 from rosbag_utils import get_bag_yymmdd
 from vk221_3 import notify_backend_with_new_bag
@@ -39,6 +41,10 @@ class RosbagSender(object):
         """
         Currently we use FTP protocol to send rosbags
         """
+        rospy.init_node("RosbagSender")
+        rospy.logwarn("Init RosbagSender")
+        self.heartbeat_publisher = rospy.Publisher(
+            "/fail_safe/rosbag_sender/heartbeat", Empty, queue_size=10)
         self.fqdn = fqdn
         self.port = port
         self.license_plate_number = get_license_plate_number()
@@ -56,9 +62,11 @@ class RosbagSender(object):
         print("backend server fqdn: {}, user_name: {}".format(self.fqdn, self.user_name))
 
     def run(self):
-        while True:
+        rate = rospy.Rate(1)
+        while not rospy.is_shutdown():
             self.send_if_having_bags()
-            time.sleep(3)
+            self.heartbeat_publisher.publish(Empty())
+            rate.sleep()
 
     def send_if_having_bags(self):
         bags = self.get_unsent_rosbag_filenames()
@@ -114,8 +122,12 @@ class RosbagSender(object):
 
     def get_unsent_rosbag_filenames(self):
         """Return a list of bag files that are not sent back"""
-        files = os.listdir(self.rosbag_backup_dir)
         ret = []
+        if not os.path.isdir(self.rosbag_backup_dir):
+            rospy.logwarn("No rosbag backup dir: %s", self.rosbag_backup_dir)
+            return ret
+
+        files = os.listdir(self.rosbag_backup_dir)
         for fname in files:
             if not fname.endswith(".bag"):
                 continue
