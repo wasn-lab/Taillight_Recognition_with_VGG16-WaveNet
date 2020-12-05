@@ -208,6 +208,7 @@ public:
   double danger_zone_distance_ = 2;
   bool use_2d_for_alarm_ = false;
   int skip_frame_number_ = 1;
+  double ground_z_ = -5;
 
   int direction_table_[16][5] = {
     { 0, 0, 0, 0, 4 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 1 }, { 0, 0, 1, 0, 0 }, { 1, 0, 1, 0, 4 },
