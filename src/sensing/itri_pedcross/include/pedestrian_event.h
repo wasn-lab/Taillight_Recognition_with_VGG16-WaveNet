@@ -85,6 +85,7 @@ public:
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
   void lanelet2_trajectory_callback(const autoware_planning_msgs::Trajectory::ConstPtr& msg);
   void lanelet2_route_callback(const visualization_msgs::MarkerArray::ConstPtr& msg);
+  cv::Mat convert_msg_to_mat(const sensor_msgs::Image::ConstPtr& msg);
   void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
@@ -96,6 +97,7 @@ public:
   void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
                      boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
                      std::vector<SkeletonBuffer>& skeleton_buffer);
+  bool crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject obj_pub);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);

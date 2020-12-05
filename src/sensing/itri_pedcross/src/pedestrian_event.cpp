@@ -391,22 +391,22 @@ void PedestrianEvent::lanelet2_trajectory_callback(const autoware_planning_msgs:
 #endif
 }
 
+cv::Mat PedestrianEvent::convert_msg_to_mat(const sensor_msgs::Image::ConstPtr& msg)
+{
+  cv_bridge::CvImageConstPtr cv_ptr_image;
+  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
+  return cv_ptr_image->image;
+}
+
 void PedestrianEvent::cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg)
 {
 #if PRINT_MESSAGE
   ros::Time start;
   start = ros::Time::now();
 #endif
-
-  // buffer raw image in cv::Mat with timestamp
-  cv_bridge::CvImageConstPtr cv_ptr_image;
-  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat msg_decode;
-  cv_ptr_image->image.copyTo(msg_decode);
-
   std::lock_guard<std::mutex> lk(mu_front_image_cache_);
-  front_image_cache_.push_back({ msg->header.stamp, msg_decode.clone() });
-  msg_decode.release();
+  // buffer raw image in cv::Mat with timestamp
+  front_image_cache_.push_back({ msg->header.stamp, convert_msg_to_mat(msg).clone() });
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
   std::cout << "Image buffer size: " << front_image_cache_.size() << std::endl;
@@ -419,16 +419,9 @@ void PedestrianEvent::cache_left_image_callback(const sensor_msgs::Image::ConstP
   ros::Time start;
   start = ros::Time::now();
 #endif
-
-  // buffer raw image in cv::Mat with timestamp
-  cv_bridge::CvImageConstPtr cv_ptr_image;
-  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat msg_decode;
-  cv_ptr_image->image.copyTo(msg_decode);
-
   std::lock_guard<std::mutex> lk(mu_left_image_cache_);
-  left_image_cache_.push_back({ msg->header.stamp, msg_decode.clone() });
-  msg_decode.release();
+  // buffer raw image in cv::Mat with timestamp
+  left_image_cache_.push_back({ msg->header.stamp, convert_msg_to_mat(msg).clone() });
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
   std::cout << "Image buffer size: " << left_image_cache_.size() << std::endl;
@@ -441,16 +434,9 @@ void PedestrianEvent::cache_right_image_callback(const sensor_msgs::Image::Const
   ros::Time start;
   start = ros::Time::now();
 #endif
-
-  // buffer raw image in cv::Mat with timestamp
-  cv_bridge::CvImageConstPtr cv_ptr_image;
-  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat msg_decode;
-  cv_ptr_image->image.copyTo(msg_decode);
-
   std::lock_guard<std::mutex> lk(mu_right_image_cache_);
-  right_image_cache_.push_back({ msg->header.stamp, msg_decode.clone() });
-  msg_decode.release();
+  // buffer raw image in cv::Mat with timestamp
+  right_image_cache_.push_back({ msg->header.stamp, convert_msg_to_mat(msg).clone() });
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
   std::cout << "Image buffer size: " << right_image_cache_.size() << std::endl;
@@ -463,16 +449,9 @@ void PedestrianEvent::cache_fov30_image_callback(const sensor_msgs::Image::Const
   ros::Time start;
   start = ros::Time::now();
 #endif
-
-  // buffer raw image in cv::Mat with timestamp
-  cv_bridge::CvImageConstPtr cv_ptr_image;
-  cv_ptr_image = cv_bridge::toCvShare(msg, "bgr8");
-  cv::Mat msg_decode;
-  cv_ptr_image->image.copyTo(msg_decode);
-
   std::lock_guard<std::mutex> lk(mu_fov30_image_cache_);
-  fov30_image_cache_.push_back({ msg->header.stamp, msg_decode.clone() });
-  msg_decode.release();
+  // buffer raw image in cv::Mat with timestamp
+  fov30_image_cache_.push_back({ msg->header.stamp, convert_msg_to_mat(msg).clone() });
 #if PRINT_MESSAGE
   std::cout << "Image buffer time cost: " << ros::Time::now() - start << std::endl;
   std::cout << "Image buffer size: " << fov30_image_cache_.size() << std::endl;
@@ -574,20 +553,20 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       obj_pub.camInfo = obj.camInfo[0];
       obj_pub.bPoint = obj.bPoint;
       obj_pub.track.id = obj.track.id;
+      // resize from 1920*1208 to 608*384
+      obj_pub.camInfo.u *= scaling_ratio_width_;
+      obj_pub.camInfo.v *= scaling_ratio_height_;
+      obj_pub.camInfo.width *= scaling_ratio_width_;
+      obj_pub.camInfo.height *= scaling_ratio_height_;
 
       /**
        * check if pedestrian is in sensing zone
        * return true if pedestrian is filtered out
        * return false if pedestrian is in sensing zone
        **/
-
       if (filter(obj.bPoint, msg->header.stamp))
       {
         obj_pub.crossProbability = -1;
-        obj_pub.camInfo.u *= scaling_ratio_width_;
-        obj_pub.camInfo.v *= scaling_ratio_height_;
-        obj_pub.camInfo.width *= scaling_ratio_width_;
-        obj_pub.camInfo.height *= scaling_ratio_height_;
       }
       else
       {
@@ -604,38 +583,11 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #endif
 
         cv::Mat cropped_image;
-        // resize from 1920*1208 to 608*384
-        obj_pub.camInfo.u *= scaling_ratio_width_;
-        obj_pub.camInfo.v *= scaling_ratio_height_;
-        obj_pub.camInfo.width *= scaling_ratio_width_;
-        obj_pub.camInfo.height *= scaling_ratio_height_;
-        // obj_pub.camInfo.v -= 5;
-        // obj_pub.camInfo.height += 10;
-        // Avoid index out of bounds
-        if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
-        {
-          obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u - 1;
-        }
-        if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows - 1)
-        {
-          obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
-        }
-
-        // check bounding box is legal
-        if (obj_pub.camInfo.width < 1 || obj_pub.camInfo.height < 1)
+        if (!crop_ped_image(matrix, cropped_image, obj_pub))
         {
           continue;
         }
         count_peds++;
-#if PRINT_MESSAGE
-        std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
-                  << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
-                  << std::endl;
-#endif
-        // crop image for openpose
-        matrix.copyTo(cropped_image);
-        cropped_image =
-            cropped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
 
         // set size to resize cropped image for openpose
         // max pixel of width or height can only be 368
@@ -685,17 +637,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             cv::Point2f zero_keypoint;
             zero_keypoint.x = 0;
             zero_keypoint.y = 0;
-            std::vector<cv::Point2f> zero_keypoints;
-            zero_keypoints.reserve(number_keypoints_);
-            for (unsigned int i = 0; i < number_keypoints_; i++)
-            {
-              zero_keypoints.emplace_back(zero_keypoint);
-            }
-            new_person.stored_skeleton_.reserve(frame_num_);
-            for (unsigned int i = 0; i < frame_num_ - 1; i++)
-            {
-              new_person.stored_skeleton_.emplace_back(zero_keypoints);
-            }
+            std::vector<cv::Point2f> zero_keypoints(number_keypoints_, zero_keypoint);
+            new_person.stored_skeleton_ = std::vector<std::vector<cv::Point2f>>(frame_num_ - 1, zero_keypoints);
             new_person.stored_skeleton_.emplace_back(keypoints);
 
             msgs::PredictSkeleton srv_skip_frame;
@@ -1379,6 +1322,39 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
   }
 
   return obj.crossProbability * 0.7;
+}
+
+/**
+ * crop pedestrian image from whole camera image
+ * return true if success
+ * return false if fail
+ */
+bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject obj_pub)
+{  
+  // Avoid index out of bounds
+  if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
+  {
+    obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u - 1;
+  }
+  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows - 1)
+  {
+    obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+  }
+  // check bounding box is legal
+  if (obj_pub.camInfo.width < 1 || obj_pub.camInfo.height < 1)
+  {
+    return false;
+  }
+#if PRINT_MESSAGE
+  std::cout << matrix.cols << " " << matrix.rows << " " << obj_pub.camInfo.u << " " << obj_pub.camInfo.v << " "
+            << obj_pub.camInfo.u + obj_pub.camInfo.width << " " << obj_pub.camInfo.v + obj_pub.camInfo.height
+            << std::endl;
+#endif
+  // crop image for openpose
+  matrix.copyTo(cropped_image);
+  cropped_image =
+      cropped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+  return true;
 }
 
 void PedestrianEvent::draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg)
