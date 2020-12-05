@@ -11,7 +11,7 @@ void PedestrianEvent::run()
 
 void PedestrianEvent::display_on_terminal()
 {
-  while (ros::ok() && !PRINT_MESSAGE && false)
+  while (ros::ok() && !PRINT_MESSAGE)
   {
     struct winsize terminal_size;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
@@ -293,10 +293,9 @@ void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerAr
         point.y = obj_point.y;
         point.z = obj_point.z;
         bool push_or_not = true;
-        for (unsigned int i = 0; i < lanelet2_route_left_.size(); i++)
+        for (const auto& p : lanelet2_route_left_)
         {
-          if (lanelet2_route_left_[i].x == point.x && lanelet2_route_left_[i].y == point.y &&
-              lanelet2_route_left_[i].z == point.z)
+          if (p.x == point.x && p.y == point.y && p.z == point.z)
           {
             push_or_not = false;
           }
@@ -316,10 +315,9 @@ void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerAr
         point.y = obj_point.y;
         point.z = obj_point.z;
         bool push_or_not = true;
-        for (unsigned int i = 0; i < lanelet2_route_right_.size(); i++)
+        for (const auto& p : lanelet2_route_right_)
         {
-          if (lanelet2_route_right_[i].x == point.x && lanelet2_route_right_[i].y == point.y &&
-              lanelet2_route_right_[i].z == point.z)
+          if (p.x == point.x && p.y == point.y && p.z == point.z)
           {
             push_or_not = false;
           }
@@ -489,8 +487,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     ros::Time msgs_timestamp;
     std::vector<msgs::PedObject> ped_objs;
     std::vector<msgs::DetectedObject> alert_objs;
-    ped_objs.reserve(msg->objects.end() - msg->objects.begin());
-    alert_objs.reserve(msg->objects.end() - msg->objects.begin());
+    ped_objs.reserve(msg->objects.size());
+    alert_objs.reserve(msg->objects.size());
 
     for (auto const& obj : msg->objects)
     {
@@ -609,28 +607,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         int resize_width_to = 0;
         if (croped_image.cols >= croped_image.rows)
         {  // width larger than height
-          if (croped_image.cols > max_pixel)
-          {
-            resize_width_to = max_pixel;
-          }
-          else
-          {
-            resize_width_to = croped_image.cols;
-          }
+          // resize_width_to = std::min(croped_image.cols, max_pixel);
           resize_width_to = max_pixel;  // force to max pixel
           aspect_ratio = (float)croped_image.rows / (float)croped_image.cols;
           resize_height_to = int(aspect_ratio * resize_width_to);
         }
         else
         {  // height larger than width
-          if (croped_image.rows > max_pixel)
-          {
-            resize_height_to = max_pixel;
-          }
-          else
-          {
-            resize_height_to = croped_image.rows;
-          }
+          // resize_height_to = std::min(croped_image.rows, max_pixel);
           resize_height_to = max_pixel;  // force to max pixel
           aspect_ratio = (float)croped_image.cols / (float)croped_image.rows;
           resize_width_to = int(aspect_ratio * resize_height_to);
@@ -711,16 +695,8 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               std::vector<cv::Point2f>().swap(predict_keypoints);
             }
 
-            std::vector<float> bbox;
-            bbox.reserve(4);
-            bbox.emplace_back(0);
-            bbox.emplace_back(0);
-            bbox.emplace_back(0);
-            bbox.emplace_back(0);
-            for (unsigned int i = 0; i < frame_num_ - 1; i++)
-            {
-              new_person.data_bbox_.emplace_back(bbox);
-            }
+            // create 2D vector with size 9*4 and value 0
+            new_person.data_bbox_ = std::vector<std::vector<float>>( 9 , std::vector<float> (4, 0));
             // last bbox will add after.
 
             obj_pub.using_skip_frame = 0;
