@@ -575,6 +575,12 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       obj_pub.bPoint = obj.bPoint;
       obj_pub.track.id = obj.track.id;
 
+      /**
+       * check if pedestrian is in sensing zone
+       * return true if pedestrian is filtered out
+       * return false if pedestrian is in sensing zone
+       **/
+
       if (filter(obj.bPoint, msg->header.stamp))
       {
         obj_pub.crossProbability = -1;
@@ -597,7 +603,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         std::cout << "Track ID: " << obj.track.id << std::endl;
 #endif
 
-        cv::Mat croped_image;
+        cv::Mat cropped_image;
         // resize from 1920*1208 to 608*384
         obj_pub.camInfo.u *= scaling_ratio_width_;
         obj_pub.camInfo.v *= scaling_ratio_height_;
@@ -627,9 +633,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                   << std::endl;
 #endif
         // crop image for openpose
-        matrix.copyTo(croped_image);
-        croped_image =
-            croped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
+        matrix.copyTo(cropped_image);
+        cropped_image =
+            cropped_image(cv::Rect(obj_pub.camInfo.u, obj_pub.camInfo.v, obj_pub.camInfo.width, obj_pub.camInfo.height));
 
         // set size to resize cropped image for openpose
         // max pixel of width or height can only be 368
@@ -637,21 +643,22 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         float aspect_ratio = 0.0;
         int resize_height_to = 0;
         int resize_width_to = 0;
-        if (croped_image.cols >= croped_image.rows)
+        if (cropped_image.cols >= cropped_image.rows)
         {  // width larger than height
-          // resize_width_to = std::min(croped_image.cols, max_pixel);
+          // resize_width_to = std::min(cropped_image.cols, max_pixel);
           resize_width_to = max_pixel;  // force to max pixel
-          aspect_ratio = croped_image.rows / (float)croped_image.cols;
+          aspect_ratio = cropped_image.rows / (float)cropped_image.cols;
           resize_height_to = int(aspect_ratio * resize_width_to);
         }
         else
         {  // height larger than width
-          // resize_height_to = std::min(croped_image.rows, max_pixel);
+          // resize_height_to = std::min(cropped_image.rows, max_pixel);
           resize_height_to = max_pixel;  // force to max pixel
-          aspect_ratio = croped_image.cols / (float)croped_image.rows;
+          aspect_ratio = cropped_image.cols / (float)cropped_image.rows;
           resize_width_to = int(aspect_ratio * resize_height_to);
         }
-        cv::resize(croped_image, croped_image, cv::Size(resize_width_to, resize_height_to));
+        // resize image for openpose (max input pixel 368)
+        cv::resize(cropped_image, cropped_image, cv::Size(resize_width_to, resize_height_to));
         inference_start = ros::Time::now();
         // search index in skeleton buffer
         int skeleton_index = -1;
@@ -673,7 +680,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             new_person.timestamp_ = msg->header.stamp;
             new_person.track_id_ = obj_pub.track.id;
 
-            keypoints = get_openpose_keypoint(croped_image);
+            keypoints = get_openpose_keypoint(cropped_image);
 
             cv::Point2f zero_keypoint;
             zero_keypoint.x = 0;
@@ -738,7 +745,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             // if there is data in skeleton buffer but calculated_skeleton is already empty
             if (skeleton_buffer.at(skeleton_index).calculated_skeleton_.empty())
             {
-              keypoints = get_openpose_keypoint(croped_image);
+              keypoints = get_openpose_keypoint(cropped_image);
 
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
 
@@ -862,9 +869,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             std::string image_filename = std::to_string(obj_pub.track.id) + "_" + std::to_string(msgs_timestamp.toSec());
             if (skeleton_buffer.at(skeleton_index).image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).image_for_optical_flow_.rows != 0)
             {
-              cv::resize(skeleton_buffer.at(skeleton_index).image_for_optical_flow_, skeleton_buffer.at(skeleton_index).image_for_optical_flow_, cv::Size(croped_image.cols, croped_image.rows));
+              cv::resize(skeleton_buffer.at(skeleton_index).image_for_optical_flow_, skeleton_buffer.at(skeleton_index).image_for_optical_flow_, cv::Size(cropped_image.cols, cropped_image.rows));
               cv::imwrite("crop/" + image_filename + "_pre.jpg", skeleton_buffer.at(skeleton_index).image_for_optical_flow_);
-              cv::imwrite("crop/" + image_filename + "_now.jpg", croped_image);
+              cv::imwrite("crop/" + image_filename + "_now.jpg", cropped_image);
             }
             if (skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.cols != 0 && skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_.rows != 0)
             {
@@ -945,7 +952,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               }
             }
 
-            skeleton_buffer.at(skeleton_index).image_for_optical_flow_ = croped_image;
+            skeleton_buffer.at(skeleton_index).image_for_optical_flow_ = cropped_image;
             skeleton_buffer.at(skeleton_index).full_image_for_optical_flow_ = matrix;
           }
           inference_stop = ros::Time::now();
@@ -1922,6 +1929,11 @@ float PedestrianEvent::predict_rf_pose(const cv::Mat& input_data)
   return p;
 }
 
+/**
+ * check if pedestrian is in sensing zone
+ * return true if pedestrian is filtered out
+ * return false if pedestrian is in sensing zone
+ **/
 bool PedestrianEvent::filter(const msgs::BoxPoint box_point, ros::Time time_stamp)
 {
   cv::Point2f position;
@@ -2184,49 +2196,15 @@ void PedestrianEvent::pedestrian_event()
   //  https://gist.github.com/bgromov/45ebeced9e8067d9f13cceececc00d5b#file-test_spinner-cpp-L63
 
   // custom callback queue
-  ros::CallbackQueue queue_1;
-  ros::CallbackQueue queue_2;
-  ros::CallbackQueue queue_3;
-  ros::CallbackQueue queue_4;
-  ros::CallbackQueue queue_5;
-  ros::CallbackQueue queue_6;
-  ros::CallbackQueue queue_7;
-  ros::CallbackQueue queue_8;
-  ros::CallbackQueue queue_9;
-  ros::CallbackQueue queue_10;
-  ros::CallbackQueue queue_11;
-  ros::CallbackQueue queue_12;
-  ros::CallbackQueue queue_13;
+  ros::CallbackQueue callback_queue;
+
   // This node handle uses global callback queue
   ros::NodeHandle nh_sub_1;
   // and this one uses custom queue
   ros::NodeHandle nh_sub_2;
-  ros::NodeHandle nh_sub_3;
-  ros::NodeHandle nh_sub_4;
-  ros::NodeHandle nh_sub_5;
-  ros::NodeHandle nh_sub_6;
-  ros::NodeHandle nh_sub_7;
-  ros::NodeHandle nh_sub_8;
-  ros::NodeHandle nh_sub_9;
-  ros::NodeHandle nh_sub_10;
-  ros::NodeHandle nh_sub_11;
-  ros::NodeHandle nh_sub_12;
-  ros::NodeHandle nh_sub_13;
-  ros::NodeHandle nh_sub_14;
+
   // Set custom callback queue
-  nh_sub_2.setCallbackQueue(&queue_1);
-  nh_sub_3.setCallbackQueue(&queue_2);
-  nh_sub_4.setCallbackQueue(&queue_3);
-  nh_sub_5.setCallbackQueue(&queue_4);
-  nh_sub_6.setCallbackQueue(&queue_5);
-  nh_sub_7.setCallbackQueue(&queue_6);
-  nh_sub_8.setCallbackQueue(&queue_7);
-  nh_sub_9.setCallbackQueue(&queue_8);
-  nh_sub_10.setCallbackQueue(&queue_9);
-  nh_sub_11.setCallbackQueue(&queue_10);
-  nh_sub_12.setCallbackQueue(&queue_11);
-  nh_sub_13.setCallbackQueue(&queue_12);
-  nh_sub_14.setCallbackQueue(&queue_13);
+  nh_sub_2.setCallbackQueue(&callback_queue);
 
   ros::Subscriber sub_1;
   ros::Subscriber sub_2;
@@ -2248,47 +2226,35 @@ void PedestrianEvent::pedestrian_event()
                                this);  // /Tracking2D/front_bottom_60 is subscirbe topic
     sub_2 = nh_sub_2.subscribe("/Tracking2D/left_back_60", 1, &PedestrianEvent::left_callback,
                                this);  // /Tracking2D/left_back_60 is subscirbe topic
-    sub_3 = nh_sub_3.subscribe("/Tracking2D/right_back_60", 1, &PedestrianEvent::right_callback,
+    sub_3 = nh_sub_2.subscribe("/Tracking2D/right_back_60", 1, &PedestrianEvent::right_callback,
                                this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_4 = nh_sub_4.subscribe("/Tracking2D/front_top_far_30", 1, &PedestrianEvent::fov30_callback,
+    sub_4 = nh_sub_2.subscribe("/Tracking2D/front_top_far_30", 1, &PedestrianEvent::fov30_callback,
                                this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_5 = nh_sub_5.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
+    sub_5 = nh_sub_2.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
                                this);  // /cam/F_right is subscirbe topic
-    sub_6 = nh_sub_6.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_left_image_callback,
+    sub_6 = nh_sub_2.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_left_image_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_7 = nh_sub_7.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_right_image_callback,
+    sub_7 = nh_sub_2.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_right_image_callback,
                                this);  // /cam/F_center is subscirbe topic
     sub_8 =
-        nh_sub_8.subscribe("/planning/scenario_planning/trajectory", 1, &PedestrianEvent::lanelet2_trajectory_callback,
+        nh_sub_2.subscribe("/planning/scenario_planning/trajectory", 1, &PedestrianEvent::lanelet2_trajectory_callback,
                            this);  // /cam/F_center is subscirbe topic
-    sub_9 = nh_sub_9.subscribe("/planning/mission_planning/route_marker", 1, &PedestrianEvent::lanelet2_route_callback,
+    sub_9 = nh_sub_2.subscribe("/planning/mission_planning/route_marker", 1, &PedestrianEvent::lanelet2_route_callback,
                                this);  // /cam/F_center is subscirbe topic
-    sub_10 = nh_sub_10.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
+    sub_10 = nh_sub_2.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
                                  this);  // /cam/F_center is subscirbe topic
-    sub_11 = nh_sub_11.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
+    sub_11 = nh_sub_2.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
                                  this);  // /cam/F_center is subscirbe topic
-    sub_12 = nh_sub_12.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
+    sub_12 = nh_sub_2.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
                                  this);  // /cam/F_center is subscirbe topic
-    sub_13 = nh_sub_13.subscribe("/cam/front_top_far_30", 1, &PedestrianEvent::cache_fov30_image_callback,
+    sub_13 = nh_sub_2.subscribe("/cam/front_top_far_30", 1, &PedestrianEvent::cache_fov30_image_callback,
                                  this);  // /cam/F_center is subscirbe topic
-    sub_14 = nh_sub_14.subscribe("/PedCross/Pedestrians/front_top_far_30", 1, &PedestrianEvent::draw_ped_fov30_callback,
+    sub_14 = nh_sub_2.subscribe("/PedCross/Pedestrians/front_top_far_30", 1, &PedestrianEvent::draw_ped_fov30_callback,
                                  this);  // /cam/F_center is subscirbe topic
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
-  async_spinner_1_.reset(new ros::AsyncSpinner(0, &queue_1));
-  async_spinner_2_.reset(new ros::AsyncSpinner(0, &queue_2));
-  async_spinner_3_.reset(new ros::AsyncSpinner(0, &queue_3));
-  async_spinner_4_.reset(new ros::AsyncSpinner(0, &queue_4));
-  async_spinner_5_.reset(new ros::AsyncSpinner(0, &queue_5));
-  async_spinner_6_.reset(new ros::AsyncSpinner(0, &queue_6));
-  async_spinner_7_.reset(new ros::AsyncSpinner(0, &queue_7));
-  async_spinner_8_.reset(new ros::AsyncSpinner(0, &queue_8));
-  async_spinner_9_.reset(new ros::AsyncSpinner(0, &queue_9));
-  async_spinner_10_.reset(new ros::AsyncSpinner(0, &queue_10));
-  async_spinner_11_.reset(new ros::AsyncSpinner(0, &queue_11));
-  async_spinner_12_.reset(new ros::AsyncSpinner(0, &queue_12));
-  async_spinner_13_.reset(new ros::AsyncSpinner(0, &queue_13));
+  async_spinner_1_.reset(new ros::AsyncSpinner(0, &callback_queue));
 
   spinner_trigger_ = true;
 
@@ -2300,33 +2266,10 @@ void PedestrianEvent::pedestrian_event()
     if (spinner_trigger_)
     {
       // Clear old callback from the queue
-      queue_1.clear();
-      queue_2.clear();
-      queue_3.clear();
-      queue_4.clear();
-      queue_5.clear();
-      queue_6.clear();
-      queue_7.clear();
-      queue_8.clear();
-      queue_9.clear();
-      queue_10.clear();
-      queue_11.clear();
-      queue_12.clear();
-      queue_13.clear();
+      callback_queue.clear();
+      
       // Start the spinner
       async_spinner_1_->start();
-      async_spinner_2_->start();
-      async_spinner_3_->start();
-      async_spinner_4_->start();
-      async_spinner_5_->start();
-      async_spinner_6_->start();
-      async_spinner_7_->start();
-      async_spinner_8_->start();
-      async_spinner_9_->start();
-      async_spinner_10_->start();
-      async_spinner_11_->start();
-      async_spinner_12_->start();
-      async_spinner_13_->start();
       ROS_INFO("Spinner enabled");
       // Reset trigger
       spinner_trigger_ = false;
@@ -2338,18 +2281,6 @@ void PedestrianEvent::pedestrian_event()
   }
   // Release AsyncSpinner object
   async_spinner_1_.reset();
-  async_spinner_2_.reset();
-  async_spinner_3_.reset();
-  async_spinner_4_.reset();
-  async_spinner_5_.reset();
-  async_spinner_6_.reset();
-  async_spinner_7_.reset();
-  async_spinner_8_.reset();
-  async_spinner_9_.reset();
-  async_spinner_10_.reset();
-  async_spinner_11_.reset();
-  async_spinner_12_.reset();
-  async_spinner_13_.reset();
   // Wait for ROS threads to terminate
   ros::waitForShutdown();
 }

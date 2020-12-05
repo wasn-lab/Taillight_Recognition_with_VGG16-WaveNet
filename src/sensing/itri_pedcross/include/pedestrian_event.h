@@ -184,18 +184,6 @@ public:
   // Variables
   cv::Ptr<cv::ml::RTrees> rf_pose_;
   boost::shared_ptr<ros::AsyncSpinner> async_spinner_1_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_2_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_3_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_4_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_5_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_6_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_7_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_8_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_9_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_10_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_11_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_12_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_13_;
   bool spinner_trigger_ = false;
   int count_;
   std::ofstream file_;
