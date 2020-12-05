@@ -11,6 +11,38 @@ void PedestrianEvent::run()
 
 void PedestrianEvent::display_on_terminal()
 {
+  /**
+    ***********************************************************************************************
+    *Time: 1607175361.798780824 Delay from camera: 733091.136378                                  *
+    *Cost time: 0.000305(sec) OpenPose inference time: 0.002280(sec) Loop: 356                    *
+    *Front camera: buffer size: 60 FPS: 0 time: 1606442271.274300                                 *
+    *Left  camera: buffer size: 60 FPS: 0 time: 1606442271.224597                                 *
+    *Right camera: buffer size: 60 FPS: 0 time: 1606442271.224597                                 *
+    *FOV30 camera: buffer size: 60 FPS: 0 time: 1606442271.224597                                 *
+    *Planned path size: 101 time: 1607175361.531045                                               *
+    *input_source: 4   max_distance: 70   show_probability: 1                                     *
+    *danger_zone_distance: 2   use_2d_for_alarm: 0   skip_frame_number: 1                         *
+    *[RF]                                                                                         *
+    ***********************************************************************************************
+    *[324]      C(0.86) x: 18 y: -2 keypoints number: 7                                           *
+    *[324]      C(0.85) x: 18 y: -2 keypoints number: 7                                           *
+    *[324]      NC(0.00) x: 19 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 19 y: -2 keypoints number: 0                                          *
+    *[290]left  NC(0.46) x: 19 y: -2 keypoints number: 14                                         *
+    *[324]      NC(0.00) x: 19 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 20 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 20 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 20 y: -2 keypoints number: 0                                          *
+    *[886]      NC(0.00) x: 21 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 21 y: -2 keypoints number: 0                                          *
+    *[286]left  C(0.65) x: 21 y: -2 keypoints number: 15                                          *
+    *[886]      NC(0.00) x: 21 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 21 y: -2 keypoints number: 0                                          *
+    *[886]      NC(0.00) x: 22 y: -2 keypoints number: 0                                          *
+    *[324]      NC(0.00) x: 22 y: -2 keypoints number: 0                                          *
+    *[286]left  C(0.64) x: 22 y: -2 keypoints number: 12                                          *
+    ***********************************************************************************************
+   */
   while (ros::ok() && !PRINT_MESSAGE)
   {
     struct winsize terminal_size;
@@ -679,15 +711,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             skip_frame_client_.call(srv_skip_frame);
 
             // get data return from skip_frame service
-            for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
+            for (const auto& predicted_keypoints_obj : srv_skip_frame.response.predicted_keypoints)
             {
               std::vector<cv::Point2f> predict_keypoints;
-              predict_keypoints.reserve(srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size());
-              for (unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
+              predict_keypoints.reserve(predicted_keypoints_obj.keypoint.size());
+              for (const auto& predicted_keypoints_obj_p : predicted_keypoints_obj.keypoint)
               {
                 cv::Point2f predict_keypoint;
-                predict_keypoint.x = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).x;
-                predict_keypoint.y = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).y;
+                predict_keypoint.x = predicted_keypoints_obj_p.x;
+                predict_keypoint.y = predicted_keypoints_obj_p.y;
                 predict_keypoints.emplace_back(predict_keypoint);
               }
               new_person.calculated_skeleton_.emplace_back(predict_keypoints);
@@ -711,16 +743,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
 
               msgs::PredictSkeleton srv_skip_frame;
-
-              for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton_.size(); i++)
+              for (const auto& stored_skeleton_obj : skeleton_buffer.at(skeleton_index).stored_skeleton_)
               {
                 msgs::Keypoints msgs_keypoints;
-                msgs_keypoints.keypoint.reserve(skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size());
-                for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size(); j++)
+                msgs_keypoints.keypoint.reserve(stored_skeleton_obj.size());
+                for (const auto& stored_skeleton_obj_p : stored_skeleton_obj)
                 {
                   msgs::Keypoint msgs_keypoint;
-                  msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).x;
-                  msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).y;
+                  msgs_keypoint.x = stored_skeleton_obj_p.x;
+                  msgs_keypoint.y = stored_skeleton_obj_p.y;
                   msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
                 }
                 srv_skip_frame.request.original_keypoints.emplace_back(msgs_keypoints);
@@ -733,20 +764,18 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).calculated_skeleton_);
 
               // get predicted_keypoints return from skip_frame service
-              for (unsigned int i = 0; i < srv_skip_frame.response.predicted_keypoints.size(); i++)
+              for (const auto& predicted_keypoints_obj : srv_skip_frame.response.predicted_keypoints)
               {
                 std::vector<cv::Point2f> predict_keypoints;
-                predict_keypoints.reserve(srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size());
-                for (unsigned int j = 0; j < srv_skip_frame.response.predicted_keypoints.at(i).keypoint.size(); j++)
+                predict_keypoints.reserve(predicted_keypoints_obj.keypoint.size());
+                for (const auto& predicted_keypoints_obj_p : predicted_keypoints_obj.keypoint)
                 {
                   cv::Point2f predict_keypoint;
-                  predict_keypoint.x = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).x;
-                  predict_keypoint.y = srv_skip_frame.response.predicted_keypoints.at(i).keypoint.at(j).y;
+                  predict_keypoint.x = predicted_keypoints_obj_p.x;
+                  predict_keypoint.y = predicted_keypoints_obj_p.y;
                   predict_keypoints.emplace_back(predict_keypoint);
                 }
                 skeleton_buffer.at(skeleton_index).calculated_skeleton_.emplace_back(predict_keypoints);
-                predict_keypoints.clear();
-                std::vector<cv::Point2f>().swap(predict_keypoints);
               }
 
               // replace original stored_skeleton only when service return size is correct
@@ -755,21 +784,19 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 skeleton_buffer.at(skeleton_index).stored_skeleton_.clear();
                 std::vector<std::vector<cv::Point2f>>().swap(skeleton_buffer.at(skeleton_index).stored_skeleton_);
                 // get processed_keypoints return from skip_frame service
-                for (unsigned int i = 0; i < srv_skip_frame.response.processed_keypoints.size(); i++)
+                for (const auto& processed_keypoints_obj : srv_skip_frame.response.processed_keypoints)
                 {
                   skeleton_buffer.at(skeleton_index).timestamp_ = msg->header.stamp;
                   std::vector<cv::Point2f> back_predict_keypoints;
-                  back_predict_keypoints.reserve(srv_skip_frame.response.processed_keypoints.at(i).keypoint.size());
-                  for (unsigned int j = 0; j < srv_skip_frame.response.processed_keypoints.at(i).keypoint.size(); j++)
+                  back_predict_keypoints.reserve(processed_keypoints_obj.keypoint.size());
+                  for (const auto& processed_keypoints_obj_p : processed_keypoints_obj.keypoint)
                   {
                     cv::Point2f back_predict_keypoint;
-                    back_predict_keypoint.x = srv_skip_frame.response.processed_keypoints.at(i).keypoint.at(j).x;
-                    back_predict_keypoint.y = srv_skip_frame.response.processed_keypoints.at(i).keypoint.at(j).y;
+                    back_predict_keypoint.x = processed_keypoints_obj_p.x;
+                    back_predict_keypoint.y = processed_keypoints_obj_p.y;
                     back_predict_keypoints.emplace_back(back_predict_keypoint);
                   }
                   skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(back_predict_keypoints);
-                  back_predict_keypoints.clear();
-                  std::vector<cv::Point2f>().swap(back_predict_keypoints);
                 }
               }
               if (skeleton_buffer.at(skeleton_index).stored_skeleton_.size() > frame_num_)
@@ -2391,25 +2418,6 @@ std::vector<cv::Point2f> PedestrianEvent::get_openpose_keypoint(cv::Mat& input_i
   return points;
 }
 
-bool PedestrianEvent::display(const std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>>& datums_ptr)
-{
-  // User's displaying/saving/other processing here
-  // datum.cvOutputData: rendered frame with pose or heatmaps
-  // datum.pose_keypoints: Array<float> with the estimated pose
-  char key = ' ';
-  if (datums_ptr != nullptr && !datums_ptr->empty())
-  {
-    cv::imshow("User worker GUI", OP_OP2CVCONSTMAT(datums_ptr->at(0)->cvOutputData));
-    // Display image and sleeps at least 1 ms (it usually sleeps ~5-10 msec to display the image)
-    key = (char)cv::waitKey(1);
-  }
-  else
-  {
-    op::opLog("Nullptr or empty datums_ptr found.", op::Priority::High, __LINE__, __FUNCTION__, __FILE__);
-  }
-  return (key == 27);
-}
-
 std::shared_ptr<std::vector<std::shared_ptr<op::Datum>>> PedestrianEvent::create_datum(cv::Mat& mat)
 {
   // Create new datum
@@ -2515,7 +2523,8 @@ int main(int argc, char** argv)
 
 #if DUMP_LOG
   std::stringstream ss;
-  ss << "../../../ped_output.csv";
+  const std::string file_path =  "../../../ped_output.csv";
+  ss << file_path;
   std::string fname = ss.str();
   pe.file_.open(fname, std::ios_base::app);
 #endif
