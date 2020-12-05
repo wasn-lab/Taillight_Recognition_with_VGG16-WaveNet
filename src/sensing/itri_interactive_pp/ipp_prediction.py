@@ -57,7 +57,7 @@ class buffer_data():
                                                   'height',
                                                   'heading_ang',
                                                   'heading_rad'])
-        self.current_time = None
+        self.current_time = 0
         standardization = {
             'PEDESTRIAN': {
                 'position': {
@@ -120,6 +120,9 @@ class buffer_data():
         self.data_columns_pedestrian = pd.MultiIndex.from_product(
             [['position', 'velocity', 'acceleration'], ['x', 'y']])
 
+    def update_frame(self):
+        self.current_frame = self.current_frame + 1
+         
     def update_buffer(self, data):
         '''
             data : pd.series
@@ -127,6 +130,7 @@ class buffer_data():
         # print(self.current_time)
         # update T frame objects in last element array
         self.buffer_frame = self.buffer_frame.append(data, ignore_index=True)
+        self.update_frame()
         # self.present_all_data()
 
     def refresh_buffer(self):
@@ -214,10 +218,7 @@ class buffer_data():
 
 
 def transform_data(buffer, data):
-    global current_frame
     present_id_list = []
-
-    buffer.current_time = current_frame
 
     for obj in data.objects:
         category = None
@@ -430,7 +431,7 @@ if __name__ == '__main__':
     ''' =====================
           loading_model_part
         ===================== '''
-    global prediction_horizon, absolute_coordinate, buffer, past_obj, current_frame
+    global prediction_horizon, absolute_coordinate, buffer, past_obj
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -438,7 +439,6 @@ if __name__ == '__main__':
     print('Complete loading model!')
     prediction_horizon = rospy.get_param('/object_path_prediction/prediction_horizon')
     absolute_coordinate = rospy.get_param('/object_path_prediction/coordinate_type')
-    current_frame = 0
     past_obj = []
 
     # for i in range(10):
