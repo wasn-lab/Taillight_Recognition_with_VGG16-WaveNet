@@ -57,7 +57,7 @@ class buffer_data():
                                                   'height',
                                                   'heading_ang',
                                                   'heading_rad'])
-        self.current_time = 0
+        self.current_frame = 0
         standardization = {
             'PEDESTRIAN': {
                 'position': {
@@ -122,7 +122,10 @@ class buffer_data():
 
     def update_frame(self):
         self.current_frame = self.current_frame + 1
-         
+
+    def get_buffer_frame(self):
+        return self.current_frame
+
     def update_buffer(self, data):
         '''
             data : pd.series
@@ -130,13 +133,12 @@ class buffer_data():
         # print(self.current_time)
         # update T frame objects in last element array
         self.buffer_frame = self.buffer_frame.append(data, ignore_index=True)
-        self.update_frame()
         # self.present_all_data()
 
     def refresh_buffer(self):
         # If frame_id < current_time - 11 remove the data
-        last_time = self.current_time - 11
-        self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= last_time]
+        old_frame = self.current_frame - 11
+        self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= old_frame]
         # print(self.buffer_frame)
         self.buffer_frame.sort_values('frame_id', inplace=True)
 
@@ -302,14 +304,14 @@ def transform_data(buffer, data):
                 if heading > 180:
                     heading = heading - 360
                 heading_rad = math.radians(heading)
-        info = str(current_frame) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + "," + \
+        info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + "," + \
             str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
         past_obj.append(info)
         
-        # if diff_x != 0:
+        # if diff_x != 0:   
         #    print(diff_x,diff_y,diff_y/diff_x,heading)
 
-        node_data = pd.Series({'frame_id': current_frame,
+        node_data = pd.Series({'frame_id': buffer.get_buffer_frame(),
                                'type': category,
                                'node_id': str(obj.track.id),
                                'robot': False,  # frame_data.loc[i]['robot']
@@ -324,9 +326,8 @@ def transform_data(buffer, data):
         
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
-    current_frame = current_frame + 1
+    buffer.update_frame()
     buffer.refresh_buffer()
-
     return present_id_list
 
 
@@ -339,11 +340,11 @@ def predict(data):
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
 
-    timesteps = np.array([buffer.current_time])
+    timesteps = np.array([buffer.get_buffer_frame()])
     # print timesteps
     # print buffer.current_time
     print('====')
-    print('current_time : ', buffer.current_time)
+    print('current_time : ', buffer.get_buffer_frame())
 
     # for node in scene.nodes:
     #     if node.id == '1754':
