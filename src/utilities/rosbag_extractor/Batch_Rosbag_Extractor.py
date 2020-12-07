@@ -57,18 +57,29 @@ def read_topic_return_msg(msg, type, contain):
     if type == 3:  # tf
         tf_transforms = msg.transforms
         tf_transforms_list = []
+        tf_transforms_list.append('stamp_secs, stamp_nsecs, source frame_id, target frame_id, translation x, y, z, rotation x, y, z, w\n')
+        has_tf_from_baselink_to_map = False
         for one_transform in tf_transforms:
-            tf_transforms_list.append('source frame_id, target frame_id, translation x, y, z, rotation x, y, z, w\n')
             if one_transform.child_frame_id != '/base_link' or one_transform.header.frame_id != '/map':
                 continue
-            tempStr = one_transform.child_frame_id + ", " + one_transform.header.frame_id +\
+            tempStr = str(one_transform.header.stamp.secs) + ", " + str(one_transform.header.stamp.nsecs) + ", " + one_transform.child_frame_id + ", " + one_transform.header.frame_id +\
                 ", " + str(one_transform.transform.translation.x) + ", " + str(one_transform.transform.translation.y) + \
                 ", " + str(one_transform.transform.translation.z) + ", " + str(one_transform.transform.rotation.x) + \
                 ", " + str(one_transform.transform.rotation.y) + ", " + str(one_transform.transform.rotation.z) + \
                 ", " + str(one_transform.transform.rotation.w) + "\n"
             tf_transforms_list.append(tempStr)
-        return tf_transforms_list
+            has_tf_from_baselink_to_map = True
+        if has_tf_from_baselink_to_map:
+            return tf_transforms_list
 
+    if type == 4:  # veh_info
+        veh_info_list = []
+        veh_info_list.append('stamp_secs, stamp_nsecs, ego_x, ego_y, ego_z, ego_heading, ego_speed, yaw_rate\n')
+        tempStr = str(msg.header.stamp.secs) + ", " + str(msg.header.stamp.nsecs) + ", " + str(msg.ego_x) + ", " + str(msg.ego_y) +\
+            ", " + str(msg.ego_z) + ", " + str(msg.ego_heading) + \
+            ", " + str(msg.ego_speed) + ", " + str(msg.yaw_rate) + "\n"
+        veh_info_list.append(tempStr)
+        return veh_info_list
 
 def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
     if type == 0:  # lidar
@@ -112,6 +123,15 @@ def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
             if not os.path.exists(outdir + pathname + "_tf"):
                 os.makedirs(outdir + pathname + "_tf")
             with open("{}{}{}.csv".format(outdir, pathname+"_tf/" ,filename), "w") as f:
+                for line in msg:
+                    f.write(line)
+            print("{}.csv ok.".format(filename))
+
+    if type == 4:  # veh_info
+        if msg:
+            if not os.path.exists(outdir + pathname + "_veh_info"):
+                os.makedirs(outdir + pathname + "_veh_info")
+            with open("{}{}{}.csv".format(outdir, pathname+"_veh_info/" ,filename), "w") as f:
                 for line in msg:
                     f.write(line)
             print("{}.csv ok.".format(filename))
@@ -327,6 +347,25 @@ def main():
                                                     read_msg_and_save(tf_msg, 3, outdir, timestr + "_tf", filename)
                                                 except BaseException:
                                                     print("tf cant save.")
+
+                                    if topic == "/veh_info":
+                                        if fps_input == 1:
+                                            timestr = str(msg.header.stamp.secs)
+                                        else:
+                                            timestr = str(msg.header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+
+                                        veh_info_msg = read_topic_return_msg(msg, 4, "")
+                                        if check_first:
+                                            datestr_veh_info = filename + "_veh_info/"
+                                            if os.path.exists(outdir + datestr_veh_info + timestr + '_veh_info.csv'):
+                                                pass
+                                            elif timestr == "":
+                                                pass
+                                            else:
+                                                try:
+                                                    read_msg_and_save(veh_info_msg, 4, outdir, timestr + "_veh_info", filename)
+                                                except BaseException:
+                                                    print("veh_info cant save.")
     print ("** Finish Extracting **")
 
 
