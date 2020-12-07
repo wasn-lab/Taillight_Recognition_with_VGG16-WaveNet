@@ -62,6 +62,13 @@ if (COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-suggest-attribute=format")
 endif ()
 
+if (CAR_MODEL_IS_C1)
+  find_package(GStreamer)
+  if (NOT GSTREAMER_FOUND)
+    message(FATAL_ERROR "GStreamer (ver 1.0) is not found. Use\n sudo apt-get install libgstreamer1.0-dev")
+  endif ()
+endif ()
+
 ## Find OpenCV
 find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
 
@@ -70,13 +77,7 @@ if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 ## Find Driveworks 2.0
 find_library(DRIVEWORKS_LIBRARY driveworks
   HINTS /usr/local/driveworks-2.0/ /usr/local/driveworks/ PATH_SUFFIXES lib lib/x64)
-else ()
-## Find Gstreamer
-find_package(PkgConfig) #finding pkg-config is a helper tool
-#using pkg-config to getting Gstreamer
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0)
 endif ()
-
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   find_library(DRIVEWORKS_LIBRARY libdriveworks.so
