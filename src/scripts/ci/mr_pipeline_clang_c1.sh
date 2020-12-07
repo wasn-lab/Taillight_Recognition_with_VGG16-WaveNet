@@ -20,5 +20,6 @@ done
 
 catkin_make --build ${build_dir} -DCATKIN_DEVEL_PREFIX=${devel_dir} \
   -DCAR_MODEL=C1 ${EXTRA_CATKIN_ARGS}
+readlink -e devel_clang_c1/lib/camera_grabber/camera_grabber_node
 
 popd
