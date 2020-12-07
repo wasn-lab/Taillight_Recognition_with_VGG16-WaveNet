@@ -64,8 +64,11 @@ endif ()
 
 if (CAR_MODEL_IS_C1)
   find_package(GStreamer)
-  if (NOT GSTREAMER_FOUND)
-    message(FATAL_ERROR "GStreamer (ver 1.0) is not found. Use\n sudo apt-get install libgstreamer1.0-dev")
+  find_package(GLIB2)  # GStreamer depends on glib2.
+  if (GSTREAMER_FOUND AND GLIB2_FOUND)
+    message(STATUS "Find gstreamer-1.0 and glib2")
+  else ()
+    message(FATAL_ERROR "GStreamer (ver 1.0) is not found. Use\n sudo apt-get install libgstreamer1.0-dev libglib2.0-dev")
   endif ()
 endif ()
 
@@ -119,7 +122,7 @@ include_directories(
   src/Util
   src/CameraGrabber
   src/RosImagePubSub
-  ${DRIVENET_INCLUDE}  
+  ${DRIVENET_INCLUDE}
 )
 else ()
 include_directories(
@@ -133,6 +136,7 @@ include_directories(
   src/RosImagePubSub
   ${DRIVENET_INCLUDE}
   ${GSTREAMER_INCLUDE_DIRS}
+  ${GLIB2_INCLUDE_DIR}
 )
 endif ()
 
