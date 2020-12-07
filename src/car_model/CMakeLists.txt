@@ -27,13 +27,6 @@ option(ENABLE_PEDCROSS "Enable pedestrian crossing detection" ON)
 option(ENABLE_GOOGLE_BENCHMARK "Enable google benchmark for perf profiling" OFF)
 include(cmake/Options${CAR_MODEL}.cmake)
 
-if (CAR_MODEL_IS_B1_V3 OR CAR_MODEL_IS_C1)
-  option(ENABLE_CAMERA_GSTREAMER_GRABBER "Enable camera gstreamer grabber" ON)
-else ()
-  option(ENABLE_CAMERA_GSTREAMER_GRABBER "Eable camera gstreamer grabber" OFF)
-endif ()
-
-
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
   CFG_EXTRAS CarModel.cmake
