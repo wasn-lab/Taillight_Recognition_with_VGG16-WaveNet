@@ -1,5 +1,22 @@
 #! /usr/bin/python2.7
 # coding=utf-8
+from tf2_geometry_msgs import PoseStamped
+import tf2_geometry_msgs
+import tf2_ros
+import math
+from msgs.msg import PointXY
+from msgs.msg import PathPrediction
+from msgs.msg import DetectedObject
+from msgs.msg import DetectedObjectArray
+from std_msgs.msg import String
+import rospy
+from tqdm import tqdm
+from model.model_registrar import ModelRegistrar
+from model.trajectron import Trajectron
+import evaluation
+import utils
+from scipy.interpolate import RectBivariateSpline
+from environment import Environment, Scene, derivative_of, Node
 import sys
 import os
 import json
@@ -10,29 +27,13 @@ import time
 
 sys.path.insert(0, "./trajectron")
 
-from environment import Environment, Scene, derivative_of, Node
-from scipy.interpolate import RectBivariateSpline
-import utils
-import evaluation
-from model.trajectron import Trajectron
-from model.model_registrar import ModelRegistrar
-from tqdm import tqdm
-import rospy
-from std_msgs.msg import String
-from msgs.msg import DetectedObjectArray
-from msgs.msg import DetectedObject
-from msgs.msg import PathPrediction
-from msgs.msg import PointXY
-import math
-import tf2_ros
-import tf2_geometry_msgs
-from tf2_geometry_msgs import PoseStamped
 
 seed = 0
 np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
+
 
 class parameter():
     def __init__(self):
@@ -235,21 +236,23 @@ def transform_data(buffer, data):
         x = obj.center_point.x
         y = obj.center_point.y
         z = obj.center_point.z
-        
+
         # transform from base_link to map
         if absolute_coordinate:
-            transform = tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
+            transform = tf_buffer.lookup_transform(
+                'map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
             pose_stamped = PoseStamped()
             pose_stamped.pose.position.x = x
             pose_stamped.pose.position.y = y
             pose_stamped.pose.position.z = z
-            pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
+            pose_transformed = tf2_geometry_msgs.do_transform_pose(
+                pose_stamped, transform)
             x = pose_transformed.pose.position.x
             y = pose_transformed.pose.position.y
             z = pose_transformed.pose.position.z
 
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
-        
+
         length = math.sqrt(
             math.pow(
                 (obj.bPoint.p4.x -
@@ -304,11 +307,11 @@ def transform_data(buffer, data):
                 if heading > 180:
                     heading = heading - 360
                 heading_rad = math.radians(heading)
-        info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + "," + \
-            str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
+        info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + \
+            "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
         past_obj.append(info)
-        
-        # if diff_x != 0:   
+
+        # if diff_x != 0:
         #    print(diff_x,diff_y,diff_y/diff_x,heading)
 
         node_data = pd.Series({'frame_id': buffer.get_buffer_frame(),
@@ -323,7 +326,7 @@ def transform_data(buffer, data):
                                'height': height,
                                'heading_ang': heading,
                                'heading_rad': heading_rad})
-        
+
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
     buffer.update_frame()
@@ -438,8 +441,10 @@ if __name__ == '__main__':
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
     buffer = buffer_data()
     print('Complete loading model!')
-    prediction_horizon = rospy.get_param('/object_path_prediction/prediction_horizon')
-    absolute_coordinate = rospy.get_param('/object_path_prediction/coordinate_type')
+    prediction_horizon = rospy.get_param(
+        '/object_path_prediction/prediction_horizon')
+    absolute_coordinate = rospy.get_param(
+        '/object_path_prediction/coordinate_type')
     past_obj = []
 
     # for i in range(10):
