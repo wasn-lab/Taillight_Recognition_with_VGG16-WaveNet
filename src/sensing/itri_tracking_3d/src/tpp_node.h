@@ -4,7 +4,6 @@
 #include "tpp.h"
 #include "kalman_trackers.h"
 #include "velocity.h"
-#include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
 #include "marker_gen.h"
@@ -35,8 +34,7 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = get_in_source();
-  bool use_ego_speed_ = get_ego_speed();
+  int in_source_ = InputSource::CameraDetV2;
 
   bool show_runtime_ = false;
 
@@ -134,9 +132,6 @@ private:
   // compute DetectedObject.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
-
-  float compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
-                                        const float box_center_y_abs);
 
   void compute_velocity_kalman();
 

@@ -4,7 +4,7 @@ import pprint
 import io
 import requests
 
-URL = "http://60.250.196.133:8300/DataMgmt/BackendService"
+URL = "http://118.163.54.112:8300/DataMgmt/BackendService"
 
 
 def _post_to_backend(json_result):
