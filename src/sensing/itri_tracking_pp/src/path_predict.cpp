@@ -60,33 +60,30 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
           continue;
         }
 
-        if (input_source_ != InputSource::RadarDet)
+        // PP filter 4: object size z
+        if (box_z_length < box_length_thr_z)
         {
-          // PP filter 4: object size z
-          if (box_z_length < box_length_thr_z)
+          pp_objs_[i].track.is_ready_prediction = false;
+          continue;
+        }
+
+        // PP filter 5: object size x & y
+        if (pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+            pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+            pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+        {
+          if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
           {
             pp_objs_[i].track.is_ready_prediction = false;
             continue;
           }
-
-          // PP filter 5: object size x & y
-          if (pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-              pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-              pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+        }
+        else
+        {
+          if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
           {
-            if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
-            {
-              pp_objs_[i].track.is_ready_prediction = false;
-              continue;
-            }
-          }
-          else
-          {
-            if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
-            {
-              pp_objs_[i].track.is_ready_prediction = false;
-              continue;
-            }
+            pp_objs_[i].track.is_ready_prediction = false;
+            continue;
           }
         }
 
