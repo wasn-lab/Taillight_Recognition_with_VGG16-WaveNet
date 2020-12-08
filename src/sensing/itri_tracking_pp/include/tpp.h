@@ -14,8 +14,8 @@ enum InputSource
 {
   Fusion = 0,
   LidarDet,
-  RadarDet,
-  CameraDetV1,
+  LidarDet_PointPillars_Car,
+  LidarDet_PointPillars_Ped_Cyc,
   VirtualBBoxAbs,
   VirtualBBoxRel,
   CameraDetV2,

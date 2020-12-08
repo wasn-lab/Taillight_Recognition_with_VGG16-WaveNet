@@ -135,15 +135,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     {
       obj.header.frame_id = "lidar";
       obj.speed_abs = 0.f;
-
-      if (input_source_ == InputSource::RadarDet)
-      {
-        obj.speed_rel = mps_to_kmph(obj.speed_rel);
-      }
-      else
-      {
-        obj.speed_rel = 0.f;
-      }
+      obj.speed_rel = 0.f;
     }
 
 #if FILL_CONVEX_HULL
@@ -187,16 +179,16 @@ void TPPNode::subscribe_and_advertise_topics()
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
-  else if (input_source_ == InputSource::RadarDet)
+  else if (input_source_ == InputSource::LidarDet_PointPillars_Car)
   {
-    LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/LidarDetection/Car)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
-  else if (input_source_ == InputSource::CameraDetV1)
+  else if (input_source_ == InputSource::LidarDet_PointPillars_Ped_Cyc)
   {
-    LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
-    fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/LidarDetection/Ped_Cyc)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection/Ped_Cyc", 1, &TPPNode::callback_fusion, this);
     set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (input_source_ == InputSource::VirtualBBoxAbs)
@@ -268,7 +260,7 @@ void TPPNode::subscribe_and_advertise_topics()
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.empty() || input_source_ == InputSource::RadarDet)
+  if (cPoint.lowerAreaPoints.empty())
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
@@ -392,16 +384,13 @@ void TPPNode::compute_velocity_kalman()
     }
 
     // DetectedObject.speed_rel
-    if (input_source_ != InputSource::RadarDet)
-    {
-      MyPoint32 p_rel;
-      track.box_center_.pos.get_point_rel(p_rel);
-      Vector3_32 rel_v_rel;
-      rel_v_rel.x = track.box_.track.relative_velocity.x;
-      rel_v_rel.y = track.box_.track.relative_velocity.y;
-      rel_v_rel.z = track.box_.track.relative_velocity.z;
-      track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-    }
+    MyPoint32 p_rel;
+    track.box_center_.pos.get_point_rel(p_rel);
+    Vector3_32 rel_v_rel;
+    rel_v_rel.x = track.box_.track.relative_velocity.x;
+    rel_v_rel.y = track.box_.track.relative_velocity.y;
+    rel_v_rel.z = track.box_.track.relative_velocity.z;
+    track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
 
     if (std::isnan(track.box_.speed_rel))
     {
