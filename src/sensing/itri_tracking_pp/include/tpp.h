@@ -6,7 +6,7 @@
 
 namespace tpp
 {
-static constexpr unsigned int num_forecasts_ = 20;
+static constexpr unsigned int num_forecasts_ = 30;
 
 static constexpr unsigned int num_2dbox_corners = 4;
 
