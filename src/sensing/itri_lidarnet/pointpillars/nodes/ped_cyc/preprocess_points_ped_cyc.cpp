@@ -121,7 +121,7 @@ void PreprocessPoints::preprocess(const float* in_points_array, int in_num_point
       // y_coors_for_sub[pillar_index] = std::floor(y_coor) * PILLAR_Y_SIZE_ + -39.9f;
       // x_coors_for_sub[pillar_index] = std::floor(x_coor) * PILLAR_X_SIZE_ + 0.1f;
       y_coors_for_sub[pillar_index] = std::floor(y_coor) * PILLAR_Y_SIZE_ + -19.76f;
-      x_coors_for_sub[pillar_index] = std::floor(x_coor) * PILLAR_X_SIZE_ + -10.16f;
+      x_coors_for_sub[pillar_index] = std::floor(x_coor) * PILLAR_X_SIZE_ + -39.6f;
 
       sparse_pillar_map[y_coor * NUM_INDS_FOR_SCAN_ + x_coor] = 1;
     }
