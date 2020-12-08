@@ -56,7 +56,7 @@ public:
 
   void set_num_pp_input_min(const std::size_t num_pp_input_min)
   {
-    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), num_pp_input_max_ - (std::size_t)2);
+    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), num_forecasts_ - (std::size_t)2);
   }
 
 private:
@@ -66,7 +66,6 @@ private:
 
   static constexpr std::size_t max_order_ = 1;
   std::size_t num_pp_input_min_ = 4;
-  const std::size_t num_pp_input_max_ = 20;
 
   static constexpr float pp_allow_x_min_m = -10.f;
   static constexpr float pp_allow_x_max_m = 100.f;

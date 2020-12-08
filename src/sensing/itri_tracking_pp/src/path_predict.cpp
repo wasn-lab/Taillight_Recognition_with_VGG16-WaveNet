@@ -20,7 +20,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
   {
     // bound num_pp_input_in_use_ range
     num_pp_input_in_use_ =
-        std::max(std::min(num_pp_input_max_, (std::size_t)pp_objs_[i].track.max_length), num_pp_input_min_);
+        std::max(std::min((std::size_t)num_forecasts_, (std::size_t)pp_objs_[i].track.max_length), num_pp_input_min_);
 
     pp_objs_[i].track.is_ready_prediction = false;
 
