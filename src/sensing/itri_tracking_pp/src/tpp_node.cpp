@@ -123,6 +123,50 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #endif
     }
 
+#if EGO_AS_DETECTED_OBJ == 1
+    msgs::DetectedObject ego_obj;
+    ego_obj.header = objs_header_;
+    ego_obj.classId = sensor_msgs_itri::DetectedObjectClassId::Bus;
+    ego_obj.distance = 0.f;
+    ego_obj.speed_abs = 0.f;
+    ego_obj.speed_rel = 0.f;
+    ego_obj.heading.x = 0.00873;
+    ego_obj.heading.y = 0.;
+    ego_obj.heading.z = 0.;
+    ego_obj.heading.w = 0.99996;
+    ego_obj.dimension.length = 3.;
+    ego_obj.dimension.width = 7.;
+    ego_obj.dimension.height = 3.1;
+    ego_obj.bPoint.p0.x = 0.5f;
+    ego_obj.bPoint.p0.y = -1.5f;
+    ego_obj.bPoint.p0.z = -3.1f;
+    ego_obj.bPoint.p1.x = 0.5f;
+    ego_obj.bPoint.p1.y = -1.5f;
+    ego_obj.bPoint.p1.z = 0.f;
+    ego_obj.bPoint.p2.x = 0.5f;
+    ego_obj.bPoint.p2.y = 1.5f;
+    ego_obj.bPoint.p2.z = 0.f;
+    ego_obj.bPoint.p3.x = 0.5f;
+    ego_obj.bPoint.p3.y = 1.5f;
+    ego_obj.bPoint.p3.z = -3.1f;
+    ego_obj.bPoint.p4.x = -6.5f;
+    ego_obj.bPoint.p4.y = -1.5f;
+    ego_obj.bPoint.p4.z = -3.1f;
+    ego_obj.bPoint.p5.x = -6.5f;
+    ego_obj.bPoint.p5.y = -1.5f;
+    ego_obj.bPoint.p5.z = 0.f;
+    ego_obj.bPoint.p6.x = -6.5f;
+    ego_obj.bPoint.p6.y = 1.5f;
+    ego_obj.bPoint.p6.z = 0.f;
+    ego_obj.bPoint.p7.x = -6.5f;
+    ego_obj.bPoint.p7.y = 1.5f;
+    ego_obj.bPoint.p7.z = -3.1f;
+    ego_obj.center_point.x = (ego_obj.bPoint.p0.x + ego_obj.bPoint.p6.x) / 2;  // -3.25f
+    ego_obj.center_point.y = (ego_obj.bPoint.p0.y + ego_obj.bPoint.p6.y) / 2;  // 0.f
+    ego_obj.center_point.z = (ego_obj.bPoint.p0.z + ego_obj.bPoint.p6.z) / 2;  // -1.55f
+    KTs_.objs_.push_back(ego_obj);
+#endif
+
 #if VIRTUAL_INPUT
     for (unsigned i = 0; i < KTs_.objs_.size(); i++)
     {
@@ -586,7 +630,10 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
     ofs << "#1 time stamp (s), "  //
         << "#2-1 track id, "      //
         << "#2-2 class id, "      //
-        << "#3 dt (s), "          //
+#if EGO_AS_DETECTED_OBJ == 1
+        << "#2-3 ego obj?, "  //
+#endif
+        << "#3 dt (s), "  //
 #if VIRTUAL_INPUT
         << "#4-1 GT bbox center x (m), "  //
         << "#4-2 GT bbox center y (m), "  //
@@ -640,8 +687,19 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
     ofs << std::fixed                          //
         << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
         << obj.track.id << ", "                // #2-1 track id
-        << obj.classId << ", "                 // #2-2 class id
-        << dt_s.toSec() << ", "                // #3 dt (s)
+        << obj.classId;                        // #2-2 class id
+#if EGO_AS_DETECTED_OBJ == 1
+    if (obj.distance == 0.f && obj.heading.w == 0.99996)
+    {
+      ofs << ", Y";  // #2-3 ego vehicle obj?
+    }
+    else
+    {
+      ofs << ", N";  // #2-3 ego vehicle obj?
+    }
+#endif
+    ofs << ", "                  //
+        << dt_s.toSec() << ", "  // #3 dt (s)
 #if VIRTUAL_INPUT
         << gt_x_ << ", "  // #4-1 GT bbox center x (m)
         << gt_y_ << ", "  // #4-2 GT bbox center y (m)
