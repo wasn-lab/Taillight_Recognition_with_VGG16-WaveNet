@@ -15,7 +15,7 @@ from pypcd import PointCloud  # pylint: disable=import-error, no-name-in-module
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import PointCloud2
 from os.path import getsize
-#from msgs.msg import Rad
+# from msgs.msg import Rad
 # sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 
 # ===== Control Variable ====
@@ -27,9 +27,15 @@ bridge = [CvBridge(), CvBridge(), CvBridge(),
 
 check_first = True
 
-cam_topics = ['/cam/front_bottom_60', '/cam/front_top_far_30',
-    '/cam/front_top_close_120', '/cam/right_front_60', '/cam/right_back_60',
-    '/cam/left_front_60', '/cam/left_back_60', '/cam/back_top_120']
+cam_topics = [
+    '/cam/front_bottom_60',
+    '/cam/front_top_far_30',
+    '/cam/front_top_close_120',
+    '/cam/right_front_60',
+    '/cam/right_back_60',
+    '/cam/left_front_60',
+    '/cam/left_back_60',
+    '/cam/back_top_120']
 
 
 def read_topic_return_msg(msg, type, contain):
@@ -57,17 +63,31 @@ def read_topic_return_msg(msg, type, contain):
     if type == 3:  # tf
         tf_transforms = msg.transforms
         tf_transforms_list = []
+        tf_transforms_list.append(
+            'stamp_secs, stamp_nsecs, source_frame_id, target_frame_id, translation_x, translation_y, translation_z, rotation_x, rotation_y, rotation_z, rotation_w\n')
+        has_tf_from_baselink_to_map = False
         for one_transform in tf_transforms:
-            tf_transforms_list.append('source frame_id, target frame_id, translation x, y, z, rotation x, y, z, w\n')
             if one_transform.child_frame_id != '/base_link' or one_transform.header.frame_id != '/map':
                 continue
-            tempStr = one_transform.child_frame_id + ", " + one_transform.header.frame_id +\
+            tempStr = str(one_transform.header.stamp.secs) + ", " + str(one_transform.header.stamp.nsecs) + ", " + one_transform.child_frame_id + ", " + one_transform.header.frame_id +\
                 ", " + str(one_transform.transform.translation.x) + ", " + str(one_transform.transform.translation.y) + \
                 ", " + str(one_transform.transform.translation.z) + ", " + str(one_transform.transform.rotation.x) + \
                 ", " + str(one_transform.transform.rotation.y) + ", " + str(one_transform.transform.rotation.z) + \
                 ", " + str(one_transform.transform.rotation.w) + "\n"
             tf_transforms_list.append(tempStr)
-        return tf_transforms_list
+            has_tf_from_baselink_to_map = True
+        if has_tf_from_baselink_to_map:
+            return tf_transforms_list
+
+    if type == 4:  # veh_info
+        veh_info_list = []
+        veh_info_list.append(
+            'stamp_secs, stamp_nsecs, ego_x, ego_y, ego_z, ego_heading, ego_speed, yaw_rate\n')
+        tempStr = str(msg.header.stamp.secs) + ", " + str(msg.header.stamp.nsecs) + ", " + str(msg.ego_x) + ", " + str(msg.ego_y) +\
+            ", " + str(msg.ego_z) + ", " + str(msg.ego_heading) + \
+            ", " + str(msg.ego_speed) + ", " + str(msg.yaw_rate) + "\n"
+        veh_info_list.append(tempStr)
+        return veh_info_list
 
 
 def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
@@ -102,7 +122,7 @@ def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
     if type == 2:  # radar
         if not os.path.exists(outdir + pathname + "_radar"):
             os.makedirs(outdir + pathname + "_radar")
-        with open("{}{}{}.txt".format(outdir, pathname+"_radar/" ,filename), "w") as f:
+        with open("{}{}{}.txt".format(outdir, pathname + "_radar/", filename), "w") as f:
             for line in msg:
                 f.write(line)
         print("{}.txt ok.".format(filename))
@@ -111,10 +131,20 @@ def read_msg_and_save(msg, type, outdir, filename, pathname=None, campos=None):
         if msg:
             if not os.path.exists(outdir + pathname + "_tf"):
                 os.makedirs(outdir + pathname + "_tf")
-            with open("{}{}{}.csv".format(outdir, pathname+"_tf/" ,filename), "w") as f:
+            with open("{}{}{}.csv".format(outdir, pathname + "_tf/", filename), "w") as f:
                 for line in msg:
                     f.write(line)
             print("{}.csv ok.".format(filename))
+
+    if type == 4:  # veh_info
+        if msg:
+            if not os.path.exists(outdir + pathname + "_veh_info"):
+                os.makedirs(outdir + pathname + "_veh_info")
+            with open("{}{}{}.csv".format(outdir, pathname + "_veh_info/", filename), "w") as f:
+                for line in msg:
+                    f.write(line)
+            print("{}.csv ok.".format(filename))
+
 
 def read_topic_and_save_camera(
         in_topicname,
@@ -185,7 +215,7 @@ def main():
     try:
         fps_input = int(str_in)
         if fps_input != 1 and fps_input != 2 and fps_input != 5 and fps_input != 10:
-        	fps_input = 1
+            fps_input = 1
 
         fps_inv = 10
         if fps_input == 1:
@@ -198,7 +228,7 @@ def main():
             fps_inv = 1
 
         print("FPS %d selected.\n", fps_input)
-            
+
     except BaseException:
         fps_input = None
         exit()
@@ -207,10 +237,10 @@ def main():
     print("** Now is '{}_msg_in_sec' Mode!".format(first_or_last_msg_in_a_sec))
     rootDir = dir_path + '/bags'
     for dirName, subdirList, fileList in os.walk(rootDir):
-        #print('Found directory: %s' % dirName)
+        # print('Found directory: %s' % dirName)
         # os.chdir(dirName)
         for fname in fileList:
-            #print('\t%s' % fname)
+            # print('\t%s' % fname)
             if fname.endswith(".bag"):
                 if dirName in Extracted_Dir_list:
                     pass
@@ -218,18 +248,18 @@ def main():
                     Extracted_Dir_list.append(dirName)
                     os.chdir(dirName)
 
-                    #dir_lst = sorted(os.listdir(os.getcwd()))
-                    #print (dir_lst)
+                    # dir_lst = sorted(os.listdir(os.getcwd()))
+                    # print (dir_lst)
                     dir_cur = os.getcwd()
                     print ("Current Directory: %s" % dir_cur)
-                    #for dir_name in dir_lst:
+                    # for dir_name in dir_lst:
                     print ("File in Directory: %s" % dir_cur)
                     if os.path.isdir(dir_cur) and not(
                             dirName.startswith(".")):
-                        #print(dir_path + "/" + dir_name)
-                        #lst = sorted(glob.glob(dir_path + "/bags/" + dir_name), key=getsize)
+                        # print(dir_path + "/" + dir_name)
+                        # lst = sorted(glob.glob(dir_path + "/bags/" + dir_name), key=getsize)
                         lst = sorted(os.listdir(os.getcwd()))
-                        #print (lst)
+                        # print (lst)
                         for bagFile in lst:
                             os.chdir(dirName)
                             if bagFile.endswith(".bag"):
@@ -237,10 +267,10 @@ def main():
                                 filename = bagFile.split(
                                     "/")[-1].split(".")[0]
                                 print (filename)
-                                #path = bagFile.split(filename)[0]
+                                # path = bagFile.split(filename)[0]
 
                                 bag = rosbag.Bag((bagFile))
-                                #topics_lst = bag.get_type_and_topic_info().topics
+                                # topics_lst = bag.get_type_and_topic_info().topics
 
                                 # check save path
                                 outdir = dir_path + "/Extracted/" + filename + '/'
@@ -251,26 +281,34 @@ def main():
                                 for topic, msg, t in bag.read_messages():
                                     if topic == "/LidarAll":
                                         if fps_input == 1:
-                                            timestr = str(msg.header.stamp.secs)
+                                            timestr = str(
+                                                msg.header.stamp.secs)
                                         else:
-                                            timestr = str(msg.header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+                                            timestr = str(msg.header.stamp.to_nsec(
+                                            ) / (fps_inv * 100000000) * fps_inv)
 
-                                        lidarall_msg = read_topic_return_msg(msg, 0, "")
+                                        lidarall_msg = read_topic_return_msg(
+                                            msg, 0, "")
                                         if check_first:
                                             datestr_lidar = filename + "_lidar/"
-                                            if os.path.exists(outdir + datestr_lidar + timestr + '.pcd'):
+                                            if os.path.exists(
+                                                    outdir + datestr_lidar + timestr + '.pcd'):
                                                 pass
                                             else:
                                                 try:
-                                                    read_msg_and_save(lidarall_msg, 0, outdir, timestr, filename)
+                                                    read_msg_and_save(
+                                                        lidarall_msg, 0, outdir, timestr, filename)
                                                 except BaseException:
-                                                    print("LidarAll cant save.")
+                                                    print(
+                                                        "LidarAll cant save.")
 
                                     if topic in cam_topics:
                                         if fps_input == 1:
-                                            timestr = str(msg.header.stamp.secs)
+                                            timestr = str(
+                                                msg.header.stamp.secs)
                                         else:
-                                            timestr = str(msg.header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+                                            timestr = str(msg.header.stamp.to_nsec(
+                                            ) / (fps_inv * 100000000) * fps_inv)
 
                                         read_topic_and_save_camera(
                                             topic, msg, outdir, filename, timestr, 0, "/cam/front_bottom_60", "a0", "A0")
@@ -292,41 +330,76 @@ def main():
 
                                     if topic == "/RadFront":
                                         if fps_input == 1:
-                                            timestr = str(msg.radHeader.stamp.secs)
+                                            timestr = str(
+                                                msg.radHeader.stamp.secs)
                                         else:
-                                            timestr = str(msg.radHeader.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+                                            timestr = str(msg.radHeader.stamp.to_nsec(
+                                            ) / (fps_inv * 100000000) * fps_inv)
 
-                                        rad_msg = read_topic_return_msg(msg, 2, "")
+                                        rad_msg = read_topic_return_msg(
+                                            msg, 2, "")
                                         if check_first:
                                             datestr_radar = filename + "_radar/"
-                                            if os.path.exists(outdir + datestr_radar + timestr + '_rad.txt'):
+                                            if os.path.exists(
+                                                    outdir + datestr_radar + timestr + '_rad.txt'):
                                                 pass
                                             elif timestr == "":
                                                 pass
                                             else:
                                                 try:
-                                                    read_msg_and_save(rad_msg, 2, outdir, timestr + "_rad", filename)
+                                                    read_msg_and_save(
+                                                        rad_msg, 2, outdir, timestr + "_rad", filename)
                                                 except BaseException:
                                                     print("rad cant save.")
 
                                     if topic == "/tf":
                                         if fps_input == 1:
-                                            timestr = str(msg.transforms[0].header.stamp.secs)
+                                            timestr = str(
+                                                msg.transforms[0].header.stamp.secs)
                                         else:
-                                            timestr = str(msg.transforms[0].header.stamp.to_nsec()/(fps_inv * 100000000) * fps_inv)
+                                            timestr = str(msg.transforms[0].header.stamp.to_nsec(
+                                            ) / (fps_inv * 100000000) * fps_inv)
 
-                                        tf_msg = read_topic_return_msg(msg, 3, "")
+                                        tf_msg = read_topic_return_msg(
+                                            msg, 3, "")
                                         if check_first:
                                             datestr_tf = filename + "_tf/"
-                                            if os.path.exists(outdir + datestr_tf + timestr + '_tf.csv'):
+                                            if os.path.exists(
+                                                    outdir + datestr_tf + timestr + '_tf.csv'):
                                                 pass
                                             elif timestr == "":
                                                 pass
                                             else:
                                                 try:
-                                                    read_msg_and_save(tf_msg, 3, outdir, timestr + "_tf", filename)
+                                                    read_msg_and_save(
+                                                        tf_msg, 3, outdir, timestr + "_tf", filename)
                                                 except BaseException:
                                                     print("tf cant save.")
+
+                                    if topic == "/veh_info":
+                                        if fps_input == 1:
+                                            timestr = str(
+                                                msg.header.stamp.secs)
+                                        else:
+                                            timestr = str(msg.header.stamp.to_nsec(
+                                            ) / (fps_inv * 100000000) * fps_inv)
+
+                                        veh_info_msg = read_topic_return_msg(
+                                            msg, 4, "")
+                                        if check_first:
+                                            datestr_veh_info = filename + "_veh_info/"
+                                            if os.path.exists(
+                                                    outdir + datestr_veh_info + timestr + '_veh_info.csv'):
+                                                pass
+                                            elif timestr == "":
+                                                pass
+                                            else:
+                                                try:
+                                                    read_msg_and_save(
+                                                        veh_info_msg, 4, outdir, timestr + "_veh_info", filename)
+                                                except BaseException:
+                                                    print(
+                                                        "veh_info cant save.")
     print ("** Finish Extracting **")
 
 
