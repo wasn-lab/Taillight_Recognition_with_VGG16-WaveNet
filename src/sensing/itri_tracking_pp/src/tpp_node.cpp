@@ -646,19 +646,19 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << gt_x_ << ", "  // #4-1 GT bbox center x (m)
         << gt_y_ << ", "  // #4-2 GT bbox center y (m)
 #endif
-        << obj.lidarInfo.boxCenter.x << ", "      // #5-1 bbox center x -- input (m)
-        << obj.lidarInfo.boxCenter.y << ", "      // #5-2 bbox center y -- input (m)
-        << obj.lidarInfo.boxCenter.z << ", "      // #5-3 bbox center z -- input (m)
-        << obj.center_point.x << ", "             // #6-1 bbox center x -- kalman-filtered (m)
-        << obj.center_point.y << ", "             // #6-2 bbox center y -- kalman-filtered (m)
-        << obj.center_point.z << ", "             // #6-3 bbox center z -- kalman-filtered (m)
+        << obj.lidarInfo.boxCenter.x << ", "  // #5-1 bbox center x -- input (m)
+        << obj.lidarInfo.boxCenter.y << ", "  // #5-2 bbox center y -- input (m)
+        << obj.lidarInfo.boxCenter.z << ", "  // #5-3 bbox center z -- input (m)
+        << obj.center_point.x << ", "         // #6-1 bbox center x -- kalman-filtered (m)
+        << obj.center_point.y << ", "         // #6-2 bbox center y -- kalman-filtered (m)
+        << obj.center_point.z << ", "         // #6-3 bbox center z -- kalman-filtered (m)
 
         << obj.track.absolute_velocity.x << ", "  // #11 abs vx (km/h)
         << obj.track.absolute_velocity.y << ", "  // #12 abs vy (km/h)
-        << obj.speed_abs << ", "                   // #13 abs speed (km/h)
+        << obj.speed_abs << ", "                  // #13 abs speed (km/h)
         << obj.track.relative_velocity.x << ", "  // #14 rel vx (km/h)
         << obj.track.relative_velocity.y << ", "  // #15 rel vy (km/h)
-        << obj.speed_rel;                          // #16 rel speed (km/h)
+        << obj.speed_rel;                         // #16 rel speed (km/h)
 
     ofs << ", "                //
         << ego_x_abs_ << ", "  // #21 ego x abs
