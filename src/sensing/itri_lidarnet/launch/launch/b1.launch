@@ -103,7 +103,6 @@ Lidar List:
 
 	<group if="$(eval arg('mode') == 6)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node"  />
-		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"	respawn="true"/>
 		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
