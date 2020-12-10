@@ -53,28 +53,7 @@ function(download_file)
     endif()
 endfunction()
 
-find_path(TENSORRT_INCLUDE_DIR NvInfer.h
-  HINTS ${TENSORRT_ROOT} ${CUDA_TOOLKIT_ROOT_DIR}
-  PATH_SUFFIXES include)
-if(TENSORRT_INCLUDE_DIR AND EXISTS "${TENSORRT_INCLUDE_DIR}/NvInferVersion.h")
-    file(STRINGS "${TENSORRT_INCLUDE_DIR}/NvInferVersion.h" VERSION_STRINGS REGEX "#define NV_TENSORRT_.*")
-else()
-    file(STRINGS "${TENSORRT_INCLUDE_DIR}/NvInfer.h" VERSION_STRINGS REGEX "define NV_TENSORRT_.*")
-endif()
-
-foreach(TYPE MAJOR)
-    string(REGEX MATCH "NV_TENSORRT_${TYPE} [0-9]" TRT_TYPE_STRING ${VERSION_STRINGS})
-    string(REGEX MATCH "[0-9]" TRT_${TYPE} ${TRT_TYPE_STRING})
-endforeach(TYPE)
-
-if(${TRT_MAJOR} STREQUAL "6")
-message("TensorRT library version: ${TRT_MAJOR}")
 include(cmake/lightnet_itri_newlayout_weights_trt6.cmake)
-else()
-message("TensorRT library version: ${TRT_MAJOR}")
-include(cmake/lightnet_itri_newlayout_weights.cmake)
-endif()
-
 include(cmake/drivenet_weights.cmake)
 include(cmake/camera_distance.cmake)
 include(cmake/camera_grabber.cmake)
@@ -83,7 +62,6 @@ include(cmake/libtensorflow_gpu.cmake)
 
 if (ENABLE_LIGHTNET)
   include(cmake/lightnet_weights.cmake)
-  include(cmake/lightnet_tainan_weights.cmake)
 endif ()
 
 if (ENABLE_PEDCROSS)
