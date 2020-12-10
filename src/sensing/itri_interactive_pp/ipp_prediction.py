@@ -1,5 +1,15 @@
 #! /usr/bin/python2.7
 # coding=utf-8
+import sys
+import os
+import json
+import torch
+import numpy as np
+import pandas as pd
+import time
+
+sys.path.insert(0, "./trajectron")
+
 from tf2_geometry_msgs import PoseStamped
 import tf2_geometry_msgs
 import tf2_ros
@@ -17,23 +27,12 @@ import evaluation
 import utils
 from scipy.interpolate import RectBivariateSpline
 from environment import Environment, Scene, derivative_of, Node
-import sys
-import os
-import json
-import torch
-import numpy as np
-import pandas as pd
-import time
-
-sys.path.insert(0, "./trajectron")
-
 
 seed = 0
 np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
-
 
 class parameter():
     def __init__(self):
@@ -224,10 +223,12 @@ def transform_data(buffer, data):
     present_id_list = []
 
     for obj in data.objects:
+        
+        # print('Obj type: ',obj.classId)
         category = None
-        if obj.classId == 1:
-            category = buffer.env.NodeType.PEDESTRIAN
-            type_ = "PEDESTRIAN"
+        if obj.classId == 1: #temporary test
+            category = buffer.env.NodeType.VEHICLE
+            type_ = "VEHICLE"
         elif obj.classId == 2 or obj.classId == 3 or obj.classId == 4:
             category = buffer.env.NodeType.VEHICLE
             type_ = "VEHICLE"
@@ -250,7 +251,7 @@ def transform_data(buffer, data):
             x = pose_transformed.pose.position.x
             y = pose_transformed.pose.position.y
             z = pose_transformed.pose.position.z
-
+        # print 'x: ', x
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
 
         length = math.sqrt(
@@ -326,9 +327,10 @@ def transform_data(buffer, data):
                                'height': height,
                                'heading_ang': heading,
                                'heading_rad': heading_rad})
-
+        # print node_data
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
+    # print(present_id_list)
     buffer.update_frame()
     buffer.refresh_buffer()
     return present_id_list
@@ -344,16 +346,16 @@ def predict(data):
                                 hyperparams['edge_removal_filter'])
 
     timesteps = np.array([buffer.get_buffer_frame()])
-    # print timesteps
+    print timesteps
     # print buffer.current_time
     print('====')
     print('current_time : ', buffer.get_buffer_frame())
 
     # for node in scene.nodes:
-    #     if node.id == '1754':
-    #         print "node_id: ",node.id
-    #         print "node_data_x: ",node.data.data[-1:,0]
-    #         print "node_data_y: ",node.data.data[-1:,1]
+    #     print "node_id: ",node.id
+    #     print "node_type: ",node.type
+        # print "node_data_x: ",node.data.data[-1:,0]
+        # print "node_data_y: ",node.data.data[-1:,1]
     # print "node_data_vx: ",node.data.data[-1:,2]
     # print "node_data_vy: ",node.data.data[-1:,3]
     # print "node_data_ax: ",node.data.data[-1:,4]
@@ -374,6 +376,7 @@ def predict(data):
     if len(predictions.keys()) < 1:
         return
     t = predictions.keys()[-1]
+    # print(t)
 
     # for t in predictions.keys():
     #     for node in predictions[t].keys():
@@ -384,8 +387,8 @@ def predict(data):
     for index, node in enumerate(predictions[t].keys()):
         for obj in data.objects:
             if obj.track.id == int(node.id):
-                # print('object id', obj.track.id)
-                # print('node id', node.id)
+                print('object id', obj.track.id)
+                print('node id', node.id)
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()
