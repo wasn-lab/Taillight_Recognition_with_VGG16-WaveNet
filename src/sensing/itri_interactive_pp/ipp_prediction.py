@@ -8,11 +8,12 @@ import numpy as np
 import pandas as pd
 import time
 
-sys.path.insert(0, "./trajectron")
-
 import tf2_ros
 import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
+
+sys.path.insert(0, "./trajectron")
+
 import math
 from msgs.msg import PointXY
 from msgs.msg import PathPrediction
@@ -349,7 +350,7 @@ def predict(data):
     # print buffer.current_time
     print('====')
     print('current_time : ', buffer.get_buffer_frame())
-    print timesteps
+    # print timesteps
     # for node in scene.nodes:
     #     print "node_id: ",node.id
     #     print "node_type: ",node.type

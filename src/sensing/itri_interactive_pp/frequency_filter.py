@@ -1,8 +1,6 @@
 #! ./sandbox/bin/python2.7
 import rospy
 import tf2_ros
-import tf2_geometry_msgs
-from tf2_geometry_msgs import PoseStamped
 from msgs.msg import DetectedObjectArray
 
 import time
@@ -48,8 +46,7 @@ def listener_ipp():
     else:
         print("Source not found!")
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
-    tf_listener = tf2_ros.TransformListener(tf_buffer)
-    # spin() simply keeps python from exiting until this node is stopped
+    tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
 
