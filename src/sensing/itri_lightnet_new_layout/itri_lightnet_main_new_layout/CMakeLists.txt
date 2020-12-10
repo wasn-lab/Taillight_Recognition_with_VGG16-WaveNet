@@ -18,8 +18,27 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(CUDA REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+else()
+  #message(STATUS "OpenCV IncludeDir: ${OpenCV_INCLUDE_DIRS}")
+  #message(STATUS "OpenCV Libararies: ${OpenCV_LIBRARIES}")
+  #message(STATUS "OpenCV Libararies Dir: ${OpenCV_LIBRARY_DIRS}")
+
+  if(EXISTS /usr/local/lib/libopencv_core.so)
+    set(OpenCV_USER_LIBRARIES /usr/local/lib/libopencv_core.so
+                              ${OpenCV_LIBRARIES})
+  else()
+    set(OpenCV_USER_LIBRARIES ${OpenCV_LIBRARIES})
+  endif()
+endif ()
 
 ###################################
 ## catkin specific configuration ##
