@@ -23,6 +23,7 @@ set(LIGHTNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet/it
 set(LIGHTNET_TAINAN_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_tainan/itri_lightnet_tainan_main/resources)
 set(LOCALIZATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/localization)
 set(VEHICLE_DAE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vehicle/vehicle_description/vehicle_body_description/b_bus_description/mesh)
+set(LIGHTNET_ITRI_NEWLAYOUT_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/resources)
 
 
 function(download_file)
@@ -51,6 +52,28 @@ function(download_file)
         message(STATUS "File ${OPT_DESTINATION} is up to date")
     endif()
 endfunction()
+
+find_path(TENSORRT_INCLUDE_DIR NvInfer.h
+  HINTS ${TENSORRT_ROOT} ${CUDA_TOOLKIT_ROOT_DIR}
+  PATH_SUFFIXES include)
+if(TENSORRT_INCLUDE_DIR AND EXISTS "${TENSORRT_INCLUDE_DIR}/NvInferVersion.h")
+    file(STRINGS "${TENSORRT_INCLUDE_DIR}/NvInferVersion.h" VERSION_STRINGS REGEX "#define NV_TENSORRT_.*")
+else()
+    file(STRINGS "${TENSORRT_INCLUDE_DIR}/NvInfer.h" VERSION_STRINGS REGEX "define NV_TENSORRT_.*")
+endif()
+
+foreach(TYPE MAJOR)
+    string(REGEX MATCH "NV_TENSORRT_${TYPE} [0-9]" TRT_TYPE_STRING ${VERSION_STRINGS})
+    string(REGEX MATCH "[0-9]" TRT_${TYPE} ${TRT_TYPE_STRING})
+endforeach(TYPE)
+
+if(${TRT_MAJOR} STREQUAL "6")
+message("TensorRT library version: ${TRT_MAJOR}")
+include(cmake/lightnet_itri_newlayout_weights_trt6.cmake)
+else()
+message("TensorRT library version: ${TRT_MAJOR}")
+include(cmake/lightnet_itri_newlayout_weights.cmake)
+endif()
 
 include(cmake/drivenet_weights.cmake)
 include(cmake/camera_distance.cmake)
