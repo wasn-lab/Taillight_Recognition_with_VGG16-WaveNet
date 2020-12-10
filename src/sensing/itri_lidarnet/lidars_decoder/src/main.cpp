@@ -36,8 +36,39 @@ pcl::StopWatch stopWatch_L;
 pcl::StopWatch stopWatch_R;
 pcl::StopWatch stopWatch_T;
 
-
 bool pub_decompress = false;
+
+//------------------------------ Octree Compressor
+void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher)
+{
+  //--------------------------- compress start
+  bool showStatistics = false;
+  pcl::io::compression_Profiles_e compressionProfile = pcl::io::HIGH_RES_ONLINE_COMPRESSION_WITH_COLOR;
+  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>* PointCloudEncoder;
+  PointCloudEncoder =
+      new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>(compressionProfile, showStatistics);
+
+  // compressed stringstream
+  msgs::CompressedPointCloud compressed_pointcloud;
+  std::stringstream compressedData;
+
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_xyzrgba(new pcl::PointCloud<pcl::PointXYZRGBA>);
+  *cloud_xyzrgba = XYZIR_to_XYZRBGA(input_cloud_tmp_ring);
+
+  PointCloudEncoder->encodePointCloud(cloud_xyzrgba, compressedData);
+  compressed_pointcloud.data = compressedData.str();
+
+  pcl_conversions::fromPCL(input_cloud_tmp_ring->header, compressed_pointcloud.header);
+
+  output_publisher.publish(compressed_pointcloud);
+
+  delete (PointCloudEncoder);
+
+  compressedData.str("");
+  compressedData.clear();
+}
+
+
 //------------------------------ Callback
 void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
 {
