@@ -168,7 +168,7 @@ class Trajectron(object):
             return predictions_dict
         
         model = self.node_models_dict[node_type]
-
+        
         # Get Input data for node type and given timesteps
         batch = get_timesteps_data(env=env, scene=scene, t=timesteps, node_type=node_type, state=self.state,
                                     pred_state=self.pred_state, edge_types=model.edge_types,
@@ -177,6 +177,7 @@ class Trajectron(object):
         # There are no nodes of type present for timestep
         if batch is None:
             return predictions_dict
+        
         (first_history_index,
             x_t, y_t, x_st_t, y_st_t,
             neighbors_data_st,
@@ -191,7 +192,6 @@ class Trajectron(object):
             robot_traj_st_t = robot_traj_st_t.to(self.device)
         if type(map) == torch.Tensor:
             map = map.to(self.device)
-        # print 'node: ', nodes
         # print('current_time_stamp : ', timesteps_o[-1])
         # print()
         # print('Shape of Tensor x : ',np.shape(x))

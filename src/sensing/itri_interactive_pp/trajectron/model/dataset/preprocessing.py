@@ -220,13 +220,13 @@ def get_timesteps_data(env, scene, t, node_type, state, pred_state,
     :param hyperparams: Model hyperparameters
     :return:
     """
-    # print(state)
+    
     nodes_per_ts = scene.present_nodes(t,
                                        type=node_type,
                                        min_history_timesteps=min_ht,
                                        min_future_timesteps=max_ft,
                                        return_robot=not hyperparams['incl_robot_node'])
-    
+    # print nodes_per_ts
     batch = list()
     nodes = list()
     out_timesteps = list()
