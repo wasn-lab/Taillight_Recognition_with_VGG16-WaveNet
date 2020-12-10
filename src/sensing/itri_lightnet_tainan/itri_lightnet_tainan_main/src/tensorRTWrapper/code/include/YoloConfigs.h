@@ -6,7 +6,7 @@ namespace Yolo
 {
     static constexpr int CHECK_COUNT = 3;
     static constexpr float IGNORE_THRESH = 0.5f;
-    static constexpr int CLASS_NUM = 7;
+    static constexpr int CLASS_NUM = 105;
 
     struct YoloKernel
     {
@@ -14,22 +14,6 @@ namespace Yolo
         int height;
         float anchors[CHECK_COUNT*2];
     };
-	//YOLO 608*384 DivU
-     YoloKernel yolo1 = {
-         19,
-         12,
-         {116,90,  156,198,  373,326}
-     };
-     YoloKernel yolo2 = {
-         38,
-         24,
-         {30,61,  62,45,  59,119}
-     };
-     YoloKernel yolo3 = {
-         76,
-         48,
-         {10,13,  16,30,  33,23}
-     };
 
     //YOLO 608
     //YoloKernel yolo1 = {
@@ -64,7 +48,7 @@ namespace Yolo
     //     52,
     //     {10,13,  16,30,  33,23}
     // };
-/*
+
     //YOLO 384 * 608
      YoloKernel yolo1 = {
          19,
@@ -81,7 +65,7 @@ namespace Yolo
          48,
          {10,13,  16,30,  33,23}
      }; 
-*/
+
     //YOLO 352 * 704
     // YoloKernel yolo1 = {
     //     22,
