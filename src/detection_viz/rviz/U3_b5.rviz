@@ -134,7 +134,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/bbox
       Name: Lidarbbox
       Namespaces:
-        {}
+        /LidarDetection: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -142,23 +142,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/delayTxt
       Name: Lidar_latency
       Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LidarDetection/Car/bbox
-      Name: Lidarbbox_Car
-      Namespaces:
-        /LidarDetection/Car: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LidarDetection/Ped_Cyc/bbox
-      Name: Lidarbbox_Ped_Cyc
-      Namespaces:
-        /LidarDetection/Ped_Cyc: true
+        /LidarDetection_delay: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -166,7 +150,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/Car/delayTxt
       Name: Lidar_latency_PointPillars
       Namespaces:
-        /LidarDetection/Car_delay: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -617,7 +601,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 96.76548767089844
+      Distance: 74.93518829345703
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -632,10 +616,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.5647963285446167
       Target Frame: base_link
       Value: ThirdPersonFollower (rviz)
-      Yaw: 2.965412139892578
+      Yaw: 3.110412359237671
     Saved: ~
 Window Geometry:
   Displays:
