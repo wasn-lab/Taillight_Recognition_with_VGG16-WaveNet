@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(trtNet_tainan)
+project(trtNet_itri_new_layout)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -56,7 +56,7 @@ set(BUILD_DEPS "YES" CACHE BOOL "If YES, will install dependencies into sandbox.
 # endif()
 list(APPEND CUDA_NVCC_FLAGS "-D_FORCE_INLINES -Xcompiler -fPIC")
 CUDA_INCLUDE_DIRECTORIES(${CUDNN_INCLUDE_DIR} ${TENSORRT_INCLUDE_DIR})
-CUDA_ADD_LIBRARY(trtNet_tainan STATIC ${PLUGIN_SOURCES})
+CUDA_ADD_LIBRARY(trtNet_itri_new_layout STATIC ${PLUGIN_SOURCES})
 
-target_include_directories(trtNet_tainan PUBLIC ${CUDA_INCLUDE_DIRS} ${TENSORRT_INCLUDE_DIR} ${CUDNN_INCLUDE_DIR})
-target_link_libraries(trtNet_tainan ${TENSORRT_LIBRARY})
+target_include_directories(trtNet_itri_new_layout PUBLIC ${CUDA_INCLUDE_DIRS} ${TENSORRT_INCLUDE_DIR} ${CUDNN_INCLUDE_DIR})
+target_link_libraries(trtNet_itri_new_layout ${TENSORRT_LIBRARY})

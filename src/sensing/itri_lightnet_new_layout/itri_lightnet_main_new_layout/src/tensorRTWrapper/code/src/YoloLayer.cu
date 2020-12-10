@@ -1,8 +1,6 @@
 #include "YoloConfigs.h"
 #include "YoloLayer.h"
 
-
-
 using namespace Yolo;
 
 namespace nvinfer1
@@ -25,11 +23,6 @@ namespace nvinfer1
 
         if(mOutputBuffer)
             CUDA_CHECK(cudaFreeHost(mOutputBuffer));
-
-
-
-
-
     }
     
     // create the plugin at runtime from a byte stream

@@ -168,6 +168,9 @@ nvinfer1::ICudaEngine *trtNet::loadModelAndCreateEngine(const char *deployFile, 
     parser->setPluginFactory(pluginFactory);
 
     std::cout << "Begin parsing model..." << std::endl;
+    printf("deployFile = %s\n", deployFile);
+    printf("modelFile = %s\n", modelFile);
+
     const IBlobNameToTensor *blobNameToTensor = parser->parse(deployFile, modelFile, *network, nvinfer1::DataType::kFLOAT);
     if (!blobNameToTensor)
         RETURN_AND_LOG(nullptr, ERROR, "Fail to parse");
@@ -233,8 +236,8 @@ void trtNet::doInference(const void *inputData, void *outputData, int batchSize 
     CUDA_CHECK(cudaMemcpyAsync(mTrtCudaBuffer[inputIndex], inputData, mTrtBindBufferSize[inputIndex], cudaMemcpyHostToDevice, mTrtCudaStream));
     //std::cout << "doinfer" << std::endl;
     auto t_start = std::chrono::high_resolution_clock::now();
-    //mTrtContext->execute(batchSize, &mTrtCudaBuffer[inputIndex]);
-    mTrtContext->enqueue(batchSize, &mTrtCudaBuffer[inputIndex], mTrtCudaStream, nullptr);   // infer the batch of images asynchronizely
+    mTrtContext->execute(batchSize, &mTrtCudaBuffer[inputIndex]);
+   // mTrtContext->enqueue(batchSize, &mTrtCudaBuffer[inputIndex], mTrtCudaStream, nullptr);   // infer the batch of images asynchronizely
 
     auto t_end = std::chrono::high_resolution_clock::now();
     float total = std::chrono::duration<float, std::milli>(t_end - t_start).count();
@@ -247,7 +250,7 @@ void trtNet::doInference(const void *inputData, void *outputData, int batchSize 
         outputData = (char *)outputData + size;
     }
 
-    //cudaStreamSynchronize(mTrtCudaStream);
+    cudaStreamSynchronize(mTrtCudaStream);
 
     mTrtIterationTime++;
 }

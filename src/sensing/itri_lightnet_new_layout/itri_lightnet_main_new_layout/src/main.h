@@ -22,15 +22,21 @@
 #include <opencv2/video/tracking_c.h>
 #include "struct_define.h"
 
-//#define read_local_bagfile
+#define read_local_bagfile
 
-cv_bridge::CvImagePtr cv_ptr;
+using namespace std;
+using namespace cv;
+
+int camera_30deg_flag = 0,camera_60deg_flag = 0;
+cv_bridge::CvImagePtr cv_ptr_30deg;
+cv_bridge::CvImagePtr cv_ptr_60deg;
+
 ros::Publisher Traffic_Light_pub;
 
 //extern void DoNms(vector<Detection> &detections, int classes, float nmsThresh);
 //extern vector<float> prepareImage(cv::Mat &img);
 //extern vector<Bbox> postProcessImg(vector<Detection> &detections, int classes);
-extern void DoNet(cv_bridge::CvImagePtr cv_ptr, struct TL_status *TL_status_info, struct TL_color *TL_color_info);
+extern void DoNet(cv_bridge::CvImagePtr cv_ptr_30deg,cv_bridge::CvImagePtr cv_ptr_60deg, struct TL_status *TL_status_info, struct TL_color *TL_color_info);
 extern void initi_all();
 struct TL_status TL_status_info;
 struct TL_color TL_color_info;
