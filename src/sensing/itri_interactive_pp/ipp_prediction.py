@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! ./sandbox/bin/python2.7
 # coding=utf-8
 import sys
 import os
@@ -10,9 +10,9 @@ import time
 
 sys.path.insert(0, "./trajectron")
 
-from tf2_geometry_msgs import PoseStamped
-import tf2_geometry_msgs
 import tf2_ros
+import tf2_geometry_msgs
+from tf2_geometry_msgs import PoseStamped
 import math
 from msgs.msg import PointXY
 from msgs.msg import PathPrediction
@@ -43,7 +43,6 @@ class parameter():
         self.output_tag = 'int_ee'
         self.node_type = 'VEHICLE'
         self.prediction_horizon = 6
-
 
 class buffer_data():
     def __init__(self):
@@ -153,7 +152,7 @@ class buffer_data():
         max_timesteps = self.buffer_frame['frame_id'].max()
         # print max_timesteps
         scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
-        for node_id in pd.unique(self.buffer_frame['node_id']):
+        for node_id in present_node_id:
             node_frequency_multiplier = 1
             node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
 
@@ -345,12 +344,12 @@ def predict(data):
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
 
-    timesteps = np.array([buffer.get_buffer_frame()])
-    print timesteps
+    timesteps = np.arange(buffer.get_buffer_frame())
+    
     # print buffer.current_time
     print('====')
     print('current_time : ', buffer.get_buffer_frame())
-
+    print timesteps
     # for node in scene.nodes:
     #     print "node_id: ",node.id
     #     print "node_type: ",node.type
@@ -387,8 +386,8 @@ def predict(data):
     for index, node in enumerate(predictions[t].keys()):
         for obj in data.objects:
             if obj.track.id == int(node.id):
-                print('object id', obj.track.id)
-                print('node id', node.id)
+                # print('object id', obj.track.id)
+                # print('node id', node.id)
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()

@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! ./sandbox/bin/python2.7
 import rospy
 from std_msgs.msg import String
 from msgs.msg import DetectedObjectArray
@@ -59,8 +59,9 @@ def vehicle_marker_callback_final(data):
     pub = rospy.Publisher(
         '/IPP/Marker',
         MarkerArray,
-        queue_size=1)  # pedestrian_marker is TOPIC
-    #rospy.init_node('pedestrian_marker', anonymous=True)
+        queue_size=1)
+    # pedestrian_marker is TOPIC
+    # rospy.init_node('pedestrian_marker', anonymous=True)
     # print(data.header.frame_id)
     markerArray = MarkerArray()
     for obj in data.objects:
