@@ -31,6 +31,7 @@
 #include <std_msgs/Float64.h>
 #include "msgs/DetectedObjectArray.h"
 #include "detected_object_class_id.h"
+#include "fusion_source_id.h"
 #include "lidar_point_pillars/ped_cyc/point_pillars_ros_ped_cyc.h"
 
 // for StopWatch
@@ -199,7 +200,7 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
 
       // base info
       object.header = in_header;
-      object.fusionSourceId = 2;
+      object.fusionSourceId = sensor_msgs_itri::FusionSourceId::Lidar;
 
       // pub
       MsgObjArr.objects.push_back(object);
