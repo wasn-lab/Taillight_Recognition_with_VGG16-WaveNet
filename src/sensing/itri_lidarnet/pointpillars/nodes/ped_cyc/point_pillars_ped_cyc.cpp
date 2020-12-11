@@ -34,7 +34,7 @@ PointPillars_Ped_Cyc::PointPillars_Ped_Cyc(const bool reproduce_result_mode, con
   , MAX_NUM_PILLARS_(18000) // 18000
   , MAX_NUM_POINTS_PER_PILLAR_(100)
   , PFE_OUTPUT_SIZE_(MAX_NUM_PILLARS_ * 64)
-  , GRID_X_SIZE_(256) // 432
+  , GRID_X_SIZE_(496) // 432
   , GRID_Y_SIZE_(248) // 496
   , GRID_Z_SIZE_(1)
   , RPN_INPUT_SIZE_(64 * GRID_X_SIZE_ * GRID_Y_SIZE_)
@@ -48,10 +48,10 @@ PointPillars_Ped_Cyc::PointPillars_Ped_Cyc(const bool reproduce_result_mode, con
   , PILLAR_X_SIZE_(0.16f)
   , PILLAR_Y_SIZE_(0.16f)
   , PILLAR_Z_SIZE_(3.0f) // 4.0f
-  , MIN_X_RANGE_(-10.24f) // -69.12f
+  , MIN_X_RANGE_(-39.68f) // -69.12f
   , MIN_Y_RANGE_(-19.84f) // -39.68f
   , MIN_Z_RANGE_(-2.5f) // -3.0f
-  , MAX_X_RANGE_(30.72f) // 69.12f
+  , MAX_X_RANGE_(39.68f) // 69.12f
   , MAX_Y_RANGE_(19.84f) // 39.68f
   , MAX_Z_RANGE_(0.5f) // 1
   , BATCH_SIZE_(1)

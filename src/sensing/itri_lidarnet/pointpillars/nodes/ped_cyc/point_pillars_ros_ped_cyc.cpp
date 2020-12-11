@@ -128,13 +128,13 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
       float y = dimension_y/2.0f;
       float z = dimension_z/2.0f;
       p[0] = Eigen::Vector3f(-x, -y, -z);
-      p[1] = Eigen::Vector3f(-x, y, -z);
+      p[1] = Eigen::Vector3f(-x, -y, z);
       p[2] = Eigen::Vector3f( -x, y, z);
-      p[3] = Eigen::Vector3f( -x, -y, z);
+      p[3] = Eigen::Vector3f( -x, y, -z);
       p[4] = Eigen::Vector3f( x, -y, -z);
-      p[5] = Eigen::Vector3f( x, y, -z);
+      p[5] = Eigen::Vector3f( x, -y, z);
       p[6] = Eigen::Vector3f( x, y, z);
-      p[7] = Eigen::Vector3f(x, -y, z);
+      p[7] = Eigen::Vector3f(x, y, -z);
       Eigen::Vector3f center(center_x, center_y, center_z);
       Eigen::Quaternionf quat(q.w, q.x, q.y, q.z);
       for (int i = 0; i < 8; i++)

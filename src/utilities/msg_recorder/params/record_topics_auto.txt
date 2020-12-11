@@ -1,9 +1,18 @@
-/LidarFrontRight/Raw
-/LidarFrontLeft/Raw
-/LidarRearRight/Raw
-/LidarRearLeft/Raw
-/LidarFrontTop/Raw # For debugging localization
+# /LidarAll
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+# /LidarFrontTop/Raw # For debugging localization
+# /LidarDetection
+
+#-- Update for New LiDARNet 
+/LidarFrontTop/Compressed
+/LidarFrontLeft/Compressed
+/LidarFrontRight/Compressed
 /LidarDetection
+/LidarDetection/Car
+/LidarDetection/Ped_Cyc
 
 # /points_map
 
