@@ -43,6 +43,7 @@ Lidar List:
 	<arg name="use_old_stitch" default="false"/>
 
 	<!-- Debug -->
+	<arg name="debug_output" default="false"/>
 	<arg name="pub_decompress" default="false"/>
 
 <!-- Parameter ************************************************************* -->
@@ -51,8 +52,8 @@ Lidar List:
 	<param name="use_roi" value="$(arg use_roi)"/>
 	<param name="use_shape_estimation" value="$(arg use_shape_estimation)"/>
 	<param name="pub_decompress" value="$(arg pub_decompress)" />
+	<param name="debug_output" value="$(arg debug_output)" /> 
 
-	<rosparam param="debug_output">true</rosparam>
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
 
 <!-- tf2 ******************************************************************* -->
