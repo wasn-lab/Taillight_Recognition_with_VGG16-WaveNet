@@ -73,9 +73,9 @@ download_file(
 download_file(
     URL "http://nas.itriadv.co:8888/git_data/B1/LiDAR_Models/PointPillars/Ped_Cyc/pfe.onnx"
     DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/ped_cyc/pfe.onnx"
-    MD5 89d6b99414581c17fa545b6897f0c0c0)
+    MD5 697f3febc851cbbcd6d60fa5399a3c12)
 
 download_file(
     URL "http://nas.itriadv.co:8888/git_data/B1/LiDAR_Models/PointPillars/Ped_Cyc/rpn.onnx"
     DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/ped_cyc/rpn.onnx"
-    MD5 c0f4c1ec518e6c84ddd2b966c544f9f8)
+    MD5 ee09757a53af4cd88058cb3393c396a0)
