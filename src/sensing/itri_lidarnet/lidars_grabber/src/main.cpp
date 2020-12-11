@@ -37,10 +37,6 @@ static ros::Publisher g_pub_LidarAll_HeartBeat;
 
 static ros::Publisher g_pub_LidarFrontTop_Localization;
 
-static ros::Publisher g_pub_LidarFrontLeft_Compress;
-static ros::Publisher g_pub_LidarFrontRight_Compress;
-static ros::Publisher g_pub_LidarFrontTop_Compress;
-
 //--------------------------- Global Variables
 mutex g_L_Lock;
 mutex g_R_Lock;
@@ -49,11 +45,9 @@ mutex g_T_Lock;
 StopWatch g_stopWatch_L;
 StopWatch g_stopWatch_R;
 StopWatch g_stopWatch_T;
-StopWatch g_stopWatch_Compressor;
 
 bool g_debug_output = false;
 bool g_use_filter = false;
-bool g_use_compress = false;
 bool g_use_roi = false;
 
 void lidarAll_Pub(int lidarNum);
@@ -421,7 +415,6 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", g_debug_output);
   ros::param::get("/use_filter", g_use_filter);
-  ros::param::get("/use_compress", g_use_compress);
   ros::param::get("/use_roi", g_use_roi);
 
   // check stitching mode
@@ -474,16 +467,8 @@ int main(int argc, char** argv)
   g_pub_LidarFrontTop_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontTop/Raw/heartbeat", 1);
   g_pub_LidarAll_HeartBeat = n.advertise<std_msgs::Empty>("/LidarAll/heartbeat", 1);
 
-
   // publisher - localization
   g_pub_LidarFrontTop_Localization = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop/Localization", 1);
-
-
-  // publisher - compressed
-  g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1);
-  g_pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Compressed", 1);
-  g_pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1);
-
 
   thread ThreadDetection_UI(UI, argc, argv);
   thread ThreadDetection_Pub(LidarAll_Publisher, argc, argv);
