@@ -65,7 +65,7 @@ class Node:
         pp_ellipse_list = MarkerArray()
         idx = 0
         for obj in objects:
-            for seq in range(20):
+            for seq in range(30):
                 pp_ellipse_list.markers.append(
                     self.create_pp_ellipse(
                         message.header, obj, idx, seq))
