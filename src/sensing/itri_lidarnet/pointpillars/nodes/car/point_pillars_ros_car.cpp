@@ -30,6 +30,8 @@
 // headers in local files
 #include <std_msgs/Float64.h>
 #include "msgs/DetectedObjectArray.h"
+#include "detected_object_class_id.h"
+#include "fusion_source_id.h"
 #include "lidar_point_pillars/car/point_pillars_ros_car.h"
 
 // for StopWatch
@@ -183,8 +185,8 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
 
       // base info
       object.header = in_header;
-      object.classId = 1;
-      object.fusionSourceId = 2;
+      object.classId = sensor_msgs_itri::DetectedObjectClassId::Car;
+      object.fusionSourceId = sensor_msgs_itri::FusionSourceId::Lidar;
 
       // pub
       MsgObjArr.objects.push_back(object);
