@@ -312,8 +312,8 @@ void TPPNode::subscribe_and_advertise_topics()
 
   if (in_source_ == 1)
   {
-    LOG_INFO << "Input Source: Lidar (/LidarDetection/Car)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
   }
   else if (in_source_ == 2)
   {
