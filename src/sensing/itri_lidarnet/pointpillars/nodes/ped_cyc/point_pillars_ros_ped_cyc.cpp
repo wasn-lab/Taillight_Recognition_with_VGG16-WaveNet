@@ -183,12 +183,12 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
       else if (labels[i] == 2)
       {
         //object.label = "Pedestrian";
-        object.classId = 2;
+        object.classId = 1;
       }
       else
       {
         //object.label = "Car";
-        object.classId = 1;
+        object.classId = 4;
       }
       
       // if (baselink_support_)

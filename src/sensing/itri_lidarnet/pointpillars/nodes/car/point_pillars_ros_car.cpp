@@ -183,7 +183,7 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
 
       // base info
       object.header = in_header;
-      object.classId = 1;
+      object.classId = 4;
       object.fusionSourceId = 2;
 
       // pub
