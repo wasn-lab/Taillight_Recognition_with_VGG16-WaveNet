@@ -1,5 +1,5 @@
-build*/
-devel*/
+/build*/
+/devel*/
 CATKIN_IGNORE
 .vscode/
 *.swp
@@ -52,4 +52,3 @@ src/sensing/deeplab/weights
 src/sensing/itri_interactive_pp/models
 src/sensing/itri_interactive_pp/other
 src/sensing/itri_interactive_pp/sandbox
-src/sensing/itri_tracking_3d/src/tpp_node.cpp
