@@ -10,10 +10,10 @@ import time
 import numpy as np
 
 
-def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0]):
+def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='/map'):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
-    marker.header.frame_id = '/base_link'  # vehicle center
+    marker.header.frame_id = coordinate_type  # vehicle center
     marker.id = id
     marker.type = marker.POINTS
     marker.action = marker.ADD
@@ -30,17 +30,17 @@ def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0]):
     return marker
 
 
-def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0]):
+def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='/map'):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
-    marker.header.frame_id = "/base_link"
+    marker.header.frame_id = coordinate_type
     marker.type = marker.LINE_STRIP
     marker.action = marker.ADD
     marker.id = id
     # marker scale
     marker.scale.x = 0.1
-    marker.scale.y = 0.1
-    marker.scale.z = 0.1
+    # marker.scale.y = 0.1
+    # marker.scale.z = 0.1
 
     # marker color
     marker.color.r = color[0]
@@ -65,13 +65,15 @@ def vehicle_marker_callback_final(data):
     # print(data.header.frame_id)
     markerArray = MarkerArray()
     for obj in data.objects:
-        if obj.track.is_ready_prediction and obj.track.id == 1754:
+        if obj.track.is_ready_prediction:
             i = 0
             line_marker = init_new_line(
-                id=obj.track.id * 30 + i, color=[1.0, 0.2, 0.0])
+                id=obj.track.id * 30 + i, color=[1.0, 0.2, 0.0],coordinate_type=coordinate_type)
             for track_point in obj.track.forecasts:
-                point_marker = init_new_points(id=obj.track.id * 20 + i)
+                point_marker = init_new_points(id=obj.track.id * 20 + i,coordinate_type=coordinate_type)
                 print("Prediction_horizon: ", i)
+                print('x: ',track_point.position.x)
+                print('y: ',track_point.position.y)
                 point_2 = Point()
                 point_2.x = track_point.position.x
                 point_2.y = track_point.position.y
@@ -87,7 +89,6 @@ def vehicle_marker_callback_final(data):
 
 
 def listener_pedestrian():
-    rospy.init_node('node_name')
     rospy.Subscriber(
         '/IPP/Alert',
         DetectedObjectArray,
@@ -97,6 +98,16 @@ def listener_pedestrian():
 
 
 if __name__ == '__main__':
+    global input_source,coordinate_type
+    rospy.init_node('Ipp_Marker')
+    input_source = rospy.get_param('/object_marker/coordinate_type')
+    if input_source == 1:
+        coordinate_type = '/map'
+    elif input_source == 2:
+        coordinate_type == '/base_link'
+    else:
+        print('Source not found!')
+        
     try:
         listener_pedestrian()
     except rospy.ROSInterruptException:

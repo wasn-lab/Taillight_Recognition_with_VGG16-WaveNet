@@ -4,7 +4,7 @@
   <!-- pedcross input source -->
   <!-- 1: tracking 2d with front/left/right cameras -->
   <!-- 2: tracking 3d -->
-  <arg name="input_topic" default="1" />
+  <arg name="input_topic" default="2" />
 
   <!-- Set time to prediction (2fps)-->
   <arg name="prediction_horizon" default="4" />
