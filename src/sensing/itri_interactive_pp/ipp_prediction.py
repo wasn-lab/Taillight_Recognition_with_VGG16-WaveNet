@@ -317,7 +317,6 @@ def transform_data(buffer, data):
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
     # print(present_id_list)
-    buffer.update_frame()
     buffer.refresh_buffer()
     return present_id_list
 
@@ -331,7 +330,7 @@ def predict(data):
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
 
-    timesteps = np.arange(buffer.get_buffer_frame())
+    timesteps = np.array([buffer.get_buffer_frame()])
     
     # print buffer.current_time
     print('====')
@@ -358,7 +357,8 @@ def predict(data):
                                    z_mode=True,
                                    gmm_mode=True,
                                    full_dist=False)
-
+    
+    buffer.update_frame()
     if len(predictions.keys()) < 1:
         return
     t = predictions.keys()[-1]
