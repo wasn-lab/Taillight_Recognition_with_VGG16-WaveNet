@@ -30,7 +30,7 @@
 // headers in local files
 #include <std_msgs/Float64.h>
 #include "msgs/DetectedObjectArray.h"
-#include "msgs/include/detected_object_class_id.h"
+#include "detected_object_class_id.h"
 #include "lidar_point_pillars/ped_cyc/point_pillars_ros_ped_cyc.h"
 
 // for StopWatch
