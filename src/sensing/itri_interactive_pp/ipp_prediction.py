@@ -8,11 +8,11 @@ import numpy as np
 import pandas as pd
 import time
 
+sys.path.insert(0, "./trajectron")
+
 import tf2_ros
 import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
-
-sys.path.insert(0, "./trajectron")
 
 import math
 from msgs.msg import PointXY
@@ -130,28 +130,20 @@ class buffer_data():
         '''
             data : pd.series
         '''
-        # print(self.current_time)
         # update T frame objects in last element array
         self.buffer_frame = self.buffer_frame.append(data, ignore_index=True)
-        # self.present_all_data()
 
     def refresh_buffer(self):
         # If frame_id < current_time - 11 remove the data
         old_frame = self.current_frame - 11
         self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= old_frame]
-        # print(self.buffer_frame)
         self.buffer_frame.sort_values('frame_id', inplace=True)
 
     def present_all_data(self):
         print('buffer_length : ', len(self.buffer_frame))
-        # print self.buffer_frame[self.buffer_frame['node_id']=='1754']
-        # for i in range(len(self.buffer)):
-        #     print('Frame_index : ', i)
-        #     print(self.buffer[i])
 
     def create_scene(self, present_node_id):
         max_timesteps = self.buffer_frame['frame_id'].max()
-        # print max_timesteps
         scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
         for node_id in present_node_id:
             node_frequency_multiplier = 1
@@ -173,7 +165,6 @@ class buffer_data():
             vy = derivative_of(y, scene.dt)
             ax = derivative_of(vx, scene.dt)
             ay = derivative_of(vy, scene.dt)
-            # print("Dt: ",scene.dt,"Vx : ", vx,"Vy : ", vy,"Ax : ", ax,"Ax : ", ay)
             if node_df.iloc[0]['type'] == self.env.NodeType.VEHICLE:
                 v = np.stack((vx, vy), axis=-1)
                 v_norm = np.linalg.norm(
@@ -223,8 +214,6 @@ def transform_data(buffer, data):
     present_id_list = []
 
     for obj in data.objects:
-        
-        # print('Obj type: ',obj.classId)
         category = None
         if obj.classId == 1: #temporary test
             category = buffer.env.NodeType.VEHICLE
@@ -311,10 +300,7 @@ def transform_data(buffer, data):
         info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + \
             "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
         past_obj.append(info)
-
-        # if diff_x != 0:
-        #    print(diff_x,diff_y,diff_y/diff_x,heading)
-
+        
         node_data = pd.Series({'frame_id': buffer.get_buffer_frame(),
                                'type': category,
                                'node_id': str(obj.track.id),
@@ -327,7 +313,7 @@ def transform_data(buffer, data):
                                'height': height,
                                'heading_ang': heading,
                                'heading_rad': heading_rad})
-        # print node_data
+        
         buffer.update_buffer(node_data)
         present_id_list.append(obj.track.id)
     # print(present_id_list)
@@ -378,17 +364,10 @@ def predict(data):
     t = predictions.keys()[-1]
     # print(t)
 
-    # for t in predictions.keys():
-    #     for node in predictions[t].keys():
-    #         if node.id == '1754':
-    #             print('Predict: ', predictions[t][node][:][0][0])
-
-    # print '===='
     for index, node in enumerate(predictions[t].keys()):
         for obj in data.objects:
             if obj.track.id == int(node.id):
-                # print('object id', obj.track.id)
-                # print('node id', node.id)
+                
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()
@@ -415,8 +394,7 @@ def listener_ipp():
     rospy.init_node('ipp_transform_data')
     rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
-    tf_listener = tf2_ros.TransformListener(tf_buffer)
-    # spin() simply keeps python from exiting until this node is stopped
+    tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
 
 
