@@ -86,26 +86,10 @@ private:
   ros::Subscriber wayarea_sub_;
   void callback_wayarea(const nav_msgs::OccupancyGrid& input);
 
-#if TTC_TEST == 0
   tf2_ros::Buffer tf_buffer_;
-#endif
 
-#if TTC_TEST
-  unsigned int seq_ = 0;
-  unsigned int seq_cb_ = 0;
-
-  ros::Subscriber seq_sub_;
-  void callback_seq(const std_msgs::Int32::ConstPtr& input);
-
-  ros::Subscriber localization_sub_;
-  void callback_localization(const visualization_msgs::Marker::ConstPtr& input);
-
-  ros::Subscriber ego_speed_kmph_sub_;
-  void callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input);
-#else
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
-#endif
 
   std::string frame_id_source_ = "base_link";
   std::string frame_id_target_ = "map";
@@ -158,10 +142,6 @@ private:
   void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
 #endif
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename);
-#if TTC_TEST
-  float closest_distance_of_obj_pivot(const msgs::DetectedObject& obj);
-  void save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs);
-#endif
 };
 }  // namespace tpp
 
