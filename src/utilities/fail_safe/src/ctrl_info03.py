@@ -72,15 +72,16 @@ class CtrlInfo03(object):
     def get_events_in_list(self):
         status = ""
         status_str = ""
+        module = ""
 
         if self.brake_status == BrakeStatus.Y_AEB:
             status = FATAL
             status_str = "AEB: Automatic emergency brake!"
-            module = "AEB"
+            module = "aeb_event"
         if self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
             status = FATAL
             status_str = "Disengage: Driver manually press brake pedals!"
-            module = "Disengage"
+            module = "disengage_event"
 
         if status:
             doc = {"module": module,
