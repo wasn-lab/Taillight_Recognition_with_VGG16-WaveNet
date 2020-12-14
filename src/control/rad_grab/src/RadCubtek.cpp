@@ -45,7 +45,7 @@ int radar_object_num = 16;
 int radar_object_data = radar_object_num * 2;
 struct can_frame current_frame;
 ros::Publisher RadPub;
-ros::Publisher RadPCLPub;
+// ros::Publisher RadPCLPub;
 
 int main(int argc, char** argv)
 {
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh("~");
 
   RadPub = n.advertise<msgs::RadObjectArray>("CubtekFront", 1);
-  RadPCLPub = n.advertise<sensor_msgs::PointCloud2>("CubtekFrontPCL", 1);
+  // RadPCLPub = n.advertise<sensor_msgs::PointCloud2>("CubtekFrontPCL", 1);
 
   onInit(nh, n);
 
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
   }
 
   msgs::RadObjectArray radArray;
-  radArray.header.frame_id = "base_link";
+  radArray.header.frame_id = "radar";
 
   ros::Rate loop_rate(18);
   int no_obj = 0;
@@ -168,24 +168,24 @@ int main(int argc, char** argv)
 
     RadPub.publish(radArray);
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
-    pcl::PointXYZI temp;
+    // pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    // pcl::PointXYZI temp;
 
-    for (int i = 0; i < radArray.objects.size(); i++)
-    {
-      // for rviz drawing
-      temp.x = radArray.objects[i].px;
-      temp.y = -radArray.objects[i].py;
-      temp.z = -2;
-      cloud->points.push_back(temp);
-    }
+    // for (int i = 0; i < radArray.objects.size(); i++)
+    // {
+    //   // for rviz drawing
+    //   temp.x = radArray.objects[i].px;
+    //   temp.y = -radArray.objects[i].py;
+    //   temp.z = -2;
+    //   cloud->points.push_back(temp);
+    // }
 
-    sensor_msgs::PointCloud2 msgtemp;
-    pcl::toROSMsg(*cloud, msgtemp);
-    msgtemp.header = radArray.header;
-    msgtemp.header.seq = radArray.header.seq;
-    msgtemp.header.frame_id = "radar_cubtek";
-    RadPCLPub.publish(msgtemp);
+    // sensor_msgs::PointCloud2 msgtemp;
+    // pcl::toROSMsg(*cloud, msgtemp);
+    // msgtemp.header = radArray.header;
+    // msgtemp.header.seq = radArray.header.seq;
+    // msgtemp.header.frame_id = "radar_cubtek";
+    // RadPCLPub.publish(msgtemp);
 
     print_count++;
     if (print_count > 60)
