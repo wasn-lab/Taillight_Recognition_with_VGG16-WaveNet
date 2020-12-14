@@ -13,6 +13,7 @@
 	<arg name="alpha_back_enable" default="1" />
 	<rosparam param="debug_message">1</rosparam>
 	<rosparam param="alpha_raw_message">0</rosparam>
+	<rosparam param="cubtek_raw_message">0</rosparam>
 	<rosparam param="delphi_raw_message">0</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
@@ -31,7 +32,8 @@
 	<group if="$(eval arg('radar_enable') != 0)">
 
 		<node pkg="rad_grab" type="rad_all" name="rad_all" output="screen" cwd="node" respawn="true" />
-		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_all_to_baselink" args="0 0 0 0 0 0 base_link radar_alpha" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_alpha_to_baselink" args="0 0 0 0 0 0 base_link radar_alpha" />
+		<node pkg="tf2_ros" type="static_transform_publisher" name="tf_rad_cubtek_to_baselink" args="0 0 0 0 0 0 base_link radar_cubtek" />
 
 	</group>
 
