@@ -12,6 +12,7 @@ fi
 
 if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/auto_record_2020-04-14-16-41-15_89.bag
+  || ! -f ${bag_dir}/geofence_pp_2020-11-16-16-35-39.bag  
   || ! -f ${bag_dir}/lidar_raw_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/edge_detection_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/localization_raw_2020-09-24-17-02-06.bag
@@ -20,7 +21,7 @@ if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/target_planner_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/lidarxyz2lla_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/auto_record_2020-06-19-16-26-18_1_filtered.bag
-  || ! -f ${bag_dir}/auto_record_2020-08-04-10-15-25_4_filtered.bag ]]; then
+  || ! -f ${bag_dir}/tracking_2d_2020-11-16-15-02-12.bag ]]; then
   bash src/car_model/test_car_b1_v2/init_test_env.sh
 fi
 
@@ -41,4 +42,21 @@ rostest car_model publish_test_geofence_pp_b1_v2.test
 rostest car_model publish_test_ukf_mm_b1_v2.test
 rostest car_model publish_test_target_planner_b1_v2.test
 rostest car_model publish_test_drivenet_b1_v2_sidecam_3dobj.test
+
+
+readonly rosbag_backup_dir=${HOME}/rosbag_files/backup
+
+# fail_safe nodes should work with and without ~/rosbag_files/backup
+if [[ -d ${rosbag_backup_dir} ]]; then
+  rm -rf ${rosbag_backup_dir}
+fi
+rostest car_model publish_test_fail_safe_b1_v2.test
+
+mkdir -p ${rosbag_backup_dir}
+touch ${rosbag_backup_dir}/auto_record_2020-10-06-16-20-50_3.bag
+rostest car_model publish_test_fail_safe_b1_v2.test
+if [[ -d ${rosbag_backup_dir} ]]; then
+  rm -rf ${rosbag_backup_dir}
+fi
+
 popd

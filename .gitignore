@@ -1,5 +1,5 @@
-build*/
-devel*/
+/build*/
+/devel*/
 CATKIN_IGNORE
 .vscode/
 *.swp
@@ -23,6 +23,7 @@ gmon.out
 *.dgpu
 *.npy
 *.pb
+*.onnx
 src/sensing/itri_drivenet/drivenet/data/alignment/
 src/sensing/itri_lidarnet/libs/TensorFlow/Installed/
 src/sensing/itri_parknet/weights/

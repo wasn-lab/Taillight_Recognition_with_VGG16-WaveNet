@@ -86,22 +86,13 @@ private:
   ros::Subscriber wayarea_sub_;
   void callback_wayarea(const nav_msgs::OccupancyGrid& input);
 
-#if TTC_TEST
-  unsigned int seq_ = 0;
-  unsigned int seq_cb_ = 0;
+  tf2_ros::Buffer tf_buffer_;
 
-  ros::Subscriber seq_sub_;
-  void callback_seq(const std_msgs::Int32::ConstPtr& input);
-
-  ros::Subscriber localization_sub_;
-  void callback_localization(const visualization_msgs::Marker::ConstPtr& input);
-
-  ros::Subscriber ego_speed_kmph_sub_;
-  void callback_ego_speed_kmph(const std_msgs::Float64::ConstPtr& input);
-#else
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
-#endif
+
+  std::string frame_id_source_ = "base_link";
+  std::string frame_id_target_ = "map";
 
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
@@ -122,7 +113,7 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject.relSpeed:
+  // compute DetectedObject.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
 
@@ -144,13 +135,13 @@ private:
   void set_ros_params();
   void subscribe_and_advertise_topics();
   void get_current_ego_data_main();
-  void get_current_ego_data(const tf2_ros::Buffer& tf_buffer, const ros::Time fusion_stamp);
+  void get_current_ego_data(const ros::Time fusion_stamp);
 
-  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
-#if TTC_TEST
-  float closest_distance_of_obj_pivot(const msgs::DetectedObject& obj);
-  void save_ttc_to_csv(std::vector<msgs::DetectedObject>& objs);
+#if OUTPUT_MAP_TF == 1
+  void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped);
+  void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
 #endif
+  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename);
 };
 }  // namespace tpp
 

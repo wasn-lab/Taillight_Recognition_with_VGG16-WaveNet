@@ -6,7 +6,7 @@ import json
 import io
 import re
 
-URL = "http://60.250.196.133:8300/DataMgmt/BackendService"
+URL = "http://118.163.54.112:8300/DataMgmt/BackendService"
 
 
 def post_accuracy(accuracy, _id):

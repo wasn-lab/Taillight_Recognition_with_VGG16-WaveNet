@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import unittest
 from vk221_3 import build_vk221_3_url, notify_backend_with_new_bag
 
@@ -10,9 +11,12 @@ class VK221_3Test(unittest.TestCase):
                   "&bag_file=auto_record_2020-10-06-16-24-34_18.bag")
         self.assertEqual(build_vk221_3_url(bag, plate), expect)
 
-        expect = ("http://60.250.196.127:8008/WebAPI?type=M8.2.VK221_3"
-                  "&plate=ITRI-ADV"
-                  "&bag_file=auto_record_2020-10-06-16-24-34_18.bag")
+        bag = "/home/chtseng/rosbag_files/backup/auto_record_2020-10-06-16-24-34_18.bag"
+        self.assertEqual(build_vk221_3_url(bag, plate), expect)
+
+        expect = (u"http://60.250.196.127:8008/WebAPI?type=M8.2.VK221_3"
+                  u"&plate=試0002"
+                  u"&bag_file=auto_record_2020-10-06-16-24-34_18.bag")
         self.assertEqual(build_vk221_3_url(bag), expect)
 
     @unittest.skip("No real invocation of web api in daily operations")

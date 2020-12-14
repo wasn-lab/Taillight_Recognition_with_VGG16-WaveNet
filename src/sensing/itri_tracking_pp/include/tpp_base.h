@@ -36,17 +36,9 @@
 
 #include "detected_object_class_id.h"
 
-#define TTC_TEST 0
-#if TTC_TEST
-#include <std_msgs/Int32.h>
-#include <std_msgs/Float64.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
-#else
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
-#endif
 
 #include <std_msgs/ColorRGBA.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -73,6 +65,8 @@
 // virtual input test
 #define VIRTUAL_INPUT 0
 #define SAME_OBJ_MARKER_HEADER 0
+
+#define OUTPUT_MAP_TF 0
 #define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
@@ -116,7 +110,7 @@
 #define O_P std::setprecision(8)
 
 #define USE_GLOG 0
-#if USE_GLOG
+#if USE_GLOG == 1
 #include "glog/logging.h"
 #define LOG_INFO LOG(INFO)
 #define LOG_WARNING LOG(WARNING)
@@ -144,8 +138,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_bbox;
-  ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
@@ -159,7 +151,6 @@ struct MarkerConfig
   bool show_source = 0;
   bool show_distance = 0;
   bool show_absspeed = 0;  // km/h
-  unsigned int show_pp = 0;
 
   std_msgs::ColorRGBA color;
   std_msgs::ColorRGBA color_lidar_tpp;
