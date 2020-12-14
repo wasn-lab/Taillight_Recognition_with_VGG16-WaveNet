@@ -72,6 +72,7 @@ class CtrlInfo03(object):
     def get_events_in_list(self):
         status = ""
         status_str = ""
+        module = ""
 
         if self.brake_status == BrakeStatus.Y_AEB:
             status = FATAL
