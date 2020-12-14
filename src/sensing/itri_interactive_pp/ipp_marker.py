@@ -39,8 +39,8 @@ def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='/ma
     marker.id = id
     # marker scale
     marker.scale.x = 0.1
-    # marker.scale.y = 0.1
-    # marker.scale.z = 0.1
+    marker.scale.y = 0.1
+    marker.scale.z = 0.1
 
     # marker color
     marker.color.r = color[0]
@@ -72,8 +72,6 @@ def vehicle_marker_callback_final(data):
             for track_point in obj.track.forecasts:
                 point_marker = init_new_points(id=obj.track.id * 20 + i,coordinate_type=coordinate_type)
                 print("Prediction_horizon: ", i)
-                print('x: ',track_point.position.x)
-                print('y: ',track_point.position.y)
                 point_2 = Point()
                 point_2.x = track_point.position.x
                 point_2.y = track_point.position.y
