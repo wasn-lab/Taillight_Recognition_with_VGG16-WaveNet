@@ -3,11 +3,11 @@
 namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
-static double input_fps = 5;    // known callback rate
-static double output_fps = 10;  // expected publish rate
+static double g_input_fps = 5;    // known callback rate
+static double g_output_fps = 10;  // expected publish rate
 
 static unsigned int num_publishs_per_loop =
-    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
 bool g_trigger = false;
 
@@ -25,7 +25,7 @@ static bool done_with_profiling()
 {
 #if ENABLE_PROFILING_MODE
   static int num_loop = 0;
-  if (num_loop < 60 * output_fps)
+  if (num_loop < 60 * g_output_fps)
   {
     num_loop++;
     return false;
@@ -911,16 +911,16 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "save_output_txt", save_output_txt_, false);
   nh_.param<bool>(domain + "output_tf_map", output_tf_map_, false);
 
-  nh_.param<double>(domain + "input_fps", input_fps, 10.);
-  nh_.param<double>(domain + "output_fps", output_fps, 10.);
-  num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+  nh_.param<double>(domain + "input_fps", g_input_fps, 10.);
+  nh_.param<double>(domain + "output_fps", g_output_fps, 10.);
+  num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
   double pp_input_shift_m = 0.;
   nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);
   pp_.set_input_shift_m((long double)pp_input_shift_m);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
-  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
+  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / g_output_fps : mc_.lifetime_sec;
 
   nh_.param<bool>(domain + "gen_markers", gen_markers_, true);
   nh_.param<bool>(domain + "show_classid", mc_.show_classid, false);
@@ -965,7 +965,7 @@ int TPPNode::run()
 
   tf2_ros::TransformListener tf_listener(tf_buffer_);
 
-  ros::Rate loop_rate(output_fps);
+  ros::Rate loop_rate(g_output_fps);
 
   while (ros::ok() && !done_with_profiling())
   {
