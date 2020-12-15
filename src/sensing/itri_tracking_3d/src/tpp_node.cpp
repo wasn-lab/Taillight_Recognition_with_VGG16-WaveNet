@@ -145,7 +145,7 @@ void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint,
                                        const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
+  if (cPoint.lowerAreaPoints.size() == 0)
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
@@ -254,31 +254,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     }
 #endif
 
-    if (in_source_ == 2)
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "RadFront";
-      }
-    }
-    else
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "lidar";
-      }
-    }
-
-#if USE_RADAR_REL_SPEED
-    for (auto& obj : KTs_.objs_)
-    {
-      if (obj.header.frame_id == "RadarFront")
-      {
-        obj.speed_rel = mps_to_kmph(obj.speed_rel);
-      }
-    }
-#endif
-
 #if DEBUG_DATA_IN
     for (auto& obj : KTs_.objs_)
       LOG_INFO << "[Object " << i << "] p0 = (" << obj.bPoint.p0.x << ", " << obj.bPoint.p0.y << ", " << obj.bPoint.p0.z
@@ -308,37 +283,37 @@ void TPPNode::subscribe_and_advertise_topics()
   std::string topic = "Tracking3D";
   use_tracking2d = false;
 
-  if (in_source_ == 1)
+  if (in_source_ == InputSource::LidarDet)
   {
     LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 2)
+  else if (in_source_ == InputSource::LidarDet_PointPillars_Car)
   {
-    LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/LidarDetection/Car)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 3)
+  else if (in_source_ == InputSource::LidarDet_PointPillars_Ped_Cyc)
   {
-    LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
-    fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/LidarDetection/Ped_Cyc)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection/Ped_Cyc", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 4)
+  else if (in_source_ == InputSource::VirtualBBoxAbs)
   {
     LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 5)
+  else if (in_source_ == InputSource::VirtualBBoxRel)
   {
     LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 6)
+  else if (in_source_ == InputSource::CameraDetV2)
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 7)
+  else if (in_source_ == InputSource::Tracking2D)
   {
     use_tracking2d = true;
     LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
@@ -397,31 +372,6 @@ float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const 
   return compute_scalar_projection_A_onto_B(rel_v_rel.x, rel_v_rel.y, rel_v_rel.z, obj_rel.x, obj_rel.y, obj_rel.z);
 }
 
-float TPPNode::compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
-                                               const float box_center_y_abs)
-{
-  float ego_vx = ego_speed_kmph_ * std::cos(ego_heading_);
-  float ego_vy = ego_speed_kmph_ * std::sin(ego_heading_);
-
-  float vecx_ego2obj_abs = box_center_x_abs - ego_x_abs_;
-  float vecy_ego2obj_abs = box_center_y_abs - ego_y_abs_;
-
-  float dist_ego2obj_tmp = euclidean_distance(vecx_ego2obj_abs, vecy_ego2obj_abs);
-  float dist_ego2obj = 0;
-  assign_value_cannot_zero(dist_ego2obj, dist_ego2obj_tmp);
-
-  float mul = divide(radar_speed_rel, dist_ego2obj);
-
-  float obj_vx_radar_rel = -vecx_ego2obj_abs * mul;
-  float obj_vy_radar_rel = -vecy_ego2obj_abs * mul;
-
-  float obj_vx_radar_abs = obj_vx_radar_rel + ego_vx;
-  float obj_vy_radar_abs = obj_vy_radar_rel + ego_vy;
-
-  float radar_speed_abs = euclidean_distance(obj_vx_radar_abs, obj_vy_radar_abs);
-  return radar_speed_abs;
-}
-
 void TPPNode::compute_velocity_kalman()
 {
   for (auto& track : KTs_.tracks_)
@@ -475,34 +425,15 @@ void TPPNode::compute_velocity_kalman()
              << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
 #endif
 
-// DetectedObject.speed_abs
-#if USE_RADAR_ABS_SPEED == 0
+    // DetectedObject.speed_abs
     track.box_.speed_abs = track.box_.track.absolute_velocity.speed;  // km/h
-#else
-    MyPoint32 p_abs;
-    box_center_.pos.get_point_abs(p_abs);
-    track.box_.speed_abs = compute_radar_absolute_velocity(track.box_.speed_rel,  //
-                                                           p_abs.x, p_abs.y);
-#endif
 
     if (std::isnan(track.box_.speed_abs))
     {
       track.box_.speed_abs = 0.f;
     }
 
-// DetectedObject.speed_rel
-#if USE_RADAR_REL_SPEED
-    if (track.box_.header.frame_id != "RadarFront")
-    {
-      MyPoint32 p_rel;
-      track.box_center_.pos.get_point_rel(p_rel);
-      Vector3_32 rel_v_rel;
-      rel_v_rel.x = track.box_.track.relative_velocity.x;
-      rel_v_rel.y = track.box_.track.relative_velocity.y;
-      rel_v_rel.z = track.box_.track.relative_velocity.z;
-      track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-    }
-#else
+    // DetectedObject.speed_rel
     MyPoint32 p_rel;
     track.box_center_.pos.get_point_rel(p_rel);  // m
 
@@ -512,7 +443,6 @@ void TPPNode::compute_velocity_kalman()
     rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
 
     track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-#endif
 
     if (std::isnan(track.box_.speed_rel))
     {
@@ -1050,7 +980,7 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_3d/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
+  nh_.param<int>(domain + "input_source", in_source_, InputSource::CameraDetV2);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);

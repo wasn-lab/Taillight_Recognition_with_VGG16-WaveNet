@@ -30,6 +30,8 @@
 // headers in local files
 #include <std_msgs/Float64.h>
 #include "msgs/DetectedObjectArray.h"
+#include "detected_object_class_id.h"
+#include "fusion_source_id.h"
 #include "lidar_point_pillars/car/point_pillars_ros_car.h"
 
 // for StopWatch
@@ -129,13 +131,13 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
       float y = dimension_y/2.0f;
       float z = dimension_z/2.0f;
       p[0] = Eigen::Vector3f(-x, -y, -z);
-      p[1] = Eigen::Vector3f(-x, y, -z);
+      p[1] = Eigen::Vector3f(-x, -y, z);
       p[2] = Eigen::Vector3f( -x, y, z);
-      p[3] = Eigen::Vector3f( -x, -y, z);
+      p[3] = Eigen::Vector3f( -x, y, -z);
       p[4] = Eigen::Vector3f( x, -y, -z);
-      p[5] = Eigen::Vector3f( x, y, -z);
+      p[5] = Eigen::Vector3f( x, -y, z);
       p[6] = Eigen::Vector3f( x, y, z);
-      p[7] = Eigen::Vector3f(x, -y, z);
+      p[7] = Eigen::Vector3f(x, y, -z);
       Eigen::Vector3f center(center_x, center_y, center_z);
       Eigen::Quaternionf quat(q.w, q.x, q.y, q.z);
       for (int i = 0; i < 8; i++)
@@ -183,8 +185,8 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
 
       // base info
       object.header = in_header;
-      object.classId = 1;
-      object.fusionSourceId = 2;
+      object.classId = sensor_msgs_itri::DetectedObjectClassId::Car;
+      object.fusionSourceId = sensor_msgs_itri::FusionSourceId::Lidar;
 
       // pub
       MsgObjArr.objects.push_back(object);
