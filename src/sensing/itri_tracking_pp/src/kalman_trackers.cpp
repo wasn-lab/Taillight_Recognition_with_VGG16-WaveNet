@@ -62,7 +62,7 @@ void KalmanTrackers::set_time_displacement(const long long dt)
 
   half_dt_square_ = 0.5f * std::pow(dt_, 2);
 
-  for (auto & track : tracks_)
+  for (auto& track : tracks_)
   {
     track.kalman_.transitionMatrix.at<float>(0, 2) = dt_;
     track.kalman_.transitionMatrix.at<float>(0, 4) = half_dt_square_;
@@ -133,7 +133,7 @@ void KalmanTrackers::extract_box_centers()
   std::vector<BoxCenter>().swap(box_centers_);
   box_centers_.reserve(objs_.size());
 
-  for (auto & obj : objs_)
+  for (auto& obj : objs_)
   {
     BoxCenter box_center;
     extract_box_center(box_center, obj.bPoint);
@@ -182,7 +182,7 @@ void KalmanTrackers::extract_box_corners_of_boxes()
   std::vector<std::vector<BoxCorner> >().swap(box_corners_of_boxes_);
   box_corners_of_boxes_.reserve(objs_.size());
 
-  for (auto & obj : objs_)
+  for (auto& obj : objs_)
   {
     std::vector<BoxCorner> box_corners;
     box_corners.reserve(NUM_2DBOX_CORNERS);
@@ -233,7 +233,7 @@ void KalmanTrackers::update_associated_trackers()
 {
   for (unsigned i = 0; i < objs_.size(); i++)
   {
-    for (auto & track : tracks_)
+    for (auto& track : tracks_)
     {
       if (objs_[i].track.id == track.id_)
       {
@@ -271,7 +271,7 @@ void KalmanTrackers::update_associated_trackers()
         increase_uint(track.tracktime_);
 
         track.hist_.set_for_successive_element(
-            track.tracktime_, p_abs.x, p_abs.y,                                               //
+            track.tracktime_, p_abs.x, p_abs.y,                                          //
             track.kalman_.statePost.at<float>(0), track.kalman_.statePost.at<float>(1),  //
             track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
       }
@@ -281,10 +281,10 @@ void KalmanTrackers::update_associated_trackers()
 
 void KalmanTrackers::mark_lost_trackers()
 {
-  for (auto & track : tracks_)
+  for (auto& track : tracks_)
   {
     bool match = false;
-    for (auto & obj : objs_)
+    for (auto& obj : objs_)
     {
       if (track.id_ == obj.track.id)
       {
@@ -304,7 +304,7 @@ void KalmanTrackers::mark_lost_trackers()
         increase_uint(track.tracktime_);
 
         track.hist_.set_for_successive_element(
-            track.tracktime_, track.x_predict_, track.y_predict_,                   //
+            track.tracktime_, track.x_predict_, track.y_predict_,                        //
             track.kalman_.statePost.at<float>(0), track.kalman_.statePost.at<float>(1),  //
             track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
       }
@@ -317,7 +317,7 @@ void KalmanTrackers::delete_lost_trackers()
   std::vector<KalmanTracker> reserve_elements;
   reserve_elements.reserve(tracks_.size());
 
-  for (auto & track : tracks_)
+  for (auto& track : tracks_)
   {
     if (!track.lost_)
     {
@@ -326,8 +326,7 @@ void KalmanTrackers::delete_lost_trackers()
     else
     {
 #if DEBUG_TRACKTIME
-      LOG_INFO << "Tracker " << track.id_ << " lost! (Lasted " << track.tracktime_ << " frames.)"
-               << std::endl;
+      LOG_INFO << "Tracker " << track.id_ << " lost! (Lasted " << track.tracktime_ << " frames.)" << std::endl;
 #endif
     }
   }
@@ -342,7 +341,7 @@ void KalmanTrackers::add_new_trackers()
   {
     bool match = false;
 
-    for (auto & track : tracks_)
+    for (auto& track : tracks_)
     {
       if (objs_[i].track.id == track.id_)
       {
@@ -359,7 +358,7 @@ void KalmanTrackers::add_new_trackers()
 
 void KalmanTrackers::init_objs()
 {
-  for (auto & obj : objs_)
+  for (auto& obj : objs_)
   {
     obj.track.id = 0;
   }
@@ -493,7 +492,7 @@ void KalmanTrackers::associate_data()
 void KalmanTrackers::give_ids_to_unassociated_objs()
 {
   // check unassociated objs_
-  for (auto & obj : objs_)
+  for (auto& obj : objs_)
   {
     if (obj.track.id < TRACK_ID_MIN)
     {
@@ -532,7 +531,7 @@ void KalmanTrackers::increase_track_id()
 
 void KalmanTrackers::increase_tracktime()
 {
-  for (auto & track : tracks_)
+  for (auto& track : tracks_)
   {
     increase_uint(track.tracktime_);
   }
@@ -671,7 +670,7 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   extract_box_two_axes_of_boxes();
 
   // kalman filter: prediction step
-  for (auto & track : tracks_)
+  for (auto& track : tracks_)
   {
     track.predict();
   }
