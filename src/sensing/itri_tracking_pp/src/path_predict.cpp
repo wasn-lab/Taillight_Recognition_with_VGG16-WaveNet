@@ -495,8 +495,7 @@ void PathPredict::confidence_threshold(const unsigned int confidence_lv)
   }
 }
 
-void PathPredict::confidence_ellipse_main(const std::size_t NUM_FORECASTS, std::vector<long double>& data_x,
-                                          std::vector<long double>& data_y, std::vector<PPLongDouble>& pps)
+void PathPredict::confidence_ellipse_main(const std::size_t NUM_FORECASTS, std::vector<PPLongDouble>& pps)
 {
   for (unsigned i = 0; i < NUM_FORECASTS; i++)
   {
@@ -640,7 +639,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
         continue;
       }
 
-      confidence_ellipse_main(NUM_FORECASTS, data_x, data_y, pps);
+      confidence_ellipse_main(NUM_FORECASTS, pps);
 
       for (unsigned j = 0; j < NUM_FORECASTS; j++)
       {
