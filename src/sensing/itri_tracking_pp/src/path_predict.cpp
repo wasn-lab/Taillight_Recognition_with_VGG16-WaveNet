@@ -503,8 +503,12 @@ void PathPredict::confidence_ellipse_main(const std::size_t NUM_FORECASTS, std::
   }
 }
 
+#if PP_VERTICES_VIA_SPEED == 1
 void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx,
                               const float abs_speed)
+#else
+void PathPredict::pp_vertices(PPLongDouble& pps, const int pp_idx, const float abs_speed)
+#endif
 {
   double roll, pitch, yaw;
   geometry_msgs::Quaternion q = tf2::toMsg(pps.q1);

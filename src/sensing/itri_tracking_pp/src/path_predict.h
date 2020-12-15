@@ -127,7 +127,11 @@ private:
 
   void confidence_ellipse_main(const std::size_t NUM_FORECASTS, std::vector<PPLongDouble>& pps);
 
+#if PP_VERTICES_VIA_SPEED == 1
   void pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx, const float abs_speed);
+#else
+  void pp_vertices(PPLongDouble& pps, const int pp_idx, const float abs_speed);
+#endif
 };
 }  // namespace tpp
 
