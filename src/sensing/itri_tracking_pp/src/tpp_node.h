@@ -133,7 +133,7 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
+  void publish_pp(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                   const float time_offset);
 #if TO_GRIDMAP
   void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs);
