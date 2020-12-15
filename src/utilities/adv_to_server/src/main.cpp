@@ -673,11 +673,11 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["bearing"] = current_gnss_pose.yaw * 180 / PI;
     J1["heading"] = 0.0;
     J1["milage"] =  vs.odometry; //行駛距離//0.0;
-    J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
+    J1["speed"] = vs.speed; //vs.speed 車速 目前來源CAN
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
     J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
-    J1["Steeringwheel"] =data[3]; //方向盤 //0.0;
+    J1["Steeringwheel"] = vs.steering_wheel; //方向盤 //0.0;
     J1["door"] = convertBoolean(vs.door); //車門 //true;
     J1["airconditioner"] = convertBoolean(vs.air_conditioner); //空調;
     J1["lat"] = gps.lidar_Lat; //vs.location 目前來源 lidar_lla
@@ -726,11 +726,11 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["bearing"] = current_gnss_pose.yaw * 180 / PI;
     J1["heading"] = 0.0;
     J1["milage"] = vs.odometry; //行駛距離//0.0;
-    J1["speed"] = data[0]; //vs.speed 車速 目前來源CAN
+    J1["speed"] = vs.speed; //vs.speed 車速 目前來源CAN
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
     J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
-    J1["Steeringwheel"] = data[3]; //方向盤 //0.0;
+    J1["Steeringwheel"] = vs.steering_wheel; //方向盤 //0.0;
     J1["door"] = convertBoolean(vs.door); //車門 //true;
     J1["airconditioner"] = convertBoolean(vs.air_conditioner); //空調;
     J1["lat"] = gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
@@ -804,7 +804,7 @@ void mqtt_pubish(std::string msg)
 {
   if(isMqttConnected){
       std::string topic = "vehicle/report/dc5360f91e74";
-      ///std::cout << "publish "  << msg << std::endl;
+      std::cout << "publish "  << msg << std::endl;
       mqttPub.publish(topic, msg);
     }
 }
@@ -1525,10 +1525,21 @@ json genMqttGnssMsg()
   double alt = gps.lidar_Alt;
   gnss["coord"] = {lat, lon, alt};
   //gnss["speed"] = -1; remove speed
-  gnss["heading"] = current_gnss_pose.yaw * 180 / PI;
+  gnss["heading"] = get_GNSS_heading_360(current_gnss_pose.yaw * 180 / PI);
   gnss["timestamp"] = timestamp_ms;
   gnss["source_time"] = timestamp_ms;
   return gnss;
+}
+
+double get_GNSS_heading_360(double heading)
+{
+    double result = -1;
+    if(heading < 0){
+        result = heading + 360;
+    }else {
+        result = heading; 
+    }
+    return result;
 }
 
 json genMqttBmsMsg()
@@ -1564,10 +1575,10 @@ json genMqttECUMsg(ecu_type type)
       ecu["steering_wheel_angle"] = vs.steering_wheel;
       break;
     case ecu_type::speed:
-      ecu["speed"] = data[0];
+      ecu["speed"] = vs.speed;
       break;
     case ecu_type::rpm:
-      ecu["rpm"] =vs.rotating_speed;
+      ecu["rpm"] = vs.rotating_speed;
       break;
     case ecu_type::gear_state:
       ecu["gear_state"] = "1";
@@ -1590,7 +1601,7 @@ json genMqttECUMsg(ecu_type type)
       ecu["driving_mode"] = 1;
       break;
     case ecu_type::emergency_stop:
-      ecu["emergency_stop"] = 1;
+      ecu["emergency_stop"] = vs.estop;
       break;
 
   }
