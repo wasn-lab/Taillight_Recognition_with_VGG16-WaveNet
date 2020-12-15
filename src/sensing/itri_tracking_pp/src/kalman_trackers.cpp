@@ -187,10 +187,10 @@ void KalmanTrackers::extract_box_corners_of_boxes()
     std::vector<BoxCorner> box_corners;
     box_corners.reserve(NUM_2DBOX_CORNERS);
 
-    BoxCorner box_corner0;
-    BoxCorner box_corner1;
-    BoxCorner box_corner2;
-    BoxCorner box_corner3;
+    BoxCorner box_corner0{};
+    BoxCorner box_corner1{};
+    BoxCorner box_corner2{};
+    BoxCorner box_corner3{};
 
     extract_box_corner(box_corner0, objs_[i].bPoint.p0, 0);
     extract_box_corner(box_corner1, objs_[i].bPoint.p3, 1);
