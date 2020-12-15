@@ -47,6 +47,16 @@ class RosModuleTraffic
         }
     }
 
+    static std::string getVid(){
+        ros::NodeHandle n;
+        std::string vid;
+        if(n.getParam("/south_bridge/vid", vid)){
+            return vid;
+        }else{
+            return "DEFAULT-vid";
+        }
+    }
+
     static void
     RegisterCallBack (void
                       (*cb1) (const msgs::DetectedObjectArray&),

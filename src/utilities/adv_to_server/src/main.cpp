@@ -141,6 +141,7 @@ double data[10] = { 0 };
 char buffer[1024];
 
 std::string PLATE = "ITRI-ADV";
+std::string VID = "vid";
 const static int FPS_KEY_LEN = 27 + 16;
 const static std::string keys[] = {
   "FPS_LidarAll",         "FPS_LidarDetection",   "FPS_camF_right",        "FPS_camF_center",     "FPS_camF_left",
@@ -538,7 +539,7 @@ void callbackSersorStatus(const std_msgs::String::ConstPtr& input)
   using namespace std;
   mutex_sensor.lock();
   json J1 = json::parse(input->data.c_str());
-  J1["vid"] = "dc5360f91e74";
+  J1["vid"] = VID;
   mqttSensorQueue.push(J1.dump());
   mutex_sensor.unlock();
 }
@@ -803,7 +804,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 void mqtt_pubish(std::string msg)
 {
   if(isMqttConnected){
-      std::string topic = "vehicle/report/dc5360f91e74";
+      std::string topic = "vehicle/report/" + VID;
       std::cout << "publish "  << msg << std::endl;
       mqttPub.publish(topic, msg);
     }
@@ -862,8 +863,8 @@ void sendRun(int argc, char** argv)
     json J1;
     std::string states;
     json detectObject;
-    std::string vid = "dc5360f91e74";
-    J1["vid"] = vid;
+    //std::string vid = "dc5360f91e74";
+    J1["vid"] = VID;
     json gnss_list = json::array();
     json bsm_list = json::array();
     json ecu_list = json::array();
@@ -921,7 +922,7 @@ void sendRun(int argc, char** argv)
         mutex_do.lock();
         json DO;
         detectObject = mqttDOQueue.front();
-        DO["vid"] = vid;
+        DO["vid"] = VID;
         DO["DO"] = detectObject;
         mqttDOQueue.pop();
         mutex_do.unlock();
@@ -1514,6 +1515,17 @@ void tcpServerRun(int argc, char** argv)
   }
 }
 
+double get_GNSS_heading_360(double heading)
+{
+    double result = -1;
+    if(heading < 0){
+        result = heading + 360;
+    }else {
+        result = heading; 
+    }
+    return result;
+}
+
 json genMqttGnssMsg()
 {
   using namespace std::chrono;
@@ -1529,17 +1541,6 @@ json genMqttGnssMsg()
   gnss["timestamp"] = timestamp_ms;
   gnss["source_time"] = timestamp_ms;
   return gnss;
-}
-
-double get_GNSS_heading_360(double heading)
-{
-    double result = -1;
-    if(heading < 0){
-        result = heading + 360;
-    }else {
-        result = heading; 
-    }
-    return result;
 }
 
 json genMqttBmsMsg()
@@ -1678,7 +1679,7 @@ json getMqttDOMsg(){
 static void on_mqtt_connect(struct mosquitto* client, void* obj, int rc)
 {
   std::string result;
-  std::string topic = "vehicle/report/dc5360f91e74";
+  std::string topic = "vehicle/report/" + VID;
   switch (rc)
   {
     case 0:
@@ -1703,6 +1704,7 @@ static void on_mqtt_connect(struct mosquitto* client, void* obj, int rc)
 void mqttPubRun(int argc, char** argv)
 {
   mqttPub.setOnConneclCallback(on_mqtt_connect);
+  mqttPub.vid = VID;
   mqttPub.connect();
 }
 
@@ -1713,6 +1715,7 @@ int main(int argc, char** argv)
   using namespace std;
   RosModuleTraffic::Initial(argc, argv);
   PLATE = RosModuleTraffic::getPlate();
+  VID = RosModuleTraffic::getVid();
   //RosModuleTraffic::advertisePublisher();
   /*Start thread to receive data from can bus.*/
   if (!checkCommand(argc, argv, "-no_can"))
