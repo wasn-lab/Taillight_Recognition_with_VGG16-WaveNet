@@ -185,7 +185,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #if FILL_CONVEX_HULL
     for (auto& obj : KTs_.objs_)
     {
-      fill_convex_hull(obj.bPoint, obj.cPoint, obj.header.frame_id);
+      fill_convex_hull(obj.bPoint, obj.cPoint);
     }
 #endif
 
@@ -302,7 +302,7 @@ void TPPNode::subscribe_and_advertise_topics()
   }
 }
 
-void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id)
+void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint)
 {
   if (cPoint.lowerAreaPoints.empty())
   {
