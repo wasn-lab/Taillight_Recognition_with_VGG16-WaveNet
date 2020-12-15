@@ -185,7 +185,7 @@ void KalmanTrackers::extract_box_corners_of_boxes()
   for (unsigned i = 0; i < objs_.size(); i++)
   {
     std::vector<BoxCorner> box_corners;
-    box_corners.reserve(num_2dbox_corners);
+    box_corners.reserve(NUM_2DBOX_CORNERS);
 
     BoxCorner box_corner0;
     BoxCorner box_corner1;
@@ -599,7 +599,7 @@ void KalmanTrackers::set_new_box_corners_of_boxes_relative()
   {
     if (track.tracked_)
     {
-      for (unsigned i = 0; i < num_2dbox_corners; i++)
+      for (unsigned i = 0; i < NUM_2DBOX_CORNERS; i++)
       {
         transform_point_abs2rel(track.box_corners_[i].new_x_abs,  //
                                 track.box_corners_[i].new_y_abs,  //

@@ -6,9 +6,9 @@
 
 namespace tpp
 {
-static constexpr unsigned int num_forecasts_ = 30;
+static constexpr unsigned int NUM_FORECASTS = 30;
 
-static constexpr unsigned int num_2dbox_corners = 4;
+static constexpr unsigned int NUM_2DBOX_CORNERS = 4;
 
 enum InputSource
 {

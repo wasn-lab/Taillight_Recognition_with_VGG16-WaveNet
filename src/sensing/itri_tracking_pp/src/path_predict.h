@@ -56,7 +56,7 @@ public:
 
   void set_num_pp_input_min(const std::size_t num_pp_input_min)
   {
-    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), num_forecasts_ - (std::size_t)2);
+    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), NUM_FORECASTS - (std::size_t)2);
   }
 
 private:
@@ -120,12 +120,12 @@ private:
 
   void covariance_matrix(PPLongDouble& pp, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
-  int predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
+  int predict(std::size_t max_order_, const std::size_t NUM_FORECASTS, std::vector<long double>& data_x,
               std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
 
   void confidence_threshold(const unsigned int confidence_lv);
 
-  void confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
+  void confidence_ellipse_main(const std::size_t NUM_FORECASTS, std::vector<long double>& data_x,
                                std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
 
   void pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx, const float abs_speed);

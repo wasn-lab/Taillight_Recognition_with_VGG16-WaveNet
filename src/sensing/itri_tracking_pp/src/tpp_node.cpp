@@ -591,7 +591,7 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
 
       if (obj.track.is_ready_prediction)
       {
-        for (unsigned int i = 0; i < num_forecasts_; i++)
+        for (unsigned int i = 0; i < NUM_FORECASTS; i++)
         {
           msgs::PointXYZ p;
           p.x = obj.track.forecasts[i].position.x;
@@ -667,7 +667,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#44 kf R, "   //
         << "#45 kf P0";
 
-    for (unsigned int i = 1; i < num_forecasts_ + 1; i++)
+    for (unsigned int i = 1; i < NUM_FORECASTS + 1; i++)
     {
       ofs << ", #PPx in " << i << " tick (m)";
       ofs << ", #PPy in " << i << " tick (m)";
@@ -738,7 +738,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
 
     if (obj.track.is_ready_prediction)
     {
-      for (unsigned int i = 0; i < num_forecasts_; i++)
+      for (unsigned int i = 0; i < NUM_FORECASTS; i++)
       {
         ofs << ", " << obj.track.forecasts[i].position.x;  // #PPx in i+1 ticks (m)
         ofs << ", " << obj.track.forecasts[i].position.y;  // #PPy in i+1 ticks (m)
@@ -761,7 +761,7 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
   {
     if (obj.track.is_ready_prediction)
     {
-      for (unsigned int j = num_forecasts_; j < num_forecasts_ * 5; j++)
+      for (unsigned int j = NUM_FORECASTS; j < NUM_FORECASTS * 5; j++)
       {
         pcl::PointXYZ p;
         p.x = obj.track.forecasts[j].position.x;
