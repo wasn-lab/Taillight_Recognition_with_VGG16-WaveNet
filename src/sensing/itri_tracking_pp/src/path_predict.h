@@ -101,7 +101,7 @@ private:
   void create_pp_input_main(const msgs::TrackInfo& track, std::vector<long double>& data_x,
                             std::vector<long double>& data_y);
 
-  long double variance(const std::vector<long double>& samples, const long double sum_samples);
+  long double variance(const std::vector<long double>& samples, const long double mean);
 
   long double standard_deviation(const long double covariance);
 
