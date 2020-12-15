@@ -120,7 +120,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
 
 void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, const std::vector<long double>& data_y)
 {
-  PointLD min;
+  PointLD min{};
   min.x = std::numeric_limits<long double>::max();
   min.y = std::numeric_limits<long double>::max();
 
@@ -137,7 +137,7 @@ void PathPredict::compute_pos_offset(const std::vector<long double>& data_x, con
     }
   }
 
-  PointLD offset;
+  PointLD offset{};
   offset.x = -min.x + input_shift_m_;
   offset.y = -min.y + input_shift_m_;
   offset.z = 0.;
@@ -578,7 +578,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 
     if (!pp_objs_[i].track.is_ready_prediction)
     {
-      PointLD offset;
+      PointLD offset{};
       offset.x = 0.;
       offset.y = 0.;
       offset.z = 0.;
