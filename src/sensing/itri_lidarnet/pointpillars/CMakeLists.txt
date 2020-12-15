@@ -82,6 +82,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   include_directories(
     include
     ${catkin_INCLUDE_DIRS}
+    ${msgs_SOURCE_DIR}/include
   )
 
   set(SOURCE_FILES

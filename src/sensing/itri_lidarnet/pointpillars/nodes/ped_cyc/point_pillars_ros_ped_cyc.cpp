@@ -30,6 +30,8 @@
 // headers in local files
 #include <std_msgs/Float64.h>
 #include "msgs/DetectedObjectArray.h"
+#include "detected_object_class_id.h"
+#include "fusion_source_id.h"
 #include "lidar_point_pillars/ped_cyc/point_pillars_ros_ped_cyc.h"
 
 // for StopWatch
@@ -177,17 +179,17 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
       if (labels[i] == 1)
       {
         //object.label = "Cyclist";
-        object.classId = 3;
+        object.classId = sensor_msgs_itri::DetectedObjectClassId::Motobike;
       }
       else if (labels[i] == 2)
       {
         //object.label = "Pedestrian";
-        object.classId = 2;
+        object.classId = sensor_msgs_itri::DetectedObjectClassId::Person;
       }
       else
       {
         //object.label = "Car";
-        object.classId = 1;
+        object.classId = sensor_msgs_itri::DetectedObjectClassId::Car;
       }
       
       // if (baselink_support_)
@@ -197,7 +199,7 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
 
       // base info
       object.header = in_header;
-      object.fusionSourceId = 2;
+      object.fusionSourceId = sensor_msgs_itri::FusionSourceId::Lidar;
 
       // pub
       MsgObjArr.objects.push_back(object);
