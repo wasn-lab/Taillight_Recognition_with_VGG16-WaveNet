@@ -22,7 +22,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
     num_pp_input_in_use_ =
         std::max(std::min((std::size_t)NUM_FORECASTS, (std::size_t)obj.track.max_length), num_pp_input_min_);
 
-    obj.track.is_ready_prediction = false;
+    obj.track.is_ready_prediction = 0u;
 
     // check track.head value
     if (obj.track.head < 255 && obj.track.head < obj.track.max_length)
@@ -30,12 +30,12 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
       // check enough record of track history for pp
       if (obj.track.head >= (int)(num_pp_input_min_ - 1) || obj.track.is_over_max_length)
       {
-        obj.track.is_ready_prediction = true;
+        obj.track.is_ready_prediction = 1u;
 
         // PP filter 1: object absolute speed
         if (obj.speed_abs < pp_obj_min_kmph_ && obj.speed_abs > pp_obj_max_kmph_)
         {
-          obj.track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = 0u;
           continue;
         }
 
@@ -49,21 +49,21 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         // PP filter 2: object position x
         if (box_center_x < pp_allow_x_min_m || box_center_x > pp_allow_x_max_m)
         {
-          obj.track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = 0u;
           continue;
         }
 
         // PP filter 3: object position y
         if (box_center_y < pp_allow_y_min_m || box_center_y > pp_allow_y_max_m)
         {
-          obj.track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = 0u;
           continue;
         }
 
         // PP filter 4: object size z
         if (box_z_length < box_length_thr_z)
         {
-          obj.track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = 0u;
           continue;
         }
 
@@ -74,7 +74,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         {
           if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
           {
-            obj.track.is_ready_prediction = false;
+            obj.track.is_ready_prediction = 0u;
             continue;
           }
         }
@@ -82,7 +82,7 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         {
           if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
           {
-            obj.track.is_ready_prediction = false;
+            obj.track.is_ready_prediction = 0u;
             continue;
           }
         }
@@ -609,7 +609,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 
         if (wayarea.data[idx] == 100)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
+          pp_objs_[i].track.is_ready_prediction = 0u;
           // std::cout << "idx = " << idx << " (PP is filtered by wayarea!)" << std::endl;
         }
         // else
@@ -639,7 +639,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
       err = predict(max_order_, NUM_FORECASTS, data_x, data_y, pps);
       if (err > 0)
       {
-        pp_objs_[i].track.is_ready_prediction = false;
+        pp_objs_[i].track.is_ready_prediction = 0u;
         continue;
       }
 
