@@ -16,65 +16,65 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
   LOG_INFO << "num_pp_input_in_use_ =" << num_pp_input_in_use_ << std::endl;
 #endif
 
-  for (unsigned i = 0; i < pp_objs_.size(); i++)
+  for (auto& obj : pp_objs_)
   {
     // bound num_pp_input_in_use_ range
     num_pp_input_in_use_ =
-        std::max(std::min((std::size_t)num_forecasts_, (std::size_t)pp_objs_[i].track.max_length), num_pp_input_min_);
+        std::max(std::min((std::size_t)num_forecasts_, (std::size_t)obj.track.max_length), num_pp_input_min_);
 
-    pp_objs_[i].track.is_ready_prediction = false;
+    obj.track.is_ready_prediction = false;
 
     // check track.head value
-    if (pp_objs_[i].track.head < 255 && pp_objs_[i].track.head < pp_objs_[i].track.max_length)
+    if (obj.track.head < 255 && obj.track.head < obj.track.max_length)
     {
       // check enough record of track history for pp
-      if (pp_objs_[i].track.head >= (int)(num_pp_input_min_ - 1) || pp_objs_[i].track.is_over_max_length == true)
+      if (obj.track.head >= (int)(num_pp_input_min_ - 1) || obj.track.is_over_max_length == true)
       {
-        pp_objs_[i].track.is_ready_prediction = true;
+        obj.track.is_ready_prediction = true;
 
         // PP filter 1: object absolute speed
-        if (pp_objs_[i].speed_abs < pp_obj_min_kmph_ && pp_objs_[i].speed_abs > pp_obj_max_kmph_)
+        if (obj.speed_abs < pp_obj_min_kmph_ && obj.speed_abs > pp_obj_max_kmph_)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = false;
           continue;
         }
 
-        float box_center_x = (pp_objs_[i].bPoint.p0.x + pp_objs_[i].bPoint.p6.x) / 2;
-        float box_center_y = (pp_objs_[i].bPoint.p0.y + pp_objs_[i].bPoint.p6.y) / 2;
+        float box_center_x = (obj.bPoint.p0.x + obj.bPoint.p6.x) / 2;
+        float box_center_y = (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2;
 
-        float box_x_length = std::abs(pp_objs_[i].bPoint.p6.x - pp_objs_[i].bPoint.p0.x);
-        float box_y_length = std::abs(pp_objs_[i].bPoint.p6.y - pp_objs_[i].bPoint.p0.y);
-        float box_z_length = std::abs(pp_objs_[i].bPoint.p6.z - pp_objs_[i].bPoint.p0.z);
+        float box_x_length = std::abs(obj.bPoint.p6.x - obj.bPoint.p0.x);
+        float box_y_length = std::abs(obj.bPoint.p6.y - obj.bPoint.p0.y);
+        float box_z_length = std::abs(obj.bPoint.p6.z - obj.bPoint.p0.z);
 
         // PP filter 2: object position x
         if (box_center_x < pp_allow_x_min_m || box_center_x > pp_allow_x_max_m)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = false;
           continue;
         }
 
         // PP filter 3: object position y
         if (box_center_y < pp_allow_y_min_m || box_center_y > pp_allow_y_max_m)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = false;
           continue;
         }
 
         // PP filter 4: object size z
         if (box_z_length < box_length_thr_z)
         {
-          pp_objs_[i].track.is_ready_prediction = false;
+          obj.track.is_ready_prediction = false;
           continue;
         }
 
         // PP filter 5: object size x & y
-        if (pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-            pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-            pp_objs_[i].classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+        if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
         {
           if (box_x_length < box_length_thr_xy_thin && box_y_length < box_length_thr_xy_thin)
           {
-            pp_objs_[i].track.is_ready_prediction = false;
+            obj.track.is_ready_prediction = false;
             continue;
           }
         }
@@ -82,13 +82,13 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
         {
           if (box_x_length < box_length_thr_xy && box_y_length < box_length_thr_xy)
           {
-            pp_objs_[i].track.is_ready_prediction = false;
+            obj.track.is_ready_prediction = false;
             continue;
           }
         }
 
 #if DEBUG_PP
-        if (pp_objs_[i].track.is_ready_prediction == true)
+        if (obj.track.is_ready_prediction == true)
         {
           std::cout << "PP_ready" << std::endl;
         }
@@ -97,9 +97,9 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
     }
 
 #if PP_VERTICES_VIA_SPEED == 1
-    pp_objs_[i].track.forecasts.resize(num_forecasts_ * 5);
+    obj.track.forecasts.resize(num_forecasts_ * 5);
 #else
-    pp_objs_[i].track.forecasts.resize(num_forecasts_);
+    obj.track.forecasts.resize(num_forecasts_);
 #endif
 
 #if PP_VERTICES_VIA_SPEED == 1
@@ -108,12 +108,12 @@ void PathPredict::callback_tracking(std::vector<msgs::DetectedObject>& pp_objs_,
     for (unsigned j = 0; j < num_forecasts_; j++)
 #endif
     {
-      pp_objs_[i].track.forecasts[j].position.x = 0;
-      pp_objs_[i].track.forecasts[j].position.y = 0;
-      pp_objs_[i].track.forecasts[j].covariance_xx = 0;
-      pp_objs_[i].track.forecasts[j].covariance_yy = 0;
-      pp_objs_[i].track.forecasts[j].covariance_xy = 0;
-      pp_objs_[i].track.forecasts[j].correlation_xy = 0;
+      obj.track.forecasts[j].position.x = 0;
+      obj.track.forecasts[j].position.y = 0;
+      obj.track.forecasts[j].covariance_xx = 0;
+      obj.track.forecasts[j].covariance_yy = 0;
+      obj.track.forecasts[j].covariance_xy = 0;
+      obj.track.forecasts[j].correlation_xy = 0;
     }
   }
 }
