@@ -610,7 +610,7 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
   }
 }
 
-void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename)
+void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string& out_filename)
 {
   std::ofstream ofs;
   std::stringstream ss;
