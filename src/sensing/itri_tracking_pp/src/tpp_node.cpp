@@ -6,7 +6,7 @@ boost::shared_ptr<ros::AsyncSpinner> g_spinner;
 static double g_input_fps = 5;    // known callback rate
 static double g_output_fps = 10;  // expected publish rate
 
-static unsigned int num_publishs_per_loop =
+static unsigned int g_num_publishs_per_loop =
     std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
 bool g_trigger = false;
@@ -913,7 +913,7 @@ void TPPNode::set_ros_params()
 
   nh_.param<double>(domain + "input_fps", g_input_fps, 10.);
   nh_.param<double>(domain + "output_fps", g_output_fps, 10.);
-  num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
+  g_num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
   double pp_input_shift_m = 0.;
   nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);
