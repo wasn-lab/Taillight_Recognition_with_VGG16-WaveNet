@@ -523,7 +523,7 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
-void TPPNode::convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped)
+void TPPNode::convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped& tf_stamped)
 {
   // TF (lidar-to-map) for object pose
   geometry_msgs::Pose pose_in_lidar;
