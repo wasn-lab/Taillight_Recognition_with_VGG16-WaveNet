@@ -81,11 +81,11 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     frame_id_source_ = objs_header_.frame_id;
   }
 
-  double objs_header_stamp_ = objs_header_.stamp.toSec();
-  double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
+  double objs_header_stamp = objs_header_.stamp.toSec();
+  double objs_header_stamp_prev = objs_header_prev_.stamp.toSec();
 
   is_legal_dt_ =
-      (objs_header_stamp_prev_ > 0 && vel_.init_time(objs_header_stamp_, objs_header_stamp_prev_) == 0) ? true : false;
+      (objs_header_stamp_prev > 0 && vel_.init_time(objs_header_stamp, objs_header_stamp_prev) == 0) ? true : false;
 
   dt_ = vel_.get_dt();
 
