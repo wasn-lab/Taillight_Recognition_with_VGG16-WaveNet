@@ -589,7 +589,7 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
         }
       }
 
-      if (obj.track.is_ready_prediction)
+      if (obj.track.is_ready_prediction != 0u)
       {
         for (unsigned int i = 0; i < NUM_FORECASTS; i++)
         {
@@ -736,7 +736,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << KTs_.get_R() << ", "   // #44 kf R
         << KTs_.get_P0();         // #45 kf P0
 
-    if (obj.track.is_ready_prediction)
+    if (obj.track.is_ready_prediction != 0u)
     {
       for (unsigned int i = 0; i < NUM_FORECASTS; i++)
       {
@@ -759,7 +759,7 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
 
   for (const auto& obj : objs)
   {
-    if (obj.track.is_ready_prediction)
+    if (obj.track.is_ready_prediction != 0u)
     {
       for (unsigned int j = NUM_FORECASTS; j < NUM_FORECASTS * 5; j++)
       {

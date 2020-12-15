@@ -197,7 +197,7 @@ void PathPredict::create_pp_input_main(const msgs::TrackInfo& track, std::vector
   {
     if (i < 0)
     {
-      if (track.is_over_max_length)
+      if (track.is_over_max_length != 0u)
       {
         create_pp_input(track.states[i + track.max_length].estimated_position, data_x, data_y);
 #if DEBUG_PP_TRAJ
@@ -579,7 +579,7 @@ void PathPredict::main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<
 
     std::vector<PPLongDouble> pps;
 
-    if (!pp_objs_[i].track.is_ready_prediction)
+    if (pp_objs_[i].track.is_ready_prediction == 0u)
     {
       PointLD offset{};
       offset.x = 0.;
