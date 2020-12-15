@@ -62,16 +62,16 @@ void KalmanTrackers::set_time_displacement(const long long dt)
 
   half_dt_square_ = 0.5f * std::pow(dt_, 2);
 
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto & track : tracks_)
   {
-    tracks_[i].kalman_.transitionMatrix.at<float>(0, 2) = dt_;
-    tracks_[i].kalman_.transitionMatrix.at<float>(0, 4) = half_dt_square_;
+    track.kalman_.transitionMatrix.at<float>(0, 2) = dt_;
+    track.kalman_.transitionMatrix.at<float>(0, 4) = half_dt_square_;
 
-    tracks_[i].kalman_.transitionMatrix.at<float>(1, 3) = dt_;
-    tracks_[i].kalman_.transitionMatrix.at<float>(1, 5) = half_dt_square_;
+    track.kalman_.transitionMatrix.at<float>(1, 3) = dt_;
+    track.kalman_.transitionMatrix.at<float>(1, 5) = half_dt_square_;
 
-    tracks_[i].kalman_.transitionMatrix.at<float>(2, 4) = dt_;
-    tracks_[i].kalman_.transitionMatrix.at<float>(3, 5) = dt_;
+    track.kalman_.transitionMatrix.at<float>(2, 4) = dt_;
+    track.kalman_.transitionMatrix.at<float>(3, 5) = dt_;
   }
 }
 
@@ -133,15 +133,15 @@ void KalmanTrackers::extract_box_centers()
   std::vector<BoxCenter>().swap(box_centers_);
   box_centers_.reserve(objs_.size());
 
-  for (unsigned i = 0; i < objs_.size(); i++)
+  for (auto & obj : objs_)
   {
     BoxCenter box_center;
-    extract_box_center(box_center, objs_[i].bPoint);
+    extract_box_center(box_center, obj.bPoint);
     box_centers_.push_back(box_center);
 
-    objs_[i].lidarInfo.boxCenter.x = objs_[i].center_point.x;
-    objs_[i].lidarInfo.boxCenter.y = objs_[i].center_point.y;
-    objs_[i].lidarInfo.boxCenter.z = objs_[i].center_point.z;
+    obj.lidarInfo.boxCenter.x = obj.center_point.x;
+    obj.lidarInfo.boxCenter.y = obj.center_point.y;
+    obj.lidarInfo.boxCenter.z = obj.center_point.z;
   }
 }
 
@@ -182,7 +182,7 @@ void KalmanTrackers::extract_box_corners_of_boxes()
   std::vector<std::vector<BoxCorner> >().swap(box_corners_of_boxes_);
   box_corners_of_boxes_.reserve(objs_.size());
 
-  for (unsigned i = 0; i < objs_.size(); i++)
+  for (auto & obj : objs_)
   {
     std::vector<BoxCorner> box_corners;
     box_corners.reserve(NUM_2DBOX_CORNERS);
@@ -192,10 +192,10 @@ void KalmanTrackers::extract_box_corners_of_boxes()
     BoxCorner box_corner2{};
     BoxCorner box_corner3{};
 
-    extract_box_corner(box_corner0, objs_[i].bPoint.p0, 0);
-    extract_box_corner(box_corner1, objs_[i].bPoint.p3, 1);
-    extract_box_corner(box_corner2, objs_[i].bPoint.p7, 2);
-    extract_box_corner(box_corner3, objs_[i].bPoint.p4, 3);
+    extract_box_corner(box_corner0, obj.bPoint.p0, 0);
+    extract_box_corner(box_corner1, obj.bPoint.p3, 1);
+    extract_box_corner(box_corner2, obj.bPoint.p7, 2);
+    extract_box_corner(box_corner3, obj.bPoint.p4, 3);
 
     box_corners.push_back(box_corner0);
     box_corners.push_back(box_corner1);
@@ -233,47 +233,47 @@ void KalmanTrackers::update_associated_trackers()
 {
   for (unsigned i = 0; i < objs_.size(); i++)
   {
-    for (unsigned j = 0; j < tracks_.size(); j++)
+    for (auto & track : tracks_)
     {
-      if (objs_[i].track.id == tracks_[j].id_)
+      if (objs_[i].track.id == track.id_)
       {
-        tracks_[j].tracked_ = true;
+        track.tracked_ = true;
 
-        tracks_[j].lost_time_ = 0;
-        tracks_[j].lost_ = false;
+        track.lost_time_ = 0;
+        track.lost_ = false;
 
-        tracks_[j].box_ = objs_[i];
+        track.box_ = objs_[i];
 
-        tracks_[j].box_center_prev_ = tracks_[j].box_center_;
-        tracks_[j].box_center_ = box_centers_[i];
+        track.box_center_prev_ = track.box_center_;
+        track.box_center_ = box_centers_[i];
 
 #if SPEEDUP_KALMAN_VEL_EST
-        if (tracks_[j].tracktime_ == 2)
+        if (track.tracktime_ == 2)
         {
           MyPoint32 p_abs;
-          tracks_[j].box_center_.pos.get_point_abs(p_abs);
+          track.box_center_.pos.get_point_abs(p_abs);
           MyPoint32 p_abs_prev;
-          tracks_[j].box_center_prev_.pos.get_point_abs(p_abs_prev);
+          track.box_center_prev_.pos.get_point_abs(p_abs_prev);
 
-          tracks_[j].kalman_.statePre.at<float>(2) = (p_abs.x - p_abs_prev.x) / dt_;
-          tracks_[j].kalman_.statePre.at<float>(3) = (p_abs.y - p_abs_prev.y) / dt_;
+          track.kalman_.statePre.at<float>(2) = (p_abs.x - p_abs_prev.x) / dt_;
+          track.kalman_.statePre.at<float>(3) = (p_abs.y - p_abs_prev.y) / dt_;
         }
 #endif
 
-        tracks_[j].box_corners_ = box_corners_of_boxes_[i];
+        track.box_corners_ = box_corners_of_boxes_[i];
 
         MyPoint32 p_abs;
         box_centers_[i].pos.get_point_abs(p_abs);
-        correct_tracker(tracks_[j], p_abs.x, p_abs.y);
+        correct_tracker(track, p_abs.x, p_abs.y);
 
-        tracks_[j].hist_.header_ = tracks_[j].box_.header;
+        track.hist_.header_ = track.box_.header;
 
-        increase_uint(tracks_[j].tracktime_);
+        increase_uint(track.tracktime_);
 
-        tracks_[j].hist_.set_for_successive_element(
-            tracks_[j].tracktime_, p_abs.x, p_abs.y,                                               //
-            tracks_[j].kalman_.statePost.at<float>(0), tracks_[j].kalman_.statePost.at<float>(1),  //
-            tracks_[j].kalman_.statePost.at<float>(2), tracks_[j].kalman_.statePost.at<float>(3));
+        track.hist_.set_for_successive_element(
+            track.tracktime_, p_abs.x, p_abs.y,                                               //
+            track.kalman_.statePost.at<float>(0), track.kalman_.statePost.at<float>(1),  //
+            track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
       }
     }
   }
@@ -281,12 +281,12 @@ void KalmanTrackers::update_associated_trackers()
 
 void KalmanTrackers::mark_lost_trackers()
 {
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto & track : tracks_)
   {
     bool match = false;
-    for (unsigned j = 0; j < objs_.size(); j++)
+    for (auto & obj : objs_)
     {
-      if (tracks_[i].id_ == objs_[j].track.id)
+      if (track.id_ == obj.track.id)
       {
         match = true;
       }
@@ -294,19 +294,19 @@ void KalmanTrackers::mark_lost_trackers()
 
     if (!match)
     {
-      tracks_[i].lost_time_++;
-      tracks_[i].lost_ = (tracks_[i].lost_time_ > tracks_[i].lost_time_max_) ? true : false;
+      track.lost_time_++;
+      track.lost_ = track.lost_time_ > track.lost_time_max_;
 
-      if (!tracks_[i].lost_)
+      if (!track.lost_)
       {
-        tracks_[i].hist_.header_ = tracks_[i].box_.header;
+        track.hist_.header_ = track.box_.header;
 
-        increase_uint(tracks_[i].tracktime_);
+        increase_uint(track.tracktime_);
 
-        tracks_[i].hist_.set_for_successive_element(
-            tracks_[i].tracktime_, tracks_[i].x_predict_, tracks_[i].y_predict_,                   //
-            tracks_[i].kalman_.statePost.at<float>(0), tracks_[i].kalman_.statePost.at<float>(1),  //
-            tracks_[i].kalman_.statePost.at<float>(2), tracks_[i].kalman_.statePost.at<float>(3));
+        track.hist_.set_for_successive_element(
+            track.tracktime_, track.x_predict_, track.y_predict_,                   //
+            track.kalman_.statePost.at<float>(0), track.kalman_.statePost.at<float>(1),  //
+            track.kalman_.statePost.at<float>(2), track.kalman_.statePost.at<float>(3));
       }
     }
   }
@@ -317,16 +317,16 @@ void KalmanTrackers::delete_lost_trackers()
   std::vector<KalmanTracker> reserve_elements;
   reserve_elements.reserve(tracks_.size());
 
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto & track : tracks_)
   {
-    if (!tracks_[i].lost_)
+    if (!track.lost_)
     {
-      reserve_elements.push_back(tracks_[i]);
+      reserve_elements.push_back(track);
     }
     else
     {
 #if DEBUG_TRACKTIME
-      LOG_INFO << "Tracker " << tracks_[i].id_ << " lost! (Lasted " << tracks_[i].tracktime_ << " frames.)"
+      LOG_INFO << "Tracker " << track.id_ << " lost! (Lasted " << track.tracktime_ << " frames.)"
                << std::endl;
 #endif
     }
@@ -342,9 +342,9 @@ void KalmanTrackers::add_new_trackers()
   {
     bool match = false;
 
-    for (unsigned j = 0; j < tracks_.size(); j++)
+    for (auto & track : tracks_)
     {
-      if (objs_[i].track.id == tracks_[j].id_)
+      if (objs_[i].track.id == track.id_)
       {
         match = true;
       }
@@ -359,9 +359,9 @@ void KalmanTrackers::add_new_trackers()
 
 void KalmanTrackers::init_objs()
 {
-  for (unsigned i = 0; i < objs_.size(); i++)
+  for (auto & obj : objs_)
   {
-    objs_[i].track.id = 0;
+    obj.track.id = 0;
   }
 }
 
@@ -438,25 +438,25 @@ void KalmanTrackers::compute_distance_table()
 void KalmanTrackers::associate_data()
 {
   // data association
-  unsigned costMatSize = std::max(tracks_.size(), objs_.size());
-  std::vector<std::vector<double> > costMatrix(costMatSize, vector<double>(costMatSize, 0));
+  unsigned cost_mat_size = std::max(tracks_.size(), objs_.size());
+  std::vector<std::vector<double> > cost_matrix(cost_mat_size, vector<double>(cost_mat_size, 0));
 
   for (unsigned i = 0; i < tracks_.size(); i++)
   {
     for (unsigned j = 0; j < objs_.size(); j++)
     {
-      costMatrix[i][j] = (double)distance_table_[i][j];
+      cost_matrix[i][j] = (double)distance_table_[i][j];
     }
   }
 
 #if DEBUG
   LOG_INFO << "cost matrix: " << std::endl;
 
-  for (unsigned i = 0; i < costMatrix.size(); i++)
+  for (unsigned i = 0; i < cost_matrix.size(); i++)
   {
-    for (unsigned j = 0; j < costMatrix.size(); j++)
+    for (unsigned j = 0; j < cost_matrix.size(); j++)
     {
-      LOG_INFO << costMatrix[i][j] << ", ";
+      LOG_INFO << cost_matrix[i][j] << ", ";
     }
     LOG_INFO << std::endl;
   }
@@ -466,23 +466,23 @@ void KalmanTrackers::associate_data()
   std::vector<int> assignment;
 
 #if DEBUG
-  double cost = hun.solve(costMatrix, assignment);
+  double cost = hun.solve(cost_matrix, assignment);
 
-  for (unsigned i = 0; i < costMatrix.size(); i++)
+  for (unsigned i = 0; i < cost_matrix.size(); i++)
   {
     LOG_INFO << i << "," << assignment[i] << "\t";
   }
 
   LOG_INFO << "\ncost: " << cost << std::endl;
 #else
-  hun.solve(costMatrix, assignment);
+  hun.solve(cost_matrix, assignment);
 #endif
 
   for (unsigned i = 0; i < tracks_.size(); i++)
   {
     if ((unsigned)assignment[i] < objs_.size())
     {
-      if (costMatrix[i][assignment[i]] < TRACK_RANGE_SED)
+      if (cost_matrix[i][assignment[i]] < TRACK_RANGE_SED)
       {
         objs_[assignment[i]].track.id = tracks_[i].id_;
       }
@@ -493,11 +493,11 @@ void KalmanTrackers::associate_data()
 void KalmanTrackers::give_ids_to_unassociated_objs()
 {
   // check unassociated objs_
-  for (unsigned i = 0; i < objs_.size(); i++)
+  for (auto & obj : objs_)
   {
-    if (objs_[i].track.id < TRACK_ID_MIN)
+    if (obj.track.id < TRACK_ID_MIN)
     {
-      objs_[i].track.id = trackid_new_;
+      obj.track.id = trackid_new_;
       increase_track_id();
     }
   }
@@ -532,9 +532,9 @@ void KalmanTrackers::increase_track_id()
 
 void KalmanTrackers::increase_tracktime()
 {
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto & track : tracks_)
   {
-    increase_uint(tracks_[i].tracktime_);
+    increase_uint(track.tracktime_);
   }
 }
 
@@ -659,7 +659,7 @@ void KalmanTrackers::update_boxes()
 void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_abs, const float ego_y_abs,
                                          const float ego_z_abs, const float ego_heading, const bool use_tracking2d)
 {
-  if (objs_.size() == 0 && tracks_.size() == 0)
+  if (objs_.empty() && tracks_.empty())
   {
     return;
   }
@@ -671,9 +671,9 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   extract_box_two_axes_of_boxes();
 
   // kalman filter: prediction step
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto & track : tracks_)
   {
-    tracks_[i].predict();
+    track.predict();
   }
 
   if (!use_tracking2d)
@@ -700,7 +700,5 @@ void KalmanTrackers::kalman_tracker_main(const long long dt, const float ego_x_a
   set_new_box_corners_of_boxes_absolute();
   set_new_box_corners_of_boxes_relative();
   update_boxes();
-
-  return;
 }
 }  // namespace tpp

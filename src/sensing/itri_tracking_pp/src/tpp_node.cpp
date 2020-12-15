@@ -470,7 +470,7 @@ void TPPNode::publish_tracking()
         // init max_length, head, is_over_max_length
         box.track.max_length = 10;
         box.track.head = 255;
-        box.track.is_over_max_length = false;
+        box.track.is_over_max_length = 0u;
 
         box.track.id = track.id_;
 
@@ -494,7 +494,7 @@ void TPPNode::publish_tracking()
         // set is_over_max_length
         if (track.hist_.len_ >= (unsigned short)track.hist_.max_len_)
         {
-          box.track.is_over_max_length = true;
+          box.track.is_over_max_length = 1u;
         }
 
         // set states
