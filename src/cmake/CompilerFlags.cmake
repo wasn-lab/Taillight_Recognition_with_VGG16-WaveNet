@@ -51,24 +51,14 @@ endmacro()
 macro(ENABLE_SANITIZER sanitizer_t)
     APPEND_GLOBAL_COMPILER_FLAGS(-fno-omit-frame-pointer
                                  -fno-optimize-sibling-calls)
-    set(SANITIZER_FLAGS "-fsanitize=${sanitizer_t}")
-    if (${sanitizer_t} STREQUAL "address")
-      set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libasan")
-    elseif (${sanitizer_t} STREQUAL "thread")
-      set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libtsan")
-    elseif (${sanitizer_t} STREQUAL "leak")
-      set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-liblsan")
-    elseif (${sanitizer_t} STREQUAL "undefined")
-      set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -static-libubsan")
-    endif ()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZER_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=${sanitizer_t}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=${sanitizer_t}")
     set(CMAKE_EXE_LINKER_FLAGS
-        "-lpthread ${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
+        "-lpthread ${CMAKE_EXE_LINKER_FLAGS} -fsanitize=${sanitizer_t}")
     set(CMAKE_SHARED_LINKER_FLAGS
-        "-lpthread ${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_FLAGS}")
+        "-lpthread ${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=${sanitizer_t}")
     set(CMAKE_MODULE_LINKER_FLAGS
-        "-lpthread ${CMAKE_MODULE_LINKER_FLAGS} ${SANITIZER_FLAGS}")
+        "-lpthread ${CMAKE_MODULE_LINKER_FLAGS} -fsanitize=${sanitizer_t}")
 endmacro()
 
 # Warning messages:
