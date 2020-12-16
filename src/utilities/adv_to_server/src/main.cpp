@@ -220,6 +220,9 @@ struct VehicelStatus
   float time; //標準時間
   float driving_time; //行駛時間
   float mileage; //行駛距離
+  float accelerator;
+  float brake_pos;
+
 };
 
 struct batteryInfo
@@ -289,6 +292,15 @@ bool convertBoolean(int state)
 /*=========================tools end=========================*/
 
 /*========================= ROS callbacks begin=========================*/
+
+void callback_flag_info04(const msgs::Flag_Info::ConstPtr& input)
+{
+    vs.steering_wheel =  input->Dspace_Flag04;
+    vs.accelerator = input->Dspace_Flag05;
+    vs.brake_pos = input->Dspace_Flag06;
+    vs.rotating_speed = input->Dspace_Flag07;
+}
+
 
 void callback_detObj(const msgs::DetectedObjectArray& input)
 {
@@ -496,12 +508,12 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   vs.localization = input->localization; //定位
   vs.odometry = input->odometry; //里程
   vs.speed = input->speed; //車速 km/hr
-  vs.rotating_speed = input->speed ; //轉速
+  //vs.rotating_speed = input->speed ; //轉速
   vs.bus_stop = input->bus_stop; //站點
   vs.vehicle_number = input->vehicle_number; //車號
   vs.gear = input->gear; //檔位
   vs.hand_brake = input->hand_brake; //手煞車
-  vs.steering_wheel = input->steering_wheel; //方向盤
+  //vs.steering_wheel = input->steering_wheel; //方向盤
   vs.door = input->door; //車門
   vs.air_conditioner = input->air_conditioner; //空調
   vs.radar = input->radar; //radar
@@ -727,7 +739,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     J1["bearing"] = current_gnss_pose.yaw * 180 / PI;
     J1["heading"] = 0.0;
     J1["milage"] = vs.odometry; //行駛距離//0.0;
-    J1["speed"] = vs.speed; //vs.speed 車速 目前來源CAN
+    J1["speed"] = vs.speed; //vs.speed 車速 
     J1["rotate"] = vs.rotating_speed; //轉速 //0.0;
     J1["gear"] = vs.gear; //檔位 //1;
     J1["handcuffs"] = convertBoolean(vs.hand_brake); //手煞車 //true;
@@ -1078,7 +1090,8 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, callbackSersorStatus, callbackTracking, callbackFailSafe, isNewMap);
+                                     callbackEvent, callbackBI, callbackSersorStatus,callbackTracking,callbackFailSafe,               
+                                     callback_flag_info04, isNewMap);
 
 
   while (ros::ok())
@@ -1567,10 +1580,10 @@ json genMqttECUMsg(ecu_type type)
 
   switch(type){
     case ecu_type::accelerator:
-      ecu["accelerator_pos"] = data[4];
+      ecu["accelerator_pos"] = vs.accelerator;
       break;
     case ecu_type::brake_pos:
-      ecu["brake_pos"] = data[5];
+      ecu["brake_pos"] = vs.brake_pos;
       break;
     case ecu_type::steering_wheel_angle:
       ecu["steering_wheel_angle"] = vs.steering_wheel;
