@@ -13,6 +13,7 @@ private:
   // member variables
   ros::Subscriber subscriber_;
   ros::Publisher publisher_;
+  ros::Publisher heartbeat_publisher_;
   ros::NodeHandle node_handle_;
   std::mutex mu_publisher_;  // guard publisher_
   std::atomic_int num_compression_;

@@ -1,5 +1,6 @@
 #include <thread>
 #include <glog/logging.h>
+#include <std_msgs/Empty.h>
 #include <sensor_msgs/CompressedImage.h>
 #include "image_compressor_args_parser.h"
 #include "image_compressor_node.h"
@@ -33,6 +34,7 @@ void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr& msg)
     std::lock_guard<std::mutex> lk(mu_publisher_);
     publisher_.publish(cmpr_msg_ptr);
   }
+  heartbeat_publisher_.publish(std_msgs::Empty{});
 }
 
 int ImageCompressorNode::set_subscriber()
@@ -60,6 +62,7 @@ int ImageCompressorNode::set_publisher()
   LOG(INFO) << ros::this_node::getName() << ":"
             << " publish compressed image at topic " << topic;
   publisher_ = node_handle_.advertise<sensor_msgs::CompressedImage>(topic, /*queue size=*/2);
+  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", 1);
   return EXIT_SUCCESS;
 }
 
