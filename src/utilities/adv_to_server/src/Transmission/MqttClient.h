@@ -5,7 +5,7 @@
 #define MSG_MAX_SIZE 1
 
 #define MQTT_HOST "iot.stois.nchc.tw"
-#define MQTT_PORT 3053
+
 #define MQTT_KEEP_ALIVE 60
 #define MQTT_TIMEOUT_MILLI 5000
 /*
@@ -24,6 +24,7 @@
 #include "mosquitto.h"
 #include <ros/package.h>
 
+
 class MqttClient
 {
 public:
@@ -32,6 +33,7 @@ public:
   int connect();
   int publish(const std::string& topic, const std::string& msg);
   int subscribe(const std::string& topic);
+  std::string vid;
   void setOnConneclCallback(void (*on_connect)(struct mosquitto* , void* , int ));
 private:
   void setTLS();
@@ -43,6 +45,7 @@ private:
   std::string MQTT_CA_CRT;
   std::string MQTT_CLIENT_CRT;
   std::string MQTT_CLIENT_KEY;
+  int port;
 };
 
 #endif  // MQTTCLIENT_H_
