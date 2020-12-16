@@ -31,10 +31,17 @@ public:
   int run();
 
 private:
+  double tf_map_orig_x_ = 0.;
+  double tf_map_orig_y_ = 0.;
+  double tf_map_orig_z_ = 0.;
+
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
   int input_source_ = InputSource::CameraDetV2;
   int occ_source_ = OccupancySource::PlannedPathBased;
+
+  bool save_output_txt_ = false;
+  bool output_tf_map_ = false;
 
   bool use_tracking2d = false;
 
@@ -109,7 +116,7 @@ private:
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
 
-  void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint, const std::string frame_id);
+  void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint);
 
   void init_velocity(msgs::TrackInfo& track);
 
@@ -126,7 +133,7 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_pp(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
+  void publish_pp(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                   const float time_offset);
 #if TO_GRIDMAP
   void publish_pp_grid(ros::Publisher pub, const std::vector<msgs::DetectedObject>& objs);
@@ -137,11 +144,11 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
 
-#if OUTPUT_MAP_TF == 1
-  void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped tf_stamped);
+  // output bbox and pp points in tf_map
+  void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped& tf_stamped);
   void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
-#endif
-  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string out_filename);
+
+  void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string& out_filename);
 };
 }  // namespace tpp
 

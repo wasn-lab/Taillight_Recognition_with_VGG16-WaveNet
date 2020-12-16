@@ -80,7 +80,7 @@ if (USE_CAMERA_DRIVEWORKS_GRABBER)
   if (DRIVEWORKS_LIBRARY)
     set(DRIVEWORKS_FOUND TRUE)
   endif()
-  if(PROCESSOR_IS_ARM)
+  if(CPU_IS_ARM)
   # Find Grabber
     find_library(ITIR_DRIVEWORKS_GRABBER_LIBRARY grabber_core
                  HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
@@ -88,7 +88,7 @@ if (USE_CAMERA_DRIVEWORKS_GRABBER)
   # X86: use grabber_core_pc make build process passed.
     find_library(ITIR_DRIVEWORKS_GRABBER_LIBRARY grabber_core_pc
                  HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
-endif()
+  endif()
 endif ()
 
 find_package(Glog)
