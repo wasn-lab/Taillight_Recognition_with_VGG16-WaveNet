@@ -5,6 +5,7 @@
     <description>compress/decompress images</description>
     <maintainer email="chtseng@itri.org.tw">chtseng</maintainer>
     <license>TODO</license>
+    <test_depend>rosunit</test_depend>
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
