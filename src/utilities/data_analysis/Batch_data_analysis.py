@@ -6,10 +6,14 @@ import math
 import string
 import rospy
 from tabulate import tabulate
+import matplotlib.pyplot as plt
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
+
+dist_lower_threshold = 225
+dist_upper_threshold = 900
 
 def input_parser(inputpath):
     objectArray = []
@@ -38,8 +42,8 @@ def input_parser(inputpath):
 
 def object_counter(objectArray):
     # count variable
-    # car, ped, bike, front, 
-    # front_right, front_left, right, left,
+    # car, ped, bike, bus, Truck
+    # front, front_right, front_left, right, left,
     # rear_right, rear_left, rear
     cnt_list = [0 for x in range(16)]
     cnt_detail_list = [0 for x in range(120)]
@@ -117,10 +121,10 @@ def object_counter(objectArray):
                     c = 4
             
             dist_square = math.pow(item[2], 2) + math.pow(item[3], 2)
-            if dist_square <= 225:
+            if dist_square <= dist_lower_threshold:
                 cnt_list[13] = cnt_list[13] + 1
                 a = 0
-            elif dist_square > 900:
+            elif dist_square > dist_upper_threshold:
                 cnt_list[15] = cnt_list[15] + 1
                 a = 2
             else:
@@ -140,6 +144,7 @@ def main():
     total_shadow_cnts = 0
     total_total_cnts = 0
     total_file_num = 0
+    total_objs = []
 
     extracted_dir_list = ["Dummy"]
     print ("** Start Analyzing **")
@@ -177,6 +182,7 @@ def main():
 
                                 xml_path = current_dir + "/" + xml_file
                                 xml_objs = input_parser(xml_path)
+                                total_objs.extend(xml_objs)
                                 if xml_objs is not None:
                                     obj_cnts, obj_detail_cnts, file_cnts, shadow_cnts = object_counter(xml_objs)
                                     dir_obj_cnts = [dir_obj_cnts[i] + obj_cnts[i] for i in range(len(obj_cnts))]
@@ -204,9 +210,9 @@ def main():
                         print ("    Objects of in rear left: %d" % dir_obj_cnts[11])
                         print ("    Objects of in rear: %d" % dir_obj_cnts[12])
                         print ("Classified by range:")
-                        print ("    Objects in 15m: %d" % dir_obj_cnts[13])
-                        print ("    Objects between 15m to 30m: %d" % dir_obj_cnts[14])
-                        print ("    Objects over 30m: %d" % dir_obj_cnts[15])
+                        print ("    Objects in %dm: %d" % (math.sqrt(dist_lower_threshold), dir_obj_cnts[13]))
+                        print ("    Objects between %dm to %dm: %d" % (math.sqrt(dist_lower_threshold), math.sqrt(dist_upper_threshold), dir_obj_cnts[14]))
+                        print ("    Objects over %dm: %d" % (math.sqrt(dist_upper_threshold), dir_obj_cnts[15]))
 
                         print ("\n** Details of %s **" % dir_name)
                         headers = ["Car", "Pedestrian", "Cyclist", "Bus", "Truck"]
@@ -250,9 +256,9 @@ def main():
     print ("    Objects of in rear left: %d" % total_obj_cnts[11])
     print ("    Objects of in rear: %d" % total_obj_cnts[12])
     print ("Classified by range:")
-    print ("    Objects in 15m: %d" % total_obj_cnts[13])
-    print ("    Objects between 15m to 30m: %d" % total_obj_cnts[14])
-    print ("    Objects over 30m: %d" % total_obj_cnts[15])
+    print ("    Objects in %dm: %d" % (math.sqrt(dist_lower_threshold), total_obj_cnts[13]))
+    print ("    Objects between %dm to %dm: %d" % (math.sqrt(dist_lower_threshold), math.sqrt(dist_upper_threshold), total_obj_cnts[14]))
+    print ("    Objects over %dm: %d" % (math.sqrt(dist_upper_threshold), total_obj_cnts[15]))
 
     print ("\n** Details in total **")
     headers = ["Car", "Pedestrian", "Cyclist", "Bus", "Truck"]
@@ -260,11 +266,11 @@ def main():
     table = []
     for i in range(3):
         if i == 0:
-            print("\n to 15m")
+            print("\n to %dm" % (math.sqrt(dist_lower_threshold)))
         elif i == 1:
-            print("\n from 15m to 30m")
+            print("\n from %dm to %dm" % (math.sqrt(dist_lower_threshold), math.sqrt(dist_upper_threshold)))
         else:
-            print("\n further than 30m")
+            print("\n further than %dm" % (math.sqrt(dist_upper_threshold)))
         table.append([["front", total_obj_detail_cnts[0+i*table_elem_num], total_obj_detail_cnts[8+i*table_elem_num], total_obj_detail_cnts[16+i*table_elem_num], total_obj_detail_cnts[24+i*table_elem_num], total_obj_detail_cnts[32+i*table_elem_num]],
                                     ["front_right", total_obj_detail_cnts[1+i*table_elem_num], total_obj_detail_cnts[9+i*table_elem_num], total_obj_detail_cnts[17+i*table_elem_num], total_obj_detail_cnts[25+i*table_elem_num], total_obj_detail_cnts[33+i*table_elem_num]],
                                     ["front_left", total_obj_detail_cnts[2+i*table_elem_num], total_obj_detail_cnts[10+i*table_elem_num], total_obj_detail_cnts[18+i*table_elem_num], total_obj_detail_cnts[26+i*table_elem_num], total_obj_detail_cnts[34+i*table_elem_num]],
@@ -274,7 +280,27 @@ def main():
                                     ["rear_left", total_obj_detail_cnts[6+i*table_elem_num], total_obj_detail_cnts[14+i*table_elem_num], total_obj_detail_cnts[22+i*table_elem_num], total_obj_detail_cnts[30+i*table_elem_num], total_obj_detail_cnts[38+i*table_elem_num]],
                                     ["rear", total_obj_detail_cnts[7+i*table_elem_num], total_obj_detail_cnts[15+i*table_elem_num], total_obj_detail_cnts[23+i*table_elem_num], total_obj_detail_cnts[31+i*table_elem_num], total_obj_detail_cnts[39+i*table_elem_num]]])
         print (tabulate(table[i], headers, tablefmt="pretty", numalign="right", colalign=("center", "center", "center", "center", "center")))
+    
+    ped_objs = [item for item in total_objs if item[1] == "Pedestrian"]
+    cyc_objs = [item for item in total_objs if item[1] == "Motorbike"]
+    x_ped = [item[2] for item in ped_objs]
+    y_ped = [item[3] for item in ped_objs]
+    x_cyc = [item[2] for item in cyc_objs]
+    y_cyc = [item[3] for item in cyc_objs]
 
+    plt.figure(figsize=(60, 60))
+    plt.xlim(-30, 30)
+    plt.ylim(-30, 30)
+    
+    # draw plot
+    plt.scatter(x_ped, y_ped, c='c', s=1)
+    plt.scatter(x_cyc, y_cyc, c='m', s=1)
+
+    plt.title('Pedestrian and Cycle Center Scattering')
+    plt.xlabel('x position')
+    plt.ylabel('y position')
+    
+    plt.show()
 
                         
 

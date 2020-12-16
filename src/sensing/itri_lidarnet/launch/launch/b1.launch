@@ -100,6 +100,11 @@ Lidar List:
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
+	<group if="$(eval arg('mode') == 6)">
+		<!-- <node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node"  /> -->
+		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
+	</group>
+
 	<group if="$(eval arg('mode') == 9)">
 		<node pkg="raw_points_processor" type="raw_points_processor_decompressor" name="raw_points_decompressor" output="screen" cwd="node" respawn="true"  />
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node"  />
