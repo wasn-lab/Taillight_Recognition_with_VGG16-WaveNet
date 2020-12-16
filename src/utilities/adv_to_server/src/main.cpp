@@ -118,7 +118,7 @@ msgs::DetectedObjectArray g_det_obj_array;
 msgs::DetectedObjectArray g_tracking_obj_array;
 msgs::LidLLA g_gps;
 msgs::VehInfo g_veh_info;
-json g_fps_json_ = { { "key", 0 } };
+json g_fps_json = { { "key", 0 } };
 std::string g_vk102_response;
 std::string g_mile_json;
 std::string g_event_json;
@@ -343,7 +343,7 @@ void callback_fps(const std_msgs::String::ConstPtr& input)
   std::string json_string = input->data.c_str();
   try
   {
-    g_fps_json_ = json::parse(json_string);
+    g_fps_json = json::parse(json_string);
   }
   catch (std::exception& e)
   {
@@ -787,7 +787,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     for (int i = 0; i < FPS_KEY_LEN; i++)
     {
       std::string key = keys[i];
-      float value = g_fps_json_.value(key, -1);
+      float value = g_fps_json.value(key, -1);
       j1[key] = value;
     }
   }
