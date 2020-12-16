@@ -7,4 +7,16 @@
   <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_left_front_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_front_60/raw -output_topic /cam/left_front_60/jpg" />
   <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_left_back_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_back_60/raw -output_topic /cam/left_back_60/jpg" />
   <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_back_top_120" output="screen" cwd="node" respawn="true" args="-input_topic /cam/back_top_120/raw -output_topic /cam/back_top_120/jpg" />
+
+  <!-- old image topics: to be removed in the future -->
+  <!--
+    <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_front_bottom_60_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_bottom_60 -output_topic /cam/front_bottom_60/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_front_top_far_30_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_top_far_30 -output_topic /cam/front_top_far_30/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_front_top_close_120_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_top_close_120 -output_topic /cam/front_top_close_120/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_right_front_60_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_front_60 -output_topic /cam/right_front_60/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_right_back_60_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_back_60 -output_topic /cam/right_back_60/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_left_front_60_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_front_60 -output_topic /cam/left_front_60/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_left_back_60_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_back_60 -output_topic /cam/left_back_60/jpg" />
+  <node pkg="image_compressor" type="image_compressor_node" name="image_compressor_node_back_top_120_old" output="screen" cwd="node" respawn="true" args="-input_topic /cam/back_top_120 -output_topic /cam/back_top_120/jpg" />
+  -->
 </launch>
