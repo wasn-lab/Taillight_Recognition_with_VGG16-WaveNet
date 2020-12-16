@@ -14,7 +14,7 @@ UdpClient::UdpClient()
   f_port = -1;
   f_addr = "";
   f_socket = -1;
-  f_addrinfo = NULL;
+  f_addrinfo = nullptr;
 }
 
 void UdpClient::initial(const std::string& addr, int port)
@@ -127,7 +127,7 @@ int UdpClient::send_obj_to_server(const std::string& str, bool show)
   std::string typestring = "M8.2.VK003.2";
   const char* type = typestring.c_str();
   size_t msg_length = strlen(msg);
-  if (strstr(msg, type) != 0) 
+  if (strstr(msg, type) != nullptr) 
   {
     //std::cout << "send to : " + f_addr + ":" + to_string(f_port) << std::endl;
     //std::cout << "msg : " + str << std::endl;
