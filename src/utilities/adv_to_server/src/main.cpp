@@ -18,8 +18,8 @@
 #include "Transmission/MqttClient.h"
 #include <chrono>
 
-bool flag_show_udp_send = true;
-bool event_queue_switch = true;
+bool g_flag_show_udp_send = true;
+bool g_event_queue_switch = true;
 
 // VK APIs backend
 const std::string TCP_VK_SRV_ADRR = "60.250.196.127";
@@ -93,7 +93,7 @@ boost::mutex g_mutex_fail_safe;
 //boost::mutex mutex_serverStatus;
 
 // ros queue
-std::queue<std::string> q_ros_queue;
+std::queue<std::string> g_ros_queue;
 // adv heading queue
 std::queue<std::string> g_obu_queue;
 
@@ -449,7 +449,7 @@ void callbackEvent(const std_msgs::String::ConstPtr& input)
   j1["timestamp"] = j0.at("timestamp");
   
   
-  if(event_queue_switch)
+  if(g_event_queue_switch)
   {
     cout << " push to queue1 event: " << j1.dump() << endl;
     g_mutex_event_1.lock();
@@ -843,21 +843,21 @@ void sendRun(int argc, char** argv)
   while (true)
   {
     g_mutex_queue.lock();
-    while (!q_ros_queue.empty())
+    while (!g_ros_queue.empty())
     {
-      udp_back_client.send_obj_to_server(q_ros_queue.front(), flag_show_udp_send);
-      q_ros_queue.pop();
+      udp_back_client.send_obj_to_server(g_ros_queue.front(), g_flag_show_udp_send);
+      g_ros_queue.pop();
     }
 
     while (!g_obu_queue.empty())
     {
-      udp_obu_client.send_obj_to_server(g_obu_queue.front(), flag_show_udp_send);
+      udp_obu_client.send_obj_to_server(g_obu_queue.front(), g_flag_show_udp_send);
       g_obu_queue.pop();
     }
 
     while (!g_vk_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_queue.front(), flag_show_udp_send);
+      udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send);
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       g_vk_queue.pop();
     }
@@ -866,7 +866,7 @@ void sendRun(int argc, char** argv)
     {
       udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true);
       udp_vk_fg_client.send_obj_to_server(g_vk_status_queue.front(), true);
-      udp_tablet_client.send_obj_to_server(g_vk_status_queue.front(), flag_show_udp_send);
+      udp_tablet_client.send_obj_to_server(g_vk_status_queue.front(), g_flag_show_udp_send);
       g_vk_status_queue.pop();
     }
     g_mutex_queue.unlock();
@@ -957,19 +957,19 @@ void sendRun(int argc, char** argv)
     g_mutex_mqtt.unlock();
 
 
-    if(event_queue_switch)
+    if(g_event_queue_switch)
     {
       if(!g_event_queue_1.empty()){
         g_mutex_event_1.lock();
-        event_queue_switch = false;
+        g_event_queue_switch = false;
       
         while (!g_event_queue_1.empty())
         {
           json j = g_event_queue_1.front();
           string jstr = j.dump();
           cout << "++++++++++++++++++++++++++++++send from q 1 " << jstr << endl;
-          udp_vk_client.send_obj_to_server(jstr, flag_show_udp_send);
-          udp_tablet_client.send_obj_to_server(jstr, flag_show_udp_send);
+          udp_vk_client.send_obj_to_server(jstr, g_flag_show_udp_send);
+          udp_tablet_client.send_obj_to_server(jstr, g_flag_show_udp_send);
           g_event_queue_1.pop();
         }
 
@@ -980,7 +980,7 @@ void sendRun(int argc, char** argv)
     {
       if(!g_event_queue_2.empty()){
         g_mutex_event_2.lock();
-        event_queue_switch = true;
+        g_event_queue_switch = true;
     
         while (!g_event_queue_2.empty())
         {
@@ -988,8 +988,8 @@ void sendRun(int argc, char** argv)
           json j = g_event_queue_2.front();
           string jstr = j.dump();
           cout << "+++++++++++++++++++++++++++++++send from q 2 " << jstr << endl;
-          udp_vk_client.send_obj_to_server(jstr, flag_show_udp_send);
-          udp_tablet_client.send_obj_to_server(jstr, flag_show_udp_send);
+          udp_vk_client.send_obj_to_server(jstr, g_flag_show_udp_send);
+          udp_tablet_client.send_obj_to_server(jstr, g_flag_show_udp_send);
           g_event_queue_2.pop();
         }
 
@@ -1014,7 +1014,7 @@ void receiveCanRun(int argc, char** argv)
       std::string type = get_msg_type(msg_id);
       std::string temp = get_jsonmsg_can(type, g_can_data);
       g_mutex_queue.lock();
-      q_ros_queue.push(temp);
+      g_ros_queue.push(temp);
       g_mutex_queue.unlock();
     }
     receiver.closeSocket();
@@ -1099,13 +1099,13 @@ void receiveRosRun(int argc, char** argv)
     g_mutex_ros.lock();
     std::string temp_adv001 = get_jsonmsg_ros("M8.2.adv001");
     g_mutex_queue.lock();
-    q_ros_queue.push(temp_adv001);
+    g_ros_queue.push(temp_adv001);
 
     g_mutex_queue.unlock();
 
     std::string temp_adv003 = get_jsonmsg_ros("M8.2.adv003");
     g_mutex_queue.lock();
-    q_ros_queue.push(temp_adv003);
+    g_ros_queue.push(temp_adv003);
     g_mutex_queue.unlock();
 
     std::string temp_adv009 = get_jsonmsg_to_obu("M8.2.adv009");
@@ -1757,7 +1757,7 @@ int main(int argc, char** argv)
   /*Start thread for UDP server to receive traffic light infomation from OBU. */
   if (checkCommand(argc, argv, "-udp_srv"))
   {
-    flag_show_udp_send = false;
+    g_flag_show_udp_send = false;
     boost::thread thread_udp_receive(receiveUDPRun, argc, argv);
   }
   /*Start thread to publish ROS topics:
@@ -1773,7 +1773,7 @@ int main(int argc, char** argv)
   /*Startr thread for TCP server: Receive VK102*/
   if (checkCommand(argc, argv, "-tcp_srv"))
   {
-    flag_show_udp_send = false;
+    g_flag_show_udp_send = false;
     boost::thread thread_tcp_server(tcpServerRun, argc, argv);
   }
 
