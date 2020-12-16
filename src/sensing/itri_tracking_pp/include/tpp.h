@@ -6,9 +6,9 @@
 
 namespace tpp
 {
-static constexpr unsigned int num_forecasts_ = 20;
+static constexpr unsigned int NUM_FORECASTS = 30;
 
-static constexpr unsigned int num_2dbox_corners = 4;
+static constexpr unsigned int NUM_2DBOX_CORNERS = 4;
 
 enum InputSource
 {
@@ -112,7 +112,7 @@ struct PPLongDouble
   tf2::Quaternion q1;  // direction of vector1 of confidence ellipse
   tf2::Quaternion q2;  // direction of vector2 of confidence ellipse
 
-#if PP_VERTICES_VIA_SPEED
+#if PP_VERTICES_VIA_SPEED == 1
   msgs::PointXY v1;  // vertex1 of confidence ellipse
   msgs::PointXY v2;  // vertex2 of confidence ellipse
   msgs::PointXY v3;  // co-vertex1 of confidence ellipse
