@@ -30,7 +30,7 @@ void UdpClient::initial(const std::string& addr, int port)
 
   int result = getaddrinfo(f_addr.c_str(), to_string(f_port).c_str(), &hints, &f_addrinfo);
 
-  if (result != 0 || f_addrinfo == NULL)
+  if (result != 0 || f_addrinfo == nullptr)
   {
     throw udp_client_server_runtime_error(
         ("invalid address or port: \"" + addr + ":" + to_string(port) + "\"").c_str());
@@ -187,7 +187,7 @@ UdpServer::UdpServer(const std::string& addr, int port) : f_port(port), f_addr(a
   hints.ai_socktype = SOCK_DGRAM;
   hints.ai_protocol = IPPROTO_UDP;
   int r(getaddrinfo(addr.c_str(), decimal_port, &hints, &f_addrinfo));
-  if (r != 0 || f_addrinfo == NULL)
+  if (r != 0 || f_addrinfo == nullptr)
   {
     throw udp_client_server_runtime_error(
         ("invalid address or port for UDP socket: \"" + addr + ":" + decimal_port + "\"").c_str());
