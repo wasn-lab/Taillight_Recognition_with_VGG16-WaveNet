@@ -354,11 +354,6 @@ class Node:
                 bbox.p7
             ]
 
-            if self.inputTopic == "/LidarDetection/Ped_Cyc" and marker.color.g == 0.0 and objects[_i].classId == 1:  
-                continue
-            elif self.inputTopic == "/LidarDetection/Ped_Cyc" and marker.color.g == 1.0 and objects[_i].classId == 3: 
-                continue
-
             for index in BOX_ORDER:
                 point = point_list[index]
                 point_msg = Point()
