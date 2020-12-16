@@ -12,7 +12,7 @@ ImageCompressorNode::ImageCompressorNode() : num_compression_(0)
 }
 ImageCompressorNode::~ImageCompressorNode() = default;
 
-void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr msg)
+void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr& msg)
 {
   num_compression_ += 1;
   if (image_compressor::use_threading())
@@ -26,7 +26,7 @@ void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr msg)
   }
 }
 
-void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr msg)
+void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr& msg)
 {
   auto cmpr_msg_ptr = compress_msg(msg);
   {
@@ -68,7 +68,7 @@ void ImageCompressorNode::run()
   CHECK(set_subscriber() == EXIT_SUCCESS);
   CHECK(set_publisher() == EXIT_SUCCESS);
 
-  ros::AsyncSpinner spinner(/*num_threads=*/1);
+  ros::AsyncSpinner spinner(/*threads_count*/1);
   spinner.start();
   ros::Rate r(1);
   while (ros::ok())

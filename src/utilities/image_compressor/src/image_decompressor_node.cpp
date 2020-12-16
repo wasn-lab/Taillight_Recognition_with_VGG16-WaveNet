@@ -12,7 +12,7 @@ ImageDecompressorNode::ImageDecompressorNode() : num_compression_(0)
 }
 ImageDecompressorNode::~ImageDecompressorNode() = default;
 
-void ImageDecompressorNode::callback(const sensor_msgs::CompressedImageConstPtr msg)
+void ImageDecompressorNode::callback(const sensor_msgs::CompressedImageConstPtr& msg)
 {
   num_compression_ += 1;
   if (image_compressor::use_threading())
@@ -26,7 +26,7 @@ void ImageDecompressorNode::callback(const sensor_msgs::CompressedImageConstPtr 
   }
 }
 
-void ImageDecompressorNode::publish(const sensor_msgs::CompressedImageConstPtr msg)
+void ImageDecompressorNode::publish(const sensor_msgs::CompressedImageConstPtr& msg)
 {
   auto decmpr_msg_ptr = decompress_msg(msg);
   {
@@ -68,7 +68,7 @@ void ImageDecompressorNode::run()
   CHECK(set_subscriber() == EXIT_SUCCESS);
   CHECK(set_publisher() == EXIT_SUCCESS);
   set_use_threading(false);
-  ros::AsyncSpinner spinner(/*num_threads=*/1);
+  ros::AsyncSpinner spinner(/*thread_count*/1);
   spinner.start();
   ros::Rate r(1);
   while (ros::ok())

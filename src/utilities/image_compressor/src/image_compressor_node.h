@@ -18,8 +18,8 @@ private:
   std::atomic_int num_compression_;
 
   // functions
-  void callback(const sensor_msgs::ImageConstPtr msg);
-  void publish(const sensor_msgs::ImageConstPtr msg);
+  void callback(const sensor_msgs::ImageConstPtr& msg);
+  void publish(const sensor_msgs::ImageConstPtr& msg);
   int set_subscriber();
   int set_publisher();
 

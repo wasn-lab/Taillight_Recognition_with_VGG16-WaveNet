@@ -10,7 +10,7 @@
 
 namespace image_compressor
 {
-sensor_msgs::CompressedImageConstPtr compress_msg(sensor_msgs::ImageConstPtr msg, const compression_format fmt)
+sensor_msgs::CompressedImageConstPtr compress_msg(const sensor_msgs::ImageConstPtr& msg, const compression_format fmt)
 {
   cv_bridge::CvImageConstPtr cv_ptr;
 
@@ -41,7 +41,7 @@ sensor_msgs::CompressedImageConstPtr compress_msg(sensor_msgs::ImageConstPtr msg
   return cmpr_msg;
 }
 
-sensor_msgs::ImageConstPtr decompress_msg(sensor_msgs::CompressedImageConstPtr cmpr_msg)
+sensor_msgs::ImageConstPtr decompress_msg(const sensor_msgs::CompressedImageConstPtr& cmpr_msg)
 {
   cv_bridge::CvImage cv_img;
   int ret = decompress(cmpr_msg->data, cv_img.image);

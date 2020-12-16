@@ -21,7 +21,7 @@ const std::vector<int> png_params{
   cv::IMWRITE_PNG_STRATEGY_RLE,
 };
 
-int compress_internal(const cv::Mat& in_img, std::vector<uint8_t>& cmpr_data, const std::string format,
+int compress_internal(const cv::Mat& in_img, std::vector<uint8_t>& cmpr_data, const std::string& format,
                       const std::vector<int>& params)
 {
   CHECK(cmpr_data.empty()) << "cmpr_data is expected to be empty.";

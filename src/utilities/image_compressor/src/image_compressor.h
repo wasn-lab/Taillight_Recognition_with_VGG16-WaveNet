@@ -11,7 +11,7 @@ enum compression_format
   png,  // 1
 };
 
-sensor_msgs::CompressedImageConstPtr compress_msg(sensor_msgs::ImageConstPtr msg,
+sensor_msgs::CompressedImageConstPtr compress_msg(const sensor_msgs::ImageConstPtr& msg,
                                                   const compression_format fmt = compression_format::jpg);
-sensor_msgs::ImageConstPtr decompress_msg(sensor_msgs::CompressedImageConstPtr cmpr_msg);
+sensor_msgs::ImageConstPtr decompress_msg(const sensor_msgs::CompressedImageConstPtr& cmpr_msg);
 };  // namespace image_compressor
