@@ -136,7 +136,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/bbox
       Name: Lidarbbox
       Namespaces:
-        {}
+        /LidarDetection: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -144,23 +144,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/delayTxt
       Name: Lidar_latency
       Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LidarDetection/Car/bbox
-      Name: Lidarbbox_Car
-      Namespaces:
-        /LidarDetection/Car: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /LidarDetection/Ped_Cyc/bbox
-      Name: Lidarbbox_Ped_Cyc
-      Namespaces:
-        /LidarDetection/Ped_Cyc: true
+        /LidarDetection_delay: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -168,7 +152,7 @@ Visualization Manager:
       Marker Topic: /LidarDetection/Car/delayTxt
       Name: Lidar_latency_PointPillars
       Namespaces:
-        /LidarDetection/Car_delay: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray

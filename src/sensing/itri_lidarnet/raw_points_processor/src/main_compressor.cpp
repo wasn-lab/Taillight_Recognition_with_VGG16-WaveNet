@@ -50,13 +50,6 @@ void cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& 
   {
     g_stopWatch_L.reset();
 
-    // check data from hardware
-    if (g_debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
-    {
-      uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-      std::cout << "[Left->Cmpr]: " << diff_time << "ms" << std::endl;
-    }
-
     //-------------------------- compress 
     msgs::CompressedPointCloud compressed_pointcloud;
     compressed_pointcloud.data = pc2_compressor::compress(input_cloud);
@@ -75,13 +68,6 @@ void cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>&
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_R.reset();
-
-    // check data from hardware
-    if (g_debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
-    {
-      uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-      std::cout << "[Right->Cmpr]: " << diff_time << "ms" << std::endl;
-    }
 
     //-------------------------- compress 
     msgs::CompressedPointCloud compressed_pointcloud;
@@ -103,13 +89,6 @@ void cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& i
   {
     g_stopWatch_T.reset();
 
-    // check data from hardware
-    if (g_debug_output && (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) < 3600)
-    {
-      uint64_t diff_time = (ros::Time::now().toSec() - input_cloud->header.stamp.toSec()) * 1000;
-      std::cout << "[Top->Cmpr]: " << diff_time << "ms" << std::endl;
-    }
-
     //-------------------------- compress 
     msgs::CompressedPointCloud compressed_pointcloud;
     compressed_pointcloud.data = pc2_compressor::compress(input_cloud);
@@ -118,7 +97,7 @@ void cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& i
     compressed_pointcloud.header = input_cloud->header;
     g_pub_LidarFrontTop_Compress.publish(compressed_pointcloud);
 
-    std::cout << "[T-Cmpr]: " << g_stopWatch_T.getTimeSeconds() << 's' << std::endl;
+    std::cout << "[Cmpr]: " << g_stopWatch_T.getTimeSeconds() << 's' << std::endl;
   }
   g_T_Lock.unlock();
 }

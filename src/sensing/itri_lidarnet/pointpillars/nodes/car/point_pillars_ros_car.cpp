@@ -35,7 +35,6 @@
 #include "lidar_point_pillars/car/point_pillars_ros_car.h"
 
 // for StopWatch
-#include <iostream>
 #include <pcl/common/time.h>
 
 // for obbs
@@ -192,6 +191,7 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
       MsgObjArr.objects.push_back(object);
     }
     pub_objects_.publish(MsgObjArr);
+    
     std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
   }
 }

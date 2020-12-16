@@ -90,7 +90,7 @@ void cb_LidarFrontTop(const msgs::CompressedPointCloud& msg)
   // publish
   sensor_pc2_ptr->header = msg.header;
   g_pub_LidarFrontTop_DeCompress.publish(*sensor_pc2_ptr);
-  std::cout << "[T-DeCmpr]: " << stopWatch_T.getTimeSeconds() << 's' << std::endl;
+  std::cout << "[De-Cmpr]: " << stopWatch_T.getTimeSeconds() << 's' << std::endl;
   T_Lock.unlock();
 }
 
