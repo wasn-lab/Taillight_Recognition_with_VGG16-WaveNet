@@ -813,7 +813,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= json parsers end =========================*/
 
 /*========================= thread runnables begin =========================*/
-void mqtt_pubish(std::string msg)
+void mqtt_pubish( const std::string& msg)
 {
   if(g_is_mqtt_connected){
       std::string topic = "vehicle/report/" + g_vid;
