@@ -53,7 +53,7 @@ class RosModuleTraffic
         if(n.getParam("/south_bridge/vid", vid)){
             return vid;
         }else{
-            return "DEFAULT-vid";
+            return "Default-vid";
         }
     }
 
