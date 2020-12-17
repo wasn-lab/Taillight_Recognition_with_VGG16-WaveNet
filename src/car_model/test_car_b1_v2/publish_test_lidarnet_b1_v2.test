@@ -12,7 +12,10 @@
                 - name: /LidarAll
                   timeout: 60
                   negative: False
-                - name: /LidarDetection
+                - name: /LidarDetection/Car
+                  timeout: 60
+                  negative: False
+                - name: /LidarDetection/Ped_Cyc
                   timeout: 60
                   negative: False
                 - name: /LidarFrontTop/Raw/heartbeat
