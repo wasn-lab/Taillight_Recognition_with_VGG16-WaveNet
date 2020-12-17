@@ -76,10 +76,8 @@ Lidar List:
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
 		<node pkg="raw_points_processor" type="raw_points_processor_compressor" name="raw_points_compressor" output="screen" cwd="node" respawn="true"  />
-		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
-		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node" respawn="true" />
-		<node pkg="lidar_squseg_v2_inference"   type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"   	output="screen" cwd="node" respawn="true" args="b1 X 0 1" /> 
-		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
+		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node"  />
+		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
 	<group if="$(eval arg('mode') == 1)">
@@ -93,17 +91,6 @@ Lidar List:
 	<group if="$(eval arg('mode') == 3)">
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 		 	name="lidars_grabber" 	  		output="screen" cwd="node"  />
 		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"  />
-	</group>
-
-	<group if="$(eval arg('mode') == 4)">
-		<node pkg="lidars_preprocessing" 		type="lidars_preprocessing_b1" 		name="lidars_preprocessing_b1" 		output="screen" cwd="node"	respawn="true"/>
-		<node pkg="lidar_squseg_v2_inference"      type="lidar_squseg_v2_inference"	name="lidar_squseg_v2_inference"	output="screen" cwd="node" respawn="true"	args="b1 X 0 1" />
-		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
-	</group>
-
-	<group if="$(eval arg('mode') == 6)">
-		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node"  />
-		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
 	<group if="$(eval arg('mode') == 9)">
