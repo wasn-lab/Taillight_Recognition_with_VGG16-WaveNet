@@ -5,12 +5,10 @@
 #cmakedefine01 CAR_MODEL_IS_B1_V2
 #cmakedefine01 CAR_MODEL_IS_B1_V3
 #cmakedefine01 CAR_MODEL_IS_C1
-#cmakedefine01 CAR_MODEL_IS_OMNIBUS
 #cmakedefine01 ENABLE_LIGHTNET
 #cmakedefine01 ENABLE_PARKNET
 #cmakedefine01 ENABLE_OPENROADNET
 #cmakedefine01 ENABLE_PEDCROSS
-#cmakedefine01 ENABLE_GOOGLE_BENCHMARK
 
 namespace car_model
 {
@@ -19,7 +17,6 @@ enum Id
   B1_V2,
   B1_V3,
   C1,
-  Omnibus,
   Num,
 };
 

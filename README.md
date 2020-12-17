@@ -4,8 +4,8 @@ This repository contains the source codes of self-driving car maintained by ITRI
 
 1. Ubuntu 18.04
 1. ROS Melodic
-1. OpenCV 4.2.0 (Optional)
-1. PCL 1.9.1 (Optional)
+1. OpenCV 4.2.0
+1. PCL 1.9.1
 1. Cuda (Optional)
 1. TensorRT (Optional)
 

@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 Send backup rosbag files to backend.
 """
@@ -7,6 +8,8 @@ import datetime
 import os
 import io
 import subprocess
+import rospy
+from std_msgs.msg import Empty
 from sb_param_utils import get_license_plate_number
 from rosbag_utils import get_bag_yymmdd
 from vk221_3 import notify_backend_with_new_bag
@@ -38,6 +41,10 @@ class RosbagSender(object):
         """
         Currently we use FTP protocol to send rosbags
         """
+        rospy.init_node("RosbagSender")
+        rospy.logwarn("Init RosbagSender")
+        self.heartbeat_publisher = rospy.Publisher(
+            "/fail_safe/rosbag_sender/heartbeat", Empty, queue_size=10)
         self.fqdn = fqdn
         self.port = port
         self.license_plate_number = get_license_plate_number()
@@ -45,6 +52,7 @@ class RosbagSender(object):
         self.user_name = user_name
         self.password = password
         self.upload_rate = upload_rate
+        self.notified_bags = {}
         if not rosbag_backup_dir:
             self.rosbag_backup_dir = os.path.join(
                 os.environ["HOME"], "rosbag_files", "backup")
@@ -54,9 +62,11 @@ class RosbagSender(object):
         print("backend server fqdn: {}, user_name: {}".format(self.fqdn, self.user_name))
 
     def run(self):
-        while True:
+        rate = rospy.Rate(1)
+        while not rospy.is_shutdown():
             self.send_if_having_bags()
-            time.sleep(3)
+            self.heartbeat_publisher.publish(Empty())
+            rate.sleep()
 
     def send_if_having_bags(self):
         bags = self.get_unsent_rosbag_filenames()
@@ -67,11 +77,18 @@ class RosbagSender(object):
 
     def send_bags(self, bags):
         bags.sort()
+
         for bag in bags:
             _, bag_base_name = os.path.split(bag)
+            if bag_base_name in self.notified_bags:
+                continue
             print("notify backend: {} is ready to be uploaded".format(bag))
             jret = notify_backend_with_new_bag(bag_base_name)
             print(jret)
+            self.notified_bags[bag_base_name] = True
+
+        for bag in bags:
+            _, bag_base_name = os.path.split(bag)
             lftp_script_filename = self._generate_lftp_script(bag)
             ret = _send_bag_by_lftp(lftp_script_filename)
             if ret == 0:
@@ -81,32 +98,36 @@ class RosbagSender(object):
 
     def _generate_lftp_script(self, bag):
         ftp_cmds = [
-            "set ssl:verify-certificate no",
-            "set net:limit-total-rate 0:{}".format(self.upload_rate),
-            "open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
+            u"set ssl:verify-certificate no",
+            u"set net:limit-total-rate 0:{}".format(self.upload_rate),
+            u"open -p {} -u {},{} {}".format(self.port, self.user_name, self.password, self.fqdn),
         ]
         ymd = get_bag_yymmdd(bag)  # backup dir name in backend
-        dir_name = "/{}/{}".format(self.license_plate_number, ymd)
+        dir_name = u"/Share/ADV/Rosbag/fail_safe/{}/{}".format(self.license_plate_number, ymd)
         ftp_cmds += [
-            "mkdir -p {}".format(dir_name),
-            "cd {}".format(dir_name),
-            "put -c {}".format(bag),
-            "!touch {}".format(_get_stamp_filename(bag)),
+            u"mkdir -p {}".format(dir_name),
+            u"cd {}".format(dir_name),
+            u"put -c {}".format(bag),
+            u"!touch {}".format(_get_stamp_filename(bag)),
         ]
-        ftp_cmds += ["bye"]
+        ftp_cmds += [u"bye"]
 
         if os.path.isfile(_BACKUP_ROSBAG_LFTP_SCRIPT):
             os.unlink(_BACKUP_ROSBAG_LFTP_SCRIPT)
 
-        with open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w") as _fp:
-            _fp.write("\n".join(ftp_cmds))
-            _fp.write("\n")
+        with io.open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w", encoding="utf-8") as _fp:
+            _fp.write(u"\n".join(ftp_cmds))
+            _fp.write(u"\n")
         return _BACKUP_ROSBAG_LFTP_SCRIPT
 
     def get_unsent_rosbag_filenames(self):
         """Return a list of bag files that are not sent back"""
-        files = os.listdir(self.rosbag_backup_dir)
         ret = []
+        if not os.path.isdir(self.rosbag_backup_dir):
+            rospy.logwarn("No rosbag backup dir: %s", self.rosbag_backup_dir)
+            return ret
+
+        files = os.listdir(self.rosbag_backup_dir)
         for fname in files:
             if not fname.endswith(".bag"):
                 continue

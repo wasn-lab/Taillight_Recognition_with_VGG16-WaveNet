@@ -266,7 +266,7 @@ int main(int argc, char** argv)
     }
     else
     {
-      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order] + std::string("/raw"), 1, f_cam_callbacks[cam_order]);
     }
     if (g_img_result_publish)
     {

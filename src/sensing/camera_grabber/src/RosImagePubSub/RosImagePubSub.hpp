@@ -66,7 +66,7 @@ public:
     // Publishers
     bool add_a_pub(size_t id_in, const std::string &topic_name);
     bool send_image(const int topic_id, const cv::Mat &content_in);
-	bool send_image_rgb(const int topic_id, const cv::Mat &content_in);
+	bool send_image_rgb(const int topic_id, const cv::Mat &content_in, ros::Time ros_time);
     bool send_image_rgb_gstreamer(const int topic_id, const cv::Mat &content_in);
     // Subscribers
     bool add_a_sub(size_t id_in, const std::string &topic_name);
