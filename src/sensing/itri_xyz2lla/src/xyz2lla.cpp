@@ -22,7 +22,7 @@ void XYZ2LLA::initParam()
   double read_tmp[63];
   int read_index = 0;
   std::string fname = ros::package::getPath(root_);
-  fname += "/data/ITRI_NEW_XYZ2ENU_sec.txt";
+  fname += path_param_xyz_to_enu;
 #if DEBUG == 1
   std::cout << fname << std::endl;
 #endif
@@ -123,7 +123,7 @@ void XYZ2LLA::initParamTWD97()
   double read_tmp_1[3];
   int read_index_1 = 0;
   std::string fname_1 = ros::package::getPath(root_);
-  fname_1 += "/data/ITRI_ShiftXYZ2TWD97.txt";
+  fname_1 += path_param_xyz_to_twd97;
 #if DEBUG == 1
   std::cout << fname_1 << std::endl;
 #endif
@@ -166,7 +166,7 @@ void XYZ2LLA::initParamUTM()
   double read_tmp_2[3];
   int read_index_2 = 0;
   std::string fname_2 = ros::package::getPath(root_);
-  fname_2 += "/data/ITRI_ShiftXYZ2UTM.txt";
+  fname_2 += path_param_xyz_to_utm;
 #if DEBUG == 1
   std::cout << fname_2 << std::endl;
 #endif
@@ -328,9 +328,18 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
 
     if (obj.header.frame_id != "map")
     {
-      geometry_msgs::TransformStamped tf_stamped;
-      frame_id_source_ = obj.header.frame_id;
+      // assign frame_id_source_
+      if (obj.header.frame_id == "lidar" || obj.header.frame_id == "base_link")
+      {
+        frame_id_source_ = "base_link";
+      }
+      else
+      {
+        frame_id_source_ = obj.header.frame_id;
+      }
 
+      // get tf_stamped: base_link-to-map
+      geometry_msgs::TransformStamped tf_stamped;
       try
       {
         tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, obj.header.stamp);
@@ -349,18 +358,18 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
         }
       }
 
-      // TF (lidar-to-map) for object pose
-      geometry_msgs::Pose pose_in_lidar;
-      pose_in_lidar.position.x = obj.center_point.x;
-      pose_in_lidar.position.y = obj.center_point.y;
-      pose_in_lidar.position.z = obj.center_point.z;
-      pose_in_lidar.orientation.x = 0;
-      pose_in_lidar.orientation.y = 0;
-      pose_in_lidar.orientation.z = 0;
-      pose_in_lidar.orientation.w = 1;
+      // TF (base_link-to-map) for object pose
+      geometry_msgs::Pose pose_in_base_link;
+      pose_in_base_link.position.x = obj.center_point.x;
+      pose_in_base_link.position.y = obj.center_point.y;
+      pose_in_base_link.position.z = obj.center_point.z;
+      pose_in_base_link.orientation.x = 0;
+      pose_in_base_link.orientation.y = 0;
+      pose_in_base_link.orientation.z = 0;
+      pose_in_base_link.orientation.w = 1;
 
       geometry_msgs::Pose pose_in_map;
-      tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped);
+      tf2::doTransform(pose_in_base_link, pose_in_map, tf_stamped);
       obj.center_point_gps.x = pose_in_map.position.x;
       obj.center_point_gps.y = pose_in_map.position.y;
       obj.center_point_gps.z = pose_in_map.position.z;
@@ -387,24 +396,44 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
   // compute heading_enu
   for (auto& obj : output.objects)
   {
+    // assume heading: v1(0, 0, 0) -> v2(rotated_vec.x(), rotated_vec.y(), rotated_vec.z())
+    // transform v1 & v2 to ENU coordinate, say v1' & v2', respectively
+    // heading_enu: v1' -> v2'
+
+    // ENU coordinate (out_E1, out_N1, out_U1) of v1(0, 0, 0)
+    double out_lat1 = 0.;
+    double out_lon1 = 0.;
+    double out_alt1 = 0.;
+    double out_E1 = 0.;
+    double out_N1 = 0.;
+    double out_U1 = 0.;
+    convert(out_lat1, out_lon1, out_alt1, out_E1, out_N1, out_U1, 0., 0., 0.);
+
+    // ENU coordinate (out_E2, out_N2, out_U2) of v2(rotated_vec.x(), rotated_vec.y(), rotated_vec.z())
     tf::Quaternion rot(obj.heading.x, obj.heading.y, obj.heading.z, obj.heading.w);
     tf::Vector3 vec(1, 0, 0);
     tf::Vector3 rotated_vec = tf::quatRotate(rot, vec);
-    double out_lat = 0.;
-    double out_lon = 0.;
-    double out_alt = 0.;
-    double out_E = 0.;
-    double out_N = 0.;
-    double out_U = 0.;
-    convert(out_lat, out_lon, out_alt, out_E, out_N, out_U, rotated_vec.x(), rotated_vec.y(), rotated_vec.z());
+    double out_lat2 = 0.;
+    double out_lon2 = 0.;
+    double out_alt2 = 0.;
+    double out_E2 = 0.;
+    double out_N2 = 0.;
+    double out_U2 = 0.;
+    convert(out_lat2, out_lon2, out_alt2, out_E2, out_N2, out_U2, rotated_vec.x(), rotated_vec.y(), rotated_vec.z());
+
+    // heading_enu: v1' -> v2'
     Eigen::Vector3d A(1., 0., 0.);
-    Eigen::Vector3d B(out_E, out_N, out_U);
+    Eigen::Vector3d B(out_E2 - out_E1, out_N2 - out_N1, out_U2 - out_U1);
     Eigen::Quaternion<double> R;
     R.setFromTwoVectors(A, B);
     obj.heading_enu.x = R.x();
     obj.heading_enu.y = R.y();
     obj.heading_enu.z = R.z();
     obj.heading_enu.w = R.w();
+
+    std::cout << "heading_enu (x, y, z, w) = "
+              << "(" << obj.heading_enu.x << ", " << obj.heading_enu.y << ", " << obj.heading_enu.z << ", "
+              << obj.heading_enu.w << ")" << std::endl;
   }
 
   pub_xyz2lla_.publish(output);
@@ -428,9 +457,10 @@ int XYZ2LLA::run()
   initParamUTM();
 #endif
 
-  std::string out_topic = "Tracking3D/xyz2lla";
+  std::string in_topic = "Tracking3D";
+  std::string out_topic = in_topic + "/xyz2lla";
 
-  sub_xyz2lla_ = nh_.subscribe("Tracking3D", 1, &XYZ2LLA::callbackTracking, this);
+  sub_xyz2lla_ = nh_.subscribe(in_topic, 1, &XYZ2LLA::callbackTracking, this);
   pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 1);
 #if HEARTBEAT == 1
   pub_xyz2lla_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);

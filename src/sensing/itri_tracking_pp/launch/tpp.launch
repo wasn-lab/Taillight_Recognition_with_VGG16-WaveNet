@@ -5,8 +5,8 @@
 
   <!-- Input source -->
   <!-- 1: LidarDet: /LidarDetection -->
-  <!-- 2: RadarDet: /RadarDetection -->
-  <!-- 3: CameraDetV1: /cam_obj/front_bottom_60 -->
+  <!-- 2: LidarDet_PointPillars_Car: /LidarDetection/Car -->
+  <!-- 3: LidarDet_PointPillars_Ped_Cyc: /LidarDetection/Ped_Cyc -->
   <!-- 4: VirtualBBoxAbs: /abs_virBB_array -->
   <!-- 5: VirtualBBoxRel: /rel_virBB_array -->
   <!-- 6: CameraDetV2: /CameraDetection -->
@@ -18,6 +18,12 @@
   <!-- 1: MapBased: /occupancy_wayarea -->
   <!-- otherwise: PlannedPathBased: /occupancy_grid_wayarea -->
   <arg name="occ_source" default="0" />
+
+  <!-- Save output to .txt file-->
+  <arg name="save_output_txt" default="False" />
+
+  <!-- Output bbox and pp points in tf_map -->
+  <arg name="output_tf_map" default="False" />
 
   <!-- Input/Output FPS -->
   <arg name="input_fps" default="10.0" />
@@ -39,12 +45,6 @@
   <arg name="show_distance" default="False" />
   <arg name="show_absspeed" default="True" />
 
-  <!-- 1: Show pp centers -->
-  <!-- 2: Show pp ellipses -->
-  <!-- 3: Show pp ellipses & ellipse vertices -->
-  <!-- otherwise: No show pp -->
-  <arg name="show_pp" default="2" />
-
   <!-- Min number of consecutive tracked time ticks to activate PP: should be >= 3 -->
   <arg name="num_pp_input_min" default="4" />
 
@@ -55,6 +55,8 @@
   <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="occ_source" value="$(arg occ_source)" />
+    <param name="save_output_txt" value="$(arg save_output_txt)" />
+    <param name="output_tf_map" value="$(arg output_tf_map)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
     <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />
@@ -65,7 +67,6 @@
     <param name="show_source" value="$(arg show_source)" />
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
-    <param name="show_pp" value="$(arg show_pp)" />
     <param name="num_pp_input_min" value="$(arg num_pp_input_min)" />
     <param name="pp_obj_min_kmph" value="$(arg pp_obj_min_kmph)" />
     <param name="pp_obj_max_kmph" value="$(arg pp_obj_max_kmph)" />
