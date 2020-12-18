@@ -7,23 +7,15 @@
 
 namespace image_compressor
 {
-ImageDecompressorNode::ImageDecompressorNode() : num_compression_(0)
+ImageDecompressorNode::ImageDecompressorNode() : num_decompression_(0)
 {
 }
 ImageDecompressorNode::~ImageDecompressorNode() = default;
 
 void ImageDecompressorNode::callback(const sensor_msgs::CompressedImageConstPtr& msg)
 {
-  num_compression_ += 1;
-  if (image_compressor::use_threading())
-  {
-    std::thread t(&ImageDecompressorNode::publish, this, msg);
-    t.detach();
-  }
-  else
-  {
-    publish(msg);
-  }
+  num_decompression_ += 1;
+  publish(msg);
 }
 
 void ImageDecompressorNode::publish(const sensor_msgs::CompressedImageConstPtr& msg)
@@ -73,8 +65,8 @@ void ImageDecompressorNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << "decompress " << image_compressor::get_input_topic() << " in 1s: " << num_compression_;
-    num_compression_ = 0;
+    LOG(INFO) << "decompress " << image_compressor::get_input_topic() << " in 1s: " << num_decompression_;
+    num_decompression_ = 0;
     r.sleep();
   }
   spinner.stop();
