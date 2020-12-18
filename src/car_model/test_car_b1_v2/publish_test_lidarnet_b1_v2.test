@@ -15,9 +15,6 @@
                 - name: /LidarDetection
                   timeout: 60
                   negative: False
-                - name: /LidarDetection/grid
-                  timeout: 60
-                  negative: False
                 - name: /LidarFrontTop/Raw/heartbeat
                   timeout: 60
                   negative: False
