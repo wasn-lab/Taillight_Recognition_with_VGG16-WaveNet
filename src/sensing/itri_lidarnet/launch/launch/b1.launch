@@ -103,7 +103,7 @@ Lidar List:
 
 
 	<group if="$(eval arg('mode') == 6)">
-		<node pkg="raw_points_processor" type="raw_points_processor_compressor" name="raw_points_compressor" output="screen" cwd="node" respawn="true"  />
+		<!-- <node pkg="raw_points_processor" type="raw_points_processor_compressor" name="raw_points_compressor" output="screen" cwd="node" respawn="true"  /> -->
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
 		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
