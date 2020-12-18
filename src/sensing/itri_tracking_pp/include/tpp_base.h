@@ -138,7 +138,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
@@ -152,7 +151,6 @@ struct MarkerConfig
   bool show_source = 0;
   bool show_distance = 0;
   bool show_absspeed = 0;  // km/h
-  unsigned int show_pp = 0;
 
   std_msgs::ColorRGBA color;
   std_msgs::ColorRGBA color_lidar_tpp;
