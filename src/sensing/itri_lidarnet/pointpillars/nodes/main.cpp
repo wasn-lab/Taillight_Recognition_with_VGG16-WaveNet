@@ -16,44 +16,47 @@
 #include <pcl/common/time.h>
 
 //---------------------------- Publisher
-static ros::Publisher g_pub_LidarDetection;
+static ros::Publisher g_pub_lidar_detection;
 
 //--------------------------- Global Variables
-std::mutex g_Car_Lock;
-std::mutex g_Ped_Cyc_Lock;
+std::mutex g_car_lock;
+std::mutex g_ped_cyc_lock;
 
 ros::Time g_car_msg_rostime;
 ros::Time g_ped_cyc_msg_rostime;
 
 msgs::DetectedObjectArray g_msgArr;
+
 pcl::StopWatch g_integrator_stopWatch;
 
 //------------------------------ Callbacks
-void cb_LidarDetection_Car(const msgs::DetectedObjectArray msgArr)
+void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
-  g_Car_Lock.lock();
+  g_car_lock.lock();
   g_integrator_stopWatch.reset();
 
-  g_car_msg_rostime = msgArr.header.stamp;
-  for (int i=0; i<msgArr.objects.size(); i++)
+  g_car_msg_rostime = msgArr->header.stamp;
+  for (const auto & object : msgArr->objects)
   {
-    g_msgArr.objects.push_back(msgArr.objects[i]);
+    g_msgArr.objects.push_back(object);
   }
 
-  g_Car_Lock.unlock();
+  g_car_lock.unlock();
 }
 
-void cb_LidarDetection_Ped_Cyc(const msgs::DetectedObjectArray msgArr)
-{
-  g_Ped_Cyc_Lock.lock();
 
-  g_ped_cyc_msg_rostime = msgArr.header.stamp;
-  for (int i=0; i<msgArr.objects.size(); i++)
+void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
+{
+  g_ped_cyc_lock.lock();
+
+  g_ped_cyc_msg_rostime = msgArr->header.stamp;
+
+  for (const auto & object : msgArr->objects)
   {
-    g_msgArr.objects.push_back(msgArr.objects[i]);
+    g_msgArr.objects.push_back(object);
   }
 
-  g_Ped_Cyc_Lock.unlock();
+  g_ped_cyc_lock.unlock();
 }
 
 void LidarDetection_Publisher(int argc, char** argv)
@@ -66,15 +69,15 @@ void LidarDetection_Publisher(int argc, char** argv)
     
     if(time_diff_ms > 50)
     {
-      std::cout << "WARNING: Car&Ped_Cyc is Out of Sync! " << time_diff_ms << "ms" << std::endl;
+      std::cout << "WARNING: Car & Ped_Cyc is Out of Sync! " << time_diff_ms << "ms" << std::endl;
     }
     
-    if(g_msgArr.objects.size()>0)
+    if(!g_msgArr.objects.empty())
     {
       g_msgArr.header.frame_id = "lidar";
       g_msgArr.header.stamp = g_car_msg_rostime;
 
-      g_pub_LidarDetection.publish(g_msgArr);
+      g_pub_lidar_detection.publish(g_msgArr);
       g_msgArr.objects = {};
 
 
@@ -104,7 +107,7 @@ int main(int argc, char** argv)
       n.subscribe<msgs::DetectedObjectArray>("/LidarDetection/Ped_Cyc", 1, cb_LidarDetection_Ped_Cyc);
 
   // publisher
-  g_pub_LidarDetection = n.advertise<msgs::DetectedObjectArray>("/LidarDetection", 1);
+  g_pub_lidar_detection = n.advertise<msgs::DetectedObjectArray>("/LidarDetection", 1);
 
   std::thread Thread_PointPillars_Pub(LidarDetection_Publisher, argc, argv);
 
