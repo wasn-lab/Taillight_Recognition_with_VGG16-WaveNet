@@ -32,5 +32,8 @@
     <param name="rpn_onnx_file"   value="$(find lidar_point_pillars)/model/ped_cyc/rpn.onnx" />
   </node>
 
+<!-- integrator -->
+  <node pkg="lidar_point_pillars" type="lidar_point_pillars_integrator" name="lidar_point_pillars_integrator" output="screen" respawn="true" />
+
 
 </launch>
