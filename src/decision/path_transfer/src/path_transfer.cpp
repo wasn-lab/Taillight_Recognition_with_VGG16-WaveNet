@@ -8,6 +8,7 @@
 #include <vector>
 #include <cmath>
 #include <std_msgs/Empty.h>
+#include <std_msgs/Float64.h>
 
 #define RT_PI 3.14159265358979323846
 
@@ -26,10 +27,14 @@ double max_slope = 0;
 double slope_setting_distouphill = 0.08;
 double distouphill = 0;
 
+bool current_pose_init_flag = false;
+geometry_msgs::PoseStamped rear_pose;
+
 ros::Publisher nav_path_pub;
 ros::Publisher nav_path_base_pub;
 ros::Publisher currenttrajinfo_pub;
 ros::Publisher nav_path_heartbeat_pub;
+ros::Publisher veh_overshoot_pub;
 
 struct Point3D
 {
@@ -346,6 +351,13 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
   nav_path_heartbeat_pub.publish(empty_msg);
 }
 
+void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
+{
+  rear_pose = CPmsg;
+
+  current_pose_init_flag = true;
+}
+
 void transfer_path_callback(const autoware_planning_msgs::Path& path)
 {
   nav_msgs::Path current_path;
@@ -357,6 +369,7 @@ void transfer_path_callback(const autoware_planning_msgs::Path& path)
   current_path.header.stamp = ros::Time::now();
  
   int path_size = path.points.size();
+  std::cout << "nav_path_astar_base_30 size() : " << path_size << std::endl;
   for (int i = 0; i < path_size; i++)
   {
     current_posestamped.pose.position.x = path.points[i].pose.position.x;
@@ -365,6 +378,21 @@ void transfer_path_callback(const autoware_planning_msgs::Path& path)
     current_path.poses.push_back(current_posestamped);
   }
   nav_path_base_pub.publish(current_path);
+
+  std_msgs::Float64 overshoot_dis;
+  overshoot_dis.data = 100;
+  for (int i = 1; i < 15; i++)
+  {
+    double a = path.points[i].pose.position.y - path.points[i-1].pose.position.y;
+    double b = path.points[i-1].pose.position.x - path.points[i].pose.position.x;
+    double c = -path.points[i-1].pose.position.x*a - path.points[i-1].pose.position.y*b;
+    double dis = std::fabs(a*rear_pose.pose.position.x + b*rear_pose.pose.position.y + c)/std::sqrt(a*a + b*b);
+    if (dis < overshoot_dis.data)
+    {
+      overshoot_dis.data = dis;
+    }
+  }
+  veh_overshoot_pub.publish(overshoot_dis);
 }
 
 
@@ -381,12 +409,14 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName()+"/z_diff_setting_out", z_diff_setting_out);
   ros::param::get(ros::this_node::getName()+"/slope_setting_distouphill", slope_setting_distouphill);
 
+  ros::Subscriber current_pose_sub = node.subscribe("rear_current_pose", 1, CurrentPoseCallback);
   ros::Subscriber safety_waypoints_sub = node.subscribe("/planning/scenario_planning/trajectory", 1, transfer_callback);
   ros::Subscriber base_path_sub = node.subscribe("/planning/scenario_planning/lane_driving/behavior_planning/path", 1, transfer_path_callback);
   nav_path_pub = node.advertise<nav_msgs::Path>("nav_path_astar_final",1);
   nav_path_base_pub = node.advertise<nav_msgs::Path>("nav_path_astar_base_30",1);
   currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
   nav_path_heartbeat_pub = node.advertise<std_msgs::Empty>("nav_path_astar_final/heartbeat",1);
+  veh_overshoot_pub = node.advertise<std_msgs::Float64>("veh_overshoot_orig_dis",1);
 
   ros::spin();
   return 0;

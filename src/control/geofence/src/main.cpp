@@ -224,7 +224,7 @@ void astar_original_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  uint size = 200;
+  uint size = 100;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
@@ -393,7 +393,7 @@ int main(int argc, char** argv)
   ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
   // ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
   // ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
-  ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+  ros::Subscriber avoidpath = n.subscribe("avoidpath_reach_goal", 1, overtake_over_Callback);
   ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 
 #ifdef VIRTUAL
