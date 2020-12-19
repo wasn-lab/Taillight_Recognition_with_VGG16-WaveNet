@@ -135,9 +135,11 @@ class buffer_data():
 
     def refresh_buffer(self):
         # If frame_id < current_time - 11 remove the data
+        prev = time.time()
         old_frame = self.current_frame - 11
         self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= old_frame]
         self.buffer_frame.sort_values('frame_id', inplace=True)
+        print '[RunTime] Refresh buffer cost time: ',time.time()-prev
 
     def present_all_data(self):
         print('buffer_length : ', len(self.buffer_frame))
@@ -322,19 +324,20 @@ def transform_data(buffer, data):
 
 
 def predict(data):
+    prev = time.time()
     present_id = transform_data(buffer, data)
+    print '[RunTime] obj count :' ,len(present_id)
+    print '[RunTime] Data preprocessing cost time: ',time.time()-prev
+    prev = time.time()
     present_id = map(str, present_id)
     scene = buffer.create_scene(present_id)
-
     scene.calculate_scene_graph(buffer.env.attention_radius,
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
-
+    # print '[RunTime] calculate_scene_graph cost time: ',time.time()-prev
     timesteps = np.array([buffer.get_buffer_frame()])
-    
+    prev = time.time()
     # print buffer.current_time
-    print('====')
-    print('current_time : ', buffer.get_buffer_frame())
     # print timesteps
     # for node in scene.nodes:
     #     print "node_id: ",node.id
@@ -357,7 +360,7 @@ def predict(data):
                                    z_mode=True,
                                    gmm_mode=True,
                                    full_dist=False)
-    
+    # print '[RunTime] Prediction cost time: ',time.time()-prev
     buffer.update_frame()
     if len(predictions.keys()) < 1:
         return
@@ -386,13 +389,11 @@ def predict(data):
         queue_size=1)  # /IPP/Alert is TOPIC
     pub.publish(data)
 
-    print('====')
-
 
 def listener_ipp():
     global tf_buffer, tf_listener
     rospy.init_node('ipp_transform_data')
-    rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
+    rospy.Subscriber(input_topic, DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
@@ -400,12 +401,12 @@ def listener_ipp():
 
 def load_model(model_dir, ts=100):
     global hyperparams
-    model_registrar = ModelRegistrar(model_dir, 'cuda:0')
+    model_registrar = ModelRegistrar(model_dir, 'cuda:1')
     model_registrar.load_models(ts)
     with open(os.path.join(model_dir, 'config.json'), 'r') as config_json:
         hyperparams = json.load(config_json)
 
-    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:0')
+    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:1')
 
     trajectron.set_environment()
     trajectron.set_annealing_params()
@@ -416,7 +417,7 @@ if __name__ == '__main__':
     ''' =====================
           loading_model_part
         ===================== '''
-    global prediction_horizon, absolute_coordinate, buffer, past_obj
+    global prediction_horizon, absolute_coordinate, buffer, past_obj, input_topic
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -426,6 +427,16 @@ if __name__ == '__main__':
         '/object_path_prediction/prediction_horizon')
     absolute_coordinate = rospy.get_param(
         '/object_path_prediction/coordinate_type')
+    delay_node = rospy.get_param(
+        '/object_path_prediction/delay_node')
+    input_source = rospy.get_param('/object_path_prediction/input_topic')
+
+    if delay_node == 2:
+	    input_topic = '/IPP/delay_Alert'
+    elif input_source == 1:
+	    input_topic = '/Tracking2D/front_bottom_60'
+    else:
+	    input_topic = '/Tracking3D'
     past_obj = []
 
     # for i in range(10):

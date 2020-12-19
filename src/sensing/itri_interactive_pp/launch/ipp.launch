@@ -6,13 +6,17 @@
   <!-- 2: tracking 3d -->
   <arg name="input_topic" default="2" />
 
-  <!-- Set time to prediction (2fps)-->
-  <arg name="prediction_horizon" default="4" />
+  <!-- Set time to prediction (3fps)-->
+  <arg name="prediction_horizon" default="6" />
 
   <!-- Set type of coordinate in input_data and marker-->
   <!-- 1: absolute coordinate map_based -->
   <!-- 2: relative coordinate ego-based -->
   <arg name="coordinate_type" default="1" />
+  <!-- Set if delay or not-->
+  <!-- 1: no delay 8 fps -->
+  <!-- 2: delay 2 fps -->
+  <arg name="delay_node" default="1" />
 
   <!-- rviz markers -->
   <!-- true : use 2d for danger zone -->
@@ -29,6 +33,8 @@
     <param name="input_topic" value="$(arg input_topic)" />
   </node>
   <node pkg="itri_interactive_pp" type="ipp_prediction.py" name="object_path_prediction" cwd="node" output="screen" >
+    <param name="input_topic" value="$(arg input_topic)" />
+    <param name="delay_node" value="$(arg delay_node)" />
     <param name="prediction_horizon" value="$(arg prediction_horizon)" />
     <param name="coordinate_type" value="$(arg coordinate_type)" />
   </node>  

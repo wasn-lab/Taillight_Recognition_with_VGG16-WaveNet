@@ -17,7 +17,7 @@ def publish_msg(data):
     # print('_')
     # if(data.header.stamp - prev).to_sec() > 10:
         # print('Initialize')
-    if(data.header.stamp - prev).to_sec() > 0.5:
+    if(data.header.stamp - prev).to_sec() > 0.3:
         # print((data.header.stamp - prev).to_sec())
         prev = data.header.stamp
         pub = rospy.Publisher(
