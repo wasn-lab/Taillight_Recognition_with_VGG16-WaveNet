@@ -287,7 +287,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
     *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
-    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0, 0);
+    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0.023, 0.21, 0);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -312,7 +312,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
       *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
-      *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0, 0);
+      *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -325,7 +325,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
-      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0, 0);
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif

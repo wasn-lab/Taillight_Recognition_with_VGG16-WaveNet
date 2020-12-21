@@ -7,7 +7,7 @@ n.subscribe("nav_path_astar_final", 1, astar_callback);
 n.subscribe("nav_path_astar_base_30", 1, astar_original_callback);
 n.subscribe("veh_predictpath", 1, deviate_path_callback);
 n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
-n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+n.subscribe("avoidpath_reach_goal", 1, overtake_over_Callback);
 n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 n.subscribe("/CameraDetection/polygon", 1, chatterCallbackCPoint);
 (suspended)n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);

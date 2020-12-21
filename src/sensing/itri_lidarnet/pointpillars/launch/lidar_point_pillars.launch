@@ -4,10 +4,10 @@
   <arg name="baselink_support" default="false" />
   <arg name="reproduce_result_mode" default="false" />
 
-  <arg name="score_threshold_car" default="0.5" />
+  <arg name="score_threshold_car" default="0.4" />
   <arg name="nms_overlap_threshold_car" default="0.05" />
 
-  <arg name="score_threshold_ped_cyc" default="0.1" />
+  <arg name="score_threshold_ped_cyc" default="0.2" />
   <arg name="nms_overlap_threshold_ped_cyc" default="0.05" />
 
 <!-- car -->
@@ -31,6 +31,9 @@
     <param name="pfe_onnx_file"   value="$(find lidar_point_pillars)/model/ped_cyc/pfe.onnx" />
     <param name="rpn_onnx_file"   value="$(find lidar_point_pillars)/model/ped_cyc/rpn.onnx" />
   </node>
+
+<!-- integrator -->
+  <node pkg="lidar_point_pillars" type="lidar_point_pillars_integrator" name="lidar_point_pillars_integrator" output="screen" respawn="true" />
 
 
 </launch>
