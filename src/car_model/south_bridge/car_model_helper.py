@@ -3,8 +3,9 @@ import io
 import os
 import configparser
 
-def _get_ini_filename():
-    car_model = get_car_model()
+def _get_ini_filename(car_model=None):
+    if car_model is None:
+        car_model = get_car_model()
     inis = {"B1_V2": "sb_b1.ini",
             "B1_V3": "sb_b1.ini",
             "C1": "sb_c1.ini"}
@@ -16,9 +17,9 @@ def _get_ini_filename():
     return ini_file
 
 
-def get_sb_config():
+def get_sb_config(car_model=None):
     cfg = configparser.ConfigParser()
-    cfg.read(_get_ini_filename())
+    cfg.read(_get_ini_filename(car_model))
     return {key: cfg["south_bridge"][key] for key in cfg["south_bridge"]}
 
 
