@@ -15,7 +15,7 @@ private:
   ros::Publisher publisher_;
   ros::NodeHandle node_handle_;
   std::mutex mu_publisher_;  // guard publisher_
-  std::atomic_int num_compression_;
+  std::atomic_int num_decompression_;
 
   // functions
   void callback(const sensor_msgs::CompressedImageConstPtr& msg);
