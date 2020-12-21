@@ -4,14 +4,13 @@ Send rosbag when car is not in service.
 The bags are for constructing Taiwan HD-map.
 """
 import argparse
-import configparser
 import io
 import os
 import re
 import logging
 import subprocess
 import time
-from car_model_helper import get_car_model, get_sb_config
+from car_model_helper import get_sb_config
 
 BAG_RGX = re.compile(
     r".+_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})-"
@@ -45,7 +44,7 @@ def convert_to_sb_bag_name(bag_fullpath, seq):
     day = match.expand(r"\g<day>")
     hour = match.expand(r"\g<hour>")
     minute = match.expand(r"\g<minute>")
-    second = match.expand(r"\g<second>")
+    # second = match.expand(r"\g<second>")
     cfg = get_sb_config()
     fn = (cfg["company_name"] + "_" + cfg["vid"] + "_camera_" +
           year + month + day + "_" + hour + minute +
@@ -54,7 +53,7 @@ def convert_to_sb_bag_name(bag_fullpath, seq):
 
 
 def get_bag_yymmdd(bag):
-    path, bag_fn = os.path.split(bag)
+    _path, bag_fn = os.path.split(bag)
     match = BAG_RGX.search(bag_fn)
     if not match:
         logging.warn("Cannot parse filename: %s", bag)

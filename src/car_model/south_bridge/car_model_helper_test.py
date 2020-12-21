@@ -4,12 +4,6 @@ import unittest
 from car_model_helper import get_car_model, get_sb_config
 
 class CarModelHelperTest(unittest.TestCase):
-    def setUp(self):
-        self.org_get_car_model = get_car_model
-
-    def tearDown(self):
-        get_car_model = self.org_get_car_model
-
     def test_get_car_model(self):
         car_model = get_car_model()
         self.assertTrue(car_model in ["B1_V2", "B1_V3", "C1"])

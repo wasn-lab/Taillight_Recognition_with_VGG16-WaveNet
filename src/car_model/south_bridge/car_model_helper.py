@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import io
 import os
+import logging
 import configparser
 
 def _get_ini_filename(car_model=None):
