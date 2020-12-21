@@ -24,15 +24,7 @@ option(ENABLE_LIGHTNET "Enable traffic light detection" ON)
 option(ENABLE_PARKNET "Enable parking slot detection" ON)
 option(ENABLE_OPENROADNET "Enable open road detection" ON)
 option(ENABLE_PEDCROSS "Enable pedestrian crossing detection" ON)
-option(ENABLE_GOOGLE_BENCHMARK "Enable google benchmark for perf profiling" OFF)
 include(cmake/Options${CAR_MODEL}.cmake)
-
-if (CAR_MODEL_IS_B1_V3)
-  option(ENABLE_CAMERA_GSTREAMER_GRABBER "Enable camera gstreamer grabber" ON)
-else ()
-  option(ENABLE_CAMERA_GSTREAMER_GRABBER "Eable camera gstreamer grabber" OFF)
-endif ()
-
 
 catkin_package(
   CATKIN_DEPENDS roscpp std_msgs
@@ -51,6 +43,8 @@ configure_file(
 configure_file(
     scripts/car_model.py.in
     ${PROJECT_BINARY_DIR}/scripts/car_model.py)
+
+file(WRITE ${PROJECT_BINARY_DIR}/scripts/car_model.txt ${CAR_MODEL})
 
 add_subdirectory(test)
 if (CAR_MODEL_IS_B1_V2)

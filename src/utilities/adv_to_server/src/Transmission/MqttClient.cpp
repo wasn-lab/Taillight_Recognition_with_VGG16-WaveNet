@@ -23,8 +23,7 @@ static void on_subscribe(struct mosquitto* client, void* obj, int mid, int qos_c
 MqttClient::MqttClient()
 {
   int rc = mosquitto_lib_init();
-  client = mosquitto_new(NULL, true, NULL);
-  setTLS();
+  client = mosquitto_new(nullptr, true, nullptr);
   setCallback();
 }
 
@@ -37,15 +36,16 @@ MqttClient::~MqttClient()
 
 int MqttClient::connect()
 {
-  int rc = mosquitto_connect(client, MQTT_HOST, MQTT_PORT, MQTT_KEEP_ALIVE);
+  setTLS();
+  int rc = mosquitto_connect(client, MQTT_HOST, port, MQTT_KEEP_ALIVE);
   std::cout << "connect rc= " << rc << std::endl;
   mosquitto_loop_forever(client, MQTT_TIMEOUT_MILLI, MSG_MAX_SIZE);
   return rc;
 }
 
-int MqttClient::publish(std::string topic, std::string msg)
+int MqttClient::publish(const std::string& topic, const std::string& msg)
 {
-  int* msg_id = NULL;
+  int* msg_id = nullptr;
   const char* topic_name = topic.c_str();
   size_t payload_length = msg.length();
   const char* payload = msg.c_str();
@@ -56,7 +56,7 @@ int MqttClient::publish(std::string topic, std::string msg)
   return rc;
 }
 
-int MqttClient::subscribe(std::string topic)
+int MqttClient::subscribe(const std::string& topic)
 {
   std::cout << "to do" << std::endl;
   return 1;
@@ -64,9 +64,27 @@ int MqttClient::subscribe(std::string topic)
 
 void MqttClient::setTLS()
 {
-  int rc = mosquitto_tls_opts_set(client, 1, "tlsv1.1", NULL);
+  using namespace std;
+  int rc = mosquitto_tls_opts_set(client, 1, "tlsv1.1", nullptr);
   std::cout << "mosquitto_tls_opts_set rc: " << rc << std::endl;
-  rc = mosquitto_tls_set(client, MQTT_CA_CRT, NULL, MQTT_CLIENT_CRT, MQTT_CLIENT_KEY, 0);
+  std::string path = ros::package::getPath("adv_to_server");
+  
+  std::string car = "";
+  if(vid == "dc5360f91e74"){
+    car = "B1";
+    port = 3053;
+  }else if( vid == "Oq5YN1hgzAhA"){
+    car = "C1";
+    port = 3052;
+  }
+  MQTT_CA_CRT = path + "/src/Transmission/TLS/" + car + "/ca.crt";
+  MQTT_CLIENT_CRT = path + "/src/Transmission/TLS/" + car + "/client.crt";
+  MQTT_CLIENT_KEY = path + "/src/Transmission/TLS/" + car + "/client.key";
+  cout << vid << endl;
+  cout << MQTT_CA_CRT << endl;
+  cout << MQTT_CLIENT_CRT << endl;
+  cout << MQTT_CLIENT_KEY << endl;
+  rc = mosquitto_tls_set(client, MQTT_CA_CRT.c_str(), nullptr, MQTT_CLIENT_CRT.c_str(), MQTT_CLIENT_KEY.c_str(), 0);
   std::cout << "mosquitto_tls_set rc: " << rc << std::endl;
   rc = mosquitto_tls_insecure_set(client, false);
   std::cout << "mosquitto_tls_insecure_set rc: " << rc << std::endl;

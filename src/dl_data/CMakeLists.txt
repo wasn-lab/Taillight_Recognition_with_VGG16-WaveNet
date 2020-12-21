@@ -12,6 +12,7 @@ set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_parknet/weig
 set(OPENROADNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_openroadnet/openroadnet)
 set(LIDARNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/squeezesegnet/lidar_squseg_inference/model)
 set(LIDARNET_V2_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/squeezesegnet/lidar_squseg_v2_inference/model)
+set(LIDARNET_POINTPILLARS_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/pointpillars/model)
 set(CAMERA_UTILS_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_utils/data)
 set(CAMERA_ALIGN_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_drivenet/drivenet/data/alignment)
 set(CAMERA_GRABBER_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_grabber/src/CameraGrabber)

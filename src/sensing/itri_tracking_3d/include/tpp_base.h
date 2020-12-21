@@ -84,17 +84,10 @@
 
 #define PUNISH_OBJCLASS_CHANGE 0
 
-#define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
-#if USE_RADAR_REL_SPEED
-#define USE_RADAR_ABS_SPEED 0  // compute absolute speed from ege speed, ego heading, and radar's relative speed
-#endif
-
 #define REMOVE_IMPULSE_NOISE 0
 #define NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX 0
 // when a tracked bbox shrinks severely in a sudden, replace it with the previous (larger) bbox
 #define PREVENT_SHRINK_BBOX 0
-
-#define PP_FILTER_DRIVABLE_AREA 1
 
 #define O_FIX std::setiosflags(std::ios::fixed)
 #define O_P std::setprecision(8)

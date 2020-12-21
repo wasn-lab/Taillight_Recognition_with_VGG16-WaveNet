@@ -22,7 +22,7 @@ class PedCrossAlert(object):
 
     def get_events_in_list(self):
         if self.pedcrossing:
-            doc = {"module": "pedcross",
+            doc = {"module": "pedcross_event",
                    "status": WARN,
                    "status_str": "pedestrian is crossing"}
             self.pedcrossing = False

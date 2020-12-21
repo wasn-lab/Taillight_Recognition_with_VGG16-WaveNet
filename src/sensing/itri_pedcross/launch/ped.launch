@@ -31,6 +31,9 @@
   <!-- Set skip frame nuber -->
   <arg name="skip_frame_number" default="1" />
 
+  <!-- Set polygon z value -->
+  <arg name="ground_z" default="-5" />
+
   <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
   <node pkg="itri_pedcross" type="skip_frame_server.py" name="skip_frame_server" cwd="node" output="screen" respawn="true">
     <param name="skip_frame_number" value="$(arg skip_frame_number)" />
@@ -44,5 +47,6 @@
     <param name="use_2d_for_alarm" value="$(arg use_2d_for_alarm)" />
     <param name="show_probability" value="$(arg show_probability)" />
     <param name="crossing_threshold" value="$(arg crossing_threshold)" />
+    <param name="ground_z" value="$(arg ground_z)" />
   </node>
 </launch>

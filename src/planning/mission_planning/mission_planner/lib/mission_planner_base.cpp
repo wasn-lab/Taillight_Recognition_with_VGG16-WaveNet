@@ -31,6 +31,7 @@ MissionPlanner::MissionPlanner() : pnh_("~"), tf_listener_(tf_buffer_)
   pnh_.param<std::string>("map_frame", map_frame_, "map");
   pnh_.param<std::string>("base_link_frame", base_link_frame_, "rear_wheel");
 
+  start_pose_subscriber_ = pnh_.subscribe("input/start_pose", 10, &MissionPlanner::startPoseCallback, this);
   goal_subscriber_ = pnh_.subscribe("input/goal_pose", 10, &MissionPlanner::goalPoseCallback, this);
   checkpoint_subscriber_ =
     pnh_.subscribe("input/checkpoint", 10, &MissionPlanner::checkpointCallback, this);
@@ -71,10 +72,21 @@ bool MissionPlanner::transformPose(
   }
 }
 
+void MissionPlanner::startPoseCallback(const geometry_msgs::PoseStampedConstPtr & start_pose_msg_ptr)
+{
+  start_pose_ = *start_pose_msg_ptr;
+  init_start_pose = true;
+}
+
 void MissionPlanner::goalPoseCallback(const geometry_msgs::PoseStampedConstPtr & goal_msg_ptr)
 {
   // set start pose
-  if (!getEgoVehiclePose(&start_pose_)) {
+  // if (!getEgoVehiclePose(&start_pose_)) {
+  //   ROS_ERROR("Failed to get ego vehicle pose in map frame. Aborting mission planning");
+  //   return;
+  // }
+  if (!init_start_pose)
+  {
     ROS_ERROR("Failed to get ego vehicle pose in map frame. Aborting mission planning");
     return;
   }
