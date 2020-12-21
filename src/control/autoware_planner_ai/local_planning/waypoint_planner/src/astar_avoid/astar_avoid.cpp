@@ -45,7 +45,7 @@ AstarAvoid::AstarAvoid()
   safety_waypoints_pub_ = nh_.advertise<autoware_msgs::Lane>("safety_waypoints", 1, true);
   navpath_astar_pub = nh_.advertise<nav_msgs::Path>("nav_path_astar_final", 1, true); //////////////////////////
   avoiding_flag_pub = nh_.advertise<std_msgs::Int32>("avoiding_path", 1, true); //////////////////////////
-  reach_goal_pub = nh_.advertise<std_msgs::Int32>("astar_reach_goal", 1, true); //////////////////////////
+  reach_goal_pub = nh_.advertise<std_msgs::Int32>("avoidpath_reach_goal", 1, true); //////////////////////////
   costmap_sub_ = nh_.subscribe("costmap", 1, &AstarAvoid::costmapCallback, this);
   // costmap_sub_ = nh_.subscribe("occupancy_grid", 1, &AstarAvoid::costmapCallback, this);
   // costmap_sub_ = nh_.subscribe("LidarDetection/grid", 1, &AstarAvoid::costmapCallback, this);

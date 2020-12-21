@@ -55,13 +55,16 @@ protected:
 
 private:
   ros::Publisher route_publisher_;
+  ros::Subscriber start_pose_subscriber_;
   ros::Subscriber goal_subscriber_;
   ros::Subscriber checkpoint_subscriber_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+  bool init_start_pose = false;
 
   bool getEgoVehiclePose(geometry_msgs::PoseStamped * ego_vehicle_pose);
+  void startPoseCallback(const geometry_msgs::PoseStampedConstPtr & start_pose_msg_ptr);
   void goalPoseCallback(const geometry_msgs::PoseStampedConstPtr & goal_msg_ptr);
   void checkpointCallback(const geometry_msgs::PoseStampedConstPtr & checkpoint_msg_ptr);
   bool transformPose(

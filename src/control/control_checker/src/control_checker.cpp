@@ -27,10 +27,6 @@ int timeout = 15;
 int const num_of_checker = 9; //一共有追蹤幾個topic
 int counter[num_of_checker];
 
-
-
-
-
 void chatterCallback_01(const msgs::Flag_Info::ConstPtr& msg)
 {
 	//cout << "counter reset" << endl;
@@ -171,9 +167,6 @@ int main(int argc, char **argv)
 	for(int i=0;i<checker.data.size();i++){
 		cout << int(checker.data[i]) << endl;
 	}
-
   
   return 0;
 }
-
-

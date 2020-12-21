@@ -15,7 +15,13 @@
                 - name: /LidarDetection
                   timeout: 60
                   negative: False
-                - name: /LidarDetection/grid
+                - name: /LidarFrontTop/Raw/heartbeat
+                  timeout: 60
+                  negative: False
+                - name: /LidarFrontRight/Raw/heartbeat
+                  timeout: 60
+                  negative: False
+                - name: /LidarFrontLeft/Raw/heartbeat
                   timeout: 60
                   negative: False
         </rosparam>

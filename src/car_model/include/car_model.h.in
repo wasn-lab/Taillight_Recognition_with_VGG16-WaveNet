@@ -9,7 +9,6 @@
 #cmakedefine01 ENABLE_PARKNET
 #cmakedefine01 ENABLE_OPENROADNET
 #cmakedefine01 ENABLE_PEDCROSS
-#cmakedefine01 ENABLE_GOOGLE_BENCHMARK
 
 namespace car_model
 {

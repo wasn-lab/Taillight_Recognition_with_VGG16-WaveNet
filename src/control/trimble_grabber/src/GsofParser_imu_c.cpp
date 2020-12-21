@@ -1938,7 +1938,7 @@ int main( int argc, char **argv )
 {
 	initial_para();
         initial_para_1();
-        ros::init(argc, argv, "imu");
+        ros::init(argc, argv, "trimble_grabber");
         ros::NodeHandle n;
         imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 20);
         imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);

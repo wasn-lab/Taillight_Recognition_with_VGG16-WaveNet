@@ -24,4 +24,10 @@
         <param name="route_choose" value="$(arg route_choose)" />
       </include>
 
+    <!-- decision module -->
+      <arg name="force_disable_avoidance" default="false" />
+      <include file="$(find decision)/launch/decision.launch" pass_all_args="true">
+        <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
+      </include>
+
 </launch>

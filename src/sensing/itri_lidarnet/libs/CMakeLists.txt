@@ -222,7 +222,7 @@ find_package        (VTK REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED)
+find_package            (PCL 1.9.1 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
@@ -361,6 +361,7 @@ set(SOURCES_SRCS
   Preprocess/Transform/Transform_CUDA.cu
   Preprocess/VoxelGrid/VoxelGrid_CUDA.cu
   Format/pointcloud_format_conversion.cpp
+  Compression/pc2_compressor.cpp
   )
 
 
