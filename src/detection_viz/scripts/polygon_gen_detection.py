@@ -35,6 +35,7 @@ class Node:
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", False)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
+        self.show_heading = rospy.get_param("~show_heading", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
@@ -61,6 +62,7 @@ class Node:
         # Publishers
         self.polygon_pub = rospy.Publisher(self.inputTopic + "/poly", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
+        self.heading_pub = rospy.Publisher(self.inputTopic + "/heading", MarkerArray, queue_size=1)
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
@@ -291,6 +293,10 @@ class Node:
         self.polygon_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
 
+        if self.show_heading:
+            heading_list = self.create_heading_list(message.header, _objects, idx)
+            idx += len(_objects)
+            self.heading_pub.publish(heading_list)
 
     # def create_polygon(self, header, cPoint, idx):
     #     marker = Marker()
@@ -406,6 +412,42 @@ class Node:
         text = "<%s>" % str(cPoint_id )
         scale = 1.0
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_tracking"), scale=scale )
+
+    def create_heading_list(self, header, objects, idx):
+        marker_arr = MarkerArray()
+
+        for obj in objects:
+            marker = Marker()
+            marker.header.frame_id = header.frame_id
+            marker.header.stamp = header.stamp
+            marker.ns = self.inputTopic
+
+            marker.id = idx
+            idx += 1
+            marker.type = Marker.ARROW
+            marker.action = Marker.ADD
+
+            marker.lifetime = rospy.Duration(0.2)
+
+            marker.pose.position.x = obj.center_point.x
+            marker.pose.position.y = obj.center_point.y
+            marker.pose.position.z = obj.center_point.z
+            marker.pose.orientation.x = obj.heading.x
+            marker.pose.orientation.y = obj.heading.y
+            marker.pose.orientation.z = obj.heading.z
+            marker.pose.orientation.w = obj.heading.w
+
+            marker.scale.x = 3
+            marker.scale.y = 0.2
+            marker.scale.z = 0.2
+            marker.color.r = self.c_red
+            marker.color.g = self.c_green
+            marker.color.b = self.c_blue
+            marker.color.a = 1.0
+
+            marker_arr.markers.append(marker)
+
+        return marker_arr
 
     def text_marker_prototype(self, idx, header, text, point=Point(), ns="T", scale=2.0):
         """
