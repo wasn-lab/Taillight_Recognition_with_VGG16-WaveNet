@@ -4,37 +4,18 @@ Send rosbag when car is not in service.
 The bags are for constructing Taiwan HD-map.
 """
 import argparse
-import configparser
 import io
 import os
 import re
 import logging
 import subprocess
 import time
-from car_model_helper import get_car_model
+from car_model_helper import get_sb_config
 
 BAG_RGX = re.compile(
     r".+_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})-"
     r"(?P<hour>\d{2})-(?P<minute>\d{2})-(?P<second>\d{2})_[\d]+.bag")
 
-
-def _get_ini_filename():
-    car_model = get_car_model()
-    inis = {"B1_V2": "sb_b1.ini",
-            "B1_V3": "sb_b1.ini",
-            "C1": "sb_c1.ini"}
-
-    cur_dir = os.path.dirname(os.path.abspath(__file__))
-    ini_file = os.path.join(cur_dir, inis[car_model])
-    if not os.path.isfile(ini_file):
-        logging.error("Cannot find ini file: %s", ini_file)
-    return ini_file
-
-
-def get_sb_config():
-    cfg = configparser.ConfigParser()
-    cfg.read(_get_ini_filename())
-    return {key: cfg["south_bridge"][key] for key in cfg["south_bridge"]}
 
 
 def get_default_bag_dir():
@@ -63,7 +44,7 @@ def convert_to_sb_bag_name(bag_fullpath, seq):
     day = match.expand(r"\g<day>")
     hour = match.expand(r"\g<hour>")
     minute = match.expand(r"\g<minute>")
-    second = match.expand(r"\g<second>")
+    # second = match.expand(r"\g<second>")
     cfg = get_sb_config()
     fn = (cfg["company_name"] + "_" + cfg["vid"] + "_camera_" +
           year + month + day + "_" + hour + minute +
@@ -72,7 +53,7 @@ def convert_to_sb_bag_name(bag_fullpath, seq):
 
 
 def get_bag_yymmdd(bag):
-    path, bag_fn = os.path.split(bag)
+    _path, bag_fn = os.path.split(bag)
     match = BAG_RGX.search(bag_fn)
     if not match:
         logging.warn("Cannot parse filename: %s", bag)

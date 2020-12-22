@@ -51,5 +51,14 @@ class JiraUtilsTest(unittest.TestCase):
         ret = close_issue("S3-241")
         self.assertEqual(ret, 0)
 
+    @unittest.skip("Manual test")
+    def test_auto_resolve_close_issue(self):
+        for i in range(503, 509):
+            iid = "S3-{}".format(i)
+            ret = resolve_issue(iid)
+            self.assertEqual(ret, 0)
+            ret = close_issue(iid)
+            self.assertEqual(ret, 0)
+
 if __name__ == "__main__":
     unittest.main()
