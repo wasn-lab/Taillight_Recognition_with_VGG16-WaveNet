@@ -1,10 +1,18 @@
-/LidarAll
-/LidarFrontRight/Raw
-/LidarFrontLeft/Raw
-/LidarRearRight/Raw
-/LidarRearLeft/Raw
-/LidarFrontTop/Raw # For debugging localization
+# /LidarAll
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+# /LidarFrontTop/Raw # For debugging localization
+# /LidarDetection
+
+#-- Update for New LiDARNet 
+/LidarFrontTop/Compressed
+/LidarFrontLeft/Compressed
+/LidarFrontRight/Compressed
 /LidarDetection
+/LidarDetection/Car
+/LidarDetection/Ped_Cyc
 
 # /points_map
 
@@ -21,16 +29,24 @@
 # /cam/B_top
 
 #-- 8-camera version
-/cam/front_bottom_60
-/cam/front_bottom_60_crop
-/cam/front_top_close_120
-/cam/front_top_far_30
-/cam/left_back_60
-/cam/left_front_60
-/cam/right_back_60
-/cam/right_front_60
-/cam/back_top_120
-
+#---- raw data
+# /cam/front_bottom_60/raw
+# /cam/front_top_close_120/raw
+# /cam/front_top_far_30/raw
+# /cam/left_back_60/raw
+# /cam/left_front_60/raw
+# /cam/right_back_60/raw
+# /cam/right_front_60/raw
+# /cam/back_top_120/raw
+#---- compressed data
+/cam/front_bottom_60/jpg
+/cam/front_top_close_120/jpg
+/cam/front_top_far_30/jpg
+/cam/left_back_60/jpg
+/cam/left_front_60/jpg
+/cam/right_back_60/jpg
+/cam/right_front_60/jpg
+/cam/back_top_120/jpg
 
 # Image with 2D bbox
 # /cam/F_right/detect_image
@@ -67,7 +83,6 @@
 #
 
 # Camera polygon
-/CameraDetection/polygon
 /CameraDetection
 
 /current_pose
@@ -147,8 +162,6 @@
 /LightResultOutput
 
 #
-/RadFront
-/RadFrontFilter
 /PP_geofence_line
 /Geofence_line # marker
 /gnss_speed_data
@@ -196,4 +209,23 @@
 /veh_predictpath
 
 
+/DelphiFront
+/AlphaFrontCenter
+/AlphaFrontLeft
+/AlphaFrontRight
+/AlphaSideLeft
+/AlphaSideRight
+/AlphaBackLeft
+/AlphaBackRight
+/CubtekFront
+/RadFront
+/RadFrontFilter
+/RadAlpha
+/RadAlphaPCL
+
+
+/traffic_light_register_info
+/control_checker
+/BusStop/Info
+/avoidpath_reach_goal
 

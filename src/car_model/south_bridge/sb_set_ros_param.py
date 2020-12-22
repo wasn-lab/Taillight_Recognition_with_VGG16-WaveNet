@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+"""
+Set basic info for car model
+"""
+from __future__ import print_function
 import subprocess
 from sb_rosbag_sender import get_sb_config
+from car_model_helper import get_car_model
 
 
 def main():
@@ -11,6 +16,10 @@ def main():
         print(" ".join(cmd))
         output = subprocess.check_output(cmd)
         print(output)
+    cmd = ["rosparam", "set", "/car_model", get_car_model()]
+    print(" ".join(cmd))
+    output = subprocess.check_output(cmd)
+    print(output)
 
 
 if __name__ == "__main__":

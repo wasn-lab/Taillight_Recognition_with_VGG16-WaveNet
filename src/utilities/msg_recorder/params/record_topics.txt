@@ -1,10 +1,18 @@
-/LidarAll
-/LidarFrontRight/Raw
-/LidarFrontLeft/Raw
-/LidarRearRight/Raw
-/LidarRearLeft/Raw
-/LidarFrontTop/Raw # For debugging localization
+# /LidarAll
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+# /LidarFrontTop/Raw # For debugging localization
+# /LidarDetection
+
+#-- Update for New LiDARNet 
+/LidarFrontTop/Compressed
+/LidarFrontLeft/Compressed
+/LidarFrontRight/Compressed
 /LidarDetection
+/LidarDetection/Car
+/LidarDetection/Ped_Cyc
 
 # /points_map
 
@@ -22,7 +30,6 @@
 
 #-- 8-camera version
 /cam/front_bottom_60
-/cam/front_bottom_60_crop
 /cam/front_top_close_120
 /cam/front_top_far_30
 /cam/left_back_60
@@ -67,7 +74,6 @@
 #
 
 # Camera polygon
-/CameraDetection/polygon
 /CameraDetection
 
 /current_pose
@@ -147,8 +153,6 @@
 /LightResultOutput
 
 #
-/RadFront
-/RadFrontFilter
 /PP_geofence_line
 /Geofence_line # marker
 /gnss_speed_data
@@ -196,4 +200,23 @@
 /veh_predictpath
 
 
+/DelphiFront
+/AlphaFrontCenter
+/AlphaFrontLeft
+/AlphaFrontRight
+/AlphaSideLeft
+/AlphaSideRight
+/AlphaBackLeft
+/AlphaBackRight
+/CubtekFront
+/RadFront
+/RadFrontFilter
+/RadAlpha
+/RadAlphaPCL
+
+
+/traffic_light_register_info
+/control_checker
+/BusStop/Info
+/avoidpath_reach_goal
 

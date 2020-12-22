@@ -128,7 +128,7 @@ ros::Publisher g_object_pub;
 ros::Publisher g_heartbeat_pub;
 std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
-int g_object_wait_frame = 5;
+int g_object_wait_frame = 1;
 std::vector<std::vector<msgs::DetectedObjectArray>> g_object_buffer_arrs(g_cam_ids.size());
 
 /// sync camera and lidar
@@ -547,7 +547,7 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
     }
   }
   std::vector<msgs::DetectedObject> msg_objs_after_fusion;
-  msg_objs_after_fusion = g_box_fusion.multiCamBoxFuse(msg_objs);
+  msg_objs_after_fusion = g_box_fusion.multi_cambox_fuse(msg_objs);
   
   msg_det_obj_arr.header = std::move(msg_header);
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
@@ -1537,7 +1537,7 @@ int main(int argc, char** argv)
     /// ros Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order], 1, f_callbacks_cam[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order] + std::string("/raw"), 1, f_callbacks_cam[cam_order]);
       object_subs[cam_order] = nh.subscribe(g_bbox_topic_names[cam_order], 1, f_callbacks_object[cam_order]);
     }
 
@@ -1553,7 +1553,7 @@ int main(int argc, char** argv)
     /// message_filters Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order], 1);
+      cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order] + std::string("/raw"), 1);
       g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
       g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
       g_cache_image[cam_order].setCacheSize(g_buffer_size);

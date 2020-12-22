@@ -85,6 +85,7 @@ public:
   void nav_path_callback(const nav_msgs::Path::ConstPtr& msg);
   void lanelet2_trajectory_callback(const autoware_planning_msgs::Trajectory::ConstPtr& msg);
   void lanelet2_route_callback(const visualization_msgs::MarkerArray::ConstPtr& msg);
+  cv::Mat convert_msg_to_mat(const sensor_msgs::Image::ConstPtr& msg);
   void cache_front_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
@@ -96,6 +97,7 @@ public:
   void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
                      boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
                      std::vector<SkeletonBuffer>& skeleton_buffer);
+  bool crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject obj_pub);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
@@ -184,18 +186,6 @@ public:
   // Variables
   cv::Ptr<cv::ml::RTrees> rf_pose_;
   boost::shared_ptr<ros::AsyncSpinner> async_spinner_1_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_2_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_3_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_4_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_5_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_6_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_7_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_8_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_9_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_10_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_11_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_12_;
-  boost::shared_ptr<ros::AsyncSpinner> async_spinner_13_;
   bool spinner_trigger_ = false;
   int count_;
   std::ofstream file_;
@@ -218,6 +208,7 @@ public:
   double danger_zone_distance_ = 2;
   bool use_2d_for_alarm_ = false;
   int skip_frame_number_ = 1;
+  double ground_z_ = -5;
 
   int direction_table_[16][5] = {
     { 0, 0, 0, 0, 4 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 1 }, { 0, 0, 1, 0, 0 }, { 1, 0, 1, 0, 4 },

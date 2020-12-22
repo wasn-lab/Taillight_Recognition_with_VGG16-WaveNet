@@ -1,0 +1,10 @@
+<launch>
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_front_bottom_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_bottom_60/jpg -output_topic /cam/front_bottom_60" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_front_top_far_30" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_top_far_30/jpg -output_topic /cam/front_top_far_30" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_front_top_close_120" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_top_close_120/jpg -output_topic /cam/front_top_close_120" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_right_front_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_front_60/jpg -output_topic /cam/right_front_60" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_right_back_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_back_60/jpg -output_topic /cam/right_back_60" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_left_front_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_front_60/jpg -output_topic /cam/left_front_60" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_left_back_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_back_60/jpg -output_topic /cam/left_back_60" />
+  <node pkg="image_compressor" type="image_decompressor_node" name="image_decompressor_node_back_top_120" output="screen" cwd="node" respawn="true" args="-input_topic /cam/back_top_120/jpg -output_topic /cam/back_top_120" />
+</launch>

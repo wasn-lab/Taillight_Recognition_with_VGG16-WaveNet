@@ -48,7 +48,6 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 #endif
 }
 
-#if PP_FILTER_DRIVABLE_AREA == 1
 void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input)
 {
   std::cout << *input << std::endl;
@@ -111,7 +110,6 @@ void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::Con
     }
   }
 }
-#endif
 
 void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 {
@@ -147,7 +145,7 @@ void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint,
                                        const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0 || frame_id == "RadarFront")
+  if (cPoint.lowerAreaPoints.size() == 0)
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
@@ -211,18 +209,27 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
     std::vector<msgs::DetectedObject>().swap(KTs_.objs_);
 
-#if INPUT_ALL_CLASS
-    KTs_.objs_.assign(input->objects.begin(), input->objects.end());
-#else
     KTs_.objs_.reserve(input->objects.size());
-    for (unsigned i = 0; i < input->objects.size(); i++)
+
+    for (const auto& obj : input->objects)
     {
-      if (input->objects[i].classId >= 1 && input->objects[i].classId <= 3)
+      if (obj.bPoint.p0.x == 0 && obj.bPoint.p0.y == 0 && obj.bPoint.p0.z == 0 && obj.bPoint.p6.x == 0 &&
+          obj.bPoint.p6.y == 0 && obj.bPoint.p6.z == 0)
       {
-        KTs_.objs_.push_back(input->objects[i]);
+        continue;
       }
-    }
+
+#if INPUT_ALL_CLASS
+      KTs_.objs_.push_back(obj);
+#else
+      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      {
+        KTs_.objs_.push_back(obj);
+      }
 #endif
+    }
 
     for (auto& obj : KTs_.objs_)
     {
@@ -244,31 +251,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     {
       gt_x_ = KTs_.objs_[i].radarInfo.imgPoint60.x;
       gt_y_ = KTs_.objs_[i].radarInfo.imgPoint60.y;
-    }
-#endif
-
-    if (in_source_ == 2)
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "RadFront";
-      }
-    }
-    else
-    {
-      for (auto& obj : KTs_.objs_)
-      {
-        obj.header.frame_id = "lidar";
-      }
-    }
-
-#if USE_RADAR_REL_SPEED
-    for (auto& obj : KTs_.objs_)
-    {
-      if (obj.header.frame_id == "RadarFront")
-      {
-        obj.speed_rel = mps_to_kmph(obj.speed_rel);
-      }
     }
 #endif
 
@@ -301,37 +283,37 @@ void TPPNode::subscribe_and_advertise_topics()
   std::string topic = "Tracking3D";
   use_tracking2d = false;
 
-  if (in_source_ == 1)
+  if (in_source_ == InputSource::LidarDet)
   {
     LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 2)
+  else if (in_source_ == InputSource::LidarDet_PointPillars_Car)
   {
-    LOG_INFO << "Input Source: Radar (/RadarDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("RadarDetection", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/LidarDetection/Car)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 3)
+  else if (in_source_ == InputSource::LidarDet_PointPillars_Ped_Cyc)
   {
-    LOG_INFO << "Input Source: Camera approach 1 (/cam_obj/front_bottom_60)" << std::endl;
-    fusion_sub_ = nh_.subscribe("cam_obj/front_bottom_60", 1, &TPPNode::callback_fusion, this);
+    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/LidarDetection/Ped_Cyc)" << std::endl;
+    fusion_sub_ = nh_.subscribe("LidarDetection/Ped_Cyc", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 4)
+  else if (in_source_ == InputSource::VirtualBBoxAbs)
   {
     LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 5)
+  else if (in_source_ == InputSource::VirtualBBoxRel)
   {
     LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 6)
+  else if (in_source_ == InputSource::CameraDetV2)
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
   }
-  else if (in_source_ == 7)
+  else if (in_source_ == InputSource::Tracking2D)
   {
     use_tracking2d = true;
     LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
@@ -353,16 +335,11 @@ void TPPNode::subscribe_and_advertise_topics()
 
   // Note that we use different NodeHandle(nh2_) here
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-#if PP_FILTER_DRIVABLE_AREA == 1
   lanelet2_route_sub_ =
       nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
-#endif
 
   if (gen_markers_)
   {
-    std::string topic1 = topic + "/markers";
-    mc_.pub_bbox = nh_.advertise<visualization_msgs::MarkerArray>(topic1, 2);
-
     std::string topic2 = topic + "/id";
     mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
 
@@ -373,10 +350,8 @@ void TPPNode::subscribe_and_advertise_topics()
     mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
   }
 
-#if PP_FILTER_DRIVABLE_AREA == 1
   std::string topic5 = topic + "/drivable";
   drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
-#endif
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)
@@ -395,31 +370,6 @@ void TPPNode::init_velocity(msgs::TrackInfo& track)
 float TPPNode::compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel)
 {
   return compute_scalar_projection_A_onto_B(rel_v_rel.x, rel_v_rel.y, rel_v_rel.z, obj_rel.x, obj_rel.y, obj_rel.z);
-}
-
-float TPPNode::compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
-                                               const float box_center_y_abs)
-{
-  float ego_vx = ego_speed_kmph_ * std::cos(ego_heading_);
-  float ego_vy = ego_speed_kmph_ * std::sin(ego_heading_);
-
-  float vecx_ego2obj_abs = box_center_x_abs - ego_x_abs_;
-  float vecy_ego2obj_abs = box_center_y_abs - ego_y_abs_;
-
-  float dist_ego2obj_tmp = euclidean_distance(vecx_ego2obj_abs, vecy_ego2obj_abs);
-  float dist_ego2obj = 0;
-  assign_value_cannot_zero(dist_ego2obj, dist_ego2obj_tmp);
-
-  float mul = divide(radar_speed_rel, dist_ego2obj);
-
-  float obj_vx_radar_rel = -vecx_ego2obj_abs * mul;
-  float obj_vy_radar_rel = -vecy_ego2obj_abs * mul;
-
-  float obj_vx_radar_abs = obj_vx_radar_rel + ego_vx;
-  float obj_vy_radar_abs = obj_vy_radar_rel + ego_vy;
-
-  float radar_speed_abs = euclidean_distance(obj_vx_radar_abs, obj_vy_radar_abs);
-  return radar_speed_abs;
 }
 
 void TPPNode::compute_velocity_kalman()
@@ -475,34 +425,15 @@ void TPPNode::compute_velocity_kalman()
              << track.box_.track.absolute_velocity.speed << " km/h" << std::endl;
 #endif
 
-// DetectedObject.speed_abs
-#if USE_RADAR_ABS_SPEED == 0
+    // DetectedObject.speed_abs
     track.box_.speed_abs = track.box_.track.absolute_velocity.speed;  // km/h
-#else
-    MyPoint32 p_abs;
-    box_center_.pos.get_point_abs(p_abs);
-    track.box_.speed_abs = compute_radar_absolute_velocity(track.box_.speed_rel,  //
-                                                           p_abs.x, p_abs.y);
-#endif
 
     if (std::isnan(track.box_.speed_abs))
     {
       track.box_.speed_abs = 0.f;
     }
 
-// DetectedObject.speed_rel
-#if USE_RADAR_REL_SPEED
-    if (track.box_.header.frame_id != "RadarFront")
-    {
-      MyPoint32 p_rel;
-      track.box_center_.pos.get_point_rel(p_rel);
-      Vector3_32 rel_v_rel;
-      rel_v_rel.x = track.box_.track.relative_velocity.x;
-      rel_v_rel.y = track.box_.track.relative_velocity.y;
-      rel_v_rel.z = track.box_.track.relative_velocity.z;
-      track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-    }
-#else
+    // DetectedObject.speed_rel
     MyPoint32 p_rel;
     track.box_center_.pos.get_point_rel(p_rel);  // m
 
@@ -512,7 +443,6 @@ void TPPNode::compute_velocity_kalman()
     rel_v_rel.z = track.box_.track.relative_velocity.z;  // km/h
 
     track.box_.speed_rel = compute_relative_speed_obj2ego(rel_v_rel, p_rel);  // km/h
-#endif
 
     if (std::isnan(track.box_.speed_rel))
     {
@@ -592,7 +522,6 @@ void TPPNode::publish_tracking()
   }
 }
 
-#if PP_FILTER_DRIVABLE_AREA == 1
 geometry_msgs::Point TPPNode::get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
                                                        geometry_msgs::Vector3 translation)
 {
@@ -604,16 +533,20 @@ geometry_msgs::Point TPPNode::get_transform_coordinate(geometry_msgs::Point orig
 
 bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon)
 {
-  int nvert = polygon.size();
-  double testx = position.x;
-  double testy = position.y;
   std::vector<double> vertx;
   std::vector<double> verty;
+  vertx.reserve(polygon.size());
+  verty.reserve(polygon.size());
+
   for (auto const& obj : polygon)
   {
     vertx.push_back(obj.x);
     verty.push_back(obj.y);
   }
+
+  int nvert = polygon.size();
+  double testx = position.x;
+  double testy = position.y;
 
   int i, j, c = 0;
   for (i = 0, j = nvert - 1; i < nvert; j = i++)
@@ -624,6 +557,7 @@ bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& p
       c = 1 + c;
     }
   }
+
   if (c % 2 == 0)
   {
     return true;
@@ -648,7 +582,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   geometry_msgs::TransformStamped tf_stamped;
   try
   {
-    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
 #if PRINT_MESSAGE
     std::cout << tf_stamped << std::endl;
 #endif
@@ -799,6 +733,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
     geometry_msgs::Point32 polygon_point;
     polygon_point.x = obj.x;
     polygon_point.y = obj.y;
+    polygon_point.z = ground_z_;
     polygon_marker.polygon.points.push_back(polygon_point);
   }
 
@@ -817,7 +752,6 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   // no need to filter
   return false;
 }
-#endif
 
 inline bool test_file_exist(const std::string& name)
 {
@@ -849,32 +783,26 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << "#4-1 GT bbox center x (m), "  //
         << "#4-2 GT bbox center y (m), "  //
 #endif
-        << "#5-1 input bbox center x (m), "            //
-        << "#5-2 input bbox center y (m), "            //
-        << "#6-1 kalman-filtered bbox center x (m), "  //
-        << "#6-2 kalman-filtered bbox center y (m), "  //
-        << "#7 abs vx (km/h), "                        //
-        << "#8 abs vy (km/h), "                        //
-        << "#9 abs speed (km/h), "                     //
-        << "#10 rel vx (km/h), "                       //
-        << "#11 rel vy (km/h), "                       //
-        << "#12 rel speed (km/h), "                    //
-        << "#13 ppx in 5 ticks (m), "                  //
-        << "#14 ppy in 5 ticks (m), "                  //
-        << "#15 ppx in 10 ticks (m), "                 //
-        << "#16 ppy in 10 ticks (m), "                 //
-        << "#17 ppx in 15 ticks (m), "                 //
-        << "#18 ppy in 15 ticks (m), "                 //
-        << "#19 ppx in 20 ticks (m), "                 //
-        << "#20 ppy in 20 ticks (m), "                 //
-        << "#21 ego x abs (m), "                       //
-        << "#22 ego y abs (m), "                       //
-        << "#23 ego z abs (m), "                       //
-        << "#24 ego heading (rad), "                   //
-        << "#25 kf Q1, "                               //
-        << "#26 kf Q2, "                               //
-        << "#27 kf Q3, "                               //
-        << "#28 kf R, "                                //
+        << "#5-1 bbox center x -- input (m), "            //
+        << "#5-2 bbox center y -- input (m), "            //
+        << "#5-3 bbox center z -- input (m), "            //
+        << "#6-1 bbox center x -- kalman-filtered (m), "  //
+        << "#6-2 bbox center y -- kalman-filtered (m), "  //
+        << "#6-3 bbox center z -- kalman-filtered (m), "  //
+        << "#7 abs vx (km/h), "                           //
+        << "#8 abs vy (km/h), "                           //
+        << "#9 abs speed (km/h), "                        //
+        << "#10 rel vx (km/h), "                          //
+        << "#11 rel vy (km/h), "                          //
+        << "#12 rel speed (km/h), "                       //
+        << "#21 ego x abs (m), "                          //
+        << "#22 ego y abs (m), "                          //
+        << "#23 ego z abs (m), "                          //
+        << "#24 ego heading (rad), "                      //
+        << "#25 kf Q1, "                                  //
+        << "#26 kf Q2, "                                  //
+        << "#27 kf Q3, "                                  //
+        << "#28 kf R, "                                   //
         << "#29 kf P0\n";
   }
   else
@@ -894,47 +822,28 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
         << gt_x_ << ", "  // #4-1 GT bbox center x (m)
         << gt_y_ << ", "  // #4-2 GT bbox center y (m)
 #endif
-        << obj.lidarInfo.boxCenter.x << ", "                // #5-1 input bbox center x (m)
-        << obj.lidarInfo.boxCenter.y << ", "                // #5-2 input bbox center y (m)
-        << (obj.bPoint.p0.x + obj.bPoint.p6.x) / 2 << ", "  // #6-1 kalman-filtered bbox center x (m)
-        << (obj.bPoint.p0.y + obj.bPoint.p6.y) / 2 << ", "  // #6-2 kalman-filtered bbox center y (m)
-        << obj.track.absolute_velocity.x << ", "            // #7 abs vx (km/h)
-        << obj.track.absolute_velocity.y << ", "            // #8 abs vy (km/h)
-        << obj.speed_abs << ", "                            // #9 abs speed (km/h)
-        << obj.track.relative_velocity.x << ", "            // #10 rel vx (km/h)
-        << obj.track.relative_velocity.y << ", "            // #11 rel vy (km/h)
-        << obj.speed_rel;                                   // #12 rel speed (km/h)
+        << obj.lidarInfo.boxCenter.x << ", "      // #5-1 bbox center x -- input (m)
+        << obj.lidarInfo.boxCenter.y << ", "      // #5-2 bbox center y -- input (m)
+        << obj.lidarInfo.boxCenter.z << ", "      // #5-3 bbox center z -- input (m)
+        << obj.center_point.x << ", "             // #6-1 bbox center x -- kalman-filtered (m)
+        << obj.center_point.y << ", "             // #6-2 bbox center y -- kalman-filtered (m)
+        << obj.center_point.z << ", "             // #6-3 bbox center z -- kalman-filtered (m)
+        << obj.track.absolute_velocity.x << ", "  // #7 abs vx (km/h)
+        << obj.track.absolute_velocity.y << ", "  // #8 abs vy (km/h)
+        << obj.speed_abs << ", "                  // #9 abs speed (km/h)
+        << obj.track.relative_velocity.x << ", "  // #10 rel vx (km/h)
+        << obj.track.relative_velocity.y << ", "  // #11 rel vy (km/h)
+        << obj.speed_rel << ", "                  // #12 rel speed (km/h)
+        << ego_x_abs_ << ", "                     // #21 ego x abs
+        << ego_y_abs_ << ", "                     // #22 ego y abs
+        << ego_z_abs_ << ", "                     // #23 ego z abs
+        << ego_heading_ << ", "                   // #24 ego heading (rad)
+        << KTs_.get_Q1() << ", "                  // #25 kf Q1
+        << KTs_.get_Q2() << ", "                  // #26 kf Q2
+        << KTs_.get_Q3() << ", "                  // #27 kf Q3
+        << KTs_.get_R() << ", "                   // #28 kf R
+        << KTs_.get_P0() << "\n";                 // #29 kf P0
 
-    if (obj.track.is_ready_prediction)
-    {
-      // #13 ppx in 5 ticks (m)
-      // #14 ppy in 5 ticks (m)
-      // #15 ppx in 10 ticks (m)
-      // #16 ppy in 10 ticks (m)
-      // #17 ppx in 15 ticks (m)
-      // #18 ppy in 15 ticks (m)
-      // #19 ppx in 20 ticks (m)
-      // #20 ppy in 20 ticks (m)
-      for (unsigned int j = 0; j < num_forecasts_; j = j + 5)
-      {
-        ofs << ", " << obj.track.forecasts[j].position.x << ", " << obj.track.forecasts[j].position.y;
-      }
-
-      ofs << ", "                //
-          << ego_x_abs_ << ", "  // #21 ego x abs
-          << ego_y_abs_ << ", "  // #22 ego y abs
-          << ego_z_abs_ << ", "  // #23 ego z abs
-          << ego_heading_;       // #24 ego heading (rad)
-
-      ofs << ", "                   //
-          << KTs_.get_Q1() << ", "  // #25 kf Q1
-          << KTs_.get_Q2() << ", "  // #26 kf Q2
-          << KTs_.get_Q3() << ", "  // #27 kf Q3
-          << KTs_.get_R() << ", "   // #28 kf R
-          << KTs_.get_P0();         // #29 kf P0
-    }
-
-    ofs << "\n";
     std::cout << "[Produced] time = " << obj.header.stamp << ", track_id = " << obj.track.id << std::endl;
   }
 
@@ -953,23 +862,26 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
   msg.header = objs_header_;
   msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);
 
-#if PP_FILTER_DRIVABLE_AREA == 1
-  msg.objects.reserve(objs.size());
-
-  for (auto& obj : objs)
+  if (drivable_area_filter_)
   {
-    if (drivable_area_filter(obj.bPoint))
+    msg.objects.reserve(objs.size());
+
+    for (auto& obj : objs)
     {
-      continue;
-    }
-    else
-    {
-      msg.objects.push_back(obj);
+      if (drivable_area_filter(obj.bPoint))
+      {
+        continue;
+      }
+      else
+      {
+        msg.objects.push_back(obj);
+      }
     }
   }
-#else
-  msg.objects.assign(objs.begin(), objs.end());
-#endif
+  else
+  {
+    msg.objects.assign(objs.begin(), objs.end());
+  }
 
   for (auto& obj : msg.objects)
   {
@@ -1029,14 +941,14 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   try
   {
-    tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
+    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+      tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -1068,7 +980,7 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_3d/";
-  nh_.param<int>(domain + "input_source", in_source_, 0);
+  nh_.param<int>(domain + "input_source", in_source_, InputSource::CameraDetV2);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
@@ -1079,8 +991,10 @@ void TPPNode::set_ros_params()
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
   nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
 
+  nh_.param<bool>(domain + "drivable_area_filter", drivable_area_filter_, true);
   nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
   nh_.param<double>(domain + "expand_right", expand_right_, 0.);
+  nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
   mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
@@ -1111,7 +1025,7 @@ int TPPNode::run()
 
   g_trigger = true;
 
-  tf2_ros::TransformListener tf_listener(tf_buffer);
+  tf2_ros::TransformListener tf_listener(tf_buffer_);
 
   ros::Rate loop_rate(output_fps);
 
@@ -1131,7 +1045,7 @@ int TPPNode::run()
 
     if (!is_legal_dt_)
     {
-      tf_buffer.clear();
+      tf_buffer_.clear();
     }
 
     if (g_trigger && is_legal_dt_)
