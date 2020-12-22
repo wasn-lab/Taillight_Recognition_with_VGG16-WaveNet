@@ -8,7 +8,7 @@ gnome-terminal  -e 'bash -c "source .bashrc;echo itri | sudo -S bash /home/lidar
 sleep 3
 gnome-terminal  -e "ssh -t camera 'echo itri | sudo -S bash /home/camera/itriadv/src/scripts/bus_env_cbus/camera/ip_forwarding.sh'"
 sleep 3
-gnome-terminal  -e 'ssh -t ta "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1"'
+gnome-terminal  -e 'ssh -t xavier "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1"'
 
 sleep 3
 gnome-terminal  -e 'bash -c "source ~/itriadv/devel/setup.bash;/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar.sh;exec bash"'
@@ -43,11 +43,11 @@ sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_edge_detection.sh;exec bash"'
 
 sleep 3
-gnome-terminal  -e 'ssh -t ta "source .bashrc;bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/ta/reset_time.sh"'
+gnome-terminal  -e 'ssh -t xavier "source .bashrc;bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/reset_time.sh"'
 sleep 15
-gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env_cbus/ta/init_control_new_lanelet2.sh;exec bash"'
+gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_control_new_lanelet2.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env_cbus/ta/init_radar.sh;exec bash"'
+gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_radar.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_adv_to_server_lanelet2.sh;exec bash"'
 #sleep 3
@@ -75,7 +75,7 @@ sleep 3
 gnome-terminal  -e 'ssh -t local "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_planning_all_lanelet2.sh;exec bash"'
 
 sleep 3
-gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env_cbus/ta/init_camera.sh;exec bash"'
+gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera.sh;exec bash"'
 
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_2d_lanelet2.sh;exec bash"'
