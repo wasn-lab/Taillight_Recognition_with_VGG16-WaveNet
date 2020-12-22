@@ -1,0 +1,4 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+	<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
+</launch>
