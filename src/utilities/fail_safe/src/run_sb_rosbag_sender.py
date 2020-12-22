@@ -28,7 +28,7 @@ def main():
     rospy.init_node("SBRosbagSender")
 
     if not os.path.isdir(args.rosbag_dir):
-        rospy.logerr("Cannot find %s", args.rosbag_dir)
+        os.makedirs(args.rosbag_dir)
 
     ini = args.sb_rosbag_sender_ini
     if not os.path.isfile(ini):
