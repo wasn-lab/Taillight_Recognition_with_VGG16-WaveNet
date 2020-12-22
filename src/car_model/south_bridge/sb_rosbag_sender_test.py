@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import unittest
-from sb_rosbag_sender import get_default_bag_dir, get_bag_filenames, convert_to_sb_bag_name, get_sb_config, get_bag_yymmdd, gen_sftp_cmd
+from sb_rosbag_sender import get_default_bag_dir, get_bag_filenames, convert_to_sb_bag_name, get_bag_yymmdd, gen_sftp_cmd
+from car_model_helper import get_sb_config
 
 class SBRosbagSenderTest(unittest.TestCase):
     @unittest.skip("No invocation in MR pipeline")

@@ -153,14 +153,14 @@ class FailSafeChecker(object):
             if doc["status"] != OK:
                 summary = "[Auto Report] {}: {}".format(
                     doc["module"], doc["status_str"])
-                desc = generate_issue_description(doc["status"], doc["status_str"])
+                desc = generate_issue_description(doc["status"], doc["status_str"], current_status["timestamp"])
                 self.issue_reporter.post_issue(summary, desc)
                 return
         if current_status["status"] != OK:
             summary = "[Auto Report] {}".format(
                 current_status["status_str"])
             desc = generate_issue_description(
-                current_status["status"], current_status["status_str"])
+                current_status["status"], current_status["status_str"], current_status["timestamp"])
             self.issue_reporter.post_issue(summary, desc)
 
 
