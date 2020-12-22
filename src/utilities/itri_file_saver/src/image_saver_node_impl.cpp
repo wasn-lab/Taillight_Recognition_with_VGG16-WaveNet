@@ -6,8 +6,11 @@
 #include "image_saver_node_impl.h"
 #include "image_saver_args_parser.h"
 
+namespace image_saver
+{
 ImageSaverNodeImpl::ImageSaverNodeImpl() = default;
 ImageSaverNodeImpl::~ImageSaverNodeImpl() = default;
+constexpr char PATH_SEPARATOR = '/';
 
 void ImageSaverNodeImpl::image_callback(const sensor_msgs::ImageConstPtr& in_image_message)
 {
@@ -31,7 +34,12 @@ void ImageSaverNodeImpl::save(const cv_bridge::CvImageConstPtr& cv_ptr, int sec,
   char buff[32] = { 0 };
 
   snprintf(buff, sizeof(buff), "%10d%09d.jpg", sec, nsec);  // NOLINT
-  std::string fname(static_cast<const char*>(buff));
+  auto output_dir = get_output_dir();
+  if ((!output_dir.empty()) && (output_dir[output_dir.size() - 1] != PATH_SEPARATOR))
+  {
+    output_dir += PATH_SEPARATOR;
+  }
+  std::string fname = output_dir + static_cast<const char*>(buff);
   LOG(INFO) << "write " << fname;
   cv::imwrite(fname, cv_ptr->image);
 }
@@ -55,3 +63,4 @@ void ImageSaverNodeImpl::run()
   }
   spinner.stop();
 }
+};  // namespace image_saver

@@ -14,7 +14,6 @@ set(PCD_SAVER_SRCS pcd_saver_args_parser.cpp pcd_saver_main.cpp)
 
 set(FILE_SAVER_INCLUDE_DIRS
     ${catkin_INCLUDE_DIRS}
-    ${PROJECT_SOURCE_DIR}/include
     ${PCL_INCLUDE_DIRS}
     ${GLOG_INCLUDE_DIRS})
 

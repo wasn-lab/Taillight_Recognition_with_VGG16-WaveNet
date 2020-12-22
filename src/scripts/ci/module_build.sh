@@ -12,6 +12,10 @@ for _dir in build devel; do
     fi
 done
 
+if [[ $(hostname) == "ci" ]]; then
+  EXTRA_CATKIN_ARGS="${EXTRA_CATKIN_ARGS} -j8"
+fi
+
 catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_INSTALL_PREFIX=${install_prefix} \

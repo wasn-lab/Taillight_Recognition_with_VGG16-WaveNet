@@ -99,6 +99,32 @@ bool AlignmentOff::search_valid_neighbor(const int row, const int col, cv::Point
   return false;
 }
 
+void AlignmentOff::visualize() const
+{
+  // spatial_points_
+  cv::Mat vis(imgH, imgW, CV_8UC3);
+  for (int row = 0; row < imgH; row++)
+  {
+    for (int col = 0; col < imgW; col++)
+    {
+      // int R = 0;
+      // int G = 0;
+      int B = 0;
+
+      B = round(spatial_points_[row][col].x*5);
+      // G = round(spatial_points_[row][col].y*20);
+      // R = round(spatial_points_[row][col].z*40);  
+
+      vis.at<cv::Vec3b>(row, col)[0] = B;
+      vis.at<cv::Vec3b>(row, col)[1] = 0;
+      vis.at<cv::Vec3b>(row, col)[2] = 0;
+    }
+  }
+  cv::namedWindow("vis", 1);
+  cv::imshow("vis", vis);
+  cv::waitKey();
+}
+
 void AlignmentOff::approx_nearest_points_if_necessary()
 {
   std::vector<cv::Point> unset_points;
@@ -108,34 +134,6 @@ void AlignmentOff::approx_nearest_points_if_necessary()
   bool done = false;
 
   std::cout << "Starting to create image" << std::endl;
-
-  /*
-    for(int i = 0; i < 5000; i++)
-    {
-      std::cout << "Process: " << i << "/5000" << std::endl ;
-
-      for(int j = -3000; j < 3000; j++)
-      {
-        float i_float = (float)i/100;
-        float j_float = (float)j/100;
-        float tmpz = (float)i_float*0.020686-2.63239;
-        // float tmpz = ((float)i_float-79)/30;
-      // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x -
-    79)/30) < 0.1)      //
-        out = run((float)i_float, (float)j_float, tmpz);
-
-        if (out[0] > 0 && out[0] < imgW && out[1] > 0 && out[1] < imgH)
-        {
-          // std::cout << "2D: x = " << out[0] << ". y = " << out[1] ;
-          // std::cout << ", 3D: x = " << i_float << ". y = " << j_float << ". z = " << tmpz << std::endl ;
-
-          spatial_points_[out[1]][out[0]].x = i_float;
-          spatial_points_[out[1]][out[0]].y = j_float;
-          spatial_points_[out[1]][out[0]].z = 0.0;
-        }
-      }
-    }
-    */
 
   for (int row = 0; row < imgH; row++)
   {
@@ -188,9 +186,38 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     for (const auto& kv : revised_points)
     {
       const auto& image_point = kv.first;
-      const auto& aligned_image_point = kv.second;
-      spatial_points_[image_point.first][image_point.second] =
-          spatial_points_[aligned_image_point.first][aligned_image_point.second];
+      // const auto& aligned_image_point = kv.second;
+      
+      int count = 0;
+      cv::Point3d sum_3d;
+
+      for (int roffset = -1; roffset <= 1; roffset++)
+      {
+        for (int coffset = -1; coffset <= 1; coffset++)
+        {
+          if ((roffset == 0) and (coffset == 0))
+          {
+            continue;
+          }
+          int nearby_row = image_point.first + roffset;
+          int nearby_col = image_point.second + coffset;
+          if (spatial_point_is_valid(nearby_row, nearby_col))
+          {
+            count++;
+            sum_3d.x += spatial_points_[nearby_row][nearby_col].x;
+            sum_3d.y += spatial_points_[nearby_row][nearby_col].y;
+            sum_3d.z += spatial_points_[nearby_row][nearby_col].z;
+          }
+        }
+      }
+      
+      // spatial_points_[image_point.first][image_point.second] =
+      //     spatial_points_[aligned_image_point.first][aligned_image_point.second];
+
+      spatial_points_[image_point.first][image_point.second].x = sum_3d.x/count;
+      spatial_points_[image_point.first][image_point.second].y = sum_3d.y/count;
+      spatial_points_[image_point.first][image_point.second].z = sum_3d.z/count;
+
     }
 
     std::cout << "Total " << unset_points_temp.size() << " need to be approximated" << std::endl;
@@ -242,20 +269,22 @@ std::string AlignmentOff::jsonize_spatial_points(cv::Point3d** spatial_points, i
 
 // Main
 AlignmentOff g_al;
+bool ctl = true;
 
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
 
+  if(ctl)
+  {
   for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
   {
-    if (LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&
-        LidAll_cloudPtr->points[i].x > 0)
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x -
-    // 122)/45) < 0.1)
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30)
-    // < 0.1)
+
+    if (/*LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&*/
+       LidAll_cloudPtr->points[i].x > 0 )
+    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x - 122)/45) < 0.1)
+    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
     {
       g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
       if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
@@ -264,31 +293,10 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
         g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y = LidAll_cloudPtr->points[i].y;
         g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z = LidAll_cloudPtr->points[i].z;
 
-        // std::cout << LidAll_cloudPtr->points[i].x;
-        // std::cout << LidAll_cloudPtr->points[i].y;
-        // std::cout << LidAll_cloudPtr->points[i].z << std::endl;
-
-        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x;
-        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y;
-        // std::cout << g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z << std::endl;
       }
     }
-
-    // if(LidAll_cloudPtr->points[i].x > 25 && LidAll_cloudPtr->points[i].z < 0 && LidAll_cloudPtr->points[i].y < 1 &&
-    // LidAll_cloudPtr->points[i].y > -1)
-    // {
-    //   g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
-    //   if(g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
-    //   {
-    //     if(g_al.out[0] = 304)
-    //     {
-    //       std::cout << LidAll_cloudPtr->points[i].x << ",";
-    //       std::cout << LidAll_cloudPtr->points[i].y << ",";
-    //       std::cout << LidAll_cloudPtr->points[i].z << ",";
-    //       std::cout << g_al.out[0] << ",";
-    //       std::cout << g_al.out[1] << std::endl;
-    //     }
-    //   }
+  }
+  ctl = false;
   }
 }
 
@@ -310,4 +318,5 @@ int main(int argc, char** argv)
 
   g_al.approx_nearest_points_if_necessary();
   g_al.dump_distance_in_json();
+  g_al.visualize();
 }

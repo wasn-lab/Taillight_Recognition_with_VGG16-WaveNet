@@ -4,4 +4,3 @@
 #cmakedefine PED_MODEL_DIR "@PED_MODEL_DIR@"
 
 #endif
-

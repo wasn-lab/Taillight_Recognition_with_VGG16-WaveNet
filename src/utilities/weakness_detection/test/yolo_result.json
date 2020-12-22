@@ -1,0 +1,24 @@
+[
+{
+ "frame_id":1, 
+ "filename":"/tmp/right_front_60/1583808519718590359.jpg", 
+ "objects": [ 
+  {"class_id":7, "name":"truck", "relative_coordinates":{"center_x":0.194974, "center_y":0.278952, "width":0.043834, "height":0.055284}, "confidence":0.565839}, 
+  {"class_id":0, "name":"person", "relative_coordinates":{"center_x":0.781887, "center_y":0.323908, "width":0.016144, "height":0.076775}, "confidence":0.632622}
+ ] 
+}, 
+{
+ "frame_id":2, 
+ "filename":"/tmp/right_front_60/1583808521030473384.jpg", 
+ "objects": [ 
+
+ ] 
+}, 
+{
+ "frame_id":3, 
+ "filename":"/tmp/right_front_60/1583808518630220355.jpg", 
+ "objects": [ 
+  {"class_id":2, "name":"car", "relative_coordinates":{"center_x":0.602523, "center_y":0.297033, "width":0.055021, "height":0.037890}, "confidence":0.689576}
+ ] 
+}
+]

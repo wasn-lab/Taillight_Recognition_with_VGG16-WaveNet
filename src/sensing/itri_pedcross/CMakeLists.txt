@@ -31,10 +31,18 @@ set(TENSORFLOW_INCLUDE_DIR ${TENSORFLOW_ROOT_DIR}/include)
 set(TENSORFLOW_LIBRARIES tensorflow)
 message("TF found: ${TENSORFLOW_LIBRARIES}")
 
-find_package(OpenCV
-  PATHS /usr/local
-  NO_DEFAULT_PATH
-)
+find_package(CUDA)
+if (NOT ${CUDA_FOUND})
+  message("CUDA not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
+find_package(OpenCV REQUIRED PATHS /usr/local NO_DEFAULT_PATH)
+if (NOT ${OpenCV_FOUND})
+  message("OpenCV not found. Skip building ${PROJECT_NAME}")
+  return ()
+endif ()
+
 find_package(openpose)
 
 if (NOT openpose_LIBRARY)
@@ -81,39 +89,59 @@ link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 
 set(CPP_FILES
     src/pedestrian_event.cpp
-    src/buffer.cpp
-    src/buffer_node.cpp
     src/openpose.cpp
     src/openpose_flags.cpp
     src/openpose_ros_io.cpp
-    #src/tf_utils.cpp
-    #src/Predict_test.cpp
 )
 
 add_executable(itri_pedcross ${CPP_FILES})
+add_executable(tracking_view src/tracking_view.cpp)
+add_executable(alert_collector src/alert_collector.cpp)
 
 if(EXISTS /usr/local/lib/libopencv_core.so)
 target_link_libraries(
     itri_pedcross
     /usr/local/lib/libopencv_core.so
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
+target_link_libraries(
+    tracking_view
+    /usr/local/lib/libopencv_core.so
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
 else()
 target_link_libraries(
     itri_pedcross
     ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
+    ${OpenCV_LIBRARIES}
     ${openpose_LIBRARIES}
     ${GFLAGS_LIBRARY}
     ${GLOG_LIBRARY}
     ${TENSORFLOW_LIBRARIES})
+target_link_libraries(
+    tracking_view
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
 endif()
 
+target_link_libraries(
+    alert_collector
+    ${catkin_LIBRARIES}
+    ${GFLAGS_LIBRARY}
+    ${GLOG_LIBRARY})
+
 add_dependencies(itri_pedcross ${catkin_EXPORTED_TARGETS})
+add_dependencies(tracking_view ${catkin_EXPORTED_TARGETS})
+add_dependencies(alert_collector ${catkin_EXPORTED_TARGETS})
+
 configure_file(include/ped_def.h.in
                ${PROJECT_BINARY_DIR}/include/ped_def.h)
 

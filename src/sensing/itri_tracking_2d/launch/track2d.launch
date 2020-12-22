@@ -3,16 +3,18 @@
 <launch>
   <!-- Node parameters -->
 
-  <!-- Input source -->
-  <!-- 1: /CameraDetection/polygon -->
-  <!-- others: /CamObjFrontCenter -->
-  <arg name="input_source" default="0" />
+  <!-- Input source ,Output topic -->
+  <!-- 0: /CameraDetection ,/Tracking2D/front_bottom_60 -->
+  <!-- 1: /CameraDetection ,/Tracking2D/front_top_far_30 -->
+  <!-- 6: /CameraDetection ,/Tracking2D/right_back_60 -->
+  <!-- 9: /CameraDetection ,/Tracking2D/left_back_60 -->
+  <arg name="input_source" default="1" />
 
   <!-- Output FPS -->
   <arg name="output_fps" default="10.0" />
 
   <!-- Launch node -->
-  <node pkg="itri_tracking_2d" type="itri_tracking_2d" name="itri_tracking_2d" cwd="node" output="screen">
+  <node pkg="itri_tracking_2d" type="itri_tracking_2d" name="$(anon itri_tracking_2d)" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="output_fps" value="$(arg output_fps)" />
   </node>

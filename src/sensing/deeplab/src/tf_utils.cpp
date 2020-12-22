@@ -25,16 +25,20 @@
 #include <cstring>
 #include <fstream>
 
-namespace tf_utils {
-
-namespace {
-static void DeallocateBuffer(void* data, size_t) {
+namespace tf_utils
+{
+namespace
+{
+static void DeallocateBuffer(void* data, size_t)
+{
   std::free(data);
 }
 
-static TF_Buffer* ReadBufferFromFile(const char* file) {
+static TF_Buffer* ReadBufferFromFile(const char* file)
+{
   std::ifstream f(file, std::ios::binary);
-  if (f.fail() || !f.is_open()) {
+  if (f.fail() || !f.is_open())
+  {
     return nullptr;
   }
 
@@ -42,7 +46,8 @@ static TF_Buffer* ReadBufferFromFile(const char* file) {
   const auto fsize = f.tellg();
   f.seekg(0, std::ios::beg);
 
-  if (fsize < 1) {
+  if (fsize < 1)
+  {
     f.close();
     return nullptr;
   }
@@ -59,15 +64,18 @@ static TF_Buffer* ReadBufferFromFile(const char* file) {
   return buf;
 }
 
-} // namespace tf_utils::
+}  // namespace
 
-TF_Graph* LoadGraph(const char* graphPath) {
-  if (graphPath == nullptr) {
+TF_Graph* LoadGraph(const char* graphPath)
+{
+  if (graphPath == nullptr)
+  {
     return nullptr;
   }
 
   TF_Buffer* buffer = ReadBufferFromFile(graphPath);
-  if (buffer == nullptr) {
+  if (buffer == nullptr)
+  {
     return nullptr;
   }
 
@@ -79,7 +87,8 @@ TF_Graph* LoadGraph(const char* graphPath) {
   TF_DeleteImportGraphDefOptions(opts);
   TF_DeleteBuffer(buffer);
 
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     TF_DeleteGraph(graph);
     graph = nullptr;
   }
@@ -89,17 +98,20 @@ TF_Graph* LoadGraph(const char* graphPath) {
   return graph;
 }
 
-void DeleteGraph(TF_Graph* graph) {
+void DeleteGraph(TF_Graph* graph)
+{
   TF_DeleteGraph(graph);
 }
 
-TF_Session* CreateSession(TF_Graph* graph) {
+TF_Session* CreateSession(TF_Graph* graph)
+{
   TF_Status* status = TF_NewStatus();
   TF_SessionOptions* options = TF_NewSessionOptions();
   TF_Session* session = TF_NewSession(graph, options, status);
   TF_DeleteSessionOptions(options);
 
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     DeleteSession(session);
     TF_DeleteStatus(status);
     return nullptr;
@@ -109,14 +121,17 @@ TF_Session* CreateSession(TF_Graph* graph) {
   return session;
 }
 
-void DeleteSession(TF_Session* session) {
+void DeleteSession(TF_Session* session)
+{
   TF_Status* status = TF_NewStatus();
   TF_CloseSession(session, status);
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     TF_CloseSession(session, status);
   }
   TF_DeleteSession(session, status);
-  if (TF_GetCode(status) != TF_OK) {
+  if (TF_GetCode(status) != TF_OK)
+  {
     TF_DeleteSession(session, status);
   }
   TF_DeleteStatus(status);
@@ -134,10 +149,9 @@ void DeleteSession(TF_Session* session) {
 //   TF_Status* status = TF_NewStatus();
 //   TF_SessionRun(session,
 //                 nullptr, // Run options.
-//                 inputs, input_tensors, static_cast<int>(ninputs), // Input tensors, input tensor values, number of inputs.
-//                 outputs, output_tensors, static_cast<int>(noutputs), // Output tensors, output tensor values, number of outputs.
-//                 nullptr, 0, // Target operations, number of targets.
-//                 nullptr, // Run metadata.
+//                 inputs, input_tensors, static_cast<int>(ninputs), // Input tensors, input tensor values, number of
+//                 inputs. outputs, output_tensors, static_cast<int>(noutputs), // Output tensors, output tensor values,
+//                 number of outputs. nullptr, 0, // Target operations, number of targets. nullptr, // Run metadata.
 //                 status // Output status.
 //   );
 
@@ -154,25 +168,29 @@ void DeleteSession(TF_Session* session) {
 //                     outputs.data(), output_tensors.data(), output_tensors.size());
 // }
 
-TF_Tensor* CreateTensor(TF_DataType data_type,
-                        const std::int64_t* dims, std::size_t num_dims,
-                        const void* data, std::size_t len) {
-  if (dims == nullptr) {
+TF_Tensor* CreateTensor(TF_DataType data_type, const std::int64_t* dims, std::size_t num_dims, const void* data,
+                        std::size_t len)
+{
+  if (dims == nullptr)
+  {
     return nullptr;
   }
 
   TF_Tensor* tensor = TF_AllocateTensor(data_type, dims, static_cast<int>(num_dims), len);
-  if (tensor == nullptr) {
+  if (tensor == nullptr)
+  {
     return nullptr;
   }
 
   void* tensor_data = TF_TensorData(tensor);
-  if (tensor_data == nullptr) {
+  if (tensor_data == nullptr)
+  {
     TF_DeleteTensor(tensor);
     return nullptr;
   }
 
-  if (data != nullptr) {
+  if (data != nullptr)
+  {
     std::memcpy(tensor_data, data, std::min(len, TF_TensorByteSize(tensor)));
   }
 
@@ -187,8 +205,10 @@ TF_Tensor* CreateTensor(TF_DataType data_type,
 //   return CreateEmptyTensor(data_type, dims.data(), dims.size());
 // }
 
-void DeleteTensor(TF_Tensor* tensor) {
-  if (tensor != nullptr) {
+void DeleteTensor(TF_Tensor* tensor)
+{
+  if (tensor != nullptr)
+  {
     TF_DeleteTensor(tensor);
   }
 }
@@ -210,5 +230,4 @@ void SetTensorsData(TF_Tensor* tensor, const void* data, std::size_t len)
   }
 }
 
-} // namespace tf_utils
-
+}  // namespace tf_utils

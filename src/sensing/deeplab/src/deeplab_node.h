@@ -4,7 +4,8 @@
 #include "ros/ros.h"
 #include "opencv2/core/mat.hpp"
 
-namespace deeplab {
+namespace deeplab
+{
 class DeeplabNodeImpl;
 class DeeplabNode
 {
@@ -16,4 +17,4 @@ public:
   ~DeeplabNode();
   void run(int argc, char* argv[]);
 };
-}; // namespace deeplab
+};  // namespace deeplab

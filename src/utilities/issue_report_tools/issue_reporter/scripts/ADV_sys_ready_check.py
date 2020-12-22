@@ -51,6 +51,7 @@ check_list = ["node_alive", "REC_is_recording"]
 check_list += ["brake_status"]
 # check_list += ["backend_connected"]
 check_list += ["localization_state"]
+check_list += ["CAN_up_OK"]
 check_list += ["Xbywire_run"]
 # check_list += ["AEB_run"]
 check_list += [ "ACC_run"]
@@ -62,6 +63,7 @@ The startup_check_list is a subset of check_list.
 - For components not listed in the list, the status is set to "OK" by default.
 """
 startup_check_list = ["node_alive", "REC_is_recording"]
+# startup_check_list += ["CAN_up_OK"]
 # The following items will be added for release version
 # startup_check_list += ["backend_connected"] # Will be added for release version
 # startup_check_list += ["localization_state"]
@@ -435,6 +437,8 @@ def main():
     rospy.Subscriber("/mileage/Xbywire_run", String, (lambda msg: _checker_CB(msg, "Xbywire_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     rospy.Subscriber("/mileage/AEB_run", String, (lambda msg: _checker_CB(msg, "AEB_run", is_event_msg=True, code_func=code_func_event_json ) ) )
     rospy.Subscriber("/mileage/ACC_run", String, (lambda msg: _checker_CB(msg, "ACC_run", is_event_msg=True, code_func=code_func_event_json ) ) )
+    # CAN uplink state
+    rospy.Subscriber("/mileage/CAN_up_OK", String, (lambda msg: _checker_CB(msg, "CAN_up_OK", is_event_msg=True, code_func=code_func_event_json ) ) )
     # Detect object status
     rospy.Subscriber("/d_viz/checker_event", String, (lambda msg: _checker_CB(msg, "detect_obj", is_event_msg=True, code_func=code_func_event_json ) ) )
     #-----------------------------#

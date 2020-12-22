@@ -507,15 +507,16 @@ int main(int argc, char** argv)
     pthread_create(&thrdDisplay, NULL, &run_display, NULL);
   }
 
-  std::string pkg_path = ros::package::getPath("drivenet");
+  std::string pkg_path_drivenet = ros::package::getPath("drivenet");
+  std::string pkg_path_cam_utils = ros::package::getPath("camera_utils");
   std::string cfg_file = "/b1_yolo_120_1.cfg";
   image_init();
-  g_yolo_app.init_yolo(pkg_path, cfg_file);
-  g_dist_est.init(g_car_id, pkg_path, g_dist_est_mode);
+  g_yolo_app.init_yolo(pkg_path_drivenet, cfg_file);
+  g_dist_est.init(g_car_id, pkg_path_drivenet, g_dist_est_mode);
 
   if (g_is_calibration)
   {
-    cv::String calibMatrix_filepath = pkg_path + "/config/sf3324.yml";
+    cv::String calibMatrix_filepath = pkg_path_cam_utils + "/data/camera_calibration/sn_ar0231_gmsl_120h.yml";
     std::cout << "Calibration mode is open, calibMatrix filepath: " << calibMatrix_filepath << std::endl;
     loadCalibrationMatrix(calibMatrix_filepath, g_camera_matrix, g_dist_coeffs);
   }
@@ -640,7 +641,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   camInfo.width = box.x2 - box.x1;
   camInfo.height = box.y2 - box.y1;
   camInfo.prob = box.prob;
-  camInfo.id = translate_label(box.label);
+  camInfo.id = g_cam_ids[cam_order];
 
   detObj.classId = translate_label(box.label);
   detObj.camInfo = camInfo;

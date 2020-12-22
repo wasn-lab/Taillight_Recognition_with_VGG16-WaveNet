@@ -12,7 +12,11 @@
 
 #include "../dataset.hpp"
 
-enum ClusteringMode {NORMAL_MODE=0, LABEL_MODE};
+enum ClusteringMode
+{
+  NORMAL_MODE = 0,
+  LABEL_MODE
+};
 
 void vertdegree(int N, int colsize, float* eps, float* d_data, int* d_Va, int* d_label, int maxThreadsNumber,
                 int label_mode);
@@ -30,7 +34,7 @@ public:
   typedef boost::shared_ptr<GDBSCAN> Ptr;
 
 public:
-  GDBSCAN(const Dataset::Ptr &dset);
+  GDBSCAN(const Dataset::Ptr& dset);
   ~GDBSCAN();
 
   void fit(float* eps, const size_t* min_elems, int maxThreadsNumber);
@@ -56,7 +60,7 @@ private:
 
   void breadth_first_search(int i, int32_t cluster, std::vector<bool>& visited);
 
-  void ErrorHandle(cudaError_t r, const std::string &Msg);
+  void ErrorHandle(cudaError_t r, const std::string& Msg);
 };
 
 #endif

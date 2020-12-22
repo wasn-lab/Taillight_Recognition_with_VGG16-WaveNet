@@ -222,7 +222,7 @@ find_package        (VTK REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED)
+find_package            (PCL 1.9.1 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
@@ -343,9 +343,27 @@ set(SOURCES_SRCS
   Utility/KeyboardMouseEvent.cpp
   Utility/extract_Indices.cpp
   eval_utility/eval_utility.cpp
+  shape_estimation/shape_estimator.cpp
+  shape_estimation/model/bounding_box.cpp
+  shape_estimation/filter/car_filter.cpp
+  shape_estimation/filter/bus_filter.cpp
+  shape_estimation/filter/truck_filter.cpp
+  shape_estimation/filter/motor_filter.cpp
+  shape_estimation/filter/no_filter.cpp
+  shape_estimation/filter/pedestrian_filter.cpp
+  shape_estimation/corrector/car_corrector.cpp
+  shape_estimation/corrector/bus_corrector.cpp
+  shape_estimation/corrector/truck_corrector.cpp
+  shape_estimation/corrector/motor_corrector.cpp
+  shape_estimation/corrector/pedestrian_corrector.cpp
+  shape_estimation/corrector/no_corrector.cpp
   Clustering/DBSCAN/CUDA/g_dbscan.cu
   Preprocess/Transform/Transform_CUDA.cu
-  Preprocess/VoxelGrid/VoxelGrid_CUDA.cu)
+  Preprocess/VoxelGrid/VoxelGrid_CUDA.cu
+  Format/pointcloud_format_conversion.cpp
+  Compression/pc2_compressor.cpp
+  )
+
 
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} ${TENSORFLOW_LIBRARIES})

@@ -71,6 +71,8 @@ bool TegraBGrabber::runPerception()
 
     // Using default stream for retreiving latest image
     grabber->retrieveNextFrame();
+    ros_time_ = ros::Time::now();
+
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[4], grabber->getCurrentFrameData(4),
                MultiGMSLCameraGrabber::ImageSize, cudaMemcpyDeviceToDevice);
     cudaMemcpy(camera_buffer_.cams_ptr->frames_GPU[5], grabber->getCurrentFrameData(5),
@@ -100,7 +102,7 @@ bool TegraBGrabber::runPerception()
         }
         else
         {
-          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_[i], num_src_bytes_, canvas[i], camera::raw_image_height,
+          npp_wrapper::npp8u_ptr_to_cvmat(npp8u_ptrs_distorted_[i], num_src_bytes_, canvas[i], camera::raw_image_height,
                                           camera::raw_image_width);
         }
       }
@@ -126,7 +128,7 @@ bool TegraBGrabber::runPerception()
     // pub camera image through ros
     for (size_t i = 0; i < cam_ids_.size(); ++i)
     {
-      ros_image.send_image_rgb(cam_ids_[i], canvas[i]);
+      ros_image.send_image_rgb(cam_ids_[i], canvas[i], ros_time_);
     }
 
     loop_rate.sleep();

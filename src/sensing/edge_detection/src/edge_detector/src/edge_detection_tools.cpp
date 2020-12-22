@@ -17,7 +17,7 @@ void getEdgeContour(const boost::shared_ptr<pcl::PointCloud<PointT> >& cloud,
                     const float length, float threshold_width)
 {
   ///@ theta_sample sample number between +-length @ length +- y length of LiDAR @  threshold_width width of x
-  double y_;
+  // double y_;
   double delta_length = length / theta_sample;
 
   boost::shared_ptr<pcl::PointCloud<PointT> > right_edge_(new pcl::PointCloud<PointT>);
@@ -183,7 +183,7 @@ void getContourV2(const boost::shared_ptr<pcl::PointCloud<PointT> >& cloud,
       {
         theta_2 += 360;
       }
-      int indx_theta = round(theta_2 / delta_theta);
+      //int indx_theta = round(theta_2 / delta_theta);
       // double r_contour = hypot( cloud_contour->points[indx_theta].x, cloud_contour->points[indx_theta].y);
       double r_contour = (cloud_contour->points[i].x) * (cloud_contour->points[i].x) +
                          (cloud_contour->points[i].y) * (cloud_contour->points[i].y);  //平方根
@@ -238,15 +238,26 @@ bool approximateProgressiveMorphological(const pcl::PointCloud<PointT>::ConstPtr
   }
   pcl::ApproximateProgressiveMorphologicalFilter<PointT> apmf;
   apmf.setInputCloud(input);
-  apmf.setCellSize(1);
-  apmf.setBase(3);  // 0.1
+
+  // BoChun's Parameters
+  // apmf.setCellSize(1);
+  // apmf.setBase(3);  // 0.1
+  // apmf.setExponential(false);
+  // apmf.setMaxWindowSize(1.0);    // 3.0
+  // apmf.setSlope(0.2);            // 0.2 //1.0f
+  // apmf.setInitialDistance(0.3);  // 0.12 //0.1
+  // apmf.setMaxDistance(0.6);      // 0.2 //0.3
+
+  // Wayne's Parameters
+  apmf.setCellSize(0.35);
+  apmf.setBase(2);  // 0.1
   apmf.setExponential(false);
   apmf.setMaxWindowSize(1.0);    // 3.0
-  apmf.setSlope(0.2);            // 0.2 //1.0f
-  apmf.setInitialDistance(0.3);  // 0.12 //0.1
-  apmf.setMaxDistance(0.6);      // 0.2 //0.3
+  apmf.setSlope(0.9);            // 0.2 //1.0f
+  apmf.setInitialDistance(0.32);  // 0.12 //0.1
+  apmf.setMaxDistance(0.34);      // 0.2 //0.3
+  
   apmf.setNumberOfThreads(2);
-
   apmf.extract(ground->indices);
   return true;
 }
@@ -290,6 +301,17 @@ bool extractParallelLine(const boost::shared_ptr<pcl::PointCloud<PointT> >& inpu
     return false;
   }
 }
+
+void radiusFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
+                  boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, double radius, int min_pts)
+{
+  pcl::RadiusOutlierRemoval<PointT> radiusF;
+  radiusF.setInputCloud(input_cloud);
+  radiusF.setRadiusSearch(radius);  // unit:m
+  radiusF.setMinNeighborsInRadius(min_pts);
+  radiusF.filter(*cloud_filtered);  // apply filter
+}
+
 
 void coFilter(boost::shared_ptr<pcl::PointCloud<PointT> >& input_cloud,
               boost::shared_ptr<pcl::PointCloud<PointT> >& cloud_filtered, const std::string& co, float min_value,
@@ -426,6 +448,7 @@ float originToLine(const Eigen::VectorXf& model_coefficients)
   line_dir.normalize();                                           // norm of line dir
   return sqrt((line_pt - origin).cross(line_dir).squaredNorm());  // d = |a x B|/|B|
 }
+
 void setInputCloud(const CloudConstPtr input, boost::shared_ptr<pcl::PointCloud<PointT> > release_cloud)
 {
   *release_cloud = *input;

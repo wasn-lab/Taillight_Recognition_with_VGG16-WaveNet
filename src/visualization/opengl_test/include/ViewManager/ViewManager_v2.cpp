@@ -66,7 +66,7 @@ mat4 ViewManager::GetProjectionMatrix(float aspect)
 	float nearVal;
 	float farVal;
 	nearVal = 0.1f;
-	farVal = 5000.0f; // 500.0f;
+	farVal = 500.0f; // 500.0f;
 	if (ortho) {
 		float size = orthoScale * zoom;
 		projMatrix = glm::ortho(-aspect * size, aspect * size, -size, size, nearVal, farVal);

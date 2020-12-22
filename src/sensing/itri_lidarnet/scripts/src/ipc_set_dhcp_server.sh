@@ -6,13 +6,13 @@ sudo bash -c "rm /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "touch /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set the interface on which dnsmasq operates.' >> /etc/dnsmasq.d/dhcp.conf"
 	
-sudo bash -c "echo 'interface=bridge0' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'interface=br0' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# To disable dnsmasq DNS server functionality.' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo 'port=0' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# To enable dnsmasq DHCP server functionality.' >> /etc/dnsmasq.d/dhcp.conf"
-sudo bash -c "echo 'dhcp-range=192.168.0.200,192.168.0.250,255.255.255.0,12h' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'dhcp-range=192.168.0.100,192.168.0.250,255.255.255.0,12h' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set static IPs of other PC' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# dhcp_client_mac_address,dhcp_client_name,dhcp_client_ip,dhcp_client_lease' >> /etc/dnsmasq.d/dhcp.conf"
@@ -23,7 +23,12 @@ sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:ad,os1-991940000164,192.168.0.224,i
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:26,os1-991940000799,192.168.0.223,infinite' >> /etc/dnsmasq.d/dhcp.conf" #223
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:90,os1-991941000030,192.168.0.230,infinite' >> /etc/dnsmasq.d/dhcp.conf" #224	
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:b4,os1-991939001245,192.168.0.225,infinite' >> /etc/dnsmasq.d/dhcp.conf" #225	
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:f5,os1-991941001040,192.168.0.226,infinite' >> /etc/dnsmasq.d/dhcp.conf" #226	
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:f5,os1-991941001040,192.168.0.226,infinite' >> /etc/dnsmasq.d/dhcp.conf" #226
+
+# in lab
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:16:94,os1-122021000109,192.168.0.101,infinite' >> /etc/dnsmasq.d/dhcp.conf" #101
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0a:77,os1-122024000217,192.168.0.102,infinite' >> /etc/dnsmasq.d/dhcp.conf" #102
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0c:dd,os1-122024000328,192.168.0.103,infinite' >> /etc/dnsmasq.d/dhcp.conf" #103
 	
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set gateway as Router. Following two lines are identical.' >> /etc/dnsmasq.d/dhcp.conf"

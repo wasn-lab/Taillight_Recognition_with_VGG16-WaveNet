@@ -14,7 +14,7 @@ bool has_nonzero(std::vector<int>& v)
   return false;
 }
 
-GDBSCAN::GDBSCAN(const Dataset::Ptr &dset)
+GDBSCAN::GDBSCAN(const Dataset::Ptr& dset)
   : m_dset(dset)
   , d_data(nullptr)
   , d_label(nullptr)
@@ -243,7 +243,7 @@ void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& vi
 
   for (size_t i = 0; i < m_dset->rows(); ++i)
   {
-    if (xa[i] != 0) //  && visited[i] == false
+    if (xa[i] != 0)  //  && visited[i] == false
     {
       visited[i] = true;
       labels[i] = cluster;
@@ -251,7 +251,7 @@ void GDBSCAN::breadth_first_search(int i, int32_t cluster, std::vector<bool>& vi
   }
 }
 
-void GDBSCAN::ErrorHandle(cudaError_t r, const std::string &Msg)
+void GDBSCAN::ErrorHandle(cudaError_t r, const std::string& Msg)
 {
   if (r != cudaSuccess)
   {
@@ -297,7 +297,6 @@ void GDBSCAN::predict(pcl::IndicesClusters& index)
     labels[i] = cluster_id;
     breadth_first_search(static_cast<int>(i), cluster_id, visited);
     cluster_id += 1;
-    
   }
 
   if (cluster_id > 0)

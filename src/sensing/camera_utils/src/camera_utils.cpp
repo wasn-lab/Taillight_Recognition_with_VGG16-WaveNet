@@ -31,7 +31,7 @@ int get_undistortion_maps(cv::Mat& mapx, cv::Mat& mapy)
 
   // load insorinsic file
   cv::FileStorage fs;
-  fs.open(CAMERA_UTILS_DATA_DIR "/sf3324.yml", cv::FileStorage::READ);
+  fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/sn_ar0231_gmsl_120h.yml", cv::FileStorage::READ);
   fs["camera_matrix"] >> camera_matrix;
   fs["distortion_coefficients"] >> distortion_coefficients;
   fs.release();

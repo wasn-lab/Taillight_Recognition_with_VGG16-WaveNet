@@ -29,6 +29,7 @@ public:
   static cv::Scalar purple_;
   static cv::Scalar yellow_;
   static cv::Scalar gray_;
+  static cv::Scalar black_;
 };
 
 enum color_enum

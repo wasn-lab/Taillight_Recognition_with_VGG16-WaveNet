@@ -77,7 +77,7 @@ bool VoxelGrid_CUDA::run(typename pcl::PointCloud<PointT>& point_cloud, float re
     std::cout << "[voxel_grid] Error: max thread equals 0" << std::endl;
     return false;
   }
-  
+
   err = cudaMalloc((void**)&d_point_cloud, point_cloud.points.size() * sizeof(PointT));
   if (err != ::cudaSuccess)
   {

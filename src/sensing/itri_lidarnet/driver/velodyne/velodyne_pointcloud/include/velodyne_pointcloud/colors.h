@@ -57,10 +57,12 @@ class RingColors
 {
 public:
   RingColors(ros::NodeHandle node, ros::NodeHandle private_nh);
-  ~RingColors() {}
+  ~RingColors()
+  {
+  }
 
 private:
-  void convertPoints(const VPointCloud::ConstPtr &inMsg);
+  void convertPoints(const VPointCloud::ConstPtr& inMsg);
 
   ros::Subscriber input_;
   ros::Publisher output_;

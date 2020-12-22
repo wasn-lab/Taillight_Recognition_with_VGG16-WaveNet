@@ -109,6 +109,18 @@ bool CudaDownSample::downsampling(pcl::PointCloud<pcl::PointXYZI>& point_cloud, 
     return false;
   }
 
+  if ((rgd_params.number_of_buckets_X < 0) || (rgd_params.number_of_buckets_Y < 0) || (rgd_params.number_of_buckets_Z < 0))
+  { 
+    std::cout << "[Error] rgd_params.numer_of_buckets is overflow"<<std::endl;
+    return false;
+  }
+
+  if (rgd_params.number_of_buckets == 0)
+  {
+    std::cout << "[Error] rgd_params.number_of_buckets = 0"<<std::endl;
+    return false;
+  }
+
   // std::cout << "regular grid parameters:" << std::endl;
   // std::cout << "bounding_box_min_X: " << rgd_params.bounding_box_min_X << std::endl;
   // std::cout << "bounding_box_min_Y: " << rgd_params.bounding_box_min_Y << std::endl;

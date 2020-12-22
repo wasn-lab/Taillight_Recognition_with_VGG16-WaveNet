@@ -6,9 +6,6 @@ readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build_scan_build
 readonly devel_dir=devel_scan_build
-if [[ -d /usr/local/llvm-6.0.0/bin ]]; then
-  export PATH=/usr/local/llvm-6.0.0/bin:$PATH
-fi
 export CC=clang
 export CXX=clang++
 
@@ -34,7 +31,6 @@ scan-build -o ${output_dir} catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DENABLE_CCACHE=0 \
-    -DCAR_MODEL=OMNIBUS \
     -DCATKIN_BLACKLIST_PACKAGES="$blacklist" \
     -j6 ${EXTRA_CATKIN_ARGS}
 

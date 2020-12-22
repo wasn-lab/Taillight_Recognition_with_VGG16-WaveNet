@@ -47,9 +47,7 @@ struct NetworkInfo
     std::string wtsFilePath;
     std::string labelsFilePath;
     std::string precision;
-#if TENSORRT_VERSION_MAJOR == 5
     std::string deviceType;
-#endif
     std::string calibrationTablePath;
     std::string enginePath;
     std::string inputBlobName;
@@ -112,9 +110,7 @@ protected:
     const std::string m_WtsFilePath;
     const std::string m_LabelsFilePath;
     const std::string m_Precision;
-#if TENSORRT_VERSION_MAJOR == 5
     const std::string m_DeviceType;
-#endif
     const std::string m_CalibImages;
     const std::string m_CalibImagesFilePath;
     std::string m_CalibTableFilePath;

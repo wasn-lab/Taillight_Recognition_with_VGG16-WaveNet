@@ -248,10 +248,19 @@ void EdgeDetection::calculate()
 
   extractIndice(cloud_filtered, cloud_non_terrain, ground, true);
   extractIndice(cloud_filtered, cloud_terrain, ground, false);
+
+//  // Radius Filter Here -------------
+  // boost::shared_ptr<pcl::PointCloud<PointT> > cloud_non_terrain_non_noise(new pcl::PointCloud<PointT>);
+  // radiusFilter(cloud_non_terrain, cloud_non_terrain_non_noise, 0.13, 1);
+  // *non_ground_pointCloud_ = *cloud_non_terrain_non_noise;
+//   // --------------------------------
+
   *non_ground_pointCloud_ = *cloud_non_terrain;
+  
   *ground_pointCloud_ = *cloud_terrain;
 
   boost::shared_ptr<pcl::PointCloud<PointT> > cloud_terrain_filter_i(new pcl::PointCloud<PointT>);
+
 
   // Project to z plane ------------------------------------
   boost::shared_ptr<pcl::PointCloud<PointT> > cloud_terrain_2D(new pcl::PointCloud<PointT>);

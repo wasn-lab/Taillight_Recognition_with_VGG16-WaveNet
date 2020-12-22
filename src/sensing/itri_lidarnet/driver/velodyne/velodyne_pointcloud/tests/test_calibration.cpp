@@ -130,8 +130,7 @@ TEST(Calibration, hdl64e)
 
 TEST(Calibration, hdl64e_s21)
 {
-  Calibration calibration(g_package_path + "/params/64e_s2.1-sztaki.yaml",
-                          false);
+  Calibration calibration(g_package_path + "/params/64e_s2.1-sztaki.yaml", false);
   EXPECT_TRUE(calibration.initialized);
   ASSERT_EQ(calibration.num_lasers, 64);
 
@@ -154,9 +153,7 @@ TEST(Calibration, hdl64e_s21)
 
 TEST(Calibration, hdl64e_s2_float_intensities)
 {
-  Calibration calibration(g_package_path +
-                          "/tests/issue_84_float_intensities.yaml",
-                          false);
+  Calibration calibration(g_package_path + "/tests/issue_84_float_intensities.yaml", false);
   EXPECT_TRUE(calibration.initialized);
   ASSERT_EQ(calibration.num_lasers, 64);
 
@@ -186,10 +183,9 @@ TEST(Calibration, hdl64e_s2_float_intensities)
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   init_global_data();
   return RUN_ALL_TESTS();
 }
-

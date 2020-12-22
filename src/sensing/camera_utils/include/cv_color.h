@@ -4,7 +4,6 @@
 
 namespace camera_utils
 {
-
 enum color
 {
   aliceblue,

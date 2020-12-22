@@ -9,8 +9,9 @@ S1Cluster::S1Cluster(boost::shared_ptr<pcl::visualization::PCLVisualizer> input_
   viewer = input_viewer;
   viewID = input_viewID;
 
-  dbscan.setEpsilon (0.6, 0.6, 0.28, 0.6, 0.28);
-  dbscan.setMinpts (5, 5, 5, 5, 5);
+  ros::param::get("/use_shape_estimation", use_shape_estimation);
+  dbscan.setEpsilon(0.6, 0.6, 0.28, 0.6, 0.28);
+  dbscan.setMinpts(5, 5, 5, 5, 5);
 }
 
 S1Cluster::~S1Cluster()
@@ -49,12 +50,10 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
 #if ENABLE_LABEL_MODE == true
   dbscan.setInputCloud<PointXYZIL>(ptr_cur_cloud_il);
 #else
-  dbscan.setInputCloud<PointXYZ> (ptr_cur_cloud);
+  dbscan.setInputCloud<PointXYZ>(ptr_cur_cloud);
 #endif
 
-  dbscan.segment (vector_cluster);
-
-  
+  dbscan.segment(vector_cluster);
 
 #if ENABLE_DEBUG_MODE == true
   cout << "-------------------------------Part 1 : get cluster_vector " << timer.getTimeSeconds() << ","
@@ -138,10 +137,13 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
        bbox.compute (cluster_vector.at (i).obb_vertex, cluster_vector.at (i).center, cluster_vector.at (i).covariance,
        cluster_vector.at (i).min, cluster_vector.at (i).max);*/
 
-      UseApproxMVBB bbox2;
-      bbox2.setInputCloud(cluster_vector.at(i).cloud);
-      bbox2.Compute(cluster_vector.at(i).obb_vertex, cluster_vector.at(i).cld_center, cluster_vector.at(i).min,
-                    cluster_vector.at(i).max, cluster_vector.at(i).convex_hull);
+      if (!use_shape_estimation)
+      {
+        UseApproxMVBB bbox2;
+        bbox2.setInputCloud(cluster_vector.at(i).cloud);
+        bbox2.Compute(cluster_vector.at(i).obb_vertex, cluster_vector.at(i).cld_center, cluster_vector.at(i).min,
+                      cluster_vector.at(i).max, cluster_vector.at(i).convex_hull);
+      }
 
       cluster_vector.at(i).dx = fabs(cluster_vector.at(i).max.x - cluster_vector.at(i).min.x);
       cluster_vector.at(i).dy = fabs(cluster_vector.at(i).max.y - cluster_vector.at(i).min.y);
@@ -239,6 +241,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
         // ============== label counting for providing cluster_tag with class types ==================
         if (cluster_vector.at(i).cluster_tag == 1)
         {
+
           size_t cnt_person = 0;
           size_t cnt_motor = 0;
           size_t cnt_car = 0;
@@ -302,6 +305,21 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
               {
                 cluster_vector.at(i).cluster_tag = nnClassID::Car;
               }
+            }
+          }
+          if (use_shape_estimation)
+          {
+            if (cluster_vector.at(i).cluster_tag == nnClassID::Car)
+            {
+              estimator_.getShapeAndPose(nnClassID::Car, cluster_vector.at(i));
+            }
+            else if (cluster_vector.at(i).cluster_tag == nnClassID::Motobike)
+            {
+              estimator_.getShapeAndPose(nnClassID::Motobike, cluster_vector.at(i));
+            }
+            else if (cluster_vector.at(i).cluster_tag == nnClassID::Person)
+            {
+              estimator_.getShapeAndPose(nnClassID::Person, cluster_vector.at(i));
             }
           }
         }
@@ -433,8 +451,7 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
   cluster_vector.resize(k);
 
   *cluster_number = cluster_vector.size();
-  auto* cluster_modify =
-      new CLUSTER_INFO[cluster_vector.size()];  // initialize an vector of cluster point cloud
+  auto* cluster_modify = new CLUSTER_INFO[cluster_vector.size()];  // initialize an vector of cluster point cloud
 
   for (size_t i = 0; i < cluster_vector.size(); i++)
   {

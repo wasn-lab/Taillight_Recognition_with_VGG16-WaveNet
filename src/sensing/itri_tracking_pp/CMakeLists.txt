@@ -6,7 +6,6 @@ include(CompilerFlags)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  geometry_msgs
   tf2_geometry_msgs
   std_msgs
   nav_msgs
@@ -37,7 +36,8 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIR}
-  ${hungarian_SOURCE_DIR}/src     
+  ${msgs_SOURCE_DIR}/include
+  ${hungarian_SOURCE_DIR}/src
 )
 
 set(SOURCES_SRCS
@@ -51,7 +51,6 @@ set(SOURCES_SRCS
   src/point32_impl.cpp
   src/ros_params_parser.cpp
   src/simple_kalman.cpp
-  src/tpp_args_parser.cpp
   src/tpp_node.cpp
   src/track_hist.cpp
   src/utils.cpp

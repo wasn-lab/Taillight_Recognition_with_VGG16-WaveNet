@@ -2,16 +2,16 @@
     <include file="$(find localization)/launch/localization.launch" />
     <include file="$(find map_pub)/launch/map_pub.launch" />
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/localization_raw_2020-04-13-17-45-48_0.bag" />
-
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/localization_raw_2020-09-24-17-02-06.bag -l">
+    </node>
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
             topics:
                 - name: /current_pose
-                  timeout: 15
+                  timeout: 30
                   negative: False
                 - name: /localization_to_veh
-                  timeout: 15
+                  timeout: 30
                   negative: False
         </rosparam>
     </test>

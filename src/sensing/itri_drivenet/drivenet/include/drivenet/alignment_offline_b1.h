@@ -45,6 +45,7 @@ public:
   void approx_nearest_points_if_necessary();
   bool search_valid_neighbor(const int row, const int col, cv::Point* valid_neighbor) const;
   void dump_distance_in_json() const;
+  void visualize() const;
   std::string jsonize_spatial_points(cv::Point3d** spatial_points_, int rows, int cols) const;
 };
 

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(trimble_gps_imu_pub)
+project(trimble_grabber)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   tf
   car_model
+  gnss_utility
 )
 
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
@@ -21,7 +22,7 @@ include(CompilerFlags)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp std_msgs car_model
+  CATKIN_DEPENDS roscpp std_msgs car_model gnss_utility
 )
 
 include_directories(
@@ -30,13 +31,13 @@ include_directories(
 )
 
 
-add_executable(${PROJECT_NAME}_node src/GsofParser_imu_c.cpp)
+add_executable(${PROJECT_NAME} src/GsofParser_imu_c.cpp)
 
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 MESSAGE("Generate ${PROJECT_NAME}")
 
-add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS} )
-#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS} )
+#add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS})

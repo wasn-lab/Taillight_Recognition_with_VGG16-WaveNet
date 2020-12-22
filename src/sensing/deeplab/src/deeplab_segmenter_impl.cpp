@@ -100,31 +100,24 @@ DeeplabSegmenterImpl::~DeeplabSegmenterImpl()
   output_tensor_ = nullptr;
 }
 
-/*
- * Returns:
- *   - 0: No resize
- *   - 1: resize image_in to DEEPLAB_IMAGE_WIDTH * image_height
- **/
 int32_t DeeplabSegmenterImpl::preprocess_for_input_tensor(const cv::Mat& img_in, cv::Mat& img_rgb)
 {
   cv::Mat img_bgr;
-  int32_t resized = 0;
 
   assert(img_in.rows > 0);
   assert(img_in.cols > 0);
   if (img_in.rows != DEEPLAB_IMAGE_HEIGHT || img_in.cols != DEEPLAB_IMAGE_WIDTH)
   {
-    LOG(WARNING) << "Expect image size " << DEEPLAB_IMAGE_WIDTH << "x" << DEEPLAB_IMAGE_HEIGHT << ", Got " << img_in.cols
-                             << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
+    LOG(WARNING) << "Expect image size " << DEEPLAB_IMAGE_WIDTH << "x" << DEEPLAB_IMAGE_HEIGHT << ", Got "
+                 << img_in.cols << "x" << img_in.rows << ". Resize to fit deeplab requirement.";
     resize_to_deeplab_input(img_in, img_bgr);
-    resized = 1;
   }
   else
   {
     img_bgr = img_in.clone();
   }
   cv::cvtColor(img_bgr, img_rgb, cv::COLOR_BGR2RGB);
-  return resized;
+  return 0;
 }
 
 int32_t DeeplabSegmenterImpl::inference(const cv::Mat& img_rgb)
@@ -189,14 +182,23 @@ int32_t DeeplabSegmenterImpl::postprocess_with_labels(const int64_t* labels, con
   return 0;
 }
 
-int32_t DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
+int32_t DeeplabSegmenterImpl::segment_with_labels(const cv::Mat& img_in, cv::Mat& img_out, uint8_t* labels)
 {
   cv::Mat img_rgb;
-  auto resized = preprocess_for_input_tensor(img_in, img_rgb);
+  preprocess_for_input_tensor(img_in, img_rgb);
   inference(img_rgb);
-  postprocess_with_labels(static_cast<int64_t*>(TF_TensorData(output_tensor_)), img_rgb, img_out);
 
-  if (resized)
+  auto* labels64 = static_cast<int64_t*>(TF_TensorData(output_tensor_));
+  if (labels)
+  {
+    for (auto idx = 0; idx < NUM_PIXELS; idx++)
+    {
+      labels[idx] = static_cast<uint8_t>(labels64[idx]);
+    }
+  }
+
+  postprocess_with_labels(labels64, img_rgb, img_out);
+  if (img_in.rows != DEEPLAB_IMAGE_HEIGHT || img_in.cols != DEEPLAB_IMAGE_WIDTH)
   {
     resize_to_608x384(img_out);
   }
@@ -205,6 +207,36 @@ int32_t DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
   // See https://github.com/tensorflow/tensorflow/issues/29733
   tf_utils::DeleteTensor(output_tensor_);
   output_tensor_ = nullptr;
+  return 0;
+}
+
+int32_t DeeplabSegmenterImpl::segment(const cv::Mat& img_in, cv::Mat& img_out)
+{
+  return segment_with_labels(img_in, img_out, nullptr);
+}
+
+int32_t DeeplabSegmenterImpl::count_labels(const int64_t* labels)
+{
+  std::unordered_map<uint64_t, size_t> pixel_map;
+  for (auto idx = 0; idx < NUM_PIXELS; idx++)
+  {
+    auto label = labels[idx];
+    if (label > 0)
+    {
+      if (pixel_map.find(label) == pixel_map.end())
+      {
+        pixel_map[label] = 1;
+      }
+      else
+      {
+        pixel_map[label] += 1;
+      }
+    }
+  }
+  for (auto& it : pixel_map)
+  {
+    LOG(INFO) << "label " << int(it.first) << " occurs " << it.second << " times.";
+  }
   return 0;
 }
 

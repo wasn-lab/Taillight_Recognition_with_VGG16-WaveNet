@@ -34,17 +34,11 @@
 #include <msgs/DetectedObjectArray.h>
 #include <msgs/VehInfo.h>
 
-#define TTC_TEST 0
-#if TTC_TEST
-#include <std_msgs/Int32.h>
-#include <std_msgs/Float64.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
-#else
+#include "detected_object_class_id.h"
+
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TransformStamped.h>
-#endif
 
 #include <std_msgs/ColorRGBA.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -63,13 +57,14 @@
 #define MyPoint32 msgs::PointXYZ
 #define Vector3_32 msgs::PointXYZ
 
+#define HEARTBEAT 1
+
 #define FPS 0
 #define ENABLE_PROFILING_MODE 0
 
 // virtual input test
 #define VIRTUAL_INPUT 0
 #define SAME_OBJ_MARKER_HEADER 0
-#define SAVE_OUTPUT_TXT 0
 
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
 
@@ -91,6 +86,8 @@
 #define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
 
+#define EGO_AS_DETECTED_OBJ 0
+
 #define PP_WAYAREA 1
 
 #define PUNISH_OBJCLASS_CHANGE 0
@@ -101,10 +98,7 @@
 #define TO_GRIDMAP 1
 #endif
 
-#define USE_RADAR_REL_SPEED 0  // use radar's relative speed w.r.t. ego-vehicle
-#if USE_RADAR_REL_SPEED
 #define USE_RADAR_ABS_SPEED 0  // compute absolute speed from ege speed, ego heading, and radar's relative speed
-#endif
 
 #define REMOVE_IMPULSE_NOISE 0
 #define NOT_OUTPUT_SHORT_TERM_TRACK_LOST_BBOX 0
@@ -115,7 +109,7 @@
 #define O_P std::setprecision(8)
 
 #define USE_GLOG 0
-#if USE_GLOG
+#if USE_GLOG == 1
 #include "glog/logging.h"
 #define LOG_INFO LOG(INFO)
 #define LOG_WARNING LOG(WARNING)
@@ -143,8 +137,6 @@ struct PoseRPY32
 
 struct MarkerConfig
 {
-  ros::Publisher pub_bbox;
-  ros::Publisher pub_pp;
   ros::Publisher pub_vel;
 
   ros::Publisher pub_id;
@@ -158,7 +150,6 @@ struct MarkerConfig
   bool show_source = 0;
   bool show_distance = 0;
   bool show_absspeed = 0;  // km/h
-  unsigned int show_pp = 0;
 
   std_msgs::ColorRGBA color;
   std_msgs::ColorRGBA color_lidar_tpp;
@@ -166,6 +157,6 @@ struct MarkerConfig
   std_msgs::ColorRGBA color_camera_tpp;
   std_msgs::ColorRGBA color_fusion_tpp;
 };
-}
+}  // namespace tpp
 
 #endif  // __TPP_BASE_H__

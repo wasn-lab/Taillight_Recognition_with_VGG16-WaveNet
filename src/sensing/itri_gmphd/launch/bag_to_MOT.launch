@@ -1,0 +1,29 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- pedcross input source -->
+  <!-- 0: camera front center -->
+  <!-- 1: camera front left -->
+  <!-- 2: camera front right -->
+  <!-- 3: tracking with camera front center -->
+  <arg name="input_source" default="3" />
+
+  <!-- Set max distance(m) to predict pedestrians -->
+  <arg name="max_distance" default="70" />
+
+  <!-- Set danger zone distance(m) to planned path -->
+  <arg name="danger_zone_distance" default="2" />
+
+  <!-- rviz markers -->
+  <!-- true : use 2d for danger zone -->
+  <!-- false: use 3d for danger zone -->
+  <arg name="use_2d_for_alarm" default="False" />
+
+  <!-- rviz markers -->
+  <!-- true : show probabiliy -->
+  <!-- false: not show probability -->
+  <arg name="show_probability" default="True" />
+
+  <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
+  <node pkg="itri_gmphd" type="bag_to_MOT" name="bag_to_MOT" cwd="node" output="screen"></node>
+</launch>

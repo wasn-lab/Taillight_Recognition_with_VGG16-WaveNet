@@ -10,9 +10,10 @@
 
 #include "ouster/lidar_scan.h"
 
-namespace ouster {
-namespace viz {
-
+namespace ouster
+{
+namespace viz
+{
 /**
  * Handle to visualizer state
  */
@@ -45,5 +46,5 @@ void run_viz(VizHandle& vh);
  * @param vh handle to visualizer state returned by init_viz()
  */
 void shutdown(VizHandle& vh);
-}
-}
+}  // namespace viz
+}  // namespace ouster

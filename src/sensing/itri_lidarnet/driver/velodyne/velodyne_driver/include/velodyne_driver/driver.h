@@ -44,39 +44,36 @@
 
 namespace velodyne_driver
 {
-
 class VelodyneDriver
 {
 public:
-  VelodyneDriver(ros::NodeHandle node,
-                 ros::NodeHandle private_nh);
-  ~VelodyneDriver() {}
+  VelodyneDriver(ros::NodeHandle node, ros::NodeHandle private_nh);
+  ~VelodyneDriver()
+  {
+  }
 
   bool poll(void);
 
 private:
   // Callback for dynamic reconfigure
-  void callback(velodyne_driver::VelodyneNodeConfig &config,
-              uint32_t level);
+  void callback(velodyne_driver::VelodyneNodeConfig& config, uint32_t level);
   // Callback for diagnostics update for lost communication with vlp
-  void diagTimerCallback(const ros::TimerEvent&event);
+  void diagTimerCallback(const ros::TimerEvent& event);
 
   // Pointer to dynamic reconfigure service srv_
-  boost::shared_ptr<dynamic_reconfigure::Server<velodyne_driver::
-              VelodyneNodeConfig> > srv_;
+  boost::shared_ptr<dynamic_reconfigure::Server<velodyne_driver::VelodyneNodeConfig> > srv_;
 
   // configuration parameters
   struct
   {
-    std::string frame_id;            // tf frame ID
-    std::string model;               // device model name
-    int    npackets;                 // number of packets to collect
-    double rpm;                      // device rotation rate (RPMs)
-    int cut_angle;                   // cutting angle in 1/100°
-    double time_offset;              // time in seconds added to each velodyne time stamp
-    bool enabled;                    // polling is enabled
-  }
-  config_;
+    std::string frame_id;  // tf frame ID
+    std::string model;     // device model name
+    int npackets;          // number of packets to collect
+    double rpm;            // device rotation rate (RPMs)
+    int cut_angle;         // cutting angle in 1/100°
+    double time_offset;    // time in seconds added to each velodyne time stamp
+    bool enabled;          // polling is enabled
+  } config_;
 
   boost::shared_ptr<Input> input_;
   ros::Publisher output_;

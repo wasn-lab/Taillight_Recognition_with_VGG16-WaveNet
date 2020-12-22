@@ -9,7 +9,7 @@
                 - name: /radar_point_cloud
                   timeout: 15
                   negative: False
-                - name: /PathPredictionOutput/radar
+                - name: /RadarDetection
                   timeout: 15
                   negative: False
         </rosparam>

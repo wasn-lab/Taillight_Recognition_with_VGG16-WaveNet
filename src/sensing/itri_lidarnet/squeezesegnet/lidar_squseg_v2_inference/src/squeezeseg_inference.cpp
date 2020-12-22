@@ -78,6 +78,7 @@ int main(int argc, char** argv)
   {
     SSN_all.at(i).TF_quit();
   }
+  LidarAllSub.shutdown();
 
   // SSN_P0deg.TF_quit();
 

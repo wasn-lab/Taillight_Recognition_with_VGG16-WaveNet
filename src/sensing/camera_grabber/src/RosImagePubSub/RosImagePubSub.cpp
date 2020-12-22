@@ -104,14 +104,16 @@ bool ImageTransfer::get(std::shared_ptr<cv::Mat>& content_out_ptr)
 //==================================================//
 //==================================================//
 
-RosImagePubSub::RosImagePubSub(ros::NodeHandle& nh_in) : _nh_ptr(&nh_in), _ros_it(nh_in)
+RosImagePubSub::RosImagePubSub(ros::NodeHandle nh_in) : _nh_ptr(nh_in), _ros_it(nh_in)
 {
 }
 
 //
 bool RosImagePubSub::add_a_pub(size_t id_in, const std::string& topic_name)
 {
-  auto result = _image_publisher_map.emplace(id_in, _ros_it.advertise(topic_name, 1));
+  auto result = _image_publisher_map.emplace(id_in, _ros_it.advertise(topic_name + std::string("/raw"), 1));
+  _heartbeat_publisher_map.emplace(id_in,
+                                   _nh_ptr.advertise<std_msgs::Empty>(topic_name + std::string("/heartbeat"), 1));
   return result.second;
 }
 
@@ -133,10 +135,41 @@ bool RosImagePubSub::send_image(const int topic_id, const cv::Mat& content_in)
   }
 }
 
-bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_in)
+bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_in, ros::Time ros_time)
 {
   cv::Mat mat_img;
   cv::cvtColor(content_in, mat_img, cv::COLOR_RGB2BGR);  //=COLOR_BGRA2RGB
+
+  std_msgs::Header header;  // empty header
+  // header.seq = sequence;			 // user defined counter
+  header.stamp = ros_time;     // time
+  header.frame_id = "camera";  // camera id
+
+  sensor_msgs::Image img_msg;
+  cv_bridge::CvImage img_bridge;
+
+  img_bridge = cv_bridge::CvImage(header, "bgr8", mat_img);
+  img_bridge.toImageMsg(img_msg);  // from cv_bridge to sensor_msgs::Image
+  std_msgs::Empty empty_msg;
+
+  auto m_it = _image_publisher_map.find(topic_id);
+  if (m_it != _image_publisher_map.end())
+  {
+    _image_publisher_map[topic_id].publish(img_msg);
+    _heartbeat_publisher_map[topic_id].publish(empty_msg);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in)
+{
+  cv::Mat mat_img;
+
+  mat_img = content_in;  // always is BGR format
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
@@ -160,7 +193,6 @@ bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_i
     return false;
   }
 }
-
 //
 bool RosImagePubSub::add_a_sub(size_t id_in, const std::string& topic_name)
 {

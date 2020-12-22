@@ -1,0 +1,6 @@
+Id,Kind,fname
+1,R001,roadedge.csv
+2,R004,intersection.csv
+3,P002,stopline.csv
+4,K004,signaldata.csv
+5,K005,streetlight.csv

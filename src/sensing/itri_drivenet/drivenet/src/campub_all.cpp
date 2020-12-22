@@ -89,49 +89,49 @@ void collectRepub()
 
   for (size_t i = 0; i < g_arr_cam_obj_fc.size(); i++)
   {
-    g_arr_cam_obj_fc[i].camInfo.id = camera::id::front_bottom_60;
+    g_arr_cam_obj_fc[i].camInfo[0].id = camera::id::front_bottom_60;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_fc[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_ft_f.size(); i++)
   {
-    g_arr_cam_obj_ft_f[i].camInfo.id = camera::id::front_top_far_30;
+    g_arr_cam_obj_ft_f[i].camInfo[0].id = camera::id::front_top_far_30;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_ft_f[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_ft_c.size(); i++)
   {
-    g_arr_cam_obj_ft_c[i].camInfo.id = camera::id::front_top_close_120;
+    g_arr_cam_obj_ft_c[i].camInfo[0].id = camera::id::front_top_close_120;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_ft_c[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_rf.size(); i++)
   {
-    g_arr_cam_obj_rf[i].camInfo.id = camera::id::right_front_60;
+    g_arr_cam_obj_rf[i].camInfo[0].id = camera::id::right_front_60;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_rf[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_rb.size(); i++)
   {
-    g_arr_cam_obj_rb[i].camInfo.id = camera::id::right_back_60;
+    g_arr_cam_obj_rb[i].camInfo[0].id = camera::id::right_back_60;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_rb[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_lf.size(); i++)
   {
-    g_arr_cam_obj_lf[i].camInfo.id = camera::id::left_front_60;
+    g_arr_cam_obj_lf[i].camInfo[0].id = camera::id::left_front_60;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_lf[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_lb.size(); i++)
   {
-    g_arr_cam_obj_lb[i].camInfo.id = camera::id::left_back_60;
+    g_arr_cam_obj_lb[i].camInfo[0].id = camera::id::left_back_60;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_lb[i]);
   }
 
   for (size_t i = 0; i < g_arr_cam_obj_bt.size(); i++)
   {
-    g_arr_cam_obj_bt[i].camInfo.id = camera::id::back_top_120;
+    g_arr_cam_obj_bt[i].camInfo[0].id = camera::id::back_top_120;
     arr_cam_obj_all.objects.push_back(g_arr_cam_obj_bt[i]);
   }
 

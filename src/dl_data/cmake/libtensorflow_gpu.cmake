@@ -9,7 +9,7 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
 endif()
 
 download_file(
-    URL "http://118.163.54.109:8888/Share/ADV/Hino_git_data/ForLiDAR/${LIBTENSORFLOW_TARGZ}"
+    URL "http://nas.itriadv.co:8888/git_data/B1/${LIBTENSORFLOW_TARGZ}"
     DESTINATION "${ASSETS_DIR}/${LIBTENSORFLOW_TARGZ}"
     MD5 ${LIBTENSORFLOW_MD5})
 

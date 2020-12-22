@@ -14,7 +14,7 @@
 
 namespace ApproxMVBB
 {
-   ProjectedPointSet::ProjectedPointSet() = default;
-   ProjectedPointSet::~ProjectedPointSet() = default;
+ProjectedPointSet::ProjectedPointSet() = default;
+ProjectedPointSet::~ProjectedPointSet() = default;
 }  // namespace ApproxMVBB
 #endif

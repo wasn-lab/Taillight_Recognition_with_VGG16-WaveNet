@@ -6,9 +6,29 @@
 
 namespace tpp
 {
-constexpr unsigned int num_forecasts_ = 20;
+static constexpr unsigned int NUM_FORECASTS = 30;
 
-constexpr unsigned int num_2dbox_corners = 4;
+static constexpr unsigned int NUM_2DBOX_CORNERS = 4;
+
+enum InputSource
+{
+  Fusion = 0,
+  LidarDet,
+  LidarDet_PointPillars_Car,
+  LidarDet_PointPillars_Ped_Cyc,
+  VirtualBBoxAbs,
+  VirtualBBoxRel,
+  CameraDetV2,
+  Tracking2D,
+  NumInputSources
+};
+
+enum OccupancySource
+{
+  PlannedPathBased = 0,
+  MapBased,
+  NumOccupancySources
+};
 
 struct BoxCenter
 {
@@ -92,7 +112,7 @@ struct PPLongDouble
   tf2::Quaternion q1;  // direction of vector1 of confidence ellipse
   tf2::Quaternion q2;  // direction of vector2 of confidence ellipse
 
-#if PP_VERTICES_VIA_SPEED
+#if PP_VERTICES_VIA_SPEED == 1
   msgs::PointXY v1;  // vertex1 of confidence ellipse
   msgs::PointXY v2;  // vertex2 of confidence ellipse
   msgs::PointXY v3;  // co-vertex1 of confidence ellipse
