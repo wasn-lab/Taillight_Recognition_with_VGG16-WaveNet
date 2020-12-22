@@ -22,7 +22,6 @@ Lidar List:
 
 <!-- Global arg ************************************************************ -->
     <!-- System -->
-	<arg name="mps" default="true" />
 	<arg name="mode" default="0" />
 
 	<!-- Hardware -->
@@ -60,11 +59,6 @@ Lidar List:
 <!-- tf2 ******************************************************************* -->
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 base_link os1_sensor" />
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
-
-<!-- MPS ******************************************************************* -->
-	<group if="$(arg mps)">
-		<node pkg="scripts" type="mps.sh" name="mps" output="screen"/>
-	</group>
 
 <!-- Compression *********************************************************** -->
 	<group if="$(arg use_compress)">
