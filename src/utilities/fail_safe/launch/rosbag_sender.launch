@@ -1,4 +1,4 @@
 <launch>
   <node name="rosbag_sender" pkg="fail_safe" type="run_rosbag_sender.py" respawn="true" />
-  <node name="rosbag_sender" pkg="fail_safe" type="run_sb_rosbag_sender.py" respawn="true" />
+  <node name="sb_rosbag_sender" pkg="fail_safe" type="run_sb_rosbag_sender.py" respawn="true" />
 </launch>
