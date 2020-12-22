@@ -8,7 +8,8 @@
     args="    
     -expected_fps 22
     -do_resize=true
-    -password nvidia    
+    -password nvidia
+    -car_driver=true    
     "
     output="screen"
   />
