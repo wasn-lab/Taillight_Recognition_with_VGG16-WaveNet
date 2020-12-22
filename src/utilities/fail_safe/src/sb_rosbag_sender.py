@@ -7,6 +7,7 @@ import configparser
 import os
 import io
 import re
+import sys
 import rospy
 from sb_param_utils import get_license_plate_number, get_company_name, get_vid
 
@@ -106,7 +107,10 @@ class SBRosbagSender(object):
         script = self.generate_lftp_script()
         script_file = os.path.join(self.rosbag_dir, "lftp_script.txt")
         with io.open(script_file, "w", encoding="utf-8") as _fp:
-            _fp.write(script.decode("utf-8"))
+            if sys.version_info.major == 2:
+                _fp.write(script.decode("utf-8"))
+            else:
+                _fp.write(script)
         return script_file
 
     def run(self):
