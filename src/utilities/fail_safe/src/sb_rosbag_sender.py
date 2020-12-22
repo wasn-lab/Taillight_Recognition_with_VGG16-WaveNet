@@ -19,7 +19,6 @@ def get_bag_yymmdd(bag):
     _path, bag_fn = os.path.split(bag)
     match = _BAG_RGX.search(bag_fn)
     if not match:
-        logging.warn("Cannot parse filename: %s", bag)
         return "999999"
     year = match.expand(r"\g<year>")
     month = match.expand(r"\g<month>")
@@ -75,9 +74,8 @@ class SBRosbagSender(object):
         hour = match.expand(r"\g<hour>")
         minute = match.expand(r"\g<minute>")
         # second = match.expand(r"\g<second>")
-        fn = (self.company_name + "_" + self.vid + "_camera_" +
-              year + month + day + "_" + hour + minute)
-        return fn
+        return (self.company_name + "_" + self.vid + "_camera_" +
+                year + month + day + "_" + hour + minute)
 
     def get_sb_bag_name(self, bag_fullpath):
         basename = self._get_sb_bag_basename(bag_fullpath)
@@ -87,7 +85,7 @@ class SBRosbagSender(object):
 
     def generate_lftp_script(self):
         if not os.path.isdir(self.rosbag_dir):
-            return
+            return ""
         self.bag_seqs = {}
 
         sftp_cmds = [("open -p " + self.port +
@@ -116,5 +114,6 @@ class SBRosbagSender(object):
         while not rospy.is_shutdown():
             script_file = self.write_lftp_script()
             rospy.logwarn("Write %s", script_file)
-            rospy.logwarn("  Use lftp -f %s to upload all the bag files to south bridge server", script_file)
+            rospy.logwarn(("  Use lftp -f %s to upload all the bag files to "
+                           "south bridge server"), script_file)
             rate.sleep()
