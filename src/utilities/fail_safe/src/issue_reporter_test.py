@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 import datetime
 from issue_reporter import IssueReporter, generate_issue_description
@@ -19,11 +20,15 @@ class IssueReporterTest(unittest.TestCase):
 
     def test_generate_issue_description(self):
         status_str = "Misbehaving modules: ACC AEB XByWire CAN"
-        desc = generate_issue_description(OK, status_str)
+        timestamp = 1608530369.999671  # (2020, 12, 21, 13, 59, 29, 999671)
+        desc = generate_issue_description(OK, status_str, timestamp)
         self.assertEqual(desc, "")
 
-        desc = generate_issue_description(WARN, status_str)
+        desc = generate_issue_description(WARN, status_str, timestamp)
         self.assertTrue(len(desc) > 0)
+        url = (u"https://service.itriadv.co:8743/ADV/EventPlayback?"
+               u"plate=試0002&startDt=2020-12-21 13:59&endDt=2020-12-21 14:00")
+        self.assertTrue(url in desc)
 
 if __name__ == "__main__":
     unittest.main()
