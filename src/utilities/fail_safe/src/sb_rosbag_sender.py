@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Generate lftp scripts for uploading rosbag files.
 """
@@ -107,12 +107,12 @@ class SBRosbagSender(object):
     def write_lftp_script(self):
         script = self.generate_lftp_script()
         script_file = os.path.join(self.rosbag_dir, "lftp_script.txt")
-        with io.open(script_file, "w") as _fp:
-            _fp.write(script_file)
+        with io.open(script_file, "w", encoding="utf-8") as _fp:
+            _fp.write(script.decode("utf-8"))
         return script_file
 
     def run(self):
-        rate = rospy.Rate(0.1)
+        rate = rospy.Rate(1.0/15)
         while not rospy.is_shutdown():
             script_file = self.write_lftp_script()
             rospy.logwarn("Write %s", script_file)
