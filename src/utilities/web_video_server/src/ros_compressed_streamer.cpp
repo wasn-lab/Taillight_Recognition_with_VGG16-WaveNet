@@ -17,7 +17,8 @@ RosCompressedStreamer::~RosCompressedStreamer()
 }
 
 void RosCompressedStreamer::start() {
-  std::string compressed_topic = topic_ + "/compressed";
+  std::string compressed_topic = topic_ + "/jpg";
+  ROS_INFO_STREAM("Start: streaming " << compressed_topic);
   image_sub_ = nh_.subscribe(compressed_topic, 1, &RosCompressedStreamer::imageCallback, this);
 }
 
@@ -37,19 +38,22 @@ void RosCompressedStreamer::restreamFrame(double max_age)
 void RosCompressedStreamer::sendImage(const sensor_msgs::CompressedImageConstPtr &msg,
                                       const ros::Time &time) {
   try {
-    std::string content_type;
-    if(msg->format.find("jpeg") != std::string::npos) {
-      content_type = "image/jpeg";
-    }
-    else if(msg->format.find("png") != std::string::npos) {
-      content_type = "image/png";
-    }
-    else {
-      ROS_WARN_STREAM("Unknown ROS compressed image format: " << msg->format);
-      return;
-    }
+  // We use jpg as default, hence we can use fixed content_type here.
+  /*
+      std::string content_type;
+      if(msg->format.find("jpeg") != std::string::npos) {
+        content_type = "image/jpeg";
+      }
+      else if(msg->format.find("png") != std::string::npos) {
+        content_type = "image/png";
+      }
+      else {
+        ROS_WARN_STREAM("Unknown ROS compressed image format: " << msg->format);
+        return;
+      }
+  */
 
-    stream_.sendPart(time, content_type, boost::asio::buffer(msg->data), msg);
+  stream_.sendPart(time, "image/jpeg", boost::asio::buffer(msg->data), msg);
   }
   catch (boost::system::system_error &e)
   {
