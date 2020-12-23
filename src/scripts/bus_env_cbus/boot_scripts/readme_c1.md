@@ -5,6 +5,7 @@ Run the following commands for setting up the boot sequence:
   - set 192.168.1.3 for the iface with router
   - set 192.168.3.1 for the iface with camera
   - cp src/scripts/bus_env_cbus/boot_scripts/rosmasterd.sh /usr/local/bin/
+  - cp src/scripts/bus_env_cbus/boot_scripts/mps.sh /usr/local/bin/
   - cp src/scripts/bus_env_cbus/boot_scripts/lidar_rc.local /etc/rc.local
 
 - For camera IPC
