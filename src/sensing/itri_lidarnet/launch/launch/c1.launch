@@ -29,6 +29,8 @@ Lidar List:
     
 	<!-- Grabber & Preprocessing -->
 	<arg name="use_compress" default="true" />
+    <arg name="use_oct_compress" default="false" />
+
 	<arg name="use_filter" default="true" />
 	<arg name="use_roi" default="false" />
 	
@@ -48,6 +50,8 @@ Lidar List:
 
 <!-- Parameter ************************************************************* -->
 	<param name="use_compress" value="$(arg use_compress)" /> 
+	<param name="use_oct_compress" value="$(arg use_oct_compress)" />
+
 	<param name="use_filter" value="$(arg use_filter)"/>
 	<param name="use_roi" value="$(arg use_roi)"/>
 	<param name="use_shape_estimation" value="$(arg use_shape_estimation)"/>
