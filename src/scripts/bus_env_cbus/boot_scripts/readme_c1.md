@@ -8,6 +8,9 @@ Run the following commands for setting up the boot sequence:
 
 ```
 cp src/scripts/bus_env_cbus/boot_scripts/rosmasterd.sh /usr/local/bin/
+cp  src/scripts/bus_env_cbus/boot_scripts/systemd/system/rosmasterd.service /etc/systemd/system
+systemctl enable rosmasterd
+
 cp src/scripts/bus_env_cbus/boot_scripts/ip_forwarding.sh /usr/local/bin/
 cp src/scripts/bus_env_cbus/boot_scripts/mps.sh /usr/local/bin/
 cp src/scripts/bus_env_cbus/boot_scripts/lidar_rc.local /etc/rc.local
