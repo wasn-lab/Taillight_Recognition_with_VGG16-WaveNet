@@ -6,8 +6,7 @@ Run the following commands for setting up the boot sequence:
   - set 192.168.3.1 for the iface with camera
   - cp src/scripts/bus_env_cbus/boot_scripts/systemd/system/rosmasterd.service /etc/systemd/system/
   - cp src/scripts/bus_env_cbus/boot_scripts/rosmasterd.sh /usr/local/bin/
-  - echo "route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.3.10" >> /etc/rc.local
-  - chmod +x /etc/rc.local
+  - cp src/scripts/bus_env_cbus/boot_scripts/lidar_rc.local /etc/rc.local
 
 - For camera IPC
   - set 192.168.3.10 for the iface with lidar
