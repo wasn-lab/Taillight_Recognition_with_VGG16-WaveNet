@@ -10,8 +10,9 @@ gnome-terminal  -e "ssh -t camera 'echo itri | sudo -S bash /home/camera/itriadv
 sleep 3
 gnome-terminal  -e 'ssh -t ta "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1"'
 
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_mps.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "source ~/itriadv/devel/setup.bash;/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_web_video_server.sh;exec bash"'
 sleep 3
