@@ -1,0 +1,10 @@
+[Unit]
+Description=ROS master service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/rosmasterd.sh
+
+[Install]
+WantedBy=default.target
