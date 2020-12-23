@@ -53,7 +53,7 @@ StopWatch g_stopWatch_Compressor;
 
 bool g_debug_output = false;
 bool g_use_filter = false;
-bool g_use_compress = false;
+bool g_use_oct_compress = false;
 bool g_use_roi = false;
 
 void lidarAll_Pub(int lidarNum);
@@ -95,7 +95,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 #endif
 
     //-------------------------- compress thread
-    if (g_use_compress)
+    if (g_use_oct_compress)
     {
       thread t_LeftCompressor;  
       t_LeftCompressor = thread{Compressor, input_cloud_tmp_ring, g_pub_LidarFrontLeft_Compress};  
@@ -189,7 +189,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
 
-    if (g_use_compress)
+    if (g_use_oct_compress)
     {
       thread t_RightCompressor;  
       t_RightCompressor = thread{Compressor, input_cloud_tmp_ring, g_pub_LidarFrontRight_Compress};  
@@ -274,7 +274,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster");
 
-    if (g_use_compress)
+    if (g_use_oct_compress)
     { 
       thread t_TopCompressor;
       t_TopCompressor = thread {Compressor, input_cloud_tmp_ring, g_pub_LidarFrontTop_Compress};
@@ -487,7 +487,7 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", g_debug_output);
   ros::param::get("/use_filter", g_use_filter);
-  ros::param::get("/use_compress", g_use_compress);
+  ros::param::get("/use_oct_compress", g_use_oct_compress);
   ros::param::get("/use_roi", g_use_roi);
 
   // check stitching mode
