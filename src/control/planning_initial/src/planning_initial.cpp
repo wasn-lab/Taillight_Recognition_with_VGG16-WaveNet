@@ -63,6 +63,7 @@ double busstop_BuildingNum[2000] = {};
 double busstop_BusStopId[2000] = {};
 int read_index = 0;
 bool busstop_ini = false;
+bool use_virtual_objects_ = false;
 
 // bool enable_avoidance_ = false;
 // bool force_disable_avoidance_ = false;
@@ -207,8 +208,8 @@ void objectsPub()
     object.header.stamp = ros::Time::now();
     object_.semantic.confidence = 1.0;
 
-    object_.state.pose_covariance.pose.position.x = 2039.41529092;
-    object_.state.pose_covariance.pose.position.y = 41618.2901704;
+    object_.state.pose_covariance.pose.position.x = 0.0;//2039.41529092;
+    object_.state.pose_covariance.pose.position.y = 0.0;//41618.2901704;
     object_.state.pose_covariance.pose.position.z = -4.5338178017;
     object_.state.pose_covariance.pose.orientation.x = 0.00383098085566;
     object_.state.pose_covariance.pose.orientation.y = -0.00115185644512;
@@ -229,29 +230,29 @@ void objectsPub()
     object_.shape.dimensions.z = 1.5;
 
     geometry_msgs::Point32 point_1;
-    point_1.x = 1.5+2039.41529092;
-    point_1.y = 1.5+41618.2901704;
+    point_1.x = 1.5+0.0;//2039.41529092;
+    point_1.y = 1.5+0.0;//41618.2901704;
     point_1.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_1);
     geometry_msgs::Point32 point_2;
-    point_2.x = 1.5+2039.41529092;
-    point_2.y = -1.5+41618.2901704;
+    point_2.x = 1.5+0.0;//2039.41529092;
+    point_2.y = -1.5+0.0;//41618.2901704;
     point_2.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_2);
     geometry_msgs::Point32 point_3;
-    point_3.x = -1.5+2039.41529092;
-    point_3.y = -1.5+41618.2901704;
+    point_3.x = -1.5+0.0;//2039.41529092;
+    point_3.y = -1.5+0.0;//41618.2901704;
     point_3.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_3);
     geometry_msgs::Point32 point_4;
-    point_2.x = -1.5+2039.41529092;
-    point_2.y = 1.5+41618.2901704;
+    point_2.x = -1.5+0.0;//2039.41529092;
+    point_2.y = 1.5+0.0;//41618.2901704;
     point_2.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_4);
 
     object.objects.push_back(object_);
   // }
-  // objects_pub.publish(object);
+  objects_pub.publish(object);
 }
 
 void LidnogroundpointCallback(const sensor_msgs::PointCloud2& Lngpmsg)
@@ -525,6 +526,7 @@ int main(int argc, char** argv)
   ros::NodeHandle node;
 
   // ros::param::get(ros::this_node::getName()+"/force_disable_avoidance", force_disable_avoidance_);
+  ros::param::get(ros::this_node::getName()+"/use_virtual_objects", use_virtual_objects_);
 
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);
@@ -551,13 +553,16 @@ int main(int argc, char** argv)
   // avoiding_path_pub = node.advertise<std_msgs::Int32>("avoidpath_reach_goal", 10, true);
 
   Ini_busstop_bytxt();
-  // ros::Rate loop_rate(10);
-  // while (ros::ok())
-  // { 
-    // objectsPub();
-  //   ros::spinOnce();
-  //   loop_rate.sleep();   
-  // }
+  if (use_virtual_objects_)
+  {
+    ros::Rate loop_rate(10);
+    while (ros::ok())
+    { 
+      objectsPub();
+      ros::spinOnce();
+      loop_rate.sleep();   
+    }
+  }
 
   ros::spin();
   return 0;

@@ -9,7 +9,7 @@ DEFINE_string(input_topic, "", "Input topic name");
 DEFINE_string(output_topic, "", "Output topic name");
 DEFINE_bool(verify, false, "Verify if the compressed data can be restored back");
 DEFINE_bool(verbose, false, "Verbose mode: print more logs for debuggin.");
-DEFINE_bool(use_threading, true, "Use threads to do compression.");
+DEFINE_bool(use_threading, false, "Use threads to do compression.");
 DEFINE_bool(use_png, false, "Use png compression (10x slower and 8x bigger than jpg, but lossless");
 
 std::string get_input_topic()

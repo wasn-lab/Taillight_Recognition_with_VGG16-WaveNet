@@ -41,7 +41,14 @@ void JetsonXavierGrabber::InitParameters()
   // password selection
   auto password = SensingSubSystem::get_password();
 
-  std::string ar0231_sh_call_command = "sh " + ar0231_sh_file_path + " " + ar0231_sh_directory_path + " " + password;
+  // car_driver or laboratory camera driver
+  const bool car_driver = SensingSubSystem::car_driver();
+
+  std::string ar0231_sh_call_command; 
+  if (car_driver)
+    ar0231_sh_call_command = "sh " + ar0231_sh_file_path + " " + ar0231_sh_directory_path + " " + password + " " + "true";
+  else
+    ar0231_sh_call_command = "sh " + ar0231_sh_file_path + " " + ar0231_sh_directory_path + " " + password + " " + "false";
   std::cout << "ar0231_sh_call_command : " << ar0231_sh_call_command << std::endl;
 
   int n = ar0231_sh_call_command.length();

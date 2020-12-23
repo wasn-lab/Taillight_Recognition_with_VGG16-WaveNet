@@ -4,8 +4,7 @@ Set basic info for car model
 """
 from __future__ import print_function
 import subprocess
-from sb_rosbag_sender import get_sb_config
-from car_model_helper import get_car_model
+from car_model_helper import get_car_model, get_sb_config
 
 
 def main():
