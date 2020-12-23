@@ -1,5 +1,7 @@
 #!/bin/bash
+set -x
 route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.3.10
 /usr/local/bin/rosmasterd.sh > /dev/null 2>&1 &
 /usr/local/bin/mps.sh > /dev/null 2>&1 &
+/usr/local/bin/ip_forwarding.sh
 
