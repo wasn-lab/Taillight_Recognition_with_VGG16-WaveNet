@@ -4,6 +4,7 @@ API for notifying that we have a new bag to be uploaded to backend.
 """
 from __future__ import print_function
 import os
+import sys
 import requests
 import logging
 from sb_param_utils import get_license_plate_number
@@ -19,5 +20,8 @@ def build_vk221_3_url(bag, plate=None):
 
 def notify_backend_with_new_bag(bag, plate=None):
     url = build_vk221_3_url(bag, plate)
-    resp = requests.post(url.encode("utf-8"))
+    if sys.version_info.major == 2:
+        resp = requests.post(url.decode("utf-8"))
+    else:
+        resp = requests.post(url)
     return resp.json()
