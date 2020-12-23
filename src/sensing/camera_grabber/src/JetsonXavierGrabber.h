@@ -38,6 +38,7 @@ private:
   // Sensing Modules
   std::vector<Npp8u*> npp8u_ptrs_;
   NPPResizer resizer_;
+  NPPRemapper remapper_;  
   int num_src_bytes_;
   bool resize_;
 
