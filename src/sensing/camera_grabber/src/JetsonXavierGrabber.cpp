@@ -232,8 +232,8 @@ bool JetsonXavierGrabber::runPerceptionGst()
           {
             ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i]);
           }
-        }
-      }
+        }       
+      }      
     }//for
 
     loop_rate.sleep();

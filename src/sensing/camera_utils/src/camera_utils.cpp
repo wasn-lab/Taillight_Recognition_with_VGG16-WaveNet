@@ -31,7 +31,17 @@ int get_undistortion_maps(cv::Mat& mapx, cv::Mat& mapy)
 
   // load insorinsic file
   cv::FileStorage fs;
+#if CAR_MODEL_IS_B1_V2
   fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/sn_ar0231_gmsl_120h.yml", cv::FileStorage::READ);
+#elif CAR_MODEL_IS_B1_V3
+  fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/sn_ar0231_gmsl_120h_1280x720.yml", cv::FileStorage::READ);
+#elif CAR_MODEL_IS_C1
+  fs.open(CAMERA_UTILS_DATA_DIR "/camera_calibration/sn_ar0231_gmsl_120h_1280x720.yml", cv::FileStorage::READ);
+#else
+#error "Car model is not defined"
+#endif
+
+
   fs["camera_matrix"] >> camera_matrix;
   fs["distortion_coefficients"] >> distortion_coefficients;
   fs.release();
