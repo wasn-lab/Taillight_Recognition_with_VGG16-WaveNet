@@ -1,23 +1,17 @@
-#include <iostream>
 #include <pthread.h>
 #include <thread>
 #include <future>
 #include <mutex>
 #include <std_msgs/Empty.h>
 
-#include "drivenet/drivenet_b1_v2.h"
 
-#include "sensor_msgs/PointCloud2.h"
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include "drivenet/drivenet.h"
 
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30 };
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
+const std::vector<camera::id> g_cam_ids{ camera::id::front_top_close_120, camera::id::back_top_120 };
 #else
 #error "car model is not well defined"
 #endif
@@ -32,11 +26,8 @@ int g_car_id = 1;
 int g_dist_est_mode = 0;
 bool g_standard_fps = false;
 bool g_display_flag = false;
-bool g_debug_flag = false;
 bool g_input_resize = true;  // grabber input mode 0: 1920x1208, 1:608x384 yolo format
 bool g_img_result_publish = true;
-bool g_lidarall_publish = true;
-bool g_lidarall_ctrl = true;
 
 /// function
 void* run_yolo(void* /*unused*/);
@@ -53,15 +44,12 @@ bool g_is_compressed = false;
 pthread_mutex_t g_mtx_infer;
 pthread_cond_t g_cnd_infer;
 std::mutex g_cam_mutex;
-std::mutex g_lidarall_mutex;
 std::mutex g_display_mutex;
 
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
 std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
-ros::Publisher g_lidar_repub;
-ros::Subscriber g_lidar_sub;
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
 // // grid map
@@ -87,8 +75,6 @@ std::vector<uint32_t> g_mat_order(g_cam_ids.size());
 std::vector<std_msgs::Header> g_headers(g_cam_ids.size());
 std::vector<int> g_dist_rows(g_cam_ids.size());
 std::vector<int> g_dist_cols(g_cam_ids.size());
-
-pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidall_cloudptr(new pcl::PointCloud<pcl::PointXYZI>);
 
 // Prepare cv::Mat
 void image_init()
@@ -159,7 +145,7 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   }
 }
 
-void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
+void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
 {
   int cam_order = 0;
   if (!g_is_infer_datas[cam_order])
@@ -172,8 +158,7 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
     sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
 }
-
-void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
+void callback_cam_back_top_120(const sensor_msgs::Image::ConstPtr& msg)
 {
   int cam_order = 1;
   if (!g_is_infer_datas[cam_order])
@@ -187,7 +172,7 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_front_bottom_60_decode(sensor_msgs::CompressedImage compressImg)
+void callback_cam_front_top_close_120_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 0;
   if (!g_is_infer_datas[cam_order])
@@ -199,7 +184,7 @@ void callback_cam_front_bottom_60_decode(sensor_msgs::CompressedImage compressIm
   }
 }
 
-void callback_cam_front_top_far_30_decode(sensor_msgs::CompressedImage compressImg)
+void callback_cam_back_top_120_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 1;
   if (!g_is_infer_datas[cam_order])
@@ -208,15 +193,6 @@ void callback_cam_front_top_far_30_decode(sensor_msgs::CompressedImage compressI
     cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
     g_cam_mutex.unlock();
     sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
-void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
-{
-  if (g_lidarall_ctrl)
-  {
-    pcl::fromROSMsg(*msg, *g_lidall_cloudptr);
-    g_lidarall_ctrl = false;
   }
 }
 
@@ -231,7 +207,7 @@ void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int c
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "drivenet_group_a_b1_v2");
+  ros::init(argc, argv, "drivenet_group_c_b1_v2");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
@@ -241,19 +217,17 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/car_id", g_car_id);
   ros::param::get(ros::this_node::getName() + "/standard_fps", g_standard_fps);
   ros::param::get(ros::this_node::getName() + "/display", g_display_flag);
-  ros::param::get(ros::this_node::getName() + "/debug", g_debug_flag);
   ros::param::get(ros::this_node::getName() + "/input_resize", g_input_resize);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
-  ros::param::get(ros::this_node::getName() + "/lidarall_publish", g_lidarall_publish);
   ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
 
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
-                                                                            callback_cam_front_top_far_30 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_bottom_60_decode,
-                                                                             callback_cam_front_top_far_30_decode };
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_top_close_120,
+                                                                            callback_cam_back_top_120 };
+  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_top_close_120_decode,
+                                                                             callback_cam_back_top_120_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
@@ -272,12 +246,6 @@ int main(int argc, char** argv)
     {
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
-    if (g_lidarall_publish)
-    {
-      g_lidar_sub = nh.subscribe("/LidarFrontTop/Raw", 1, callback_LidarAll);
-      g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/LidarAll_re", 2);
-    }
-
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
     g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
     g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
@@ -302,12 +270,12 @@ int main(int argc, char** argv)
   }
 
   std::string pkg_path = ros::package::getPath("drivenet");
-  std::string cfg_file = "/b1_v2_yolo_group_a.cfg";
+  std::string cfg_file = "/yolo_top.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
   g_dist_est.init(pkg_path, g_dist_est_mode);
 
-  ros::MultiThreadedSpinner spinner(3);
+  ros::MultiThreadedSpinner spinner(2);
   spinner.spin();
 
   g_is_infer_stop = true;
@@ -348,50 +316,44 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 {
   msgs::DetectedObject det_obj;
   msgs::BoxPoint box_point;
-  std::vector<msgs::CamInfo> cam_info_vector;
+  std::vector<msgs::CamInfo> cam_info_vector;  
   msgs::CamInfo cam_info;
-  
 
-  int l_check = 2;
-  int r_check = 2;
+  // int l_check = 2;
+  // int r_check = 2;
   float distance = -1;
   det_obj.distance = distance;
+  /*
+  if (g_cam_ids[cam_order] == camera::id::front_top_close_120)
+  {
+    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x1, box.y2);
+    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x2, box.y2);
+  }
+  else if (g_cam_ids[cam_order] == camera::id::back_top_120)
+  {
+    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::back_top_120], box.x1, box.y2);
+    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::back_top_120], box.x2, box.y2);
+  }
+  */
 
-  if (g_cam_ids[cam_order] == camera::id::front_bottom_60)
-  {
-    // l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x1, box.y2);
-    // r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x2, box.y2);
-    l_check = 0;
-    r_check = 0;
-  }
-  else if (g_cam_ids[cam_order] == camera::id::front_top_far_30)
-  {
-    // l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x1, box.y2);
-    // r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x2, box.y2);
-    l_check = 0;
-    r_check = 0;
-  }
+  box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
 
-  if (l_check == 0 && r_check == 0)
+  std::vector<float> left_point(2);
+  std::vector<float> right_point(2);
+  left_point[0] = box_point.p0.x;
+  right_point[0] = box_point.p3.x;
+  left_point[1] = box_point.p0.y;
+  right_point[1] = box_point.p3.y;
+  if (left_point[0] == 0 && left_point[1] == 0)
   {
-    box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
-    std::vector<float> left_point(2);
-    std::vector<float> right_point(2);
-    left_point[0] = box_point.p0.x;
-    right_point[0] = box_point.p3.x;
-    left_point[1] = box_point.p0.y;
-    right_point[1] = box_point.p3.y;
-    if (left_point[0] == 0 && left_point[1] == 0)
-    {
-      distance = -1;
-    }
-    else
-    {
-      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
-      det_obj.bPoint = box_point;
-    }
-    det_obj.distance = distance;
+    distance = -1;
   }
+  else
+  {
+    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+    det_obj.bPoint = box_point;
+  }
+  det_obj.distance = distance;
 
   cam_info.u = box.x1;
   cam_info.v = box.y1;
@@ -400,7 +362,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
-  cam_info_vector.push_back(cam_info);
+  cam_info_vector.push_back(cam_info);  
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info_vector;
@@ -480,7 +442,7 @@ void* run_yolo(void* /*unused*/)
       header_msg = headers_tmp[cam_order];
       g_time_info_pubs[cam_order].publish(header_msg);
     }
-    
+
     // reset data
     reset_data();
 
@@ -493,7 +455,6 @@ void* run_yolo(void* /*unused*/)
     {
       g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp);
     }
-
     g_yolo_app.inference_yolo();
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);
 
@@ -522,8 +483,6 @@ void* run_yolo(void* /*unused*/)
         m_display = *mat_srcs_tmp[cam_order];
       }
 
-      tmp_b_bx = g_dist_est.MergeBbox(tmp_b_bx);
-
       msgs::DetectedObject det_obj;
       std::vector<std::future<msgs::DetectedObject>> pool;
       for (auto const& box : *tmp_b_bx)
@@ -548,33 +507,20 @@ void* run_yolo(void* /*unused*/)
       {
         det_obj = pool[i].get();
         v_do.push_back(det_obj);
-        if (g_img_result_publish || g_display_flag)
-        {
-          int x1 = det_obj.camInfo[0].u;
-          int y1 = det_obj.camInfo[0].v;
-          PixelPosition position_1{ x1, y1 };
-          transferPixelScaling(position_1);
+        // if (g_display_flag)
+        // {
+        //   if (detObj.bPoint.p0.x != 0 && detObj.bPoint.p0.z != 0)
+        //   {
+        //     int x1 = detObj.camInfo.u;
+        //     int y1 = detObj.camInfo.v;
+        //     float distance = detObj.distance;
+        //     distance = truncateDecimalPrecision(distance, 1);
+        //     std::string distance_str = floatToString_with_RealPrecision(distance);
 
-          float class_id = det_obj.camInfo[0].id;
-          class_color = get_common_label_color(class_id);
-
-          if (g_debug_flag)
-          {
-            // draw class name
-            std::string class_name = get_common_label_string(class_id);
-            cv::putText(m_display, class_name, cvPoint(position_1.u + 10, position_1.v + 10), 0, 0.3, class_color, 1);
-          }
-
-          // draw distance
-          if (det_obj.bPoint.p0.x != 0 && det_obj.bPoint.p0.z != 0)
-          {
-            float distance = det_obj.distance;
-            distance = truncateDecimalPrecision(distance, 1);
-            std::string distance_str = floatToString_with_RealPrecision(distance);
-            cv::putText(m_display, distance_str + " m", cvPoint(position_1.u + 5, position_1.v - 5), 0, 0.3,
-                        class_color, 1);
-          }
-        }
+        //     class_color = get_common_label_color(detObj.classId);
+        //     cv::putText(M_display, distance_str + " m", cvPoint(x1 + 10, y1 - 10), 0, 1.5, class_color, 2);
+        //   }
+        // }
       }
 
       doa.header = headers_tmp[cam_order];
@@ -609,15 +555,6 @@ void* run_yolo(void* /*unused*/)
     }
     // grid map To Occpancy publisher
     // g_cosmap_gener.OccupancyMsgPublisher(costmap_, g_occupancy_grid_publisher, doa.header);
-
-    if (g_lidarall_publish)
-    {
-      pcl::PointCloud<pcl::PointXYZI> inputAll;
-      inputAll = *g_lidall_cloudptr;
-      g_lidar_repub.publish(inputAll);
-      g_lidarall_ctrl = true;
-      inputAll.clear();
-    }
 
     // reset data
     headers_tmp.clear();
