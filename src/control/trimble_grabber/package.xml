@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>trimble_gps_imu_pub</name>
+  <name>trimble_grabber</name>
   <version>0.0.0</version>
-  <description>The trimble_gps_imu_pub package</description>
+  <description>The trimble_grabber package</description>
   <maintainer email="bchsu1125@gmail.com">u300</maintainer>
 
   <license>TODO</license>

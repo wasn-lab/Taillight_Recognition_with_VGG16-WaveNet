@@ -144,7 +144,7 @@ void initial_para()
 {
         double read_tmp[63];
         int read_index = 0;
-        std::string fname = ros::package::getPath("trimble_gps_imu_pub");
+        std::string fname = ros::package::getPath("trimble_grabber");
         fname += "/data/ITRI_NEW_ENU2LidXYZ_sec.txt";
         // fname += "/data/Shalun_ENU2LidXYZ.txt";
         std::cout << fname << std::endl;
@@ -263,7 +263,7 @@ void initial_para_1()
 {
     double read_tmp_1[3];
     int read_index_1 = 0;
-    std::string fname_1 = ros::package::getPath("trimble_gps_imu_pub");
+    std::string fname_1 = ros::package::getPath("trimble_grabber");
     fname_1 += "/data/ITRI_ShiftUTM2Lidarxyz.txt";
     std::cout << fname_1 << std::endl;
     
@@ -1938,7 +1938,7 @@ int main( int argc, char **argv )
 {
 	initial_para();
         initial_para_1();
-        ros::init(argc, argv, "imu");
+        ros::init(argc, argv, "trimble_grabber");
         ros::NodeHandle n;
         imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 20);
         imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);

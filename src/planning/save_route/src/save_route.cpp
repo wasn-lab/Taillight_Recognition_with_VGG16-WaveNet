@@ -24,8 +24,27 @@ bool transformPose(
   }
 }
 
+bool transformPose(
+  const geometry_msgs::PoseWithCovarianceStamped & input_pose, geometry_msgs::PoseWithCovarianceStamped * output_pose,
+  const std::string target_frame)
+{
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tfListener(tf_buffer_);
+  sleep(1);
+  geometry_msgs::TransformStamped transform;
+  try {
+    transform = tf_buffer_.lookupTransform(target_frame, input_pose.header.frame_id, ros::Time(0));
+    tf2::doTransform(input_pose, *output_pose, transform);
+    return true;
+  } catch (tf2::TransformException & ex) {
+    ROS_WARN("%s", ex.what());
+    return false;
+  }
+}
+
 SaveRoute::SaveRoute():node("~")
 {
+  initial_pose_subscriber = node.subscribe("/initialpose", 1, &SaveRoute::SaveInitialPose, this);
   goal_subscriber = node.subscribe("/move_base_simple/goal", 1, &SaveRoute::SaveGoalPose, this);
   checkpoint_subscriber = node.subscribe("/checkpoint", 1, &SaveRoute::SaveCheckPoint, this);
 }
@@ -33,6 +52,37 @@ SaveRoute::SaveRoute():node("~")
 SaveRoute::~SaveRoute()
 {
   file.close();
+}
+
+void SaveRoute::SaveInitialPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr& initialpose_msg_ptr)
+{
+  geometry_msgs::PoseWithCovarianceStamped initialpose_msg;
+
+  if (!transformPose(*initialpose_msg_ptr, &initialpose_msg, map_frame_)) {
+    ROS_ERROR("Failed to get goal pose in map frame. Aborting mission planning");
+    return;
+  }
+  
+  fpname = ros::package::getPath("save_route");
+  fpname_s = fpname + "/data/test.txt";
+  file.open(fpname_s.c_str(),ios::out);
+
+  if(file.fail())
+  {
+    cout << "could not open the file--" << endl;
+  }
+  else
+  {
+    file.clear();
+
+    file << initialpose_msg.pose.pose.position.x << "," << initialpose_msg.pose.pose.position.y << "," << initialpose_msg.pose.pose.position.z << "," 
+    << initialpose_msg.pose.pose.orientation.x << ","<< initialpose_msg.pose.pose.orientation.y << "," 
+    << initialpose_msg.pose.pose.orientation.z << "," << initialpose_msg.pose.pose.orientation.w ;
+    
+    cout << initialpose_msg.pose.pose.position.x << "," << initialpose_msg.pose.pose.position.y << "," << initialpose_msg.pose.pose.position.z << "," 
+    << initialpose_msg.pose.pose.orientation.x << ","<< initialpose_msg.pose.pose.orientation.y << "," 
+    << initialpose_msg.pose.pose.orientation.z << "," << initialpose_msg.pose.pose.orientation.w ;
+  }
 }
 
 void SaveRoute::SaveGoalPose(const geometry_msgs::PoseStampedConstPtr& goal_msg_ptr)
@@ -44,23 +94,23 @@ void SaveRoute::SaveGoalPose(const geometry_msgs::PoseStampedConstPtr& goal_msg_
     return;
   }
   
-  fpname = ros::package::getPath("save_route");
-  fpname_s = fpname + "/data/test.txt";
-  
-  file.open(fpname_s.c_str(),ios::out);
+  // fpname = ros::package::getPath("save_route");
+  // fpname_s = fpname + "/data/test.txt";
+  // file.open(fpname_s.c_str(),ios::out);
+
   if(file.fail())
   {
     cout << "could not open the file--" << endl;
   }
   else
   {
-    file.clear();
+    // file.clear();
 
-    file << goal_msg.pose.position.x << "," << goal_msg.pose.position.y << "," << goal_msg.pose.position.z << "," 
+    file << "\n" << goal_msg.pose.position.x << "," << goal_msg.pose.position.y << "," << goal_msg.pose.position.z << "," 
     << goal_msg.pose.orientation.x << ","<< goal_msg.pose.orientation.y << "," 
     << goal_msg.pose.orientation.z << "," << goal_msg.pose.orientation.w ;
     
-    cout << goal_msg.pose.position.x << "," << goal_msg.pose.position.y << "," << goal_msg.pose.position.z << "," 
+    cout << "\n" << goal_msg.pose.position.x << "," << goal_msg.pose.position.y << "," << goal_msg.pose.position.z << "," 
     << goal_msg.pose.orientation.x << ","<< goal_msg.pose.orientation.y << "," 
     << goal_msg.pose.orientation.z << "," << goal_msg.pose.orientation.w ;
   }

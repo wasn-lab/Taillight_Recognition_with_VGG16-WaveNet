@@ -26,9 +26,9 @@ sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:b4,os1-991939001245,192.168.0.225,i
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:f5,os1-991941001040,192.168.0.226,infinite' >> /etc/dnsmasq.d/dhcp.conf" #226
 
 # in lab
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:16:94 os1-122021000109,192.168.0.101,infinite' >> /etc/dnsmasq.d/dhcp.conf" #101
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0a:77 os1-122024000217,192.168.0.102,infinite' >> /etc/dnsmasq.d/dhcp.conf" #102
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0c:dd os1-122024000328,192.168.0.103,infinite' >> /etc/dnsmasq.d/dhcp.conf" #103
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:16:94,os1-122021000109,192.168.0.101,infinite' >> /etc/dnsmasq.d/dhcp.conf" #101
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0a:77,os1-122024000217,192.168.0.102,infinite' >> /etc/dnsmasq.d/dhcp.conf" #102
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0c:dd,os1-122024000328,192.168.0.103,infinite' >> /etc/dnsmasq.d/dhcp.conf" #103
 	
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set gateway as Router. Following two lines are identical.' >> /etc/dnsmasq.d/dhcp.conf"

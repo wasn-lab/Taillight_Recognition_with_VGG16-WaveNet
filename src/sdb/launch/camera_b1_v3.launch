@@ -1,0 +1,16 @@
+<launch>
+
+	<include file="$(find drivenet)/launch/b1_v3_drivenet_group_a.launch"/>
+
+	<include file="$(find drivenet)/launch/b1_v3_drivenet_side.launch"/>
+	
+	<include file="$(find drivenet)/launch/b1_v3_drivenet_top.launch"/>
+
+	<include file="$(find camera_grabber)/launch/repub_image_topic_tools.launch"/>
+
+	<node name="msg_recorder"
+		pkg="msg_recorder"
+		type="msg_recorder.py"
+		args="-A --NO_KEY_IN"/>
+
+</launch>
