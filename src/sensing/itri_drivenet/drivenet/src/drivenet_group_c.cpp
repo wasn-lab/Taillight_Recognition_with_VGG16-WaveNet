@@ -4,12 +4,12 @@
 #include <future>
 #include <mutex>
 
-#include "drivenet/drivenet_b1_v2.h"
+#include "drivenet/drivenet.h"
 
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
 const std::vector<camera::id> g_cam_ids{ camera::id::left_front_60, camera::id::left_back_60,
                                          camera::id::back_top_120 };
 #else
@@ -293,7 +293,7 @@ int main(int argc, char** argv)
   }
 
   std::string pkg_path = ros::package::getPath("drivenet");
-  std::string cfg_file = "/b1_v2_yolo_group_c.cfg";
+  std::string cfg_file = "/yolo_group_c.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
   g_dist_est.init(pkg_path, g_dist_est_mode);

@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(drivenet_lib)
 
-set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake ${car_model_DIR})
 include(CompilerFlags)
+include(CarModel)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslib
+  car_model
+  camera_utils
 ) 
 
 catkin_package(
@@ -54,7 +57,8 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(LIBS ${OpenCV_USER_LIBRARIES}
+set(LIBS camera_utils
+         ${OpenCV_USER_LIBRARIES}
          nvinfer
          nvinfer_plugin
          ${CUDA_LIBRARIES}
@@ -69,6 +73,8 @@ add_definitions("-DNPP")
 
 include_directories(
   include
+  ${car_model_BINARY_DIR}/include
+  ${camera_utils_SOURCE_DIR}/include
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${GLIB_INCLUDE_DIRS}
