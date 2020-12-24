@@ -47,6 +47,16 @@ class RosModuleTraffic
         }
     }
 
+    static std::string getVid(){
+        ros::NodeHandle n;
+        std::string vid;
+        if(n.getParam("/south_bridge/vid", vid)){
+            return vid;
+        }else{
+            return "Default-vid";
+        }
+    }
+
     static void
     RegisterCallBack (void
                       (*cb1) (const msgs::DetectedObjectArray&),
@@ -78,6 +88,8 @@ class RosModuleTraffic
                       (*cb14) (const msgs::DetectedObjectArray&),
                       void
                       (*cb15) (const std_msgs::String::ConstPtr&),
+                      void
+                      (*cb16) (const msgs::Flag_Info::ConstPtr&),
                       bool isNewMap)
     {
       ros::NodeHandle n;
@@ -107,6 +119,7 @@ class RosModuleTraffic
       static ros::Subscriber sensor_status = n.subscribe("/vehicle/report/itri/sensor_status", 1, cb13);
       static ros::Subscriber tracking = n.subscribe("/Tracking3D/xyz2lla", 100, cb14);
       static ros::Subscriber fail_safe = n.subscribe("/vehicle/report/itri/fail_safe_status", 1, cb15);
+      static ros::Subscriber flag04 = n.subscribe("/Flag_Info04", 1, cb16);
     }
 
     static void

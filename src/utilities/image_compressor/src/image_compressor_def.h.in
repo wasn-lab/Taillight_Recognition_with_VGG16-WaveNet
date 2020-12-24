@@ -1,0 +1,5 @@
+#pragma once
+
+#define NO_UNUSED_VAR_CHECK(x) ((void)(x))
+#cmakedefine IMAGE_COMPRESSOR_TEST_DATA_DIR "@IMAGE_COMPRESSOR_TEST_DATA_DIR@"
+

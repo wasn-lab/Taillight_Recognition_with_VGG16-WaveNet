@@ -1,9 +1,15 @@
 #!/bin/sh
 dir=`pwd`
-#change to init_ar0231 directory, wakeup init_ar0231 to initiate ar0231 driver
+#change to init_ar0231_1207_9286trigger.sh directory, wakeup init_ar0231_1207_9286trigger.sh to initiate ar0231 driver
 cd $1
-chmod +x ./init_ar0231.sh ./eq_fine_tune_max.sh
-echo $2 | sudo -S ./init_ar0231.sh
-echo $2 | sudo -S ./eq_fine_tune_max.sh
-#echo $2 | sudo -S ./eq_fine_tune_profile.sh
+chmod +x ./init_ar0231_1207_9286trigger.sh ./eq_fine_tune_max.sh ./eq_fine_tune_profile.sh
+echo $2 | sudo -S ./init_ar0231_1207_9286trigger.sh
+if [ "$3" = "true" ]
+then
+  echo "enable car camera driver"
+  echo nvidia | sudo -S ./eq_fine_tune_max.sh
+else
+  echo "enable laboratory camera driver"	
+  echo nvidia | sudo -S ./eq_fine_tune_profile.sh
+fi
 cd $dir
