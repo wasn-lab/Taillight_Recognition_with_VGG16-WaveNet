@@ -192,7 +192,6 @@ float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const in
   assert(srcImg_32f_ptr);
   assert(LetterBoxImg_npp8u_ptr);
   assert(ResizeImg_npp8u_ptr);
-  assert(ResizeImg_npp8u_ptr2);
 
   if (m_Height != camera::image_height || m_Width != camera::image_width)
   {
