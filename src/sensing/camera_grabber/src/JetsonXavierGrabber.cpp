@@ -183,6 +183,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
 
       // grab frame from camera
       ret = video_capture_list[i].read(canvas[i]);
+      ros_time_ = ros::Time::now();
 
       // check the frame whether green screen, green screen mean camera read fail
       cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
@@ -214,11 +215,11 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (resize_)
           {
             resizer_.resize(canvas_undestortion, canvas_resize); //608x342
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize);
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
           }
           else
           {
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_undestortion);
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_undestortion, ros_time_);
           }
         }
         else
@@ -226,11 +227,11 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (resize_)
           {
             resizer_.resize(canvas[i], canvas_resize); //608x342
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize);
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
           }
           else
           {
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i]);
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
           }
         }       
       }      
