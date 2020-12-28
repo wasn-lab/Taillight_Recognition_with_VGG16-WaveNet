@@ -7,7 +7,7 @@ export CXX=clang++
 
 export build_dir=build_clang_c1
 export devel_dir=devel_clang_c1
-readonly build_type="${build_type:-Release}"
+readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 pushd $repo_dir
 
