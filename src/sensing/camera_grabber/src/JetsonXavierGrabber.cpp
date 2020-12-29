@@ -22,6 +22,7 @@ JetsonXavierGrabber::JetsonXavierGrabber()
   , remapper_(camera::raw_image_height, camera::raw_image_width)  
   , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
   , ros_image(n)
+  , ros_time(cam_ids_.size())
   , video_capture_list(cam_ids_.size())
 {
   InitParameters();
@@ -103,15 +104,17 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
     unsigned int width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
     unsigned int height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
     unsigned int fps = capture.get(cv::CAP_PROP_FPS);
-    unsigned int pixels = width * height;
+    unsigned int pixels;
     std::cout << "<<cam" << video_index << " open success>>" << std::endl;
     if (resize_)
     {
+      pixels = camera::image_width * camera::image_height;
       std::cout << "  Frame size : " << camera::image_width << " x " << camera::image_height << ", " << pixels << " Pixels " << fps << " FPS"
               << std::endl;  
     }  
     else
     {
+      pixels = width * height;
       std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
               << std::endl;
     }
@@ -167,7 +170,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
   cv::Mat diff(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
   cv::Mat diffcolor(height, width, CV_8UC1);
 
-  // cv::namedWindow("MyCameraPreview", cv::WindowFlags::WINDOW_AUTOSIZE);
+  
 
   while (ros::ok())
   {
@@ -183,8 +186,14 @@ bool JetsonXavierGrabber::runPerceptionGst()
 
       // grab frame from camera
       ret = video_capture_list[i].read(canvas[i]);
-      ros_time_ = ros::Time::now();
+      ros_time[i] = ros::Time::now();
+    }
 
+    for (i = 0; i < cam_count; ++i)
+    {
+      if (for_running == false)
+        break;
+    
       // check the frame whether green screen, green screen mean camera read fail
       cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
 
@@ -204,9 +213,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
         }
       }
       else
-      {
-        // cv::imshow("MyCameraPreview", canvas[i]);
-        // cv::waitKey(1); // let imshow draw
+      {      
 
         if (camera::distortion[i])
         { //FOV 120                  
@@ -215,11 +222,11 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (resize_)
           {
             resizer_.resize(canvas_undestortion, canvas_resize); //608x342
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
+            canvas[i] = canvas_resize;            
           }
           else
           {
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_undestortion, ros_time_);
+            canvas[i] = canvas_undestortion;            
           }
         }
         else
@@ -227,15 +234,18 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (resize_)
           {
             resizer_.resize(canvas[i], canvas_resize); //608x342
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
-          }
-          else
-          {
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
-          }
+            canvas[i] = canvas_resize;            
+          }          
         }       
       }      
-    }//for
+    }
+
+    for (i = 0; i < cam_count; ++i)
+    {
+      if (for_running == false)
+        break;
+      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time[i]);
+    }
 
     loop_rate.sleep();
 

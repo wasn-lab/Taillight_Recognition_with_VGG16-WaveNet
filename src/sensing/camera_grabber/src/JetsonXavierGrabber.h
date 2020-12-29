@@ -45,7 +45,8 @@ private:
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
-  ros::Time ros_time_;
+  //ros::Time ros_time_;
+  std::vector<ros::Time> ros_time;
 
   // Gstream
   std::vector<cv::VideoCapture> video_capture_list;
