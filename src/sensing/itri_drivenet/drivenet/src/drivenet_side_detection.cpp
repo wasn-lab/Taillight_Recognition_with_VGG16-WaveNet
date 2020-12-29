@@ -3,15 +3,16 @@
 #include <thread>
 #include <future>
 #include <mutex>
+#include <std_msgs/Empty.h>
 
-#include "drivenet/drivenet_b1_v2.h"
+#include "drivenet/drivenet.h"
 
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_top_close_120, camera::id::right_front_60,
-                                         camera::id::right_back_60 };
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -48,6 +49,8 @@ std::mutex g_display_mutex;
 
 /// ros publisher/subscriber
 std::vector<ros::Publisher> g_bbox_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_heartbeat_pubs(g_cam_ids.size());
+std::vector<ros::Publisher> g_time_info_pubs(g_cam_ids.size());
 std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_doas;
 // // grid map
@@ -143,23 +146,9 @@ void sync_inference(int cam_order, std_msgs::Header& header, cv::Mat* mat, std::
   }
 }
 
-void callback_cam_front_top_close_120(const sensor_msgs::Image::ConstPtr& msg)
-{
-  int cam_order = 0;
-  if (!g_is_infer_datas[cam_order])
-  {
-    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    g_cam_mutex.lock();
-    g_mats[cam_order] = cv_ptr->image;
-    g_cam_mutex.unlock();
-    std_msgs::Header h = msg->header;
-    sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
 void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
 {
-  int cam_order = 1;
+  int cam_order = 0;
   if (!g_is_infer_datas[cam_order])
   {
     cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
@@ -172,6 +161,20 @@ void callback_cam_right_front_60(const sensor_msgs::Image::ConstPtr& msg)
 }
 void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
 {
+  int cam_order = 1;
+  if (!g_is_infer_datas[cam_order])
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    g_cam_mutex.lock();
+    g_mats[cam_order] = cv_ptr->image;
+    g_cam_mutex.unlock();
+    std_msgs::Header h = msg->header;
+    sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
+  }
+}
+
+void callback_cam_left_front_60(const sensor_msgs::Image::ConstPtr& msg)
+{
   int cam_order = 2;
   if (!g_is_infer_datas[cam_order])
   {
@@ -184,7 +187,21 @@ void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_front_top_close_120_decode(sensor_msgs::CompressedImage compressImg)
+void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  int cam_order = 3;
+  if (!g_is_infer_datas[cam_order])
+  {
+    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    g_cam_mutex.lock();
+    g_mats[cam_order] = cv_ptr->image;
+    g_cam_mutex.unlock();
+    std_msgs::Header h = msg->header;
+    sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
+  }
+}
+
+void callback_cam_right_front_60_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 0;
   if (!g_is_infer_datas[cam_order])
@@ -195,8 +212,7 @@ void callback_cam_front_top_close_120_decode(sensor_msgs::CompressedImage compre
     sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
 }
-
-void callback_cam_right_front_60_decode(sensor_msgs::CompressedImage compressImg)
+void callback_cam_right_back_60_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 1;
   if (!g_is_infer_datas[cam_order])
@@ -207,7 +223,8 @@ void callback_cam_right_front_60_decode(sensor_msgs::CompressedImage compressImg
     sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
 }
-void callback_cam_right_back_60_decode(sensor_msgs::CompressedImage compressImg)
+
+void callback_cam_left_front_60_decode(sensor_msgs::CompressedImage compressImg)
 {
   int cam_order = 2;
   if (!g_is_infer_datas[cam_order])
@@ -218,11 +235,26 @@ void callback_cam_right_back_60_decode(sensor_msgs::CompressedImage compressImg)
     sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
   }
 }
+
+void callback_cam_left_back_60_decode(sensor_msgs::CompressedImage compressImg)
+{
+  int cam_order = 3;
+  if (!g_is_infer_datas[cam_order])
+  {
+    g_cam_mutex.lock();
+    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
+    g_cam_mutex.unlock();
+    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
+  }
+}
+
 void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int cam_order)
 {
   sensor_msgs::ImagePtr img_msg;
   img_msg = cv_bridge::CvImage(header, "bgr8", image).toImageMsg();
   g_img_pubs[cam_order].publish(img_msg);
+  std_msgs::Empty empty_msg;
+  g_heartbeat_pubs[cam_order].publish(empty_msg);
 }
 
 int main(int argc, char** argv)
@@ -244,12 +276,12 @@ int main(int argc, char** argv)
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_top_close_120,
-                                                                            callback_cam_right_front_60,
-                                                                            callback_cam_right_back_60 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_top_close_120_decode,
-                                                                             callback_cam_right_front_60_decode,
-                                                                             callback_cam_right_back_60_decode };
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = {
+    callback_cam_right_front_60, callback_cam_right_back_60, callback_cam_left_front_60, callback_cam_left_back_60
+  };
+  static void (*f_cam_decodes_callbacks[])(
+      sensor_msgs::CompressedImage) = { callback_cam_right_front_60_decode, callback_cam_right_back_60_decode,
+                                        callback_cam_left_front_60_decode, callback_cam_left_back_60_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
@@ -262,13 +294,15 @@ int main(int argc, char** argv)
     }
     else
     {
-      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order] + std::string("/raw"), 1, f_cam_callbacks[cam_order]);
     }
     if (g_img_result_publish)
     {
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
+    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -290,12 +324,12 @@ int main(int argc, char** argv)
   }
 
   std::string pkg_path = ros::package::getPath("drivenet");
-  std::string cfg_file = "/b1_v2_yolo_group_b.cfg";
+  std::string cfg_file = "/yolo_side.cfg";
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
   g_dist_est.init(pkg_path, g_dist_est_mode);
 
-  ros::MultiThreadedSpinner spinner(3);
+  ros::MultiThreadedSpinner spinner(4);
   spinner.spin();
 
   g_is_infer_stop = true;
@@ -336,19 +370,16 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 {
   msgs::DetectedObject det_obj;
   msgs::BoxPoint box_point;
+  std::vector<msgs::CamInfo> cam_info_vector;  
   msgs::CamInfo cam_info;
 
-  int l_check = 2;
-  int r_check = 2;
+  
+  // int l_check = 2;
+  // int r_check = 2;
   float distance = -1;
   det_obj.distance = distance;
-
-  if (g_cam_ids[cam_order] == camera::id::front_top_close_120)
-  {
-    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x1, box.y2);
-    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_close_120], box.x2, box.y2);
-  }
-  else if (g_cam_ids[cam_order] == camera::id::right_front_60)
+  /*
+  if (g_cam_ids[cam_order] == camera::id::right_front_60)
   {
     l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_front_60], box.x1, box.y2);
     r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_front_60], box.x2, box.y2);
@@ -358,28 +389,37 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_back_60], box.x1, box.y2);
     r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::right_back_60], box.x2, box.y2);
   }
-
-  if (l_check == 0 && r_check == 0)
+  else if (g_cam_ids[cam_order] == camera::id::left_front_60)
   {
-    box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
-
-    std::vector<float> left_point(2);
-    std::vector<float> right_point(2);
-    left_point[0] = box_point.p0.x;
-    right_point[0] = box_point.p3.x;
-    left_point[1] = box_point.p0.y;
-    right_point[1] = box_point.p3.y;
-    if (left_point[0] == 0 && left_point[1] == 0)
-    {
-      distance = -1;
-    }
-    else
-    {
-      distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
-      det_obj.bPoint = box_point;
-    }
-    det_obj.distance = distance;
+    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::left_front_60], box.x1, box.y2);
+    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::left_front_60], box.x2, box.y2);
   }
+  else if (g_cam_ids[cam_order] == camera::id::left_back_60)
+  {
+    l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::left_back_60], box.x1, box.y2);
+    r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::left_back_60], box.x2, box.y2);
+  }
+  */
+
+  box_point = g_dist_est.Get3dBBox(box.x1, box.y1, box.x2, box.y2, box.label, g_cam_ids[cam_order]);
+
+  std::vector<float> left_point(2);
+  std::vector<float> right_point(2);
+  left_point[0] = box_point.p0.x;
+  right_point[0] = box_point.p3.x;
+  left_point[1] = box_point.p0.y;
+  right_point[1] = box_point.p3.y;
+  if (left_point[0] == 0 && left_point[1] == 0)
+  {
+    distance = -1;
+  }
+  else
+  {
+    distance = AbsoluteToRelativeDistance(left_point, right_point);  // relative distance
+    det_obj.bPoint = box_point;
+  }
+  det_obj.distance = distance;
+  
 
   cam_info.u = box.x1;
   cam_info.v = box.y1;
@@ -388,8 +428,10 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
+  cam_info_vector.push_back(cam_info);  
+
   det_obj.classId = translate_label(box.label);
-  det_obj.camInfo = cam_info;
+  det_obj.camInfo = cam_info_vector;
   det_obj.fusionSourceId = sensor_msgs_itri::FusionSourceId::Camera;
 
   return det_obj;
@@ -421,7 +463,7 @@ void* run_yolo(void* /*unused*/)
   cv::Mat m_display_tmp;
   cv::Scalar class_color;
 
-  ros::Rate r(30);
+  ros::Rate r(10);
   while (ros::ok() && !g_is_infer_stop)
   {
     bool is_data_vaild = true;
@@ -459,6 +501,13 @@ void* run_yolo(void* /*unused*/)
     mat_order_tmp = g_mat_order;
     dist_cols_tmp = g_dist_cols;
     dist_rows_tmp = g_dist_rows;
+
+    for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+    {
+      std_msgs::Header header_msg;
+      header_msg = headers_tmp[cam_order];
+      g_time_info_pubs[cam_order].publish(header_msg);
+    }
 
     // reset data
     reset_data();
@@ -499,6 +548,8 @@ void* run_yolo(void* /*unused*/)
         }
         m_display = *mat_srcs_tmp[cam_order];
       }
+
+      tmp_b_bx = g_dist_est.MergeBbox(tmp_b_bx);
 
       msgs::DetectedObject det_obj;
       std::vector<std::future<msgs::DetectedObject>> pool;

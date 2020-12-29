@@ -24,6 +24,10 @@ static ros::Publisher g_pub_LidarFrontLeft_Compress;
 static ros::Publisher g_pub_LidarFrontRight_Compress;
 static ros::Publisher g_pub_LidarFrontTop_Compress;
 
+static ros::Publisher g_pub_LidarFrontLeft_Compress_HeartBeat;
+static ros::Publisher g_pub_LidarFrontRight_Compress_HeartBeat;
+static ros::Publisher g_pub_LidarFrontTop_Compress_HeartBeat;
+
 //--------------------------- Global Variables
 bool g_debug_output = true;
 
@@ -41,10 +45,9 @@ void cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& 
 {
   g_L_Lock.lock();
 
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  // std_msgs::Empty empty_msg;
-  // g_pub_LidarFrontLeft_Raw_HeartBeat.publish(empty_msg);
+  // -------------------heartbeat publisher
+  std_msgs::Empty empty_msg;
+  g_pub_LidarFrontLeft_Compress_HeartBeat.publish(empty_msg);
 
   if (input_cloud->width * input_cloud->height > 100)
   {
@@ -72,6 +75,10 @@ void cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>&
 {
   g_R_Lock.lock();
 
+  // -------------------heartbeat publisher
+  std_msgs::Empty empty_msg;
+  g_pub_LidarFrontRight_Compress_HeartBeat.publish(empty_msg);
+
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_R.reset();
@@ -98,6 +105,10 @@ void cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>&
 void cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_T_Lock.lock();
+
+  // -------------------heartbeat publisher
+  std_msgs::Empty empty_msg;
+  g_pub_LidarFrontTop_Compress_HeartBeat.publish(empty_msg);
 
   if (input_cloud->width * input_cloud->height > 100)
   {
@@ -141,6 +152,11 @@ int main(int argc, char** argv)
   g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1);
   g_pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Compressed", 1);
   g_pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1);
+
+  // publisher - heartbeat
+  g_pub_LidarFrontLeft_Compress_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontLeft/Compressed/heartbeat", 1);
+  g_pub_LidarFrontRight_Compress_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontRight/Compressed/heartbeat", 1);
+  g_pub_LidarFrontTop_Compress_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontTop/Compressed/heartbeat", 1);
 
   ros::AsyncSpinner spinner(3);
   spinner.start();

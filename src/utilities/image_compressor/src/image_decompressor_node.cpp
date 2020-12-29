@@ -1,4 +1,5 @@
 #include <thread>
+#include <chrono>
 #include <glog/logging.h>
 #include <sensor_msgs/CompressedImage.h>
 #include "image_compressor.h"
@@ -27,6 +28,21 @@ void ImageDecompressorNode::publish(const sensor_msgs::CompressedImageConstPtr& 
   }
 }
 
+static bool is_topic_published(const std::string& topic)
+{
+  ros::master::V_TopicInfo master_topics;
+  ros::master::getTopics(master_topics);
+
+  for (auto& master_topic : master_topics)
+  {
+    if (master_topic.name == topic)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 int ImageDecompressorNode::set_subscriber()
 {
   std::string topic = image_compressor::get_input_topic();
@@ -34,6 +50,11 @@ int ImageDecompressorNode::set_subscriber()
   {
     LOG(ERROR) << "Empty input topic name is not allow. Please pass it with -input_topic in the command line";
     return EXIT_FAILURE;
+  }
+  while (ros::ok() && !is_topic_published(topic))
+  {
+    LOG(INFO) << "wait 1 second for topic " << topic;
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   LOG(INFO) << ros::this_node::getName() << ":"
             << " subscribe " << topic;
