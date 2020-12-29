@@ -25,9 +25,6 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
-screen -t itri_lightnet_new_layout_node
-stuff "export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.3.10;source /home/camera/itriadv_d/devel/setup.bash;cd /home/camera/itriadv_d;devel/lib/itri_lightnet_new_layout/itri_lightnet_new_layout_node^M"
-
 screen -t init_camera
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh^M"
 
