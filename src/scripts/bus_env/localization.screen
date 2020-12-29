@@ -1,0 +1,35 @@
+# ctrl+a q unblock scrolling
+altscreen on # erase screen when quit apps
+defutf8 on
+defc1 off # treat input chars 128 ~ 159 as control functions
+defflow on
+activity "activity in %n (%t)"
+bell_msg "bell in %n (%t)"
+vbell on
+startup_message off
+nethack on
+shell $SHELL
+defscrollback 100000
+
+# using Ctrl+Left & Ctrl+Right
+bindkey ^[[1;5D prev
+bindkey ^[[1;5C next
+bindkey \033[D prev
+bindkey \033[C next
+
+# encoding
+defencoding utf8
+bind b encoding big5 utf8
+bind u encoding utf8 utf8
+defbce on # erase background with current bg color
+cjkwidth off
+caption always "%n(%t@%H)"
+
+screen -t init_map
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_map.sh^M"
+
+screen -t init_localization
+stuff "^/home/localization/itriadv/src/scripts/bus_env/local/init_localization.shM"
+
+screen -t init_localization_supervision
+stuff "/home/local/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh^M"
