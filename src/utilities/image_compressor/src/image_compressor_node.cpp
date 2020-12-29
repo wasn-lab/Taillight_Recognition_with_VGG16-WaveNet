@@ -43,9 +43,10 @@ static bool is_topic_published(const std::string& topic)
   ros::master::V_TopicInfo master_topics;
   ros::master::getTopics(master_topics);
 
-  for (ros::master::V_TopicInfo::iterator it = master_topics.begin(); it != master_topics.end(); it++)
+  for (auto& master_topic : master_topics)
   {
-    if (it->name == topic)
+    LOG(INFO) << "find " << master_topic.name;
+    if (master_topic.name == topic)
     {
       return true;
     }
