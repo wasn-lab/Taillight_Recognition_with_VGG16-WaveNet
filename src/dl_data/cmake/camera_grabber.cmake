@@ -12,9 +12,9 @@ else()
         DESTINATION "${CAMERA_GRABBER_DATA_DIR}/ar0231_22fps.ko"
         MD5 800ed0c012e8bdc778d951dcdb2118f6)
     download_file(
-        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231_1207_9286trigger.sh"
-        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger.sh"
-        MD5 f3eb72a748ac5a29d2654929782a636f)    
+        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231_1207_9286trigger_v2.sh"
+        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger_v2.sh"
+        MD5 29a3382f2f3b64dc28fdfd8444e8150b)    
   endif()
 
 endif()

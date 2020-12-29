@@ -165,7 +165,7 @@ bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_i
   }
 }
 
-bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in)
+bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in, ros::Time ros_time)
 {
   cv::Mat mat_img;
 
@@ -173,7 +173,7 @@ bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat&
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
-  header.stamp = ros::Time::now();  // time
+  header.stamp = ros_time;          // time
   header.frame_id = "camera";       // camera id
 
   sensor_msgs::Image img_msg;

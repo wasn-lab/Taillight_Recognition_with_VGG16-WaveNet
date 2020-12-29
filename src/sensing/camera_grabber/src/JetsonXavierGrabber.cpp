@@ -19,6 +19,7 @@ JetsonXavierGrabber::JetsonXavierGrabber()
   , npp8u_ptrs_(cam_ids_.size())
   , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
              camera::image_width)  // 720,1280 to 342,608
+  , remapper_(camera::raw_image_height, camera::raw_image_width)  
   , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
   , ros_image(n)
   , video_capture_list(cam_ids_.size())
@@ -80,24 +81,16 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
   char caps[300];
 
   memset(caps, 0, sizeof(caps));
-  if (resize_)
-  {  // resize
-    sprintf(caps, "v4l2src device=/dev/video%d ! "
-                  "videoconvert ! videoscale ! "
-                  "video/x-raw, width=%d, height=%d, format=BGR ! "
-                  "appsink",
-            video_index, camera::image_width, camera::image_height);
-  }
-  else
-  {  // normal
-    sprintf(caps, "v4l2src device=/dev/video%d ! "
+
+  // normal
+  sprintf(caps, "v4l2src device=/dev/video%d ! "
                   "video/x-raw, width=%d, height=%d, format=UYVY ! "
                   "videoconvert ! "
                   "video/x-raw, width=%d, height=%d, format=BGR ! "
                   "appsink",
             video_index, camera::raw_image_width, camera::raw_image_height, camera::raw_image_width,
             camera::raw_image_height);
-  }
+  
 
   cv::VideoCapture capture(caps);
   if (!capture.isOpened())
@@ -112,8 +105,16 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
     unsigned int fps = capture.get(cv::CAP_PROP_FPS);
     unsigned int pixels = width * height;
     std::cout << "<<cam" << video_index << " open success>>" << std::endl;
-    std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
+    if (resize_)
+    {
+      std::cout << "  Frame size : " << camera::image_width << " x " << camera::image_height << ", " << pixels << " Pixels " << fps << " FPS"
+              << std::endl;  
+    }  
+    else
+    {
+      std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
               << std::endl;
+    }
   }
 
   video_capture_list[video_index] = (capture);
@@ -153,17 +154,13 @@ bool JetsonXavierGrabber::runPerceptionGst()
   bool for_running = true;
   int i;
   int height, width;
-
-  if (resize_)
-  {
-    height = camera::image_height;
-    width = camera::image_width;
-  }
-  else
-  {  // normal
-    height = camera::raw_image_height;
-    width = camera::raw_image_width;
-  }
+  cv::Mat canvas_resize;
+  cv::Mat canvas_undestortion;
+  
+  // normal
+  height = camera::raw_image_height;
+  width = camera::raw_image_width;
+  
 
   // create green screen mat, (0, 131, 0) mean green color
   cv::Mat green_mat(height, width, CV_8UC3, cv::Scalar(0, 131, 0));
@@ -186,6 +183,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
 
       // grab frame from camera
       ret = video_capture_list[i].read(canvas[i]);
+      ros_time_ = ros::Time::now();
 
       // check the frame whether green screen, green screen mean camera read fail
       cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
@@ -210,9 +208,34 @@ bool JetsonXavierGrabber::runPerceptionGst()
         // cv::imshow("MyCameraPreview", canvas[i]);
         // cv::waitKey(1); // let imshow draw
 
-        ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i]);
-      }
-    }
+        if (camera::distortion[i])
+        { //FOV 120                  
+          remapper_.remap(canvas[i], canvas_undestortion);//undistrotion , 1280x720
+
+          if (resize_)
+          {
+            resizer_.resize(canvas_undestortion, canvas_resize); //608x342
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
+          }
+          else
+          {
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_undestortion, ros_time_);
+          }
+        }
+        else
+        {
+          if (resize_)
+          {
+            resizer_.resize(canvas[i], canvas_resize); //608x342
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
+          }
+          else
+          {
+            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
+          }
+        }       
+      }      
+    }//for
 
     loop_rate.sleep();
 
