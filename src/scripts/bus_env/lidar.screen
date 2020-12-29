@@ -1,0 +1,81 @@
+# ctrl+a q unblock scrolling
+altscreen on # erase screen when quit apps
+defutf8 on
+defc1 off # treat input chars 128 ~ 159 as control functions
+defflow on
+activity "activity in %n (%t)"
+bell_msg "bell in %n (%t)"
+vbell on
+startup_message off
+nethack on
+shell $SHELL
+defscrollback 100000
+
+# using Ctrl+Left & Ctrl+Right
+bindkey ^[[1;5D prev
+bindkey ^[[1;5C next
+bindkey \033[D prev
+bindkey \033[C next
+
+# encoding
+defencoding utf8
+bind b encoding big5 utf8
+bind u encoding utf8 utf8
+defbce on # erase background with current bg color
+cjkwidth off
+caption always "%n(%t@%H)"
+
+# roscore to init_mps are run at the system bootup
+#screen -t init_roscore
+#stuff "source ~/itriadv/devel/setup.bash;/home/lidar/itriadv/src/scripts/bus_env/lidar/init_roscore.sh^M"
+
+#screen -t set_ip
+#stuff "source .bashrc;echo itri | sudo -S route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.3.10^M"
+
+#screen -t ip_forwarding
+#stuff "^source .bashrc;echo itri | sudo -S bash /home/lidar/itriadv/src/scripts/bus_env/lidar/ip_forwarding.shM"
+
+#screen -t init_mps
+#stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_mps.sh^M"
+
+screen -t init_lidar
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_lidar.sh^M"
+
+screen -t run_web_video_server
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh^M"
+
+screen -t run_gui_gateway
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_gui_gateway.sh^M"
+
+screen -t run_sys_check_gateway
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh^M"
+
+screen -t init_fail_safe
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fail_safe.sh^M"
+
+screen -t init_fusion
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fusion.sh^M"
+
+screen -t init_tracking_pp
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_pp.sh^M"
+
+screen -t init_edge_detection
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_edge_detection.sh^M"
+
+screen -t init_tracking_2d_lanelet2.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2.sh^M"
+
+screen -t init_tracking_2d_lanelet2_left.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2_left.sh^M"
+
+screen -t init_tracking_2d_lanelet2_right.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2_right.sh^M"
+
+screen -t init_tracking_2d_lanelet2_fov30.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2_fov30.sh^M"
+
+screen -t roslaunch opengl_test GUI_B_car.launch
+stuff "export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.1.3;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch^M"
+
+screen -t roslaunch sdb gui.launch
+stuff "export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.1.3;source /home/lidar/itriadv/devel/setup.bash;roslaunch sdb gui.launch^M"
