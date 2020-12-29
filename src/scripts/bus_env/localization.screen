@@ -25,11 +25,15 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
-screen -t init_map
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_map.sh^M"
+screen -t tmp_init_planning_all_lanelet2
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_planning_all_lanelet2.sh^M"
 
-screen -t init_localization
-stuff "^/home/localization/itriadv/src/scripts/bus_env/local/init_localization.shM"
+screen -t tmp_init_map_lanelet2
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_map_lanelet2.sh^M"
+
+screen -t tmp_init_localization_lanelet2
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_localization_lanelet2.sh^M"
 
 screen -t init_localization_supervision
-stuff "/home/local/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh^M"
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh^M"
+
