@@ -45,7 +45,6 @@ static bool is_topic_published(const std::string& topic)
 
   for (auto& master_topic : master_topics)
   {
-    LOG(INFO) << "find " << master_topic.name;
     if (master_topic.name == topic)
     {
       return true;
