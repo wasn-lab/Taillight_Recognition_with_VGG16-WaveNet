@@ -22,7 +22,6 @@ JetsonXavierGrabber::JetsonXavierGrabber()
   , remapper_(camera::raw_image_height, camera::raw_image_width)  
   , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
   , ros_image(n)
-  , ros_time(cam_ids_.size())
   , video_capture_list(cam_ids_.size())
 {
   InitParameters();
@@ -153,12 +152,13 @@ bool JetsonXavierGrabber::runPerceptionGst()
 {
   auto fps = SensingSubSystem::get_expected_fps();
   ros::Rate loop_rate(fps);
-  bool ret;
+  bool ret[cam_ids_.size()];
   bool for_running = true;
   int i;
   int height, width;
   cv::Mat canvas_resize;
   cv::Mat canvas_undestortion;
+  bool check_green_screen = true;
   
   // normal
   height = camera::raw_image_height;
@@ -185,36 +185,65 @@ bool JetsonXavierGrabber::runPerceptionGst()
         break;
 
       // grab frame from camera
-      ret = video_capture_list[i].read(canvas[i]);
-      ros_time[i] = ros::Time::now();
+      ret[i] = video_capture_list[i].read(canvas[i]);      
     }
+
+    ros_time_ = ros::Time::now();
 
     for (i = 0; i < cam_count; ++i)
     {
       if (for_running == false)
         break;
-    
-      // check the frame whether green screen, green screen mean camera read fail
-      cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
 
-      // countNonZero only available when single channel, conver 3 channel to 1 channel
-      cv::cvtColor(diff, diffcolor, CV_BGR2GRAY, 1);
+      if (check_green_screen)
+      {    
+        // check the frame whether green screen, green screen mean camera read fail
+        cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
 
-      // The nz is 0 when frame is green screen
-      int nz = cv::countNonZero(diffcolor);
+        // countNonZero only available when single channel, conver 3 channel to 1 channel
+        cv::cvtColor(diff, diffcolor, CV_BGR2GRAY, 1);
 
-      if ((!ret) || (nz == 0))
-      {
-        if (for_running)
+        // The nz is 0 when frame is green screen
+        int nz = cv::countNonZero(diffcolor);
+
+        if ((!ret[i]) || (nz == 0))
         {
-          std::cout << "ERROR : video_capture_list read camera " << i << " fail \n" << std::endl;
-          std::cout << "Please press CTRL+C to break program \n" << std::endl;
-          for_running = false;  // stop the for loop
+          if (for_running)
+          {
+            std::cout << "ERROR : video_capture_list read camera " << i << " fail \n" << std::endl;
+            std::cout << "Please press CTRL+C to break program \n" << std::endl;
+            for_running = false;  // stop the for loop
+          }
         }
+        else
+        {     
+
+          if (camera::distortion[i])
+          { //FOV 120                  
+            remapper_.remap(canvas[i], canvas_undestortion);//undistrotion , 1280x720
+
+            if (resize_)
+            {
+              resizer_.resize(canvas_undestortion, canvas_resize); //608x342
+              canvas[i] = canvas_resize;            
+            }
+            else
+            {
+              canvas[i] = canvas_undestortion;            
+            }
+          }
+          else
+          {
+            if (resize_)
+            {
+              resizer_.resize(canvas[i], canvas_resize); //608x342
+              canvas[i] = canvas_resize;            
+            }          
+          }       
+        }        
       }
       else
-      {      
-
+      {  //no green screen check
         if (camera::distortion[i])
         { //FOV 120                  
           remapper_.remap(canvas[i], canvas_undestortion);//undistrotion , 1280x720
@@ -236,15 +265,17 @@ bool JetsonXavierGrabber::runPerceptionGst()
             resizer_.resize(canvas[i], canvas_resize); //608x342
             canvas[i] = canvas_resize;            
           }          
-        }       
+        }                     
       }      
     }
+    
+    check_green_screen = false; //only check green screen for first time
 
     for (i = 0; i < cam_count; ++i)
     {
       if (for_running == false)
         break;
-      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time[i]);
+      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
     }
 
     loop_rate.sleep();
