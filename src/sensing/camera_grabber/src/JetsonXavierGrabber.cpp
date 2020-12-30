@@ -212,38 +212,13 @@ bool JetsonXavierGrabber::runPerceptionGst()
           {
             std::cout << "ERROR : video_capture_list read camera " << i << " fail \n" << std::endl;
             std::cout << "Please press CTRL+C to break program \n" << std::endl;
-            for_running = false;  // stop the for loop
+            for_running = false;  // stop for loop
           }
         }
-        else
-        {     
-
-          if (camera::distortion[i])
-          { //FOV 120                  
-            remapper_.remap(canvas[i], canvas_undestortion);//undistrotion , 1280x720
-
-            if (resize_)
-            {
-              resizer_.resize(canvas_undestortion, canvas_resize); //608x342
-              canvas[i] = canvas_resize;            
-            }
-            else
-            {
-              canvas[i] = canvas_undestortion;            
-            }
-          }
-          else
-          {
-            if (resize_)
-            {
-              resizer_.resize(canvas[i], canvas_resize); //608x342
-              canvas[i] = canvas_resize;            
-            }          
-          }       
-        }        
-      }
-      else
-      {  //no green screen check
+      }  
+      
+      if (for_running)
+      {     
         if (camera::distortion[i])
         { //FOV 120                  
           remapper_.remap(canvas[i], canvas_undestortion);//undistrotion , 1280x720
@@ -265,8 +240,8 @@ bool JetsonXavierGrabber::runPerceptionGst()
             resizer_.resize(canvas[i], canvas_resize); //608x342
             canvas[i] = canvas_resize;            
           }          
-        }                     
-      }      
+        }       
+      }                   
     }
     
     check_green_screen = false; //only check green screen for first time
