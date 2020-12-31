@@ -172,7 +172,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
 
   
 
-  while (ros::ok())
+  while (ros::ok() && for_running)
   {
     // update vehicle state & imu state
     ros::spinOnce();
