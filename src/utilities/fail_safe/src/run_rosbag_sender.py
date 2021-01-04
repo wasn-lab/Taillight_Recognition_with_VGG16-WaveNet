@@ -14,17 +14,20 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--rosbag-sender-ini", default=os.path.join(src_dir, "rosbag_sender.ini"))
+    parser.add_argument("--debug-mode", action="store_true")
     args = parser.parse_known_args()[0]
 
     cfg = configparser.ConfigParser()
     cfg.read(args.rosbag_sender_ini)
 
+    rospy.init_node("RosbagSender")
+    rospy.logwarn("Init RosbagSender")
     sender = RosbagSender(cfg["ftp"]["fqdn"], cfg["ftp"]["port"],
                           cfg["ftp"]["user_name"],
                           cfg["ftp"]["password"],
                           cfg["rosbag"]["backup_dir"],
                           cfg["ftp"]["upload_rate"])
-
+    sender.set_debug_mode(args.debug_mode)
     sender.run()
 
 if __name__ == "__main__":
