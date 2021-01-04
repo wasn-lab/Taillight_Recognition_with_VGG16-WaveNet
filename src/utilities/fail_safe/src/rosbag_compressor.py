@@ -18,7 +18,8 @@ def decompress_bag(bag_fullpath):
 def compress_bag(bag_fullpath):
     if not bag_fullpath.endswith(".bag"):
         return -1
-    cmd = ["gzip", bag_fullpath]
+    # 19 is least favorable to the process
+    cmd = ["nice", "-n", "19", "gzip", bag_fullpath]
     org_size = os.path.getsize(bag_fullpath)
     subprocess.check_call(cmd)
     cmpr_file = bag_fullpath + ".gz"
@@ -32,8 +33,6 @@ class RosbagCompressor(object):
         """
         Compres *.bag in *.bag.gz for transmission.
         """
-        rospy.init_node("RosbagCompressor")
-        rospy.logwarn("Init RosbagCompressor, rosbag_dir: %s", rosbag_dir)
         self.rosbag_dir = rosbag_dir
 
     def run(self):
@@ -43,10 +42,19 @@ class RosbagCompressor(object):
             rate.sleep()
 
     def compress_bags_if_necessary(self):
+        bags = []
         for root, _dirs, files in os.walk(self.rosbag_dir):
             for filename in files:
                 if not filename.endswith(".bag"):
                     continue
-                bag_fullpath = os.path.join(root, filename)
-                ratio = compress_bag(bag_fullpath)
-                rospy.loginfo("Compress %s, compression ratio: %f", bag_fullpath, ratio)
+                bags.append(os.path.join(root, filename))
+        bags.sort()
+        for bag in bags:
+            start_time = time.time()
+            rospy.loginfo("Start compressing %s", bag)
+            ratio = compress_bag(bag)
+            elapsed_time = time.time() - start_time
+            gz_size = os.path.getsize(bag + ".gz") / (1024 * 1024)
+            rospy.loginfo(("Done compressing %s, ratio: %.2f, file size: %d MB, "
+                           "elapsed_time: %f seconds"),
+                           bag, ratio, gz_size, elapsed_time)
