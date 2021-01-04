@@ -151,9 +151,9 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
         Publisher[7].publish(speed_ms);
         cout << "speed_ms: " << speed_ms.data << endl;
 		msg_temp.Dspace_Flag01 = frame.data[0];
-		msg_temp.Dspace_Flag02 = frame.data[1];
-		msg_temp.Dspace_Flag03 = frame.data[2];
-		msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag02 = frame.data[1] / 10.0;
+		msg_temp.Dspace_Flag03 = frame.data[2] / 10.0;
+		msg_temp.Dspace_Flag04 = (frame.data[3] | frame.data[4] << 8) / 10.0;
 		msg_temp.Dspace_Flag05 = frame.data[5];
 		msg_temp.Dspace_Flag06 = frame.data[6];
 		msg_temp.Dspace_Flag07 = frame.data[7];
