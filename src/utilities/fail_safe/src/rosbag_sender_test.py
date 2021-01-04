@@ -46,7 +46,7 @@ class RosbagSenderTest(unittest.TestCase):
             contents = _fp.read()
         self.assertTrue(bag_gz in contents)
 
-
+    @unittest.skip("Manually enabled test item")
     def test_send_bags(self):
         self.sender.set_rosbag_backup_dir("/media/chtseng/Sandisk/20201228/full_run")
         bags = self.sender.get_unsent_rosbag_filenames()
