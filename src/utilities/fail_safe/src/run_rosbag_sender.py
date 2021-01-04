@@ -20,8 +20,6 @@ def main():
     cfg = configparser.ConfigParser()
     cfg.read(args.rosbag_sender_ini)
 
-    rospy.init_node("RosbagSender")
-    rospy.logwarn("Init RosbagSender")
     sender = RosbagSender(cfg["ftp"]["fqdn"], cfg["ftp"]["port"],
                           cfg["ftp"]["user_name"],
                           cfg["ftp"]["password"],
