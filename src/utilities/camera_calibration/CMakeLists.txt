@@ -47,8 +47,8 @@ set(LIBS camera_utils
          ${OpenCV_USER_LIBRARIES}
 )
 
-if (CAR_MODEL_IS_C1)
-  add_executable(${PROJECT_NAME}_node src/camera_calibration.cpp)
+if (CAR_MODEL_IS_B1_V3 OR CAR_MODEL_IS_C1)
+  add_executable(${PROJECT_NAME}_node EXCLUDE_FROM_ALL src/camera_calibration.cpp)
   target_link_libraries(${PROJECT_NAME}_node ${LIBS} ${catkin_LIBRARIES})
   add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 endif ()
