@@ -311,7 +311,7 @@ public:
   * @param[in] out_detections Network output bounding box
   * @details This is an interface for the algorithm
   */
-  void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections);
+  void doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections,std::vector<float>& out_scores);
 };
 
 #endif  // POINTS_PILLAR_H
