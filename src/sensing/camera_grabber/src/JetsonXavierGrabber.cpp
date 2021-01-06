@@ -19,8 +19,7 @@ JetsonXavierGrabber::JetsonXavierGrabber()
   , npp8u_ptrs_(cam_ids_.size())
   , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
              camera::image_width)  // 720,1280 to 342,608
-  , remapper_(camera::raw_image_height, camera::raw_image_width)  
-  , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
+  , remapper_(camera::raw_image_height, camera::raw_image_width)
   , ros_image(n)
   , video_capture_list(cam_ids_.size())
 {
