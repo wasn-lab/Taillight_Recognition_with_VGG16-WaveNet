@@ -221,7 +221,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
         grid_map::GridMapRosConverter::toOccupancyGrid(merged_costmap_, "merged_costmap_layer", 0, 1,
                                                        occupancy_grid_msg);
         occupancy_grid_msg.header = in_header;
-        occupancy_grid_msg.header.frame_id = "base_link";
+        occupancy_grid_msg.header.frame_id = "freespace";
         occupancy_grid_publisher.publish(occupancy_grid_msg);
       }
 

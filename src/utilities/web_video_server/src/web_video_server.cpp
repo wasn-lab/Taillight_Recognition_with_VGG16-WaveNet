@@ -161,7 +161,7 @@ bool WebVideoServer::handle_stream(const async_web_server_cpp::HttpRequest &requ
     // Fallback for topics without corresponding compressed topics
     if (type == std::string("ros_compressed"))
     {
-      std::string compressed_topic_name = topic + "/compressed";
+      std::string compressed_topic_name = topic + "/jpg";
       ros::master::V_TopicInfo topics;
       ros::master::getTopics(topics);
       bool did_find_compressed_topic = false;
@@ -209,14 +209,14 @@ bool WebVideoServer::handle_stream_viewer(const async_web_server_cpp::HttpReques
                                           const char* end)
 {
   std::string type = request.get_query_param_value_or_default("type", __default_stream_type);
+  ROS_INFO_STREAM("Use type " << type);
   if (stream_types_.find(type) != stream_types_.end())
   {
     std::string topic = request.get_query_param_value_or_default("topic", "");
     // Fallback for topics without corresponding compressed topics
     if (type == std::string("ros_compressed"))
     {
-
-      std::string compressed_topic_name = topic + "/compressed";
+      std::string compressed_topic_name = topic + "/jpg";
       ros::master::V_TopicInfo topics;
       ros::master::getTopics(topics);
       bool did_find_compressed_topic = false;

@@ -1782,7 +1782,7 @@ int main(int argc, char** argv)
   msgs::StopInfoArray empty;
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);
   /*block main.*/
-  while (true)
+  while (ros::ok())
   {
     boost::this_thread::sleep(boost::posix_time::microseconds(1000000));
   }

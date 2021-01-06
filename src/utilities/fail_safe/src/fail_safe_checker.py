@@ -1,3 +1,4 @@
+from __future__ import print_function
 import configparser
 import json
 import pprint
@@ -45,6 +46,8 @@ class FailSafeChecker(object):
                 cfg[module].getboolean("latch"),
                 cfg[module].get("sensor_type", None),
                 cfg[module].get("sensor_uid", None))
+            enable = cfg[module].getboolean("enable", True)
+            self.modules[module].set_enabled(enable)
             if cfg[module].getboolean("latch"):
                 self.latched_modules.append(module)
         self.ctrl_info_03 = CtrlInfo03()
@@ -153,14 +156,15 @@ class FailSafeChecker(object):
             if doc["status"] != OK:
                 summary = "[Auto Report] {}: {}".format(
                     doc["module"], doc["status_str"])
-                desc = generate_issue_description(doc["status"], doc["status_str"])
+                desc = generate_issue_description(
+                    doc["status"], doc["status_str"], current_status["timestamp"])
                 self.issue_reporter.post_issue(summary, desc)
                 return
         if current_status["status"] != OK:
             summary = "[Auto Report] {}".format(
                 current_status["status_str"])
             desc = generate_issue_description(
-                current_status["status"], current_status["status_str"])
+                current_status["status"], current_status["status_str"], current_status["timestamp"])
             self.issue_reporter.post_issue(summary, desc)
 
 

@@ -35,7 +35,6 @@
 #include <geometry_msgs/Point32.h>
 
 ros::Publisher rearcurrentpose_pub;
-ros::Publisher enable_avoid_pub;
 ros::Publisher objects_pub;
 ros::Publisher nogroundpoints_pub;
 ros::Publisher twist_pub;
@@ -43,13 +42,14 @@ ros::Publisher trafficlight_pub;
 ros::Publisher busstop_pub;
 ros::Publisher occ_maporigin_pub;
 ros::Publisher occ_wayareamaporigin_pub;
+// ros::Publisher enable_avoid_pub;
+// ros::Publisher avoiding_path_pub;
 
 static sensor_msgs::Imu imu_data_rad;
 
 #define RT_PI 3.14159265358979323846
 
 double wheel_dis = 3.8;
-bool avoid_flag = 0;
 
 geometry_msgs::PoseStamped current_pose;
 
@@ -63,6 +63,12 @@ double busstop_BuildingNum[2000] = {};
 double busstop_BusStopId[2000] = {};
 int read_index = 0;
 bool busstop_ini = false;
+bool use_virtual_objects_ = false;
+
+// bool enable_avoidance_ = false;
+// bool force_disable_avoidance_ = false;
+// int obs_index_base = 0;
+// double project_dis = 100;
 
 template <int size_readtmp>
 void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
@@ -99,7 +105,7 @@ void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],dou
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/HDmap_bus_stop_info.txt"; // full route
+  std::string fpname_s = fpname + "/data/HDmap_bus_stop_info.txt";
 
   read_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -121,11 +127,6 @@ void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
   rearcurrentpose_pub.publish(rear_pose);
 
   current_pose_init_flag = true;
-}
-
-void avoidingflagCallback(const std_msgs::Int32::ConstPtr& avoidflagmsg)
-{
-  avoid_flag = avoidflagmsg->data;
 }
 
 // bool transformPose(
@@ -207,8 +208,8 @@ void objectsPub()
     object.header.stamp = ros::Time::now();
     object_.semantic.confidence = 1.0;
 
-    object_.state.pose_covariance.pose.position.x = 2039.41529092;
-    object_.state.pose_covariance.pose.position.y = 41618.2901704;
+    object_.state.pose_covariance.pose.position.x = 0.0;//2039.41529092;
+    object_.state.pose_covariance.pose.position.y = 0.0;//41618.2901704;
     object_.state.pose_covariance.pose.position.z = -4.5338178017;
     object_.state.pose_covariance.pose.orientation.x = 0.00383098085566;
     object_.state.pose_covariance.pose.orientation.y = -0.00115185644512;
@@ -229,29 +230,29 @@ void objectsPub()
     object_.shape.dimensions.z = 1.5;
 
     geometry_msgs::Point32 point_1;
-    point_1.x = 1.5+2039.41529092;
-    point_1.y = 1.5+41618.2901704;
+    point_1.x = 1.5+0.0;//2039.41529092;
+    point_1.y = 1.5+0.0;//41618.2901704;
     point_1.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_1);
     geometry_msgs::Point32 point_2;
-    point_2.x = 1.5+2039.41529092;
-    point_2.y = -1.5+41618.2901704;
+    point_2.x = 1.5+0.0;//2039.41529092;
+    point_2.y = -1.5+0.0;//41618.2901704;
     point_2.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_2);
     geometry_msgs::Point32 point_3;
-    point_3.x = -1.5+2039.41529092;
-    point_3.y = -1.5+41618.2901704;
+    point_3.x = -1.5+0.0;//2039.41529092;
+    point_3.y = -1.5+0.0;//41618.2901704;
     point_3.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_3);
     geometry_msgs::Point32 point_4;
-    point_2.x = -1.5+2039.41529092;
-    point_2.y = 1.5+41618.2901704;
+    point_2.x = -1.5+0.0;//2039.41529092;
+    point_2.y = 1.5+0.0;//41618.2901704;
     point_2.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_4);
 
     object.objects.push_back(object_);
   // }
-  // objects_pub.publish(object);
+  objects_pub.publish(object);
 }
 
 void LidnogroundpointCallback(const sensor_msgs::PointCloud2& Lngpmsg)
@@ -457,28 +458,77 @@ void occgridwayareaCallback(const nav_msgs::OccupancyGrid& costmap)
   occ_wayareamaporigin_pub.publish(costmap_maporigin);
 }
 
-void avoidstatesubCallback(const msgs::Flag_Info& msg)
-{
-  double avoid_state_index_ = msg.Dspace_Flag03;
-  // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
-  bool enable_avoidance = false;
-  // if (avoid_state_index_ == 1)
-  // {
-  //   enable_avoidance = true;
-  // }
-  // else
-  // {
-  //   enable_avoidance = false;
-  // }
-  // enable_avoid_pub.publish(enable_avoidance);
-}
+// void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
+// {
+//   double obswaypoints_data_base = obsdismsg_base->data;
+//   if (obswaypoints_data_base > 40) ///////////////////////
+//   {
+//     obswaypoints_data_base = -1;
+//   }
+
+//   // if (obswaypoints_data_base == -1)
+//   // {
+//   //   obs_index_base += 1;
+//   // }
+//   // else
+//   // {
+//   //   obs_index_base = 0;
+//   // }
+
+//   std_msgs::Int32 avoid_path;
+//   // if (obs_index_base > 20)
+//   // {
+//   //   avoid_path.data = 1;
+//   // }
+//   // else
+//   // {
+//   //   avoid_path.data = 0;
+//   // }
+
+//   if (enable_avoidance_ == 1 && obswaypoints_data_base == -1 && project_dis < 0.5)
+//   {
+//     avoid_path.data = 1;
+//   }
+//   else
+//   {
+//     avoid_path.data = 0;
+//   }
+  
+//   avoiding_path_pub.publish(avoid_path);
+// }
+
+// void avoidstatesubCallback(const msgs::Flag_Info& msg)
+// {
+//   double avoid_state_index_ = msg.Dspace_Flag03;
+//   // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
+//   std_msgs::Bool enable_avoidance;// = false;
+//   // std::cout << "force_disable_avoidance_ : " << force_disable_avoidance_ << std::endl;
+//   if (avoid_state_index_ == 1 && !force_disable_avoidance_)
+//   {
+//     enable_avoidance.data = true;
+//   }
+//   else
+//   {
+//     enable_avoidance.data = false;
+//   }
+//   enable_avoidance_ = enable_avoidance.data;
+//   enable_avoid_pub.publish(enable_avoidance);
+// }
+
+// void overshootorigdisCallback(const std_msgs::Float64& msg)
+// {
+//   project_dis = msg.data;
+// }
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "planning_initial");
   ros::NodeHandle node;
+
+  // ros::param::get(ros::this_node::getName()+"/force_disable_avoidance", force_disable_avoidance_);
+  ros::param::get(ros::this_node::getName()+"/use_virtual_objects", use_virtual_objects_);
+
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
-  ros::Subscriber avoiding_flag_sub = node.subscribe("avoiding_path", 1, avoidingflagCallback);
   ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);
   ros::Subscriber Lidnogroundpoint_sub = node.subscribe("input/lidar_no_ground", 1, LidnogroundpointCallback); // /LidarAll/NonGround2
   ros::Subscriber velocity_sub = node.subscribe("veh_info",1,currentVelocityCallback);
@@ -488,7 +538,9 @@ int main(int argc, char** argv)
   ros::Subscriber busstop_info_sub = node.subscribe("/BusStop/Info", 1, busstopinfoCallback);
   ros::Subscriber occ_grid_sub = node.subscribe("occupancy_grid", 1, occgridCallback);
   ros::Subscriber occ_grid_wayarea_sub = node.subscribe("occupancy_grid_wayarea", 1, occgridwayareaCallback);
-  ros::Subscriber avoid_state_sub = node.subscribe("Flag_Info01", 1, avoidstatesubCallback);
+  // ros::Subscriber avoid_state_sub = node.subscribe("Flag_Info01", 1, avoidstatesubCallback);
+  // ros::Subscriber obstacle_dis_1_sub = node.subscribe("Geofence_original", 1, obsdisbaseCallback);
+  // ros::Subscriber veh_overshoot_orig_dis_sub = node.subscribe("veh_overshoot_orig_dis", 1, overshootorigdisCallback);
   rearcurrentpose_pub = node.advertise<geometry_msgs::PoseStamped>("rear_current_pose", 1, true);
   objects_pub = node.advertise<autoware_perception_msgs::DynamicObjectArray>("output/objects", 1, true);
   nogroundpoints_pub = node.advertise<sensor_msgs::PointCloud2>("output/lidar_no_ground", 1, true);
@@ -497,16 +549,20 @@ int main(int argc, char** argv)
   busstop_pub = node.advertise<msgs::BusStopArray>("BusStop/Reserve", 1, true);
   occ_maporigin_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_maporigin", 1, true);
   occ_wayareamaporigin_pub = node.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_wayarea_maporigin", 1, true);
-  enable_avoid_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/enable_avoidance", 10, true);
+  // enable_avoid_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/enable_avoidance", 10, true);
+  // avoiding_path_pub = node.advertise<std_msgs::Int32>("avoidpath_reach_goal", 10, true);
 
   Ini_busstop_bytxt();
-  // ros::Rate loop_rate(10);
-  // while (ros::ok())
-  // { 
-    // objectsPub();
-  //   ros::spinOnce();
-  //   loop_rate.sleep();   
-  // }
+  if (use_virtual_objects_)
+  {
+    ros::Rate loop_rate(10);
+    while (ros::ok())
+    { 
+      objectsPub();
+      ros::spinOnce();
+      loop_rate.sleep();   
+    }
+  }
 
   ros::spin();
   return 0;

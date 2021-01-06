@@ -165,7 +165,7 @@ bool RosImagePubSub::send_image_rgb(const int topic_id, const cv::Mat& content_i
   }
 }
 
-bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in)
+bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat& content_in, ros::Time ros_time)
 {
   cv::Mat mat_img;
 
@@ -173,7 +173,7 @@ bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat&
 
   std_msgs::Header header;  // empty header
   // header.seq = sequence;			 // user defined counter
-  header.stamp = ros::Time::now();  // time
+  header.stamp = ros_time;          // time
   header.frame_id = "camera";       // camera id
 
   sensor_msgs::Image img_msg;
@@ -181,11 +181,13 @@ bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat&
 
   img_bridge = cv_bridge::CvImage(header, "bgr8", mat_img);
   img_bridge.toImageMsg(img_msg);  // from cv_bridge to sensor_msgs::Image
+  std_msgs::Empty empty_msg;
 
   auto m_it = _image_publisher_map.find(topic_id);
   if (m_it != _image_publisher_map.end())
   {
     _image_publisher_map[topic_id].publish(img_msg);
+    _heartbeat_publisher_map[topic_id].publish(empty_msg);
     return true;
   }
   else

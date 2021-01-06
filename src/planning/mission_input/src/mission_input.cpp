@@ -10,6 +10,7 @@
 
 ros::Publisher goal_publisher;
 ros::Publisher checkpoint_publisher;
+ros::Publisher initial_point_publisher;
 
 int ORGS = 0;
 int route_choose = 1;
@@ -114,6 +115,28 @@ void Ini_busstop_bytxt()
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
 
+void get_initial_point()
+{
+  geometry_msgs::PoseStamped input_initial_point;
+
+  input_initial_point.header.frame_id = "map";
+  input_initial_point.header.stamp = ros::Time::now();
+
+  input_initial_point.pose.position.x = seg_x[0];
+  input_initial_point.pose.position.y = seg_y[0];
+  input_initial_point.pose.position.z = seg_z[0];
+  input_initial_point.pose.orientation.x = ori_x[0];
+  input_initial_point.pose.orientation.y = ori_y[0];
+  input_initial_point.pose.orientation.z = ori_z[0];
+  input_initial_point.pose.orientation.w = ori_w[0];
+
+  initial_point_publisher.publish(input_initial_point);
+  std::cout << "Set offline initial point!" << std::endl;
+  ros::Rate loop_rate(2);
+  ros::spinOnce();
+  loop_rate.sleep();
+}
+
 void get_goal_point()
 {
   geometry_msgs::PoseStamped input_goal;
@@ -121,13 +144,13 @@ void get_goal_point()
   input_goal.header.frame_id = "map";
   input_goal.header.stamp = ros::Time::now();
 
-  input_goal.pose.position.x = seg_x[0];
-  input_goal.pose.position.y = seg_y[0];
-  input_goal.pose.position.z = seg_z[0];
-  input_goal.pose.orientation.x = ori_x[0];
-  input_goal.pose.orientation.y = ori_y[0];
-  input_goal.pose.orientation.z = ori_z[0];
-  input_goal.pose.orientation.w = ori_w[0];
+  input_goal.pose.position.x = seg_x[1];
+  input_goal.pose.position.y = seg_y[1];
+  input_goal.pose.position.z = seg_z[1];
+  input_goal.pose.orientation.x = ori_x[1];
+  input_goal.pose.orientation.y = ori_y[1];
+  input_goal.pose.orientation.z = ori_z[1];
+  input_goal.pose.orientation.w = ori_w[1];
 
   goal_publisher.publish(input_goal);
   std::cout << "Set offline goal point!" << std::endl;
@@ -140,7 +163,7 @@ void get_checkpoint_point()
 {
   geometry_msgs::PoseStamped input_checkpoint;
  
-  for (int i=1;i<read_index;i++)
+  for (int i=2;i<read_index;i++)
   {
     input_checkpoint.header.frame_id = "map";
     input_checkpoint.header.stamp = ros::Time::now();
@@ -224,7 +247,7 @@ void offline_realtime_goal_setting()
     {
       Ini_route_05_bytxt();
     }
-    
+    get_initial_point();
     get_goal_point();
     get_checkpoint_point();
   }
@@ -233,6 +256,16 @@ void offline_realtime_goal_setting()
     Ini_busstop_bytxt();
     ros::spin();
   } 
+}
+
+void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
+{
+  geometry_msgs::PoseStamped current_pose = CPmsg;
+  if (ORGS == 1)
+  {
+    initial_point_publisher.publish(current_pose);
+  }
+  // current_pose_init_flag = true;
 }
 
 void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
@@ -280,6 +313,8 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName()+"/ORGS", ORGS);
   ros::param::get(ros::this_node::getName()+"/route_choose", route_choose);
   ros::Subscriber busstopinfo = node.subscribe("/BusStop/Info", 1, busstopinfoCallback);
+  ros::Subscriber current_pose_sub = node.subscribe("rear_current_pose", 1, CurrentPoseCallback);
+  initial_point_publisher = node.advertise<geometry_msgs::PoseStamped>("/initialpose_offline", 10, true);
   goal_publisher = node.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10, true);
   checkpoint_publisher = node.advertise<geometry_msgs::PoseStamped>("/checkpoint", 10, true);
 
