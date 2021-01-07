@@ -3,20 +3,19 @@
 Send backup rosbag files to backend.
 """
 from __future__ import print_function
-import time
+# import time
 import datetime
 import os
 import io
 import subprocess
-import rospy
 import logging
+import rospy
 from std_msgs.msg import Empty
 from sb_param_utils import get_license_plate_number
 from rosbag_utils import get_bag_yymmdd
 from vk221_3 import notify_backend_with_new_bag
 from vk221_4 import notify_backend_with_uploaded_bag
 
-_BACKUP_ROSBAG_LFTP_SCRIPT = "/tmp/backup_rosbag_lftp_script.txt"
 
 
 def _get_stamp_filename(fullpath):
@@ -125,13 +124,14 @@ class RosbagSender(object):
         ]
         ftp_cmds += [u"bye"]
 
-        if os.path.isfile(_BACKUP_ROSBAG_LFTP_SCRIPT):
-            os.unlink(_BACKUP_ROSBAG_LFTP_SCRIPT)
+        script_file = os.path.join("/tmp", bag + ".lftprc")
+        if os.path.isfile(script_file):
+            os.unlink(script_file)
 
-        with io.open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w", encoding="utf-8") as _fp:
+        with io.open(script_file, "w", encoding="utf-8") as _fp:
             _fp.write(u"\n".join(ftp_cmds))
             _fp.write(u"\n")
-        return _BACKUP_ROSBAG_LFTP_SCRIPT
+        return script_file
 
     def get_unsent_rosbag_filenames(self):
         """Return a list of bag files that are not sent back"""
@@ -144,7 +144,7 @@ class RosbagSender(object):
             for fname in files:
                 if not fname.endswith(".bag.gz"):
                     continue
-                fullpath = os.path.join(self.rosbag_backup_dir, fname)
+                fullpath = os.path.join(root, fname)
                 bag = fullpath[:-3]
                 if os.path.isfile(bag):
                     # still compressing, skip this file
