@@ -122,7 +122,7 @@ private:
   * @param[in] in_header Header from pointcloud
   * @details Convert std::vector to DetectedObject, and publish them
   */
-  void pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& in_header);
+  void pubDetectedObject(const std::vector<float>& detections, const std::vector<float>& scores, const std_msgs::Header& in_header);
 
 public:
   PointPillarsROS_Car();

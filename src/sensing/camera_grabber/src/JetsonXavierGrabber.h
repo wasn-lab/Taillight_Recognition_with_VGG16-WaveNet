@@ -38,14 +38,13 @@ private:
   // Sensing Modules
   std::vector<Npp8u*> npp8u_ptrs_;
   NPPResizer resizer_;
-  NPPRemapper remapper_;  
-  int num_src_bytes_;
+  NPPRemapper remapper_;    
   bool resize_;
 
   // ROS publisher
   ros::NodeHandle n;
   RosImagePubSub ros_image;
-  ros::Time ros_time_;
+  ros::Time ros_time_;  
 
   // Gstream
   std::vector<cv::VideoCapture> video_capture_list;
