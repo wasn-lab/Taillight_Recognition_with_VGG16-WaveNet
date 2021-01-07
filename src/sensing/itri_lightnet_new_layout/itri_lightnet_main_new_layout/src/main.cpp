@@ -63,7 +63,6 @@ int main(int argc, char **argv)
     ros::Time::init();
     //ros::Rate loop_rate(1000000);
 
-    HeartbeatPub = n.advertise<std_msgs::Empty>("LightNet/heartbeat", 1);
 #ifdef display_cv_window
     cv::namedWindow("view_30deg");
     cv::namedWindow("view_60deg");
@@ -71,6 +70,9 @@ int main(int argc, char **argv)
 #endif
     ros::NodeHandle nh;
     ros::NodeHandle nw;
+
+
+    HeartbeatPub = nw.advertise<std_msgs::Empty>("LightNet/heartbeat", 1);
 
     Traffic_Light_pub = nw.advertise<msgs::DetectedLightArray>("LightResultOutput_ITRI_Campus", 30);
 
