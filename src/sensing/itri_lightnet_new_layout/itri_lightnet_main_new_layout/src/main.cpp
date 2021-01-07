@@ -49,6 +49,12 @@ void imageCallback_60deg(const sensor_msgs::ImageConstPtr &msg)
     }
 }
 
+void msgPublisher()
+{
+  std_msgs::Empty empty_msg;
+  HeartbeatPub.publish(empty_msg);
+}
+
 pthread_t thread1;
 int main(int argc, char **argv)
 {
@@ -56,6 +62,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "LightNet_ITRI_Campus");
     ros::Time::init();
     //ros::Rate loop_rate(1000000);
+
+    HeartbeatPub = n.advertise<std_msgs::Empty>("LightNet/heartbeat", 1);
 #ifdef display_cv_window
     cv::namedWindow("view_30deg");
     cv::namedWindow("view_60deg");
@@ -76,7 +84,15 @@ int main(int argc, char **argv)
     image_transport::Subscriber sub_60 = it.subscribe("/cam/front_bottom_60", 1, imageCallback_60deg);
     //image_transport::Subscriber sub = it.subscribe("/cam/F_center", 1, imageCallback);
 #endif
-    ros::spin();
+    // ros::spin();
+
+    ros::Rate rate(20);
+    while (ros::ok())
+    {
+        msgPublisher();
+        ros::spinOnce();
+        rate.sleep();
+    }
 
 #ifdef display_cv_window
     cv::destroyWindow("view");

@@ -21,6 +21,8 @@
 #include "functions.h"
 #include <opencv2/video/tracking_c.h>
 #include "struct_define.h"
+#include <std_msgs/Header.h>
+#include <std_msgs/Empty.h>
 
 #define read_local_bagfile
 
@@ -32,6 +34,7 @@ cv_bridge::CvImagePtr cv_ptr_30deg;
 cv_bridge::CvImagePtr cv_ptr_60deg;
 
 ros::Publisher Traffic_Light_pub;
+ros::Publisher HeartbeatPub;
 
 //extern void DoNms(vector<Detection> &detections, int classes, float nmsThresh);
 //extern vector<float> prepareImage(cv::Mat &img);
