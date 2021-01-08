@@ -576,6 +576,9 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
       convert(obj.bPoint.p6, tf_stamped);
       convert(obj.bPoint.p7, tf_stamped);
 
+      convert(obj.lidarInfo.boxCenter, tf_stamped);
+      convert(obj.center_point, tf_stamped);
+
       tf_map_orig_x_ = tf_stamped.transform.translation.x;
       tf_map_orig_y_ = tf_stamped.transform.translation.y;
       tf_map_orig_z_ = tf_stamped.transform.translation.z;
