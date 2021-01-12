@@ -45,7 +45,6 @@ class RosbagSenderTest(unittest.TestCase):
         self.assertTrue(
             _should_delete_bag(bag, bag_dt + datetime.timedelta(days=4)))
 
-
     def test_get_unsent_rosbag_filenames(self):
         bags = self.sender.get_unsent_rosbag_filenames()
         self.assertEqual(bags, [self.bag_gz])

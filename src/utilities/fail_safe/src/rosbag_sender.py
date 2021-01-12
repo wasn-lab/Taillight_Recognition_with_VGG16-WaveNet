@@ -97,8 +97,23 @@ class RosbagSender(object):
         else:
             self.rosbag_backup_dir = rosbag_backup_dir
 
+    def _delete_old_bags_if_necessary(self, bags):
+        for bag in bags:
+            if not _should_delete_bag(bag):
+                continue
+
+            for fn in [bag, _get_stamp_filename(bag)]:
+                if not os.path.isfile(fn):
+                    continue
+                rospy.logwarn("rm %s", fn)
+                if self.debug_mode:
+                    rospy.logwarn("Debug mode: do not actually rm %s", fn)
+                else:
+                    os.unlink(fn)
+
     def send_bags(self, bags):
         bags.sort()
+        self._delete_old_bags_if_necessary(bags)
 
         for bag in bags:
             _, bag_base_name = os.path.split(bag)
