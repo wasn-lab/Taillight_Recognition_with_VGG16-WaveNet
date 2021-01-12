@@ -102,14 +102,14 @@ class RosbagSender(object):
             if not _should_delete_bag(bag):
                 continue
 
-            for fn in [bag, _get_stamp_filename(bag)]:
-                if not os.path.isfile(fn):
+            for filename in [bag, _get_stamp_filename(bag)]:
+                if not os.path.isfile(filename):
                     continue
-                rospy.logwarn("rm %s", fn)
+                rospy.logwarn("rm %s", filename)
                 if self.debug_mode:
-                    rospy.logwarn("Debug mode: do not actually rm %s", fn)
+                    rospy.logwarn("Debug mode: do not actually rm %s", filename)
                 else:
-                    os.unlink(fn)
+                    os.unlink(filename)
 
     def send_bags(self, bags):
         bags.sort()
@@ -133,6 +133,8 @@ class RosbagSender(object):
                 print("notify backend: {} has been uploaded successfuly".format(bag))
                 jret = notify_backend_with_uploaded_bag(bag_base_name)
                 print(jret)
+            if os.path.isfile(lftp_script_filename):
+                os.unlink(lftp_script_filename)
 
     def _generate_lftp_script(self, bag):
         ftp_cmds = [
