@@ -12,10 +12,21 @@ import logging
 import rospy
 from std_msgs.msg import Empty
 from sb_param_utils import get_license_plate_number
-from rosbag_utils import get_bag_yymmdd
+from rosbag_utils import get_bag_yymmdd, get_bag_timestamp
 from vk221_3 import notify_backend_with_new_bag
 from vk221_4 import notify_backend_with_uploaded_bag
 
+
+def _should_delete_bag(bag_fullpath, current_dt=None):
+    """
+    Return True if the datetime in |bag_fullpath| is <= |current_dt| - 3 days.
+    Return False otherwise.
+    """
+    bag_dt = get_bag_timestamp(bag_fullpath)
+    if current_dt is None:
+        current_dt = datetime.datetime.now()
+    delta = current_dt - bag_dt
+    return bool(delta.total_seconds() > 259200)  # 259200 = 3*24*60*60
 
 
 def _get_stamp_filename(fullpath):
