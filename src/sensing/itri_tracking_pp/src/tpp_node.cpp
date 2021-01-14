@@ -536,8 +536,6 @@ void TPPNode::object_yaw(std::vector<msgs::DetectedObject>& objs)
     double det = x1 * y2 - y1 * x2;  // determinant
     double yaw_rad = std::atan2(det, dot);
     obj.distance = (float)yaw_rad;
-    std::cout << obj.track.absolute_velocity.x << " " << obj.track.absolute_velocity.y << " " << obj.distance
-              << std::endl;
   }
 }
 
