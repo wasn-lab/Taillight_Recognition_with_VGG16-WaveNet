@@ -9,7 +9,9 @@
       </include>
 
     <!-- planning initial module -->
-      <include file="$(find control)/launch/planning_initial.launch">
+      <arg name="use_virtual_objects" default="false" />
+      <include file="$(find control)/launch/planning_initial.launch" pass_all_args="true">
+        <param name="use_virtual_objects" value="$(arg use_virtual_objects)" />
       </include>
 
     <!-- planning module -->
@@ -22,6 +24,12 @@
       <include file="$(find control)/launch/mission_input.launch" pass_all_args="true">
         <param name="ORGS" value="$(arg ORGS)" />
         <param name="route_choose" value="$(arg route_choose)" />
+      </include>
+
+    <!-- decision module -->
+      <arg name="force_disable_avoidance" default="false" />
+      <include file="$(find decision)/launch/decision.launch" pass_all_args="true">
+        <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
       </include>
 
 </launch>

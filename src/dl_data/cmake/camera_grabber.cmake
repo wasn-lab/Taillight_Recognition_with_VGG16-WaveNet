@@ -8,13 +8,13 @@ if (NOT ${ENABLE_CAMERA_GSTREAMER_GRABBER})
 else()
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     download_file(
-        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/ac_22fps.ko"
-        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/ac_22fps.ko"
-        MD5 f4d5793ac0db45db637b4649ece6a8c3)
+        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/ar0231_22fps.ko"
+        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/ar0231_22fps.ko"
+        MD5 800ed0c012e8bdc778d951dcdb2118f6)
     download_file(
-        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231"
-        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231"
-        MD5 6a3110150939e5fa33c9da8d319d036d)    
+        URL "http://nas.itriadv.co:8888/git_data/B1/camera_grabber/jetson_xavier/init_ar0231_1207_9286trigger_v2.sh"
+        DESTINATION "${CAMERA_GRABBER_DATA_DIR}/init_ar0231_1207_9286trigger_v2.sh"
+        MD5 29a3382f2f3b64dc28fdfd8444e8150b)    
   endif()
 
 endif()

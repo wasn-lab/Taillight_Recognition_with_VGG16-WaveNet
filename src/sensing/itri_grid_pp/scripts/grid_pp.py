@@ -10,19 +10,25 @@ from geometry_msgs.msg import Point
 
 
 class Node:
-    y_thr_min_ = 1.5  # right boundary of left lane (m)
-    y_thr_max_ = 5.  # left boundary of left lane (m)
+    x_thr1_min_ = 1.0
+    x_thr1_max_ = 71.0
 
-    x_thr1_min_ = -10.
-    x_thr1_max_ = 0.
+    y_thr1_min_ = -1.5  # right boundary of left lane (m)
+    y_thr1_max_ = 5.0  # left boundary of left lane (m)
 
-    x_thr2_min_ = 0.
-    x_thr2_max_ = 70.
+    x_thr2_min_ = -9.0
+    x_thr2_max_ = 1.0
 
-    x_thr3_min_ = -40.
-    x_thr3_max_ = -10.
+    y_thr2_min_ = 1.5  # right boundary of left lane (m)
+    y_thr2_max_ = 5.0  # left boundary of left lane (m)
 
-    speed_rel_thr_ = -1.  # km/h; negative value represents 'incoming'
+    x_thr3_min_ = -39.0
+    x_thr3_max_ = -9.0
+
+    y_thr3_min_ = -1.5  # right boundary of left lane (m)
+    y_thr3_max_ = 5.0  # left boundary of left lane (m)
+
+    speed_rel_thr_ = -1.0  # km/h; negative value represents 'incoming'
 
     frame_id_target = "base_link"
 
@@ -33,7 +39,8 @@ class Node:
         self.radar_topic = rospy.get_param("~radar_topic")
         self.out_topic = rospy.get_param("~out_topic")
 
-        self.pub_grid_pp = rospy.Publisher(self.out_topic, LaneEvent, queue_size=1)
+        self.pub_grid_pp = rospy.Publisher(
+            self.out_topic, LaneEvent, queue_size=1)
         self.pub_grid_pp_signal = rospy.Publisher(
             self.out_topic + "/signal", MarkerArray, queue_size=1)
         self.sub_track3d = rospy.Subscriber(
@@ -111,10 +118,10 @@ class Node:
             txt = txt + "C3:T\n"
             # txt = txt + "C3:T(" + str(lane_event.obj_in_n40_n10_incoming % 1000) + ")\n"
         else:
-            txt = txt + "C3:F\n"
+            txt = txt + "C3:F"
 
         out.markers.append(self.text_marker_prototype(
-            0, header, txt, Point(-3, -10, 0)))
+            0, header, txt, Point(-3, -7, 0)))
 
         return out
 
@@ -179,10 +186,10 @@ class Node:
                         obj_x_max,
                         obj_y_min,
                         obj_y_max,
-                        self.x_thr2_min_,
-                        self.x_thr2_max_,
-                        self.y_thr_min_,
-                        self.y_thr_max_):
+                        self.x_thr1_min_,
+                        self.x_thr1_max_,
+                        self.y_thr1_min_,
+                        self.y_thr1_max_):
                     out.is_in_0_70_incoming = True
                     out.obj_in_0_70_incoming = obj.track.id
                     print(
@@ -197,10 +204,10 @@ class Node:
                         obj_x_max,
                         obj_y_min,
                         obj_y_max,
-                        self.x_thr1_min_,
-                        self.x_thr1_max_,
-                        self.y_thr_min_,
-                        self.y_thr_max_):
+                        self.x_thr2_min_,
+                        self.x_thr2_max_,
+                        self.y_thr2_min_,
+                        self.y_thr2_max_):
                     out.is_in_n10_0 = True
                     out.obj_in_n10_0 = obj.track.id
                     print(
@@ -217,8 +224,8 @@ class Node:
                         obj_y_max,
                         self.x_thr3_min_,
                         self.x_thr3_max_,
-                        self.y_thr_min_,
-                        self.y_thr_max_):
+                        self.y_thr3_min_,
+                        self.y_thr3_max_):
                     out.is_in_n40_n10_incoming = True
                     out.obj_in_n40_n10_incoming = obj.track.id
                     print(

@@ -1,10 +1,18 @@
-/LidarAll
-/LidarFrontRight/Raw
-/LidarFrontLeft/Raw
-/LidarRearRight/Raw
-/LidarRearLeft/Raw
-/LidarFrontTop/Raw # For debugging localization
+# /LidarAll
+# /LidarFrontRight/Raw
+# /LidarFrontLeft/Raw
+# /LidarRearRight/Raw
+# /LidarRearLeft/Raw
+# /LidarFrontTop/Raw # For debugging localization
+# /LidarDetection
+
+#-- Update for New LiDARNet 
+/LidarFrontTop/Compressed
+/LidarFrontLeft/Compressed
+/LidarFrontRight/Compressed
 /LidarDetection
+/LidarDetection/Car
+/LidarDetection/Ped_Cyc
 
 # /points_map
 
@@ -30,15 +38,15 @@
 # /cam/right_back_60/raw
 # /cam/right_front_60/raw
 # /cam/back_top_120/raw
-#---- repub data
-/cam/front_bottom_60
-/cam/front_top_close_120
-/cam/front_top_far_30
-/cam/left_back_60
-/cam/left_front_60
-/cam/right_back_60
-/cam/right_front_60
-/cam/back_top_120
+#---- compressed data
+/cam/front_bottom_60/jpg
+/cam/front_top_close_120/jpg
+/cam/front_top_far_30/jpg
+/cam/left_back_60/jpg
+/cam/left_front_60/jpg
+/cam/right_back_60/jpg
+/cam/right_front_60/jpg
+/cam/back_top_120/jpg
 
 # Image with 2D bbox
 # /cam/F_right/detect_image

@@ -1,4 +1,5 @@
 import re
+import datetime
 import logging
 
 __BAG_NAME_RGX = re.compile(
@@ -16,6 +17,15 @@ def get_bag_yymmdd(bag):
     day = match.expand(r"\g<day>")
     return year + month + day
 
+def get_bag_timestamp(bag):
+    """
+    Return the timestamp of |bag|.
+    """
+    dt_dict = get_bag_timestamp_in_dict(bag)
+    return datetime.datetime(
+        int(dt_dict["year"]), int(dt_dict["month"]),
+        int(dt_dict["day"]), int(dt_dict["hour"]), int(dt_dict["minute"]),
+        int(dt_dict["second"]))
 
 def get_bag_timestamp_in_dict(bag):
     """Return the dict of timestamp info encoded in |bag|."""

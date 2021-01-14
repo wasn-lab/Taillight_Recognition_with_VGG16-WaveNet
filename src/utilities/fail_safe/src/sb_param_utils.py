@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import configparser
 import os
 import rospy
@@ -11,6 +12,10 @@ def get_vid():
 
 def get_license_plate_number():
     return __get_sb_param("license_plate_number")
+
+
+def get_company_name():
+    return __get_sb_param("company_name")
 
 
 def __get_sb_param(sb_param_name):

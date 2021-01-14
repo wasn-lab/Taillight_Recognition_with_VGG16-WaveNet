@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import heapq
 import rospy
@@ -86,12 +87,13 @@ def cam_object_detection_func(msg):
     status_str = "No camera 3d detection result"
     if msg is not None:
         status = OK
-        status_str = ""
+        status_str = "OK"
         for obj in msg.objects:
             center = __calc_center_by_3d_bpoint(obj.bPoint)
             if not in_3d_roi(center[0], center[1]):
+                print("object not in 3d_roi")
                 continue
-            prob = obj.camInfo.prob
+            prob = max(cam_instance.prob for cam_instance in obj.camInfo)
             if prob < 0.6:
                 status = WARN
                 status_str = ("Low confidence: classId: {}, prob: {}, "
@@ -110,6 +112,7 @@ class Heartbeat(object):
         self.fps_low = fps_low
         self.fps_high = fps_high
         self.latch = latch
+        self.enabled = True
         self.inspect_func = None
         self.message_type = message_type
         self.inspect_message_contents = inspect_message_contents
@@ -152,9 +155,13 @@ class Heartbeat(object):
 
     def to_dict(self):
         self._update_status()
-        return {"module": self.module_name,
-                "status": self.status,
-                "status_str": self.status_str}
+        ret = {"module": self.module_name,
+               "status": self.status,
+               "status_str": self.status_str}
+        if not self.enabled:
+            ret["status"] = OK
+            ret["status_str"] = "Disabled"
+        return ret
 
     def get_fps(self):
         return len(self.heap) / self.sampling_period_in_seconds
@@ -240,3 +247,7 @@ class Heartbeat(object):
             rospy.logerr("%s: No ego_speed, not receive data yet", self.module_name)
             return float("inf")
         return int(self.msg.ego_speed)
+
+    def set_enabled(self, mode):
+        print("set {} enable={}".format(self.module_name, mode))
+        self.enabled = mode

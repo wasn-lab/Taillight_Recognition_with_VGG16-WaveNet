@@ -30,11 +30,11 @@ PointPillars_Car::PointPillars_Car(const bool reproduce_result_mode, const float
   , nms_overlap_threshold_(nms_overlap_threshold)
   , pfe_onnx_file_(pfe_onnx_file)
   , rpn_onnx_file_(rpn_onnx_file)
-  , MAX_NUM_PILLARS_(18000)
+  , MAX_NUM_PILLARS_(36000)
   , MAX_NUM_POINTS_PER_PILLAR_(100)
   , PFE_OUTPUT_SIZE_(MAX_NUM_PILLARS_ * 64)
   , GRID_X_SIZE_(496)
-  , GRID_Y_SIZE_(248)
+  , GRID_Y_SIZE_(496)
   , GRID_Z_SIZE_(1)
   , RPN_INPUT_SIZE_(64 * GRID_X_SIZE_ * GRID_Y_SIZE_)
   , NUM_ANCHOR_X_INDS_(GRID_X_SIZE_ * 0.5)
@@ -48,10 +48,10 @@ PointPillars_Car::PointPillars_Car(const bool reproduce_result_mode, const float
   , PILLAR_Y_SIZE_(0.16f)
   , PILLAR_Z_SIZE_(4.0f)
   , MIN_X_RANGE_(-39.68f)
-  , MIN_Y_RANGE_(-19.84f)
+  , MIN_Y_RANGE_(-39.68f)
   , MIN_Z_RANGE_(-3.0f)
   , MAX_X_RANGE_(39.68f)
-  , MAX_Y_RANGE_(19.84f)
+  , MAX_Y_RANGE_(39.68f)
   , MAX_Z_RANGE_(1)
   , BATCH_SIZE_(1)
   , NUM_INDS_FOR_SCAN_(512)
@@ -561,7 +561,7 @@ void PointPillars_Car::preprocess(const float* in_points_array, const int in_num
   }
 }
 
-void PointPillars_Car::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections)
+void PointPillars_Car::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections, std::vector<float>& out_scores)
 {
   preprocess(in_points_array, in_num_points);
 
@@ -596,6 +596,9 @@ void PointPillars_Car::doInference(const float* in_points_array, const int in_nu
       (float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3], dev_anchor_mask_, dev_anchors_px_,
       dev_anchors_py_, dev_anchors_pz_, dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
       dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_, dev_filter_count_, out_detections);
+  float host_filtered_score_[out_detections.size() / NUM_OUTPUT_BOX_FEATURE_];
+  GPU_CHECK(cudaMemcpyAsync(host_filtered_score_, dev_filtered_score_, (out_detections.size() / NUM_OUTPUT_BOX_FEATURE_) *sizeof(float), cudaMemcpyDeviceToHost, stream));
+  out_scores.assign(host_filtered_score_, host_filtered_score_+(out_detections.size() / NUM_OUTPUT_BOX_FEATURE_));
 
   // release the stream and the buffers
   cudaStreamDestroy(stream);

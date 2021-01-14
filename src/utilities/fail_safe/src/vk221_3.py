@@ -1,8 +1,11 @@
+# -*- encoding: utf-8 -*-
 """
 API for notifying that we have a new bag to be uploaded to backend.
 """
+from __future__ import print_function
 import os
 import requests
+import logging
 from sb_param_utils import get_license_plate_number
 from backend_info import WEBAPI_BASE_URL
 
@@ -10,8 +13,8 @@ def build_vk221_3_url(bag, plate=None):
     if plate is None:
         plate = get_license_plate_number()
     _, base = os.path.split(bag)
-    return ("{}/WebAPI?type=M8.2.VK221_3"
-            "&plate={}&bag_file={}".format(WEBAPI_BASE_URL, plate, base))
+    return (u"{}/WebAPI?type=M8.2.VK221_3"
+            u"&plate={}&bag_file={}".format(WEBAPI_BASE_URL, plate, base))
 
 
 def notify_backend_with_new_bag(bag, plate=None):
