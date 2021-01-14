@@ -522,6 +522,25 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
+void TPPNode::object_yaw(std::vector<msgs::DetectedObject>& objs)
+{
+  for (auto& obj : objs)
+  {
+    // rotate from (0, 1, 0) to absolute_velocity in counter-clockwise direction
+    double x1 = obj.track.absolute_velocity.x;
+    double y1 = obj.track.absolute_velocity.y;
+    double x2 = 0.;
+    double y2 = 1.;
+
+    double dot = x1 * x2 + y1 * y2;  // dot product between [x1, y1] and [x2, y2]
+    double det = x1 * y2 - y1 * x2;  // determinant
+    double yaw_rad = std::atan2(det, dot);
+    obj.distance = (float)yaw_rad;
+    std::cout << obj.track.absolute_velocity.x << " " << obj.track.absolute_velocity.y << " " << obj.distance
+              << std::endl;
+  }
+}
+
 void TPPNode::convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped& tf_stamped)
 {
   // TF (lidar-to-map) for object pose
@@ -647,6 +666,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#6-2 bbox center y -- kalman-filtered (m), "  //
         << "#6-3 bbox center z -- kalman-filtered (m), "  //
 
+#if OBJECT_YAW == 1
+        << "#7-1 object yaw (rad), "  //
+        << "#7-2 object yaw (deg), "  //
+#endif
+
         << "#11 abs vx (km/h), "     //
         << "#12 abs vy (km/h), "     //
         << "#13 abs speed (km/h), "  //
@@ -712,6 +736,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << obj.center_point.x << ", "         // #6-1 bbox center x -- kalman-filtered (m)
         << obj.center_point.y << ", "         // #6-2 bbox center y -- kalman-filtered (m)
         << obj.center_point.z << ", "         // #6-3 bbox center z -- kalman-filtered (m)
+
+#if OBJECT_YAW == 1
+        << obj.distance << ", "                 // #7-1 object yaw (rad)
+        << obj.distance * 57.295779513 << ", "  // #7-2 object yaw (deg)
+#endif
 
         << obj.track.absolute_velocity.x << ", "  // #11 abs vx (km/h)
         << obj.track.absolute_velocity.y << ", "  // #12 abs vy (km/h)
@@ -790,6 +819,10 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
 void TPPNode::publish_pp(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs,
                          const unsigned int pub_offset, const float time_offset)
 {
+#if OBJECT_YAW == 1
+  object_yaw(objs);
+#endif
+
   if (save_output_txt_)
   {
     save_output_to_txt(objs, "../../../tracking_rpp_output_tf_lidar.txt");
