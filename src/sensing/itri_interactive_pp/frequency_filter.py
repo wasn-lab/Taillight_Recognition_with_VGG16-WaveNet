@@ -1,8 +1,8 @@
 #! ./sandbox/bin/python2.7
+
 import rospy
 import tf2_ros
 from msgs.msg import DetectedObjectArray
-
 import time
 
 prev = rospy.Time()
@@ -17,7 +17,7 @@ def publish_msg(data):
     # print('_')
     # if(data.header.stamp - prev).to_sec() > 10:
         # print('Initialize')
-    if(data.header.stamp - prev).to_sec() > 0.3:
+    if(data.header.stamp - prev).to_sec() > 0.5:
         # print((data.header.stamp - prev).to_sec())
         prev = data.header.stamp
         pub = rospy.Publisher(

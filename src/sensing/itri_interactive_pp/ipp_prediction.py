@@ -13,6 +13,7 @@ sys.path.insert(0, "./trajectron")
 import tf2_ros
 import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
+from tf.transformations import euler_from_quaternion
 
 import math
 from msgs.msg import PointXY
@@ -135,11 +136,19 @@ class buffer_data():
 
     def refresh_buffer(self):
         # If frame_id < current_time - 11 remove the data
-        prev = time.time()
-        old_frame = self.current_frame - 11
-        self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= old_frame]
-        self.buffer_frame.sort_values('frame_id', inplace=True)
-        print '[RunTime] Refresh buffer cost time: ',time.time()-prev
+        if len(frame_length) > 11:
+            tmp = self.buffer_frame.copy()
+            prev = time.time()
+            tmp.drop(range(0,frame_length[0]))
+            del frame_length[0]
+            # print 'frame_length : ', frame_length
+            print '[RunTime] (After) Refresh buffer cost time: ',time.time()-prev
+            
+        # prev = time.time()
+        # old_frame = self.current_frame - 11
+        # self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= old_frame]
+        # self.buffer_frame.sort_values('frame_id', inplace=True)
+        # print '[RunTime] (Before) Refresh buffer cost time: ',time.time()-prev
 
     def present_all_data(self):
         print('buffer_length : ', len(self.buffer_frame))
@@ -275,6 +284,10 @@ def transform_data(buffer, data):
         diff_x = 0
         diff_y = 0
         heading = 0
+        # using quaternion problem radian or angle?
+        # quaternion_list = [obj.heading.x,obj.heading.y,obj.heading.z,obj.heading.w]
+        # _ , _ , yaw = euler_from_quaternion(quaternion_list)
+        
         heading_rad = 0
         for old_obj in past_obj:
             sp = old_obj.split(",")
@@ -302,7 +315,8 @@ def transform_data(buffer, data):
         info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + \
             "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
         past_obj.append(info)
-        
+        # print 'ros method heading : ',yaw
+        # print 'our method heading : ',heading
         node_data = pd.Series({'frame_id': buffer.get_buffer_frame(),
                                'type': category,
                                'node_id': str(obj.track.id),
@@ -320,6 +334,7 @@ def transform_data(buffer, data):
         present_id_list.append(obj.track.id)
     # print(present_id_list)
     buffer.refresh_buffer()
+    frame_length.append(len(present_id_list))
     return present_id_list
 
 
@@ -327,14 +342,16 @@ def predict(data):
     prev = time.time()
     present_id = transform_data(buffer, data)
     print '[RunTime] obj count :' ,len(present_id)
-    print '[RunTime] Data preprocessing cost time: ',time.time()-prev
+    print '[RunTime] Data preprocessing cost time: ',time.time() - prev
     prev = time.time()
     present_id = map(str, present_id)
     scene = buffer.create_scene(present_id)
+    print '[RunTime] Create_scene cost time: ',time.time() - prev
+    prev = time.time()
     scene.calculate_scene_graph(buffer.env.attention_radius,
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
-    # print '[RunTime] calculate_scene_graph cost time: ',time.time()-prev
+    print '[RunTime] calculate_scene_graph cost time: ',time.time()-prev
     timesteps = np.array([buffer.get_buffer_frame()])
     prev = time.time()
     # print buffer.current_time
@@ -360,7 +377,7 @@ def predict(data):
                                    z_mode=True,
                                    gmm_mode=True,
                                    full_dist=False)
-    # print '[RunTime] Prediction cost time: ',time.time()-prev
+    print '[RunTime] Prediction cost time: ',time.time()-prev
     buffer.update_frame()
     if len(predictions.keys()) < 1:
         return
@@ -416,8 +433,9 @@ def load_model(model_dir, ts=100):
 if __name__ == '__main__':
     ''' =====================
           loading_model_part
+          frame_length for refreshing buffer
         ===================== '''
-    global prediction_horizon, absolute_coordinate, buffer, past_obj, input_topic
+    global prediction_horizon, absolute_coordinate, buffer, past_obj, input_topic, frame_length
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -438,6 +456,7 @@ if __name__ == '__main__':
     else:
 	    input_topic = '/Tracking3D'
     past_obj = []
+    frame_length = []
 
     # for i in range(10):
     #     heading = math.atan(i*(-1))

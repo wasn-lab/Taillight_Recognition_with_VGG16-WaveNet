@@ -10,7 +10,7 @@ import time
 import numpy as np
 
 
-def init_new_points(id=0, duration=0.3, color=[1.0, 1.0, 1.0],coordinate_type='map'):
+def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map'):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
     marker.header.frame_id = coordinate_type  # vehicle center
@@ -30,7 +30,7 @@ def init_new_points(id=0, duration=0.3, color=[1.0, 1.0, 1.0],coordinate_type='m
     return marker
 
 
-def init_new_line(id=0, duration=0.3, color=[1.0, 1.0, 1.0],coordinate_type='map'):
+def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map'):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
     marker.header.frame_id = coordinate_type

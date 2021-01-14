@@ -16,7 +16,7 @@
   <!-- Set if delay or not-->
   <!-- 1: no delay 8 fps -->
   <!-- 2: delay 2 fps -->
-  <arg name="delay_node" default="1" />
+  <arg name="delay_node" default="2" />
 
   <!-- rviz markers -->
   <!-- true : use 2d for danger zone -->
