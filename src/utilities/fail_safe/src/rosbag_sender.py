@@ -3,20 +3,30 @@
 Send backup rosbag files to backend.
 """
 from __future__ import print_function
-import time
+# import time
 import datetime
 import os
 import io
 import subprocess
-import rospy
 import logging
+import rospy
 from std_msgs.msg import Empty
 from sb_param_utils import get_license_plate_number
-from rosbag_utils import get_bag_yymmdd
+from rosbag_utils import get_bag_yymmdd, get_bag_timestamp
 from vk221_3 import notify_backend_with_new_bag
 from vk221_4 import notify_backend_with_uploaded_bag
 
-_BACKUP_ROSBAG_LFTP_SCRIPT = "/tmp/backup_rosbag_lftp_script.txt"
+
+def _should_delete_bag(bag_fullpath, current_dt=None):
+    """
+    Return True if the datetime in |bag_fullpath| is <= |current_dt| - 3 days.
+    Return False otherwise.
+    """
+    bag_dt = get_bag_timestamp(bag_fullpath)
+    if current_dt is None:
+        current_dt = datetime.datetime.now()
+    delta = current_dt - bag_dt
+    return bool(delta.total_seconds() > 259200)  # 259200 = 3*24*60*60
 
 
 def _get_stamp_filename(fullpath):
@@ -87,8 +97,23 @@ class RosbagSender(object):
         else:
             self.rosbag_backup_dir = rosbag_backup_dir
 
+    def _delete_old_bags_if_necessary(self, bags):
+        for bag in bags:
+            if not _should_delete_bag(bag):
+                continue
+
+            for filename in [bag, _get_stamp_filename(bag)]:
+                if not os.path.isfile(filename):
+                    continue
+                rospy.logwarn("rm %s", filename)
+                if self.debug_mode:
+                    rospy.logwarn("Debug mode: do not actually rm %s", filename)
+                else:
+                    os.unlink(filename)
+
     def send_bags(self, bags):
         bags.sort()
+        self._delete_old_bags_if_necessary(bags)
 
         for bag in bags:
             _, bag_base_name = os.path.split(bag)
@@ -108,6 +133,8 @@ class RosbagSender(object):
                 print("notify backend: {} has been uploaded successfuly".format(bag))
                 jret = notify_backend_with_uploaded_bag(bag_base_name)
                 print(jret)
+            if os.path.isfile(lftp_script_filename):
+                os.unlink(lftp_script_filename)
 
     def _generate_lftp_script(self, bag):
         ftp_cmds = [
@@ -125,13 +152,14 @@ class RosbagSender(object):
         ]
         ftp_cmds += [u"bye"]
 
-        if os.path.isfile(_BACKUP_ROSBAG_LFTP_SCRIPT):
-            os.unlink(_BACKUP_ROSBAG_LFTP_SCRIPT)
+        script_file = os.path.join("/tmp", bag + ".lftprc")
+        if os.path.isfile(script_file):
+            os.unlink(script_file)
 
-        with io.open(_BACKUP_ROSBAG_LFTP_SCRIPT, "w", encoding="utf-8") as _fp:
+        with io.open(script_file, "w", encoding="utf-8") as _fp:
             _fp.write(u"\n".join(ftp_cmds))
             _fp.write(u"\n")
-        return _BACKUP_ROSBAG_LFTP_SCRIPT
+        return script_file
 
     def get_unsent_rosbag_filenames(self):
         """Return a list of bag files that are not sent back"""
@@ -144,7 +172,7 @@ class RosbagSender(object):
             for fname in files:
                 if not fname.endswith(".bag.gz"):
                     continue
-                fullpath = os.path.join(self.rosbag_backup_dir, fname)
+                fullpath = os.path.join(root, fname)
                 bag = fullpath[:-3]
                 if os.path.isfile(bag):
                     # still compressing, skip this file

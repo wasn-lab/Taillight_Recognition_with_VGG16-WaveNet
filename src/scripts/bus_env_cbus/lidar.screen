@@ -88,7 +88,7 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_2d_lanel
 screen -t init_pedcross.sh
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross.sh^M"
 
-screen -t roslaunch opengl_test GUI_B_car.launch
+screen -t GUI_B_car.launch
 stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch^M"
 
 screen -t detection_viz

@@ -86,6 +86,8 @@
 #define EIGEN3_ROTATION 1
 #define FILL_CONVEX_HULL 1
 
+// save_output_txt
+#define OBJECT_YAW 0
 #define EGO_AS_DETECTED_OBJ 0
 
 #define PP_WAYAREA 1
