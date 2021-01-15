@@ -29,6 +29,7 @@ include_directories(${PC2_COMPRESSOR_INCLUDE_DIRS})
 
 add_library(${PC2_COMPRESSOR_LIB} STATIC ${PC2_COMPRESSOR_LIB_SRCS})
 target_link_libraries(${PC2_COMPRESSOR_LIB} ${PC2_COMPRESSOR_LIB_DEPS})
+add_dependencies(${PC2_COMPRESSOR_LIB} ${catkin_EXPORTED_TARGETS})
 
 set(PC2_COMPRESSOR_NODE_EXE pc2_compressor_node)
 set(PC2_COMPRESSOR_NODE_SRCS
@@ -36,6 +37,7 @@ set(PC2_COMPRESSOR_NODE_SRCS
   cmpr_main.cpp)
 add_executable(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_NODE_SRCS})
 target_link_libraries(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})
+add_dependencies(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB})
 
 set(PC2_DECOMPRESSOR_NODE_EXE pc2_decompressor_node)
 set(PC2_DECOMPRESSOR_NODE_SRCS
@@ -43,6 +45,8 @@ set(PC2_DECOMPRESSOR_NODE_SRCS
   decmpr_main.cpp)
 add_executable(${PC2_DECOMPRESSOR_NODE_EXE} ${PC2_DECOMPRESSOR_NODE_SRCS})
 target_link_libraries(${PC2_DECOMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})
+add_dependencies(${PC2_DECOMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB})
+
 set(PC2_COMPRESSOR_TEST_DIR "${CMAKE_CURRENT_LIST_DIR}/test")
 configure_file(pc2_compressor_def.h.in ${PROJECT_BINARY_DIR}/include/pc2_compressor_def.h)
 
