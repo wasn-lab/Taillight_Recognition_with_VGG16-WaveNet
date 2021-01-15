@@ -524,3 +524,117 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
     }
   }
 }
+
+void getBoxInImageFOV(const msgs::DetectedObjectArray& objects, std::vector<MinMax2D>& cam_pixels_obj, Alignment& alignment)
+{
+  // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
+  // std::cout << "objects.objects size: " << objects.objects.size() << std::endl;
+  for (auto& obj : objects.objects)
+  {
+    std::vector<pcl::PointXYZI> bbox_points(8);
+    msgs::DetectedObject obj_tmp = obj;
+    obj_tmp.header = objects.header;
+
+    if (!(obj_tmp.bPoint.p0.x == 0 && obj_tmp.bPoint.p0.y ==0 && obj_tmp.bPoint.p0.z ==0 && 
+      obj_tmp.bPoint.p6.x == 0 && obj_tmp.bPoint.p6.y ==0 && obj_tmp.bPoint.p6.z ==0))
+    {
+      // get the 2d box
+      bbox_points[0].x = obj_tmp.bPoint.p0.x;
+      bbox_points[0].y = obj_tmp.bPoint.p0.y;
+      bbox_points[0].z = obj_tmp.bPoint.p0.z;
+      // bbox_points[1].x = obj_tmp.bPoint.p1.x;
+      // bbox_points[1].y = obj_tmp.bPoint.p1.y;
+      // bbox_points[1].z = obj_tmp.bPoint.p1.z;
+      // bbox_points[2].x = obj_tmp.bPoint.p2.x;
+      // bbox_points[2].y = obj_tmp.bPoint.p2.y;
+      // bbox_points[2].z = obj_tmp.bPoint.p2.z;
+      // bbox_points[3].x = obj_tmp.bPoint.p3.x;
+      // bbox_points[3].y = obj_tmp.bPoint.p3.y;
+      // bbox_points[3].z = obj_tmp.bPoint.p3.z;
+      // bbox_points[4].x = obj_tmp.bPoint.p4.x;
+      // bbox_points[4].y = obj_tmp.bPoint.p4.y;
+      // bbox_points[4].z = obj_tmp.bPoint.p4.z;
+      // bbox_points[5].x = obj_tmp.bPoint.p5.x;
+      // bbox_points[5].y = obj_tmp.bPoint.p5.y;
+      // bbox_points[5].z = obj_tmp.bPoint.p5.z;
+      bbox_points[6].x = obj_tmp.bPoint.p6.x;
+      bbox_points[6].y = obj_tmp.bPoint.p6.y;
+      bbox_points[6].z = obj_tmp.bPoint.p6.z;
+      // bbox_points[7].x = obj_tmp.bPoint.p7.x;
+      // bbox_points[7].y = obj_tmp.bPoint.p7.y;
+      // bbox_points[7].z = obj_tmp.bPoint.p7.z;
+
+      MinMax2D min_max_2d_bbox;
+      min_max_2d_bbox.p_min = alignment.projectPointToPixel(bbox_points[0]);
+      min_max_2d_bbox.p_max = alignment.projectPointToPixel(bbox_points[6]);
+      if (min_max_2d_bbox.p_min.u >= 0 && min_max_2d_bbox.p_min.v >= 0 && min_max_2d_bbox.p_max.u >= 0 && min_max_2d_bbox.p_max.v >= 0)
+      {
+        cam_pixels_obj.push_back(min_max_2d_bbox);
+      }
+    }
+  }
+}
+void getBoxInImageFOV(const msgs::DetectedObjectArray& objects, std::vector<std::vector<PixelPosition>>& cam_pixels_obj, Alignment& alignment)
+{
+  // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
+  bool is_out_of_range = false;
+  // std::cout << "objects.objects size: " << objects.objects.size() << std::endl;
+  for (auto& obj : objects.objects)
+  {
+    std::vector<pcl::PointXYZI> bbox_points(8);
+    std::vector<PixelPosition> cube(8);
+    msgs::DetectedObject obj_tmp = obj;
+    obj_tmp.header = objects.header;
+
+    // get the 2d box
+    if (!(obj_tmp.bPoint.p0.x == 0 && obj_tmp.bPoint.p0.y ==0 && obj_tmp.bPoint.p0.z ==0 && 
+      obj_tmp.bPoint.p6.x == 0 && obj_tmp.bPoint.p6.y ==0 && obj_tmp.bPoint.p6.z ==0))
+    {
+      bbox_points[0].x = obj_tmp.bPoint.p0.x;
+      bbox_points[0].y = obj_tmp.bPoint.p0.y;
+      bbox_points[0].z = obj_tmp.bPoint.p0.z;
+      bbox_points[1].x = obj_tmp.bPoint.p1.x;
+      bbox_points[1].y = obj_tmp.bPoint.p1.y;
+      bbox_points[1].z = obj_tmp.bPoint.p1.z;
+      bbox_points[2].x = obj_tmp.bPoint.p2.x;
+      bbox_points[2].y = obj_tmp.bPoint.p2.y;
+      bbox_points[2].z = obj_tmp.bPoint.p2.z;
+      bbox_points[3].x = obj_tmp.bPoint.p3.x;
+      bbox_points[3].y = obj_tmp.bPoint.p3.y;
+      bbox_points[3].z = obj_tmp.bPoint.p3.z;
+      bbox_points[4].x = obj_tmp.bPoint.p4.x;
+      bbox_points[4].y = obj_tmp.bPoint.p4.y;
+      bbox_points[4].z = obj_tmp.bPoint.p4.z;
+      bbox_points[5].x = obj_tmp.bPoint.p5.x;
+      bbox_points[5].y = obj_tmp.bPoint.p5.y;
+      bbox_points[5].z = obj_tmp.bPoint.p5.z;
+      bbox_points[6].x = obj_tmp.bPoint.p6.x;
+      bbox_points[6].y = obj_tmp.bPoint.p6.y;
+      bbox_points[6].z = obj_tmp.bPoint.p6.z;
+      bbox_points[7].x = obj_tmp.bPoint.p7.x;
+      bbox_points[7].y = obj_tmp.bPoint.p7.y;
+      bbox_points[7].z = obj_tmp.bPoint.p7.z;
+
+      for (size_t i = 0; i < bbox_points.size(); i++)
+      {
+        if (alignment.checkPointInCoverage(bbox_points[i]))
+        {
+          cube[i] = alignment.projectPointToPixel(bbox_points[i]);
+          if (cube[i].u < 0 || cube[i].v < 0)
+          {
+            is_out_of_range = true;
+          }
+        }
+        else
+        {
+          is_out_of_range = true;
+        }
+        
+      }
+      if (!is_out_of_range)
+      {
+        cam_pixels_obj.push_back(cube);
+      }
+    }
+  }
+}
