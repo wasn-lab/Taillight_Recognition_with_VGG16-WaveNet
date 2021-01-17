@@ -1,68 +1,36 @@
 #!/usr/bin/env python2
 
-from __future__ import division
 import rospy
-from geometry_msgs.msg import Point32, Quaternion
+import tf2_ros
+import tf2_geometry_msgs
+from geometry_msgs.msg import TransformStamped, Pose
 from msgs.msg import *
 from autoware_perception_msgs.msg import *
-from numpy import array_equal, negative, cross, dot
-import math
 
 
-def my_divide(dividend, divisor):
-    remain = dividend % divisor
-    floor = dividend // divisor
-    return floor, remain
+class MsgConvert2:
 
-
-def vector3d_to_quaternion(v):
-    # Half-way vector solution for finding quaternion representing the
-    # rotation from one vector to another
-    u = [1, 0, 0]
-
-    norm1 = math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2])
-    if norm1 != 0:
-        v = [v[0] / norm1, v[1] / norm1, v[2] / norm1]
-
-    q = [0, 0, 0, 0]  # quaternion [x, y, z, w]
-    if (array_equal(u, v)):
-        q = [0, 0, 0, 1]
-    elif (array_equal(u, negative(v))):
-        q = [0, 0, 1, 0]  # orthogonal to u
-    else:
-        half = [u[0] + v[0], u[1] + v[1], u[2] + v[2]]
-        norm2 = math.sqrt(
-            half[0] *
-            half[0] +
-            half[1] *
-            half[1] +
-            half[2] *
-            half[2])
-        if norm2 != 0:
-            half = [half[0] / norm2, half[1] / norm2, half[2] / norm2]
-        cross_u_half = cross(u, half)
-        q = [cross_u_half[0], cross_u_half[1], cross_u_half[2], dot(u, half)]
-
-    return q
-
-
-class Node:
+    frame_id_target_ = "map"
+    frame_id_source_ = "base_link"
+    tf_buffer_ = tf2_ros.Buffer()
 
     def __init__(self):
         rospy.init_node("detectedin_obj._msg_converter")
 
-        # Publishers
-        self.track3d_aw_pub = rospy.Publisher(
-            "/Tracking3D_aw", DynamicObjectArray, queue_size=1)
+        in_topic_ = "LidarDetection"
+
         # Subscribers
-        self.track3d_sub = rospy.Subscriber(
-            "/Tracking3D", DetectedObjectArray, self.track3d_callback)
+        self.sub_ = rospy.Subscriber(
+            in_topic_, DetectedObjectArray, self.callback)
+        # Publishers
+        self.pub_ = rospy.Publisher(
+            str(in_topic_ + "/aw"), DynamicObjectWithFeatureArray, queue_size=1)
 
     def run(self):
         rospy.spin()
 
-    def track3d_callback(self, msg):
-        self.track3d_aw_pub.publish(self.msg_convert(msg))
+    def callback(self, msg):
+        self.pub_.publish(self.msg_convert(msg))
 
     def classid_convert(self, idx):
         dict = {
@@ -79,73 +47,81 @@ class Node:
         }
         return dict.get(idx)
 
+    def convert(self, p, tf_stamped):
+        # TF (lidar-to-map) for object pose
+        pose_in_lidar = Pose()
+        pose_in_lidar.position.x = p.x
+        pose_in_lidar.position.y = p.y
+        pose_in_lidar.position.z = p.z
+        pose_in_lidar.orientation.x = 0
+        pose_in_lidar.orientation.y = 0
+        pose_in_lidar.orientation.z = 0
+        pose_in_lidar.orientation.w = 1
+
+        pose_in_map = Pose()
+        pose_in_map = do_transform_pose(pose_in_lidar, tf_stamped)
+        p.x = pose_in_map.position.x
+        p.y = pose_in_map.position.y
+        p.z = pose_in_map.position.z
+
+    def convert_all_to_map_tf(self, obj):
+        if obj.header.frame_id != self.frame_id_target_:
+            tf_stamped = TransformStamped()
+
+            try:
+               tf_stamped = self.tf_buffer_.lookup_transform(self.frame_id_target_, self.frame_id_source_, rospy.Time(0))
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+               return
+
+            convert(obj.center_point, tf_stamped)
+            convert(obj.bPoint.p0, tf_stamped)
+            convert(obj.bPoint.p1, tf_stamped)
+            convert(obj.bPoint.p2, tf_stamped)
+            convert(obj.bPoint.p3, tf_stamped)
+            convert(obj.bPoint.p4, tf_stamped)
+            convert(obj.bPoint.p5, tf_stamped)
+            convert(obj.bPoint.p6, tf_stamped)
+            convert(obj.bPoint.p7, tf_stamped)
+
     def msg_convert(self, in_list):
-        out_list = DynamicObjectArray()
+        out_list = DynamicObjectWithFeatureArray()
         out_list.header = in_list.header
 
         for in_obj in in_list.objects:
+            self.convert_all_to_map_tf(in_obj)
+
             out_obj = DynamicObject()
 
-            # in_obj.track.id(uint32) to out_obj.id.uuid(uint8[16])
-            id_list = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            tmp_id = in_obj.track.id
-            tmp_id, id_list[15] = my_divide(tmp_id, 256)
-            tmp_id, id_list[14] = my_divide(tmp_id, 256)
-            tmp_id, id_list[13] = my_divide(tmp_id, 256)
-            tmp_id, id_list[12] = my_divide(tmp_id, 256)
-            out_obj.id.uuid = id_list
-            # print('in_obj.track.id = {0}'.format(in_obj.track.id))
-            # print('out_obj.id.uuid = {0}'.format(out_obj.id.uuid))
-
+            # fill semantic
             out_obj.semantic.type = self.classid_convert(in_obj.classId)
+            out_obj.semantic.confidence = 1.0
             # print('in_obj.classId = {0}; out_obj.semantic.type = {1}'.format(in_obj.classId, out_obj.semantic.type))
 
-            if in_obj.camInfo:
-                out_obj.semantic.confidence = in_obj.camInfo[0].prob
+            # fill state
+            out_obj.state.pose_covariance.pose.position.x = in_obj.center_point.x
+            out_obj.state.pose_covariance.pose.position.y = in_obj.center_point.y
+            out_obj.state.pose_covariance.pose.position.z = in_obj.center_point.z
+            out_obj.state.pose_covariance.pose.orientation.x = in_obj.heading.x
+            out_obj.state.pose_covariance.pose.orientation.y = in_obj.heading.y
+            out_obj.state.pose_covariance.pose.orientation.z = in_obj.heading.z
+            out_obj.state.pose_covariance.pose.orientation.w = in_obj.heading.w
 
-            out_obj.state.pose_covariance.pose.position.x = (
-                in_obj.bPoint.p0.x + in_obj.bPoint.p7.x) / 2
-            out_obj.state.pose_covariance.pose.position.y = (
-                in_obj.bPoint.p0.y + in_obj.bPoint.p7.y) / 2
-            out_obj.state.pose_covariance.pose.position.z = (
-                in_obj.bPoint.p0.z + in_obj.bPoint.p7.z) / 2
+            out_obj.state.orientation_reliable = False
 
-            out_obj.state.twist_covariance.twist.linear.x = in_obj.track.absolute_velocity.x
-            out_obj.state.twist_covariance.twist.linear.y = in_obj.track.absolute_velocity.y
-            out_obj.state.twist_covariance.twist.linear.z = in_obj.track.absolute_velocity.z
+            # fill shape
+            out_obj.shape.type = 0
+            out_obj.shape.dimensions.x = in_obj.dimension.length
+            out_obj.shape.dimensions.y = in_obj.dimension.width
+            out_obj.shape.dimensions.z = in_obj.dimension.height
 
-            vec3_x = in_obj.track.absolute_velocity.x
-            vec3_y = in_obj.track.absolute_velocity.y
-            vec3_z = in_obj.track.absolute_velocity.z
-
-            if vec3_x == 0:
-                vec3_x = -0.0001
-
-            if vec3_y == 0:
-                vec3_y = -0.0001
-
-            if vec3_z == 0:
-                vec3_z = -0.0001
-
-            vec3 = [vec3_x, vec3_y, vec3_z]
-
-            q = vector3d_to_quaternion(vec3)
-            out_obj.state.pose_covariance.pose.orientation = Quaternion(
-                q[0], q[1], q[2], q[3])
-            out_obj.state.orientation_reliable = True
-
-            out_obj.shape.type = 2
-
-            if in_obj.cPoint.lowerAreaPoints:
-                for p in in_obj.cPoint.lowerAreaPoints:
-                    out_obj.shape.footprint.points.append(
-                        Point32(p.x, p.y, p.z))
-
-            out_list.objects.append(out_obj)
+            out_obj_with_feature = DynamicObjectWithFeature()
+            out_obj_with_feature.object = out_obj
+            out_list.feature_objects.append(out_obj_with_feature)
 
         return out_list
 
 
 if __name__ == "__main__":
-    node = Node()
+    node = MsgConvert2()
     node.run()
+    tf_listener = tf2_ros.TransformListener(tf_buffer_)
