@@ -203,7 +203,7 @@ MapBasedPredictionROS::MapBasedPredictionROS() : pnh_("~"), interpolating_resolu
 void MapBasedPredictionROS::createROSPubSub()
 {
   sub_objects_ = nh_.subscribe<autoware_perception_msgs::DynamicObjectArray>(
-      "/Tracking3D_aw", 1, &MapBasedPredictionROS::objectsCallback, this);
+      "/Tracking3D/aw", 1, &MapBasedPredictionROS::objectsCallback, this);
   sub_map_ = nh_.subscribe("/vector_map", 10, &MapBasedPredictionROS::mapCallback, this);
 
   pub_objects_ = nh_.advertise<autoware_perception_msgs::DynamicObjectArray>("objects", 1);
@@ -254,7 +254,6 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     tmp_object.object = object;
     if (in_objects->header.frame_id != "map")
     {
-      // TF (lidar-to-map) for object pose
       geometry_msgs::Pose pose_in_map;
       tf2::doTransform(object.state.pose_covariance.pose, pose_in_map, world2map_transform);
       tmp_object.object.state.pose_covariance.pose = pose_in_map;
@@ -453,44 +452,6 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
   output.header = in_objects->header;
   output.header.frame_id = "map";
   output.objects = out_objects_in_map;
-
-  for (auto& object : tmp_objects_without_map.objects)
-  {
-    if (tmp_objects_without_map.header.frame_id != "map")
-    {
-      // TF (lidar-to-map) for object twist (3 steps)
-      // Step 1. Put object twist into twist_pose
-      geometry_msgs::Pose twist_pose;
-      twist_pose.position.x = object.state.twist_covariance.twist.linear.x;
-      twist_pose.position.y = object.state.twist_covariance.twist.linear.y;
-      twist_pose.position.z = object.state.twist_covariance.twist.linear.z;
-      twist_pose.orientation.x = 0;
-      twist_pose.orientation.y = 0;
-      twist_pose.orientation.z = 0;
-      twist_pose.orientation.w = 1;
-
-      // Step 2. Apply rotation of lidar-to-map to twist_pose
-      tf2::Transform tf1;
-      tf2::fromMsg(twist_pose, tf1);
-
-      tf2::Transform tf2;
-      geometry_msgs::Transform tmp_tf = world2map_transform.transform;
-      tmp_tf.translation.x = 0;
-      tmp_tf.translation.y = 0;
-      tmp_tf.translation.z = 0;
-      tf2::fromMsg(tmp_tf, tf2);
-
-      tf2::Transform tf3 = tf2 * tf1;
-
-      geometry_msgs::Pose twist_pose_in_map;
-      tf2::toMsg(tf3, twist_pose_in_map);
-
-      // Step 3. Write twist_pose_in_map back to object twist
-      object.state.twist_covariance.twist.linear.x = twist_pose_in_map.position.x;
-      object.state.twist_covariance.twist.linear.y = twist_pose_in_map.position.y;
-      object.state.twist_covariance.twist.linear.z = twist_pose_in_map.position.z;
-    }
-  }
 
   std::vector<autoware_perception_msgs::DynamicObject> out_objects_without_map;
   map_based_prediction_->doLinearPrediction(tmp_objects_without_map, out_objects_without_map);
