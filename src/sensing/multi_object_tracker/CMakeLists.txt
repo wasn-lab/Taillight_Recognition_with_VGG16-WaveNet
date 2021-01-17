@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.1)
 project(multi_object_tracker)
 
 add_compile_options(-std=c++14)
