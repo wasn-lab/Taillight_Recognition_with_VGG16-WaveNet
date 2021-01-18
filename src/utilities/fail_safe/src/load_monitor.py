@@ -26,6 +26,8 @@ def _get_gpu_load_by_tegra_stats():
 def _get_cpu_load():
     line = subprocess.check_output(["w"]).splitlines()[0]
     match = W_RGX.search(line)
+    if match is None:
+        return "NA"
     return match.expand(r"\g<load>")
 
 
