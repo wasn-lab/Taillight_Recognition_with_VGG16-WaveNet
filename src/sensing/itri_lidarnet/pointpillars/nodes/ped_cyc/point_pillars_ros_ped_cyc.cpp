@@ -95,14 +95,13 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
     {
       msgs::DetectedObject object;
 
-
       float center_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 0];
       float center_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
       float center_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 2];
       
-      float dimension_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5]; //4
-      float dimension_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3]; //3
-      float dimension_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4]; //5
+      float dimension_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4];
+      float dimension_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3];
+      float dimension_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5];
 
       object.center_point.x = center_x;
       object.center_point.y = center_y;
