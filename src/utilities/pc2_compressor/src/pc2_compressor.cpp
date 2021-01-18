@@ -37,14 +37,16 @@ static msgs::CompressedPointCloud2ConstPtr __compress(const sensor_msgs::PointCl
     auto org_size = size_of_msg(in_msg);
     auto cmpr_size = size_of_msg(cmpr_msg);
     std::string field_names;
-    for(const auto& field: in_msg->fields){
+    for (const auto& field : in_msg->fields)
+    {
       field_names += field.name + "(datatype: " + std::to_string(field.datatype) + ") ";
     }
-    if (!field_names.empty()){
+    if (!field_names.empty())
+    {
       field_names.pop_back();
     }
     LOG(INFO) << "Compression ratio: " << double(cmpr_size) / org_size << " (" << cmpr_size << "/" << org_size << ")"
-              << ", point cloud fields: " << field_names ;
+              << ", point cloud fields: " << field_names;
   }
 
   return cmpr_msg;
