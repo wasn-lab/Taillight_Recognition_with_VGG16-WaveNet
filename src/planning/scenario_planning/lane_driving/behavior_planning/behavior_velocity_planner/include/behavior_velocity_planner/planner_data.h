@@ -40,6 +40,7 @@
 
 #include <msgs/BusStop.h>
 #include <msgs/BusStopArray.h>
+#include <std_msgs/String.h>
 
 
 struct PlannerData
@@ -53,6 +54,7 @@ struct PlannerData
   pcl::PointCloud<pcl::PointXYZ>::ConstPtr no_ground_pointcloud;
   lanelet::LaneletMapPtr lanelet_map;
   msgs::BusStopArray::ConstPtr bus_stop_reserve;
+  std::string LRturn;
 
   // other internal data
   std::map<int, autoware_perception_msgs::TrafficLightStateStamped> traffic_light_id_map_;
