@@ -5,43 +5,44 @@
 #include "itri_pcd_reader.h"
 #include "pc2_compression_format.h"
 
-int pc2_compressor::ITRIPCDReader::readBodyCompressed(const unsigned char* map, pcl::PCLPointCloud2& cloud,
+int pc2_compressor::ITRIPCDReader::readBodyCompressed(const unsigned char* data_cmpr, pcl::PCLPointCloud2& cloud,
                                                       const int32_t fmt, const uint32_t data_idx)
 {
   // Setting the is_dense property to true by default
-  cloud.is_dense = true;
+  cloud.is_dense = 1u;
 
   unsigned int compressed_size = 0, uncompressed_size = 0;
-  memcpy(&compressed_size, &map[data_idx + 0], 4);
-  memcpy(&uncompressed_size, &map[data_idx + 4], 4);
+  memcpy(&compressed_size, &data_cmpr[data_idx + 0], 4);
+  memcpy(&uncompressed_size, &data_cmpr[data_idx + 4], 4);
 
   if (uncompressed_size != cloud.data.size())
   {
     cloud.data.resize(uncompressed_size);
   }
 
-  unsigned int data_size = static_cast<unsigned int>(cloud.data.size());
+  auto data_size = static_cast<unsigned int>(cloud.data.size());
   std::vector<char> buf(data_size);
   // The size of the uncompressed data better be the same as what we stored in the header
   if (fmt == compression_format::lzf)
   {
-    unsigned int tmp_size = pcl::lzfDecompress(&map[data_idx + 8], compressed_size, &buf[0], data_size);
+    unsigned int tmp_size = pcl::lzfDecompress(&data_cmpr[data_idx + 8], compressed_size, &buf[0], data_size);
     CHECK(tmp_size == uncompressed_size);
   }
   else if (fmt == compression_format::snappy)
   {
-    bool success = snappy::RawUncompress(reinterpret_cast<const char*>(&map[data_idx + 8]), compressed_size, &buf[0]);
+    bool success =
+        snappy::RawUncompress(reinterpret_cast<const char*>(&data_cmpr[data_idx + 8]), compressed_size, &buf[0]);
     CHECK(success == true);
   }
   else if (fmt == compression_format::none)
   {
-    memcpy(&buf[0], reinterpret_cast<const char*>(&map[data_idx + 8]), uncompressed_size);
+    memcpy(&buf[0], reinterpret_cast<const char*>(&data_cmpr[data_idx + 8]), uncompressed_size);
   }
   else if (fmt == compression_format::zlib)
   {
     uint64_t dest_len = uncompressed_size;
     auto ret = uncompress(reinterpret_cast<unsigned char*>(&buf[0]), &dest_len,
-                          reinterpret_cast<const unsigned char*>(&map[data_idx + 8]), compressed_size);
+                          reinterpret_cast<const unsigned char*>(&data_cmpr[data_idx + 8]), compressed_size);
     CHECK(ret == Z_OK) << "uncompress returns " << ret;
     CHECK(dest_len == uncompressed_size);
   }
@@ -58,7 +59,9 @@ int pc2_compressor::ITRIPCDReader::readBodyCompressed(const unsigned char* map, 
   for (const auto& field : cloud.fields)
   {
     if (field.name == "_")
+    {
       continue;
+    }
     fields_sizes[nri] = field.count * pcl::getFieldSize(field.datatype);
     fsize += fields_sizes[nri];
     fields[nri] = field;

@@ -56,13 +56,13 @@ int PC2DecompressorNode::set_subscriber()
   }
   LOG(INFO) << ros::this_node::getName() << ":"
             << " subscribe " << topic;
-  int use_v1 = 0;  // for backward compatibility
+  int32_t use_v1 = 0;  // for backward compatibility
   while (ros::ok() && !is_topic_published(topic, &use_v1))
   {
     LOG(INFO) << "wait 1 second for topic " << topic;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
-  if (use_v1)
+  if (use_v1 != 0)
   {
     subscriber_ = node_handle_.subscribe(topic, /*queue_size*/ 2, &PC2DecompressorNode::callback_v1, this);
   }
