@@ -68,9 +68,10 @@ static sensor_msgs::PointCloud2ConstPtr __decompress(const msgs::CompressedPoint
   assert(res == 0);
   assert(data_type == 2);  // Expect data_type is compressed.
 
-  const unsigned char* data = reinterpret_cast<const unsigned char*>(cmpr_msg->data.data());
+  const auto data = reinterpret_cast<const unsigned char*>(cmpr_msg->data.data());
   const int32_t fmt = cmpr_msg->compression_format;
   res = reader.readBodyCompressed(data, pcl_pc2, fmt, data_idx);
+  NO_UNUSED_VAR_CHECK(res);
   assert(res == 0);
 
   sensor_msgs::PointCloud2Ptr decmpr_msg(new sensor_msgs::PointCloud2);
@@ -123,33 +124,33 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
     LOG(INFO) << "Inconsitent channels size: pc_a channel=" << pc_a.channels.size()
               << " pc_b channels=" << pc_b.channels.size();
     LOG(INFO) << "pc_a channels:";
-    for (uint32_t i = 0; i < pc_a.channels.size(); i++)
+    for (auto& channel : pc_a.channels)
     {
-      LOG(INFO) << pc_a.channels[i].name;
+      LOG(INFO) << channel.name;
     }
 
     LOG(INFO) << "pc_b channels:";
-    for (uint32_t i = 0; i < pc_b.channels.size(); i++)
+    for (auto& channel : pc_b.channels)
     {
-      LOG(INFO) << pc_b.channels[i].name;
+      LOG(INFO) << channel.name;
     }
     return false;
   }
 
-  for (uint32_t i = 0; i < pc_a.channels.size(); i++)
+  for (auto& channel_a : pc_a.channels)
   {
-    for (uint32_t j = 0; j < pc_b.channels.size(); j++)
+    for (auto& channel_b : pc_b.channels)
     {
-      if (pc_a.channels[i].name != pc_b.channels[j].name)
+      if (channel_a.name != channel_b.name)
       {
         continue;
       }
-      for (int k = 0, nvalues = pc_a.channels[i].values.size(); k < nvalues; k++)
+      for (int k = 0, nvalues = channel_a.values.size(); k < nvalues; k++)
       {
-        if (pc_a.channels[i].values[k] != pc_b.channels[j].values[k])
+        if (channel_a.values[k] != channel_b.values[k])
         {
-          LOG(INFO) << "channel " << pc_a.channels[i].name << " value differ at " << k << ":"
-                    << pc_a.channels[i].values[k] << " v.s. " << pc_b.channels[j].values[k];
+          LOG(INFO) << "channel " << channel_a.name << " value differ at " << k << ":" << channel_a.values[k]
+                    << " v.s. " << channel_b.values[k];
           return false;
         }
       }
