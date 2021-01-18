@@ -12,12 +12,18 @@
   <!-- 6: CameraDetV2: /CameraDetection -->
   <!-- 7: Tracking2D: /Tracking2D/front_bottom_60 -->
   <!-- otherwise: Fusion: /SensorFusion -->
-  <arg name="input_source" default="6" />
+  <arg name="input_source" default="1" />
 
   <!-- Occupancy source -->
   <!-- 1: MapBased: /occupancy_wayarea -->
   <!-- otherwise: PlannedPathBased: /occupancy_grid_wayarea -->
   <arg name="occ_source" default="0" />
+
+  <!-- Save output to .txt file-->
+  <arg name="save_output_txt" default="False" />
+
+  <!-- Output bbox and pp points in tf_map -->
+  <arg name="output_tf_map" default="False" />
 
   <!-- Input/Output FPS -->
   <arg name="input_fps" default="10.0" />
@@ -49,6 +55,8 @@
   <node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
     <param name="occ_source" value="$(arg occ_source)" />
+    <param name="save_output_txt" value="$(arg save_output_txt)" />
+    <param name="output_tf_map" value="$(arg output_tf_map)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
     <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />

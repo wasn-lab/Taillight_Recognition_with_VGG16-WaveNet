@@ -84,7 +84,7 @@ geometry_msgs::Pose PointPillarsROS_Car::getTransformedPose(const geometry_msgs:
   return out_pose.pose;
 }
 
-void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections, const std_msgs::Header& in_header)
+void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections, const std::vector<float>& scores, const std_msgs::Header& in_header)
 {
   msgs::DetectedObjectArray MsgObjArr;
   MsgObjArr.header = in_header;
@@ -267,8 +267,9 @@ void PointPillarsROS_Car::pointsCallback(const sensor_msgs::PointCloud2::ConstPt
   }
 
   std::vector<float> out_detection;
-  point_pillars_ptr_->doInference(points_array, pcl_pc_ptr->size(), out_detection);
+  std::vector<float> out_score;
+  point_pillars_ptr_->doInference(points_array, pcl_pc_ptr->size(), out_detection, out_score);
 
   delete[] points_array;
-  pubDetectedObject(out_detection, msg->header);
+  pubDetectedObject(out_detection, out_score, msg->header);
 }

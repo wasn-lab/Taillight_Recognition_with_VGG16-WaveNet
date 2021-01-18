@@ -21,3 +21,4 @@ make -j
 sudo make install
 cd ../..
 rm openpose.tar.gz
+sudo ldconfig

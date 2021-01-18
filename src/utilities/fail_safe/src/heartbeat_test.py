@@ -2,7 +2,7 @@
 import unittest
 from msgs.msg import DetectedObjectArray, DetectedObject, CamInfo
 from status_level import OK, WARN
-from heartbeat import cam_object_detection_func
+from heartbeat import cam_object_detection_func, Heartbeat
 
 def _gen_detected_object():
     obj = DetectedObject()
@@ -62,6 +62,20 @@ class HeartbeatTest(unittest.TestCase):
         status, status_str = cam_object_detection_func(det_obj_arr)
         self.assertEqual(status, WARN)
         self.assertTrue("Low confidenc" in status_str)
+
+    def test_disabled(self):
+        obj = Heartbeat("foo",  # module_name
+                        "/mock/topic",
+                        "Empty",  # message_type
+                        10,  # fps_low
+                        30,  # fps_high
+                        False,  # inspect_message_contents
+                        False)  # latch
+        obj.set_enabled(False)
+        self.assertEqual(obj.to_dict(),
+                         {"module": "foo",
+                          "status": OK,
+                          "status_str": "Disabled"})
 
 if __name__ == "__main__":
     unittest.main()

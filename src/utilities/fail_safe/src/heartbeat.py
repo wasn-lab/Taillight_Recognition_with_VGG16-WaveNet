@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import heapq
 import rospy
@@ -111,6 +112,7 @@ class Heartbeat(object):
         self.fps_low = fps_low
         self.fps_high = fps_high
         self.latch = latch
+        self.enabled = True
         self.inspect_func = None
         self.message_type = message_type
         self.inspect_message_contents = inspect_message_contents
@@ -153,9 +155,13 @@ class Heartbeat(object):
 
     def to_dict(self):
         self._update_status()
-        return {"module": self.module_name,
-                "status": self.status,
-                "status_str": self.status_str}
+        ret = {"module": self.module_name,
+               "status": self.status,
+               "status_str": self.status_str}
+        if not self.enabled:
+            ret["status"] = OK
+            ret["status_str"] = "Disabled"
+        return ret
 
     def get_fps(self):
         return len(self.heap) / self.sampling_period_in_seconds
@@ -241,3 +247,7 @@ class Heartbeat(object):
             rospy.logerr("%s: No ego_speed, not receive data yet", self.module_name)
             return float("inf")
         return int(self.msg.ego_speed)
+
+    def set_enabled(self, mode):
+        print("set {} enable={}".format(self.module_name, mode))
+        self.enabled = mode

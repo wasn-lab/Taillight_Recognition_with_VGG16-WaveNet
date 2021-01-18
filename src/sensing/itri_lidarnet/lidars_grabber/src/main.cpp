@@ -53,10 +53,12 @@ StopWatch g_stopWatch_Compressor;
 
 bool g_debug_output = false;
 bool g_use_filter = false;
-bool g_use_compress = false;
+bool g_use_oct_compress = false;
 bool g_use_roi = false;
 
 void lidarAll_Pub(int lidarNum);
+
+uint64_t g_all_last_time = 0;
 
 //------------------------ Compressor
 void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher);
@@ -95,7 +97,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 #endif
 
     //-------------------------- compress thread
-    if (g_use_compress)
+    if (g_use_oct_compress)
     {
       thread t_LeftCompressor;  
       t_LeftCompressor = thread{Compressor, input_cloud_tmp_ring, g_pub_LidarFrontLeft_Compress};  
@@ -189,7 +191,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
 
-    if (g_use_compress)
+    if (g_use_oct_compress)
     {
       thread t_RightCompressor;  
       t_RightCompressor = thread{Compressor, input_cloud_tmp_ring, g_pub_LidarFrontRight_Compress};  
@@ -274,7 +276,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
     pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring(new pcl::PointCloud<pcl::PointXYZIR>);
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster");
 
-    if (g_use_compress)
+    if (g_use_oct_compress)
     { 
       thread t_TopCompressor;
       t_TopCompressor = thread {Compressor, input_cloud_tmp_ring, g_pub_LidarFrontTop_Compress};
@@ -287,7 +289,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
     *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
-    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0, 0, 0);
+    *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0.023, 0.21, 0);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -312,7 +314,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
       *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
-      *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0, 0);
+      *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -325,7 +327,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0.2, 0);
 #elif CAR_MODEL_IS_C1
-      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0, 0, 0);
+      *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -391,7 +393,6 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
   Compressor_Lock.unlock();
 }
 
-
 //----------------------------------------------------- Publisher
 void LidarAll_Publisher(int argc, char** argv)
 {
@@ -411,41 +412,45 @@ void lidarAll_Pub(int lidarNum)
   *g_cloudPtr_LidarAll += *g_cloudPtr_LidarFrontTop;
 
   //------ assign header
-  if (g_cloudPtr_LidarFrontTop->header.stamp != 0)
-  {
-    g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontTop->header.stamp;
-  }
-  else
-  {
-    if (g_cloudPtr_LidarFrontLeft->header.stamp >= g_cloudPtr_LidarFrontRight->header.stamp)
-    {
-      g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontLeft->header.stamp;
-    }
-    else
-    {
-      g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontRight->header.stamp;
-    }
-  }
-  uint64_t LidarAll_time;
+  vector<uint64_t> stamp_vec;
+  stamp_vec= {g_cloudPtr_LidarFrontTop->header.stamp, g_cloudPtr_LidarFrontLeft->header.stamp, g_cloudPtr_LidarFrontRight->header.stamp};
+  uint64_t biggest_stamp = *max_element(std::begin(stamp_vec), std::end(stamp_vec));
+
+  g_cloudPtr_LidarAll->header.stamp = biggest_stamp;
+  g_cloudPtr_LidarAll->header.frame_id = "lidar";
+
+  // if (g_cloudPtr_LidarFrontTop->header.stamp != 0)
+  // {
+  //   g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontTop->header.stamp;
+  // }
+  // else
+  // {
+  //   if (g_cloudPtr_LidarFrontLeft->header.stamp >= g_cloudPtr_LidarFrontRight->header.stamp)
+  //   {
+  //     g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontLeft->header.stamp;
+  //   }
+  //   else
+  //   {
+  //     g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontRight->header.stamp;
+  //   }
+  // }
 
   // g_cloudPtr_LidarAll->header.stamp = ros::Time::now().toNSec() / 1000ull;
 
-  LidarAll_time = g_cloudPtr_LidarAll->header.stamp;
-  g_cloudPtr_LidarAll->header.frame_id = "lidar";
-
   //------ pub LidarAll
-  if (g_cloudPtr_LidarAll->size() > 100)
+  if (g_cloudPtr_LidarAll->size() > 100 && g_cloudPtr_LidarAll->header.stamp != g_all_last_time )
   {
     g_pub_LidarAll.publish(*g_cloudPtr_LidarAll);
     std_msgs::Empty empty_msg;
     g_pub_LidarAll_HeartBeat.publish(empty_msg);
+    g_all_last_time = g_cloudPtr_LidarAll->header.stamp;
   }
   g_cloudPtr_LidarAll->clear();
 
   //------ clear real time memory
   // if wall_time - ros_time < 30 minutes, (not rosbag), clear sensor pc data memory if delay 2sec.
   uint64_t now = ros::Time::now().toNSec() / 1000ull;  // microsec
-  if (!((now - LidarAll_time) > 1000000 * 1800))
+  if (!((now - g_cloudPtr_LidarAll->header.stamp) > 1000000 * 1800))
   {
     if ((now - g_cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 1)
     {
@@ -487,7 +492,7 @@ int main(int argc, char** argv)
   // check debug mode
   ros::param::get("/debug_output", g_debug_output);
   ros::param::get("/use_filter", g_use_filter);
-  ros::param::get("/use_compress", g_use_compress);
+  ros::param::get("/use_oct_compress", g_use_oct_compress);
   ros::param::get("/use_roi", g_use_roi);
 
   // check stitching mode
