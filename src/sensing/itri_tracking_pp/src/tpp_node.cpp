@@ -522,21 +522,39 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
-void TPPNode::object_yaw(std::vector<msgs::DetectedObject>& objs)
+void TPPNode::object_yaw(msgs::DetectedObject& obj, const geometry_msgs::TransformStamped& tf_stamped)
 {
-  for (auto& obj : objs)
-  {
-    // rotate from (0, 1, 0) to absolute_velocity in counter-clockwise direction
-    double x1 = obj.track.absolute_velocity.x;
-    double y1 = obj.track.absolute_velocity.y;
-    double x2 = 0.;
-    double y2 = 1.;
+  // transform absolute_velocity in tf_lidar to tf_map
+  msgs::PointXYZ v;
+  v.x = obj.track.absolute_velocity.x;
+  v.y = obj.track.absolute_velocity.y;
 
-    double dot = x1 * x2 + y1 * y2;  // dot product between [x1, y1] and [x2, y2]
-    double det = x1 * y2 - y1 * x2;  // determinant
-    double yaw_rad = std::atan2(det, dot);
-    obj.distance = (float)yaw_rad;
-  }
+  transform_vector_rel2abs(obj.track.absolute_velocity.x, obj.track.absolute_velocity.y, v.x, v.y, ego_heading_);
+
+  obj.track.absolute_velocity.x = v.x;
+  obj.track.absolute_velocity.y = v.y;
+
+  // rotate from (0, 1, 0) to absolute_velocity in tf_map in counter-clockwise direction
+  double x1 = 0.;
+  double y1 = 1.;
+  double x2 = obj.track.absolute_velocity.x;
+  double y2 = obj.track.absolute_velocity.y;
+
+  double dx = x2 - x1;
+  double dy = y2 - y1;
+
+  double yaw_rad_from_velo = std::atan2(dy, dx);
+
+#if OBJECT_YAW_FROM_HEADING == 1
+  tf2::Quaternion q(obj.heading_enu.x, obj.heading_enu.y, obj.heading_enu.z, obj.heading_enu.w);
+  tf2::Matrix3x3 m(q);
+  double roll, pitch, yaw;
+  m.getRPY(roll, pitch, yaw);
+  double yaw_rad_from_heading = yaw;
+  obj.distance = (float)yaw_rad_from_heading;
+#else
+  obj.distance = (float)yaw_rad_from_velo;
+#endif
 }
 
 void TPPNode::convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped& tf_stamped)
@@ -583,6 +601,8 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
           return;
         }
       }
+
+      object_yaw(obj, tf_stamped);
 
       convert(obj.bPoint.p0, tf_stamped);
       convert(obj.bPoint.p1, tf_stamped);
@@ -648,9 +668,10 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
 
     ofs << "#1 time stamp (s), "  //
         << "#2-1 track id, "      //
-        << "#2-2 class id, "      //
+        << "#2-2 track time, "    //
+        << "#2-3 class id, "      //
 #if EGO_AS_DETECTED_OBJ == 1
-        << "#2-3 ego obj?, "  //
+        << "#2-4 ego obj?, "  //
 #endif
         << "#3 dt (s), "  //
 #if VIRTUAL_INPUT
@@ -664,10 +685,8 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#6-2 bbox center y -- kalman-filtered (m), "  //
         << "#6-3 bbox center z -- kalman-filtered (m), "  //
 
-#if OBJECT_YAW == 1
         << "#7-1 object yaw (rad), "  //
         << "#7-2 object yaw (deg), "  //
-#endif
 
         << "#11 abs vx (km/h), "     //
         << "#12 abs vy (km/h), "     //
@@ -711,15 +730,16 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
     ofs << std::fixed                          //
         << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
         << obj.track.id << ", "                // #2-1 track id
-        << obj.classId;                        // #2-2 class id
+        << obj.track.tracktime << ", "         // #2-2 track time
+        << obj.classId;                        // #2-3 class id
 #if EGO_AS_DETECTED_OBJ == 1
     if (obj.distance == 0.f && obj.heading.w == 0.99996)
     {
-      ofs << ", Y";  // #2-3 ego vehicle obj?
+      ofs << ", Y";  // #2-4 ego vehicle obj?
     }
     else
     {
-      ofs << ", N";  // #2-3 ego vehicle obj?
+      ofs << ", N";  // #2-4 ego vehicle obj?
     }
 #endif
     ofs << ", "                  //
@@ -735,10 +755,8 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << obj.center_point.y << ", "         // #6-2 bbox center y -- kalman-filtered (m)
         << obj.center_point.z << ", "         // #6-3 bbox center z -- kalman-filtered (m)
 
-#if OBJECT_YAW == 1
         << obj.distance << ", "                 // #7-1 object yaw (rad)
         << obj.distance * 57.295779513 << ", "  // #7-2 object yaw (deg)
-#endif
 
         << obj.track.absolute_velocity.x << ", "  // #11 abs vx (km/h)
         << obj.track.absolute_velocity.y << ", "  // #12 abs vy (km/h)
@@ -817,10 +835,6 @@ void TPPNode::publish_pp_grid(ros::Publisher pub, const std::vector<msgs::Detect
 void TPPNode::publish_pp(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs,
                          const unsigned int pub_offset, const float time_offset)
 {
-#if OBJECT_YAW == 1
-  object_yaw(objs);
-#endif
-
   if (save_output_txt_)
   {
     save_output_to_txt(objs, "../../../tracking_rpp_output_tf_lidar.txt");
@@ -938,7 +952,7 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_pp/";
-  nh_.param<int>(domain + "input_source", input_source_, InputSource::CameraDetV2);
+  nh_.param<int>(domain + "input_source", input_source_, InputSource::LidarDet);
   nh_.param<int>(domain + "occ_source", occ_source_, OccupancySource::PlannedPathBased);
 
   nh_.param<bool>(domain + "save_output_txt", save_output_txt_, false);

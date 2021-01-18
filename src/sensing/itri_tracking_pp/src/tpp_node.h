@@ -144,7 +144,7 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
 
-  void object_yaw(std::vector<msgs::DetectedObject>& objs);
+  void object_yaw(msgs::DetectedObject& obj, const geometry_msgs::TransformStamped& tf_stamped);
 
   // output bbox and pp points in tf_map
   void convert(msgs::PointXYZ& p, const geometry_msgs::TransformStamped& tf_stamped);
