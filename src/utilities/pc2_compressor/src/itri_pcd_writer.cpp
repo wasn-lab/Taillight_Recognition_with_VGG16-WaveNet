@@ -11,7 +11,7 @@ int pc2_compressor::ITRIPCDWriter::writeBinaryCompressed(std::ostream& os, const
                                                          const Eigen::Quaternionf& orientation)
 {
   CHECK(!cloud.data.empty());
-  if (generateHeaderBinaryCompressed(os, cloud, origin, orientation))
+  if (generateHeaderBinaryCompressed(os, cloud, origin, orientation) != 0)
   {
     return -1;
   }
@@ -25,7 +25,9 @@ int pc2_compressor::ITRIPCDWriter::writeBinaryCompressed(std::ostream& os, const
   for (const auto& field : cloud.fields)
   {
     if (field.name == "_")
+    {
       continue;
+    }
 
     fields_sizes[nri] = field.count * pcl::getFieldSize(field.datatype);
     fsize += fields_sizes[nri];
