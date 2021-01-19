@@ -12,7 +12,7 @@
   <!-- 6: CameraDetV2: /CameraDetection -->
   <!-- 7: Tracking2D: /Tracking2D/front_bottom_60 -->
   <!-- otherwise: Fusion: /SensorFusion -->
-  <arg name="input_source" default="6" />
+  <arg name="input_source" default="1" />
 
   <!-- Occupancy source -->
   <!-- 1: MapBased: /occupancy_wayarea -->
