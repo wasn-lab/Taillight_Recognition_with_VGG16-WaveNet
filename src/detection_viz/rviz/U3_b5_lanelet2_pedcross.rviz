@@ -115,8 +115,8 @@ Visualization Manager:
       Displays:
         - Class: rviz/MarkerArray
           Enabled: true
-          Marker Topic: /LidarDetection/poly
-          Name: Lidar_polygon
+          Marker Topic: /LidarDetection/bbox
+          Name: Lidar_bbox
           Namespaces:
             {}
           Queue Size: 100

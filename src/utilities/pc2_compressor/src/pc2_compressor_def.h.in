@@ -1,0 +1,2 @@
+#pragma once
+#cmakedefine PC2_COMPRESSOR_TEST_DIR "@PC2_COMPRESSOR_TEST_DIR@"
