@@ -89,7 +89,7 @@ screen -t init_pedcross.sh
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross.sh^M"
 
 screen -t GUI_B_car.launch
-stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch^M"
+stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch --wait opengl_test GUI_B_car.launch^M"
 
 screen -t detection_viz
-stuff "source /home/lidar/itriadv/devel/setup.bash; roslaunch detection_viz itriadv_viz.launch rviz_config:=\"U3_b5_lanelet2_pedcross\"^M"
+stuff "source /home/lidar/itriadv/devel/setup.bash; roslaunch --wait detection_viz itriadv_viz.launch rviz_config:=\"U3_b5_lanelet2_pedcross\"^M"
