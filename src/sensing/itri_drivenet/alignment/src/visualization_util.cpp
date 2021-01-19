@@ -25,7 +25,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
   std::vector<cv::Point> cv_points(2);
   std::vector<PixelPosition> pixel_positions(2);
   int obj_count = 0;
-  cv::Scalar color = CvColor::white_;
+  cv::Scalar color = CvColor::blue_;
   for (const auto& obj : objects)
   {
     for(uint i = 0; i < obj.camInfo.size(); i++)
@@ -41,7 +41,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
       cv_points[1].x = pixel_positions[1].u;
       cv_points[1].y = pixel_positions[1].v;
 
-      color = intToColor(int(obj_count % 10));
+      // color = intToColor(int(obj_count % 10));
       cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
       obj_count++;
     }
@@ -113,12 +113,30 @@ void Visualization::drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<Pixe
     cv_points[11].y = bbox[7].v;
 
     // color = intToColor(int(obj_count % 10));
-    cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8); // top
-    cv::rectangle(m_src, cv_points[2], cv_points[3], color, 1, cv::LINE_8); // bottom
-    cv::line(m_src, cv_points[4], cv_points[5], color, 1, cv::LINE_8);
-    cv::line(m_src, cv_points[6], cv_points[7], color, 1, cv::LINE_8);
-    cv::line(m_src, cv_points[8], cv_points[9], color, 1, cv::LINE_8);
-    cv::line(m_src, cv_points[10], cv_points[11], color, 1, cv::LINE_8);
+    if ((cv_points[0].x != -1 && cv_points[0].y != -1) && (cv_points[1].x != -1 && cv_points[1].y != -1))
+    {
+      cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8); // top
+    }
+    if ((cv_points[2].x != -1 && cv_points[2].y != -1) && (cv_points[3].x != -1 && cv_points[3].y != -1))
+    {
+      cv::rectangle(m_src, cv_points[2], cv_points[3], color, 1, cv::LINE_8); // bottom
+    }
+    if ((cv_points[4].x != -1 && cv_points[4].y != -1) && (cv_points[5].x != -1 && cv_points[5].y != -1))
+    {
+      cv::line(m_src, cv_points[4], cv_points[5], color, 1, cv::LINE_8);
+    }
+    if ((cv_points[6].x != -1 && cv_points[6].y != -1) && (cv_points[7].x != -1 && cv_points[7].y != -1))
+    {
+      cv::line(m_src, cv_points[6], cv_points[7], color, 1, cv::LINE_8);
+    }
+    if ((cv_points[8].x != -1 && cv_points[8].y != -1) && (cv_points[9].x != -1 && cv_points[9].y != -1))
+    {
+      cv::line(m_src, cv_points[8], cv_points[9], color, 1, cv::LINE_8);
+    }
+    if ((cv_points[10].x != -1 && cv_points[10].y != -1) && (cv_points[11].x != -1 && cv_points[11].y != -1))
+    {
+      cv::line(m_src, cv_points[10], cv_points[11], color, 1, cv::LINE_8);
+    }
     // cv::circle(m_src, cv_points[0], 1, color, -1, cv::FILLED, 0);
     // cv::circle(m_src, cv_points[1], 1, color, -1, cv::FILLED, 0);
     // cv::circle(m_src, cv_points[2], 1, color, -1, cv::FILLED, 0);
@@ -128,18 +146,19 @@ void Visualization::drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<Pixe
     // cv::circle(m_src, cv_points[6], 1, color, -1, cv::FILLED, 0);
     // cv::circle(m_src, cv_points[7], 1, color, -1, cv::FILLED, 0);
 
-    std::cout << "=======================" << std::endl;
-    std::cout << "cv_points[0]: " << cv_points[0].x << ", " << cv_points[0].y << std::endl;
-    std::cout << "cv_points[1]: " << cv_points[1].x << ", " << cv_points[1].y << std::endl;
-    std::cout << "cv_points[2]: " << cv_points[2].x << ", " << cv_points[2].y << std::endl;
-    std::cout << "cv_points[3]: " << cv_points[3].x << ", " << cv_points[3].y << std::endl;
-    std::cout << "cv_points[4]: " << cv_points[4].x << ", " << cv_points[4].y << std::endl;
-    std::cout << "cv_points[5]: " << cv_points[5].x << ", " <<  cv_points[5].y << std::endl;
-    std::cout << "cv_points[6]: " << cv_points[6].x << ", " <<  cv_points[6].y << std::endl;
-    std::cout << "cv_points[7]: " << cv_points[7].x << ", " <<  cv_points[7].y << std::endl;
-    std::cout << "cv_points[8]: " << cv_points[8].x << ", " <<  cv_points[8].y << std::endl;
-    std::cout << "cv_points[9]: " << cv_points[9].x << ", " <<  cv_points[9].y << std::endl;
-    std::cout << "cv_points[10]: " << cv_points[10].x << ", " <<  cv_points[10].y << std::endl;
+    // std::cout << "=======================" << std::endl;
+    // std::cout << "cv_points[0]: " << cv_points[0].x << ", " << cv_points[0].y << std::endl;
+    // std::cout << "cv_points[1]: " << cv_points[1].x << ", " << cv_points[1].y << std::endl;
+    // std::cout << "cv_points[2]: " << cv_points[2].x << ", " << cv_points[2].y << std::endl;
+    // std::cout << "cv_points[3]: " << cv_points[3].x << ", " << cv_points[3].y << std::endl;
+    // std::cout << "cv_points[4]: " << cv_points[4].x << ", " << cv_points[4].y << std::endl;
+    // std::cout << "cv_points[5]: " << cv_points[5].x << ", " <<  cv_points[5].y << std::endl;
+    // std::cout << "cv_points[6]: " << cv_points[6].x << ", " <<  cv_points[6].y << std::endl;
+    // std::cout << "cv_points[7]: " << cv_points[7].x << ", " <<  cv_points[7].y << std::endl;
+    // std::cout << "cv_points[8]: " << cv_points[8].x << ", " <<  cv_points[8].y << std::endl;
+    // std::cout << "cv_points[9]: " << cv_points[9].x << ", " <<  cv_points[9].y << std::endl;
+    // std::cout << "cv_points[10]: " << cv_points[10].x << ", " <<  cv_points[10].y << std::endl;
+    // std::cout << "cv_points[11]: " << cv_points[11].x << ", " <<  cv_points[11].y << std::endl;
     // obj_count++;
   }
 }

@@ -70,7 +70,7 @@ std::vector<std::mutex> g_mutex_cam_object_time(g_cam_ids.size());
 /// params
 bool g_is_data_sync = false;
 bool g_is_enable_default_3d_bbox = true;
-bool g_is_display = true;
+bool g_is_display = false;
 
 /// ros
 std::vector<message_filters::Cache<sensor_msgs::Image>> g_cache_image(g_cam_ids.size());
@@ -396,7 +396,7 @@ void projectLidarBBoxOntoImage(cv::Mat& mats, const msgs::DetectedObjectArray& o
 {
   std::vector<std::vector<PixelPosition>> cam_pixels_obj_cube;
   getBoxInImageFOV(objects, cam_pixels_obj, g_alignments[0]);
-  getBoxInImageFOV(objects, cam_pixels_obj_cube, g_alignments[0]);
+  // getBoxInImageFOV(objects, cam_pixels_obj_cube, g_alignments[0]);
   if (g_is_display)
   {
     drawLidarBoxOnImage(mats, cam_pixels_obj);
@@ -709,7 +709,7 @@ void runInference()
       /// get results
       std::cout << "===== doInference once =====" << std::endl;
       g_is_data_sync = false;
-      getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
+      // getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
       projectLidarBBoxOntoImage(cam_mats[0], object_lidar, cam_pixels_obj[0]);
 
       if (g_is_display)
@@ -929,7 +929,7 @@ int main(int argc, char** argv)
   if (g_is_display)
   {
     display_lidar_thread = std::thread(displayLidarData);
-    // display_camera_thread = std::thread(displayCameraData);
+    display_camera_thread = std::thread(displayCameraData);
   }
   /// sync
   std::thread buffer_monitor_thread(buffer_monitor);
@@ -946,7 +946,7 @@ int main(int argc, char** argv)
   if (g_is_display)
   {
     display_lidar_thread.join();
-    // display_camera_thread.join();
+    display_camera_thread.join();
   }
   /// sync
   buffer_monitor_thread.join();

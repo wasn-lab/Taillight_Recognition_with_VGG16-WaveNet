@@ -615,21 +615,32 @@ void getBoxInImageFOV(const msgs::DetectedObjectArray& objects, std::vector<std:
       bbox_points[7].y = obj_tmp.bPoint.p7.y;
       bbox_points[7].z = obj_tmp.bPoint.p7.z;
 
+      // std::cout << "=======================" << std::endl;
+      // std::cout << "bbox_points[1]: " << bbox_points[1].x << ", " << bbox_points[1].y << ", " << bbox_points[1].z << std::endl;
+      // std::cout << "bbox_points[2]: " << bbox_points[2].x << ", " << bbox_points[2].y << ", " << bbox_points[2].z << std::endl;
+      // std::cout << "bbox_points[6]: " << bbox_points[6].x << ", " << bbox_points[6].y << ", " << bbox_points[6].z << std::endl;
+      // std::cout << "bbox_points[5]: " << bbox_points[5].x << ", " << bbox_points[5].y << ", " << bbox_points[5].z << std::endl;
+
+      // std::cout << "bbox_points[0]: " << bbox_points[0].x << ", " << bbox_points[0].y << ", " << bbox_points[0].z << std::endl;
+      // std::cout << "bbox_points[3]: " << bbox_points[3].x << ", " << bbox_points[3].y << ", " << bbox_points[3].z << std::endl;
+      // std::cout << "bbox_points[7]: " << bbox_points[7].x << ", " << bbox_points[7].y << ", " << bbox_points[7].z << std::endl;
+      // std::cout << "bbox_points[4]: " << bbox_points[4].x << ", " << bbox_points[4].y << ", " << bbox_points[4].z << std::endl;
+
+
       for (size_t i = 0; i < bbox_points.size(); i++)
       {
-        if (alignment.checkPointInCoverage(bbox_points[i]))
-        {
+        // if (alignment.checkPointInCoverage(bbox_points[i]))
+        // {
           cube[i] = alignment.projectPointToPixel(bbox_points[i]);
-          if (cube[i].u < 0 || cube[i].v < 0)
-          {
-            is_out_of_range = true;
-          }
-        }
-        else
-        {
-          is_out_of_range = true;
-        }
-        
+          // if (cube[i].u < 0 || cube[i].v < 0)
+          // {
+          //   is_out_of_range = true;
+          // }
+        // }
+        // else
+        // {
+        //   is_out_of_range = true;
+        // }
       }
       if (!is_out_of_range)
       {

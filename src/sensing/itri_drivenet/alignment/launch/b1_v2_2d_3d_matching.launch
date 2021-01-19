@@ -1,0 +1,5 @@
+<launch>
+        # Node
+        <node name="alignment_b1_v2_match_2d_3d_bbox" pkg="alignment" type="alignment_b1_v2_match_2d_3d_bbox"  output="screen">
+        </node>
+</launch>
