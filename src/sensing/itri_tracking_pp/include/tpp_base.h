@@ -154,10 +154,6 @@ struct MarkerConfig
   bool show_absspeed = 0;  // km/h
 
   std_msgs::ColorRGBA color;
-  std_msgs::ColorRGBA color_lidar_tpp;
-  std_msgs::ColorRGBA color_radar_tpp;
-  std_msgs::ColorRGBA color_camera_tpp;
-  std_msgs::ColorRGBA color_fusion_tpp;
 };
 }  // namespace tpp
 

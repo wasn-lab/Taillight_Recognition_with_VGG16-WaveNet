@@ -220,50 +220,42 @@ void TPPNode::subscribe_and_advertise_topics()
   {
     LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_lidar_tpp);
   }
   else if (input_source_ == InputSource::LidarDet_PointPillars_Car)
   {
     LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/LidarDetection/Car)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_radar_tpp);
   }
   else if (input_source_ == InputSource::LidarDet_PointPillars_Ped_Cyc)
   {
     LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/LidarDetection/Ped_Cyc)" << std::endl;
     fusion_sub_ = nh_.subscribe("LidarDetection/Ped_Cyc", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (input_source_ == InputSource::VirtualBBoxAbs)
   {
     LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else if (input_source_ == InputSource::VirtualBBoxRel)
   {
     LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
     fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
   else if (input_source_ == InputSource::CameraDetV2)
   {
     LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
     fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else if (input_source_ == InputSource::Tracking2D)
   {
     use_tracking2d = true;
     LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
     fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_camera_tpp);
   }
   else
   {
     LOG_INFO << "Input Source: Fusion (/SensorFusion)" << std::endl;
     fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
-    set_ColorRGBA(mc_.color, mc_.color_fusion_tpp);
   }
 
   pp_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
@@ -1018,10 +1010,7 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "pp_obj_max_kmph", pp_obj_max_kmph, 50.);
   pp_.set_pp_obj_max_kmph(pp_obj_max_kmph);
 
-  set_ColorRGBA(mc_.color_lidar_tpp, 1.f, 1.f, 0.4f, 1.f);  // Unmellow Yellow (255, 255, 102)
-  set_ColorRGBA(mc_.color_radar_tpp, 1.f, 1.f, 0.4f, 1.f);
-  set_ColorRGBA(mc_.color_camera_tpp, 1.f, 1.f, 0.4f, 1.f);
-  set_ColorRGBA(mc_.color_fusion_tpp, 1.f, 1.f, 0.4f, 1.f);
+  set_ColorRGBA(mc_.color, 1.f, 1.f, 0.4f, 1.f);  // Unmellow Yellow (255, 255, 102)
 }
 
 int TPPNode::run()
