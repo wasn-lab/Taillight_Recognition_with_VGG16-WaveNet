@@ -13,6 +13,7 @@
 #endif
 #include <visualization_msgs/MarkerArray.h>
 #include <tf2/utils.h>
+#include <geometry_msgs/PolygonStamped.h>
 
 #include <fstream>
 
@@ -88,6 +89,8 @@ private:
   ros::Publisher pp_grid_pub_;
 #endif
 
+  ros::Publisher drivable_area_pub_;
+
   MarkerGen mg_;
 
   ros::Subscriber fusion_sub_;
@@ -100,6 +103,9 @@ private:
 
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
+
+  ros::Subscriber lanelet2_route_sub_;
+  void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
 
   std::string frame_id_source_ = "base_link";
   std::string frame_id_target_ = "map";
@@ -120,6 +126,23 @@ private:
   double ego_vely_abs_kmph_ = 0.;
 
   void fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint);
+
+  double ground_z_ = -3.1;
+
+  bool drivable_area_filter_ = true;
+  double expand_left_ = 2.2;
+  double expand_right_ = 0.;
+
+  std::vector<cv::Point3f> lanelet2_route_left;
+  std::vector<cv::Point3f> lanelet2_route_right;
+
+  std::vector<cv::Point2f> expanded_route_left;
+  std::vector<cv::Point2f> expanded_route_right;
+
+  geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                geometry_msgs::Vector3 translation);
+  bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
+  bool drivable_area_filter(const msgs::BoxPoint box_point);
 
   bool create_bbox_from_polygon_ = false;
   void create_bbox_from_polygon(msgs::DetectedObject& obj);

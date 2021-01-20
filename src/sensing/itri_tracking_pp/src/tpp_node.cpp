@@ -53,6 +53,69 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 #endif
 }
 
+void TPPNode::callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input)
+{
+  std::cout << *input << std::endl;
+
+  ros::Time start;
+  start = ros::Time::now();
+
+  std::vector<cv::Point3f>().swap(lanelet2_route_left);
+  std::vector<cv::Point3f>().swap(lanelet2_route_right);
+  lanelet2_route_left.reserve(200);
+  lanelet2_route_right.reserve(200);
+
+  for (auto const& obj : input->markers)
+  {
+    if (obj.ns.compare("left_lane_bound") == 0)
+    {
+      for (auto const& obj_point : obj.points)
+      {
+        cv::Point3f point;
+        point.x = obj_point.x;
+        point.y = obj_point.y;
+        point.z = obj_point.z;
+        bool push_or_not = true;
+        for (size_t i = 0; i < lanelet2_route_left.size(); i++)
+        {
+          if (lanelet2_route_left[i].x == point.x && lanelet2_route_left[i].y == point.y &&
+              lanelet2_route_left[i].z == point.z)
+          {
+            push_or_not = false;
+          }
+        }
+        if (push_or_not)
+        {
+          lanelet2_route_left.push_back(point);
+        }
+      }
+    }
+    else if (obj.ns.compare("right_lane_bound") == 0)
+    {
+      for (auto const& obj_point : obj.points)
+      {
+        cv::Point3f point;
+        point.x = obj_point.x;
+        point.y = obj_point.y;
+        point.z = obj_point.z;
+        bool push_or_not = true;
+        for (size_t i = 0; i < lanelet2_route_left.size(); i++)
+        {
+          if (lanelet2_route_left[i].x == point.x && lanelet2_route_left[i].y == point.y &&
+              lanelet2_route_left[i].z == point.z)
+          {
+            push_or_not = false;
+          }
+        }
+        if (push_or_not)
+        {
+          lanelet2_route_right.push_back(point);
+        }
+      }
+    }
+  }
+}
+
 void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 {
   if (!obj.cPoint.lowerAreaPoints.empty())
@@ -156,16 +219,39 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
         continue;
       }
 
-#if INPUT_ALL_CLASS
-      KTs_.objs_.push_back(obj);
-#else
-      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      if (drivable_area_filter_)
       {
-        KTs_.objs_.push_back(obj);
-      }
+        if (drivable_area_filter(obj.bPoint))
+        {
+          continue;
+        }
+        else
+        {
+#if INPUT_ALL_CLASS == 1
+          KTs_.objs_.push_back(obj);
+#else
+          if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+              obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+              obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+          {
+            KTs_.objs_.push_back(obj);
+          }
 #endif
+        }
+      }
+      else
+      {
+#if INPUT_ALL_CLASS == 1
+        KTs_.objs_.push_back(obj);
+#else
+        if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+        {
+          KTs_.objs_.push_back(obj);
+        }
+#endif
+      }
     }
 
 #if EGO_AS_DETECTED_OBJ == 1
@@ -336,18 +422,23 @@ void TPPNode::subscribe_and_advertise_topics()
   }
 
   ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
+  lanelet2_route_sub_ =
+      nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
 
   if (gen_markers_)
   {
-    std::string topic3 = topic + "/id";
-    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
+    std::string topic2 = topic + "/id";
+    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
 
-    std::string topic4 = topic + "/speed";
-    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
+    std::string topic3 = topic + "/speed";
+    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
 
-    std::string topic7 = topic + "/vel";
-    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic7, 2);
+    std::string topic4 = topic + "/vel";
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
   }
+
+  std::string topic5 = topic + "/drivable";
+  drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
 }
 
 void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint)
@@ -563,6 +654,222 @@ void TPPNode::publish_tracking()
     }
 #endif  // REMOVE_IMPULSE_NOISE
   }
+}
+
+geometry_msgs::Point TPPNode::get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
+                                                       geometry_msgs::Vector3 translation)
+{
+  geometry_msgs::Point new_point;
+  new_point.x = translation.x + std::cos(yaw) * origin_point.x - std::sin(yaw) * origin_point.y;
+  new_point.y = translation.y + std::sin(yaw) * origin_point.x + std::cos(yaw) * origin_point.y;
+  return new_point;
+}
+
+bool TPPNode::check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon)
+{
+  std::vector<double> vertx;
+  std::vector<double> verty;
+  vertx.reserve(polygon.size());
+  verty.reserve(polygon.size());
+
+  for (auto const& obj : polygon)
+  {
+    vertx.push_back(obj.x);
+    verty.push_back(obj.y);
+  }
+
+  int nvert = polygon.size();
+  double testx = position.x;
+  double testy = position.y;
+
+  int i, j, c = 0;
+  for (i = 0, j = nvert - 1; i < nvert; j = i++)
+  {
+    if (((verty[i] > testy) != (verty[j] > testy)) &&
+        (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
+    {
+      c = 1 + c;
+    }
+  }
+
+  if (c % 2 == 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
+{
+  cv::Point2f position;
+  position.x = box_point.p0.x;
+  position.y = box_point.p0.y;
+
+  if (lanelet2_route_left.empty() || lanelet2_route_right.empty())
+  {
+    return false;
+  }
+
+  double yaw = tf2::getYaw(tf_stamped_.transform.rotation);
+
+  geometry_msgs::PoseStamped point_in;
+  point_in.pose.position.x = position.x;
+  point_in.pose.position.y = position.y;
+  point_in.pose.position.z = 0;
+
+  geometry_msgs::PoseStamped point_out;
+  point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped_.transform.translation);
+  position.x = point_out.pose.position.x;
+  position.y = point_out.pose.position.y;
+
+  std::vector<cv::Point3f> lanelet2_route_left_temp(lanelet2_route_left);
+  std::vector<cv::Point3f> lanelet2_route_right_temp(lanelet2_route_right);
+  std::vector<cv::Point2f> route_left_transformed;
+  std::vector<cv::Point2f> route_right_transformed;
+
+  for (auto const& obj : lanelet2_route_left_temp)
+  {
+    cv::Point2f point;
+    point.x = obj.x;
+    point.y = obj.y;
+    route_left_transformed.push_back(point);
+  }
+
+  for (auto const& obj : lanelet2_route_right_temp)
+  {
+    cv::Point2f point;
+    point.x = obj.x;
+    point.y = obj.y;
+    route_right_transformed.push_back(point);
+  }
+
+  std::vector<cv::Point3f>().swap(lanelet2_route_left_temp);
+  std::vector<cv::Point3f>().swap(lanelet2_route_right_temp);
+
+  // expand warning zone for left bound
+  std::vector<cv::Point2f>().swap(expanded_route_left);
+  for (size_t i = 0; i < route_left_transformed.size(); i++)
+  {
+    if (i == 0)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_left_transformed[0].x - route_right_transformed[0].x;
+      diff_y = route_left_transformed[0].y - route_right_transformed[0].y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_left_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_left_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_left_;
+      expanded_route_left.push_back(expand_point);
+    }
+    else if (i == route_left_transformed.size() - 1)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_left_transformed.back().x - route_right_transformed.back().x;
+      diff_y = route_left_transformed.back().y - route_right_transformed.back().y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_left_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_left_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_left_;
+      expanded_route_left.push_back(expand_point);
+    }
+    else
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_left_transformed[i + 1].x - route_left_transformed[i - 1].x;
+      diff_y = route_left_transformed[i + 1].y - route_left_transformed[i - 1].y;
+      double N_x = (-1) * diff_y;
+      double N_y = diff_x;
+      double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
+      cv::Point2f expand_point = route_left_transformed[i];
+      expand_point.x = expand_point.x + N_x / distance * expand_left_;
+      expand_point.y = expand_point.y + N_y / distance * expand_left_;
+      expanded_route_left.push_back(expand_point);
+    }
+  }
+  // expand warning zone for right bound
+  std::vector<cv::Point2f>().swap(expanded_route_right);
+  for (size_t i = 0; i < route_right_transformed.size(); i++)
+  {
+    if (i == 0)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_right_transformed[0].x - route_left_transformed[0].x;
+      diff_y = route_right_transformed[0].y - route_left_transformed[0].y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_right_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_right_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_right_;
+      expanded_route_right.push_back(expand_point);
+    }
+    else if (i == route_left_transformed.size() - 1)
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_right_transformed.back().x - route_left_transformed.back().x;
+      diff_y = route_right_transformed.back().y - route_left_transformed.back().y;
+      double distance = sqrt(pow(diff_x, 2) + pow(diff_y, 2));
+      cv::Point2f expand_point = route_right_transformed[i];
+      expand_point.x = expand_point.x + diff_x / distance * expand_right_;
+      expand_point.y = expand_point.y + diff_y / distance * expand_right_;
+      expanded_route_right.push_back(expand_point);
+    }
+    else
+    {
+      double diff_x;
+      double diff_y;
+      diff_x = route_right_transformed[i + 1].x - route_right_transformed[i - 1].x;
+      diff_y = route_right_transformed[i + 1].y - route_right_transformed[i - 1].y;
+      double N_x = diff_y;
+      double N_y = (-1) * diff_x;
+      double distance = sqrt(pow(N_x, 2) + pow(N_y, 2));
+      cv::Point2f expand_point = route_right_transformed[i];
+      expand_point.x = expand_point.x + N_x / distance * expand_right_;
+      expand_point.y = expand_point.y + N_y / distance * expand_right_;
+      expanded_route_right.push_back(expand_point);
+    }
+  }
+
+  // route_right_transformed add into route_left_transformed reversed
+  while (!expanded_route_right.empty())
+  {
+    expanded_route_left.push_back(expanded_route_right.back());
+    expanded_route_right.pop_back();
+  }
+  expanded_route_left.push_back(expanded_route_left[0]);  // close the polygon
+
+  geometry_msgs::PolygonStamped polygon_marker;
+  polygon_marker.header.frame_id = "map";
+
+  for (auto const& obj : expanded_route_left)
+  {
+    geometry_msgs::Point32 polygon_point;
+    polygon_point.x = obj.x;
+    polygon_point.y = obj.y;
+    polygon_point.z = ground_z_;
+    polygon_marker.polygon.points.push_back(polygon_point);
+  }
+
+  drivable_area_pub_.publish(polygon_marker);
+
+  // all route, check ped in polygon or not
+  // no need to filter peds in warning zone
+  if (check_in_polygon(position, expanded_route_left))
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+  // no need to filter
+  return false;
 }
 
 inline bool test_file_exist(const std::string& name)
@@ -1043,6 +1350,11 @@ void TPPNode::set_ros_params()
 
   nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
   nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
+
+  nh_.param<bool>(domain + "drivable_area_filter", drivable_area_filter_, true);
+  nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
+  nh_.param<double>(domain + "expand_right", expand_right_, 0.);
+  nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   double pp_input_shift_m = 0.;
   nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);

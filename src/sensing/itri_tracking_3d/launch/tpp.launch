@@ -57,6 +57,7 @@
     <param name="drivable_area_filter" value="$(arg drivable_area_filter)" />
     <param name="expand_left" value="$(arg expand_left)" />
     <param name="expand_right" value="$(arg expand_right)" />
+    <param name="ground_z" value="$(arg ground_z)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
     <param name="gen_markers" value="$(arg gen_markers)" />
     <param name="show_classid" value="$(arg show_classid)" />
@@ -64,6 +65,5 @@
     <param name="show_source" value="$(arg show_source)" />
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
-    <param name="ground_z" value="$(arg ground_z)" />
   </node>
 </launch>
