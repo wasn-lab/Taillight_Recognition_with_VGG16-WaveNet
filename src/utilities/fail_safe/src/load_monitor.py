@@ -17,7 +17,14 @@ def get_hostname():
 def _get_gpu_load_by_nvidia_smi():
     cmd = ["nvidia-smi", "--format=csv,noheader,nounits",
            "--query-gpu=utilization.gpu"]
-    return str(subprocess.check_output(cmd)).strip()
+    ret = "INF"
+    try:
+        output = str(subprocess.check_output(cmd))
+        line = output.splitlines()[-1]
+        ret = line.strip()
+    except subprocess.CalledProcessError:
+        ret = "INF"
+    return ret
 
 def _get_gpu_load_by_tegra_stats():
     # Machines like Xavier do not have nvidia-smi.
