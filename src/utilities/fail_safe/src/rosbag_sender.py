@@ -35,6 +35,10 @@ def _get_stamp_filename(fullpath):
 
 
 def _send_bag_by_lftp(lftp_script_file, debug_mode=False):
+    if not rospy.get_param("/fail_safe/should_send_bags", True):
+        rospy.logwarn("Do not send bag due to /fail_safe/should_send_bags is False")
+        return 0
+
     shell_cmd = ["lftp", "-f", lftp_script_file]
     print(" ".join(shell_cmd))
     if debug_mode:
@@ -125,11 +129,14 @@ class RosbagSender(object):
                 print(jret)
                 self.notified_bags[bag_base_name] = True
 
+        should_notify_backend = (
+            rospy.get_param("/fail_safe/should_notify_backend", True)
+            and not self.debug_mode)
         for bag in bags:
             _, bag_base_name = os.path.split(bag)
             lftp_script_filename = self._generate_lftp_script(bag)
-            ret = _send_bag_by_lftp(lftp_script_filename, self.debug_mode)
-            if ret == 0 and not self.debug_mode:
+            ret = _send_bag_by_lftp(lftp_script_filename, debug_mode=self.debug_mode)
+            if ret == 0 and should_notify_backend:
                 print("notify backend: {} has been uploaded successfuly".format(bag))
                 jret = notify_backend_with_uploaded_bag(bag_base_name)
                 print(jret)

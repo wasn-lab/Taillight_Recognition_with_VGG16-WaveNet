@@ -45,7 +45,6 @@ class IssueReporter():
         self.min_post_time_interval = 60  # Don't post same issue within 60s
         self.project_id = PROJECT_ID_P_S3
         self.issue_type_id = ISSUE_TYPE_ID_BUG
-        self.debug_mode = False
 
     def set_project_id(self, project_id):
         """set project id"""
@@ -54,9 +53,6 @@ class IssueReporter():
     def set_issue_type_id(self, issue_type_id):
         """set issue type"""
         self.issue_type_id = issue_type_id
-
-    def set_debug_mode(self, mode):
-        self.debug_mode = mode
 
     def _is_repeated_issue(self):
         now = time.time()
@@ -72,8 +68,8 @@ class IssueReporter():
             logging.warn("%s: Does not post repeated issue", summary)
             return 0
 
-        if dry_run or self.debug_mode:
-            logging.warn("%s: Dry/Debug run mode. Do not post issue to jira", summary)
+        if dry_run:
+            logging.warn("%s: Dry run mode. Do not post issue to jira", summary)
         else:
             logging.warn("%s: Post issue to jira", summary)
             post_issue(self.project_id, summary, description, self.issue_type_id)
