@@ -282,8 +282,7 @@ void MarkerGen::process_vel_marker(unsigned int& idx, const std::vector<msgs::De
   mc_.pub_vel.publish(m_vel_);
 }
 
-void MarkerGen::marker_gen_main(const std_msgs::Header header, std::vector<msgs::DetectedObject>& objs,
-                                MarkerConfig mc)
+void MarkerGen::marker_gen_main(const std_msgs::Header header, std::vector<msgs::DetectedObject>& objs, MarkerConfig mc)
 {
   set_config(mc, mc_);
   header_ = header;

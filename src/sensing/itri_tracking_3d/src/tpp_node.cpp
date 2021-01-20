@@ -218,16 +218,39 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
         continue;
       }
 
-#if INPUT_ALL_CLASS
-      KTs_.objs_.push_back(obj);
-#else
-      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      if (drivable_area_filter_)
       {
-        KTs_.objs_.push_back(obj);
-      }
+        if (drivable_area_filter(obj.bPoint))
+        {
+          continue;
+        }
+        else
+        {
+#if INPUT_ALL_CLASS == 1
+          KTs_.objs_.push_back(obj);
+#else
+          if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+              obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+              obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+          {
+            KTs_.objs_.push_back(obj);
+          }
 #endif
+        }
+      }
+      else
+      {
+#if INPUT_ALL_CLASS == 1
+        KTs_.objs_.push_back(obj);
+#else
+        if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+        {
+          KTs_.objs_.push_back(obj);
+        }
+#endif
+      }
     }
 
     for (auto& obj : KTs_.objs_)
@@ -886,27 +909,7 @@ void TPPNode::publish_tracking2(const ros::Publisher& pub, std::vector<msgs::Det
 
   msg.header = objs_header_;
   msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);
-
-  if (drivable_area_filter_)
-  {
-    msg.objects.reserve(objs.size());
-
-    for (auto& obj : objs)
-    {
-      if (drivable_area_filter(obj.bPoint))
-      {
-        continue;
-      }
-      else
-      {
-        msg.objects.push_back(obj);
-      }
-    }
-  }
-  else
-  {
-    msg.objects.assign(objs.begin(), objs.end());
-  }
+  msg.objects.assign(objs.begin(), objs.end());
 
   for (auto& obj : msg.objects)
   {
@@ -914,7 +917,6 @@ void TPPNode::publish_tracking2(const ros::Publisher& pub, std::vector<msgs::Det
   }
 
   pub.publish(msg);
-
 #if HEARTBEAT == 1
   std_msgs::Empty msg_heartbeat;
   track3d_pub_heartbeat_.publish(msg_heartbeat);
