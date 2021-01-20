@@ -12,6 +12,7 @@
 #include "points_to_costmap.h"
 #endif
 #include <visualization_msgs/MarkerArray.h>
+#include <tf2/utils.h>
 
 #include <fstream>
 
