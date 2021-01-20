@@ -38,7 +38,7 @@ private:
 
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int input_source_ = InputSource::CameraDetV2;
+  int input_source_ = InputSource::LidarDet;
   int occ_source_ = OccupancySource::PlannedPathBased;
 
   geometry_msgs::TransformStamped tf_stamped_;

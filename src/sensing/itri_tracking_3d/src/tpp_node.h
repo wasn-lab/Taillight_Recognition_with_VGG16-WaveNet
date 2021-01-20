@@ -141,7 +141,7 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
+  void publish_tracking2(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
                          const float time_offset);
 
   void set_ros_params();

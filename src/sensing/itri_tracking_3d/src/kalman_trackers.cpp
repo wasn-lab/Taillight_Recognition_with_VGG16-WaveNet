@@ -531,9 +531,9 @@ void KalmanTrackers::increase_track_id()
 
 void KalmanTrackers::increase_tracktime()
 {
-  for (unsigned i = 0; i < tracks_.size(); i++)
+  for (auto& track : tracks_)
   {
-    increase_uint(tracks_[i].tracktime_);
+    increase_uint(track.tracktime_);
   }
 }
 

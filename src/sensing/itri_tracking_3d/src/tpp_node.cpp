@@ -3,11 +3,11 @@
 namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
-static double input_fps = 5;    // known callback rate
-static double output_fps = 10;  // expected publish rate
+static double g_input_fps = 5;    // known callback rate
+static double g_output_fps = 10;  // expected publish rate
 
-static unsigned int num_publishs_per_loop =
-    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+static unsigned int g_num_publishs_per_loop =
+    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
 bool g_trigger = false;
 
@@ -25,7 +25,7 @@ static bool done_with_profiling()
 {
 #if ENABLE_PROFILING_MODE
   static int num_loop = 0;
-  if (num_loop < 60 * output_fps)
+  if (num_loop < 60 * g_output_fps)
   {
     num_loop++;
     return false;
@@ -189,11 +189,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     frame_id_source_ = objs_header_.frame_id;
   }
 
-  double objs_header_stamp_ = objs_header_.stamp.toSec();
-  double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
+  double objs_header_stamp = objs_header_.stamp.toSec();
+  double objs_header_stamp_prev = objs_header_prev_.stamp.toSec();
 
-  is_legal_dt_ =
-      (objs_header_stamp_prev_ > 0 && vel_.init_time(objs_header_stamp_, objs_header_stamp_prev_) == 0) ? true : false;
+  is_legal_dt_ = objs_header_stamp_prev > 0 && vel_.init_time(objs_header_stamp, objs_header_stamp_prev) == 0;
 
   dt_ = vel_.get_dt();
 
@@ -479,7 +478,7 @@ void TPPNode::publish_tracking()
         // init max_length, head, is_over_max_length
         box.track.max_length = 10;
         box.track.head = 255;
-        box.track.is_over_max_length = false;
+        box.track.is_over_max_length = 0u;
 
         box.track.id = track.id_;
 
@@ -497,10 +496,13 @@ void TPPNode::publish_tracking()
           box.track.head = track.hist_.head_;
         }
 
+        // set length
+        box.track.length = track.hist_.len_;
+
         // set is_over_max_length
         if (track.hist_.len_ >= (unsigned short)track.hist_.max_len_)
         {
-          box.track.is_over_max_length = true;
+          box.track.is_over_max_length = 1u;
         }
 
         // set states
@@ -873,7 +875,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   ofs.close();
 }
 
-void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
+void TPPNode::publish_tracking2(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs,
                                 const unsigned int pub_offset, const float time_offset)
 {
 #if SAVE_OUTPUT_TXT
@@ -1000,9 +1002,9 @@ void TPPNode::set_ros_params()
   std::string domain = "/itri_tracking_3d/";
   nh_.param<int>(domain + "input_source", in_source_, InputSource::LidarDet);
 
-  nh_.param<double>(domain + "input_fps", input_fps, 10.);
-  nh_.param<double>(domain + "output_fps", output_fps, 10.);
-  num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+  nh_.param<double>(domain + "g_input_fps", g_input_fps, 10.);
+  nh_.param<double>(domain + "g_output_fps", g_output_fps, 10.);
+  g_num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
   nh_.param<bool>(domain + "show_runtime", show_runtime_, false);
 
@@ -1015,7 +1017,7 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
-  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
+  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / g_output_fps : mc_.lifetime_sec;
 
   nh_.param<bool>(domain + "gen_markers", gen_markers_, true);
   nh_.param<bool>(domain + "show_classid", mc_.show_classid, false);
@@ -1045,7 +1047,7 @@ int TPPNode::run()
 
   tf2_ros::TransformListener tf_listener(tf_buffer_);
 
-  ros::Rate loop_rate(output_fps);
+  ros::Rate loop_rate(g_output_fps);
 
   while (ros::ok() && !done_with_profiling())
   {
