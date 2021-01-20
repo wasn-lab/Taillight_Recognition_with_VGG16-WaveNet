@@ -7,7 +7,6 @@ rosparam set /south_bridge/vid Oq5YN1hgzAhA
 rosparam set /south_bridge/license_plate_number MOREA
 rosparam set /south_bridge/company_name itri
 rosparam set /car_model C1
-sleep 5
 
 gnome-terminal -e "screen -c ${cur_dir}/lidar.screen"
 gnome-terminal -e 'ssh -t xavier "screen -c /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier.screen"'
