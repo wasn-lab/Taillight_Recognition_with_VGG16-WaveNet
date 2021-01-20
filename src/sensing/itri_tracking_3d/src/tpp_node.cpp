@@ -945,11 +945,7 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
   {
     vel_.set_ego_x_abs(tf_stamped_.transform.translation.x);
     vel_.set_ego_y_abs(tf_stamped_.transform.translation.y);
-
-    double roll, pitch, yaw;
-    quaternion_to_rpy(roll, pitch, yaw, tf_stamped_.transform.rotation.x, tf_stamped_.transform.rotation.y,
-                      tf_stamped_.transform.rotation.z, tf_stamped_.transform.rotation.w);
-    vel_.set_ego_heading(yaw);
+    vel_.set_ego_heading(tf2::getYaw(tf_stamped_.transform.rotation));
   }
   else
   {
