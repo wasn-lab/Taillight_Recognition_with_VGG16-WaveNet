@@ -522,7 +522,7 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
-void TPPNode::object_yaw(msgs::DetectedObject& obj, const geometry_msgs::TransformStamped& tf_stamped)
+void TPPNode::object_yaw(msgs::DetectedObject& obj)
 {
   // transform absolute_velocity in tf_lidar to tf_map
   msgs::PointXYZ v;
@@ -565,8 +565,7 @@ void TPPNode::object_yaw(msgs::DetectedObject& obj, const geometry_msgs::Transfo
 #endif
 }
 
-void TPPNode::convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q,
-                      const geometry_msgs::TransformStamped& tf_stamped)
+void TPPNode::convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q)
 {
   // TF (lidar-to-map) for object pose
   geometry_msgs::Pose pose_in_lidar;
@@ -576,7 +575,7 @@ void TPPNode::convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q,
   pose_in_lidar.orientation = q;
 
   geometry_msgs::Pose pose_in_map;
-  tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped);
+  tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped_);
   p.x = pose_in_map.position.x;
   p.y = pose_in_map.position.y;
   p.z = pose_in_map.position.z;
@@ -587,88 +586,65 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
 {
   for (auto& obj : objs)
   {
-    if (obj.header.frame_id != frame_id_target_)
+    geometry_msgs::Quaternion q0;
+    q0.x = 0.;
+    q0.y = 0.;
+    q0.z = 0.;
+    q0.w = 1.;
+
+    convert(obj.bPoint.p0, q0);
+    convert(obj.bPoint.p1, q0);
+    convert(obj.bPoint.p2, q0);
+    convert(obj.bPoint.p3, q0);
+    convert(obj.bPoint.p4, q0);
+    convert(obj.bPoint.p5, q0);
+    convert(obj.bPoint.p6, q0);
+    convert(obj.bPoint.p7, q0);
+
+    convert(obj.lidarInfo.boxCenter, q0);
+
+    geometry_msgs::Quaternion q;
+    q.x = obj.heading.x;
+    q.y = obj.heading.y;
+    q.z = obj.heading.z;
+    q.w = obj.heading.w;
+    convert(obj.center_point, q);
+    obj.heading.x = q.x;
+    obj.heading.y = q.y;
+    obj.heading.z = q.z;
+    obj.heading.w = q.w;
+
+    object_yaw(obj);
+
+    tf_map_orig_x_ = tf_stamped_.transform.translation.x;
+    tf_map_orig_y_ = tf_stamped_.transform.translation.y;
+    tf_map_orig_z_ = tf_stamped_.transform.translation.z;
+
+    if (!obj.cPoint.lowerAreaPoints.empty())
     {
-      geometry_msgs::TransformStamped tf_stamped;
-
-      try
+      for (auto p : obj.cPoint.lowerAreaPoints)
       {
-        tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, obj.header.stamp);
+        convert(p, q0);
       }
-      catch (tf2::TransformException& ex1)
-      {
-        ROS_WARN("%s", ex1.what());
-        try
-        {
-          tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
-        }
-        catch (tf2::TransformException& ex2)
-        {
-          ROS_WARN("%s", ex2.what());
-          return;
-        }
-      }
-
-      geometry_msgs::Quaternion q0;
-      q0.x = 0.;
-      q0.y = 0.;
-      q0.z = 0.;
-      q0.w = 1.;
-
-      convert(obj.bPoint.p0, q0, tf_stamped);
-      convert(obj.bPoint.p1, q0, tf_stamped);
-      convert(obj.bPoint.p2, q0, tf_stamped);
-      convert(obj.bPoint.p3, q0, tf_stamped);
-      convert(obj.bPoint.p4, q0, tf_stamped);
-      convert(obj.bPoint.p5, q0, tf_stamped);
-      convert(obj.bPoint.p6, q0, tf_stamped);
-      convert(obj.bPoint.p7, q0, tf_stamped);
-
-      convert(obj.lidarInfo.boxCenter, q0, tf_stamped);
-
-      geometry_msgs::Quaternion q;
-      q.x = obj.heading.x;
-      q.y = obj.heading.y;
-      q.z = obj.heading.z;
-      q.w = obj.heading.w;
-      convert(obj.center_point, q, tf_stamped);
-      obj.heading.x = q.x;
-      obj.heading.y = q.y;
-      obj.heading.z = q.z;
-      obj.heading.w = q.w;
-
-      object_yaw(obj, tf_stamped);
-
-      tf_map_orig_x_ = tf_stamped.transform.translation.x;
-      tf_map_orig_y_ = tf_stamped.transform.translation.y;
-      tf_map_orig_z_ = tf_stamped.transform.translation.z;
-
-      if (!obj.cPoint.lowerAreaPoints.empty())
-      {
-        for (auto p : obj.cPoint.lowerAreaPoints)
-        {
-          convert(p, q0, tf_stamped);
-        }
-      }
-
-      if (obj.track.is_ready_prediction != 0u)
-      {
-        for (unsigned int i = 0; i < NUM_FORECASTS; i++)
-        {
-          msgs::PointXYZ p;
-          p.x = obj.track.forecasts[i].position.x;
-          p.y = obj.track.forecasts[i].position.y;
-          p.z = 0.;
-
-          convert(p, q0, tf_stamped);
-
-          obj.track.forecasts[i].position.x = p.x;
-          obj.track.forecasts[i].position.y = p.y;
-        }
-      }
-
-      obj.header.frame_id = frame_id_target_;
     }
+
+    if (obj.track.is_ready_prediction != 0u)
+    {
+      for (unsigned int i = 0; i < NUM_FORECASTS; i++)
+      {
+        msgs::PointXYZ p;
+        p.x = obj.track.forecasts[i].position.x;
+        p.y = obj.track.forecasts[i].position.y;
+        p.z = 0.;
+
+        convert(p, q0);
+
+        obj.track.forecasts[i].position.x = p.x;
+        obj.track.forecasts[i].position.y = p.y;
+      }
+    }
+
+    obj.header.frame_id = frame_id_target_;
   }
 }
 
@@ -708,8 +684,8 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#6-2 bbox center y -- kalman-filtered (m), "  //
         << "#6-3 bbox center z -- kalman-filtered (m), "  //
 
-        << "#7-1 object yaw (rad) -- from (0, 1, 0) CCW, "  //
-        << "#7-2 object yaw (deg) -- from (0, 1, 0) CCW, "  //
+        << "#7-1 object yaw (rad) -- from (0 1 0) CCW, "  //
+        << "#7-2 object yaw (deg) -- from (0 1 0) CCW, "  //
 
         << "#11 abs vx (km/h), "     //
         << "#12 abs vy (km/h), "     //
@@ -940,19 +916,18 @@ void TPPNode::get_current_ego_data_main()
 
 void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 {
-  geometry_msgs::TransformStamped tf_stamped;
   bool is_warning = false;
 
   try
   {
-    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
+    tf_stamped_ = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+      tf_stamped_ = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -963,12 +938,12 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   if (!is_warning)
   {
-    vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
-    vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
+    vel_.set_ego_x_abs(tf_stamped_.transform.translation.x);
+    vel_.set_ego_y_abs(tf_stamped_.transform.translation.y);
 
     double roll, pitch, yaw;
-    quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
-                      tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
+    quaternion_to_rpy(roll, pitch, yaw, tf_stamped_.transform.rotation.x, tf_stamped_.transform.rotation.y,
+                      tf_stamped_.transform.rotation.z, tf_stamped_.transform.rotation.w);
     vel_.set_ego_heading(yaw);
   }
   else

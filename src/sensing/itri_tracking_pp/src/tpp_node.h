@@ -40,6 +40,8 @@ private:
   int input_source_ = InputSource::CameraDetV2;
   int occ_source_ = OccupancySource::PlannedPathBased;
 
+  geometry_msgs::TransformStamped tf_stamped_;
+
   bool save_output_txt_ = false;
   bool output_tf_map_ = false;
 
@@ -144,10 +146,10 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
 
-  void object_yaw(msgs::DetectedObject& obj, const geometry_msgs::TransformStamped& tf_stamped);
+  void object_yaw(msgs::DetectedObject& obj);
 
   // output bbox and pp points in tf_map
-  void convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q, const geometry_msgs::TransformStamped& tf_stamped);
+  void convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q);
   void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string& out_filename);
