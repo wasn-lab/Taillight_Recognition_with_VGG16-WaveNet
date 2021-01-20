@@ -34,7 +34,7 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = InputSource::CameraDetV2;
+  int in_source_ = InputSource::LidarDet;
 
   geometry_msgs::TransformStamped tf_stamped_;
 

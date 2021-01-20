@@ -998,7 +998,7 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_3d/";
-  nh_.param<int>(domain + "input_source", in_source_, InputSource::CameraDetV2);
+  nh_.param<int>(domain + "input_source", in_source_, InputSource::LidarDet);
 
   nh_.param<double>(domain + "input_fps", input_fps, 10.);
   nh_.param<double>(domain + "output_fps", output_fps, 10.);
