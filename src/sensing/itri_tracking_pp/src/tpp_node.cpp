@@ -324,13 +324,6 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       }
     }
 
-#if FILL_CONVEX_HULL
-    for (auto& obj : KTs_.objs_)
-    {
-      fill_convex_hull(obj.bPoint, obj.cPoint);
-    }
-#endif
-
 #if DEBUG_DATA_IN
     for (auto& obj : KTs_.objs_)
       LOG_INFO << "[Object " << i << "] p0 = (" << obj.bPoint.p0.x << ", " << obj.bPoint.p0.y << ", " << obj.bPoint.p0.z
@@ -439,20 +432,6 @@ void TPPNode::subscribe_and_advertise_topics()
 
   std::string topic5 = topic + "/drivable";
   drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
-}
-
-void TPPNode::fill_convex_hull(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint)
-{
-  if (cPoint.lowerAreaPoints.empty())
-  {
-    std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
-    cPoint.lowerAreaPoints.reserve(4);
-    cPoint.lowerAreaPoints.push_back(bPoint.p0);
-    cPoint.lowerAreaPoints.push_back(bPoint.p3);
-    cPoint.lowerAreaPoints.push_back(bPoint.p7);
-    cPoint.lowerAreaPoints.push_back(bPoint.p4);
-    cPoint.objectHigh = 4;
-  }
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)
