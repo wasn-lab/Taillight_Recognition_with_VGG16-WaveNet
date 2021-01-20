@@ -579,22 +579,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
     return false;
   }
 
-  geometry_msgs::TransformStamped tf_stamped;
-  try
-  {
-    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
-#if PRINT_MESSAGE
-    std::cout << tf_stamped << std::endl;
-#endif
-  }
-  catch (tf2::TransformException& ex)
-  {
-    ROS_WARN("%s", ex.what());
-    ros::Duration(1.0).sleep();
-    return false;
-  }
-
-  double yaw = tf2::getYaw(tf_stamped.transform.rotation);
+  double yaw = tf2::getYaw(tf_stamped_.transform.rotation);
 
   geometry_msgs::PoseStamped point_in;
   point_in.pose.position.x = position.x;
@@ -602,7 +587,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   point_in.pose.position.z = 0;
 
   geometry_msgs::PoseStamped point_out;
-  point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped.transform.translation);
+  point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped_.transform.translation);
   position.x = point_out.pose.position.x;
   position.y = point_out.pose.position.y;
 
@@ -936,19 +921,18 @@ void TPPNode::get_current_ego_data_main()
 
 void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 {
-  geometry_msgs::TransformStamped tf_stamped;
   bool is_warning = false;
 
   try
   {
-    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
+    tf_stamped_ = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+      tf_stamped_ = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -959,12 +943,12 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   if (!is_warning)
   {
-    vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
-    vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
+    vel_.set_ego_x_abs(tf_stamped_.transform.translation.x);
+    vel_.set_ego_y_abs(tf_stamped_.transform.translation.y);
 
     double roll, pitch, yaw;
-    quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
-                      tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
+    quaternion_to_rpy(roll, pitch, yaw, tf_stamped_.transform.rotation.x, tf_stamped_.transform.rotation.y,
+                      tf_stamped_.transform.rotation.z, tf_stamped_.transform.rotation.w);
     vel_.set_ego_heading(yaw);
   }
   else

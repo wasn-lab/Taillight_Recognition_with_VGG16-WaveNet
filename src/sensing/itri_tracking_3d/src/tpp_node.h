@@ -36,6 +36,8 @@ private:
 
   int in_source_ = InputSource::CameraDetV2;
 
+  geometry_msgs::TransformStamped tf_stamped_;
+
   bool show_runtime_ = false;
 
   bool use_tracking2d = false;
