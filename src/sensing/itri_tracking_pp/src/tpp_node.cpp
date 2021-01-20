@@ -53,6 +53,52 @@ void TPPNode::callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input)
 #endif
 }
 
+void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
+{
+  if (!obj.cPoint.lowerAreaPoints.empty())
+  {
+    float xmin = std::numeric_limits<float>::max();
+    float xmax = -std::numeric_limits<float>::max();
+    float ymin = std::numeric_limits<float>::max();
+    float ymax = -std::numeric_limits<float>::max();
+    float zmin = std::numeric_limits<float>::max();
+    float zmax = -std::numeric_limits<float>::max();
+
+    for (auto p : obj.cPoint.lowerAreaPoints)
+    {
+      xmin = (p.x < xmin) ? p.x : xmin;
+      xmax = (p.x > xmax) ? p.x : xmax;
+      ymin = (p.y < ymin) ? p.y : ymin;
+      ymax = (p.y > ymax) ? p.y : ymax;
+      zmin = (p.z < zmin) ? p.z : zmin;
+      zmax = (p.z > zmax) ? p.z : zmax;
+    }
+
+    init_BoxPoint(obj.bPoint.p0, xmin, ymax, zmin);
+    init_BoxPoint(obj.bPoint.p1, xmin, ymax, zmax);
+    init_BoxPoint(obj.bPoint.p2, xmin, ymin, zmax);
+    init_BoxPoint(obj.bPoint.p3, xmin, ymin, zmin);
+    init_BoxPoint(obj.bPoint.p4, xmax, ymax, zmin);
+    init_BoxPoint(obj.bPoint.p5, xmax, ymax, zmax);
+    init_BoxPoint(obj.bPoint.p6, xmax, ymin, zmax);
+    init_BoxPoint(obj.bPoint.p7, xmax, ymin, zmin);
+  }
+}
+void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint,
+                                       const std::string frame_id)
+{
+  if (cPoint.lowerAreaPoints.empty())
+  {
+    std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
+    cPoint.lowerAreaPoints.reserve(4);
+    cPoint.lowerAreaPoints.push_back(bPoint.p0);
+    cPoint.lowerAreaPoints.push_back(bPoint.p3);
+    cPoint.lowerAreaPoints.push_back(bPoint.p7);
+    cPoint.lowerAreaPoints.push_back(bPoint.p4);
+    cPoint.objectHigh = 4;
+  }
+}
+
 void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 {
 #if DEBUG_CALLBACK
@@ -167,10 +213,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 #endif
 
 #if VIRTUAL_INPUT
-    for (unsigned i = 0; i < KTs_.objs_.size(); i++)
+    for (auto& obj : KTs_.objs_)
     {
-      gt_x_ = KTs_.objs_[i].radarInfo.imgPoint60.x;
-      gt_y_ = KTs_.objs_[i].radarInfo.imgPoint60.y;
+      gt_x_ = obj.radarInfo.imgPoint60.x;
+      gt_y_ = obj.radarInfo.imgPoint60.y;
     }
 #endif
 
@@ -179,6 +225,17 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
       obj.header.frame_id = "lidar";
       obj.speed_abs = 0.f;
       obj.speed_rel = 0.f;
+
+      // std::cout << "CCC" << std::endl;
+
+      if (create_bbox_from_polygon_)
+      {
+        create_bbox_from_polygon(obj);
+      }
+      if (create_polygon_from_bbox_)
+      {
+        create_polygon_from_bbox(obj.bPoint, obj.cPoint, obj.header.frame_id);
+      }
     }
 
 #if FILL_CONVEX_HULL
@@ -631,7 +688,7 @@ void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
 
     if (!obj.cPoint.lowerAreaPoints.empty())
     {
-      for (auto p : obj.cPoint.lowerAreaPoints)
+      for (auto& p : obj.cPoint.lowerAreaPoints)
       {
         convert(p, q0);
       }
@@ -983,6 +1040,9 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "input_fps", g_input_fps, 10.);
   nh_.param<double>(domain + "output_fps", g_output_fps, 10.);
   g_num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
+
+  nh_.param<bool>(domain + "create_bbox_from_polygon", create_bbox_from_polygon_, false);
+  nh_.param<bool>(domain + "create_polygon_from_bbox", create_polygon_from_bbox_, false);
 
   double pp_input_shift_m = 0.;
   nh_.param<double>(domain + "pp_input_shift_m", pp_input_shift_m, 150.);

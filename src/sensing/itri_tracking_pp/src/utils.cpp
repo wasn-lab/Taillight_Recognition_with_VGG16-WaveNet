@@ -12,6 +12,13 @@ float divide(const float dividend, const float divisor)
   return (dividend / divisor);
 }
 
+void init_BoxPoint(msgs::PointXYZ& p, const float x, const float y, const float z)
+{
+  p.x = x;
+  p.y = y;
+  p.z = z;
+}
+
 void increase_uint(unsigned int& x)
 {
   if (x == 4294967295)

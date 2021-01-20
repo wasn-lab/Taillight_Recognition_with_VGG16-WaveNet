@@ -145,7 +145,7 @@ void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint,
                                        const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0)
+  if (cPoint.lowerAreaPoints.empty())
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);

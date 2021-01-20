@@ -18,6 +18,8 @@ void assign_value_cannot_zero(T& out, const T in)
   out = (in == (T)0) ? epsilon : in;
 }
 
+void init_BoxPoint(msgs::PointXYZ& p, const float x, const float y, const float z);
+
 void increase_uint(unsigned int& x);
 
 double clock_to_milliseconds(const clock_t num_ticks);
