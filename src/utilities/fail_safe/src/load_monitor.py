@@ -7,6 +7,7 @@ import rospy
 from std_msgs.msg import String
 
 W_RGX = re.compile(r"load average: (?P<load>[ \.\d,]+)")
+NVIDIA_SMI_LOAD_RGX = re.compile(r".+[\s]+(?P<load>[\d]+)%[\s]+Default.+")
 
 def get_hostname():
     """
@@ -14,10 +15,42 @@ def get_hostname():
     """
     return str(subprocess.check_output(["hostname"])).strip()
 
+
+def _parse_nvidia_smi_output(line):
+    """
+    Given |line| as
+    | 22%   34C    P8     9W / 250W |     44MiB / 11016MiB |      17%      Default |
+    return "17"
+    """
+    match = NVIDIA_SMI_LOAD_RGX.match(line)
+    if match:
+        return match.expand(r"\g<load>")
+    return ""
+
+
 def _get_gpu_load_by_nvidia_smi():
     cmd = ["nvidia-smi", "--format=csv,noheader,nounits",
            "--query-gpu=utilization.gpu"]
-    return str(subprocess.check_output(cmd)).strip()
+    ret = None
+    try:
+        output = str(subprocess.check_output(cmd))
+        line = output.splitlines()[-1]
+        ret = line.strip()
+    except subprocess.CalledProcessError:
+        ret = None
+    if ret is not None:
+        return ret
+    cmd = ["nvidia-smi"]  # fall back to nvidia-smi
+    ret = "INF"
+    try:
+        output = str(subprocess.check_output(cmd))
+        for line in output.splitlines():
+            temp = _parse_nvidia_smi_output(line)
+            if temp:
+                ret = temp
+    except subprocess.CalledProcessError:
+        ret = "INF"
+    return ret
 
 def _get_gpu_load_by_tegra_stats():
     # Machines like Xavier do not have nvidia-smi.
