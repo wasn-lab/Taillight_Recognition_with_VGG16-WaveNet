@@ -23,6 +23,7 @@
 #include "points_in_image_area.h"
 #include "point_preprocessing.h"
 #include "sync_message.h"
+#include "roi_fusion.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -53,6 +54,7 @@ const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60};
 /// class
 std::vector<Alignment> g_alignments(g_cam_ids.size());
 Visualization g_visualization;
+RoiFusion g_roi_fusion;
 
 /// thread
 std::vector<std::mutex> g_mutex_cams(g_cam_ids.size());
@@ -70,7 +72,7 @@ std::vector<std::mutex> g_mutex_cam_object_time(g_cam_ids.size());
 /// params
 bool g_is_data_sync = false;
 bool g_is_enable_default_3d_bbox = true;
-bool g_is_display = false;
+bool g_is_display = true;
 
 /// ros
 std::vector<message_filters::Cache<sensor_msgs::Image>> g_cache_image(g_cam_ids.size());
@@ -392,10 +394,10 @@ void displayCameraData()
   std::cout << "===== displayCameraData close =====" << std::endl;
 }
 
-void projectLidarBBoxOntoImage(cv::Mat& mats, const msgs::DetectedObjectArray& objects, std::vector<MinMax2D>& cam_pixels_obj)
+void projectLidarBBoxOntoImage(cv::Mat& mats, const msgs::DetectedObjectArray& objects_array, std::vector<msgs::DetectedObject>& objects, std::vector<MinMax2D>& cam_pixels_obj)
 {
   std::vector<std::vector<PixelPosition>> cam_pixels_obj_cube;
-  getBoxInImageFOV(objects, cam_pixels_obj, g_alignments[0]);
+  getBoxInImageFOV(objects_array, objects, cam_pixels_obj, g_alignments[0]);
   // getBoxInImageFOV(objects, cam_pixels_obj_cube, g_alignments[0]);
   if (g_is_display)
   {
@@ -403,6 +405,7 @@ void projectLidarBBoxOntoImage(cv::Mat& mats, const msgs::DetectedObjectArray& o
     // drawLidarCubeOnImage(mats, cam_pixels_obj_cube);
   }
 }
+
 void getSyncLidarCameraData()
 {
   std::cout << "getSyncLidarCameraData start." << std::endl;
@@ -684,6 +687,7 @@ void runInference()
   msgs::DetectedObjectArray object_lidar;
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cam_ids.size());
   std::vector<std::vector<PixelPosition>> cam_pixels(g_cam_ids.size());
+  std::vector<msgs::DetectedObject> object_lidar_filter;
   std::vector<std::vector<MinMax2D>> cam_pixels_obj(g_cam_ids.size());
   std::vector<std::vector<MinMax3D>> cams_bboxs_cube_min_max(g_cam_ids.size());
 
@@ -710,7 +714,10 @@ void runInference()
       std::cout << "===== doInference once =====" << std::endl;
       g_is_data_sync = false;
       // getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
-      projectLidarBBoxOntoImage(cam_mats[0], object_lidar, cam_pixels_obj[0]);
+      projectLidarBBoxOntoImage(cam_mats[0], object_lidar, object_lidar_filter, cam_pixels_obj[0]);
+      std::vector<sensor_msgs::RegionOfInterest> object_lidar_roi = g_roi_fusion.getLidar2DROI(cam_pixels_obj[0]);
+      std::vector<sensor_msgs::RegionOfInterest> object_camera_roi = g_roi_fusion.getCam2DROI(object_arrs[0]);
+      std::vector<std::pair<int,int>> fusion_index = g_roi_fusion.roi_fusion(object_camera_roi, object_lidar_roi);
 
       if (g_is_display)
       {
@@ -738,6 +745,7 @@ void runInference()
 
       release(cam_pixels);
       release(cam_pixels_obj);
+      object_lidar_filter.clear();
     }
     loop_rate.sleep();
   }

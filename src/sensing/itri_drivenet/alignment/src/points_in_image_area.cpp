@@ -525,15 +525,17 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   }
 }
 
-void getBoxInImageFOV(const msgs::DetectedObjectArray& objects, std::vector<MinMax2D>& cam_pixels_obj, Alignment& alignment)
+void getBoxInImageFOV(const msgs::DetectedObjectArray& objects_array, std::vector<msgs::DetectedObject>& objects, std::vector<MinMax2D>& cam_pixels_obj, Alignment& alignment)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
-  // std::cout << "objects.objects size: " << objects.objects.size() << std::endl;
-  for (auto& obj : objects.objects)
+
+  std::vector<PixelPosition> cube(8);
+  // std::cout << "objects.objects size: " << objects_array.objects.size() << std::endl;
+  for (auto& obj : objects_array.objects)
   {
     std::vector<pcl::PointXYZI> bbox_points(8);
     msgs::DetectedObject obj_tmp = obj;
-    obj_tmp.header = objects.header;
+    obj_tmp.header = objects_array.header;
 
     if (!(obj_tmp.bPoint.p0.x == 0 && obj_tmp.bPoint.p0.y ==0 && obj_tmp.bPoint.p0.z ==0 && 
       obj_tmp.bPoint.p6.x == 0 && obj_tmp.bPoint.p6.y ==0 && obj_tmp.bPoint.p6.z ==0))
@@ -542,34 +544,62 @@ void getBoxInImageFOV(const msgs::DetectedObjectArray& objects, std::vector<MinM
       bbox_points[0].x = obj_tmp.bPoint.p0.x;
       bbox_points[0].y = obj_tmp.bPoint.p0.y;
       bbox_points[0].z = obj_tmp.bPoint.p0.z;
-      // bbox_points[1].x = obj_tmp.bPoint.p1.x;
-      // bbox_points[1].y = obj_tmp.bPoint.p1.y;
-      // bbox_points[1].z = obj_tmp.bPoint.p1.z;
-      // bbox_points[2].x = obj_tmp.bPoint.p2.x;
-      // bbox_points[2].y = obj_tmp.bPoint.p2.y;
-      // bbox_points[2].z = obj_tmp.bPoint.p2.z;
-      // bbox_points[3].x = obj_tmp.bPoint.p3.x;
-      // bbox_points[3].y = obj_tmp.bPoint.p3.y;
-      // bbox_points[3].z = obj_tmp.bPoint.p3.z;
-      // bbox_points[4].x = obj_tmp.bPoint.p4.x;
-      // bbox_points[4].y = obj_tmp.bPoint.p4.y;
-      // bbox_points[4].z = obj_tmp.bPoint.p4.z;
-      // bbox_points[5].x = obj_tmp.bPoint.p5.x;
-      // bbox_points[5].y = obj_tmp.bPoint.p5.y;
-      // bbox_points[5].z = obj_tmp.bPoint.p5.z;
+      bbox_points[1].x = obj_tmp.bPoint.p1.x;
+      bbox_points[1].y = obj_tmp.bPoint.p1.y;
+      bbox_points[1].z = obj_tmp.bPoint.p1.z;
+      bbox_points[2].x = obj_tmp.bPoint.p2.x;
+      bbox_points[2].y = obj_tmp.bPoint.p2.y;
+      bbox_points[2].z = obj_tmp.bPoint.p2.z;
+      bbox_points[3].x = obj_tmp.bPoint.p3.x;
+      bbox_points[3].y = obj_tmp.bPoint.p3.y;
+      bbox_points[3].z = obj_tmp.bPoint.p3.z;
+      bbox_points[4].x = obj_tmp.bPoint.p4.x;
+      bbox_points[4].y = obj_tmp.bPoint.p4.y;
+      bbox_points[4].z = obj_tmp.bPoint.p4.z;
+      bbox_points[5].x = obj_tmp.bPoint.p5.x;
+      bbox_points[5].y = obj_tmp.bPoint.p5.y;
+      bbox_points[5].z = obj_tmp.bPoint.p5.z;
       bbox_points[6].x = obj_tmp.bPoint.p6.x;
       bbox_points[6].y = obj_tmp.bPoint.p6.y;
       bbox_points[6].z = obj_tmp.bPoint.p6.z;
-      // bbox_points[7].x = obj_tmp.bPoint.p7.x;
-      // bbox_points[7].y = obj_tmp.bPoint.p7.y;
-      // bbox_points[7].z = obj_tmp.bPoint.p7.z;
+      bbox_points[7].x = obj_tmp.bPoint.p7.x;
+      bbox_points[7].y = obj_tmp.bPoint.p7.y;
+      bbox_points[7].z = obj_tmp.bPoint.p7.z;
 
-      MinMax2D min_max_2d_bbox;
-      min_max_2d_bbox.p_min = alignment.projectPointToPixel(bbox_points[0]);
-      min_max_2d_bbox.p_max = alignment.projectPointToPixel(bbox_points[6]);
-      if (min_max_2d_bbox.p_min.u >= 0 && min_max_2d_bbox.p_min.v >= 0 && min_max_2d_bbox.p_max.u >= 0 && min_max_2d_bbox.p_max.v >= 0)
+      std::vector<int> col;
+      std::vector<int> row;
+      /// 3d cube to 2d cube
+      for (size_t i = 0; i < bbox_points.size(); i++)
       {
+          cube[i] = alignment.projectPointToPixel(bbox_points[i]);
+          if (cube[i].u >= 0)
+          {
+            col.push_back(cube[i].u);
+          }
+          if (cube[i].v >= 0)
+          {
+            row.push_back(cube[i].v);
+          }
+      }
+      if(col.size() >= 2 && row.size() >= 2)
+      {
+        /// find min and max pixel point
+        MinMax2D min_max_2d_bbox;
+        /// min point
+        std::vector<int>::iterator min_col_inter = std::min_element(col.begin(), col.end());
+        min_max_2d_bbox.p_min.u = col[std::distance(col.begin(), min_col_inter)];
+        std::vector<int>::iterator max_row_inter = std::max_element(row.begin(), row.end());
+        min_max_2d_bbox.p_min.v = row[std::distance(row.begin(), max_row_inter)];
+        /// max point
+        std::vector<int>::iterator max_col_inter = std::max_element(col.begin(), col.end());
+        min_max_2d_bbox.p_max.u = col[std::distance(col.begin(), max_col_inter)];
+        std::vector<int>::iterator min_row_inter = std::min_element(row.begin(), row.end());
+        min_max_2d_bbox.p_max.v = row[std::distance(row.begin(), min_row_inter)];
+
+        // std::cout << "min_max_2d_bbox.p_min: " << min_max_2d_bbox.p_min.u << ", " << min_max_2d_bbox.p_min.v << std::endl;
+        // std::cout << "min_max_2d_bbox.p_max: " << min_max_2d_bbox.p_max.u << ", " << min_max_2d_bbox.p_max.v << std::endl;
         cam_pixels_obj.push_back(min_max_2d_bbox);
+        objects.push_back(obj_tmp);
       }
     }
   }
