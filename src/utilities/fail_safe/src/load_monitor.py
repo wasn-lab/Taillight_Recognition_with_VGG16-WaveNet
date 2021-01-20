@@ -12,19 +12,19 @@ def get_hostname():
     """
     Return the hostname of the machine, i.e., /etc/hostname
     """
-    return subprocess.check_output(["hostname"]).strip()
+    return str(subprocess.check_output(["hostname"])).strip()
 
 def _get_gpu_load_by_nvidia_smi():
     cmd = ["nvidia-smi", "--format=csv,noheader,nounits",
            "--query-gpu=utilization.gpu"]
-    return subprocess.check_output(cmd).strip()
+    return str(subprocess.check_output(cmd)).strip()
 
 def _get_gpu_load_by_tegra_stats():
     # Machines like Xavier do not have nvidia-smi.
     return "NA"
 
 def _get_cpu_load():
-    line = subprocess.check_output(["w"]).splitlines()[0]
+    line = str(subprocess.check_output(["w"])).splitlines()[0]
     match = W_RGX.search(line)
     if match is None:
         return "NA"
