@@ -582,6 +582,27 @@ void TPPNode::convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q)
   q = pose_in_map.orientation;
 }
 
+void TPPNode::heading_enu(std::vector<msgs::DetectedObject>& objs)
+{
+  for (auto& obj : objs)
+  {
+    msgs::PointXYZ p;
+    p.x = 0.;
+    p.y = 0.;
+    p.z = 0.;
+    geometry_msgs::Quaternion q;
+    q.x = obj.heading.x;
+    q.y = obj.heading.y;
+    q.z = obj.heading.z;
+    q.w = obj.heading.w;
+    convert(p, q);
+    obj.heading_enu.x = q.x;
+    obj.heading_enu.y = q.y;
+    obj.heading_enu.z = q.z;
+    obj.heading_enu.w = q.w;
+  }
+}
+
 void TPPNode::convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs)
 {
   for (auto& obj : objs)
@@ -687,6 +708,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
         << "#7-1 object yaw (rad) -- from (0 1 0) CCW, "  //
         << "#7-2 object yaw (deg) -- from (0 1 0) CCW, "  //
 
+        << "#8-1 object heading_enu.x -- from (1 0 0) CCW, "  //
+        << "#8-2 object heading_enu.y -- from (1 0 0) CCW, "  //
+        << "#8-3 object heading_enu.z -- from (1 0 0) CCW, "  //
+        << "#8-4 object heading_enu.w -- from (1 0 0) CCW, "  //
+
         << "#11 abs vx (km/h), "     //
         << "#12 abs vy (km/h), "     //
         << "#13 abs speed (km/h), "  //
@@ -756,6 +782,11 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
 
         << obj.distance << ", "                 // #7-1 object yaw (rad) -- from (0, 1, 0) CCW
         << obj.distance * 57.295779513 << ", "  // #7-2 object yaw (deg) -- from (0, 1, 0) CCW
+
+        << obj.heading_enu.x << ", "  // #8-1 object heading_enu.x -- from (1, 0, 0) CCW
+        << obj.heading_enu.y << ", "  // #8-2 object heading_enu.y -- from (1, 0, 0) CCW
+        << obj.heading_enu.z << ", "  // #8-3 object heading_enu.z -- from (1, 0, 0) CCW
+        << obj.heading_enu.w << ", "  // #8-4 object heading_enu.w -- from (1, 0, 0) CCW
 
         << obj.track.absolute_velocity.x << ", "  // #11 abs vx (km/h)
         << obj.track.absolute_velocity.y << ", "  // #12 abs vy (km/h)
@@ -1035,6 +1066,7 @@ int TPPNode::run()
     if (g_trigger && is_legal_dt_)
     {
       get_current_ego_data(KTs_.header_.stamp);  // sync data
+      heading_enu(KTs_.objs_);                   // compute heading_enu (tf_map)
 
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;

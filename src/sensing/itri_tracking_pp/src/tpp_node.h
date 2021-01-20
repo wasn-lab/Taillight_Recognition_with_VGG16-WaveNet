@@ -151,6 +151,7 @@ private:
   // output bbox and pp points in tf_map
   void convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q);
   void convert_all_to_map_tf(std::vector<msgs::DetectedObject>& objs);
+  void heading_enu(std::vector<msgs::DetectedObject>& objs);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, const std::string& out_filename);
 };
