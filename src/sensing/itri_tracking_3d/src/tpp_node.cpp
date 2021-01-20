@@ -744,6 +744,44 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
+void TPPNode::convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q)
+{
+  // TF (lidar-to-map) for object pose
+  geometry_msgs::Pose pose_in_lidar;
+  pose_in_lidar.position.x = p.x;
+  pose_in_lidar.position.y = p.y;
+  pose_in_lidar.position.z = p.z;
+  pose_in_lidar.orientation = q;
+
+  geometry_msgs::Pose pose_in_map;
+  tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped_);
+  p.x = pose_in_map.position.x;
+  p.y = pose_in_map.position.y;
+  p.z = pose_in_map.position.z;
+  q = pose_in_map.orientation;
+}
+
+void TPPNode::heading_enu(std::vector<msgs::DetectedObject>& objs)
+{
+  for (auto& obj : objs)
+  {
+    msgs::PointXYZ p;
+    p.x = 0.;
+    p.y = 0.;
+    p.z = 0.;
+    geometry_msgs::Quaternion q;
+    q.x = obj.heading.x;
+    q.y = obj.heading.y;
+    q.z = obj.heading.z;
+    q.w = obj.heading.w;
+    convert(p, q);
+    obj.heading_enu.x = q.x;
+    obj.heading_enu.y = q.y;
+    obj.heading_enu.z = q.z;
+    obj.heading_enu.w = q.w;
+  }
+}
+
 void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
@@ -1031,6 +1069,7 @@ int TPPNode::run()
     if (g_trigger && is_legal_dt_)
     {
       get_current_ego_data(KTs_.header_.stamp);  // sync data
+      heading_enu(KTs_.objs_);                   // compute heading_enu (tf_map)
 
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;

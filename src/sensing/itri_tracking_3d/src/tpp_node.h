@@ -149,6 +149,10 @@ private:
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
 
+  // output bbox and pp points in tf_map
+  void convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q);
+  void heading_enu(std::vector<msgs::DetectedObject>& objs);
+
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 };
 }  // namespace tpp
