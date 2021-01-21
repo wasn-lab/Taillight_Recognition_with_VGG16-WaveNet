@@ -78,13 +78,13 @@ sleep 3
 gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_camera.sh;exec bash"'
 
 sleep 3
-#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2.sh;exec bash"'
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d.sh;exec bash"'
 sleep 3
-#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2_left.sh;exec bash"'
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_left.sh;exec bash"'
 sleep 3
-#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2_right.sh;exec bash"'
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_right.sh;exec bash"'
 sleep 3
-#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_lanelet2_fov30.sh;exec bash"'
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_fov30.sh;exec bash"'
 sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pedcross.sh;exec bash"'
 
