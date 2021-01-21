@@ -783,7 +783,8 @@ void runInference()
       
       if(g_img_result_publish)
       {
-        drawBoxOnImages(cam_mats, cam_pixels_obj[0]);
+        drawBoxOnImages(cam_mats, object_arrs); // camera detection result
+        drawBoxOnImages(cam_mats, cam_pixels_obj[0]); // fusion camera result
         image_publisher(cam_mats, object_lidar.header);
       }
 
