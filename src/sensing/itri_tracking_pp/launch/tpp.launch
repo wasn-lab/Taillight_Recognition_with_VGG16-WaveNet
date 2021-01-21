@@ -29,6 +29,18 @@
   <arg name="input_fps" default="10.0" />
   <arg name="output_fps" default="10.0" />
 
+  <!-- Create bbox(bPoint) from polygon(cPoint) -->
+  <arg name="create_bbox_from_polygon" default="False" />
+
+  <!-- Create polygon(cPoint) from bbox(bPoint) -->
+  <arg name="create_polygon_from_bbox" default="False" />
+
+  <!-- PP filter of drivable area: width (meter) to be expanded from the host lane -->
+  <arg name="drivable_area_filter" default="True" />
+  <arg name="expand_left" default="2.2" />
+  <arg name="expand_right" default="0.0" />
+  <arg name="ground_z" default="-3.1" />
+
   <!-- Move PP AR(1) input's origin to (pp_input_shift, pp_input_shift) -->
   <arg name="pp_input_shift_m" default="150.0" />
 
@@ -59,6 +71,12 @@
     <param name="output_tf_map" value="$(arg output_tf_map)" />
     <param name="input_fps" value="$(arg input_fps)" />
     <param name="output_fps" value="$(arg output_fps)" />
+    <param name="create_bbox_from_polygon" value="$(arg create_bbox_from_polygon)" />
+    <param name="create_polygon_from_bbox" value="$(arg create_polygon_from_bbox)" />
+    <param name="drivable_area_filter" value="$(arg drivable_area_filter)" />
+    <param name="expand_left" value="$(arg expand_left)" />
+    <param name="expand_right" value="$(arg expand_right)" />
+    <param name="ground_z" value="$(arg ground_z)" />
     <param name="pp_input_shift_m" value="$(arg pp_input_shift_m)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
     <param name="gen_markers" value="$(arg gen_markers)" />
