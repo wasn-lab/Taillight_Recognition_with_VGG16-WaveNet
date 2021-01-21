@@ -53,20 +53,20 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh^M"
 screen -t init_fail_safe
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fail_safe.sh^M"
 
-screen -t init_tracking_3d_lanelet2.sh
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_3d_lanelet2.sh^M"
+screen -t init_tracking_3d.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_3d.sh^M"
 
-screen -t init_xyz2lla_lanelet2.sh
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_xyz2lla_lanelet2.sh^M"
+screen -t init_xyz2lla.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_xyz2lla.sh^M"
 
-screen -t init_obj_msg_converter_lanelet2
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_obj_msg_converter_lanelet2.sh^M"
+screen -t init_obj_msg_converter
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_obj_msg_converter.sh^M"
 
-screen -t init_map_based_prediction_lanelet2.sh
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_map_based_prediction_lanelet2.sh^M"
+screen -t init_map_based_prediction.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_map_based_prediction.sh^M"
 
-screen -t init_dynamic_object_vis_lanelet2.sh
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_dynamic_object_vis_lanelet2.sh^M"
+screen -t init_dynamic_object_vis.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_dynamic_object_vis.sh^M"
 
 screen -t init_edge_detection
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_edge_detection.sh^M"

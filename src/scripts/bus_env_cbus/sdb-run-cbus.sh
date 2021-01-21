@@ -28,18 +28,18 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/
 #sleep 3
 #gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
 #sleep 3
-#gnome-terminal  -e 'bash -c "./init_tracking_pp_lanelet2.sh;exec bash"'
+#gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d_lanelet2.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_xyz2lla_lanelet2.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_xyz2lla.sh;exec bash"'
 
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_obj_msg_converter_lanelet2.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_obj_msg_converter.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_map_based_prediction_lanelet2.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_map_based_prediction.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_dynamic_object_vis_lanelet2.sh;exec bash"'
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_dynamic_object_vis.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_edge_detection.sh;exec bash"'
 
