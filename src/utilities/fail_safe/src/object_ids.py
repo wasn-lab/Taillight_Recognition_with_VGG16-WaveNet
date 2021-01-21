@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 """
 Object class id
 see src/msgs/include/detected_object_class_id.h

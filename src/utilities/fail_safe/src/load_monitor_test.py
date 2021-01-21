@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
 from load_monitor import get_hostname, LoadMonitor, _parse_nvidia_smi_output
 
