@@ -1,4 +1,5 @@
 #include "visualization_util.h"
+#include "fusion_source_id.h"
 
 /// stardard
 #include <cmath>
@@ -20,12 +21,12 @@ void Visualization::drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point
   cv::circle(m_src, center_point, 1, point_color, -1, cv::FILLED, 0);
 }
 
-void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects)
+void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<msgs::DetectedObject>& objects)
 {
   std::vector<cv::Point> cv_points(2);
   std::vector<PixelPosition> pixel_positions(2);
-  int obj_count = 0;
-  cv::Scalar color = CvColor::blue_;
+  // int obj_count = 0;
+  cv::Scalar color = CvColor::yellow_;
   for (const auto& obj : objects)
   {
     for(uint i = 0; i < obj.camInfo.size(); i++)
@@ -43,15 +44,30 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObj
 
       // color = intToColor(int(obj_count % 10));
       cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
-      obj_count++;
+      // obj_count++;
     }
   }
 }
-void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<MinMax2D>& min_max_2d_bbox)
+void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<MinMax2D>& min_max_2d_bbox, int source_id)
 {
   std::vector<cv::Point> cv_points(2);
+  bool random_color = false;
   int obj_count = 0;
-  cv::Scalar color = CvColor::green_;
+
+  cv::Scalar color;
+  if (source_id == static_cast<int>(sensor_msgs_itri::FusionSourceId::Camera))
+  {
+    color = CvColor::blue_;
+  }
+  else if (source_id == static_cast<int>(sensor_msgs_itri::FusionSourceId::Lidar))
+  {
+    color = CvColor::green_;
+  }
+  else
+  {
+    random_color = true;
+  }
+  
   for (const auto& bbox : min_max_2d_bbox)
   {
     cv_points[0].x = bbox.p_min.u;
@@ -59,9 +75,13 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, std::vector<MinMax2D>& min_ma
     cv_points[1].x = bbox.p_max.u;
     cv_points[1].y = bbox.p_max.v;
 
-    // color = intToColor(int(obj_count % 10));
+    if(random_color)
+    {
+      color = intToColor(int(obj_count % 10));
+      obj_count++;
+    }
     cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
-    obj_count++;
+    
   }
 }
 void Visualization::drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<PixelPosition>>& cube_2d_bbox)

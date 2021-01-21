@@ -79,3 +79,24 @@ std::vector<std::pair<int,int>> RoiFusion::roi_fusion(const std::vector<sensor_m
   }
   return fusion_index;
 }
+void RoiFusion::getFusionCamObj(const msgs::DetectedObjectArray& objects_array, const std::vector<std::pair<int,int>> fusion_index, std::vector<DriveNet::MinMax2D>& cam_pixels_obj)
+{
+  for (size_t pair_index = 0; pair_index < fusion_index.size(); pair_index++)
+  {
+    int camera_index = fusion_index[pair_index].first;
+
+    std::vector<DriveNet::PixelPosition> pixel_positions(2);
+    pixel_positions[0].u = objects_array.objects[camera_index].camInfo[0].u;
+    pixel_positions[0].v = objects_array.objects[camera_index].camInfo[0].v;
+    pixel_positions[1].u = objects_array.objects[camera_index].camInfo[0].u + objects_array.objects[camera_index].camInfo[0].width;
+    pixel_positions[1].v = objects_array.objects[camera_index].camInfo[0].v + objects_array.objects[camera_index].camInfo[0].height;
+    transferPixelScaling(pixel_positions);
+
+    DriveNet::MinMax2D min_max_2d_bbox;
+    min_max_2d_bbox.p_min.u = pixel_positions[0].u;
+    min_max_2d_bbox.p_min.v = pixel_positions[0].v;
+    min_max_2d_bbox.p_max.u = pixel_positions[1].u;
+    min_max_2d_bbox.p_max.v = pixel_positions[1].v;
+    cam_pixels_obj.push_back(min_max_2d_bbox);
+  }
+}
