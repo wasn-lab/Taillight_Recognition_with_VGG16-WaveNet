@@ -1,6 +1,6 @@
+# -*- encoding: utf-8 -*-
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
-# -*- coding: utf-8 -*-
 import time
 import logging
 import datetime

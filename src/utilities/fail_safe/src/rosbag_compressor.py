@@ -1,6 +1,6 @@
+# -*- encoding: utf-8 -*-
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
-# -*- encoding: utf-8 -*-
 """
 Send backup rosbag files to backend.
 """
