@@ -936,6 +936,9 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
+  ros::param::get(ros::this_node::getName() + "/display", g_is_display);
+  ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
+
   /// ros Subscriber
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
   std::vector<ros::Subscriber> object_subs(g_cam_ids.size());
