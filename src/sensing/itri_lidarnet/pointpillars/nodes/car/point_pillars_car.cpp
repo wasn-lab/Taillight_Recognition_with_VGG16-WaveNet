@@ -561,7 +561,7 @@ void PointPillars_Car::preprocess(const float* in_points_array, const int in_num
   }
 }
 
-void PointPillars_Car::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections)
+void PointPillars_Car::doInference(const float* in_points_array, const int in_num_points, std::vector<float>& out_detections, std::vector<float>& out_scores)
 {
   preprocess(in_points_array, in_num_points);
 
@@ -596,6 +596,9 @@ void PointPillars_Car::doInference(const float* in_points_array, const int in_nu
       (float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3], dev_anchor_mask_, dev_anchors_px_,
       dev_anchors_py_, dev_anchors_pz_, dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
       dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_box_for_nms_, dev_filter_count_, out_detections);
+  float host_filtered_score_[out_detections.size() / NUM_OUTPUT_BOX_FEATURE_];
+  GPU_CHECK(cudaMemcpyAsync(host_filtered_score_, dev_filtered_score_, (out_detections.size() / NUM_OUTPUT_BOX_FEATURE_) *sizeof(float), cudaMemcpyDeviceToHost, stream));
+  out_scores.assign(host_filtered_score_, host_filtered_score_+(out_detections.size() / NUM_OUTPUT_BOX_FEATURE_));
 
   // release the stream and the buffers
   cudaStreamDestroy(stream);

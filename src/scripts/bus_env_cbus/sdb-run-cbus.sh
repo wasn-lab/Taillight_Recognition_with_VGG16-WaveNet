@@ -8,7 +8,7 @@ gnome-terminal  -e 'bash -c "source .bashrc;echo itri | sudo -S bash /home/lidar
 sleep 3
 gnome-terminal  -e "ssh -t camera 'echo itri | sudo -S bash /home/camera/itriadv/src/scripts/bus_env_cbus/camera/ip_forwarding.sh'"
 sleep 3
-gnome-terminal  -e 'ssh -t xavier "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1"'
+#gnome-terminal  -e 'ssh -t xavier "source .bashrc;echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1"'
 
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_mps.sh;exec bash"'
 sleep 3
@@ -43,8 +43,6 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_edge_detection.sh;exec bash"'
 
-sleep 3
-gnome-terminal  -e 'ssh -t xavier "source .bashrc;bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/reset_time.sh"'
 sleep 15
 gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_control_new_lanelet2.sh;exec bash"'
 sleep 3
@@ -95,11 +93,10 @@ sleep 3
 gnome-terminal  -e "bash -c 'source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
 
 sleep 3
-#gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.3.10;source /home/camera/Documents/itriadv_d/devel/setup.bash;cd /home/camera/Documents/itriadv_d;./devel/lib/lightnet_tainan_new_layout/lightnet_tainan_new_layout_node;exec bash'"
-#gnome-terminal  -e "ssh -t camera 'source /home/camera/Documents/itriadv_d/devel/setup.bash;cd /home/camera/Documents/itriadv_d;./devel/lib/lightnet_tainan_new_layout/lightnet_tainan_new_layout_node;exec bash'"
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh;exec bash'"
 
 sleep 3
-gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh;exec bash'"
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh;exec bash'"
 
 sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh;exec bash'"

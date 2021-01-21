@@ -52,6 +52,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_sys_check_gateway.
 screen -t init_fail_safe
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_fail_safe.sh^M"
 
+screen -t init_load_monitor
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M"
+
 screen -t init_tracking_3d_lanelet2
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d_lanelet2.sh^M"
 
@@ -88,8 +91,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_2d_lanel
 screen -t init_pedcross.sh
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross.sh^M"
 
-screen -t roslaunch opengl_test GUI_B_car.launch
-stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch^M"
+screen -t GUI_B_car.launch
+stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch --wait opengl_test GUI_B_car.launch^M"
 
 screen -t detection_viz
-stuff "source /home/lidar/itriadv/devel/setup.bash; roslaunch detection_viz itriadv_viz.launch rviz_config:=\"U3_b5_lanelet2_pedcross\"^M"
+stuff "source /home/lidar/itriadv/devel/setup.bash; roslaunch --wait detection_viz itriadv_viz.launch rviz_config:=\"U3_b5_lanelet2_pedcross\"^M"
+

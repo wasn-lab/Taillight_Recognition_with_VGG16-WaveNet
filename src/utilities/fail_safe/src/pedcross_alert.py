@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import time
 import heapq
 import rospy
@@ -30,15 +32,18 @@ class PedCrossAlert(object):
         return []
 
     def get_status_in_list(self):
-        fps = self._get_fps()
-        if fps > self.fps_low:
-            doc = {"module": "pedcross",
-                   "status": OK,
-                   "status_str": ""}
-        else:
-            doc = {"module": "pedcross",
-                   "status": WARN,
-                   "status_str": "low fps: {}".format(fps)}
+#        fps = self._get_fps()
+#        if fps > self.fps_low:
+#            doc = {"module": "pedcross",
+#                   "status": OK,
+#                   "status_str": ""}
+#        else:
+#            doc = {"module": "pedcross",
+#                   "status": WARN,
+#                   "status_str": "low fps: {}".format(fps)}
+        doc = {"module": "pedcross",
+               "status": OK,
+               "status_str": "Disabled for lacking cam 3d bbox."}
         self.pedcrossing = False;
         return [doc]
 

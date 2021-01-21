@@ -1065,6 +1065,8 @@ void sendROSRun(int argc, char** argv)
         spat.spat_sec = j1.at("Spat_sec");
         spat.signal_state = j1.at("Signal_state");
         spat.index = j1.at("Index");
+        spat.intersection_id = j1.at("intersection_id");
+        spat.road_id = j1.at("road_id");
       } 
       catch(std::exception& e)
       {
