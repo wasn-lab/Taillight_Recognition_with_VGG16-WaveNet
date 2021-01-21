@@ -95,11 +95,10 @@ sleep 3
 gnome-terminal  -e "bash -c 'source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
 
 sleep 3
-#gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.3.10;source /home/camera/Documents/itriadv_d/devel/setup.bash;cd /home/camera/Documents/itriadv_d;./devel/lib/lightnet_tainan_new_layout/lightnet_tainan_new_layout_node;exec bash'"
-#gnome-terminal  -e "ssh -t camera 'source /home/camera/Documents/itriadv_d/devel/setup.bash;cd /home/camera/Documents/itriadv_d;./devel/lib/lightnet_tainan_new_layout/lightnet_tainan_new_layout_node;exec bash'"
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh;exec bash'"
 
 sleep 3
-gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh;exec bash'"
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh;exec bash'"
 
 sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh;exec bash'"
