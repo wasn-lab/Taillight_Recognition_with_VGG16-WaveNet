@@ -4,7 +4,7 @@ import unittest
 import time
 from itri_mqtt_client import ItriMqttClient
 
-CLIENT = ItriMqttClient("127.0.0.1")
+CLIENT = ItriMqttClient("127.0.0.1", 1883)
 
 class ItriMqttClientTest(unittest.TestCase):
     def test_1(self):
