@@ -35,4 +35,16 @@ screen -t init_load_monitor
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
 
 screen -t init_lightnet
-stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_lightnet.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
+
+screen -t init_tracking_2d_lanelet2.sh
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_lanelet2.sh^M"
+
+screen -t init_tracking_2d_lanelet2_left.sh
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_lanelet2_left.sh^M"
+
+screen -t init_tracking_2d_lanelet2_right.sh
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_lanelet2_right.sh^M"
+
+screen -t init_tracking_2d_lanelet2_fov30.sh
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_lanelet2_fov30.sh^M"
