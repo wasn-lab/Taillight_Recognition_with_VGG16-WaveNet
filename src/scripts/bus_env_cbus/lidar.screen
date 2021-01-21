@@ -53,7 +53,7 @@ screen -t init_fail_safe
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_fail_safe.sh^M"
 
 screen -t init_load_monitor
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M"
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M"
 
 screen -t init_tracking_3d_lanelet2
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d_lanelet2.sh^M"
