@@ -74,6 +74,7 @@ std::vector<std::mutex> g_mutex_cam_object_time(g_cam_ids.size());
 bool g_is_data_sync = false;
 bool g_is_enable_default_3d_bbox = true;
 bool g_is_display = false;
+bool g_img_result_publish = false;
 
 /// ros
 std::vector<message_filters::Cache<sensor_msgs::Image>> g_cache_image(g_cam_ids.size());
@@ -82,6 +83,7 @@ message_filters::Cache<pcl::PointCloud<pcl::PointXYZI>> g_cache_lidarall;
 message_filters::Cache<msgs::DetectedObjectArray> g_cache_lidar_detection;
 std::vector<std::string> g_cam_topic_names(g_cam_ids.size());
 std::vector<std::string> g_bbox_topic_names(g_cam_ids.size());
+std::vector<image_transport::Publisher> g_img_pubs(g_cam_ids.size());
 
 /// image
 int g_image_w = camera::image_width;
@@ -684,6 +686,15 @@ void getSyncLidarCameraData()
   std::cout << "getSyncLidarCameraData close." << std::endl;
 }
 
+void image_publisher(const std::vector<cv::Mat>& image, const std_msgs::Header& header)
+{
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    sensor_msgs::ImagePtr img_msg;
+    img_msg = cv_bridge::CvImage(header, "bgr8", image[cam_order]).toImageMsg();
+    g_img_pubs[cam_order].publish(img_msg);
+  }
+}
 void object_publisher(const msgs::DetectedObjectArray& object_array_camera, const msgs::DetectedObjectArray& object_array_lidar,
                       const std::vector<msgs::DetectedObject>& object_array_lidar_filter, const std::vector<std::pair<int,int>>& fusion_index)
 {
@@ -770,12 +781,21 @@ void runInference()
       g_roi_fusion.getFusionCamObj(object_arrs[0], fusion_index, cam_pixels_obj[0]);
       object_publisher(object_arrs[0], object_lidar, object_lidar_filter, fusion_index);
       
+      if(g_img_result_publish)
+      {
+        drawBoxOnImages(cam_mats, cam_pixels_obj[0]);
+        image_publisher(cam_mats, object_lidar.header);
+      }
+
       if (g_is_display)
       {
         /// draw results on image
         // drawPointCloudOnImages(cam_mats, cam_pixels, cams_points_ptr);
         // drawBoxOnImages(cam_mats, object_arrs);
-        drawBoxOnImages(cam_mats, cam_pixels_obj[0]);
+        if(!g_img_result_publish)
+        {
+          drawBoxOnImages(cam_mats, cam_pixels_obj[0]);
+        }
 
         /// prepare image visualization
         std::lock_guard<std::mutex> lock_cams_process(g_mutex_cams_process);
@@ -913,6 +933,7 @@ int main(int argc, char** argv)
   std::cout << "===== match_2d_3d_bbox startup. =====" << std::endl;
   ros::init(argc, argv, "match_2d_3d_bbox");
   ros::NodeHandle nh;
+  image_transport::ImageTransport it(nh);
 
   /// ros Subscriber
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
@@ -954,6 +975,11 @@ int main(int argc, char** argv)
     g_cache_cam_object[cam_order].connectInput(object_filter_subs[cam_order]);
     g_cache_cam_object[cam_order].registerCallback(f_callbacks_object[cam_order]);
     g_cache_cam_object[cam_order].setCacheSize(g_buffer_size);
+
+    if (g_img_result_publish)
+    {
+      g_img_pubs[cam_order] = it.advertise(camera::detect_result + std::string("/") + g_cam_topic_names[cam_order] + std::string("/detect_image"), 1);
+    }
   }
 
   sub_filter_lidarall.subscribe(nh, "/LidarAll", 1);
