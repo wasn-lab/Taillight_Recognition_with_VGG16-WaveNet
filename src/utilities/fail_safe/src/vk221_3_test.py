@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
 from vk221_3 import build_vk221_3_url, notify_backend_with_new_bag
 

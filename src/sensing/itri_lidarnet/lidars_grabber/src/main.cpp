@@ -58,6 +58,8 @@ bool g_use_roi = false;
 
 void lidarAll_Pub(int lidarNum);
 
+uint64_t g_all_last_time = 0;
+
 //------------------------ Compressor
 void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros::Publisher output_publisher);
 
@@ -391,7 +393,6 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
   Compressor_Lock.unlock();
 }
 
-
 //----------------------------------------------------- Publisher
 void LidarAll_Publisher(int argc, char** argv)
 {
@@ -411,41 +412,45 @@ void lidarAll_Pub(int lidarNum)
   *g_cloudPtr_LidarAll += *g_cloudPtr_LidarFrontTop;
 
   //------ assign header
-  if (g_cloudPtr_LidarFrontTop->header.stamp != 0)
-  {
-    g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontTop->header.stamp;
-  }
-  else
-  {
-    if (g_cloudPtr_LidarFrontLeft->header.stamp >= g_cloudPtr_LidarFrontRight->header.stamp)
-    {
-      g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontLeft->header.stamp;
-    }
-    else
-    {
-      g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontRight->header.stamp;
-    }
-  }
-  uint64_t LidarAll_time;
+  vector<uint64_t> stamp_vec;
+  stamp_vec= {g_cloudPtr_LidarFrontTop->header.stamp, g_cloudPtr_LidarFrontLeft->header.stamp, g_cloudPtr_LidarFrontRight->header.stamp};
+  uint64_t biggest_stamp = *max_element(std::begin(stamp_vec), std::end(stamp_vec));
+
+  g_cloudPtr_LidarAll->header.stamp = biggest_stamp;
+  g_cloudPtr_LidarAll->header.frame_id = "lidar";
+
+  // if (g_cloudPtr_LidarFrontTop->header.stamp != 0)
+  // {
+  //   g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontTop->header.stamp;
+  // }
+  // else
+  // {
+  //   if (g_cloudPtr_LidarFrontLeft->header.stamp >= g_cloudPtr_LidarFrontRight->header.stamp)
+  //   {
+  //     g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontLeft->header.stamp;
+  //   }
+  //   else
+  //   {
+  //     g_cloudPtr_LidarAll->header.stamp = g_cloudPtr_LidarFrontRight->header.stamp;
+  //   }
+  // }
 
   // g_cloudPtr_LidarAll->header.stamp = ros::Time::now().toNSec() / 1000ull;
 
-  LidarAll_time = g_cloudPtr_LidarAll->header.stamp;
-  g_cloudPtr_LidarAll->header.frame_id = "lidar";
-
   //------ pub LidarAll
-  if (g_cloudPtr_LidarAll->size() > 100)
+  if (g_cloudPtr_LidarAll->size() > 100 && g_cloudPtr_LidarAll->header.stamp != g_all_last_time )
   {
     g_pub_LidarAll.publish(*g_cloudPtr_LidarAll);
     std_msgs::Empty empty_msg;
     g_pub_LidarAll_HeartBeat.publish(empty_msg);
+    g_all_last_time = g_cloudPtr_LidarAll->header.stamp;
   }
   g_cloudPtr_LidarAll->clear();
 
   //------ clear real time memory
   // if wall_time - ros_time < 30 minutes, (not rosbag), clear sensor pc data memory if delay 2sec.
   uint64_t now = ros::Time::now().toNSec() / 1000ull;  // microsec
-  if (!((now - LidarAll_time) > 1000000 * 1800))
+  if (!((now - g_cloudPtr_LidarAll->header.stamp) > 1000000 * 1800))
   {
     if ((now - g_cloudPtr_LidarFrontLeft->header.stamp) > 1000000 * 1)
     {
