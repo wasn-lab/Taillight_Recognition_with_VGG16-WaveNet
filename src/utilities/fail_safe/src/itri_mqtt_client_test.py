@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
 import time
 from itri_mqtt_client import ItriMqttClient

@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 #!/usr/bin/env python
 import argparse
 import rospy

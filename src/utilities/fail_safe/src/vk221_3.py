@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 # -*- encoding: utf-8 -*-
 """
 API for notifying that we have a new bag to be uploaded to backend.
