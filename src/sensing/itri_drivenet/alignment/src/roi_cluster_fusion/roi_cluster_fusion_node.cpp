@@ -40,7 +40,8 @@
 #include <Eigen/Geometry>
 namespace roi_cluster_fusion
 {
-RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
+RoiClusterFusionNodelet::RoiClusterFusionNodelet()
+{
   use_iou_x_ = true;
   use_iou_y_ = false;
   use_iou_ = false;
@@ -49,93 +50,94 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 
 // void RoiClusterFusionNodelet::onInit()
 // {
-  // nh_ = getNodeHandle();
-  // private_nh_ = getPrivateNodeHandle();
+// nh_ = getNodeHandle();
+// private_nh_ = getPrivateNodeHandle();
 
-  // private_nh_.param<bool>("use_iou_x", use_iou_x_, true);
-  // private_nh_.param<bool>("use_iou_y", use_iou_y_, false);
-  // private_nh_.param<bool>("use_iou", use_iou_, false);
-  // private_nh_.param<bool>("use_cluster_semantic_type", use_cluster_semantic_type_, false);
-  // private_nh_.param<double>("iou_threshold", iou_threshold_, 0.1);
-  // private_nh_.param<int>("rois_number", rois_number_, 1);
-  // if (rois_number_ < 1) {
-  //   ROS_WARN("minimum roi_num is 1. current roi_num is %d", rois_number_);
-  //   rois_number_ = 1;
-  // }
-  // if (8 < rois_number_) {
-  //   ROS_WARN("maximum roi_num is 8. current roi_num is %d", rois_number_);
-  //   rois_number_ = 8;
-  // }
+// private_nh_.param<bool>("use_iou_x", use_iou_x_, true);
+// private_nh_.param<bool>("use_iou_y", use_iou_y_, false);
+// private_nh_.param<bool>("use_iou", use_iou_, false);
+// private_nh_.param<bool>("use_cluster_semantic_type", use_cluster_semantic_type_, false);
+// private_nh_.param<double>("iou_threshold", iou_threshold_, 0.1);
+// private_nh_.param<int>("rois_number", rois_number_, 1);
+// if (rois_number_ < 1) {
+//   ROS_WARN("minimum roi_num is 1. current roi_num is %d", rois_number_);
+//   rois_number_ = 1;
+// }
+// if (8 < rois_number_) {
+//   ROS_WARN("maximum roi_num is 8. current roi_num is %d", rois_number_);
+//   rois_number_ = 8;
+// }
 
-  // tf_listener_ptr_ = std::make_shared<tf2_ros::TransformListener>(tf_buffer_);
-  // cluster_sub_.subscribe(nh_, "clusters", 1);
-  // for (int id = 0; id < rois_number_; ++id) {
-  //   v_camera_info_sub_.push_back(
-  //     std::make_shared<ros::Subscriber>(nh_.subscribe<sensor_msgs::CameraInfo>(
-  //       "camera_info" + std::to_string(id), 1,
-  //       boost::bind(&RoiClusterFusionNodelet::cameraInfoCallback, this, _1, id))));
-  // }
-  // v_roi_sub_.resize(rois_number_);
-  // for (int id = 0; id < (int)v_roi_sub_.size(); ++id) {
-  //   v_roi_sub_.at(id) = std::make_shared<
-  //     message_filters::Subscriber<autoware_perception_msgs::DynamicObjectWithFeatureArray>>();
-  //   v_roi_sub_.at(id)->subscribe(nh_, "rois" + std::to_string(id), 1);
-  // }
-  // // add dummy callback to enable passthrough filter
-  // v_roi_sub_.at(0)->registerCallback(bind(&RoiClusterFusionNodelet::dummyCallback, this, _1));
-  // switch (rois_number_) {
-  //   case 1:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), passthrough_, passthrough_, passthrough_,
-  //       passthrough_, passthrough_, passthrough_, passthrough_);
-  //     break;
-  //   case 2:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), passthrough_,
-  //       passthrough_, passthrough_, passthrough_, passthrough_, passthrough_);
-  //     break;
-  //   case 3:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
-  //       passthrough_, passthrough_, passthrough_, passthrough_, passthrough_);
-  //     break;
-  //   case 4:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
-  //       *v_roi_sub_.at(3), passthrough_, passthrough_, passthrough_, passthrough_);
-  //     break;
-  //   case 5:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
-  //       *v_roi_sub_.at(3), *v_roi_sub_.at(4), passthrough_, passthrough_, passthrough_);
-  //     break;
-  //   case 6:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
-  //       *v_roi_sub_.at(3), *v_roi_sub_.at(4), *v_roi_sub_.at(5), passthrough_, passthrough_);
-  //     break;
-  //   case 7:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
-  //       *v_roi_sub_.at(3), *v_roi_sub_.at(4), *v_roi_sub_.at(5), *v_roi_sub_.at(6), passthrough_);
-  //     break;
-  //   case 8:
-  //     sync_ptr_ = std::make_shared<Sync>(
-  //       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
-  //       *v_roi_sub_.at(3), *v_roi_sub_.at(4), *v_roi_sub_.at(5), *v_roi_sub_.at(6),
-  //       *v_roi_sub_.at(7));
-  //     break;
-  //   default:
-  //     return;
-  // }
-  // // sync_ptr_->registerCallback(boost::bind(&RoiClusterFusionNodelet::fusionCallback, this, _1, _2, _3, _4, _5, _6, _7,
-  // // _8, _9));
-  // sync_ptr_->registerCallback(std::bind(
-  //   &RoiClusterFusionNodelet::fusionCallback, this, std::placeholders::_1, std::placeholders::_2,
-  //   std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6,
-  //   std::placeholders::_7, std::placeholders::_8, std::placeholders::_9));
-  // labeled_cluster_pub_ =
-  //   nh_.advertise<autoware_perception_msgs::DynamicObjectWithFeatureArray>("labeled_clusters", 10);
+// tf_listener_ptr_ = std::make_shared<tf2_ros::TransformListener>(tf_buffer_);
+// cluster_sub_.subscribe(nh_, "clusters", 1);
+// for (int id = 0; id < rois_number_; ++id) {
+//   v_camera_info_sub_.push_back(
+//     std::make_shared<ros::Subscriber>(nh_.subscribe<sensor_msgs::CameraInfo>(
+//       "camera_info" + std::to_string(id), 1,
+//       boost::bind(&RoiClusterFusionNodelet::cameraInfoCallback, this, _1, id))));
+// }
+// v_roi_sub_.resize(rois_number_);
+// for (int id = 0; id < (int)v_roi_sub_.size(); ++id) {
+//   v_roi_sub_.at(id) = std::make_shared<
+//     message_filters::Subscriber<autoware_perception_msgs::DynamicObjectWithFeatureArray>>();
+//   v_roi_sub_.at(id)->subscribe(nh_, "rois" + std::to_string(id), 1);
+// }
+// // add dummy callback to enable passthrough filter
+// v_roi_sub_.at(0)->registerCallback(bind(&RoiClusterFusionNodelet::dummyCallback, this, _1));
+// switch (rois_number_) {
+//   case 1:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), passthrough_, passthrough_, passthrough_,
+//       passthrough_, passthrough_, passthrough_, passthrough_);
+//     break;
+//   case 2:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), passthrough_,
+//       passthrough_, passthrough_, passthrough_, passthrough_, passthrough_);
+//     break;
+//   case 3:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
+//       passthrough_, passthrough_, passthrough_, passthrough_, passthrough_);
+//     break;
+//   case 4:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
+//       *v_roi_sub_.at(3), passthrough_, passthrough_, passthrough_, passthrough_);
+//     break;
+//   case 5:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
+//       *v_roi_sub_.at(3), *v_roi_sub_.at(4), passthrough_, passthrough_, passthrough_);
+//     break;
+//   case 6:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
+//       *v_roi_sub_.at(3), *v_roi_sub_.at(4), *v_roi_sub_.at(5), passthrough_, passthrough_);
+//     break;
+//   case 7:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
+//       *v_roi_sub_.at(3), *v_roi_sub_.at(4), *v_roi_sub_.at(5), *v_roi_sub_.at(6), passthrough_);
+//     break;
+//   case 8:
+//     sync_ptr_ = std::make_shared<Sync>(
+//       SyncPolicy(10), cluster_sub_, *v_roi_sub_.at(0), *v_roi_sub_.at(1), *v_roi_sub_.at(2),
+//       *v_roi_sub_.at(3), *v_roi_sub_.at(4), *v_roi_sub_.at(5), *v_roi_sub_.at(6),
+//       *v_roi_sub_.at(7));
+//     break;
+//   default:
+//     return;
+// }
+// // sync_ptr_->registerCallback(boost::bind(&RoiClusterFusionNodelet::fusionCallback, this, _1, _2, _3, _4, _5, _6,
+// _7,
+// // _8, _9));
+// sync_ptr_->registerCallback(std::bind(
+//   &RoiClusterFusionNodelet::fusionCallback, this, std::placeholders::_1, std::placeholders::_2,
+//   std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6,
+//   std::placeholders::_7, std::placeholders::_8, std::placeholders::_9));
+// labeled_cluster_pub_ =
+//   nh_.advertise<autoware_perception_msgs::DynamicObjectWithFeatureArray>("labeled_clusters", 10);
 // }
 
 // void RoiClusterFusionNodelet::cameraInfoCallback(
@@ -210,7 +212,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //       // for reduce calc cost
 //       // Eigen::Vector3d centroid_point;
 //       // centroid_point << 0, 0, 0;
-//       // for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"), iter_y(transformed_cluster,
+//       // for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"),
+//       iter_y(transformed_cluster,
 //       // "y"), iter_z(transformed_cluster, "z");
 //       //      iter_x != iter_x.end();
 //       //      ++iter_x, ++iter_y, ++iter_z)
@@ -304,27 +307,31 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 // #if 0
 //         cv::namedWindow("ROI" + std::to_string(id), CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
 
-//         cv::Mat image(cv::Size(m_camera_info_.at(id).width, m_camera_info_.at(id).height), CV_8UC3, cv::Scalar(0, 0, 0));
+//         cv::Mat image(cv::Size(m_camera_info_.at(id).width, m_camera_info_.at(id).height), CV_8UC3, cv::Scalar(0, 0,
+//         0));
 
 //         for (size_t i = 0; i < input_cluster_msg->feature_objects.size(); ++i)
 //         {
 //             if (input_cluster_msg->feature_objects.at(i).feature.cluster.data.empty())
 //                 continue;
 //             sensor_msgs::PointCloud2 transformed_cluster;
-//             tf2::doTransform(input_cluster_msg->feature_objects.at(i).feature.cluster, transformed_cluster, transform_stamped);
+//             tf2::doTransform(input_cluster_msg->feature_objects.at(i).feature.cluster, transformed_cluster,
+//             transform_stamped);
 
 //             std::vector<Eigen::Vector2d> projected_points;
 //             projected_points.reserve(transformed_cluster.data.size());
 //             int min_x(m_camera_info_.at(id).width), min_y(m_camera_info_.at(id).height), max_x(0), max_y(0);
-//             for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"), iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
+//             for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"),
+//             iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
 //                 iter_x != iter_x.end();
 //                 ++iter_x, ++iter_y, ++iter_z)
 //             {
 //                 if (*iter_z <= 0.0)
 //                     continue;
 //                 Eigen::Vector3d projected_point = intrinsic * Eigen::Vector3d(*iter_x, *iter_y, *iter_z);
-//                 Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(projected_point.x() / projected_point.z(), projected_point.y() / projected_point.z());
-//                 if (0 <= (int)normalized_projected_point.x() &&
+//                 Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(projected_point.x() /
+//                 projected_point.z(), projected_point.y() / projected_point.z()); if (0 <=
+//                 (int)normalized_projected_point.x() &&
 //                     (int)normalized_projected_point.x() <= (int)m_camera_info_.at(id).width - 1 &&
 //                     0 <= (int)normalized_projected_point.y() &&
 //                     (int)normalized_projected_point.y() <= (int)m_camera_info_.at(id).height - 1)
@@ -334,7 +341,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //                     max_x = std::max((int)normalized_projected_point.x(), max_x);
 //                     max_y = std::max((int)normalized_projected_point.y(), max_y);
 //                     projected_points.push_back(normalized_projected_point);
-//                     cv::circle(image, cv::Point((int)normalized_projected_point.x(), (int)normalized_projected_point.y()), 2, cv::Scalar(255, 255, 255), 3, 4);
+//                     cv::circle(image, cv::Point((int)normalized_projected_point.x(),
+//                     (int)normalized_projected_point.y()), 2, cv::Scalar(255, 255, 255), 3, 4);
 //                 }
 //             }
 //             if (projected_points.empty())
@@ -363,21 +371,33 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //         for (size_t i = 0; i < input_roi_msg->feature_objects.size(); ++i)
 //         {
 //             cv::line(image,
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                      cv::Scalar(0, 255, 0), 3, CV_AA);
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset), cv::Scalar(0, 255, 0), 3, CV_AA);
 //             cv::line(image,
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                      cv::Scalar(0, 255, 0), 3, CV_AA);
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.height), cv::Scalar(0, 255, 0), 3, CV_AA);
 //             cv::line(image,
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                      cv::Scalar(0, 255, 0), 3, CV_AA);
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.height), cv::Scalar(0, 255, 0), 3, CV_AA);
 //             cv::line(image,
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                      cv::Scalar(0, 255, 0), 3, CV_AA);
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.height),
+//                      cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                      input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                      input_roi_msg->feature_objects.at(i).feature.roi.height), cv::Scalar(0, 255, 0), 3, CV_AA);
 //         }
 //         cv::imshow("ROI" + std::to_string(id), image);
 //         cv::waitKey(2);
@@ -406,7 +426,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //         geometry_msgs::TransformStamped transform_stamped;
 //         try
 //         {
-//             transform_stamped = tf_buffer_.lookupTransform(/*target*/ camera_info_ptr_->header.frame_id, /*src*/ input_cluster_msg->header.frame_id,
+//             transform_stamped = tf_buffer_.lookupTransform(/*target*/ camera_info_ptr_->header.frame_id, /*src*/
+//             input_cluster_msg->header.frame_id,
 //                                                         ros::Time(0));
 //         }
 //         catch (tf2::TransformException &ex)
@@ -421,14 +442,16 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //         {
 //             if (input_cluster_msg->feature_objects.at(i).feature.cluster.data.empty())
 //                 continue;
-                
+
 //             sensor_msgs::PointCloud2 transformed_cluster;
-//             tf2::doTransform(input_cluster_msg->feature_objects.at(i).feature.cluster, transformed_cluster, transform_stamped);
+//             tf2::doTransform(input_cluster_msg->feature_objects.at(i).feature.cluster, transformed_cluster,
+//             transform_stamped);
 
 //             // for reduce calc cost
 //             // Eigen::Vector3d centroid_point;
 //             // centroid_point << 0, 0, 0;
-//             // for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"), iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
+//             // for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"),
+//             iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
 //             //      iter_x != iter_x.end();
 //             //      ++iter_x, ++iter_y, ++iter_z)
 //             // {
@@ -441,15 +464,17 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //             std::vector<Eigen::Vector2d> projected_points;
 //             projected_points.reserve(transformed_cluster.data.size());
 //             int min_x(camera_info_ptr_->width), min_y(camera_info_ptr_->height), max_x(0), max_y(0);
-//             for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"), iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
+//             for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"),
+//             iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
 //                 iter_x != iter_x.end();
 //                 ++iter_x, ++iter_y, ++iter_z)
 //             {
 //                 if (*iter_z <= 0.0)
 //                     continue;
 //                 Eigen::Vector3d projected_point = intrinsic * Eigen::Vector3d(*iter_x, *iter_y, *iter_z);
-//                 Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(projected_point.x() / projected_point.z(), projected_point.y() / projected_point.z());
-//                 if (0 <= (int)normalized_projected_point.x() &&
+//                 Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(projected_point.x() /
+//                 projected_point.z(), projected_point.y() / projected_point.z()); if (0 <=
+//                 (int)normalized_projected_point.x() &&
 //                     (int)normalized_projected_point.x() <= (int)camera_info_ptr_->width - 1 &&
 //                     0 <= (int)normalized_projected_point.y() &&
 //                     (int)normalized_projected_point.y() <= (int)camera_info_ptr_->height - 1)
@@ -478,7 +503,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //         {
 //             int index;
 //             double max_iou = 0.0;
-//             for (auto m_cluster_roi_itr = m_cluster_roi.begin(); m_cluster_roi_itr != m_cluster_roi.end(); ++m_cluster_roi_itr)
+//             for (auto m_cluster_roi_itr = m_cluster_roi.begin(); m_cluster_roi_itr != m_cluster_roi.end();
+//             ++m_cluster_roi_itr)
 //             {
 //                 double iou(0.0), iou_x(0.0), iou_y(0.0);
 //                 if (use_iou_)
@@ -494,7 +520,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //                 }
 //             }
 //             if (iou_threshold_ < max_iou)
-//                 output_msg.feature_objects.at(index).object.semantic = input_roi_msg->feature_objects.at(i).object.semantic;
+//                 output_msg.feature_objects.at(index).object.semantic =
+//                 input_roi_msg->feature_objects.at(i).object.semantic;
 //         }
 
 //         // publish output msg
@@ -510,20 +537,23 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //             if (input_cluster_msg->feature_objects.at(i).feature.cluster.data.empty())
 //                 continue;
 //             sensor_msgs::PointCloud2 transformed_cluster;
-//             tf2::doTransform(input_cluster_msg->feature_objects.at(i).feature.cluster, transformed_cluster, transform_stamped);
+//             tf2::doTransform(input_cluster_msg->feature_objects.at(i).feature.cluster, transformed_cluster,
+//             transform_stamped);
 
 //             std::vector<Eigen::Vector2d> projected_points;
 //             projected_points.reserve(transformed_cluster.data.size());
 //             int min_x(camera_info_ptr_->width), min_y(camera_info_ptr_->height), max_x(0), max_y(0);
-//             for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"), iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
+//             for (sensor_msgs::PointCloud2ConstIterator<float> iter_x(transformed_cluster, "x"),
+//             iter_y(transformed_cluster, "y"), iter_z(transformed_cluster, "z");
 //                 iter_x != iter_x.end();
 //                 ++iter_x, ++iter_y, ++iter_z)
 //             {
 //                 if (*iter_z <= 0.0)
 //                     continue;
 //                 Eigen::Vector3d projected_point = intrinsic * Eigen::Vector3d(*iter_x, *iter_y, *iter_z);
-//                 Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(projected_point.x() / projected_point.z(), projected_point.y() / projected_point.z());
-//                 if (0 <= (int)normalized_projected_point.x() &&
+//                 Eigen::Vector2d normalized_projected_point = Eigen::Vector2d(projected_point.x() /
+//                 projected_point.z(), projected_point.y() / projected_point.z()); if (0 <=
+//                 (int)normalized_projected_point.x() &&
 //                     (int)normalized_projected_point.x() <= (int)camera_info_ptr_->width - 1 &&
 //                     0 <= (int)normalized_projected_point.y() &&
 //                     (int)normalized_projected_point.y() <= (int)camera_info_ptr_->height - 1)
@@ -533,7 +563,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //                     max_x = std::max((int)normalized_projected_point.x(), max_x);
 //                     max_y = std::max((int)normalized_projected_point.y(), max_y);
 //                     projected_points.push_back(normalized_projected_point);
-//                     cv::circle(image, cv::Point((int)normalized_projected_point.x(), (int)normalized_projected_point.y()), 2, cv::Scalar(255, 255, 255), 3, 4);
+//                     cv::circle(image, cv::Point((int)normalized_projected_point.x(),
+//                     (int)normalized_projected_point.y()), 2, cv::Scalar(255, 255, 255), 3, 4);
 //                 }
 //             }
 //             if (projected_points.empty())
@@ -562,21 +593,33 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 //         for (size_t i = 0; i < input_roi_msg->feature_objects.size(); ++i)
 //         {
 //             cv::line(image,
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                     cv::Scalar(0, 255, 0), 3, CV_AA);
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset), cv::Scalar(0, 255, 0), 3, CV_AA);
 //             cv::line(image,
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                     cv::Scalar(0, 255, 0), 3, CV_AA);
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.height), cv::Scalar(0, 255, 0), 3, CV_AA);
 //             cv::line(image,
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                     cv::Scalar(0, 255, 0), 3, CV_AA);
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset),
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.height), cv::Scalar(0, 255, 0), 3, CV_AA);
 //             cv::line(image,
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset + input_roi_msg->feature_objects.at(i).feature.roi.width, input_roi_msg->feature_objects.at(i).feature.roi.y_offset + input_roi_msg->feature_objects.at(i).feature.roi.height),
-//                     cv::Scalar(0, 255, 0), 3, CV_AA);
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.height),
+//                     cv::Point(input_roi_msg->feature_objects.at(i).feature.roi.x_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.width,
+//                     input_roi_msg->feature_objects.at(i).feature.roi.y_offset +
+//                     input_roi_msg->feature_objects.at(i).feature.roi.height), cv::Scalar(0, 255, 0), 3, CV_AA);
 //         }
 //         cv::imshow("Sample", image);
 //         cv::waitKey(3);
@@ -584,8 +627,8 @@ RoiClusterFusionNodelet::RoiClusterFusionNodelet() {
 // #endif
 // }
 
-double RoiClusterFusionNodelet::calcIoU(
-  const sensor_msgs::RegionOfInterest & roi_1, const sensor_msgs::RegionOfInterest & roi_2)
+double RoiClusterFusionNodelet::calcIoU(const sensor_msgs::RegionOfInterest& roi_1,
+                                        const sensor_msgs::RegionOfInterest& roi_2)
 {
   double s_1, s_2;
   s_1 = (double)roi_1.width * (double)roi_1.height;
@@ -595,12 +638,10 @@ double RoiClusterFusionNodelet::calcIoU(
   double overlap_max_x, overlap_max_y, overlap_min_x, overlap_min_y;
   overlap_min_x = roi_1.x_offset < roi_2.x_offset ? roi_2.x_offset : roi_1.x_offset;
   overlap_min_y = roi_1.y_offset < roi_2.y_offset ? roi_2.y_offset : roi_1.y_offset;
-  overlap_max_x = roi_1.x_offset + roi_1.width < roi_2.x_offset + roi_2.width
-                    ? roi_1.x_offset + roi_1.width
-                    : roi_2.x_offset + roi_2.width;
-  overlap_max_y = roi_1.y_offset + roi_1.height < roi_2.y_offset + roi_2.height
-                    ? roi_1.y_offset + roi_1.height
-                    : roi_2.y_offset + roi_2.height;
+  overlap_max_x = roi_1.x_offset + roi_1.width < roi_2.x_offset + roi_2.width ? roi_1.x_offset + roi_1.width :
+                                                                                roi_2.x_offset + roi_2.width;
+  overlap_max_y = roi_1.y_offset + roi_1.height < roi_2.y_offset + roi_2.height ? roi_1.y_offset + roi_1.height :
+                                                                                  roi_2.y_offset + roi_2.height;
   overlap_s = (overlap_max_x - overlap_min_x) * (overlap_max_y - overlap_min_y);
   if (overlap_max_x < overlap_min_x || overlap_max_y < overlap_min_y)
   {
@@ -608,8 +649,8 @@ double RoiClusterFusionNodelet::calcIoU(
   }
   return overlap_s / (s_1 + s_2 - overlap_s);
 }
-double RoiClusterFusionNodelet::calcIoUX(
-  const sensor_msgs::RegionOfInterest & roi_1, const sensor_msgs::RegionOfInterest & roi_2)
+double RoiClusterFusionNodelet::calcIoUX(const sensor_msgs::RegionOfInterest& roi_1,
+                                         const sensor_msgs::RegionOfInterest& roi_2)
 {
   double s_1, s_2;
   s_1 = (double)roi_1.width;
@@ -618,21 +659,19 @@ double RoiClusterFusionNodelet::calcIoUX(
   double overlap_max_x, overlap_max_y, overlap_min_x, overlap_min_y;
   overlap_min_x = roi_1.x_offset < roi_2.x_offset ? roi_2.x_offset : roi_1.x_offset;
   overlap_min_y = roi_1.y_offset < roi_2.y_offset ? roi_2.y_offset : roi_1.y_offset;
-  overlap_max_x = roi_1.x_offset + roi_1.width < roi_2.x_offset + roi_2.width
-                    ? roi_1.x_offset + roi_1.width
-                    : roi_2.x_offset + roi_2.width;
-  overlap_max_y = roi_1.y_offset + roi_1.height < roi_2.y_offset + roi_2.height
-                    ? roi_1.y_offset + roi_1.height
-                    : roi_2.y_offset + roi_2.height;
+  overlap_max_x = roi_1.x_offset + roi_1.width < roi_2.x_offset + roi_2.width ? roi_1.x_offset + roi_1.width :
+                                                                                roi_2.x_offset + roi_2.width;
+  overlap_max_y = roi_1.y_offset + roi_1.height < roi_2.y_offset + roi_2.height ? roi_1.y_offset + roi_1.height :
+                                                                                  roi_2.y_offset + roi_2.height;
   overlap_s = (overlap_max_x - overlap_min_x);
-  if (overlap_max_x < overlap_min_x || overlap_max_y < overlap_min_y) 
+  if (overlap_max_x < overlap_min_x || overlap_max_y < overlap_min_y)
   {
     return 0.0;
   }
   return overlap_s / (s_1 + s_2 - overlap_s);
 }
-double RoiClusterFusionNodelet::calcIoUY(
-  const sensor_msgs::RegionOfInterest & roi_1, const sensor_msgs::RegionOfInterest & roi_2)
+double RoiClusterFusionNodelet::calcIoUY(const sensor_msgs::RegionOfInterest& roi_1,
+                                         const sensor_msgs::RegionOfInterest& roi_2)
 {
   double s_1, s_2;
   s_1 = (double)roi_1.height;
@@ -641,12 +680,10 @@ double RoiClusterFusionNodelet::calcIoUY(
   double overlap_max_x, overlap_max_y, overlap_min_x, overlap_min_y;
   overlap_min_x = roi_1.x_offset < roi_2.x_offset ? roi_2.x_offset : roi_1.x_offset;
   overlap_min_y = roi_1.y_offset < roi_2.y_offset ? roi_2.y_offset : roi_1.y_offset;
-  overlap_max_x = roi_1.x_offset + roi_1.width < roi_2.x_offset + roi_2.width
-                    ? roi_1.x_offset + roi_1.width
-                    : roi_2.x_offset + roi_2.width;
-  overlap_max_y = roi_1.y_offset + roi_1.height < roi_2.y_offset + roi_2.height
-                    ? roi_1.y_offset + roi_1.height
-                    : roi_2.y_offset + roi_2.height;
+  overlap_max_x = roi_1.x_offset + roi_1.width < roi_2.x_offset + roi_2.width ? roi_1.x_offset + roi_1.width :
+                                                                                roi_2.x_offset + roi_2.width;
+  overlap_max_y = roi_1.y_offset + roi_1.height < roi_2.y_offset + roi_2.height ? roi_1.y_offset + roi_1.height :
+                                                                                  roi_2.y_offset + roi_2.height;
   overlap_s = (overlap_max_y - overlap_min_y);
   if (overlap_max_x < overlap_min_x || overlap_max_y < overlap_min_y)
   {

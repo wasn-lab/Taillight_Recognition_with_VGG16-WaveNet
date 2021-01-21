@@ -46,7 +46,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60};
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -226,13 +226,13 @@ void alignmentInitializer()
 }
 void drawLidarBoxOnImage(cv::Mat& mats, std::vector<MinMax2D>& cam_pixels_obj)
 {
-// std::cout << "===== drawLidarBoxOnImage... =====" << std::endl;
+  // std::cout << "===== drawLidarBoxOnImage... =====" << std::endl;
   g_visualization.drawBoxOnImage(mats, cam_pixels_obj);
 }
 
 void drawLidarCubeOnImage(cv::Mat& mats, std::vector<std::vector<PixelPosition>>& cam_pixels_obj)
 {
-// std::cout << "===== drawLidarBoxOnImage... =====" << std::endl;
+  // std::cout << "===== drawLidarBoxOnImage... =====" << std::endl;
   g_visualization.drawCubeOnImage(mats, cam_pixels_obj);
 }
 
@@ -289,8 +289,8 @@ void displayLidarData()
 {
   std::cout << "===== displayLidarData... =====" << std::endl;
   /// create variable
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(
-      new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer("Cloud_"
+                                                                                                        "Viewer"));
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cams_points_ptr.size());
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_lidarall(g_lidarall_ptr_process, 255, 255, 255);
@@ -354,8 +354,9 @@ void displayLidarData()
                                         "line-20m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_10m.p_min, point_10m.p_max, color_10m[2], color_10m[1], color_10m[0],
                                         "line-10m");
-    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0], "line-"
-                                                                                                               "0m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0],
+                                        "line-"
+                                        "0m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_negative_10m.p_min, point_negative_10m.p_max, color_negative_10m[2],
                                         color_negative_10m[1], color_negative_10m[0], "line-negative-10m");
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -394,7 +395,8 @@ void displayCameraData()
   std::cout << "===== displayCameraData close =====" << std::endl;
 }
 
-void projectLidarBBoxOntoImage(cv::Mat& mats, const msgs::DetectedObjectArray& objects_array, std::vector<msgs::DetectedObject>& objects, std::vector<MinMax2D>& cam_pixels_obj)
+void projectLidarBBoxOntoImage(cv::Mat& mats, const msgs::DetectedObjectArray& objects_array,
+                               std::vector<msgs::DetectedObject>& objects, std::vector<MinMax2D>& cam_pixels_obj)
 {
   std::vector<std::vector<PixelPosition>> cam_pixels_obj_cube;
   getBoxInImageFOV(objects_array, objects, cam_pixels_obj, g_alignments[0]);
@@ -425,7 +427,8 @@ void getSyncLidarCameraData()
   ros::Rate loop_rate(20);
   while (ros::ok())
   {
-    if (!g_cam_times[0].empty() && !g_lidarall_times.empty() && !g_lidar_detection_times.empty() && g_is_object_update[0] && !g_is_data_sync)
+    if (!g_cam_times[0].empty() && !g_lidarall_times.empty() && !g_lidar_detection_times.empty() &&
+        g_is_object_update[0] && !g_is_data_sync)
     {
       g_is_object_update[0] = false;
       is_camera_update = false;
@@ -479,8 +482,7 @@ void getSyncLidarCameraData()
 
             /// get camera image
             cv::Mat message_mat;
-            message_mat =
-                getSpecificTimeCameraMessage(g_cache_image[cam_order], cam_time, duration_time);
+            message_mat = getSpecificTimeCameraMessage(g_cache_image[cam_order], cam_time, duration_time);
             if (!message_mat.empty())
             {
               g_mats[cam_order] = message_mat;
@@ -589,7 +591,8 @@ void getSyncLidarCameraData()
           /// lidar detection
           if (is_lidar_update)
           {
-            sync_times_it = std::find(lidar_detection_times_tmp.begin(), lidar_detection_times_tmp.end(), sync_lidar_time);
+            sync_times_it =
+                std::find(lidar_detection_times_tmp.begin(), lidar_detection_times_tmp.end(), sync_lidar_time);
             sync_time_index = std::distance(lidar_detection_times_tmp.begin(), sync_times_it);
 
             if (sync_time_index == lidar_detection_times_tmp.size())
@@ -607,8 +610,9 @@ void getSyncLidarCameraData()
                   {
                     if (diff_time_detection < diff_max_time)
                     {
-                      // std::cout << "index: " << i << ", lidar_detection_times_tmp[i]: " 
-                      // << lidar_detection_times_tmp[i] << ", diff_time_detection.nsec: " << diff_time_detection.nsec << std::endl;
+                      // std::cout << "index: " << i << ", lidar_detection_times_tmp[i]: "
+                      // << lidar_detection_times_tmp[i] << ", diff_time_detection.nsec: " << diff_time_detection.nsec
+                      // << std::endl;
                       diff_time_nsec_detection[i] = diff_time_detection.nsec;
                       have_candidate_detection = true;
                     }
@@ -645,11 +649,12 @@ void getSyncLidarCameraData()
               }
               else
               {
-                // std::cout << "sync_lidar_detection_time: " << sync_lidar_detection_time.sec << "." << sync_lidar_detection_time.nsec
+                // std::cout << "sync_lidar_detection_time: " << sync_lidar_detection_time.sec << "." <<
+                // sync_lidar_detection_time.nsec
                 // <<
                 // std::endl;
-                g_object_lidar =
-                    getSpecificTimeLidarObjectMessage(g_cache_lidar_detection, sync_lidar_detection_time, duration_time);
+                g_object_lidar = getSpecificTimeLidarObjectMessage(g_cache_lidar_detection, sync_lidar_detection_time,
+                                                                   duration_time);
                 g_lidar_header_time = sync_lidar_detection_time;
                 is_lidar_detection_update = true;
               }
@@ -717,7 +722,7 @@ void runInference()
       projectLidarBBoxOntoImage(cam_mats[0], object_lidar, object_lidar_filter, cam_pixels_obj[0]);
       std::vector<sensor_msgs::RegionOfInterest> object_lidar_roi = g_roi_fusion.getLidar2DROI(cam_pixels_obj[0]);
       std::vector<sensor_msgs::RegionOfInterest> object_camera_roi = g_roi_fusion.getCam2DROI(object_arrs[0]);
-      std::vector<std::pair<int,int>> fusion_index = g_roi_fusion.roi_fusion(object_camera_roi, object_lidar_roi);
+      std::vector<std::pair<int, int>> fusion_index = g_roi_fusion.roi_fusion(object_camera_roi, object_lidar_roi);
 
       if (g_is_display)
       {
@@ -795,8 +800,8 @@ void buffer_monitor()
       // {
       //   cam_object_update = false;
       // }
-      
-      // lock_cam_object_time.unlock();      
+
+      // lock_cam_object_time.unlock();
     }
 
     std::unique_lock<std::mutex> lock_lidar_time(g_mutex_lidar_time, std::adopt_lock);
@@ -826,7 +831,7 @@ void buffer_monitor()
     {
       lidar_object_update = false;
     }
-    
+
     lock_lidar_detection_time.unlock();
 
     std::unique_lock<std::mutex> lock_data(g_mutex_data, std::adopt_lock);
@@ -853,13 +858,13 @@ void buffer_monitor()
       for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
       {
         g_cam_times[cam_order].erase(g_cam_times[cam_order].begin(),
-                                      g_cam_times[cam_order].begin() + g_buffer_size / 3);
+                                     g_cam_times[cam_order].begin() + g_buffer_size / 3);
         // g_cam_object_times[cam_order].erase(g_cam_object_times[cam_order].begin(),
         //                               g_cam_object_times[cam_order].begin() + g_buffer_size / 3);
-      
       }
       g_lidarall_times.erase(g_lidarall_times.begin(), g_lidarall_times.begin() + g_buffer_size / 3);
-      g_lidar_detection_times.erase(g_lidar_detection_times.begin(), g_lidar_detection_times.begin() + g_buffer_size / 3);
+      g_lidar_detection_times.erase(g_lidar_detection_times.begin(),
+                                    g_lidar_detection_times.begin() + g_buffer_size / 3);
       lock_data.unlock();
     }
     loop_rate.sleep();
@@ -885,12 +890,9 @@ int main(int argc, char** argv)
   message_filters::Subscriber<msgs::DetectedObjectArray> sub_filter_lidar_detection;
 
   /// get callback function
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
-    callback_cam_front_bottom_60
-  };
-  static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
-    callback_object_cam_front_bottom_60
-  };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60 };
+  static void (*f_callbacks_object[])(
+      const msgs::DetectedObjectArray::ConstPtr&) = { callback_object_cam_front_bottom_60 };
 
   /// set topic name
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -945,7 +947,7 @@ int main(int argc, char** argv)
 
   /// main loop start
   std::thread main_thread(runInference);
-  int thread_count = int(g_cam_ids.size())*2 + 2;  /// camera raw + lidar raw + objects
+  int thread_count = int(g_cam_ids.size()) * 2 + 2;  /// camera raw + lidar raw + objects
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
   std::cout << "===== match_2d_3d_bbox running... =====" << std::endl;

@@ -29,7 +29,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<msgs::Detec
   cv::Scalar color = CvColor::yellow_;
   for (const auto& obj : objects)
   {
-    for(uint i = 0; i < obj.camInfo.size(); i++)
+    for (uint i = 0; i < obj.camInfo.size(); i++)
     {
       pixel_positions[0].u = obj.camInfo[i].u;
       pixel_positions[0].v = obj.camInfo[i].v;
@@ -67,7 +67,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<MinMax2D>& 
   {
     random_color = true;
   }
-  
+
   for (const auto& bbox : min_max_2d_bbox)
   {
     cv_points[0].x = bbox.p_min.u;
@@ -75,13 +75,12 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<MinMax2D>& 
     cv_points[1].x = bbox.p_max.u;
     cv_points[1].y = bbox.p_max.v;
 
-    if(random_color)
+    if (random_color)
     {
       color = intToColor(int(obj_count % 10));
       obj_count++;
     }
     cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
-    
   }
 }
 void Visualization::drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<PixelPosition>>& cube_2d_bbox)
@@ -135,11 +134,11 @@ void Visualization::drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<Pixe
     // color = intToColor(int(obj_count % 10));
     if ((cv_points[0].x != -1 && cv_points[0].y != -1) && (cv_points[1].x != -1 && cv_points[1].y != -1))
     {
-      cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8); // top
+      cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);  // top
     }
     if ((cv_points[2].x != -1 && cv_points[2].y != -1) && (cv_points[3].x != -1 && cv_points[3].y != -1))
     {
-      cv::rectangle(m_src, cv_points[2], cv_points[3], color, 1, cv::LINE_8); // bottom
+      cv::rectangle(m_src, cv_points[2], cv_points[3], color, 1, cv::LINE_8);  // bottom
     }
     if ((cv_points[4].x != -1 && cv_points[4].y != -1) && (cv_points[5].x != -1 && cv_points[5].y != -1))
     {

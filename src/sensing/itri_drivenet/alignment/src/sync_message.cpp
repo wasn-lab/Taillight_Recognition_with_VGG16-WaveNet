@@ -43,8 +43,9 @@ cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>&
   return out_mat;
 }
 
-msgs::DetectedObjectArray getSpecificTimeCameraObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object, ros::Time target_time,
-                                     const ros::Duration& duration_time)
+msgs::DetectedObjectArray
+getSpecificTimeCameraObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object,
+                                   ros::Time target_time, const ros::Duration& duration_time)
 {
   ros::Time begin_time = ros::Time(0);
   if ((target_time.sec - duration_time.sec) > 0)
@@ -177,7 +178,7 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
 }
 msgs::DetectedObjectArray
 getSpecificTimeLidarObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object,
-                            ros::Time target_time, const ros::Duration& duration_time)
+                                  ros::Time target_time, const ros::Duration& duration_time)
 {
   ros::Time begin_time = ros::Time(0);
   if ((target_time.sec - duration_time.sec) > 0)
