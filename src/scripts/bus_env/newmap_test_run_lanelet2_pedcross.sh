@@ -32,6 +32,8 @@ sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_3d.sh;exec bash"'
 sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_xyz2lla.sh;exec bash"'
+sleep 3
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_grid_pp.sh;exec bash"'
 
 sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_obj_msg_converter.sh;exec bash"'
@@ -87,6 +89,8 @@ sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_2d_fov30.sh;exec bash"'
 sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pedcross.sh;exec bash"'
+sleep 3
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pedcross_tf.sh;exec bash"'
 
 sleep 3
 #gnome-terminal  -e "bash -c 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.1.3;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
