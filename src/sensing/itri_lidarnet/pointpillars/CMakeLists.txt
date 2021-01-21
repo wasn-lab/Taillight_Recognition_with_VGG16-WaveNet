@@ -81,6 +81,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
   include_directories(
     include
     ${catkin_INCLUDE_DIRS}
+    ${msgs_SOURCE_DIR}/include
   )
 
   set(SOURCE_FILES
@@ -199,6 +200,20 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL)
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
+  
+  # integrator --------------------------------------------------------------------
+  add_executable(lidar_point_pillars_integrator
+    #${SOURCE_FILES}
+    nodes/main.cpp
+  )
+  add_dependencies(lidar_point_pillars_integrator
+    ${catkin_EXPORTED_TARGETS}
+  )
+  target_link_libraries(lidar_point_pillars_integrator
+    ${catkin_LIBRARIES}
+  )
+
+
 
 
   #-----------------------------------------------------

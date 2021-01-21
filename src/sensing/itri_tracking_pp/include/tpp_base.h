@@ -66,9 +66,6 @@
 #define VIRTUAL_INPUT 0
 #define SAME_OBJ_MARKER_HEADER 0
 
-#define OUTPUT_MAP_TF 0
-#define SAVE_OUTPUT_TXT 0
-
 #define SPEEDUP_KALMAN_VEL_EST 1  // speed up kalman velocity estimation
 
 // debug
@@ -87,7 +84,10 @@
 #define INPUT_ALL_CLASS 1
 
 #define EIGEN3_ROTATION 1
-#define FILL_CONVEX_HULL 1
+
+// save_output_txt
+#define OBJECT_YAW_FROM_HEADING 0
+#define EGO_AS_DETECTED_OBJ 0
 
 #define PP_WAYAREA 1
 
@@ -153,10 +153,6 @@ struct MarkerConfig
   bool show_absspeed = 0;  // km/h
 
   std_msgs::ColorRGBA color;
-  std_msgs::ColorRGBA color_lidar_tpp;
-  std_msgs::ColorRGBA color_radar_tpp;
-  std_msgs::ColorRGBA color_camera_tpp;
-  std_msgs::ColorRGBA color_fusion_tpp;
 };
 }  // namespace tpp
 

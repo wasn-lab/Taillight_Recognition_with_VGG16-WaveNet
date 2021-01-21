@@ -29,3 +29,9 @@ cd AutowareArchitectureProposal/
 ./setup_ubuntu18.04.sh
 ```
 Note : Do you install GPU modules(cuda: 10.2, cudnn: 7.6.5, TensorRT: 7.0.0)? (y/n) -> choose "n"
+
+### Install osqp (another method)
+1. Run the setup script
+```
+./src/utilities/osqp_setup/setup_osqp.sh
+```

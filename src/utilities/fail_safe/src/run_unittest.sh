@@ -11,3 +11,6 @@ python vk221_4_test.py
 python rosbag_sender_test.py
 python jira_utils_test.py
 python issue_reporter_test.py
+python sb_rosbag_sender_test.py
+python rosbag_compressor_test.py
+python load_monitor_test.py

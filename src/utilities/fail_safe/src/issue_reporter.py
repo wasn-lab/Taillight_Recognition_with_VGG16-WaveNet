@@ -1,27 +1,42 @@
+# -*- coding: utf-8 -*-
 import time
 import logging
 import datetime
 from status_level import STATUS_CODE_TO_STR, OK
 from jira_utils import (post_issue, PROJECT_ID_P_S3, ISSUE_TYPE_ID_BUG)
+from sb_param_utils import get_license_plate_number
 
 
-def generate_issue_description(status_code, status_str):
+def generate_issue_description(status_code, status_str, timestamp):
     if status_code == OK:
         logging.warn("Do not generate description for status OK")
         return ""
-    return """
+    dt = datetime.datetime.fromtimestamp(timestamp)
+    plate = get_license_plate_number()
+    start_dt = "{}-{}-{} {}:{}".format(
+        dt.year, dt.month, dt.day, dt.hour, dt.minute)
+    minute_after_dt = dt + datetime.timedelta(minutes=1)
+    end_dt = "{}-{}-{} {:02d}:{:02d}".format(
+        minute_after_dt.year, minute_after_dt.month, minute_after_dt.day,
+        minute_after_dt.hour, minute_after_dt.minute)
+
+    url = (u"https://service.itriadv.co:8743/ADV/EventPlayback?plate={}&"
+           u"startDt={}&endDt={}").format(plate, start_dt, end_dt)
+
+    return u"""
 status code: {}
 
 status str: {}
 
 issue is reported at timestamp: {}
 
-Please login to https://service.itriadv.co:8743/
+Please use the url
+  {}
 to retrieve related bag files.
 
-- User name: U200
-- User password: u200u200u200
-    """.format(STATUS_CODE_TO_STR[status_code], status_str, datetime.datetime.now())
+- User name: u200
+- User password: please ask your colleague
+    """.format(STATUS_CODE_TO_STR[status_code], status_str, dt, url)
 
 
 class IssueReporter():
@@ -30,7 +45,6 @@ class IssueReporter():
         self.min_post_time_interval = 60  # Don't post same issue within 60s
         self.project_id = PROJECT_ID_P_S3
         self.issue_type_id = ISSUE_TYPE_ID_BUG
-        self.debug_mode = False
 
     def set_project_id(self, project_id):
         """set project id"""
@@ -39,9 +53,6 @@ class IssueReporter():
     def set_issue_type_id(self, issue_type_id):
         """set issue type"""
         self.issue_type_id = issue_type_id
-
-    def set_debug_mode(self, mode):
-        self.debug_mode = mode
 
     def _is_repeated_issue(self):
         now = time.time()
@@ -57,8 +68,8 @@ class IssueReporter():
             logging.warn("%s: Does not post repeated issue", summary)
             return 0
 
-        if dry_run or self.debug_mode:
-            logging.warn("%s: Dry/Debug run mode. Do not post issue to jira", summary)
+        if dry_run:
+            logging.warn("%s: Dry run mode. Do not post issue to jira", summary)
         else:
             logging.warn("%s: Post issue to jira", summary)
             post_issue(self.project_id, summary, description, self.issue_type_id)

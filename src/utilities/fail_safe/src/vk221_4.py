@@ -17,5 +17,5 @@ def build_vk221_4_url(bag, plate=None):
 
 def notify_backend_with_uploaded_bag(bag, plate=None):
     url = build_vk221_4_url(bag, plate)
-    resp = requests.post(url.encode("utf-8"))
+    resp = requests.post(url)
     return resp.json()
