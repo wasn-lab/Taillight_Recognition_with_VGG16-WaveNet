@@ -1,6 +1,6 @@
+#!/usr/bin/env python
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
-#!/usr/bin/env python
 """
 Functions/parameters that defines dangerous/cautious situation.
 """
