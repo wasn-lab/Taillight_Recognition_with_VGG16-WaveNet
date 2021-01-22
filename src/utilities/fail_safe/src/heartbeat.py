@@ -113,6 +113,10 @@ def lidar_detection_func(msg):
         status = OK
         status_str = "OK"
         for obj in msg.objects:
+            if len(obj.camInfo) == 0:
+                # LidarDetection stores the prob in camInfo for now.
+                # If we cannot get the prob, just ignore the message.
+                continue
             center = __calc_center_by_3d_bpoint(obj.bPoint)
             if center[0] <= 0:
                 # We don't care much about objects behind the car.
