@@ -43,6 +43,47 @@ cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>&
   return out_mat;
 }
 
+msgs::DetectedObjectArray
+getSpecificTimeCameraObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object,
+                                   ros::Time target_time, const ros::Duration& duration_time)
+{
+  ros::Time begin_time = ros::Time(0);
+  if ((target_time.sec - duration_time.sec) > 0)
+  {
+    begin_time = target_time - duration_time;
+  }
+  ros::Time end_time = target_time + duration_time;
+  std::vector<msgs::DetectedObjectArray::ConstPtr> objects = cache_object.getInterval(begin_time, end_time);
+  msgs::DetectedObjectArray object_array;
+  if (!objects.empty())
+  {
+    std::vector<ros::Time> object_time(objects.size());
+    for (size_t index = 0; index < objects.size(); index++)
+    {
+      object_time[index] = objects[index]->header.stamp;
+    }
+    std::vector<ros::Time>::iterator it;
+    it = std::find(object_time.begin(), object_time.end(), target_time);
+    if (it != object_time.end())
+    {
+      int time_index = std::distance(object_time.begin(), it);
+      object_array = *objects[time_index];
+    }
+    else if (objects.size() == 1)
+    {
+      object_array = *objects[0];
+    }
+    else
+    {
+      std::cout << "Not found the same timestamp in camera object buffer." << std::endl;
+    }
+  }
+  else
+  {
+    std::cout << "Not found any message in camera object buffer." << std::endl;
+  }
+  return object_array;
+}
 pcl::PointCloud<pcl::PointXYZI>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZI>>& cache_lidar, ros::Time target_time,
                             const ros::Duration& duration_time)
@@ -134,4 +175,45 @@ getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZ
     lidar_ptr = nullptr;
   }
   return lidar_ptr;
+}
+msgs::DetectedObjectArray
+getSpecificTimeLidarObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object,
+                                  ros::Time target_time, const ros::Duration& duration_time)
+{
+  ros::Time begin_time = ros::Time(0);
+  if ((target_time.sec - duration_time.sec) > 0)
+  {
+    begin_time = target_time - duration_time;
+  }
+  ros::Time end_time = target_time + duration_time;
+  std::vector<msgs::DetectedObjectArray::ConstPtr> objects = cache_object.getInterval(begin_time, end_time);
+  msgs::DetectedObjectArray object_array;
+  if (!objects.empty())
+  {
+    std::vector<ros::Time> object_time(objects.size());
+    for (size_t index = 0; index < objects.size(); index++)
+    {
+      object_time[index] = objects[index]->header.stamp;
+    }
+    std::vector<ros::Time>::iterator it;
+    it = std::find(object_time.begin(), object_time.end(), target_time);
+    if (it != object_time.end())
+    {
+      int time_index = std::distance(object_time.begin(), it);
+      object_array = *objects[time_index];
+    }
+    else if (objects.size() == 1)
+    {
+      object_array = *objects[0];
+    }
+    else
+    {
+      std::cout << "Not found the same timestamp in lidar object buffer." << std::endl;
+    }
+  }
+  else
+  {
+    std::cout << "Not found any message in lidar object buffer." << std::endl;
+  }
+  return object_array;
 }
