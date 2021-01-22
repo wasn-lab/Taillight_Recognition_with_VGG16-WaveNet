@@ -2,13 +2,8 @@
 find_package(Benchmark)
 include_directories(${PC2_COMPRESSOR_INCLUDE_DIRS} ${benchmark_INCLUDE_DIRS})
 
-#catkin_download_test_data(velodyne32.pcd
-#  "http://118.163.54.109:8888/git_data/B1/tests/velodyne32.pcd"
-#  DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
-#  MD5 3826f9e2bb13e17c12a63e708d88ed1d)
-
 catkin_download_test_data(ouster64.pcd
-  "http://118.163.54.109:8888/git_data/B1/tests/ouster64.pcd"
+  "http://nas.itriadv.co:8888/git_data/B1/tests/ouster64.pcd"
   DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
   MD5 14c96d5bdf4d3d80ccfc9d309d90be8a)
 

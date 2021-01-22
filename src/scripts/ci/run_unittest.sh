@@ -21,9 +21,6 @@ make -j car_model_test
 make -j camera_utils_test
 ../devel/lib/camera_utils/camera_utils_test
 
-make -j pc2_compressor_test
-../devel/lib/pc2_compressor/pc2_compressor_test
-
 # Run tests that may be disabled by car_model
 if grep -Fxq "#define ENABLE_PARKNET 1" ${car_model_h}
 then
