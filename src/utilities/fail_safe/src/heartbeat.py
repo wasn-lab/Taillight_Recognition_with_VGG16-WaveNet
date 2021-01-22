@@ -4,6 +4,8 @@ from __future__ import print_function
 import time
 import heapq
 import rospy
+from object_ids import (OBJECT_ID_PERSON, OBJECT_ID_BICYCLE, OBJECT_ID_MOTOBIKE,
+                        OBJECT_ID_CAR)
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
@@ -116,7 +118,10 @@ def lidar_detection_func(msg):
                 # We don't care much about objects behind the car.
                 continue
             prob = max(cam_instance.prob for cam_instance in obj.camInfo)
-            if prob < 0.5:
+            if ((obj.classId == OBJECT_ID_CAR and prob < 0.41) or
+                    (obj.classId == OBJECT_ID_PERSON and prob < 0.31) or
+                    (obj.classId == OBJECT_ID_BICYCLE and prob < 0.31) or
+                    (obj.classId == OBJECT_ID_MOTOBIKE and prob < 0.31)):
                 status = WARN
                 status_str = ("Low confidence: classId: {}, prob: {}, "
                               "center: ({:.2f}, {:.2f})").format(
