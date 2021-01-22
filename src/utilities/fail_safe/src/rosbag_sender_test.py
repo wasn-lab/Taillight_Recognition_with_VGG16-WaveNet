@@ -1,9 +1,12 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
+import datetime
 import configparser
 import os
 import io
 import subprocess
-from rosbag_sender import RosbagSender
+from rosbag_sender import RosbagSender, _should_delete_bag
 
 
 class RosbagSenderTest(unittest.TestCase):
@@ -27,6 +30,22 @@ class RosbagSenderTest(unittest.TestCase):
         rel_bag = "auto_record_2020-10-06-16-20-50_3.bag"
         self.bag = os.path.join(cur_dir, "data", rel_bag)
         self.bag_gz = self.bag + ".gz"
+
+    def test__should_delete_bag(self):
+        bag = "/home/nvidia/rosbag_files/backup/auto_record_2020-10-06-16-26-50_27.bag"
+        self.assertTrue(_should_delete_bag(bag))
+        bag_dt = datetime.datetime(year=2020, month=10, day=6, hour=16, minute=26, second=50)
+
+        self.assertFalse(
+            _should_delete_bag(bag, bag_dt + datetime.timedelta(days=0)))
+        self.assertFalse(
+            _should_delete_bag(bag, bag_dt + datetime.timedelta(days=1)))
+        self.assertFalse(
+            _should_delete_bag(bag, bag_dt + datetime.timedelta(days=2)))
+        self.assertFalse(
+            _should_delete_bag(bag, bag_dt + datetime.timedelta(days=3)))
+        self.assertTrue(
+            _should_delete_bag(bag, bag_dt + datetime.timedelta(days=4)))
 
     def test_get_unsent_rosbag_filenames(self):
         bags = self.sender.get_unsent_rosbag_filenames()

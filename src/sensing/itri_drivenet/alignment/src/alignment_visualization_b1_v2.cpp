@@ -290,8 +290,8 @@ void displayLidarData()
 {
   std::cout << "===== displayLidarData... =====" << std::endl;
   /// create variable
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(
-      new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer("Cloud_"
+                                                                                                        "Viewer"));
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cams_points_ptr.size());
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rgb_lidarall(g_lidarall_ptr_process, 255, 255, 255);
@@ -355,8 +355,9 @@ void displayLidarData()
                                         "line-20m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_10m.p_min, point_10m.p_max, color_10m[2], color_10m[1], color_10m[0],
                                         "line-10m");
-    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0], "line-"
-                                                                                                               "0m");
+    pcl_viewer->addLine<pcl::PointXYZI>(point_0m.p_min, point_0m.p_max, color_0m[2], color_0m[1], color_0m[0],
+                                        "line-"
+                                        "0m");
     pcl_viewer->addLine<pcl::PointXYZI>(point_negative_10m.p_min, point_negative_10m.p_max, color_negative_10m[2],
                                         color_negative_10m[1], color_negative_10m[0], "line-negative-10m");
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)

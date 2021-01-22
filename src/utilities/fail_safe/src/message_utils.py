@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 """
 Return the corresponding class for a given msg_name
 """
