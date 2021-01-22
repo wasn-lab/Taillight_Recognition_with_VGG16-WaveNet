@@ -12,6 +12,11 @@ catkin_download_test_data(lidar_raw_2020-03-10-10-48-39_41_1s.bag
   DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
   MD5 b678a7888403f5f55cd5c2a4acdf0daa)
 
+catkin_download_test_data(lidar_compressed_2020-03-10-10-48-39_41.bag
+  "http://nas.itriadv.co:8888/Share/ADV/Rosbag/B1/test_case/lidar_compressed_2020-03-10-10-48-39_41.bag"
+  DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
+  MD5 e62b87e69f9a96ceaf60f81999463f1d)
+
 catkin_add_gtest(pc2_compressor_test
   pc2_compressor_test_main.cpp
   pc2_compressor_test_utils.cpp
