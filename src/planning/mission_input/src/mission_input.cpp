@@ -110,7 +110,7 @@ void Ini_route_05_bytxt()
 void Ini_route_bytxt()
 {
   std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/ITRI_route_0" + std::to_string(route_choose) + ".txt"; // full route - pass 51 - end 14
+  std::string fpname_s = fpname + "/data/ITRI_route_0" + std::to_string(route_choose) + ".txt";
   std::cout << "--------" << fpname_s << std::endl;
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
@@ -119,8 +119,8 @@ void Ini_shalun_route_bytxt(int route_choose_)
 {
   route_choose_ = route_choose_ - 100;
   std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/Shalun_route_0" + std::to_string(route_choose_) + ".txt"; // full route - pass 51 - end 14
-
+  std::string fpname_s = fpname + "/data/Shalun_route_0" + std::to_string(route_choose_) + ".txt";
+  
   std::cout << "--------" << fpname_s << std::endl;
 
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
