@@ -4,4 +4,4 @@
                 <param name="display" type="bool" value="false" />
                 <param name="imgResult_publish" type="bool" value="true" />
         </node>
-</launch>c
+</launch>
