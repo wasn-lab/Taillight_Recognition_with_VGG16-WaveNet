@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #include <benchmark/benchmark.h>
 #include "pc2_compressor_test_utils.h"
 

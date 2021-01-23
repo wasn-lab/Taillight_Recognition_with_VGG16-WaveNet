@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #pragma once
 
 namespace pc2_compressor

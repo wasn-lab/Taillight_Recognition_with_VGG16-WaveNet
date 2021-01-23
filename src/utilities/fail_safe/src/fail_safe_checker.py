@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 from __future__ import print_function
 import configparser
 import json
@@ -80,7 +82,6 @@ class FailSafeChecker(object):
 
     def set_debug_mode(self, mode):
         self.debug_mode = mode
-        self.issue_reporter.set_debug_mode(mode)
 
     def get_current_status(self):
         """Collect states from the components of the car"""
@@ -148,10 +149,15 @@ class FailSafeChecker(object):
     def is_self_driving(self):
         return self.ctrl_info_02.is_self_driving()
 
-    def report_issue_if_necessary(self, current_status):
+    def post_issue_if_necessary(self, current_status):
         if not self.is_self_driving():
             rospy.logwarn("Do not post issue in non-self-driving mode")
             return
+
+        if not rospy.get_param("/fail_safe/should_post_issue", True):
+            rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
+            return
+
         for doc in current_status["events"]:
             if doc["status"] != OK:
                 summary = "[Auto Report] {}: {}".format(
@@ -167,7 +173,6 @@ class FailSafeChecker(object):
                 current_status["status"], current_status["status_str"], current_status["timestamp"])
             self.issue_reporter.post_issue(summary, desc)
 
-
     def run(self):
         """Send out aggregated info to backend server every second."""
         rate = rospy.Rate(1)
@@ -182,7 +187,7 @@ class FailSafeChecker(object):
             if current_status["status"] != OK:
                 self.action_emitter.backup_rosbag(current_status["status_str"])
 
-            self.report_issue_if_necessary(current_status)
+            self.post_issue_if_necessary(current_status)
             current_status_json = json.dumps(current_status)
             self.mqtt_client.publish(self.mqtt_topic, current_status_json)
             self.fail_safe_status_publisher.publish(current_status_json)

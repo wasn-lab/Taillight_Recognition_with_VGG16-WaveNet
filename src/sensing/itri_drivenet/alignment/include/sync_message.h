@@ -5,6 +5,7 @@
 #include "ros/ros.h"
 #include <message_filters/cache.h>
 #include <cv_bridge/cv_bridge.h>
+#include <msgs/DetectedObjectArray.h>
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -21,10 +22,16 @@
 
 cv::Mat getSpecificTimeCameraMessage(message_filters::Cache<sensor_msgs::Image>& cache_image, ros::Time target_time,
                                      const ros::Duration& duration_time);
+msgs::DetectedObjectArray
+getSpecificTimeCameraObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object, ros::Time target_time,
+                                     const ros::Duration& duration_time);                       
 pcl::PointCloud<pcl::PointXYZI>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZI>>& cache_lidar, ros::Time target_time,
                             const ros::Duration& duration_time);
 pcl::PointCloud<pcl::PointXYZIL>::Ptr
 getSpecificTimeLidarMessage(message_filters::Cache<pcl::PointCloud<pcl::PointXYZIL>>& cache_lidar,
+                            ros::Time target_time, const ros::Duration& duration_time);
+msgs::DetectedObjectArray
+getSpecificTimeLidarObjectMessage(message_filters::Cache<msgs::DetectedObjectArray>& cache_object,
                             ros::Time target_time, const ros::Duration& duration_time);
 #endif

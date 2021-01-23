@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #include <gtest/gtest.h>
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/point_traits.h>

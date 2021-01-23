@@ -95,14 +95,21 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
     for (size_t i = 0; i < num_objects; i++)
     {
       msgs::DetectedObject object;
-
+      msgs::CamInfo cam_info;
+      std::vector<msgs::CamInfo> cam_info_vector;
+      
+      float score = scores[i];
+      cam_info.prob = score;
+      cam_info_vector.push_back(cam_info);
+      object.camInfo = cam_info_vector;
+      
       float center_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 0];
       float center_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
       float center_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 2];
       
-      float dimension_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4];
-      float dimension_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3];
-      float dimension_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5];
+      float dimension_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 4]; //5->H
+      float dimension_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 3]; //4->W
+      float dimension_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 5]; //3->L
 
       object.center_point.x = center_x;
       object.center_point.y = center_y;
