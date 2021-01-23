@@ -19,7 +19,7 @@ public:
   {
   }
 
-  void marker_gen_main(const std_msgs::Header header, const std::vector<msgs::DetectedObject>& objs, MarkerConfig mc);
+  void marker_gen_main(const std_msgs::Header header, std::vector<msgs::DetectedObject>& objs, MarkerConfig mc);
 
 private:
   DISALLOW_COPY_AND_ASSIGN(MarkerGen);
@@ -55,7 +55,7 @@ private:
   std::string parse_source_id(unsigned int source_id);
 
   visualization_msgs::Marker create_trackid_marker(const unsigned int idx, const geometry_msgs::Point point,
-                                                   msgs::DetectedObject obj);
+                                                   msgs::DetectedObject& obj);
 
   visualization_msgs::Marker create_speed_marker(const unsigned int idx, const geometry_msgs::Point point,
                                                  std_msgs::Header obj_header, const float relspeed,
@@ -65,7 +65,7 @@ private:
                                                const float vy, std_msgs::Header obj_header);
 
   // process markers
-  void process_text_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
+  void process_text_marker(unsigned int& idx, std::vector<msgs::DetectedObject>& objs);
 
   void process_vel_marker(unsigned int& idx, const std::vector<msgs::DetectedObject>& objs);
 };

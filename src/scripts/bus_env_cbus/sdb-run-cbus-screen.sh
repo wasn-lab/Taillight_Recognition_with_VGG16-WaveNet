@@ -9,8 +9,6 @@ rosparam set /south_bridge/company_name itri
 rosparam set /car_model C1
 
 gnome-terminal -e "screen -c ${cur_dir}/lidar.screen"
-echo "Wait a few seconds before bringing up other nodes."
-sleep 5
 gnome-terminal -e 'ssh -t xavier "screen -c /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier.screen"'
 gnome-terminal -e 'ssh -t local "screen -c /home/local/itriadv/src/scripts/bus_env_cbus/localization.screen"'
 gnome-terminal -e "ssh -t camera 'screen -c /home/camera/itriadv/src/scripts/bus_env_cbus/camera.screen'"

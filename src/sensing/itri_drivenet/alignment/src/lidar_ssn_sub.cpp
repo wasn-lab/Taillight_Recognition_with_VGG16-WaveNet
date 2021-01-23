@@ -65,8 +65,8 @@ void displayLidarData()
 {
   // std::cout << "===== displayLidarData... =====" << std::endl;
   /// create variable
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(
-      new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer("Cloud_"
+                                                                                                        "Viewer"));
   pcl::PointCloud<pcl::PointXYZIL>::Ptr ssn_ptr(new pcl::PointCloud<pcl::PointXYZIL>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ssn_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr person_points_ptr(new pcl::PointCloud<pcl::PointXYZI>);

@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
 import rospy
 from sb_param_utils import get_vid, get_license_plate_number
