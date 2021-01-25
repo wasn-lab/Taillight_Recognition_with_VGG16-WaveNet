@@ -89,7 +89,7 @@ void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],dou
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/HDmap_bus_stop_info.txt"; // full route
+  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt"; // full route
 
   read_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -297,7 +297,7 @@ void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nea
     // {
     //   register_.Distance = std::fabs(register_.Distance - 17);
     // }
-    if (register_.Distance > 20)
+    if (register_.Distance > 40)
     {
       register_.StopZone = 0;
     }
