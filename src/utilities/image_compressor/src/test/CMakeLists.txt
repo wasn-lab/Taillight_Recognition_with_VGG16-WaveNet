@@ -3,7 +3,7 @@ if (CATKIN_ENABLE_TESTING)
    catkin_download_test_data(
     608x384.png
     http://nas.itriadv.co:8888/git_data/B1/tests/608x384.png
-    DESTINATION ${image_compressor_SOURCE_DIR}/src/test
+    DESTINATION ${PROJECT_BINARY_DIR}
     MD5 db5a175267aeb50ee698a66353335016)
 
   catkin_download_test_data(
