@@ -58,6 +58,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M
 screen -t init_tracking_3d
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d.sh^M"
 
+screen -t init_tracking_pp
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_pp.sh^M"
+
 screen -t init_xyz2lla
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_xyz2lla.sh^M"
 
