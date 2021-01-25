@@ -10,7 +10,6 @@ else
 fi
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
-readonly car_model_h=car_model/include/car_model.h
 export ROS_HOME=$repo_dir
 pushd $repo_dir/build
 
@@ -26,6 +25,7 @@ source devel/setup.bash
 src/car_model/south_bridge/run_unittest.sh
 src/utilities/fail_safe/src/run_unittest.sh
 src/utilities/image_compressor/src/test/run_unittest.sh
+src/utilities/image_compressor/src/test/run_publish_test.sh
 src/utilities/pc2_compressor/src/test/run_unittest.sh
 src/utilities/pc2_compressor/src/test/run_publish_test.sh
 popd

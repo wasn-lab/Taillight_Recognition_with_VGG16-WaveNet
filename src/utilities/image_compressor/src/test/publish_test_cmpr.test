@@ -1,7 +1,7 @@
 <launch>
     <include file="$(find image_compressor)/launch/cmpr.launch"/>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="-l $(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag">
+    <node pkg="rosbag" type="play" name="player" output="log" args="-l $(find image_compressor)/src/test/auto_record_2020-03-10-10-48-39_41_image_raw.bag">
       <remap from="/cam/front_bottom_60" to="/cam/front_bottom_60/raw"/>
       <remap from="/cam/front_top_far_30" to="/cam/front_top_far_30/raw"/>
       <remap from="/cam/front_top_close_120" to="/cam/front_top_close_120/raw"/>
