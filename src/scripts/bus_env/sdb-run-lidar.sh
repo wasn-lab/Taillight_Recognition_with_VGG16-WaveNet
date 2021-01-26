@@ -20,6 +20,8 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_g
 sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_sys_check_gateway.sh;exec bash"'
 sleep 2
+gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_fail_safe_checker.sh;exec bash"'
+sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fusion.sh;exec bash"'
 sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_pp.sh;exec bash"'
@@ -52,13 +54,15 @@ sleep 2
 gnome-terminal  -e 'ssh -t local "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh;exec bash"'
 
 sleep 2
-gnome-terminal  -e 'ssh -t ta "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_camera.sh;exec bash"'
+gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_camera.sh;exec bash"'
 sleep 2
 gnome-terminal  -e "bash -c 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.1.3;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
 sleep 2
 gnome-terminal  -e "ssh -t camera 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.3.10;source /home/camera/itriadv_d/devel/setup.bash;cd /home/camera/itriadv_d;devel/lib/itri_lightnet_new_layout/itri_lightnet_new_layout_node;exec bash'"
 sleep 2
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh;exec bash'"
+sleep 1
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_lightnet.sh;exec bash'"
 sleep 1
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d.sh;exec bash'"
 sleep 1

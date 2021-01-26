@@ -12,14 +12,18 @@ set(PARKNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_parknet/weig
 set(OPENROADNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_openroadnet/openroadnet)
 set(LIDARNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/squeezesegnet/lidar_squseg_inference/model)
 set(LIDARNET_V2_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/squeezesegnet/lidar_squseg_v2_inference/model)
+set(LIDARNET_POINTPILLARS_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lidarnet/pointpillars/model)
 set(CAMERA_UTILS_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_utils/data)
 set(CAMERA_ALIGN_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_drivenet/drivenet/data/alignment)
 set(CAMERA_GRABBER_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_grabber/src/CameraGrabber)
 set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(PEDCROSS_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_pedcross/models)
+set(PEDCROSS_TF_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_pedcross_tf/models)
 set(LIGHTNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet/itri_lightnet_main/resources)
 set(LIGHTNET_TAINAN_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_tainan/itri_lightnet_tainan_main/resources)
 set(LOCALIZATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/localization)
+set(VEHICLE_DAE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vehicle/vehicle_description/vehicle_body_description/b_bus_description/mesh)
+
 
 function(download_file)
     cmake_parse_arguments(OPT "" "URL;DESTINATION;MD5" "" ${ARGN})
@@ -76,3 +80,4 @@ if (CAR_MODEL_IS_HINO)
 endif ()
 
 include (cmake/localization.cmake)
+include (cmake/vehicle_dae.cmake)

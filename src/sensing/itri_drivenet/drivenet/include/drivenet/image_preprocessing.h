@@ -13,10 +13,17 @@
 
 namespace DriveNet
 {
+
 struct PixelPosition
 {
   int u;
   int v;
+};
+
+struct MinMax2D
+{
+  PixelPosition p_min;
+  PixelPosition p_max;
 };
 
 class CvColor
@@ -29,6 +36,7 @@ public:
   static cv::Scalar purple_;
   static cv::Scalar yellow_;
   static cv::Scalar gray_;
+  static cv::Scalar black_;
 };
 
 enum color_enum

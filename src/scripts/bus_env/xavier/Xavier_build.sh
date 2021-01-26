@@ -1,0 +1,2 @@
+cd ~/itriadv
+catkin_make -DCATKIN_WHITELIST_PACKAGES="camera_grabber;camera_utils;system_time;lidar_location_send;control_checker;gnss_utility;lidarxyz2lla;from_dspace;to_dspace;geofence;trimble_grabber;geofence_map_pp;vehinfo_pub;geofence_pp;rad_grab;control;car_model;dl_data;msgs;autoware_control_msgs;autoware_lanelet2_msgs;autoware_perception_msgs;autoware_planning_msgs;autoware_system_msgs;autoware_vehicle_msgs;image_compressor" -DCAR_MODEL=B1_V3

@@ -76,19 +76,7 @@ set_directory_properties( PROPERTIES COMPILE_DEFINITIONS "" )
 ######################
 ##     Vehicle      ##
 ######################   
-if (CAR_MODEL_IS_HINO) 
-  cuda_add_executable   (${PROJECT_NAME}_hino src/main_hino.cpp src/convex_fusion_hino.cpp)
-  add_dependencies      (${PROJECT_NAME}_hino ${catkin_EXPORTED_TARGETS}) 
-  target_link_libraries (${PROJECT_NAME}_hino ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda libs )
-  qt5_use_modules       (${PROJECT_NAME}_hino Widgets)
-endif()
-
-if (CAR_MODEL_IS_B1) 
-  cuda_add_executable   (${PROJECT_NAME}_b1 src/main_b1.cpp src/convex_fusion_b1.cpp)
-  add_dependencies      (${PROJECT_NAME}_b1 ${catkin_EXPORTED_TARGETS}) 
-  target_link_libraries (${PROJECT_NAME}_b1 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs object_costmap_generator)
-  qt5_use_modules       (${PROJECT_NAME}_b1 Widgets)
-elseif(CAR_MODEL_IS_B1_V2)
+if(CAR_MODEL_IS_B1_V2)
   cuda_add_executable   (${PROJECT_NAME}_b1_v2 src/main_b1_v2.cpp src/convex_fusion_b1_v2.cpp)
   add_dependencies      (${PROJECT_NAME}_b1_v2 ${catkin_EXPORTED_TARGETS}) 
   target_link_libraries (${PROJECT_NAME}_b1_v2 ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${CUDA_LIBRARIES} cuda camera_utils libs object_costmap_generator)

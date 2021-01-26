@@ -9,7 +9,6 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
@@ -57,6 +56,15 @@ static uint overtake_over_flag;
 ros::Publisher Radar_marker;
 ros::Publisher Geofence_line;
 
+uint PCloud_Geofence_count = 0;
+int PCloud_Geofence_lastdis = 300;
+
+uint Deviate_Geofence_count = 0;
+int Deviate_Geofence_lastdis = 300;
+
+uint CPoint_Geofence_count = 0;
+int CPoint_Geofence_lastdis = 300;
+
 void LocalizationToVehCallback(const msgs::LocalizationToVeh::ConstPtr& LTVmsg)
 {
   Heading = LTVmsg->heading;
@@ -84,27 +92,23 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg)
   {
     Point_temp.X = msg->objects[i].bPoint.p0.x;
     Point_temp.Y = msg->objects[i].bPoint.p0.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p3.x;
     Point_temp.Y = msg->objects[i].bPoint.p3.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p4.x;
     Point_temp.Y = msg->objects[i].bPoint.p4.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p7.x;
     Point_temp.Y = msg->objects[i].bPoint.p7.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
-    Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x +
-                    msg->objects[i].bPoint.p7.x) /
-                   4;
-    Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y +
-                    msg->objects[i].bPoint.p7.y) /
-                   4;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.X = msg->objects[i].center_point.x;  // lidar_TF
+    Point_temp.Y = msg->objects[i].center_point.y;  // lidar_TF
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
   }
 #ifdef VIRTUAL
@@ -124,7 +128,7 @@ void chatterCallbackCPoint(const msgs::DetectedObjectArray::ConstPtr& msg)
     {
       Point_temp.X = msg->objects[i].cPoint.lowerAreaPoints[j].x;
       Point_temp.Y = msg->objects[i].cPoint.lowerAreaPoints[j].y;
-      Point_temp.Speed = msg->objects[i].relSpeed;
+      Point_temp.Speed = msg->objects[i].speed_rel;
       PointCloud_temp.push_back(Point_temp);
     }
   }
@@ -139,27 +143,23 @@ void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg)
   {
     Point_temp.X = msg->objects[i].bPoint.p0.x;
     Point_temp.Y = msg->objects[i].bPoint.p0.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p3.x;
     Point_temp.Y = msg->objects[i].bPoint.p3.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p4.x;
     Point_temp.Y = msg->objects[i].bPoint.p4.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p7.x;
     Point_temp.Y = msg->objects[i].bPoint.p7.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
-    Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x +
-                    msg->objects[i].bPoint.p7.x) /
-                   4;
-    Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y +
-                    msg->objects[i].bPoint.p7.y) /
-                   4;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.X = msg->objects[i].center_point.x;  // lidar_TF
+    Point_temp.Y = msg->objects[i].center_point.y;  // lidar_TF
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
   }
   Radar_Geofence.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);
@@ -196,13 +196,13 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  uint size = 50;
+  uint size = 200;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
   }
 
-  double Resolution = 50;
+  double Resolution = 10;
   for (uint i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -224,12 +224,12 @@ void astar_original_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  uint size = 50;
+  uint size = 100;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
   }
-  double Resolution = 50;
+  double Resolution = 10;
   for (uint i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -393,7 +393,7 @@ int main(int argc, char** argv)
   ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
   // ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
   // ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
-  ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+  ros::Subscriber avoidpath = n.subscribe("avoidpath_reach_goal", 1, overtake_over_Callback);
   ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 
 #ifdef VIRTUAL
@@ -457,10 +457,22 @@ int main(int argc, char** argv)
       std_msgs::Float64 Geofence_temp;
       Geofence_temp.data = PCloud_Geofence.getDistance_w();
       Geofence_PC.publish(Geofence_temp);
-      if (PCloud_Geofence.getDistance() < 80)
+      int PCloud_Geofence_dis = 300;  // PCloud_Geofence.getDistance();
+      if (PCloud_Geofence_lastdis - PCloud_Geofence.getDistance() > 200 && PCloud_Geofence_count < 10)
+      {
+        PCloud_Geofence_dis = PCloud_Geofence_lastdis;
+        PCloud_Geofence_count++;
+      }
+      else
+      {
+        PCloud_Geofence_dis = PCloud_Geofence.getDistance();
+        PCloud_Geofence_count = 0;
+      }
+      if (PCloud_Geofence_dis < 80)
       {
         Plot_geofence(PCloud_Geofence.findDirection());
       }
+      PCloud_Geofence_lastdis = PCloud_Geofence_dis;
     }
     else
     {
@@ -493,10 +505,22 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(Deviate_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      if (Deviate_Geofence.getDistance() < 80)
+      int Deviate_Geofence_dis = 300;  // Deviate_Geofence.getDistance();
+      if (Deviate_Geofence_lastdis - Deviate_Geofence.getDistance() > 200 && Deviate_Geofence_count < 10)
+      {
+        Deviate_Geofence_dis = Deviate_Geofence_lastdis;
+        Deviate_Geofence_count++;
+      }
+      else
+      {
+        Deviate_Geofence_dis = Deviate_Geofence.getDistance();
+        Deviate_Geofence_count = 0;
+      }
+      if (Deviate_Geofence_dis < 80)
       {
         Plot_geofence(Deviate_Geofence.findDirection());
       }
+      Deviate_Geofence_lastdis = Deviate_Geofence_dis;
     }
     else
     {
@@ -553,10 +577,22 @@ int main(int argc, char** argv)
       frame.data[7] = (short int)(CPoint_Geofence.getNearest_Y() * 10) >> 8;
       nbytes = write(s, &frame, sizeof(struct can_frame));
       printf("Wrote %d bytes\n", nbytes);
-      if (CPoint_Geofence.getDistance() < 80)
+      int CPoint_Geofence_dis = 300;  // CPoint_Geofence.getDistance();
+      if (CPoint_Geofence_lastdis - CPoint_Geofence.getDistance() > 200 && CPoint_Geofence_count < 10)
+      {
+        CPoint_Geofence_dis = CPoint_Geofence_lastdis;
+        CPoint_Geofence_count++;
+      }
+      else
+      {
+        CPoint_Geofence_dis = CPoint_Geofence.getDistance();
+        CPoint_Geofence_count = 0;
+      }
+      if (CPoint_Geofence_dis < 80)
       {
         Plot_geofence_yellow(CPoint_Geofence.findDirection());
       }
+      CPoint_Geofence_lastdis = CPoint_Geofence_dis;
     }
     else
     {

@@ -3,6 +3,7 @@
 #include <glog/logging.h>
 #include "TegraAGrabber.h"
 #include "TegraBGrabber.h"
+#include "DriveXavierGrabber.h"
 #include "Util/ProgramArguments.hpp"
 #include "grabber_args_parser.h"
 
@@ -16,14 +17,14 @@ int main(int argc, char** argv)
 
   // do resize
   const bool do_resize = SensingSubSystem::do_resize();
-  const bool do_crop = SensingSubSystem::do_crop();
+  // const bool do_crop = SensingSubSystem::do_crop();
 
   if (mode == "a")
   {
     ros::init(argc, argv, "camera_a_grabber");
     printf("Running Camera a grabber\n");
     SensingSubSystem::TegraAGrabber app;
-    app.initializeModules(do_resize, do_crop);
+    app.initializeModules(do_resize);  //, do_crop);
     return app.runPerception();
   }
   else if (mode == "b")
@@ -31,6 +32,14 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "camera_b_grabber");
     printf("Running Camera b grabber\n");
     SensingSubSystem::TegraBGrabber app;
+    app.initializeModules(do_resize);
+    return app.runPerception();
+  }
+  else if (mode == "all")
+  {
+    ros::init(argc, argv, "camera_all_grabber");
+    printf("Running Camera all grabber\n");
+    SensingSubSystem::DriveXavierGrabber app;
     app.initializeModules(do_resize);
     return app.runPerception();
   }

@@ -14,7 +14,7 @@ UdpClient::UdpClient()
   f_port = -1;
   f_addr = "";
   f_socket = -1;
-  f_addrinfo = NULL;
+  f_addrinfo = nullptr;
 }
 
 void UdpClient::initial(const std::string& addr, int port)
@@ -22,7 +22,7 @@ void UdpClient::initial(const std::string& addr, int port)
   f_port = port;
   f_addr = addr;
 
-  addrinfo hints;
+  addrinfo hints{};
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_DGRAM;
@@ -30,7 +30,7 @@ void UdpClient::initial(const std::string& addr, int port)
 
   int result = getaddrinfo(f_addr.c_str(), to_string(f_port).c_str(), &hints, &f_addrinfo);
 
-  if (result != 0 || f_addrinfo == NULL)
+  if (result != 0 || f_addrinfo == nullptr)
   {
     throw udp_client_server_runtime_error(
         ("invalid address or port: \"" + addr + ":" + to_string(port) + "\"").c_str());
@@ -122,13 +122,15 @@ int UdpClient::send_obj_to_server(const std::string& str, bool show)
 {
   std::stringstream stream;
   stream << std::fixed << std::setprecision(2);
-  // cout<< str << endl;
+  //cout<< str << endl;
   const char* msg = str.c_str();
+  std::string typestring = "M8.2.VK003.2";
+  const char* type = typestring.c_str();
   size_t msg_length = strlen(msg);
-  if (show)
+  if (strstr(msg, type) != nullptr) 
   {
-    std::cout << "send to : " + f_addr + ":" + to_string(f_port) << std::endl;
-    std::cout << "msg : " + str << std::endl;
+    //std::cout << "send to : " + f_addr + ":" + to_string(f_port) << std::endl;
+    //std::cout << "msg : " + str << std::endl;
   }
   int result = sendto(f_socket, msg, msg_length, 0, f_addrinfo->ai_addr, f_addrinfo->ai_addrlen);
   if (result < 0)
@@ -179,13 +181,13 @@ UdpServer::UdpServer(const std::string& addr, int port) : f_port(port), f_addr(a
   char decimal_port[16];
   snprintf(decimal_port, sizeof(decimal_port), "%d", f_port);
   decimal_port[sizeof(decimal_port) / sizeof(decimal_port[0]) - 1] = '\0';
-  struct addrinfo hints;
+  struct addrinfo hints{};
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_DGRAM;
   hints.ai_protocol = IPPROTO_UDP;
   int r(getaddrinfo(addr.c_str(), decimal_port, &hints, &f_addrinfo));
-  if (r != 0 || f_addrinfo == NULL)
+  if (r != 0 || f_addrinfo == nullptr)
   {
     throw udp_client_server_runtime_error(
         ("invalid address or port for UDP socket: \"" + addr + ":" + decimal_port + "\"").c_str());
@@ -301,7 +303,7 @@ int UdpServer::timed_recv(char* msg, size_t max_size, int max_wait_ms)
   fd_set s;
   FD_ZERO(&s);
   FD_SET(f_socket, &s);
-  struct timeval timeout;
+  struct timeval timeout{};
   timeout.tv_sec = max_wait_ms / 1000;
   timeout.tv_usec = (max_wait_ms % 1000) * 1000;
   int retval = select(f_socket + 1, &s, &s, &s, &timeout);

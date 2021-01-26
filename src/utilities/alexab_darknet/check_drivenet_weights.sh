@@ -11,6 +11,8 @@ readonly weakness_detection_dir=${repo_dir}/src/utilities/weakness_detection
 readonly now=$(date "+%Y%m%d%H%M%S")
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.6/dist-packages
 set +e
+git fetch
+git merge remotes/origin/master --no-ff
 git diff-index --quiet HEAD
 if [[ "$?" == "0" ]]; then
   readonly repo_status="clean"

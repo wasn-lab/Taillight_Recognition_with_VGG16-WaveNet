@@ -1,5 +1,5 @@
-build*/
-devel*/
+/build*/
+/devel*/
 CATKIN_IGNORE
 .vscode/
 *.swp
@@ -23,6 +23,7 @@ gmon.out
 *.dgpu
 *.npy
 *.pb
+*.onnx
 src/sensing/itri_drivenet/drivenet/data/alignment/
 src/sensing/itri_lidarnet/libs/TensorFlow/Installed/
 src/sensing/itri_parknet/weights/
@@ -41,7 +42,13 @@ src/sensing/camera_utils/data/left_120.json
 src/sensing/camera_utils/data/right_120.json
 src/sensing/itri_pedcross/models/
 src/sensing/itri_pedcross/openpose/
+src/sensing/itri_pedcross_tf/models/
 src/bags/
 src/dl_data/assets/
 src/sensing/itri_lidarnet/lidars_grabber/src/UI/Makefile
+src/utilities/alexab_darknet/drivenet_dataset
+src/utilities/alexab_darknet/build
 src/sensing/deeplab/weights
+src/sensing/itri_interactive_pp/models
+src/sensing/itri_interactive_pp/other
+src/sensing/itri_interactive_pp/sandbox

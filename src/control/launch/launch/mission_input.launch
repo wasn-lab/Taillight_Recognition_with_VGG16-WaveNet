@@ -1,0 +1,13 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <arg name="ORGS" default="0" />
+  <arg name="route_choose" default="3" />
+  
+  <!-- mission input node-->
+  <node pkg="mission_input" type="mission_input" name="mission_input" output="screen" >
+	<param name="ORGS" value="$(arg ORGS)" />
+        <param name="route_choose" value="$(arg route_choose)" />
+  </node>
+
+</launch>

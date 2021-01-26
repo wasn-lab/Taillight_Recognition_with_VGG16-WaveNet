@@ -9,7 +9,6 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
@@ -108,13 +107,13 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  int size = 50;
+  int size = 200;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
   }
 
-  double Resolution = 50;
+  double Resolution = 10;
   for (int i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -217,24 +216,24 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
         // cout << "x:" << Point_temp.X << endl;
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
         // cout << "y:" <<Point_temp.Y << endl;
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         /*
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p0.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p0.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p3.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p3.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p4.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p4.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p7.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p7.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         */
         // cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y
@@ -253,8 +252,8 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
         if (BBox_Geofence.getDistance() < 80)
         {
           // cout << "PP Points in boundary: " << BBox_Geofence.getDistance() << " - " << BBox_Geofence.getFarest() <<
-          // endl; cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl; Plot
-          // geofence PP
+          // endl; cout << "(x,y): " << BBox_Geofence.getNearest_X() << "," << BBox_Geofence.getNearest_Y() << endl;
+          // Plot geofence PP
           if (BBox_Geofence.getDistance() < PP_Distance && BBox_Geofence.getDistance() > 3.8)
           {
             PP_Distance = BBox_Geofence.getDistance();
@@ -289,7 +288,7 @@ void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg)
         // cout << "x:" << Point_temp.X << endl;
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
         // cout << "y:" <<Point_temp.Y << endl;
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         // cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y
         // << endl;

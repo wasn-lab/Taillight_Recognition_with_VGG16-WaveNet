@@ -1,0 +1,7 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <!-- Launch node -->
+  <node pkg="web_video_server" type="web_video_server" name="web_video_server" cwd="node" output="screen">
+    <param name="default_stream_type" value="ros_compressed" />
+  </node>
+</launch>

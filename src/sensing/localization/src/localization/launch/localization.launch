@@ -2,10 +2,14 @@
 <launch>
 
   <arg name="use_rviz_" default="false"/>
+  <arg name="lidar_height" default="2.7"/>
+  <arg name="ndt_res" default="1.2"/>  
 
 
   <node pkg="localization" type="localization_node" name="localization" output="screen">
     <param name="use_rviz_" value="$(arg use_rviz_)"/>
+    <param name="lidar_height" type = "double" value="$(arg lidar_height)"/>
+    <param name="ndt_res" type = "double" value="$(arg ndt_res)"/>
   </node>
 
 </launch>

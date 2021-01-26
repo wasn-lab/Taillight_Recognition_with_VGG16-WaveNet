@@ -20,8 +20,6 @@ const int NumOfTopic = 8;
 #include "msgs/VehInfo.h"
 #include <ros/ros.h>
 
-
-
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
@@ -153,9 +151,9 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
         Publisher[7].publish(speed_ms);
         cout << "speed_ms: " << speed_ms.data << endl;
 		msg_temp.Dspace_Flag01 = frame.data[0];
-		msg_temp.Dspace_Flag02 = frame.data[1];
-		msg_temp.Dspace_Flag03 = frame.data[2];
-		msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag02 = frame.data[1] / 10.0;
+		msg_temp.Dspace_Flag03 = frame.data[2] / 10.0;
+		msg_temp.Dspace_Flag04 = (frame.data[3] | frame.data[4] << 8) / 10.0;
 		msg_temp.Dspace_Flag05 = frame.data[5];
 		msg_temp.Dspace_Flag06 = frame.data[6];
 		msg_temp.Dspace_Flag07 = frame.data[7];
@@ -377,8 +375,8 @@ int main(int argc, char **argv)
     Publisher[3] = n.advertise<msgs::Flag_Info>("Flag_Info04", 1);
     Publisher[4] = n.advertise<msgs::Flag_Info>("Flag_Info05", 1);
     Publisher[5] = n.advertise<msgs::Flag_Info>("/NextStop/Info", 1);
-    Publisher[6] = n.advertise<msgs::Flag_Info>("/Ego_speed/kph", 1);
-    Publisher[7] = n.advertise<msgs::Flag_Info>("/Ego_speed/ms", 1);
+    Publisher[6] = n.advertise<std_msgs::Float64>("/Ego_speed/kph", 1);
+    Publisher[7] = n.advertise<std_msgs::Float64>("/Ego_speed/ms", 1);
 
     ros::Publisher Publisher_Backend;
     Publisher_Backend = n.advertise<msgs::BackendInfo>("Backend/Info", 1);
@@ -452,7 +450,7 @@ int main(int argc, char **argv)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher);;
+            ProcessFrame(frame, Publisher);
         }
         Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);

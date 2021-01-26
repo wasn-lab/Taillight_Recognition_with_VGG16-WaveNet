@@ -1,0 +1,61 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+
+  <arg name="force_disable_avoidance" default="false" />
+  <arg name="disable_lane_event" default="false" />
+
+  <arg name="Look_ahead_time" default="1.6" />
+  <arg name="Look_ahead_S0" default="3" />
+  <arg name="Look_ahead_time_right" default="1.0" />
+  <arg name="Look_ahead_S0_right" default="1.5" />
+  <arg name="wheel_dis" default="3.8" />
+  <arg name="target_left_shift" default="0.0" />
+
+  <arg name="angle_diff_setting_in" default="0.78539816339" /> <!--PI/4-->
+  <arg name="angle_diff_setting_out" default="0.15" /><!--0.3-->
+  <arg name="angle_diff_setting_distoturn" default="0.3" />
+  <arg name="z_diff_setting_in" default="1.0" /><!--1.0-->
+  <arg name="z_diff_setting_out" default="0.1" /><!--0.1-->
+  <arg name="slope_setting_distouphill" default="0.08" />
+
+  <arg name="predict_s_max" default="13.8" />
+  <arg name="predict_t" default="2.0" />
+
+  <!-- decision maker node -->
+  <node pkg="decision_maker" type="decision_maker" name="decision_maker" output="screen" >
+        <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
+	<param name="disable_lane_event" value="$(arg disable_lane_event)" />
+  </node>
+  
+  <!-- scene_register_checker node -->
+  <node pkg="scene_register_checker" type="scene_register_checker" name="scene_register_checker" output="screen" >
+  </node>
+
+  <!-- path transfer node -->
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer" ><!-- output="screen" -->
+        <param name="angle_diff_setting_in" value="$(arg angle_diff_setting_in)" />
+	<param name="angle_diff_setting_out" value="$(arg angle_diff_setting_out)" />
+	<param name="angle_diff_setting_distoturn" value="$(arg angle_diff_setting_distoturn)" />
+        <param name="z_diff_setting_in" value="$(arg z_diff_setting_in)" />
+        <param name="z_diff_setting_out" value="$(arg z_diff_setting_out)" />
+	<param name="slope_setting_distouphill" value="$(arg slope_setting_distouphill)" />
+  </node>
+    
+  <!-- target pub node -->
+  <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" >
+	<param name="Look_ahead_time" value="$(arg Look_ahead_time)" />
+	<param name="Look_ahead_S0" value="$(arg Look_ahead_S0)" />
+	<param name="Look_ahead_time_right" value="$(arg Look_ahead_time_right)" />
+	<param name="Look_ahead_S0_right" value="$(arg Look_ahead_S0_right)" />
+        <param name="wheel_dis" value="$(arg wheel_dis)" />
+        <param name="target_left_shift" value="$(arg target_left_shift)"/>
+  </node>
+
+  <!-- veh_predictwaypoint pub node -->
+  <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint"> <!--output="screen" -->
+        <param name="wheel_dis" value="$(arg wheel_dis)"/>
+        <param name="predict_s_max" value="$(arg predict_s_max)"/>
+        <param name="predict_t" value="$(arg predict_t)"/>
+  </node>
+
+</launch>
