@@ -21,13 +21,7 @@ class LoadCollector(object):
             rospy.logerr("Unrecognized car_model: %s", car_model)
 
         rospy.logwarn("Init LoadCollector node")
-        self.records = {}
-        now = datetime.datetime.now()
-        for ipc in self.ipcs:
-            self.records[ipc] = {"cpu_load": "",
-                                 "gpu_load": "",
-                                 "cpu_load_ts": now,
-                                 "gpu_load_ts": now}
+        self.records, self.timestamps = self.setup_records()
 
         for ipc in self.ipcs:
             cpu_topic = "/vehicle/report/{}/cpu_load".format(ipc)
@@ -37,37 +31,36 @@ class LoadCollector(object):
             rospy.Subscriber(gpu_topic, String, callback=self._cb, callback_args=("gpu_load", ipc), queue_size=1)
             rospy.logwarn("Subscribe %s", gpu_topic)
 
-        self.load_publisher = rospy.Publisher(
-            "/vehicle/report/ipc_loads", String, queue_size=10)
-        rospy.logwarn("Publish on /vehicle/report/system_loads")
+        output_topic = "/vehicle/report/system_loads"
+        self.load_publisher = rospy.Publisher(output_topic, String, queue_size=10)
+        rospy.logwarn("Publish on %s", output_topic)
+
+    def setup_records(self):
+        now = datetime.datetime.now()
+        self.records = {}
+        self.timestamps = {}
+        for ipc in self.ipcs:
+            self.records[ipc] = {"cpu_load": "", "gpu_load": ""}
+            self.timestamps[ipc] = {"cpu_load": now, "gpu_load": now}
+        return self.records, self.timestamps
 
     def _cb(self, msg, args):
         load_type, ipc_name = args
         self.records[ipc_name][load_type] = msg.data
-        self.records[ipc_name][load_type + "_ts"] = datetime.datetime.now()
+        self.timestamps[ipc_name][load_type] = datetime.datetime.now()
 
-    def _evict_old_record(self):
-        now = datetime.datetime.now()
-        for ipc in self.ipcs:
-            delta = now - self.records[ipc]["cpu_load_ts"]
-            if delta.total_seconds() > 3:
-                self.records[ipc]["cpu_load"] = "NA"
-            delta = now - self.records[ipc]["gpu_load_ts"]
-            if delta.total_seconds() > 3:
-                self.records[ipc]["gpu_load"] = "NA"
-
-    def get_current_loads(self):
+    def get_current_loads(self, now=None):
         """
         Return the latest loads.
         If we do not get cpu/gpu loads in recent 3 seconds, then show it as NA
         """
-        now = datetime.datetime.now()
+        if now is None:
+            now = datetime.datetime.now()
         ret = {}
         for ipc in self.ipcs:
             ret[ipc] = {}
             for load_type in ["cpu_load", "gpu_load"]:
-                ts_key = load_type + "_ts"
-                delta = now - self.records[ipc][ts_key]
+                delta = now - self.timestamps[ipc][load_type]
                 if delta.total_seconds() > 3:
                     ret[ipc][load_type] = "NA"
                 else:
@@ -77,8 +70,8 @@ class LoadCollector(object):
     def run(self):
         rate = rospy.Rate(1)  # FPS: 1
         while not rospy.is_shutdown():
-            cur_load = self.get_current_loads()
-            self.load_publisher.publish(json.dumps(cur_load))
+            loads = self.get_current_loads()
+            self.load_publisher.publish(json.dumps(loads))
             rate.sleep()
 
 if __name__ == "__main__":
