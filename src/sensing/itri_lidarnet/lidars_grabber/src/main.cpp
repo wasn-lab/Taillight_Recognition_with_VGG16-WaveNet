@@ -122,8 +122,8 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       pcl::copyPointCloud(*input_cloud_tmp_ring, *input_cloud_tmp);
     }
 
-    // -------------------------- check stitching
-    if (GlobalVariable::STITCHING_MODE_NUM == 1)
+    //-------------------------- Transform
+    if (GlobalVariable::STITCHING_MODE_NUM == 1) 
     {
       *g_cloudPtr_LidarFrontLeft = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1], GlobalVariable::UI_PARA[2],
@@ -134,13 +134,12 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
     }
     else
     {
-      // Transfrom
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(
           input_cloud_tmp, LidarFrontLeft_Fine_Param[0], LidarFrontLeft_Fine_Param[1], LidarFrontLeft_Fine_Param[2],
           LidarFrontLeft_Fine_Param[3], LidarFrontLeft_Fine_Param[4], LidarFrontLeft_Fine_Param[5]);
       *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
 
-      // ROI
+      //-------------------------- ROI
       if (g_use_roi)
       {
         // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0,
@@ -359,21 +358,37 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
   Compressor_Lock.lock();
   g_stopWatch_Compressor.reset();
 
-  //--------------------------- compress start
+  //--------------------------- create compressor
+  pcl::io::compression_Profiles_e compressionProfile = pcl::io::MANUAL_CONFIGURATION;
   bool showStatistics = false;
-  pcl::io::compression_Profiles_e compressionProfile = pcl::io::HIGH_RES_ONLINE_COMPRESSION_WITH_COLOR;
-  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>* PointCloudEncoder;
+  const double pointResolution_arg = 0.001;
+  const double octreeResolution_arg = 0.001;
+  bool doVoxelGridDownDownSampling_arg = false;
+  const unsigned int iFrameRate_arg = 30 ;
+  bool doColorEncoding_arg = true;
+  const unsigned char colorBitResolution_arg = 8 ;
+
+  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
   PointCloudEncoder =
-      new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>(compressionProfile, showStatistics);
+      //new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>(compressionProfile, showStatistics);
+      new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>(compressionProfile,
+                                                                showStatistics,
+                                                                pointResolution_arg,
+                                                                octreeResolution_arg,
+                                                                doVoxelGridDownDownSampling_arg,
+                                                                iFrameRate_arg,
+                                                                doColorEncoding_arg,
+                                                                colorBitResolution_arg
+                                                                );
 
   // compressed stringstream
   msgs::CompressedPointCloud compressed_pointcloud;
   std::stringstream compressedData;
 
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_xyzrgba(new pcl::PointCloud<pcl::PointXYZRGBA>);
-  *cloud_xyzrgba = XYZIR_to_XYZRBGA(input_cloud_tmp_ring);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_xyzrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
+  *cloud_xyzrgb = XYZIR_to_XYZRGB(input_cloud_tmp_ring);
 
-  PointCloudEncoder->encodePointCloud(cloud_xyzrgba, compressedData);
+  PointCloudEncoder->encodePointCloud(cloud_xyzrgb, compressedData);
   compressed_pointcloud.data = compressedData.str();
 
   pcl_conversions::fromPCL(input_cloud_tmp_ring->header, compressed_pointcloud.header);
@@ -551,9 +566,9 @@ int main(int argc, char** argv)
 
 
   // publisher - compressed
-  g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1);
-  g_pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Compressed", 1);
-  g_pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1);
+  g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Oct_Compressed", 1);
+  g_pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Oct_Compressed", 1);
+  g_pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Oct_Compressed", 1);
 
 
   thread ThreadDetection_UI(UI, argc, argv);
