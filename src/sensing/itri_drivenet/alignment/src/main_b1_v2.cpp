@@ -548,7 +548,7 @@ void object_publisher(std::vector<msgs::DetectedObjectArray>& objects_2d_bbox,
   }
   std::vector<msgs::DetectedObject> msg_objs_after_fusion;
   msg_objs_after_fusion = g_box_fusion.multi_cambox_fuse(msg_objs);
-  
+
   msg_det_obj_arr.header = std::move(msg_header);
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
   // msg_det_obj_arr.objects = msg_objs;
@@ -732,8 +732,8 @@ void displayLidarData()
 {
   std::cout << "===== displayLidarData... =====" << std::endl;
   /// create variable
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(
-      new pcl::visualization::PCLVisualizer("Cloud_Viewer"));
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> pcl_viewer(new pcl::visualization::PCLVisualizer("Cloud_"
+                                                                                                        "Viewer"));
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_points_ptr(g_cams_points_ptr.size());
   std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cams_bbox_points_ptr(g_cams_bbox_points_ptr.size());
@@ -1537,7 +1537,8 @@ int main(int argc, char** argv)
     /// ros Subscriber
     for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
     {
-      cam_subs[cam_order] = nh.subscribe(g_cam_topic_names[cam_order] + std::string("/raw"), 1, f_callbacks_cam[cam_order]);
+      cam_subs[cam_order] =
+          nh.subscribe(g_cam_topic_names[cam_order] + std::string("/raw"), 1, f_callbacks_cam[cam_order]);
       object_subs[cam_order] = nh.subscribe(g_bbox_topic_names[cam_order], 1, f_callbacks_object[cam_order]);
     }
 

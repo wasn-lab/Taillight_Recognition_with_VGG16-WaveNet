@@ -393,49 +393,6 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
     obj.center_point_gps.z = out_alt;
   }
 
-  // compute heading_enu
-  for (auto& obj : output.objects)
-  {
-    // assume heading: v1(0, 0, 0) -> v2(rotated_vec.x(), rotated_vec.y(), rotated_vec.z())
-    // transform v1 & v2 to ENU coordinate, say v1' & v2', respectively
-    // heading_enu: v1' -> v2'
-
-    // ENU coordinate (out_E1, out_N1, out_U1) of v1(0, 0, 0)
-    double out_lat1 = 0.;
-    double out_lon1 = 0.;
-    double out_alt1 = 0.;
-    double out_E1 = 0.;
-    double out_N1 = 0.;
-    double out_U1 = 0.;
-    convert(out_lat1, out_lon1, out_alt1, out_E1, out_N1, out_U1, 0., 0., 0.);
-
-    // ENU coordinate (out_E2, out_N2, out_U2) of v2(rotated_vec.x(), rotated_vec.y(), rotated_vec.z())
-    tf::Quaternion rot(obj.heading.x, obj.heading.y, obj.heading.z, obj.heading.w);
-    tf::Vector3 vec(1, 0, 0);
-    tf::Vector3 rotated_vec = tf::quatRotate(rot, vec);
-    double out_lat2 = 0.;
-    double out_lon2 = 0.;
-    double out_alt2 = 0.;
-    double out_E2 = 0.;
-    double out_N2 = 0.;
-    double out_U2 = 0.;
-    convert(out_lat2, out_lon2, out_alt2, out_E2, out_N2, out_U2, rotated_vec.x(), rotated_vec.y(), rotated_vec.z());
-
-    // heading_enu: v1' -> v2'
-    Eigen::Vector3d A(1., 0., 0.);
-    Eigen::Vector3d B(out_E2 - out_E1, out_N2 - out_N1, out_U2 - out_U1);
-    Eigen::Quaternion<double> R;
-    R.setFromTwoVectors(A, B);
-    obj.heading_enu.x = R.x();
-    obj.heading_enu.y = R.y();
-    obj.heading_enu.z = R.z();
-    obj.heading_enu.w = R.w();
-
-    std::cout << "heading_enu (x, y, z, w) = "
-              << "(" << obj.heading_enu.x << ", " << obj.heading_enu.y << ", " << obj.heading_enu.z << ", "
-              << obj.heading_enu.w << ")" << std::endl;
-  }
-
   pub_xyz2lla_.publish(output);
 #if HEARTBEAT == 1
   std_msgs::Empty output_heartbeat;

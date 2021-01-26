@@ -7,4 +7,4 @@ source /home/nvidia/.bashrc
 source /home/nvidia/itriadv/devel/setup.bash
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.2.10
-roslaunch camera_grabber drive_xavier_b1.launch
+roslaunch --wait camera_grabber drive_xavier_b1.launch
