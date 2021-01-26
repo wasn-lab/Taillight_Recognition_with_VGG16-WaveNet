@@ -107,6 +107,25 @@ void Ini_route_05_bytxt()
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }
 
+void Ini_route_bytxt()
+{
+  std::string fpname = ros::package::getPath("mission_input");
+  std::string fpname_s = fpname + "/data/ITRI_route_0" + std::to_string(route_choose) + ".txt";
+  std::cout << "--------" << fpname_s << std::endl;
+  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+}
+
+void Ini_shalun_route_bytxt(int route_choose_)
+{
+  route_choose_ = route_choose_ - 100;
+  std::string fpname = ros::package::getPath("mission_input");
+  std::string fpname_s = fpname + "/data/Shalun_route_0" + std::to_string(route_choose_) + ".txt";
+  
+  std::cout << "--------" << fpname_s << std::endl;
+
+  read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
+}
+
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("mission_input");
@@ -227,25 +246,33 @@ void offline_realtime_goal_setting()
 {
   if (ORGS == 0)
   {
-    if (route_choose == 1)
+    // if (route_choose == 1)
+    // {
+    //   Ini_route_01_bytxt();
+    // }
+    // else if (route_choose == 2)
+    // {
+    //   Ini_route_02_bytxt();
+    // }
+    // else if (route_choose == 3)
+    // {
+    //   Ini_route_03_bytxt();
+    // }
+    // else if (route_choose == 4)
+    // {
+    //   Ini_route_04_bytxt();
+    // }
+    // else if (route_choose == 5)
+    // {
+    //   Ini_route_05_bytxt();
+    // }
+    if (route_choose < 100)
     {
-      Ini_route_01_bytxt();
-    }
-    else if (route_choose == 2)
-    {
-      Ini_route_02_bytxt();
-    }
-    else if (route_choose == 3)
-    {
-      Ini_route_03_bytxt();
-    }
-    else if (route_choose == 4)
-    {
-      Ini_route_04_bytxt();
+      Ini_route_bytxt();
     }
     else
     {
-      Ini_route_05_bytxt();
+      Ini_shalun_route_bytxt(route_choose);
     }
     get_initial_point();
     get_goal_point();
