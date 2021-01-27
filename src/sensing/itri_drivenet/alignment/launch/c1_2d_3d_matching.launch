@@ -1,5 +1,4 @@
 <launch>
-        # Node
         <node name="alignment_c1_match_2d_3d_bbox" pkg="alignment" type="alignment_c1_match_2d_3d_bbox"  output="screen">
                 <param name="display" type="bool" value="false" />
                 <param name="imgResult_publish" type="bool" value="true" />
