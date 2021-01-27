@@ -36,6 +36,3 @@ stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_radar.sh^M"
 
 screen -t init_camera
 stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera.sh^M"
-
-screen -t init_load_monitor
-stuff "/home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_load_monitor.sh^M"

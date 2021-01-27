@@ -31,9 +31,6 @@ stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh^M"
 screen -t init_fail_safe
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
 
-screen -t init_load_monitor
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
-
 screen -t init_lightnet
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
 

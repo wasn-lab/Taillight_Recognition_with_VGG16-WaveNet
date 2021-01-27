@@ -36,6 +36,3 @@ stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_localization_supe
 
 screen -t init_planning_all_lanelet2
 stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_planning_all_lanelet2.sh^M"
-
-screen -t init_load_monitor
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_load_monitor.sh^M"
