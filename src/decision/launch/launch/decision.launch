@@ -2,6 +2,7 @@
 <launch>
 
   <arg name="force_disable_avoidance" default="false" />
+  <arg name="disable_lane_event" default="false" />
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
@@ -23,6 +24,7 @@
   <!-- decision maker node -->
   <node pkg="decision_maker" type="decision_maker" name="decision_maker" output="screen" >
         <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
+	<param name="disable_lane_event" value="$(arg disable_lane_event)" />
   </node>
   
   <!-- scene_register_checker node -->

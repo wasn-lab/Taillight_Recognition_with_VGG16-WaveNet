@@ -363,7 +363,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   {
     // lampstate.type = autoware_perception_msgs::LampState::GREEN;
     // lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
+    // trafficlightstate.lamp_states.push_back(lampstate);
     lampstate.type = autoware_perception_msgs::LampState::UP;
     lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
