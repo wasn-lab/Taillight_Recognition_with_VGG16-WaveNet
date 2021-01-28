@@ -37,7 +37,10 @@ def localization_state_func(msg):
         status = FATAL
         status_strs.append("pose_unstable")
 
-    return status, " ".join(status_strs)
+    status_str = " ".join(status_strs)
+    if status != OK:
+        rospy.logwarn("Localization state: %s", status_str)
+    return status, status_str
 
 
 def backend_connection_state_func(msg):
@@ -73,6 +76,8 @@ def backend_info_func(msg):
             status_str = ("Low battery: gross voltage is {}, "
                           "lowest voltage is {}").format(
                               gross_voltage, lowest_voltage)
+    if status != OK:
+        rospy.logwarn("BackendInfo: %s", status_str)
     return status, status_str
 
 
@@ -103,6 +108,8 @@ def cam_object_detection_func(msg):
                 status_str = ("Low confidence: classId: {}, prob: {}, "
                               "center: ({:.2f}, {:.2f})").format(
                                   obj.classId, prob, center[0], center[1])
+    if status != OK:
+        rospy.logwarn("CameraDetection: %s", status_str)
     return status, status_str
 
 
