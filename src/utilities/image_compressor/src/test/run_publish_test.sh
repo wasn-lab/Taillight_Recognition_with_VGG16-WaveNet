@@ -10,6 +10,6 @@ make auto_record_2020-03-10-10-48-39_41_image_raw.bag
 rostest image_compressor publish_test_cmpr.test
 
 make auto_record_2020-12-28-16-55-14_29_jpg.bag
-rostest pc2_compressor publish_test_decmpr.test
+rostest image_compressor publish_test_decmpr.test
 
 popd
