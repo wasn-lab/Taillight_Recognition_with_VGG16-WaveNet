@@ -13,19 +13,19 @@ class Node:
     x_thr1_min_ = 1.0
     x_thr1_max_ = 71.0
 
-    y_thr1_min_ = -1.5  # right boundary of left lane (m)
+    y_thr1_min_ = 1.5  # right boundary of left lane (m)
     y_thr1_max_ = 5.0  # left boundary of left lane (m)
 
     x_thr2_min_ = -9.0
     x_thr2_max_ = 1.0
 
-    y_thr2_min_ = 1.5  # right boundary of left lane (m)
+    y_thr2_min_ = -1.5  # right boundary of host lane (m)
     y_thr2_max_ = 5.0  # left boundary of left lane (m)
 
     x_thr3_min_ = -39.0
     x_thr3_max_ = -9.0
 
-    y_thr3_min_ = -1.5  # right boundary of left lane (m)
+    y_thr3_min_ = -1.5  # right boundary of host lane (m)
     y_thr3_max_ = 5.0  # left boundary of left lane (m)
 
     speed_rel_thr_ = -1.0  # km/h; negative value represents 'incoming'
