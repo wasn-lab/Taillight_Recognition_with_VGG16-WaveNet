@@ -130,6 +130,8 @@ def lidar_detection_func(msg):
                 status_str = ("Low confidence: classId: {}, prob: {}, "
                               "center: ({:.2f}, {:.2f})").format(
                                   obj.classId, prob, center[0], center[1])
+    if status != OK:
+        rospy.logwarn("LidarDetection: %s", status_str)
     return status, status_str
 
 
