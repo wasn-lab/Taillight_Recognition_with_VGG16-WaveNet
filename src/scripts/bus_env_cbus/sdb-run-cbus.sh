@@ -20,9 +20,6 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_sys_check_gateway.sh;exec bash"'
 
-sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_fail_safe.sh;exec bash"'
-
 #sleep 3
 #gnome-terminal  -e 'bash -c "./init_fusion.sh;exec bash"'
 #sleep 3
@@ -103,7 +100,11 @@ sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh;exec bash'"
 
 sleep 3
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender;exec bash'"
+
+sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh;exec bash'"
+
 
 sleep 10
 #export ROS_MASTER_URI=http://192.168.1.3:11311
