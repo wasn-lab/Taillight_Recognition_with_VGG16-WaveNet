@@ -117,7 +117,7 @@ class FailSafeChecker(object):
             self.warn_count = 0
         if self.warn_count > 10 and ego_speed > 0:
             status = ERROR
-            status_str = "WARN states more than 10 seconds"
+            status_str += "; WARN states more than 10 seconds"
 
         if status == ERROR:
             self.error_count += 1
@@ -125,7 +125,7 @@ class FailSafeChecker(object):
             self.error_count = 0
         if self.error_count > 10:
             status = FATAL
-            status_str = "ERROR states more than 10 seconds"
+            status_str += "; ERROR states more than 10 seconds"
 
         ret["status"] = status
         ret["status_str"] = status_str
