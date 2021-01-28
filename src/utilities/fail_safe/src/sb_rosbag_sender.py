@@ -117,9 +117,12 @@ class SBRosbagSender(object):
 
     def run(self):
         rate = rospy.Rate(1.0/15)
+        prompted = False
         while not rospy.is_shutdown():
             script_file = self.write_lftp_script()
-            rospy.logwarn("Write %s", script_file)
-            rospy.logwarn(("  Use lftp -f %s to upload all the bag files to "
-                           "south bridge server"), script_file)
+            if not prompted:
+                rospy.logwarn("Write %s", script_file)
+                rospy.logwarn(("  Use lftp -f %s to upload all the bag files to "
+                               "south bridge server"), script_file)
+                prompted = True
             rate.sleep()
