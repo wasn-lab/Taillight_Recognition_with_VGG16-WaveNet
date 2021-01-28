@@ -79,8 +79,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_dynamic_object_vi
 screen -t init_edge_detection
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_edge_detection.sh^M"
 
-screen -t init_adv_to_server_lanelet2
-stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_adv_to_server_lanelet2.sh^M"
+# Do not notify backend about the activities in the lab.
+#screen -t init_adv_to_server_lanelet2
+#stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_adv_to_server_lanelet2.sh^M"
 
 screen -t init_pedcross
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross.sh^M"
