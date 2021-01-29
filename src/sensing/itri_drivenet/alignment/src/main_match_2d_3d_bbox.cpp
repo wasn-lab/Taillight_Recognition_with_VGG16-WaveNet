@@ -976,7 +976,7 @@ int main(int argc, char** argv)
   /// message_filters Subscriber
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order] + "/raw", 1);
+    cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order] + std::string("/raw"), 1);
     g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
     g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
     g_cache_image[cam_order].setCacheSize(g_buffer_size);
