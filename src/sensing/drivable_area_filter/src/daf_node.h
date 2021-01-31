@@ -52,7 +52,7 @@ private:
   ros::Subscriber sub_lanelet2_route_;
   void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
 
-  bool drivable_area_filter_ = true;
+  bool use_filter_ = true;
   double expand_left_ = 2.2;
   double expand_right_ = 0.0;
   double ground_z_ = -3.1;

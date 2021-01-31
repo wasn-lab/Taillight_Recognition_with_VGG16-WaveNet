@@ -120,7 +120,7 @@ void DAFNode::callback_detected_objs(const msgs::DetectedObjectArray::ConstPtr& 
       continue;
     }
 
-    if (drivable_area_filter_)
+    if (use_filter_)
     {
       if (drivable_area_filter(obj.bPoint))
       {
@@ -447,7 +447,7 @@ void DAFNode::publish_filtered_objs()
 void DAFNode::set_ros_params()
 {
   std::string domain = "/drivable_area_filter/";
-  nh_.param<bool>(domain + "drivable_area_filter", drivable_area_filter_, true);
+  nh_.param<bool>(domain + "use_filter", use_filter_, true);
   nh_.param<double>(domain + "expand_left", expand_left_, 2.2);
   nh_.param<double>(domain + "expand_right", expand_right_, 0.0);
   nh_.param<double>(domain + "ground_z", ground_z_, -3.1);

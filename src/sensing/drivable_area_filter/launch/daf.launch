@@ -15,7 +15,7 @@
   <arg name="input_source" default="1" />
 
   <!-- PP filter of drivable area: width (meter) to be expanded from the host lane -->
-  <arg name="drivable_area_filter" default="True" />
+  <arg name="use_filter" default="True" />
   <arg name="expand_left" default="2.2" />
   <arg name="expand_right" default="0.0" />
   <arg name="ground_z" default="-3.1" />
@@ -23,7 +23,7 @@
   <!-- Launch node -->
   <node pkg="drivable_area_filter" type="drivable_area_filter" name="drivable_area_filter" cwd="node" output="screen">
     <param name="input_source" value="$(arg input_source)" />
-    <param name="drivable_area_filter" value="$(arg drivable_area_filter)" />
+    <param name="use_filter" value="$(arg use_filter)" />
     <param name="expand_left" value="$(arg expand_left)" />
     <param name="expand_right" value="$(arg expand_right)" />
     <param name="ground_z" value="$(arg ground_z)" />
