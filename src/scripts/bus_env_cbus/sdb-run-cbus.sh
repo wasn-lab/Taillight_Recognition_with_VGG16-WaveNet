@@ -22,10 +22,6 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/
 
 #sleep 3
 #gnome-terminal  -e 'bash -c "./init_fusion.sh;exec bash"'
-#sleep 3
-#gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
-#sleep 3
-#gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d.sh;exec bash"'
 sleep 3
