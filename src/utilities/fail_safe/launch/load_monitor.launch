@@ -1,3 +1,3 @@
 <launch>
-  <node name="load_monitor_$(env USER)" pkg="fail_safe" type="run_load_monitor.py" respawn="true" />
+  <node name="load_monitor_$(env HOSTNAME)" pkg="fail_safe" type="run_load_monitor.py" respawn="true" />
 </launch>
