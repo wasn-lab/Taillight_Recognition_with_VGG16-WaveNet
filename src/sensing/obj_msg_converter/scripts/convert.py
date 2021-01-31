@@ -17,14 +17,14 @@ class MsgConvert2:
     def __init__(self):
         rospy.init_node("detectedin_obj._msg_converter")
 
-        in_topic_ = "LidarDetection"
+        self.input_topic_ = rospy.get_param("~input_topic")
 
         # Subscribers
         self.sub_ = rospy.Subscriber(
-            in_topic_, DetectedObjectArray, self.callback)
+            self.input_topic_, DetectedObjectArray, self.callback)
         # Publishers
         self.pub_ = rospy.Publisher(
-            str(in_topic_ + "/aw"), DynamicObjectWithFeatureArray, queue_size=1)
+            str(self.input_topic_ + "/aw"), DynamicObjectWithFeatureArray, queue_size=1)
 
     def run(self):
         rospy.spin()

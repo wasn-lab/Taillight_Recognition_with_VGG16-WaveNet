@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 
 <launch>
-  <arg name="input" default="/LidarDetection/aw"/>
-  <arg name="output" default="/Tracking3D/aw"/>
+  <arg name="input" default="/filtered_objs/aw"/>
+  <arg name="output" default="/tracked_objs/aw"/>
   <arg name="world_frame_id" default="map"/>
   <arg name="publish_rate" default="10"/>
   <node pkg="multi_object_tracker" type="multi_object_tracker_node" name="multi_object_tracker" output="screen">
