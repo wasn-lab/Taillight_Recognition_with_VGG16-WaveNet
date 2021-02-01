@@ -160,7 +160,7 @@ rostopic echo /CamObjBackTop
 rostopic echo /CameraDetection/polygon
 ```
 
-**CAR_MODEL = B1_V2 || C1:**
+**CAR_MODEL = B1_V2 or C1:**
 
 ```
 rostopic echo /cam_obj/front_bottom_60
