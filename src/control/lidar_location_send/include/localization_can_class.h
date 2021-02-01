@@ -74,7 +74,7 @@ public :
     ~ClassLiDARPoseCan ();
 
     void
-    initial ();
+    initial (const char *ifname);
 
     int
     poseSendByCAN(const struct MsgSendToCan &input_msg);
