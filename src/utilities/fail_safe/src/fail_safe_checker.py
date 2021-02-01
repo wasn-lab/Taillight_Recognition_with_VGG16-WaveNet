@@ -6,7 +6,7 @@ import json
 import pprint
 import time
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info02 import CtrlInfo02
@@ -70,6 +70,8 @@ class FailSafeChecker(object):
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
         self.fail_safe_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
+        self.sys_ready_publisher = rospy.Publisher(
+            "/ADV_op/sys_ready", Bool, queue_size=1000)
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -117,7 +119,7 @@ class FailSafeChecker(object):
             self.warn_count = 0
         if self.warn_count > 10 and ego_speed > 0:
             status = ERROR
-            status_str = "WARN states more than 10 seconds"
+            status_str += "; WARN states more than 10 seconds"
 
         if status == ERROR:
             self.error_count += 1
@@ -125,12 +127,21 @@ class FailSafeChecker(object):
             self.error_count = 0
         if self.error_count > 10:
             status = FATAL
-            status_str = "ERROR states more than 10 seconds"
+            status_str += "; ERROR states more than 10 seconds"
 
         ret["status"] = status
         ret["status_str"] = status_str
+        self._publish_sys_ready(status, status_str)
 
         return ret
+
+    def _publish_sys_ready(self, status, status_str):
+        if status == FATAL:
+            # force stop self-driving mode
+            rospy.logfatal("status is FATAL: %s", status_str)
+            self.sys_ready_publisher.publish(False)
+        else:
+            self.sys_ready_publisher.publish(True)
 
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
