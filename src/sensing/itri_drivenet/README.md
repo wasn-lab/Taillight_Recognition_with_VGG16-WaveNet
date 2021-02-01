@@ -17,8 +17,10 @@ Please choose Release mode.
 If not, the module will run slowly.
 
 ```
-catkin_make -DCMAKE_BUILD_TYPE=Release
+catkin_make -DCMAKE_BUILD_TYPE=Release -DCAR_MODEL=B1_V2
 ```
+
+CAR_MODEL: B1_V2 (default)
 
 ### How to run
 
@@ -74,6 +76,42 @@ Camera & LiDAR 3D object detection
 roslaunch alignment b1_v2_3d_object_detection.launch
 ```
 
+Camera & LiDAR 2d and 3d matching
+```
+roslaunch alignment b1_v2_2d_3d_matching.launch
+```
+
+**CAR_MODEL = C1:**
+
+```
+source ./devel/setup.bash
+```
+
+/cam/front_bottom_60, /cam/front_top_far_30 2D object detection
+```
+roslaunch drivenet c1_drivenet_group_a.launch
+```
+
+/cam/right_front_60, /cam/right_back_60, /cam/left_front_60, /cam/left_back_60,  2D object detection
+```
+roslaunch drivenet c1_drivenet_side.launch
+```
+
+/cam/front_top_close_120, /cam/back_top_120  2D object detection
+```
+roslaunch drivenet c1_drivenet_top.launch
+```
+
+Camera & LiDAR 3D object detection
+```
+roslaunch alignment c1_3d_object_detection.launch
+```
+
+Camera & LiDAR 2d and 3d matching
+```
+roslaunch alignment c1_2d_3d_matching.launch
+```
+
 ### How to setup parameters of launch file
 
 1. car_id (Choose car config)
@@ -101,8 +139,8 @@ roslaunch alignment b1_v2_3d_object_detection.launch
 
 4. imgResult_publish (2D detection visualization publisher)
 ```
-0: disable (default)
-1: enable
+0: disable
+1: enable (default)
 ```
 
 ### How to evaluate results
@@ -122,7 +160,7 @@ rostopic echo /CamObjBackTop
 rostopic echo /CameraDetection/polygon
 ```
 
-**CAR_MODEL = B1_V2:**
+**CAR_MODEL = B1_V2 || C1:**
 
 ```
 rostopic echo /cam_obj/front_bottom_60
@@ -133,5 +171,5 @@ rostopic echo /cam_obj/right_back_60
 rostopic echo /cam_obj/left_front_60
 rostopic echo /cam_obj/left_back_60
 rostopic echo /cam_obj/back_top_120
-rostopic echo /CameraDetection/polygon
+rostopic echo /CameraDetection
 ```
