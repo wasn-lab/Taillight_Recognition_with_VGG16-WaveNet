@@ -3,11 +3,11 @@
 namespace tpp
 {
 boost::shared_ptr<ros::AsyncSpinner> g_spinner;
-static double input_fps = 5;    // known callback rate
-static double output_fps = 10;  // expected publish rate
+static double g_input_fps = 5;    // known callback rate
+static double g_output_fps = 10;  // expected publish rate
 
-static unsigned int num_publishs_per_loop =
-    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+static unsigned int g_num_publishs_per_loop =
+    std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
 bool g_trigger = false;
 
@@ -25,7 +25,7 @@ static bool done_with_profiling()
 {
 #if ENABLE_PROFILING_MODE
   static int num_loop = 0;
-  if (num_loop < 60 * output_fps)
+  if (num_loop < 60 * g_output_fps)
   {
     num_loop++;
     return false;
@@ -145,7 +145,7 @@ void TPPNode::create_bbox_from_polygon(msgs::DetectedObject& obj)
 void TPPNode::create_polygon_from_bbox(const msgs::BoxPoint& bPoint, msgs::ConvexPoint& cPoint,
                                        const std::string frame_id)
 {
-  if (cPoint.lowerAreaPoints.size() == 0)
+  if (cPoint.lowerAreaPoints.empty())
   {
     std::vector<MyPoint32>().swap(cPoint.lowerAreaPoints);
     cPoint.lowerAreaPoints.reserve(4);
@@ -189,11 +189,10 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
     frame_id_source_ = objs_header_.frame_id;
   }
 
-  double objs_header_stamp_ = objs_header_.stamp.toSec();
-  double objs_header_stamp_prev_ = objs_header_prev_.stamp.toSec();
+  double objs_header_stamp = objs_header_.stamp.toSec();
+  double objs_header_stamp_prev = objs_header_prev_.stamp.toSec();
 
-  is_legal_dt_ =
-      (objs_header_stamp_prev_ > 0 && vel_.init_time(objs_header_stamp_, objs_header_stamp_prev_) == 0) ? true : false;
+  is_legal_dt_ = objs_header_stamp_prev > 0 && vel_.init_time(objs_header_stamp, objs_header_stamp_prev) == 0;
 
   dt_ = vel_.get_dt();
 
@@ -219,16 +218,39 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
         continue;
       }
 
-#if INPUT_ALL_CLASS
-      KTs_.objs_.push_back(obj);
-#else
-      if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
-          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
-          obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+      if (drivable_area_filter_)
       {
-        KTs_.objs_.push_back(obj);
-      }
+        if (drivable_area_filter(obj.bPoint))
+        {
+          continue;
+        }
+        else
+        {
+#if INPUT_ALL_CLASS == 1
+          KTs_.objs_.push_back(obj);
+#else
+          if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+              obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+              obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+          {
+            KTs_.objs_.push_back(obj);
+          }
 #endif
+        }
+      }
+      else
+      {
+#if INPUT_ALL_CLASS == 1
+        KTs_.objs_.push_back(obj);
+#else
+        if (obj.classId == sensor_msgs_itri::DetectedObjectClassId::Person ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Bicycle ||
+            obj.classId == sensor_msgs_itri::DetectedObjectClassId::Motobike)
+        {
+          KTs_.objs_.push_back(obj);
+        }
+#endif
+      }
     }
 
     for (auto& obj : KTs_.objs_)
@@ -479,7 +501,7 @@ void TPPNode::publish_tracking()
         // init max_length, head, is_over_max_length
         box.track.max_length = 10;
         box.track.head = 255;
-        box.track.is_over_max_length = false;
+        box.track.is_over_max_length = 0u;
 
         box.track.id = track.id_;
 
@@ -497,10 +519,13 @@ void TPPNode::publish_tracking()
           box.track.head = track.hist_.head_;
         }
 
+        // set length
+        box.track.length = track.hist_.len_;
+
         // set is_over_max_length
         if (track.hist_.len_ >= (unsigned short)track.hist_.max_len_)
         {
-          box.track.is_over_max_length = true;
+          box.track.is_over_max_length = 1u;
         }
 
         // set states
@@ -579,22 +604,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
     return false;
   }
 
-  geometry_msgs::TransformStamped tf_stamped;
-  try
-  {
-    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
-#if PRINT_MESSAGE
-    std::cout << tf_stamped << std::endl;
-#endif
-  }
-  catch (tf2::TransformException& ex)
-  {
-    ROS_WARN("%s", ex.what());
-    ros::Duration(1.0).sleep();
-    return false;
-  }
-
-  double yaw = tf2::getYaw(tf_stamped.transform.rotation);
+  double yaw = tf2::getYaw(tf_stamped_.transform.rotation);
 
   geometry_msgs::PoseStamped point_in;
   point_in.pose.position.x = position.x;
@@ -602,7 +612,7 @@ bool TPPNode::drivable_area_filter(const msgs::BoxPoint box_point)
   point_in.pose.position.z = 0;
 
   geometry_msgs::PoseStamped point_out;
-  point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped.transform.translation);
+  point_out.pose.position = get_transform_coordinate(point_in.pose.position, yaw, tf_stamped_.transform.translation);
   position.x = point_out.pose.position.x;
   position.y = point_out.pose.position.y;
 
@@ -759,6 +769,44 @@ inline bool test_file_exist(const std::string& name)
   return f.good();
 }
 
+void TPPNode::convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q)
+{
+  // TF (lidar-to-map) for object pose
+  geometry_msgs::Pose pose_in_lidar;
+  pose_in_lidar.position.x = p.x;
+  pose_in_lidar.position.y = p.y;
+  pose_in_lidar.position.z = p.z;
+  pose_in_lidar.orientation = q;
+
+  geometry_msgs::Pose pose_in_map;
+  tf2::doTransform(pose_in_lidar, pose_in_map, tf_stamped_);
+  p.x = pose_in_map.position.x;
+  p.y = pose_in_map.position.y;
+  p.z = pose_in_map.position.z;
+  q = pose_in_map.orientation;
+}
+
+void TPPNode::heading_enu(std::vector<msgs::DetectedObject>& objs)
+{
+  for (auto& obj : objs)
+  {
+    msgs::PointXYZ p;
+    p.x = 0.;
+    p.y = 0.;
+    p.z = 0.;
+    geometry_msgs::Quaternion q;
+    q.x = obj.heading.x;
+    q.y = obj.heading.y;
+    q.z = obj.heading.z;
+    q.w = obj.heading.w;
+    convert(p, q);
+    obj.heading_enu.x = q.x;
+    obj.heading_enu.y = q.y;
+    obj.heading_enu.z = q.z;
+    obj.heading_enu.w = q.w;
+  }
+}
+
 void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
 {
   std::ofstream ofs;
@@ -850,7 +898,7 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs)
   ofs.close();
 }
 
-void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs,
+void TPPNode::publish_tracking2(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs,
                                 const unsigned int pub_offset, const float time_offset)
 {
 #if SAVE_OUTPUT_TXT
@@ -861,27 +909,7 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
 
   msg.header = objs_header_;
   msg.header.stamp = objs_header_.stamp + ros::Duration((double)time_offset);
-
-  if (drivable_area_filter_)
-  {
-    msg.objects.reserve(objs.size());
-
-    for (auto& obj : objs)
-    {
-      if (drivable_area_filter(obj.bPoint))
-      {
-        continue;
-      }
-      else
-      {
-        msg.objects.push_back(obj);
-      }
-    }
-  }
-  else
-  {
-    msg.objects.assign(objs.begin(), objs.end());
-  }
+  msg.objects.assign(objs.begin(), objs.end());
 
   for (auto& obj : msg.objects)
   {
@@ -889,7 +917,6 @@ void TPPNode::publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedOb
   }
 
   pub.publish(msg);
-
 #if HEARTBEAT == 1
   std_msgs::Empty msg_heartbeat;
   track3d_pub_heartbeat_.publish(msg_heartbeat);
@@ -936,19 +963,18 @@ void TPPNode::get_current_ego_data_main()
 
 void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 {
-  geometry_msgs::TransformStamped tf_stamped;
   bool is_warning = false;
 
   try
   {
-    tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
+    tf_stamped_ = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, fusion_stamp);
   }
   catch (tf2::TransformException& ex)
   {
     ROS_WARN("%s", ex.what());
     try
     {
-      tf_stamped = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
+      tf_stamped_ = tf_buffer_.lookupTransform(frame_id_target_, frame_id_source_, ros::Time(0));
     }
     catch (tf2::TransformException& ex)
     {
@@ -959,13 +985,9 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 
   if (!is_warning)
   {
-    vel_.set_ego_x_abs(tf_stamped.transform.translation.x);
-    vel_.set_ego_y_abs(tf_stamped.transform.translation.y);
-
-    double roll, pitch, yaw;
-    quaternion_to_rpy(roll, pitch, yaw, tf_stamped.transform.rotation.x, tf_stamped.transform.rotation.y,
-                      tf_stamped.transform.rotation.z, tf_stamped.transform.rotation.w);
-    vel_.set_ego_heading(yaw);
+    vel_.set_ego_x_abs(tf_stamped_.transform.translation.x);
+    vel_.set_ego_y_abs(tf_stamped_.transform.translation.y);
+    vel_.set_ego_heading(tf2::getYaw(tf_stamped_.transform.rotation));
   }
   else
   {
@@ -980,11 +1002,11 @@ void TPPNode::get_current_ego_data(const ros::Time fusion_stamp)
 void TPPNode::set_ros_params()
 {
   std::string domain = "/itri_tracking_3d/";
-  nh_.param<int>(domain + "input_source", in_source_, InputSource::CameraDetV2);
+  nh_.param<int>(domain + "input_source", in_source_, InputSource::LidarDet);
 
-  nh_.param<double>(domain + "input_fps", input_fps, 10.);
-  nh_.param<double>(domain + "output_fps", output_fps, 10.);
-  num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(output_fps / input_fps)));
+  nh_.param<double>(domain + "g_input_fps", g_input_fps, 10.);
+  nh_.param<double>(domain + "g_output_fps", g_output_fps, 10.);
+  g_num_publishs_per_loop = std::max((unsigned int)1, (unsigned int)std::floor(std::floor(g_output_fps / g_input_fps)));
 
   nh_.param<bool>(domain + "show_runtime", show_runtime_, false);
 
@@ -997,7 +1019,7 @@ void TPPNode::set_ros_params()
   nh_.param<double>(domain + "ground_z", ground_z_, -3.1);
 
   nh_.param<double>(domain + "m_lifetime_sec", mc_.lifetime_sec, 0.);
-  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / output_fps : mc_.lifetime_sec;
+  mc_.lifetime_sec = (mc_.lifetime_sec == 0.) ? 1. / g_output_fps : mc_.lifetime_sec;
 
   nh_.param<bool>(domain + "gen_markers", gen_markers_, true);
   nh_.param<bool>(domain + "show_classid", mc_.show_classid, false);
@@ -1027,7 +1049,7 @@ int TPPNode::run()
 
   tf2_ros::TransformListener tf_listener(tf_buffer_);
 
-  ros::Rate loop_rate(output_fps);
+  ros::Rate loop_rate(g_output_fps);
 
   while (ros::ok() && !done_with_profiling())
   {
@@ -1051,6 +1073,7 @@ int TPPNode::run()
     if (g_trigger && is_legal_dt_)
     {
       get_current_ego_data(KTs_.header_.stamp);  // sync data
+      heading_enu(KTs_.objs_);                   // compute heading_enu (tf_map)
 
 #if DEBUG
       LOG_INFO << "Tracking main process start" << std::endl;

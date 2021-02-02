@@ -152,7 +152,7 @@ void ObstacleStopPlannerNode::pathCallback(
     // transform pointcloud
     geometry_msgs::TransformStamped transform_stamped = tf_buffer_.lookupTransform(
       trajectory.header.frame_id, obstacle_ros_pointcloud_ptr_->header.frame_id,
-      obstacle_ros_pointcloud_ptr_->header.stamp, ros::Duration(0.5));
+      ros::Time(0), ros::Duration(0.5)); //obstacle_ros_pointcloud_ptr_->header.stamp
     Eigen::Matrix4f affine_matrix =
       tf2::transformToEigen(transform_stamped.transform).matrix().cast<float>();
     sensor_msgs::PointCloud2 transformed_obstacle_ros_pointcloud;
@@ -530,7 +530,7 @@ bool ObstacleStopPlannerNode::getSelfPose(
   try {
     geometry_msgs::TransformStamped transform;
     transform =
-      tf_buffer.lookupTransform(header.frame_id, "rear_wheel", header.stamp, ros::Duration(0.1));
+      tf_buffer.lookupTransform(header.frame_id, "rear_wheel", ros::Time(0), ros::Duration(0.1)); //header.stamp
     self_pose.position.x = transform.transform.translation.x;
     self_pose.position.y = transform.transform.translation.y;
     self_pose.position.z = transform.transform.translation.z;

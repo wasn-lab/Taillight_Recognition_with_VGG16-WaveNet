@@ -1,7 +1,11 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 from __future__ import print_function
 import time
 import heapq
 import rospy
+from object_ids import (OBJECT_ID_PERSON, OBJECT_ID_BICYCLE, OBJECT_ID_MOTOBIKE,
+                        OBJECT_ID_CAR)
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
@@ -33,7 +37,10 @@ def localization_state_func(msg):
         status = FATAL
         status_strs.append("pose_unstable")
 
-    return status, " ".join(status_strs)
+    status_str = " ".join(status_strs)
+    if status != OK:
+        rospy.logwarn("Localization state: %s", status_str)
+    return status, status_str
 
 
 def backend_connection_state_func(msg):
@@ -69,6 +76,8 @@ def backend_info_func(msg):
             status_str = ("Low battery: gross voltage is {}, "
                           "lowest voltage is {}").format(
                               gross_voltage, lowest_voltage)
+    if status != OK:
+        rospy.logwarn("BackendInfo: %s", status_str)
     return status, status_str
 
 
@@ -99,6 +108,37 @@ def cam_object_detection_func(msg):
                 status_str = ("Low confidence: classId: {}, prob: {}, "
                               "center: ({:.2f}, {:.2f})").format(
                                   obj.classId, prob, center[0], center[1])
+    if status != OK:
+        rospy.logwarn("CameraDetection: %s", status_str)
+    return status, status_str
+
+
+def lidar_detection_func(msg):
+    status = ERROR
+    status_str = "No lidar detection result"
+    if msg is not None:
+        status = OK
+        status_str = "OK"
+        for obj in msg.objects:
+            if len(obj.camInfo) == 0:
+                # LidarDetection stores the prob in camInfo for now.
+                # If we cannot get the prob, just ignore the message.
+                continue
+            center = __calc_center_by_3d_bpoint(obj.bPoint)
+            if center[0] <= 0:
+                # We don't care much about objects behind the car.
+                continue
+            prob = max(cam_instance.prob for cam_instance in obj.camInfo)
+            if ((obj.classId == OBJECT_ID_CAR and prob < 0.41) or
+                    (obj.classId == OBJECT_ID_PERSON and prob < 0.31) or
+                    (obj.classId == OBJECT_ID_BICYCLE and prob < 0.31) or
+                    (obj.classId == OBJECT_ID_MOTOBIKE and prob < 0.31)):
+                status = WARN
+                status_str = ("Low confidence: classId: {}, prob: {}, "
+                              "center: ({:.2f}, {:.2f})").format(
+                                  obj.classId, prob, center[0], center[1])
+    if status != OK:
+        rospy.logwarn("LidarDetection: %s", status_str)
     return status, status_str
 
 
@@ -133,6 +173,10 @@ class Heartbeat(object):
         if module_name == "backend_info":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = backend_info_func
+
+        if module_name == "LidarDetection":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = lidar_detection_func
 
         # internal variables:
         self.heap = []

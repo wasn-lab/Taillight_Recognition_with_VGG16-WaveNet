@@ -510,13 +510,12 @@ void PathPredict::pp_vertices(PPLongDouble& pps, const msgs::PathPrediction fore
 void PathPredict::pp_vertices(PPLongDouble& pps, const int pp_idx, const float abs_speed)
 #endif
 {
-  double roll, pitch, yaw;
   geometry_msgs::Quaternion q = tf2::toMsg(pps.q1);
-  quaternion_to_rpy(roll, pitch, yaw, q.x, q.y, q.z, q.w);
+  double yaw = tf2::getYaw(q);
 
 #if DEBUG_PP
-  std::cout << "q.x:" << q.x << " q.y:" << q.y << " q.z:" << q.z << " q.z:" << q.z << " roll:" << roll
-            << " pitch:" << pitch << " yaw:" << yaw << " absspeed:" << abs_speed << std::endl;
+  std::cout << "q.x:" << q.x << " q.y:" << q.y << " q.z:" << q.z << " q.z:" << q.z << " yaw:" << yaw
+            << " absspeed:" << abs_speed << std::endl;
 #endif
 
   float scale = abs_speed * (pp_idx + 1) / 200.;
