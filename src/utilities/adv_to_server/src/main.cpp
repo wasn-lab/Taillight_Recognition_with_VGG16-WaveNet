@@ -1568,7 +1568,7 @@ json genMqttBmsMsg()
   bsm["current"] = g_battery.gross_current;
   bsm["voltage"] = g_battery.gross_voltage;
   bsm["capacity"] =g_vs.battery;
-  bsm["design_capacity"] = -1 ;
+  bsm["design_capacity"] = 300 ;
   bsm["timestamp"] = timestamp_ms;
   bsm["source_time"] = timestamp_ms;
   return bsm;
@@ -1612,7 +1612,7 @@ json genMqttECUMsg(ecu_type type)
       break;
     case ecu_type::operation_speed:
       ecu["operation_speed"] = -1.0;
-      ecu["maximum_speed"] = 35;
+      ecu["maximum_speed"] = 110;
       break;
     case ecu_type::driving_mode:
       ecu["driving_mode"] = 1;
