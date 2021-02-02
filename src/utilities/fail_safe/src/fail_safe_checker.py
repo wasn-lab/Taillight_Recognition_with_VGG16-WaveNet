@@ -19,6 +19,9 @@ from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
 
 
+_MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
+
+
 def _overall_status(module_states):
     return max(_["status"] for _ in module_states)
 
@@ -140,8 +143,10 @@ class FailSafeChecker(object):
             # force stop self-driving mode
             rospy.logfatal("status is FATAL: %s", status_str)
             self.sys_ready_publisher.publish(False)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "0")
         else:
             self.sys_ready_publisher.publish(True)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "1")
 
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
