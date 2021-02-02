@@ -52,7 +52,7 @@ sleep 2
 gnome-terminal  -e 'ssh -t local "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh;exec bash"'
 
 sleep 2
-gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_camera.sh;exec bash"'
+gnome-terminal  -e 'ssh -t xavier "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera.sh;exec bash"'
 sleep 2
 gnome-terminal  -e "bash -c 'export ROS_MASTER_URI=http://192.168.1.3:11311;export ROS_IP=192.168.1.3;source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_car.launch;exec bash'"
 sleep 2

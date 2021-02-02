@@ -1399,7 +1399,7 @@ void buffer_monitor()
   ros::Time lidarall_nonground_time_last = ros::Time(0);
   ros::Time lidar_ssn_time_last = ros::Time(0);
   /// main loop
-  ros::Rate loop_rate(20);
+  ros::Rate loop_rate(25);
   while (ros::ok())
   {
     if (g_data_sync)
