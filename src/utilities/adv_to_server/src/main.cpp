@@ -295,6 +295,7 @@ bool convertBoolean(int state)
 
 void callback_flag_info04(const msgs::Flag_Info::ConstPtr& input)
 {
+    g_vs.speed = input->Dspace_Flag01;
     g_vs.steering_wheel =  input->Dspace_Flag04;
     g_vs.accelerator = input->Dspace_Flag05;
     g_vs.brake_pos = input->Dspace_Flag06;
@@ -507,7 +508,7 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   g_vs.steer = input->steer; //轉向
   g_vs.localization = input->localization; //定位
   g_vs.odometry = input->odometry; //里程
-  g_vs.speed = input->speed; //車速 km/hr
+  //g_vs.speed = input->speed; //車速 km/hr
   //vs.rotating_speed = input->speed ; //轉速
   g_vs.bus_stop = input->bus_stop; //站點
   g_vs.vehicle_number = input->vehicle_number; //車號
@@ -714,8 +715,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Gyrox"] = g_imu.Gyrox; // 目前來源 imu_data_rad
     j1["Gyroy"] = g_imu.Gyroy; // 目前來源 imu_data_rad
     j1["Gyroz"] = g_imu.Gyroz; // 目前來源 imu_data_rad
-    j1["accelerator"] = g_can_data[4]; //無rostopic 目前來源CAN
-    j1["brake_pedal"] = g_can_data[5]; //無rostopic 目前來源CAN
+    j1["accelerator"] = g_vs.accelerator; //無rostopic 目前來源Flag04
+    j1["brake_pedal"] = g_vs.brake_pos; //無rostopic 目前來源Flag04
     j1["distance"] = 0.0; //? 跟mileage有何不同？
     j1["mainvoltage"] = g_battery.gross_voltage; //總電壓//0.0;
     j1["maxvoltage"] = g_battery.highest_voltage; //最高電池電壓//0.0;
@@ -764,8 +765,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Gyrox"] = g_imu.Gyrox; //   目前來源 imu_data_rad
     j1["Gyroy"] = g_imu.Gyroy; //   目前來源 imu_data_rad
     j1["Gyroz"] = g_imu.Gyroz; //   目前來源 imu_data_rad
-    j1["accelerator"] = g_can_data[4]; //無rostopic 目前來源CAN
-    j1["brake_pedal"] = g_can_data[5]; //無rostopic 目前來源CAN
+    j1["accelerator"] = g_vs.accelerator; //無rostopic 目前來源Flag04
+    j1["brake_pedal"] = g_vs.brake_pos; //無rostopic 目前來源Flag04
     j1["ArrivedStop"] = g_cuttent_arrive_stop.id; //目前來源 NextStop/Info
     j1["ArrivedStopStatus"] = g_cuttent_arrive_stop.status; //目前來源 NextStop/Info
     j1["round"] = g_cuttent_arrive_stop.round; //目前來源 BusStop/Round
