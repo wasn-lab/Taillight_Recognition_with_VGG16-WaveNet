@@ -49,8 +49,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_web_video_server.s
 screen -t run_gui_gateway
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_gui_gateway.sh^M"
 
-screen -t run_sys_check_gateway
-stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_sys_check_gateway.sh^M"
+# Use fail_safe to publish sys_ready
+#screen -t run_sys_check_gateway
+#stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_sys_check_gateway.sh^M"
 
 screen -t init_tracking_3d
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d.sh^M"
