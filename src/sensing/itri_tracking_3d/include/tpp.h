@@ -6,7 +6,7 @@
 
 namespace tpp
 {
-constexpr unsigned int num_2dbox_corners = 4;
+constexpr unsigned int NUM_2DBOX_CORNERS = 4;
 
 enum InputSource
 {

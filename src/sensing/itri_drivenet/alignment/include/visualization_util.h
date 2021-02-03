@@ -25,7 +25,9 @@ private:
 public:
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, float point_x);
   void drawPointCloudOnImage(cv::Mat& m_src, int point_u, int point_v, int index);
-  void drawBoxOnImage(cv::Mat& m_src, std::vector<msgs::DetectedObject>& objects);
+  void drawBoxOnImage(cv::Mat& m_src, const std::vector<msgs::DetectedObject>& objects);
+  void drawBoxOnImage(cv::Mat& m_src, const std::vector<DriveNet::MinMax2D>& min_max_2d_bbox, int source_id);
+  void drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<DriveNet::PixelPosition>>& cube_2d_bbox);
   cv::Scalar getDistColor(float distance_in_meters);
   MinMax3D getDistLinePoint(float x_dist, float y_dist, float z_dist);
 };

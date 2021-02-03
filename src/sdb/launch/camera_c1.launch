@@ -8,6 +8,8 @@
 
 	<include file="$(find camera_grabber)/launch/repub_image_topic_tools.launch"/>
 
+        <include file="$(find alignment)/launch/c1_2d_3d_matching.launch"/>
+
 	<node name="msg_recorder"
 		pkg="msg_recorder"
 		type="msg_recorder.py"
