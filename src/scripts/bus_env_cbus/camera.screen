@@ -37,9 +37,6 @@ stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera
 screen -t init_rosbag_sender
 stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
 
-screen -t init_fail_safe
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
-
 screen -t init_lightnet
 stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
 
