@@ -5,7 +5,7 @@
       <arg name="use_compress" value="false" />
     </include>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_compressed_2021-01-12-16-01-42.bag -l" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_compressed_2021-02-03.bag -l" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
