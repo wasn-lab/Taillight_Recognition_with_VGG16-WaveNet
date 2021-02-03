@@ -46,7 +46,7 @@
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60 };
 #else
 #error "car model is not well defined"
@@ -108,7 +108,7 @@ msgs::DetectedObjectArray g_object_lidar;
 std::vector<msgs::DetectedObjectArray> g_object_arrs(g_cam_ids.size());
 std::vector<msgs::DetectedObjectArray> g_object_arrs_process(g_cam_ids.size());
 bool g_is_lidar_object_update = false;
-int g_object_wait_frame = 5;
+int g_object_wait_frame = 1;
 std::vector<std::vector<msgs::DetectedObjectArray>> g_object_buffer_arrs(g_cam_ids.size());
 std::vector<bool> g_is_object_update(g_cam_ids.size());
 
@@ -843,7 +843,7 @@ void buffer_monitor()
   ros::Time lidar_detection_time_last = ros::Time(0);
   bool cam_object_update = false;
   /// main loop
-  ros::Rate loop_rate(20);
+  ros::Rate loop_rate(25);
   while (ros::ok())
   {
     // Add buffer
@@ -976,7 +976,7 @@ int main(int argc, char** argv)
   /// message_filters Subscriber
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order], 1);
+    cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order] + std::string("/raw"), 1);
     g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
     g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
     g_cache_image[cam_order].setCacheSize(g_buffer_size);

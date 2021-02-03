@@ -25,14 +25,5 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
-screen -t set_ip
-stuff "echo nvidia | sudo -S route add -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.2.1^M"
-
-screen -t reset_time
-stuff "bash /home/nvidia/itriadv/src/scripts/bus_env/ta/reset_time.sh^M"
-
-screen -t init_control_new_lanelet2
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_control_new_lanelet2.sh^M"
-
-screen -t init_radar
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_radar.sh^M"
+screen -t init_camera
+stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera.sh^M"

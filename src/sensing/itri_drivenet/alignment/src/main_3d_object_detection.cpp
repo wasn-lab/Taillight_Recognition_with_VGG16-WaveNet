@@ -53,7 +53,7 @@ using namespace DriveNet;
 Boxfusion g_box_fusion;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
                                          camera::id::right_back_60,   camera::id::left_back_60,
                                          camera::id::right_front_60,  camera::id::left_front_60 };
@@ -1399,7 +1399,7 @@ void buffer_monitor()
   ros::Time lidarall_nonground_time_last = ros::Time(0);
   ros::Time lidar_ssn_time_last = ros::Time(0);
   /// main loop
-  ros::Rate loop_rate(20);
+  ros::Rate loop_rate(25);
   while (ros::ok())
   {
     if (g_data_sync)
