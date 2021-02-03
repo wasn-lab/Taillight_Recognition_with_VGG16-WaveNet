@@ -2,8 +2,8 @@
 set -x
 
 pkill screen
-ssh -t xavier "pill screen"
-ssh -t local "pill screen"
-ssh -t camera "pill screen"
+ssh -t xavier "pkill screen"
+ssh -t local "pkill screen"
+ssh -t camera "pkill screen"
 
 echo All done
