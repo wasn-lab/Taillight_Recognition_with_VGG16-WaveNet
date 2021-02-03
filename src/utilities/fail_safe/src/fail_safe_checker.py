@@ -14,9 +14,12 @@ from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
-from status_level import OK, WARN, ERROR, FATAL
+from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
+
+
+_MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
 
 def _overall_status(module_states):
@@ -140,8 +143,10 @@ class FailSafeChecker(object):
             # force stop self-driving mode
             rospy.logfatal("status is FATAL: %s", status_str)
             self.sys_ready_publisher.publish(False)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "0")
         else:
             self.sys_ready_publisher.publish(True)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "1")
 
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
@@ -166,7 +171,8 @@ class FailSafeChecker(object):
             return
 
         if not rospy.get_param("/fail_safe/should_post_issue", True):
-            rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
+            if current_status["status"] != OK:
+                rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
             return
 
         for doc in current_status["events"]:
@@ -192,6 +198,9 @@ class FailSafeChecker(object):
                 self.modules[module].update_latched_message()
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
+
+            rospy.logwarn("status: %s",
+                          STATUS_CODE_TO_STR[current_status["status"]])
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)
