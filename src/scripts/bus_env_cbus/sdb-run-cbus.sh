@@ -18,8 +18,6 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_gui_gateway.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_fail_safe.sh;exec bash"'
-sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_sys_check_gateway.sh;exec bash"'
 
 #sleep 3
@@ -104,8 +102,8 @@ gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus
 sleep 3
 gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender;exec bash'"
 
-#sleep 3
-#gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh;exec bash'"
+sleep 3
+gnome-terminal  -e "ssh -t camera '/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh;exec bash'"
 
 
 sleep 10
