@@ -14,7 +14,7 @@ from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
-from status_level import OK, WARN, ERROR, FATAL
+from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
 
@@ -171,7 +171,8 @@ class FailSafeChecker(object):
             return
 
         if not rospy.get_param("/fail_safe/should_post_issue", True):
-            rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
+            if current_status["status"] != OK:
+                rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
             return
 
         for doc in current_status["events"]:
@@ -197,6 +198,9 @@ class FailSafeChecker(object):
                 self.modules[module].update_latched_message()
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
+
+            rospy.logwarn("status: %s",
+                          STATUS_CODE_TO_STR[current_status["status"]])
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)
