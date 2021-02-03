@@ -213,9 +213,13 @@ class Heartbeat(object):
     def _update_status(self):
         self._update_heap()  # Clear out-of-date timestamps
         if self.inspect_func is not None:
-            if self.get_fps() == 0:
-                self.msg = None
-            self.status, self.status_str = self.inspect_func(self.msg)
+            if self.enabled:
+                if self.get_fps() == 0:
+                    self.msg = None
+                self.status, self.status_str = self.inspect_func(self.msg)
+            else:
+                self.status = OK
+                self.status_str = "Disabled"
             return
         if self.latch:
             self._update_status_latch()
