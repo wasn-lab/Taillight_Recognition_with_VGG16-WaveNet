@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
 from rosbag_utils import get_bag_yymmdd, get_bag_timestamp, get_bag_timestamp_in_dict
 

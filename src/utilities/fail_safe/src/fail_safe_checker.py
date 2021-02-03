@@ -1,10 +1,12 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 from __future__ import print_function
 import configparser
 import json
 import pprint
 import time
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info02 import CtrlInfo02
@@ -12,9 +14,12 @@ from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
-from status_level import OK, WARN, ERROR, FATAL
+from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
+
+
+_MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
 
 def _overall_status(module_states):
@@ -68,6 +73,8 @@ class FailSafeChecker(object):
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
         self.fail_safe_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
+        self.sys_ready_publisher = rospy.Publisher(
+            "/ADV_op/sys_ready", Bool, queue_size=1000)
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -115,7 +122,7 @@ class FailSafeChecker(object):
             self.warn_count = 0
         if self.warn_count > 10 and ego_speed > 0:
             status = ERROR
-            status_str = "WARN states more than 10 seconds"
+            status_str += "; WARN states more than 10 seconds"
 
         if status == ERROR:
             self.error_count += 1
@@ -123,12 +130,23 @@ class FailSafeChecker(object):
             self.error_count = 0
         if self.error_count > 10:
             status = FATAL
-            status_str = "ERROR states more than 10 seconds"
+            status_str += "; ERROR states more than 10 seconds"
 
         ret["status"] = status
         ret["status_str"] = status_str
+        self._publish_sys_ready(status, status_str)
 
         return ret
+
+    def _publish_sys_ready(self, status, status_str):
+        if status == FATAL:
+            # force stop self-driving mode
+            rospy.logfatal("status is FATAL: %s", status_str)
+            self.sys_ready_publisher.publish(False)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "0")
+        else:
+            self.sys_ready_publisher.publish(True)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "1")
 
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
@@ -153,7 +171,8 @@ class FailSafeChecker(object):
             return
 
         if not rospy.get_param("/fail_safe/should_post_issue", True):
-            rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
+            if current_status["status"] != OK:
+                rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
             return
 
         for doc in current_status["events"]:
@@ -179,6 +198,9 @@ class FailSafeChecker(object):
                 self.modules[module].update_latched_message()
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
+
+            rospy.logwarn("status: %s",
+                          STATUS_CODE_TO_STR[current_status["status"]])
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)

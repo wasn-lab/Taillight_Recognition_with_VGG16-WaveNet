@@ -14,3 +14,5 @@ python issue_reporter_test.py
 python sb_rosbag_sender_test.py
 python rosbag_compressor_test.py
 python load_monitor_test.py
+python car_model_helper_test.py
+python load_collector_test.py

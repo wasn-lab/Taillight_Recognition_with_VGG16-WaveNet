@@ -25,17 +25,20 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
-screen -t init_map_lanelet2
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_map_lanelet2.sh^M"
-
-screen -t init_localization_lanelet2
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_localization_lanelet2.sh^M"
-
-screen -t init_localization_supervision
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_localization_supervision.sh^M"
-
-screen -t init_planning_all_lanelet2.sh
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_planning_all_lanelet2.sh^M"
-
+# ROS has trouble when dealing multiple nodes concurrently.
+# We first make light-weight load_monitor to successfully connect to master,
+# and then bring up other nodes.
 screen -t init_load_monitor
 stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_load_monitor.sh^M"
+
+screen -t init_map_lanelet2
+stuff "sleep 3; /home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_map_lanelet2.sh^M"
+
+screen -t init_localization_lanelet2
+stuff "sleep 3; /home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_localization_lanelet2.sh^M"
+
+screen -t init_localization_supervision
+stuff "sleep 3; /home/local/itriadv/src/scripts/bus_env_cbus/local/init_localization_supervision.sh^M"
+
+screen -t init_planning_all_lanelet2
+stuff "sleep 3; /home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_planning_all_lanelet2.sh^M"

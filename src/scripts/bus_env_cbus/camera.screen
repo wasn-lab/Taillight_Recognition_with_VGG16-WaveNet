@@ -25,11 +25,32 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
-screen -t init_camera
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh^M"
-
-screen -t init_fail_safe.sh
-stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
-
+# ROS has trouble when dealing multiple nodes concurrently.
+# We first make light-weight load_monitor to successfully connect to master,
+# and then bring up other nodes.
 screen -t init_load_monitor
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
+
+screen -t init_camera
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh^M"
+
+screen -t init_rosbag_sender
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
+
+screen -t init_fail_safe
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
+
+screen -t init_lightnet
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
+
+screen -t init_tracking_2d
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d.sh^M"
+
+screen -t init_tracking_2d_left
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_left.sh^M"
+
+screen -t init_tracking_2d_right
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_right.sh^M"
+
+screen -t init_tracking_2d_fov30
+stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_fov30.sh^M"
