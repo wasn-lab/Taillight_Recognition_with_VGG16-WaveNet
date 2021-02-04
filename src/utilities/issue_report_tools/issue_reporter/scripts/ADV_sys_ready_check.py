@@ -525,7 +525,7 @@ def main():
 
         # Publish ready
         #----------------------------------#
-        ros_advop_sys_ready_pub.publish( evaluate_is_OK(sys_total_status) )
+        #ros_advop_sys_ready_pub.publish( evaluate_is_OK(sys_total_status) )
         #----------------------------------#
         try:
             rate.sleep()
