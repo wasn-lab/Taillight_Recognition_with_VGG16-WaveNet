@@ -89,3 +89,36 @@ use rqt_image_view to view following topic
 /cam/left_back_60/raw
 /cam/back_top_120/raw
 ```
+
+
+### How to install camera driver
+
+**install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_car_mode.sh
+```
+
+**install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_laboratory_mode.sh
+```
+
+### How to install camera driver when xavier bootup
+* create /etc/rc.local
+```
+#!/bin/sh -e
+exec > /tmp/rclocal.log 2>&1
+set -x
+#init max clock
+sleep 5
+/usr/bin/jetson_clocks
+#wait clocks ready
+sleep 5
+#init camera driver for car mode
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_car_mode.sh
+#init camera driver for laboratory mode
+#bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_laboratory_mode.sh
+```
+
+
+
