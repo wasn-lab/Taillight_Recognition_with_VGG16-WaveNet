@@ -30,6 +30,25 @@ def _overall_status_str(module_states):
     mnames = [_["module"] for _ in module_states if _["status"] != OK]
     return "Misbehaving modules: {}".format(" ".join(mnames))
 
+def aggregate_event_status(status, status_str, events):
+    """
+    Args:
+    status(int) -- overall status of states
+    status_str(str) -- aggregated strs of states
+
+    Return:
+    status(int) -- Highest level between |status| and |events|
+    status_str(str) -- Aggregated status_str with |events|
+    """
+    for event in events:
+        status = max(status, event["status"])
+        if event["status"] != OK:
+            if status_str:
+                status_str += "; " + event["status_str"]
+            else:
+                status_str = event["status_str"]
+    return status, status_str
+
 
 class FailSafeChecker(object):
     def __init__(self, heartbeat_ini, mqtt_ini, mqtt_fqdn):
@@ -132,13 +151,7 @@ class FailSafeChecker(object):
             status = FATAL
             status_str += "; ERROR states more than 10 seconds"
 
-        for event in ret["events"]:
-            status = max(status, event["status"])
-            if event["status"] != OK:
-                rospy.logwarn("Status:%s, Event: %s",
-                    STATUS_CODE_TO_STR[event["status"]],
-                    event["status_str"])
-                status_str += "; " + event["status_str"]
+        status, status_str = aggregate_event_status(status, status_str, ret["events"])
         ret["status"] = status
         ret["status_str"] = status_str
         self._publish_sys_ready(status, status_str)
@@ -148,7 +161,6 @@ class FailSafeChecker(object):
     def _publish_sys_ready(self, status, status_str):
         if status == FATAL:
             # force stop self-driving mode
-            rospy.logfatal("status is FATAL: %s", status_str)
             self.sys_ready_publisher.publish(False)
             self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "0")
         else:
@@ -207,8 +219,9 @@ class FailSafeChecker(object):
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
 
-            rospy.logwarn("status: %s",
-                          STATUS_CODE_TO_STR[current_status["status"]])
+            rospy.logwarn("status: %s -- %s",
+                          STATUS_CODE_TO_STR[current_status["status"]],
+                          current_status["status_str"])
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)
