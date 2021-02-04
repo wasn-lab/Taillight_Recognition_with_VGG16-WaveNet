@@ -132,6 +132,10 @@ class FailSafeChecker(object):
             status = FATAL
             status_str += "; ERROR states more than 10 seconds"
 
+        for event in ret["events"]:
+            status = max(status, event["status"])
+            if event["status"] != OK:
+                status_str += "; " + event["status_str"]
         ret["status"] = status
         ret["status_str"] = status_str
         self._publish_sys_ready(status, status_str)
