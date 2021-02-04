@@ -23,7 +23,7 @@ set(LIGHTNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet/it
 set(LIGHTNET_TAINAN_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_tainan/itri_lightnet_tainan_main/resources)
 set(LOCALIZATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/localization)
 set(VEHICLE_DAE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vehicle/vehicle_description/vehicle_body_description/b_bus_description/mesh)
-set(IPP_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_interactive/models)
+set(IPP_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_interactive_pp/models)
 
 
 function(download_file)

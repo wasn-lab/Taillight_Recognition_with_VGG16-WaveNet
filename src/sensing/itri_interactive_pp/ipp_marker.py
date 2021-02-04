@@ -98,13 +98,8 @@ def listener_pedestrian():
 if __name__ == '__main__':
     global input_source,coordinate_type
     rospy.init_node('Ipp_Marker')
-    input_source = rospy.get_param('/object_marker/coordinate_type')
-    if input_source == 1:
-        coordinate_type = 'map'
-    elif input_source == 2:
-        coordinate_type == '/base_link'
-    else:
-        print('Source not found!')
+    # IPP input with map-based
+    coordinate_type = 'map'
         
     try:
         listener_pedestrian()

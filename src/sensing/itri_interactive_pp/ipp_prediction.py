@@ -180,9 +180,7 @@ class buffer_data():
                 v = np.stack((vx, vy), axis=-1)
                 v_norm = np.linalg.norm(
                     np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
-                heading_v = np.divide(
-                    v, v_norm, out=np.zeros_like(v), where=(
-                        v_norm > 0.1))
+                heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
                 heading_x = heading_v[:, 0]
                 heading_y = heading_v[:, 1]
 
@@ -239,7 +237,7 @@ def transform_data(buffer, data):
         z = obj.center_point.z
 
         # transform from base_link to map
-        if absolute_coordinate:
+        if transformer:
             transform = tf_buffer.lookup_transform(
                 'map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
             pose_stamped = PoseStamped()
@@ -284,37 +282,36 @@ def transform_data(buffer, data):
         diff_x = 0
         diff_y = 0
         heading = 0
-        # using quaternion problem radian or angle?
-        # quaternion_list = [obj.heading.x,obj.heading.y,obj.heading.z,obj.heading.w]
-        # _ , _ , yaw = euler_from_quaternion(quaternion_list)
-        
-        heading_rad = 0
-        for old_obj in past_obj:
-            sp = old_obj.split(",")
-            if obj.track.id == int(sp[2]):
-                diff_x = x - float(sp[4])
-                diff_y = y - float(sp[5])
-                if diff_x == 0:
-                    heading = 90
-                else:
-                    heading = abs(math.degrees(math.atan(diff_y / diff_x)))
-                # print(diff_x,diff_y,diff_y/diff_x,heading)
-                if diff_x == 0 and diff_y == 0:
-                    heading = 0
-                elif diff_x >= 0 and diff_y >= 0:
-                    heading = heading
-                elif diff_x >= 0 and diff_y < 0:
-                    heading = 360 - heading
-                elif diff_x < 0 and diff_y >= 0:
-                    heading = 180 - heading
-                else:
-                    heading = 180 + heading
-                if heading > 180:
-                    heading = heading - 360
-                heading_rad = math.radians(heading)
-        info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + \
-            "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
-        past_obj.append(info)
+        # for CH object.yaw
+        heading = obj.distance
+        heading_rad = math.radians(heading)
+        # heading_rad = 0
+        # for old_obj in past_obj:
+        #     sp = old_obj.split(",")
+        #     if obj.track.id == int(sp[2]):
+        #         diff_x = x - float(sp[4])
+        #         diff_y = y - float(sp[5])
+        #         if diff_x == 0:
+        #             heading = 90
+        #         else:
+        #             heading = abs(math.degrees(math.atan(diff_y / diff_x)))
+        #         # print(diff_x,diff_y,diff_y/diff_x,heading)
+        #         if diff_x == 0 and diff_y == 0:
+        #             heading = 0
+        #         elif diff_x >= 0 and diff_y >= 0:
+        #             heading = heading
+        #         elif diff_x >= 0 and diff_y < 0:
+        #             heading = 360 - heading
+        #         elif diff_x < 0 and diff_y >= 0:
+        #             heading = 180 - heading
+        #         else:
+        #             heading = 180 + heading
+        #         if heading > 180:
+        #             heading = heading - 360
+        #         heading_rad = math.radians(heading)
+        # info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + \
+        #     "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
+        # past_obj.append(info)
         # print 'ros method heading : ',yaw
         # print 'our method heading : ',heading
         node_data = pd.Series({'frame_id': buffer.get_buffer_frame(),
@@ -341,17 +338,17 @@ def transform_data(buffer, data):
 def predict(data):
     prev = time.time()
     present_id = transform_data(buffer, data)
-    print '[RunTime] obj count :' ,len(present_id)
-    print '[RunTime] Data preprocessing cost time: ',time.time() - prev
+    # print '[RunTime] obj count :' ,len(present_id)
+    # print '[RunTime] Data preprocessing cost time: ',time.time() - prev
     prev = time.time()
     present_id = map(str, present_id)
     scene = buffer.create_scene(present_id)
-    print '[RunTime] Create_scene cost time: ',time.time() - prev
+    # print '[RunTime] Create_scene cost time: ',time.time() - prev
     prev = time.time()
     scene.calculate_scene_graph(buffer.env.attention_radius,
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
-    print '[RunTime] calculate_scene_graph cost time: ',time.time()-prev
+    # print '[RunTime] calculate_scene_graph cost time: ',time.time()-prev
     timesteps = np.array([buffer.get_buffer_frame()])
     prev = time.time()
     # print buffer.current_time
@@ -377,7 +374,7 @@ def predict(data):
                                    z_mode=True,
                                    gmm_mode=True,
                                    full_dist=False)
-    print '[RunTime] Prediction cost time: ',time.time()-prev
+    # print '[RunTime] Prediction cost time: ',time.time()-prev
     buffer.update_frame()
     if len(predictions.keys()) < 1:
         return
@@ -386,8 +383,9 @@ def predict(data):
 
     for index, node in enumerate(predictions[t].keys()):
         for obj in data.objects:
+            # print(obj.track.forecasts)
+            obj.track.forecasts = []
             if obj.track.id == int(node.id):
-                
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()
@@ -396,9 +394,12 @@ def predict(data):
 
                     obj.track.forecasts.append(forecasts_item)
                     obj.track.is_ready_prediction = True
+                    print(prediction_x_y)
                 break
             else:
                 continue
+
+            # print(obj.track.forecasts)
 
     pub = rospy.Publisher(
         '/IPP/Alert',
@@ -435,7 +436,7 @@ if __name__ == '__main__':
           loading_model_part
           frame_length for refreshing buffer
         ===================== '''
-    global prediction_horizon, absolute_coordinate, buffer, past_obj, input_topic, frame_length
+    global prediction_horizon, transformer, buffer, past_obj, input_topic, frame_length
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -443,8 +444,8 @@ if __name__ == '__main__':
     print('Complete loading model!')
     prediction_horizon = rospy.get_param(
         '/object_path_prediction/prediction_horizon')
-    absolute_coordinate = rospy.get_param(
-        '/object_path_prediction/coordinate_type')
+    transformer = rospy.get_param(
+        '/object_path_prediction/transformer')
     delay_node = rospy.get_param(
         '/object_path_prediction/delay_node')
     input_source = rospy.get_param('/object_path_prediction/input_topic')
