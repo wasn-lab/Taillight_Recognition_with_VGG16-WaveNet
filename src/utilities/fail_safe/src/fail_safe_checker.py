@@ -135,6 +135,9 @@ class FailSafeChecker(object):
         for event in ret["events"]:
             status = max(status, event["status"])
             if event["status"] != OK:
+                rospy.logwarn("Status:%s, Event: %s",
+                    STATUS_CODE_TO_STR[event["status"]],
+                    event["status_str"])
                 status_str += "; " + event["status_str"]
         ret["status"] = status
         ret["status_str"] = status_str
@@ -171,7 +174,8 @@ class FailSafeChecker(object):
 
     def post_issue_if_necessary(self, current_status):
         if not self.is_self_driving():
-            rospy.logwarn("Do not post issue in non-self-driving mode")
+            if current_status["status"] != OK:
+                rospy.logwarn("Do not post issue in non-self-driving mode")
             return
 
         if not rospy.get_param("/fail_safe/should_post_issue", True):
