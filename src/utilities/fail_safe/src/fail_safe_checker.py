@@ -161,7 +161,6 @@ class FailSafeChecker(object):
     def _publish_sys_ready(self, status, status_str):
         if status == FATAL:
             # force stop self-driving mode
-            rospy.logfatal("status is FATAL: %s", status_str)
             self.sys_ready_publisher.publish(False)
             self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "0")
         else:
