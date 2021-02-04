@@ -9,14 +9,15 @@
   <!-- Set time to prediction (3fps)-->
   <arg name="prediction_horizon" default="6" />
 
-  <!-- Set transformer if coordinate need to be change-->
-  <!-- 0: transformer False No Transform -->
-  <!-- 1: transformer True ego-based->map-based -->
-  <arg name="transform_coordinate" default="1" />
   <!-- Set if delay or not-->
   <!-- 1: no delay 8 fps -->
   <!-- 2: delay 2 fps -->
   <arg name="delay_node" default="2" />
+  <!-- print log-->
+  <!-- 0: Dont Print log -->
+  <!-- 1: Print execution time log-->
+  <!-- 2: Print prediction log-->
+  <arg name="print_log" default="0" />
 
   <node pkg="itri_interactive_pp" type="frequency_filter.py" name="filter" cwd="node" output="screen" >
     <param name="input_topic" value="$(arg input_topic)" />
@@ -25,7 +26,7 @@
     <param name="input_topic" value="$(arg input_topic)" />
     <param name="delay_node" value="$(arg delay_node)" />
     <param name="prediction_horizon" value="$(arg prediction_horizon)" />
-    <param name="transformer" value="$(arg transform_coordinate)" />
+    <param name="print_log" value="$(arg print_log)" />
   </node>  
   <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen" />
 </launch>

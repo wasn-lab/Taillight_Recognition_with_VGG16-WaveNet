@@ -15,7 +15,6 @@ import tf2_geometry_msgs
 from tf2_geometry_msgs import PoseStamped
 from tf.transformations import euler_from_quaternion
 
-import math
 from msgs.msg import PointXY
 from msgs.msg import PathPrediction
 from msgs.msg import DetectedObject
@@ -23,201 +22,21 @@ from msgs.msg import DetectedObjectArray
 from std_msgs.msg import String
 import rospy
 from tqdm import tqdm
+import math
+
+from script.ipp_class import parameter, buffer_data
 from model.model_registrar import ModelRegistrar
 from model.trajectron import Trajectron
 import evaluation
 import utils
 from scipy.interpolate import RectBivariateSpline
-from environment import Environment, Scene, derivative_of, Node
+from environment import Scene, Node
 
 seed = 0
 np.random.seed(seed)
 torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
-
-class parameter():
-    def __init__(self):
-        self.model = 'models/int_ee'
-        self.checkpoint = 12
-        self.data = '../processed/nuScenes_test_full.pkl'
-        self.output_path = 'results'
-        self.output_tag = 'int_ee'
-        self.node_type = 'VEHICLE'
-        self.prediction_horizon = 6
-
-class buffer_data():
-    def __init__(self):
-        self.buffer_frame = pd.DataFrame(columns=['frame_id',
-                                                  'type',
-                                                  'node_id',
-                                                  'robot',
-                                                  'x', 'y', 'z',
-                                                  'length',
-                                                  'width',
-                                                  'height',
-                                                  'heading_ang',
-                                                  'heading_rad'])
-        self.current_frame = 0
-        standardization = {
-            'PEDESTRIAN': {
-                'position': {
-                    'x': {'mean': 0, 'std': 1},
-                    'y': {'mean': 0, 'std': 1}
-                },
-                'velocity': {
-                    'x': {'mean': 0, 'std': 2},
-                    'y': {'mean': 0, 'std': 2}
-                },
-                'acceleration': {
-                    'x': {'mean': 0, 'std': 1},
-                    'y': {'mean': 0, 'std': 1}
-                }
-            },
-            'VEHICLE': {
-                'position': {
-                    'x': {'mean': 0, 'std': 80},
-                    'y': {'mean': 0, 'std': 80}
-                },
-                'velocity': {
-                    'x': {'mean': 0, 'std': 15},
-                    'y': {'mean': 0, 'std': 15},
-                    'norm': {'mean': 0, 'std': 15}
-                },
-                'acceleration': {
-                    'x': {'mean': 0, 'std': 4},
-                    'y': {'mean': 0, 'std': 4},
-                    'norm': {'mean': 0, 'std': 4}
-                },
-                'heading': {
-                    'x': {'mean': 0, 'std': 1},
-                    'y': {'mean': 0, 'std': 1},
-                    'angle': {'mean': 0, 'std': np.pi},
-                    'radian': {'mean': 0, 'std': 1}
-                }
-            }
-        }
-        self.env = Environment(
-            node_type_list=[
-                'VEHICLE',
-                'PEDESTRIAN'],
-            standardization=standardization)
-        self.attention_radius = dict()
-        self.attention_radius[(self.env.NodeType.PEDESTRIAN,
-                               self.env.NodeType.PEDESTRIAN)] = 10.0
-        self.attention_radius[(self.env.NodeType.PEDESTRIAN,
-                               self.env.NodeType.VEHICLE)] = 20.0
-        self.attention_radius[(self.env.NodeType.VEHICLE,
-                               self.env.NodeType.PEDESTRIAN)] = 20.0
-        self.attention_radius[(self.env.NodeType.VEHICLE,
-                               self.env.NodeType.VEHICLE)] = 30.0
-        self.env.attention_radius = self.attention_radius
-        self.data_columns_vehicle = pd.MultiIndex.from_product(
-            [['position', 'velocity', 'acceleration', 'heading'], ['x', 'y']])
-        self.data_columns_vehicle = self.data_columns_vehicle.append(
-            pd.MultiIndex.from_tuples([('heading', 'angle'), ('heading', 'radian')]))
-        self.data_columns_vehicle = self.data_columns_vehicle.append(
-            pd.MultiIndex.from_product([['velocity', 'acceleration'], ['norm']]))
-        self.data_columns_pedestrian = pd.MultiIndex.from_product(
-            [['position', 'velocity', 'acceleration'], ['x', 'y']])
-
-    def update_frame(self):
-        self.current_frame = self.current_frame + 1
-
-    def get_buffer_frame(self):
-        return self.current_frame
-
-    def update_buffer(self, data):
-        '''
-            data : pd.series
-        '''
-        # update T frame objects in last element array
-        self.buffer_frame = self.buffer_frame.append(data, ignore_index=True)
-
-    def refresh_buffer(self):
-        # If frame_id < current_time - 11 remove the data
-        if len(frame_length) > 11:
-            tmp = self.buffer_frame.copy()
-            prev = time.time()
-            tmp.drop(range(0,frame_length[0]))
-            del frame_length[0]
-            # print 'frame_length : ', frame_length
-            print '[RunTime] (After) Refresh buffer cost time: ',time.time()-prev
-            
-        # prev = time.time()
-        # old_frame = self.current_frame - 11
-        # self.buffer_frame = self.buffer_frame[self.buffer_frame['frame_id'] >= old_frame]
-        # self.buffer_frame.sort_values('frame_id', inplace=True)
-        # print '[RunTime] (Before) Refresh buffer cost time: ',time.time()-prev
-
-    def present_all_data(self):
-        print('buffer_length : ', len(self.buffer_frame))
-
-    def create_scene(self, present_node_id):
-        max_timesteps = self.buffer_frame['frame_id'].max()
-        scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
-        for node_id in present_node_id:
-            node_frequency_multiplier = 1
-            node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
-
-            if node_df['x'].shape[0] < 2:
-                continue
-
-            if not np.all(np.diff(node_df['frame_id']) == 1):
-                # print('Occlusion')
-                continue  # TODO Make better
-
-            node_values = node_df[['x', 'y']].values
-            x = node_values[:, 0]
-            y = node_values[:, 1]
-            heading = node_df['heading_ang'].values
-            # TODO rewrite self.scene.dt to real delta time
-            vx = derivative_of(x, scene.dt)
-            vy = derivative_of(y, scene.dt)
-            ax = derivative_of(vx, scene.dt)
-            ay = derivative_of(vy, scene.dt)
-            if node_df.iloc[0]['type'] == self.env.NodeType.VEHICLE:
-                v = np.stack((vx, vy), axis=-1)
-                v_norm = np.linalg.norm(
-                    np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
-                heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
-                heading_x = heading_v[:, 0]
-                heading_y = heading_v[:, 1]
-
-                data_dict = {('position', 'x'): x,
-                             ('position', 'y'): y,
-                             ('velocity', 'x'): vx,
-                             ('velocity', 'y'): vy,
-                             ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
-                             ('acceleration', 'x'): ax,
-                             ('acceleration', 'y'): ay,
-                             ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
-                             ('heading', 'x'): heading_x,
-                             ('heading', 'y'): heading_y,
-                             ('heading', 'angle'): heading,
-                             ('heading', 'radian'): node_df['heading_rad'].values}
-                node_data = pd.DataFrame(
-                    data_dict, columns=self.data_columns_vehicle)
-            else:
-                data_dict = {('position', 'x'): x,
-                             ('position', 'y'): y,
-                             ('velocity', 'x'): vx,
-                             ('velocity', 'y'): vy,
-                             ('acceleration', 'x'): ax,
-                             ('acceleration', 'y'): ay}
-                node_data = pd.DataFrame(
-                    data_dict, columns=self.data_columns_pedestrian)
-
-            node = Node(
-                node_type=node_df.iloc[0]['type'],
-                node_id=node_id,
-                data=node_data,
-                frequency_multiplier=node_frequency_multiplier)
-            node.first_timestep = node_df['frame_id'].iloc[0]
-            scene.nodes.append(node)
-
-        return scene
-
 
 def transform_data(buffer, data):
     present_id_list = []
@@ -237,18 +56,18 @@ def transform_data(buffer, data):
         z = obj.center_point.z
 
         # transform from base_link to map
-        if transformer:
-            transform = tf_buffer.lookup_transform(
-                'map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
-            pose_stamped = PoseStamped()
-            pose_stamped.pose.position.x = x
-            pose_stamped.pose.position.y = y
-            pose_stamped.pose.position.z = z
-            pose_transformed = tf2_geometry_msgs.do_transform_pose(
-                pose_stamped, transform)
-            x = pose_transformed.pose.position.x
-            y = pose_transformed.pose.position.y
-            z = pose_transformed.pose.position.z
+        # if transformer:
+        #     transform = tf_buffer.lookup_transform(
+        #         'map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
+        #     pose_stamped = PoseStamped()
+        #     pose_stamped.pose.position.x = x
+        #     pose_stamped.pose.position.y = y
+        #     pose_stamped.pose.position.z = z
+        #     pose_transformed = tf2_geometry_msgs.do_transform_pose(
+        #         pose_stamped, transform)
+        #     x = pose_transformed.pose.position.x
+        #     y = pose_transformed.pose.position.y
+        #     z = pose_transformed.pose.position.z
         # print 'x: ', x
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
 
@@ -331,59 +150,48 @@ def transform_data(buffer, data):
         present_id_list.append(obj.track.id)
     # print(present_id_list)
     buffer.refresh_buffer()
-    frame_length.append(len(present_id_list))
+    buffer.add_frame_length(len(present_id_list))
     return present_id_list
 
 
 def predict(data):
+    global args
+    timer = []
+
     prev = time.time()
     present_id = transform_data(buffer, data)
-    # print '[RunTime] obj count :' ,len(present_id)
-    # print '[RunTime] Data preprocessing cost time: ',time.time() - prev
-    prev = time.time()
+    timer.append(time.time() - prev)
+
     present_id = map(str, present_id)
     scene = buffer.create_scene(present_id)
-    # print '[RunTime] Create_scene cost time: ',time.time() - prev
-    prev = time.time()
+
+    timer.append(time.time() - timer[-1])
     scene.calculate_scene_graph(buffer.env.attention_radius,
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
-    # print '[RunTime] calculate_scene_graph cost time: ',time.time()-prev
+    timer.append(time.time() - timer[-1])
     timesteps = np.array([buffer.get_buffer_frame()])
-    prev = time.time()
-    # print buffer.current_time
-    # print timesteps
-    # for node in scene.nodes:
-    #     print "node_id: ",node.id
-    #     print "node_type: ",node.type
-        # print "node_data_x: ",node.data.data[-1:,0]
-        # print "node_data_y: ",node.data.data[-1:,1]
-    # print "node_data_vx: ",node.data.data[-1:,2]
-    # print "node_data_vy: ",node.data.data[-1:,3]
-    # print "node_data_ax: ",node.data.data[-1:,4]
-    # print "node_data_ay: ",node.data.data[-1:,5]
-    # print "node_data_heading_angle: ",node.data.data[-1:,8]
-    # print "node_data_heading_radian: ",node.data.data[-1:,9]
 
     predictions = eval_stg.predict(scene,
                                    timesteps,
-                                   prediction_horizon,
+                                   args.get_predict_horizon(),
                                    buffer.env,
                                    num_samples=1,
                                    min_future_timesteps=8,
                                    z_mode=True,
                                    gmm_mode=True,
                                    full_dist=False)
-    # print '[RunTime] Prediction cost time: ',time.time()-prev
+    
+    timer.append(time.time() - timer[-1])
     buffer.update_frame()
+    timer.append(time.time() - timer[-1])
     if len(predictions.keys()) < 1:
         return
-    t = predictions.keys()[-1]
-    # print(t)
 
-    for index, node in enumerate(predictions[t].keys()):
+    t = predictions.keys()[-1]
+
+    for _ , node in enumerate(predictions[t].keys()):
         for obj in data.objects:
-            # print(obj.track.forecasts)
             obj.track.forecasts = []
             if obj.track.id == int(node.id):
                 for prediction_x_y in predictions[t][node][:][0][0]:
@@ -394,12 +202,10 @@ def predict(data):
 
                     obj.track.forecasts.append(forecasts_item)
                     obj.track.is_ready_prediction = True
-                    print(prediction_x_y)
+                    # print(prediction_x_y)
                 break
             else:
                 continue
-
-            # print(obj.track.forecasts)
 
     pub = rospy.Publisher(
         '/IPP/Alert',
@@ -407,11 +213,41 @@ def predict(data):
         queue_size=1)  # /IPP/Alert is TOPIC
     pub.publish(data)
 
+    timer.append(time.time() - timer[-1])
+
+    if args.get_print() == 1:
+        print '[RunTime] obj count : ',len(present_id)
+        print '[RunTime] Data preprocessing cost time : ',timer[0]
+        print '[RunTime] Create_scene cost time : ',timer[1]
+        print '[RunTime] calculate_scene_graph cost time : ',timer[2]
+        print '[RunTime] Prediction cost time : ',timer[3]
+        print '[RunTime] Update buffer cost time : ',timer[4]
+        print '[RunTime] Pass msg cost time : ',timer[5]
+    elif args.get_print() == 2:
+        print 'Current time : ', buffer.get_buffer_frame()
+        for _ , node in enumerate(predictions[t].keys()):
+            for obj in data.objects:
+                print 'Current Position : ', (obj.center_point.x,obj.center_point.y)
+                if obj.track.id == int(node.id):
+                    predict_frame = 1
+                    for prediction_x_y in predictions[t][node][:][0][0]:
+
+                        forecasts_item = PathPrediction()
+                        forecasts_item.position.x = np.float32(prediction_x_y[0])
+                        forecasts_item.position.y = np.float32(prediction_x_y[1])
+
+                        obj.track.forecasts.append(forecasts_item)
+                        obj.track.is_ready_prediction = True
+                        print 'Prediction ', predict_frame,'' : ' prediction_x_y
+                        predict_frame += 1
+                    break
+                else:
+                    continue
 
 def listener_ipp():
     global tf_buffer, tf_listener
     rospy.init_node('ipp_transform_data')
-    rospy.Subscriber(input_topic, DetectedObjectArray, predict)
+    rospy.Subscriber(args.get_source(), DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
@@ -436,26 +272,30 @@ if __name__ == '__main__':
           loading_model_part
           frame_length for refreshing buffer
         ===================== '''
-    global prediction_horizon, transformer, buffer, past_obj, input_topic, frame_length
+    global buffer, past_obj, frame_length, args
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
     buffer = buffer_data()
     print('Complete loading model!')
-    prediction_horizon = rospy.get_param(
-        '/object_path_prediction/prediction_horizon')
-    transformer = rospy.get_param(
-        '/object_path_prediction/transformer')
+
     delay_node = rospy.get_param(
         '/object_path_prediction/delay_node')
-    input_source = rospy.get_param('/object_path_prediction/input_topic')
+    input_source = rospy.get_param(
+        '/object_path_prediction/input_topic')
+    prediction_horizon = rospy.get_param(
+        '/object_path_prediction/prediction_horizon')
+    show_log = rospy.get_param(
+        '/object_path_prediction/print_log')
 
     if delay_node == 2:
 	    input_topic = '/IPP/delay_Alert'
     elif input_source == 1:
 	    input_topic = '/Tracking2D/front_bottom_60'
     else:
-	    input_topic = '/Tracking3D'
+	    input_topic = '/PathPredictionOutput'
+    
+    args.set_params(input_topic, prediction_horizon, show_log)
     past_obj = []
     frame_length = []
 
