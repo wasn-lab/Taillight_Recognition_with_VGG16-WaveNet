@@ -227,8 +227,8 @@ def predict(data):
         print 'Current time : ', buffer.get_buffer_frame()
         for _ , node in enumerate(predictions[t].keys()):
             for obj in data.objects:
-                print 'Current Position : ', (obj.center_point.x,obj.center_point.y)
                 if obj.track.id == int(node.id):
+                    print 'Current Position : ', (obj.center_point.x,obj.center_point.y)
                     predict_frame = 1
                     for prediction_x_y in predictions[t][node][:][0][0]:
 
@@ -238,7 +238,7 @@ def predict(data):
 
                         obj.track.forecasts.append(forecasts_item)
                         obj.track.is_ready_prediction = True
-                        print 'Prediction ', predict_frame,'' : ' prediction_x_y
+                        print 'Prediction ', predict_frame, 'frame : ', prediction_x_y
                         predict_frame += 1
                     break
                 else:
