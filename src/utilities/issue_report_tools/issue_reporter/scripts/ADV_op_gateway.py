@@ -69,7 +69,7 @@ mqtt_subscription_list.append( (mqtt_advop_req_run_stop_subT, 2) )
 #------------------------#
 mqtt_advop_run_state_pubT = mqtt_msg_topic_namespace + '/run_state' #
 mqtt_advop_sys_ready_pubT = mqtt_msg_topic_namespace + '/sys_ready' #
-mqtt_advop_event_json_pubT = mqtt_msg_topic_namespace + '/event_json' #
+#mqtt_advop_event_json_pubT = mqtt_msg_topic_namespace + '/event_json' #
 #------------------------#
 
 #------------------------------------------------------------#
@@ -121,7 +121,7 @@ def mqtt_publish_all_states():
     if mqtt_client is None:
         return
     mqtt_client.publish(mqtt_advop_run_state_pubT, payload=mqtt_bool_to_char(var_advop_run_state), qos=2, retain=False)
-    mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(var_advop_sys_ready), qos=2, retain=False)
+    # mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(var_advop_sys_ready), qos=2, retain=False)
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -218,7 +218,7 @@ def ros_advop_sys_ready_CB(msg):
     if mqtt_client is None:
         return
     # Publish
-    mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(msg.data), qos=2, retain=False)
+    #mqtt_client.publish(mqtt_advop_sys_ready_pubT, payload=mqtt_bool_to_char(msg.data), qos=2, retain=False)
     #
     set_timer_sys_ready()
 
@@ -232,7 +232,7 @@ def ros_advop_event_json_CB(msg):
     if mqtt_client is None:
         return
     # Publish
-    mqtt_client.publish(mqtt_advop_event_json_pubT, payload=event_json, qos=2, retain=False)
+    #mqtt_client.publish(mqtt_advop_event_json_pubT, payload=event_json, qos=2, retain=False)
     #
 #------------------------------------------------------------#
 # end ROS callbacks

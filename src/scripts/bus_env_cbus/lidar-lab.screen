@@ -37,6 +37,9 @@ caption always "%n(%t@%H)"
 #screen -t init_mps
 #stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_mps.sh^M"
 
+screen -t set_in_lab_param
+stuff "rosparam set /fail_safe/should_post_issue 0^M"
+
 screen -t init_load_monitor
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M"
 
