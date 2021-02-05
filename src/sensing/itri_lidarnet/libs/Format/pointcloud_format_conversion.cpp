@@ -33,11 +33,10 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
     {
       offset_ring = cloud_msg.fields[f].offset;
     }
-
   }
 
   // populate point cloud object
-  for (int p = 0, bound=cloud_msg.width * cloud_msg.height; p < bound; ++p)
+  for (int p = 0, bound = cloud_msg.width * cloud_msg.height; p < bound; ++p)
   {
     pcl::PointXYZIR newPoint;
 
@@ -48,13 +47,13 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
     newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes * p) + offset_ring);
 
     if (brand == "ouster")
-    {  
-      newPoint.intensity = newPoint.intensity * 255 / 500; // normalize
+    {
+      newPoint.intensity = newPoint.intensity * 255 / 500;  // normalize
 
       if (newPoint.intensity > 255)
       {
         newPoint.intensity = 255;
-      }  
+      }
     }
     cloud.points.push_back(newPoint);
   }
@@ -76,8 +75,8 @@ pcl::PointCloud<pcl::PointXYZRGB> XYZIR_to_XYZRGB(pcl::PointCloud<pcl::PointXYZI
     new_point.y = input_cloud->points[p].y;
     new_point.z = input_cloud->points[p].z;
 
-    new_point.r = (uint8_t) input_cloud->points[p].intensity;
-    new_point.g = (uint8_t) input_cloud->points[p].ring;
+    new_point.r = (uint8_t)input_cloud->points[p].intensity;
+    new_point.g = (uint8_t)input_cloud->points[p].ring;
     new_point.b = 0;
 
     output_cloud->points.push_back(new_point);
@@ -86,7 +85,6 @@ pcl::PointCloud<pcl::PointXYZRGB> XYZIR_to_XYZRGB(pcl::PointCloud<pcl::PointXYZI
   output_cloud->header = input_cloud->header;
   return *output_cloud;
 }
-
 
 pcl::PointCloud<pcl::PointXYZIR> XYZRGB_to_XYZIR(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
 {

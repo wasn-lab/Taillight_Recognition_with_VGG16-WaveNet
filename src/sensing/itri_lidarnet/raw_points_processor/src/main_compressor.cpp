@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 
-//std
+// std
 #include <string>
 #include <iostream>
 #include <vector>
@@ -17,7 +17,6 @@
 // msg
 #include "msgs/CompressedPointCloud.h"
 #include <std_msgs/Empty.h>
-
 
 //---------------------------- Publisher
 static ros::Publisher g_pub_LidarFrontLeft_Compress;
@@ -60,7 +59,7 @@ void cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& 
       std::cout << "[Left->Cmpr]: " << diff_time << "ms" << std::endl;
     }
 
-    //-------------------------- compress 
+    //-------------------------- compress
     msgs::CompressedPointCloud compressed_pointcloud;
     compressed_pointcloud.data = pc2_compressor::compress(input_cloud);
 
@@ -90,14 +89,13 @@ void cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCloud2>&
       std::cout << "[Right->Cmpr]: " << diff_time << "ms" << std::endl;
     }
 
-    //-------------------------- compress 
+    //-------------------------- compress
     msgs::CompressedPointCloud compressed_pointcloud;
     compressed_pointcloud.data = pc2_compressor::compress(input_cloud);
 
     // publish
     compressed_pointcloud.header = input_cloud->header;
     g_pub_LidarFrontRight_Compress.publish(compressed_pointcloud);
-
   }
   g_R_Lock.unlock();
 }
@@ -121,7 +119,7 @@ void cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& i
       std::cout << "[Top->Cmpr]: " << diff_time << "ms" << std::endl;
     }
 
-    //-------------------------- compress 
+    //-------------------------- compress
     msgs::CompressedPointCloud compressed_pointcloud;
     compressed_pointcloud.data = pc2_compressor::compress(input_cloud);
 
@@ -134,7 +132,6 @@ void cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& i
   g_T_Lock.unlock();
 }
 
-
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "raw_compressor");
@@ -145,8 +142,7 @@ int main(int argc, char** argv)
       n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw", 1, cb_LidarFrontLeft);
   ros::Subscriber sub_LidarFrontRight =
       n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw", 1, cb_LidarFrontRight);
-  ros::Subscriber sub_LidarFrontTop =
-      n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cb_LidarFrontTop);
+  ros::Subscriber sub_LidarFrontTop = n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw", 1, cb_LidarFrontTop);
 
   // publisher - compressed
   g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1);

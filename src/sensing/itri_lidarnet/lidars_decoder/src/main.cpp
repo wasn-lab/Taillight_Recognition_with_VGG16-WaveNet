@@ -97,10 +97,8 @@ void cloud_cb_LidarFrontRight(msgs::CompressedPointCloud msg)
 
   pub_LidarFrontRight.publish(*sensor_pc2);
 
-
-  msg_data_ss.str("");  
+  msg_data_ss.str("");
   msg_data_ss.clear();
-  
 
   delete (PointCloudDecoder);
   R_Lock.unlock();
@@ -133,7 +131,7 @@ void cloud_cb_LidarFrontTop(msgs::CompressedPointCloud msg)
 
   msg_data_ss.str("");
   msg_data_ss.clear();
-  
+
   delete (PointCloudDecoder);
 
   cout << "[T-Decode]:" << stopWatch_T.getTimeSeconds() << 's' << endl;
