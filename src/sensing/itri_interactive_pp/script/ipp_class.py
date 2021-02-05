@@ -138,6 +138,7 @@ class buffer_data():
 
             if not np.all(np.diff(node_df['frame_id']) == 1):
                 # print('Occlusion')
+                # print 'here!'
                 continue  # TODO Make better
 
             node_values = node_df[['x', 'y']].values
