@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #include <cstdlib>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>

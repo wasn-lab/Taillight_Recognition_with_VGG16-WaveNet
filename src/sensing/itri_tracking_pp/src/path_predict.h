@@ -13,6 +13,7 @@
 #include "tpp.h"
 #include "ar1.h"
 #include "utils.h"
+#include <tf2/utils.h>
 
 namespace tpp
 {

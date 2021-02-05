@@ -63,7 +63,6 @@ int ImageCompressorNode::set_subscriber()
   }
   while (ros::ok() && !is_topic_published(topic))
   {
-    LOG(INFO) << "wait 1 second for topic " << topic;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
   LOG(INFO) << ros::this_node::getName() << ":"

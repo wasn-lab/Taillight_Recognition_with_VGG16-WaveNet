@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #pragma once
 #include <ros/ros.h>
 #include "msgs/CompressedPointCloud.h"

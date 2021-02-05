@@ -2,15 +2,20 @@
 find_package(Benchmark)
 include_directories(${PC2_COMPRESSOR_INCLUDE_DIRS} ${benchmark_INCLUDE_DIRS})
 
-#catkin_download_test_data(velodyne32.pcd
-#  "http://118.163.54.109:8888/git_data/B1/tests/velodyne32.pcd"
-#  DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
-#  MD5 3826f9e2bb13e17c12a63e708d88ed1d)
-
 catkin_download_test_data(ouster64.pcd
-  "http://118.163.54.109:8888/git_data/B1/tests/ouster64.pcd"
+  "http://nas.itriadv.co:8888/git_data/B1/tests/ouster64.pcd"
   DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
   MD5 14c96d5bdf4d3d80ccfc9d309d90be8a)
+
+catkin_download_test_data(lidar_raw_2020-03-10-10-48-39_41_1s.bag
+  "http://nas.itriadv.co:8888/Share/ADV/Rosbag/B1/test_case/lidar_raw_2020-03-10-10-48-39_41_1s.bag"
+  DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
+  MD5 b678a7888403f5f55cd5c2a4acdf0daa)
+
+catkin_download_test_data(lidar_compressed_2020-03-10-10-48-39_41.bag
+  "http://nas.itriadv.co:8888/Share/ADV/Rosbag/B1/test_case/lidar_compressed_2020-03-10-10-48-39_41.bag"
+  DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
+  MD5 e62b87e69f9a96ceaf60f81999463f1d)
 
 catkin_add_gtest(pc2_compressor_test
   pc2_compressor_test_main.cpp
