@@ -216,19 +216,19 @@ def predict(data):
     timer.append(time.time() - timer[-1])
 
     if args.get_print() == 1:
-        print '[RunTime] obj count : ',len(present_id)
-        print '[RunTime] Data preprocessing cost time : ',timer[0]
-        print '[RunTime] Create_scene cost time : ',timer[1]
-        print '[RunTime] calculate_scene_graph cost time : ',timer[2]
-        print '[RunTime] Prediction cost time : ',timer[3]
-        print '[RunTime] Update buffer cost time : ',timer[4]
-        print '[RunTime] Pass msg cost time : ',timer[5]
+        print ('[RunTime] obj count : ',len(present_id))
+        print ('[RunTime] Data preprocessing cost time : ',timer[0])
+        print ('[RunTime] Create_scene cost time : ',timer[1])
+        print ('[RunTime] calculate_scene_graph cost time : ',timer[2])
+        print ('[RunTime] Prediction cost time : ',timer[3])
+        print ('[RunTime] Update buffer cost time : ',timer[4])
+        print ('[RunTime] Pass msg cost time : ',timer[5])
     elif args.get_print() == 2:
-        print 'Current time : ', buffer.get_buffer_frame()
+        print ('Current time : ', buffer.get_buffer_frame())
         for _ , node in enumerate(predictions[t].keys()):
             for obj in data.objects:
                 if obj.track.id == int(node.id):
-                    print 'Current Position : ', (obj.center_point.x,obj.center_point.y)
+                    print ('Current Position : ', (obj.center_point.x,obj.center_point.y))
                     predict_frame = 1
                     for prediction_x_y in predictions[t][node][:][0][0]:
 
@@ -238,7 +238,7 @@ def predict(data):
 
                         obj.track.forecasts.append(forecasts_item)
                         obj.track.is_ready_prediction = True
-                        print 'Prediction ', predict_frame, 'frame : ', prediction_x_y
+                        print ('Prediction ', predict_frame, 'frame : ', prediction_x_y)
                         predict_frame += 1
                     break
                 else:
