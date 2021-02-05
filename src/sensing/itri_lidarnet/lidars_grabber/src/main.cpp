@@ -95,7 +95,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 #elif CAR_MODEL_IS_C1
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster");
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+    #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
 
     //-------------------------- compress thread
@@ -117,7 +117,7 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 #elif CAR_MODEL_IS_C1
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+      #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
       pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
     }
@@ -192,7 +192,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 #elif CAR_MODEL_IS_C1
     *input_cloud_tmp_ring = SensorMsgs_to_XYZIR(*input_cloud, "ouster");
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+    #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
 
     if (g_use_oct_compress)
@@ -212,7 +212,7 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 #elif CAR_MODEL_IS_C1
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+    #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
       pcl::copyPointCloud(*output_cloud_tmp_ring, *input_cloud_tmp);
     }
@@ -297,7 +297,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #elif CAR_MODEL_IS_C1
     *localization_cloud = Transform_CUDA().compute<PointXYZI>(localization_cloud, 0, 0, 0, 0.023, 0.21, 0);
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+    #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
 
     g_pub_LidarFrontTop_Localization.publish(*localization_cloud);
@@ -322,7 +322,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #elif CAR_MODEL_IS_C1
       *g_cloudPtr_LidarFrontTop = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+      #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
       g_cloudPtr_LidarFrontTop->header.frame_id = "lidar";
       g_pub_LidarFrontTop.publish(*g_cloudPtr_LidarFrontTop);
@@ -335,7 +335,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #elif CAR_MODEL_IS_C1
       *input_cloud_tmp = Transform_CUDA().compute<PointXYZI>(input_cloud_tmp, 0, 0, 0, 0.023, 0.21, 0);
 #else
-#error CORRESPONDING CAR MODEL NOT FOUND.
+      #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
       *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -7.0, 2, -1.3, 1.3, -3.0, 1);
       if (g_use_roi)
