@@ -16,3 +16,4 @@ python rosbag_compressor_test.py
 python load_monitor_test.py
 python car_model_helper_test.py
 python load_collector_test.py
+python fail_safe_checker_test.py
