@@ -18,6 +18,7 @@
   <!-- 1: Print execution time log-->
   <!-- 2: Print prediction log-->
   <arg name="print_log" default="0" />
+  <arg name="tf_map" default="0" />
 
   <node pkg="itri_interactive_pp" type="frequency_filter.py" name="filter" cwd="node" output="screen" >
     <param name="input_topic" value="$(arg input_topic)" />
@@ -27,6 +28,7 @@
     <param name="delay_node" value="$(arg delay_node)" />
     <param name="prediction_horizon" value="$(arg prediction_horizon)" />
     <param name="print_log" value="$(arg print_log)" />
+    <param name="tf_map" value="$(arg tf_map)" />
   </node>  
   <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen" />
 </launch>
