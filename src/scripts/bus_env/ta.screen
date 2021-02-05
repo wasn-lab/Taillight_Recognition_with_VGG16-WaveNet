@@ -36,6 +36,3 @@ stuff "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_control_new_lanelet2.sh^
 
 screen -t init_radar
 stuff "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_radar.sh^M"
-
-screen -t init_camera
-stuff "/home/nvidia/itriadv/src/scripts/bus_env/ta/init_camera.sh^M"

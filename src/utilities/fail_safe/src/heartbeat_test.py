@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import unittest
 from msgs.msg import DetectedObjectArray, DetectedObject, CamInfo
 from status_level import OK, WARN

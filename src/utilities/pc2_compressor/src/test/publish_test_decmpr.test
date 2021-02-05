@@ -1,0 +1,20 @@
+<launch>
+    <include file="$(find pc2_compressor)/launch/decmpr.launch">
+    </include>
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find pc2_compressor)/src/test/lidar_compressed_2020-03-10-10-48-39_41.bag -l" />
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /LidarFrontTop/Raw
+                  timeout: 10
+                  negative: False
+                - name: /LidarFrontLeft/Raw
+                  timeout: 10
+                  negative: False
+                - name: /LidarFrontRight/Raw
+                  timeout: 10
+                  negative: False
+        </rosparam>
+    </test>
+</launch>

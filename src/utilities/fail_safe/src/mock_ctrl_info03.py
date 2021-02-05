@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import argparse
 import rospy
 from msgs.msg import Flag_Info

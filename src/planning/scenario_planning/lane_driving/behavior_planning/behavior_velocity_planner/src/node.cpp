@@ -136,6 +136,8 @@ BehaviorVelocityPlannerNode::BehaviorVelocityPlannerNode()
     "input/traffic_light_states", 10, &BehaviorVelocityPlannerNode::onTrafficLightStates, this);
   sub_bus_stop_reserve_ = pnh_.subscribe(
     "input/bus_stop_reserve", 10, &BehaviorVelocityPlannerNode::onBusStopReserve, this);
+  sub_current_trajectory_info_reserve_ = pnh_.subscribe(
+    "input/current_trajectory_info", 10, &BehaviorVelocityPlannerNode::onCurrentTrajInfo, this);
 
   // Publishers
   path_pub_ = pnh_.advertise<autoware_planning_msgs::Path>("output/path", 1);
@@ -277,6 +279,27 @@ void BehaviorVelocityPlannerNode::onBusStopReserve(
   const msgs::BusStopArray::ConstPtr & msg)
 {
   planner_data_.bus_stop_reserve = msg;
+}
+
+void BehaviorVelocityPlannerNode::onCurrentTrajInfo(
+  const msgs::CurrentTrajInfo::ConstPtr & msg)
+{
+  if (msg->LRturn == 0)
+  {
+    planner_data_.LRturn = "straight";
+  }
+  else if (msg->LRturn == 1)
+  {
+    planner_data_.LRturn = "left";
+  }
+  else if (msg->LRturn == 2)
+  {
+    planner_data_.LRturn = "right";
+  }
+  else
+  {
+    planner_data_.LRturn = "else";
+  }
 }
 
 void BehaviorVelocityPlannerNode::onTrigger(
