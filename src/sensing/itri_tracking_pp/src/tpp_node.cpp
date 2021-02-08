@@ -1017,10 +1017,12 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
   {
     ofs.open(fname, std::ios_base::app);
 
-    ofs << "#1 time stamp (s), "  //
-        << "#2-1 track id, "      //
-        << "#2-2 track time, "    //
-        << "#2-3 class id, "      //
+    ofs << "#1-1 time stamp (s), "  //
+        << "#1-2 seq, "             //
+        << "#1-3 delta_seq, "       //
+        << "#2-1 track id, "        //
+        << "#2-2 track time, "      //
+        << "#2-3 class id, "        //
 #if EGO_AS_DETECTED_OBJ == 1
         << "#2-4 ego obj?, "  //
 #endif
@@ -1083,11 +1085,13 @@ void TPPNode::save_output_to_txt(const std::vector<msgs::DetectedObject>& objs, 
 
   for (const auto& obj : objs)
   {
-    ofs << std::fixed                          //
-        << objs_header_.stamp.toSec() << ", "  // #1 time stamp (s)
-        << obj.track.id << ", "                // #2-1 track id
-        << obj.track.tracktime << ", "         // #2-2 track time
-        << obj.classId;                        // #2-3 class id
+    ofs << std::fixed                                        //
+        << objs_header_.stamp.toSec() << ", "                // #1-1 time stamp (s)
+        << objs_header_.seq << ", "                          // #1-2 seq
+        << objs_header_.seq - objs_header_prev_.seq << ", "  // #1-3 delta_seq
+        << obj.track.id << ", "                              // #2-1 track id
+        << obj.track.tracktime << ", "                       // #2-2 track time
+        << obj.classId;                                      // #2-3 class id
 #if EGO_AS_DETECTED_OBJ == 1
     if (obj.distance == 0.f && obj.heading.w == 0.99996)
     {

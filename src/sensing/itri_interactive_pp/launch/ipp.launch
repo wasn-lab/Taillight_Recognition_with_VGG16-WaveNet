@@ -3,36 +3,32 @@
 <launch>
   <!-- pedcross input source -->
   <!-- 1: tracking 2d with front/left/right cameras -->
-  <!-- 2: tracking 3d -->
+  <!-- 2: /PathPredictionOutput -->
   <arg name="input_topic" default="2" />
 
-  <!-- Set time to prediction (2fps)-->
-  <arg name="prediction_horizon" default="4" />
+  <!-- Set time to prediction (3fps)-->
+  <arg name="prediction_horizon" default="6" />
 
-  <!-- Set type of coordinate in input_data and marker-->
-  <!-- 1: absolute coordinate map_based -->
-  <!-- 2: relative coordinate ego-based -->
-  <arg name="coordinate_type" default="1" />
+  <!-- Set if delay or not-->
+  <!-- 1: no delay 8 fps -->
+  <!-- 2: delay 2 fps -->
+  <arg name="delay_node" default="2" />
+  <!-- print log-->
+  <!-- 0: Dont Print log -->
+  <!-- 1: Print execution time log-->
+  <!-- 2: Print prediction log-->
+  <arg name="print_log" default="0" />
+  <arg name="tf_map" default="0" />
 
-  <!-- rviz markers -->
-  <!-- true : use 2d for danger zone -->
-  <!-- false: use 3d for danger zone -->
-  <!--arg name="use_2d_for_alarm" default="False" /-->
-
-  <!-- rviz markers -->
-  <!-- true : show probabiliy -->
-  <!-- false: not show probability -->
-  <!--arg name="show_probability" default="True" /-->
-
-  <!--<node pkg="itri_tracking_pp" type="itri_tracking_pp" name="itri_tracking_pp" cwd="node" output="screen" /> -->
   <node pkg="itri_interactive_pp" type="frequency_filter.py" name="filter" cwd="node" output="screen" >
     <param name="input_topic" value="$(arg input_topic)" />
   </node>
   <node pkg="itri_interactive_pp" type="ipp_prediction.py" name="object_path_prediction" cwd="node" output="screen" >
+    <param name="input_topic" value="$(arg input_topic)" />
+    <param name="delay_node" value="$(arg delay_node)" />
     <param name="prediction_horizon" value="$(arg prediction_horizon)" />
-    <param name="coordinate_type" value="$(arg coordinate_type)" />
+    <param name="print_log" value="$(arg print_log)" />
+    <param name="tf_map" value="$(arg tf_map)" />
   </node>  
-  <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen">
-    <param name="coordinate_type" value="$(arg coordinate_type)" />
-  </node>
+  <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen" />
 </launch>
