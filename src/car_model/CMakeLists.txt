@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 project(car_model)
 
-set(CAR_MODEL "B1_V2" CACHE STRING "Car model (B1_V2, B1_V3, C1)")
+set(CAR_MODEL "B1_V3" CACHE STRING "Car model (B1_V2, B1_V3, C1)")
 set_property(CACHE CAR_MODEL PROPERTY STRINGS B1_V2 B1_V3 C1)
 
 set(CAR_MODEL_IS_B1_V2 0)
