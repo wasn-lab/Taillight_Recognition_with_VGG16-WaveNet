@@ -24,6 +24,7 @@ option(ENABLE_LIGHTNET "Enable traffic light detection" ON)
 option(ENABLE_PARKNET "Enable parking slot detection" ON)
 option(ENABLE_OPENROADNET "Enable open road detection" ON)
 option(ENABLE_PEDCROSS "Enable pedestrian crossing detection" ON)
+option(ENABLE_IPP "Enable interactive path prediction" ON)
 include(cmake/Options${CAR_MODEL}.cmake)
 
 catkin_package(

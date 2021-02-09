@@ -1,4 +1,6 @@
 # -*- encoding: utf-8 -*-
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 """
 API for notifying that we have a new bag to be uploaded to backend.
 """
@@ -19,5 +21,5 @@ def build_vk221_3_url(bag, plate=None):
 
 def notify_backend_with_new_bag(bag, plate=None):
     url = build_vk221_3_url(bag, plate)
-    resp = requests.post(url.encode("utf-8"))
+    resp = requests.post(url)
     return resp.json()

@@ -221,8 +221,7 @@ public:
     LidarDetection_pub_v2.publish(msgObjArr);
   }
 
-  static void Send_LidarResults(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime,
-                                   const string& frameId)
+  static void Send_LidarResults(CLUSTER_INFO* cluster_info, int cluster_size, ros::Time rostime, const string& frameId)
   {
     static ros::Publisher LidarDetection_pub =
         ros::NodeHandle().advertise<msgs::DetectedObjectArray>("/LidarDetection", 1);
@@ -258,7 +257,7 @@ public:
 
         //----------------------- bPoint
         // if (cluster_info[i].dis_abbc_obbc > 0.1)
-        if (cluster_info[i].obb_vertex.size()<8)
+        if (cluster_info[i].obb_vertex.size() < 8)
         {
           // msgObj.bPoint.p0.x = cluster_info[i].min.x;
           // msgObj.bPoint.p0.y = cluster_info[i].min.y;

@@ -34,7 +34,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIR}
   ${msgs_SOURCE_DIR}/include
-  ${hungarian_SOURCE_DIR}/src     
+  ${hungarian_SOURCE_DIR}/src
 )
 
 set(SOURCES_SRCS

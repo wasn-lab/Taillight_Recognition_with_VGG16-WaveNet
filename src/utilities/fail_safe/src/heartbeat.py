@@ -1,6 +1,11 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
+from __future__ import print_function
 import time
 import heapq
 import rospy
+from object_ids import (OBJECT_ID_PERSON, OBJECT_ID_BICYCLE, OBJECT_ID_MOTOBIKE,
+                        OBJECT_ID_CAR)
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
@@ -32,7 +37,10 @@ def localization_state_func(msg):
         status = FATAL
         status_strs.append("pose_unstable")
 
-    return status, " ".join(status_strs)
+    status_str = " ".join(status_strs)
+    if status != OK:
+        rospy.logwarn("Localization state: %s", status_str)
+    return status, status_str
 
 
 def backend_connection_state_func(msg):
@@ -68,6 +76,8 @@ def backend_info_func(msg):
             status_str = ("Low battery: gross voltage is {}, "
                           "lowest voltage is {}").format(
                               gross_voltage, lowest_voltage)
+    if status != OK:
+        rospy.logwarn("BackendInfo: %s", status_str)
     return status, status_str
 
 
@@ -98,6 +108,37 @@ def cam_object_detection_func(msg):
                 status_str = ("Low confidence: classId: {}, prob: {}, "
                               "center: ({:.2f}, {:.2f})").format(
                                   obj.classId, prob, center[0], center[1])
+    if status != OK:
+        rospy.logwarn("CameraDetection: %s", status_str)
+    return status, status_str
+
+
+def lidar_detection_func(msg):
+    status = ERROR
+    status_str = "No lidar detection result"
+    if msg is not None:
+        status = OK
+        status_str = "OK"
+        for obj in msg.objects:
+            if len(obj.camInfo) == 0:
+                # LidarDetection stores the prob in camInfo for now.
+                # If we cannot get the prob, just ignore the message.
+                continue
+            center = __calc_center_by_3d_bpoint(obj.bPoint)
+            if center[0] <= 0:
+                # We don't care much about objects behind the car.
+                continue
+            prob = max(cam_instance.prob for cam_instance in obj.camInfo)
+            if ((obj.classId == OBJECT_ID_CAR and prob < 0.41) or
+                    (obj.classId == OBJECT_ID_PERSON and prob < 0.31) or
+                    (obj.classId == OBJECT_ID_BICYCLE and prob < 0.31) or
+                    (obj.classId == OBJECT_ID_MOTOBIKE and prob < 0.31)):
+                status = WARN
+                status_str = ("Low confidence: classId: {}, prob: {}, "
+                              "center: ({:.2f}, {:.2f})").format(
+                                  obj.classId, prob, center[0], center[1])
+    if status != OK:
+        rospy.logwarn("LidarDetection: %s", status_str)
     return status, status_str
 
 
@@ -111,6 +152,7 @@ class Heartbeat(object):
         self.fps_low = fps_low
         self.fps_high = fps_high
         self.latch = latch
+        self.enabled = True
         self.inspect_func = None
         self.message_type = message_type
         self.inspect_message_contents = inspect_message_contents
@@ -131,6 +173,10 @@ class Heartbeat(object):
         if module_name == "backend_info":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = backend_info_func
+
+        if module_name == "LidarDetection":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = lidar_detection_func
 
         # internal variables:
         self.heap = []
@@ -153,9 +199,13 @@ class Heartbeat(object):
 
     def to_dict(self):
         self._update_status()
-        return {"module": self.module_name,
-                "status": self.status,
-                "status_str": self.status_str}
+        ret = {"module": self.module_name,
+               "status": self.status,
+               "status_str": self.status_str}
+        if not self.enabled:
+            ret["status"] = OK
+            ret["status_str"] = "Disabled"
+        return ret
 
     def get_fps(self):
         return len(self.heap) / self.sampling_period_in_seconds
@@ -163,9 +213,13 @@ class Heartbeat(object):
     def _update_status(self):
         self._update_heap()  # Clear out-of-date timestamps
         if self.inspect_func is not None:
-            if self.get_fps() == 0:
-                self.msg = None
-            self.status, self.status_str = self.inspect_func(self.msg)
+            if self.enabled:
+                if self.get_fps() == 0:
+                    self.msg = None
+                self.status, self.status_str = self.inspect_func(self.msg)
+            else:
+                self.status = OK
+                self.status_str = "Disabled"
             return
         if self.latch:
             self._update_status_latch()
@@ -241,3 +295,7 @@ class Heartbeat(object):
             rospy.logerr("%s: No ego_speed, not receive data yet", self.module_name)
             return float("inf")
         return int(self.msg.ego_speed)
+
+    def set_enabled(self, mode):
+        print("set {} enable={}".format(self.module_name, mode))
+        self.enabled = mode

@@ -1,4 +1,5 @@
 <launch>
+  <node name="MockRecorderGenerator" pkg="fail_safe" type="mock_recorder.py" respawn="true" />
   <node name="MockBackendConnectionGenerator" pkg="fail_safe" type="mock_backend_connection.py" args="--connected" respawn="true" />
   <node name="MockBackendInfoGenerator" pkg="fail_safe" type="mock_backend_info.py" args="" respawn="true" />
   <node name="MockControlCheckerGenerator" pkg="fail_safe" type="mock_control_checker.py" args="--enable-can" respawn="true" />

@@ -61,8 +61,14 @@ std::string map_frame_ = "map";
 double busstop_BusStopNum[2000] = {};
 double busstop_BuildingNum[2000] = {};
 double busstop_BusStopId[2000] = {};
-int read_index = 0;
+double trafficlight_IntersectionId[2000] = {};
+double trafficlight_RoadId[2000] = {};
+double trafficlight_Id[2000] = {};
+int read_index_busstop = 0;
+int read_index_trafficlight = 0;
 bool busstop_ini = false;
+bool trafficlight_ini = false;
+bool use_virtual_objects_ = false;
 
 // bool enable_avoidance_ = false;
 // bool force_disable_avoidance_ = false;
@@ -70,7 +76,7 @@ bool busstop_ini = false;
 // double project_dis = 100;
 
 template <int size_readtmp>
-void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
+void read_busstop_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
 {
   std::string fname = fpname;
 
@@ -92,23 +98,65 @@ void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],dou
       std::string token;
 
       getline(ss,token, ',');
-      BusStop_BusStopNum[read_index] = atof(token.c_str());
+      BusStop_BusStopNum[read_index_busstop] = atof(token.c_str());
       getline(ss,token, ',');
-      BusStop_BuildingNum[read_index] = atof(token.c_str());
+      BusStop_BuildingNum[read_index_busstop] = atof(token.c_str());
       getline(ss,token, ',');
-      BusStop_BusStopId[read_index] = atof(token.c_str());
-      read_index += 1;
+      BusStop_BusStopId[read_index_busstop] = atof(token.c_str());
+      read_index_busstop += 1;
     }
 }
 
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
 
-  read_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
+  read_busstop_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
   busstop_ini = true;
+}
+
+template <int size_readtmp>
+void read_traffic_light_txt(std::string fpname, double (&TrafficLight_IntersectionId)[size_readtmp],double (&TrafficLight_RoadId)[size_readtmp],double (&TrafficLight_Id)[size_readtmp])
+{
+  std::string fname = fpname;
+
+    std::ifstream fin;
+    char line[300];
+    memset( line, 0, sizeof(line));
+
+    fin.open(fname.c_str(),std::ios::in);
+    if(!fin) 
+    {
+        std::cout << "Fail to import txt" <<std::endl;
+        exit(1);
+    }
+
+    while(fin.getline(line,sizeof(line),'\n')) 
+    {
+      std::string nmea_str(line);
+      std::stringstream ss(nmea_str);
+      std::string token;
+
+      getline(ss,token, ',');
+      TrafficLight_IntersectionId[read_index_trafficlight] = atof(token.c_str());
+      getline(ss,token, ',');
+      TrafficLight_RoadId[read_index_trafficlight] = atof(token.c_str());
+      getline(ss,token, ',');
+      TrafficLight_Id[read_index_trafficlight] = atof(token.c_str());
+      read_index_trafficlight += 1;
+    }
+}
+
+void Ini_traffic_light_bytxt()
+{
+  std::string fpname = ros::package::getPath("planning_initial");
+  std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+
+  read_traffic_light_txt(fpname_s, trafficlight_IntersectionId, trafficlight_RoadId, trafficlight_Id);
+
+  trafficlight_ini = true;
 }
 
 void CurrentPoseCallback(const geometry_msgs::PoseStamped& CPmsg)
@@ -207,8 +255,8 @@ void objectsPub()
     object.header.stamp = ros::Time::now();
     object_.semantic.confidence = 1.0;
 
-    object_.state.pose_covariance.pose.position.x = 2039.41529092;
-    object_.state.pose_covariance.pose.position.y = 41618.2901704;
+    object_.state.pose_covariance.pose.position.x = 0.0;//2039.41529092;
+    object_.state.pose_covariance.pose.position.y = 0.0;//41618.2901704;
     object_.state.pose_covariance.pose.position.z = -4.5338178017;
     object_.state.pose_covariance.pose.orientation.x = 0.00383098085566;
     object_.state.pose_covariance.pose.orientation.y = -0.00115185644512;
@@ -229,29 +277,29 @@ void objectsPub()
     object_.shape.dimensions.z = 1.5;
 
     geometry_msgs::Point32 point_1;
-    point_1.x = 1.5+2039.41529092;
-    point_1.y = 1.5+41618.2901704;
+    point_1.x = 1.5+0.0;//2039.41529092;
+    point_1.y = 1.5+0.0;//41618.2901704;
     point_1.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_1);
     geometry_msgs::Point32 point_2;
-    point_2.x = 1.5+2039.41529092;
-    point_2.y = -1.5+41618.2901704;
+    point_2.x = 1.5+0.0;//2039.41529092;
+    point_2.y = -1.5+0.0;//41618.2901704;
     point_2.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_2);
     geometry_msgs::Point32 point_3;
-    point_3.x = -1.5+2039.41529092;
-    point_3.y = -1.5+41618.2901704;
+    point_3.x = -1.5+0.0;//2039.41529092;
+    point_3.y = -1.5+0.0;//41618.2901704;
     point_3.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_3);
     geometry_msgs::Point32 point_4;
-    point_2.x = -1.5+2039.41529092;
-    point_2.y = 1.5+41618.2901704;
+    point_2.x = -1.5+0.0;//2039.41529092;
+    point_2.y = 1.5+0.0;//41618.2901704;
     point_2.z = 5-4.5338178017;
     object_.shape.footprint.points.push_back(point_4);
 
     object.objects.push_back(object_);
   // }
-  // objects_pub.publish(object);
+  objects_pub.publish(object);
 }
 
 void LidnogroundpointCallback(const sensor_msgs::PointCloud2& Lngpmsg)
@@ -279,13 +327,26 @@ void imudataCallback(const sensor_msgs::Imu& msg)
 void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
   int light_status = (int)(msg->spat_state);
+  int RoadId = msg->road_id;
+  int IntersectionId = msg->intersection_id;
   double confidence = 1.0;
   autoware_perception_msgs::LampState lampstate;
   autoware_perception_msgs::TrafficLightState trafficlightstate;
   autoware_perception_msgs::TrafficLightStateArray trafficlightstatearray;
   trafficlightstatearray.header.frame_id = "map";
   trafficlightstatearray.header.stamp = ros::Time::now();
-  trafficlightstate.id = 402079;
+  if (trafficlight_ini)
+  {
+    for (int i = 0; i < read_index_trafficlight; i++)
+    {
+      if (IntersectionId == trafficlight_IntersectionId[i] && RoadId == trafficlight_RoadId[i])
+      {
+        trafficlightstate.id = trafficlight_Id[i];
+      }
+    }
+    // trafficlightstate.id = 402079;
+  }
+  
   if (light_status == 129) // red
   {
     lampstate.type = autoware_perception_msgs::LampState::RED;
@@ -300,9 +361,9 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   }
   else if(light_status == 48) // green straight + green right
   {
-    lampstate.type = autoware_perception_msgs::LampState::GREEN;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
+    // lampstate.type = autoware_perception_msgs::LampState::GREEN;
+    // lampstate.confidence = confidence;
+    // trafficlightstate.lamp_states.push_back(lampstate);
     lampstate.type = autoware_perception_msgs::LampState::UP;
     lampstate.confidence = confidence;
     trafficlightstate.lamp_states.push_back(lampstate);
@@ -325,8 +386,8 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     lampstate.confidence = 0.0;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
-  // trafficlightstatearray.states.push_back(trafficlightstate);
-  // trafficlight_pub.publish(trafficlightstatearray);
+  trafficlightstatearray.states.push_back(trafficlightstate);
+  trafficlight_pub.publish(trafficlightstatearray);
 }
 
 void trafficDspaceCallback(const msgs::Flag_Info::ConstPtr& msg)
@@ -379,8 +440,8 @@ void trafficDspaceCallback(const msgs::Flag_Info::ConstPtr& msg)
     lampstate.confidence = 0.0;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
-  trafficlightstatearray.states.push_back(trafficlightstate);
-  trafficlight_pub.publish(trafficlightstatearray);
+  // trafficlightstatearray.states.push_back(trafficlightstate);
+  // trafficlight_pub.publish(trafficlightstatearray);
 }
 
 void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
@@ -393,11 +454,11 @@ void busstopinfoCallback(const msgs::Flag_Info::ConstPtr& msg)
   busstoparray.header.stamp = ros::Time::now();
   if (busstop_ini)
   {
-    if (read_index > 8)
+    if (read_index_busstop > 8)
     {
       ROS_ERROR("Bus stop size error !");
     }
-    for (int i = 0; i < read_index; i++)
+    for (int i = 0; i < read_index_busstop; i++)
     {
       if (Dspace_Flag[i] == 1)
       {
@@ -525,6 +586,7 @@ int main(int argc, char** argv)
   ros::NodeHandle node;
 
   // ros::param::get(ros::this_node::getName()+"/force_disable_avoidance", force_disable_avoidance_);
+  ros::param::get(ros::this_node::getName()+"/use_virtual_objects", use_virtual_objects_);
 
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);
@@ -551,13 +613,17 @@ int main(int argc, char** argv)
   // avoiding_path_pub = node.advertise<std_msgs::Int32>("avoidpath_reach_goal", 10, true);
 
   Ini_busstop_bytxt();
-  // ros::Rate loop_rate(10);
-  // while (ros::ok())
-  // { 
-    // objectsPub();
-  //   ros::spinOnce();
-  //   loop_rate.sleep();   
-  // }
+  Ini_traffic_light_bytxt();
+  if (use_virtual_objects_)
+  {
+    ros::Rate loop_rate(10);
+    while (ros::ok())
+    { 
+      objectsPub();
+      ros::spinOnce();
+      loop_rate.sleep();   
+    }
+  }
 
   ros::spin();
   return 0;

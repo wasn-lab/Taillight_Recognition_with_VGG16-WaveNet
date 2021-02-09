@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import time
 import heapq
 import rospy
@@ -37,6 +39,11 @@ class CtrlInfo03(object):
         rospy.Subscriber(CtrlInfo03.TOPIC, Flag_Info, self._cb)
 
     def _get_aeb_status(self):
+        # AEB is disabled temporarily in the control team because it is reported
+        # many noisy points.
+        return {"module": "AEB",
+                "status": OK,
+                "status_str": "Disabled for many noisy points"}
         if self.aeb_enable:
             status = OK
             status_str = ""

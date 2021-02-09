@@ -67,6 +67,11 @@ false : disable resize
 nvidia (default)
 ```
 
+4. car_driver 
+```
+true  : use car mode camera driver (default)
+false : use laboratory mode camera driver
+```
 
 ### How to evaluate results
 
@@ -75,12 +80,39 @@ nvidia (default)
 
 ```
 use rqt_image_view to view following topic
-/cam/front_bottom_60
-/cam/front_top_far_30
-/cam/front_top_close_120
-/cam/right_front_60
-/cam/right_back_60
-/cam/left_front_60
-/cam/left_back_60
-/cam/back_top_120
+/cam/front_bottom_60/raw
+/cam/front_top_far_30/raw
+/cam/front_top_close_120/raw
+/cam/right_front_60/raw
+/cam/right_back_60/raw
+/cam/left_front_60/raw
+/cam/left_back_60/raw
+/cam/back_top_120/raw
 ```
+
+
+### How to install camera driver
+
+**install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_car_mode.sh
+```
+
+**install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_camera_driver_for_laboratory_mode.sh
+```
+
+### How to install camera driver when xavier bootup
+**install camera driver for car mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_car_mode_camera_driver_to_bootup_script.sh
+```
+
+**install camera driver for laboratory mode**
+```
+bash /home/nvidia/itriadv/src/scripts/bus_env_cbus/xavier/init_laboratory_mode_camera_driver_to_bootup_script.sh
+```
+
+
+

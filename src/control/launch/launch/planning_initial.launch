@@ -10,6 +10,8 @@
   <arg name="right_waylength" default="3" />
   <arg name="left_waylength" default="6" />
 
+  <arg name="use_virtual_objects" default="false" />
+
   <!--tf rear_wheel-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
@@ -20,6 +22,7 @@
         <remap from="input/lidar_no_ground" to="$(arg input/lidar_noground_topic)" />
 	<remap from="input/objects" to="$(arg input/objects_topic)" />
 	<remap from="output/traffic_light" to="$(arg output/traffic_light)" />
+        <param name="use_virtual_objects" value="$(arg use_virtual_objects)" />
   </node>
   
   <!-- Grid map fusion pub node-->

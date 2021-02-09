@@ -1,9 +1,11 @@
 # -*- encoding: utf-8 -*-
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import configparser
 import os
 import rospy
 import rospkg
-from car_model_helper import get_car_model
+from car_model_helper import get_car_model_as_str
 
 
 def get_vid():
@@ -14,6 +16,10 @@ def get_license_plate_number():
     return __get_sb_param("license_plate_number")
 
 
+def get_company_name():
+    return __get_sb_param("company_name")
+
+
 def __get_sb_param(sb_param_name):
     key = "/south_bridge/{}".format(sb_param_name)
     if rospy.has_param(key):
@@ -22,7 +28,7 @@ def __get_sb_param(sb_param_name):
     inis = {"B1_V2": "sb_b1.ini",
             "B1_V3": "sb_b1.ini",
             "C1": "sb_c1.ini"}
-    car_model = get_car_model()
+    car_model = get_car_model_as_str()
     car_model_dir = rospkg.RosPack().get_path("car_model")
     sb_ini = os.path.join(car_model_dir, "south_bridge", inis[car_model])
     cfg = configparser.ConfigParser()
