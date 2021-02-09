@@ -79,11 +79,10 @@ void callback_LidarAll(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr& msg)
     }
     RosModuleB1::send_LidarAllNonGround(*cloud_non_ground, msg->header.stamp, msg->header.frame_id);
 
-    // send sensor_msgs_nonground 
-    sensor_msgs::PointCloud2 sensor_msgs_nonground; 
+    // send sensor_msgs_nonground
+    sensor_msgs::PointCloud2 sensor_msgs_nonground;
     pcl::toROSMsg(*cloud_non_ground, sensor_msgs_nonground);
     pub_sensor_msgs_nonground.publish(sensor_msgs_nonground);
-
 
     if (debug_output)
     {
@@ -121,7 +120,6 @@ int main(int argc, char** argv)
 #if ENABLE_DEBUG_MODE == true
   thread TheadDetection(UI, argc, argv);
 #endif
-
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
