@@ -17,8 +17,8 @@ pushd $repo_dir/build
 make -j car_model_test
 ../devel/lib/car_model/car_model_test
 
-#make -j camera_utils_test
-#../devel/lib/camera_utils/camera_utils_test
+make -j camera_utils_test
+../devel/lib/camera_utils/camera_utils_test
 
 pushd $repo_dir
 source devel/setup.bash
