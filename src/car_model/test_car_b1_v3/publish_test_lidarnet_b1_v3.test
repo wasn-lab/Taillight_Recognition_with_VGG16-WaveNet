@@ -1,10 +1,10 @@
 <launch>
     <include file="$(find lidar)/launch/b1.launch">
       <arg name="hardware_enable" value="false" />
-      <arg name="mode" value="9" />
+      <arg name="mode" value="0" />
     </include>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_compressed_2021-02-03.bag -l" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_2020-11-27_c1_raw.bag -l" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
