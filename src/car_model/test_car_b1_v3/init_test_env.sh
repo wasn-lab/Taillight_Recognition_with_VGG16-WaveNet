@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 source build/car_model/scripts/car_model.sh
 if [[ "${CAR_MODEL}" != "B1_V3" ]]; then
@@ -6,7 +7,6 @@ if [[ "${CAR_MODEL}" != "B1_V3" ]]; then
   exit 0
 fi
 source devel/setup.bash
-set -x
 
 # build necessary programs and download files
 pushd build
@@ -17,6 +17,7 @@ make auto_record_2020-04-14-16-41-15_89.bag
 make geofence_pp_2020-11-16-16-35-39.bag
 make lidar_raw_2020-03-10-10-48-39_41.bag
 make lidar_raw_compressed_2021-01-12-16-01-42.bag
+make lidar_raw_compressed_2021-02-03.bag
 make edge_detection_2020-04-13-17-45-48_0.bag
 make localization_raw_2020-09-24-17-02-06.bag
 make lidarxyz2lla_2020-04-13-17-45-48_0.bag

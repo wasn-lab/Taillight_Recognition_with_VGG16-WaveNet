@@ -28,7 +28,7 @@ fi
 source devel/setup.bash
 set -x
 
-python src/car_model/scripts/gen_drivenet_engine.py --package sdb --launch camera_b1_v3.launch
+src/car_model/scripts/gen_drivenet_engine.py --package sdb --launch camera_b1_v3.launch
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v3.test
 #rostest car_model publish_test_tpp_b1_v3.test
