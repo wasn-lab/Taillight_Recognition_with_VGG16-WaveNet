@@ -25,12 +25,13 @@ from tqdm import tqdm
 import math
 
 from script.ipp_class import parameter, buffer_data
+# from script.ipp_method import create_scene, transform_data
 from model.model_registrar import ModelRegistrar
 from model.trajectron import Trajectron
 import evaluation
 import utils
 from scipy.interpolate import RectBivariateSpline
-from environment import Scene, Node
+from environment import Environment, Scene, derivative_of, Node
 
 seed = 0
 np.random.seed(seed)
@@ -38,8 +39,84 @@ torch.manual_seed(seed)
 if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 
-def transform_data(buffer, data):
-    global tf_map
+def create_scene(scene_ids, present_id):
+    # global buffer
+    # print(buffer)
+    obstacle_id_list = []
+    max_timesteps = buffer.buffer_frame['frame_id'].max()
+    scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
+    for node_id in scene_ids:
+        node_frequency_multiplier = 1
+        node_df = buffer.buffer_frame[buffer.buffer_frame['node_id'] == node_id]
+
+        if node_df['x'].shape[0] < 2:
+            continue
+
+        if not np.all(np.diff(node_df['frame_id']) == 1):
+            # print('Occlusion')
+            # print 'here!'
+            continue  # TODO Make better
+
+        node_values = node_df[['x', 'y']].values
+        x = node_values[:, 0]
+        y = node_values[:, 1]
+        heading = node_df['heading_ang'].values
+        # TODO get obstacle id
+        vx = derivative_of(x, scene.dt)
+        vy = derivative_of(y, scene.dt)
+
+        ax = derivative_of(vx, scene.dt)
+        ay = derivative_of(vy, scene.dt)
+        if node_df.iloc[0]['type'] == buffer.env.NodeType.VEHICLE:
+            v = np.stack((vx, vy), axis=-1)
+            v_norm = np.linalg.norm(
+                np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
+            
+            
+            if np.sum(v_norm, axis = 0)[0]/len(v_norm) < 0.2 and node_id in present_id:
+                # print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
+                obstacle_id_list.append(int(node_id))
+            
+            heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
+            heading_x = heading_v[:, 0]
+            heading_y = heading_v[:, 1]
+
+            data_dict = {('position', 'x'): x,
+                            ('position', 'y'): y,
+                            ('velocity', 'x'): vx,
+                            ('velocity', 'y'): vy,
+                            ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
+                            ('acceleration', 'x'): ax,
+                            ('acceleration', 'y'): ay,
+                            ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
+                            ('heading', 'x'): heading_x,
+                            ('heading', 'y'): heading_y,
+                            ('heading', 'angle'): heading,
+                            ('heading', 'radian'): node_df['heading_rad'].values}
+            node_data = pd.DataFrame(
+                data_dict, columns=buffer.data_columns_vehicle)
+        else:
+            data_dict = {('position', 'x'): x,
+                            ('position', 'y'): y,
+                            ('velocity', 'x'): vx,
+                            ('velocity', 'y'): vy,
+                            ('acceleration', 'x'): ax,
+                            ('acceleration', 'y'): ay}
+            node_data = pd.DataFrame(
+                data_dict, columns=buffer.data_columns_pedestrian)
+
+        node = Node(
+            node_type=node_df.iloc[0]['type'],
+            node_id=node_id,
+            data=node_data,
+            frequency_multiplier=node_frequency_multiplier)
+        node.first_timestep = node_df['frame_id'].iloc[0]
+        scene.nodes.append(node)
+    buffer.update_prev_id(obstacle_id_list)
+    return scene
+    
+def transform_data(data, tf_map, tf_buffer, rospy):
+    
     present_id_list = []
     for obj in data.objects:
         # category = None
@@ -135,7 +212,7 @@ def transform_data(buffer, data):
         # past_obj.append(info)
         # print 'ros method heading : ',yaw
         # print 'our method heading : ',heading
-        node_data = pd.Series({'frame_id': buffer.get_buffer_frame(),
+        node_data = pd.Series({'frame_id': buffer.get_curr_frame(),
                                'type': category,
                                'node_id': str(obj.track.id),
                                'robot': False,  # frame_data.loc[i]['robot']
@@ -147,33 +224,41 @@ def transform_data(buffer, data):
                                'height': height,
                                'heading_ang': heading,
                                'heading_rad': heading_rad})
-        
         buffer.update_buffer(node_data)
         present_id_list.append(id)
-
+    
+    # add temp data
+    mask_id_list = buffer.add_temp_obstacle(present_id_list)
+    
     buffer.refresh_buffer()
-    buffer.add_frame_length(len(present_id_list))
-    return present_id_list
-
+    # buffer.add_frame_length(len(present_id_list))
+    buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
+    return present_id_list,mask_id_list
 
 def predict(data):
-    global args
+    global args,tf_map,tf_buffer
     timer = []
 
-    prev = time.time()
-    present_id = transform_data(buffer, data)
-    obj_cnt = len(present_id)
-    timer.append(time.time() - prev)
+    timer.append(time.time())
+    present_id, mask_id_list= transform_data(data, tf_map, tf_buffer, rospy)
+    obj_cnt = len(present_id) + len(mask_id_list)
+    
+    timer.append(time.time())
+    
+    # previous obstacle id list
+    scene_ids = map(str, list(present_id) + list(mask_id_list))
+    present_id = map(str,present_id)
+    scene = create_scene(scene_ids, present_id)
 
-    present_id = map(str, present_id)
-    scene = buffer.create_scene(present_id)
-
-    timer.append(time.time() - timer[-1])
+    timer.append(time.time())
     scene.calculate_scene_graph(buffer.env.attention_radius,
                                 hyperparams['edge_addition_filter'],
                                 hyperparams['edge_removal_filter'])
-    timer.append(time.time() - timer[-1])
-    timesteps = np.array([buffer.get_buffer_frame()])
+    
+    # remove obstacle prediction
+    
+    timer.append(time.time())
+    timesteps = np.array([buffer.get_curr_frame()])
 
     predictions = eval_stg.predict(scene,
                                    timesteps,
@@ -185,9 +270,9 @@ def predict(data):
                                    gmm_mode=True,
                                    full_dist=False)
     
-    timer.append(time.time() - timer[-1])
+    timer.append(time.time())
     buffer.update_frame()
-    timer.append(time.time() - timer[-1])
+    timer.append(time.time())
     if len(predictions.keys()) < 1:
         return
 
@@ -220,14 +305,14 @@ def predict(data):
 
     if args.get_print() == 1:
         print ('[RunTime] obj count : ',len(present_id))
-        print ('[RunTime] Data preprocessing cost time : ',timer[0])
-        print ('[RunTime] Create_scene cost time : ',timer[1])
-        print ('[RunTime] calculate_scene_graph cost time : ',timer[2])
-        print ('[RunTime] Prediction cost time : ',timer[3])
-        print ('[RunTime] Update buffer cost time : ',timer[4])
-        print ('[RunTime] Pass msg cost time : ',timer[5])
+        print ('[RunTime] Data preprocessing cost time : ',timer[1] - timer[0])
+        print ('[RunTime] Create_scene cost time : ',timer[2] - timer[1])
+        print ('[RunTime] calculate_scene_graph cost time : ',timer[3] - timer[2])
+        print ('[RunTime] Prediction cost time : ',timer[4] - timer[3])
+        print ('[RunTime] Update buffer cost time : ',timer[5] - timer[4])
+        print ('[RunTime] Pass msg cost time : ',timer[6] - timer[5])
     elif args.get_print() == 2:
-        print ('Current time : ', buffer.get_buffer_frame())
+        print ('Current time : ', buffer.get_curr_frame())
         print ('Current obj count : ', obj_cnt)
         for _ , node in enumerate(predictions[t].keys()):
             for obj in data.objects:
@@ -275,7 +360,7 @@ if __name__ == '__main__':
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
     buffer = buffer_data()
-    print('Complete loading model!')
+    print('Complete Initialization!')
 
     delay_node = rospy.get_param(
         '/object_path_prediction/delay_node')
