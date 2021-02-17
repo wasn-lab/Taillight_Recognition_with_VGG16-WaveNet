@@ -21,12 +21,13 @@ def talker():
         else:
             open_close = 1
 
-	    if open_close2 == 1:
+        if open_close2 == 1:
             open_close2 = 0
-	    else:
+        else:
 		    open_close2 = 1
 
-	    msg.motor_temperature = 1.0 
+        msg.motor_temperature = 1.0 
+        '''
         msg.tire_pressure= 1.0 
         msg.air_pressure= 1.0 
         msg.battery= 100.0 
@@ -68,7 +69,7 @@ def talker():
         msg.highest_temperature= 100.0
         msg.mode= 1
         msg.emergency_exit= 0.0
-
+        '''
         pub.publish(msg)
         rate.sleep()
 
