@@ -31,7 +31,6 @@ public:
   PointCloud<PointT> runRadiusOutlierRemoval(typename PointCloud<PointT>::Ptr input, double radius, int min_pts);
 
   PointCloud<PointXYZIR> runRingOutlierRemoval(PointCloud<PointXYZIR>::Ptr input, int ring_num, float threshold);
-
 };
 
 #endif

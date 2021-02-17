@@ -241,7 +241,6 @@ CLUSTER_INFO* S1Cluster::getClusters(bool debug, const PointCloud<PointXYZIL>::C
         // ============== label counting for providing cluster_tag with class types ==================
         if (cluster_vector.at(i).cluster_tag == 1)
         {
-
           size_t cnt_person = 0;
           size_t cnt_motor = 0;
           size_t cnt_car = 0;

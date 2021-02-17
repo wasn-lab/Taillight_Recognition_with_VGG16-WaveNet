@@ -23,7 +23,23 @@ JetsonXavierGrabber::JetsonXavierGrabber()
   , ros_image(n)
   , video_capture_list(cam_ids_.size())
 {
-  InitParameters();
+  char buf[16];
+
+  // check camera driver whether loaded
+  FILE *fd = popen("lsmod | grep ar0147", "r");
+
+  if (fread (buf, 1, sizeof (buf), fd) > 0) // if there is some result the camera driver module must be loaded
+  {
+    printf ("camera driver module always is loaded\n");
+  }
+  else
+  {
+    printf ("camera driver module is not loaded\n");
+    InitParameters();
+  }
+
+  pclose(fd);
+
 }
 
 void JetsonXavierGrabber::InitParameters()
@@ -91,32 +107,50 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
             camera::raw_image_height);
   
 
-  cv::VideoCapture capture(caps);
+  cv::VideoCapture capture(caps, cv::CAP_GSTREAMER);
+
+  
   if (!capture.isOpened())
   {
-    std::cout << "Failed to open camera " << video_index << " fail " << std::endl;
-    return false;
-  }
-  else
-  {
-    unsigned int width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
-    unsigned int height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
-    unsigned int fps = capture.get(cv::CAP_PROP_FPS);
-    unsigned int pixels;
-    std::cout << "<<cam" << video_index << " open success>>" << std::endl;
-    if (resize_)
+    sleep(1);
+    if(capture.open(caps)) //try re-open again
     {
-      pixels = camera::image_width * camera::image_height;
-      std::cout << "  Frame size : " << camera::image_width << " x " << camera::image_height << ", " << pixels << " Pixels " << fps << " FPS"
-              << std::endl;  
-    }  
+      std::cout << "(1) reopen camera success " << video_index << std::endl;
+    }
     else
     {
-      pixels = width * height;
-      std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
-              << std::endl;
+      sleep(1);
+      if(capture.open(caps)) //try re-open again
+      {
+        std::cout << "(2) reopen camera success " << video_index << std::endl;
+      }
+      else
+      {
+        std::cout << "Failed to reopen camera " << video_index << " fail " << std::endl;
+        return false;
+      }
     }
   }
+  
+  // success open camera
+  unsigned int width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+  unsigned int height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+  unsigned int fps = capture.get(cv::CAP_PROP_FPS);
+  unsigned int pixels;
+  std::cout << "<<cam" << video_index << " open success>>" << std::endl;
+  if (resize_)
+  {
+    pixels = camera::image_width * camera::image_height;
+    std::cout << "  Frame size : " << camera::image_width << " x " << camera::image_height << ", " << pixels << " Pixels " << fps << " FPS"
+            << std::endl;  
+  }  
+  else
+  {
+    pixels = width * height;
+    std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
+            << std::endl;
+  }
+  
 
   video_capture_list[video_index] = (capture);
 
@@ -133,9 +167,11 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
   camera_buffer_.initBuffer();
   resize_ = do_resize;
 
+  sleep(1);
   // Gstreamer
   for (unsigned int index = 0; index < cam_ids_.size(); index++)
   {
+    sleep(1);
     if (gst_pipeline_init(index) == false)
     {
       std::cout << "initializeModulesGst init camera " << index << " fail!\n" << std::endl;

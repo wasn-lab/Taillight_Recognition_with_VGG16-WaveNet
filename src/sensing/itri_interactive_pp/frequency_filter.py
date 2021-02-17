@@ -17,8 +17,13 @@ def publish_msg(data):
     # print('_')
     # if(data.header.stamp - prev).to_sec() > 10:
         # print('Initialize')
+    
+
     if(data.header.stamp - prev).to_sec() > 0.5:
         # print((data.header.stamp - prev).to_sec())
+        for obj in data.objects:
+            obj.track.forecasts = []
+            obj.track.is_ready_prediction = False
         prev = data.header.stamp
         pub = rospy.Publisher(
             '/IPP/delay_Alert',

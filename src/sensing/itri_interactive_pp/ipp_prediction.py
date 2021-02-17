@@ -39,35 +39,37 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 
 def transform_data(buffer, data):
+    global tf_map
     present_id_list = []
-
     for obj in data.objects:
-        category = None
-        if obj.classId == 1: #temporary test
-            category = buffer.env.NodeType.VEHICLE
-            type_ = "VEHICLE"
-        elif obj.classId == 2 or obj.classId == 3 or obj.classId == 4:
-            category = buffer.env.NodeType.VEHICLE
-            type_ = "VEHICLE"
-        else:
-            continue
+        # category = None
+        # if obj.classId == 1: #temporary test
+        #     category = buffer.env.NodeType.VEHICLE
+        #     type_ = "PEDESTRIAN"
+        # elif obj.classId == 2 or obj.classId == 3 or obj.classId == 4:
+        #     category = buffer.env.NodeType.VEHICLE
+        #     type_ = "VEHICLE"
+        # else:
+        #     continue
+        id = int(obj.track.id)
+        category = buffer.env.NodeType.VEHICLE
+        type_ = "VEHICLE"
         x = obj.center_point.x
         y = obj.center_point.y
         z = obj.center_point.z
-
         # transform from base_link to map
-        # if transformer:
-        #     transform = tf_buffer.lookup_transform(
-        #         'map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
-        #     pose_stamped = PoseStamped()
-        #     pose_stamped.pose.position.x = x
-        #     pose_stamped.pose.position.y = y
-        #     pose_stamped.pose.position.z = z
-        #     pose_transformed = tf2_geometry_msgs.do_transform_pose(
-        #         pose_stamped, transform)
-        #     x = pose_transformed.pose.position.x
-        #     y = pose_transformed.pose.position.y
-        #     z = pose_transformed.pose.position.z
+        if tf_map:
+            transform = tf_buffer.lookup_transform(
+                'map', 'base_link', rospy.Time(0), rospy.Duration(1.0))
+            pose_stamped = PoseStamped()
+            pose_stamped.pose.position.x = x
+            pose_stamped.pose.position.y = y
+            pose_stamped.pose.position.z = z
+            pose_transformed = tf2_geometry_msgs.do_transform_pose(
+                pose_stamped, transform)
+            x = pose_transformed.pose.position.x
+            y = pose_transformed.pose.position.y
+            z = pose_transformed.pose.position.z
         # print 'x: ', x
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
 
@@ -147,8 +149,8 @@ def transform_data(buffer, data):
                                'heading_rad': heading_rad})
         
         buffer.update_buffer(node_data)
-        present_id_list.append(obj.track.id)
-    # print(present_id_list)
+        present_id_list.append(id)
+
     buffer.refresh_buffer()
     buffer.add_frame_length(len(present_id_list))
     return present_id_list
@@ -160,6 +162,7 @@ def predict(data):
 
     prev = time.time()
     present_id = transform_data(buffer, data)
+    obj_cnt = len(present_id)
     timer.append(time.time() - prev)
 
     present_id = map(str, present_id)
@@ -192,8 +195,8 @@ def predict(data):
 
     for _ , node in enumerate(predictions[t].keys()):
         for obj in data.objects:
-            obj.track.forecasts = []
             if obj.track.id == int(node.id):
+                #  and (obj.track.id == 281 or obj.track.id == 2065)  for debug
                 for prediction_x_y in predictions[t][node][:][0][0]:
 
                     forecasts_item = PathPrediction()
@@ -210,7 +213,7 @@ def predict(data):
     pub = rospy.Publisher(
         '/IPP/Alert',
         DetectedObjectArray,
-        queue_size=1)  # /IPP/Alert is TOPIC
+        queue_size=2)  # /IPP/Alert is TOPIC
     pub.publish(data)
 
     timer.append(time.time() - timer[-1])
@@ -225,28 +228,23 @@ def predict(data):
         print ('[RunTime] Pass msg cost time : ',timer[5])
     elif args.get_print() == 2:
         print ('Current time : ', buffer.get_buffer_frame())
+        print ('Current obj count : ', obj_cnt)
         for _ , node in enumerate(predictions[t].keys()):
             for obj in data.objects:
                 if obj.track.id == int(node.id):
+                    print ('Current obj id : ',obj.track.id)
                     print ('Current Position : ', (obj.center_point.x,obj.center_point.y))
                     predict_frame = 1
                     for prediction_x_y in predictions[t][node][:][0][0]:
-
-                        forecasts_item = PathPrediction()
-                        forecasts_item.position.x = np.float32(prediction_x_y[0])
-                        forecasts_item.position.y = np.float32(prediction_x_y[1])
-
-                        obj.track.forecasts.append(forecasts_item)
-                        obj.track.is_ready_prediction = True
-                        print ('Prediction ', predict_frame, 'frame : ', prediction_x_y)
                         predict_frame += 1
+                        print ('Prediction ', predict_frame, 'frame : ', prediction_x_y)
                     break
                 else:
                     continue
 
 def listener_ipp():
     global tf_buffer, tf_listener
-    rospy.init_node('ipp_transform_data')
+    rospy.init_node('object_path_prediction')
     rospy.Subscriber(args.get_source(), DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
@@ -255,12 +253,12 @@ def listener_ipp():
 
 def load_model(model_dir, ts=100):
     global hyperparams
-    model_registrar = ModelRegistrar(model_dir, 'cuda:1')
+    model_registrar = ModelRegistrar(model_dir, 'cuda:0')
     model_registrar.load_models(ts)
     with open(os.path.join(model_dir, 'config.json'), 'r') as config_json:
         hyperparams = json.load(config_json)
 
-    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:1')
+    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:0')
 
     trajectron.set_environment()
     trajectron.set_annealing_params()
@@ -272,7 +270,7 @@ if __name__ == '__main__':
           loading_model_part
           frame_length for refreshing buffer
         ===================== '''
-    global buffer, past_obj, frame_length, args
+    global buffer, past_obj, frame_length, args, tf_map
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -285,6 +283,8 @@ if __name__ == '__main__':
         '/object_path_prediction/input_topic')
     prediction_horizon = rospy.get_param(
         '/object_path_prediction/prediction_horizon')
+    tf_map = rospy.get_param(
+        '/object_path_prediction/tf_map')
     show_log = rospy.get_param(
         '/object_path_prediction/print_log')
 
