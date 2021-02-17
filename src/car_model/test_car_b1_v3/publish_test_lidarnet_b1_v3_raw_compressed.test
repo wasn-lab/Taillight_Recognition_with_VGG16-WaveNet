@@ -22,15 +22,6 @@
                 - name: /LidarDetection/Ped_Cyc
                   timeout: 60
                   negative: False
-                - name: /LidarFrontTop/Raw/heartbeat
-                  timeout: 60
-                  negative: False
-                - name: /LidarFrontRight/Raw/heartbeat
-                  timeout: 60
-                  negative: False
-                - name: /LidarFrontLeft/Raw/heartbeat
-                  timeout: 60
-                  negative: False
         </rosparam>
     </test>
 </launch>
