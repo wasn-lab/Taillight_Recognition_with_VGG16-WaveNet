@@ -244,7 +244,7 @@ def predict(data):
 
 def listener_ipp():
     global tf_buffer, tf_listener
-    rospy.init_node('ipp_transform_data')
+    rospy.init_node('object_path_prediction')
     rospy.Subscriber(args.get_source(), DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
@@ -253,12 +253,12 @@ def listener_ipp():
 
 def load_model(model_dir, ts=100):
     global hyperparams
-    model_registrar = ModelRegistrar(model_dir, 'cuda:1')
+    model_registrar = ModelRegistrar(model_dir, 'cuda:0')
     model_registrar.load_models(ts)
     with open(os.path.join(model_dir, 'config.json'), 'r') as config_json:
         hyperparams = json.load(config_json)
 
-    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:1')
+    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:0')
 
     trajectron.set_environment()
     trajectron.set_annealing_params()
