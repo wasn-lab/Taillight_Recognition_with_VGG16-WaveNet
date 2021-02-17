@@ -1,10 +1,4 @@
 <!-- -*- mode: XML -*- -->
-<!-- 
-Lidar List:
-* LidarFrontRight:         MR32, 192.168.0.220
-* LidarFrontLeft:          MR32, 192.168.0.221     
-* LidarFrontTop(base): Ouster64, 192.168.0.224
--->
 
 <launch>
 <!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
@@ -42,9 +36,6 @@ Lidar List:
 	<arg name="set_group_2" default="/LidarFrontLeft"/>
 	<arg name="set_group_3" default="/LidarFrontTop"/>
 
-	<!-- Stitching-->
-	<arg name="use_old_stitch" default="false"/>
-
 	<!-- Debug -->
 	<arg name="pub_decompress" default="false"/>
 
@@ -67,14 +58,6 @@ Lidar List:
 <!-- Compression *********************************************************** -->
 	<group if="$(arg use_compress)">
 		<node pkg="raw_points_processor" type="raw_points_processor_compressor" name="raw_points_compressor" output="screen" cwd="node" respawn="true"  /> 
-	</group>
-
-<!-- Old Stitch ******************************************************************* -->
-	<group if="$(arg use_old_stitch)">
-		<rosparam param="LidarFrontLeft_Fine_Param">[0.462, 1.098, -1.858, 0.031, -0.007, 1.783]</rosparam>
-		<rosparam param="LidarFrontRight_Fine_Param">[0.512, -1.053, -1.836, -0.025, -0.01, -1.785]</rosparam>
-		<rosparam param="LidarRearLeft_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
-		<rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 	</group>
 
 <!-- Mode Switch ************************************************************ -->
@@ -110,7 +93,7 @@ Lidar List:
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->
-<!-- ************ Front-Top: Ouster64 ************ -->
+<!-- ************ Front-Right: Ouster64 ************ -->
     <group ns="$(arg set_group_1)" if="$(arg hardware_enable)">
         <arg name="os1_hostname" default="192.168.0.230" doc="hostname or IP in dotted decimal form of the sensor"/>
         <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
@@ -143,7 +126,7 @@ Lidar List:
     </group>
 
 
-<!-- ************ Front-Top: Ouster64 ************ -->
+<!-- ************ Front-Left: Ouster64 ************ -->
     <group ns="$(arg set_group_2)" if="$(arg hardware_enable)">
         <arg name="os1_hostname" default="192.168.0.220" doc="hostname or IP in dotted decimal form of the sensor"/>
         <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
