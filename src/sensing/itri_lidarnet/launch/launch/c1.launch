@@ -22,7 +22,6 @@
 	<arg name="hardware_enable" default="true" />
     
 	<!-- Grabber & Preprocessing -->
-	<arg name="use_compress" default="true" />
     <arg name="use_oct_compress" default="false" />
 
 	<arg name="use_filter" default="true" />
@@ -31,23 +30,20 @@
 	<!-- SSN and Shape -->
 	<arg name="use_shape_estimation" default="true" />
 
+	<!-- Stitching-->
+	<arg name="use_old_stitch" default="false"/>
+
 	<!-- Ouster Setting -->
-	<arg name="set_group_1" default="/LidarFrontRight"/>
-	<arg name="set_group_2" default="/LidarFrontLeft"/>
+	<arg name="set_group_1" default="/LidarFrontLeft"/>
+	<arg name="set_group_2" default="/LidarFrontRight"/>
 	<arg name="set_group_3" default="/LidarFrontTop"/>
 
-	<!-- Debug -->
-	<arg name="pub_decompress" default="false"/>
-
 <!-- Parameter ************************************************************* -->
-	<param name="use_compress" value="$(arg use_compress)" /> 
 	<param name="use_oct_compress" value="$(arg use_oct_compress)" />
 
 	<param name="use_filter" value="$(arg use_filter)"/>
 	<param name="use_roi" value="$(arg use_roi)"/>
 	<param name="use_shape_estimation" value="$(arg use_shape_estimation)"/>
-	<param name="pub_decompress" value="$(arg pub_decompress)" />
-
 	<rosparam param="debug_output">true</rosparam>
 	<rosparam param="LaunchFileName">b1.launch</rosparam>
 
@@ -55,14 +51,10 @@
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_os1sensor"  args="0 0 0 -3.1415926 0 0 base_link os1_sensor" />
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
 
-<!-- Compression *********************************************************** -->
-	<group if="$(arg use_compress)">
-		<node pkg="raw_points_processor" type="raw_points_processor_compressor" name="raw_points_compressor" output="screen" cwd="node" respawn="true"  /> 
-	</group>
-
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
-		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
+		<include file="$(find pc2_compressor)/launch/cmpr.launch" />
+        <node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
 		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
@@ -86,23 +78,28 @@
 		<node pkg="output_results_by_dbscan" 	type="output_results_by_dbscan_b1"  name="output_results_by_dbscan_b1"  output="screen" cwd="node" respawn="true"  />
 	</group>
 
-	<group if="$(eval arg('mode') == 9)">
-		<node pkg="raw_points_processor" type="raw_points_processor_decompressor" name="raw_points_decompressor" output="screen" cwd="node" respawn="true"  />
+	<group if="$(eval arg('mode') == 5)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
+		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
+	</group>
+	
+    <group if="$(eval arg('mode') == 9)">
+		<include file="$(find pc2_compressor)/launch/decmpr.launch" />
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
 		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->
-<!-- ************ Front-Right: Ouster64 ************ -->
+<!-- ************ Front-Left: Ouster64 ************ -->
     <group ns="$(arg set_group_1)" if="$(arg hardware_enable)">
-        <arg name="os1_hostname" default="192.168.0.230" doc="hostname or IP in dotted decimal form of the sensor"/>
+        <arg name="os1_hostname" default="192.168.0.223" doc="hostname or IP in dotted decimal form of the sensor"/>
         <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
         <arg name="os1_lidar_port" default="7511" doc="port to which the sensor should send lidar data"/>
         <arg name="os1_imu_port" default="7512" doc="port to which the sensor should send imu data"/>
         <arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
         <arg name="lidar_mode" default="1024x20" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
         <arg name="metadata" default="" doc="override default metadata file for replays"/>
-        <arg name="frame_id" default="lidar_front_right"/>
+        <arg name="frame_id" default="lidar_front_left"/>
 
         <node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" respawn="true">
             <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
@@ -126,7 +123,7 @@
     </group>
 
 
-<!-- ************ Front-Left: Ouster64 ************ -->
+<!-- ************ Front-Right: Ouster64 ************ -->
     <group ns="$(arg set_group_2)" if="$(arg hardware_enable)">
         <arg name="os1_hostname" default="192.168.0.220" doc="hostname or IP in dotted decimal form of the sensor"/>
         <arg name="os1_udp_dest" default="192.168.0.1" doc="hostname or IP where the sensor will send data packets"/>
@@ -135,7 +132,7 @@
         <arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
         <arg name="lidar_mode" default="1024x20" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
         <arg name="metadata" default="" doc="override default metadata file for replays"/>
-        <arg name="frame_id" default="lidar_front_left"/>
+        <arg name="frame_id" default="lidar_front_right"/>
 
         <node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" respawn="true">
             <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
@@ -193,13 +190,3 @@
 
 
 </launch>
-
-
-
-
-
-
-
-
-
-
