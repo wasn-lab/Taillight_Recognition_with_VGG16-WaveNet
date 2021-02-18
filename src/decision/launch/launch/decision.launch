@@ -22,17 +22,17 @@
   <arg name="predict_t" default="2.0" />
 
   <!-- decision maker node -->
-  <node pkg="decision_maker" type="decision_maker" name="decision_maker" output="screen" >
+  <node pkg="decision_maker" type="decision_maker" name="decision_maker" output="screen" cwd="node" respawn="true">
         <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
 	<param name="disable_lane_event" value="$(arg disable_lane_event)" />
   </node>
   
   <!-- scene_register_checker node -->
-  <node pkg="scene_register_checker" type="scene_register_checker" name="scene_register_checker" output="screen" >
+  <node pkg="scene_register_checker" type="scene_register_checker" name="scene_register_checker" output="screen" cwd="node" respawn="true">
   </node>
 
   <!-- path transfer node -->
-  <node pkg="path_transfer" type="path_transfer" name="path_transfer" ><!-- output="screen" -->
+  <node pkg="path_transfer" type="path_transfer" name="path_transfer" cwd="node" respawn="true"><!-- output="screen" -->
         <param name="angle_diff_setting_in" value="$(arg angle_diff_setting_in)" />
 	<param name="angle_diff_setting_out" value="$(arg angle_diff_setting_out)" />
 	<param name="angle_diff_setting_distoturn" value="$(arg angle_diff_setting_distoturn)" />
@@ -42,7 +42,7 @@
   </node>
     
   <!-- target pub node -->
-  <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" >
+  <node pkg="target_planner" type="target_planner" name="target_planner" output="screen" cwd="node" respawn="true">
 	<param name="Look_ahead_time" value="$(arg Look_ahead_time)" />
 	<param name="Look_ahead_S0" value="$(arg Look_ahead_S0)" />
 	<param name="Look_ahead_time_right" value="$(arg Look_ahead_time_right)" />
@@ -52,7 +52,7 @@
   </node>
 
   <!-- veh_predictwaypoint pub node -->
-  <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint"> <!--output="screen" -->
+  <node pkg="veh_predictwaypoint" type="veh_predictwaypoint" name="veh_predictwaypoint" cwd="node" respawn="true"> <!--output="screen" -->
         <param name="wheel_dis" value="$(arg wheel_dis)"/>
         <param name="predict_s_max" value="$(arg predict_s_max)"/>
         <param name="predict_t" value="$(arg predict_t)"/>
