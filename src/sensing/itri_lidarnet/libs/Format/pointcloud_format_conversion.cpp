@@ -46,15 +46,15 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
     newPoint.intensity = *(float*)(&cloud_msg.data[0] + (pointBytes * p) + offset_int);
     newPoint.ring = *(unsigned char*)(&cloud_msg.data[0] + (pointBytes * p) + offset_ring);
 
-    if (brand == "ouster")
-    {
-      newPoint.intensity = newPoint.intensity * 255 / 500;  // normalize
+    // if (brand == "ouster")
+    // {
+    //   newPoint.intensity = newPoint.intensity * 255 / 500;  // normalize
 
-      if (newPoint.intensity > 255)
-      {
-        newPoint.intensity = 255;
-      }
-    }
+    //   if (newPoint.intensity > 255)
+    //   {
+    //     newPoint.intensity = 255;
+    //   }
+    // }
     cloud.points.push_back(newPoint);
   }
 

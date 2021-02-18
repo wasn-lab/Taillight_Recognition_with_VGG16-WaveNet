@@ -2,7 +2,6 @@
     <include file="$(find lidar)/launch/b1.launch">
       <arg name="mode" value="9" />
       <arg name="hardware_enable" value="false" />
-      <arg name="use_compress" value="false" />
     </include>
 
     <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_compressed_2021-02-03.bag -l" />
@@ -20,15 +19,6 @@
                   timeout: 60
                   negative: False
                 - name: /LidarDetection/Ped_Cyc
-                  timeout: 60
-                  negative: False
-                - name: /LidarFrontTop/Raw/heartbeat
-                  timeout: 60
-                  negative: False
-                - name: /LidarFrontRight/Raw/heartbeat
-                  timeout: 60
-                  negative: False
-                - name: /LidarFrontLeft/Raw/heartbeat
                   timeout: 60
                   negative: False
         </rosparam>
