@@ -52,4 +52,4 @@ src/sensing/deeplab/weights
 src/sensing/itri_interactive_pp/models
 src/sensing/itri_interactive_pp/other
 src/sensing/itri_interactive_pp/sandbox
-ped_output.csv
+src/sensing/itri_interactive_pp/backup

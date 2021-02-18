@@ -31,8 +31,8 @@
 
 pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, string brand);
 
-pcl::PointCloud<pcl::PointXYZRGBA> XYZIR_to_XYZRBGA(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud);
+pcl::PointCloud<pcl::PointXYZRGB> XYZIR_to_XYZRGB(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud);
 
-pcl::PointCloud<pcl::PointXYZIR> XYZRBGA_to_XYZIR(pcl::PointCloud<pcl::PointXYZRGBA>::Ptr input_cloud);
+pcl::PointCloud<pcl::PointXYZIR> XYZRGB_to_XYZIR(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
 
 #endif
