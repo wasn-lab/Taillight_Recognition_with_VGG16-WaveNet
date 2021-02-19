@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *
+ * v1.0 Yukihiro Saito
  */
 
-#include <ros/ros.h>
-#include "map_based_prediction_ros.h"
+#pragma once
+#include <cmath>
+#include "autoware_perception_msgs/Shape.h"
+#include "geometry_msgs/Polygon.h"
+#include "geometry_msgs/Vector3.h"
 
-int main(int argc, char** argv)
+namespace utils
 {
-  ros::init(argc, argv, "map_based_prediction");
-  MapBasedPredictionROS ros_node;
-  ros_node.createROSPubSub();
-  ros::spin();
-  return 0;
-}
+double getPolygonArea(const geometry_msgs::Polygon & footprint);
+double getRectangleArea(const geometry_msgs::Vector3 & dimensions);
+double getCircleArea(const geometry_msgs::Vector3 & dimensions);
+double getArea(const autoware_perception_msgs::Shape & shape);
+}  // namespace utils

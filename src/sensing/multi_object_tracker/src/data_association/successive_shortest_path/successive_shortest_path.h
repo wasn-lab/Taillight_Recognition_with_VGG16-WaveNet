@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Autoware Foundation. All rights reserved.
+ * Copyright 2020 Tier IV, Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- *
  */
+#ifndef SUCCESSIVE_SHORTEST_PATH_H_
+#define SUCCESSIVE_SHORTEST_PATH_H_
 
-#include <ros/ros.h>
-#include "map_based_prediction_ros.h"
+#include <unordered_map>
+#include <vector>
 
-int main(int argc, char** argv)
+namespace assignment_problem
 {
-  ros::init(argc, argv, "map_based_prediction");
-  MapBasedPredictionROS ros_node;
-  ros_node.createROSPubSub();
-  ros::spin();
-  return 0;
-}
+// See IMPORTANT NOTE at the top of the file.
+void MaximizeLinearAssignment(const std::vector<std::vector<double>>& cost,
+                              std::unordered_map<int, int>* direct_assignment,
+                              std::unordered_map<int, int>* reverse_assignment);
+}  // namespace assignment_problem
+
+#endif  // SUCCESSIVE_SHORTEST_PATH_H_

@@ -13,17 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *
+ * v1.0 Yukihiro Saito
  */
 
-#include <ros/ros.h>
-#include "map_based_prediction_ros.h"
-
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "map_based_prediction");
-  MapBasedPredictionROS ros_node;
-  ros_node.createROSPubSub();
-  ros::spin();
-  return 0;
-}
+#pragma once
+#include "model/bicycle_tracker.hpp"
+#include "model/pedestrian_tracker.hpp"
+#include "model/tracker_base.hpp"
+#include "model/vehicle_tracker.hpp"

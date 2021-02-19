@@ -24,8 +24,6 @@ gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_f
 sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_fusion.sh;exec bash"'
 sleep 2
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_pp.sh;exec bash"'
-sleep 2
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_edge_detection.sh;exec bash"'
 sleep 2
 
