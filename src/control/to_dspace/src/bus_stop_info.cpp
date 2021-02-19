@@ -41,6 +41,7 @@ const vector<int> bus_stop_code = {2001,2002,2003,2004,2005};
 ros::Publisher publisher_01;
 ros::Publisher publisher_02;
 
+std::string can_name_ = "can1";
 
 
 void send_can(){
@@ -49,7 +50,7 @@ void send_can(){
 	struct sockaddr_can addr;
 	struct can_frame frame;
 	struct ifreq ifr;
-	const char *ifname = CAN_INTERFACE_NAME;
+	const char *ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
 	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0){
 		perror("Error while opening socket");
 	}
@@ -202,6 +203,10 @@ int main(int argc, char **argv)
 	}		 
 	ros::init(argc, argv, "bus_stop_info");
 	ros::NodeHandle n;
+
+	std::string can_name_ = "can1";
+    ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
 	ros::Subscriber subscriber_01 = n.subscribe("/reserve/request", 1, chatterCallback_01);
 	ros::Subscriber subscriber_02 = n.subscribe("/NextStop/Info", 1, chatterCallback_02);
 	ros::Subscriber subscriber_03 = n.subscribe("/reserve/route", 1, chatterCallback_03);

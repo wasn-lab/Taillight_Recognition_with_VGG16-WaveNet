@@ -16,7 +16,7 @@
   <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
 
   <!-- planning initial node -->
-  <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" >
+  <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" cwd="node" respawn="true">
 	<remap from="output/lidar_no_ground" to="$(arg output/lidar_noground_topic)" />
 	<remap from="output/objects" to="$(arg output/objects_topic)" />
         <remap from="input/lidar_no_ground" to="$(arg input/lidar_noground_topic)" />
@@ -26,7 +26,7 @@
   </node>
   
   <!-- Grid map fusion pub node-->
-  <node pkg="occ_grid_lane" type="occ_grid_lane" name="occ_grid_lane" output="screen" >
+  <node pkg="occ_grid_lane" type="occ_grid_lane" name="occ_grid_lane" output="screen" cwd="node" respawn="true">
 	<param name="right_waylength" value="$(arg right_waylength)" />
 	<param name="left_waylength" value="$(arg left_waylength)" />
   </node>

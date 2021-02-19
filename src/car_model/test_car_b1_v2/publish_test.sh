@@ -15,6 +15,7 @@ if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/geofence_pp_2020-11-16-16-35-39.bag  
   || ! -f ${bag_dir}/lidar_raw_2020-03-10-10-48-39_41.bag
   || ! -f ${bag_dir}/lidar_raw_compressed_2021-01-12-16-01-42.bag
+  || ! -f ${bag_dir}/lidar_raw_compressed_2021-02-03.bag
   || ! -f ${bag_dir}/edge_detection_2020-04-13-17-45-48_0.bag
   || ! -f ${bag_dir}/localization_raw_2020-09-24-17-02-06.bag
   || ! -f ${bag_dir}/rad_grab_2020-04-13-17-45-48_0.bag

@@ -3,7 +3,7 @@
   <arg name="input_route_topic_name" default="/planning/mission_planning/route" />
   <arg name="map_topic_name" default="/map/vector_map" />
 
-  <node pkg="lane_change_planner" type="lane_change_planner" name="lane_change_planner" output="screen">
+  <node pkg="lane_change_planner" type="lane_change_planner" name="lane_change_planner" output="screen" respawn="true">
     <remap from="~input/route" to="$(arg input_route_topic_name)" />
     <remap from="~input/vector_map" to="$(arg map_topic_name)" />
     <remap from="~input/perception" to="/perception/object_recognition/objects" />
@@ -33,9 +33,9 @@
     <param name="enable_abort_lane_change" value="true" />
   </node>
 
-  <node pkg="rostopic" type="rostopic" name="auto_approve_lane_change" args="pub /lane_change_approval std_msgs/Bool 'data: true' -r 10" />
+  <node pkg="rostopic" type="rostopic" name="auto_approve_lane_change" args="pub /lane_change_approval std_msgs/Bool 'data: true' -r 10" respawn="true"/>
 
-  <node pkg="turn_signal_decider" type="turn_signal_decider" name="turn_signal_decider" output="screen">
+  <node pkg="turn_signal_decider" type="turn_signal_decider" name="turn_signal_decider" output="screen" respawn="true">
     <remap from="~input/path_with_lane_id" to="path_with_lane_id" />
     <remap from="~input/vector_map" to="$(arg map_topic_name)" />
     <remap from="~output/turn_signal_cmd" to="/planning/turn_signal_decider/turn_signal_cmd" />
