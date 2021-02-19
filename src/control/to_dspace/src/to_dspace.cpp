@@ -1,9 +1,3 @@
-
-#define CAN_DLC 8;
-#define CAN_INTERFACE_NAME "can1"
-#define can_id_start  0x000
-const double NumOfID = 5;
-
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DetectedObject.h"
@@ -34,6 +28,12 @@ const double NumOfID = 5;
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <typeinfo>
+
+#define CAN_DLC 8;
+std::string can_name_ = "can1";
+#define CAN_INTERFACE_NAME can_name_.c_str()
+#define can_id_start  0x000
+const double NumOfID = 5;
 
 using namespace std;
 
@@ -163,6 +163,8 @@ void chatterCallback_02(const std_msgs::Bool::ConstPtr& msg)
 	struct ifreq ifr;
 
 	const char *ifname = CAN_INTERFACE_NAME;
+
+	std::cout << "--------------------------" << CAN_INTERFACE_NAME << std::endl;
 
 	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
 	{
@@ -518,6 +520,9 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "to_dspace");
   ros::NodeHandle n;
+  
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
   //ros::Subscriber dSPACE_subscriber_01 = n.subscribe("PathPredictionOutput/lidar", 1, chatterCallback_01);
   ros::Subscriber dSPACE_subscriber_02 = n.subscribe("/ADV_op/req_run_stop", 1, chatterCallback_02);
   ros::Subscriber dSPACE_subscriber_03 = n.subscribe("/ADV_op/sys_ready", 1, chatterCallback_03);
