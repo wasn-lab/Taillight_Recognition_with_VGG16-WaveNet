@@ -12,8 +12,6 @@ RoiFusion::getLidar2DROI(const std::vector<DriveNet::MinMax2D>& cam_pixels_obj)
     roi.y_offset = pixel_obj.p_min.v;
     roi.width = pixel_obj.p_max.u - pixel_obj.p_min.u;
     roi.height = std::abs(pixel_obj.p_max.v - pixel_obj.p_min.v);
-    // std::cout << "lidar - roi.x_offset: " << roi.x_offset << ", roi.y_offset: " << roi.y_offset << ", roi.width: " <<
-    // roi.width << ", roi.height: " << roi.height<< std::endl;
     object_roi.push_back(roi);
   }
   return object_roi;
@@ -35,8 +33,6 @@ std::vector<sensor_msgs::RegionOfInterest> RoiFusion::getCam2DROI(const msgs::De
     roi.y_offset = pixel_positions[0].v;
     roi.width = pixel_positions[1].u - pixel_positions[0].u;
     roi.height = pixel_positions[1].v - pixel_positions[0].v;
-    // std::cout << "camera - roi.x_offset: " << roi.x_offset << ", roi.y_offset: " << roi.y_offset << ", roi.width: "
-    // << roi.width << ", roi.height: " << roi.height << std::endl;
     object_roi.push_back(roi);
   }
   return object_roi;
@@ -68,8 +64,6 @@ RoiFusion::getRoiFusionResult(const std::vector<sensor_msgs::RegionOfInterest>& 
       }
       if (max_iou < iou + iou_x + iou_y)
       {
-        // std::cout << "max_iou_cam_index: " << max_iou_cam_index << ", max_iou_lidar_index: " << max_iou_lidar_index
-        // << ", max_iou: " << max_iou<< std::endl;
         max_iou_lidar_index = lidar_index;
         max_iou_cam_index = cam_index;
         max_iou = iou + iou_x + iou_y;
@@ -78,14 +72,6 @@ RoiFusion::getRoiFusionResult(const std::vector<sensor_msgs::RegionOfInterest>& 
 
     if (roi_fusion_nodelet.iou_threshold_ < max_iou)
     {
-      // std::cout << "camera - object_camera_roi.x_offset: " << object_camera_roi[max_iou_cam_index].x_offset << ",
-      // object_camera_roi.y_offset: " << object_camera_roi[max_iou_cam_index].y_offset << ", roi.width: " <<
-      // object_camera_roi[max_iou_cam_index].width << ", roi.height: " << object_camera_roi[max_iou_cam_index].height
-      // << std::endl; std::cout << "lidar - object_lidar_roi.x_offset: " <<
-      // object_lidar_roi[max_iou_lidar_index].x_offset << ", object_lidar_roi[.y_offset: " <<
-      // object_lidar_roi[max_iou_lidar_index].y_offset << ", roi.width: " <<
-      // object_lidar_roi[max_iou_lidar_index].width << ", roi.height: " << object_lidar_roi[max_iou_lidar_index].height
-      // << std::endl;
       fusion_index.push_back(std::pair<int, int>(max_iou_cam_index, max_iou_lidar_index));
     }
   }
