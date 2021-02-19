@@ -27,6 +27,9 @@ const int TCP_VK_SRV_PORT = 55553;
 
 const std::string UDP_VK_SRV_ADRR = "60.250.196.127";
 const int UDP_VK_SRV_PORT = 55554;
+const int UDP_VK_SRV_A_PLUS_SENSOR_PORT = 55560;
+const int UDP_VK_SRV_A_PLUS_INFO_PORT = 55561;
+const int UDP_VK_SRV_A_PLUS_OBJ_PORT = 55562;
 
 // aws backend
 const std::string UDP_AWS_SRV_ADRR = "52.69.10.200";
@@ -37,10 +40,10 @@ const std::string UDP_OBU_ADRR = "192.168.1.200";
 const int UDP_OBU_PORT = 9999;
 
 // TCP Server on ADV
-const std::string TCP_ADV_SRV_ADRR = "192.168.1.6";
+const std::string TCP_ADV_SRV_ADRR = "192.168.1.3";
 const int TCP_ADV_SRV_PORT = 8765;
 
-const std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
+const std::string UDP_ADV_SRV_ADRR = "192.168.1.3";
 const int UDP_ADV_SRV_PORT = 8766;
 
 // obu traffic signal
@@ -832,6 +835,9 @@ void sendRun(int argc, char** argv)
   UdpClient udp_tablet_client;
   UdpClient udp_vk_fg_client;
   UdpClient udp_vk_fail_safe_client;
+  UdpClient udp_vk_a_plus_sensor_client;
+  UdpClient udp_vk_a_plus_info_client;
+  UdpClient udp_vk_a_plus_obj_client;
 
   udp_back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   udp_obu_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
@@ -839,6 +845,9 @@ void sendRun(int argc, char** argv)
   udp_tablet_client.initial("192.168.1.3", 9876);
   udp_vk_fg_client.initial("140.134.128.42", 8888);
   udp_vk_fail_safe_client.initial(UDP_VK_SRV_ADRR, 55554);
+  udp_vk_a_plus_sensor_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_A_PLUS_SENSOR_PORT);
+  udp_vk_a_plus_info_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_A_PLUS_INFO_PORT);
+  udp_vk_a_plus_obj_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_A_PLUS_OBJ_PORT);
 
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
@@ -929,6 +938,7 @@ void sendRun(int argc, char** argv)
        g_mqtt_sensor_queue.pop();
        g_mutex_sensor.unlock();
        mqtt_pubish(states);
+       udp_vk_a_plus_sensor_client.send_obj_to_server(states, true);
     }
 
     while(!g_mqtt_detect_object_queue.empty()){
@@ -940,6 +950,7 @@ void sendRun(int argc, char** argv)
         g_mqtt_detect_object_queue.pop();
         g_mutex_do.unlock();
         mqtt_pubish(json_detect_object.dump());
+        udp_vk_a_plus_obj_client.send_obj_to_server(states, true);
     }
 
     while(!g_mqtt_fail_safe_queue.empty())
@@ -955,6 +966,7 @@ void sendRun(int argc, char** argv)
     }
 
     mqtt_pubish(j1.dump());
+    udp_vk_a_plus_info_client.send_obj_to_server(j1.dump(), true);
     g_mutex_mqtt.unlock();
 
 
