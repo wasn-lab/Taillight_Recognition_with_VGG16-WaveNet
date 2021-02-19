@@ -1,3 +1,7 @@
 <launch>
-  <node name="m_obj_msg_converter" pkg="obj_msg_converter" type="convert.py" output="screen" clear_params="true" />
+  <arg name="input_topic" default="filtered_objs" />
+
+  <node name="m_obj_msg_converter" pkg="obj_msg_converter" type="convert.py" output="screen" clear_params="true">
+    <param name="input_topic" value="$(arg input_topic)" />
+  </node>
 </launch>
