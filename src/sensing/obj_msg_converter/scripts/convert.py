@@ -3,12 +3,12 @@
 import rospy
 import tf2_ros
 import tf2_geometry_msgs
-from geometry_msgs.msg import TransformStamped, Pose
-from msgs.msg import *
-from autoware_perception_msgs.msg import *
+from geometry_msgs.msg import PointStamped, PoseStamped
+from msgs.msg import DetectedObjectArray
+from autoware_perception_msgs.msg import DynamicObject, DynamicObjectWithFeature, DynamicObjectWithFeatureArray
 
 
-class MsgConvert2:
+class MsgConvert2(object):
 
     frame_id_target_ = "map"
     frame_id_source_ = "base_link"
@@ -27,13 +27,14 @@ class MsgConvert2:
             str(self.input_topic_ + "/aw"), DynamicObjectWithFeatureArray, queue_size=1)
 
     def run(self):
+        tf_listener = tf2_ros.TransformListener(self.tf_buffer_)
         rospy.spin()
 
     def callback(self, msg):
         self.pub_.publish(self.msg_convert(msg))
 
     def classid_convert(self, idx):
-        dict = {
+        id_dict = {
             0: 0,
             1: 6,
             2: 4,
@@ -45,47 +46,59 @@ class MsgConvert2:
             8: -1,
             9: -1
         }
-        return dict.get(idx)
+        return id_dict.get(idx)
 
-    def convert(self, p, tf_stamped):
+    def convert_point(self, p, tf_stamped):
+        # TF (lidar-to-map) for object position
+        p_in_lidar = PointStamped()
+        p_in_lidar.point.x = p.x
+        p_in_lidar.point.y = p.y
+        p_in_lidar.point.z = p.z
+
+        p_in_map = tf2_geometry_msgs.do_transform_point(p_in_lidar, tf_stamped)
+        p.x = p_in_map.point.x
+        p.y = p_in_map.point.y
+        p.z = p_in_map.point.z
+
+    def convert_pose(self, p, q, tf_stamped):
         # TF (lidar-to-map) for object pose
-        pose_in_lidar = Pose()
-        pose_in_lidar.position.x = p.x
-        pose_in_lidar.position.y = p.y
-        pose_in_lidar.position.z = p.z
-        pose_in_lidar.orientation.x = 0
-        pose_in_lidar.orientation.y = 0
-        pose_in_lidar.orientation.z = 0
-        pose_in_lidar.orientation.w = 1
+        pose_in_lidar = PoseStamped()
+        pose_in_lidar.pose.position.x = p.x
+        pose_in_lidar.pose.position.y = p.y
+        pose_in_lidar.pose.position.z = p.z
+        pose_in_lidar.pose.orientation.x = q.x
+        pose_in_lidar.pose.orientation.y = q.y
+        pose_in_lidar.pose.orientation.z = q.z
+        pose_in_lidar.pose.orientation.w = q.w
 
-        pose_in_map = Pose()
-        pose_in_map = do_transform_pose(pose_in_lidar, tf_stamped)
-        p.x = pose_in_map.position.x
-        p.y = pose_in_map.position.y
-        p.z = pose_in_map.position.z
+        pose_in_map = tf2_geometry_msgs.do_transform_pose(pose_in_lidar, tf_stamped)
+        p.x = pose_in_map.pose.position.x
+        p.y = pose_in_map.pose.position.y
+        p.z = pose_in_map.pose.position.z
+        q.x = pose_in_map.pose.orientation.x
+        q.y = pose_in_map.pose.orientation.y
+        q.z = pose_in_map.pose.orientation.z
+        q.w = pose_in_map.pose.orientation.w
 
     def convert_all_to_map_tf(self, obj):
         if obj.header.frame_id != self.frame_id_target_:
-            tf_stamped = TransformStamped()
+            tf_stamped = self.tf_buffer_.lookup_transform(
+                self.frame_id_target_, self.frame_id_source_, rospy.Time(0))
 
-            try:
-               tf_stamped = self.tf_buffer_.lookup_transform(self.frame_id_target_, self.frame_id_source_, rospy.Time(0))
-            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-               return
-
-            convert(obj.center_point, tf_stamped)
-            convert(obj.bPoint.p0, tf_stamped)
-            convert(obj.bPoint.p1, tf_stamped)
-            convert(obj.bPoint.p2, tf_stamped)
-            convert(obj.bPoint.p3, tf_stamped)
-            convert(obj.bPoint.p4, tf_stamped)
-            convert(obj.bPoint.p5, tf_stamped)
-            convert(obj.bPoint.p6, tf_stamped)
-            convert(obj.bPoint.p7, tf_stamped)
+            self.convert_pose(obj.center_point, obj.heading, tf_stamped)
+            self.convert_point(obj.bPoint.p0, tf_stamped)
+            self.convert_point(obj.bPoint.p1, tf_stamped)
+            self.convert_point(obj.bPoint.p2, tf_stamped)
+            self.convert_point(obj.bPoint.p3, tf_stamped)
+            self.convert_point(obj.bPoint.p4, tf_stamped)
+            self.convert_point(obj.bPoint.p5, tf_stamped)
+            self.convert_point(obj.bPoint.p6, tf_stamped)
+            self.convert_point(obj.bPoint.p7, tf_stamped)
 
     def msg_convert(self, in_list):
         out_list = DynamicObjectWithFeatureArray()
         out_list.header = in_list.header
+        out_list.header.frame_id = "map"
 
         for in_obj in in_list.objects:
             self.convert_all_to_map_tf(in_obj)
@@ -122,6 +135,5 @@ class MsgConvert2:
 
 
 if __name__ == "__main__":
-    node = MsgConvert2()
-    node.run()
-    tf_listener = tf2_ros.TransformListener(tf_buffer_)
+    NODE = MsgConvert2()
+    NODE.run()
