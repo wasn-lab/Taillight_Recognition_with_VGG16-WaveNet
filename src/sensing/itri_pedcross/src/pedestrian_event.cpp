@@ -1071,7 +1071,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 if (path_point.x == nearest_point.x && path_point.y == nearest_point.y)
                 {
                   std::lock_guard<std::mutex> lk(mu_veh_info_);
-#if DUMP_LOG
+#if DUMP_LOG == 1
                   // print distance
                   // file_ << ros::Time::now() << "," << obj_pub.track.id << "," << distance_from_car << ","
                   //  << veh_info_.ego_speed << "\n";
@@ -1235,7 +1235,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     std::lock_guard<std::mutex> lk2(mu_delay_from_camera_);
     total_time_ += stop - start;
     delay_from_camera_ = std::to_string((ros::Time::now() - msgs_timestamp).toSec());
-#if DUMP_LOG
+#if DUMP_LOG == 1
     // print inference time
     file_ << ros::Time::now() << "," << count_peds << "," << (inference_stop - inference_start).toSec() << ","
           << delay_from_camera_ << "\n";
@@ -2429,7 +2429,7 @@ int main(int argc, char** argv)
   std::cout << "PedCross started. Init time: " << stop - start << " sec" << std::endl;
   pe.count_ = 0;
 
-#if DUMP_LOG
+#if DUMP_LOG == 1
   std::stringstream ss;
   const std::string file_path =  "../../../ped_output.csv";
   ss << file_path;
@@ -2439,7 +2439,7 @@ int main(int argc, char** argv)
 
   pe.run();
 
-#if DUMP_LOG
+#if DUMP_LOG == 1
   pe.file_.close();
 #endif
 
