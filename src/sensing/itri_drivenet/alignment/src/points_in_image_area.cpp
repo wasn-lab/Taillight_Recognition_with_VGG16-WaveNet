@@ -589,17 +589,14 @@ void getBoxInImageFOV(const msgs::DetectedObjectArray& objects_array, std::vecto
         /// min point
         std::vector<int>::iterator min_col_inter = std::min_element(col.begin(), col.end());
         min_max_2d_bbox.p_min.u = col[std::distance(col.begin(), min_col_inter)];
-        std::vector<int>::iterator max_row_inter = std::max_element(row.begin(), row.end());
-        min_max_2d_bbox.p_min.v = row[std::distance(row.begin(), max_row_inter)];
+        std::vector<int>::iterator min_row_inter = std::min_element(row.begin(), row.end());
+        min_max_2d_bbox.p_min.v = row[std::distance(row.begin(), min_row_inter)];
         /// max point
         std::vector<int>::iterator max_col_inter = std::max_element(col.begin(), col.end());
         min_max_2d_bbox.p_max.u = col[std::distance(col.begin(), max_col_inter)];
-        std::vector<int>::iterator min_row_inter = std::min_element(row.begin(), row.end());
-        min_max_2d_bbox.p_max.v = row[std::distance(row.begin(), min_row_inter)];
+        std::vector<int>::iterator max_row_inter = std::max_element(row.begin(), row.end());
+        min_max_2d_bbox.p_max.v = row[std::distance(row.begin(), max_row_inter)];
 
-        // std::cout << "min_max_2d_bbox.p_min: " << min_max_2d_bbox.p_min.u << ", " << min_max_2d_bbox.p_min.v <<
-        // std::endl; std::cout << "min_max_2d_bbox.p_max: " << min_max_2d_bbox.p_max.u << ", " <<
-        // min_max_2d_bbox.p_max.v << std::endl;
         cam_pixels_obj.push_back(min_max_2d_bbox);
         objects.push_back(obj_tmp);
       }
