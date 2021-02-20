@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #include "pc2_compressor_node.h"
 #include <gflags/gflags.h>
 #include <gflags/gflags_gflags.h>

@@ -78,7 +78,8 @@ msgs::BoxPoint ObjectGenerator::clusterToBoxPoint(const CLUSTER_INFO& cluster_ve
   return box_point;
 }
 
-void ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::PointXYZI>& cloud, const int class_id, OrientedBBox& obb, msgs::BoxPoint& box_point)
+void ObjectGenerator::pointsToLShapeBBox(const pcl::PointCloud<pcl::PointXYZI>& cloud, const int class_id,
+                                         OrientedBBox& obb, msgs::BoxPoint& box_point)
 {
   /// Preprocessing
   CLUSTER_INFO cluster_vector;

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #include <thread>
 #include <glog/logging.h>
 #include <pcl_ros/point_cloud.h>

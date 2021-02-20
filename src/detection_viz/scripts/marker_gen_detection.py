@@ -326,7 +326,7 @@ class Node:
 
     def create_bounding_box_list_marker(self, idx, header, objects):
         marker = Marker()
-        marker.header.frame_id = header.frame_id
+        marker.header.frame_id = 'base_link'
         marker.header.stamp = header.stamp
         marker.ns = self.inputTopic
         marker.action = Marker.ADD

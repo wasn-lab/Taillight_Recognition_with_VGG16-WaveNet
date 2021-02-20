@@ -9,7 +9,7 @@
 
   <arg name="param_path" default="$(find motion_velocity_optimizer)/config/default_motion_velocity_optimizer.yaml" />
 
-  <node pkg="motion_velocity_optimizer" type="motion_velocity_optimizer" name="motion_velocity_optimizer" output="$(arg output)">
+  <node pkg="motion_velocity_optimizer" type="motion_velocity_optimizer" name="motion_velocity_optimizer" output="$(arg output)" respawn="true">
     <rosparam command="load" file="$(arg param_path)" />
     <param name="show_debug_info" value="$(arg show_debug_info)"/>
     <param name="show_debug_info_all" value="$(arg show_debug_info_all)"/>

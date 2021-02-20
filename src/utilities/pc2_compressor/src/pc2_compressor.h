@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #pragma once
 #include <string>
 #include <pcl_ros/point_cloud.h>

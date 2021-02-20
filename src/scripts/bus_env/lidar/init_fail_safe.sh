@@ -9,4 +9,4 @@ roscd car_model
 cd south_bridge
 python sb_set_ros_param.py
 
-roslaunch fail_safe fail_safe.launch
+roslaunch --wait fail_safe fail_safe.launch

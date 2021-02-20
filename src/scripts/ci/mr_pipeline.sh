@@ -63,9 +63,6 @@ else
 fi
 set -e
 
-echo "Check binary files specific to ARM platform."
-readlink -e devel/lib/libcamera_grabber_framework.a
-
 set +x
 source devel/setup.bash
 python src/scripts/ci/run_pylint.py

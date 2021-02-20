@@ -25,3 +25,12 @@ direction = (MSB)000(LSB)
 MSB bit = Turn Right
 Middle bit = Go Ahead
 LSB bit = Turn Left
+
+## 啟動方式
+``` sh
+./devel/lib/itri_lightnet_new_layout/itri_lightnet_new_layout_node
+```
+
+## dependencies
+OpenCV V4.2
+TensorRT 5.0.2.6/4.0.1.6
