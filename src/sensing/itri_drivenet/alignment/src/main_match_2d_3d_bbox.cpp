@@ -47,7 +47,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::left_back_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30 , camera::id::left_back_60, camera::id::right_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -138,9 +138,29 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   // <<
   // g_cam_time_buffer[cam_order].back().nsec << std::endl;
 }
+void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
+  g_cam_time_buffer[cam_order].push_back(msg->header.stamp);
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_time_buffer[cam_order].back().sec << "."
+  // <<
+  // g_cam_time_buffer[cam_order].back().nsec << std::endl;
+}
 void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
+  g_cam_time_buffer[cam_order].push_back(msg->header.stamp);
+  // std::cout << camera::topics[g_cam_ids[cam_order]] << " time: " << g_cam_time_buffer[cam_order].back().sec << "."
+  // <<
+  // g_cam_time_buffer[cam_order].back().nsec << std::endl;
+}
+void callback_cam_right_back_60(const sensor_msgs::Image::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
   std::lock_guard<std::mutex> lock_cam_time(g_mutex_cam_time[cam_order]);
   g_cam_time_buffer[cam_order].push_back(msg->header.stamp);
@@ -171,9 +191,53 @@ void callback_object_cam_front_bottom_60(const msgs::DetectedObjectArray::ConstP
   // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
   // msg->header.stamp.nsec << std::endl;
 }
+void callback_object_cam_front_top_far_30(const msgs::DetectedObjectArray::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::front_top_far_30);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  static int object_wait_frame_count = 0;
+  if (object_wait_frame_count < g_object_wait_frame)
+  {
+    g_object_buffer_arrs[cam_order].push_back(*msg);
+    object_wait_frame_count = object_wait_frame_count + 1;
+  }
+  else
+  {
+    g_object_buffer_arrs[cam_order].push_back(*msg);
+    std::unique_lock<std::mutex> lock_cam_object_time(g_mutex_cam_object_time[cam_order], std::adopt_lock);
+    g_object_arrs[cam_order] = g_object_buffer_arrs[cam_order].front();
+    lock_cam_object_time.unlock();
+    g_is_object_update[cam_order] = true;
+    g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
+  }
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
+}
 void callback_object_cam_left_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
   auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::left_back_60);
+  int cam_order = std::distance(g_cam_ids.begin(), it);
+  static int object_wait_frame_count = 0;
+  if (object_wait_frame_count < g_object_wait_frame)
+  {
+    g_object_buffer_arrs[cam_order].push_back(*msg);
+    object_wait_frame_count = object_wait_frame_count + 1;
+  }
+  else
+  {
+    g_object_buffer_arrs[cam_order].push_back(*msg);
+    std::unique_lock<std::mutex> lock_cam_object_time(g_mutex_cam_object_time[cam_order], std::adopt_lock);
+    g_object_arrs[cam_order] = g_object_buffer_arrs[cam_order].front();
+    lock_cam_object_time.unlock();
+    g_is_object_update[cam_order] = true;
+    g_object_buffer_arrs[cam_order].erase(g_object_buffer_arrs[cam_order].begin());
+  }
+  // std::cout << camera::topics_obj[g_cam_ids[cam_order]] << " time: " << msg->header.stamp.sec << "." <<
+  // msg->header.stamp.nsec << std::endl;
+}
+void callback_object_cam_right_back_60(const msgs::DetectedObjectArray::ConstPtr& msg)
+{
+  auto it = std::find(g_cam_ids.begin(), g_cam_ids.end(), camera::id::right_back_60);
   int cam_order = std::distance(g_cam_ids.begin(), it);
   static int object_wait_frame_count = 0;
   if (object_wait_frame_count < g_object_wait_frame)
@@ -1001,9 +1065,11 @@ int main(int argc, char** argv)
 
   /// get callback function
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
-                                                                            callback_cam_left_back_60 };
+                                                                            callback_cam_front_top_far_30,
+                                                                            callback_cam_left_back_60,
+                                                                            callback_cam_right_back_60 };
   static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
-    callback_object_cam_front_bottom_60, callback_object_cam_left_back_60
+    callback_object_cam_front_bottom_60, callback_object_cam_front_top_far_30, callback_object_cam_left_back_60, callback_object_cam_right_back_60
   };
 
   /// set topic name
