@@ -19,7 +19,8 @@ RoiFusion::getLidar2DROI(const std::vector<std::vector<DriveNet::MinMax2D>>& cam
   }
   return object_roi;
 }
-std::vector<std::vector<sensor_msgs::RegionOfInterest>> RoiFusion::getCam2DROI(const std::vector<msgs::DetectedObjectArray>& objects_array)
+std::vector<std::vector<sensor_msgs::RegionOfInterest>>
+RoiFusion::getCam2DROI(const std::vector<msgs::DetectedObjectArray>& objects_array)
 {
   std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_roi(objects_array.size());
   for (size_t cam_order = 0; cam_order < objects_array.size(); cam_order++)
@@ -60,15 +61,18 @@ RoiFusion::getRoiFusionResult(const std::vector<std::vector<sensor_msgs::RegionO
         double iou(0.0), iou_x(0.0), iou_y(0.0);
         if (roi_fusion_nodelet.use_iou_)
         {
-          iou = roi_fusion_nodelet.calcIoU(object_lidar_roi[cam_order][lidar_index], object_camera_roi[cam_order][cam_index]);
+          iou = roi_fusion_nodelet.calcIoU(object_lidar_roi[cam_order][lidar_index],
+                                           object_camera_roi[cam_order][cam_index]);
         }
         if (roi_fusion_nodelet.use_iou_x_)
         {
-          iou_x = roi_fusion_nodelet.calcIoUX(object_lidar_roi[cam_order][lidar_index], object_camera_roi[cam_order][cam_index]);
+          iou_x = roi_fusion_nodelet.calcIoUX(object_lidar_roi[cam_order][lidar_index],
+                                              object_camera_roi[cam_order][cam_index]);
         }
         if (roi_fusion_nodelet.use_iou_y_)
         {
-          iou_y = roi_fusion_nodelet.calcIoUY(object_lidar_roi[cam_order][lidar_index], object_camera_roi[cam_order][cam_index]);
+          iou_y = roi_fusion_nodelet.calcIoUY(object_lidar_roi[cam_order][lidar_index],
+                                              object_camera_roi[cam_order][cam_index]);
         }
         if (max_iou < iou + iou_x + iou_y)
         {
@@ -99,10 +103,10 @@ void RoiFusion::getFusionCamObj(const std::vector<msgs::DetectedObjectArray>& ob
       std::vector<DriveNet::PixelPosition> pixel_positions(2);
       pixel_positions[0].u = objects_array[cam_order].objects[camera_index].camInfo[0].u;
       pixel_positions[0].v = objects_array[cam_order].objects[camera_index].camInfo[0].v;
-      pixel_positions[1].u =
-          objects_array[cam_order].objects[camera_index].camInfo[0].u + objects_array[cam_order].objects[camera_index].camInfo[0].width;
-      pixel_positions[1].v =
-          objects_array[cam_order].objects[camera_index].camInfo[0].v + objects_array[cam_order].objects[camera_index].camInfo[0].height;
+      pixel_positions[1].u = objects_array[cam_order].objects[camera_index].camInfo[0].u +
+                             objects_array[cam_order].objects[camera_index].camInfo[0].width;
+      pixel_positions[1].v = objects_array[cam_order].objects[camera_index].camInfo[0].v +
+                             objects_array[cam_order].objects[camera_index].camInfo[0].height;
       transferPixelScaling(pixel_positions);
 
       DriveNet::MinMax2D min_max_2d_bbox;

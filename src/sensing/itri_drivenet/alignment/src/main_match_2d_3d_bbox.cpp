@@ -47,7 +47,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::left_back_60};
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::left_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -264,7 +264,8 @@ void drawLidarBoxOnImage(std::vector<cv::Mat>& mats, std::vector<std::vector<Min
   // std::cout << "===== drawLidarBoxOnImage... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    g_visualization.drawBoxOnImage(mats[cam_order], lidar_pixels_obj[cam_order], sensor_msgs_itri::FusionSourceId::Lidar);
+    g_visualization.drawBoxOnImage(mats[cam_order], lidar_pixels_obj[cam_order],
+                                   sensor_msgs_itri::FusionSourceId::Lidar);
   }
 }
 
@@ -306,7 +307,8 @@ void drawBoxOnImages(std::vector<cv::Mat>& mats, const std::vector<std::vector<M
   // std::cout << "===== drawBoxOnImages... =====" << std::endl;
   for (size_t cam_order = 0; cam_order < mats.size(); cam_order++)
   {
-    g_visualization.drawBoxOnImage(mats[cam_order], min_max_2d_bbox[cam_order], sensor_msgs_itri::FusionSourceId::Camera);
+    g_visualization.drawBoxOnImage(mats[cam_order], min_max_2d_bbox[cam_order],
+                                   sensor_msgs_itri::FusionSourceId::Camera);
   }
 }
 void getPointCloudInAllImageFOV(const pcl::PointCloud<pcl::PointXYZI>::Ptr& lidarall_ptr,
@@ -442,7 +444,8 @@ void displayCameraData()
 }
 
 void projectLidarBBoxOntoImage(std::vector<cv::Mat>& mats, const msgs::DetectedObjectArray& objects_array,
-                               std::vector<std::vector<msgs::DetectedObject>>& objects, std::vector<std::vector<MinMax2D>>& lidar_pixels_obj)
+                               std::vector<std::vector<msgs::DetectedObject>>& objects,
+                               std::vector<std::vector<MinMax2D>>& lidar_pixels_obj)
 {
   getBoxInImageFOV(objects_array, objects, lidar_pixels_obj, g_alignments);
 
@@ -817,7 +820,8 @@ void runInference()
       g_is_data_sync = false;
       // getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
       projectLidarBBoxOntoImage(cam_mats, object_lidar, object_lidar_filter, lidar_pixels_obj);
-      std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_lidar_roi = g_roi_fusion.getLidar2DROI(lidar_pixels_obj);
+      std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_lidar_roi =
+          g_roi_fusion.getLidar2DROI(lidar_pixels_obj);
       std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_camera_roi = g_roi_fusion.getCam2DROI(object_arrs);
       std::vector<std::vector<std::pair<int, int>>> fusion_index =
           g_roi_fusion.getRoiFusionResult(object_camera_roi, object_lidar_roi);
@@ -826,7 +830,7 @@ void runInference()
 
       if (g_img_result_publish)
       {
-        drawBoxOnImages(cam_mats, object_arrs);        // camera detection result
+        drawBoxOnImages(cam_mats, object_arrs);     // camera detection result
         drawBoxOnImages(cam_mats, cam_pixels_obj);  // fusion camera result
         image_publisher(cam_mats, object_lidar.header);
       }
@@ -996,9 +1000,11 @@ int main(int argc, char** argv)
   message_filters::Subscriber<msgs::DetectedObjectArray> sub_filter_lidar_detection;
 
   /// get callback function
-  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60, callback_cam_left_back_60 };
-  static void (*f_callbacks_object[])(
-      const msgs::DetectedObjectArray::ConstPtr&) = { callback_object_cam_front_bottom_60, callback_object_cam_left_back_60 };
+  static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
+                                                                            callback_cam_left_back_60 };
+  static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
+    callback_object_cam_front_bottom_60, callback_object_cam_left_back_60
+  };
 
   /// set topic name
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)

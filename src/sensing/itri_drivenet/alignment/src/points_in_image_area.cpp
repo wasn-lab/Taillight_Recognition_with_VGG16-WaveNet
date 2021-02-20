@@ -525,7 +525,8 @@ void getPointCloudIn3DBox(const pcl::PointCloud<pcl::PointXYZI>& cloud_src, int 
   }
 }
 
-void getBoxInImageFOV(const msgs::DetectedObjectArray& objects_array, std::vector<std::vector<msgs::DetectedObject>>& objects,
+void getBoxInImageFOV(const msgs::DetectedObjectArray& objects_array,
+                      std::vector<std::vector<msgs::DetectedObject>>& objects,
                       std::vector<std::vector<MinMax2D>>& cam_pixels_obj, std::vector<Alignment>& alignment)
 {
   // std::cout << "===== getPointCloudInBoxFOV... =====" << std::endl;
