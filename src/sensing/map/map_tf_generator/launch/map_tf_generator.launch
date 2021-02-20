@@ -4,7 +4,7 @@
   <arg name="map_frame" default="map" />
   <arg name="viewer_frame" default="viewer" />
 
-  <node pkg="map_tf_generator" type="map_tf_generator" name="map_tf_generator" output="screen">
+  <node pkg="map_tf_generator" type="map_tf_generator" name="map_tf_generator" output="screen" respawn="true">
     <remap from="pointcloud_map" to="$(arg input_map_points_topic)" />
 
     <param name="map_frame" value="$(arg map_frame)" />
