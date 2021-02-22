@@ -77,6 +77,7 @@ bool g_is_data_sync = false;
 bool g_is_enable_default_3d_bbox = true;
 bool g_is_display = false;
 bool g_img_result_publish = false;
+bool g_lidar_detection_on_2d = false;
 
 /// ros
 std::vector<message_filters::Cache<sensor_msgs::Image>> g_cache_image(g_cam_ids.size());
@@ -515,10 +516,13 @@ void projectLidarBBoxOntoImage(std::vector<cv::Mat>& mats, const msgs::DetectedO
 {
   getBoxInImageFOV(objects_array, objects, lidar_pixels_obj, g_alignments);
 
-  // if (g_is_display)
-  // {
-  // drawLidarBoxOnImage(mats, lidar_pixels_obj);
-  // }
+  if (g_is_display || g_img_result_publish)
+  {
+    if(g_lidar_detection_on_2d)
+    {
+      drawLidarBoxOnImage(mats, lidar_pixels_obj);
+    }
+  }
 }
 
 void getSyncLidarCameraData()
@@ -1051,7 +1055,8 @@ int main(int argc, char** argv)
 
   ros::param::get(ros::this_node::getName() + "/display", g_is_display);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
-
+  ros::param::get(ros::this_node::getName() + "/lidar_detection_on_2d", g_lidar_detection_on_2d);
+  
   /// ros Subscriber
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
   std::vector<ros::Subscriber> object_subs(g_cam_ids.size());
