@@ -35,6 +35,7 @@ rostest car_model publish_test_drivenet_b1_v3.test
 rostest car_model publish_test_track2d_b1_v3.test
 #rostest car_model publish_test_pedcross_b1_v3.test
 rostest car_model publish_test_lidarnet_b1_v3.test
+rostest car_model publish_test_lidars_grabber_b1_v3.test
 rostest car_model publish_test_lidarnet_b1_v3_raw_compressed.test
 rostest car_model publish_test_edge_detection_b1_v3.test
 rostest car_model publish_test_localization_b1_v3.test
