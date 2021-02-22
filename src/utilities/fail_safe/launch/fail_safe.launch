@@ -1,3 +1,4 @@
 <launch>
   <node name="fail_safe" pkg="fail_safe" type="run_fail_safe_checker.py" respawn="true" />
+  <node name="load_collector" pkg="fail_safe" type="run_load_collector.py" respawn="true" />
 </launch>

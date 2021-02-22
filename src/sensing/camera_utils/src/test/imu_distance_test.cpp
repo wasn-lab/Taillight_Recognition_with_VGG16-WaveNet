@@ -1,6 +1,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <gtest/gtest.h>
 #include <cmath>
+#include "car_model.h"
 #include "imu_distance.h"
 
 namespace imu_distance_test
@@ -55,12 +56,14 @@ TEST(IMUDistanceTest, test_read_obj_bbox2d)
   EXPECT_EQ(0.5, imud.get_obj_pivot_y2d());
 }
 
+#if CAR_MODEL_IS_B1_V2
 TEST(IMUDistanceTest, test_fov)
 {
   EXPECT_EQ(120., roundn(imu_distance::fov_w, 3));
   EXPECT_EQ(75.477, roundn(imu_distance::fov_h, 3));
   EXPECT_EQ(0.063, roundn(imu_distance::degs_per_px, 3));
 }
+#endif
 
 TEST(IMUDistanceTest, test_compute_imu_and_sensor_rpy)
 {

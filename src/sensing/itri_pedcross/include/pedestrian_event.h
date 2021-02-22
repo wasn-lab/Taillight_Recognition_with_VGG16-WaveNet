@@ -48,7 +48,7 @@
 //#include <tf_utils.hpp>
 
 #define USE_2D_FOR_ALARM 0
-#define DUMP_LOG 1
+#define DUMP_LOG 0
 #define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG

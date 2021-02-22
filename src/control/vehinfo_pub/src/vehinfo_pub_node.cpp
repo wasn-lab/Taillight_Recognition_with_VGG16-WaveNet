@@ -234,6 +234,9 @@ int main(int argc, char **argv)
         ros::NodeHandle nodeHandle1;
         uint32_t seq = 0;
 
+        std::string can_name_ = "can1";
+        ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
         ros::Publisher vehinfo_pub = nodeHandle1.advertise<msgs::VehInfo>("veh_info", 1);
         int rc;
         int s;
@@ -261,7 +264,8 @@ int main(int argc, char **argv)
         struct can_frame frame;
         struct ifreq ifr;
 
-        const char *ifname = "can1";
+        const char *ifname = can_name_.c_str();//"can1";
+        // std::cout << "cancancancancan : " << can_name_ << std::endl;
 
         if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
                 perror("Error while opening socket");

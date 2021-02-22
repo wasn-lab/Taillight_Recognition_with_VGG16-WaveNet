@@ -2,7 +2,6 @@
 
 source /home/lidar/itriadv/devel/setup.bash
 export ROS_MASTER_URI=http://192.168.1.3:11311
-export ROS_IP=192.168.3.10
-#roslaunch itri_tracking_pp tpp.launch show_absspeed:="true" pp_obj_min_kmph:="10.0"
-roslaunch itri_tracking_pp tpp.launch occ_source:=1
+export ROS_IP=192.168.1.3
 
+roslaunch --wait itri_tracking_pp tpp.launch input_source:=1 create_polygon_from_bbox:=True show_classid:=True drivable_area_filter:=True

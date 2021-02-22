@@ -1,0 +1,50 @@
+# ctrl+a q unblock scrolling
+altscreen on # erase screen when quit apps
+defutf8 on
+defc1 off # treat input chars 128 ~ 159 as control functions
+defflow on
+activity "activity in %n (%t)"
+bell_msg "bell in %n (%t)"
+vbell on
+startup_message off
+nethack on
+shell $SHELL
+defscrollback 100000
+
+# using Ctrl+Left & Ctrl+Right
+bindkey ^[[1;5D prev
+bindkey ^[[1;5C next
+bindkey \033[D prev
+bindkey \033[C next
+
+# encoding
+defencoding utf8
+bind b encoding big5 utf8
+bind u encoding utf8 utf8
+defbce on # erase background with current bg color
+cjkwidth off
+caption always "%n(%t@%H)"
+
+screen -t init_camera
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh^M"
+
+screen -t init_fail_safe
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_fail_safe.sh^M"
+
+screen -t init_rosbag_sender
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_rosbag_sender.sh^M"
+
+screen -t init_lightnet
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_lightnet.sh^M"
+
+screen -t init_tracking_2d
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d.sh^M"
+
+screen -t init_tracking_2d_left
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d_left.sh^M"
+
+screen -t init_tracking_2d_right
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d_right.sh^M"
+
+screen -t init_tracking_2d_fov30
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d_fov30.sh^M"

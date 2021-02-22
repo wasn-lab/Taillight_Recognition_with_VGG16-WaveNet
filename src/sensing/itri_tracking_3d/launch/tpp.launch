@@ -12,7 +12,7 @@
   <!-- 6: CameraDetV2: /CameraDetection -->
   <!-- 7: Tracking2D: /Tracking2D/front_bottom_60 -->
   <!-- otherwise: Fusion: /SensorFusion -->
-  <arg name="input_source" default="6" />
+  <arg name="input_source" default="1" />
 
   <!-- Input/Output FPS -->
   <arg name="input_fps" default="10.0" />
@@ -36,7 +36,7 @@
   <!-- Rviz marker lifetime -->
   <!-- 0: Auto-assign as (1 / output_fps) -->
   <!-- other value: manually assign -->
-  <arg name="m_lifetime_sec" default="1.0" />
+  <arg name="m_lifetime_sec" default="0.15" />
 
   <!-- Rviz markers -->
   <arg name="gen_markers" default="True" />
@@ -57,6 +57,7 @@
     <param name="drivable_area_filter" value="$(arg drivable_area_filter)" />
     <param name="expand_left" value="$(arg expand_left)" />
     <param name="expand_right" value="$(arg expand_right)" />
+    <param name="ground_z" value="$(arg ground_z)" />
     <param name="m_lifetime_sec" value="$(arg m_lifetime_sec)" />
     <param name="gen_markers" value="$(arg gen_markers)" />
     <param name="show_classid" value="$(arg show_classid)" />
@@ -64,6 +65,5 @@
     <param name="show_source" value="$(arg show_source)" />
     <param name="show_distance" value="$(arg show_distance)" />
     <param name="show_absspeed" value="$(arg show_absspeed)" />
-    <param name="ground_z" value="$(arg ground_z)" />
   </node>
 </launch>

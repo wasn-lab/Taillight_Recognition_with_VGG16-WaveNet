@@ -27,6 +27,9 @@ const int TCP_VK_SRV_PORT = 55553;
 
 const std::string UDP_VK_SRV_ADRR = "60.250.196.127";
 const int UDP_VK_SRV_PORT = 55554;
+const int UDP_VK_SRV_A_PLUS_SENSOR_PORT = 55560;
+const int UDP_VK_SRV_A_PLUS_INFO_PORT = 55561;
+const int UDP_VK_SRV_A_PLUS_OBJ_PORT = 55562;
 
 // aws backend
 const std::string UDP_AWS_SRV_ADRR = "52.69.10.200";
@@ -37,10 +40,10 @@ const std::string UDP_OBU_ADRR = "192.168.1.200";
 const int UDP_OBU_PORT = 9999;
 
 // TCP Server on ADV
-const std::string TCP_ADV_SRV_ADRR = "192.168.1.6";
+const std::string TCP_ADV_SRV_ADRR = "192.168.1.3";
 const int TCP_ADV_SRV_PORT = 8765;
 
-const std::string UDP_ADV_SRV_ADRR = "192.168.1.6";
+const std::string UDP_ADV_SRV_ADRR = "192.168.1.3";
 const int UDP_ADV_SRV_PORT = 8766;
 
 // obu traffic signal
@@ -295,6 +298,7 @@ bool convertBoolean(int state)
 
 void callback_flag_info04(const msgs::Flag_Info::ConstPtr& input)
 {
+    g_vs.speed = input->Dspace_Flag01;
     g_vs.steering_wheel =  input->Dspace_Flag04;
     g_vs.accelerator = input->Dspace_Flag05;
     g_vs.brake_pos = input->Dspace_Flag06;
@@ -507,7 +511,7 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   g_vs.steer = input->steer; //轉向
   g_vs.localization = input->localization; //定位
   g_vs.odometry = input->odometry; //里程
-  g_vs.speed = input->speed; //車速 km/hr
+  //g_vs.speed = input->speed; //車速 km/hr
   //vs.rotating_speed = input->speed ; //轉速
   g_vs.bus_stop = input->bus_stop; //站點
   g_vs.vehicle_number = input->vehicle_number; //車號
@@ -714,8 +718,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Gyrox"] = g_imu.Gyrox; // 目前來源 imu_data_rad
     j1["Gyroy"] = g_imu.Gyroy; // 目前來源 imu_data_rad
     j1["Gyroz"] = g_imu.Gyroz; // 目前來源 imu_data_rad
-    j1["accelerator"] = g_can_data[4]; //無rostopic 目前來源CAN
-    j1["brake_pedal"] = g_can_data[5]; //無rostopic 目前來源CAN
+    j1["accelerator"] = g_vs.accelerator; //無rostopic 目前來源Flag04
+    j1["brake_pedal"] = g_vs.brake_pos; //無rostopic 目前來源Flag04
     j1["distance"] = 0.0; //? 跟mileage有何不同？
     j1["mainvoltage"] = g_battery.gross_voltage; //總電壓//0.0;
     j1["maxvoltage"] = g_battery.highest_voltage; //最高電池電壓//0.0;
@@ -764,8 +768,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Gyrox"] = g_imu.Gyrox; //   目前來源 imu_data_rad
     j1["Gyroy"] = g_imu.Gyroy; //   目前來源 imu_data_rad
     j1["Gyroz"] = g_imu.Gyroz; //   目前來源 imu_data_rad
-    j1["accelerator"] = g_can_data[4]; //無rostopic 目前來源CAN
-    j1["brake_pedal"] = g_can_data[5]; //無rostopic 目前來源CAN
+    j1["accelerator"] = g_vs.accelerator; //無rostopic 目前來源Flag04
+    j1["brake_pedal"] = g_vs.brake_pos; //無rostopic 目前來源Flag04
     j1["ArrivedStop"] = g_cuttent_arrive_stop.id; //目前來源 NextStop/Info
     j1["ArrivedStopStatus"] = g_cuttent_arrive_stop.status; //目前來源 NextStop/Info
     j1["round"] = g_cuttent_arrive_stop.round; //目前來源 BusStop/Round
@@ -831,6 +835,9 @@ void sendRun(int argc, char** argv)
   UdpClient udp_tablet_client;
   UdpClient udp_vk_fg_client;
   UdpClient udp_vk_fail_safe_client;
+  UdpClient udp_vk_a_plus_sensor_client;
+  UdpClient udp_vk_a_plus_info_client;
+  UdpClient udp_vk_a_plus_obj_client;
 
   udp_back_client.initial(UDP_AWS_SRV_ADRR, UDP_AWS_SRV_PORT);
   udp_obu_client.initial(UDP_OBU_ADRR, UDP_OBU_PORT);
@@ -838,6 +845,9 @@ void sendRun(int argc, char** argv)
   udp_tablet_client.initial("192.168.1.3", 9876);
   udp_vk_fg_client.initial("140.134.128.42", 8888);
   udp_vk_fail_safe_client.initial(UDP_VK_SRV_ADRR, 55554);
+  udp_vk_a_plus_sensor_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_A_PLUS_SENSOR_PORT);
+  udp_vk_a_plus_info_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_A_PLUS_INFO_PORT);
+  udp_vk_a_plus_obj_client.initial(UDP_VK_SRV_ADRR, UDP_VK_SRV_A_PLUS_OBJ_PORT);
 
   // UDP_VK_client.initial("192.168.43.24", UDP_VK_SRV_PORT);
   while (true)
@@ -928,6 +938,7 @@ void sendRun(int argc, char** argv)
        g_mqtt_sensor_queue.pop();
        g_mutex_sensor.unlock();
        mqtt_pubish(states);
+       udp_vk_a_plus_sensor_client.send_obj_to_server(states, true);
     }
 
     while(!g_mqtt_detect_object_queue.empty()){
@@ -939,6 +950,7 @@ void sendRun(int argc, char** argv)
         g_mqtt_detect_object_queue.pop();
         g_mutex_do.unlock();
         mqtt_pubish(json_detect_object.dump());
+        udp_vk_a_plus_obj_client.send_obj_to_server(states, true);
     }
 
     while(!g_mqtt_fail_safe_queue.empty())
@@ -954,6 +966,7 @@ void sendRun(int argc, char** argv)
     }
 
     mqtt_pubish(j1.dump());
+    udp_vk_a_plus_info_client.send_obj_to_server(j1.dump(), true);
     g_mutex_mqtt.unlock();
 
 
@@ -1065,6 +1078,8 @@ void sendROSRun(int argc, char** argv)
         spat.spat_sec = j1.at("Spat_sec");
         spat.signal_state = j1.at("Signal_state");
         spat.index = j1.at("Index");
+        spat.intersection_id = j1.at("intersection_id");
+        spat.road_id = j1.at("road_id");
       } 
       catch(std::exception& e)
       {
@@ -1565,7 +1580,7 @@ json genMqttBmsMsg()
   bsm["current"] = g_battery.gross_current;
   bsm["voltage"] = g_battery.gross_voltage;
   bsm["capacity"] =g_vs.battery;
-  bsm["design_capacity"] = -1 ;
+  bsm["design_capacity"] = 300 ;
   bsm["timestamp"] = timestamp_ms;
   bsm["source_time"] = timestamp_ms;
   return bsm;
@@ -1609,7 +1624,7 @@ json genMqttECUMsg(ecu_type type)
       break;
     case ecu_type::operation_speed:
       ecu["operation_speed"] = -1.0;
-      ecu["maximum_speed"] = 35;
+      ecu["maximum_speed"] = 110;
       break;
     case ecu_type::driving_mode:
       ecu["driving_mode"] = 1;
@@ -1782,7 +1797,7 @@ int main(int argc, char** argv)
   msgs::StopInfoArray empty;
   RosModuleTraffic::publishReserve(TOPIC_RESERVE, empty);
   /*block main.*/
-  while (true)
+  while (ros::ok())
   {
     boost::this_thread::sleep(boost::posix_time::microseconds(1000000));
   }
