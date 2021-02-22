@@ -10,7 +10,7 @@ import time
 import numpy as np
 
 
-def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='/map'):
+def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map'):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
     marker.header.frame_id = coordinate_type  # vehicle center
@@ -30,7 +30,7 @@ def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='/
     return marker
 
 
-def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='/map'):
+def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map'):
     marker = Marker()
     marker.header.stamp = rospy.get_rostime()
     marker.header.frame_id = coordinate_type
@@ -64,14 +64,15 @@ def vehicle_marker_callback_final(data):
     # rospy.init_node('pedestrian_marker', anonymous=True)
     # print(data.header.frame_id)
     markerArray = MarkerArray()
+    i = 0
     for obj in data.objects:
         if obj.track.is_ready_prediction:
-            i = 0
+            i = i + 1
             line_marker = init_new_line(
-                id=obj.track.id * 30 + i, color=[1.0, 0.2, 0.0],coordinate_type=coordinate_type)
+                id = i, color=[1.0, 0.2, 0.0],coordinate_type=coordinate_type)
             for track_point in obj.track.forecasts:
-                point_marker = init_new_points(id=obj.track.id * 20 + i,coordinate_type=coordinate_type)
-                print("Prediction_horizon: ", i)
+                i = i + 1
+                point_marker = init_new_points(id=i,coordinate_type=coordinate_type)
                 point_2 = Point()
                 point_2.x = track_point.position.x
                 point_2.y = track_point.position.y
@@ -79,7 +80,6 @@ def vehicle_marker_callback_final(data):
                 point_marker.points.append(point_2)
                 line_marker.points.append(point_2)
                 markerArray.markers.append(point_marker)
-                i = i + 1
             markerArray.markers.append(line_marker)
 
     # the correct one
@@ -98,13 +98,8 @@ def listener_pedestrian():
 if __name__ == '__main__':
     global input_source,coordinate_type
     rospy.init_node('Ipp_Marker')
-    input_source = rospy.get_param('/object_marker/coordinate_type')
-    if input_source == 1:
-        coordinate_type = '/map'
-    elif input_source == 2:
-        coordinate_type == '/base_link'
-    else:
-        print('Source not found!')
+    # IPP input with map-based
+    coordinate_type = 'map'
         
     try:
         listener_pedestrian()

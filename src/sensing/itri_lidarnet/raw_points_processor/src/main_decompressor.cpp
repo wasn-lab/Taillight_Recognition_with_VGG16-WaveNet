@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 
-//std
+// std
 #include <string>
 #include <iostream>
 #include <vector>
@@ -52,7 +52,7 @@ void cb_LidarFrontLeft(const msgs::CompressedPointCloud& msg)
   // publish
   sensor_pc2_ptr->header = msg.header;
   g_pub_LidarFrontLeft_DeCompress.publish(*sensor_pc2_ptr);
-  //std::cout << "[L-DeCmpr]: " << stopWatch_L.getTimeSeconds() << 's' << std::endl;
+  // std::cout << "[L-DeCmpr]: " << stopWatch_L.getTimeSeconds() << 's' << std::endl;
   L_Lock.unlock();
 }
 
@@ -71,7 +71,7 @@ void cb_LidarFrontRight(const msgs::CompressedPointCloud& msg)
   // publish
   sensor_pc2_ptr->header = msg.header;
   g_pub_LidarFrontRight_DeCompress.publish(*sensor_pc2_ptr);
-  //std::cout << "[R-DeCmpr]: " << stopWatch_R.getTimeSeconds() << 's' << std::endl;
+  // std::cout << "[R-DeCmpr]: " << stopWatch_R.getTimeSeconds() << 's' << std::endl;
   R_Lock.unlock();
 }
 
@@ -86,7 +86,7 @@ void cb_LidarFrontTop(const msgs::CompressedPointCloud& msg)
   // g_pub_LidarFrontLeft_Raw_HeartBeat.publish(empty_msg);
 
   auto sensor_pc2_ptr = pc2_compressor::decompress(msg.data);
-  
+
   // publish
   sensor_pc2_ptr->header = msg.header;
   g_pub_LidarFrontTop_DeCompress.publish(*sensor_pc2_ptr);

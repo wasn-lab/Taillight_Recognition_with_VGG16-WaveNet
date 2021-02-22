@@ -38,7 +38,7 @@
 #include <linux/can/raw.h>
 #include <typeinfo>
 #define CAN_DLC 8
-#define CAN_INTERFACE_NAME "can1"
+// #define CAN_INTERFACE_NAME "can1"
 
 // Specify running mode
 //#define VIRTUAL
@@ -383,6 +383,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Geofence");
   ros::NodeHandle n;
+
+  std::string can_name_ = "can1";
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
   ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
   ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
   ros::Subscriber AstarSub_original =
@@ -413,7 +417,8 @@ int main(int argc, char** argv)
   struct sockaddr_can addr;
   struct can_frame frame;
   struct ifreq ifr;
-  const char* ifname = CAN_INTERFACE_NAME;
+  const char* ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
+  // std::cout << "cancancancancangeofence : " << can_name_ << std::endl;
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");

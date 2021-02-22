@@ -7,28 +7,28 @@
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
           topics:
-            - name: /cam/front_bottom_60
+            - name: /cam/front_bottom_60/raw
               timeout: 15
               negative: False
-            - name: /cam/front_top_far_30
+            - name: /cam/front_top_far_30/raw
               timeout: 15
               negative: False
-            - name: /cam/front_top_close_120
+            - name: /cam/front_top_close_120/raw
               timeout: 15
               negative: False
-            - name: /cam/right_front_60
+            - name: /cam/right_front_60/raw
               timeout: 15
               negative: False
-            - name: /cam/right_back_60
+            - name: /cam/right_back_60/raw
               timeout: 15
               negative: False
-            - name: /cam/left_front_60
+            - name: /cam/left_front_60/raw
               timeout: 15
               negative: False
-            - name: /cam/left_back_60
+            - name: /cam/left_back_60/raw
               timeout: 15
               negative: False
-            - name: /cam/back_top_120
+            - name: /cam/back_top_120/raw
               timeout: 15
               negative: False
         </rosparam>

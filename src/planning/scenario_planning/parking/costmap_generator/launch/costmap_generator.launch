@@ -6,7 +6,7 @@
   <arg name="output_grid_map" />
   <arg name="output_occupancy_grid" />
 
-  <node pkg="costmap_generator" type="costmap_generator" name="costmap_generator" output="screen">
+  <node pkg="costmap_generator" type="costmap_generator" name="costmap_generator" output="screen" respawn="true">
     <remap from="~input/objects" to="$(arg input_objects)" />
     <remap from="~input/points_no_ground" to="$(arg input_points_no_ground)" />
     <remap from="~input/vector_map" to="$(arg input_lanelet_map)" />

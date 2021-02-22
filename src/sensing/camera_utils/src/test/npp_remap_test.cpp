@@ -8,7 +8,9 @@
 #include "camera_params.h"
 #include "camera_utils.h"
 #include "npp.h"
+#include "car_model.h"
 
+#if CAR_MODEL_IS_B1_V2
 namespace camera
 {
 const cv::Mat g_img_in = cv::imread(CAMERA_UTILS_TEST_DATA_DIR "/front_120_raw_10000.jpg");
@@ -68,3 +70,4 @@ TEST(NPPWrapperTest, test_cv_remap_32fc1_perf)
 }
 
 };  // namespace
+#endif  // CAR_MODEL_IS_B1_V2

@@ -36,7 +36,6 @@ pcl::StopWatch stopWatch_L;
 pcl::StopWatch stopWatch_R;
 pcl::StopWatch stopWatch_T;
 
-
 bool pub_decompress = false;
 //------------------------------ Callback
 void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
@@ -44,18 +43,18 @@ void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
   L_Lock.lock();
   stopWatch_L.reset();
 
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGBA>());
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGB>());
 
   stringstream msg_data_ss;
 
   msg_data_ss << msg.data;
 
-  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>* PointCloudDecoder;
-  PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>();
+  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudDecoder;
+  PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>();
   PointCloudDecoder->decodePointCloud(msg_data_ss, cloudOut);
 
   pcl::PointCloud<pcl::PointXYZIR>::Ptr XYZIR_tmp(new pcl::PointCloud<pcl::PointXYZIR>);
-  *XYZIR_tmp = XYZRBGA_to_XYZIR(cloudOut);
+  *XYZIR_tmp = XYZRGB_to_XYZIR(cloudOut);
 
   pcl_conversions::toPCL(msg.header, XYZIR_tmp->header);
 
@@ -68,10 +67,8 @@ void cloud_cb_LidarFrontLeft(msgs::CompressedPointCloud msg)
   msg_data_ss.str("");
   msg_data_ss.clear();
 
-
   delete (PointCloudDecoder);
 
-  cout << "[L-Decode]:" << stopWatch_L.getTimeSeconds() << 's' << endl;
   L_Lock.unlock();
 }
 
@@ -80,36 +77,30 @@ void cloud_cb_LidarFrontRight(msgs::CompressedPointCloud msg)
   R_Lock.lock();
   stopWatch_R.reset();
 
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGBA>());
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGB>());
 
   stringstream msg_data_ss;
 
   msg_data_ss << msg.data;
 
-  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>* PointCloudDecoder;
-  PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>();
+  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudDecoder;
+  PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>();
   PointCloudDecoder->decodePointCloud(msg_data_ss, cloudOut);
 
   pcl::PointCloud<pcl::PointXYZIR>::Ptr XYZIR_tmp(new pcl::PointCloud<pcl::PointXYZIR>);
-  *XYZIR_tmp = XYZRBGA_to_XYZIR(cloudOut);
+  *XYZIR_tmp = XYZRGB_to_XYZIR(cloudOut);
 
   pcl_conversions::toPCL(msg.header, XYZIR_tmp->header);
 
   sensor_msgs::PointCloud2::Ptr sensor_pc2(new sensor_msgs::PointCloud2);
-
   pcl::toROSMsg(*XYZIR_tmp, *sensor_pc2);
 
   pub_LidarFrontRight.publish(*sensor_pc2);
 
-
-  msg_data_ss.str("");  
+  msg_data_ss.str("");
   msg_data_ss.clear();
-  
 
   delete (PointCloudDecoder);
-
-
-  cout << "[R-Decode]:" << stopWatch_R.getTimeSeconds() << 's' << endl;
   R_Lock.unlock();
 }
 
@@ -119,18 +110,18 @@ void cloud_cb_LidarFrontTop(msgs::CompressedPointCloud msg)
 
   stopWatch_T.reset();
 
-  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGBA>());
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut(new pcl::PointCloud<pcl::PointXYZRGB>());
 
   stringstream msg_data_ss;
 
   msg_data_ss << msg.data;
 
-  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>* PointCloudDecoder;
-  PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>();
+  pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudDecoder;
+  PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>();
   PointCloudDecoder->decodePointCloud(msg_data_ss, cloudOut);
 
   pcl::PointCloud<pcl::PointXYZIR>::Ptr XYZIR_tmp(new pcl::PointCloud<pcl::PointXYZIR>);
-  *XYZIR_tmp = XYZRBGA_to_XYZIR(cloudOut);
+  *XYZIR_tmp = XYZRGB_to_XYZIR(cloudOut);
   pcl_conversions::toPCL(msg.header, XYZIR_tmp->header);
 
   sensor_msgs::PointCloud2::Ptr sensor_pc2(new sensor_msgs::PointCloud2);
@@ -140,7 +131,6 @@ void cloud_cb_LidarFrontTop(msgs::CompressedPointCloud msg)
 
   msg_data_ss.str("");
   msg_data_ss.clear();
-  
 
   delete (PointCloudDecoder);
 
@@ -157,18 +147,18 @@ int main(int argc, char** argv)
 
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
-      n.subscribe<msgs::CompressedPointCloud>("/LidarFrontLeft/Compressed", 1, cloud_cb_LidarFrontLeft);
+      n.subscribe<msgs::CompressedPointCloud>("/LidarFrontLeft/Oct_Compressed", 1, cloud_cb_LidarFrontLeft);
   ros::Subscriber sub_LidarFrontRight =
-      n.subscribe<msgs::CompressedPointCloud>("/LidarFrontRight/Compressed", 1, cloud_cb_LidarFrontRight);
+      n.subscribe<msgs::CompressedPointCloud>("/LidarFrontRight/Oct_Compressed", 1, cloud_cb_LidarFrontRight);
   ros::Subscriber sub_LidarFrontTop =
-      n.subscribe<msgs::CompressedPointCloud>("/LidarFrontTop/Compressed", 1, cloud_cb_LidarFrontTop);
+      n.subscribe<msgs::CompressedPointCloud>("/LidarFrontTop/Oct_Compressed", 1, cloud_cb_LidarFrontTop);
 
   if (pub_decompress)
   {
     // publisher
-    pub_LidarFrontLeft = n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontLeft/Decompressed", 1);
-    pub_LidarFrontRight = n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontRight/Decompressed", 1);
-    pub_LidarFrontTop = n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontTop/Decompressed", 1);
+    pub_LidarFrontLeft = n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontLeft/Oct_Decompressed", 1);
+    pub_LidarFrontRight = n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontRight/Oct_Decompressed", 1);
+    pub_LidarFrontTop = n.advertise<const sensor_msgs::PointCloud2>("/LidarFrontTop/Oct_Decompressed", 1);
   }
   else
   {

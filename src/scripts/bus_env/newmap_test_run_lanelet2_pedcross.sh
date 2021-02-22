@@ -24,10 +24,6 @@ sleep 3
 
 #sleep 3
 #gnome-terminal  -e 'bash -c "./init_fusion.sh;exec bash"'
-#sleep 3
-#gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
-#sleep 3
-#gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
 sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_tracking_3d.sh;exec bash"'
 sleep 3
@@ -36,7 +32,11 @@ sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_grid_pp.sh;exec bash"'
 
 sleep 3
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_drivable_area_filter.sh;exec bash"'
+sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_obj_msg_converter.sh;exec bash"'
+sleep 3
+#gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_multi_object_tracker.sh;exec bash"'
 sleep 3
 #gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_map_based_prediction.sh;exec bash"'
 sleep 3
