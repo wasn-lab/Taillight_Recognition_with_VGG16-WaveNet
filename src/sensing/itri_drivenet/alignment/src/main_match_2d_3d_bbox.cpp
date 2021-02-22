@@ -25,6 +25,7 @@
 #include "point_preprocessing.h"
 #include "sync_message.h"
 #include "roi_fusion.h"
+#include "box_fusion.h"
 
 /// opencv
 #include <opencv2/core/core.hpp>
@@ -56,6 +57,7 @@ const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id
 std::vector<Alignment> g_alignments(g_cam_ids.size());
 Visualization g_visualization;
 RoiFusion g_roi_fusion;
+Boxfusion g_box_fusion;
 
 /// thread
 std::vector<std::mutex> g_mutex_cams(g_cam_ids.size());
@@ -815,8 +817,6 @@ void object_publisher(const std::vector<msgs::DetectedObjectArray>& object_array
     {
       int camera_index = fusion_index[cam_order][pair_index].first;
       int lidar_index = fusion_index[cam_order][pair_index].second;
-      // std::cout << "fusion_index[" << pair_index << "]: " << fusion_index[cam_order][pair_index].first << ", " <<
-      // fusion_index[cam_order][pair_index].second << std::endl;
 
       msgs::DetectedObject msg_obj;
       msg_obj.header = object_array_lidar.header;
@@ -834,10 +834,12 @@ void object_publisher(const std::vector<msgs::DetectedObjectArray>& object_array
       msg_objs.push_back(msg_obj);
     }
   }
+  std::vector<msgs::DetectedObject> msg_objs_after_fusion;
+  msg_objs_after_fusion = g_box_fusion.multi_cambox_fuse(msg_objs);
 
   msg_det_obj_arr.header = object_array_lidar.header;
   msg_det_obj_arr.header.frame_id = "lidar";  // mapping to lidar coordinate
-  msg_det_obj_arr.objects = msg_objs;
+  msg_det_obj_arr.objects = msg_objs_after_fusion;
   g_object_pub.publish(msg_det_obj_arr);
 
   std_msgs::Empty empty_msg;
