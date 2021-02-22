@@ -40,12 +40,9 @@ public:
   bool use_iou_;
   double iou_threshold_;
 
-  double calcIoU(
-    const sensor_msgs::RegionOfInterest & roi_1, const sensor_msgs::RegionOfInterest & roi_2);
-  double calcIoUX(
-    const sensor_msgs::RegionOfInterest & roi_1, const sensor_msgs::RegionOfInterest & roi_2);
-  double calcIoUY(
-    const sensor_msgs::RegionOfInterest & roi_1, const sensor_msgs::RegionOfInterest & roi_2);
+  double calcIoU(const sensor_msgs::RegionOfInterest& roi_1, const sensor_msgs::RegionOfInterest& roi_2);
+  double calcIoUX(const sensor_msgs::RegionOfInterest& roi_1, const sensor_msgs::RegionOfInterest& roi_2);
+  double calcIoUY(const sensor_msgs::RegionOfInterest& roi_1, const sensor_msgs::RegionOfInterest& roi_2);
 
 private:
   // void onInit();
