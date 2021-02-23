@@ -19,12 +19,27 @@ JetsonXavierGrabber::JetsonXavierGrabber()
   , npp8u_ptrs_(cam_ids_.size())
   , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
              camera::image_width)  // 720,1280 to 342,608
-  , remapper_(camera::raw_image_height, camera::raw_image_width)  
-  , num_src_bytes_(camera::raw_image_height * camera::raw_image_width * 3)
+  , remapper_(camera::raw_image_height, camera::raw_image_width)
   , ros_image(n)
   , video_capture_list(cam_ids_.size())
 {
-  InitParameters();
+  char buf[16];
+
+  // check camera driver whether loaded
+  FILE *fd = popen("lsmod | grep ar0147", "r");
+
+  if (fread (buf, 1, sizeof (buf), fd) > 0) // if there is some result the camera driver module must be loaded
+  {
+    printf ("camera driver module always is loaded\n");
+  }
+  else
+  {
+    printf ("camera driver module is not loaded\n");
+    InitParameters();
+  }
+
+  pclose(fd);
+
 }
 
 void JetsonXavierGrabber::InitParameters()
@@ -92,30 +107,50 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
             camera::raw_image_height);
   
 
-  cv::VideoCapture capture(caps);
+  cv::VideoCapture capture(caps, cv::CAP_GSTREAMER);
+
+  
   if (!capture.isOpened())
   {
-    std::cout << "Failed to open camera " << video_index << " fail " << std::endl;
-    return false;
-  }
-  else
-  {
-    unsigned int width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
-    unsigned int height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
-    unsigned int fps = capture.get(cv::CAP_PROP_FPS);
-    unsigned int pixels = width * height;
-    std::cout << "<<cam" << video_index << " open success>>" << std::endl;
-    if (resize_)
+    sleep(1);
+    if(capture.open(caps)) //try re-open again
     {
-      std::cout << "  Frame size : " << camera::image_width << " x " << camera::image_height << ", " << pixels << " Pixels " << fps << " FPS"
-              << std::endl;  
-    }  
+      std::cout << "(1) reopen camera success " << video_index << std::endl;
+    }
     else
     {
-      std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
-              << std::endl;
+      sleep(1);
+      if(capture.open(caps)) //try re-open again
+      {
+        std::cout << "(2) reopen camera success " << video_index << std::endl;
+      }
+      else
+      {
+        std::cout << "Failed to reopen camera " << video_index << " fail " << std::endl;
+        return false;
+      }
     }
   }
+  
+  // success open camera
+  unsigned int width = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+  unsigned int height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+  unsigned int fps = capture.get(cv::CAP_PROP_FPS);
+  unsigned int pixels;
+  std::cout << "<<cam" << video_index << " open success>>" << std::endl;
+  if (resize_)
+  {
+    pixels = camera::image_width * camera::image_height;
+    std::cout << "  Frame size : " << camera::image_width << " x " << camera::image_height << ", " << pixels << " Pixels " << fps << " FPS"
+            << std::endl;  
+  }  
+  else
+  {
+    pixels = width * height;
+    std::cout << "  Frame size : " << width << " x " << height << ", " << pixels << " Pixels " << fps << " FPS"
+            << std::endl;
+  }
+  
 
   video_capture_list[video_index] = (capture);
 
@@ -132,9 +167,11 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
   camera_buffer_.initBuffer();
   resize_ = do_resize;
 
+  sleep(1);
   // Gstreamer
   for (unsigned int index = 0; index < cam_ids_.size(); index++)
   {
+    sleep(1);
     if (gst_pipeline_init(index) == false)
     {
       std::cout << "initializeModulesGst init camera " << index << " fail!\n" << std::endl;
@@ -150,12 +187,13 @@ bool JetsonXavierGrabber::runPerceptionGst()
 {
   auto fps = SensingSubSystem::get_expected_fps();
   ros::Rate loop_rate(fps);
-  bool ret;
+  bool ret[cam_ids_.size()];
   bool for_running = true;
   int i;
   int height, width;
   cv::Mat canvas_resize;
   cv::Mat canvas_undestortion;
+  bool check_green_screen = true;
   
   // normal
   height = camera::raw_image_height;
@@ -167,9 +205,9 @@ bool JetsonXavierGrabber::runPerceptionGst()
   cv::Mat diff(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
   cv::Mat diffcolor(height, width, CV_8UC1);
 
-  // cv::namedWindow("MyCameraPreview", cv::WindowFlags::WINDOW_AUTOSIZE);
+  
 
-  while (ros::ok())
+  while (ros::ok() && for_running)
   {
     // update vehicle state & imu state
     ros::spinOnce();
@@ -182,32 +220,40 @@ bool JetsonXavierGrabber::runPerceptionGst()
         break;
 
       // grab frame from camera
-      ret = video_capture_list[i].read(canvas[i]);
-      ros_time_ = ros::Time::now();
+      ret[i] = video_capture_list[i].read(canvas[i]);      
+    }
 
-      // check the frame whether green screen, green screen mean camera read fail
-      cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
+    ros_time_ = ros::Time::now();
 
-      // countNonZero only available when single channel, conver 3 channel to 1 channel
-      cv::cvtColor(diff, diffcolor, CV_BGR2GRAY, 1);
+    for (i = 0; i < cam_count; ++i)
+    {
+      if (for_running == false)
+        break;
 
-      // The nz is 0 when frame is green screen
-      int nz = cv::countNonZero(diffcolor);
+      if (check_green_screen)
+      {    
+        // check the frame whether green screen, green screen mean camera read fail
+        cv::compare(green_mat, canvas[i], diff, cv::CMP_NE);
 
-      if ((!ret) || (nz == 0))
-      {
-        if (for_running)
+        // countNonZero only available when single channel, conver 3 channel to 1 channel
+        cv::cvtColor(diff, diffcolor, CV_BGR2GRAY, 1);
+
+        // The nz is 0 when frame is green screen
+        int nz = cv::countNonZero(diffcolor);
+
+        if ((!ret[i]) || (nz == 0))
         {
-          std::cout << "ERROR : video_capture_list read camera " << i << " fail \n" << std::endl;
-          std::cout << "Please press CTRL+C to break program \n" << std::endl;
-          for_running = false;  // stop the for loop
+          if (for_running)
+          {
+            std::cout << "ERROR : video_capture_list read camera " << i << " fail \n" << std::endl;
+            std::cout << "Please press CTRL+C to break program \n" << std::endl;
+            for_running = false;  // stop for loop
+          }
         }
-      }
-      else
-      {
-        // cv::imshow("MyCameraPreview", canvas[i]);
-        // cv::waitKey(1); // let imshow draw
-
+      }  
+      
+      if (for_running)
+      {     
         if (camera::distortion[i])
         { //FOV 120                  
           remapper_.remap(canvas[i], canvas_undestortion);//undistrotion , 1280x720
@@ -215,11 +261,11 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (resize_)
           {
             resizer_.resize(canvas_undestortion, canvas_resize); //608x342
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
+            canvas[i] = canvas_resize;            
           }
           else
           {
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_undestortion, ros_time_);
+            canvas[i] = canvas_undestortion;            
           }
         }
         else
@@ -227,15 +273,20 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if (resize_)
           {
             resizer_.resize(canvas[i], canvas_resize); //608x342
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_resize, ros_time_);
-          }
-          else
-          {
-            ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
-          }
+            canvas[i] = canvas_resize;            
+          }          
         }       
-      }      
-    }//for
+      }                   
+    }
+    
+    check_green_screen = false; //only check green screen for first time
+
+    for (i = 0; i < cam_count; ++i)
+    {
+      if (for_running == false)
+        break;
+      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
+    }
 
     loop_rate.sleep();
 

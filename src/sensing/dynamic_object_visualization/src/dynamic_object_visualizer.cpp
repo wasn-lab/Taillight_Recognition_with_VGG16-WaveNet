@@ -250,14 +250,11 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
       marker.lifetime = ros::Duration(0.2);
       initPose(marker.pose);
       getColor(input_msg->objects.at(i), marker.color);
-      marker.color.r = 255 / 255.;
-      marker.color.g = 99 / 255.;
-      marker.color.b = 71 / 255.;
       for (size_t j = 0; j < input_msg->objects.at(i).state.predicted_paths.size(); ++j)
       {
         marker.color.a = std::max(
             (double)std::min((double)input_msg->objects.at(i).state.predicted_paths.at(j).confidence, 0.999), 0.5);
-        marker.scale.x = line_width * marker.color.a * 8;
+        marker.scale.x = line_width * marker.color.a * 6;
         marker.points.clear();
         if (!calcPathLineList(input_msg->objects.at(i).state.predicted_paths.at(j), marker.points))
           continue;
@@ -287,14 +284,13 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
       marker.ns = std::string("path confidence");
       marker.action = visualization_msgs::Marker::MODIFY;
       marker.lifetime = ros::Duration(0.2);
-      marker.scale.x = 2.;
-      marker.scale.y = 2.;
-      marker.scale.z = 2.;
+      marker.scale.x = 2.0;
+      marker.scale.y = 2.0;
+      marker.scale.z = 2.0;
       initPose(marker.pose);
-      // getColor(input_msg->objects.at(i), marker.color);
-      marker.color.r = 1.;
-      marker.color.g = 1.;
-      marker.color.b = 1.;
+      marker.color.r = 1.0;
+      marker.color.g = 1.0;
+      marker.color.b = 1.0;
       for (size_t j = 0; j < input_msg->objects.at(i).state.predicted_paths.size(); ++j)
       {
         if (!input_msg->objects.at(i).state.predicted_paths.at(j).path.empty())
