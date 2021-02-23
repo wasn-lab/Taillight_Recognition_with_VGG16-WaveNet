@@ -7,6 +7,8 @@ float32 distance
 float64 speed_abs
 float64 speed_rel
 
+float32 score
+
 PointXYZ center_point
 PointXYZ center_point_gps
 Quaternion heading
