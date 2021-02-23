@@ -1215,7 +1215,7 @@ void getServerStatusRun(int argc, char** argv)
     tcp_vk_client.connectServer();
     json j1;
     j1["type"] = "M8.2.VK008";
-    j1["deviceid"] = "ITRI-ADV";
+    j1["deviceid"] = g_plate;
     std::string json_str = j1.dump();
     const char* msg = json_str.c_str();
     tcp_vk_client.sendRequest(msg, strlen(msg));
