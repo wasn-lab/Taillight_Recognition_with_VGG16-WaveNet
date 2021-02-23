@@ -188,7 +188,8 @@ void ShapeEstimator::rotation2D(double xy_input[2], double xy_output[2], double 
   xy_output[1] = -xy_input[0] * std::sin(theta) + xy_input[1] * std::cos(theta);
 }
 
-void ShapeEstimator::setBoundingBox(CLUSTER_INFO& cluster_info, double pt0[2], double pt3[2], double pt4[2], double pt7[2])
+void ShapeEstimator::setBoundingBox(CLUSTER_INFO& cluster_info, double pt0[2], double pt3[2], double pt4[2],
+                                    double pt7[2])
 {
   /* ABB order
   | pt5 _______pt6(max)

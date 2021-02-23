@@ -135,9 +135,13 @@ static void astar_callback_1(const geometry_msgs::PoseStamped::ConstPtr& input)
 
 int main(int argc, char **argv)
 {
-        CLPC.initial();
         ros::init(argc, argv, "lidar_location_send");
         ros::NodeHandle nh;
+
+        std::string can_name_ = "can1";
+        ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+        CLPC.initial(can_name_.c_str());
+
         ros::Subscriber current_pose_2vm_sub = nh.subscribe("localization_to_veh", 1, localization_to_veh_callback);
         // ros::Subscriber current_pose_2vm_sub_2 = nh.subscribe("current_pose", 1, localization_to_veh_callback_2);
         ros::Subscriber IMU_acc_rpy_sub = nh.subscribe("imu_data", 1, imu_data_callback);

@@ -7,7 +7,7 @@
 
   <group ns="/vehicle_info">
     <rosparam file="$(find b_bus_description)/config/vehicle_info.yaml" command="load"/>
-    <node name="additional_vehicle_info_generator" pkg="additional_vehicle_info_generator" type="additional_vehicle_info_generator" output="log"/>
+    <node name="additional_vehicle_info_generator" pkg="additional_vehicle_info_generator" type="additional_vehicle_info_generator" output="log" />
 
     <group ns="mirror">
       <rosparam file="$(find b_bus_description)/config/mirror.yaml" command="load"/>
@@ -15,6 +15,6 @@
   </group>
 
   <!-- tf publisher -->
-  <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <node name="vehicle_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true"/>
 
 </launch>
