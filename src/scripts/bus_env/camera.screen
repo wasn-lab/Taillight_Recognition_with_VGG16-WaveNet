@@ -25,6 +25,12 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
+# ROS has trouble when dealing multiple nodes concurrently.
+# We first make light-weight load_monitor to successfully connect to master,
+# and then bring up other nodes.
+screen -t init_load_monitor
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
+
 screen -t init_camera
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_camera.sh^M"
 
