@@ -10,7 +10,7 @@
 sensor_msgs::PointCloud2Ptr g_pc2_msg_ptr;
 pcl::PointCloud<ouster_ros::OS1::PointOS1>::Ptr g_cloud_ptr;
 
-sensor_msgs::PointCloud2Ptr __gen_rand_lidar_msg()
+void __gen_rand_lidar_msg()
 {
   pcl::PointCloud<ouster_ros::OS1::PointOS1> cloud;
   cloud.width = 1024;
@@ -40,28 +40,32 @@ sensor_msgs::PointCloud2Ptr __gen_rand_lidar_msg()
   g_pc2_msg_ptr.reset(new sensor_msgs::PointCloud2);
   pcl_conversions::fromPCL(cloud_blob, *g_pc2_msg_ptr);
 
-  if (!g_cloud_ptr.get()){
-    g_cloud_ptr = cloud.makeShared();
-  }
-
-  return g_pc2_msg_ptr;
+  g_cloud_ptr = cloud.makeShared();
 }
 
-sensor_msgs::PointCloud2ConstPtr gen_rand_lidar_msg()
+sensor_msgs::PointCloud2ConstPtr get_msg_ptr()
 {
-  if (!g_pc2_msg_ptr.get() || !g_cloud_ptr.get()) {
-    g_pc2_msg_ptr = __gen_rand_lidar_msg();
+  if (!g_pc2_msg_ptr.get()) {
+    __gen_rand_lidar_msg();
     CHECK(g_pc2_msg_ptr.get() != nullptr);
     CHECK(g_pc2_msg_ptr->width == 1024);
     CHECK(g_pc2_msg_ptr->height == 64);
     CHECK(g_pc2_msg_ptr->fields.size() == 9);
     CHECK(g_pc2_msg_ptr->is_dense);
 
+  }
+  return g_pc2_msg_ptr;
+}
+
+pcl::PointCloud<ouster_ros::OS1::PointOS1>::ConstPtr gen_rand_cloud()
+{
+  if (!g_cloud_ptr.get()){
+    __gen_rand_lidar_msg();
     CHECK(g_cloud_ptr.get() != nullptr);
     CHECK(g_cloud_ptr->width == 1024);
     CHECK(g_cloud_ptr->height == 64);
     CHECK(g_cloud_ptr->points.size() == 1024 * 64);
     CHECK(g_cloud_ptr->is_dense);
   }
-  return g_pc2_msg_ptr;
+  return g_cloud_ptr;
 }

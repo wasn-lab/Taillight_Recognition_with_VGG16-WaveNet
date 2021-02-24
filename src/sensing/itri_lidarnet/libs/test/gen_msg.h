@@ -5,6 +5,6 @@
 #pragma once 
 #include <pcl_ros/point_cloud.h>
 
-sensor_msgs::PointCloud2ConstPtr gen_rand_lidar_msg();
-
-
+void gen_random_msg();
+sensor_msgs::PointCloud2ConstPtr get_msg_ptr();
+pcl::PointCloud<ouster_ros::OS1::PointOS1>::ConstPtr get_cloud_ptr();
