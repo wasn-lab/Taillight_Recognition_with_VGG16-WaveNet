@@ -31,6 +31,7 @@ void frontRadFilter(msgs::Rad* rad);
 void cornerRadFilter(msgs::Rad* rad);
 int debug_message = 0;
 int alpha_raw_message = 0;
+char *ifname; // YD_TEST
 
 struct can_frame current_frame;
 ros::Publisher RadPub;
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
   int nbytes, i;
   static struct ifreq ifr;
   static struct sockaddr_ll sll;
-  char* ifname = "can1";
+//  char* ifname = "can1";	// YD_TEST
   int ifindex;
   int opt;
   int send_one_frame = 0;
@@ -198,6 +199,14 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
   nh.param("/debug_message", debug_message, 0);
   nh.param("/alpha_raw_message", alpha_raw_message, 0);
+
+  // YD_TEST
+  string ifname_temp = "any";
+  nh.getParam("/radar_ifname", ifname_temp);
+  ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
+  strcpy(ifname, ifname_temp.c_str());
+  cout << endl << endl << "++++++++++ ifname(alpha) = " << ifname << " ++++++++++" << endl;
+  // YD_TEST
 
   int filter_id = 0;
   nh.getParam("filter_id", filter_id);

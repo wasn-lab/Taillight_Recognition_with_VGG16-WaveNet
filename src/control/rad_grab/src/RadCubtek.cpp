@@ -41,11 +41,13 @@ void turnRadarOn(int s, int type);
 void radarParsing(struct can_frame first, struct can_frame second, msgs::RadObject* rad_obj);
 
 int debug_message = 0;
+int cubtek_raw_message = 0;
 int radar_object_num = 16;
 int radar_object_data = radar_object_num * 2;
 struct can_frame current_frame;
 ros::Publisher RadPub;
 // ros::Publisher RadPCLPub;
+char *ifname;
 
 int main(int argc, char** argv)
 {
@@ -60,7 +62,6 @@ int main(int argc, char** argv)
   int nbytes, i;
   static struct ifreq ifr;
   static struct sockaddr_ll sll;
-  char* ifname = "can1";
   int ifindex;
   int send_one_frame = 0;
   vector<int> can_data;
@@ -208,6 +209,14 @@ int main(int argc, char** argv)
 void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 {
   nh.param("/debug_message", debug_message, 0);
+  nh.param("/cubtek_raw_message", cubtek_raw_message, 0);
+
+  string ifname_temp = "any";
+  nh.getParam("/radar_ifname", ifname_temp);
+  ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
+  strcpy(ifname, ifname_temp.c_str());
+  cout << endl << endl << "++++++++++ ifname(cubtek) = " << ifname << " ++++++++++" << endl;
+
 }
 
 void radarParsing(struct can_frame first, struct can_frame second, msgs::RadObject* rad_obj)
