@@ -8,7 +8,7 @@ if (NOT GLOG_FOUND)
 endif ()
 
 include_directories(
-  ${libs_SOURCE_DIR}/pub
+  ${libs_SOURCE_DIR}/include
   ${libs_SOURCE_DIR}/Format
   ${GLOG_INCLUDE_DIR}
   )

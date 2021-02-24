@@ -9,6 +9,7 @@
 #include "pcl/point_types.h"
 #include "gen_msg.h"
 #include "pointcloud_format_conversion.h"
+#include "lidar_hardware.h"
 
 constexpr int num_perf_loops = 100;
 
@@ -22,6 +23,7 @@ TEST(format_test, perf_SensorMsgs_to_XYZIR)
   auto ptr = gen_rand_lidar_msg();
   for(int i=0; i<num_perf_loops; i++){
     auto ret = SensorMsgs_to_XYZIR(*ptr, "ouster");
+    // auto ret = SensorMsgs_to_XYZIR(*ptr, lidar::Hardware::Ouster);
   }
 }
 
