@@ -17,6 +17,9 @@ void __gen_rand_lidar_msg()
   cloud.height = 64;
   cloud.points.resize(cloud.width * cloud.height);
   cloud.is_dense = true;
+  cloud.header.frame_id = "lidar";
+  cloud.header.seq = 197;
+  cloud.header.stamp = 789000123456ULL;
 
   srand(static_cast<unsigned int>(time(nullptr)));
   std::size_t nr_p = cloud.points.size();
