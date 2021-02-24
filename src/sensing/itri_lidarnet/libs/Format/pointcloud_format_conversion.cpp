@@ -37,17 +37,16 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   }
 
   // populate point cloud object
+  cloud.points.resize(cloud_msg.width * cloud_msg.height);
   for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height, point_offset = 0; p < bound;
        ++p, point_offset += point_bytes)
   {
     const auto base_addr = &cloud_msg.data[0] + point_offset;
-    pcl::PointXYZIR new_point;
-
-    new_point.x = *(float*)(base_addr + offset_x);
-    new_point.y = *(float*)(base_addr + offset_y);
-    new_point.z = *(float*)(base_addr + offset_z);
-    new_point.intensity = *(float*)(base_addr + offset_int);
-    new_point.ring = *(unsigned char*)(base_addr + offset_ring);
+    cloud.points[p].x = *(float*)(base_addr + offset_x);
+    cloud.points[p].y = *(float*)(base_addr + offset_y);
+    cloud.points[p].z = *(float*)(base_addr + offset_z);
+    cloud.points[p].intensity = *(float*)(base_addr + offset_int);
+    cloud.points[p].ring = *(unsigned char*)(base_addr + offset_ring);
 
     // if (brand == "ouster")
     // {
@@ -58,7 +57,6 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
     //     new_point.intensity = 255;
     //   }
     // }
-    cloud.points.emplace_back(new_point);
   }
 
   pcl_conversions::toPCL(cloud_msg.header, cloud.header);
