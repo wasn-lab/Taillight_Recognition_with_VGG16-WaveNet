@@ -410,7 +410,7 @@ Visualization Manager:
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /lane_event/grid
-          Name: grid_pp_grid
+          Name: gridpp_grid
           Namespaces:
             {}
           Queue Size: 100
@@ -418,7 +418,7 @@ Visualization Manager:
         - Class: rviz/MarkerArray
           Enabled: true
           Marker Topic: /lane_event/signal
-          Name: grid_pp_signal
+          Name: gridpp_signal
           Namespaces:
             {}
           Queue Size: 100
@@ -426,7 +426,7 @@ Visualization Manager:
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /lane_event/c1
-          Name: grid_pp_c1
+          Name: gridpp_c1
           Namespaces:
             {}
           Queue Size: 100
@@ -434,7 +434,7 @@ Visualization Manager:
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /lane_event/c2
-          Name: grid_pp_c2
+          Name: gridpp_c2
           Namespaces:
             {}
           Queue Size: 100
@@ -442,13 +442,13 @@ Visualization Manager:
         - Class: rviz/Marker
           Enabled: true
           Marker Topic: /lane_event/c3
-          Name: grid_pp_c3
+          Name: gridpp_c3
           Namespaces:
             {}
           Queue Size: 100
           Value: true
-      Enabled: false
-      Name: Grid_PP
+      Enabled: true
+      Name: GridPP
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /PSOutput/markers
