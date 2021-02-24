@@ -10,6 +10,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <pcl/common/time.h>
 #include <pcl/console/time.h>
