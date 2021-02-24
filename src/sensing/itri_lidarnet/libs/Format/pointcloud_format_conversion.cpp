@@ -1,17 +1,18 @@
+#include <pcl_conversions/pcl_conversions.h>
 #include "pointcloud_format_conversion.h"
 
-pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, string brand)
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, lidar::Hardware brand)
 {
   pcl::PointCloud<pcl::PointXYZIR> cloud;
 
   // Get the field structure of this point cloud
   int pointBytes = cloud_msg.point_step;
-  int offset_x;
-  int offset_y;
-  int offset_z;
-  int offset_int;
-  int offset_ring;
-  for (int f = 0; f < cloud_msg.fields.size(); ++f)
+  int offset_x = 0;
+  int offset_y = 0;
+  int offset_z = 0;
+  int offset_int = 0;
+  int offset_ring = 0;
+  for (size_t f = 0; f < cloud_msg.fields.size(); ++f)
   {
     if (cloud_msg.fields[f].name == "x")
     {
@@ -36,7 +37,7 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   }
 
   // populate point cloud object
-  for (int p = 0, bound = cloud_msg.width * cloud_msg.height; p < bound; ++p)
+  for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height; p < bound; ++p)
   {
     pcl::PointXYZIR newPoint;
 
@@ -55,7 +56,7 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
     //     newPoint.intensity = 255;
     //   }
     // }
-    cloud.points.push_back(newPoint);
+    cloud.points.emplace_back(newPoint);
   }
 
   pcl_conversions::toPCL(cloud_msg.header, cloud.header);
@@ -68,7 +69,7 @@ pcl::PointCloud<pcl::PointXYZRGB> XYZIR_to_XYZRGB(pcl::PointCloud<pcl::PointXYZI
 {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-  for (int p = 0; p < (input_cloud->size()); ++p)
+  for (size_t p = 0; p < input_cloud->size(); ++p)
   {
     pcl::PointXYZRGB new_point;
     new_point.x = input_cloud->points[p].x;
@@ -79,7 +80,7 @@ pcl::PointCloud<pcl::PointXYZRGB> XYZIR_to_XYZRGB(pcl::PointCloud<pcl::PointXYZI
     new_point.g = (uint8_t)input_cloud->points[p].ring;
     new_point.b = 0;
 
-    output_cloud->points.push_back(new_point);
+    output_cloud->points.emplace_back(new_point);
   }
 
   output_cloud->header = input_cloud->header;
@@ -90,7 +91,7 @@ pcl::PointCloud<pcl::PointXYZIR> XYZRGB_to_XYZIR(pcl::PointCloud<pcl::PointXYZRG
 {
   pcl::PointCloud<pcl::PointXYZIR>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZIR>);
 
-  for (int p = 0; p < (input_cloud->size()); ++p)
+  for (size_t p = 0; p < input_cloud->size(); ++p)
   {
     pcl::PointXYZIR new_point;
     new_point.x = input_cloud->points[p].x;
@@ -99,12 +100,12 @@ pcl::PointCloud<pcl::PointXYZIR> XYZRGB_to_XYZIR(pcl::PointCloud<pcl::PointXYZRG
 
     uint8_t new_r = input_cloud->points[p].r;
     uint8_t new_g = input_cloud->points[p].g;
-    uint8_t new_b = input_cloud->points[p].b;
+    // uint8_t new_b = input_cloud->points[p].b;
 
     new_point.intensity = unsigned(new_r);
     new_point.ring = unsigned(new_g);
 
-    output_cloud->points.push_back(new_point);
+    output_cloud->points.emplace_back(new_point);
   }
   output_cloud->header = input_cloud->header;
 
