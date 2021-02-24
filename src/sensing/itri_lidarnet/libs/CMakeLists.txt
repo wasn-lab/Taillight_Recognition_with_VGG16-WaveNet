@@ -130,6 +130,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+find_package(Glog)
+
 ## Declare a C++ library
 #add_library(${PROJECT_NAME}
   #src/${PROJECT_NAME}/beginner_tutorials.cpp
