@@ -48,7 +48,7 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30 , camera::id::left_back_60, camera::id::right_back_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60/*, camera::id::front_top_far_30*/ , camera::id::left_back_60, camera::id::right_back_60 };
 #else
 #error "car model is not well defined"
 #endif
@@ -1072,11 +1072,11 @@ int main(int argc, char** argv)
 
   /// get callback function
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
-                                                                            callback_cam_front_top_far_30,
+                                                                            /*callback_cam_front_top_far_30,*/
                                                                             callback_cam_left_back_60,
                                                                             callback_cam_right_back_60 };
   static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
-    callback_object_cam_front_bottom_60, callback_object_cam_front_top_far_30, callback_object_cam_left_back_60, callback_object_cam_right_back_60
+    callback_object_cam_front_bottom_60/*, callback_object_cam_front_top_far_30*/, callback_object_cam_left_back_60, callback_object_cam_right_back_60
   };
 
   /// set topic name
