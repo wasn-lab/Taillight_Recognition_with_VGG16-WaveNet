@@ -39,6 +39,10 @@ class Node:
         self.radar_topic = rospy.get_param("~radar_topic")
         self.out_topic = rospy.get_param("~out_topic")
 
+        self.C1 = rospy.get_param("~C1")
+        self.C2 = rospy.get_param("~C2")
+        self.C3 = rospy.get_param("~C3")
+
         self.pub_grid_pp = rospy.Publisher(
             self.out_topic, LaneEvent, queue_size=1)
         self.pub_grid_pp_signal = rospy.Publisher(
@@ -102,23 +106,26 @@ class Node:
 
         txt = ""
 
-        if lane_event.is_in_0_70_incoming:
-            txt = txt + "C1:T\n"
-            # txt = txt + "C1:T(" + str(lane_event.obj_in_0_70_incoming % 1000) + ")\n"
-        else:
-            txt = txt + "C1:F\n"
+        if self.C1:
+            if lane_event.is_in_0_70_incoming:
+                txt = txt + "C1:T\n"
+                # txt = txt + "C1:T(" + str(lane_event.obj_in_0_70_incoming % 1000) + ")\n"
+            else:
+                txt = txt + "C1:F\n"
 
-        if lane_event.is_in_n10_0:
-            txt = txt + "C2:T\n"
-            # txt = "C2:T(" + str(lane_event.obj_in_n10_0 % 1000) + ")\n"
-        else:
-            txt = txt + "C2:F\n"
+        if self.C2:
+            if lane_event.is_in_n10_0:
+                txt = txt + "C2:T\n"
+                # txt = "C2:T(" + str(lane_event.obj_in_n10_0 % 1000) + ")\n"
+            else:
+                txt = txt + "C2:F\n"
 
-        if lane_event.is_in_n40_n10_incoming:
-            txt = txt + "C3:T\n"
-            # txt = txt + "C3:T(" + str(lane_event.obj_in_n40_n10_incoming % 1000) + ")\n"
-        else:
-            txt = txt + "C3:F"
+        if self.C3:
+            if lane_event.is_in_n40_n10_incoming:
+                txt = txt + "C3:T\n"
+                # txt = txt + "C3:T(" + str(lane_event.obj_in_n40_n10_incoming % 1000) + ")\n"
+            else:
+                txt = txt + "C3:F"
 
         out.markers.append(self.text_marker_prototype(
             0, header, txt, Point(-3, -7, 0)))
@@ -180,7 +187,7 @@ class Node:
                 obj.bPoint.p7.y)
 
             # event C1: is_in_0_70_incoming
-            if not out.is_in_0_70_incoming:
+            if self.C1 and not out.is_in_0_70_incoming:
                 if obj.speed_rel <= -self.speed_rel_thr_ and self.obj_in_area(
                         obj_x_min,
                         obj_x_max,
@@ -198,7 +205,7 @@ class Node:
                             1000))
 
             # event C2: is_in_n10_0
-            if not out.is_in_n10_0:
+            if self.C2 and not out.is_in_n10_0:
                 if self.obj_in_area(
                         obj_x_min,
                         obj_x_max,
@@ -216,7 +223,7 @@ class Node:
                             1000))
 
             # event C3: is_in_n40_n10_incoming
-            if not out.is_in_n40_n10_incoming:
+            if self.C3 and not out.is_in_n40_n10_incoming:
                 if obj.speed_rel <= self.speed_rel_thr_ and self.obj_in_area(
                         obj_x_min,
                         obj_x_max,
