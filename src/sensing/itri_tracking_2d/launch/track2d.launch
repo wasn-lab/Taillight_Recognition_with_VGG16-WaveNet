@@ -6,8 +6,8 @@
   <!-- Input source ,Output topic -->
   <!-- 0: /CameraDetection ,/Tracking2D/front_bottom_60 -->
   <!-- 1: /CameraDetection ,/Tracking2D/front_top_far_30 -->
-  <!-- 6: /CameraDetection ,/Tracking2D/right_back_60 -->
-  <!-- 9: /CameraDetection ,/Tracking2D/left_back_60 -->
+  <!-- 4: /CameraDetection ,/Tracking2D/right_back_60 -->
+  <!-- 6: /CameraDetection ,/Tracking2D/left_back_60 -->
   <arg name="input_source" default="1" />
 
   <!-- Output FPS -->
