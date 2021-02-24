@@ -40,13 +40,14 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height, point_offset = 0; p < bound;
        ++p, point_offset += point_bytes)
   {
+    const auto base_addr = &cloud_msg.data[0] + point_offset;
     pcl::PointXYZIR new_point;
 
-    new_point.x = *(float*)(&cloud_msg.data[0] + point_offset + offset_x);
-    new_point.y = *(float*)(&cloud_msg.data[0] + point_offset + offset_y);
-    new_point.z = *(float*)(&cloud_msg.data[0] + point_offset + offset_z);
-    new_point.intensity = *(float*)(&cloud_msg.data[0] + point_offset + offset_int);
-    new_point.ring = *(unsigned char*)(&cloud_msg.data[0] + point_offset + offset_ring);
+    new_point.x = *(float*)(base_addr + offset_x);
+    new_point.y = *(float*)(base_addr + offset_y);
+    new_point.z = *(float*)(base_addr + offset_z);
+    new_point.intensity = *(float*)(base_addr + offset_int);
+    new_point.ring = *(unsigned char*)(base_addr + offset_ring);
 
     // if (brand == "ouster")
     // {
