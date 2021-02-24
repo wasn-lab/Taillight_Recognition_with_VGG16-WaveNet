@@ -37,15 +37,16 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   }
 
   // populate point cloud object
-  for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height; p < bound; ++p)
+  for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height, point_offset = 0; p < bound;
+       ++p, point_offset += point_bytes)
   {
     pcl::PointXYZIR new_point;
 
-    new_point.x = *(float*)(&cloud_msg.data[0] + (point_bytes * p) + offset_x);
-    new_point.y = *(float*)(&cloud_msg.data[0] + (point_bytes * p) + offset_y);
-    new_point.z = *(float*)(&cloud_msg.data[0] + (point_bytes * p) + offset_z);
-    new_point.intensity = *(float*)(&cloud_msg.data[0] + (point_bytes * p) + offset_int);
-    new_point.ring = *(unsigned char*)(&cloud_msg.data[0] + (point_bytes * p) + offset_ring);
+    new_point.x = *(float*)(&cloud_msg.data[0] + point_offset + offset_x);
+    new_point.y = *(float*)(&cloud_msg.data[0] + point_offset + offset_y);
+    new_point.z = *(float*)(&cloud_msg.data[0] + point_offset + offset_z);
+    new_point.intensity = *(float*)(&cloud_msg.data[0] + point_offset + offset_int);
+    new_point.ring = *(unsigned char*)(&cloud_msg.data[0] + point_offset + offset_ring);
 
     // if (brand == "ouster")
     // {
