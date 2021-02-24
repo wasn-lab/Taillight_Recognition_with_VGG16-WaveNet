@@ -1,33 +1,12 @@
 #ifndef POINTCLOUD_FORMAT_CONVERSION_H
 #define POINTCLOUD_FORMAT_CONVERSION_H
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstdint>
-#include <stdexcept>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <omp.h>
-#include <thread>
-#include <unistd.h>  //sleep
-#include <functional>
-#include <cerrno>
-#include <cstdlib>
-
 #include "../UserDefine.h"
-#include <ros/ros.h>
-#include <std_msgs/Header.h>
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <pcl/conversions.h>
-#include <pcl_conversions/pcl_conversions.h>
-
-#include <pcl/compression/octree_pointcloud_compression.h>
+#include <sensor_msgs/PointCloud2.h>
 #include "lidar_hardware.h"
 
 pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, lidar::Hardware brand);

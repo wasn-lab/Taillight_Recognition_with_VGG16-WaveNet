@@ -1,3 +1,4 @@
+#include <pcl_conversions/pcl_conversions.h>
 #include "pointcloud_format_conversion.h"
 
 pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, lidar::Hardware brand)
@@ -6,11 +7,11 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
 
   // Get the field structure of this point cloud
   int pointBytes = cloud_msg.point_step;
-  int offset_x;
-  int offset_y;
-  int offset_z;
-  int offset_int;
-  int offset_ring;
+  int offset_x = 0;
+  int offset_y = 0;
+  int offset_z = 0;
+  int offset_int = 0;
+  int offset_ring = 0;
   for (size_t f = 0; f < cloud_msg.fields.size(); ++f)
   {
     if (cloud_msg.fields[f].name == "x")
