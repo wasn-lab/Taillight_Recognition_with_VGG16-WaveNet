@@ -17,7 +17,6 @@ make auto_record_2020-04-14-16-41-15_89.bag
 make geofence_pp_2020-11-16-16-35-39.bag
 make lidar_raw_compressed_2021-02-03.bag
 make lidar_raw_2020-12-28-16-53-14_21.bag
-make edge_detection_2020-04-13-17-45-48_0.bag
 make localization_raw_2020-09-24-17-02-06.bag
 make lidarxyz2lla_2020-04-13-17-45-48_0.bag
 make rad_grab_2020-04-13-17-45-48_0.bag
