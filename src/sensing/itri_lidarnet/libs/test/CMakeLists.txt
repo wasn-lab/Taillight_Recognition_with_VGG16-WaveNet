@@ -9,6 +9,7 @@ endif ()
 
 include_directories(
   ${libs_SOURCE_DIR}/pub
+  ${libs_SOURCE_DIR}/Format
   ${GLOG_INCLUDE_DIR}
   )
 
