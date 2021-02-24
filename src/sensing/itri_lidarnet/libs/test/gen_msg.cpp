@@ -7,7 +7,7 @@
 #include "point_os1.h"
 #include "gen_msg.h"
 
-sensor_msgs::PointCloud2Ptr g_pc2_msg_ptr;
+sensor_msgs::PointCloud2::Ptr g_pc2_msg_ptr;
 pcl::PointCloud<ouster_ros::OS1::PointOS1>::Ptr g_cloud_ptr;
 
 void __gen_rand_lidar_msg()
@@ -43,7 +43,7 @@ void __gen_rand_lidar_msg()
   g_cloud_ptr = cloud.makeShared();
 }
 
-sensor_msgs::PointCloud2ConstPtr get_msg_ptr()
+sensor_msgs::PointCloud2::ConstPtr get_msg_ptr()
 {
   if (!g_pc2_msg_ptr.get()) {
     __gen_rand_lidar_msg();
