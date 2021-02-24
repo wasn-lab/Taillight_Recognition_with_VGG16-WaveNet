@@ -20,6 +20,9 @@ make -j car_model_test
 make -j camera_utils_test
 ../devel/lib/camera_utils/camera_utils_test
 
+make -j lidar_test
+/home/chtseng/repo/itriadv/devel/lib/libs/lidar_test
+
 pushd $repo_dir
 source devel/setup.bash
 src/car_model/south_bridge/run_unittest.sh
