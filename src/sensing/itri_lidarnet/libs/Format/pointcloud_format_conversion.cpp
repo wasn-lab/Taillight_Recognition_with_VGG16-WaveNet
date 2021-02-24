@@ -1,6 +1,6 @@
 #include "pointcloud_format_conversion.h"
 
-pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, string brand)
+pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointCloud2& cloud_msg, lidar::Hardware brand)
 {
   pcl::PointCloud<pcl::PointXYZIR> cloud;
 

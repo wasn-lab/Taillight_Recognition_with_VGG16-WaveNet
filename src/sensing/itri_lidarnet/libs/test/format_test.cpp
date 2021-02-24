@@ -22,8 +22,7 @@ TEST(format_test, perf_SensorMsgs_to_XYZIR)
 {
   auto ptr = gen_rand_lidar_msg();
   for(int i=0; i<num_perf_loops; i++){
-    auto ret = SensorMsgs_to_XYZIR(*ptr, "ouster");
-    // auto ret = SensorMsgs_to_XYZIR(*ptr, lidar::Hardware::Ouster);
+    auto ret = SensorMsgs_to_XYZIR(*ptr, lidar::Hardware::Ouster);
   }
 }
 
