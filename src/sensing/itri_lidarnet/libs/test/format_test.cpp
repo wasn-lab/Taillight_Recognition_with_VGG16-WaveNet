@@ -37,12 +37,14 @@ TEST(format_test, test_SensorMsgs_to_XYZIR)
   auto cloud_ptr = get_cloud_ptr();
   auto res = SensorMsgs_to_XYZIR(*msg_ptr, lidar::Hardware::Ouster);
   EXPECT_EQ(res.points.size(), cloud_ptr->points.size());
-  int idx = 10097;
-  EXPECT_EQ(res[idx].x, cloud_ptr->points[idx].x);
-  EXPECT_EQ(res[idx].y, cloud_ptr->points[idx].y);
-  EXPECT_EQ(res[idx].z, cloud_ptr->points[idx].z);
-  EXPECT_EQ(res[idx].intensity, cloud_ptr->points[idx].intensity);
-  EXPECT_EQ(res[idx].ring, cloud_ptr->points[idx].ring);
+  for (size_t idx = 0; idx < res.points.size(); idx++)
+  {
+    EXPECT_EQ(res[idx].x, cloud_ptr->points[idx].x);
+    EXPECT_EQ(res[idx].y, cloud_ptr->points[idx].y);
+    EXPECT_EQ(res[idx].z, cloud_ptr->points[idx].z);
+    EXPECT_EQ(res[idx].intensity, cloud_ptr->points[idx].intensity);
+    EXPECT_EQ(res[idx].ring, cloud_ptr->points[idx].ring);
+  }
 }
 
 TEST(format_test, perf_SensorMsgs_to_XYZIR)
