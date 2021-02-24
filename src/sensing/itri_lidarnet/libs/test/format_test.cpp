@@ -7,11 +7,21 @@
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 #include "pcl/point_types.h"
+#include "gen_msg.h"
+#include "pointcloud_format_conversion.h"
 
 constexpr int num_perf_loops = 100;
 
-TEST(lidar_test, test_gen_rand_cloud)
+TEST(format_test, test_gen_rand_lidar_msg)
 {
-  EXPECT_EQ(1+3, 4);
+  auto ptr = gen_rand_lidar_msg();
+}
+
+TEST(format_test, perf_SensorMsgs_to_XYZIR)
+{
+  auto ptr = gen_rand_lidar_msg();
+  for(int i=0; i<num_perf_loops; i++){
+    auto ret = SensorMsgs_to_XYZIR(*ptr, "ouster");
+  }
 }
 
