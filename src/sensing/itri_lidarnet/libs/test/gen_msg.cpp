@@ -45,27 +45,18 @@ void __gen_rand_lidar_msg()
 
 sensor_msgs::PointCloud2::ConstPtr get_msg_ptr()
 {
-  if (!g_pc2_msg_ptr.get()) {
+  if (!g_pc2_msg_ptr.get())
+  {
     __gen_rand_lidar_msg();
-    CHECK(g_pc2_msg_ptr.get() != nullptr);
-    CHECK(g_pc2_msg_ptr->width == 1024);
-    CHECK(g_pc2_msg_ptr->height == 64);
-    CHECK(g_pc2_msg_ptr->fields.size() == 9);
-    CHECK(g_pc2_msg_ptr->is_dense);
-
   }
   return g_pc2_msg_ptr;
 }
 
-pcl::PointCloud<ouster_ros::OS1::PointOS1>::ConstPtr gen_rand_cloud()
+pcl::PointCloud<ouster_ros::OS1::PointOS1>::ConstPtr get_cloud_ptr()
 {
-  if (!g_cloud_ptr.get()){
+  if (!g_cloud_ptr.get())
+  {
     __gen_rand_lidar_msg();
-    CHECK(g_cloud_ptr.get() != nullptr);
-    CHECK(g_cloud_ptr->width == 1024);
-    CHECK(g_cloud_ptr->height == 64);
-    CHECK(g_cloud_ptr->points.size() == 1024 * 64);
-    CHECK(g_cloud_ptr->is_dense);
   }
   return g_cloud_ptr;
 }
