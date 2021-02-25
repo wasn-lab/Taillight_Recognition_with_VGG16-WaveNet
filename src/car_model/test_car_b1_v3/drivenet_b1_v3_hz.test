@@ -1,0 +1,19 @@
+<launch>
+    <include file="$(find drivenet)/launch/b1_v3_drivenet_group_a.launch"/>
+    <include file="$(find drivenet)/launch/b1_v3_drivenet_side.launch"/>
+    <include file="$(find drivenet)/launch/b1_v3_drivenet_top.launch"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag -l -r 3">
+      <remap from="/cam/front_bottom_60" to="/cam/front_bottom_60/raw"/>
+      <remap from="/cam/front_top_far_30" to="/cam/front_top_far_30/raw"/>
+      <remap from="/cam/front_top_close_120" to="/cam/front_top_close_120/raw"/>
+      <remap from="/cam/right_front_60" to="/cam/right_front_60/raw"/>
+      <remap from="/cam/right_back_60" to="/cam/right_back_60/raw"/>
+      <remap from="/cam/left_front_60" to="/cam/left_front_60/raw"/>
+      <remap from="/cam/left_back_60" to="/cam/left_back_60/raw"/>
+      <remap from="/cam/back_top_120" to="/cam/back_top_120/raw"/>
+    </node>
+
+    <node pkg="car_model" type="calc_hz.py" name="calc_hz" output="screen" required="true" args="--duration 15">
+    </node>
+</launch>

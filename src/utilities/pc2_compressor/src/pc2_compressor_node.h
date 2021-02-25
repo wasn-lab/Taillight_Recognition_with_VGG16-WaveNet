@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #pragma once
 #include <mutex>
 #include <ros/ros.h>
@@ -11,7 +15,7 @@ class PC2CompressorNode
 private:
   // member variables
   ros::Subscriber subscriber_;
-  ros::Publisher publisher_;
+  ros::Publisher publisher_, heartbeat_publisher_;
   ros::NodeHandle node_handle_;
   std::mutex mu_publisher_;  // guard publisher_
   compression_format cmpr_fmt_;

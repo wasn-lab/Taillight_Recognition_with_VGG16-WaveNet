@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2021, Industrial Technology and Research Institute.
+ * All rights reserved.
+ */
 #include <thread>
 #include <glog/logging.h>
 #include <pcl_ros/point_cloud.h>
@@ -15,7 +19,7 @@ PC2DecompressorNode::~PC2DecompressorNode() = default;
 
 void PC2DecompressorNode::callback_v1(const msgs::CompressedPointCloudConstPtr& msg)
 {
-  msgs::CompressedPointCloud2Ptr msg_v2{new msgs::CompressedPointCloud2};
+  msgs::CompressedPointCloud2Ptr msg_v2{ new msgs::CompressedPointCloud2 };
   msg_v2->header = msg->header;
   msg_v2->data = msg->data;
   msg_v2->compression_format = compression_format::lzf;
@@ -36,7 +40,8 @@ static bool is_topic_published(const std::string& topic, int* use_v1)
   {
     if (master_topic.name == topic)
     {
-      if (master_topic.datatype == "msgs/CompressedPointCloud") {
+      if (master_topic.datatype == "msgs/CompressedPointCloud")
+      {
         *use_v1 = 1;
       }
       return true;
@@ -55,16 +60,18 @@ int PC2DecompressorNode::set_subscriber()
   }
   LOG(INFO) << ros::this_node::getName() << ":"
             << " subscribe " << topic;
-  int use_v1 = 0;  // for backward compatibility
+  int32_t use_v1 = 0;  // for backward compatibility
   while (ros::ok() && !is_topic_published(topic, &use_v1))
   {
     LOG(INFO) << "wait 1 second for topic " << topic;
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
-  if (use_v1) {
+  if (use_v1 != 0)
+  {
     subscriber_ = node_handle_.subscribe(topic, /*queue_size*/ 2, &PC2DecompressorNode::callback_v1, this);
   }
-  else {
+  else
+  {
     subscriber_ = node_handle_.subscribe(topic, /*queue_size*/ 2, &PC2DecompressorNode::callback_v2, this);
   }
   return EXIT_SUCCESS;

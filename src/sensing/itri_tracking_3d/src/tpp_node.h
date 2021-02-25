@@ -34,7 +34,9 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = InputSource::CameraDetV2;
+  int in_source_ = InputSource::LidarDet;
+
+  geometry_msgs::TransformStamped tf_stamped_;
 
   bool show_runtime_ = false;
 
@@ -139,13 +141,17 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
-                         const float time_offset);
+  void publish_tracking2(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs,
+                         const unsigned int pub_offset, const float time_offset);
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
+
+  // output bbox and pp points in tf_map
+  void convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q);
+  void heading_enu(std::vector<msgs::DetectedObject>& objs);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 };

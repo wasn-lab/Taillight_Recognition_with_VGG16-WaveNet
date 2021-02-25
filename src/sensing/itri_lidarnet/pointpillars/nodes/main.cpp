@@ -33,9 +33,8 @@ pcl::StopWatch g_integrator_stopWatch;
 void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
   g_car_lock.lock();
-  g_integrator_stopWatch.reset();
-
   g_car_msg_rostime = msgArr->header.stamp;
+  
   for (const auto & object : msgArr->objects)
   {
     g_msgArr.objects.push_back(object);
@@ -48,14 +47,13 @@ void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArr
 void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
   g_ped_cyc_lock.lock();
-
+  g_integrator_stopWatch.reset();
   g_ped_cyc_msg_rostime = msgArr->header.stamp;
 
   for (const auto & object : msgArr->objects)
   {
     g_msgArr.objects.push_back(object);
   }
-
   g_ped_cyc_lock.unlock();
 }
 
@@ -75,11 +73,10 @@ void LidarDetection_Publisher(int argc, char** argv)
     if(!g_msgArr.objects.empty())
     {
       g_msgArr.header.frame_id = "lidar";
-      g_msgArr.header.stamp = g_car_msg_rostime;
+      g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
 
       g_pub_lidar_detection.publish(g_msgArr);
-      g_msgArr.objects = {};
-
+      g_msgArr.objects.clear();
 
       std::cout << "[Integrator]: " << g_integrator_stopWatch.getTimeSeconds() << 's' << std::endl;
 
