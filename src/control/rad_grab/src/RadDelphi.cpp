@@ -145,7 +145,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   nh.param("/delphi_raw_message", delphi_raw_message, 0);
 
   std::string ifname_temp = "any";
-  nh.getParam("/radar_ifname", ifname_temp);
+  nh.getParam("ifname", ifname_temp);
   ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
   strcpy(ifname, ifname_temp.c_str());
   std::cout << std::endl << std::endl << "++++++++++ ifname(delphi) = " << ifname << " ++++++++++" << std::endl;

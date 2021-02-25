@@ -202,7 +202,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
 
   // YD_TEST
   string ifname_temp = "any";
-  nh.getParam("/radar_ifname", ifname_temp);
+  nh.getParam("ifname", ifname_temp);
   ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
   strcpy(ifname, ifname_temp.c_str());
   cout << endl << endl << "++++++++++ ifname(alpha) = " << ifname << " ++++++++++" << endl;

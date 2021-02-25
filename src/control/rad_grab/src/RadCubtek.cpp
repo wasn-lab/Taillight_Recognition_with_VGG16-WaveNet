@@ -107,6 +107,7 @@ int main(int argc, char** argv)
   }
   else
   {
+    cout << endl << endl << "++++++++++ (main)ifname(cubtek) = " << ifname << " ++++++++++" << endl;
     strcpy(ifr.ifr_name, ifname);
     ioctl(s, SIOCGIFINDEX, &ifr);
     ifindex = ifr.ifr_ifindex;
@@ -212,7 +213,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   nh.param("/cubtek_raw_message", cubtek_raw_message, 0);
 
   string ifname_temp = "any";
-  nh.getParam("/radar_ifname", ifname_temp);
+  nh.getParam("ifname", ifname_temp);
   ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
   strcpy(ifname, ifname_temp.c_str());
   cout << endl << endl << "++++++++++ ifname(cubtek) = " << ifname << " ++++++++++" << endl;
