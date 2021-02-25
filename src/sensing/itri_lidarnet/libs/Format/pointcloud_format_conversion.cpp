@@ -12,27 +12,27 @@ pcl::PointCloud<pcl::PointXYZIR> SensorMsgs_to_XYZIR(const sensor_msgs::PointClo
   int offset_z = 0;
   int offset_int = 0;
   int offset_ring = 0;
-  for (size_t f = 0; f < cloud_msg.fields.size(); ++f)
+  for (const auto& field: cloud_msg.fields)
   {
-    if (cloud_msg.fields[f].name == "x")
+    if (field.name == "x")
     {
-      offset_x = cloud_msg.fields[f].offset;
+      offset_x = field.offset;
     }
-    if (cloud_msg.fields[f].name == "y")
+    else if (field.name == "y")
     {
-      offset_y = cloud_msg.fields[f].offset;
+      offset_y = field.offset;
     }
-    if (cloud_msg.fields[f].name == "z")
+    else if (field.name == "z")
     {
-      offset_z = cloud_msg.fields[f].offset;
+      offset_z = field.offset;
     }
-    if (cloud_msg.fields[f].name == "intensity")
+    else if (field.name == "intensity")
     {
-      offset_int = cloud_msg.fields[f].offset;
+      offset_int = field.offset;
     }
-    if (cloud_msg.fields[f].name == "ring")
+    else if (field.name == "ring")
     {
-      offset_ring = cloud_msg.fields[f].offset;
+      offset_ring = field.offset;
     }
   }
 
