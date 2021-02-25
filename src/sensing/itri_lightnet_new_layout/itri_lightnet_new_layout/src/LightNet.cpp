@@ -20,8 +20,8 @@ vector<string> split(const string &str, char delim)
 
 void initi_all()
 {
-    clahe_30deg = createCLAHE(); clahe_30deg->setClipLimit(1); clahe_30deg->setTilesGridSize(Size(5, 5));
-    clahe_60deg = createCLAHE(); clahe_60deg->setClipLimit(1); clahe_60deg->setTilesGridSize(Size(5, 5));
+    //clahe_30deg = createCLAHE(); clahe_30deg->setClipLimit(1); clahe_30deg->setTilesGridSize(Size(5, 5));
+    //clahe_60deg = createCLAHE(); clahe_60deg->setClipLimit(1); clahe_60deg->setTilesGridSize(Size(5, 5));
 
     fstream file_30deg, file_60deg;
     file_30deg.open(engineName_30deg, ios::binary | ios::in);
@@ -168,6 +168,18 @@ vector<float> prepareImage(cv::Mat &img)
 {
     using namespace cv;
 
+	cv::Mat img_padding = cv::Mat(384,608,CV_8UC3);
+
+	int top, bottom, left, right;
+	if(img.rows <= 384)
+	{
+		top = 0;
+	    bottom = (384-img.rows);
+    	left = 0;
+	    right = 0;
+        copyMakeBorder(img, img, top, bottom, left, right, BORDER_CONSTANT);
+	}
+
     int c = 3;
     int h = 384;
     int w = 608; //net w
@@ -175,16 +187,10 @@ vector<float> prepareImage(cv::Mat &img)
     float scale = min(float(w) / 608, float(h) / 384);
     auto scaleSize = cv::Size(608 * scale, 384 * scale);
 
-    //printf("scaleSize.x = %d scaleSize.y = %d\n",scaleSize.width,scaleSize.height);
+
     cv::Mat rgb;
     cv::Mat resized;
     cv::cvtColor(img, resized, CV_BGR2RGB);
-
-    //cv::resize(rgb, resized, scaleSize, 0, 0, INTER_CUBIC);
-
-    // cv::Mat cropped(h, w, CV_8UC3, 127);
-    // Rect rect((w - scaleSize.width) / 2, (h - scaleSize.height) / 2, scaleSize.width, scaleSize.height);
-    // resized.copyTo(cropped(rect));
 
     cv::Mat img_float;
     if (c == 3)
@@ -330,10 +336,16 @@ void DoNet(cv_bridge::CvImagePtr cv_ptr_30deg, cv_bridge::CvImagePtr cv_ptr_60de
     dImg = cv_ptr_30deg->image;
     dImg_60deg = cv_ptr_60deg->image;
 
+	//cv::resize(dImg,dImg,Size(608,342),0,0,INTER_LINEAR);
+	//cv::resize(dImg_60deg,dImg_60deg,Size(608,342),0,0,INTER_LINEAR);
+
 #ifdef display_cv_window
     dImg.copyTo(dImg1);
     dImg_60deg.copyTo(dImg1_60deg);
 #endif
+
+
+
     pthread_create(&thread_preprocess_30deg, NULL, preprocess_30deg, NULL);
     pthread_create(&thread_preprocess_60deg, NULL, preprocess_60deg, NULL); 
 
@@ -511,7 +523,7 @@ void DoNet(cv_bridge::CvImagePtr cv_ptr_30deg, cv_bridge::CvImagePtr cv_ptr_60de
 
 #ifdef display_cv_window
     animateFin = Mat::zeros(100, 1220, CV_8UC3);
-    animateTrafficLight(animateFin, finLightStatus[1], prediction.at<float>(0));
+    animateTrafficLight(animateFin, finLightStatus[1],  TL_status_info->distance_light);
 //     animate30 = Mat::zeros(100, 1220, CV_8UC3);
 //     animateTrafficLight(animate30, finLightStatus30, _tlBody30[selectTL30][6]);
 //     imshow("Result-30", animate30);
