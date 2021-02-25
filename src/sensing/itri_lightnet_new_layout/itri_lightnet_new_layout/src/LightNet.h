@@ -55,19 +55,19 @@ unique_ptr<float[]> outputData(new float[100549]);
 #endif
 
 #ifdef Tainan
-const std::string INPUT_PROTOTXT_30deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/caffe_model/30deg/30_divU.prototxt";
-const std::string INPUT_CAFFEMODEL_30deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/caffe_model/30deg/30_divU.caffemodel";
+const std::string INPUT_PROTOTXT_30deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/caffe_model/30deg/30_divU.prototxt";
+const std::string INPUT_CAFFEMODEL_30deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/caffe_model/30deg/30_divU.caffemodel";
 string mode_30deg = "fp16";
 RUN_MODE run_mode_30deg = RUN_MODE::FLOAT32;
 string OUTPUTS = "yolo-det"; //layer82-conv,layer94-conv,layer106-conv
-string engineName_30deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/resources/yolov3_fp16_201208_30deg.engine";
+string engineName_30deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/resources/yolov3_fp16_201208_30deg.engine";
 unique_ptr<float[]> outputData_30deg(new float[402193]);
 
-const std::string INPUT_PROTOTXT_60deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/caffe_model/60deg/60_divU.prototxt";
-const std::string INPUT_CAFFEMODEL_60deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/caffe_model/60deg/60_divU.caffemodel";
+const std::string INPUT_PROTOTXT_60deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/caffe_model/60deg/60_divU.prototxt";
+const std::string INPUT_CAFFEMODEL_60deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/caffe_model/60deg/60_divU.caffemodel";
 string mode_60deg = "fp16";
 RUN_MODE run_mode_60deg = RUN_MODE::FLOAT16;
-string engineName_60deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_main_new_layout/resources/yolov3_fp16_201208_60deg.engine";
+string engineName_60deg = "./src/sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/resources/yolov3_fp16_201208_60deg.engine";
 unique_ptr<float[]> outputData_60deg(new float[402193]);
 #endif
 
@@ -184,3 +184,4 @@ Mat dImg1_60deg;
 int frame_count = 0;
 Ptr<CLAHE> clahe_30deg;
 Ptr<CLAHE> clahe_60deg;
+Mat prediction ;

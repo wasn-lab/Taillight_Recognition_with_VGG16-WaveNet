@@ -11,5 +11,6 @@ struct TL_color
 {
 	int color_light;
 };
-#define ITRI_Field
+//#define ITRI_Field
+#define Tainan
 //#define display_cv_window
