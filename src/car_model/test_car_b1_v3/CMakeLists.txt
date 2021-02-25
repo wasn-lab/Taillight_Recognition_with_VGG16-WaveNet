@@ -36,13 +36,6 @@ if (CATKIN_ENABLE_TESTING)
     MD5 a94d0f1f4ccf9a490dd78f7b7d72b1bb
   )
 
-  set(TEST_BAG "edge_detection_2020-04-13-17-45-48_0.bag")
-  catkin_download_test_data(${TEST_BAG}
-    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
-    DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 fccf1132a9058350449afe2d32502f64
-  )
-
   set(TEST_BAG "localization_raw_2020-09-24-17-02-06.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"

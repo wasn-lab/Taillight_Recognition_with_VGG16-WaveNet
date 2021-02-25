@@ -17,6 +17,9 @@ void __gen_rand_lidar_msg()
   cloud.height = 64;
   cloud.points.resize(cloud.width * cloud.height);
   cloud.is_dense = true;
+  cloud.header.frame_id = "lidar";
+  cloud.header.seq = 197;
+  cloud.header.stamp = 789000123456ULL;
 
   srand(static_cast<unsigned int>(time(nullptr)));
   std::size_t nr_p = cloud.points.size();
@@ -45,7 +48,7 @@ void __gen_rand_lidar_msg()
 
 sensor_msgs::PointCloud2::ConstPtr get_msg_ptr()
 {
-  if (!g_pc2_msg_ptr.get())
+  if (g_cloud_ptr.get() == nullptr)
   {
     __gen_rand_lidar_msg();
   }
@@ -54,7 +57,7 @@ sensor_msgs::PointCloud2::ConstPtr get_msg_ptr()
 
 pcl::PointCloud<ouster_ros::OS1::PointOS1>::ConstPtr get_cloud_ptr()
 {
-  if (!g_cloud_ptr.get())
+  if (g_cloud_ptr.get() == nullptr)
   {
     __gen_rand_lidar_msg();
   }

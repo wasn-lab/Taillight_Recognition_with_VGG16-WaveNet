@@ -22,6 +22,8 @@ TEST(format_test, init_test_env)
   EXPECT_EQ(pc2_msg_ptr->height, 64);
   EXPECT_EQ(pc2_msg_ptr->fields.size(), 9);
   EXPECT_TRUE(pc2_msg_ptr->is_dense);
+  EXPECT_EQ(pc2_msg_ptr->header.frame_id, "lidar");
+  EXPECT_EQ(pc2_msg_ptr->header.seq, 197);
 
   auto cloud_ptr = get_cloud_ptr();
   EXPECT_TRUE(cloud_ptr.get() != nullptr);
@@ -29,6 +31,8 @@ TEST(format_test, init_test_env)
   EXPECT_EQ(cloud_ptr->height, 64);
   EXPECT_EQ(cloud_ptr->points.size(), 1024 * 64);
   EXPECT_TRUE(cloud_ptr->is_dense);
+  EXPECT_EQ(cloud_ptr->header.frame_id, "lidar");
+  EXPECT_EQ(cloud_ptr->header.seq, 197);
 }
 
 TEST(format_test, test_SensorMsgs_to_XYZIR)
@@ -37,12 +41,17 @@ TEST(format_test, test_SensorMsgs_to_XYZIR)
   auto cloud_ptr = get_cloud_ptr();
   auto res = SensorMsgs_to_XYZIR(*msg_ptr, lidar::Hardware::Ouster);
   EXPECT_EQ(res.points.size(), cloud_ptr->points.size());
-  int idx = 10097;
-  EXPECT_EQ(res[idx].x, cloud_ptr->points[idx].x);
-  EXPECT_EQ(res[idx].y, cloud_ptr->points[idx].y);
-  EXPECT_EQ(res[idx].z, cloud_ptr->points[idx].z);
-  EXPECT_EQ(res[idx].intensity, cloud_ptr->points[idx].intensity);
-  EXPECT_EQ(res[idx].ring, cloud_ptr->points[idx].ring);
+  for (size_t idx = 0; idx < res.points.size(); idx++)
+  {
+    EXPECT_EQ(res[idx].x, cloud_ptr->points[idx].x);
+    EXPECT_EQ(res[idx].y, cloud_ptr->points[idx].y);
+    EXPECT_EQ(res[idx].z, cloud_ptr->points[idx].z);
+    EXPECT_EQ(res[idx].intensity, cloud_ptr->points[idx].intensity);
+    EXPECT_EQ(res[idx].ring, cloud_ptr->points[idx].ring);
+  }
+  EXPECT_EQ(res.header.seq, msg_ptr->header.seq);
+  EXPECT_EQ(res.header.frame_id, msg_ptr->header.frame_id);
+  EXPECT_EQ(res.header.frame_id, "lidar");
 }
 
 TEST(format_test, perf_SensorMsgs_to_XYZIR)
