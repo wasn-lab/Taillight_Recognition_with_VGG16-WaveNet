@@ -102,12 +102,54 @@ class buffer_data():
         
         self.current_frame = 0
         self.frame_length = []
+        self.previous_id_list = []
+        # dict keys = id, values = keep_time 
+        self.obstacle_buffer = dict()
 
+    def add_temp_obstacle(self,present_id):
+        '''=================
+        Get node_id's last frame and duplicate it replace frame_num
+        
+        present_id -> list: current obstacle id 
+        
+        ===================='''
+        # print('previous_id_list : ',self.previous_id_list)
+        # print('present_id : ',present_id)
+
+        # get mask obstacle object
+        mask_id = set(self.previous_id_list) - set(present_id)
+        for node_id in mask_id:
+            if node_id not in self.obstacle_buffer.keys():
+                self.obstacle_buffer[node_id] = 1
+                
+            node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
+            node_df = node_df[node_df['frame_id'] ==  self.get_curr_frame() - 1].copy()
+            node_df = node_df.replace('frame_id',self.get_curr_frame())
+            # print('Node_id : ',node_id,'copy data : ',node_df)
+            self.update_buffer(node_df)
+
+        for node_id in self.obstacle_buffer.keys():
+            if node_id in present_id:
+                continue
+            if self.obstacle_buffer[node_id] <= 3 and self.obstacle_buffer[node_id] >=1:
+                print('mask_id : ',node_id)
+                self.obstacle_buffer[node_id] += 1
+            else:
+                del self.obstacle_buffer[node_id]
+                continue
+            node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
+            node_df = node_df[node_df['frame_id'] ==  self.get_curr_frame() - 1].copy()
+            node_df = node_df.replace('frame_id',self.get_curr_frame())
+            # print('Node_id : ',node_id,'copy data : ',node_df)
+            self.update_buffer(node_df)
+        
+        return list(mask_id)
+    
+    def update_prev_id(self,prev_id_list):
+        self.previous_id_list = list(prev_id_list)
+    
     def update_frame(self):
         self.current_frame = self.current_frame + 1
-
-    def get_buffer_frame(self):
-        return self.current_frame
 
     def update_buffer(self, data):
         '''
@@ -125,69 +167,26 @@ class buffer_data():
             
     def add_frame_length(self,frame_obj_nb):
         self.frame_length.append(frame_obj_nb)
+    
+    def get_curr_frame(self):
+        return self.current_frame
+    
+    def get_buffer_frame(self):
+        return self.buffer_frame
 
-    def create_scene(self, present_node_id):
-        max_timesteps = self.buffer_frame['frame_id'].max()
-        scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
-        for node_id in present_node_id:
-            node_frequency_multiplier = 1
-            node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
+    def reset_buffers(self):
+        self.buffer_frame = pd.DataFrame(columns=['frame_id',
+                                                  'type',
+                                                  'node_id',
+                                                  'robot',
+                                                  'x', 'y', 'z',
+                                                  'length',
+                                                  'width',
+                                                  'height',
+                                                  'heading_ang',
+                                                  'heading_rad'])
+        self.current_frame = 0
+        self.frame_length = []
+        self.previous_id_list = []
+        self.obstacle_buffer = dict()
 
-            if node_df['x'].shape[0] < 2:
-                continue
-
-            if not np.all(np.diff(node_df['frame_id']) == 1):
-                # print('Occlusion')
-                # print 'here!'
-                continue  # TODO Make better
-
-            node_values = node_df[['x', 'y']].values
-            x = node_values[:, 0]
-            y = node_values[:, 1]
-            heading = node_df['heading_ang'].values
-            # TODO rewrite self.scene.dt to real delta time
-            vx = derivative_of(x, scene.dt)
-            vy = derivative_of(y, scene.dt)
-            ax = derivative_of(vx, scene.dt)
-            ay = derivative_of(vy, scene.dt)
-            if node_df.iloc[0]['type'] == self.env.NodeType.VEHICLE:
-                v = np.stack((vx, vy), axis=-1)
-                v_norm = np.linalg.norm(
-                    np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
-                heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
-                heading_x = heading_v[:, 0]
-                heading_y = heading_v[:, 1]
-
-                data_dict = {('position', 'x'): x,
-                             ('position', 'y'): y,
-                             ('velocity', 'x'): vx,
-                             ('velocity', 'y'): vy,
-                             ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
-                             ('acceleration', 'x'): ax,
-                             ('acceleration', 'y'): ay,
-                             ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
-                             ('heading', 'x'): heading_x,
-                             ('heading', 'y'): heading_y,
-                             ('heading', 'angle'): heading,
-                             ('heading', 'radian'): node_df['heading_rad'].values}
-                node_data = pd.DataFrame(
-                    data_dict, columns=self.data_columns_vehicle)
-            else:
-                data_dict = {('position', 'x'): x,
-                             ('position', 'y'): y,
-                             ('velocity', 'x'): vx,
-                             ('velocity', 'y'): vy,
-                             ('acceleration', 'x'): ax,
-                             ('acceleration', 'y'): ay}
-                node_data = pd.DataFrame(
-                    data_dict, columns=self.data_columns_pedestrian)
-
-            node = Node(
-                node_type=node_df.iloc[0]['type'],
-                node_id=node_id,
-                data=node_data,
-                frequency_multiplier=node_frequency_multiplier)
-            node.first_timestep = node_df['frame_id'].iloc[0]
-            scene.nodes.append(node)
-
-        return scene

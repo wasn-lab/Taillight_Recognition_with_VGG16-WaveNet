@@ -18,7 +18,12 @@
   <!-- 1: Print execution time log-->
   <!-- 2: Print prediction log-->
   <arg name="print_log" default="0" />
+  <!-- 0: Don't transform coordinate-->
+  <!-- 1: Transform coordinate-->
   <arg name="tf_map" default="0" />
+  <!-- 0: Don't short memory-->
+  <!-- 1: Short memory-->
+  <arg name="short_mem" default="1"/>
 
   <node pkg="itri_interactive_pp" type="frequency_filter.py" name="filter" cwd="node" output="screen" >
     <param name="input_topic" value="$(arg input_topic)" />
@@ -29,6 +34,7 @@
     <param name="prediction_horizon" value="$(arg prediction_horizon)" />
     <param name="print_log" value="$(arg print_log)" />
     <param name="tf_map" value="$(arg tf_map)" />
+    <param name="short_mem" value="$(arg short_mem)" />
   </node>  
   <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen" />
 </launch>

@@ -48,6 +48,8 @@ def listener_ipp():
             publish_msg)
     elif input_source == 2:
         rospy.Subscriber('/PathPredictionOutput', DetectedObjectArray, publish_msg)
+    elif input_source == 3:
+        rospy.Subscriber('/Tracking3D', DetectedObjectArray, publish_msg)
     else:
         print("Source not found!")
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length

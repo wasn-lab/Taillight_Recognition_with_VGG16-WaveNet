@@ -40,8 +40,6 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 
 def create_scene(scene_ids, present_id):
-    # global buffer
-    # print(buffer)
     obstacle_id_list = []
     max_timesteps = buffer.buffer_frame['frame_id'].max()
     scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
@@ -73,8 +71,8 @@ def create_scene(scene_ids, present_id):
                 np.stack((vx, vy), axis=-1), axis=-1, keepdims=True)
             
             
-            if np.sum(v_norm, axis = 0)[0]/len(v_norm) < 0.2 and node_id in present_id:
-                # print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
+            if np.sum(v_norm, axis = 0)[0]/len(v_norm) < 1.0 and node_id in present_id:
+                print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
                 obstacle_id_list.append(int(node_id))
             
             heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
@@ -228,11 +226,14 @@ def transform_data(data, tf_map, tf_buffer, rospy):
         present_id_list.append(id)
     
     # add temp data
-    mask_id_list = buffer.add_temp_obstacle(present_id_list)
+    if short_mem:
+        mask_id_list = buffer.add_temp_obstacle(present_id_list)
+    else:
+        mask_id_list = []
     
     buffer.refresh_buffer()
     # buffer.add_frame_length(len(present_id_list))
-    buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
+    
     return present_id_list,mask_id_list
 
 def predict(data):
@@ -240,15 +241,23 @@ def predict(data):
     timer = []
 
     timer.append(time.time())
-    present_id, mask_id_list= transform_data(data, tf_map, tf_buffer, rospy)
-    obj_cnt = len(present_id) + len(mask_id_list)
-    
+    present_id_list, mask_id_list= transform_data(data, tf_map, tf_buffer, rospy)
+    # ros parameter
+    obj_cnt = len(present_id_list) + len(mask_id_list)
+    buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
+    scene_ids = map(str, list(present_id_list) + list(mask_id_list))
+    present_id_list = map(str,present_id_list)
+    # else:
+    #     obj_cnt = len(present_id_list)
+    #     buffer.add_frame_length(len(present_id_list))
+    #     scene_ids = map(str,present_id_list)
+    #     present_id_list = scene_ids
+
     timer.append(time.time())
     
     # previous obstacle id list
-    scene_ids = map(str, list(present_id) + list(mask_id_list))
-    present_id = map(str,present_id)
-    scene = create_scene(scene_ids, present_id)
+    
+    scene = create_scene(scene_ids, present_id_list)
 
     timer.append(time.time())
     scene.calculate_scene_graph(buffer.env.attention_radius,
@@ -301,10 +310,10 @@ def predict(data):
         queue_size=2)  # /IPP/Alert is TOPIC
     pub.publish(data)
 
-    timer.append(time.time() - timer[-1])
+    timer.append(time.time())
 
     if args.get_print() == 1:
-        print ('[RunTime] obj count : ',len(present_id))
+        print ('[RunTime] obj count : ',len(present_id_list))
         print ('[RunTime] Data preprocessing cost time : ',timer[1] - timer[0])
         print ('[RunTime] Create_scene cost time : ',timer[2] - timer[1])
         print ('[RunTime] calculate_scene_graph cost time : ',timer[3] - timer[2])
@@ -326,6 +335,9 @@ def predict(data):
                     break
                 else:
                     continue
+    elif args.get_print() == 3:
+        print('Current time : ', buffer.get_curr_frame())
+        print('Masked id : ',list(mask_id_list))
 
 def listener_ipp():
     global tf_buffer, tf_listener
@@ -338,12 +350,12 @@ def listener_ipp():
 
 def load_model(model_dir, ts=100):
     global hyperparams
-    model_registrar = ModelRegistrar(model_dir, 'cuda:0')
+    model_registrar = ModelRegistrar(model_dir, 'cuda:1')
     model_registrar.load_models(ts)
     with open(os.path.join(model_dir, 'config.json'), 'r') as config_json:
         hyperparams = json.load(config_json)
 
-    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:0')
+    trajectron = Trajectron(model_registrar, hyperparams, None, 'cuda:1')
 
     trajectron.set_environment()
     trajectron.set_annealing_params()
@@ -355,7 +367,7 @@ if __name__ == '__main__':
           loading_model_part
           frame_length for refreshing buffer
         ===================== '''
-    global buffer, past_obj, frame_length, args, tf_map
+    global buffer, past_obj, frame_length, args, tf_map, short_mem
     print('Loading model...')
     args = parameter()
     eval_stg, hyperparams = load_model(args.model, ts=args.checkpoint)
@@ -372,11 +384,15 @@ if __name__ == '__main__':
         '/object_path_prediction/tf_map')
     show_log = rospy.get_param(
         '/object_path_prediction/print_log')
-
+    short_mem = rospy.get_param(
+        '/object_path_prediction/short_mem')
+    
     if delay_node == 2:
 	    input_topic = '/IPP/delay_Alert'
     elif input_source == 1:
 	    input_topic = '/Tracking2D/front_bottom_60'
+    elif input_source == 3:
+        input_topic = '/Tracking3D'
     else:
 	    input_topic = '/PathPredictionOutput'
     
