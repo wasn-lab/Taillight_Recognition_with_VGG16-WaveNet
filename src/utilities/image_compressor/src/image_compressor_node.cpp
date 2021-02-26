@@ -45,6 +45,11 @@ int ImageCompressorNode::set_subscriber()
     LOG(ERROR) << "Empty input topic name is not allow. Please pass it with -input_topic in the command line";
     return EXIT_FAILURE;
   }
+
+  LOG(INFO) << "Wait for input topic " << topic;
+  ros::topic::waitForMessage<sensor_msgs::Image>(topic);
+  LOG(INFO) << topic << " is ready";
+
   subscriber_ = node_handle_.subscribe(topic, 2, &ImageCompressorNode::callback, this);
   return EXIT_SUCCESS;
 }
