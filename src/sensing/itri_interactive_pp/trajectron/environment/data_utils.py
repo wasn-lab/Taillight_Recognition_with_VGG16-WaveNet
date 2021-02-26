@@ -17,13 +17,13 @@ def make_continuous_copy(alpha):
 
 
 def derivative_of(x, dt=1, radian=False):
-    # print(radian)
-    # print('Data value : ', type(x[0]))
-    # print('Data : ',  np.isnan(x))
+    print(radian)
+    print('Data value : ', type(x[0]))
+    print('Data : ',  np.isnan(x))
     if radian:
         x = make_continuous_copy(x)
+        print('heading')
 
-    # print(np.isnan(x))
     if x[~np.isnan(x)].shape[-1] < 2:
         return np.zeros_like(x)
 

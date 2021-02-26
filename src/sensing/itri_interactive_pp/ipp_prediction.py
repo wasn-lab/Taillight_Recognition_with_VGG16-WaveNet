@@ -23,9 +23,11 @@ from std_msgs.msg import String
 import rospy
 from tqdm import tqdm
 import math
+import atexit
 
 from script.ipp_class import parameter, buffer_data
 # from script.ipp_method import create_scene, transform_data
+from script.ipp_method import output_csvfile
 from model.model_registrar import ModelRegistrar
 from model.trajectron import Trajectron
 import evaluation
@@ -58,11 +60,12 @@ def create_scene(scene_ids, present_id):
         node_values = node_df[['x', 'y']].values
         x = node_values[:, 0]
         y = node_values[:, 1]
-        heading = node_df['heading_ang'].values
+        heading = node_df['heading_rad'].values
+        
         # TODO get obstacle id
         vx = derivative_of(x, scene.dt)
         vy = derivative_of(y, scene.dt)
-
+        
         ax = derivative_of(vx, scene.dt)
         ay = derivative_of(vy, scene.dt)
         if node_df.iloc[0]['type'] == buffer.env.NodeType.VEHICLE:
@@ -72,13 +75,13 @@ def create_scene(scene_ids, present_id):
             
             
             if np.sum(v_norm, axis = 0)[0]/len(v_norm) < 1.0 and node_id in present_id:
-                print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
+                # print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
                 obstacle_id_list.append(int(node_id))
             
             heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
             heading_x = heading_v[:, 0]
             heading_y = heading_v[:, 1]
-
+            print(heading)
             data_dict = {('position', 'x'): x,
                             ('position', 'y'): y,
                             ('velocity', 'x'): vx,
@@ -90,11 +93,11 @@ def create_scene(scene_ids, present_id):
                             ('heading', 'x'): heading_x,
                             ('heading', 'y'): heading_y,
                             ('heading', 'angle'): heading,
-                            ('heading', 'radian'): node_df['heading_rad'].values}
+                            ('heading', 'radian'): derivative_of(heading, scene.dt, radian=True)}
             node_data = pd.DataFrame(
                 data_dict, columns=buffer.data_columns_vehicle)
         else:
-            data_dict = {('position', 'x'): x,
+            data_dict = {   ('position', 'x'): x,
                             ('position', 'y'): y,
                             ('velocity', 'x'): vx,
                             ('velocity', 'y'): vy,
@@ -114,7 +117,7 @@ def create_scene(scene_ids, present_id):
     return scene
     
 def transform_data(data, tf_map, tf_buffer, rospy):
-    
+    heading_data = []
     present_id_list = []
     for obj in data.objects:
         # category = None
@@ -147,7 +150,8 @@ def transform_data(data, tf_map, tf_buffer, rospy):
             z = pose_transformed.pose.position.z
         # print 'x: ', x
         # print(pose_transformed.pose.position.x, pose_transformed.pose.position.y, pose_transformed.pose.position.z)
-
+        heading_data.append((id,x,y))
+        
         length = math.sqrt(
             math.pow(
                 (obj.bPoint.p4.x -
@@ -178,36 +182,40 @@ def transform_data(data, tf_map, tf_buffer, rospy):
         diff_x = 0
         diff_y = 0
         heading = 0
+        heading_rad = 0
         # for CH object.yaw
-        heading = obj.distance
-        heading_rad = math.radians(heading)
-        # heading_rad = 0
-        # for old_obj in past_obj:
-        #     sp = old_obj.split(",")
-        #     if obj.track.id == int(sp[2]):
-        #         diff_x = x - float(sp[4])
-        #         diff_y = y - float(sp[5])
-        #         if diff_x == 0:
-        #             heading = 90
-        #         else:
-        #             heading = abs(math.degrees(math.atan(diff_y / diff_x)))
-        #         # print(diff_x,diff_y,diff_y/diff_x,heading)
-        #         if diff_x == 0 and diff_y == 0:
-        #             heading = 0
-        #         elif diff_x >= 0 and diff_y >= 0:
-        #             heading = heading
-        #         elif diff_x >= 0 and diff_y < 0:
-        #             heading = 360 - heading
-        #         elif diff_x < 0 and diff_y >= 0:
-        #             heading = 180 - heading
-        #         else:
-        #             heading = 180 + heading
-        #         if heading > 180:
-        #             heading = heading - 360
-        #         heading_rad = math.radians(heading)
-        # info = str(buffer.get_buffer_frame()) + "," + type_ + "," + str(obj.track.id) + "," + "False" + "," + str(x) + \
-        #     "," + str(y) + "," + str(z) + "," + str(length) + "," + str(width) + "," + str(height) + "," + str(heading)
-        # past_obj.append(info)
+        # heading = obj.distance
+        # heading_rad = math.radians(heading)
+        
+        '''
+            calculate heading data
+        '''
+        past_obj = buffer.get_heading_buffer()
+        
+        if id in past_obj.keys():
+            # print(id,past_obj[id])
+            diff_x = x - past_obj[id][0]
+            diff_y = y - past_obj[id][1]
+            if diff_x == 0:
+                heading = 90
+            elif diff_y == 0:
+                heading = 0
+            else:
+                heading = math.degrees(math.atan(diff_y/diff_x)) 
+            if diff_x == 0 and diff_y == 0:
+                heading = 0
+            elif diff_x >= 0 and diff_y >= 0:
+                heading = heading
+            elif diff_x >= 0 and diff_y < 0:
+                heading = heading
+            elif diff_x < 0 and diff_y >= 0:
+                heading = 180 + heading
+            else:
+                heading = heading - 180
+            heading_rad = math.radians(heading)
+        '''
+            
+        '''
         # print 'ros method heading : ',yaw
         # print 'our method heading : ',heading
         node_data = pd.Series({'frame_id': buffer.get_curr_frame(),
@@ -231,7 +239,9 @@ def transform_data(data, tf_map, tf_buffer, rospy):
     else:
         mask_id_list = []
     
-    buffer.refresh_buffer()
+    buffer.update_heading_buffer(heading_data)
+    # buffer.refresh_buffer()
+    # buffer.print_buffer()
     # buffer.add_frame_length(len(present_id_list))
     
     return present_id_list,mask_id_list
@@ -386,7 +396,9 @@ if __name__ == '__main__':
         '/object_path_prediction/print_log')
     short_mem = rospy.get_param(
         '/object_path_prediction/short_mem')
-    
+    output_csv = rospy.get_param(
+        '/object_path_prediction/output_csv')
+
     if delay_node == 2:
 	    input_topic = '/IPP/delay_Alert'
     elif input_source == 1:
@@ -409,3 +421,8 @@ if __name__ == '__main__':
         listener_ipp()
     except rospy.ROSInterruptException:
         pass
+
+    if output_csv:
+	print('Write to csv complete!')
+        atexit.register(output_csvfile, "./", "rosbag.csv", buffer)
+

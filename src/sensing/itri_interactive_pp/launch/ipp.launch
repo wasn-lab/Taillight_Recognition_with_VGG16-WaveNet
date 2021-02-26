@@ -24,6 +24,10 @@
   <!-- 0: Don't short memory-->
   <!-- 1: Short memory-->
   <arg name="short_mem" default="1"/>
+  <!-- True : output csv-->
+  <!-- False : Don't output-->
+  <arg name="output_csv" default="False"/>
+  
 
   <node pkg="itri_interactive_pp" type="frequency_filter.py" name="filter" cwd="node" output="screen" >
     <param name="input_topic" value="$(arg input_topic)" />
@@ -35,6 +39,7 @@
     <param name="print_log" value="$(arg print_log)" />
     <param name="tf_map" value="$(arg tf_map)" />
     <param name="short_mem" value="$(arg short_mem)" />
+    <param name="output_csv" value="$(arg output_csv)" />
   </node>  
   <node pkg="itri_interactive_pp" type="ipp_marker.py" name="object_marker" cwd="node" output="screen" />
 </launch>

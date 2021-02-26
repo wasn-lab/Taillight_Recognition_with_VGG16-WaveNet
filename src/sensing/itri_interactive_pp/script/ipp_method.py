@@ -204,16 +204,7 @@ def transform_data(buffer, data, tf_map, tf_buffer, rospy):
     buffer.add_frame_length(len(present_id_list) + len(mask_id_list))
     return present_id_list,mask_id_list
 
-def output_txt(data_path,data,csv_filename):
-    with open('data_path' + csv_filename,'w') as f:
-        wirteCsv = csv.writer(f)
-        # TODO extract with row
-        headers = ['frame_id','type','node_id','dt','x','y','z','length','width','height','heading','PP_x','PP_y','self_x','self_y']
-        wirteCsv.writerow(headers)
-        '''
-            for data in Data :
-                # tuple
-                data = [('frame_id',),]
-                writeCsv.writerow(data)
-        '''
+def output_csvfile(data_path,csv_filename,data):
+    data = data.get_buffer_frame()
+    data.to_csv(data_path + csv_filename)
         

@@ -105,6 +105,8 @@ class buffer_data():
         self.previous_id_list = []
         # dict keys = id, values = keep_time 
         self.obstacle_buffer = dict()
+        # dict keys = id, values = (x,y) -> tuple
+        self.heading_buffer = dict()
 
     def add_temp_obstacle(self,present_id):
         '''=================
@@ -145,6 +147,11 @@ class buffer_data():
         
         return list(mask_id)
     
+    def update_heading_buffer(self,datas):
+        self.heading_buffer.clear()
+        for data in datas:
+            self.heading_buffer[data[0]] = (data[1],data[2])
+        
     def update_prev_id(self,prev_id_list):
         self.previous_id_list = list(prev_id_list)
     
@@ -161,8 +168,7 @@ class buffer_data():
     def refresh_buffer(self):
         # If frame_id < current_time - 11 remove the data
         if len(self.frame_length) > 11:
-            tmp = self.buffer_frame.copy()
-            tmp.drop(range(0,self.frame_length[0]))
+            self.buffer_frame = self.buffer_frame.drop(range(0,self.frame_length[0]))
             del self.frame_length[0]
             
     def add_frame_length(self,frame_obj_nb):
@@ -173,6 +179,12 @@ class buffer_data():
     
     def get_buffer_frame(self):
         return self.buffer_frame
+    
+    def get_heading_buffer(self):
+        return self.heading_buffer
+
+    def print_buffer(self):
+        print(self.buffer_frame)
 
     def reset_buffers(self):
         self.buffer_frame = pd.DataFrame(columns=['frame_id',
