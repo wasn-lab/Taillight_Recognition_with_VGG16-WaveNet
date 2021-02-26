@@ -22,20 +22,6 @@ if (CATKIN_ENABLE_TESTING)
     MD5 62bf328edc7eb796366161e36c3f66eb
   )
 
-  set(TEST_BAG "lidar_raw_2020-03-10-10-48-39_41.bag")
-  catkin_download_test_data(${TEST_BAG}
-    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
-    DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 e2ff37c83b2e95aebeff9b192cf88c64
-  )
-
-  set(TEST_BAG "lidar_raw_compressed_2021-01-12-16-01-42.bag")
-  catkin_download_test_data(${TEST_BAG}
-    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
-    DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 24f75b75ebc1c25a35e17f8953fef9c0
-  )
-  
   set(TEST_BAG "lidar_raw_compressed_2021-02-03.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
@@ -43,19 +29,20 @@ if (CATKIN_ENABLE_TESTING)
     MD5 fe090879b354151dfa6c4674422d0964
   )
 
-  set(TEST_BAG "lidar_2020-11-27_c1_raw.bag")
+  set(TEST_BAG "lidar_detection_car_ped_cyc_2020-12-28-16-53-14_21.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
     DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 841902ab7370565eb5787de0ad6aeddf
+    MD5 92839d7c373836381a0aa4ed82b0e3e3
   )
 
-  set(TEST_BAG "edge_detection_2020-04-13-17-45-48_0.bag")
+  set(TEST_BAG "lidar_raw_2020-12-28-16-53-14_21.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
     DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 fccf1132a9058350449afe2d32502f64
+    MD5 a94d0f1f4ccf9a490dd78f7b7d72b1bb
   )
+
 
   set(TEST_BAG "localization_raw_2020-09-24-17-02-06.bag")
   catkin_download_test_data(${TEST_BAG}
