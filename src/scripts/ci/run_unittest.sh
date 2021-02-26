@@ -21,7 +21,9 @@ export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 ../devel/lib/libs/lidar_test
 
 pushd $repo_dir
+set +x
 source devel/setup.bash
+set -x
 src/car_model/south_bridge/run_unittest.sh
 src/utilities/fail_safe/src/run_unittest.sh
 src/utilities/image_compressor/src/test/run_unittest.sh
