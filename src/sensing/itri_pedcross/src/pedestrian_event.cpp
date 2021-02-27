@@ -2471,6 +2471,12 @@ int main(int argc, char** argv)
   nh.param<int>("/pedestrian_event/crossing_threshold", pe.cross_threshold_, 55);
   nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
   nh.param<double>("/pedestrian_event/ground_z", pe.ground_z_, -5);
+  nh.param<int>("/pedestrian_event/car_model", pe.car_model, 0);
+  if (pe.car_model == 1)
+  {
+    pe.scaling_ratio_width_ = 0.475;
+    pe.scaling_ratio_height_ = 0.475;
+  }
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
   pe.tf_client_ = nh.serviceClient<msgs::PredictCrossing>("pedcross_tf");
