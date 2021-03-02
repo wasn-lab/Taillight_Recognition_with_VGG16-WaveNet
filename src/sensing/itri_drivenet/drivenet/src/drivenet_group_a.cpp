@@ -257,8 +257,14 @@ int main(int argc, char** argv)
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
+    cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
+
+    /// Wait for all message
+    std::cout << "Wait for input topic " << cam_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_topic_names[cam_order]);
+    std::cout << cam_topic_names[cam_order] << " is ready" << std::endl;
+
     if (g_is_compressed)
     {
       cam_subs[cam_order] =
@@ -266,7 +272,7 @@ int main(int argc, char** argv)
     }
     else
     {
-      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order] + std::string("/raw"), 1, f_cam_callbacks[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
     }
     if (g_img_result_publish)
     {
@@ -274,7 +280,12 @@ int main(int argc, char** argv)
     }
     if (g_lidarall_publish)
     {
-      g_lidar_sub = nh.subscribe("/LidarFrontTop/Raw", 1, callback_LidarAll);
+      std::string lidar_raw_topic = "/LidarFrontTop/Raw";
+      std::cout << "Wait for input topic " << lidar_raw_topic << std::endl;
+      ros::topic::waitForMessage<sensor_msgs::PointCloud2>(lidar_raw_topic);
+      std::cout << lidar_raw_topic << " is ready" << std::endl;
+
+      g_lidar_sub = nh.subscribe(lidar_raw_topic, 1, callback_LidarAll);
       g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/LidarAll_re", 2);
     }
 
