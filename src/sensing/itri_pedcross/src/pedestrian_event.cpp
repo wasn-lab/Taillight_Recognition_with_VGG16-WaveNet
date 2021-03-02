@@ -2252,37 +2252,100 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_12;
   ros::Subscriber sub_13;
   ros::Subscriber sub_14;
-  if (input_source_ == 4)  // if (input_source_ == 4)
+
+  if (input_source_ == 4)
   {
+    // input topics from itri_tracking_2d
     std::string in_topic1 = "Tracking2D/front_bottom_60";
+    std::cout << "Wait for input topic " << in_topic1 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic1);
+    std::cout << in_topic1 << " is ready" << std::endl;
+
     std::string in_topic2 = "Tracking2D/left_back_60";
+    std::cout << "Wait for input topic " << in_topic2 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic2);
+    std::cout << in_topic2 << " is ready" << std::endl;
+
     std::string in_topic3 = "Tracking2D/right_back_60";
+    std::cout << "Wait for input topic " << in_topic3 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic3);
+    std::cout << in_topic3 << " is ready" << std::endl;
+
     std::string in_topic4 = "Tracking2D/front_top_far_30";
+    std::cout << "Wait for input topic " << in_topic4 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic4);
+    std::cout << in_topic4 << " is ready" << std::endl;
+
+    // input topics from raw images
     std::string in_topic5 = "cam/front_bottom_60";
+    std::cout << "Wait for input topic " << in_topic5 << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
+    std::cout << in_topic5 << " is ready" << std::endl;
+
     std::string in_topic6 = "cam/left_back_60";
+    std::cout << "Wait for input topic " << in_topic6 << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
+    std::cout << in_topic6 << " is ready" << std::endl;
+
     std::string in_topic7 = "cam/right_back_60";
-    std::string in_topic8 = "planning/scenario_planning/trajectory";
-    std::string in_topic9 = "planning/mission_planning/route_marker";
-    std::string in_topic10 = "PedCross/Pedestrians/front_bottom_60";
-    std::string in_topic11 = "PedCross/Pedestrians/left_back_60";
-    std::string in_topic12 = "PedCross/Pedestrians/right_back_60";
-    std::string in_topic13 = "cam/front_top_far_30";
-    std::string in_topic14 = "PedCross/Pedestrians/front_top_far_30";
+    std::cout << "Wait for input topic " << in_topic7 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
+    std::cout << in_topic7 << " is ready" << std::endl;
+
+    std::string in_topic8 = "cam/front_top_far_30";
+    std::cout << "Wait for input topic " << in_topic8 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
+    std::cout << in_topic8 << " is ready" << std::endl;
+
+    // input topics from pedestrian_subscriber.py
+    std::string in_topic9 = "PedCross/Pedestrians/front_bottom_60";
+    std::cout << "Wait for input topic " << in_topic9 << std::endl;
+    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic9);
+    std::cout << in_topic9 << " is ready" << std::endl;
+
+    std::string in_topic10 = "PedCross/Pedestrians/left_back_60";
+    std::cout << "Wait for input topic " << in_topic10 << std::endl;
+    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic10);
+    std::cout << in_topic10 << " is ready" << std::endl;
+
+    std::string in_topic11 = "PedCross/Pedestrians/right_back_60";
+    std::cout << "Wait for input topic " << in_topic11 << std::endl;
+    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic11);
+    std::cout << in_topic11 << " is ready" << std::endl;
+
+    std::string in_topic12 = "PedCross/Pedestrians/front_top_far_30";
+    std::cout << "Wait for input topic " << in_topic12 << std::endl;
+    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic12);
+    std::cout << in_topic12 << " is ready" << std::endl;
+
+    // input topics from planning
+    std::string in_topic13 = "planning/scenario_planning/trajectory";
+    std::cout << "Wait for input topic " << in_topic13 << std::endl;
+    ros::topic::waitForMessage<autoware_planning_msgs::Trajectory>(in_topic13);
+    std::cout << in_topic13 << " is ready" << std::endl;
+
+    std::string in_topic14 = "planning/mission_planning/route_marker";
+    std::cout << "Wait for input topic " << in_topic14 << std::endl;
+    ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic14);
+    std::cout << in_topic14 << " is ready" << std::endl;
 
     sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::front_callback, this);
     sub_2 = nh_sub_2.subscribe(in_topic2, 1, &PedestrianEvent::left_callback, this);
     sub_3 = nh_sub_2.subscribe(in_topic3, 1, &PedestrianEvent::right_callback, this);
     sub_4 = nh_sub_2.subscribe(in_topic4, 1, &PedestrianEvent::fov30_callback, this);
+
     sub_5 = nh_sub_2.subscribe(in_topic5, 1, &PedestrianEvent::cache_front_image_callback, this);
     sub_6 = nh_sub_2.subscribe(in_topic6, 1, &PedestrianEvent::cache_left_image_callback, this);
     sub_7 = nh_sub_2.subscribe(in_topic7, 1, &PedestrianEvent::cache_right_image_callback, this);
-    sub_8 = nh_sub_2.subscribe(in_topic8, 1, &PedestrianEvent::lanelet2_trajectory_callback, this);
-    sub_9 = nh_sub_2.subscribe(in_topic9, 1, &PedestrianEvent::lanelet2_route_callback, this);
-    sub_10 = nh_sub_2.subscribe(in_topic10, 1, &PedestrianEvent::draw_ped_front_callback, this);
-    sub_11 = nh_sub_2.subscribe(in_topic11, 1, &PedestrianEvent::draw_ped_left_callback, this);
-    sub_12 = nh_sub_2.subscribe(in_topic12, 1, &PedestrianEvent::draw_ped_right_callback, this);
-    sub_13 = nh_sub_2.subscribe(in_topic13, 1, &PedestrianEvent::cache_fov30_image_callback, this);
-    sub_14 = nh_sub_2.subscribe(in_topic14, 1, &PedestrianEvent::draw_ped_fov30_callback, this);
+    sub_8 = nh_sub_2.subscribe(in_topic8, 1, &PedestrianEvent::cache_fov30_image_callback, this);
+
+    sub_9 = nh_sub_2.subscribe(in_topic9, 1, &PedestrianEvent::draw_ped_front_callback, this);
+    sub_10 = nh_sub_2.subscribe(in_topic10, 1, &PedestrianEvent::draw_ped_left_callback, this);
+    sub_11 = nh_sub_2.subscribe(in_topic11, 1, &PedestrianEvent::draw_ped_right_callback, this);
+    sub_12 = nh_sub_2.subscribe(in_topic12, 1, &PedestrianEvent::draw_ped_fov30_callback, this);
+
+    sub_13 = nh_sub_2.subscribe(in_topic13, 1, &PedestrianEvent::lanelet2_trajectory_callback, this);
+    sub_14 = nh_sub_2.subscribe(in_topic14, 1, &PedestrianEvent::lanelet2_route_callback, this);
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
