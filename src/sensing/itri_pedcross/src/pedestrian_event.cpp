@@ -2254,35 +2254,35 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_14;
   if (input_source_ == 4)  // if (input_source_ == 4)
   {
-    sub_1 = nh_sub_1.subscribe("/Tracking2D/front_bottom_60", 1, &PedestrianEvent::front_callback,
-                               this);  // /Tracking2D/front_bottom_60 is subscirbe topic
-    sub_2 = nh_sub_2.subscribe("/Tracking2D/left_back_60", 1, &PedestrianEvent::left_callback,
-                               this);  // /Tracking2D/left_back_60 is subscirbe topic
-    sub_3 = nh_sub_2.subscribe("/Tracking2D/right_back_60", 1, &PedestrianEvent::right_callback,
-                               this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_4 = nh_sub_2.subscribe("/Tracking2D/front_top_far_30", 1, &PedestrianEvent::fov30_callback,
-                               this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_5 = nh_sub_2.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
-                               this);  // /cam/F_right is subscirbe topic
-    sub_6 = nh_sub_2.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_left_image_callback,
-                               this);  // /cam/F_center is subscirbe topic
-    sub_7 = nh_sub_2.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_right_image_callback,
-                               this);  // /cam/F_center is subscirbe topic
-    sub_8 =
-        nh_sub_2.subscribe("/planning/scenario_planning/trajectory", 1, &PedestrianEvent::lanelet2_trajectory_callback,
-                           this);  // /cam/F_center is subscirbe topic
-    sub_9 = nh_sub_2.subscribe("/planning/mission_planning/route_marker", 1, &PedestrianEvent::lanelet2_route_callback,
-                               this);  // /cam/F_center is subscirbe topic
-    sub_10 = nh_sub_2.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_11 = nh_sub_2.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_12 = nh_sub_2.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_13 = nh_sub_2.subscribe("/cam/front_top_far_30", 1, &PedestrianEvent::cache_fov30_image_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_14 = nh_sub_2.subscribe("/PedCross/Pedestrians/front_top_far_30", 1, &PedestrianEvent::draw_ped_fov30_callback,
-                                this);  // /cam/F_center is subscirbe topic
+    std::string in_topic1 = "Tracking2D/front_bottom_60";
+    std::string in_topic2 = "Tracking2D/left_back_60";
+    std::string in_topic3 = "Tracking2D/right_back_60";
+    std::string in_topic4 = "Tracking2D/front_top_far_30";
+    std::string in_topic5 = "cam/front_bottom_60";
+    std::string in_topic6 = "cam/left_back_60";
+    std::string in_topic7 = "cam/right_back_60";
+    std::string in_topic8 = "planning/scenario_planning/trajectory";
+    std::string in_topic9 = "planning/mission_planning/route_marker";
+    std::string in_topic10 = "PedCross/Pedestrians/front_bottom_60";
+    std::string in_topic11 = "PedCross/Pedestrians/left_back_60";
+    std::string in_topic12 = "PedCross/Pedestrians/right_back_60";
+    std::string in_topic13 = "cam/front_top_far_30";
+    std::string in_topic14 = "PedCross/Pedestrians/front_top_far_30";
+
+    sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::front_callback, this);
+    sub_2 = nh_sub_2.subscribe(in_topic2, 1, &PedestrianEvent::left_callback, this);
+    sub_3 = nh_sub_2.subscribe(in_topic3, 1, &PedestrianEvent::right_callback, this);
+    sub_4 = nh_sub_2.subscribe(in_topic4, 1, &PedestrianEvent::fov30_callback, this);
+    sub_5 = nh_sub_2.subscribe(in_topic5, 1, &PedestrianEvent::cache_front_image_callback, this);
+    sub_6 = nh_sub_2.subscribe(in_topic6, 1, &PedestrianEvent::cache_left_image_callback, this);
+    sub_7 = nh_sub_2.subscribe(in_topic7, 1, &PedestrianEvent::cache_right_image_callback, this);
+    sub_8 = nh_sub_2.subscribe(in_topic8, 1, &PedestrianEvent::lanelet2_trajectory_callback, this);
+    sub_9 = nh_sub_2.subscribe(in_topic9, 1, &PedestrianEvent::lanelet2_route_callback, this);
+    sub_10 = nh_sub_2.subscribe(in_topic10, 1, &PedestrianEvent::draw_ped_front_callback, this);
+    sub_11 = nh_sub_2.subscribe(in_topic11, 1, &PedestrianEvent::draw_ped_left_callback, this);
+    sub_12 = nh_sub_2.subscribe(in_topic12, 1, &PedestrianEvent::draw_ped_right_callback, this);
+    sub_13 = nh_sub_2.subscribe(in_topic13, 1, &PedestrianEvent::cache_fov30_image_callback, this);
+    sub_14 = nh_sub_2.subscribe(in_topic14, 1, &PedestrianEvent::draw_ped_fov30_callback, this);
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
