@@ -361,7 +361,6 @@ void TPPNode::subscribe_and_advertise_topics()
   lanelet2_route_sub_ =
       nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
 
-
   // publishers
   std::string out_topic = "Tracking3D";
   track3d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 2);
