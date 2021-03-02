@@ -2272,9 +2272,9 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic3 << " is ready" << std::endl;
 
     std::string in_topic4 = "Tracking2D/front_top_far_30";
-    std::cout << "Wait for input topic " << in_topic4 << std::endl;
-    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic4);
-    std::cout << in_topic4 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic4 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic4);
+    // std::cout << in_topic4 << " is ready" << std::endl;
 
     // input topics from raw images
     std::string in_topic5 = "cam/front_bottom_60";
@@ -2293,9 +2293,9 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic7 << " is ready" << std::endl;
 
     std::string in_topic8 = "cam/front_top_far_30";
-    std::cout << "Wait for input topic " << in_topic8 << std::endl;
-    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
-    std::cout << in_topic8 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic8 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
+    // std::cout << in_topic8 << " is ready" << std::endl;
 
     // input topics from pedestrian_subscriber.py
     std::string in_topic9 = "PedCross/Pedestrians/front_bottom_60";
@@ -2314,9 +2314,9 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic11 << " is ready" << std::endl;
 
     std::string in_topic12 = "PedCross/Pedestrians/front_top_far_30";
-    std::cout << "Wait for input topic " << in_topic12 << std::endl;
-    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic12);
-    std::cout << in_topic12 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic12 << std::endl;
+    // ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic12);
+    // std::cout << in_topic12 << " is ready" << std::endl;
 
     // input topics from planning
     std::string in_topic13 = "planning/scenario_planning/trajectory";
