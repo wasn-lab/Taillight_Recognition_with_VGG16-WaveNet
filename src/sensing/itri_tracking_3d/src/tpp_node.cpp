@@ -348,9 +348,9 @@ void TPPNode::subscribe_and_advertise_topics()
     LOG_INFO << "Input Source: Fusion (/" << in_topic << ")" << std::endl;
   }
 
-  LOG_INFO << "Wait for input topic " << in_topic;
+  LOG_INFO << "Wait for input topic " << in_topic << std::endl;
   ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic);
-  LOG_INFO << in_topic << " is ready";
+  LOG_INFO << in_topic << " is ready" << std::endl;
 
   fusion_sub_ = nh_.subscribe(in_topic, 1, &TPPNode::callback_fusion, this);
 
