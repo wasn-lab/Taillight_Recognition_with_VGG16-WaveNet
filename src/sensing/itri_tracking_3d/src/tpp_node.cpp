@@ -356,10 +356,20 @@ void TPPNode::subscribe_and_advertise_topics()
 
   nh2_.setCallbackQueue(&queue_);
 
-  // Note that we use different NodeHandle(nh2_) here
-  ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-  lanelet2_route_sub_ =
-      nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
+  // NodeHandle nh2_
+  std::string in_topic2 = "veh_info";
+  LOG_INFO << "Wait for input topic " << in_topic2 << std::endl;
+  ros::topic::waitForMessage<msgs::VehInfo>(in_topic2);
+  LOG_INFO << in_topic2 << " is ready" << std::endl;
+
+  ego_speed_kmph_sub_ = nh2_.subscribe(in_topic2, 1, &TPPNode::callback_ego_speed_kmph, this);
+
+  std::string in_topic3 = "planning/mission_planning/route_marker";
+  LOG_INFO << "Wait for input topic " << in_topic3 << std::endl;
+  ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic3);
+  LOG_INFO << in_topic3 << " is ready" << std::endl;
+
+  lanelet2_route_sub_ = nh2_.subscribe(in_topic3, 1, &TPPNode::callback_lanelet2_route, this);
 
   // publishers
   std::string out_topic = "Tracking3D";
