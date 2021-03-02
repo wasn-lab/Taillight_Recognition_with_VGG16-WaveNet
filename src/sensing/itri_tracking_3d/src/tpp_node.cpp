@@ -302,7 +302,7 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
 void TPPNode::subscribe_and_advertise_topics()
 {
-  std::string topic = "Tracking3D";
+  // subscribers
   use_tracking2d = false;
 
   if (in_source_ == InputSource::LidarDet)
@@ -347,12 +347,6 @@ void TPPNode::subscribe_and_advertise_topics()
     fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
   }
 
-  track3d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
-
-#if HEARTBEAT == 1
-  track3d_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(topic + std::string("/heartbeat"), 1);
-#endif
-
   nh2_.setCallbackQueue(&queue_);
 
   // Note that we use different NodeHandle(nh2_) here
@@ -360,20 +354,21 @@ void TPPNode::subscribe_and_advertise_topics()
   lanelet2_route_sub_ =
       nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
 
+
+  // publishers
+  std::string out_topic = "Tracking3D";
+  track3d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 2);
+#if HEARTBEAT == 1
+  track3d_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);
+#endif
+
   if (gen_markers_)
   {
-    std::string topic2 = topic + "/id";
-    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
-
-    std::string topic3 = topic + "/speed";
-    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
-
-    std::string topic4 = topic + "/vel";
-    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
+    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(out_topic + std::string("/id"), 2);
+    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(out_topic + std::string("/speed"), 2);
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(out_topic + std::string("/vel"), 2);
   }
-
-  std::string topic5 = topic + "/drivable";
-  drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
+  drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(out_topic + std::string("/drivable"), 2);
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)
