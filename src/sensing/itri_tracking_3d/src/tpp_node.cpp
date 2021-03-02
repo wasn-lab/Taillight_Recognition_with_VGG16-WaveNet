@@ -347,6 +347,11 @@ void TPPNode::subscribe_and_advertise_topics()
     in_topic = "SensorFusion";
     LOG_INFO << "Input Source: Fusion (/" << in_topic << ")" << std::endl;
   }
+
+  LOG_INFO << "Wait for input topic " << in_topic;
+  ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic);
+  LOG_INFO << in_topic << " is ready";
+
   fusion_sub_ = nh_.subscribe(in_topic, 1, &TPPNode::callback_fusion, this);
 
   nh2_.setCallbackQueue(&queue_);
