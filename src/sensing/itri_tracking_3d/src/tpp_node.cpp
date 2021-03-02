@@ -304,48 +304,50 @@ void TPPNode::subscribe_and_advertise_topics()
 {
   // subscribers
   use_tracking2d = false;
+  std::string in_topic = "";
 
   if (in_source_ == InputSource::LidarDet)
   {
-    LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
+    in_topic = "LidarDetection";
+    LOG_INFO << "Input Source: Lidar (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::LidarDet_PointPillars_Car)
   {
-    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/LidarDetection/Car)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
+    in_topic = "LidarDetection/Car";
+    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::LidarDet_PointPillars_Ped_Cyc)
   {
-    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/LidarDetection/Ped_Cyc)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection/Ped_Cyc", 1, &TPPNode::callback_fusion, this);
+    in_topic = "LidarDetection/Ped_Cyc";
+    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::VirtualBBoxAbs)
   {
-    LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
-    fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
+    in_topic = "abs_virBB_array";
+    LOG_INFO << "Input Source: Virtual_abs (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::VirtualBBoxRel)
   {
-    LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
-    fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
+    in_topic = "rel_virBB_array";
+    LOG_INFO << "Input Source: Virtual_rel (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::CameraDetV2)
   {
-    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
+    in_topic = "CameraDetection";
+    LOG_INFO << "Input Source: Camera approach 2 (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::Tracking2D)
   {
     use_tracking2d = true;
-    LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
-    fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
+    in_topic = "Tracking2D/front_bottom_60";
+    LOG_INFO << "Input Source: Tracking 2D (/" << in_topic << ")" << std::endl;
   }
   else
   {
-    LOG_INFO << "Input Source: Fusion (/SensorFusion)" << std::endl;
-    fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
+    in_topic = "SensorFusion";
+    LOG_INFO << "Input Source: Fusion (/" << in_topic << ")" << std::endl;
   }
+  fusion_sub_ = nh_.subscribe(in_topic, 1, &TPPNode::callback_fusion, this);
 
   nh2_.setCallbackQueue(&queue_);
 
