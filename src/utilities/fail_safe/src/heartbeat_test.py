@@ -56,14 +56,14 @@ class HeartbeatTest(unittest.TestCase):
         det_obj_arr = DetectedObjectArray()
         det_obj_arr.objects.append(obj)
 
-        status, status_str = cam_object_detection_func(det_obj_arr)
+        status, status_str = cam_object_detection_func(det_obj_arr, 12.345)
         self.assertEqual(status, OK)
-        self.assertEqual(status_str, "OK")
+        self.assertEqual(status_str, "FPS: 12.35")
 
         obj.camInfo = _gen_cam_info_array(low_prob=True)
-        status, status_str = cam_object_detection_func(det_obj_arr)
+        status, status_str = cam_object_detection_func(det_obj_arr, 12.345)
         self.assertEqual(status, WARN)
-        self.assertTrue("Low confidenc" in status_str)
+        self.assertTrue("Low confidence" in status_str)
 
     def test_disabled(self):
         obj = Heartbeat("foo",  # module_name
