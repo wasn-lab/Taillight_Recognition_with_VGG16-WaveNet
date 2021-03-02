@@ -119,7 +119,6 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::chrono::duration<double, std::milli> fp_ms = check_ms - start;
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr front_top_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_ftop_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_fright_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -130,7 +129,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
   std_msgs::Header in_header = msg->header;
 
-  pcl::fromROSMsg(*msg, *front_top_cloud_ptr);
+  pcl::fromROSMsg(*msg, *filtered_scan_ptr);
 
 #if PRINT_TIME
   check_ms = std::chrono::high_resolution_clock::now();
@@ -139,8 +138,6 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::cout << "[Time] fromROSMsg " << fp_ms.count() << "ms\n";
   std::cout << "-----------------------------------------------------------------" << std::endl;
 #endif
-
-  *filtered_scan_ptr += *front_top_cloud_ptr;
 
 #if PRINT_TIME
   check_ms = std::chrono::high_resolution_clock::now();
@@ -323,7 +320,6 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::chrono::high_resolution_clock::time_point check_ms;
   std::chrono::duration<double, std::milli> fp_ms = check_ms - start;
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr front_right_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -332,9 +328,8 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
   grid_map::GridMap grid_map_data;
   std_msgs::Header in_header = msg->header;
 
-  pcl::fromROSMsg(*msg, *front_right_cloud_ptr);
+  pcl::fromROSMsg(*msg, *filtered_scan_ptr);
 
-  *filtered_scan_ptr += *front_right_cloud_ptr;
   *filtered_cloudPtr = hollow_removal(filtered_scan_ptr, -13, 0.7, -2.0, 2.0, -3, 0.5, -15, 55, -15, 15, -5, -0.8);
 
   FRED.setInputCloud(filtered_cloudPtr);
@@ -374,7 +369,6 @@ void callback_LidarFrontLeft(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 #endif
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr front_left_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -383,9 +377,8 @@ void callback_LidarFrontLeft(const sensor_msgs::PointCloud2::ConstPtr& msg)
   grid_map::GridMap grid_map_data;
   std_msgs::Header in_header = msg->header;
 
-  pcl::fromROSMsg(*msg, *front_left_cloud_ptr);
+  pcl::fromROSMsg(*msg, *filtered_scan_ptr);
 
-  *filtered_scan_ptr += *front_left_cloud_ptr;
   *filtered_cloudPtr = hollow_removal(filtered_scan_ptr, -13, 0.7, -2.0, 2.0, -3, 0.5, -15, 55, -15, 15, -5, -0.8);
 
   FLED.setInputCloud(filtered_cloudPtr);
