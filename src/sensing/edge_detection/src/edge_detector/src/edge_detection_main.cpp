@@ -53,7 +53,7 @@ static double grid_position_y;
 static double grid_min_value;
 static double grid_max_value;
 static double maximum_lidar_height_thres;
-static double minimum_lidar_height_thres;
+// static double minimum_lidar_height_thres;
 
 boost::recursive_mutex mergedMap;
 
@@ -119,7 +119,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::chrono::duration<double, std::milli> fp_ms = check_ms - start;
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr front_top_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_ftop_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_fright_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -130,7 +130,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
 
   std_msgs::Header in_header = msg->header;
 
-  pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
+  pcl::fromROSMsg(*msg, *front_top_cloud_ptr);
 
 #if PRINT_TIME
   check_ms = std::chrono::high_resolution_clock::now();
@@ -140,7 +140,7 @@ void callback_LidarFrontTop(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::cout << "-----------------------------------------------------------------" << std::endl;
 #endif
 
-  *filtered_scan_ptr += *LidAll_cloudPtr;
+  *filtered_scan_ptr += *front_top_cloud_ptr;
 
 #if PRINT_TIME
   check_ms = std::chrono::high_resolution_clock::now();
@@ -323,7 +323,7 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
   std::chrono::high_resolution_clock::time_point check_ms;
   std::chrono::duration<double, std::milli> fp_ms = check_ms - start;
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr front_right_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -332,9 +332,9 @@ void callback_LidarFrontRight(const sensor_msgs::PointCloud2::ConstPtr& msg)
   grid_map::GridMap grid_map_data;
   std_msgs::Header in_header = msg->header;
 
-  pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
+  pcl::fromROSMsg(*msg, *front_right_cloud_ptr);
 
-  *filtered_scan_ptr += *LidAll_cloudPtr;
+  *filtered_scan_ptr += *front_right_cloud_ptr;
   *filtered_cloudPtr = hollow_removal(filtered_scan_ptr, -13, 0.7, -2.0, 2.0, -3, 0.5, -15, 55, -15, 15, -5, -0.8);
 
   FRED.setInputCloud(filtered_cloudPtr);
@@ -370,9 +370,11 @@ void callback_LidarFrontLeft(const sensor_msgs::PointCloud2::ConstPtr& msg)
     // ros_rate.sleep();
     return;
   }
+#if PRINT_TIME
   std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+#endif
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr front_left_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ring_edge_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -381,9 +383,9 @@ void callback_LidarFrontLeft(const sensor_msgs::PointCloud2::ConstPtr& msg)
   grid_map::GridMap grid_map_data;
   std_msgs::Header in_header = msg->header;
 
-  pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
+  pcl::fromROSMsg(*msg, *front_left_cloud_ptr);
 
-  *filtered_scan_ptr += *LidAll_cloudPtr;
+  *filtered_scan_ptr += *front_left_cloud_ptr;
   *filtered_cloudPtr = hollow_removal(filtered_scan_ptr, -13, 0.7, -2.0, 2.0, -3, 0.5, -15, 55, -15, 15, -5, -0.8);
 
   FLED.setInputCloud(filtered_cloudPtr);
