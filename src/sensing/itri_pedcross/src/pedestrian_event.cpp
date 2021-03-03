@@ -2262,14 +2262,14 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic1 << " is ready" << std::endl;
 
     std::string in_topic2 = "Tracking2D/left_back_60";
-    std::cout << "Wait for input topic " << in_topic2 << std::endl;
-    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic2);
-    std::cout << in_topic2 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic2 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic2);
+    // std::cout << in_topic2 << " is ready" << std::endl;
 
     std::string in_topic3 = "Tracking2D/right_back_60";
-    std::cout << "Wait for input topic " << in_topic3 << std::endl;
-    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic3);
-    std::cout << in_topic3 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic3 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic3);
+    // std::cout << in_topic3 << " is ready" << std::endl;
 
     std::string in_topic4 = "Tracking2D/front_top_far_30";
     // std::cout << "Wait for input topic " << in_topic4 << std::endl;
@@ -2283,14 +2283,14 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic5 << " is ready" << std::endl;
 
     std::string in_topic6 = "cam/left_back_60";
-    std::cout << "Wait for input topic " << in_topic6 << std::endl;
-    ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
-    std::cout << in_topic6 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic6 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
+    // std::cout << in_topic6 << " is ready" << std::endl;
 
     std::string in_topic7 = "cam/right_back_60";
-    std::cout << "Wait for input topic " << in_topic7 << std::endl;
-    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
-    std::cout << in_topic7 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic7 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
+    // std::cout << in_topic7 << " is ready" << std::endl;
 
     std::string in_topic8 = "cam/front_top_far_30";
     // std::cout << "Wait for input topic " << in_topic8 << std::endl;
@@ -2304,14 +2304,14 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic9 << " is ready" << std::endl;
 
     std::string in_topic10 = "PedCross/Pedestrians/left_back_60";
-    std::cout << "Wait for input topic " << in_topic10 << std::endl;
-    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic10);
-    std::cout << in_topic10 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic10 << std::endl;
+    // ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic10);
+    // std::cout << in_topic10 << " is ready" << std::endl;
 
     std::string in_topic11 = "PedCross/Pedestrians/right_back_60";
-    std::cout << "Wait for input topic " << in_topic11 << std::endl;
-    ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic11);
-    std::cout << in_topic11 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic11 << std::endl;
+    // ros::topic::waitForMessage<msgs::PedObjectArray>(in_topic11);
+    // std::cout << in_topic11 << " is ready" << std::endl;
 
     std::string in_topic12 = "PedCross/Pedestrians/front_top_far_30";
     // std::cout << "Wait for input topic " << in_topic12 << std::endl;
