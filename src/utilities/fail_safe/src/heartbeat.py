@@ -10,7 +10,7 @@ from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
 
-def localization_state_func(msg):
+def localization_state_func(msg, fps):
     if msg is None:
         return ERROR, "No localizaton state message"
     state = msg.data
@@ -40,10 +40,12 @@ def localization_state_func(msg):
     status_str = " ".join(status_strs)
     if status != OK:
         rospy.logwarn("Localization state: %s", status_str)
+    else:
+        status_str = "FPS: {:.2f}".format(fps)
     return status, status_str
 
 
-def backend_connection_state_func(msg):
+def backend_connection_state_func(msg, fps):
     status = ERROR
     status_str = "No backend connection message"
     if msg is not None:
@@ -58,7 +60,7 @@ def backend_connection_state_func(msg):
     return status, status_str
 
 
-def backend_info_func(msg):
+def backend_info_func(msg, fps):
     status = ERROR
     status_str = "No backend info message"
     if msg is not None:
@@ -91,7 +93,7 @@ def __calc_center_by_3d_bpoint(bpoint):
     return (x / 8.0, y / 8.0)
 
 
-def cam_object_detection_func(msg):
+def cam_object_detection_func(msg, fps):
     status = ERROR
     status_str = "No camera 3d detection result"
     if msg is not None:
@@ -110,10 +112,12 @@ def cam_object_detection_func(msg):
                                   obj.classId, prob, center[0], center[1])
     if status != OK:
         rospy.logwarn("CameraDetection: %s", status_str)
+    else:
+        status_str = "FPS: {:.2f}".format(fps)
     return status, status_str
 
 
-def lidar_detection_func(msg):
+def lidar_detection_func(msg, fps):
     status = ERROR
     status_str = "No lidar detection result"
     if msg is not None:
@@ -139,6 +143,8 @@ def lidar_detection_func(msg):
                                   obj.classId, prob, center[0], center[1])
     if status != OK:
         rospy.logwarn("LidarDetection: %s", status_str)
+    else:
+        status_str = "FPS: {:2.f}".format(fps)
     return status, status_str
 
 
@@ -214,9 +220,10 @@ class Heartbeat(object):
         self._update_heap()  # Clear out-of-date timestamps
         if self.inspect_func is not None:
             if self.enabled:
-                if self.get_fps() == 0:
+                fps = self.get_fps()
+                if fps == 0:
                     self.msg = None
-                self.status, self.status_str = self.inspect_func(self.msg)
+                self.status, self.status_str = self.inspect_func(self.msg, fps)
             else:
                 self.status = OK
                 self.status_str = "Disabled"
