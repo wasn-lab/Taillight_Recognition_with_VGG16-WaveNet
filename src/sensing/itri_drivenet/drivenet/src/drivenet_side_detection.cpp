@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
+    cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
     cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
 
