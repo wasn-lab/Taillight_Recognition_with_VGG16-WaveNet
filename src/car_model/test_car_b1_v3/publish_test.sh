@@ -25,10 +25,11 @@ if [[ ! -f ${bag_dir}/auto_record_2020-03-10-10-48-39_41.bag
   bash src/car_model/test_car_b1_v3/init_test_env.sh
 fi
 
+set +x
 source devel/setup.bash
 set -x
 
-src/car_model/scripts/gen_drivenet_engine.py --package sdb --launch camera_b1_v3.launch
+src/car_model/scripts/gen_drivenet_engine.py --package car_model --launch gen_drivenet_engine.launch
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v3.test
 #rostest car_model publish_test_tpp_b1_v3.test

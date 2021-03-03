@@ -1080,16 +1080,40 @@ int main(int argc, char** argv)
   };
 
   /// set topic name
+  std::string lidar_raw_topic = "/LidarAll";
+  std::string lidar_detection_topic = "/LidarDetection";
+  std::vector<std::string> cam_raw_topic_names(g_cam_ids.size());
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     g_cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
+    cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     g_bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
   }
+
+  /// Wait for all message
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
+    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+
+    std::cout << "Wait for input topic " << g_bbox_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(g_bbox_topic_names[cam_order]);
+    std::cout << g_bbox_topic_names[cam_order] << " is ready" << std::endl;
+
+  }
+  std::cout << "Wait for input topic " << lidar_raw_topic << std::endl;
+  ros::topic::waitForMessage<pcl::PointCloud<pcl::PointXYZI>>(lidar_raw_topic);
+  std::cout << lidar_raw_topic << " is ready" << std::endl;
+
+  std::cout << "Wait for input topic " << lidar_detection_topic << std::endl;
+  ros::topic::waitForMessage<msgs::DetectedObjectArray>(lidar_detection_topic);
+  std::cout << lidar_detection_topic << " is ready" << std::endl;
 
   /// message_filters Subscriber
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
-    cam_filter_subs[cam_order].subscribe(nh, g_cam_topic_names[cam_order] + std::string("/raw"), 1);
+    cam_filter_subs[cam_order].subscribe(nh, cam_raw_topic_names[cam_order], 1);
     g_cache_image[cam_order].connectInput(cam_filter_subs[cam_order]);
     g_cache_image[cam_order].registerCallback(f_callbacks_cam[cam_order]);
     g_cache_image[cam_order].setCacheSize(g_buffer_size);
@@ -1106,12 +1130,12 @@ int main(int argc, char** argv)
     }
   }
 
-  sub_filter_lidarall.subscribe(nh, "/LidarAll", 1);
+  sub_filter_lidarall.subscribe(nh, lidar_raw_topic, 1);
   g_cache_lidarall.setCacheSize(g_buffer_size);
   g_cache_lidarall.connectInput(sub_filter_lidarall);
   g_cache_lidarall.registerCallback(callback_lidarall);
 
-  sub_filter_lidar_detection.subscribe(nh, "/LidarDetection", 1);
+  sub_filter_lidar_detection.subscribe(nh, lidar_detection_topic, 1);
   g_cache_lidar_detection.setCacheSize(g_buffer_size);
   g_cache_lidar_detection.connectInput(sub_filter_lidar_detection);
   g_cache_lidar_detection.registerCallback(callback_lidar_detection);

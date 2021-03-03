@@ -6,7 +6,9 @@ if [[ "${CAR_MODEL}" != "B1_V3" ]]; then
   echo "This script is for B1_V3 only."
   exit 0
 fi
+set +x
 source devel/setup.bash
+set -x
 
 # build necessary programs and download files
 pushd build
@@ -30,6 +32,6 @@ popd
 
 # Generatie drivenet tensorRT engine files.
 find src/sensing/itri_drivenet -name "*.engine" -exec rm {} \;
-src/car_model/scripts/gen_drivenet_engine.py --package sdb --launch camera_b1_v3.launch
+src/car_model/scripts/gen_drivenet_engine.py --package car_model --launch gen_drivenet_engine.launch
 
 find src/sensing/itri_drivenet -name "*.engine"
