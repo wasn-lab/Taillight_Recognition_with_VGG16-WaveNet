@@ -53,11 +53,13 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<MinMax2D>& 
   std::vector<cv::Point> cv_points(2);
   bool random_color = false;
   int obj_count = 0;
+  int thinkness = 1;
 
   cv::Scalar color;
   if (source_id == static_cast<int>(sensor_msgs_itri::FusionSourceId::Camera))
   {
     color = CvColor::blue_;
+    thinkness = 2;
   }
   else if (source_id == static_cast<int>(sensor_msgs_itri::FusionSourceId::Lidar))
   {
@@ -80,7 +82,7 @@ void Visualization::drawBoxOnImage(cv::Mat& m_src, const std::vector<MinMax2D>& 
       color = intToColor(int(obj_count % 10));
       obj_count++;
     }
-    cv::rectangle(m_src, cv_points[0], cv_points[1], color, 1, cv::LINE_8);
+    cv::rectangle(m_src, cv_points[0], cv_points[1], color, thinkness, cv::LINE_8);
   }
 }
 void Visualization::drawCubeOnImage(cv::Mat& m_src, std::vector<std::vector<PixelPosition>>& cube_2d_bbox)

@@ -20,8 +20,6 @@ gnome-terminal  -e 'bash -c "~/run_sys_check_gateway.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "./init_fusion.sh;exec bash"'
 sleep 3
-gnome-terminal  -e 'bash -c "./init_tracking_pp.sh;exec bash"'
-sleep 3
 gnome-terminal  -e 'bash -c "./init_edge_detection.sh;exec bash"'
 sleep 3
 

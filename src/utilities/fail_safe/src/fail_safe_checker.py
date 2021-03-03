@@ -6,7 +6,7 @@ import json
 import pprint
 import time
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from heartbeat import Heartbeat
 from itri_mqtt_client import ItriMqttClient
 from ctrl_info02 import CtrlInfo02
@@ -14,9 +14,12 @@ from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
 from action_emitter import ActionEmitter
-from status_level import OK, WARN, ERROR, FATAL
+from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
+
+
+_MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
 
 def _overall_status(module_states):
@@ -26,6 +29,25 @@ def _overall_status(module_states):
 def _overall_status_str(module_states):
     mnames = [_["module"] for _ in module_states if _["status"] != OK]
     return "Misbehaving modules: {}".format(" ".join(mnames))
+
+def aggregate_event_status(status, status_str, events):
+    """
+    Args:
+    status(int) -- overall status of states
+    status_str(str) -- aggregated strs of states
+
+    Return:
+    status(int) -- Highest level between |status| and |events|
+    status_str(str) -- Aggregated status_str with |events|
+    """
+    for event in events:
+        status = max(status, event["status"])
+        if event["status"] != OK:
+            if status_str:
+                status_str += "; " + event["status_str"]
+            else:
+                status_str = event["status_str"]
+    return status, status_str
 
 
 class FailSafeChecker(object):
@@ -70,6 +92,8 @@ class FailSafeChecker(object):
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
         self.fail_safe_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
+        self.sys_ready_publisher = rospy.Publisher(
+            "/ADV_op/sys_ready", Bool, queue_size=1000)
 
         # counters for warn, error states. When the counter reaches 10,
         # change the state into next level (warn->error, error->fatal)
@@ -117,7 +141,7 @@ class FailSafeChecker(object):
             self.warn_count = 0
         if self.warn_count > 10 and ego_speed > 0:
             status = ERROR
-            status_str = "WARN states more than 10 seconds"
+            status_str += "; WARN states more than 10 seconds"
 
         if status == ERROR:
             self.error_count += 1
@@ -125,12 +149,23 @@ class FailSafeChecker(object):
             self.error_count = 0
         if self.error_count > 10:
             status = FATAL
-            status_str = "ERROR states more than 10 seconds"
+            status_str += "; ERROR states more than 10 seconds"
 
+        status, status_str = aggregate_event_status(status, status_str, ret["events"])
         ret["status"] = status
         ret["status_str"] = status_str
+        self._publish_sys_ready(status, status_str)
 
         return ret
+
+    def _publish_sys_ready(self, status, status_str):
+        if status == FATAL:
+            # force stop self-driving mode
+            self.sys_ready_publisher.publish(False)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "0")
+        else:
+            self.sys_ready_publisher.publish(True)
+            self.mqtt_client.publish(_MQTT_SYS_READY_TOPIC, "1")
 
     def _get_all_sensor_status(self):
         docs = {"vid": self.vid,
@@ -151,11 +186,13 @@ class FailSafeChecker(object):
 
     def post_issue_if_necessary(self, current_status):
         if not self.is_self_driving():
-            rospy.logwarn("Do not post issue in non-self-driving mode")
+            if current_status["status"] != OK:
+                rospy.logwarn("Do not post issue in non-self-driving mode")
             return
 
         if not rospy.get_param("/fail_safe/should_post_issue", True):
-            rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
+            if current_status["status"] != OK:
+                rospy.logwarn("Do not post issue due to /fail_safe/should_post_issue is False")
             return
 
         for doc in current_status["events"]:
@@ -181,6 +218,10 @@ class FailSafeChecker(object):
                 self.modules[module].update_latched_message()
             current_status = self.get_current_status()
             sensor_status = self._get_all_sensor_status()
+
+            rospy.logwarn("status: %s -- %s",
+                          STATUS_CODE_TO_STR[current_status["status"]],
+                          current_status["status_str"])
             if self.debug_mode:
                 # pprint.pprint(sensor_status)
                 pprint.pprint(current_status)

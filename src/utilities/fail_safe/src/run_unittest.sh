@@ -1,8 +1,8 @@
 #!/bin/bash
-readonly repo_dir=$(git rev-parse --show-toplevel)
-set -e
 set -x
-cd ${repo_dir}/src/utilities/fail_safe/src
+set -e
+readonly repo_dir=$(git rev-parse --show-toplevel)
+pushd ${repo_dir}/src/utilities/fail_safe/src
 python heartbeat_test.py
 python rosbag_utils_test.py
 python sb_param_utils_test.py
@@ -16,3 +16,5 @@ python rosbag_compressor_test.py
 python load_monitor_test.py
 python car_model_helper_test.py
 python load_collector_test.py
+python fail_safe_checker_test.py
+popd

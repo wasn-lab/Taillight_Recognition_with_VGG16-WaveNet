@@ -4,6 +4,7 @@
  */
 #include <unistd.h>
 #include <cstdio>
+#include <cstring>
 #include <pcl/io/pcd_io.h>
 #include <pcl_ros/transforms.h>
 #include <pcl_ros/point_cloud.h>
@@ -114,9 +115,11 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
     return false;
   }
 
+  // pc_a.points is of type geometry_msgs/Point32[], each of which is 3d points
   for (int i = 0, np = pc_a.points.size(); i < np; i++)
   {
-    if (pc_a.points[i] != pc_b.points[i])
+    if (pc_a.points[i].x != pc_b.points[i].x || pc_a.points[i].y != pc_b.points[i].y ||
+        pc_a.points[i].z != pc_b.points[i].z)
     {
       LOG(INFO) << "inconsitent point[ " << i << "]: " << pc_a.points[i] << " v.s. " << pc_b.points[i];
       return false;

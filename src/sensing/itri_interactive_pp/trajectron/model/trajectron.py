@@ -192,13 +192,6 @@ class Trajectron(object):
             robot_traj_st_t = robot_traj_st_t.to(self.device)
         if type(map) == torch.Tensor:
             map = map.to(self.device)
-        # print('current_time_stamp : ', timesteps_o[-1])
-        # print()
-        # print('Shape of Tensor x : ',np.shape(x))
-        # print('Tensor x : ',x)
-        # print('Shape of state : ',np.shape(x_st_t))
-        # print('Shape of neighbors_data : ',np.shape(neighbors_data_st))
-        # print('Shape of neighbors_edge : ',np.shape(neighbors_edge_value))
 
         # Run forward pass
         predictions = model.predict(inputs=x,
@@ -222,75 +215,7 @@ class Trajectron(object):
             if ts not in predictions_dict.keys():
                 predictions_dict[ts] = dict()
             predictions_dict[ts][nodes[i]] = np.transpose(predictions_np[:, [i]], (1, 0, 2, 3))
-            # print('predictions_dict[ts][nodes[i]]: ',predictions_dict[ts][nodes[i]])
-            # print("ts: ", ts)
-        # del x
-        # del x_st_t
+           
         
         return predictions_dict
         
-    # def train_loss(self, batch, node_type):
-    #     (first_history_index,
-    #      x_t, y_t, x_st_t, y_st_t,
-    #      neighbors_data_st,
-    #      neighbors_edge_value,
-    #      robot_traj_st_t,
-    #      map) = batch
-
-    #     x = x_t.to(self.device)
-    #     y = y_t.to(self.device)
-    #     x_st_t = x_st_t.to(self.device)
-    #     y_st_t = y_st_t.to(self.device)
-    #     if robot_traj_st_t is not None:
-    #         robot_traj_st_t = robot_traj_st_t.to(self.device)
-    #     if type(map) == torch.Tensor:
-    #         map = map.to(self.device)
-
-    #     # Run forward pass
-    #     model = self.node_models_dict[node_type]
-    #     loss = model.train_loss(inputs=x,
-    #                             inputs_st=x_st_t,
-    #                             first_history_indices=first_history_index,
-    #                             labels=y,
-    #                             labels_st=y_st_t,
-    #                             neighbors=restore(neighbors_data_st),
-    #                             neighbors_edge_value=restore(neighbors_edge_value),
-    #                             robot=robot_traj_st_t,
-    #                             map=map,
-    #                             prediction_horizon=self.ph)
-
-    #     return loss
-
-    # def eval_loss(self, batch, node_type):
-    #     (first_history_index,
-    #      x_t, y_t, x_st_t, y_st_t,
-    #      neighbors_data_st,
-    #      neighbors_edge_value,
-    #      robot_traj_st_t,
-    #      map) = batch
-
-    #     x = x_t.to(self.device)
-    #     y = y_t.to(self.device)
-    #     x_st_t = x_st_t.to(self.device)
-    #     y_st_t = y_st_t.to(self.device)
-    #     if robot_traj_st_t is not None:
-    #         robot_traj_st_t = robot_traj_st_t.to(self.device)
-    #     if type(map) == torch.Tensor:
-    #         map = map.to(self.device)
-
-    #     # Run forward pass
-    #     model = self.node_models_dict[node_type]
-    #     nll = model.eval_loss(inputs=x,
-    #                           inputs_st=x_st_t,
-    #                           first_history_indices=first_history_index,
-    #                           labels=y,
-    #                           labels_st=y_st_t,
-    #                           neighbors=restore(neighbors_data_st),
-    #                           neighbors_edge_value=restore(neighbors_edge_value),
-    #                           robot=robot_traj_st_t,
-    #                           map=map,
-    #                           prediction_horizon=self.ph)
-
-    #     return nll.cpu().detach().numpy()
-
-    

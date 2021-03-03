@@ -20,7 +20,7 @@
   <arg name="delay_response_time" default="1.3" />
 
 
-  <node pkg="behavior_velocity_planner" type="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen">
+  <node pkg="behavior_velocity_planner" type="behavior_velocity_planner_node" name="behavior_velocity_planner" output="screen" respawn="true">
     <rosparam command="load" file="$(find behavior_velocity_planner)/config/blind_spot_param.yaml" />
     <rosparam command="load" file="$(find behavior_velocity_planner)/config/crosswalk_param.yaml" />
     <rosparam command="load" file="$(find behavior_velocity_planner)/config/detection_area_param.yaml" />

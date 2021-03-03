@@ -98,6 +98,14 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
 
   // subscriber
+  ROS_INFO("Wait for /LidarDetection/Car");
+  ros::topic::waitForMessage<msgs::DetectedObjectArray>("/LidarDetection/Car");
+
+  ROS_INFO("Wait for /LidarDetection/Ped_Cyc");
+  ros::topic::waitForMessage<msgs::DetectedObjectArray>("/LidarDetection/Ped_Cyc");
+
+  ROS_INFO("/LidarDetection/Car and /LidarDetection/Ped_Cyc are ready");
+
   ros::Subscriber sub_LidarDetection_Car =
       n.subscribe<msgs::DetectedObjectArray>("/LidarDetection/Car", 1, cb_LidarDetection_Car);
   ros::Subscriber sub_LidarDetection_Ped_Cyc =
