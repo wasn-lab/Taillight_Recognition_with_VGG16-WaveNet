@@ -48,7 +48,7 @@
 //#include <tf_utils.hpp>
 
 #define USE_2D_FOR_ALARM 0
-#define DUMP_LOG 1
+#define DUMP_LOG 0
 #define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
@@ -194,8 +194,9 @@ public:
   bool tf_error_ = false;
 
   // Setup variables
-  const double scaling_ratio_width_ = 0.3167;
-  const double scaling_ratio_height_ = 0.3179;
+  int car_model = 0;
+  double scaling_ratio_width_ = 0.3167;
+  double scaling_ratio_height_ = 0.3179;
   const unsigned int number_keypoints_ = 25;
   const unsigned int feature_num_ = 1174;
   const unsigned int frame_num_ = 10;

@@ -1,6 +1,13 @@
-
-    
 download_file(
-    URL "http://140.96.172.66:8080/share.cgi?ssid=0HZ9sfG&fid=0HZ9sfG&filename=LightNet.IPC_fp16.engine&openfolder=forcedownload&ep="
-    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/LightNet.IPC_fp16.engine"
-    MD5 b781f8d2e597035469320e419e48fe48)
+    URL "140.96.172.66:8080/share.cgi?ssid=0D8l43O&fid=0D8l43O&filename=yolov3_fp16_201208_30deg.engine&openfolder=forcedownload&ep="
+    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/yolov3_fp16_201208_30deg.engine"
+    MD5 0616a2db6b68ad130c2885eb6ef66645
+)
+
+download_file(
+   URL "140.96.172.66:8080/share.cgi?ssid=0wabvTu&fid=0wabvTu&filename=yolov3_fp16_201208_60deg.engine&openfolder=forcedownload&ep="
+    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/yolov3_fp16_201208_60deg.engine"
+    MD5 0420f66cfae366bc3588229cb6abfc71
+)
+
+

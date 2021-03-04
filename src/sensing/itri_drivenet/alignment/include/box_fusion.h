@@ -41,16 +41,13 @@ public:
   Boxfusion();
   ~Boxfusion();
   std::vector<msgs::DetectedObjectArray> box_fuse(std::vector<msgs::DetectedObjectArray> ori_object_arrs,
-                                                 int camera_id_1, int camera_id_2);
+                                                  int camera_id_1, int camera_id_2);
   msgs::DetectedObjectArray fuse_two_camera(msgs::DetectedObjectArray obj1, msgs::DetectedObjectArray obj2);
   int check_point_in_area(CheckArea area, int object_x1, int object_y2);
   bool point_compare(DriveNet::PixelPosition front_bottom, DriveNet::PixelPosition projected);
   std::vector<msgs::DetectedObject> multi_cambox_fuse(std::vector<msgs::DetectedObject>& input_obj_arrs);
   float iou_compare_with_heading(msgs::DetectedObject& obj1, msgs::DetectedObject& obj2);
   msgs::BoxPoint redefine_bounding_box(msgs::BoxPoint origin_box);
-  
-  
-  
 };
 
 #endif
