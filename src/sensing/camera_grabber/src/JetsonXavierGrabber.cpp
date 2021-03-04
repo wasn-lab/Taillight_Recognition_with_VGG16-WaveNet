@@ -4,9 +4,14 @@
 #include <opencv4/opencv2/videoio.hpp>
 #include <opencv4/opencv2/highgui.hpp>
 
+
 #include "JetsonXavierGrabber.h"
 #include "grabber_args_parser.h"
 #include "camera_params.h"
+
+//if MV_IMAGE_DEBUG defined, the nv_extractor have to true in jetson_xavier_b1.launch
+#define MV_IMAGE_DEBUG 1
+
 
 namespace SensingSubSystem
 {
@@ -15,6 +20,15 @@ namespace SensingSubSystem
 ///
 JetsonXavierGrabber::JetsonXavierGrabber()
   : canvas(cam_ids_.size())
+  , canvas_tmp(cam_ids_.size())
+  , ctx(cam_ids_.size())
+  , cvBGR(cam_ids_.size())
+  , cvYUV(cam_ids_.size())
+  , cvBGR_queue(cam_ids_.size())
+  , fuRes_enc(cam_ids_.size())
+  , debug_counter(cam_ids_.size())
+  , cvMV(cam_ids_.size())
+  , mv_msgs_array(cam_ids_.size())
   , display_(&camera_buffer_)
   , npp8u_ptrs_(cam_ids_.size())
   , resizer_(camera::raw_image_height, camera::raw_image_width, camera::image_height,
@@ -84,7 +98,13 @@ void JetsonXavierGrabber::InitParameters()
 
 JetsonXavierGrabber::~JetsonXavierGrabber()
 {
-  /* do nothing */
+  if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+  {
+    for(unsigned int i=0; i<cam_ids_.size(); i++)
+    {
+      MvExtractor_Deinit(&ctx[i]);
+    }
+  }
 }
 
 //********************
@@ -99,10 +119,10 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
 
   // normal
   sprintf(caps, "v4l2src device=/dev/video%d ! "
-                  "video/x-raw, width=%d, height=%d, format=UYVY ! "
-                  "videoconvert ! "
-                  "video/x-raw, width=%d, height=%d, format=BGR ! "
-                  "appsink",
+                "video/x-raw, width=%d, height=%d, format=UYVY ! "
+                "videoconvert ! "
+                "video/x-raw, width=%d, height=%d, format=BGR ! "
+                "appsink",
             video_index, camera::raw_image_width, camera::raw_image_height, camera::raw_image_width,
             camera::raw_image_height);
   
@@ -159,13 +179,26 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
 
 bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
 {
+  // get nv_extractor variable from roslaunch file
+  nv_extractor_ = SensingSubSystem::nv_extractor();
+
+  resize_ = do_resize;
+
   for (const auto cam_id : cam_ids_)
   {
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
+    
+    if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+    { 
+#ifdef MV_IMAGE_DEBUG     
+      ros_image.add_a_pub_mv(cam_id , camera::topics[cam_id]); 
+#endif
+      ros_image.add_a_pub_mv_msgs(cam_id , camera::topics[cam_id]);     
+    }
   }
 
   camera_buffer_.initBuffer();
-  resize_ = do_resize;
+  
 
   sleep(1);
   // Gstreamer
@@ -178,6 +211,43 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
       return false;
     }
   }
+
+  
+
+  //MvExtractor init  
+  if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+  {
+
+    auto fps = SensingSubSystem::get_expected_fps();
+    int ret = 0;
+    for (unsigned int i = 0; i < cam_ids_.size(); i++)
+    {      
+      MvExtractor_Settings(&ctx[i]);
+      
+      ctx[i].width = camera::raw_image_width;
+      ctx[i].height = camera::raw_image_height;
+      ctx[i].fps_n = (int)fps;
+      ctx[i].iframe_interval = 120;
+      ctx[i].idr_interval = 120;
+      ctx[i].stats = true;
+      
+      ret = MvExtractor_Init(&ctx[i], i);
+      
+
+      if (ret)
+      {
+        std::cout << "MvExtractor_Init failed for camera " << i << std::endl;
+      }
+      else
+      {
+        std::cout << "MvExtractor_Init success for camera " << i << std::endl;
+      }
+
+      debug_counter[i] = 0;
+
+    }
+  }
+
 
   std::cout << "initializeModulesGst init done!\n" << std::endl;
   return true;
@@ -194,6 +264,8 @@ bool JetsonXavierGrabber::runPerceptionGst()
   cv::Mat canvas_resize;
   cv::Mat canvas_undestortion;
   bool check_green_screen = true;
+  msgs::MotionVectorArray mv_msgs_arry;
+  
   
   // normal
   height = camera::raw_image_height;
@@ -219,13 +291,28 @@ bool JetsonXavierGrabber::runPerceptionGst()
       if (for_running == false)
         break;
 
+      if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+      {
+
+        /* Check MvExtractor error flag */
+        for(int i=0; i<cam_count; i++)
+        {
+            if(ctx[i].got_error || ctx[i].enc->isInError())
+            {
+                std::cerr << "ctx[i].got_error || ctx[i].enc->isInError()" << std::endl;
+                break;
+            }
+        }
+      }
+
+
       // grab frame from camera
-      ret[i] = video_capture_list[i].read(canvas[i]);      
+      ret[i] = video_capture_list[i].read(canvas[i]); 
     }
 
     ros_time_ = ros::Time::now();
 
-    for (i = 0; i < cam_count; ++i)
+    for (i = 0; i < cam_count; i++)
     {
       if (for_running == false)
         break;
@@ -265,7 +352,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
           }
           else
           {
-            canvas[i] = canvas_undestortion;            
+            canvas[i] = canvas_undestortion;                        
           }
         }
         else
@@ -274,18 +361,110 @@ bool JetsonXavierGrabber::runPerceptionGst()
           {
             resizer_.resize(canvas[i], canvas_resize); //608x342
             canvas[i] = canvas_resize;            
-          }          
-        }       
-      }                   
-    }
+          }
+        }
+
+        canvas_tmp[i] = canvas[i].clone();
+
+        if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+        {
+          //cvBGR[i] = canvas[i];
+          cvBGR[i] = canvas[i].clone();
+          if(cvBGR[i].empty())
+          {
+            std::cout << "cvBGR.empty ..." << std::endl;
+            for(int i=0; i < cam_count; i++)
+            {
+              ctx[i].enc->setEncoderCommand(V4L2_ENC_CMD_STOP, 1);
+            }
+            break;
+          }
+
+          cvBGR_queue[i].push(cvBGR[i]);
+          /* Color transform from BGR to YUV_I420 */
+          cv::cvtColor(cvBGR[i], cvYUV[i], cv::COLOR_BGR2YUV_I420);
+        }        
+      } //for_running                   
+    }//for loop
+
+    if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+    {      
+      /* Using C++11 future async function to get multi-channel MVs */
+      for(int i=0; i<cam_count; i++)
+      {
+        fuRes_enc[i] = std::async(std::launch::async, MvExtractor_Process, &ctx[i], &cvYUV[i]);
+      }      
+      
+      int mv_ret = 0;
+      for(int i=0; i<cam_count; i++)
+      {     
+        mv_ret += fuRes_enc[i].get();
+      }
+      
+      if(mv_ret == 0)
+      {
+        for(int selected_channel=0; selected_channel<cam_count; selected_channel++)
+        {
+          SafeQueue<MotionVectors> *mv_queue = &(ctx[selected_channel].mvs_queue);
+
+          if(mv_queue->size() > 1)
+          {
+            MotionVectors mv_struct;
+            cv::Mat cvTemp;
+            ctx[selected_channel].mvs_queue.pop(mv_struct);
+            cvBGR_queue[selected_channel].pop(cvTemp);
+
+            //std::cout << "get [" << mv_struct.frame_number << "] from queue, queue size = " << mv_queue->size() << ", elapsed = " << ctx[selected_channel].timestampincr/1000 << " ms" << std::endl;
+
+            if(mv_struct.frame_number != debug_counter[selected_channel]++)
+                    std::cerr << "MV not sync ... @" << mv_struct.frame_number << ", " << debug_counter[selected_channel] << std::endl;
+
+            MVInfo *pInfo = (MVInfo *)mv_struct.mvs.data();
+            msgs::MotionVector mv_msg;
+            
+            mv_msgs_array[selected_channel].mvs.clear(); //clear old elements
+
+            for (uint32_t i = 0; i < mv_struct.total_numbers; i++, pInfo++)
+            {
+              int32_t dst_x = 16 * (i%(ctx[selected_channel].width/16)) + 8;
+              int32_t dst_y = 16 * (i/(ctx[selected_channel].width/16)) + 8;
+              int32_t src_x = dst_x + pInfo->mv_x/16;
+              int32_t src_y = dst_y + pInfo->mv_y/16;
+#ifdef MV_IMAGE_DEBUG
+              cv::arrowedLine(cvTemp, cv::Point(src_x, src_y), cv::Point(dst_x, dst_y), cv::Scalar(0, 255, 0), 2, 8, 0, 0.5);
+#endif              
+              mv_msg.mv_x = dst_x;
+              mv_msg.mv_y = dst_y;
+              mv_msg.src_x = src_x;
+              mv_msg.src_y = src_y;
+              mv_msgs_array[selected_channel].mvs.emplace_back(mv_msg);
+            }
+#ifdef MV_IMAGE_DEBUG
+              cvMV[selected_channel] = cvTemp;
+#endif
+          }
+        }//end for selected_channel
+      }//end (mv_ret == 0)
+     
+
+    }//end nv_extractor_
     
     check_green_screen = false; //only check green screen for first time
 
-    for (i = 0; i < cam_count; ++i)
+    for (i = 0; i < cam_count; i++)
     {
       if (for_running == false)
         break;
-      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas[i], ros_time_);
+
+      ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_tmp[i], ros_time_);
+      
+      if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+      {
+#ifdef MV_IMAGE_DEBUG
+        ros_image.send_image_rgb_gstreamer_mv(cam_ids_[i], cvMV[i], ros_time_);
+#endif 
+        ros_image.send_image_rgb_gstreamer_mv_msgs(cam_ids_[i], mv_msgs_array[i], ros_time_);
+      }
     }
 
     loop_rate.sleep();

@@ -1,6 +1,9 @@
 #ifndef __TEGRA_C_GRABBER__
 #define __TEGRA_C_GRABBER__
 
+#include <msgs/MotionVector.h>
+#include <msgs/MotionVectorArray.h>
+#include "mvextractor_standalone.h"
 #include "CameraGrabber.h"
 #include "camera_params.h"
 
@@ -30,6 +33,15 @@ protected:
 #error "car model is not well defined"
 #endif
   std::vector<cv::Mat> canvas;
+  std::vector<cv::Mat> canvas_tmp;
+  std::vector<context_t> ctx;
+  std::vector<cv::Mat> cvBGR;
+  std::vector<cv::Mat> cvYUV;
+  std::vector<SafeQueue<cv::Mat>> cvBGR_queue;
+  std::vector<std::future<int>> fuRes_enc;
+  std::vector<uint32_t> debug_counter;
+  std::vector<cv::Mat> cvMV;
+  std::vector<msgs::MotionVectorArray> mv_msgs_array;
 
   BufferConfig camera_buffer_;
   DisplayConfig display_;
@@ -40,6 +52,7 @@ private:
   NPPResizer resizer_;
   NPPRemapper remapper_;    
   bool resize_;
+  bool nv_extractor_;
 
   // ROS publisher
   ros::NodeHandle n;
