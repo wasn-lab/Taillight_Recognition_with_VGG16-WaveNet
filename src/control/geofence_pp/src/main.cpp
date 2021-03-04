@@ -9,7 +9,6 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
@@ -37,7 +36,7 @@
 #include <linux/can/raw.h>
 #include <typeinfo>
 #define CAN_DLC 8
-#define CAN_INTERFACE_NAME "can1"
+// #define CAN_INTERFACE_NAME "can1"
 
 // Specify running mode
 //#define VIRTUAL
@@ -217,24 +216,24 @@ void chatterCallbackPP(const msgs::DetectedObjectArray::ConstPtr& msg)
         // cout << "x:" << Point_temp.X << endl;
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
         // cout << "y:" <<Point_temp.Y << endl;
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         /*
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p0.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p0.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p3.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p3.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p4.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p4.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         Point_temp.X = msg->objects[i].track.forecasts[j].position.x - (Center_X - msg->objects[i].bPoint.p7.x);
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y - (Center_Y - msg->objects[i].bPoint.p7.y);
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         */
         // cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y
@@ -289,7 +288,7 @@ void chatterCallbackPP_PedCross(const msgs::DetectedObjectArray::ConstPtr& msg)
         // cout << "x:" << Point_temp.X << endl;
         Point_temp.Y = msg->objects[i].track.forecasts[j].position.y;
         // cout << "y:" <<Point_temp.Y << endl;
-        Point_temp.Speed = msg->objects[i].relSpeed;
+        Point_temp.Speed = msg->objects[i].speed_rel;
         PointCloud_temp.push_back(Point_temp);
         // cout << msg->objects[i].track.forecasts[j].position.x << "," << msg->objects[i].track.forecasts[j].position.y
         // << endl;
@@ -327,6 +326,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Geofence_PP");
   ros::NodeHandle n;
+
+  std::string can_name_ = "can1";
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
   ros::Subscriber PCloudGeofenceSub = n.subscribe("dynamic_path_para", 1, chatterCallbackPoly);
   ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
   ros::Subscriber VI_sub = n.subscribe("veh_info", 1, VehinfoCallback);
@@ -357,7 +360,7 @@ int main(int argc, char** argv)
   struct sockaddr_can addr;
   struct can_frame frame;
   struct ifreq ifr;
-  const char* ifname = CAN_INTERFACE_NAME;
+  const char* ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");

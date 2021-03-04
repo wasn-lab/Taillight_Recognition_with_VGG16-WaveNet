@@ -287,7 +287,6 @@ void set_ColorRGBA(std_msgs::ColorRGBA& c, const float r, const float g, const f
 
 void set_config(const MarkerConfig& in, MarkerConfig& out)
 {
-  out.pub_bbox = in.pub_bbox;
   out.pub_vel = in.pub_vel;
   out.pub_id = in.pub_id;
   out.pub_speed = in.pub_speed;
@@ -302,14 +301,5 @@ void set_config(const MarkerConfig& in, MarkerConfig& out)
   out.show_absspeed = in.show_absspeed;
 
   set_ColorRGBA(out.color, in.color);
-}
-
-void quaternion_to_rpy(double& roll, double& pitch, double& yaw, const double q_x, const double q_y, const double q_z,
-                       const double q_w)
-{
-  tf::Quaternion q(q_x, q_y, q_z, q_w);
-  tf::Matrix3x3 m(q);
-
-  m.getRPY(roll, pitch, yaw);
 }
 }  // namespace tpp

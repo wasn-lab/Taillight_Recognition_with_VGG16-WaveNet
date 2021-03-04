@@ -130,6 +130,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+find_package(Glog)
+
 ## Declare a C++ library
 #add_library(${PROJECT_NAME}
   #src/${PROJECT_NAME}/beginner_tutorials.cpp
@@ -222,7 +224,7 @@ find_package        (VTK REQUIRED)
 ######################
 ##       PCL        ##
 ######################
-find_package            (PCL 1.8 REQUIRED)
+find_package            (PCL 1.9.1 REQUIRED)
 include_directories     (${PCL_INCLUDE_DIRS})
 link_directories        (${PCL_LIBRARY_DIRS})
 add_definitions         (${PCL_DEFINITIONS})
@@ -361,8 +363,10 @@ set(SOURCES_SRCS
   Preprocess/Transform/Transform_CUDA.cu
   Preprocess/VoxelGrid/VoxelGrid_CUDA.cu
   Format/pointcloud_format_conversion.cpp
+  Compression/pc2_compressor.cpp
   )
 
 
 cuda_add_library(${PROJECT_NAME} ${SOURCES_SRCS})
 target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${CUDA_LIBRARIES} ${TENSORFLOW_LIBRARIES})
+add_subdirectory(test)

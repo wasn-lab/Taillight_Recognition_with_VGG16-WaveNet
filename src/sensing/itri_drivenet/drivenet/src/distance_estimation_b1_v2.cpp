@@ -36,7 +36,7 @@ void DistanceEstimation::init(const std::string& pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string fc60_json = pkgPath;
-    fc60_json.append("/data/alignment/fm60_0528.json");
+    fc60_json.append("/data/alignment/fm60_0224.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
@@ -911,11 +911,25 @@ std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* bo
 
       if(status == 2)
       {
-        box2[i].x1 = box1.x2;
+        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box2[i].x2 - box1.x2) * (box2[i].y2 - box2[i].y1))
+        {
+          box2[i].y2 = box1.y1;
+        }
+        else
+        {
+          box2[i].x1 = box1.x2;
+        }
       }
       else if(status == 3)
       {
-        box2[i].x2 = box1.x1;        
+        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box1.x1 - box2[i].x1) * (box2[i].y2 - box2[i].y1))
+        {
+          box2[i].y2 = box1.y1;
+        }
+        else
+        {
+          box2[i].x2 = box1.x1;
+        }
       }    
     }
   }  

@@ -9,7 +9,6 @@
 #include "std_msgs/Header.h"
 #include "msgs/BoxPoint.h"
 #include "msgs/DynamicPath.h"
-#include "msgs/DetectedObject.h"
 #include "msgs/DetectedObjectArray.h"
 #include "msgs/PathPrediction.h"
 #include "msgs/PointXY.h"
@@ -39,7 +38,7 @@
 #include <linux/can/raw.h>
 #include <typeinfo>
 #define CAN_DLC 8
-#define CAN_INTERFACE_NAME "can1"
+// #define CAN_INTERFACE_NAME "can1"
 
 // Specify running mode
 //#define VIRTUAL
@@ -93,27 +92,23 @@ void chatterCallbackPCloud(const msgs::DetectedObjectArray::ConstPtr& msg)
   {
     Point_temp.X = msg->objects[i].bPoint.p0.x;
     Point_temp.Y = msg->objects[i].bPoint.p0.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p3.x;
     Point_temp.Y = msg->objects[i].bPoint.p3.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p4.x;
     Point_temp.Y = msg->objects[i].bPoint.p4.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p7.x;
     Point_temp.Y = msg->objects[i].bPoint.p7.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
-    Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x +
-                    msg->objects[i].bPoint.p7.x) /
-                   4;
-    Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y +
-                    msg->objects[i].bPoint.p7.y) /
-                   4;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.X = msg->objects[i].center_point.x;  // lidar_TF
+    Point_temp.Y = msg->objects[i].center_point.y;  // lidar_TF
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
   }
 #ifdef VIRTUAL
@@ -133,7 +128,7 @@ void chatterCallbackCPoint(const msgs::DetectedObjectArray::ConstPtr& msg)
     {
       Point_temp.X = msg->objects[i].cPoint.lowerAreaPoints[j].x;
       Point_temp.Y = msg->objects[i].cPoint.lowerAreaPoints[j].y;
-      Point_temp.Speed = msg->objects[i].relSpeed;
+      Point_temp.Speed = msg->objects[i].speed_rel;
       PointCloud_temp.push_back(Point_temp);
     }
   }
@@ -148,27 +143,23 @@ void chatterCallbackPCloud_Radar(const msgs::DetectedObjectArray::ConstPtr& msg)
   {
     Point_temp.X = msg->objects[i].bPoint.p0.x;
     Point_temp.Y = msg->objects[i].bPoint.p0.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p3.x;
     Point_temp.Y = msg->objects[i].bPoint.p3.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p4.x;
     Point_temp.Y = msg->objects[i].bPoint.p4.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
     Point_temp.X = msg->objects[i].bPoint.p7.x;
     Point_temp.Y = msg->objects[i].bPoint.p7.y;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
-    Point_temp.X = (msg->objects[i].bPoint.p0.x + msg->objects[i].bPoint.p3.x + msg->objects[i].bPoint.p4.x +
-                    msg->objects[i].bPoint.p7.x) /
-                   4;
-    Point_temp.Y = (msg->objects[i].bPoint.p0.y + msg->objects[i].bPoint.p3.y + msg->objects[i].bPoint.p4.y +
-                    msg->objects[i].bPoint.p7.y) /
-                   4;
-    Point_temp.Speed = msg->objects[i].relSpeed;
+    Point_temp.X = msg->objects[i].center_point.x;  // lidar_TF
+    Point_temp.Y = msg->objects[i].center_point.y;  // lidar_TF
+    Point_temp.Speed = msg->objects[i].speed_rel;
     PointCloud_temp.push_back(Point_temp);
   }
   Radar_Geofence.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);
@@ -233,7 +224,7 @@ void astar_original_callback(const nav_msgs::Path::ConstPtr& msg)
 {
   vector<Point> Position;
   Point Pos;
-  uint size = 200;
+  uint size = 100;
   if (msg->poses.size() < size)
   {
     size = msg->poses.size();
@@ -392,6 +383,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Geofence");
   ros::NodeHandle n;
+
+  std::string can_name_ = "can1";
+  ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
   ros::Subscriber LidAllSub = n.subscribe("ring_edge_point_cloud", 1, callback_LidarAll);
   ros::Subscriber AstarSub = n.subscribe("nav_path_astar_final", 1, astar_callback);
   ros::Subscriber AstarSub_original =
@@ -402,7 +397,7 @@ int main(int argc, char** argv)
   ros::Subscriber LTVSub = n.subscribe("localization_to_veh", 1, LocalizationToVehCallback);
   // ros::Subscriber MMTPSub = n.subscribe("mm_tp_info", 1, mm_tp_infoCallback);
   // ros::Subscriber avoidpath = n.subscribe("avoiding_path", 1, overtake_over_Callback);
-  ros::Subscriber avoidpath = n.subscribe("astar_reach_goal", 1, overtake_over_Callback);
+  ros::Subscriber avoidpath = n.subscribe("avoidpath_reach_goal", 1, overtake_over_Callback);
   ros::Subscriber RadarGeofenceSub = n.subscribe("PathPredictionOutput/radar", 1, chatterCallbackPCloud_Radar);
 
 #ifdef VIRTUAL
@@ -422,7 +417,8 @@ int main(int argc, char** argv)
   struct sockaddr_can addr;
   struct can_frame frame;
   struct ifreq ifr;
-  const char* ifname = CAN_INTERFACE_NAME;
+  const char* ifname = can_name_.c_str();//CAN_INTERFACE_NAME;
+  // std::cout << "cancancancancangeofence : " << can_name_ << std::endl;
   if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
   {
     perror("Error while opening socket");

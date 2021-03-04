@@ -20,7 +20,7 @@ ClassLiDARPoseCan::~ClassLiDARPoseCan ()
 }
 
 void
-ClassLiDARPoseCan::initial()
+ClassLiDARPoseCan::initial(const char *ifname)
 {
 
     int mtu;
@@ -35,8 +35,8 @@ ClassLiDARPoseCan::initial()
 
     required_mtu = CAN_MTU;
     //required_mtu = CANFD_MTU;
-
-    strncpy (ifr.ifr_name, "can1", IFNAMSIZ - 1);
+    // std::cout << "111111111111111111111111111111 : " << ifname << std::endl;
+    strncpy (ifr.ifr_name, ifname, IFNAMSIZ - 1);
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     ifr.ifr_ifindex = if_nametoindex (ifr.ifr_name);
     if (!ifr.ifr_ifindex)

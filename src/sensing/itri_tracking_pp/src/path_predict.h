@@ -13,6 +13,7 @@
 #include "tpp.h"
 #include "ar1.h"
 #include "utils.h"
+#include <tf2/utils.h>
 
 namespace tpp
 {
@@ -37,7 +38,7 @@ public:
                          const float ego_z_abs, const float ego_heading, const int input_source);
 
   void main(std::vector<msgs::DetectedObject>& pp_objs_, std::vector<std::vector<PPLongDouble> >& ppss,
-            const unsigned int show_pp, const nav_msgs::OccupancyGrid& wayarea);
+            const nav_msgs::OccupancyGrid& wayarea);
 
   void set_input_shift_m(const long double shift_m)
   {
@@ -56,18 +57,16 @@ public:
 
   void set_num_pp_input_min(const std::size_t num_pp_input_min)
   {
-    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), num_pp_input_max_ - (std::size_t)2);
+    num_pp_input_min_ = std::min(std::max(num_pp_input_min, (std::size_t)3), NUM_FORECASTS - (std::size_t)2);
   }
 
 private:
   DISALLOW_COPY_AND_ASSIGN(PathPredict);
 
   int input_source_ = InputSource::CameraDetV2;
-  unsigned int show_pp_ = 0;
 
   static constexpr std::size_t max_order_ = 1;
   std::size_t num_pp_input_min_ = 4;
-  const std::size_t num_pp_input_max_ = 20;
 
   static constexpr float pp_allow_x_min_m = -10.f;
   static constexpr float pp_allow_x_max_m = 100.f;
@@ -103,7 +102,7 @@ private:
   void create_pp_input_main(const msgs::TrackInfo& track, std::vector<long double>& data_x,
                             std::vector<long double>& data_y);
 
-  long double variance(const std::vector<long double>& samples, const long double sum_samples);
+  long double variance(const std::vector<long double>& samples, const long double mean);
 
   long double standard_deviation(const long double covariance);
 
@@ -122,15 +121,18 @@ private:
 
   void covariance_matrix(PPLongDouble& pp, std::vector<long double>& data_x, std::vector<long double>& data_y);
 
-  int predict(std::size_t max_order_, const std::size_t num_forecasts_, std::vector<long double>& data_x,
+  int predict(std::size_t max_order_, const std::size_t NUM_FORECASTS, std::vector<long double>& data_x,
               std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
 
   void confidence_threshold(const unsigned int confidence_lv);
 
-  void confidence_ellipse_main(const std::size_t num_forecasts_, std::vector<long double>& data_x,
-                               std::vector<long double>& data_y, std::vector<PPLongDouble>& pps);
+  void confidence_ellipse_main(const std::size_t NUM_FORECASTS, std::vector<PPLongDouble>& pps);
 
+#if PP_VERTICES_VIA_SPEED == 1
   void pp_vertices(PPLongDouble& pps, const msgs::PathPrediction forecast, const int pp_idx, const float abs_speed);
+#else
+  void pp_vertices(PPLongDouble& pps, const int pp_idx, const float abs_speed);
+#endif
 };
 }  // namespace tpp
 

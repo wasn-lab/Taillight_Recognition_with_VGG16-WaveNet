@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 """
 Definition for Fail-Safe levels:
 - OK: Everything works fine.
@@ -16,6 +18,13 @@ WARN = 10
 ERROR = 20
 FATAL = 30
 UNKNOWN = -1
+
+STATUS_CODE_TO_STR = {
+    OK: "OK",
+    WARN: "WARN",
+    ERROR: "ERROR",
+    FATAL: "FATAL",
+    UNKNOWN: "UNKNOWN"}
 
 # Used by Wistron data exchange protocol, published in /vehicle/report/*
 OFF = 0

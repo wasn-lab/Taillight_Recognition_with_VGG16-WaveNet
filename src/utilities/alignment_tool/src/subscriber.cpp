@@ -107,7 +107,7 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_top_close_120", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/right_front_60/raw", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
@@ -115,16 +115,16 @@ void detection(int argc, char** argv)
   {
     //0:1, 1:0.1, 2:0.1, 3:0.1, 4:1, 5:1
     projector.setcameraMat(0,0,0,0);
-    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1] * 10,GlobalVariable::UI_PARA[2] * 10, GlobalVariable::UI_PARA[3] * 10,GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5]);
+    projector.setprojectionMat(GlobalVariable::UI_PARA[0], GlobalVariable::UI_PARA[1]*10,GlobalVariable::UI_PARA[2]*10, GlobalVariable::UI_PARA[3]*10,GlobalVariable::UI_PARA[4],GlobalVariable::UI_PARA[5]);
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr release_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
     mutex_LidarAll.lock();
     cv::Mat M_MID_temp;
     M_MID.copyTo(M_MID_temp);
-    cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 384), 0, 0, cv::INTER_LINEAR);
+    cv::resize(M_MID_temp, M_MID_temp, cv::Size(608, 342), 0, 0, cv::INTER_LINEAR);
     *release_cloud = *LidarAll_cloudPtr;
-    double scaleFactor = M_MID_temp.rows / 384;
+    double scaleFactor = M_MID_temp.rows / 342;
     for (size_t i = 0; i < release_cloud->size(); i++)
     {
       if (!projector.outOfFov(release_cloud->points[i].x, release_cloud->points[i].y, release_cloud->points[i].z))
@@ -136,9 +136,9 @@ void detection(int argc, char** argv)
         if (result[0] >= 0 && result[1] >= 0 && result[0] < M_MID_temp.cols && result[1] < M_MID_temp.rows)
         {
           double hight = (double)release_cloud->points[i].z;
-          if(hight > -2)
+          if(hight > -2.3 && hight < -0.3)
           {
-            cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 3, CV_RGB(0, 0, 0), -1, 8, 0);
+            cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 2, CV_RGB(0, 0, 0), -1, 8, 0);
           }
           int red_int = 0, gre_int = 0, blu_int = 0;
           double depths_float = (double)release_cloud->points[i].x;
@@ -172,7 +172,7 @@ void detection(int argc, char** argv)
               gre_int = 0;
               blu_int = 255;
             }
-          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 1, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
+          cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 0.75, CV_RGB(red_int, gre_int, blu_int), -1, 8, 0);
         }
       }
     }

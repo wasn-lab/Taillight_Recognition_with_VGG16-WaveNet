@@ -6,7 +6,7 @@ using namespace DriveNet;
 
 void Alignment::projectMatrixInit(camera::id cam_id)
 {
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
   projector3_.init(cam_id);
 #endif
 }
@@ -19,7 +19,7 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
   vector<int> pixel_position_vect;
   PixelPosition pixel_position{ -1, -1 };
 
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
   pixel_position_vect = projector3_.project(x, y, z);
 #endif
   pixel_position.u = pixel_position_vect[0];
@@ -38,7 +38,7 @@ PixelPosition Alignment::projectPointToPixel(PointXYZI point)
 bool Alignment::checkPointInCoverage(PointXYZI point)
 {
   bool is_out_of_coverage = false;
-#if CAR_MODEL_IS_B1_V2
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
   is_out_of_coverage = projector3_.outOfCoverage(point.x, point.y, point.z);
 #endif
   return !is_out_of_coverage;

@@ -13,10 +13,17 @@
 
 namespace DriveNet
 {
+
 struct PixelPosition
 {
   int u;
   int v;
+};
+
+struct MinMax2D
+{
+  PixelPosition p_min;
+  PixelPosition p_max;
 };
 
 class CvColor

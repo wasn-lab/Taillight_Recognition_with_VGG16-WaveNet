@@ -24,6 +24,7 @@
 #include <autoware_perception_msgs/DynamicObjectArray.h>
 #include <autoware_planning_msgs/Path.h>
 #include <autoware_planning_msgs/PathWithLaneId.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <tf2_ros/transform_listener.h>
@@ -44,6 +45,9 @@ public:
     const std::shared_ptr<const PlannerData> & planner_data,
     const autoware_planning_msgs::PathWithLaneId & input_path_msg);
 
+  diagnostic_msgs::DiagnosticStatus getStopReasonDiag();
+
 private:
   std::vector<std::shared_ptr<SceneModuleManagerInterface>> scene_manager_ptrs_;
+  diagnostic_msgs::DiagnosticStatus stop_reason_diag_;
 };

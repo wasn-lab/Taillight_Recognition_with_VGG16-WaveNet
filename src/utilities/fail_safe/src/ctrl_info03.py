@@ -1,3 +1,5 @@
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 import time
 import heapq
 import rospy
@@ -37,6 +39,11 @@ class CtrlInfo03(object):
         rospy.Subscriber(CtrlInfo03.TOPIC, Flag_Info, self._cb)
 
     def _get_aeb_status(self):
+        # AEB is disabled temporarily in the control team because it is reported
+        # many noisy points.
+        return {"module": "AEB",
+                "status": OK,
+                "status_str": "Disabled for many noisy points"}
         if self.aeb_enable:
             status = OK
             status_str = ""
@@ -72,15 +79,19 @@ class CtrlInfo03(object):
     def get_events_in_list(self):
         status = ""
         status_str = ""
+        module = ""
+
         if self.brake_status == BrakeStatus.Y_AEB:
             status = FATAL
-            status_str = "AEB event!"
-        elif self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
+            status_str = "AEB: Automatic emergency brake!"
+            module = "aeb_event"
+        if self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
             status = FATAL
             status_str = "Disengage: Driver manually press brake pedals!"
+            module = "disengage_event"
 
         if status:
-            doc = {"module": "AEB",
+            doc = {"module": module,
                    "status": status,
                    "status_str": status_str}
             return [doc]
@@ -101,6 +112,7 @@ class CtrlInfo03(object):
             self.xbywire_enable = False
 
     def _get_fps(self):
+        self._update_heap()
         return len(self.heap) / self.sampling_period_in_seconds
 
     def _update_heap(self):
@@ -108,10 +120,10 @@ class CtrlInfo03(object):
         bound = now - self.sampling_period_in_seconds
         while self.heap and self.heap[0] < bound:
             heapq.heappop(self.heap)
-        heapq.heappush(self.heap, now)
 
     def _cb(self, msg):
         self._update_heap()
+        heapq.heappush(self.heap, time.time())
         self.brake_status = int(msg.Dspace_Flag05)
         self.xbywire_enable = bool(int(msg.Dspace_Flag06))
         self.aeb_enable = bool(int(msg.Dspace_Flag07))

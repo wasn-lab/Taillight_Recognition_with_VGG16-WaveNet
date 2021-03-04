@@ -11,6 +11,7 @@
 
   <depend>geometry_msgs</depend>
   <depend>lanelet2_extension</depend>
+  <depend>libboost-filesystem-dev</depend>
   <depend>libpcl-all-dev</depend>
   <depend>pcl_ros</depend>
   <depend>roscpp</depend>

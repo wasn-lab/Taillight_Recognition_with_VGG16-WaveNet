@@ -113,14 +113,27 @@ std::vector<autoware_planning_msgs::TrajectoryPoint> EBPathOptimizer::generateOp
   const autoware_planning_msgs::Path & path,
   const std::unique_ptr<std::vector<autoware_planning_msgs::TrajectoryPoint>> &
     prev_optimized_points,
-  const std::vector<autoware_perception_msgs::DynamicObject> & objects, DebugData & debug_data)
+  const std::vector<autoware_perception_msgs::DynamicObject> & objects, DebugData & debug_data, const nav_msgs::OccupancyGrid & freespace_grid, const bool use_freespace, const bool freespace_rect_ini)
 {
   // processing drivable area
   auto t_start1 = std::chrono::high_resolution_clock::now();
   cv::Mat drivable_area = process_cv::getDrivableAreaInCV(path.drivable_area);
   cv::Mat clearance_map = process_cv::getClearanceMap(path.drivable_area, drivable_area, objects);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////
+  cv::Mat clearance_map_;
+  if (use_freespace && freespace_rect_ini)
+  {
+    cv::Mat freespace_area = process_cv::getDrivableAreaInCV(freespace_grid);
+    clearance_map_ = freespace_area;
+  }
+  else
+  {
+    clearance_map_ = clearance_map;
+  }
   cv::Mat only_objects_clearance_map = process_cv::getOnlyObjectsClearanceMap(
-    clearance_map, objects, path.drivable_area, constrain_param_.max_avoiding_objects_velocity_ms);
+    clearance_map_, objects, path.drivable_area, constrain_param_.max_avoiding_objects_velocity_ms, use_freespace);
+  ////////////////////////////////////////////////////////////////////////////////////////////////////
   debug_data.clearance_map = clearance_map;
   debug_data.only_object_clearance_map = only_objects_clearance_map;
   auto t_end1 = std::chrono::high_resolution_clock::now();

@@ -64,14 +64,130 @@ void Projector3::init(int camera_id)
       std::cerr << " No match camera id, init failed." << std::endl;
       break;
   }
+
+#elif CAR_MODEL_IS_B1_V3
+  camera_id_ = camera_id;
+  switch (camera_id)
+  {
+    case camera::id::front_bottom_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_front_bottom_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::front_top_far_30:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_front_top_far_30.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::front_top_close_120:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_front_top_close_120.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::right_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_right_back_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::left_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_left_back_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::right_front_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_right_front_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::left_front_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/b1_v3_left_front_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    default:
+      std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+  }
+
+#elif CAR_MODEL_IS_C1
+  camera_id_ = camera_id;
+  switch (camera_id)
+  {
+    case camera::id::front_bottom_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_front_bottom_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::front_top_far_30:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_front_top_far_30.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::front_top_close_120:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_front_top_close_120.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::right_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_right_back_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::left_back_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_left_back_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::right_front_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_right_front_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    case camera::id::left_front_60:
+    {
+      std::string file_path = std::string(CAMERA_UTILS_DATA_DIR) + std::string("/projection/c1_left_front_60.yml");
+      readCameraParameters(file_path.c_str());
+    }
+    break;
+
+    default:
+      std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+  }
 #endif
 }
 
 std::vector<int> Projector3::project(float x, float y, float z)
 {
   std::vector<int> result(2, -1);
-  // if (!outOfFov(x,y,z))
-  // {
+  if (!outOfFov(x,y,z))
+  {
     if (!projectionMatrix.empty())
     {
       std::vector<cv::Point3d> object_point;
@@ -85,7 +201,7 @@ std::vector<int> Projector3::project(float x, float y, float z)
     {
       std::cerr << " Projection Matrix is empty." << std::endl;
     }
-  // }
+  }
   return result;
 }
 
@@ -111,6 +227,74 @@ bool Projector3::outOfFov(float x, float y, float z)
     double angle = atan(tan) * 180 / M_PI;
 
 #if CAR_MODEL_IS_B1_V2
+    switch (camera_id_)
+    {
+      case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
+      {
+        if (angle > 30 || angle < -30)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_far_30:
+      {
+        if (angle > 15 || angle < -15)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_close_120:
+      {
+        if (angle > 60 || angle < -60)
+        {
+          return true;
+        }
+      }
+      break;
+
+      default:
+        std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+    }
+#elif CAR_MODEL_IS_B1_V3
+    switch (camera_id_)
+    {
+      case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:
+      {
+        if (angle > 30 || angle < -30)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_far_30:
+      {
+        if (angle > 15 || angle < -15)
+        {
+          return true;
+        }
+      }
+      break;
+
+      case camera::id::front_top_close_120:
+      {
+        if (angle > 60 || angle < -60)
+        {
+          return true;
+        }
+      }
+      break;
+
+      default:
+        std::cerr << " No match camera id, init failed." << std::endl;
+      break;
+    }
+#elif CAR_MODEL_IS_C1
     switch (camera_id_)
     {
       case camera::id::front_bottom_60: case camera::id::right_back_60: case camera::id::left_back_60: case camera::id::right_front_60: case camera::id::left_front_60:

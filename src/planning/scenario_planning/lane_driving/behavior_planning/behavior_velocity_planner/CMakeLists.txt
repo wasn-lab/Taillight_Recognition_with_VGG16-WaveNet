@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(behavior_velocity_planner)
 
 # Compile as C++14, supported in ROS Melodic and newer
@@ -13,18 +13,16 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
+  spline_interpolation
   tf2
   tf2_eigen
   tf2_geometry_msgs
   tf2_ros
   visualization_msgs
+  msgs
 )
 
 find_package(Eigen3 REQUIRED)
-
-find_package(PCL REQUIRED)
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
 
 catkin_package(
   INCLUDE_DIRS
@@ -37,17 +35,18 @@ catkin_package(
     lanelet2_extension
     pcl_ros
     sensor_msgs
+    spline_interpolation
     tf2
     tf2_eigen
     tf2_geometry_msgs
     tf2_ros
     visualization_msgs
+    msgs
 )
 
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -55,6 +54,7 @@ include_directories(
 add_library(scene_module_lib STATIC
   src/utilization/path_utilization.cpp
   src/utilization/util.cpp
+  src/utilization/interpolate.cpp
 )
 
 add_dependencies(scene_module_lib
@@ -83,11 +83,30 @@ target_link_libraries(scene_module_stop_line
   ${catkin_LIBRARIES}
 )
 
+# Scene Module: Bus Stop
+add_library(scene_module_bus_stop STATIC
+  src/scene_module/bus_stop/manager.cpp
+  src/scene_module/bus_stop/scene.cpp
+  src/scene_module/bus_stop/debug.cpp
+)
+
+add_dependencies(scene_module_bus_stop
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(scene_module_bus_stop
+  scene_module_lib
+  ${catkin_LIBRARIES}
+)
+
 # Scene Module: Crosswalk
 add_library(scene_module_crosswalk STATIC
   src/scene_module/crosswalk/manager.cpp
-  src/scene_module/crosswalk/scene.cpp
+  src/scene_module/crosswalk/scene_crosswalk.cpp
+  src/scene_module/crosswalk/scene_walkway.cpp
   src/scene_module/crosswalk/debug.cpp
+  src/scene_module/crosswalk/util.cpp
 )
 
 add_dependencies(scene_module_crosswalk
@@ -103,8 +122,10 @@ target_link_libraries(scene_module_crosswalk
 # Scene Module: Intersection
 add_library(scene_module_intersection STATIC
   src/scene_module/intersection/manager.cpp
-  src/scene_module/intersection/scene.cpp
+  src/scene_module/intersection/scene_intersection.cpp
+  src/scene_module/intersection/scene_merge_from_private_road.cpp
   src/scene_module/intersection/debug.cpp
+  src/scene_module/intersection/util.cpp
 )
 
 add_dependencies(scene_module_intersection
@@ -151,6 +172,23 @@ target_link_libraries(scene_module_blind_spot
   ${catkin_LIBRARIES}
 )
 
+# Scene Module: Detection Area
+add_library(scene_module_detection_area STATIC
+  src/scene_module/detection_area/manager.cpp
+  src/scene_module/detection_area/scene.cpp
+  src/scene_module/detection_area/debug.cpp
+)
+
+add_dependencies(scene_module_detection_area
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_link_libraries(scene_module_detection_area
+  scene_module_lib
+  ${catkin_LIBRARIES}
+)
+
 # Scene Module Manager
 add_library(scene_module_manager STATIC
   src/planner_manager.cpp
@@ -167,6 +205,8 @@ target_link_libraries(scene_module_manager
   scene_module_intersection
   scene_module_traffic_light
   scene_module_blind_spot
+  scene_module_bus_stop
+  scene_module_detection_area
 )
 
 # Node
@@ -182,7 +222,6 @@ add_dependencies(behavior_velocity_planner_node
 
 target_link_libraries(behavior_velocity_planner_node
   scene_module_manager
-  ${PCL_LIBRARIES}
   ${catkin_LIBRARIES}
 )
 
@@ -192,4 +231,11 @@ install(
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(
+  DIRECTORY
+    config
+    launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

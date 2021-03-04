@@ -7,7 +7,7 @@
 
 //Can setup
 #define CAN_DLC 8;
-#define CAN_CHNNEL "can1"
+// #define CAN_CHNNEL "can1"
 const int NumOfReceiveID = 15;
 const int NumOfTopic = 8;
 
@@ -19,8 +19,6 @@ const int NumOfTopic = 8;
 #include "std_msgs/Int8MultiArray.h"
 #include "msgs/VehInfo.h"
 #include <ros/ros.h>
-
-
 
 #include <cstdio>
 #include <cstdlib>
@@ -152,10 +150,12 @@ int ProcessFrame(const struct can_frame& frame, ros::Publisher* Publisher) {
         speed_ms.data = speed_kph.data/3.6;
         Publisher[7].publish(speed_ms);
         cout << "speed_ms: " << speed_ms.data << endl;
+        double steer_angle_fb;
 		msg_temp.Dspace_Flag01 = frame.data[0];
-		msg_temp.Dspace_Flag02 = frame.data[1];
-		msg_temp.Dspace_Flag03 = frame.data[2];
-		msg_temp.Dspace_Flag04 = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag02 = frame.data[1] / 10.0;
+		msg_temp.Dspace_Flag03 = frame.data[2] / 10.0;
+        steer_angle_fb = frame.data[3] | frame.data[4] << 8;
+		msg_temp.Dspace_Flag04 = steer_angle_fb / 10.0 - 1000.0;
 		msg_temp.Dspace_Flag05 = frame.data[5];
 		msg_temp.Dspace_Flag06 = frame.data[6];
 		msg_temp.Dspace_Flag07 = frame.data[7];
@@ -370,6 +370,10 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "from_dspace");
     ros::NodeHandle n;
+
+    std::string can_name_ = "can1";
+    ros::param::get(ros::this_node::getName()+"/can_name", can_name_);
+
 	ros::Publisher Publisher[NumOfTopic];
 	Publisher[0] = n.advertise<msgs::Flag_Info>("Flag_Info01", 1);
 	Publisher[1] = n.advertise<msgs::Flag_Info>("Flag_Info02", 1);
@@ -409,7 +413,7 @@ int main(int argc, char **argv)
     
 
     int s;
-    const char *ifname = CAN_CHNNEL;
+    const char *ifname = can_name_.c_str();//CAN_CHNNEL;
     int nbytes;
     struct sockaddr_can addr;
     struct can_frame frame;
@@ -452,7 +456,7 @@ int main(int argc, char **argv)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
             printf("Read %d bytes\n", nbytes);
-            ProcessFrame(frame, Publisher);;
+            ProcessFrame(frame, Publisher);
         }
         Publisher_Backend.publish(msg_Backend);
         //vehinfo_pub.publish(msg_VehInfo);

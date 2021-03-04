@@ -15,11 +15,32 @@ if (CATKIN_ENABLE_TESTING)
     MD5 14e46bab793d858db78b52213b61e5a0
   )
 
+  set(TEST_BAG "geofence_pp_2020-11-16-16-35-39.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 62bf328edc7eb796366161e36c3f66eb
+  )
+
   set(TEST_BAG "lidar_raw_2020-03-10-10-48-39_41.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
     DESTINATION ${Project_SOURCE_DIR}/bags
     MD5 e2ff37c83b2e95aebeff9b192cf88c64
+  )
+
+  set(TEST_BAG "lidar_raw_compressed_2021-01-12-16-01-42.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 24f75b75ebc1c25a35e17f8953fef9c0
+  )
+  
+  set(TEST_BAG "lidar_raw_compressed_2021-02-03.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 fe090879b354151dfa6c4674422d0964
   )
 
   set(TEST_BAG "edge_detection_2020-04-13-17-45-48_0.bag")
@@ -71,11 +92,11 @@ if (CATKIN_ENABLE_TESTING)
     MD5 93e265acc97c7f951930f01d7cb938a5
   )
 
-  set(TEST_BAG "auto_record_2020-08-04-10-15-25_4_filtered.bag")
+  set(TEST_BAG "tracking_2d_2020-11-16-15-02-12.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
     DESTINATION ${Project_SOURCE_DIR}/bags
-    MD5 8c8364b3398751ce2acb0717451029e0
+    MD5 a7a3e9bc06292cccabe478ddb22a60a5
   )
 
 endif()

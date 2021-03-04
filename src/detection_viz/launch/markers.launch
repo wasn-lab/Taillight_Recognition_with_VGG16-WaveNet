@@ -4,7 +4,7 @@
   <node name="bus_footprint" pkg="detection_viz" type="bus_footprint.py" output="screen"/>
 
 
-  <!-- Lidar Polygon **************************************************************************** -->
+  <!-- Lidar Polygon **************************************************************************** 
   <node name="m_LidarDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/LidarDetection"/>
       <param name="red"   value="0.0"/>
@@ -13,7 +13,46 @@
       <param name="delay_prefix"  value="lidar"/>
       <param name="delay_pos_x"  value="3.0"/>
       <param name="is_ignoring_empty_obj"  value="true"/>
+      <param name="show_heading"  value="true"/>
   </node>
+  -->
+  
+<!-- Lidar bbox **************************************************************************** -->
+  <node name="m_LidarDetection_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/LidarDetection"/>
+      <param name="red"   value="0.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="lidar_bbox"/>
+      <param name="delay_pos_x"  value="3.0"/>
+      <param name="is_using_costmap_listener"  value="True"/>
+      <param name="show_heading"  value="true"/>
+  </node>
+
+
+  <!-- Lidar bbox Car **************************************************************************** 
+  <node name="m_LidarDetection_bbox_car" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/LidarDetection/Car"/>
+      <param name="red"   value="0.2"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="lidar_bbox_car"/>
+      <param name="delay_pos_x"  value="2.0"/>
+      <param name="is_using_costmap_listener"  value="True"/>
+  </node>
+  -->
+
+  <!-- Lidar bbox Ped & Cyc **************************************************************************** 
+  <node name="m_LidarDetection_bbox_pedcyc" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/LidarDetection/Ped_Cyc"/>
+      <param name="red"   value="0.2"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="1.0"/>
+      <param name="delay_prefix"  value="lidar_bbox_ped_cyc"/>
+      <param name="delay_pos_x"  value="1.0"/>
+      <param name="is_using_costmap_listener"  value="True"/>
+  </node>
+  -->
 
   <!-- Camera Polygon **************************************************************************** -->
   <node name="m_CameraDetection_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
@@ -23,6 +62,7 @@
       <param name="blue"  value="1.0"/>
       <param name="delay_prefix"  value="cam_poly"/>
       <param name="delay_pos_x"  value="-1.0"/>
+      <param name="show_heading"  value="true"/>
   </node>
 
   <!-- Radar Polygon **************************************************************************** -->
@@ -33,6 +73,7 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="radar"/>
       <param name="delay_pos_x"  value="-1.0"/>
+      <param name="show_heading"  value="false"/>
   </node>
 
   <!-- Fusion Polygon *************************************************************************** -->
@@ -43,10 +84,33 @@
       <param name="blue"  value="0.0"/>
       <param name="delay_prefix"  value="fusion"/>
       <param name="delay_pos_x"  value="-3.0"/>
+      <param name="show_heading"  value="true"/>
+  </node>
+
+  <!-- Filtered BBox **************************************************************************** -->
+  <node name="m_Filtered_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/filtered_objs"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.4"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
   </node>
 
   <!-- Tracking Polygon ************************************************************************* -->
   <node name="m_Tracking_polygon" pkg="detection_viz" type="polygon_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/PathPredictionOutput"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.4"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
+      <param name="show_heading"  value="true"/>
+  </node>
+  <!-- Tracking BBox **************************************************************************** -->
+  <node name="m_Tracking_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
       <param name="topic" value="/PathPredictionOutput"/>
       <param name="red"   value="1.0"/>
       <param name="green" value="1.0"/>
@@ -65,6 +129,17 @@
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>
+      <param name="show_heading"  value="true"/>
+  </node>
+  <!-- Tracking 3D BBox **************************************************************************** -->
+  <node name="m_Tracking_3d_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/Tracking3D"/>
+      <param name="red"   value="1.0"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.4"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
   </node>
 
   <!-- Tracking 2D Polygon ************************************************************************* -->
@@ -76,6 +151,27 @@
       <param name="delay_prefix"  value="tracking"/>
       <param name="delay_pos_x"  value="-5.0"/>
       <param name="is_tracking_mode"  value="true"/>
+      <param name="show_heading"  value="true"/>
+  </node>
+  <!-- Tracking BBox **************************************************************************** -->
+  <node name="m_Tracking_2d_bbox" pkg="detection_viz" type="marker_gen_detection.py" output="screen" clear_params="true">
+      <param name="topic" value="/Tracking2D/front_bottom_60"/>
+      <param name="red"   value="0.87451"/>
+      <param name="green" value="1.0"/>
+      <param name="blue"  value="0.0"/>
+      <param name="delay_prefix"  value="tracking"/>
+      <param name="delay_pos_x"  value="-5.0"/>
+      <param name="is_tracking_mode"  value="true"/>
+  </node>
+
+  <!-- PP Ellipse **************************************************************************** -->
+  <node name="m_PP_ellipse" pkg="detection_viz" type="gen_pp_ellipse.py" output="screen" clear_params="true">
+      <param name="in_topic" value="/PathPredictionOutput"/>
+  </node>
+
+  <!-- LaneEvent Grid **************************************************************************** -->
+  <node name="m_LaneEvent_grid" pkg="detection_viz" type="gen_lane_event_grid.py" output="screen" clear_params="true">
+      <param name="in_topic" value="/lane_event"/>
   </node>
 
   <!-- virbb bbox ******************************************************************************* -->

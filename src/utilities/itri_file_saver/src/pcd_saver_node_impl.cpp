@@ -22,11 +22,33 @@ void PCDSaverNodeImpl::save(const sensor_msgs::PointCloud2ConstPtr& in_pcd_messa
   snprintf(buff, sizeof(buff), "%10d%09d.pcd", sec, nsec);  // NOLINT
   std::string fname(static_cast<const char*>(buff));
 
-  pcl::PointCloud<pcl::PointXYZI>::Ptr pcd_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::fromROSMsg(*in_pcd_message, *pcd_ptr);
-  LOG(INFO) << "write " << fname << " points: " << pcd_ptr->points.size();
+  pcl::PCDWriter writer;
+  pcl::PCLPointCloud2 pc2;
+  pcl_conversions::toPCL(*in_pcd_message, pc2);
 
-  pcl::io::savePCDFileASCII(fname, *pcd_ptr);
+  if (pcd_saver::save_as_ascii()) {
+    writer.writeASCII(fname, pc2);
+  } else {
+    // writer.writeBinary(fname, pc2);
+    writer.writeBinaryCompressed(fname, pc2);
+  }
+
+  auto width = in_pcd_message->width;
+  auto height = in_pcd_message->height;
+  auto npoints = width * height;
+  LOG(INFO) << "write " << fname << ", points: " << npoints << ", width: " << width << ", height: " << height
+            << ", is_dense: " << static_cast<bool>(in_pcd_message->is_dense)
+            << ", point_step: " << in_pcd_message->point_step << ", raw_step: " << in_pcd_message->row_step
+            << ", num_fields: " << in_pcd_message->fields.size();
+  /*
+  for (size_t i = 0; i < in_pcd_message->fields.size(); i++)
+  {
+    LOG(INFO) << "fields[" << i << "]:"
+              << " name: " << in_pcd_message->fields[i].name
+              << ", datatype: " << static_cast<int>(in_pcd_message->fields[i].datatype)
+              << ", offset: " << in_pcd_message->fields[i].offset << ", count: " << in_pcd_message->fields[i].count;
+  }
+  */
 }
 
 void PCDSaverNodeImpl::subscribe()

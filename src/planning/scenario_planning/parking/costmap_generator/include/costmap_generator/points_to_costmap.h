@@ -47,11 +47,8 @@
 #ifndef POINTS_TO_COSTMAP_H
 #define POINTS_TO_COSTMAP_H
 
-// headers in ROS
 #include <ros/ros.h>
 #include <grid_map_ros/grid_map_ros.hpp>
-
-// headers in PCL
 #include <pcl_ros/point_cloud.h>
 
 class PointsToCostmap

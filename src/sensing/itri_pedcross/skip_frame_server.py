@@ -25,8 +25,10 @@ def callback(req):
     if predict_frames == 0:
         return PredictSkeletonResponse(predicted_keypoints, processed_keypoints)
     
-    latest_openpose = req.original_keypoints[frame_num - 1]
-    second_latest_openpose = req.original_keypoints[frame_num - 2 - predict_frames]
+    latest_openpose = processed_keypoints[len(processed_keypoints) - 1]
+    second_latest_openpose = processed_keypoints[len(processed_keypoints) - 2 - predict_frames]
+    if len(processed_keypoints) > frame_num:
+        del processed_keypoints[0]
     # calculate predicted_keypoints
     diff = Keypoints()
     for i in range(len(latest_openpose.keypoint)):
@@ -62,9 +64,11 @@ def callback(req):
         for i in range(predict_frames):
             predict_keypoints = Keypoints()
             for j in range(len(diff.keypoint)):
-                # processed_keypoints = (original keypoints + interpolation keypoints) / 2
-                processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x + second_latest_openpose.keypoint[j].x + diff.keypoint[j].x * (i + 1)) / 2
-                processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].y = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].y + second_latest_openpose.keypoint[j].y + diff.keypoint[j].y * (i + 1)) / 2
+                # Do back prediction only when both latest_openpose and second_latest_openpose are detected
+                if keypoint_is_detected(diff.keypoint[j]):
+                    # processed_keypoints = (original keypoints + interpolation keypoints) / 2
+                    processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].x + second_latest_openpose.keypoint[j].x + diff.keypoint[j].x * (i + 1)) / 2
+                    processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].y = (processed_keypoints[frame_num - 2 - predict_frames + (i + 1)].keypoint[j].y + second_latest_openpose.keypoint[j].y + diff.keypoint[j].y * (i + 1)) / 2
 
     return PredictSkeletonResponse(predicted_keypoints, processed_keypoints)
 

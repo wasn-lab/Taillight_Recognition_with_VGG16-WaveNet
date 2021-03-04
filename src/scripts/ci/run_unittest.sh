@@ -10,24 +10,27 @@ else
 fi
 
 readonly repo_dir=$(git rev-parse --show-toplevel)
-readonly car_model_h=car_model/include/car_model.h
 export ROS_HOME=$repo_dir
 pushd $repo_dir/build
 
 # Let catkin_make builds only the target run_tests.
-make car_model_test
+make -j car_model_test camera_utils_test lidar_test
+export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 ../devel/lib/car_model/car_model_test
-
-make camera_utils_test
 ../devel/lib/camera_utils/camera_utils_test
+../devel/lib/libs/lidar_test
 
-# Run tests that may be disabled by car_model
-if grep -Fxq "#define ENABLE_PARKNET 1" ${car_model_h}
-then
-  make parknet_test
-  ../devel/lib/itri_parknet/parknet_test
-fi
-
+pushd $repo_dir
+set +x
+source devel/setup.bash
+set -x
+src/car_model/south_bridge/run_unittest.sh
+src/utilities/fail_safe/src/run_unittest.sh
+src/utilities/image_compressor/src/test/run_unittest.sh
+src/utilities/image_compressor/src/test/run_publish_test.sh
+src/utilities/pc2_compressor/src/test/run_unittest.sh
+src/utilities/pc2_compressor/src/test/run_publish_test.sh
 popd
+
 echo "ALL done!"
 exit 0

@@ -4,15 +4,12 @@
 #include "tpp.h"
 #include "kalman_trackers.h"
 #include "velocity.h"
-#include "tpp_args_parser.h"
 #include "ros_params_parser.h"
 #include "ego_param.h"
 #include "marker_gen.h"
 #include <visualization_msgs/MarkerArray.h>
-#if PP_FILTER_DRIVABLE_AREA == 1
 #include <tf2/utils.h>
 #include <geometry_msgs/PolygonStamped.h>
-#endif
 #if HEARTBEAT == 1
 #include <std_msgs/Empty.h>
 #endif
@@ -37,8 +34,9 @@ public:
 private:
   DISALLOW_COPY_AND_ASSIGN(TPPNode);
 
-  int in_source_ = get_in_source();
-  bool use_ego_speed_ = get_ego_speed();
+  int in_source_ = InputSource::LidarDet;
+
+  geometry_msgs::TransformStamped tf_stamped_;
 
   bool show_runtime_ = false;
 
@@ -76,9 +74,7 @@ private:
   ros::Publisher track3d_pub_heartbeat_;
 #endif
 
-#if PP_FILTER_DRIVABLE_AREA == 1
   ros::Publisher drivable_area_pub_;
-#endif
 
   MarkerGen mg_;
 
@@ -88,10 +84,12 @@ private:
   ros::Subscriber ego_speed_kmph_sub_;
   void callback_ego_speed_kmph(const msgs::VehInfo::ConstPtr& input);
 
-#if PP_FILTER_DRIVABLE_AREA == 1
   ros::Subscriber lanelet2_route_sub_;
   void callback_lanelet2_route(const visualization_msgs::MarkerArray::ConstPtr& input);
-#endif
+
+  std::string frame_id_source_ = "base_link";
+  std::string frame_id_target_ = "map";
+  tf2_ros::Buffer tf_buffer_;
 
   bool is_legal_dt_ = false;
   double loop_begin = 0.;    // seconds
@@ -108,7 +106,9 @@ private:
   double ego_velx_abs_kmph_ = 0.;
   double ego_vely_abs_kmph_ = 0.;
 
-#if PP_FILTER_DRIVABLE_AREA == 1
+  double ground_z_ = -3.1;
+
+  bool drivable_area_filter_ = true;
   double expand_left_ = 2.2;
   double expand_right_ = 0.;
 
@@ -118,12 +118,10 @@ private:
   std::vector<cv::Point2f> expanded_route_left;
   std::vector<cv::Point2f> expanded_route_right;
 
-  tf2_ros::Buffer tf_buffer;
   geometry_msgs::Point get_transform_coordinate(geometry_msgs::Point origin_point, double yaw,
                                                 geometry_msgs::Vector3 translation);
   bool check_in_polygon(cv::Point2f position, std::vector<cv::Point2f>& polygon);
   bool drivable_area_filter(const msgs::BoxPoint box_point);
-#endif
 
   bool create_bbox_from_polygon_ = false;
   void create_bbox_from_polygon(msgs::DetectedObject& obj);
@@ -133,12 +131,9 @@ private:
 
   void init_velocity(msgs::TrackInfo& track);
 
-  // compute DetectedObject.relSpeed:
+  // compute DetectedObject.speed_rel:
   // i.e., speed of relative velocity on relative coordinate projection onto object-to-ego-vehicle vector
   float compute_relative_speed_obj2ego(const Vector3_32 rel_v_rel, const MyPoint32 obj_rel);
-
-  float compute_radar_absolute_velocity(const float radar_speed_rel, const float box_center_x_abs,
-                                        const float box_center_y_abs);
 
   void compute_velocity_kalman();
 
@@ -146,13 +141,17 @@ private:
   void publish_tracking();
 
   void control_sleep(const double loop_interval);
-  void publish_tracking2(ros::Publisher pub, std::vector<msgs::DetectedObject>& objs, const unsigned int pub_offset,
-                         const float time_offset);
+  void publish_tracking2(const ros::Publisher& pub, std::vector<msgs::DetectedObject>& objs,
+                         const unsigned int pub_offset, const float time_offset);
 
   void set_ros_params();
   void subscribe_and_advertise_topics();
   void get_current_ego_data_main();
   void get_current_ego_data(const ros::Time fusion_stamp);
+
+  // output bbox and pp points in tf_map
+  void convert(msgs::PointXYZ& p, geometry_msgs::Quaternion& q);
+  void heading_enu(std::vector<msgs::DetectedObject>& objs);
 
   void save_output_to_txt(const std::vector<msgs::DetectedObject>& objs);
 };

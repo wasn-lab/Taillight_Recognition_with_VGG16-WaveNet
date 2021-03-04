@@ -119,7 +119,7 @@ void rmlv2ObjectTracking::update_GL_data(ROS_API &ros_api){
     size_t _j = 0;
     for (size_t i = 0; i < num_box; i++)
     {
-        long long obj_id = msg_out_ptr->objects[i].camInfo.id;
+        long long obj_id = msg_out_ptr->objects[i].camInfo[0].id;
         _point_1_ptr = &(msg_out_ptr->objects[i].bPoint.p0);
         _point_2_ptr = &(msg_out_ptr->objects[i].bPoint.p7);
         glm::vec3 point_pose_ori = (  0.5f*(glm::vec3(_point_1_ptr->x, _point_1_ptr->y, _point_1_ptr->z) + glm::vec3(_point_2_ptr->x, _point_2_ptr->y, _point_2_ptr->z)) + glm::vec3(0.0f, 0.0f, 0.0f)  );

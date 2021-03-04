@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <glog/logging.h>
 #include <opencv2/opencv.hpp>
+#include "car_model.h"
 #include "camera_utils_test.h"
 #include "camera_utils.h"
 #include "camera_params.h"
@@ -19,6 +20,7 @@ TEST(CameraUtilsTest, test_has_yolov3_image_size)
   EXPECT_FALSE(camera::has_yolov3_image_size(img));
 }
 
+#if CAR_MODEL_IS_B1_V2
 TEST(CameraUtilsTest, test_fit_yolov3_image_size)
 {
   cv::Mat yolov3_img;
@@ -58,6 +60,7 @@ TEST(CameraUtilsTest, perf_fit_yolov3_image_size_with_resizer_only)
     resizer.resize_to_letterbox_yolov3(g_img_in, yolov3_img);
   }
 }
+#endif
 
 TEST(CameraUtilsTest, test_calc_yolov3_image_to_raw_size)
 {
@@ -80,10 +83,14 @@ TEST(CameraUtilsTest, test_camera_to_yolov3_xy)
   cam_image_x = 1920 - 1;
   cam_image_y = 1208 - 1;
   camera::camera_to_yolov3_xy(cam_image_x, cam_image_y, &yolov3_x, &yolov3_y);
+#if CAR_MODEL_IS_B1_V2
   EXPECT_EQ(yolov3_x, 607);
   EXPECT_LE(std::abs(yolov3_y - 494), 1);
+#endif
 }
 
+
+#if CAR_MODEL_IS_B1_V2
 TEST(CameraUtilsTest, test_yolov3_to_camera_xy)
 {
   int cam_image_x = 0, cam_image_y = 0;
@@ -128,6 +135,7 @@ TEST(CameraUtilsTest, test_cvmats_are_equal)
   cvmat1.at<uchar>(30, 30) = 255;
   EXPECT_FALSE(camera::cvmats_are_equal(cvmat1, cvmat2));
 }
+#endif
 
 TEST(CameraUtilsTest, test_is_black_image)
 {
