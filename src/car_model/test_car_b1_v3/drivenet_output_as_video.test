@@ -3,7 +3,9 @@
     <include file="$(find drivenet)/launch/b1_v3_drivenet_side.launch"/>
     <include file="$(find drivenet)/launch/b1_v3_drivenet_top.launch"/>
 
-    <node pkg="rosbag" type="play" name="player" output="log" required="true" args="$(find car_model)/../bags/camera_raw_2021-02-25-15-53-00_77.bag --delay 5">
+    <node pkg="rosbag" type="play" name="player_bring_up_drivenet" output="log" args="$(find car_model)/../bags/camera_raw_2021-02-25-15-53-00_77.bag -u 1">
+    </node>
+    <node pkg="rosbag" type="play" name="player" output="log" required="true" args="$(find car_model)/../bags/camera_raw_2021-02-25-15-53-00_77.bag -d 10">
     </node>
 
 <node pkg="itri_file_saver" type="video_saver" name="front_bottom_60_saver" output="screen" args="-image_topic /cam/front_bottom_60/detect_image -output_filename $(env output_dir)/front_bottom_60.avi"></node>
