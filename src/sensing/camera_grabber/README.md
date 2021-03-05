@@ -75,7 +75,7 @@ false : use laboratory mode camera driver
 
 5. nv_extractor 
 ```
-true  : enable motion vector message (The do_resize have to false when nv_extractor)
+true  : enable motion vector message (The do_resize have to false when nv_extractor true)
         motion vector message topic names are :
         /cam/front_bottom_60/motion_vector_msg
         /cam/front_top_far_30/motion_vector_msg
