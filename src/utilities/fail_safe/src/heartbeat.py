@@ -41,7 +41,7 @@ def localization_state_func(msg, fps):
     if status != OK:
         rospy.logwarn("Localization state: %s", status_str)
     else:
-        status_str = "FPS: {:.2f}".format(fps)
+        status_str = "FPS: " + str(fps)[:5]
     return status, status_str
 
 
@@ -113,7 +113,7 @@ def cam_object_detection_func(msg, fps):
     if status != OK:
         rospy.logwarn("CameraDetection: %s", status_str)
     else:
-        status_str = "FPS: {:.2f}".format(fps)
+        status_str = "FPS: " + str(fps)[:5]
     return status, status_str
 
 
@@ -144,7 +144,7 @@ def lidar_detection_func(msg, fps):
     if status != OK:
         rospy.logwarn("LidarDetection: %s", status_str)
     else:
-        status_str = "FPS: {:2.f}".format(fps)
+        status_str = "FPS: " + str(fps)[:5]
     return status, status_str
 
 
@@ -245,14 +245,14 @@ class Heartbeat(object):
         fps = self.get_fps()
         if fps >= self.fps_low and fps <= self.fps_high:
             self.status = OK
-            self.status_str = "FPS: {:.2f}".format(fps)
+            self.status_str = "FPS: " + str(fps)[:5]
 
         if fps > self.fps_high:
             self.status = WARN
-            self.status_str = "FPS too high: {:.2f}".format(fps)
+            self.status_str = "FPS too high: " + str(fps)[:5]
         if fps < self.fps_low:
             self.status = WARN
-            self.status_str = "FPS too low: {:.2f}".format(fps)
+            self.status_str = "FPS too low: " + str(fps)[:5]
         if fps == 0:
             if self.module_name == "nav_path_astar_final":
                 self.status = FATAL
