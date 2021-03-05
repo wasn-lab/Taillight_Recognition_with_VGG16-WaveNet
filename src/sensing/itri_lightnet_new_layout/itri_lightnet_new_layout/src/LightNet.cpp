@@ -18,25 +18,33 @@ vector<string> split(const string &str, char delim)
     return container;
 }
 
-void initi_all()
+void initi_all(char LightNet_TRT_model_path[])
 {
-    //clahe_30deg = createCLAHE(); clahe_30deg->setClipLimit(1); clahe_30deg->setTilesGridSize(Size(5, 5));
-    //clahe_60deg = createCLAHE(); clahe_60deg->setClipLimit(1); clahe_60deg->setTilesGridSize(Size(5, 5));
+  string engineName_30deg_real(LightNet_TRT_model_path);
+  engineName_30deg_real.append(engineName_30deg);
 
-    fstream file_30deg, file_60deg;
-    file_30deg.open(engineName_30deg, ios::binary | ios::in);
-    file_60deg.open(engineName_60deg, ios::binary | ios::in);
+  string engineName_60deg_real(LightNet_TRT_model_path);
+  engineName_60deg_real.append(engineName_60deg);
+  // printf("Program binary path is: %s\n", engineName_30deg_real.c_str());
 
-    if (!file_30deg.is_open())
-    {
-        cout << "read engine file" << engineName_30deg << " failed" << endl;
-        printf("No find TRT Engine file!! Re-creat Engine file, please wait.\n");
-        auto outputNames = split(OUTPUTS, ',');
-        vector<vector<float>> calibData;
-        //string saveName = "yolov3_" + mode + ".engine";
-        net_30deg.reset(new trtNet(INPUT_PROTOTXT_30deg, INPUT_CAFFEMODEL_30deg, outputNames, calibData, run_mode_30deg, batchSize));
-        cout << "save Engine..." << engineName_30deg << endl;
-        net_30deg->saveEngine(engineName_30deg);
+  // clahe_30deg = createCLAHE(); clahe_30deg->setClipLimit(1); clahe_30deg->setTilesGridSize(Size(5, 5));
+  // clahe_60deg = createCLAHE(); clahe_60deg->setClipLimit(1); clahe_60deg->setTilesGridSize(Size(5, 5));
+
+  fstream file_30deg, file_60deg;
+  file_30deg.open(engineName_30deg_real, ios::binary | ios::in);
+  file_60deg.open(engineName_60deg_real, ios::binary | ios::in);
+
+  if (!file_30deg.is_open())
+  {
+    cout << "read engine file" << engineName_30deg << " failed" << endl;
+    printf("No find TRT Engine file!! Re-creat Engine file, please wait.\n");
+    auto outputNames = split(OUTPUTS, ',');
+    vector<vector<float>> calibData;
+    // string saveName = "yolov3_" + mode + ".engine";
+    net_30deg.reset(
+        new trtNet(INPUT_PROTOTXT_30deg, INPUT_CAFFEMODEL_30deg, outputNames, calibData, run_mode_30deg, batchSize));
+    cout << "save Engine..." << engineName_30deg << endl;
+    net_30deg->saveEngine(engineName_30deg);
     }
     else
     {

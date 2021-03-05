@@ -37,6 +37,6 @@ ros::Publisher Traffic_Light_pub;
 //extern vector<float> prepareImage(cv::Mat &img);
 //extern vector<Bbox> postProcessImg(vector<Detection> &detections, int classes);
 extern void DoNet(cv_bridge::CvImagePtr cv_ptr_30deg,cv_bridge::CvImagePtr cv_ptr_60deg, struct TL_status *TL_status_info, struct TL_color *TL_color_info);
-extern void initi_all();
+extern void initi_all(char LightNet_TRT_model_path[]);
 struct TL_status TL_status_info;
 struct TL_color TL_color_info;

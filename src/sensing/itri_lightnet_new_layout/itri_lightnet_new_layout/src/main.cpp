@@ -52,10 +52,34 @@ void imageCallback_60deg(const sensor_msgs::ImageConstPtr &msg)
 pthread_t thread1;
 int main(int argc, char **argv)
 {
-    initi_all();
-    ros::init(argc, argv, "LightNet_ITRI_Campus");
-    ros::Time::init();
-    //ros::Rate loop_rate(1000000);
+  char buf[1024] = {};
+  readlink("/proc/self/exe", buf, sizeof(buf));
+  char  LightNet_TRT_model_path[1024];
+  for(int i=0;i<1024;i++)
+  {
+      if(buf[i] == '/' && 
+         buf[i+1] == 'i' &&
+         buf[i+2] == 't' &&
+         buf[i+3] == 'r' &&
+         buf[i+4] == 'i' &&
+         buf[i+5] == 'a' &&
+         buf[i+6] == 'd' &&
+         buf[i+7] == 'v' &&
+         buf[i+8] == '/'
+         )
+      {
+          for(int j=0;j<=i+8;j++)
+          {
+              LightNet_TRT_model_path[j] = buf[j];
+          }
+      }
+  }
+
+
+  initi_all(LightNet_TRT_model_path);
+  ros::init(argc, argv, "LightNet_ITRI_Campus");
+  ros::Time::init();
+  // ros::Rate loop_rate(1000000);
 #ifdef display_cv_window
     cv::namedWindow("view_30deg");
     cv::namedWindow("view_60deg");
