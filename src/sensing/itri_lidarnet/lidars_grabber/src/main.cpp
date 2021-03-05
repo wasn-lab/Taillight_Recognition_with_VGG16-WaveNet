@@ -541,6 +541,15 @@ int main(int argc, char** argv)
     cout << "STITCHING PARAMETER FIND!" << endl;
   }
 
+  ROS_INFO("Wait for /LidarFrontTop/Raw");
+  ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw");
+  ROS_INFO("Wait for /LidarFrontLeft/Raw");
+  ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw");
+  ROS_INFO("Wait for /LidarFrontRight/Raw");
+  ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw");
+
+  ROS_INFO("/LidarFrontTop/Raw, /LidarFrontLeft/Raw, /LidarFrontRight/Raw are ready.");
+
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
       n.subscribe<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw", 1, cloud_cb_LidarFrontLeft);
