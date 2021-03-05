@@ -97,7 +97,7 @@ if (USE_CAMERA_GSTREAMER_GRABBER)
                HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
   # set runtime libary path  
     SET(CMAKE_EXE_LINKER_FLAGS 
-      "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber") 
+      "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber")    
 endif ()
 
 find_package(Glog)

@@ -10,7 +10,7 @@
 #include "camera_params.h"
 
 //if MV_IMAGE_DEBUG defined, the nv_extractor have to true in jetson_xavier_b1.launch
-#define MV_IMAGE_DEBUG 1
+//#define MV_IMAGE_DEBUG 1
 
 
 namespace SensingSubSystem
@@ -98,6 +98,12 @@ void JetsonXavierGrabber::InitParameters()
 
 JetsonXavierGrabber::~JetsonXavierGrabber()
 {
+  for(unsigned int i=0; i<cam_ids_.size(); i++)
+  {  
+    video_capture_list[i].release();
+    std::cout << "close video " << i << std::endl;
+  }
+  
   if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
   {
     for(unsigned int i=0; i<cam_ids_.size(); i++)
@@ -183,6 +189,14 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
   nv_extractor_ = SensingSubSystem::nv_extractor();
 
   resize_ = do_resize;
+  
+#ifdef MV_IMAGE_DEBUG
+  if(!nv_extractor_)
+  {
+    std::cout << "Error : MV_IMAGE_DEBUG defined only when nv_extractor_ is true in launch file" << std::endl;
+    return false;
+  }
+#endif
 
   for (const auto cam_id : cam_ids_)
   {
@@ -190,7 +204,7 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
     
     if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
     { 
-#ifdef MV_IMAGE_DEBUG     
+#ifdef MV_IMAGE_DEBUG      
       ros_image.add_a_pub_mv(cam_id , camera::topics[cam_id]); 
 #endif
       ros_image.add_a_pub_mv_msgs(cam_id , camera::topics[cam_id]);     
@@ -212,7 +226,11 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
     }
   }
 
-  
+  if(nv_extractor_ && resize_)
+  {
+      std::cout << "Error : MosionVector(nv_extractor) true only when resize is false in launch file" << std::endl;
+      return false;
+  }
 
   //MvExtractor init  
   if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
@@ -367,8 +385,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
         canvas_tmp[i] = canvas[i].clone();
 
         if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
-        {
-          //cvBGR[i] = canvas[i];
+        {          
           cvBGR[i] = canvas[i].clone();
           if(cvBGR[i].empty())
           {
@@ -410,9 +427,8 @@ bool JetsonXavierGrabber::runPerceptionGst()
           if(mv_queue->size() > 1)
           {
             MotionVectors mv_struct;
-            cv::Mat cvTemp;
             ctx[selected_channel].mvs_queue.pop(mv_struct);
-            cvBGR_queue[selected_channel].pop(cvTemp);
+            cvBGR_queue[selected_channel].pop(cvMV[selected_channel]);
 
             //std::cout << "get [" << mv_struct.frame_number << "] from queue, queue size = " << mv_queue->size() << ", elapsed = " << ctx[selected_channel].timestampincr/1000 << " ms" << std::endl;
 
@@ -431,7 +447,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
               int32_t src_x = dst_x + pInfo->mv_x/16;
               int32_t src_y = dst_y + pInfo->mv_y/16;
 #ifdef MV_IMAGE_DEBUG
-              cv::arrowedLine(cvTemp, cv::Point(src_x, src_y), cv::Point(dst_x, dst_y), cv::Scalar(0, 255, 0), 2, 8, 0, 0.5);
+              cv::arrowedLine(cvMV[selected_channel], cv::Point(src_x, src_y), cv::Point(dst_x, dst_y), cv::Scalar(0, 255, 0), 2, 8, 0, 0.5);
 #endif              
               mv_msg.mv_x = dst_x;
               mv_msg.mv_y = dst_y;
@@ -439,9 +455,6 @@ bool JetsonXavierGrabber::runPerceptionGst()
               mv_msg.src_y = src_y;
               mv_msgs_array[selected_channel].mvs.emplace_back(mv_msg);
             }
-#ifdef MV_IMAGE_DEBUG
-              cvMV[selected_channel] = cvTemp;
-#endif
           }
         }//end for selected_channel
       }//end (mv_ret == 0)
@@ -457,6 +470,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
         break;
 
       ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_tmp[i], ros_time_);
+    
       
       if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
       {
