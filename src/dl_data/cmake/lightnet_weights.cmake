@@ -1,13 +1,11 @@
 download_file(
-    URL "140.96.172.66:8080/share.cgi?ssid=0D8l43O&fid=0D8l43O&filename=yolov3_fp16_201208_30deg.engine&openfolder=forcedownload&ep="
-    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/yolov3_fp16_201208_30deg.engine"
-    MD5 0616a2db6b68ad130c2885eb6ef66645
+    URL "140.96.172.66:8080/share.cgi?ssid=0zcxNW1&fid=0zcxNW1&filename=iclu30_v3-kINT8-batch1.engine&openfolder=forcedownload&ep="
+    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/iclu30_v3-kINT8-batch1.engine"
+    MD5 c54f92402f16f4769b29d094ceea16c0
 )
 
 download_file(
-   URL "140.96.172.66:8080/share.cgi?ssid=0wabvTu&fid=0wabvTu&filename=yolov3_fp16_201208_60deg.engine&openfolder=forcedownload&ep="
-    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/yolov3_fp16_201208_60deg.engine"
-    MD5 0420f66cfae366bc3588229cb6abfc71
+   URL "140.96.172.66:8080/share.cgi?ssid=0fDnRP7&fid=0fDnRP7&filename=iclu60_v3-kINT8-batch1.engine&openfolder=forcedownload&ep="
+    DESTINATION "${LIGHTNET_WEIGHTS_DIR}/iclu60_v3-kINT8-batch1.engine"
+    MD5 074adae687675d17c6446718beaf074f
 )
-
-
