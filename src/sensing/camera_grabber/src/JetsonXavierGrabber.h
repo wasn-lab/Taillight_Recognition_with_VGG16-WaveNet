@@ -52,7 +52,7 @@ private:
   NPPResizer resizer_;
   NPPRemapper remapper_;    
   bool resize_;
-  bool nv_extractor_;
+  bool motion_vector_;
 
   // ROS publisher
   ros::NodeHandle n;

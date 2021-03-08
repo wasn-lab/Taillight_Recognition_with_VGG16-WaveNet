@@ -73,7 +73,7 @@ true  : use car mode camera driver (default)
 false : use laboratory mode camera driver
 ```
 
-5. nv_extractor 
+5. motion_vector 
 ```
 true  : enable motion vector message (The do_resize have to false when nv_extractor true)
         motion vector message topic names are :
@@ -92,7 +92,7 @@ false : disable motion vector message (default)
 ```
 If you want to debug motion vector image. There is a line "//#define MV_IMAGE_DEBUG 1" in the JetsonXavierGrabber.cpp. 
 It can publish motion vector image when unmark the line.
-The do_resize set false and nv_extractor set true at the same time.
+The do_resize set false and motion_vector set true at the same time.
 Motion vector image topic names are :
 /cam/front_bottom_60/motion_vector
 /cam/front_top_far_30/motion_vector

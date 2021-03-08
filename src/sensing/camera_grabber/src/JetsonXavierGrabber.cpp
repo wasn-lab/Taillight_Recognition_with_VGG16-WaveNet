@@ -9,7 +9,7 @@
 #include "grabber_args_parser.h"
 #include "camera_params.h"
 
-//if MV_IMAGE_DEBUG defined, the nv_extractor have to true in jetson_xavier_b1.launch
+//if MV_IMAGE_DEBUG defined, the motion_vector have to true in jetson_xavier_b1.launch
 //#define MV_IMAGE_DEBUG 1
 
 
@@ -104,7 +104,7 @@ JetsonXavierGrabber::~JetsonXavierGrabber()
     std::cout << "close video " << i << std::endl;
   }
   
-  if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+  if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
   {
     for(unsigned int i=0; i<cam_ids_.size(); i++)
     {
@@ -185,15 +185,15 @@ bool JetsonXavierGrabber::gst_pipeline_init(int video_index)
 
 bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
 {
-  // get nv_extractor variable from roslaunch file
-  nv_extractor_ = SensingSubSystem::nv_extractor();
+  // get motion_vector_ variable from roslaunch file
+  motion_vector_ = SensingSubSystem::motion_vector();
 
   resize_ = do_resize;
   
 #ifdef MV_IMAGE_DEBUG
-  if(!nv_extractor_)
+  if(!motion_vector_)
   {
-    std::cout << "Error : MV_IMAGE_DEBUG defined only when nv_extractor_ is true in launch file" << std::endl;
+    std::cout << "Error : MV_IMAGE_DEBUG defined only when motion_vector is true in launch file" << std::endl;
     return false;
   }
 #endif
@@ -202,7 +202,7 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
   {
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
     
-    if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+    if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
     { 
 #ifdef MV_IMAGE_DEBUG      
       ros_image.add_a_pub_mv(cam_id , camera::topics[cam_id]); 
@@ -226,14 +226,14 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
     }
   }
 
-  if(nv_extractor_ && resize_)
+  if(motion_vector_ && resize_)
   {
-      std::cout << "Error : MosionVector(nv_extractor) true only when resize is false in launch file" << std::endl;
+      std::cout << "Error : MosionVector(motion_vector) true only when resize is false in launch file" << std::endl;
       return false;
   }
 
   //MvExtractor init  
-  if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+  if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
   {
 
     auto fps = SensingSubSystem::get_expected_fps();
@@ -309,7 +309,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       if (for_running == false)
         break;
 
-      if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+      if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
       {
 
         /* Check MvExtractor error flag */
@@ -384,7 +384,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
 
         canvas_tmp[i] = canvas[i].clone();
 
-        if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+        if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
         {          
           cvBGR[i] = canvas[i].clone();
           if(cvBGR[i].empty())
@@ -404,7 +404,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       } //for_running                   
     }//for loop
 
-    if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+    if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
     {      
       /* Using C++11 future async function to get multi-channel MVs */
       for(int i=0; i<cam_count; i++)
@@ -460,7 +460,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       }//end (mv_ret == 0)
      
 
-    }//end nv_extractor_
+    }//end motion_vector_
     
     check_green_screen = false; //only check green screen for first time
 
@@ -472,7 +472,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_tmp[i], ros_time_);
     
       
-      if (nv_extractor_ && (!resize_)) //MvExtractor no support when resize
+      if (motion_vector_ && (!resize_)) //MvExtractor no support when resize
       {
 #ifdef MV_IMAGE_DEBUG
         ros_image.send_image_rgb_gstreamer_mv(cam_ids_[i], cvMV[i], ros_time_);
