@@ -3,11 +3,13 @@
 import time
 import heapq
 import rospy
+from std_msgs.msg import Bool
 from msgs.msg import Flag_Info
 
 
 class CtrlInfo02(object):
     TOPIC = "/Flag_Info02"
+    ADV_OP_TOPIC = "/ADV_op/run_state"
 
     def __init__(self):
         # expected module stats
@@ -19,6 +21,7 @@ class CtrlInfo02(object):
         self.heap = []
         self.sampling_period_in_seconds = 30 / self.fps_low
         rospy.Subscriber(CtrlInfo02.TOPIC, Flag_Info, self._cb)
+        self.adv_op_publisher = rospy.Publisher(CtrlInfo02.ADV_OP_TOPIC, Bool, queue_size=1)
 
     def is_self_driving(self):
         if self.msg is None:
@@ -44,3 +47,6 @@ class CtrlInfo02(object):
         self._update_heap()
         heapq.heappush(self.heap, time.time())
         self.msg = msg
+        out_msg = Bool()
+        out_msg.data = self.is_self_driving()
+        self.adv_op_publisher.publish(out_msg)
