@@ -28,8 +28,10 @@
 
     <!-- decision module -->
       <arg name="force_disable_avoidance" default="false" />
+      <arg name="disable_lane_event" default="true" />
       <include file="$(find decision)/launch/decision.launch" pass_all_args="true">
         <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
+	<param name="disable_lane_event" value="$(arg disable_lane_event)" />
       </include>
 
 </launch>
