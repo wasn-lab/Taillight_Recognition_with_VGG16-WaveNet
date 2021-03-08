@@ -14,7 +14,7 @@
 #include "iostream"
 #include <chrono>
 #include <stdlib.h>
-//#include "TrtNet.h"
+#include "TrtNet.h"
 #include <string>
 #include "dataReader.h"
 #include <msgs/DetectedSignArray.h>
@@ -28,26 +28,22 @@
 #include <opencv2/highgui.hpp>
 // #include "functions.h"
 
-
-#include "class_timer.hpp"
-#include "class_detector.h"
-
 using namespace std;
 //using namespace argsParser;
 using namespace Tn;
-//using namespace Yolo;
+using namespace Yolo;
 using namespace cv;
 #define Tainan
 //#define printf_debug
 
-//std::unique_ptr<trtNet> net_30deg;
-//std::unique_ptr<trtNet> net_60deg;
+std::unique_ptr<trtNet> net_30deg;
+std::unique_ptr<trtNet> net_60deg;
 pthread_t thread_preprocess_30deg, thread_preprocess_60deg;
 pthread_t thread_postprocess_30deg, thread_postprocess_60deg;
 Mat animateFin;
 Mat animate30;
 Mat animate60;
-/*
+
 #ifdef ITRI_Field
 string INPUT_PROTOTXT = "./416/DivU_TL_v1.prototxt";
 string INPUT_CAFFEMODEL = "./416/DivU_TL_simplify.caffemodel";
@@ -74,7 +70,6 @@ RUN_MODE run_mode_60deg = RUN_MODE::FLOAT16;
 string engineName_60deg = "/resources/yolov3_fp16_201208_60deg.engine";
 unique_ptr<float[]> outputData_60deg(new float[402193]);
 #endif
-*/
 
 int batchSize = 1;
 
@@ -93,8 +88,8 @@ int classNum = 6;
 string class_name[7] = {"red", "yellow", "green", "go_straight", "turn_right", "turn_left", "Traffic_light"};
 
 #endif
-std::vector<Mat> inputData;
-std::vector<Mat> inputData_60deg;
+vector<float> inputData;
+vector<float> inputData_60deg;
 
 //CV Post-process
 
@@ -190,14 +185,3 @@ int frame_count = 0;
 Ptr<CLAHE> clahe_30deg;
 Ptr<CLAHE> clahe_60deg;
 Mat prediction ;
-
-
-Config config_v4_60;
-Config config_v4_30;
-
-std::unique_ptr<Detector> detector_30(new Detector());
-std::unique_ptr<Detector> detector_60(new Detector());
-
-std::vector<BatchResult> batch_res_30;
-std::vector<BatchResult> batch_res_60;
-

@@ -14,7 +14,7 @@
 #include "iostream"
 #include <chrono>
 #include <stdlib.h>
-//#include "TrtNet.h"
+#include "TrtNet.h"
 #include <string>
 #include "dataReader.h"
 #include <msgs/DetectedLightArray.h>
