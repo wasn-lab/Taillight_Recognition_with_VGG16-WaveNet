@@ -7,10 +7,7 @@
 
 namespace pcd_to_pc2
 {
-PCDToPc2Node::PCDToPc2Node()
-{
-}
-
+PCDToPc2Node::PCDToPc2Node() = default;
 PCDToPc2Node::~PCDToPc2Node() = default;
 
 void PCDToPc2Node::load_pcd()
