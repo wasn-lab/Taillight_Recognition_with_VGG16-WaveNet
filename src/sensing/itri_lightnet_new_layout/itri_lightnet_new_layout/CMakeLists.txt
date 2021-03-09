@@ -109,5 +109,5 @@ set(CPP_SOURCES
     )
 
 add_executable(${PROJECT_NAME}_node ${CPP_SOURCES})
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/src/libdetector.so ${OpenCV_LIBS} ${LEPTONICA_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/resources/libdetector.so ${OpenCV_LIBS} ${LEPTONICA_LIBRARIES} )
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
