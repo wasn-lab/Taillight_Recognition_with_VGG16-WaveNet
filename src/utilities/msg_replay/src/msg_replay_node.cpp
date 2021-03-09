@@ -15,9 +15,7 @@ static std::string get_msg_datatype(const std::string& topic)
 {
   ros::master::V_TopicInfo master_topics;
   LOG(INFO) << "wait for " << topic;
-  bool found = false;
-  std::string ret;
-  while (ros::ok() && !found)
+  while (ros::ok())
   {
     ros::master::getTopics(master_topics);
     for (auto& master_topic : master_topics)
@@ -25,14 +23,12 @@ static std::string get_msg_datatype(const std::string& topic)
       if (master_topic.name == topic)
       {
         LOG(INFO) << topic << " is ready.";
-        found = true;
-        ret = master_topic.datatype;
-        break;
+        return master_topic.datatype;
       }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
   }
-  return ret;
+  return "";
 }
 
 MsgReplayNode::MsgReplayNode(): num_replayed_msg_(0) {}
