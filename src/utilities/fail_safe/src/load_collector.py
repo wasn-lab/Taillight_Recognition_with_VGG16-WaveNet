@@ -15,7 +15,7 @@ class LoadCollector(object):
         rospy.init_node("LoadCollector")
         car_model = get_car_model_as_str()
         self.ipcs = []
-        if car_model in ["B1_V2", "B1_V3", "C1"]:
+        if car_model in ["B1", "B1_V2", "B1_V3", "C1"]:
             self.ipcs = ["lidar", "camera", "localization", "xavier"]
         else:
             rospy.logerr("Unrecognized car_model: %s", car_model)

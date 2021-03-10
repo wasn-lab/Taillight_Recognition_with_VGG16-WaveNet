@@ -302,78 +302,89 @@ void TPPNode::callback_fusion(const msgs::DetectedObjectArray::ConstPtr& input)
 
 void TPPNode::subscribe_and_advertise_topics()
 {
-  std::string topic = "Tracking3D";
+  // subscribers
   use_tracking2d = false;
+  std::string in_topic = "";
 
   if (in_source_ == InputSource::LidarDet)
   {
-    LOG_INFO << "Input Source: Lidar (/LidarDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection", 1, &TPPNode::callback_fusion, this);
+    in_topic = "LidarDetection";
+    LOG_INFO << "Input Source: Lidar (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::LidarDet_PointPillars_Car)
   {
-    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/LidarDetection/Car)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection/Car", 1, &TPPNode::callback_fusion, this);
+    in_topic = "LidarDetection/Car";
+    LOG_INFO << "Input Source: Lidar PointPillars -- Car model (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::LidarDet_PointPillars_Ped_Cyc)
   {
-    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/LidarDetection/Ped_Cyc)" << std::endl;
-    fusion_sub_ = nh_.subscribe("LidarDetection/Ped_Cyc", 1, &TPPNode::callback_fusion, this);
+    in_topic = "LidarDetection/Ped_Cyc";
+    LOG_INFO << "Input Source: Lidar PointPillars -- Ped & Cycle model (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::VirtualBBoxAbs)
   {
-    LOG_INFO << "Input Source: Virtual_abs (/abs_virBB_array)" << std::endl;
-    fusion_sub_ = nh_.subscribe("abs_virBB_array", 1, &TPPNode::callback_fusion, this);
+    in_topic = "abs_virBB_array";
+    LOG_INFO << "Input Source: Virtual_abs (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::VirtualBBoxRel)
   {
-    LOG_INFO << "Input Source: Virtual_rel (/rel_virBB_array)" << std::endl;
-    fusion_sub_ = nh_.subscribe("rel_virBB_array", 1, &TPPNode::callback_fusion, this);
+    in_topic = "rel_virBB_array";
+    LOG_INFO << "Input Source: Virtual_rel (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::CameraDetV2)
   {
-    LOG_INFO << "Input Source: Camera approach 2 (/CameraDetection)" << std::endl;
-    fusion_sub_ = nh_.subscribe("CameraDetection", 1, &TPPNode::callback_fusion, this);
+    in_topic = "CameraDetection";
+    LOG_INFO << "Input Source: Camera approach 2 (/" << in_topic << ")" << std::endl;
   }
   else if (in_source_ == InputSource::Tracking2D)
   {
     use_tracking2d = true;
-    LOG_INFO << "Input Source: Tracking 2D (/Tracking2D/front_bottom_60)" << std::endl;
-    fusion_sub_ = nh_.subscribe("Tracking2D/front_bottom_60", 1, &TPPNode::callback_fusion, this);
+    in_topic = "Tracking2D/front_bottom_60";
+    LOG_INFO << "Input Source: Tracking 2D (/" << in_topic << ")" << std::endl;
   }
   else
   {
-    LOG_INFO << "Input Source: Fusion (/SensorFusion)" << std::endl;
-    fusion_sub_ = nh_.subscribe("SensorFusion", 1, &TPPNode::callback_fusion, this);
+    in_topic = "SensorFusion";
+    LOG_INFO << "Input Source: Fusion (/" << in_topic << ")" << std::endl;
   }
 
-  track3d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(topic, 2);
+  LOG_INFO << "Wait for input topic " << in_topic << std::endl;
+  ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic);
+  LOG_INFO << in_topic << " is ready" << std::endl;
 
-#if HEARTBEAT == 1
-  track3d_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(topic + std::string("/heartbeat"), 1);
-#endif
+  fusion_sub_ = nh_.subscribe(in_topic, 1, &TPPNode::callback_fusion, this);
 
   nh2_.setCallbackQueue(&queue_);
 
-  // Note that we use different NodeHandle(nh2_) here
-  ego_speed_kmph_sub_ = nh2_.subscribe("veh_info", 1, &TPPNode::callback_ego_speed_kmph, this);
-  lanelet2_route_sub_ =
-      nh2_.subscribe("planning/mission_planning/route_marker", 1, &TPPNode::callback_lanelet2_route, this);
+  // NodeHandle nh2_
+  std::string in_topic2 = "veh_info";
+  LOG_INFO << "Wait for input topic " << in_topic2 << std::endl;
+  ros::topic::waitForMessage<msgs::VehInfo>(in_topic2);
+  LOG_INFO << in_topic2 << " is ready" << std::endl;
+
+  ego_speed_kmph_sub_ = nh2_.subscribe(in_topic2, 1, &TPPNode::callback_ego_speed_kmph, this);
+
+  std::string in_topic3 = "planning/mission_planning/route_marker";
+  LOG_INFO << "Wait for input topic " << in_topic3 << std::endl;
+  ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic3);
+  LOG_INFO << in_topic3 << " is ready" << std::endl;
+
+  lanelet2_route_sub_ = nh2_.subscribe(in_topic3, 1, &TPPNode::callback_lanelet2_route, this);
+
+  // publishers
+  std::string out_topic = "Tracking3D";
+  track3d_pub_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 2);
+#if HEARTBEAT == 1
+  track3d_pub_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);
+#endif
 
   if (gen_markers_)
   {
-    std::string topic2 = topic + "/id";
-    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(topic2, 2);
-
-    std::string topic3 = topic + "/speed";
-    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(topic3, 2);
-
-    std::string topic4 = topic + "/vel";
-    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(topic4, 2);
+    mc_.pub_id = nh_.advertise<visualization_msgs::MarkerArray>(out_topic + std::string("/id"), 2);
+    mc_.pub_speed = nh_.advertise<visualization_msgs::MarkerArray>(out_topic + std::string("/speed"), 2);
+    mc_.pub_vel = nh_.advertise<visualization_msgs::MarkerArray>(out_topic + std::string("/vel"), 2);
   }
-
-  std::string topic5 = topic + "/drivable";
-  drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(topic5, 2);
+  drivable_area_pub_ = nh_.advertise<geometry_msgs::PolygonStamped>(out_topic + std::string("/drivable"), 2);
 }
 
 void TPPNode::init_velocity(msgs::TrackInfo& track)

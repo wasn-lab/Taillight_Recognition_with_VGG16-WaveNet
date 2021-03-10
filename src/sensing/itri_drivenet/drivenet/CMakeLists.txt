@@ -170,4 +170,8 @@ elseif(CAR_MODEL_IS_C1)
   add_executable(${PROJECT_NAME}_detect_node_top_c1 src/drivenet_top_detection.cpp src/distance_estimation_b1_v2.cpp ${LIB_SOURCES} ${EXCEPTION_SRCS} ${COMMON_UTILS})
   add_dependencies(${PROJECT_NAME}_detect_node_top_c1 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
   target_link_libraries(${PROJECT_NAME}_detect_node_top_c1 ${LIBS} ${catkin_LIBRARIES} )
+
+  add_executable(${PROJECT_NAME}_depth_node_alignment_b1_v2 src/alignment_offline_b1.cpp ${EXCEPTION_SRCS} ${COMMON_UTILS})
+  add_dependencies(${PROJECT_NAME}_depth_node_alignment_b1_v2 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+  target_link_libraries(${PROJECT_NAME}_depth_node_alignment_b1_v2 ${LIBS} ${catkin_LIBRARIES} )
 endif ()

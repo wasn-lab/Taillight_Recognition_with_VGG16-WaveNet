@@ -34,6 +34,9 @@ stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_load_monitor.sh^M"
 screen -t init_camera
 stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_camera.sh^M"
 
+screen -t init_image_compressor
+stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_image_compressor.sh^M"
+
 screen -t init_control_new_lanelet2
 stuff "/home/nvidia/itriadv/src/scripts/bus_env/xavier/init_control_new_lanelet2.sh^M"
 
