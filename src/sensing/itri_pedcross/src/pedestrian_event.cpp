@@ -2307,14 +2307,14 @@ void PedestrianEvent::pedestrian_event()
 
     // input topics from planning
     std::string in_topic13 = "planning/scenario_planning/trajectory";
-    std::cout << "Wait for input topic " << in_topic13 << std::endl;
-    ros::topic::waitForMessage<autoware_planning_msgs::Trajectory>(in_topic13);
-    std::cout << in_topic13 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic13 << std::endl;
+    // ros::topic::waitForMessage<autoware_planning_msgs::Trajectory>(in_topic13);
+    // std::cout << in_topic13 << " is ready" << std::endl;
 
     std::string in_topic14 = "planning/mission_planning/route_marker";
-    std::cout << "Wait for input topic " << in_topic14 << std::endl;
-    ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic14);
-    std::cout << in_topic14 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic14 << std::endl;
+    // ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic14);
+    // std::cout << in_topic14 << " is ready" << std::endl;
 
     sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::front_callback, this);
     sub_2 = nh_sub_2.subscribe(in_topic2, 1, &PedestrianEvent::left_callback, this);

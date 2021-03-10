@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="msg_replay" type="msg_replay_node" name="msg_replay_node_front_top" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontTop/Compressed/Origin -output_topic /LidarFrontTop/Compressed" />
+  <node pkg="msg_replay" type="msg_replay_node" name="msg_replay_node_front_left" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontLeft/Compressed/Origin -output_topic /LidarFrontLeft/Compressed" />
+  <node pkg="msg_replay" type="msg_replay_node" name="msg_replay_node_front_right" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontRight/Compressed/Origin -output_topic /LidarFrontRight/Compressed" />
+</launch>
