@@ -33,14 +33,17 @@ class PedCrossAlert(object):
 
     def get_status_in_list(self):
         fps = self._get_fps()
-        if fps > self.fps_low:
-            doc = {"module": "pedcross",
-                   "status": OK,
-                   "status_str": "FPS: {:.2f}".format(fps)}
-        else:
-            doc = {"module": "pedcross",
-                   "status": WARN,
-                   "status_str": "low FPS: {:.2f}".format(fps)}
+        doc = {"module": "pedcross",
+               "status": OK,
+               "status_str": "FPS: " + str(fps)[:5]}
+#        if fps > self.fps_low:
+#            doc = {"module": "pedcross",
+#                   "status": OK,
+#                   "status_str": "FPS: " + str(fps)[:5]}
+#        else:
+#            doc = {"module": "pedcross",
+#                   "status": WARN,
+#                   "status_str": "low FPS: " + str(fps)[:5]}
         return [doc]
 
     def _get_fps(self):

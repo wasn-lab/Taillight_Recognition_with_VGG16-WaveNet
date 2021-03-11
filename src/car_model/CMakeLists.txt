@@ -48,9 +48,6 @@ configure_file(
 file(WRITE ${PROJECT_BINARY_DIR}/scripts/car_model.txt ${CAR_MODEL})
 
 add_subdirectory(test)
-if (CAR_MODEL_IS_B1_V2)
-  add_subdirectory(test_car_b1_v2)
-endif ()
 if (CAR_MODEL_IS_B1_V3)
   add_subdirectory(test_car_b1_v3)
 endif ()
