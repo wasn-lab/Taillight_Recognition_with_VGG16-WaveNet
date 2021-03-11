@@ -1390,11 +1390,25 @@ bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, ms
   // Avoid index out of bounds
   if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
   {
-    obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u - 1;
+    if (matrix.cols > obj_pub.camInfo.u)
+    {
+      obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+    }
+    else
+    {
+      return false;
+    }
   }
-  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows - 1)
+  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
   {
-    obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+    if (matrix.rows > obj_pub.camInfo.v)
+    {
+      obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+    }
+    else
+    {
+      return false;
+    }
   }
   // check bounding box is legal
   if (obj_pub.camInfo.width < 1 || obj_pub.camInfo.height < 1)
