@@ -103,7 +103,7 @@ JetsonXavierGrabber::~JetsonXavierGrabber()
     video_capture_list[i].release();  //close video  
   }
   
-  if (motion_vector_) //MvExtractor no support when resize
+  if (motion_vector_) 
   {
     for(unsigned int i=0; i<cam_ids_.size(); i++)
     {
@@ -201,7 +201,7 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
   {
     ros_image.add_a_pub(cam_id, camera::topics[cam_id]);
     
-    if (motion_vector_) //MvExtractor no support when resize
+    if (motion_vector_) 
     { 
 #ifdef MV_IMAGE_DEBUG      
       ros_image.add_a_pub_mv(cam_id , camera::topics[cam_id]); 
@@ -226,7 +226,7 @@ bool JetsonXavierGrabber::initializeModulesGst(const bool do_resize)
   }  
 
   //MvExtractor init  
-  if (motion_vector_) //MvExtractor no support when resize
+  if (motion_vector_) 
   {
 
     auto fps = SensingSubSystem::get_expected_fps();
@@ -302,7 +302,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       if (for_running == false)
         break;
 
-      if (motion_vector_) //MvExtractor no support when resize
+      if (motion_vector_) 
       {
 
         /* Check MvExtractor error flag */
@@ -387,7 +387,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
 
         canvas_tmp[i] = canvas[i].clone();
 
-        if (motion_vector_) //MvExtractor no support when resize
+        if (motion_vector_) 
         {          
           //cvBGR[i] = canvas[i].clone();
           if(cvBGR[i].empty())
@@ -407,7 +407,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       } //for_running                   
     }//for loop
 
-    if (motion_vector_) //MvExtractor no support when resize
+    if (motion_vector_) 
     {      
       /* Using C++11 future async function to get multi-channel MVs */
       for(int i=0; i<cam_count; i++)
@@ -459,13 +459,6 @@ bool JetsonXavierGrabber::runPerceptionGst()
               mv_msg.src_y = src_y;
               
               mv_msgs_array[selected_channel].mvs.emplace_back(mv_msg);
-/*
-              if (src_x < 0 || src_y < 0)
-              {
-                std::cerr << i << " src_x= " << src_x << ", src_y= " << src_y  << std::endl;
-                std::cerr << i << " mv_msg.src_x= " << mv_msg.src_x << ", mv_msg.src_y= " << mv_msg.src_y  << std::endl;
-              }
-*/
 
             }
           }
@@ -485,7 +478,7 @@ bool JetsonXavierGrabber::runPerceptionGst()
       ros_image.send_image_rgb_gstreamer(cam_ids_[i], canvas_tmp[i], ros_time_);
     
       
-      if (motion_vector_) //MvExtractor no support when resize
+      if (motion_vector_) 
       {
 #ifdef MV_IMAGE_DEBUG
         ros_image.send_image_rgb_gstreamer_mv(cam_ids_[i], cvMV[i], ros_time_);
