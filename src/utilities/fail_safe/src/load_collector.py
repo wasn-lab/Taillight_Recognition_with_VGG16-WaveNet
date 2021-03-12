@@ -78,7 +78,3 @@ class LoadCollector(object):
             self.load_publisher.publish(jloads)
             self.mqtt_client.publish(_MQTT_VEHICLE_SYSTEM_LOADS_TOPIC, jloads)
             rate.sleep()
-
-if __name__ == "__main__":
-    col = LoadCollector()
-    col.run()
