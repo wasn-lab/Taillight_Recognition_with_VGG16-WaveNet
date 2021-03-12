@@ -585,6 +585,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         cv::Mat cropped_image;
         if (!crop_ped_image(matrix, cropped_image, obj_pub))
         {
+          cropped_image.release();
           continue;
         }
         count_peds++;
@@ -601,6 +602,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_width_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.rows / (float)cropped_image.cols;
           resize_height_to = int(aspect_ratio * resize_width_to);
+	  resize_height_to = std::max(resize_height_to, max_pixel);
         }
         else
         {  // height larger than width
@@ -608,6 +610,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_height_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.cols / (float)cropped_image.rows;
           resize_width_to = int(aspect_ratio * resize_height_to);
+	  resize_width_to = std::max(resize_width_to, max_pixel);
         }
         // resize image for openpose (max input pixel 368)
         cv::resize(cropped_image, cropped_image, cv::Size(resize_width_to, resize_height_to));
@@ -1385,16 +1388,30 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
  * return true if success
  * return false if fail
  */
-bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject obj_pub)
+bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject& obj_pub)
 {
   // Avoid index out of bounds
   if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
   {
-    obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u - 1;
+    if (matrix.cols > obj_pub.camInfo.u)
+    {
+      obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+    }
+    else
+    {
+      return false;
+    }
   }
-  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows - 1)
+  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
   {
-    obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+    if (matrix.rows > obj_pub.camInfo.v)
+    {
+      obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+    }
+    else
+    {
+      return false;
+    }
   }
   // check bounding box is legal
   if (obj_pub.camInfo.width < 1 || obj_pub.camInfo.height < 1)
@@ -1487,15 +1504,12 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
-      std::cout << obj.using_skip_frame << std::endl;
       if (obj.using_skip_frame == 1)
       {
-        std::cout << "true" << std::endl;
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
       }
       else
       {
-        std::cout << "false" << std::endl;
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
       }
     }
