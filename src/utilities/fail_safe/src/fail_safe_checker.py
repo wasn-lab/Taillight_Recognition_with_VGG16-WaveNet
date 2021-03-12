@@ -19,6 +19,7 @@ from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
 
 _MQTT_FAIL_SAFE_TOPIC = "/fail_safe"
+_MQTT_FAIL_SAFE_STATUS_TOPIC = "vehicle/report/itri/fail_safe_status"
 _MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
 
@@ -225,6 +226,7 @@ class FailSafeChecker(object):
             self.post_issue_if_necessary(current_status)
             current_status_json = json.dumps(current_status)
             self.mqtt_client.publish(_MQTT_FAIL_SAFE_TOPIC, current_status_json)
+            self.mqtt_client.publish(_MQTT_FAIL_SAFE_STATUS_TOPIC, current_status_json)
             self.fail_safe_status_publisher.publish(current_status_json)
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
 
