@@ -8,7 +8,7 @@ class LoadCollectorTest(unittest.TestCase):
     def test_get_current_loads(self):
         now = datetime.datetime.now()
 
-        collector = LoadCollector("127.0.0.1", "1883")
+        collector = LoadCollector("127.0.0.1", 1883)
         collector.ipcs = ["my"]
         collector.setup_records()
         collector.records["my"]["cpu_load"] = "0.16, 0.21, 0.18"
