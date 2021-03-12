@@ -80,11 +80,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_map_based_prediction.s
 screen -t init_dynamic_object_vis
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_dynamic_object_vis.sh^M"
 
-screen -t init_edge_detection
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_edge_detection.sh^M"
-
-screen -t init_adv_to_server_lanelet2
-stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_adv_to_server_lanelet2.sh^M"
+# Do not notify backend in lab env.
+#screen -t init_adv_to_server_lanelet2
+#stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_adv_to_server_lanelet2.sh^M"
 
 screen -t init_pedcross
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pedcross.sh^M"
