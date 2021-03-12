@@ -10,7 +10,9 @@ class ItriMqttClient():
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
         self.client.on_publish = self.on_publish
-        self.client.connect(fqdn, port, 60)
+        print("Try connecting to MQTT server {}, port {}".format(fqdn, port))
+        self.client.connect(fqdn, int(port), 60)
+        print("Successfuly connect to MQTT server")
         self.client.loop_start()
 
     def __del__(self):
