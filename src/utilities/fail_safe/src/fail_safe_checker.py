@@ -18,7 +18,7 @@ from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
 
-_MQTT_FAIL_SAFE_TOPIC = "/fail_safe"
+_MQTT_FAIL_SAFE_TOPIC = "/fail_safe"  # To be removed in the future
 _MQTT_FAIL_SAFE_STATUS_TOPIC = "vehicle/report/itri/fail_safe_status"
 _MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
