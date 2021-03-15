@@ -1,0 +1,31 @@
+<!-- -*- mode: XML -*- -->
+
+<launch>
+  <!-- Node parameters -->
+
+  <!-- Input source -->
+  <!-- 1: LidarDet: /LidarDetection -->
+  <!-- 2: LidarDet_PointPillars_Car: /LidarDetection/Car -->
+  <!-- 3: LidarDet_PointPillars_Ped_Cyc: /LidarDetection/Ped_Cyc -->
+  <!-- 4: VirtualBBoxAbs: /abs_virBB_array -->
+  <!-- 5: VirtualBBoxRel: /rel_virBB_array -->
+  <!-- 6: CameraDetV2: /CameraDetection -->
+  <!-- 7: Tracking2D: /Tracking2D/front_bottom_60 -->
+  <!-- otherwise: Fusion: /SensorFusion -->
+  <arg name="input_source" default="1" />
+
+  <!-- PP filter of drivable area: width (meter) to be expanded from the host lane -->
+  <arg name="use_filter" default="True" />
+  <arg name="expand_left" default="2.2" />
+  <arg name="expand_right" default="0.0" />
+  <arg name="ground_z" default="-3.1" />
+
+  <!-- Launch node -->
+  <node pkg="drivable_area_filter" type="drivable_area_filter" name="drivable_area_filter" cwd="node" output="screen">
+    <param name="input_source" value="$(arg input_source)" />
+    <param name="use_filter" value="$(arg use_filter)" />
+    <param name="expand_left" value="$(arg expand_left)" />
+    <param name="expand_right" value="$(arg expand_right)" />
+    <param name="ground_z" value="$(arg ground_z)" />
+  </node>
+</launch>

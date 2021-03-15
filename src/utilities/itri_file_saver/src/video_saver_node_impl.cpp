@@ -5,21 +5,9 @@
 #include "video_saver_node_impl.h"
 #include "video_saver_args_parser.h"
 
-VideoSaverNodeImpl::VideoSaverNodeImpl()
-#if CV_VERSION_MAJOR == 4
-  : video_
-{
-  video_saver::get_output_filename(), cv::VideoWriter::fourcc('X', '2', '6', '4'), video_saver::get_frame_rate(),
-      cv::Size(video_saver::get_frame_width(), video_saver::get_frame_height())
-}
-#else
-  : video_
-{
-  video_saver::get_output_filename(), CV_FOURCC('X', '2', '6', '4'), video_saver::get_frame_rate(),
-      cv::Size(video_saver::get_frame_width(), video_saver::get_frame_height())
-}
+VideoSaverNodeImpl::VideoSaverNodeImpl(): num_images_(0)
+#if 0
 #endif
-, num_images_(0)
 {
 }
 
@@ -44,20 +32,19 @@ void VideoSaverNodeImpl::image_callback(const sensor_msgs::ImageConstPtr& in_ima
   }
   ++num_images_;
 
-  if (cv_ptr->image.rows == video_saver::get_frame_height() && cv_ptr->image.cols == video_saver::get_frame_width())
-  {
-    video_.write(cv_ptr->image);
+  if (!video_.isOpened()){
+    auto filename = video_saver::get_output_filename();
+#if CV_VERSION_MAJOR == 4
+    auto fourcc = cv::VideoWriter::fourcc('X', '2', '6', '4');
+#else
+    auto fourcc = CV_FOURCC('X', '2', '6', '4');
+#endif
+    auto frame_rate = video_saver::get_frame_rate();
+    auto frame_size = cv::Size(cv_ptr->image.cols, cv_ptr->image.rows);
+    video_.open(filename, fourcc, frame_rate, frame_size);
   }
-  else
-  {
-    cv::Mat img;
-    const int ewidth = video_saver::get_frame_width();
-    const int eheight = video_saver::get_frame_height();
-    LOG(INFO) << "Expect images of " << ewidth << "x" << eheight << ", Got " << cv_ptr->image.rows << "x"
-              << cv_ptr->image.cols;
-    cv::resize(cv_ptr->image, img, cv::Size{ ewidth, eheight });
-    video_.write(img);
-  }
+
+  video_.write(cv_ptr->image);
 }
 
 void VideoSaverNodeImpl::subscribe()

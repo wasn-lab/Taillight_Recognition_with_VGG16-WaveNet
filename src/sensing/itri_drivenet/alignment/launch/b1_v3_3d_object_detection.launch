@@ -1,0 +1,4 @@
+<launch>
+        <node name="alignment_b1_v3" pkg="alignment" type="alignment_b1_v3"  output="screen">
+        </node>
+</launch>

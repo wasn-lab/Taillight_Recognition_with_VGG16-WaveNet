@@ -19,10 +19,11 @@ set(CAMERA_GRABBER_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/camera_grabbe
 set(ASSETS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/assets)
 set(PEDCROSS_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_pedcross/models)
 set(PEDCROSS_TF_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_pedcross_tf/models)
-set(LIGHTNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet/itri_lightnet_main/resources)
+set(LIGHTNET_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_new_layout/itri_lightnet_new_layout/resources)
 set(LIGHTNET_TAINAN_WEIGHTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_lightnet_tainan/itri_lightnet_tainan_main/resources)
 set(LOCALIZATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/localization)
 set(VEHICLE_DAE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../vehicle/vehicle_description/vehicle_body_description/b_bus_description/mesh)
+set(IPP_MODELS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../sensing/itri_interactive_pp/models)
 
 
 function(download_file)
@@ -81,3 +82,7 @@ endif ()
 
 include (cmake/localization.cmake)
 include (cmake/vehicle_dae.cmake)
+
+if (ENABLE_IPP)
+  include(cmake/ipp_models.cmake)
+endif ()

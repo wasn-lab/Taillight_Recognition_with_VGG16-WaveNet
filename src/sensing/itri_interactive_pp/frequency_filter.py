@@ -1,8 +1,8 @@
 #! ./sandbox/bin/python2.7
+
 import rospy
 import tf2_ros
 from msgs.msg import DetectedObjectArray
-
 import time
 
 prev = rospy.Time()
@@ -17,8 +17,13 @@ def publish_msg(data):
     # print('_')
     # if(data.header.stamp - prev).to_sec() > 10:
         # print('Initialize')
+    
+
     if(data.header.stamp - prev).to_sec() > 0.5:
         # print((data.header.stamp - prev).to_sec())
+        for obj in data.objects:
+            obj.track.forecasts = []
+            obj.track.is_ready_prediction = False
         prev = data.header.stamp
         pub = rospy.Publisher(
             '/IPP/delay_Alert',
@@ -42,7 +47,7 @@ def listener_ipp():
             DetectedObjectArray,
             publish_msg)
     elif input_source == 2:
-        rospy.Subscriber('/Tracking3D', DetectedObjectArray, publish_msg)
+        rospy.Subscriber('/PathPredictionOutput', DetectedObjectArray, publish_msg)
     else:
         print("Source not found!")
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
