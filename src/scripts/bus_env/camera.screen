@@ -54,3 +54,6 @@ stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d_right.sh
 
 screen -t init_tracking_2d_fov30
 stuff "/home/camera/itriadv/src/scripts/bus_env/camera/init_tracking_2d_fov30.sh^M"
+
+screen -t replay_jpg
+stuff "/home/camera/itriadv/src/scripts/bus_env/camera/run_replay_jpg.sh^M"
