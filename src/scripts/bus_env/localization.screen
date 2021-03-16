@@ -31,6 +31,9 @@ caption always "%n(%t@%H)"
 screen -t init_load_monitor
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_load_monitor.sh^M"
 
+screen -t init_edge_detection
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_edge_detection.sh^M"
+
 screen -t tmp_init_planning_all_lanelet2
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_planning_all_lanelet2.sh^M"
 
