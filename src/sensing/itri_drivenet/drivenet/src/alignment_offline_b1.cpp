@@ -9,6 +9,8 @@ AlignmentOff::AlignmentOff()
   const camera::id camId = camera::id::front_60;
 #elif CAR_MODEL_IS_C1
   const camera::id camId = camera::id::front_bottom_60;
+#elif CAR_MODEL_IS_B1_V3
+  const camera::id camId = camera::id::front_bottom_60;
 #else
 #error "car model is not well defined"
 #endif
