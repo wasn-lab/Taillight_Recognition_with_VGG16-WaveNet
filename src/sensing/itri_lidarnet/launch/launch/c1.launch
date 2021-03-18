@@ -25,7 +25,7 @@
 	<!-- Grabber & Preprocessing -->
     <arg name="use_oct_compress" default="false" />
 	<arg name="use_filter" default="true" />
-	<arg name="use_roi" default="false" />
+	<arg name="use_roi" default="true" />
 
 	<!-- Stitching-->
 	<arg name="use_old_stitch" default="false"/>
@@ -78,7 +78,6 @@
     <group if="$(eval arg('mode') == 9)">
 		<include file="$(find pc2_compressor)/launch/decmpr.launch" />
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
-		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
 <!-- Lidar Driver ********************************************************************************** -->
@@ -96,10 +95,10 @@
     <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
     <arg name="group_name" value="/LidarFrontRight" />
     <arg name="tf_prefix" value="lidar_front_right" doc="as frame_id" />
-    <arg name="sensor_hostname" value="192.168.0.220" />
+    <arg name="sensor_hostname" value="192.168.0.227" />
     <arg name="udp_dest" value="192.168.0.1" />
-    <arg name="lidar_port" value="7500" />
-    <arg name="imu_port" value="7510" />
+    <arg name="lidar_port" value="7507" />
+    <arg name="imu_port" value="7517" />
     </include>
 
     <!-- Top-->
