@@ -147,8 +147,8 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       //-------------------------- ROI
       if (g_use_roi)
       {
-        // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0,
-        // 0.1, -30, 4, 0, 30.0, -5.0, 0.01);
+        // additial remove outliner for front-left lidar
+        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -20, 0, -20, 1.4, -3.0, 0.1);
       }
 
       // assign
@@ -243,8 +243,8 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       // ROI
       if (g_use_roi)
       {
-        // *input_cloud_tmp = CuboidFilter().hollow_removal_IO<PointXYZI>(input_cloud_tmp, -7.0, 1, -1.4, 1.4, -3.0,
-        // 0.1, -30.0, 4, -30.0, 0, -5.0, 0.01);
+        // additial remove outliner for front-left lidar
+        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -20, 0, -1.4, 20, -3.0, 0.1);
       }
 
       // assign
@@ -541,14 +541,13 @@ int main(int argc, char** argv)
     cout << "STITCHING PARAMETER FIND!" << endl;
   }
 
-  ROS_INFO("Wait for /LidarFrontTop/Raw");
-  ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw");
-  ROS_INFO("Wait for /LidarFrontLeft/Raw");
-  ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw");
-  ROS_INFO("Wait for /LidarFrontRight/Raw");
-  ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw");
-
-  ROS_INFO("/LidarFrontTop/Raw, /LidarFrontLeft/Raw, /LidarFrontRight/Raw are ready.");
+  // ROS_INFO("Wait for /LidarFrontTop/Raw");
+  // ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontTop/Raw");
+  // ROS_INFO("Wait for /LidarFrontLeft/Raw");
+  // ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontLeft/Raw");
+  // ROS_INFO("Wait for /LidarFrontRight/Raw");
+  // ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/LidarFrontRight/Raw");
+  // ROS_INFO("/LidarFrontTop/Raw, /LidarFrontLeft/Raw, /LidarFrontRight/Raw are ready.");
 
   // subscriber
   ros::Subscriber sub_LidarFrontLeft =
