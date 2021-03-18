@@ -164,7 +164,7 @@ endif()
 add_library(${PROJECT_NAME}_demo OBJECT ${DEMO_MODE_SOURCE})
 add_dependencies(${PROJECT_NAME}_demo ${PROJECT_NAME}_framework ${catkin_EXPORTED_TARGETS})
 
-if (USE_CAMERA_GSTREAMER_GRABBER)
+if (USE_CAMERA_GSTREAMER_GRABBER AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
   cuda_add_executable(${PROJECT_NAME}_node src/main_jetson_xavier.cpp
                       $<TARGET_OBJECTS:${PROJECT_NAME}_demo>)
   target_link_libraries(${PROJECT_NAME}_node
