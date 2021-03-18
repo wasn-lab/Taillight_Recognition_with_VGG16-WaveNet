@@ -91,6 +91,15 @@ if (USE_CAMERA_DRIVEWORKS_GRABBER)
   endif()
 endif ()
 
+if (USE_CAMERA_GSTREAMER_GRABBER)
+  # Find MvExtractor    
+    find_library(ITRI_GSTREAMER_GRABBER_LIBRARY libmvextractor_standalone.so.1.0.1
+               HINTS ${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber)
+  # set runtime libary path  
+    SET(CMAKE_EXE_LINKER_FLAGS 
+      "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,${CMAKE_CURRENT_LIST_DIR}/src/CameraGrabber")    
+endif ()
+
 find_package(Glog)
 if (NOT GLOG_FOUND)
   message(FATAL_ERROR "glog not found. Please run\n sudo apt-get install libgoogle-glog-dev")
@@ -109,6 +118,7 @@ list(APPEND CAMERA_GRABBER_INCLUDE_DIRS
   src/Util
   src/CameraGrabber
   src/RosImagePubSub
+  src/MvExtractor
   ${DRIVENET_INCLUDE})
 
 if (USE_CAMERA_GSTREAMER_GRABBER)
@@ -154,10 +164,12 @@ endif()
 add_library(${PROJECT_NAME}_demo OBJECT ${DEMO_MODE_SOURCE})
 add_dependencies(${PROJECT_NAME}_demo ${PROJECT_NAME}_framework ${catkin_EXPORTED_TARGETS})
 
-if (USE_CAMERA_GSTREAMER_GRABBER)
+if (USE_CAMERA_GSTREAMER_GRABBER AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
   cuda_add_executable(${PROJECT_NAME}_node src/main_jetson_xavier.cpp
                       $<TARGET_OBJECTS:${PROJECT_NAME}_demo>)
-  target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_framework)
+  target_link_libraries(${PROJECT_NAME}_node
+                        ${PROJECT_NAME}_framework
+                        ${ITRI_GSTREAMER_GRABBER_LIBRARY})
   add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_demo ${PROJECT_NAME}_framework)
 endif ()
 

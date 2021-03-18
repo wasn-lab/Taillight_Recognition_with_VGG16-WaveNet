@@ -3,6 +3,8 @@
       <arg name="mode" value="9" />
       <arg name="hardware_enable" value="false" />
     </include>
+    <include file="$(find msg_replay)/launch/replay_cmpr_pc2_to_camera.launch">
+    </include>
 
     <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_compressed_2021-02-03.bag -l" />
 

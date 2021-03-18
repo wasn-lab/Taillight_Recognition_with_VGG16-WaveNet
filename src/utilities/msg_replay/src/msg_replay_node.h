@@ -24,9 +24,8 @@ class MsgReplayNode
 private:
   // member variables
   ros::Subscriber subscriber_;
-  ros::Publisher publisher_;
+  ros::Publisher replay_publisher_, heartbeat_publisher_;
   ros::NodeHandle node_handle_;
-  std::atomic_uint32_t num_replayed_msg_;
   std::string input_topic_, output_topic_;
 
   // functions

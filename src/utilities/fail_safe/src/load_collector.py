@@ -8,10 +8,12 @@ import json
 import rospy
 from std_msgs.msg import String
 from car_model_helper import get_car_model_as_str
+from itri_mqtt_client import ItriMqttClient
 
+_MQTT_VEHICLE_SYSTEM_LOADS_TOPIC = "vehicle/report/system_loads"
 
 class LoadCollector(object):
-    def __init__(self):
+    def __init__(self, mqtt_fqdn, mqtt_port):
         rospy.init_node("LoadCollector")
         car_model = get_car_model_as_str()
         self.ipcs = []
@@ -34,6 +36,7 @@ class LoadCollector(object):
         output_topic = "/vehicle/report/system_loads"
         self.load_publisher = rospy.Publisher(output_topic, String, queue_size=10)
         rospy.logwarn("Publish on %s", output_topic)
+        self.mqtt_client = ItriMqttClient(mqtt_fqdn, mqtt_port)
 
     def setup_records(self):
         now = datetime.datetime.now()
@@ -71,9 +74,7 @@ class LoadCollector(object):
         rate = rospy.Rate(1)  # FPS: 1
         while not rospy.is_shutdown():
             loads = self.get_current_loads()
-            self.load_publisher.publish(json.dumps(loads))
+            jloads = json.dumps(loads);
+            self.load_publisher.publish(jloads)
+            self.mqtt_client.publish(_MQTT_VEHICLE_SYSTEM_LOADS_TOPIC, jloads)
             rate.sleep()
-
-if __name__ == "__main__":
-    col = LoadCollector()
-    col.run()
