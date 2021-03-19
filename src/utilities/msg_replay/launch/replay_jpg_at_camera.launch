@@ -1,0 +1,10 @@
+<launch>
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_front_bottom_60_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_bottom_60/jpg/origin -output_topic /cam/front_bottom_60/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_front_top_far_30_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_top_far_30/jpg/origin -output_topic /cam/front_top_far_30/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_front_top_close_120_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/front_top_close_120/jpg/origin -output_topic /cam/front_top_close_120/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_right_front_60_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_front_60/jpg/origin -output_topic /cam/right_front_60/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_right_back_60_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_back_60/jpg/origin -output_topic /cam/right_back_60/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_left_front_60_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_front_60/jpg/origin -output_topic /cam/left_front_60/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_left_back_60_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_back_60/jpg/origin -output_topic /cam/left_back_60/jpg" />
+  <node pkg="msg_replay" type="msg_replay_node" name="replay_back_top_120_jpg" output="screen" cwd="node" respawn="true" args="-input_topic /cam/back_top_120/jpg/origin -output_topic /cam/back_top_120/jpg" />
+</launch>
