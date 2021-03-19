@@ -57,10 +57,10 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
     overtake_over.data = 0;
   }
 
-  if (!lane_event_enable_overtake && project_dis < 0.5)
-  {
-    overtake_over.data = 1;
-  }
+  // if (!lane_event_enable_overtake && project_dis < 0.5)
+  // {
+  //   overtake_over.data = 1;
+  // }
   
   overtake_over_pub.publish(overtake_over);
 }
