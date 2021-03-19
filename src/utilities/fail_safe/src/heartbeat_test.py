@@ -58,7 +58,7 @@ class HeartbeatTest(unittest.TestCase):
 
         status, status_str = cam_object_detection_func(det_obj_arr, 12.345)
         self.assertEqual(status, OK)
-        self.assertEqual(status_str, "FPS: 12.35")
+        self.assertEqual(status_str, "FPS: 12.34")
 
         obj.camInfo = _gen_cam_info_array(low_prob=True)
         status, status_str = cam_object_detection_func(det_obj_arr, 12.345)

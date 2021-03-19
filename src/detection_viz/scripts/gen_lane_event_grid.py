@@ -126,7 +126,8 @@ class Node:
                 self.y1_max_,
                 self.y1_min_,
                 is_warning_c1):
-            marker.points.append(p)
+            pass
+            # marker.points.append(p)
         for p in self.create_lane_event_grid_main(
                 self.x2_max_,
                 self.x2_min_,

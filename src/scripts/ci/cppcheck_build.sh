@@ -20,5 +20,6 @@ catkin_make \
     -DCMAKE_BUILD_TYPE=${build_type} \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
     -DCATKIN_BLACKLIST_PACKAGES="dl_data;localization;opengl_test" \
+    -j8 \
     -DCMAKE_CXX_CPPCHECK="cppcheck;--template=gcc;--enable=style,warning;--inconclusive;--inline-suppr;--suppressions-list=${repo_dir}/src/scripts/ci/cppcheck_suppression.txt" ${EXTRA_CATKIN_ARGS} ${EXTRA_CATKIN_ARGS}
 popd
