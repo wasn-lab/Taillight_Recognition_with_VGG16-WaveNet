@@ -5,6 +5,7 @@
  *	 Institute: ITRI ICL U300
  */
 #include "localization_supervision.h"
+#include <std_msgs/Empty.h>
 static ros::Publisher marker_pub;
 #define RE_BY_LOCAL 1
 
@@ -115,7 +116,7 @@ bool msg_fq_check(const std::chrono::high_resolution_clock::time_point& start,
   return (threshold >= fq_ms.count());
 }
 
-void lidarfronttop_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
+void lidar_all_callback(const std_msgs::Empty::ConstPtr& msg)
 {
   lidarall_start_ms = std::chrono::high_resolution_clock::now();
 }
@@ -177,7 +178,7 @@ int main(int argc, char** argv)
   visualization_msgs::Marker marker;
   ros::Rate loop_rate(fq);
   ros::Subscriber currentPoseSub = nh.subscribe("current_pose", 1, pose_callback);
-  ros::Subscriber LidFrontTopSub = nh.subscribe("LidarAll", 1, lidarfronttop_callback);
+  ros::Subscriber lidar_all_sub = nh.subscribe("/LidarAll/replay_to_localization/heartbeat", 1, lidar_all_callback);
   ros::Subscriber gnss2local_sub = nh.subscribe("gnss2local_data", 10, gnss2local_callback);
   ros::Subscriber stable_sub = nh.subscribe("lidar_locaization_fixed", 10, stable_callback);
 

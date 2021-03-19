@@ -12,6 +12,7 @@ DEFINE_bool(do_resize, true, "Resize image size, default: true");
 DEFINE_bool(do_crop, true, "Crop image, default: true");
 DEFINE_string(password, "nvidia", "Specify the sudo password for ar0231 camera driver , default: nivida");
 DEFINE_bool(car_driver, true, "true :car camera driver; false: laboratory camera driver, default: true");
+DEFINE_bool(motion_vector, false, "true :enable Mv extractor; false: disable Mv extractor, default: false");
 
 std::string get_mode()
 {
@@ -46,6 +47,11 @@ std::string get_password()
 bool car_driver()
 {
   return FLAGS_car_driver;
+}
+
+bool motion_vector()
+{
+  return FLAGS_motion_vector;
 }
 
 };  // namespace
