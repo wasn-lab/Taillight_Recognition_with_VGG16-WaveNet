@@ -81,25 +81,20 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
 
 void Track2DNode::subscribe_and_advertise_topics()
 {
-  /**
-   * enum id
-   * {
-   *  begin = 0,
-   *  front_bottom_60 = begin,  // 0
-   *  front_top_far_30,         // 1
-   *  front_bottom_60_crop,     // 2
-   *  _dummy1,                  // 3  // NOLINT
-   *  front_top_close_120,      // 4
-   *  right_front_60,           // 5
-   *  right_back_60,            // 6
-   *  _dummy2,                  // 7  // NOLINT
-   *  left_front_60,            // 8
-   *  left_back_60,             // 9
-   *  back_top_120,             // 10
-   *  _dummy3,                  // 11  // NOLINT
-   *  num_ids                   // 12
-   * };
-   */
+  // enum id
+  // {
+  //   begin = 0,
+  //   front_bottom_60 = begin,  // 0*
+  //   front_top_far_30,         // 1*
+  //   front_top_close_120,      // 2  
+  //   right_front_60,           // 3
+  //   right_back_60,            // 4*
+  //   left_front_60,            // 5  
+  //   left_back_60,             // 6*
+  //   back_top_120,             // 7
+  //   num_ids                   // 8                      
+  // };
+
   if (in_source_ == 0)
   {
     LOG_INFO << "Input Source: /CameraDetection" << std::endl;
@@ -107,14 +102,14 @@ void Track2DNode::subscribe_and_advertise_topics()
     camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/front_bottom_60", 2);
   }
-  else if (in_source_ == 9)
+  else if (in_source_ == 6)
   {
     LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/left_back_60" << std::endl;
     camera_sub_ = nh_.subscribe("/CameraDetection", 1, &Track2DNode::callback_camera, this);
     track2d_pub_ = nh_.advertise<msgs::DetectedObjectArray>("/Tracking2D/left_back_60", 2);
   }
-  else if (in_source_ == 6)
+  else if (in_source_ == 4)
   {
     LOG_INFO << "Input Source: /CameraDetection" << std::endl;
     LOG_INFO << "Output Topic: /Tracking2D/right_back_60" << std::endl;

@@ -10,7 +10,7 @@
 #include <pcl/point_types.h>
 
 /// projection
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
 #include <projection/projector3.h>
 #else
 #error "car model is not well defined"
@@ -19,7 +19,7 @@
 class Alignment
 {
 private:
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_C1
+#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
   Projector3 projector3_;
 #else
 #error "car model is not well defined"

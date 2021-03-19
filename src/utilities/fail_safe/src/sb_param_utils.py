@@ -27,6 +27,7 @@ def __get_sb_param(sb_param_name):
     # fall-back
     inis = {"B1_V2": "sb_b1.ini",
             "B1_V3": "sb_b1.ini",
+            "B1": "sb_b1.ini",
             "C1": "sb_c1.ini"}
     car_model = get_car_model_as_str()
     car_model_dir = rospkg.RosPack().get_path("car_model")

@@ -585,6 +585,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         cv::Mat cropped_image;
         if (!crop_ped_image(matrix, cropped_image, obj_pub))
         {
+          cropped_image.release();
           continue;
         }
         count_peds++;
@@ -601,6 +602,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_width_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.rows / (float)cropped_image.cols;
           resize_height_to = int(aspect_ratio * resize_width_to);
+	  resize_height_to = std::min(std::max(resize_height_to, 0), max_pixel);
         }
         else
         {  // height larger than width
@@ -608,9 +610,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_height_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.cols / (float)cropped_image.rows;
           resize_width_to = int(aspect_ratio * resize_height_to);
+	  resize_width_to = std::min(std::max(resize_width_to, 0), max_pixel);
         }
         // resize image for openpose (max input pixel 368)
         cv::resize(cropped_image, cropped_image, cv::Size(resize_width_to, resize_height_to));
+        cv::Mat padded;
+        padded.create(max_pixel, max_pixel, cropped_image.type());
+        padded.setTo(cv::Scalar::all(0));
+        cropped_image.copyTo(padded(cv::Rect(0, 0, cropped_image.cols, cropped_image.rows)));
         inference_start = ros::Time::now();
         // search index in skeleton buffer
         int skeleton_index = -1;
@@ -632,7 +639,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             new_person.timestamp_ = msg->header.stamp;
             new_person.track_id_ = obj_pub.track.id;
 
-            keypoints = get_openpose_keypoint(cropped_image);
+            keypoints = get_openpose_keypoint(padded);
 
             cv::Point2f zero_keypoint;
             zero_keypoint.x = 0;
@@ -688,7 +695,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             // if there is data in skeleton buffer but calculated_skeleton is already empty
             if (skeleton_buffer.at(skeleton_index).calculated_skeleton_.empty())
             {
-              keypoints = get_openpose_keypoint(cropped_image);
+              keypoints = get_openpose_keypoint(padded);
 
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
 
@@ -1385,16 +1392,30 @@ float PedestrianEvent::adjust_probability(msgs::PedObject obj)
  * return true if success
  * return false if fail
  */
-bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject obj_pub)
+bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject& obj_pub)
 {
   // Avoid index out of bounds
   if (obj_pub.camInfo.u + obj_pub.camInfo.width > matrix.cols)
   {
-    obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u - 1;
+    if (matrix.cols > obj_pub.camInfo.u)
+    {
+      obj_pub.camInfo.width = matrix.cols - obj_pub.camInfo.u;
+    }
+    else
+    {
+      return false;
+    }
   }
-  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows - 1)
+  if (obj_pub.camInfo.v + obj_pub.camInfo.height > matrix.rows)
   {
-    obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+    if (matrix.rows > obj_pub.camInfo.v)
+    {
+      obj_pub.camInfo.height = matrix.rows - obj_pub.camInfo.v;
+    }
+    else
+    {
+      return false;
+    }
   }
   // check bounding box is legal
   if (obj_pub.camInfo.width < 1 || obj_pub.camInfo.height < 1)
@@ -1487,15 +1508,12 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
-      std::cout << obj.using_skip_frame << std::endl;
       if (obj.using_skip_frame == 1)
       {
-        std::cout << "true" << std::endl;
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
       }
       else
       {
-        std::cout << "false" << std::endl;
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
       }
     }
@@ -2252,37 +2270,87 @@ void PedestrianEvent::pedestrian_event()
   ros::Subscriber sub_12;
   ros::Subscriber sub_13;
   ros::Subscriber sub_14;
-  if (input_source_ == 4)  // if (input_source_ == 4)
+
+  if (input_source_ == 4)
   {
-    sub_1 = nh_sub_1.subscribe("/Tracking2D/front_bottom_60", 1, &PedestrianEvent::front_callback,
-                               this);  // /Tracking2D/front_bottom_60 is subscirbe topic
-    sub_2 = nh_sub_2.subscribe("/Tracking2D/left_back_60", 1, &PedestrianEvent::left_callback,
-                               this);  // /Tracking2D/left_back_60 is subscirbe topic
-    sub_3 = nh_sub_2.subscribe("/Tracking2D/right_back_60", 1, &PedestrianEvent::right_callback,
-                               this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_4 = nh_sub_2.subscribe("/Tracking2D/front_top_far_30", 1, &PedestrianEvent::fov30_callback,
-                               this);  // /Tracking2D/right_back_60 is subscirbe topic
-    sub_5 = nh_sub_2.subscribe("/cam/front_bottom_60", 1, &PedestrianEvent::cache_front_image_callback,
-                               this);  // /cam/F_right is subscirbe topic
-    sub_6 = nh_sub_2.subscribe("/cam/left_back_60", 1, &PedestrianEvent::cache_left_image_callback,
-                               this);  // /cam/F_center is subscirbe topic
-    sub_7 = nh_sub_2.subscribe("/cam/right_back_60", 1, &PedestrianEvent::cache_right_image_callback,
-                               this);  // /cam/F_center is subscirbe topic
-    sub_8 =
-        nh_sub_2.subscribe("/planning/scenario_planning/trajectory", 1, &PedestrianEvent::lanelet2_trajectory_callback,
-                           this);  // /cam/F_center is subscirbe topic
-    sub_9 = nh_sub_2.subscribe("/planning/mission_planning/route_marker", 1, &PedestrianEvent::lanelet2_route_callback,
-                               this);  // /cam/F_center is subscirbe topic
-    sub_10 = nh_sub_2.subscribe("/PedCross/Pedestrians/front_bottom_60", 1, &PedestrianEvent::draw_ped_front_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_11 = nh_sub_2.subscribe("/PedCross/Pedestrians/left_back_60", 1, &PedestrianEvent::draw_ped_left_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_12 = nh_sub_2.subscribe("/PedCross/Pedestrians/right_back_60", 1, &PedestrianEvent::draw_ped_right_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_13 = nh_sub_2.subscribe("/cam/front_top_far_30", 1, &PedestrianEvent::cache_fov30_image_callback,
-                                this);  // /cam/F_center is subscirbe topic
-    sub_14 = nh_sub_2.subscribe("/PedCross/Pedestrians/front_top_far_30", 1, &PedestrianEvent::draw_ped_fov30_callback,
-                                this);  // /cam/F_center is subscirbe topic
+    // input topics from itri_tracking_2d
+    std::string in_topic1 = "Tracking2D/front_bottom_60";
+    std::cout << "Wait for input topic " << in_topic1 << std::endl;
+    ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic1);
+    std::cout << in_topic1 << " is ready" << std::endl;
+
+    std::string in_topic2 = "Tracking2D/left_back_60";
+    // std::cout << "Wait for input topic " << in_topic2 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic2);
+    // std::cout << in_topic2 << " is ready" << std::endl;
+
+    std::string in_topic3 = "Tracking2D/right_back_60";
+    // std::cout << "Wait for input topic " << in_topic3 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic3);
+    // std::cout << in_topic3 << " is ready" << std::endl;
+
+    std::string in_topic4 = "Tracking2D/front_top_far_30";
+    // std::cout << "Wait for input topic " << in_topic4 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic4);
+    // std::cout << in_topic4 << " is ready" << std::endl;
+
+    // input topics from raw images
+    std::string in_topic5 = "cam/front_bottom_60";
+    std::cout << "Wait for input topic " << in_topic5 << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
+    std::cout << in_topic5 << " is ready" << std::endl;
+
+    std::string in_topic6 = "cam/left_back_60";
+    // std::cout << "Wait for input topic " << in_topic6 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
+    // std::cout << in_topic6 << " is ready" << std::endl;
+
+    std::string in_topic7 = "cam/right_back_60";
+    // std::cout << "Wait for input topic " << in_topic7 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
+    // std::cout << in_topic7 << " is ready" << std::endl;
+
+    std::string in_topic8 = "cam/front_top_far_30";
+    // std::cout << "Wait for input topic " << in_topic8 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
+    // std::cout << in_topic8 << " is ready" << std::endl;
+
+    // input topics from pedestrian_subscriber.py
+    // Warning: Do NOT apply waitForMessage to topics of PedCross/Pedestrian/...
+    // since they are generated by itri_pedcross itself
+    std::string in_topic9 = "PedCross/Pedestrians/front_bottom_60";
+    std::string in_topic10 = "PedCross/Pedestrians/left_back_60";
+    std::string in_topic11 = "PedCross/Pedestrians/right_back_60";
+    std::string in_topic12 = "PedCross/Pedestrians/front_top_far_30";
+
+    // input topics from planning
+    std::string in_topic13 = "planning/scenario_planning/trajectory";
+    // std::cout << "Wait for input topic " << in_topic13 << std::endl;
+    // ros::topic::waitForMessage<autoware_planning_msgs::Trajectory>(in_topic13);
+    // std::cout << in_topic13 << " is ready" << std::endl;
+
+    std::string in_topic14 = "planning/mission_planning/route_marker";
+    // std::cout << "Wait for input topic " << in_topic14 << std::endl;
+    // ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic14);
+    // std::cout << in_topic14 << " is ready" << std::endl;
+
+    sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::front_callback, this);
+    sub_2 = nh_sub_2.subscribe(in_topic2, 1, &PedestrianEvent::left_callback, this);
+    sub_3 = nh_sub_2.subscribe(in_topic3, 1, &PedestrianEvent::right_callback, this);
+    sub_4 = nh_sub_2.subscribe(in_topic4, 1, &PedestrianEvent::fov30_callback, this);
+
+    sub_5 = nh_sub_2.subscribe(in_topic5, 1, &PedestrianEvent::cache_front_image_callback, this);
+    sub_6 = nh_sub_2.subscribe(in_topic6, 1, &PedestrianEvent::cache_left_image_callback, this);
+    sub_7 = nh_sub_2.subscribe(in_topic7, 1, &PedestrianEvent::cache_right_image_callback, this);
+    sub_8 = nh_sub_2.subscribe(in_topic8, 1, &PedestrianEvent::cache_fov30_image_callback, this);
+
+    sub_9 = nh_sub_2.subscribe(in_topic9, 1, &PedestrianEvent::draw_ped_front_callback, this);
+    sub_10 = nh_sub_2.subscribe(in_topic10, 1, &PedestrianEvent::draw_ped_left_callback, this);
+    sub_11 = nh_sub_2.subscribe(in_topic11, 1, &PedestrianEvent::draw_ped_right_callback, this);
+    sub_12 = nh_sub_2.subscribe(in_topic12, 1, &PedestrianEvent::draw_ped_fov30_callback, this);
+
+    sub_13 = nh_sub_2.subscribe(in_topic13, 1, &PedestrianEvent::lanelet2_trajectory_callback, this);
+    sub_14 = nh_sub_2.subscribe(in_topic14, 1, &PedestrianEvent::lanelet2_route_callback, this);
   }
 
   // Create AsyncSpinner, run it on all available cores and make it process custom callback queue
@@ -2471,6 +2539,12 @@ int main(int argc, char** argv)
   nh.param<int>("/pedestrian_event/crossing_threshold", pe.cross_threshold_, 55);
   nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
   nh.param<double>("/pedestrian_event/ground_z", pe.ground_z_, -5);
+  nh.param<int>("/pedestrian_event/car_model", pe.car_model, 0);
+  if (pe.car_model == 1)
+  {
+    pe.scaling_ratio_width_ = 0.475;
+    pe.scaling_ratio_height_ = 0.475;
+  }
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
   pe.tf_client_ = nh.serviceClient<msgs::PredictCrossing>("pedcross_tf");

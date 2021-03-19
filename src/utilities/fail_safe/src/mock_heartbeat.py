@@ -20,7 +20,7 @@ class MockHeartbeatGenerator():
                 self.publishers.append(rospy.Publisher(topic, Empty, queue_size=1))
 
     def run(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(10.345)
         cnt = 0
         while not rospy.is_shutdown():
             if cnt == 0:
