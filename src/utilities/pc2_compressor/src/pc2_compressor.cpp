@@ -41,17 +41,8 @@ static msgs::CompressedPointCloud2ConstPtr __compress(const sensor_msgs::PointCl
   {
     auto org_size = size_of_msg(in_msg);
     auto cmpr_size = size_of_msg(cmpr_msg);
-    std::string field_names;
-    for (const auto& field : in_msg->fields)
-    {
-      field_names += field.name + "(datatype: " + std::to_string(field.datatype) + ") ";
-    }
-    if (!field_names.empty())
-    {
-      field_names.pop_back();
-    }
     LOG(INFO) << "Compression ratio: " << double(cmpr_size) / org_size << " (" << cmpr_size << "/" << org_size << ")"
-              << ", point cloud fields: " << field_names;
+              << ", " << describe(in_msg);
   }
 
   return cmpr_msg;
@@ -189,6 +180,25 @@ uint64_t size_of_msg(const sensor_msgs::PointCloud2ConstPtr& msg)
 uint64_t size_of_msg(const msgs::CompressedPointCloud2ConstPtr& msg)
 {
   return sizeof(msg->header) + msg->data.size();
+}
+
+std::string describe(const sensor_msgs::PointCloud2ConstPtr& in_msg)
+{
+  std::string field_names;
+  for (const auto& field : in_msg->fields)
+  {
+    field_names += field.name + "(datatype: " + std::to_string(field.datatype) + ") ";
+  }
+  if (!field_names.empty())
+  {
+    field_names.pop_back();
+  }
+  auto num_points = in_msg->height * in_msg->width;
+  auto is_bigendian = in_msg->is_bigendian ? "true" : "false";
+  auto is_dense = in_msg->is_dense ? "true" : "false";
+  return "#points: " + std::to_string(num_points) + ", is_bigendian: " + is_bigendian +
+         ", point_step: " + std::to_string(in_msg->point_step) + ", row_step: " + std::to_string(in_msg->row_step) +
+         ", is_dense: " + is_dense + ", point cloud fields: " + field_names;
 }
 
 };  // namespace pc2_compressor
