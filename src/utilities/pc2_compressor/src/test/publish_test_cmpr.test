@@ -1,7 +1,7 @@
 <launch>
     <include file="$(find pc2_compressor)/launch/cmpr_and_verify.launch">
     </include>
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find pc2_compressor)/src/test/lidar_raw_2020-03-10-10-48-39_41_1s.bag -l" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-12-28-16-53-14_21.bag -l" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
