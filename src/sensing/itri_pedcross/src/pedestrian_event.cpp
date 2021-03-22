@@ -304,7 +304,6 @@ void PedestrianEvent::veh_info_callback(const msgs::VehInfo::ConstPtr& msg)
 void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerArray::ConstPtr& msg)
 {
   std::lock_guard<std::mutex> lk(mu_lanelet2_route_);
-  std::cout << *msg << std::endl;
   ros::Time start;
   start = ros::Time::now();
   lanelet2_route_left_.clear();
