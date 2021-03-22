@@ -9,6 +9,7 @@ import logging
 import rospy
 # other msg types: CompressedImage, PointCloud2
 from sensor_msgs.msg import Image, PointCloud2
+from msgs.msg import DetectedObjectArray
 
 class HZCalculatorNode(object):
     def __init__(self, duration):
@@ -93,6 +94,18 @@ class HZCalculatorNode(object):
              "counts": 0},
             {"topic": "/cam/back_top_120/detect_image",
              "type": Image,
+             "callback": self._callback,
+             "counts": 0},
+            {"topic": "/LidarDetection/Car",
+             "type": DetectedObjectArray,
+             "callback": self._callback,
+             "counts": 0},
+            {"topic": "/LidarDetection",
+             "type": DetectedObjectArray,
+             "callback": self._callback,
+             "counts": 0},
+            {"topic": "/LidarFrontTop/Localization",
+             "type": PointCloud2,
              "callback": self._callback,
              "counts": 0},
             {"topic": "/LidarAll",
