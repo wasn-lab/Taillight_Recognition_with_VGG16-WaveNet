@@ -114,9 +114,9 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
 #if CAR_MODEL_IS_B1_V2
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.5);
 #elif CAR_MODEL_IS_B1_V3
-      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
 #elif CAR_MODEL_IS_C1
-      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
 #else
       #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -148,13 +148,14 @@ void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointClo
       if (g_use_roi)
       {
         // additial remove outliner for front-left lidar
-        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -20, 0, -20, 1.4, -3.0, 0.1);
+        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -25, 2, -25, 1.5, -3.0, 0);
       }
 
       // assign
       *g_cloudPtr_LidarFrontLeft = *input_cloud_tmp;
 
       // publish
+      pcl_conversions::toPCL(ros::Time::now(), g_cloudPtr_LidarFrontLeft->header.stamp);
       g_cloudPtr_LidarFrontLeft->header.frame_id = "lidar";
       g_pub_LidarFrontLeft.publish(*g_cloudPtr_LidarFrontLeft);
 
@@ -209,9 +210,9 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 #if CAR_MODEL_IS_B1_V2
       *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 32, 0.5);
 #elif CAR_MODEL_IS_B1_V3
-      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
 #elif CAR_MODEL_IS_C1
-      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1.5);
+      *output_cloud_tmp_ring = NoiseFilter().runRingOutlierRemoval(input_cloud_tmp_ring, 64, 1);
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
@@ -243,14 +244,15 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
       // ROI
       if (g_use_roi)
       {
-        // additial remove outliner for front-left lidar
-        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -20, 0, -1.4, 20, -3.0, 0.1);
+        // additial remove outliner for front-right lidar
+        *input_cloud_tmp = CuboidFilter().hollow_removal<PointXYZI>(input_cloud_tmp, -25, 2, -1.5, 25, -3.0, 0);
       }
 
       // assign
       *g_cloudPtr_LidarFrontRight = *input_cloud_tmp;
 
       // publish
+      pcl_conversions::toPCL(ros::Time::now(), g_cloudPtr_LidarFrontRight->header.stamp);	
       g_cloudPtr_LidarFrontRight->header.frame_id = "lidar";
       g_pub_LidarFrontRight.publish(*g_cloudPtr_LidarFrontRight);
     }
@@ -300,7 +302,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
 #else
     #error CORRESPONDING CAR MODEL NOT FOUND.
 #endif
-
+    pcl_conversions::toPCL(ros::Time::now(), localization_cloud->header.stamp);
     g_pub_LidarFrontTop_Localization.publish(*localization_cloud);
 
     // Ring Filter
@@ -350,6 +352,7 @@ void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointClou
       *g_cloudPtr_LidarFrontTop = *input_cloud_tmp;
 
       // publish
+      pcl_conversions::toPCL(ros::Time::now(), g_cloudPtr_LidarFrontTop->header.stamp);
       g_cloudPtr_LidarFrontTop->header.frame_id = "lidar";
       g_pub_LidarFrontTop.publish(*g_cloudPtr_LidarFrontTop);
     }
