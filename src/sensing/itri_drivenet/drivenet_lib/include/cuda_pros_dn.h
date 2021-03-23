@@ -9,5 +9,5 @@ extern "C" void cudaResize_gpu_memory_preprocess(float* d_out, int result_width,
                                                  int ori_width, int ori_height, int N);
 extern "C" void cudaResize_gpu_memory_preprocess_for_cv(unsigned char* d_out, int result_width, int result_height,
                                                         unsigned char* d_in, int ori_width, int ori_height, int N);
-}
+}  // namespace DriveNet
 #endif

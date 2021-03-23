@@ -17,7 +17,9 @@ public:
   void init(int inputW, int inputH);
   float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW);
   float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize);
-  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize, int crop_size, int crop_offset);
+  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize, int crop_size,
+                       int crop_offset);
+
 private:
   DriveNet_npp::NPPResizer* resizer;
 
