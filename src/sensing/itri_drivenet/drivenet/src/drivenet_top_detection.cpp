@@ -4,7 +4,6 @@
 #include <mutex>
 #include <std_msgs/Empty.h>
 
-
 #include "drivenet/drivenet.h"
 
 using namespace DriveNet;
@@ -243,8 +242,8 @@ int main(int argc, char** argv)
 
     if (g_is_compressed)
     {
-      cam_subs[cam_order] =
-          nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1,
+                                         f_cam_decodes_callbacks[cam_order]);
     }
     else
     {
@@ -255,8 +254,10 @@ int main(int argc, char** argv)
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
-    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
-    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
+    g_heartbeat_pubs[cam_order] =
+        nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_time_info_pubs[cam_order] =
+        nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -324,7 +325,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 {
   msgs::DetectedObject det_obj;
   msgs::BoxPoint box_point;
-  std::vector<msgs::CamInfo> cam_info_vector;  
+  std::vector<msgs::CamInfo> cam_info_vector;
   msgs::CamInfo cam_info;
 
   // int l_check = 2;
@@ -370,7 +371,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
-  cam_info_vector.push_back(cam_info);  
+  cam_info_vector.push_back(cam_info);
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info_vector;

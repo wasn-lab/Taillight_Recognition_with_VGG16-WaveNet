@@ -309,8 +309,8 @@ int main(int argc, char** argv)
 
     if (g_is_compressed)
     {
-      cam_subs[cam_order] =
-          nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1,
+                                         f_cam_decodes_callbacks[cam_order]);
     }
     else
     {
@@ -321,8 +321,10 @@ int main(int argc, char** argv)
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
-    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
-    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
+    g_heartbeat_pubs[cam_order] =
+        nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_time_info_pubs[cam_order] =
+        nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -390,10 +392,9 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 {
   msgs::DetectedObject det_obj;
   msgs::BoxPoint box_point;
-  std::vector<msgs::CamInfo> cam_info_vector;  
+  std::vector<msgs::CamInfo> cam_info_vector;
   msgs::CamInfo cam_info;
 
-  
   // int l_check = 2;
   // int r_check = 2;
   float distance = -1;
@@ -439,7 +440,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
     det_obj.bPoint = box_point;
   }
   det_obj.distance = distance;
-  
 
   cam_info.u = box.x1;
   cam_info.v = box.y1;
@@ -448,7 +448,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
-  cam_info_vector.push_back(cam_info);  
+  cam_info_vector.push_back(cam_info);
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info_vector;
@@ -539,7 +539,8 @@ void* run_yolo(void* /*unused*/)
     }
     else
     {
-      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp, crop_size, crop_offset);
+      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp,
+                                  crop_size, crop_offset);
     }
     g_yolo_app.inference_yolo();
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);

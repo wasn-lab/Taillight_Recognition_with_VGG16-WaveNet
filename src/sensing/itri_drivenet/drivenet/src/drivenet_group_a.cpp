@@ -269,8 +269,8 @@ int main(int argc, char** argv)
 
     if (g_is_compressed)
     {
-      cam_subs[cam_order] =
-          nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
+      cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1,
+                                         f_cam_decodes_callbacks[cam_order]);
     }
     else
     {
@@ -292,8 +292,10 @@ int main(int argc, char** argv)
     }
 
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
-    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
-    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
+    g_heartbeat_pubs[cam_order] =
+        nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_time_info_pubs[cam_order] =
+        nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -363,7 +365,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::BoxPoint box_point;
   std::vector<msgs::CamInfo> cam_info_vector;
   msgs::CamInfo cam_info;
-  
 
   int l_check = 2;
   int r_check = 2;
@@ -493,7 +494,7 @@ void* run_yolo(void* /*unused*/)
       header_msg = headers_tmp[cam_order];
       g_time_info_pubs[cam_order].publish(header_msg);
     }
-    
+
     // reset data
     reset_data();
 

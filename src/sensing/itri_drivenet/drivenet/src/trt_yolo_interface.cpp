@@ -82,7 +82,8 @@ void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, 
 
   for (uint i = 0; i < batchSize; i++)
   {
-    float* tmp = dsImags.preprocessing(*matSrcs[i], inferYolo->getInputH(), inferYolo->getInputW(), input_size, crop_size[i], crop_offset[i]);
+    float* tmp = dsImags.preprocessing(*matSrcs[i], inferYolo->getInputH(), inferYolo->getInputW(), input_size,
+                                       crop_size[i], crop_offset[i]);
     cudaMemcpyAsync(yoloInput, tmp, inferYolo->getInputH() * inferYolo->getInputW() * 3 * sizeof(float),
                     cudaMemcpyDeviceToDevice, inferYolo->m_CudaStream);
     cudaFree(tmp);
