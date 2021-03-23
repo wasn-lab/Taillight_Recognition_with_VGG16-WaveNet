@@ -17,7 +17,7 @@ public:
   void init(int inputW, int inputH);
   float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW);
   float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize);
-
+  float* preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize, int crop_size, int crop_offset);
 private:
   DriveNet_npp::NPPResizer* resizer;
 
@@ -26,6 +26,7 @@ private:
   Npp8u pixelArr[3];
   NppiSize nppSizeNet;
   NppiSize nppSizeResize;
+  NppiSize nppSizeCrop;
 
   Npp8u* srcImg_npp8u_ptr;
   Npp8u* ResizeImg_npp8u_ptr;
@@ -33,6 +34,7 @@ private:
   float* RGBImg_32f_ptr;
   float* CHWImg_32f_ptr;
   // Npp8u* dst;
+  Npp8u* CropImg_npp8u_ptr;
   Npp8u* LetterBoxImg_npp8u_ptr;  // letterboxed Image given to the network as input
 
   cv::Mat Img8UC3;

@@ -208,7 +208,7 @@ float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const in
     // cv::Mat to Npp8u
     cvmat_to_npp8u_ptr(srcImg, ResizeImg_npp8u_ptr);
     // letterboxing
-    nppiCopyConstBorder_8u_C3R(ResizeImg_npp8u_ptr, m_Width * 3, nppSizeResize, LetterBoxImg_npp8u_ptr, Img8UC3.step,
+    nppiCopyConstBorder_8u_C3R(ResizeImg_npp8u_ptr, nppSizeResize.width*3, nppSizeResize, LetterBoxImg_npp8u_ptr, Img8UC3.step,
                                 nppSizeNet, m_YOffset, 0, pixelArr);
 
     // unsigned int to float
@@ -229,6 +229,83 @@ float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const in
     //     assert(0);
     // }
     // cv::imwrite("npp8u_c3.jpg", out_img);
+    // cv::imshow("npp8u_c3.jpg", out_img);
+    // cv::waitKey(1);
+    // nppiFree(dst);
+  }
+  return CHWImg_32f_ptr;
+}
+float* DsImage::preprocessing(const cv::Mat& srcImg, const int& inputH, const int& inputW, int input_resize, int crop_size, int crop_offset)
+{
+  if (!srcImg.data)
+  {
+    std::cout << "Unable to read image : " << std::endl;
+    assert(0);
+  }
+  else if (srcImg.cols <= 0 || srcImg.rows <= 0)
+  {
+    std::cout << "image size - cols: " << srcImg.cols << ", rows: " << srcImg.rows << std::endl;
+    assert(0);
+  }
+
+  if (srcImg.channels() != 3)
+  {
+    std::cout << "Non RGB images are not supported" << std::endl;
+    assert(0);
+  }
+
+  m_Height = srcImg.rows;
+  m_Width = srcImg.cols;
+
+  assert(srcImg_npp8u_ptr);
+  cudaMalloc((float**)&CHWImg_32f_ptr, nppSizeNet.width * nppSizeNet.height * 3 * sizeof(float));
+  assert(srcImg_32f_ptr);
+  assert(LetterBoxImg_npp8u_ptr);
+  assert(ResizeImg_npp8u_ptr);
+
+  if (m_Height != camera::image_height || m_Width != camera::image_width)
+  {
+    std::cout << "Input size is not equal to " << std::to_string(camera::image_width) << "x" << std::to_string(camera::image_height) << std::endl;
+    assert(0);
+  }
+  else
+  {
+    nppSizeResize.width = m_Width;
+    nppSizeResize.height = m_Height;
+    m_XOffset = (nppSizeNet.width - m_Width) / 2;
+    m_YOffset = (nppSizeNet.height - m_Height) / 2;
+
+    nppSizeCrop.width = m_Width - crop_size;
+    nppSizeCrop.height = m_Height;
+    CropImg_npp8u_ptr = nppiMalloc_8u_C3(nppSizeCrop.width, nppSizeCrop.height, &dummy);
+
+    // cv::Mat to Npp8u
+    cvmat_to_npp8u_ptr(srcImg, ResizeImg_npp8u_ptr);
+    // crop image
+    nppiCopyConstBorder_8u_C3R(ResizeImg_npp8u_ptr, nppSizeResize.width * 3, nppSizeResize, CropImg_npp8u_ptr, nppSizeCrop.width*3,
+                                nppSizeCrop, 0, (-1)*crop_offset, pixelArr);
+    // letterboxing
+    nppiCopyConstBorder_8u_C3R(CropImg_npp8u_ptr, nppSizeCrop.width*3, nppSizeCrop, LetterBoxImg_npp8u_ptr, Img8UC3.step,
+                                nppSizeNet, m_YOffset, 0 + crop_offset, pixelArr);
+
+    // unsigned int to float
+    nppiConvert_8u32f_C3R(LetterBoxImg_npp8u_ptr, Img8UC3.step, srcImg_32f_ptr, ImgFloat32C3.step, nppSizeNet);
+    // // BRG to RGB
+    nppiSwapChannels_32f_C3R(srcImg_32f_ptr, ImgFloat32C3.step, RGBImg_32f_ptr, ImgFloat32C3.step, nppSizeNet, BGROrder);
+    // // // HWC to CHW
+    cudaReshape(CHWImg_32f_ptr, RGBImg_32f_ptr, nppSizeNet.width * nppSizeNet.height);
+
+    // Cuda mem to cv:Mat
+    // dst = nppiMalloc_8u_C3(nppSizeNet.width, nppSizeNet.height, &dummy);
+    // nppiConvert_32f8u_C3R(CHWImg_32f_ptr, ImgFloat32C3.step, dst, Img8UC3.step, nppSizeNet, NPP_RND_NEAR);
+    // cv::Mat out_img;
+    // npp8u_ptr_to_cvmat(dst, nppSizeNet.height*nppSizeNet.width * 3, out_img, nppSizeNet.height, nppSizeNet.width);
+    // if (!out_img.data)
+    // {
+    //     std::cout << "Unable to read image : " << std::endl;
+    //     assert(0);
+    // }
+    // cv::imwrite("npp8u_c3" +  std::to_string(crop_offset) +".jpg", out_img);
     // cv::imshow("npp8u_c3.jpg", out_img);
     // cv::waitKey(1);
     // nppiFree(dst);

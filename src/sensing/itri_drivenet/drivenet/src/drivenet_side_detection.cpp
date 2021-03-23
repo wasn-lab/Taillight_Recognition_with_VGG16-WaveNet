@@ -10,9 +10,21 @@
 using namespace DriveNet;
 
 /// camera layout
-#if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3 || CAR_MODEL_IS_C1
+#if CAR_MODEL_IS_B1_V2
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
+#elif CAR_MODEL_IS_B1_V3
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
+/// mirror issue
+const std::vector<int> crop_size{ 72, 70, 70, 55 };
+const std::vector<int> crop_offset{ 0, 70, 70, 0 };
+#elif CAR_MODEL_IS_C1
+const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
+                                         camera::id::left_front_60, camera::id::left_back_60 };
+/// mirror issue
+const std::vector<int> crop_size{ 50, 50, 50, 70 };
+const std::vector<int> crop_offset{ 0, 50, 50, 0 };
 #else
 #error "car model is not well defined"
 #endif
@@ -527,7 +539,7 @@ void* run_yolo(void* /*unused*/)
     }
     else
     {
-      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp);
+      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp, crop_size, crop_offset);
     }
     g_yolo_app.inference_yolo();
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);

@@ -50,6 +50,8 @@ public:
   void input_preprocess(std::vector<cv::Mat*>& matSrcs);
   void input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int> dist_w,
                         std::vector<int> dist_h);
+  void input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int> dist_cols,
+                        std::vector<int> dist_rows, std::vector<int> crop_size, std::vector<int> crop_offset);
   void inference_yolo();
   void get_yolo_result(std::vector<uint32_t>* order, std::vector<std::vector<ITRI_Bbox>*>& vbbx_output);
   void delete_yolo_infer();
