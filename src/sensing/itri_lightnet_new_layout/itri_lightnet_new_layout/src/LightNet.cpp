@@ -2,541 +2,531 @@
 
 using namespace std;
 using namespace Tn;
-using namespace Yolo;
+//using namespace Yolo;
 using namespace cv;
 
-vector<string> split(const string &str, char delim)
+vector<string> split(const string& str, char delim)
 {
-    stringstream ss(str);
-    string token;
-    vector<string> container;
-    while (getline(ss, token, delim))
-    {
-        container.push_back(token);
-    }
+  stringstream ss(str);
+  string token;
+  vector<string> container;
+  while (getline(ss, token, delim))
+  {
+    container.push_back(token);
+  }
 
-    return container;
+  return container;
 }
 
-void initi_all()
+float IOU_CALC(int box1[7], int box2[6])
 {
-    //clahe_30deg = createCLAHE(); clahe_30deg->setClipLimit(1); clahe_30deg->setTilesGridSize(Size(5, 5));
-    //clahe_60deg = createCLAHE(); clahe_60deg->setClipLimit(1); clahe_60deg->setTilesGridSize(Size(5, 5));
+	float minx1 = (float)box1[1];
+	float maxx1 = (float)box1[3];
+	float miny1 = (float)box1[2];
+	float maxy1 = (float)box1[4];
+	float minx2 = (float)box2[1];
+	float maxx2 = (float)box2[3];
+	float miny2 = (float)box2[2];
+	float maxy2 = (float)box2[4];
+	float distx = (((maxx2 - minx2) / 2) + minx2) - (((maxx1 - minx1) / 2) + minx1);
+	float disty = (((maxy2 - miny2) / 2) + miny2) - (((maxy1 - miny1) / 2) + miny1);
+	float dist = (disty * disty) + (distx * distx);
 
-    fstream file_30deg, file_60deg;
-    file_30deg.open(engineName_30deg, ios::binary | ios::in);
-    file_60deg.open(engineName_60deg, ios::binary | ios::in);
+	float minxc, minyc, maxxc, maxyc;
+	if (minx1 > minx2){minxc = minx2;}
+	else{minxc = minx1;}
+	if (miny1 > miny2){minyc = miny2;}
+	else{minyc = miny1;}
+	if (maxx1 > maxx2){maxxc = maxx1;}
+	else{maxxc = maxx2;}
+	if (maxy1 > maxy2){maxyc = maxy1;}
+	else{maxyc = maxy2;}
+	float normx = maxxc - minxc;
+	float normy = maxyc - minyc;
+	float norm = (normy * normy) + (normx * normx);
 
-    if (!file_30deg.is_open())
-    {
-        cout << "read engine file" << engineName_30deg << " failed" << endl;
-        printf("No find TRT Engine file!! Re-creat Engine file, please wait.\n");
-        auto outputNames = split(OUTPUTS, ',');
-        vector<vector<float>> calibData;
-        //string saveName = "yolov3_" + mode + ".engine";
-        net_30deg.reset(new trtNet(INPUT_PROTOTXT_30deg, INPUT_CAFFEMODEL_30deg, outputNames, calibData, run_mode_30deg, batchSize));
-        cout << "save Engine..." << engineName_30deg << endl;
-        net_30deg->saveEngine(engineName_30deg);
-    }
-    else
-    {
-        net_30deg.reset(new trtNet(engineName_30deg));
-        assert(net_30deg->getBatchSize() == batchSize);
-    }
+	if (minx1 > maxx2 || maxx1 < minx2 || miny1 > maxy2 || maxy1 < miny2 || box1[0] != box2[0])
+	{
+		return 0.0f;
+	}
+	else
+	{
+		float dx = std::min(maxx2, maxx1) - std::max(minx2, minx1);
+		float dy = std::min(maxy2, maxy1) - std::max(miny2, miny1);
+		float area1 = (maxx1 - minx1) * (maxy1 - miny1);
+		float area2 = (maxx2 - minx2) * (maxy2 - miny2);
+		float inter = dx * dy;
+		float uni = area1 + area2 - inter; 
+		float IoU = inter / uni;
+		return (IoU + 1.1 * (dist / norm));
+	}
+}
+void initi_all(const std::string& LightNet_TRT_model_path)
+{
+  string engineName_30deg_real(LightNet_TRT_model_path);
+  engineName_30deg_real = engineName_30deg_real + "/resources/iclu30_v3.cfg";
+  string engineName_60deg_real(LightNet_TRT_model_path);
+  engineName_60deg_real = engineName_60deg_real + "/resources/iclu60_v3.cfg";
 
-    if (!file_60deg.is_open())
-    {
-        cout << "read engine file" << engineName_60deg << " failed" << endl;
-        printf("No find TRT Engine file!! Re-creat Engine file, please wait.\n");
-        auto outputNames = split(OUTPUTS, ',');
-        vector<vector<float>> calibData;
-        //string saveName = "yolov3_" + mode + ".engine";
-        net_60deg.reset(new trtNet(INPUT_PROTOTXT_60deg, INPUT_CAFFEMODEL_60deg, outputNames, calibData, run_mode_60deg, batchSize));
-        cout << "save Engine..." << engineName_60deg << endl;
-        net_60deg->saveEngine(engineName_60deg);
-    }
-    else
-    {
-        net_60deg.reset(new trtNet(engineName_60deg));
-        assert(net_60deg->getBatchSize() == batchSize);
-    }
+  string engineName_30deg_real1(LightNet_TRT_model_path);
+  engineName_30deg_real1 = engineName_30deg_real1 + "/resources/yolov3_fp16_201208_30deg.engine";
+  string engineName_60deg_real1(LightNet_TRT_model_path);
+  engineName_60deg_real1 = engineName_60deg_real1 + "/resources/yolov3_fp16_201208_60deg.engine";
 
+  config_v4_30.net_type = YOLOV4;
+  config_v4_30.file_model_cfg = engineName_30deg_real;
+  config_v4_30.file_model_weights = LightNet_TRT_model_path + "/resources/iclu30_v3.weights";
+  // config_v4_30.calibration_image_list_file_txt = "../configs/calibration_images.txt";
+  config_v4_30.inference_precison = INT8;
+  config_v4_30.detect_thresh = 0.95;
+
+  config_v4_60.net_type = YOLOV4;
+  config_v4_60.file_model_cfg = engineName_60deg_real;
+  config_v4_60.file_model_weights = LightNet_TRT_model_path + "/resources/iclu60_v3.weights";
+  // config_v4_60.calibration_image_list_file_txt = "../configs/calibration_images.txt";
+  config_v4_60.inference_precison = INT8;
+  config_v4_60.detect_thresh = 0.95;
+
+  detector_30->init(config_v4_60);
+  detector_60->init(config_v4_60);
+
+  for (int k = 0; k < 6; k++)
+  {
+    finLightStatus30[k] = false;
+    preLightCount30[k] = 0;
+    finLightStatus60[k] = false;
+    preLightCount60[k] = 0;
+  }
+  for (int l = 0; l < 2; l++)
+  {
     for (int k = 0; k < 6; k++)
     {
-		finLightStatus30[k] = false;
-		preLightCount30[k] = 0;
-		finLightStatus60[k] = false;
-		preLightCount60[k] = 0;
+      finLightStatus[l][k] = false;
     }
-	for (int l = 0; l < 2; l++)
-	{
-		for (int k = 0; k < 6; k++)
-		{
-			finLightStatus[l][k] = false;
-		}
-		finLightDistance[l] = 0;
-	}
+    finLightDistance[l] = 0;
+  }
 
-
-    imageDimension.x = 608;
-    imageDimension.y = 384;
-
-    outputCount = net_30deg->getOutputSize() / sizeof(float);
-    inputData.reserve(384 * 608 * 3 * 1);
-    inputData_60deg.reserve(384 * 608 * 3 * 1);
-
-    //kalman = cvCreateKalman(stateNum, measureNum, 0);   //state(x,y,detaX,detaY)
-    //measurement = cvCreateMat(measureNum, 1, CV_32FC1); //measurement(x,y)
-    measurement = Mat::zeros(measureNum, 1, CV_32F);
-    //memcpy(kalman->transition_matrix->data.fl, A, sizeof(A));
-    //memcpy(KF.transitionMatrix.data.fl, A, sizeof(A));
-    KF.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, 10, 0,0, 1, 0, 10,0, 0, 1, 0,0, 0, 0, 1);
-
-    //cvSetIdentity(kalman->measurement_matrix, cvRealScalar(1));
-    //cvSetIdentity(kalman->process_noise_cov, cvRealScalar(1e-5));
-    //cvSetIdentity(kalman->measurement_noise_cov, cvRealScalar(1e-1));
-    //cvSetIdentity(kalman->error_cov_post, cvRealScalar(1));
-
-    setIdentity(KF.measurementMatrix);
-    setIdentity(KF.processNoiseCov, Scalar::all(1e-5));
-    setIdentity(KF.measurementNoiseCov, Scalar::all(1e-1));
-    setIdentity(KF.errorCovPost, Scalar::all(1));
+  imageDimension.x = 608;
+  imageDimension.y = 384;
+  inputData.reserve(384 * 608 * 3 * 1);
+  inputData_60deg.reserve(384 * 608 * 3 * 1);
+  measurement = Mat::zeros(measureNum, 1, CV_32F);
+  KF.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, 10, 0, 0, 1, 0, 10, 0, 0, 1, 0, 0, 0, 0, 1);
+  setIdentity(KF.measurementMatrix);
+  setIdentity(KF.processNoiseCov, Scalar::all(1e-5));
+  setIdentity(KF.measurementNoiseCov, Scalar::all(1e-1));
+  setIdentity(KF.errorCovPost, Scalar::all(1));
 }
 
-void DoNms(vector<Detection> &detections, int classes, float nmsThresh)
+void* preprocess_30deg(void* ptr)
 {
-    auto t_start = chrono::high_resolution_clock::now();
+  cv::Mat img_padding = cv::Mat(320, 608, CV_8UC3);
+  inputData.clear();
+  int top, bottom, left, right;
+  top = 0;
+  bottom = (342 - 320);
+  left = 0;
+  right = 0;
+  copyMakeBorder(dImg, img_padding, top, bottom, left, right, BORDER_CONSTANT);
 
-    vector<vector<Detection>> resClass;
-    resClass.resize(classes);
-
-    for (const auto &item : detections)
-        resClass[item.classId].push_back(item);
-
-    auto iouCompute = [](float *lbox, float *rbox) {
-        float interBox[] = {
-            max(lbox[0] - lbox[2] / 2.f, rbox[0] - rbox[2] / 2.f), //left
-            min(lbox[0] + lbox[2] / 2.f, rbox[0] + rbox[2] / 2.f), //right
-            max(lbox[1] - lbox[3] / 2.f, rbox[1] - rbox[3] / 2.f), //top
-            min(lbox[1] + lbox[3] / 2.f, rbox[1] + rbox[3] / 2.f), //bottom
-        };
-
-        if (interBox[2] > interBox[3] || interBox[0] > interBox[1])
-            return 0.0f;
-
-        float interBoxS = (interBox[1] - interBox[0]) * (interBox[3] - interBox[2]);
-        return interBoxS / (lbox[2] * lbox[3] + rbox[2] * rbox[3] - interBoxS);
-    };
-
-    vector<Detection> result;
-    for (int i = 0; i < classes; ++i)
-    {
-        auto &dets = resClass[i];
-        if (dets.size() == 0)
-            continue;
-
-        sort(dets.begin(), dets.end(), [=](const Detection &left, const Detection &right) {
-            return left.prob > right.prob;
-        });
-
-        for (unsigned int m = 0; m < dets.size(); ++m)
-        {
-            auto &item = dets[m];
-            result.push_back(item);
-            for (unsigned int n = m + 1; n < dets.size(); ++n)
-            {
-               // printf("iouCompute(item.bbox, dets[n].bbox) = %d\n", iouCompute(item.bbox, dets[n].bbox));
-
-                if (iouCompute(item.bbox, dets[n].bbox) > nmsThresh)
-                {
-                    dets.erase(dets.begin() + n);
-                    --n;
-                }
-            }
-        }
-    }
-
-    //swap(detections,result);
-    detections = move(result);
-
-    auto t_end = chrono::high_resolution_clock::now();
-    float total = chrono::duration<float, milli>(t_end - t_start).count();
-    //cout << "Time taken for nms is " << total << " ms." << endl;
+  inputData.push_back(img_padding);
 }
 
-vector<float> prepareImage(cv::Mat &img)
+void* preprocess_60deg(void* ptr)
 {
-    using namespace cv;
+  cv::Mat img_padding = cv::Mat(320, 608, CV_8UC3);
 
-	cv::Mat img_padding = cv::Mat(384,608,CV_8UC3);
+  int top, bottom, left, right;
+  top = 0;
+  bottom = (342 - 320);
+  left = 0;
+  right = 0;
+  copyMakeBorder(dImg_60deg, img_padding, top, bottom, left, right, BORDER_CONSTANT);
 
-	int top, bottom, left, right;
-	if(img.rows <= 384)
-	{
-		top = 0;
-	    bottom = (384-img.rows);
-    	left = 0;
-	    right = 0;
-        copyMakeBorder(img, img, top, bottom, left, right, BORDER_CONSTANT);
-	}
-
-    int c = 3;
-    int h = 384;
-    int w = 608; //net w
-
-    float scale = min(float(w) / 608, float(h) / 384);
-    auto scaleSize = cv::Size(608 * scale, 384 * scale);
-
-
-    cv::Mat rgb;
-    cv::Mat resized;
-    cv::cvtColor(img, resized, CV_BGR2RGB);
-
-    cv::Mat img_float;
-    if (c == 3)
-        resized.convertTo(img_float, CV_32FC3, 1 / 255.0);
-    else
-        resized.convertTo(img_float, CV_32FC1, 1 / 255.0);
-
-    //HWC TO CHW
-    vector<Mat> input_channels(c);
-    cv::split(img_float, input_channels);
-
-    vector<float> result(h * w * c);
-    auto data = result.data();
-    int channelLength = h * w;
-    for (int i = 0; i < c; ++i)
-    {
-        memcpy(data, input_channels[i].data, channelLength * sizeof(float));
-        data += channelLength;
-    }
-
-    return result;
+  inputData_60deg.clear();
+  inputData_60deg.push_back(img_padding);
 }
 
-vector<Bbox> postProcessImg(vector<Detection> &detections, int classes)
+void* postprocess_30deg(void* ptr)
 {
-    using namespace cv;
-
-    int h = 384; //net h
-    int w = 608; //net w
-
-    //scale bbox to img
-    int width = w;
-    int height = h;
-    float scale = min(float(w) / width, float(h) / height);
-    float scaleSize[] = {width * scale, height * scale};
-
-    //correct box
-    for (auto &item : detections)
-    {
-        auto &bbox = item.bbox;
-        bbox[0] = (bbox[0] * w - (w - scaleSize[0]) / 2.f) / scaleSize[0];
-        bbox[1] = (bbox[1] * h - (h - scaleSize[1]) / 2.f) / scaleSize[1];
-        bbox[2] /= scaleSize[0];
-        bbox[3] /= scaleSize[1];
-    }
-
-    //nms
-    float nmsThresh = 0.45;
-    if (nmsThresh > 0)
-        DoNms(detections, classes, nmsThresh);
-
-    vector<Bbox> boxes;
-    for (const auto &item : detections)
-    {
-        auto &b = item.bbox;
-        Bbox bbox =
-            {
-                item.classId,                                  //classId
-                max(int((b[0] - b[2] / 2.) * width), 0),       //left
-                min(int((b[0] + b[2] / 2.) * width), width),   //right
-                max(int((b[1] - b[3] / 2.) * height), 0),      //top
-                min(int((b[1] + b[3] / 2.) * height), height), //bot
-                item.prob,                                     //score
-                item.SignBox};
-        boxes.push_back(bbox);
-    }
-
-    return boxes;
-}
-
-void *preprocess_30deg(void *ptr)
-{
-    vector<float> curInput = prepareImage(dImg);
-    //vector<float> curInput = prepareImage(dImg_hdr);
-    inputData.insert(inputData.end(), curInput.begin(), curInput.end());
-}
-
-void *preprocess_60deg(void *ptr)
-{
-    vector<float> curInput1 = prepareImage(dImg_60deg);
-    //vector<float> curInput1 = prepareImage(dImg_60deg_hdr);
-
-    inputData_60deg.insert(inputData_60deg.end(), curInput1.begin(), curInput1.end());
-}
-
-void *postprocess_30deg(void *ptr)
-{
-    numOfDetection = numOfBulb30;
-    filterBB(trafficLightBulb30, numOfDetection, _tlBulb30, numOfBulb30, 30);
-    clusterBB(_tlBulb30, numOfBulb30, _tlBox30, numOfBox30);
-    statusRecognize30(_tlBulb30, numOfBulb30, _tlBox30, numOfBox30, selectTL30, dImg, IsItTheFirstFrame, preLightCount30, finLightStatus30);
-
-    // //Filter Bounding Boxes
-    // filterTrafficLight(trafficLightBody30, numOfBody30, trafficLightBulb30, numOfBulb30, _tlBody30, _tlBulb30, selectTL30, imageDimension, 30);
+  numOfDetection = numOfBulb30;
+  filterBB(trafficLightBulb30, numOfDetection, _tlBulb30, numOfBulb30, 30);
+  clusterBB(_tlBulb30, numOfBulb30, _tlBox30, numOfBox30);
+  statusRecognize30(_tlBulb30, numOfBulb30, _tlBox30, numOfBox30, selectTL30, dImg, IsItTheFirstFrame, preLightCount30,
+                    finLightStatus30);
 #ifdef display_cv_window
-    //Only for Visualization
-    for (int k = 0; k < numOfBulb30; k++)
+  // Only for Visualization
+  for (int k = 0; k < numOfBulb30; k++)
+  {
+    putText(dImg1, intToString(_tlBulb30[k][8]), Point(_tlBulb30[k][1], _tlBulb30[k][2]), 1, 1, Scalar(255, 255, 0), 2,
+            8, 0);
+    rectangle(dImg1, Point(_tlBulb30[k][1], _tlBulb30[k][2]), Point(_tlBulb30[k][3], _tlBulb30[k][4]),
+              Scalar(255, 255, 0), 1, 8, 0);
+  }
+  if (selectTL30 > -1)
+  {
+    for (int k = 0; k < _tlBox30[selectTL30][0]; k++)
     {
-        putText(dImg1, intToString(_tlBulb30[k][8]), Point(_tlBulb30[k][1], _tlBulb30[k][2]), 1, 1, Scalar(255, 255, 0), 2, 8, 0);
-        rectangle(dImg1, Point(_tlBulb30[k][1], _tlBulb30[k][2]), Point(_tlBulb30[k][3], _tlBulb30[k][4]), Scalar(255, 255, 0), 1, 8, 0);
+      putText(dImg1, intToString(_tlBulb30[_tlBox30[selectTL30][k + 2]][8]),
+              Point(_tlBulb30[_tlBox30[selectTL30][k + 2]][1], _tlBulb30[_tlBox30[selectTL30][k + 2]][2]), 1, 1,
+              Scalar(0, 0, 255), 2, 8, 0);
+      rectangle(dImg1, Point(_tlBulb30[_tlBox30[selectTL30][k + 2]][1], _tlBulb30[_tlBox30[selectTL30][k + 2]][2]),
+                Point(_tlBulb30[_tlBox30[selectTL30][k + 2]][3], _tlBulb30[_tlBox30[selectTL30][k + 2]][4]),
+                Scalar(0, 0, 255), 1, 8, 0);
     }
-    if (selectTL30 > -1)
-    {
-        for (int k = 0; k < _tlBox30[selectTL30][0]; k++)
-        {
-            putText(dImg1, intToString(_tlBulb30[_tlBox30[selectTL30][k + 2]][8]), Point(_tlBulb30[_tlBox30[selectTL30][k + 2]][1], _tlBulb30[_tlBox30[selectTL30][k + 2]][2]), 1, 1, Scalar(0, 0, 255), 2, 8, 0);
-            rectangle(dImg1, Point(_tlBulb30[_tlBox30[selectTL30][k + 2]][1], _tlBulb30[_tlBox30[selectTL30][k + 2]][2]), Point(_tlBulb30[_tlBox30[selectTL30][k + 2]][3], _tlBulb30[_tlBox30[selectTL30][k + 2]][4]), Scalar(0, 0, 255), 1, 8, 0);
-        }
-    }
+  }
 #endif
 }
 
-void *postprocess_60deg(void *ptr)
+void* postprocess_60deg(void* ptr)
 {
-    numOfDetection_60deg = numOfBulb60;
-    filterBB(trafficLightBulb60, numOfDetection_60deg, _tlBulb60, numOfBulb60, 60);
-    clusterBB(_tlBulb60, numOfBulb60, _tlBox60, numOfBox60);
-    statusRecognize60(_tlBulb60, numOfBulb60, _tlBox60, numOfBox60, selectTL60, dImg_60deg, IsItTheFirstFrame, preLightCount60, finLightStatus60);
+  numOfDetection_60deg = numOfBulb60;
+  filterBB(trafficLightBulb60, numOfDetection_60deg, _tlBulb60, numOfBulb60, 60);
+  clusterBB(_tlBulb60, numOfBulb60, _tlBox60, numOfBox60);
+  statusRecognize60(_tlBulb60, numOfBulb60, _tlBox60, numOfBox60, selectTL60, dImg_60deg, IsItTheFirstFrame,
+                    preLightCount60, finLightStatus60);
 #ifdef display_cv_window
-    //Only for Visualization
-    for (int k = 0; k < numOfBulb60; k++)
+  // Only for Visualization
+  for (int k = 0; k < numOfBulb60; k++)
+  {
+    putText(dImg1_60deg, intToString(_tlBulb60[k][8]), Point(_tlBulb60[k][1], _tlBulb60[k][2]), 1, 1,
+            Scalar(255, 255, 0), 2, 8, 0);
+    rectangle(dImg1_60deg, Point(_tlBulb60[k][1], _tlBulb60[k][2]), Point(_tlBulb60[k][3], _tlBulb60[k][4]),
+              Scalar(255, 255, 0), 1, 8, 0);
+  }
+  if (selectTL60 > -1)
+  {
+    for (int k = 0; k < _tlBox60[selectTL60][0]; k++)
     {
-        putText(dImg1_60deg, intToString(_tlBulb60[k][8]), Point(_tlBulb60[k][1], _tlBulb60[k][2]), 1, 1, Scalar(255, 255, 0), 2, 8, 0);
-        rectangle(dImg1_60deg, Point(_tlBulb60[k][1], _tlBulb60[k][2]), Point(_tlBulb60[k][3], _tlBulb60[k][4]), Scalar(255, 255, 0), 1, 8, 0);
+      putText(dImg1_60deg, intToString(_tlBulb60[_tlBox60[selectTL60][k + 2]][8]),
+              Point(_tlBulb60[_tlBox60[selectTL60][k + 2]][1], _tlBulb60[_tlBox60[selectTL60][k + 2]][2]), 1, 1,
+              Scalar(0, 0, 255), 2, 8, 0);
+      rectangle(dImg1_60deg,
+                Point(_tlBulb60[_tlBox60[selectTL60][k + 2]][1], _tlBulb60[_tlBox60[selectTL60][k + 2]][2]),
+                Point(_tlBulb60[_tlBox60[selectTL60][k + 2]][3], _tlBulb60[_tlBox60[selectTL60][k + 2]][4]),
+                Scalar(0, 0, 255), 1, 8, 0);
     }
-    if (selectTL60 > -1)
-    {
-        for (int k = 0; k < _tlBox60[selectTL60][0]; k++)
-        {
-            putText(dImg1_60deg, intToString(_tlBulb60[_tlBox60[selectTL60][k + 2]][8]), Point(_tlBulb60[_tlBox60[selectTL60][k + 2]][1], _tlBulb60[_tlBox60[selectTL60][k + 2]][2]), 1, 1, Scalar(0, 0, 255), 2, 8, 0);
-            rectangle(dImg1_60deg, Point(_tlBulb60[_tlBox60[selectTL60][k + 2]][1], _tlBulb60[_tlBox60[selectTL60][k + 2]][2]), Point(_tlBulb60[_tlBox60[selectTL60][k + 2]][3], _tlBulb60[_tlBox60[selectTL60][k + 2]][4]), Scalar(0, 0, 255), 1, 8, 0);
-        }
-    }
+  }
 #endif
 }
 stringstream openName;
 char datapath[500];
 int j = 2794;
-void DoNet(cv_bridge::CvImagePtr cv_ptr_30deg, cv_bridge::CvImagePtr cv_ptr_60deg, struct TL_status *TL_status_info, struct TL_color *TL_color_info)
+void DoNet(cv_bridge::CvImagePtr cv_ptr_30deg, cv_bridge::CvImagePtr cv_ptr_60deg, struct TL_status* TL_status_info,
+           struct TL_color* TL_color_info)
 {
-    frame_count++;
+  frame_count++;
 
-    dImg = cv_ptr_30deg->image;
-    dImg_60deg = cv_ptr_60deg->image;
-
-	//cv::resize(dImg,dImg,Size(608,342),0,0,INTER_LINEAR);
-	//cv::resize(dImg_60deg,dImg_60deg,Size(608,342),0,0,INTER_LINEAR);
+  dImg = cv_ptr_30deg->image;
+  dImg_60deg = cv_ptr_60deg->image;
 
 #ifdef display_cv_window
-    dImg.copyTo(dImg1);
-    dImg_60deg.copyTo(dImg1_60deg);
+  dImg.copyTo(dImg1);
+  dImg_60deg.copyTo(dImg1_60deg);
 #endif
 
+  pthread_create(&thread_preprocess_30deg, NULL, preprocess_30deg, NULL);
+  pthread_create(&thread_preprocess_60deg, NULL, preprocess_60deg, NULL);
 
+  pthread_join(thread_preprocess_30deg, NULL);
+  pthread_join(thread_preprocess_60deg, NULL);
+  detector_30->detect(inputData, batch_res_30);
+  detector_60->detect(inputData_60deg, batch_res_60);
+	int bbCountInput, bbCountOutput;
+	int bbInput[50][6];  //class-xstart-ystart-xstop-ystop-enable
+	int bbOutput[50][5]; //class-xstart-ystart-xstop-ystop
+	float confInput[50], confOutput[50];
+	float iou;
 
-    pthread_create(&thread_preprocess_30deg, NULL, preprocess_30deg, NULL);
-    pthread_create(&thread_preprocess_60deg, NULL, preprocess_60deg, NULL); 
-
-    pthread_join(thread_preprocess_30deg, NULL);
-    pthread_join(thread_preprocess_60deg, NULL);
-
-    net_30deg->doInference(inputData.data(), outputData_30deg.get(), 1);
-    net_60deg->doInference(inputData_60deg.data(), outputData_60deg.get(), 1);
-
-    //Get Output
-    auto output = outputData_30deg.get();
-    auto outputSize = net_30deg->getOutputSize() / sizeof(float) / 1;
-
-    //Get Output
-    auto output_60deg = outputData_60deg.get();
-    auto outputSize_60deg = net_60deg->getOutputSize() / sizeof(float) / 1;
-    int detN = 0;
-    int detN1 = 0;
-    for (int i = 0; i < 1; ++i)
+  numOfBulb30 = 0;
+  numOfBulb60 = 0;
+  for (int i = 0; i < inputData.size(); ++i)
+  {
+    bbCountInput = 0;
+    bbCountOutput = 0;
+    for (const auto& r : batch_res_30[i])
     {
-
-        //process 30 deg camera result
-        //first detect count
-        int detCount = output[0];
-        //later detect result
-        vector<Detection> result;
-        result.resize(detCount);
-        memcpy(result.data(), &output[1], detCount * sizeof(Detection));
-
-        auto boxes = postProcessImg(result, classNum);
-        outputs.emplace_back(boxes);
-
-        output += outputSize;
-
-        //process 60 deg camera result
-        int detCount_60deg = output_60deg[0];
-
-        vector<Detection> result_60deg;
-        result_60deg.resize(detCount_60deg);
-        memcpy(result_60deg.data(), &output_60deg[1], detCount_60deg * sizeof(Detection));
-
-        auto boxes_60deg = postProcessImg(result_60deg, classNum);
-        outputs_60deg.emplace_back(boxes_60deg);
-
-        output_60deg += outputSize_60deg;
+      // Data Normalization
+      bbInput[bbCountInput][0] = r.id;
+      bbInput[bbCountInput][1] = r.rect.x;
+      bbInput[bbCountInput][2] = r.rect.y;
+      bbInput[bbCountInput][3] = r.rect.width + r.rect.x;
+      bbInput[bbCountInput][4] = r.rect.height + r.rect.y;
+      bbInput[bbCountInput][5] = 1;
+      confInput[bbCountInput] = r.prob;
+      bbCountInput++;
     }
-    inputData.clear();
-    inputData_60deg.clear();
-    auto bbox = *outputs.begin();
-    auto bbox_60deg = *outputs_60deg.begin();
 
-    numOfBulb30 = 0;
-    numOfBulb60 = 0;
+    // Perform Non-suppresing Maximum
+    for (int l = 0; l < bbCountInput; l++)
+    {
+      if (bbInput[l][5] == 1)
+      {
+        for (int k = 0; k < bbCountInput; k++)
+        {
+          if (l != k)
+          {
+            if (bbInput[k][5] == 1)
+            {
+              iou = IOU_CALC(bbInput[l], bbInput[k]);
+              if (iou > 0.2)
+              {
+                if (bbInput[l][0] == bbInput[k][0])
+                {
+                  if (confInput[l] > confInput[k])
+                  {
+                    bbInput[k][5] = 0;
+                  }
+                  else
+                  {
+                    bbInput[l][5] = 0;
+                  }
+                }
+                else
+                {
+                  if (iou > 0.8)
+                  {
+                    if (confInput[l] > confInput[k])
+                    {
+                      bbInput[k][5] = 0;
+                    }
+                    else
+                    {
+                      bbInput[l][5] = 0;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // Display Detection Result
+    for (int l = 0; l < bbCountInput; l++)
+    {
+      if (bbInput[l][5] == 1)
+      {
+        for (int d = 0; d < 5; d++)
+        {
+          bbOutput[bbCountOutput][d] = bbInput[l][d];
+        }
+        confOutput[bbCountOutput] = confInput[l];
+
+        if (bbOutput[bbCountOutput][0] < 6)
+        {
+          trafficLightBulb30[numOfBulb30][0] = 1;
+          trafficLightBulb30[numOfBulb30][1] = bbOutput[bbCountOutput][1];
+          trafficLightBulb30[numOfBulb30][2] = bbOutput[bbCountOutput][2];
+          trafficLightBulb30[numOfBulb30][3] = bbOutput[bbCountOutput][3];
+          trafficLightBulb30[numOfBulb30][4] = bbOutput[bbCountOutput][4];
+          trafficLightBulb30[numOfBulb30][5] = (bbOutput[bbCountOutput][3] - bbOutput[bbCountOutput][1]) *
+                                               (bbOutput[bbCountOutput][4] - bbOutput[bbCountOutput][2]);
+          trafficLightBulb30[numOfBulb30][6] = bbOutput[bbCountOutput][0];
+          trafficLightBulb30[numOfBulb30][7] = -1;
+          numOfBulb30++;
+        }
+        bbCountOutput++;
+      }
+    }
+  }
+
+  for (int i = 0; i < inputData_60deg.size(); ++i)
+  {
+    bbCountInput = 0;
+    bbCountOutput = 0;
+    for (const auto& r : batch_res_60[i])
+    {
+      // Data Normalization
+      bbInput[bbCountInput][0] = r.id;
+      bbInput[bbCountInput][1] = r.rect.x;
+      bbInput[bbCountInput][2] = r.rect.y;
+      bbInput[bbCountInput][3] = r.rect.width + r.rect.x;
+      bbInput[bbCountInput][4] = r.rect.height + r.rect.y;
+      bbInput[bbCountInput][5] = 1;
+      confInput[bbCountInput] = r.prob;
+      bbCountInput++;
+    }
+
+    // Perform Non-suppresing Maximum
+    for (int l = 0; l < bbCountInput; l++)
+    {
+      if (bbInput[l][5] == 1)
+      {
+        for (int k = 0; k < bbCountInput; k++)
+        {
+          if (l != k)
+          {
+            if (bbInput[k][5] == 1)
+            {
+              iou = IOU_CALC(bbInput[l], bbInput[k]);
+              if (iou > 0.2)
+              {
+                if (bbInput[l][0] == bbInput[k][0])
+                {
+                  if (confInput[l] > confInput[k])
+                  {
+                    bbInput[k][5] = 0;
+                  }
+                  else
+                  {
+                    bbInput[l][5] = 0;
+                  }
+                }
+                else
+                {
+                  if (iou > 0.8)
+                  {
+                    if (confInput[l] > confInput[k])
+                    {
+                      bbInput[k][5] = 0;
+                    }
+                    else
+                    {
+                      bbInput[l][5] = 0;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Display Detection Result
+    for (int l = 0; l < bbCountInput; l++)
+    {
+      if (bbInput[l][5] == 1)
+      {
+        for (int d = 0; d < 5; d++)
+        {
+          bbOutput[bbCountOutput][d] = bbInput[l][d];
+        }
+        confOutput[bbCountOutput] = confInput[l];
+        if (bbOutput[bbCountOutput][0] < 6)
+        {
+          trafficLightBulb60[numOfBulb60][0] = 1;
+          trafficLightBulb60[numOfBulb60][1] = bbOutput[bbCountOutput][1];
+          trafficLightBulb60[numOfBulb60][2] = bbOutput[bbCountOutput][2];
+          trafficLightBulb60[numOfBulb60][3] = bbOutput[bbCountOutput][3];
+          trafficLightBulb60[numOfBulb60][4] = bbOutput[bbCountOutput][4];
+          trafficLightBulb60[numOfBulb60][5] = (bbOutput[bbCountOutput][3] - bbOutput[bbCountOutput][1]) *
+                                               (bbOutput[bbCountOutput][4] - bbOutput[bbCountOutput][2]);
+          trafficLightBulb60[numOfBulb60][6] = bbOutput[bbCountOutput][0];
+          trafficLightBulb60[numOfBulb60][7] = -1;
+          numOfBulb60++;
+        }
+        bbCountOutput++;
+      }
+    }
+  }
+ 
+
 #ifdef Tainan
-    // 30 deg camera result
-    for (const auto &item : bbox)
-    {
-        normClass = item.classId;
-        if (normClass < 6)
-        {
-            trafficLightBulb30[numOfBulb30][0] = 1;
-            trafficLightBulb30[numOfBulb30][1] = item.left;
-            trafficLightBulb30[numOfBulb30][2] = item.top;
-            trafficLightBulb30[numOfBulb30][3] = item.right;
-            trafficLightBulb30[numOfBulb30][4] = item.bot;
-            trafficLightBulb30[numOfBulb30][5] = (item.right - item.left) * (item.bot - item.top);
-            trafficLightBulb30[numOfBulb30][6] = normClass;
-            trafficLightBulb30[numOfBulb30][7] = -1;
-            numOfBulb30++;
-        }
-    }
+  // myfile.close();
+  pthread_create(&thread_postprocess_30deg, NULL, postprocess_30deg, NULL);
+  pthread_join(thread_postprocess_30deg, NULL);
+  pthread_create(&thread_postprocess_60deg, NULL, postprocess_60deg, NULL);
 
-    for (const auto &item : bbox_60deg)
-    {
-        normClass = item.classId;
-        if (normClass < 6)
-        {
-            trafficLightBulb60[numOfBulb60][0] = 1;
-            trafficLightBulb60[numOfBulb60][1] = item.left;
-            trafficLightBulb60[numOfBulb60][2] = item.top;
-            trafficLightBulb60[numOfBulb60][3] = item.right;
-            trafficLightBulb60[numOfBulb60][4] = item.bot;
-            trafficLightBulb60[numOfBulb60][5] = (item.right - item.left) * (item.bot - item.top);
-            trafficLightBulb60[numOfBulb60][6] = normClass;
-            trafficLightBulb60[numOfBulb60][7] = -1;
-            numOfBulb60++;
-        }
-    }
-   // myfile.close();
-    pthread_create(&thread_postprocess_30deg, NULL, postprocess_30deg, NULL);
-    pthread_join(thread_postprocess_30deg, NULL);
-    pthread_create(&thread_postprocess_60deg, NULL, postprocess_60deg, NULL);
+  pthread_join(thread_postprocess_60deg, NULL);
+  // Finalize Detection Results
+  finalizeTrafficLight(finLightStatus30, _tlBox30[selectTL30][1], finLightStatus60, _tlBox60[selectTL60][1],
+                       finLightStatus, finLightDistance);
 
-    pthread_join(thread_postprocess_60deg, NULL);
-    //Finalize Detection Results
-    finalizeTrafficLight(finLightStatus30, _tlBox30[selectTL30][1], finLightStatus60, _tlBox60[selectTL60][1], finLightStatus, finLightDistance);
-
-    //printf("F-Distance = %d\n", finLightDistance[1]);
+  // printf("F-Distance = %d\n", finLightDistance[1]);
 
 #endif
 
-    //memset(&TL_status_info,0,sizeof(TL_status_info));
-    TL_status_info->left_green = 0;
-    TL_status_info->ahead_green = 0;
-    TL_status_info->right_green = 0;
+  // memset(&TL_status_info,0,sizeof(TL_status_info));
+  TL_status_info->left_green = 0;
+  TL_status_info->ahead_green = 0;
+  TL_status_info->right_green = 0;
+  TL_status_info->ros_msg_total = 0;
+  TL_status_info->distance_light = 0;
+#ifdef Tainan
+
+  if (finLightDistance[1] != -1 && finLightDistance[1] <= 40)
+  {
+    TL_status_info->distance_light = finLightDistance[1];
+
+    if (finLightStatus[1][0])
+      TL_color_info->color_light = 1;
+    if (finLightStatus[1][1])
+      TL_color_info->color_light = 2;
+    if (finLightStatus[1][2])
+      TL_color_info->color_light = 3;
+
+    if (finLightStatus[1][0] == finLightStatus[1][1] == finLightStatus[1][2] == 0)
+      TL_color_info->color_light = 0;
+
+    TL_status_info->ahead_green = finLightStatus[1][3];
+    TL_status_info->right_green = finLightStatus[1][4];
+    TL_status_info->left_green = finLightStatus[1][5];
+  }
+
+#endif
+  TL_status_info->ros_msg_total =
+      TL_status_info->right_green << 2 | TL_status_info->ahead_green << 1 | TL_status_info->left_green;
+
+  if (!numOfBulb30 && !numOfBulb60)
+  {
+    TL_color_info->color_light = 0;
     TL_status_info->ros_msg_total = 0;
-    TL_status_info->distance_light = 0;
-#ifdef Tainan
+  }
+  if (!numOfBulb60 && !numOfBulb30)
+  {
+    detect_count++;
+  }
+  else
+  {
+    detect_count = 0;
+  }
+  if (finLightDistance[1] != -1 && finLightDistance[1] <= 40)
+  {
+    Mat prediction = KF.predict();
 
-    if (finLightDistance[1] != -1 && finLightDistance[1] <=40)
+
+    measurement.at<float>(0) = (float)TL_status_info->distance_light;
+
+    // cvKalmanCorrect(kalman, measurement);
+    KF.correct(measurement);
+
+    if (detect_count >= detect_continuous_frame)
     {
-        TL_status_info->distance_light = finLightDistance[1];
-
-        if (finLightStatus[1][0])
-            TL_color_info->color_light = 1;
-        if (finLightStatus[1][1])
-            TL_color_info->color_light = 2;
-        if (finLightStatus[1][2])
-            TL_color_info->color_light = 3;
-
-        if (finLightStatus[1][0] == finLightStatus[1][1] == finLightStatus[1][2] == 0)
-            TL_color_info->color_light = 0;
-
-        TL_status_info->ahead_green = finLightStatus[1][3];
-        TL_status_info->right_green = finLightStatus[1][4];
-        TL_status_info->left_green = finLightStatus[1][5];
-    }
-    
-#endif
-    TL_status_info->ros_msg_total = TL_status_info->right_green << 2 | TL_status_info->ahead_green << 1 | TL_status_info->left_green;
-
-    if (!numOfBulb30 && !numOfBulb60)
-    {
-        TL_color_info->color_light = 0;
-        TL_status_info->ros_msg_total = 0;
-    }
-    if (!numOfBulb60 && !numOfBulb30)
-    {
-        detect_count++;
+      TL_status_info->distance_light = 0;
+      TL_color_info->color_light = 0;
+      TL_status_info->ros_msg_total = 0;
     }
     else
-    {
-        detect_count = 0;
-    }
-    if (finLightDistance[1] != -1&& finLightDistance[1] <=40)
-    {
-        //const CvMat *prediction = cv::KalmanFilter::predict(kalman, 0);
-        Mat prediction = KF.predict();
-        //CvPoint predict_pt = cvPoint((int)prediction.data.fl[0], (int)prediction.data.fl[1]);
-        //measurement->data.fl[0] = (float)TL_status_info->distance_light;
+      TL_status_info->distance_light = prediction.at<float>(0);
+    // TL_status_info->distance_light = predict_pt.x;
+  }
+  // printf("F-Distance_kalman = %d\n", predict_pt.x);
 
-        measurement.at<float>(0) = (float)TL_status_info->distance_light;
+  outputs.clear();
+  outputs_60deg.clear();
+  // animateFin = Mat::zeros(100, 1220, CV_8UC3);
+  // animateTrafficLight(animateFin, finLightStatus[1], finLightDistance[1]);
 
-        //cvKalmanCorrect(kalman, measurement);
-        KF.correct(measurement);
-
-        if (detect_count >= detect_continuous_frame)
-        {
-            TL_status_info->distance_light = 0;
-            TL_color_info->color_light = 0;
-            TL_status_info->ros_msg_total = 0;
-        }
-        else
-            TL_status_info->distance_light = prediction.at<float>(0);
-        //TL_status_info->distance_light = predict_pt.x;
-    }
-    //printf("F-Distance_kalman = %d\n", predict_pt.x);
-    
-    outputs.clear();
-    outputs_60deg.clear();
-    //animateFin = Mat::zeros(100, 1220, CV_8UC3);
-   // animateTrafficLight(animateFin, finLightStatus[1], finLightDistance[1]);
-
-    IsItTheFirstFrame = false;
+  IsItTheFirstFrame = false;
 
 #ifdef display_cv_window
-    animateFin = Mat::zeros(100, 1220, CV_8UC3);
-    animateTrafficLight(animateFin, finLightStatus[1],  TL_status_info->distance_light);
-//     animate30 = Mat::zeros(100, 1220, CV_8UC3);
-//     animateTrafficLight(animate30, finLightStatus30, _tlBody30[selectTL30][6]);
-//     imshow("Result-30", animate30);
-//     animate60 = Mat::zeros(100, 1220, CV_8UC3);
-//     animateTrafficLight(animate60, finLightStatus60, _tlBody60[selectTL60][6]);
-//    // printf("60 deg = %d\n",_tlBody60[selectTL60][6]);
-//     imshow("Result-60", animate60);
+  animateFin = Mat::zeros(100, 1220, CV_8UC3);
+  animateTrafficLight(animateFin, finLightStatus[1], TL_status_info->distance_light);
+  //     animate30 = Mat::zeros(100, 1220, CV_8UC3);
+  //     animateTrafficLight(animate30, finLightStatus30, _tlBody30[selectTL30][6]);
+  //     imshow("Result-30", animate30);
+  //     animate60 = Mat::zeros(100, 1220, CV_8UC3);
+  //     animateTrafficLight(animate60, finLightStatus60, _tlBody60[selectTL60][6]);
+  //    // printf("60 deg = %d\n",_tlBody60[selectTL60][6]);
+  //     imshow("Result-60", animate60);
 
-    cv::imshow("view_60deg", dImg1_60deg);
-    cv::imshow("view_30deg", dImg1);
-    cv::imshow("Result-Final", animateFin);
+  cv::imshow("view_60deg", dImg1_60deg);
+  cv::imshow("view_30deg", dImg1);
+  cv::imshow("Result-Final", animateFin);
 
-    //cv::imshow("view", cv_ptr->image);
-    cv::waitKey(1);
+  // cv::imshow("view", cv_ptr->image);
+  cv::waitKey(1);
 #endif
 }
