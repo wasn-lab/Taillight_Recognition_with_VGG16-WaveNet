@@ -82,7 +82,7 @@ class CtrlInfo03(object):
         module = ""
 
         if self.brake_status == BrakeStatus.Y_AEB:
-            status = FATAL
+            status = WARN
             status_str = "AEB: Automatic emergency brake!"
             module = "aeb_event"
         if self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
