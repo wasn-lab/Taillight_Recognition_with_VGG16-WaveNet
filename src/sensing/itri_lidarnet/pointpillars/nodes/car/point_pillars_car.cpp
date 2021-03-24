@@ -30,7 +30,7 @@ PointPillars_Car::PointPillars_Car(const bool reproduce_result_mode, const float
   , nms_overlap_threshold_(nms_overlap_threshold)
   , pfe_onnx_file_(pfe_onnx_file)
   , rpn_onnx_file_(rpn_onnx_file)
-  , MAX_NUM_PILLARS_(36000)
+  , MAX_NUM_PILLARS_(24000)
   , MAX_NUM_POINTS_PER_PILLAR_(100)
   , PFE_OUTPUT_SIZE_(MAX_NUM_PILLARS_ * 64)
   , GRID_X_SIZE_(496)
@@ -435,7 +435,7 @@ void PointPillars_Car::onnxToTRTModel(const std::string& model_file,            
   // create the builder
   nvinfer1::IBuilder* builder = nvinfer1::createInferBuilder(g_logger_);
   const auto explicitBatch = 1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
-  nvinfer1::INetworkDefinition* network = builder->createNetwork();
+  nvinfer1::INetworkDefinition* network = builder->createNetworkV2(explicitBatch);
 
   auto parser = nvonnxparser::createParser(*network, g_logger_);
 
