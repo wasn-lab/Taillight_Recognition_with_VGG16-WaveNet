@@ -31,6 +31,36 @@ void Yolo_app::init_yolo(std::string pkg_path, std::string cfg_file)
   dsImags.init(inferYolo->getInputW(), inferYolo->getInputH());
   cudaMalloc((void**)&yoloInput, batchSize * inferYolo->getInputH() * inferYolo->getInputW() * 3 * sizeof(float));
 }
+void Yolo_app::init_yolo(std::string pkg_path, std::string cfg_file, const std::vector<int>& crop_size)
+{
+  int argc = 2;
+  std::string cfgFile("--flagfile=");
+  cfgFile += pkg_path + cfg_file;
+  std::cout << cfgFile.c_str() << std::endl;
+  char* argv[2] = { (char*)"trt-yolo-app", (char*)cfgFile.c_str() };
+
+  yoloConfigParserInit(argc, argv, pkg_path);
+  NetworkInfo yoloInfo = getYoloNetworkInfo();
+  InferParams yoloInferParams = getYoloInferParams();
+  uint64_t seed = getSeed();
+  std::string networkType = getNetworkType();
+  std::string precision = getPrecision();
+  std::string testImages = getTestImages();
+  std::string testImagesPath = getTestImagesPath();
+
+  decode = getDecode();
+  doBenchmark = getDoBenchmark();
+  viewDetections = getViewDetections();
+  saveDetections = getSaveDetections();
+  std::string saveDetectionsPath = getSaveDetectionsPath();
+  batchSize = getBatchSize();
+  shuffleTestSet = getShuffleTestSet();
+
+  srand(unsigned(seed));
+  inferYolo = new YoloV3(batchSize, yoloInfo, yoloInferParams);
+  dsImags.init(inferYolo->getInputW(), inferYolo->getInputH(), crop_size);
+  cudaMalloc((void**)&yoloInput, batchSize * inferYolo->getInputH() * inferYolo->getInputW() * 3 * sizeof(float));
+}
 
 void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs)
 {
@@ -52,8 +82,8 @@ void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs)
   cudaStreamSynchronize(inferYolo->m_CudaStream);
   yoloInput = yoloInput - inferYolo->getInputH() * inferYolo->getInputW() * 3 * batchSize;
 }
-void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int> dist_cols,
-                                std::vector<int> dist_rows)
+void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int>& dist_cols,
+                                std::vector<int>& dist_rows)
 {
   dsImgs_rows.clear();
   dsImgs_cols.clear();
@@ -72,8 +102,8 @@ void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, 
   cudaStreamSynchronize(inferYolo->m_CudaStream);
   yoloInput = yoloInput - inferYolo->getInputH() * inferYolo->getInputW() * 3 * batchSize;
 }
-void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int> dist_cols,
-                                std::vector<int> dist_rows, std::vector<int> crop_size, std::vector<int> crop_offset)
+void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, std::vector<int>& dist_cols,
+                                std::vector<int>& dist_rows, const std::vector<int>& crop_offset)
 {
   dsImgs_rows.clear();
   dsImgs_cols.clear();
@@ -83,7 +113,7 @@ void Yolo_app::input_preprocess(std::vector<cv::Mat*>& matSrcs, int input_size, 
   for (uint i = 0; i < batchSize; i++)
   {
     float* tmp = dsImags.preprocessing(*matSrcs[i], inferYolo->getInputH(), inferYolo->getInputW(), input_size,
-                                       crop_size[i], crop_offset[i]);
+                                       i, crop_offset[i]);
     cudaMemcpyAsync(yoloInput, tmp, inferYolo->getInputH() * inferYolo->getInputW() * 3 * sizeof(float),
                     cudaMemcpyDeviceToDevice, inferYolo->m_CudaStream);
     cudaFree(tmp);

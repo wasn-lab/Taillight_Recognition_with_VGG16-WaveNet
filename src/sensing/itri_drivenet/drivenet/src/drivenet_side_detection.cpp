@@ -51,7 +51,6 @@ void* run_display(void* /*unused*/);
 bool g_is_infer_stop;
 bool g_is_infer_data;
 std::vector<bool> g_is_infer_datas(g_cam_ids.size());
-bool g_is_compressed = false;
 
 /// thread
 pthread_mutex_t g_mtx_infer;
@@ -213,53 +212,6 @@ void callback_cam_left_back_60(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_right_front_60_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 0;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-void callback_cam_right_back_60_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 1;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
-void callback_cam_left_front_60_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 2;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
-void callback_cam_left_back_60_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 3;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
 void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int cam_order)
 {
   sensor_msgs::ImagePtr img_msg;
@@ -292,9 +244,6 @@ int main(int argc, char** argv)
   static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = {
     callback_cam_right_front_60, callback_cam_right_back_60, callback_cam_left_front_60, callback_cam_left_back_60
   };
-  static void (*f_cam_decodes_callbacks[])(
-      sensor_msgs::CompressedImage) = { callback_cam_right_front_60_decode, callback_cam_right_back_60_decode,
-                                        callback_cam_left_front_60_decode, callback_cam_left_back_60_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
@@ -307,15 +256,8 @@ int main(int argc, char** argv)
     ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
     std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
 
-    if (g_is_compressed)
-    {
-      cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order] + std::string("/compressed"), 1,
-                                         f_cam_decodes_callbacks[cam_order]);
-    }
-    else
-    {
-      cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
-    }
+    cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
+
     if (g_img_result_publish)
     {
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
@@ -348,7 +290,7 @@ int main(int argc, char** argv)
   std::string pkg_path = ros::package::getPath("drivenet");
   std::string cfg_file = "/yolo_side.cfg";
   image_init();
-  g_yolo_app.init_yolo(pkg_path, cfg_file);
+  g_yolo_app.init_yolo(pkg_path, cfg_file, crop_size);
   g_dist_est.init(pkg_path, g_dist_est_mode);
 
   ros::MultiThreadedSpinner spinner(4);
@@ -539,8 +481,7 @@ void* run_yolo(void* /*unused*/)
     }
     else
     {
-      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp,
-                                  crop_size, crop_offset);
+      g_yolo_app.input_preprocess(mat_srcs_tmp, static_cast<int>(g_input_resize), dist_cols_tmp, dist_rows_tmp, crop_offset);
     }
     g_yolo_app.inference_yolo();
     g_yolo_app.get_yolo_result(&mat_order_tmp, vbbx_output_tmp);
