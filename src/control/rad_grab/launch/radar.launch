@@ -4,16 +4,16 @@
 	<!-- Global arg ************************************************************ -->
 	<arg name="radar_enable" default="1" />
 	<arg name="radar_detection" default="1" />
-	<arg name="delphi_enable" default="1" />
+	<arg name="delphi_enable" default="0" />
 	<arg name="umec_enable" default="0" />
 	<arg name="cubtek_enable" default="1" />
 	<arg name="alpha_test" default="0" />
-	<arg name="alpha_front_enable" default="1" />
-	<arg name="alpha_side_enable" default="1" />
-	<arg name="alpha_back_enable" default="1" />
-	<rosparam param="debug_message">1</rosparam>
+	<arg name="alpha_front_enable" default="0" />
+	<arg name="alpha_side_enable" default="0" />
+	<arg name="alpha_back_enable" default="0" />
+	<rosparam param="debug_message">0</rosparam>
 	<rosparam param="alpha_raw_message">0</rosparam>
-	<rosparam param="cubtek_raw_message">0</rosparam>
+	<rosparam param="cubtek_raw_message">1</rosparam>
 	<rosparam param="delphi_raw_message">0</rosparam>
 
 	<!-- ******** Ros Parameter For Radar Stitching ******** -->
@@ -48,7 +48,7 @@
 
 	<!-- ************ Delphi Front Center ************ -->
 	<group if="$(eval arg('delphi_enable') != 0)">
-		<arg name="ifname" default="any" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_delphi" name="rad_delphi" output="screen" cwd="node">
 			<param name="~/ifname" value="$(arg ifname)" />
 		</node>
@@ -68,7 +68,7 @@
 	<!-- degree to radian : static_transform_publisher x y z yaw pitch roll frame_id child_frame_id -->
 	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="1" />
-		<arg name="ifname" default="can1" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_front_center" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />
@@ -79,7 +79,7 @@
 	<!-- ************ Alpha Front Left ************** -->
 	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="2" />
-		<arg name="ifname" default="can2" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_front_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />
@@ -90,7 +90,7 @@
 	<!-- ************ Alpha Front Right ************ -->
 	<group if="$(eval arg('alpha_front_enable') != 0)">
 		<arg name="filter_id" default="3" />
-		<arg name="ifname" default="can3" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_front_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />
@@ -101,7 +101,7 @@
 	<!-- ************ Alpha Side Left ************ -->
 	<group if="$(eval arg('alpha_side_enable') != 0)">
 		<arg name="filter_id" default="4" />
-		<arg name="ifname" default="can4" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_side_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />
@@ -112,7 +112,7 @@
 	<!-- ************ Alpha Side Right ************ -->
 	<group if="$(eval arg('alpha_side_enable') != 0)">
 		<arg name="filter_id" default="5" />
-		<arg name="ifname" default="can5" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_side_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />
@@ -123,7 +123,7 @@
 	<!-- ************ Alpha Back Left ************ -->
 	<group if="$(eval arg('alpha_back_enable') != 0)">
 		<arg name="filter_id" default="6" />
-		<arg name="ifname" default="can6" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_left" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />
@@ -134,7 +134,7 @@
 	<!-- ************ Alpha Back Right ************ -->
 	<group if="$(eval arg('alpha_back_enable') != 0)">
 		<arg name="filter_id" default="7" />
-		<arg name="ifname" default="can7" />
+		<arg name="ifname" default="can0" />
 		<node pkg="rad_grab" type="rad_alpha" name="rad_back_right" output="screen" cwd="node">
 			<param name="~/filter_id" value="$(arg filter_id)" />
 			<param name="~/ifname" value="$(arg ifname)" />

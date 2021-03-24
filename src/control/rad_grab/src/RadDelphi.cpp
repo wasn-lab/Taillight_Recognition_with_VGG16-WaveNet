@@ -144,7 +144,7 @@ void onInit(ros::NodeHandle nh, ros::NodeHandle n)
   nh.param("/debug_message", debug_message, 0);
   nh.param("/delphi_raw_message", delphi_raw_message, 0);
 
-  std::string ifname_temp = "any";
+  std::string ifname_temp = "can0";
   nh.getParam("ifname", ifname_temp);
   ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
   strcpy(ifname, ifname_temp.c_str());
