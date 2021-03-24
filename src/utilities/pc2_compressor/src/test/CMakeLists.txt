@@ -7,10 +7,13 @@ catkin_download_test_data(ouster64.pcd
   DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
   MD5 14c96d5bdf4d3d80ccfc9d309d90be8a)
 
-catkin_download_test_data(lidar_raw_2020-03-10-10-48-39_41_1s.bag
-  "http://nas.itriadv.co:8888/Share/ADV/Rosbag/B1/test_case/lidar_raw_2020-03-10-10-48-39_41_1s.bag"
-  DESTINATION ${pc2_compressor_SOURCE_DIR}/src/test
-  MD5 b678a7888403f5f55cd5c2a4acdf0daa)
+# Already defined in car_model package.
+#set(TEST_BAG "lidar_raw_2020-12-28-16-53-14_21.bag")
+#catkin_download_test_data(${TEST_BAG}
+#  "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+#  DESTINATION ${Project_SOURCE_DIR}/bags
+#  MD5 a94d0f1f4ccf9a490dd78f7b7d72b1bb
+#)
 
 catkin_download_test_data(lidar_compressed_2020-03-10-10-48-39_41.bag
   "http://nas.itriadv.co:8888/Share/ADV/Rosbag/B1/test_case/lidar_compressed_2020-03-10-10-48-39_41.bag"

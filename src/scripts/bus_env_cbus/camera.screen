@@ -32,25 +32,28 @@ screen -t init_load_monitor
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_load_monitor.sh^M"
 
 screen -t init_camera
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_camera.sh^M"
 
 screen -t init_rosbag_sender
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_rosbag_sender.sh^M"
 
 screen -t init_fail_safe
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_fail_safe.sh^M"
 
 screen -t init_lightnet
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
 
 screen -t init_tracking_2d
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d.sh^M"
 
 screen -t init_tracking_2d_left
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_left.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_left.sh^M"
 
 screen -t init_tracking_2d_right
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_right.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_right.sh^M"
 
 screen -t init_tracking_2d_fov30
-stuff "sleep 3; /home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_fov30.sh^M"
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_tracking_2d_fov30.sh^M"
+
+screen -t replay_jpg
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/run_replay_jpg.sh^M"

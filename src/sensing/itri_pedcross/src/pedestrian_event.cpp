@@ -304,7 +304,6 @@ void PedestrianEvent::veh_info_callback(const msgs::VehInfo::ConstPtr& msg)
 void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerArray::ConstPtr& msg)
 {
   std::lock_guard<std::mutex> lk(mu_lanelet2_route_);
-  std::cout << *msg << std::endl;
   ros::Time start;
   start = ros::Time::now();
   lanelet2_route_left_.clear();
@@ -602,7 +601,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_width_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.rows / (float)cropped_image.cols;
           resize_height_to = int(aspect_ratio * resize_width_to);
-	  resize_height_to = std::max(resize_height_to, max_pixel);
+	  resize_height_to = std::min(std::max(resize_height_to, 0), max_pixel);
         }
         else
         {  // height larger than width
@@ -610,10 +609,14 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_height_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.cols / (float)cropped_image.rows;
           resize_width_to = int(aspect_ratio * resize_height_to);
-	  resize_width_to = std::max(resize_width_to, max_pixel);
+	  resize_width_to = std::min(std::max(resize_width_to, 0), max_pixel);
         }
         // resize image for openpose (max input pixel 368)
         cv::resize(cropped_image, cropped_image, cv::Size(resize_width_to, resize_height_to));
+        cv::Mat padded;
+        padded.create(max_pixel, max_pixel, cropped_image.type());
+        padded.setTo(cv::Scalar::all(0));
+        cropped_image.copyTo(padded(cv::Rect(0, 0, cropped_image.cols, cropped_image.rows)));
         inference_start = ros::Time::now();
         // search index in skeleton buffer
         int skeleton_index = -1;
@@ -635,7 +638,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             new_person.timestamp_ = msg->header.stamp;
             new_person.track_id_ = obj_pub.track.id;
 
-            keypoints = get_openpose_keypoint(cropped_image);
+            keypoints = get_openpose_keypoint(padded);
 
             cv::Point2f zero_keypoint;
             zero_keypoint.x = 0;
@@ -691,7 +694,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             // if there is data in skeleton buffer but calculated_skeleton is already empty
             if (skeleton_buffer.at(skeleton_index).calculated_skeleton_.empty())
             {
-              keypoints = get_openpose_keypoint(cropped_image);
+              keypoints = get_openpose_keypoint(padded);
 
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
 
