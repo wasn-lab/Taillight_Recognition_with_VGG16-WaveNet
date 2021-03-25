@@ -31,11 +31,11 @@ PointPillars_Ped_Cyc::PointPillars_Ped_Cyc(const bool reproduce_result_mode, con
   , nms_overlap_threshold_(nms_overlap_threshold)
   , pfe_onnx_file_(pfe_onnx_file)
   , rpn_onnx_file_(rpn_onnx_file)
-  , MAX_NUM_PILLARS_(18000) // 18000
+  , MAX_NUM_PILLARS_(24000) // 18000
   , MAX_NUM_POINTS_PER_PILLAR_(100)
   , PFE_OUTPUT_SIZE_(MAX_NUM_PILLARS_ * 64)
   , GRID_X_SIZE_(496) // 432
-  , GRID_Y_SIZE_(248) // 496
+  , GRID_Y_SIZE_(496) // 496
   , GRID_Z_SIZE_(1)
   , RPN_INPUT_SIZE_(64 * GRID_X_SIZE_ * GRID_Y_SIZE_)
   , NUM_ANCHOR_X_INDS_(GRID_X_SIZE_ ) // car: * 0.5; ped_cycle: * 1.0
@@ -49,10 +49,10 @@ PointPillars_Ped_Cyc::PointPillars_Ped_Cyc(const bool reproduce_result_mode, con
   , PILLAR_Y_SIZE_(0.16f)
   , PILLAR_Z_SIZE_(3.0f) // 4.0f
   , MIN_X_RANGE_(-39.68f) // -69.12f
-  , MIN_Y_RANGE_(-19.84f) // -39.68f
+  , MIN_Y_RANGE_(-39.68f) // -39.68f
   , MIN_Z_RANGE_(-2.5f) // -3.0f
   , MAX_X_RANGE_(39.68f) // 69.12f
-  , MAX_Y_RANGE_(19.84f) // 39.68f
+  , MAX_Y_RANGE_(39.68f) // 39.68f
   , MAX_Z_RANGE_(0.5f) // 1
   , BATCH_SIZE_(1)
   , NUM_INDS_FOR_SCAN_(512)
@@ -172,6 +172,7 @@ PointPillars_Ped_Cyc::~PointPillars_Ped_Cyc()
 
   GPU_CHECK(cudaFree(dummy));
   GPU_CHECK(cudaFree(dummy_1));
+  GPU_CHECK(cudaFree(dummy_2));
   GPU_CHECK(cudaFree(dev_anchors_px_));
   GPU_CHECK(cudaFree(dev_anchors_py_));
   GPU_CHECK(cudaFree(dev_anchors_pz_));
@@ -255,6 +256,7 @@ void PointPillars_Ped_Cyc::deviceMemoryMalloc()
   // for filter
   GPU_CHECK(cudaMalloc((void**)&dummy, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dummy_1, NUM_ANCHOR_ * sizeof(float)));
+  GPU_CHECK(cudaMalloc((void**)&dummy_2, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_px_, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_py_, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMalloc((void**)&dev_anchors_pz_, NUM_ANCHOR_ * sizeof(float)));
@@ -365,7 +367,8 @@ void PointPillars_Ped_Cyc::putAnchorsInDeviceMemory()
   // GPU_CHECK(cudaMemset(dev_anchors_px_, 0, NUM_ANCHOR_ * sizeof(float)));
   GPU_CHECK(cudaMemcpy(dev_anchors_px_, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
   GPU_CHECK(cudaMemcpy(dummy, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
-  GPU_CHECK(cudaMemcpy(dummy_1, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice))
+  GPU_CHECK(cudaMemcpy(dummy_1, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
+  GPU_CHECK(cudaMemcpy(dummy_2, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
   // GPU_CHECK(cudaMemcpy(dummy, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
   // GPU_CHECK(cudaMemcpy(dummy, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
   // GPU_CHECK(cudaMemcpy(dummy, anchors_px_, NUM_ANCHOR_ * sizeof(float), cudaMemcpyHostToDevice));
@@ -462,7 +465,7 @@ void PointPillars_Ped_Cyc::onnxToTRTModel(const std::string& model_file,        
   nvinfer1::IBuilder* builder = nvinfer1::createInferBuilder(g_logger_);
   // newly add in 2020/10/3
   const auto explicitBatch = 1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
-  nvinfer1::INetworkDefinition* network = builder->createNetwork();
+  nvinfer1::INetworkDefinition* network = builder->createNetworkV2(explicitBatch);
 
   auto parser = nvonnxparser::createParser(*network, g_logger_);
 
@@ -475,7 +478,7 @@ void PointPillars_Ped_Cyc::onnxToTRTModel(const std::string& model_file,        
 
   // Build the engine
   // builder->setMaxBatchSize(BATCH_SIZE_);
-  builder->setMaxWorkspaceSize(1 << 20);
+  builder->setMaxWorkspaceSize(1 << 22);
 
   nvinfer1::ICudaEngine* engine = builder->buildCudaEngine(*network);
 
@@ -622,7 +625,7 @@ void PointPillars_Ped_Cyc::doInference(const float* in_points_array, const int i
   GPU_CHECK(cudaMemset(dev_filter_count_, 0, sizeof(int)));
   // raise(SIGINT);
   postprocess_cuda_ptr_->doPostprocessCuda(
-      (float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3], dev_anchor_mask_, dummy_1, dev_anchors_px_,
+      (float*)rpn_buffers_[1], (float*)rpn_buffers_[2], (float*)rpn_buffers_[3], dev_anchor_mask_, dummy_1, dummy_2, dev_anchors_px_,
       dev_anchors_py_, dev_anchors_pz_, dev_anchors_dx_, dev_anchors_dy_, dev_anchors_dz_, dev_anchors_ro_,
       dev_filtered_box_, dev_filtered_score_, dev_filtered_dir_, dev_filtered_label_, dev_box_for_nms_, dev_filter_count_, out_labels, out_detections);
   // std::cout << anchors_px_[0] << std::endl; 

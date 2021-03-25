@@ -102,6 +102,8 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
       cam_info_vector.push_back(cam_info);
       object.camInfo = cam_info_vector;
 
+      // object.score = score;
+
       float center_x = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 0];
       float center_y = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 1];
       float center_z = detections[i * OUTPUT_NUM_BOX_FEATURE_ + 2];
