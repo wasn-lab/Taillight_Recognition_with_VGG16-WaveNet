@@ -44,7 +44,6 @@ void* run_display(void* /*unused*/);
 bool g_is_infer_stop;
 bool g_is_infer_data;
 std::vector<bool> g_is_infer_datas(g_cam_ids.size());
-bool g_is_compressed = false;
 bool g_is_distance = true;
 
 /// thread
@@ -169,44 +168,6 @@ void callback_cam_front_bottom_60(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
-{
-  int cam_order = 1;
-  if (!g_is_infer_datas[cam_order])
-  {
-    cv_bridge::CvImageConstPtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    g_cam_mutex.lock();
-    g_mats[cam_order] = cv_ptr->image;
-    g_cam_mutex.unlock();
-    std_msgs::Header h = msg->header;
-    sync_inference(cam_order, h, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
-void callback_cam_front_bottom_60_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 0;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
-void callback_cam_front_top_far_30_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 1;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   if (g_lidarall_ctrl)
@@ -240,26 +201,24 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
 
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
+  std::vector<std::string> cam_raw_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
-  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
-                                                                            callback_cam_front_top_far_30 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_bottom_60_decode,
-                                                                             callback_cam_front_top_far_30_decode };
+  static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60 };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
+    cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
-    if (g_is_compressed)
-    {
-      cam_subs[cam_order] =
-          nh.subscribe(cam_topic_names[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
-    }
-    else
-    {
-      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
-    }
+
+    /// Wait for all message
+    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
+    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+
+    cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
+
     if (g_img_result_publish)
     {
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
@@ -337,7 +296,7 @@ void* run_interp(void* /*unused*/)
 msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
 {
   msgs::DetectedObject det_obj;
-  std::vector<msgs::CamInfo> cam_info_vector;  
+  std::vector<msgs::CamInfo> cam_info_vector;
   msgs::CamInfo cam_info;
 
   if (g_is_distance)
@@ -354,11 +313,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
       // r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_bottom_60], box.x2, box.y2);
       l_check = 0;
       r_check = 0;
-    }
-    else if (g_cam_ids[cam_order] == camera::id::front_top_far_30)
-    {
-      l_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x1, box.y2);
-      r_check = g_dist_est.CheckPointInArea(g_dist_est.area[camera::id::front_top_far_30], box.x2, box.y2);
     }
 
     if (l_check == 0 && r_check == 0)
@@ -389,7 +343,7 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   cam_info.prob = box.prob;
   cam_info.id = g_cam_ids[cam_order];
 
-  cam_info_vector.push_back(cam_info);  
+  cam_info_vector.push_back(cam_info);
 
   det_obj.classId = translate_label(box.label);
   det_obj.camInfo = cam_info_vector;

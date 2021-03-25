@@ -84,7 +84,7 @@ void PluginFactory::destroy()
 /*****************************/
 YoloLayerV3::YoloLayerV3(const void* data, size_t length)
 {
-  const char *d = static_cast<const char *>(data), *a = d;
+  const char *d = static_cast<const char*>(data), *a = d;
   read(d, m_NumBoxes);
   read(d, m_NumClasses);
   read(d, m_GridSize);
@@ -149,7 +149,7 @@ size_t YoloLayerV3::getSerializationSize()
 
 void YoloLayerV3::serialize(void* buffer)
 {
-  char *d = static_cast<char *>(buffer), *a = d;
+  char *d = static_cast<char*>(buffer), *a = d;
   write(d, m_NumBoxes);
   write(d, m_NumClasses);
   write(d, m_GridSize);
