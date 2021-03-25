@@ -2,7 +2,7 @@
 <launch>
 
   <arg name="force_disable_avoidance" default="false" />
-  <arg name="disable_lane_event" default="false" />
+  <arg name="disable_lane_event" default="true" />
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />

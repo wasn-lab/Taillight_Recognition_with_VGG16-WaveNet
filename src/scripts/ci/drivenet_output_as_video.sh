@@ -8,10 +8,6 @@ make video_saver -j
 popd
 
 source build/car_model/scripts/car_model.sh
-if [[ "${CAR_MODEL}" != "B1_V2" ]]; then
-  echo "This script is for B1_V2 only."
-  exit 0
-fi
 
 source devel/setup.bash
 export output_dir=/var/www/html/artifacts/drivenet-detection/${today}
