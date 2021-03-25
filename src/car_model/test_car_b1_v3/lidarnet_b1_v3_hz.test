@@ -1,0 +1,12 @@
+<launch>
+    <include file="$(find lidar)/launch/b1.launch">
+      <arg name="hardware_enable" value="false" />
+      <arg name="mode" value="0" />
+    </include>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-12-28-16-53-14_21.bag -l -r 3">
+    </node>
+
+    <node pkg="car_model" type="calc_hz.py" name="calc_hz" output="screen" required="true" args="--duration 30">
+    </node>
+</launch>
