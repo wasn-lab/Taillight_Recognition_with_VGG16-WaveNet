@@ -36,7 +36,7 @@ void DistanceEstimation::init(const std::string& pkgPath, int mode)
   if (de_mode == 1)
   {
     std::string fc60_json = pkgPath;
-    fc60_json.append("/data/alignment/fm60_0528.json");
+    fc60_json.append("/data/alignment/fm60_0224.json");
     align_FC60 = new cv::Point3d*[img_al_h];
     for (int i = 0; i < img_al_h; i++)
     {
@@ -52,7 +52,6 @@ void DistanceEstimation::init(const std::string& pkgPath, int mode)
       align_FT30[i] = new cv::Point3d[img_al_w];
     }
     ReadDistanceFromJson(ft30_json, align_FT30, img_al_h, img_al_w);
-
   }
 }
 
@@ -880,38 +879,39 @@ msgs::PointXYZ DistanceEstimation::GetPointDist(int x, int y, camera::id cam_id)
 
 std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* box)
 {
-  std::vector<ITRI_Bbox> &box2 = *box;
+  std::vector<ITRI_Bbox>& box2 = *box;
   for (auto const& box1 : *box)
   {
     for (uint i = 0; i < box2.size(); i++)
     {
       int status = 0;
-      if(box1.x1 == box2[i].x1 && box1.y1 == box2[i].y1)
+      if (box1.x1 == box2[i].x1 && box1.y1 == box2[i].y1)
       {
         continue;
       }
-      
+
       // status 1: One of the box is fully inside another box.
       // status 2: Box's left bottom point is in another box.
       // status 3: Box's right bottom point is in another box.
 
-
-      if(box1.x1 < box2[i].x1 && box1.y1 < box2[i].y1 && box1.x2 > box2[i].x2 && box1.y2 > box2[i].y2)
+      if (box1.x1 < box2[i].x1 && box1.y1 < box2[i].y1 && box1.x2 > box2[i].x2 && box1.y2 > box2[i].y2)
       {
         status = 1;
       }
-      else if(box1.x1 < box2[i].x1 && box1.x2 > box2[i].x1 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 && box1.x2 < box2[i].x2)
+      else if (box1.x1 < box2[i].x1 && box1.x2 > box2[i].x1 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 &&
+               box1.x2 < box2[i].x2)
       {
         status = 2;
       }
-      else if(box1.x1 < box2[i].x2 && box1.x2 > box2[i].x2 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 && box1.x1 > box2[i].x1)
+      else if (box1.x1 < box2[i].x2 && box1.x2 > box2[i].x2 && box1.y1 < box2[i].y2 && box1.y2 > box2[i].y2 &&
+               box1.x1 > box2[i].x1)
       {
-        status = 3;        
+        status = 3;
       }
 
-      if(status == 2)
+      if (status == 2)
       {
-        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box2[i].x2 - box1.x2) * (box2[i].y2 - box2[i].y1))
+        if ((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box2[i].x2 - box1.x2) * (box2[i].y2 - box2[i].y1))
         {
           box2[i].y2 = box1.y1;
         }
@@ -920,9 +920,9 @@ std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* bo
           box2[i].x1 = box1.x2;
         }
       }
-      else if(status == 3)
+      else if (status == 3)
       {
-        if((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box1.x1 - box2[i].x1) * (box2[i].y2 - box2[i].y1))
+        if ((box2[i].x2 - box2[i].x1) * (box1.y1 - box2[i].y1) > (box1.x1 - box2[i].x1) * (box2[i].y2 - box2[i].y1))
         {
           box2[i].y2 = box1.y1;
         }
@@ -930,11 +930,10 @@ std::vector<ITRI_Bbox>* DistanceEstimation::MergeBbox(std::vector<ITRI_Bbox>* bo
         {
           box2[i].x2 = box1.x1;
         }
-      }    
+      }
     }
-  }  
+  }
   std::vector<ITRI_Bbox>* out = &box2;
-  
+
   return out;
 }
-

@@ -233,3 +233,6 @@
 /reserve/route
 /ADV_op/req_run_stop
 
+# For debugging how sys_ready changes.
+/vehicle/report/itri/fail_safe_status
+/vehicle/report/itri/sensor_status

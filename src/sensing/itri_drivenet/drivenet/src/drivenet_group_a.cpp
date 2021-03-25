@@ -47,7 +47,6 @@ void* run_display(void* /*unused*/);
 bool g_is_infer_stop;
 bool g_is_infer_data;
 std::vector<bool> g_is_infer_datas(g_cam_ids.size());
-bool g_is_compressed = false;
 
 /// thread
 pthread_mutex_t g_mtx_infer;
@@ -187,30 +186,6 @@ void callback_cam_front_top_far_30(const sensor_msgs::Image::ConstPtr& msg)
   }
 }
 
-void callback_cam_front_bottom_60_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 0;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
-void callback_cam_front_top_far_30_decode(sensor_msgs::CompressedImage compressImg)
-{
-  int cam_order = 1;
-  if (!g_is_infer_datas[cam_order])
-  {
-    g_cam_mutex.lock();
-    cv::imdecode(cv::Mat(compressImg.data), 1).copyTo(g_mats[cam_order]);
-    g_cam_mutex.unlock();
-    sync_inference(cam_order, compressImg.header, &g_mats[cam_order], &g_bboxs[cam_order]);
-  }
-}
-
 void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   if (g_lidarall_ctrl)
@@ -248,39 +223,45 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName() + "/dist_esti_mode", g_dist_est_mode);
 
   std::vector<std::string> cam_topic_names(g_cam_ids.size());
+  std::vector<std::string> cam_raw_topic_names(g_cam_ids.size());
   std::vector<std::string> bbox_topic_names(g_cam_ids.size());
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
   static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
                                                                             callback_cam_front_top_far_30 };
-  static void (*f_cam_decodes_callbacks[])(sensor_msgs::CompressedImage) = { callback_cam_front_bottom_60_decode,
-                                                                             callback_cam_front_top_far_30_decode };
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
+    cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
-    if (g_is_compressed)
-    {
-      cam_subs[cam_order] =
-          nh.subscribe(cam_topic_names[cam_order] + std::string("/compressed"), 1, f_cam_decodes_callbacks[cam_order]);
-    }
-    else
-    {
-      cam_subs[cam_order] = nh.subscribe(cam_topic_names[cam_order] + std::string("/raw"), 1, f_cam_callbacks[cam_order]);
-    }
+
+    /// Wait for all message
+    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
+    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+
+    cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
+
     if (g_img_result_publish)
     {
       g_img_pubs[cam_order] = it.advertise(cam_topic_names[cam_order] + std::string("/detect_image"), 1);
     }
     if (g_lidarall_publish)
     {
-      g_lidar_sub = nh.subscribe("/LidarFrontTop/Raw", 1, callback_LidarAll);
+      std::string lidar_raw_topic = "/LidarFrontTop/Raw";
+      std::cout << "Wait for input topic " << lidar_raw_topic << std::endl;
+      ros::topic::waitForMessage<sensor_msgs::PointCloud2>(lidar_raw_topic);
+      std::cout << lidar_raw_topic << " is ready" << std::endl;
+
+      g_lidar_sub = nh.subscribe(lidar_raw_topic, 1, callback_LidarAll);
       g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/LidarAll_re", 2);
     }
 
     g_bbox_pubs[cam_order] = nh.advertise<msgs::DetectedObjectArray>(bbox_topic_names[cam_order], 8);
-    g_heartbeat_pubs[cam_order] = nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
-    g_time_info_pubs[cam_order] = nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
+    g_heartbeat_pubs[cam_order] =
+        nh.advertise<std_msgs::Empty>(cam_topic_names[cam_order] + std::string("/detect_image/heartbeat"), 1);
+    g_time_info_pubs[cam_order] =
+        nh.advertise<std_msgs::Header>(bbox_topic_names[cam_order] + std::string("/time_info"), 1);
   }
 
   // // occupancy grid map publisher
@@ -350,7 +331,6 @@ msgs::DetectedObject run_dist(ITRI_Bbox box, int cam_order)
   msgs::BoxPoint box_point;
   std::vector<msgs::CamInfo> cam_info_vector;
   msgs::CamInfo cam_info;
-  
 
   int l_check = 2;
   int r_check = 2;
@@ -480,7 +460,7 @@ void* run_yolo(void* /*unused*/)
       header_msg = headers_tmp[cam_order];
       g_time_info_pubs[cam_order].publish(header_msg);
     }
-    
+
     // reset data
     reset_data();
 

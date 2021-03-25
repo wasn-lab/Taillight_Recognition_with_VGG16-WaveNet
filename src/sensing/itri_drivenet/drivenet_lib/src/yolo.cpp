@@ -650,10 +650,13 @@ bool Yolo::verifyYoloEngine()
 
   for (auto tensor : m_OutputTensors)
   {
-    assert(!strcmp(m_Engine->getBindingName(tensor.bindingIndex), tensor.blobName.c_str()) &&
-           "Blobs names dont match between cfg and engine file \n");
-    assert(get3DTensorVolume(m_Engine->getBindingDimensions(tensor.bindingIndex)) == tensor.volume &&
-           "Tensor volumes dont match between cfg and engine file \n");
+    assert(!strcmp(m_Engine->getBindingName(tensor.bindingIndex), tensor.blobName.c_str()) && "Blobs names dont match "
+                                                                                              "between cfg and engine "
+                                                                                              "file \n");
+    assert(get3DTensorVolume(m_Engine->getBindingDimensions(tensor.bindingIndex)) == tensor.volume && "Tensor volumes "
+                                                                                                      "dont match "
+                                                                                                      "between cfg and "
+                                                                                                      "engine file \n");
   }
 
   assert(m_Engine->bindingIsInput(m_InputBindingIndex) && "Incorrect input binding index \n");

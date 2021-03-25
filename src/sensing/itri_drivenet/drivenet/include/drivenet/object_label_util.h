@@ -10,7 +10,6 @@
 
 namespace DriveNet
 {
-
 enum class common_type_id
 {
   other = sensor_msgs_itri::DetectedObjectClassId::Unknown,       // 0

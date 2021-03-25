@@ -22,6 +22,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/Empty.h>
+#include <msgs/MotionVector.h>
+#include <msgs/MotionVectorArray.h>
 
 
 class ImageTransfer{
@@ -65,9 +67,13 @@ public:
     RosImagePubSub(ros::NodeHandle nh_in);
     // Publishers
     bool add_a_pub(size_t id_in, const std::string &topic_name);
+    bool add_a_pub_mv(size_t id_in, const std::string &topic_name);
+    bool add_a_pub_mv_msgs(size_t id_in, const std::string &topic_name);
     bool send_image(const int topic_id, const cv::Mat &content_in);
 	bool send_image_rgb(const int topic_id, const cv::Mat &content_in, ros::Time ros_time);
     bool send_image_rgb_gstreamer(const int topic_id, const cv::Mat &content_in, ros::Time ros_time);
+    bool send_image_rgb_gstreamer_mv(const int topic_id, const cv::Mat &content_in, ros::Time ros_time);
+    bool send_image_rgb_gstreamer_mv_msgs(const int topic_id, const msgs::MotionVectorArray &content_in, ros::Time ros_time);
     // Subscribers
     bool add_a_sub(size_t id_in, const std::string &topic_name);
     bool get_image(const int topic_id, cv::Mat &content_out);
@@ -92,8 +98,11 @@ private:
     // Image subscribers
     std::map<size_t, image_transport::Subscriber> _image_subscriber_map;
     // Image publishers
-    std::map<size_t, image_transport::Publisher> _image_publisher_map;
+    std::map<size_t, image_transport::Publisher> _image_publisher_map; 
+    std::map<size_t, image_transport::Publisher> _image_publisher_map_mv;   
     std::map<size_t, ros::Publisher> _heartbeat_publisher_map;
+    std::map<size_t, ros::Publisher> _mv_msg_publisher_map;
+    
 
 
     // ImageTransfer

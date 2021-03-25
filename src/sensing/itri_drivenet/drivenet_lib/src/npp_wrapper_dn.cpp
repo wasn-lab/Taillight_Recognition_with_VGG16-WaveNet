@@ -18,8 +18,8 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
   assert(wscale > 0);
 
   int dummy;
-  const NppiSize src_size = {.width = src.cols, .height = src.rows };
-  const NppiRect src_roi = {.x = 0, .y = 0, .width = src.cols, .height = src.rows };
+  const NppiSize src_size = { .width = src.cols, .height = src.rows };
+  const NppiRect src_roi = { .x = 0, .y = 0, .width = src.cols, .height = src.rows };
   const int src_line_steps = src.cols * channel;
   const int num_src_bytes = src.cols * src.rows * channel;
   Npp8u* src_npp8u_ptr = NULL;
@@ -41,8 +41,8 @@ int resize(const cv::Mat& src, cv::Mat& dst, const double hscale, const double w
   const int dst_cols = wscale;
   const int dst_line_steps = dst_cols * channel;
   const int num_dst_bytes = dst_cols * dst_rows * channel;
-  const NppiSize dst_size = {.width = dst_cols, .height = dst_rows };
-  const NppiRect dst_roi = {.x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
+  const NppiSize dst_size = { .width = dst_cols, .height = dst_rows };
+  const NppiRect dst_roi = { .x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
   Npp8u* dst_npp8u_ptr = NULL;
   if (channel == 3)
   {
@@ -98,8 +98,8 @@ int rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_degree, const Np
   assert((rotation_degree == 90) || (rotation_degree == 180) || (rotation_degree == 270));
 
   int dummy = 0;
-  const NppiSize src_size = {.width = src.cols, .height = src.rows };
-  const NppiRect src_roi = {.x = 0, .y = 0, .width = src.cols, .height = src.rows };
+  const NppiSize src_size = { .width = src.cols, .height = src.rows };
+  const NppiRect src_roi = { .x = 0, .y = 0, .width = src.cols, .height = src.rows };
   int src_line_steps = src.cols * 3;
   const int num_src_bytes = src.cols * src.rows * 3;
   Npp8u* src_npp8u_ptr = nppiMalloc_8u_C3(src.cols, src.rows, &dummy);
@@ -117,7 +117,7 @@ int rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_degree, const Np
   int dst_cols = src.rows;
   int dst_line_steps = dst_cols * 3;
   // NppiSize dst_size = {.width = dst_cols, .height = dst_rows };
-  NppiRect dst_roi = {.x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
+  NppiRect dst_roi = { .x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
   // paramters for 180 degree
   if (rotation_degree == 180)
   {
@@ -189,4 +189,4 @@ int npp8u_ptr_to_cvmat(const Npp8u* in_npp8u_ptr, const size_t in_num_bytes, cv:
   return 0;
 }
 
-};  // namespace
+};  // namespace DriveNet_npp
