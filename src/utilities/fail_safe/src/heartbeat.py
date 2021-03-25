@@ -37,11 +37,9 @@ def localization_state_func(msg, fps):
         status = FATAL
         status_strs.append("pose_unstable")
 
-    status_str = " ".join(status_strs)
+    status_str = "FPS: " + str(fps)[:5] + " ".join(status_strs)
     if status != OK:
         rospy.logwarn("Localization state: %s", status_str)
-    else:
-        status_str = "FPS: " + str(fps)[:5]
     return status, status_str
 
 
