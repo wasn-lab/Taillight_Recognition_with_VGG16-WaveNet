@@ -235,7 +235,7 @@ void image_publisher(const cv::Mat& image, const std_msgs::Header& header, int c
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "drivenet_group_c_b1_v2");
+  ros::init(argc, argv, "drivenet_group_c");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
