@@ -18,6 +18,6 @@ int rotate(const cv::Mat& src, cv::Mat& dst, const int rotation_degree,
 int cvmat_to_npp8u_ptr(const cv::Mat& src, Npp8u* out_npp8u_ptr);
 int npp8u_ptr_to_cvmat(const Npp8u* in_npp8u_ptr, const size_t in_num_bytes, cv::Mat& out_img, const int rows,
                        const int cols);
-}  // namespace
+}  // namespace DriveNet_npp
 
 #endif  // __NPP_WRAPPER_DN_H__
