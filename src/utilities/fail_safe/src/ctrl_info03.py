@@ -4,7 +4,7 @@ import time
 import heapq
 import rospy
 from msgs.msg import Flag_Info
-from status_level import OK, FATAL, UNKNOWN
+from status_level import OK, WARN, FATAL, UNKNOWN
 
 
 # Flag05 contents in self-driving mode
