@@ -45,3 +45,11 @@ grep "detect_image Hz: " ${logf_separately} | grep -v "No data" | sort
 
 echo "SUMMARY: Performance of running all nodes simultaneously:"
 grep "detect_image Hz: " ${logf_simultaneously} | grep -v "No data" | sort
+
+set +x
+if [[ -f ${logf_separately} ]]; then
+  rm ${logf_separately}
+fi
+if [[ -f ${logf_simultaneously} ]]; then
+  rm ${logf_simultaneously}
+fi
