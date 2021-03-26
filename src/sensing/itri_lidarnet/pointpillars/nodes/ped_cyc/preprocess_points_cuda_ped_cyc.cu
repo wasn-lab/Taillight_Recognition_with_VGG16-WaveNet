@@ -117,7 +117,7 @@ __global__ void make_pillar_index_kernel(
     // dev_x_coors_for_sub[count] =  x*  PILLAR_X_SIZE + 0.1f;
     // dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -39.9f;
     dev_x_coors_for_sub[count] =  x*  PILLAR_X_SIZE + -39.6f;
-    dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -19.76f;
+    dev_y_coors_for_sub[count] =  y*  PILLAR_Y_SIZE + -39.6f;
     dev_sparse_pillar_map[y*NUM_INDS_FOR_SCAN + x] = 1;
   }
 }
