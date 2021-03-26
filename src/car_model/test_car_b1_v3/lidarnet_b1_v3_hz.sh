@@ -17,3 +17,8 @@ roslaunch car_model lidarnet_b1_v3_hz.test | tee ${logf}
 
 echo "SUMMARY: Performance result:"
 grep " Hz: " ${logf} | grep -v "No data" | sort
+
+set +x
+if [[ -f ${logf} ]]; then
+  rm ${logf}
+fi
