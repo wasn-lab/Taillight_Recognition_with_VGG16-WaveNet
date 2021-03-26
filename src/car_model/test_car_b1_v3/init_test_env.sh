@@ -15,6 +15,7 @@ pushd build
 set -e
 make -j pcd_saver video_saver image_saver
 make camera_raw_2021-02-25-15-53-00_77.bag
+make auto_record_2020-11-04-15-29-32_0.bag
 make auto_record_2020-04-14-16-41-15_89.bag
 make geofence_pp_2020-11-16-16-35-39.bag
 make lidar_raw_compressed_2021-02-03.bag

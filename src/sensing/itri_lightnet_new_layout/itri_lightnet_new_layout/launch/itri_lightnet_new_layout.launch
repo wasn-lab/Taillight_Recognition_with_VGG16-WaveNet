@@ -1,0 +1,6 @@
+<launch>
+  <node name="itri_lightnet_new_layout_node"
+    pkg="itri_lightnet_new_layout"
+    type="itri_lightnet_new_layout_node"
+  />
+</launch>

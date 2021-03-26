@@ -91,7 +91,7 @@ public:
   * @details dev_* represents device memory allocated variables
   */
   void doPostprocessCuda(const float* rpn_box_output, const float* rpn_cls_output, const float* rpn_dir_output,
-                         int* dev_anchor_mask, float* dummy, const float* dev_anchors_px, const float* dev_anchors_py,
+                         int* dev_anchor_mask, float* dummy, float* dummy1, const float* dev_anchors_px, const float* dev_anchors_py,
                          const float* dev_anchors_pz, const float* dev_anchors_dx, const float* dev_anchors_dy,
                          const float* dev_anchors_dz, const float* dev_anchors_ro, float* dev_filtered_box,
                          float* dev_filtered_score, int* dev_filtered_label, int* dev_filtered_dir, float* dev_box_for_nms,
