@@ -89,19 +89,15 @@ class LoadMonitor(object):
         except subprocess.CalledProcessError:
             self.use_nvidia_smi = False
 
-    def get_gpu_load(self):
+    def get_ipc_load(self):
         if self.use_nvidia_smi:
-            load = _get_gpu_load_by_nvidia_smi()
+            gpu_load = _get_gpu_load_by_nvidia_smi()
         else:
-            load = _get_gpu_load_by_tegra_stats()
+            gpu_load = _get_gpu_load_by_tegra_stats()
         ret = {"hostname": self.hostname,
-               "gpu_load": load}
-        return json.dumps(ret)
-
-    def get_cpu_load(self):
-        ret = {"load": _get_cpu_load(),
-               "hostname": self.hostname,
-               "nproc": self.nproc}
+               "cpu_load": _get_cpu_load(),
+               "nproc": self.nproc,
+               "gpu_load": gpu_load}
         return json.dumps(ret)
 
     def run(self):
@@ -113,18 +109,11 @@ class LoadMonitor(object):
 
         rate = rospy.Rate(1)  # FPS: 1
 
-        cpu_load_topic = "/vehicle/report/{}/cpu_load".format(hostname)
-        cpu_load_publisher = rospy.Publisher(cpu_load_topic, String, queue_size=1000)
-        rospy.logwarn("Publish data on %s", cpu_load_topic)
-
-        gpu_load_topic = "/vehicle/report/{}/gpu_load".format(hostname)
-        gpu_load_publisher = rospy.Publisher(gpu_load_topic, String, queue_size=1000)
-        rospy.logwarn("Publish data on %s", gpu_load_topic)
+        ipc_load_topic = "/vehicle/report/{}/load".format(hostname)
+        ipc_load_publisher = rospy.Publisher(ipc_load_topic, String, queue_size=1)
+        rospy.logwarn("Publish data on %s", ipc_load_topic)
         while not rospy.is_shutdown():
             msg = String()
-            msg.data = self.get_cpu_load()
-            cpu_load_publisher.publish(msg)
-
-            msg.data = self.get_gpu_load()
-            gpu_load_publisher.publish(msg)
+            msg.data = self.get_ipc_load()
+            ipc_load_publisher.publish(msg)
             rate.sleep()
