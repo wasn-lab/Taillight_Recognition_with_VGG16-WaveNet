@@ -240,22 +240,22 @@ bool approximateProgressiveMorphological(const pcl::PointCloud<PointT>::ConstPtr
   apmf.setInputCloud(input);
 
   // BoChun's Parameters
-  // apmf.setCellSize(1);
-  // apmf.setBase(3);  // 0.1
-  // apmf.setExponential(false);
-  // apmf.setMaxWindowSize(1.0);    // 3.0
-  // apmf.setSlope(0.2);            // 0.2 //1.0f
-  // apmf.setInitialDistance(0.3);  // 0.12 //0.1
-  // apmf.setMaxDistance(0.6);      // 0.2 //0.3
+   apmf.setCellSize(1);
+   apmf.setBase(3);  // 0.1
+   apmf.setExponential(false);
+   apmf.setMaxWindowSize(1.0);    // 3.0
+   apmf.setSlope(0.2);            // 0.2 //1.0f
+   apmf.setInitialDistance(0.3);  // 0.12 //0.1
+   apmf.setMaxDistance(0.6);      // 0.2 //0.3
 
   // Wayne's Parameters
-  apmf.setCellSize(0.35);
-  apmf.setBase(2);  // 0.1
-  apmf.setExponential(false);
-  apmf.setMaxWindowSize(1.0);    // 3.0
-  apmf.setSlope(0.9);            // 0.2 //1.0f
-  apmf.setInitialDistance(0.32);  // 0.12 //0.1
-  apmf.setMaxDistance(0.34);      // 0.2 //0.3
+  //apmf.setCellSize(0.35);
+  //apmf.setBase(2);  // 0.1
+  //apmf.setExponential(false);
+  //apmf.setMaxWindowSize(1.0);    // 3.0
+  //apmf.setSlope(0.9);            // 0.2 //1.0f
+  //apmf.setInitialDistance(0.32);  // 0.12 //0.1
+  //apmf.setMaxDistance(0.34);      // 0.2 //0.3
   
   apmf.setNumberOfThreads(2);
   apmf.extract(ground->indices);
