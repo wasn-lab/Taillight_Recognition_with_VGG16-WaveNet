@@ -19,11 +19,11 @@ def get_hostname():
     return str(subprocess.check_output(["hostname"])).strip()
 
 
-def get_nproc_as_str():
+def get_nproc():
     """
     Return the number of cpu cores.
     """
-    return str(subprocess.check_output(["nproc"])).strip()
+    return int(str(subprocess.check_output(["nproc"])).strip())
 
 
 def _parse_nvidia_smi_output(line):
@@ -45,39 +45,43 @@ def _get_gpu_load_by_nvidia_smi():
     try:
         output = str(subprocess.check_output(cmd))
         line = output.splitlines()[-1]
-        ret = line.strip()
+        ret = float(line.strip())
     except subprocess.CalledProcessError:
-        ret = None
+        ret = -1
     if ret is not None:
         return ret
     cmd = ["nvidia-smi"]  # fall back to nvidia-smi
-    ret = "INF"
+    ret = -1.0
     try:
         output = str(subprocess.check_output(cmd))
         for line in output.splitlines():
             temp = _parse_nvidia_smi_output(line)
             if temp:
-                ret = temp
+                ret = float(temp)
     except subprocess.CalledProcessError:
-        ret = "INF"
+        ret = -1.0
     return ret
 
 def _get_gpu_load_by_tegra_stats():
     # Machines like Xavier do not have nvidia-smi.
-    return "NA"
+    return -1.0
 
 def _get_cpu_load():
     line = str(subprocess.check_output(["w"])).splitlines()[0]
     match = W_RGX.search(line)
     if match is None:
-        return "NA"
-    return match.expand(r"\g<load>")
+        return 100.0
+    fields = match.expand(r"\g<load>").split(",")
+    if len(fields) > 0:
+        return float(fields[0])
+    else:
+        return 100.0
 
 
 class LoadMonitor(object):
     def __init__(self):
         self.hostname = get_hostname()
-        self.nproc = get_nproc_as_str()
+        self.nproc = get_nproc()
         self.use_nvidia_smi = False
         self.check_nvidia_tooling()
 
