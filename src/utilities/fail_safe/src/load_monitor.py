@@ -5,6 +5,7 @@ Publish cpu/gpu load
 """
 import re
 import subprocess
+import json
 import rospy
 from std_msgs.msg import String
 
@@ -16,6 +17,13 @@ def get_hostname():
     Return the hostname of the machine, i.e., /etc/hostname
     """
     return str(subprocess.check_output(["hostname"])).strip()
+
+
+def get_nproc_as_str():
+    """
+    Return the number of cpu cores.
+    """
+    return str(subprocess.check_output(["nproc"])).strip()
 
 
 def _parse_nvidia_smi_output(line):
@@ -69,6 +77,7 @@ def _get_cpu_load():
 class LoadMonitor(object):
     def __init__(self):
         self.hostname = get_hostname()
+        self.nproc = get_nproc_as_str()
         self.use_nvidia_smi = False
         self.check_nvidia_tooling()
 
@@ -105,9 +114,11 @@ class LoadMonitor(object):
         gpu_load_publisher = rospy.Publisher(gpu_load_topic, String, queue_size=1000)
         rospy.logwarn("Publish data on %s", gpu_load_topic)
         while not rospy.is_shutdown():
+            cpu_load = {"load": self.get_cpu_load(), "nproc": self.nproc}
             msg = String()
-            msg.data = self.get_cpu_load()
+            msg.data = json.dumps(cpu_load)
             cpu_load_publisher.publish(msg)
+
             msg.data = self.get_gpu_load()
             gpu_load_publisher.publish(msg)
             rate.sleep()

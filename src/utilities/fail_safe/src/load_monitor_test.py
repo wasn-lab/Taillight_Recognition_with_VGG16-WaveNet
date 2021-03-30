@@ -1,11 +1,21 @@
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
 import unittest
-from load_monitor import get_hostname, LoadMonitor, _parse_nvidia_smi_output
+from load_monitor import (get_hostname, LoadMonitor, _parse_nvidia_smi_output,
+                          get_nproc_as_str)
 
 class LoadMonitorTest(unittest.TestCase):
     def setUp(self):
         self.monitor = LoadMonitor()
+
+    def test_get_hostname(self):
+        name = get_hostname()
+        self.assertTrue(len(name) > 0)
+        self.assertFalse(name[-1].isspace())
+
+    def test_get_nproc_as_str(self):
+        nproc = int(get_nproc_as_str())
+        self.assertTrue(nproc >= 4)  # We don't have low-end computers.
 
     def test_get_gpu_load(self):
         gpu_load = self.monitor.get_gpu_load()
@@ -22,11 +32,6 @@ class LoadMonitorTest(unittest.TestCase):
         cpu_load = self.monitor.get_cpu_load()
         self.assertTrue(len(cpu_load) > 0)
         self.assertEqual(len(cpu_load.split()), 3)
-
-    def test_get_hostname(self):
-        name = get_hostname()
-        self.assertTrue(len(name) > 0)
-        self.assertFalse(name[-1].isspace())
 
 if __name__ == "__main__":
     unittest.main()
