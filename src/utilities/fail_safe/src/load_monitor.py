@@ -91,11 +91,18 @@ class LoadMonitor(object):
 
     def get_gpu_load(self):
         if self.use_nvidia_smi:
-            return _get_gpu_load_by_nvidia_smi()
-        return _get_gpu_load_by_tegra_stats()
+            load = _get_gpu_load_by_nvidia_smi()
+        else:
+            load = _get_gpu_load_by_tegra_stats()
+        ret = {"hostname": self.hostname,
+               "gpu_load": load}
+        return json.dumps(ret)
 
     def get_cpu_load(self):
-        return _get_cpu_load()
+        ret = {"load": _get_cpu_load(),
+               "hostname": self.hostname,
+               "nproc": self.nproc}
+        return json.dumps(ret)
 
     def run(self):
         # ROS topic/node name does not allow characters like -
@@ -114,9 +121,8 @@ class LoadMonitor(object):
         gpu_load_publisher = rospy.Publisher(gpu_load_topic, String, queue_size=1000)
         rospy.logwarn("Publish data on %s", gpu_load_topic)
         while not rospy.is_shutdown():
-            cpu_load = {"load": self.get_cpu_load(), "nproc": self.nproc}
             msg = String()
-            msg.data = json.dumps(cpu_load)
+            msg.data = self.get_cpu_load()
             cpu_load_publisher.publish(msg)
 
             msg.data = self.get_gpu_load()
