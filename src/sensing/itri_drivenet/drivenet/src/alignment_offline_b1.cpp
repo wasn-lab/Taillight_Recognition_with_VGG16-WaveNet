@@ -9,6 +9,8 @@ AlignmentOff::AlignmentOff()
   const camera::id camId = camera::id::front_60;
 #elif CAR_MODEL_IS_C1
   const camera::id camId = camera::id::front_bottom_60;
+#elif CAR_MODEL_IS_B1_V3
+  const camera::id camId = camera::id::front_bottom_60;
 #else
 #error "car model is not well defined"
 #endif
@@ -113,9 +115,9 @@ void AlignmentOff::visualize() const
       // int G = 0;
       int B = 0;
 
-      B = round(spatial_points_[row][col].x*5);
+      B = round(spatial_points_[row][col].x * 5);
       // G = round(spatial_points_[row][col].y*20);
-      // R = round(spatial_points_[row][col].z*40);  
+      // R = round(spatial_points_[row][col].z*40);
 
       vis.at<cv::Vec3b>(row, col)[0] = B;
       vis.at<cv::Vec3b>(row, col)[1] = 0;
@@ -189,7 +191,7 @@ void AlignmentOff::approx_nearest_points_if_necessary()
     {
       const auto& image_point = kv.first;
       // const auto& aligned_image_point = kv.second;
-      
+
       int count = 0;
       cv::Point3d sum_3d;
 
@@ -212,14 +214,13 @@ void AlignmentOff::approx_nearest_points_if_necessary()
           }
         }
       }
-      
+
       // spatial_points_[image_point.first][image_point.second] =
       //     spatial_points_[aligned_image_point.first][aligned_image_point.second];
 
-      spatial_points_[image_point.first][image_point.second].x = sum_3d.x/count;
-      spatial_points_[image_point.first][image_point.second].y = sum_3d.y/count;
-      spatial_points_[image_point.first][image_point.second].z = sum_3d.z/count;
-
+      spatial_points_[image_point.first][image_point.second].x = sum_3d.x / count;
+      spatial_points_[image_point.first][image_point.second].y = sum_3d.y / count;
+      spatial_points_[image_point.first][image_point.second].z = sum_3d.z / count;
     }
 
     std::cout << "Total " << unset_points_temp.size() << " need to be approximated" << std::endl;
@@ -278,27 +279,26 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
   pcl::PointCloud<pcl::PointXYZI>::Ptr LidAll_cloudPtr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*msg, *LidAll_cloudPtr);
 
-  if(ctl)
+  if (ctl)
   {
-  for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
-  {
-
-    if (/*LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&*/
-       LidAll_cloudPtr->points[i].x > 0 )
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x - 122)/45) < 0.1)
-    // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
+    for (size_t i = 0; i < LidAll_cloudPtr->size(); i++)
     {
-      g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
-      if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
+      if (/*LidAll_cloudPtr->points[i].z > g_al.groundLowBound && LidAll_cloudPtr->points[i].z < g_al.groundUpBound &&*/
+          LidAll_cloudPtr->points[i].x > 0)
+      // if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z - (2*LidAll_cloudPtr->points[i].x -
+      // 122)/45) < 0.1) if(LidAll_cloudPtr->points[i].x > 0 && abs(LidAll_cloudPtr->points[i].z -
+      // (LidAll_cloudPtr->points[i].x - 79)/30) < 0.1)
       {
-        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x = LidAll_cloudPtr->points[i].x;
-        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y = LidAll_cloudPtr->points[i].y;
-        g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z = LidAll_cloudPtr->points[i].z;
-
+        g_al.out = g_al.run(LidAll_cloudPtr->points[i].x, LidAll_cloudPtr->points[i].y, LidAll_cloudPtr->points[i].z);
+        if (g_al.out[0] > 0 && g_al.out[0] < g_al.imgW && g_al.out[1] > 0 && g_al.out[1] < g_al.imgH)
+        {
+          g_al.spatial_points_[g_al.out[1]][g_al.out[0]].x = LidAll_cloudPtr->points[i].x;
+          g_al.spatial_points_[g_al.out[1]][g_al.out[0]].y = LidAll_cloudPtr->points[i].y;
+          g_al.spatial_points_[g_al.out[1]][g_al.out[0]].z = LidAll_cloudPtr->points[i].z;
+        }
       }
     }
-  }
-  ctl = false;
+    ctl = false;
   }
 }
 

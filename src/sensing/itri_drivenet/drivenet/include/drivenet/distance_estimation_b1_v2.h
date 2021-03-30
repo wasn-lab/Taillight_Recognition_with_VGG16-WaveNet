@@ -46,7 +46,6 @@ private:
   msgs::PointXYZ GetPointDist(int x, int y, camera::id cam_id);
   int BoxShrink(camera::id cam_id, std::vector<int> Points_src, std::vector<int>& Points_dst);
   float RatioDefine(camera::id cam_id, int cls);
-  
 
 public:
   DistanceEstimation();
@@ -57,7 +56,6 @@ public:
   msgs::BoxPoint Get3dBBox(msgs::PointXYZ p0, msgs::PointXYZ p3, int class_id, camera::id cam_id);
   int CheckPointInArea(CheckArea area, int object_x1, int object_y2);
   std::vector<ITRI_Bbox>* MergeBbox(std::vector<ITRI_Bbox>* box);
-  
 
   CheckArea* area;
 };

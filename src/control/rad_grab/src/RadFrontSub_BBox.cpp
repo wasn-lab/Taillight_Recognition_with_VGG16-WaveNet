@@ -25,6 +25,7 @@ ros::Publisher AlphaPub;
 ros::Publisher BBox_pub;
 ros::Publisher BBox_pub_vehicle;
 
+int debug_message = 0;
 float m_radio = 0.25;
 float m_height = m_radio * 2;
 float m_depth = m_radio * 2;
@@ -85,7 +86,8 @@ void callbackRadFront(const msgs::Rad::ConstPtr& msg)
 
     }
   }
-  cout << "Number of Delphi objects = " << BBox.objects.size() << endl;
+  if(debug_message)
+    cout << "Number of Delphi objects = " << BBox.objects.size() << endl;
   BBox_pub.publish(BBox);
   BBox_pub_vehicle.publish(BBox);
 }
@@ -146,20 +148,29 @@ void callbackAlpha(const msgs::Rad::ConstPtr& msg)
 
     }
   }
-  cout << "Number of Alpha objects = " << BBox.objects.size() << endl;
+  if(debug_message)
+    cout << "Number of Alpha objects = " << BBox.objects.size() << endl;
   AlphaPub.publish(BBox);
+}
+
+void onInit(ros::NodeHandle nh, ros::NodeHandle n)
+{
+  nh.param("/debug_message", debug_message, 0);
 }
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "RadFrontSub_BBox");
   ros::NodeHandle n;
+  ros::NodeHandle nh("~");
   ros::Subscriber RadFrontSub = n.subscribe("RadFront", 1, callbackRadFront);
   ros::Subscriber RadAlphaSub = n.subscribe("RadAlpha", 1, callbackAlpha);
   BBox_pub = n.advertise<msgs::DetectedObjectArray>("RadarDetection", 1);
   BBox_pub_vehicle = n.advertise<msgs::DetectedObjectArray>("PathPredictionOutput/radar", 1);
 
   AlphaPub = n.advertise<msgs::DetectedObjectArray>("AlphaDetection", 1);
+
+  onInit(nh, n);
 
   ros::Rate rate(100);
   while (ros::ok())

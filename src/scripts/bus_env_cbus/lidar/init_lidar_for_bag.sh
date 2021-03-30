@@ -1,7 +1,5 @@
 #! /bin/bash
-
 source /home/lidar/itriadv/devel/setup.bash
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.1.3
-
-roslaunch --wait edge_detection edge_detection.launch
+roslaunch --wait lidar c1.launch mode:=9 hardware_enable:=0
