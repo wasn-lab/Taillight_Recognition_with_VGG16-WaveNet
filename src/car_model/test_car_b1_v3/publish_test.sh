@@ -34,6 +34,9 @@ src/car_model/scripts/gen_drivenet_engine.py --package car_model --launch gen_dr
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v3.test
 rostest car_model publish_test_track2d_b1_v3.test
+
+# cache the contents of the bag for avoid timing problem.
+cat ${bag_dir}/auto_record_2020-11-04-15-29-32_0.bag > /dev/null 2>&1
 rostest car_model publish_test_pedcross_b1_v3.test
 rostest car_model publish_test_lidarnet_b1_v3.test
 rostest car_model publish_test_lidars_grabber_b1_v3.test
