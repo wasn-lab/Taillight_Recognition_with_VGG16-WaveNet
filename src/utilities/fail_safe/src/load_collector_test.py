@@ -14,7 +14,7 @@ class LoadCollectorTest(unittest.TestCase):
         collector.setup_records()
         collector.records["xavier"]["cpu_load"] = 0.16
         collector.records["xavier"]["gpu_load"] = "47"
-        collector.records["xavier"]["nproc"] = 12
+        collector.records["xavier"]["cpu_load_threshold"] = 12
         collector.timestamps["xavier"] = now
 
         delta = datetime.timedelta(seconds=1)
