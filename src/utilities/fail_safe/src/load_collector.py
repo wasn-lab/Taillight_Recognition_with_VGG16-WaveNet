@@ -12,6 +12,7 @@ from itri_mqtt_client import ItriMqttClient
 from status_level import OK, WARN
 
 _MQTT_VEHICLE_SYSTEM_LOADS_TOPIC = "vehicle/report/system_loads"
+SYSTEM_LOADS_TOPIC = "/vehicle/report/system_loads"
 
 class LoadCollector(object):
     def __init__(self, mqtt_fqdn, mqtt_port):
@@ -32,9 +33,8 @@ class LoadCollector(object):
             rospy.Subscriber(topic, String, callback=self._cb, queue_size=1)
             rospy.logwarn("Subscribe %s", topic)
 
-        output_topic = "/vehicle/report/system_loads"
-        self.load_publisher = rospy.Publisher(output_topic, String, queue_size=1)
-        rospy.logwarn("Publish on %s", output_topic)
+        self.load_publisher = rospy.Publisher(SYSTEM_LOADS_TOPIC, String, queue_size=1)
+        rospy.logwarn("Publish on %s", SYSTEM_LOADS_TOPIC)
         self.mqtt_client = ItriMqttClient(mqtt_fqdn, mqtt_port)
 
     def setup_records(self):
@@ -58,11 +58,11 @@ class LoadCollector(object):
         self.records[ipc]["status"] = OK
         status_str = ""
 
-        if jdata["cpu_load"] >= jdata["nproc"]:
+        if jdata["cpu_load"] >= jdata["cpu_load_threshold"]:
             self.records[ipc]["status"] = WARN
             status_str = "high cpu load: " + str(self.records[ipc]["cpu_load"])[:5]
 
-        if jdata["gpu_load"] >= 95:
+        if jdata["gpu_load"] >= 99:
             self.records[ipc]["status"] = WARN
             temp = "high gpu load: " + str(self.records[ipc]["gpu_load"])[:5]
             if status_str:

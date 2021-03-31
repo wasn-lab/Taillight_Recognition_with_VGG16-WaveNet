@@ -6,10 +6,10 @@ import rospy
 import json
 from status_level import OK, WARN
 from std_msgs.msg import String
+from load_collector import SYSTEM_LOADS_TOPIC
 
 
 class SystemLoadChecker(object):
-    TOPIC = "/vehicle/report/system_loads"
     def __init__(self):
         # expected module stats
         self.fps_low = 0.5
@@ -24,11 +24,11 @@ class SystemLoadChecker(object):
         self.status_str = ""
         self.msg = None
 
-        rospy.Subscriber(SystemLoadChecker.TOPIC, String, self._cb)
+        rospy.Subscriber(SYSTEM_LOADS_TOPIC, String, self._cb)
 
     def get_status_in_list(self):
         fps = self._get_fps()
-        doc = {"module": "system_load"}
+        doc = {"module": "system_loads"}
         status = OK
         status_strs = ["FPS: " + str(fps)[:5]]
         if self.msg is not None:

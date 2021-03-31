@@ -9,7 +9,7 @@ import json
 import rospy
 from std_msgs.msg import String
 
-W_RGX = re.compile(r"load average: (?P<load>[ \.\d,]+)")
+W_RGX = re.compile(r"load average: (?P<load1>[\.\d]+), (?P<load5>[\.\d]+), (?P<load15>[\.\d]+)")
 NVIDIA_SMI_LOAD_RGX = re.compile(r".+[\s]+(?P<load>[\d]+)%[\s]+Default.+")
 
 def get_hostname():
@@ -66,22 +66,28 @@ def _get_gpu_load_by_tegra_stats():
     # Machines like Xavier do not have nvidia-smi.
     return -1.0
 
-def _get_cpu_load():
-    line = str(subprocess.check_output(["w"])).splitlines()[0]
-    match = W_RGX.search(line)
+
+def _parse_cpu_load_output(text):
+    match = W_RGX.search(text)
     if match is None:
-        return 100.0
-    fields = match.expand(r"\g<load>").split(",")
-    if len(fields) > 0:
-        return float(fields[0])
-    else:
-        return 100.0
+        return "100.0"
+    return match.expand(r"\g<load15>")
+
+
+def _get_cpu_load():
+    line = str(subprocess.check_output(["uptime"]))
+    return float(_parse_cpu_load_output(line))
 
 
 class LoadMonitor(object):
     def __init__(self):
         self.hostname = get_hostname()
-        self.nproc = get_nproc()
+        nproc = get_nproc()
+        if self.hostname == "xavier":
+            self.cpu_load_threshold = 14.0  # empirical
+        else:
+            self.cpu_load_threshold = float(nproc)
+
         self.use_nvidia_smi = False
         self.check_nvidia_tooling()
 
@@ -100,7 +106,7 @@ class LoadMonitor(object):
             gpu_load = _get_gpu_load_by_tegra_stats()
         ret = {"hostname": self.hostname,
                "cpu_load": _get_cpu_load(),
-               "nproc": self.nproc,
+               "cpu_load_threshold": self.cpu_load_threshold,
                "gpu_load": gpu_load}
         return json.dumps(ret)
 
@@ -116,6 +122,7 @@ class LoadMonitor(object):
         ipc_load_topic = "/vehicle/report/{}/load".format(hostname)
         ipc_load_publisher = rospy.Publisher(ipc_load_topic, String, queue_size=1)
         rospy.logwarn("Publish data on %s", ipc_load_topic)
+        rospy.logwarn("%s: cpu_load_threshold to %f", self.hostname, self.cpu_load_threshold)
         while not rospy.is_shutdown():
             msg = String()
             msg.data = self.get_ipc_load()
