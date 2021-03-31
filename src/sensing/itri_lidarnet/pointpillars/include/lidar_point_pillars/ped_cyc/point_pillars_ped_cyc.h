@@ -132,6 +132,7 @@ private:
   
   float* dummy;
   float* dummy_1;
+  float* dummy_2;
   float* anchors_px_;
   float* anchors_py_;
   float* anchors_pz_;

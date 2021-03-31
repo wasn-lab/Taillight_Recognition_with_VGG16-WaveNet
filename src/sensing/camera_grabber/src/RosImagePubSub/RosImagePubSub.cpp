@@ -117,6 +117,22 @@ bool RosImagePubSub::add_a_pub(size_t id_in, const std::string& topic_name)
   return result.second;
 }
 
+//
+bool RosImagePubSub::add_a_pub_mv(size_t id_in, const std::string& topic_name)
+{
+  auto result = _image_publisher_map_mv.emplace(id_in, _ros_it.advertise(topic_name + std::string("/motion_vector"), 1));  
+  
+  return result.second;
+}
+
+bool RosImagePubSub::add_a_pub_mv_msgs(size_t id_in, const std::string& topic_name)
+{  
+  auto result = _mv_msg_publisher_map.emplace(id_in,
+                                   _nh_ptr.advertise<msgs::MotionVectorArray>(topic_name + std::string("/motion_vector_msg"), 1));
+  
+  return result.second;
+}
+
 // output
 bool RosImagePubSub::send_image(const int topic_id, const cv::Mat& content_in)
 {
@@ -195,6 +211,63 @@ bool RosImagePubSub::send_image_rgb_gstreamer(const int topic_id, const cv::Mat&
     return false;
   }
 }
+
+bool RosImagePubSub::send_image_rgb_gstreamer_mv(const int topic_id, const cv::Mat& content_in, ros::Time ros_time)
+{
+  cv::Mat mat_img;
+  mat_img = content_in;  // always is BGR format  
+
+
+  std_msgs::Header header;  // empty header
+  // header.seq = sequence;			 // user defined counter
+  header.stamp = ros_time;          // time
+  header.frame_id = "camera";       // camera id
+
+  sensor_msgs::Image img_msg;
+  cv_bridge::CvImage img_bridge;
+
+  img_bridge = cv_bridge::CvImage(header, "bgr8", mat_img);
+  img_bridge.toImageMsg(img_msg);  // from cv_bridge to sensor_msgs::Image
+
+  //std::cout << "mv 7.5" << std::endl;
+  auto m_it = _image_publisher_map_mv.find(topic_id);
+  if (m_it != _image_publisher_map_mv.end())
+  {
+    _image_publisher_map_mv[topic_id].publish(img_msg);    
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool RosImagePubSub::send_image_rgb_gstreamer_mv_msgs(const int topic_id, const msgs::MotionVectorArray& content_in, ros::Time ros_time)
+{
+  msgs::MotionVectorArray msgs_array;
+
+  msgs_array = content_in;  
+
+  std_msgs::Header header;  // empty header
+  // header.seq = sequence;			 // user defined counter
+  header.stamp = ros_time;          // time
+  header.frame_id = "camera";       // camera id
+  msgs_array.header = header;
+
+  auto m_it = _mv_msg_publisher_map.find(topic_id);
+  if (m_it != _mv_msg_publisher_map.end())
+  {
+    
+    _mv_msg_publisher_map[topic_id].publish(msgs_array);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
 //
 bool RosImagePubSub::add_a_sub(size_t id_in, const std::string& topic_name)
 {
