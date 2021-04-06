@@ -7,29 +7,23 @@ import subprocess
 import re
 
 def _get_interfaces():
-    output = subprocess.check_output(["ifconfig", "-a"]).decode("utf-8")
-    interface_re = re.compile("(?P<ifname>[\w\d]+)\:\s+flags=\d+")
+    ifnames = os.listdir("/sys/class/net/")
     ip_re = re.compile(".*inet\s+(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})")
     interfaces = []
 
-    ifname = ""
-    ip = ""
-    for line in output.splitlines():
-        match = interface_re.match(line)
-        if match:
-            ifname = match.expand(r"\g<ifname>")
-            continue
-        match = ip_re.match(line)
-        if match:
-            ip = match.expand(r"\g<ip>")
-        if ifname and ip:
-            interfaces.append({"interface": ifname, "ip": ip, "speed": -1})
-            ifname = ""
-            ip = ""
+    for ifname in ifnames:
+        ip = ""
+        output = subprocess.check_output(["ifconfig", ifname])
+        for line in output.splitlines():
+            match = ip_re.match(line)
+            if match:
+                ip = match.expand(r"\g<ip>")
+        interfaces.append({"interface": ifname, "ip": ip, "speed": "-1"})
     for doc in interfaces:
-        tmp = "/sys/class/net/{}/speed".format(doc["interface"])
-        if doc["interface"] == "lo":
+        ifname = doc["interface"]
+        if ifname == "lo" or ifname == "br0":
             continue
+        tmp = "/sys/class/net/{}/speed".format(doc["interface"])
         try:
             output = subprocess.check_output(["cat", tmp]).decode("utf-8")
             doc["speed"] = output.splitlines()[0]
@@ -38,9 +32,9 @@ def _get_interfaces():
     return interfaces
 
 
-def gen_iptable_rules():
+def main():
     interfaces = _get_interfaces()
     print(interfaces)
 
 if __name__ == "__main__":
-    gen_iptable_rules()
+    main()
