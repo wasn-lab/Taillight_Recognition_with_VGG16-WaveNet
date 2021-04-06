@@ -291,7 +291,28 @@ void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nea
     }
     else
     {
-      register_.Distance = sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
+      double dx = nearst_pose.x - current_pose.x;
+      double dy = nearst_pose.y - current_pose.y;
+      double theta = std::atan2(dy,dx);
+      if (theta < 0)
+      {
+        theta += 2*RT_PI;
+      }
+      double theta_diff = std::fabs(current_pose.yaw - theta);
+      if (theta_diff > RT_PI)
+      {
+        theta_diff = 2*RT_PI - theta_diff;
+      }
+      int a;
+      if (theta_diff <= RT_PI/2.0)
+      {
+        a = 1;
+      }
+      else
+      {
+        a = -1;
+      }
+      register_.Distance = a * sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
     }
     // if (Module == "traffic_light")
     // {
@@ -339,9 +360,9 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "scene_register_checker");
   ros::NodeHandle node;
 
-  ros::Subscriber behavior_scene_register_sub = node.subscribe("/planning/scenario_planning/status/behavior_scene_register", 1, register_callback);
-  ros::Subscriber stop_reasons_sub = node.subscribe("/planning/scenario_planning/status/stop_reasons", 1, stop_reasons_callback);
-  ros::Subscriber current_pose_sub = node.subscribe("/rear_current_pose", 1, current_pose_callback);
+  ros::Subscriber behavior_scene_register_sub = node.subscribe("/planning/scenario_planning/status/behavior_scene_register", 10, register_callback);
+  ros::Subscriber stop_reasons_sub = node.subscribe("/planning/scenario_planning/status/stop_reasons", 10, stop_reasons_callback);
+  ros::Subscriber current_pose_sub = node.subscribe("/rear_current_pose", 10, current_pose_callback);
   bus_stop_register_pub = node.advertise<msgs::BehaviorSceneRegister>("/bus_stop_register_info",1);
   bus_stop_register_array_pub = node.advertise<msgs::BehaviorSceneRegisterArray>("/bus_stop_register_array_info",1);
   traffic_light_register_pub = node.advertise<msgs::BehaviorSceneRegister>("/traffic_light_register_info",1);
