@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+    <name>pcd_to_pc2</name>
+    <version>0.0.0</version>
+    <description>repeatedly publish a single pcd for testing</description>
+    <maintainer email="chtseng@itri.org.tw">chtseng</maintainer>
+    <license>TODO</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>roscpp</build_depend>
+
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>roscpp</run_depend>
+    <export>
+    </export>
+</package>

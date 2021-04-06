@@ -8,10 +8,14 @@ import json
 import rospy
 from std_msgs.msg import String
 from car_model_helper import get_car_model_as_str
+from itri_mqtt_client import ItriMqttClient
+from status_level import OK, WARN
 
+_MQTT_VEHICLE_SYSTEM_LOADS_TOPIC = "vehicle/report/system_loads"
+SYSTEM_LOADS_TOPIC = "/vehicle/report/system_loads"
 
 class LoadCollector(object):
-    def __init__(self):
+    def __init__(self, mqtt_fqdn, mqtt_port):
         rospy.init_node("LoadCollector")
         car_model = get_car_model_as_str()
         self.ipcs = []
@@ -24,30 +28,48 @@ class LoadCollector(object):
         self.records, self.timestamps = self.setup_records()
 
         for ipc in self.ipcs:
-            cpu_topic = "/vehicle/report/{}/cpu_load".format(ipc)
-            rospy.Subscriber(cpu_topic, String, callback=self._cb, callback_args=("cpu_load", ipc), queue_size=1)
-            rospy.logwarn("Subscribe %s", cpu_topic)
-            gpu_topic = "/vehicle/report/{}/gpu_load".format(ipc)
-            rospy.Subscriber(gpu_topic, String, callback=self._cb, callback_args=("gpu_load", ipc), queue_size=1)
-            rospy.logwarn("Subscribe %s", gpu_topic)
+            ipc = ipc.replace("-", "_")
+            topic = "/vehicle/report/{}/load".format(ipc)
+            rospy.Subscriber(topic, String, callback=self._cb, queue_size=1)
+            rospy.logwarn("Subscribe %s", topic)
 
-        output_topic = "/vehicle/report/system_loads"
-        self.load_publisher = rospy.Publisher(output_topic, String, queue_size=10)
-        rospy.logwarn("Publish on %s", output_topic)
+        self.load_publisher = rospy.Publisher(SYSTEM_LOADS_TOPIC, String, queue_size=1)
+        rospy.logwarn("Publish on %s", SYSTEM_LOADS_TOPIC)
+        self.mqtt_client = ItriMqttClient(mqtt_fqdn, mqtt_port)
 
     def setup_records(self):
         now = datetime.datetime.now()
         self.records = {}
-        self.timestamps = {}
+        self.timestamps = {ipc: now for ipc in self.ipcs}
         for ipc in self.ipcs:
-            self.records[ipc] = {"cpu_load": "", "gpu_load": ""}
-            self.timestamps[ipc] = {"cpu_load": now, "gpu_load": now}
+            self.records[ipc] = {"cpu_load": 0,
+                                 "gpu_load": 0,
+                                 "status": OK,
+                                 "status_str": ""}
         return self.records, self.timestamps
 
-    def _cb(self, msg, args):
-        load_type, ipc_name = args
-        self.records[ipc_name][load_type] = msg.data
-        self.timestamps[ipc_name][load_type] = datetime.datetime.now()
+    def _cb(self, msg):
+        jdata = json.loads(msg.data)
+        ipc = jdata["hostname"]
+
+        self.timestamps[ipc] = datetime.datetime.now()
+        self.records[ipc]["cpu_load"] = jdata["cpu_load"]
+        self.records[ipc]["gpu_load"] = jdata["gpu_load"]
+        self.records[ipc]["status"] = OK
+        status_str = ""
+
+        if jdata["cpu_load"] >= jdata["cpu_load_threshold"]:
+            self.records[ipc]["status"] = WARN
+            status_str = "high cpu load: " + str(self.records[ipc]["cpu_load"])[:5]
+
+        if jdata["gpu_load"] >= 99:
+            self.records[ipc]["status"] = WARN
+            temp = "high gpu load: " + str(self.records[ipc]["gpu_load"])[:5]
+            if status_str:
+                status_str += ", " + temp
+            else:
+                status_str = temp
+        self.records[ipc]["status_str"] = status_str
 
     def get_current_loads(self, now=None):
         """
@@ -56,24 +78,19 @@ class LoadCollector(object):
         """
         if now is None:
             now = datetime.datetime.now()
-        ret = {}
         for ipc in self.ipcs:
-            ret[ipc] = {}
-            for load_type in ["cpu_load", "gpu_load"]:
-                delta = now - self.timestamps[ipc][load_type]
-                if delta.total_seconds() > 3:
-                    ret[ipc][load_type] = "NA"
-                else:
-                    ret[ipc][load_type] = self.records[ipc][load_type]
-        return ret
+            delta = now - self.timestamps[ipc]
+            if delta.total_seconds() > 3:
+                rospy.logwarn("%s: not receiving cpu/gpu loads", ipc)
+                self.records[ipc]["status"] = WARN
+                self.records[ipc]["status_str"] = "not receiving cpu/gpu loads"
+        return self.records
 
     def run(self):
         rate = rospy.Rate(1)  # FPS: 1
         while not rospy.is_shutdown():
             loads = self.get_current_loads()
-            self.load_publisher.publish(json.dumps(loads))
+            jloads = json.dumps(loads);
+            self.load_publisher.publish(jloads)
+            self.mqtt_client.publish(_MQTT_VEHICLE_SYSTEM_LOADS_TOPIC, jloads)
             rate.sleep()
-
-if __name__ == "__main__":
-    col = LoadCollector()
-    col.run()

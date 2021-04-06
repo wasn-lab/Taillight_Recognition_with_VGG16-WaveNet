@@ -33,5 +33,5 @@ public:
   int rotate(const cv::Mat& src, cv::Mat& dst, int rotation_degree);
   void set_interpolation_mode(NppiInterpolationMode mode);
 };
-}
+}  // namespace DriveNet_npp
 #endif  // __NPP_ROTATER_IMPL_DN_H__

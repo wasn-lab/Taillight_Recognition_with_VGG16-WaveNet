@@ -4,7 +4,7 @@ import time
 import heapq
 import rospy
 from msgs.msg import Flag_Info
-from status_level import OK, FATAL, UNKNOWN
+from status_level import OK, WARN, FATAL, UNKNOWN
 
 
 # Flag05 contents in self-driving mode
@@ -82,7 +82,7 @@ class CtrlInfo03(object):
         module = ""
 
         if self.brake_status == BrakeStatus.Y_AEB:
-            status = FATAL
+            status = WARN
             status_str = "AEB: Automatic emergency brake!"
             module = "aeb_event"
         if self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:

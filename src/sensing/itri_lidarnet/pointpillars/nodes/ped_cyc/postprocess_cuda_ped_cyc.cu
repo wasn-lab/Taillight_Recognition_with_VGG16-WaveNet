@@ -22,7 +22,7 @@
 //headers in local files
 #include "lidar_point_pillars/ped_cyc/postprocess_cuda_ped_cyc.h"
 
-__global__ void filter_kernel(const float* box_preds, const float* cls_preds, const float* dir_preds, const int* anchor_mask, float* dummy,
+__global__ void filter_kernel(const float* box_preds, const float* cls_preds, const float* dir_preds, const int* anchor_mask, float* dummy, float* dummy1,
                               const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
                               const float* dev_anchors_dx, const float* dev_anchors_dy, const float* dev_anchors_dz, const float* dev_anchors_ro,
                               float* filtered_box, float* filtered_score, int* filtered_label, int* filtered_dir, float* box_for_nms, int* filter_count,
@@ -212,14 +212,14 @@ NUM_OUTPUT_BOX_FEATURE_(NUM_OUTPUT_BOX_FEATURE)
 }
 
 void PostprocessCuda::doPostprocessCuda(const float* rpn_box_output, const float* rpn_cls_output, const float* rpn_dir_output,
-        int* dev_anchor_mask, float* dummy, const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
+        int* dev_anchor_mask, float* dummy, float* dummy1, const float* dev_anchors_px, const float* dev_anchors_py, const float* dev_anchors_pz,
         const float* dev_anchors_dx, const float* dev_anchors_dy, const float* dev_anchors_dz, const float* dev_anchors_ro,
         float* dev_filtered_box, float* dev_filtered_score, int* dev_filtered_label, int* dev_filtered_dir, float* dev_box_for_nms, int* dev_filter_count,
         std::vector<int>& out_label, std::vector<float>& out_detection)
 {
 
   filter_kernel<<<NUM_ANCHOR_X_INDS_*NUM_ANCHOR_R_INDS_, NUM_ANCHOR_Y_INDS_>>>
-                                (rpn_box_output, rpn_cls_output, rpn_dir_output, dev_anchor_mask, dummy,
+                                (rpn_box_output, rpn_cls_output, rpn_dir_output, dev_anchor_mask, dummy, dummy1,
                                 dev_anchors_px, dev_anchors_py, dev_anchors_pz,
                                 dev_anchors_dx, dev_anchors_dy, dev_anchors_dz, dev_anchors_ro,
                                 dev_filtered_box, dev_filtered_score, dev_filtered_label, dev_filtered_dir, dev_box_for_nms, dev_filter_count,

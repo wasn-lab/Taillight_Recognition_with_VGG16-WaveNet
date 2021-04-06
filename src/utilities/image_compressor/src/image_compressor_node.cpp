@@ -46,9 +46,21 @@ int ImageCompressorNode::set_subscriber()
     return EXIT_FAILURE;
   }
 
-  LOG(INFO) << "Wait for input topic " << topic;
-  ros::topic::waitForMessage<sensor_msgs::Image>(topic);
-  LOG(INFO) << topic << " is ready";
+  bool done = false;
+  while (ros::ok() && !done)
+  {
+    // timeout: 1 second
+    auto msg_ptr =
+        ros::topic::waitForMessage<sensor_msgs::Image>(topic, node_handle_, ros::Duration(/*sec*/ 1, /*nsec*/ 0));
+    if (msg_ptr)
+    {
+      LOG(INFO) << topic << " is ready";
+      done = true;
+    } else
+    {
+      LOG(INFO) << "Wait for input topic " << topic;
+    }
+  }
 
   subscriber_ = node_handle_.subscribe(topic, 2, &ImageCompressorNode::callback, this);
   return EXIT_SUCCESS;
