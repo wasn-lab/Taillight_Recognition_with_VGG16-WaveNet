@@ -5,6 +5,7 @@ Generate iptables that allows lidar ipc to relay packets for camera ipc.
 import os
 import subprocess
 import re
+import json
 
 def _get_interfaces():
     ifnames = os.listdir("/sys/class/net/")
@@ -34,7 +35,7 @@ def _get_interfaces():
 
 def main():
     interfaces = _get_interfaces()
-    print(interfaces)
+    print(json.dumps(interfaces, indent=2, sort_keys=True))
 
 if __name__ == "__main__":
     main()
