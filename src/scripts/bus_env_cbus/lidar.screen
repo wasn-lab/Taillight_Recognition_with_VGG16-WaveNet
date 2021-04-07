@@ -43,8 +43,8 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M
 screen -t init_lidar
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar.sh^M"
 
-screen -t init_lidar_cmpr
-stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar_cmpr.sh^M"
+#screen -t init_lidar_cmpr
+#stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_lidar_cmpr.sh^M"
 
 screen -t run_web_video_server
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_web_video_server.sh^M"

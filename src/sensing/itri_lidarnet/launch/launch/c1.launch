@@ -45,7 +45,8 @@
 
 <!-- Mode Switch ************************************************************ -->
 	<group if="$(eval arg('mode') == 0)">
-        <node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
+        <incloud file="$(find pc2_compressor)/launch/cmpr.launch)">
+		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
 		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
