@@ -15,7 +15,7 @@ cd ~
 git clone https://github.com/glfw/glfw.git
 cd ~/glfw
 cmake -G "Unix Makefiles"
-apt-get install cmake xorg-dev libglu1-mesa-dev
+apt-get install -y cmake xorg-dev libglu1-mesa-dev
 make
 make install
 echo "Done"
