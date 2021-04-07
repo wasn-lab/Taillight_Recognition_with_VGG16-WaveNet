@@ -17,8 +17,8 @@ const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id:
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
 /// mirror issue
-const std::vector<int> crop_size{ 72, 70, 70, 55 };
-const std::vector<int> crop_offset{ 0, 70, 70, 0 };
+const std::vector<int> crop_size{ 52, 46, 50, 60 };
+const std::vector<int> crop_offset{ 0, 46, 50, 0 };
 #elif CAR_MODEL_IS_C1
 const std::vector<camera::id> g_cam_ids{ camera::id::right_front_60, camera::id::right_back_60,
                                          camera::id::left_front_60, camera::id::left_back_60 };
