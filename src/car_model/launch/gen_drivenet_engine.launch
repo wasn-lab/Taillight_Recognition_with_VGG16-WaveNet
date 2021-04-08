@@ -2,7 +2,7 @@
 	<include file="$(find drivenet)/launch/b1_v3_drivenet_group_a.launch"/>
 	<include file="$(find drivenet)/launch/b1_v3_drivenet_side.launch"/>
 	<include file="$(find drivenet)/launch/b1_v3_drivenet_top.launch"/>
-  <node pkg="rosbag" type="play" name="player" output="log" args="-r 0.5 -d 5 $(find car_model)/../bags/auto_record_2020-03-10-10-48-39_41.bag -l">
+  <node pkg="rosbag" type="play" name="player" output="log" args="-r 0.5 -d 5 $(find car_model)/../bags/camera_raw_2021-02-25-15-53-00_77.bag -l">
     <remap from="/cam/front_bottom_60" to="/cam/front_bottom_60/raw"/>
     <remap from="/cam/front_top_far_30" to="/cam/front_top_far_30/raw"/>
     <remap from="/cam/front_top_close_120" to="/cam/front_top_close_120/raw"/>

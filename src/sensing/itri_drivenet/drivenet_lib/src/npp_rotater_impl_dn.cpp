@@ -33,10 +33,10 @@ NPPRotaterImpl::NPPRotaterImpl(const int src_rows, const int src_cols, const int
   CHECK(dst_rows > 0);
   CHECK(dst_cols > 0);
 
-  src_size_ = {.width = src_cols, .height = src_rows };
-  dst_size_ = {.width = dst_cols, .height = dst_rows };
-  src_roi_ = {.x = 0, .y = 0, .width = src_cols, .height = src_rows };
-  dst_roi_ = {.x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
+  src_size_ = { .width = src_cols, .height = src_rows };
+  dst_size_ = { .width = dst_cols, .height = dst_rows };
+  src_roi_ = { .x = 0, .y = 0, .width = src_cols, .height = src_rows };
+  dst_roi_ = { .x = 0, .y = 0, .width = dst_cols, .height = dst_rows };
 
   int dummy = 0;
 
@@ -99,4 +99,4 @@ void NPPRotaterImpl::set_interpolation_mode(NppiInterpolationMode mode)
 {
   interpolation_mode_ = mode;
 }
-}
+}  // namespace DriveNet_npp

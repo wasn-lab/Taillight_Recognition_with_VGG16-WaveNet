@@ -1,2 +1,3 @@
 src/CameraGrabber/ar0231_22fps.ko
 src/CameraGrabber/init_ar0231_1207_9286trigger_v2.sh
+src/CameraGrabber/libmvextractor_standalone.so.1.0.1

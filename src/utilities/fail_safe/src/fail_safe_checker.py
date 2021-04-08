@@ -13,12 +13,14 @@ from ctrl_info02 import CtrlInfo02
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
+from system_load_checker import SystemLoadChecker
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
 
-
+_MQTT_FAIL_SAFE_TOPIC = "/fail_safe"  # To be removed in the future
+_MQTT_FAIL_SAFE_STATUS_TOPIC = "vehicle/report/itri/fail_safe_status"
 _MQTT_SYS_READY_TOPIC = "ADV_op/sys_ready"
 
 
@@ -51,7 +53,7 @@ def aggregate_event_status(status, status_str, events):
 
 
 class FailSafeChecker(object):
-    def __init__(self, heartbeat_ini, mqtt_ini, mqtt_fqdn):
+    def __init__(self, heartbeat_ini, mqtt_fqdn, mqtt_port):
         self.debug_mode = False
         self.vid = get_vid()  # vehicle id
         rospy.init_node("FailSafeChecker")
@@ -77,16 +79,11 @@ class FailSafeChecker(object):
         self.ctrl_info_03 = CtrlInfo03()
         self.ctrl_info_02 = CtrlInfo02()
         self.pedcross_alert = PedCrossAlert()
+        self.system_load_checker = SystemLoadChecker()
         self.can_checker = CanChecker()
         self.issue_reporter = IssueReporter()
 
-        mqtt_cfg = configparser.ConfigParser()
-        mqtt_cfg.read(mqtt_ini)
-        if mqtt_fqdn is None:
-            mqtt_fqdn = mqtt_cfg["mqtt_broker"].get("fqdn", "127.0.0.1")
-        self.mqtt_client = ItriMqttClient(
-            mqtt_fqdn, mqtt_cfg["mqtt_broker"].getint("port", 1883))
-        self.mqtt_topic = mqtt_cfg["mqtt_topics"]["fail_safe"]
+        self.mqtt_client = ItriMqttClient(mqtt_fqdn, mqtt_port)
         self.action_emitter = ActionEmitter()
         self.sensor_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
@@ -120,6 +117,7 @@ class FailSafeChecker(object):
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         # pedcross is still under heavy development
         ret["states"] += self.pedcross_alert.get_status_in_list()
+        ret["states"] += self.system_load_checker.get_status_in_list()
         status = _overall_status(ret["states"])
         status_str = _overall_status_str(ret["states"])
 
@@ -230,7 +228,8 @@ class FailSafeChecker(object):
 
             self.post_issue_if_necessary(current_status)
             current_status_json = json.dumps(current_status)
-            self.mqtt_client.publish(self.mqtt_topic, current_status_json)
+            self.mqtt_client.publish(_MQTT_FAIL_SAFE_TOPIC, current_status_json)
+            self.mqtt_client.publish(_MQTT_FAIL_SAFE_STATUS_TOPIC, current_status_json)
             self.fail_safe_status_publisher.publish(current_status_json)
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
 

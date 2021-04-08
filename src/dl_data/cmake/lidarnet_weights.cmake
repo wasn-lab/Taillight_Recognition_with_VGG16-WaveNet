@@ -63,19 +63,19 @@ download_file(
 download_file(
     URL "http://nas.itriadv.co:8888/git_data/B1/LiDAR_Models/PointPillars/Car/pfe.onnx"
     DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/car/pfe.onnx"
-    MD5 de87a6b83ad6abf85fe98fae47d8d7d1)
+    MD5 0f73845ca972f53be38886982773907c)
 
 download_file(
     URL "http://nas.itriadv.co:8888/git_data/B1/LiDAR_Models/PointPillars/Car/rpn.onnx"
     DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/car/rpn.onnx"
-    MD5 f0efe57438f8bd876b06fb0732f4cdb0)
+    MD5 c3f5dd18b57ac029121a70819ed9209e)
 
 download_file(
     URL "http://nas.itriadv.co:8888/git_data/B1/LiDAR_Models/PointPillars/Ped_Cyc/pfe.onnx"
     DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/ped_cyc/pfe.onnx"
-    MD5 63fd64712d453fd576b7a490e246e3b6)
+    MD5 5b1b875228e8606af11d20815f0363ab)
 
 download_file(
     URL "http://nas.itriadv.co:8888/git_data/B1/LiDAR_Models/PointPillars/Ped_Cyc/rpn.onnx"
     DESTINATION "${LIDARNET_POINTPILLARS_WEIGHTS_DIR}/ped_cyc/rpn.onnx"
-    MD5 084cfc446691508d3e8f05233af70b9b)
+    MD5 6dc98fea30e359dfda84524cd8e05ff4)
