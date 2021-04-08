@@ -237,3 +237,7 @@
 /vehicle/report/itri/fail_safe_status
 /vehicle/report/itri/sensor_status
 /vehicle/report/system_loads
+/vehicle/report/lidar/load
+/vehicle/report/camera/load
+/vehicle/report/localization/load
+/vehicle/report/xavier/load
