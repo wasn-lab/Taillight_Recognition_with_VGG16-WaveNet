@@ -23,7 +23,7 @@ def get_nproc():
     """
     Return the number of cpu cores.
     """
-    return int(str(subprocess.check_output(["nproc"])).strip())
+    return int(subprocess.check_output(["nproc"]).decode("utf-8").strip())
 
 
 def _parse_nvidia_smi_output(line):
@@ -43,7 +43,7 @@ def _get_gpu_load_by_nvidia_smi():
            "--query-gpu=utilization.gpu"]
     ret = None
     try:
-        output = str(subprocess.check_output(cmd))
+        output = subprocess.check_output(cmd).decode("utf-8")
         line = output.splitlines()[-1]
         ret = float(line.strip())
     except subprocess.CalledProcessError:

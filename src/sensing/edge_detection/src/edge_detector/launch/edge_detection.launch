@@ -1,4 +1,4 @@
-<!--launch file for edge_detection -->
+ 	<!--launch file for edge_detection -->
 <launch>
   <!--ros param not release yet except for LidarAll_flag -->
   <arg name="theta_sample" default="360"/>
