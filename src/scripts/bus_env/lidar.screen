@@ -29,8 +29,8 @@ caption always "%n(%t@%H)"
 #screen -t init_roscore
 #stuff "source ~/itriadv/devel/setup.bash;/home/lidar/itriadv/src/scripts/bus_env/lidar/init_roscore.sh^M"
 
-screen -t set_ip
-stuff "source .bashrc;echo itri | sudo -S route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.3.10^M"
+#screen -t set_ip
+#stuff "source .bashrc;echo itri | sudo -S route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.3.10^M"
 
 #screen -t ip_forwarding
 #stuff "^source .bashrc;echo itri | sudo -S bash /home/lidar/itriadv/src/scripts/bus_env/lidar/ip_forwarding.sh^M"
@@ -43,6 +43,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_load_monitor.sh^M"
 
 screen -t init_lidar
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_lidar.sh^M"
+
+#screen -t init_lidar_cmpr
+#stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_lidar_cmpr.sh^M"
 
 screen -t run_web_video_server
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh^M"
