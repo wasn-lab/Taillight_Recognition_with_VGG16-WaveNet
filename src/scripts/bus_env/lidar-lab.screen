@@ -101,3 +101,6 @@ stuff "^source /home/lidar/itriadv/devel/setup.bash;roslaunch opengl_test GUI_B_
 
 screen -t detection_viz
 stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch detection_viz itriadv_viz.launch rviz_config:=\"U3_b5_lanelet2_pedcross\"^M"
+
+screen -t hmi
+stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_hmi.sh^M"
