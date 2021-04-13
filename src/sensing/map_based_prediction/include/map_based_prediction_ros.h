@@ -22,6 +22,7 @@
 #if HEARTBEAT == 1
 #include <std_msgs/Empty.h>
 #endif
+#define OUTPUT_OBJ_FAR 0
 
 namespace tf2_ros
 {

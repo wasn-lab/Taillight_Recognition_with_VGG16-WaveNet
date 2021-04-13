@@ -276,9 +276,11 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     std::string uuid_string = unique_id::toHexString(object.id);
     if (!getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string))
     {
+#if OUTPUT_OBJ_FAR == 1
       geometry_msgs::Point debug_point;
       tf2::doTransform(tmp_object.object.state.pose_covariance.pose.position, debug_point, debug_map2lidar_transform);
       tmp_objects_without_map.objects.push_back(object);
+#endif
       continue;
     }
 
