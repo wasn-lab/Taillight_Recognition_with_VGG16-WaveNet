@@ -57,6 +57,7 @@ bool current_pose_init_flag = false;
 double current_roll, current_pitch, current_yaw;
 
 std::string map_frame_ = "map";
+std::string location_name_ = "ITRI";
 
 double busstop_BusStopNum[2000] = {};
 double busstop_BuildingNum[2000] = {};
@@ -110,7 +111,10 @@ void read_busstop_txt(std::string fpname, double (&BusStop_BusStopNum)[size_read
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+
+  std::cout << "Ini_busstop_bytxt : " << fpname_s << std::endl;
 
   read_busstop_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -152,7 +156,10 @@ void read_traffic_light_txt(std::string fpname, double (&TrafficLight_Intersecti
 void Ini_traffic_light_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_traffic_light_info.txt";
+
+  std::cout << "Ini_traffic_light_bytxt : " << fpname_s << std::endl;
 
   read_traffic_light_txt(fpname_s, trafficlight_IntersectionId, trafficlight_RoadId, trafficlight_Id);
 
@@ -587,6 +594,7 @@ int main(int argc, char** argv)
 
   // ros::param::get(ros::this_node::getName()+"/force_disable_avoidance", force_disable_avoidance_);
   ros::param::get(ros::this_node::getName()+"/use_virtual_objects", use_virtual_objects_);
+  ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
 
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);

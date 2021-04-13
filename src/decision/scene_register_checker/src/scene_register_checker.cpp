@@ -53,6 +53,7 @@ double busstop_BuildingNum[2000] = {};
 double busstop_BusStopId[2000] = {};
 int read_index = 0;
 bool busstop_txt_ini = false;
+std::string location_name_ = "ITRI";
 
 template <int size_readtmp>
 void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
@@ -89,7 +90,10 @@ void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],dou
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt"; // full route
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+
+  std::cout << "Ini_busstop_bytxt : " << fpname_s << std::endl;
 
   read_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -359,6 +363,8 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "scene_register_checker");
   ros::NodeHandle node;
+
+  ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
 
   ros::Subscriber behavior_scene_register_sub = node.subscribe("/planning/scenario_planning/status/behavior_scene_register", 10, register_callback);
   ros::Subscriber stop_reasons_sub = node.subscribe("/planning/scenario_planning/status/stop_reasons", 10, stop_reasons_callback);

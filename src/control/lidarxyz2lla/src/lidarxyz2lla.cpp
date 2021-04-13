@@ -33,6 +33,7 @@ double twd97_shift_x,twd97_shift_y,twd97_shift_z;
 // utm2wgs84
 double utm_shift_x,utm_shift_y;
 int utm_zone;
+std::string location_name_ = "ITRI";
 
 ros::Publisher lidarlla_pub;
 ros::Publisher lidarlla_wgs84_pub;
@@ -226,8 +227,9 @@ void initial_para_2()
 	double read_tmp_2[3];
 	int read_index_2 = 0;
 	std::string fname_2 = ros::package::getPath("lidarxyz2lla");
-	fname_2 += "/data/ITRI_ShiftLidarxyz2UTM.txt";
-  	std::cout << fname_2 << std::endl;
+	// fname_2 += "/data/ITRI_ShiftLidarxyz2UTM.txt";
+	fname_2 = fname_2 + "/data/" + location_name_ + "_ShiftLidarxyz2UTM.txt";
+  	std::cout << "initial_para_lidarxyz2lla : " << fname_2 << std::endl;
 
   	std::ifstream fin_2;
     char line_2[100];
@@ -447,7 +449,13 @@ void lidarxyztopicCallback_1(const geometry_msgs::PoseStamped::ConstPtr& lidarxy
 int main( int argc, char **argv )
 {
 	// testgnss();
-	
+
+	// ros initial
+	ros::init(argc, argv, "lidarxyz2lla");
+	ros::NodeHandle nh;
+
+	ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
+
 	// initial parameter
 	initial_para();
 	#ifdef TWD97
@@ -456,9 +464,7 @@ int main( int argc, char **argv )
 	#ifdef UTM
 		initial_para_2();
 	#endif
-	// ros initial
-	ros::init(argc, argv, "lidarxyz2lla");
-	ros::NodeHandle nh;
+	
 
 	// subscriber
 	lidarlla_sub = nh.subscribe("current_pose", 1, lidarxyztopicCallback_1);
