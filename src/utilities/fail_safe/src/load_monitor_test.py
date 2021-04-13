@@ -21,11 +21,15 @@ class LoadMonitorTest(unittest.TestCase):
     def test_get_ipc_load(self):
         ipc_load = self.monitor.get_ipc_load()
         jdata = json.loads(ipc_load)
-        # print(jdata)
         self.assertEqual(jdata["hostname"], get_hostname())
         self.assertTrue(isinstance(jdata["cpu_load_threshold"], float))
         self.assertTrue(isinstance(jdata["cpu_load"], float))
         self.assertTrue(isinstance(jdata["gpu_load"], float))
+        self.assertTrue(isinstance(jdata["gpu_power_draw"], float))
+        self.assertTrue(isinstance(jdata["gpu_temperature"], int))
+        self.assertTrue(isinstance(jdata["gpu_memory_used"], int))
+        self.assertEqual(jdata["gpu_pstate"][0], "P")
+        self.assertTrue(jdata["gpu_pstate"][1:].isdigit())
 
     def test_parse_cpu_load_output(self):
         text = " 10:48:40 up  2:04,  1 user,  load average: 0.34, 0.19, 0.17"
