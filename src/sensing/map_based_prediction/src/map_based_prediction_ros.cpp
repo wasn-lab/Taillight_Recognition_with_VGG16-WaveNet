@@ -258,14 +258,6 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
       tmp_object.object.state.pose_covariance.pose = pose_in_map;
     }
 
-    if (object.semantic.type != autoware_perception_msgs::Semantic::CAR &&
-        object.semantic.type != autoware_perception_msgs::Semantic::BUS &&
-        object.semantic.type != autoware_perception_msgs::Semantic::TRUCK)
-    {
-      tmp_objects_without_map.objects.push_back(tmp_object.object);
-      continue;
-    }
-
     // generate non redundant lanelet vector
     std::vector<lanelet::Lanelet> start_lanelets;
     geometry_msgs::Point closest_point;
@@ -273,6 +265,33 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     std::vector<geometry_msgs::Pose> second_path_points;
     std::vector<geometry_msgs::Pose> right_path_points;
     std::string uuid_string = unique_id::toHexString(object.id);
+
+    if (object.semantic.type != autoware_perception_msgs::Semantic::CAR &&
+        object.semantic.type != autoware_perception_msgs::Semantic::BUS &&
+        object.semantic.type != autoware_perception_msgs::Semantic::TRUCK)
+    {
+#if OUTPUT_OBJ_FAR == 1
+      tmp_objects_without_map.objects.push_back(tmp_object.object);
+#else
+      if (object.semantic.type == autoware_perception_msgs::Semantic::PEDESTRIAN)
+      {
+        if (getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 2))
+        {
+          tmp_objects_without_map.objects.push_back(tmp_object.object);
+        }
+      }
+      else  // BICYCLE, MOTORBIKE, ANIMAL
+      {
+        if (getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 5))
+        {
+          tmp_objects_without_map.objects.push_back(tmp_object.object);
+        }
+      }
+#endif
+      continue;
+    }
+
+    // CAR, BUS, TRUCK
     if (!getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 3))
     {
 #if OUTPUT_OBJ_FAR == 1
