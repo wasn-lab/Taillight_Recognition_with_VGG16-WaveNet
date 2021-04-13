@@ -24,7 +24,7 @@ class MsgConvert2(object):
             self.input_topic_, DetectedObjectArray, self.callback)
         # Publishers
         self.pub_ = rospy.Publisher(
-            str(self.input_topic_ + "/aw"), DynamicObjectWithFeatureArray, queue_size=1)
+            str("filtered_objs/aw"), DynamicObjectWithFeatureArray, queue_size=1)
 
     def run(self):
         tf_listener = tf2_ros.TransformListener(self.tf_buffer_)
