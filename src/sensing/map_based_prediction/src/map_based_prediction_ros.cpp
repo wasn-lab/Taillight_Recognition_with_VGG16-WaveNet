@@ -292,7 +292,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     }
 
     // CAR, BUS, TRUCK
-    if (!getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 3))
+    if (!getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 2))
     {
 #if OUTPUT_OBJ_FAR == 1
       geometry_msgs::Point debug_point;
