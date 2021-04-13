@@ -105,7 +105,8 @@ private:
 
   bool getClosestLanelets(const autoware_perception_msgs::DynamicObject& object,
                           const lanelet::LaneletMapPtr& lanelet_map_ptr,
-                          std::vector<lanelet::Lanelet>& closest_lanelets, std::string uuid_string);
+                          std::vector<lanelet::Lanelet>& closest_lanelets, std::string uuid_string,
+                          const double max_dist_for_searching_lanelet);
 
 public:
   MapBasedPredictionROS();
