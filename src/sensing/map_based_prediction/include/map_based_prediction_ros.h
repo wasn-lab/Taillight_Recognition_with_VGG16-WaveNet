@@ -22,7 +22,7 @@
 #if HEARTBEAT == 1
 #include <std_msgs/Empty.h>
 #endif
-#define OUTPUT_OBJ_FAR 0
+#define UNDRIVABLE_AREA_FILTER 1  // 0: OFF  1: ON
 
 namespace tf2_ros
 {

@@ -270,7 +270,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
         object.semantic.type != autoware_perception_msgs::Semantic::BUS &&
         object.semantic.type != autoware_perception_msgs::Semantic::TRUCK)
     {
-#if OUTPUT_OBJ_FAR == 1
+#if UNDRIVABLE_AREA_FILTER == 0
       tmp_objects_without_map.objects.push_back(tmp_object.object);
 #else
       if (object.semantic.type == autoware_perception_msgs::Semantic::PEDESTRIAN)
@@ -294,7 +294,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     // CAR, BUS, TRUCK
     if (!getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 2))
     {
-#if OUTPUT_OBJ_FAR == 1
+#if UNDRIVABLE_AREA_FILTER == 0
       geometry_msgs::Point debug_point;
       tf2::doTransform(tmp_object.object.state.pose_covariance.pose.position, debug_point, debug_map2lidar_transform);
       tmp_objects_without_map.objects.push_back(object);
