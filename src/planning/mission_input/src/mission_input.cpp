@@ -350,13 +350,13 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName()+"/route_choose", route_choose_);
   ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
 
-  offline_realtime_goal_setting();
-
   ros::Subscriber busstopinfo = node.subscribe("/BusStop/Info", 1, busstopinfoCallback);
   ros::Subscriber current_pose_sub = node.subscribe("rear_current_pose", 1, CurrentPoseCallback);
   initial_point_publisher = node.advertise<geometry_msgs::PoseStamped>("/initialpose_offline", 10, true);
   goal_publisher = node.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 10, true);
   checkpoint_publisher = node.advertise<geometry_msgs::PoseStamped>("/checkpoint", 10, true);
+
+  offline_realtime_goal_setting();
 
   //ros::spin();
   return 0;
