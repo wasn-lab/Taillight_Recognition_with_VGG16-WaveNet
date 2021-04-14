@@ -226,9 +226,10 @@ void initial_para_2()
 {
 	double read_tmp_2[3];
 	int read_index_2 = 0;
-	std::string fname_2 = ros::package::getPath("lidarxyz2lla");
+	std::string fname_2 = ros::package::getPath("planning_initial");
 	// fname_2 += "/data/ITRI_ShiftLidarxyz2UTM.txt";
-	fname_2 = fname_2 + "/data/" + location_name_ + "_ShiftLidarxyz2UTM.txt";
+	// fname_2 = fname_2 + "/data/" + location_name_ + "_ShiftLidarxyz2UTM.txt";
+	fname_2 = fname_2 + "/data/" + location_name_ + "/" + location_name_ + "_ShiftLidarxyz2UTM.txt";
   	std::cout << "initial_para_lidarxyz2lla : " << fname_2 << std::endl;
 
   	std::ifstream fin_2;

@@ -264,9 +264,10 @@ void initial_para_1()
 {
     double read_tmp_1[3];
     int read_index_1 = 0;
-    std::string fname_1 = ros::package::getPath("trimble_grabber");
+    std::string fname_1 = ros::package::getPath("planning_initial");
 //     fname_1 += "/data/ITRI_ShiftUTM2Lidarxyz.txt";
-    fname_1 = fname_1 + "/data/" + location_name_ + "_ShiftUTM2Lidarxyz.txt";
+//     fname_1 = fname_1 + "/data/" + location_name_ + "_ShiftUTM2Lidarxyz.txt";
+    fname_1 = fname_1 + "/data/" + location_name_ + "/" + location_name_ + "_ShiftUTM2Lidarxyz.txt";
     std::cout << "initial_para_trimble_grabber : " << fname_1 << std::endl;
     
     std::ifstream fin_1;

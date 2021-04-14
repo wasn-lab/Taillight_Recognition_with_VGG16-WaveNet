@@ -118,8 +118,8 @@ double (&SEG_Z)[size_readtmp],double (&ORI_X)[size_readtmp],double (&ORI_Y)[size
 
 void Ini_route_bytxt()
 {
-  std::string fpname = ros::package::getPath("mission_input");
-  std::string fpname_s = fpname + "/data/" + location_name_ + "_route_" + route_choose_ + ".txt";
+  std::string fpname = ros::package::getPath("planning_initial");
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/route/" + location_name_ + "_route_" + route_choose_ + ".txt";
   std::cout << "Ini_route_bytxt : " << fpname_s << std::endl;
   read_txt(fpname_s, seg_x, seg_y, seg_z, ori_x, ori_y, ori_z, ori_w);
 }

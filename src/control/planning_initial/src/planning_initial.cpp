@@ -112,7 +112,8 @@ void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
   // std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
-  std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_bus_stop_info.txt";
 
   std::cout << "Ini_busstop_bytxt : " << fpname_s << std::endl;
 
@@ -157,7 +158,8 @@ void Ini_traffic_light_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
   // std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
-  std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_traffic_light_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_traffic_light_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_traffic_light_info.txt";
 
   std::cout << "Ini_traffic_light_bytxt : " << fpname_s << std::endl;
 
