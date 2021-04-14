@@ -48,8 +48,8 @@
 #include "map_based_prediction_ros.h"
 
 bool MapBasedPredictionROS::getClosestLanelets(const autoware_perception_msgs::DynamicObject& object,
-                                               const lanelet::LaneletMapPtr& lanelet_map_ptr_,
-                                               std::vector<lanelet::Lanelet>& closest_lanelets, std::string uuid_string,
+                                               std::vector<lanelet::Lanelet>& closest_lanelets,
+                                               const std::string& uuid_string,
                                                const double max_dist_for_searching_lanelet)
 {
   std::chrono::high_resolution_clock::time_point begin = std::chrono::high_resolution_clock::now();
@@ -275,14 +275,14 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
 #else
       if (object.semantic.type == autoware_perception_msgs::Semantic::PEDESTRIAN)
       {
-        if (getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 2))
+        if (getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, 2))
         {
           tmp_objects_without_map.objects.push_back(tmp_object.object);
         }
       }
       else  // BICYCLE, MOTORBIKE, ANIMAL
       {
-        if (getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 5))
+        if (getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, 5))
         {
           tmp_objects_without_map.objects.push_back(tmp_object.object);
         }
@@ -292,7 +292,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     }
 
     // CAR, BUS, TRUCK
-    if (!getClosestLanelets(tmp_object.object, lanelet_map_ptr_, start_lanelets, uuid_string, 2))
+    if (!getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, 2))
     {
 #if UNDRIVABLE_AREA_FILTER == 0
       geometry_msgs::Point debug_point;
