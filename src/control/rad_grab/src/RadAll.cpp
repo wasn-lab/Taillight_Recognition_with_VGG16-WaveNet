@@ -231,7 +231,7 @@ void callbackCubtekFront(const msgs::RadObjectArray::ConstPtr& msg)
     float z = out_cloud.points[i].z;
 
     data.x = x;
-    data.y = y;
+    data.y = -y;
     data.z = z;
     data.speed = out_cloud.points[i].intensity;
 
