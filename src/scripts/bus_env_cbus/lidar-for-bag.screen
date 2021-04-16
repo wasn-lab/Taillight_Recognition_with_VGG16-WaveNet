@@ -64,9 +64,6 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_xyz2lla.sh^M"
 screen -t init_grid_pp
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_grid_pp.sh^M"
 
-screen -t init_drivable_area_filter
-stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_drivable_area_filter.sh^M"
-
 screen -t init_obj_msg_converter
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_obj_msg_converter.sh^M"
 
