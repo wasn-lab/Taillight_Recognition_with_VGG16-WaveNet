@@ -207,7 +207,7 @@ void callbackCubtekFront(const msgs::RadObjectArray::ConstPtr& msg)
   }
 
   float tx = Cubtek_Front_Center_Param[0];
-  float ty = Cubtek_Front_Center_Param[1];
+  float ty = -Cubtek_Front_Center_Param[1];
   float tz = Cubtek_Front_Center_Param[2];
   float rx = Cubtek_Front_Center_Param[5] * PI_OVER_180;
   float ry = Cubtek_Front_Center_Param[4] * PI_OVER_180;
