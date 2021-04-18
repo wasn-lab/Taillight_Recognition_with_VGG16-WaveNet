@@ -90,12 +90,9 @@ public:
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
-                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
+  void tracking3d_callback(const msgs::DetectedObjectArray::ConstPtr& in);
+  void main_callback(const msgs::DetectedObjectArray& msg,
+                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, const int cam_id,
                      std::vector<SkeletonBuffer>& skeleton_buffer);
   bool crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject& obj_pub);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
@@ -103,7 +100,7 @@ public:
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
-                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
+                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, const int cam_id);
   void pedestrian_event();
   float crossing_predict(std::vector<std::vector<float>>& bbox_array,
                          std::vector<std::vector<cv::Point2f>>& keypoint_array);
