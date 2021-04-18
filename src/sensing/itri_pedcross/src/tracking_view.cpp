@@ -33,9 +33,22 @@ void TrackingView::detection_callback(const msgs::DetectedObjectArray::ConstPtr&
   latest_detection = *msg;
   draw_tracking_with_detection();
 }
+
 void TrackingView::tracking_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  latest_tracking = *msg;
+  latest_tracking.header = msg->header;
+
+  std::vector<msgs::DetectedObject>().swap(latest_tracking.objects);
+  latest_tracking.objects.reserve(msg->objects.size());
+
+  for (const auto& obj : msg->objects)
+  {
+    if (obj.camInfo[0].prob != -1)  // cam_id 0
+    {
+      latest_tracking.objects.push_back(obj);
+    }
+  }
+
   draw_tracking_with_detection();
 }
 
