@@ -44,15 +44,9 @@
 	<node pkg="tf2_ros" type="static_transform_publisher" name="tf_baselink_to_lidar"  args="0 0 0 0 0 0 base_link lidar" />
 
 <!-- Mode Switch ************************************************************ -->
-<<<<<<< HEAD
 	<group if="$(eval arg('mode') == 0)">
 		<include file="$(find pc2_compressor)/launch/cmpr.launch" />
 		<node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
-=======
-    <group if="$(eval arg('mode') == 0)">
-        <include file="$(find pc2_compressor)/launch/cmpr.launch" />
-        <node pkg="lidars_grabber" 				type="lidars_grabber" 			name="lidars_grabber" 			output="screen" cwd="node" respawn="true"  />
->>>>>>> 63c4b5b4cd3ae5c24b2aa3adf6c66e8b152afe0f
 		<include file="$(find lidar_point_pillars)/launch/lidar_point_pillars.launch" />
 	</group>
 
