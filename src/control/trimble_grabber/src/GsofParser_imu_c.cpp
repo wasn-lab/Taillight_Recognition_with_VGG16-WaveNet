@@ -84,6 +84,7 @@ int ENU2LidXYZ_siwtch = 1;
 
 double utm_shift_x,utm_shift_y;
 int utm_zone;
+std::string location_name_ = "ITRI";
 
 double x_LiDAR, y_LiDAR, z_LiDAR, heading_LiDAR;
 double base_lon,base_lat,base_h,T[3],R[3][3],T1[3],R1[3][3],T2[3],R2[3][3],T3[3],R3[3][3],T4[3],R4[3][3],T5[3],R5[3][3];
@@ -263,9 +264,11 @@ void initial_para_1()
 {
     double read_tmp_1[3];
     int read_index_1 = 0;
-    std::string fname_1 = ros::package::getPath("trimble_grabber");
-    fname_1 += "/data/ITRI_ShiftUTM2Lidarxyz.txt";
-    std::cout << fname_1 << std::endl;
+    std::string fname_1 = ros::package::getPath("planning_initial");
+//     fname_1 += "/data/ITRI_ShiftUTM2Lidarxyz.txt";
+//     fname_1 = fname_1 + "/data/" + location_name_ + "_ShiftUTM2Lidarxyz.txt";
+    fname_1 = fname_1 + "/data/" + location_name_ + "/" + location_name_ + "_ShiftUTM2Lidarxyz.txt";
+    std::cout << "initial_para_trimble_grabber : " << fname_1 << std::endl;
     
     std::ifstream fin_1;
     char line_1[100];
@@ -1936,10 +1939,14 @@ int main( int argc, char **argv )
  * handler.
  */
 {
-	initial_para();
-        initial_para_1();
         ros::init(argc, argv, "trimble_grabber");
         ros::NodeHandle n;
+
+        ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
+
+        initial_para();
+        initial_para_1();
+
         imu_pub = n.advertise<sensor_msgs::Imu>("imu_data", 20);
         imu_rad_pub = n.advertise<sensor_msgs::Imu>("imu_data_rad", 20);
         gnss_pub = n.advertise<geometry_msgs::PoseStamped>("gnss_data", 20);
