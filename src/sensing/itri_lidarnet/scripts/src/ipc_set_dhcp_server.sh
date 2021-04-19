@@ -17,14 +17,25 @@ sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set static IPs of other PC' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# dhcp_client_mac_address,dhcp_client_name,dhcp_client_ip,dhcp_client_lease' >> /etc/dnsmasq.d/dhcp.conf"
 
+# b1
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:05:f2,os1-991925000304,192.168.0.220,infinite' >> /etc/dnsmasq.d/dhcp.conf" #220
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:ba,os1-991941000026,192.168.0.221,infinite' >> /etc/dnsmasq.d/dhcp.conf" #221
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:ad,os1-991940000164,192.168.0.224,infinite' >> /etc/dnsmasq.d/dhcp.conf" #222	
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:26,os1-991940000799,192.168.0.223,infinite' >> /etc/dnsmasq.d/dhcp.conf" #223
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:90,os1-991941000030,192.168.0.230,infinite' >> /etc/dnsmasq.d/dhcp.conf" #224	
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:b4,os1-991939001245,192.168.0.225,infinite' >> /etc/dnsmasq.d/dhcp.conf" #225	
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:f5,os1-991941001040,192.168.0.226,infinite' >> /etc/dnsmasq.d/dhcp.conf" #226
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:ed,os1-122035000199,192.168.0.227,infinite' >> /etc/dnsmasq.d/dhcp.conf" #227
+
+
+# c1
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:ed,os1-122035000199,192.168.0.227,infinite' >> /etc/dnsmasq.d/dhcp.conf" #227 Left
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:15:af,os1-122016000062,192.168.0.228,infinite' >> /etc/dnsmasq.d/dhcp.conf" #228 Right
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:52,os1-122032000008,192.168.0.229,infinite' >> /etc/dnsmasq.d/dhcp.conf" #229 Top
+
+
+
+# not in use
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:26,os1-991940000799,192.168.0.223,infinite' >> /etc/dnsmasq.d/dhcp.conf" #223
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:ba,os1-991941000026,192.168.0.221,infinite' >> /etc/dnsmasq.d/dhcp.conf" #221
+
 
 # in lab
 sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:16:94,os1-122021000109,192.168.0.101,infinite' >> /etc/dnsmasq.d/dhcp.conf" #101
