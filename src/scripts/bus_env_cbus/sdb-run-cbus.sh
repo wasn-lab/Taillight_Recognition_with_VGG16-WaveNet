@@ -30,8 +30,6 @@ sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_grid_pp.sh;exec bash"'
 
 sleep 3
-gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_drivable_area_filter.sh;exec bash"'
-sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_obj_msg_converter.sh;exec bash"'
 sleep 3
 gnome-terminal  -e 'bash -c "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_multi_object_tracker.sh;exec bash"'
