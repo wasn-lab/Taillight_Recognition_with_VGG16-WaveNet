@@ -19,7 +19,7 @@ def init_new_points(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='m
     marker.action = marker.ADD
     marker.scale.x = 0.4
     marker.scale.y = 0.4
-    # marker.scale.z = 0.1
+    marker.scale.z = -3.1
     marker.color.r = color[0]
     marker.color.g = color[1]
     marker.color.b = color[2]
@@ -40,7 +40,7 @@ def init_new_line(id=0, duration=0.5, color=[1.0, 1.0, 1.0],coordinate_type='map
     # marker scale
     marker.scale.x = 0.1
     marker.scale.y = 0.1
-    marker.scale.z = 0.1
+    marker.scale.z = -3.1
 
     # marker color
     marker.color.r = color[0]

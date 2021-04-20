@@ -63,6 +63,9 @@ def create_scene(buffer, scene_ids, present_id):
                             ('heading', 'radian'): node_df['heading_rad'].values}
             node_data = pd.DataFrame(
                 data_dict, columns=buffer.data_columns_vehicle)
+            output_node_data = node_data
+            output_node_data = node_data['frame_id'] = buffer.get_curr_frame()
+            print('node_data : ',output_node_data)
         else:
             data_dict = {('position', 'x'): x,
                             ('position', 'y'): y,
@@ -205,6 +208,6 @@ def transform_data(buffer, data, tf_map, tf_buffer, rospy):
     return present_id_list,mask_id_list
 
 def output_csvfile(data_path,csv_filename,data):
-    data = data.get_buffer_frame()
     data.to_csv(data_path + csv_filename)
-        
+
+

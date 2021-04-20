@@ -2,9 +2,10 @@
 
 <launch>
   <!-- pedcross input source -->
-  <!-- 1: tracking 2d with front/left/right cameras -->
+  <!-- 1: /Tracking2D/front_bottom_60 -->
   <!-- 2: /PathPredictionOutput -->
-  <arg name="input_topic" default="2" />
+  <!-- 3: /Tracking3D -->
+  <arg name="input_topic" default="3" />
 
   <!-- Set time to prediction (3fps)-->
   <arg name="prediction_horizon" default="6" />

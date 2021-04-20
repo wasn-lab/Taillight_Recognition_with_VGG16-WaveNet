@@ -42,6 +42,7 @@ if torch.cuda.is_available():
     torch.cuda.manual_seed_all(seed)
 
 def create_scene(scene_ids, present_id):
+    output_node_data = None
     obstacle_id_list = []
     max_timesteps = buffer.buffer_frame['frame_id'].max()
     scene = Scene(timesteps=max_timesteps + 1, dt=0.5)
@@ -78,24 +79,55 @@ def create_scene(scene_ids, present_id):
                 # print('v_norm : ',np.sum(v_norm, axis = 0)[0]/len(v_norm))
                 obstacle_id_list.append(int(node_id))
             
-            heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 0.1))
+            heading_v = np.divide(v, v_norm, out=np.zeros_like(v), where=(v_norm > 1.0))
             heading_x = heading_v[:, 0]
             heading_y = heading_v[:, 1]
-            print(heading)
-            data_dict = {('position', 'x'): x,
-                            ('position', 'y'): y,
-                            ('velocity', 'x'): vx,
-                            ('velocity', 'y'): vy,
-                            ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
-                            ('acceleration', 'x'): ax,
-                            ('acceleration', 'y'): ay,
-                            ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
-                            ('heading', 'x'): heading_x,
-                            ('heading', 'y'): heading_y,
-                            ('heading', 'angle'): heading,
-                            ('heading', 'radian'): derivative_of(heading, scene.dt, radian=True)}
+            # print('Heading : ',heading)
+            data_dict = {
+                ('position', 'x'): x,
+                ('position', 'y'): y,
+                ('velocity', 'x'): vx,
+                ('velocity', 'y'): vy,
+                ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1),
+                ('acceleration', 'x'): ax,
+                ('acceleration', 'y'): ay,
+                ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1),
+                ('heading', 'x'): heading_x,
+                ('heading', 'y'): heading_y,
+                ('heading', 'angle'): heading,
+                ('heading', 'radian'): 0
+            }
+            
             node_data = pd.DataFrame(
                 data_dict, columns=buffer.data_columns_vehicle)
+            
+            # print("velocity norm length : ",len(np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1)))
+            # print('acceleration norm length : ',len(np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1)))
+
+            output_dict = {
+                ('node','id') : node_id,
+                ('frame','id') : buffer.get_curr_frame(),
+                ('position', 'x'): x[-1],
+                ('position', 'y'): y[-1],
+                ('velocity', 'x'): vx[-1],
+                ('velocity', 'y'): vy[-1],
+                ('velocity', 'norm'): np.linalg.norm(np.stack((vx, vy), axis=-1), axis=-1)[-1],
+                ('acceleration', 'x'): ax[-1],
+                ('acceleration', 'y'): ay[-1],
+                ('acceleration', 'norm'): np.linalg.norm(np.stack((ax, ay), axis=-1), axis=-1)[-1],
+                ('heading', 'x'): heading_x[-1],
+                ('heading', 'y'): heading_y[-1],
+                ('heading', 'angle'): heading[-1],
+                ('heading', 'radian'): derivative_of(heading, scene.dt, radian=True)[-1]
+            }
+            
+            output_node_data = pd.DataFrame(
+                output_dict, columns=buffer.output_data_column,index = [0])
+            
+            # print("output_node_data type : ",type(output_node_data))
+            # print("output_node_data value : ",output_node_data)
+            # print('output_dict : ', output_dict)
+            buffer.update_predict_frame(output_node_data)
         else:
             data_dict = {   ('position', 'x'): x,
                             ('position', 'y'): y,
@@ -240,9 +272,9 @@ def transform_data(data, tf_map, tf_buffer, rospy):
         mask_id_list = []
     
     buffer.update_heading_buffer(heading_data)
-    # buffer.refresh_buffer()
+    buffer.refresh_buffer()
     # buffer.print_buffer()
-    # buffer.add_frame_length(len(present_id_list))
+    buffer.add_frame_length(len(present_id_list))
     
     return present_id_list,mask_id_list
 
@@ -275,7 +307,6 @@ def predict(data):
                                 hyperparams['edge_removal_filter'])
     
     # remove obstacle prediction
-    
     timer.append(time.time())
     timesteps = np.array([buffer.get_curr_frame()])
 
@@ -284,7 +315,7 @@ def predict(data):
                                    args.get_predict_horizon(),
                                    buffer.env,
                                    num_samples=1,
-                                   min_future_timesteps=8,
+                                   min_future_timesteps=6,
                                    z_mode=True,
                                    gmm_mode=True,
                                    full_dist=False)
@@ -321,15 +352,17 @@ def predict(data):
     pub.publish(data)
 
     timer.append(time.time())
-
+    
     if args.get_print() == 1:
         print ('[RunTime] obj count : ',len(present_id_list))
-        print ('[RunTime] Data preprocessing cost time : ',timer[1] - timer[0])
-        print ('[RunTime] Create_scene cost time : ',timer[2] - timer[1])
-        print ('[RunTime] calculate_scene_graph cost time : ',timer[3] - timer[2])
+        # print ('[RunTime] Data preprocessing cost time : ',timer[1] - timer[0])
+        # print ('[RunTime] Create_scene cost time : ',timer[2] - timer[1])
+        # print ('[RunTime] calculate_scene_graph cost time : ',timer[3] - timer[2])
         print ('[RunTime] Prediction cost time : ',timer[4] - timer[3])
-        print ('[RunTime] Update buffer cost time : ',timer[5] - timer[4])
-        print ('[RunTime] Pass msg cost time : ',timer[6] - timer[5])
+        # print ('[RunTime] Update buffer cost time : ',timer[5] - timer[4])
+        # print ('[RunTime] Pass msg cost time : ',timer[6] - timer[5])
+        print ('[RunTime] Data preprocessing all cost time : ',timer[5] - timer[1] - timer[4] + timer[3])
+        print ('[RunTime] IPP Module cost time : ',timer[5] - timer[1])
     elif args.get_print() == 2:
         print ('Current time : ', buffer.get_curr_frame())
         print ('Current obj count : ', obj_cnt)
@@ -348,11 +381,16 @@ def predict(data):
     elif args.get_print() == 3:
         print('Current time : ', buffer.get_curr_frame())
         print('Masked id : ',list(mask_id_list))
+    elif args.get_print() == 4:
+        print('Current time : ', buffer.get_curr_frame())
+        for node in scene.nodes:
+            print('Node_id : ',node.id)
+            print('Node_data : ',node.pd_data)
 
 def listener_ipp():
     global tf_buffer, tf_listener
-    rospy.init_node('object_path_prediction')
-    rospy.Subscriber(args.get_source(), DetectedObjectArray, predict)
+    rospy.init_node('IPP')
+    rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
@@ -423,6 +461,6 @@ if __name__ == '__main__':
         pass
 
     if output_csv:
-	print('Write to csv complete!')
-        atexit.register(output_csvfile, "./", "rosbag.csv", buffer)
-
+        print('Write to csv complete!')
+        atexit.register(output_csvfile, "./", "ros_bag_data.csv", buffer.get_buffer_frame())
+        atexit.register(output_csvfile, "./", "ros_preprocess.csv", buffer.get_predicted_buffer())

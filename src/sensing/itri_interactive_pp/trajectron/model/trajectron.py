@@ -87,6 +87,24 @@ class Trajectron(object):
         self.ph =  self.hyperparams['prediction_horizon']
         
         self.state = self.hyperparams['state']
+        
+        self.state = OrderedDict()
+        
+        self.ped_state = OrderedDict()
+        self.ped_state['position'] = ['x','y']
+        self.ped_state['velocity'] = ['x','y']
+        self.ped_state['acceleration'] = ['x','y']
+        
+        self.veh_state = OrderedDict()
+        self.veh_state['position'] = ['x','y']
+        self.veh_state['velocity'] = ['x','y']
+        self.veh_state['acceleration'] = ['x','y']
+        self.veh_state['heading'] = ['angle', 'radian']
+        #
+        self.state['PEDESTRIAN'] = self.ped_state
+        self.state['VEHICLE'] = self.veh_state
+        # 'state': {'PEDESTRIAN': {'position': ['x', 'y'], 'velocity': ['x', 'y'], 'acceleration': ['x', 'y']}, 
+        #                               'VEHICLE': {'position': ['x', 'y'], 'velocity': ['x', 'y'], 'acceleration': ['x', 'y'], 'heading': ['angle', 'radian']}}, 
         # self.state = dict()
         # state_list = ['position','velocity','acceleration']
         # self.state['PEDESTRIAN'] = dict()
@@ -100,6 +118,7 @@ class Trajectron(object):
         # self.state['PEDESTRIAN'] = sorted(self.state['PEDESTRIAN'], key=len) 
         # self.state['VEHICLE'] = sorted(self.state['VEHICLE'], key=len) 
         # print 'state : ', self.state
+
         self.state_length = dict()
         for state_type in self.state.keys():
             self.state_length[state_type] = int(
@@ -174,7 +193,9 @@ class Trajectron(object):
                                     pred_state=self.pred_state, edge_types=model.edge_types,
                                     min_ht=min_history_timesteps, max_ht=self.max_ht, min_ft=min_future_timesteps,
                                     max_ft=min_future_timesteps, hyperparams=self.hyperparams)
+        # print(batch)
         # There are no nodes of type present for timestep
+        # print("Standarization parameter : ",env.standardization)
         if batch is None:
             return predictions_dict
         

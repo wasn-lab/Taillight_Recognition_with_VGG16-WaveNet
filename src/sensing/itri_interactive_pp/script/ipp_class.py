@@ -38,6 +38,7 @@ class buffer_data():
                                                   'height',
                                                   'heading_ang',
                                                   'heading_rad'])
+        self.buffer_predicted_frame = None
         standardization = {
             'PEDESTRIAN': {
                 'position': {
@@ -99,6 +100,8 @@ class buffer_data():
             pd.MultiIndex.from_product([['velocity', 'acceleration'], ['norm']]))
         self.data_columns_pedestrian = pd.MultiIndex.from_product(
             [['position', 'velocity', 'acceleration'], ['x', 'y']])
+        self.output_data_column = pd.MultiIndex.from_product([['frame', 'node'],['id']])
+        self.output_data_column = self.output_data_column.append(self.data_columns_vehicle.copy())
         
         self.current_frame = 0
         self.frame_length = []
@@ -164,6 +167,16 @@ class buffer_data():
         '''
         # update T frame objects in last element array
         self.buffer_frame = self.buffer_frame.append(data, ignore_index=True)
+        
+    def update_predict_frame(self, data):
+        '''
+            data : pd.series
+        '''
+        # update T frame objects in last element array
+        if self.buffer_predicted_frame is not None:
+            self.buffer_predicted_frame = pd.concat([self.buffer_predicted_frame,data])
+        else:
+            self.buffer_predicted_frame = data
 
     def refresh_buffer(self):
         # If frame_id < current_time - 11 remove the data
@@ -182,6 +195,9 @@ class buffer_data():
     
     def get_heading_buffer(self):
         return self.heading_buffer
+
+    def get_predicted_buffer(self):
+        return self.buffer_predicted_frame
 
     def print_buffer(self):
         print(self.buffer_frame)

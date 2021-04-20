@@ -339,7 +339,7 @@ class Node:
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
         marker.color.a = 1.0
-
+	print('fuck')
 
         for _i in range(len(objects)):
             bbox = objects[_i].bPoint
