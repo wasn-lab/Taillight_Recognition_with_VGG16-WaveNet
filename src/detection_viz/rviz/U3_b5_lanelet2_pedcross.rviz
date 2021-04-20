@@ -447,7 +447,7 @@ Visualization Manager:
             {}
           Queue Size: 100
           Value: true
-      Enabled: true
+      Enabled: false
       Name: GridPP
     - Class: rviz/MarkerArray
       Enabled: true
