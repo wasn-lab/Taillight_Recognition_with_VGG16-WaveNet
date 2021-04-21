@@ -4,10 +4,10 @@ python move_window.py --window-title <title> --monitor <monitor>
 
 Use xrandr to find out monitor. Usually monitor is HDMI-0, DP-0 etc.
 """
+from __future__ import print_function
 import argparse
 import sys
 import subprocess
-import re
 
 def _installed(prog):
     found = False
