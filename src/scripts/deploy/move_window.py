@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Copyright (c) 2021, Industrial Technology and Research Institute.
+# All rights reserved.
 """
 python move_window.py --window-title <title> --monitor <monitor>
 
