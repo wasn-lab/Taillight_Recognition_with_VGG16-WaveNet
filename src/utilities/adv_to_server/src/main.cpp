@@ -697,8 +697,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Steeringwheel"] = g_vs.steering_wheel; //方向盤 //0.0;
     j1["door"] = convertBoolean(g_vs.door); //車門 //true;
     j1["airconditioner"] = convertBoolean(g_vs.air_conditioner); //空調;
-    j1["lat"] = g_gps.lidar_Lat; //vs.location 目前來源 lidar_lla
-    j1["lng"] = g_gps.lidar_Lon; //vs.location 目前來源 lidar_lla
+    j1["lat"] = g_current_gnss_pose.x; //vs.location 目前來源 gnss
+    j1["lng"] = g_current_gnss_pose.y; //vs.location 目前來源 gnss
     j1["headlight"] = convertBoolean(g_vs.headlight); //車燈 //true;
     j1["wiper"] =  convertBoolean(g_vs.wiper); //雨刷//true;
     j1["Interiorlight"] = convertBoolean(g_vs.indoor_light); //車內燈//true;
@@ -750,8 +750,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Steeringwheel"] = g_vs.steering_wheel; //方向盤 //0.0;
     j1["door"] = convertBoolean(g_vs.door); //車門 //true;
     j1["airconditioner"] = convertBoolean(g_vs.air_conditioner); //空調;
-    j1["lat"] = g_gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
-    j1["lng"] = g_gps.lidar_Lon;  //vs.location 目前來源 lidar_lla
+    j1["lat"] = g_current_gnss_pose.x;  //vs.location 目前來源 gnss
+    j1["lng"] = g_current_gnss_pose.y;  //vs.location 目前來源 gnss
     j1["headlight"] = convertBoolean(g_vs.headlight); //車燈 //true;
     j1["wiper"] = convertBoolean(g_vs.wiper); //雨刷//true;
     j1["Interiorlight"] = convertBoolean(g_vs.indoor_light); //車內燈//true;
@@ -1560,9 +1560,9 @@ json genMqttGnssMsg()
   json gnss;
   uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   //uint64_t source_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-  double lat = g_gps.lidar_Lat;
-  double lon = g_gps.lidar_Lon;
-  double alt = g_gps.lidar_Alt;
+  double lat = g_current_gnss_pose.x;
+  double lon = g_current_gnss_pose.y;
+  double alt = g_current_gnss_pose.z;
   gnss["coord"] = {lat, lon, alt};
   //gnss["speed"] = -1; remove speed
   gnss["heading"] = get_GNSS_heading_360(g_current_gnss_pose.yaw * 180 / PI);

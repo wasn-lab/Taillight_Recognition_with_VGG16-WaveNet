@@ -24,17 +24,18 @@
 #include <thread>
 
 
-
+static ros::Publisher traffic_pub;
 class RosModuleTraffic
 {
   public:
-
+    
     static void
     Initial (int argc,
              char ** argv)
     {
       ros::init (argc, argv, "adv_to_server");
-
+      ros::NodeHandle n;
+      traffic_pub = n.advertise<msgs::Spat>("/traffic", 1000);
     }
 
     static std::string getPlate(){
@@ -125,9 +126,7 @@ class RosModuleTraffic
     static void
     publishTraffic(std::string topic, msgs::Spat input)
     {
-      //std::cout << "publishTraffic topic " << topic <<  std::endl;
-      ros::NodeHandle n;
-      static ros::Publisher traffic_pub = n.advertise<msgs::Spat>(topic, 1000);
+      std::cout << "publishTraffic topic " << topic <<  std::endl;
       traffic_pub.publish(input);
     }
 
