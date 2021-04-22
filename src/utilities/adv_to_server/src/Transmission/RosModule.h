@@ -91,6 +91,8 @@ class RosModuleTraffic
                       (*cb15) (const std_msgs::String::ConstPtr&),
                       void
                       (*cb16) (const msgs::Flag_Info::ConstPtr&),
+                      void
+                      (*cb17) (const msgs::Flag_Info::ConstPtr&),
                       bool isNewMap)
     {
       ros::NodeHandle n;
@@ -121,6 +123,7 @@ class RosModuleTraffic
       static ros::Subscriber tracking = n.subscribe("/Tracking3D/xyz2lla", 100, cb14);
       static ros::Subscriber fail_safe = n.subscribe("/vehicle/report/itri/fail_safe_status", 1, cb15);
       static ros::Subscriber flag04 = n.subscribe("/Flag_Info04", 1, cb16);
+      static ros::Subscriber flag02 = n.subscribe("/Flag_Info02", 1, cb17);
     }
 
     static void
