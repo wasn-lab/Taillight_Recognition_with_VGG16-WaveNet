@@ -57,6 +57,7 @@ bool current_pose_init_flag = false;
 double current_roll, current_pitch, current_yaw;
 
 std::string map_frame_ = "map";
+std::string location_name_ = "ITRI";
 
 double busstop_BusStopNum[2000] = {};
 double busstop_BuildingNum[2000] = {};
@@ -110,7 +111,11 @@ void read_busstop_txt(std::string fpname, double (&BusStop_BusStopNum)[size_read
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_bus_stop_info.txt";
+
+  std::cout << "Ini_busstop_bytxt : " << fpname_s << std::endl;
 
   read_busstop_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -152,7 +157,11 @@ void read_traffic_light_txt(std::string fpname, double (&TrafficLight_Intersecti
 void Ini_traffic_light_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_traffic_light_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_traffic_light_info.txt";
+
+  std::cout << "Ini_traffic_light_bytxt : " << fpname_s << std::endl;
 
   read_traffic_light_txt(fpname_s, trafficlight_IntersectionId, trafficlight_RoadId, trafficlight_Id);
 
@@ -326,6 +335,7 @@ void imudataCallback(const sensor_msgs::Imu& msg)
 
 void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
+  int signal_state = msg->signal_state;
   int light_status = (int)(msg->spat_state);
   int RoadId = msg->road_id;
   int IntersectionId = msg->intersection_id;
@@ -347,40 +357,49 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     // trafficlightstate.id = 402079;
   }
   
-  if (light_status == 129) // red
+  if (signal_state == 0)
   {
-    lampstate.type = autoware_perception_msgs::LampState::RED;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
+    if (light_status == 129) // red
+    {
+      lampstate.type = autoware_perception_msgs::LampState::RED;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else if(light_status == 130) // yellow
+    {
+      lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else if(light_status == 48) // green straight + green right
+    {
+      // lampstate.type = autoware_perception_msgs::LampState::GREEN;
+      // lampstate.confidence = confidence;
+      // trafficlightstate.lamp_states.push_back(lampstate);
+      lampstate.type = autoware_perception_msgs::LampState::UP;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+      lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else if(light_status == 9) // red + green left
+    {
+      lampstate.type = autoware_perception_msgs::LampState::RED;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+      lampstate.type = autoware_perception_msgs::LampState::LEFT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else // unknown
+    {
+      lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+      lampstate.confidence = 0.0;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
   }
-  else if(light_status == 130) // yellow
-  {
-    lampstate.type = autoware_perception_msgs::LampState::YELLOW;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else if(light_status == 48) // green straight + green right
-  {
-    // lampstate.type = autoware_perception_msgs::LampState::GREEN;
-    // lampstate.confidence = confidence;
-    // trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::UP;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::RIGHT;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else if(light_status == 9) // red + green left
-  {
-    lampstate.type = autoware_perception_msgs::LampState::RED;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::LEFT;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else // unknown
+  else
   {
     lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
     lampstate.confidence = 0.0;
@@ -587,6 +606,7 @@ int main(int argc, char** argv)
 
   // ros::param::get(ros::this_node::getName()+"/force_disable_avoidance", force_disable_avoidance_);
   ros::param::get(ros::this_node::getName()+"/use_virtual_objects", use_virtual_objects_);
+  ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
 
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);

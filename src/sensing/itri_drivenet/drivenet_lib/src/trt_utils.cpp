@@ -183,12 +183,14 @@ std::vector<BBoxInfo> nmsAllClasses(const float nmsThresh, std::vector<BBoxInfo>
     splitBoxes[class_id] = nonMaximumSuppression(nmsThresh, splitBoxes[class_id]);
 
     // car:2, bus: 5, truck: 7
-    if (class_id == static_cast<int>(yolo_class_id::car) || class_id == static_cast<int>(yolo_class_id::bus) || class_id == static_cast<int>(yolo_class_id::truck))
+    if (class_id == static_cast<int>(yolo_class_id::car) || class_id == static_cast<int>(yolo_class_id::bus) ||
+        class_id == static_cast<int>(yolo_class_id::truck))
     {
       splitBoxes_car.insert(splitBoxes_car.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
     }
     // motorbike:1, bike: 3
-    else if (class_id == static_cast<int>(yolo_class_id::motorbike) || class_id == static_cast<int>(yolo_class_id::bicycle))
+    else if (class_id == static_cast<int>(yolo_class_id::motorbike) ||
+             class_id == static_cast<int>(yolo_class_id::bicycle))
     {
       splitBoxes_bike.insert(splitBoxes_bike.end(), splitBoxes[class_id].begin(), splitBoxes[class_id].end());
     }
@@ -684,4 +686,4 @@ void printLayerInfo(std::string layerIndex, std::string layerName, std::string l
   std::cout << std::setw(20) << std::left << layerInput << std::setw(20) << std::left << layerOutput;
   std::cout << std::setw(6) << std::left << weightPtr << std::endl;
 }
-}
+}  // namespace DriveNet

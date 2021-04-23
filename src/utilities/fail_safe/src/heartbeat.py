@@ -18,7 +18,7 @@ def localization_state_func(msg, fps):
     low_lidar_frequency = (state & 2) > 0
     low_pose_frequency = (state & 4) > 0
     pose_unstable = (state & 8) > 0
-    status_strs = []
+    status_strs = ["FPS: " + str(fps)[:5]]
     status = OK
 
     if low_gnss_frequency:
@@ -40,8 +40,6 @@ def localization_state_func(msg, fps):
     status_str = " ".join(status_strs)
     if status != OK:
         rospy.logwarn("Localization state: %s", status_str)
-    else:
-        status_str = "FPS: " + str(fps)[:5]
     return status, status_str
 
 

@@ -13,7 +13,6 @@
 
 namespace DriveNet
 {
-
 struct PixelPosition
 {
   int u;
