@@ -13,10 +13,12 @@ from ctrl_info02 import CtrlInfo02
 from ctrl_info03 import CtrlInfo03
 from can_checker import CanChecker
 from pedcross_alert import PedCrossAlert
+from system_load_checker import SystemLoadChecker
 from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
+from timestamp_utils import get_timestamp_mot
 
 _MQTT_FAIL_SAFE_TOPIC = "/fail_safe"  # To be removed in the future
 _MQTT_FAIL_SAFE_STATUS_TOPIC = "vehicle/report/itri/fail_safe_status"
@@ -78,6 +80,7 @@ class FailSafeChecker(object):
         self.ctrl_info_03 = CtrlInfo03()
         self.ctrl_info_02 = CtrlInfo02()
         self.pedcross_alert = PedCrossAlert()
+        self.system_load_checker = SystemLoadChecker()
         self.can_checker = CanChecker()
         self.issue_reporter = IssueReporter()
 
@@ -109,12 +112,13 @@ class FailSafeChecker(object):
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": self.ctrl_info_03.get_events_in_list(),
                "seq": self.seq,
-               "timestamp": time.time()}
+               "timestamp": get_timestamp_mot()}
         self.seq += 1
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]
         # pedcross is still under heavy development
         ret["states"] += self.pedcross_alert.get_status_in_list()
+        ret["states"] += self.system_load_checker.get_status_in_list()
         status = _overall_status(ret["states"])
         status_str = _overall_status_str(ret["states"])
 

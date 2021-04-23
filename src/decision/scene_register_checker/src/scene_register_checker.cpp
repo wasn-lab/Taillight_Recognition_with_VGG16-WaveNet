@@ -53,6 +53,7 @@ double busstop_BuildingNum[2000] = {};
 double busstop_BusStopId[2000] = {};
 int read_index = 0;
 bool busstop_txt_ini = false;
+std::string location_name_ = "ITRI";
 
 template <int size_readtmp>
 void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
@@ -89,7 +90,11 @@ void read_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],dou
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt"; // full route
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_bus_stop_info.txt";
+
+  std::cout << "Ini_busstop_bytxt : " << fpname_s << std::endl;
 
   read_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -291,7 +296,28 @@ void run(msgs::BehaviorSceneRegisterArray& register_array_, pose_with_header nea
     }
     else
     {
-      register_.Distance = sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
+      double dx = nearst_pose.x - current_pose.x;
+      double dy = nearst_pose.y - current_pose.y;
+      double theta = std::atan2(dy,dx);
+      if (theta < 0)
+      {
+        theta += 2*RT_PI;
+      }
+      double theta_diff = std::fabs(current_pose.yaw - theta);
+      if (theta_diff > RT_PI)
+      {
+        theta_diff = 2*RT_PI - theta_diff;
+      }
+      int a;
+      if (theta_diff <= RT_PI/2.0)
+      {
+        a = 1;
+      }
+      else
+      {
+        a = -1;
+      }
+      register_.Distance = a * sqrt((current_pose.x-nearst_pose.x)*(current_pose.x-nearst_pose.x) + (current_pose.y-nearst_pose.y)*(current_pose.y-nearst_pose.y));
     }
     // if (Module == "traffic_light")
     // {
@@ -339,9 +365,11 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "scene_register_checker");
   ros::NodeHandle node;
 
-  ros::Subscriber behavior_scene_register_sub = node.subscribe("/planning/scenario_planning/status/behavior_scene_register", 1, register_callback);
-  ros::Subscriber stop_reasons_sub = node.subscribe("/planning/scenario_planning/status/stop_reasons", 1, stop_reasons_callback);
-  ros::Subscriber current_pose_sub = node.subscribe("/rear_current_pose", 1, current_pose_callback);
+  ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
+
+  ros::Subscriber behavior_scene_register_sub = node.subscribe("/planning/scenario_planning/status/behavior_scene_register", 10, register_callback);
+  ros::Subscriber stop_reasons_sub = node.subscribe("/planning/scenario_planning/status/stop_reasons", 10, stop_reasons_callback);
+  ros::Subscriber current_pose_sub = node.subscribe("/rear_current_pose", 10, current_pose_callback);
   bus_stop_register_pub = node.advertise<msgs::BehaviorSceneRegister>("/bus_stop_register_info",1);
   bus_stop_register_array_pub = node.advertise<msgs::BehaviorSceneRegisterArray>("/bus_stop_register_array_info",1);
   traffic_light_register_pub = node.advertise<msgs::BehaviorSceneRegister>("/traffic_light_register_info",1);

@@ -9,6 +9,7 @@ from object_ids import (OBJECT_ID_PERSON, OBJECT_ID_BICYCLE, OBJECT_ID_MOTOBIKE,
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
+from timestamp_utils import get_timestamp_mot
 
 def localization_state_func(msg, fps):
     if msg is None:
@@ -18,7 +19,7 @@ def localization_state_func(msg, fps):
     low_lidar_frequency = (state & 2) > 0
     low_pose_frequency = (state & 4) > 0
     pose_unstable = (state & 8) > 0
-    status_strs = []
+    status_strs = ["FPS: " + str(fps)[:5]]
     status = OK
 
     if low_gnss_frequency:
@@ -40,8 +41,6 @@ def localization_state_func(msg, fps):
     status_str = " ".join(status_strs)
     if status != OK:
         rospy.logwarn("Localization state: %s", status_str)
-    else:
-        status_str = "FPS: " + str(fps)[:5]
     return status, status_str
 
 
@@ -293,8 +292,8 @@ class Heartbeat(object):
             status = ALARM
 
         return {"uid": self.sensor_uid,
-                "timestamp": int(time.time()),
-                "source_time": int(time.time()),
+                "timestamp": get_timestamp_mot(),
+                "source_time": get_timestamp_mot(),
                 "status": status}
 
     def get_ego_speed(self):

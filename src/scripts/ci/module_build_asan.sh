@@ -6,7 +6,7 @@
 set -x
 set -e
 
-readonly build_type="${build_type:-RelWithDebInfo}"
+readonly build_type="${build_type:-Debug}"
 readonly repo_dir=$(git rev-parse --show-toplevel)
 readonly build_dir=build
 readonly devel_dir=devel
