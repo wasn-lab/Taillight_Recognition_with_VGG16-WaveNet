@@ -91,6 +91,8 @@ class RosModuleTraffic
                       (*cb15) (const std_msgs::String::ConstPtr&),
                       void
                       (*cb16) (const msgs::Flag_Info::ConstPtr&),
+                      void
+                      (*cb17) (const msgs::Flag_Info::ConstPtr&),
                       bool isNewMap)
     {
       ros::NodeHandle n;
@@ -115,12 +117,14 @@ class RosModuleTraffic
       static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
       static ros::Subscriber imu = n.subscribe("imu_data_rad", 1, cb10);
       //checker big buffer for multi event at the same time.
-      static ros::Subscriber checker = n.subscribe("/ADV_op/event_json", 1000, cb11);
+      //get event from fail_safe
+      //static ros::Subscriber checker = n.subscribe("/ADV_op/event_json", 1000, cb11);
       static ros::Subscriber backendInfo = n.subscribe("Backend/Info", 1, cb12);
       static ros::Subscriber sensor_status = n.subscribe("/vehicle/report/itri/sensor_status", 1, cb13);
       static ros::Subscriber tracking = n.subscribe("/Tracking3D/xyz2lla", 100, cb14);
       static ros::Subscriber fail_safe = n.subscribe("/vehicle/report/itri/fail_safe_status", 1, cb15);
       static ros::Subscriber flag04 = n.subscribe("/Flag_Info04", 1, cb16);
+      static ros::Subscriber flag02 = n.subscribe("/Flag_Info02", 1, cb17);
     }
 
     static void
