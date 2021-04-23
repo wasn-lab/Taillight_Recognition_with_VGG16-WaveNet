@@ -449,12 +449,12 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   {
     // 0:red 1:yellow 2:green 3:left 4:straight 5:right 6:ped green 7:ped red
     std::string light_status_binary = toBinary(light_status);
-    std::cout << "light_status_binary = " << light_status_binary << std::endl;
-    std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
-    std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
+    // std::cout << "light_status_binary = " << light_status_binary << std::endl;
+    // std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
+    // std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
     if (light_status_binary[0] == 49) // red // "1" = 49
     {
-      std::cout << "REDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD " << std::endl;
+      // std::cout << "REDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD " << std::endl;
       lampstate.type = autoware_perception_msgs::LampState::RED;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
