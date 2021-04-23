@@ -74,7 +74,7 @@ def main():
     parser.add_argument("--window-title", "-w", required=True)
     parser.add_argument("--monitor", "-m", required=True)
     args = parser.parse_args()
-    move_and_max(args.window_title, args.monitor)
+    move_and_max(args.window_title.decode("utf-8"), args.monitor)
 
 if __name__ == "__main__":
     main()

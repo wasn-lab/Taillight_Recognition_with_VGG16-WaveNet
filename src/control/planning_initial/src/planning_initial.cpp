@@ -335,6 +335,7 @@ void imudataCallback(const sensor_msgs::Imu& msg)
 
 void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
+  int signal_state = msg->signal_state;
   int light_status = (int)(msg->spat_state);
   int RoadId = msg->road_id;
   int IntersectionId = msg->intersection_id;
@@ -356,40 +357,49 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     // trafficlightstate.id = 402079;
   }
   
-  if (light_status == 129) // red
+  if (signal_state == 0)
   {
-    lampstate.type = autoware_perception_msgs::LampState::RED;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
+    if (light_status == 129) // red
+    {
+      lampstate.type = autoware_perception_msgs::LampState::RED;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else if(light_status == 130) // yellow
+    {
+      lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else if(light_status == 48) // green straight + green right
+    {
+      // lampstate.type = autoware_perception_msgs::LampState::GREEN;
+      // lampstate.confidence = confidence;
+      // trafficlightstate.lamp_states.push_back(lampstate);
+      lampstate.type = autoware_perception_msgs::LampState::UP;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+      lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else if(light_status == 9) // red + green left
+    {
+      lampstate.type = autoware_perception_msgs::LampState::RED;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+      lampstate.type = autoware_perception_msgs::LampState::LEFT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    else // unknown
+    {
+      lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+      lampstate.confidence = 0.0;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
   }
-  else if(light_status == 130) // yellow
-  {
-    lampstate.type = autoware_perception_msgs::LampState::YELLOW;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else if(light_status == 48) // green straight + green right
-  {
-    // lampstate.type = autoware_perception_msgs::LampState::GREEN;
-    // lampstate.confidence = confidence;
-    // trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::UP;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::RIGHT;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else if(light_status == 9) // red + green left
-  {
-    lampstate.type = autoware_perception_msgs::LampState::RED;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::LEFT;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else // unknown
+  else
   {
     lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
     lampstate.confidence = 0.0;
