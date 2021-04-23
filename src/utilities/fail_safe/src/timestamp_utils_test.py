@@ -7,8 +7,9 @@ from timestamp_utils import get_timestamp_mot
 class TimestampUtilsTest(unittest.TestCase):
     def test_1(self):
         ret = get_timestamp_mot()
-        self.assertEqual(len(ret), 13)
-        self.assertTrue(ret.isdigit())
+        self.assertTrue(isinstance(ret, int))
+        sret = str(ret)
+        self.assertEqual(len(sret), 13)
 
 
 if __name__ == "__main__":
