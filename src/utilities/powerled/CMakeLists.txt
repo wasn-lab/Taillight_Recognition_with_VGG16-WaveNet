@@ -37,6 +37,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+file(COPY src/powerled_config.txt DESTINATION ${CATKIN_DEVEL_PREFIX}/lib/powerled)
+file(COPY src/hand_data.txt DESTINATION ${CATKIN_DEVEL_PREFIX}/lib/powerled)
+file(COPY src/self_data.txt DESTINATION ${CATKIN_DEVEL_PREFIX}/lib/powerled)
 
 ## Declare a cpp executable
 add_executable(powerled src/powerled.c)
