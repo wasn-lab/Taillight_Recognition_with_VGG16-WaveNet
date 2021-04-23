@@ -9,6 +9,7 @@ from object_ids import (OBJECT_ID_PERSON, OBJECT_ID_BICYCLE, OBJECT_ID_MOTOBIKE,
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
+from timestamp_utils import get_timestamp_mot
 
 def localization_state_func(msg, fps):
     if msg is None:
@@ -291,8 +292,8 @@ class Heartbeat(object):
             status = ALARM
 
         return {"uid": self.sensor_uid,
-                "timestamp": int(time.time()),
-                "source_time": int(time.time()),
+                "timestamp": get_timestamp_mot(),
+                "source_time": get_timestamp_mot(),
                 "status": status}
 
     def get_ego_speed(self):
