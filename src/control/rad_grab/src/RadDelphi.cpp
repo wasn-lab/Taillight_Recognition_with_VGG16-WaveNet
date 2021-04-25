@@ -3,6 +3,7 @@
 #include "std_msgs/String.h"
 #include "msgs/Rad.h"
 #include "msgs/PointXYZV.h"
+#include <string>
 #include <cstring>
 #include <cmath>
 
@@ -22,9 +23,11 @@
 #include <linux/can.h>      /* for struct can_frame */
 
 void delphi_radar_parsing(struct can_frame frame, float* x, float* y, float* z, float* speed);
+void onInit(ros::NodeHandle nh, ros::NodeHandle n);
 
 int debug_message = 0;
 int delphi_raw_message = 0;
+char *ifname;
 
 int main(int argc, char** argv)
 {
@@ -37,10 +40,18 @@ int main(int argc, char** argv)
   int nbytes, i;
   static struct ifreq ifr;
   static struct sockaddr_ll sll;
-  char* ifname = "can1";
   int ifindex;
   int send_one_frame = 0;
   int count = 0;
+
+  ros::init(argc, argv, "RadDelphi");
+  ros::NodeHandle n;
+  ros::NodeHandle nh("~");
+
+  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("DelphiFront", 1);
+  ros::Rate loop_rate(20);
+  
+  onInit(nh, n);
 
   s = socket(PF_CAN, SOCK_RAW, CAN_RAW);
   if (s < 0)
@@ -73,16 +84,6 @@ int main(int argc, char** argv)
   {
     std::cout << "Create success !!" << std::endl;
   }
-
-  ros::init(argc, argv, "RadDelphi");
-  ros::NodeHandle n;
-  ros::NodeHandle nh("~");
-
-  nh.param("/debug_message", debug_message, 0);
-  nh.param("/delphi_raw_message", delphi_raw_message, 0);
-
-  ros::Publisher RadFrontPub = n.advertise<msgs::Rad>("DelphiFront", 1);
-  ros::Rate loop_rate(20);
 
   float x, y, z, speed;
 
@@ -136,6 +137,19 @@ int main(int argc, char** argv)
   }
 
   return 0;
+}
+
+void onInit(ros::NodeHandle nh, ros::NodeHandle n)
+{
+  nh.param("/debug_message", debug_message, 0);
+  nh.param("/delphi_raw_message", delphi_raw_message, 0);
+
+  std::string ifname_temp = "can0";
+  nh.getParam("ifname", ifname_temp);
+  ifname = (char *)malloc(sizeof(char) * (ifname_temp.length()+1));
+  strcpy(ifname, ifname_temp.c_str());
+  std::cout << std::endl << std::endl << "++++++++++ ifname(delphi) = " << ifname << " ++++++++++" << std::endl;
+
 }
 
 void delphi_radar_parsing(struct can_frame frame, float* x, float* y, float* z, float* speed)

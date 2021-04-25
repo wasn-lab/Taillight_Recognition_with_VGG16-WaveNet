@@ -625,10 +625,14 @@ int main(int argc, char** argv)
 
   is_init_merged_map = false;
 
-  ros::Subscriber LidAllSub = n.subscribe("LidarAll", 1, callback_LidarAll);
-  ros::Subscriber LidFrontTopSub = n.subscribe("LidarFrontTop", 1, callback_LidarFrontTop);
-  ros::Subscriber LidFrontRightSub = n.subscribe("LidarFrontRight", 1, callback_LidarFrontRight);
-  ros::Subscriber LidFrontLeftSub = n.subscribe("LidarFrontLeft", 1, callback_LidarFrontLeft);
+  if (lidar_all_flag)
+  {
+    ros::Subscriber LidAllSub = n.subscribe("LidarAll/replay_to_localization", 1, callback_LidarAll);
+  }
+
+  ros::Subscriber LidFrontTopSub = n.subscribe("LidarFrontTop/Localization/replay_to_localization", 1, callback_LidarFrontTop);
+  ros::Subscriber LidFrontRightSub = n.subscribe("LidarFrontRight/replay_to_localization", 1, callback_LidarFrontRight);
+  ros::Subscriber LidFrontLeftSub = n.subscribe("LidarFrontLeft/replay_to_localization", 1, callback_LidarFrontLeft);
 
   mopho_input_pointCloudPublisher = n.advertise<sensor_msgs::PointCloud2>("mopho_input", 1, true);
   ground_pointCloudPublisher = n.advertise<sensor_msgs::PointCloud2>("ground_point_cloud", 1, true);

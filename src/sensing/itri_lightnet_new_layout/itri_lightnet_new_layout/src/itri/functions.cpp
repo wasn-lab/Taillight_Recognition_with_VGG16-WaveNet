@@ -169,6 +169,7 @@ void filterBB (int inpBulb[90][8], int &numInp, int outBulb[90][10], int &numOut
 	//1. Remove Distant Bulbs based on Pixel-based Dimensions
 	for (int l = 0; l < numInp; l++)
 	{
+
 		width  = inpBulb[l][3] - inpBulb[l][1];
 		height = inpBulb[l][4] - inpBulb[l][2];
 		if (width > height)

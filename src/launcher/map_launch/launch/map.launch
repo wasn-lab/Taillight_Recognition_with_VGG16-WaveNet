@@ -1,7 +1,8 @@
 <!-- -*- mode: XML -*- -->
 <launch>
-  <arg name="map_path" default="$(find map_loader)/data/" />
-  <arg name="lanelet2_map_path" default="$(arg map_path)/lanelet2_map.osm" />
+  <arg name="location_name" default="ITRI"/>
+  <arg name="map_path" default="$(find map_loader)/data" />
+  <arg name="lanelet2_map_path" default="$(arg map_path)/$(arg location_name)_lanelet2_map.osm" />
   <!--arg name="pointcloud_map_path" default="$(arg map_path)/pointcloud_map.pcd" /-->
 
   <group ns="map">

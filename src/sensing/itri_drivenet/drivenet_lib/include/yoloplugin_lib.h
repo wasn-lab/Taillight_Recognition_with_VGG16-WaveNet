@@ -67,7 +67,7 @@ std::vector<YoloPluginOutput*> YoloPluginProcess(YoloPluginCtx* ctx, std::vector
 
 // Deinitialize library context
 void YoloPluginCtxDeinit(YoloPluginCtx* ctx);
-}
+}  // namespace DriveNet
 #ifdef __cplusplus
 }
 #endif

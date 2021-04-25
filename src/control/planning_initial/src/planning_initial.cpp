@@ -57,6 +57,7 @@ bool current_pose_init_flag = false;
 double current_roll, current_pitch, current_yaw;
 
 std::string map_frame_ = "map";
+std::string location_name_ = "ITRI";
 
 double busstop_BusStopNum[2000] = {};
 double busstop_BuildingNum[2000] = {};
@@ -74,6 +75,18 @@ bool use_virtual_objects_ = false;
 // bool force_disable_avoidance_ = false;
 // int obs_index_base = 0;
 // double project_dis = 100;
+
+std::string toBinary(int n)
+{
+  std::string r;
+  while(n!=0){r=(n%2==0 ? "0":"1")+r;n/=2;}
+  int length = r.length();
+  for (int i=0;i<8-length;i++)
+  {
+      r = "0" + r;
+  }
+  return r;
+}
 
 template <int size_readtmp>
 void read_busstop_txt(std::string fpname, double (&BusStop_BusStopNum)[size_readtmp],double (&BusStop_BuildingNum)[size_readtmp],double (&BusStop_BusStopId)[size_readtmp])
@@ -110,7 +123,11 @@ void read_busstop_txt(std::string fpname, double (&BusStop_BusStopNum)[size_read
 void Ini_busstop_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_bus_stop_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_bus_stop_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_bus_stop_info.txt";
+
+  std::cout << "Ini_busstop_bytxt : " << fpname_s << std::endl;
 
   read_busstop_txt(fpname_s, busstop_BusStopNum, busstop_BuildingNum, busstop_BusStopId);
 
@@ -152,7 +169,11 @@ void read_traffic_light_txt(std::string fpname, double (&TrafficLight_Intersecti
 void Ini_traffic_light_bytxt()
 {
   std::string fpname = ros::package::getPath("planning_initial");
-  std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+  // std::string fpname_s = fpname + "/data/ITRI_HDmap_traffic_light_info.txt";
+  // std::string fpname_s = fpname + "/data/" + location_name_ + "_HDmap_traffic_light_info.txt";
+  std::string fpname_s = fpname + "/data/" + location_name_ + "/" + location_name_ + "_HDmap_traffic_light_info.txt";
+
+  std::cout << "Ini_traffic_light_bytxt : " << fpname_s << std::endl;
 
   read_traffic_light_txt(fpname_s, trafficlight_IntersectionId, trafficlight_RoadId, trafficlight_Id);
 
@@ -324,8 +345,85 @@ void imudataCallback(const sensor_msgs::Imu& msg)
   imu_data_rad = msg;
 }
 
+// void trafficCallback(const msgs::Spat::ConstPtr& msg)
+// {
+//   int signal_state = msg->signal_state;
+//   int light_status = (int)(msg->spat_state);
+//   int RoadId = msg->road_id;
+//   int IntersectionId = msg->intersection_id;
+//   double confidence = 1.0;
+//   autoware_perception_msgs::LampState lampstate;
+//   autoware_perception_msgs::TrafficLightState trafficlightstate;
+//   autoware_perception_msgs::TrafficLightStateArray trafficlightstatearray;
+//   trafficlightstatearray.header.frame_id = "map";
+//   trafficlightstatearray.header.stamp = ros::Time::now();
+//   if (trafficlight_ini)
+//   {
+//     for (int i = 0; i < read_index_trafficlight; i++)
+//     {
+//       if (IntersectionId == trafficlight_IntersectionId[i] && RoadId == trafficlight_RoadId[i])
+//       {
+//         trafficlightstate.id = trafficlight_Id[i];
+//       }
+//     }
+//     // trafficlightstate.id = 402079;
+//   }
+  
+//   if (signal_state == 0)
+//   {
+//     if (light_status == 129) // red
+//     {
+//       lampstate.type = autoware_perception_msgs::LampState::RED;
+//       lampstate.confidence = confidence;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//     }
+//     else if(light_status == 130) // yellow
+//     {
+//       lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+//       lampstate.confidence = confidence;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//     }
+//     else if(light_status == 48) // green straight + green right
+//     {
+//       // lampstate.type = autoware_perception_msgs::LampState::GREEN;
+//       // lampstate.confidence = confidence;
+//       // trafficlightstate.lamp_states.push_back(lampstate);
+//       lampstate.type = autoware_perception_msgs::LampState::UP;
+//       lampstate.confidence = confidence;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//       lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+//       lampstate.confidence = confidence;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//     }
+//     else if(light_status == 9) // red + green left
+//     {
+//       lampstate.type = autoware_perception_msgs::LampState::RED;
+//       lampstate.confidence = confidence;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//       lampstate.type = autoware_perception_msgs::LampState::LEFT;
+//       lampstate.confidence = confidence;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//     }
+//     else // unknown
+//     {
+//       lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+//       lampstate.confidence = 0.0;
+//       trafficlightstate.lamp_states.push_back(lampstate);
+//     }
+//   }
+//   else
+//   {
+//     lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+//     lampstate.confidence = 0.0;
+//     trafficlightstate.lamp_states.push_back(lampstate);
+//   }
+//   trafficlightstatearray.states.push_back(trafficlightstate);
+//   trafficlight_pub.publish(trafficlightstatearray);
+// }
+
 void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
+  int signal_state = msg->signal_state;
   int light_status = (int)(msg->spat_state);
   int RoadId = msg->road_id;
   int IntersectionId = msg->intersection_id;
@@ -347,40 +445,58 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     // trafficlightstate.id = 402079;
   }
   
-  if (light_status == 129) // red
+  if (signal_state == 0)
   {
-    lampstate.type = autoware_perception_msgs::LampState::RED;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
+    // 0:red 1:yellow 2:green 3:left 4:straight 5:right 6:ped green 7:ped red
+    std::string light_status_binary = toBinary(light_status);
+    // std::cout << "light_status_binary = " << light_status_binary << std::endl;
+    // std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
+    // std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
+    if (light_status_binary[0] == 49) // red // "1" = 49
+    {
+      // std::cout << "REDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD " << std::endl;
+      lampstate.type = autoware_perception_msgs::LampState::RED;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[1] == 49) // yellow
+    {
+      lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[2] == 49) // green
+    {
+      lampstate.type = autoware_perception_msgs::LampState::GREEN;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[3] == 49) // left
+    {
+      lampstate.type = autoware_perception_msgs::LampState::LEFT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[4] == 49) // straight
+    {
+      lampstate.type = autoware_perception_msgs::LampState::UP;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[5] == 49) // right
+    {
+      lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (trafficlightstate.lamp_states.empty())// unknown
+    {
+      lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+      lampstate.confidence = 0.0;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
   }
-  else if(light_status == 130) // yellow
-  {
-    lampstate.type = autoware_perception_msgs::LampState::YELLOW;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else if(light_status == 48) // green straight + green right
-  {
-    // lampstate.type = autoware_perception_msgs::LampState::GREEN;
-    // lampstate.confidence = confidence;
-    // trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::UP;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::RIGHT;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else if(light_status == 9) // red + green left
-  {
-    lampstate.type = autoware_perception_msgs::LampState::RED;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-    lampstate.type = autoware_perception_msgs::LampState::LEFT;
-    lampstate.confidence = confidence;
-    trafficlightstate.lamp_states.push_back(lampstate);
-  }
-  else // unknown
+  else
   {
     lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
     lampstate.confidence = 0.0;
@@ -587,6 +703,7 @@ int main(int argc, char** argv)
 
   // ros::param::get(ros::this_node::getName()+"/force_disable_avoidance", force_disable_avoidance_);
   ros::param::get(ros::this_node::getName()+"/use_virtual_objects", use_virtual_objects_);
+  ros::param::get(ros::this_node::getName()+"/location_name", location_name_);
 
   ros::Subscriber current_pose_sub = node.subscribe("current_pose", 1, CurrentPoseCallback);
   ros::Subscriber objects_sub = node.subscribe("input/objects", 1, objectsCallback);

@@ -7,8 +7,9 @@
 
 namespace DriveNet
 {
-DEFINE_string(network_type, "yolov3", "[REQUIRED] Type of network architecture. Choose from yolov2, yolov2-tiny, "
-                                      "yolov3 and yolov3-tiny");
+DEFINE_string(network_type, "yolov3",
+              "[REQUIRED] Type of network architecture. Choose from yolov2, yolov2-tiny, "
+              "yolov3 and yolov3-tiny");
 DEFINE_string(config_file_path, "not-specified", "[REQUIRED] Darknet cfg file");
 DEFINE_string(wts_file_path, "not-specified", "[REQUIRED] Darknet weights file");
 DEFINE_string(labels_file_path, "not-specified", "[REQUIRED] Object class labels file");
@@ -44,10 +45,12 @@ DEFINE_double(nms_thresh, 0.5, "[OPTIONAL] IOU threshold for bounding box candid
 DEFINE_bool(do_benchmark, false, "[OPTIONAL] Generate JSON file with detection info in coco benchmark format");
 DEFINE_bool(save_detections, false, "[OPTIONAL] Flag to save images overlayed with objects detected.");
 DEFINE_bool(view_detections, false, "[OPTIONAL] Flag to view images overlayed with objects detected.");
-DEFINE_string(save_detections_path, "not-specified", "[OPTIONAL] Path where the images overlayed with bounding boxes "
-                                                     "are to be saved");
-DEFINE_bool(decode, true, "[OPTIONAL] Decode the detections. This can be set to false if benchmarking network for "
-                          "throughput only");
+DEFINE_string(save_detections_path, "not-specified",
+              "[OPTIONAL] Path where the images overlayed with bounding boxes "
+              "are to be saved");
+DEFINE_bool(decode, true,
+            "[OPTIONAL] Decode the detections. This can be set to false if benchmarking network for "
+            "throughput only");
 DEFINE_uint64(seed, std::time(0), "[OPTIONAL] Seed for the random number generator");
 DEFINE_bool(shuffle_test_set, false, "[OPTIONAL] Shuffle the test set images before running inference");
 
@@ -217,4 +220,4 @@ bool getShuffleTestSet()
 {
   return FLAGS_shuffle_test_set;
 }
-}
+}  // namespace DriveNet
