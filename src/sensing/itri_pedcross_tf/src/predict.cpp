@@ -19,6 +19,8 @@
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
 
+bool g_test_new_model_ = false;
+
 const std::vector<std::int64_t> INPUT_DIMS = { 1, FRAME_NUM, FEATURE_NUM };
 
 TF_Graph* g_graph = nullptr;
@@ -115,6 +117,41 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
 
   for (unsigned int index = 0; index < FRAME_NUM; index++)
   {
+    if (test_new_model_)
+    {
+      if (from_camera == 1) //left
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+      if (from_camera == 3) //FOV30
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+      if (from_camera == 0) //center
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+      if (from_camera == 2) //right
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+    }
     // Add bbox to feature vector
     std::vector<float> bbox = bbox_array.at(index);
     feature.insert(feature.end(), bbox.begin(), bbox.end());
@@ -257,9 +294,25 @@ int main(int argc, char** argv)
   ros::Time::init();
   ros::Time start = ros::Time::now();
 
+  ros::init(argc, argv, "pedcross_tf_server");
+  ros::NodeHandle n;
+  ros::ServiceServer service = n.advertiseService("pedcross_tf", callback);
+
+  n.param<bool>("/pedcross_tf_server/test_new_model", g_test_new_model_, false);
+
   std::cout << "Load graph testing..." << std::endl;
 
-  g_graph = tf_utils::LoadGraph((PED_TF_MODEL_DIR + std::string("/keras_2.2.4_model.pb")).c_str(), nullptr, nullptr);
+  std::string model_name = "";
+  if (g_test_new_model_)
+  {
+    model_name = "/LSTM_data_onehot_4_new_and_old_test.pb";
+  }
+  else
+  {
+    model_name = "/keras_2.2.4_model.pb";
+  }
+
+  g_graph = tf_utils::LoadGraph((PED_TF_MODEL_DIR + model_name).c_str(), nullptr, nullptr);
   SCOPE_EXIT
   {
     tf_utils::DeleteGraph(g_graph);
@@ -328,10 +381,6 @@ int main(int argc, char** argv)
                 nullptr,                      // Run metadata.
                 g_status                      // Output status.
   );
-
-  ros::init(argc, argv, "pedcross_tf_server");
-  ros::NodeHandle n;
-  ros::ServiceServer service = n.advertiseService("pedcross_tf", callback);
 
   ros::Time stop = ros::Time::now();
   std::cout << "PedCross TF Server started. Init time: " << stop - start << " sec" << std::endl;
