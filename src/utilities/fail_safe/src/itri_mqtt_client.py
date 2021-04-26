@@ -1,7 +1,6 @@
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
-import configparser
-import logging
+from __future__ import print_function
 import paho.mqtt.client as mqtt
 
 class ItriMqttClient():
@@ -9,7 +8,6 @@ class ItriMqttClient():
         self.fqdn = fqdn
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
-        self.client.on_publish = self.on_publish
         print("Try connecting to MQTT server {}, port {}".format(fqdn, port))
         self.client.connect(fqdn, int(port), 60)
         print("Successfuly connect to MQTT server")
@@ -18,13 +16,22 @@ class ItriMqttClient():
     def __del__(self):
         self.client.loop_stop()
 
-    def on_publish(self, client, userdata, mid):
-        return
+    def on_message(self, _client, _userdata, message):
+        print("message received ", str(message.payload.decode("utf-8")))
+        print("message topic=", message.topic)
+        print("message qos=", message.qos)
+        print("message retain flag=", message.retain)
 
-    def on_connect(self, client, userdata, flags, rc):
+    def on_connect(self, _client, _userdata, _flags, _rc):
         print("Connect to mqtt broker {}".format(self.fqdn))
-        client.subscribe("$SYS/#")
 
     def publish(self, topic, payload):
         self.client.publish(topic, payload=payload, qos=2, retain=False)
         return 0
+
+    def subscribe(self, topic, callback, qos=2):
+        """
+        qos -- At most once (0), At least once (1), Exactly once (2).
+        """
+        self.client.subscribe(topic, qos)
+        self.client.on_message = callback

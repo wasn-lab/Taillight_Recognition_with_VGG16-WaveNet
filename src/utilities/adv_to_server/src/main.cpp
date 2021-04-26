@@ -695,7 +695,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["electricity"] = g_vs.battery; //電量//0.0;
     j1["steering"] = g_vs.steer; // 轉向 
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
-    j1["heading"] = 0.0;
+    j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] =  g_vs.odometry; //行駛距離//0.0;
     j1["speed"] = g_vs.speed; //vs.speed 車速 目前來源CAN
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
@@ -748,7 +748,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["electricity"] =  g_vs.battery; //電量//0.0;
     j1["steering"] = g_vs.steer; // 轉向 
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
-    j1["heading"] = 0.0;
+    j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] = g_vs.odometry; //行駛距離//0.0;
     j1["speed"] = g_vs.speed; //vs.speed 車速 
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
