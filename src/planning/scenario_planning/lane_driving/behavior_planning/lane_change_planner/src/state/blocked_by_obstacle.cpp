@@ -199,12 +199,16 @@ bool BlockedByObstacleState::isLaneBlocked() const
   for (const auto & obj : dynamic_objects_->objects) {
     const auto velocity = util::l2Norm(obj.state.twist_covariance.twist.linear);
     if (velocity < static_obj_velocity_thresh) {
+      // std::cout << "------------------- velocity : " << velocity << std::endl;
       const auto position =
         lanelet::utils::conversion::toLaneletPoint(obj.state.pose_covariance.pose.position);
       const auto distance = boost::geometry::distance(
         lanelet::utils::to2D(position).basicPoint(), lanelet::utils::to2D(polygon).basicPolygon());
       if (distance < std::numeric_limits<double>::epsilon()) {
-        return true;
+        std::cout << "------------------- obj.semantic.type : " << obj.semantic.type << std::endl;
+        std::cout << "------------------- velocity : " << velocity << std::endl;
+        std::cout << "------------------- distance : " << distance << std::endl;
+        // return true;
       }
     }
   }
