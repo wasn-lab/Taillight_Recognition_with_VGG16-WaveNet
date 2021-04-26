@@ -16,7 +16,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mqtt-fqdn", default="192.168.1.3")
     parser.add_argument("--mqtt-port", type=int, default=1883)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
 
     pad_issue_reporter = PadIssueReporter(args.mqtt_fqdn, args.mqtt_port)
     pad_issue_reporter.run()
