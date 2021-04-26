@@ -208,7 +208,7 @@ bool BlockedByObstacleState::isLaneBlocked() const
         std::cout << "------------------- obj.semantic.type : " << obj.semantic.type << std::endl;
         std::cout << "------------------- velocity : " << velocity << std::endl;
         std::cout << "------------------- distance : " << distance << std::endl;
-        // return true;
+        return true;
       }
     }
   }
