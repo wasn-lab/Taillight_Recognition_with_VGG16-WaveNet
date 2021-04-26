@@ -12,7 +12,7 @@ from issue_reporter import IssueReporter, generate_issue_description
 _MQTT_REQ_REPORT_ISSUE_TOPIC = "fail_safe/req_report_issue"
 
 
-def _post_issue(_client, _userdata, message):
+def _post_issue(_client, _userdata, _message):
     # print("message received ", str(message.payload.decode("utf-8")))
     # print("message topic=", message.topic)
     # print("message qos=", message.qos)
@@ -25,7 +25,7 @@ def _post_issue(_client, _userdata, message):
     rospy.logwarn("Use click the post issue button!")
     print(summary)
     print(description)
-    issue_reporter.post_issue(summary, desc)
+    issue_reporter.post_issue(summary, description)
 
 class PadIssueReporter(object):
     def __init__(self, mqtt_fqdn, mqtt_port):
