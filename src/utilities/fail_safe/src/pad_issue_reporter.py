@@ -9,8 +9,8 @@ from itri_mqtt_client import ItriMqttClient
 from status_level import FATAL
 from issue_reporter import IssueReporter, generate_issue_description
 
-#_MQTT_REQ_REPORT_ISSUE_TOPIC = "fail_safe/req_report_issue"
-_MQTT_REQ_REPORT_ISSUE_TOPIC = "kk"
+_MQTT_REQ_REPORT_ISSUE_TOPIC = "fail_safe/req_report_issue"
+
 
 def _post_issue(_client, _userdata, message):
     # print("message received ", str(message.payload.decode("utf-8")))
