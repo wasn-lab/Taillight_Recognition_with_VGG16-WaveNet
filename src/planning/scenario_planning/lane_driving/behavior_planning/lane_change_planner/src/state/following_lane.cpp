@@ -166,7 +166,7 @@ bool FollowingLaneState::isLaneBlocked(const lanelet::ConstLanelets & lanes) con
       const auto distance = boost::geometry::distance(
         lanelet::utils::to2D(position).basicPoint(), lanelet::utils::to2D(polygon).basicPolygon());
       if (distance < std::numeric_limits<double>::epsilon()) {
-        // return true;
+        return true;
       }
     }
   }
