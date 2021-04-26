@@ -195,6 +195,9 @@ MapBasedPredictionROS::MapBasedPredictionROS() : pnh_("~"), interpolating_resolu
   pnh_.param<bool>("map_based_prediction/has_subscribed_map", has_subscribed_map_, false);
   pnh_.param<double>("prediction_time_horizon", prediction_time_horizon_, 10.0);
   pnh_.param<double>("prediction_sampling_delta_time", prediction_sampling_delta_time_, 0.5);
+  pnh_.param<double>("drivable_four_wheeled", drivable_four_wheeled_, 1.0);
+  pnh_.param<double>("drivable_two_wheeled", drivable_two_wheeled_, 5.0);
+  pnh_.param<double>("drivable_ped", drivable_ped_, 2.0);
   map_based_prediction_ = std::make_shared<MapBasedPrediction>(interpolating_resolution_, prediction_time_horizon_,
                                                                prediction_sampling_delta_time_);
 }
@@ -275,14 +278,14 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
 #else
       if (object.semantic.type == autoware_perception_msgs::Semantic::PEDESTRIAN)
       {
-        if (getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, 2))
+        if (getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, drivable_ped_))
         {
           tmp_objects_without_map.objects.push_back(tmp_object.object);
         }
       }
       else  // BICYCLE, MOTORBIKE, ANIMAL
       {
-        if (getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, 5))
+        if (getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, drivable_two_wheeled_))
         {
           tmp_objects_without_map.objects.push_back(tmp_object.object);
         }
@@ -292,7 +295,7 @@ void MapBasedPredictionROS::objectsCallback(const autoware_perception_msgs::Dyna
     }
 
     // CAR, BUS, TRUCK
-    if (!getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, 2))
+    if (!getClosestLanelets(tmp_object.object, start_lanelets, uuid_string, drivable_four_wheeled_))
     {
 #if UNDRIVABLE_AREA_FILTER == 0
       geometry_msgs::Point debug_point;
