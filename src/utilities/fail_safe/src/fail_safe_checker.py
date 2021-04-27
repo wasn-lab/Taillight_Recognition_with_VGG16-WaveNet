@@ -18,6 +18,7 @@ from action_emitter import ActionEmitter
 from status_level import OK, WARN, ERROR, FATAL, STATUS_CODE_TO_STR
 from sb_param_utils import get_vid
 from issue_reporter import IssueReporter, generate_issue_description
+from timestamp_utils import get_timestamp_mot
 
 _MQTT_FAIL_SAFE_TOPIC = "/fail_safe"  # To be removed in the future
 _MQTT_FAIL_SAFE_STATUS_TOPIC = "vehicle/report/itri/fail_safe_status"
@@ -111,7 +112,7 @@ class FailSafeChecker(object):
         ret = {"states": self.ctrl_info_03.get_status_in_list(),
                "events": self.ctrl_info_03.get_events_in_list(),
                "seq": self.seq,
-               "timestamp": time.time()}
+               "timestamp": get_timestamp_mot()}
         self.seq += 1
         ret["states"] += self.can_checker.get_status_in_list()
         ret["states"] += [self.modules[_].to_dict() for _ in self.modules]

@@ -241,7 +241,7 @@ struct BatteryInfo
   float highest_temperature; //電池最高環境溫度
 };
 
-unsigned int g_mode; //模式 自動/半自動/手動/鎖定
+float g_mode; //模式 自動/半自動/手動/鎖定
 float g_emergency_exit; //緊急出口
   
 Pose g_current_gnss_pose;
@@ -295,6 +295,13 @@ bool convertBoolean(int state)
 /*=========================tools end=========================*/
 
 /*========================= ROS callbacks begin=========================*/
+
+
+void callback_flag_info02(const msgs::Flag_Info::ConstPtr& input)
+{
+    g_mode = input->Dspace_Flag01;
+    std::cout << "adv mode: " << g_mode << std::endl;
+}
 
 void callback_flag_info04(const msgs::Flag_Info::ConstPtr& input)
 {
@@ -544,7 +551,7 @@ void callbackBI(const msgs::BackendInfo::ConstPtr& input)
   g_battery.voltage_deviation = input->voltage_deviation; //高低電壓差 0.01V
   g_battery.highest_temp_location = input->highest_temp_location; //電池最高環境溫度位置 區域編號
   g_battery.highest_temperature = input->highest_temperature; //電池最高環境溫度
-  g_mode = input->mode; //模式 自動/半自動/手動/鎖定
+  //g_mode = input->mode; //模式 自動/半自動/手動/鎖定
   g_emergency_exit = input->emergency_exit; //緊急出口
   g_delta_mileage = input->mileage;
 }
@@ -688,7 +695,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["electricity"] = g_vs.battery; //電量//0.0;
     j1["steering"] = g_vs.steer; // 轉向 
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
-    j1["heading"] = 0.0;
+    j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] =  g_vs.odometry; //行駛距離//0.0;
     j1["speed"] = g_vs.speed; //vs.speed 車速 目前來源CAN
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
@@ -697,8 +704,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Steeringwheel"] = g_vs.steering_wheel; //方向盤 //0.0;
     j1["door"] = convertBoolean(g_vs.door); //車門 //true;
     j1["airconditioner"] = convertBoolean(g_vs.air_conditioner); //空調;
-    j1["lat"] = g_gps.lidar_Lat; //vs.location 目前來源 lidar_lla
-    j1["lng"] = g_gps.lidar_Lon; //vs.location 目前來源 lidar_lla
+    j1["lat"] = g_current_gnss_pose.x; //vs.location 目前來源 gnss
+    j1["lng"] = g_current_gnss_pose.y; //vs.location 目前來源 gnss
     j1["headlight"] = convertBoolean(g_vs.headlight); //車燈 //true;
     j1["wiper"] =  convertBoolean(g_vs.wiper); //雨刷//true;
     j1["Interiorlight"] = convertBoolean(g_vs.indoor_light); //車內燈//true;
@@ -741,7 +748,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["electricity"] =  g_vs.battery; //電量//0.0;
     j1["steering"] = g_vs.steer; // 轉向 
     j1["bearing"] = g_current_gnss_pose.yaw * 180 / PI;
-    j1["heading"] = 0.0;
+    j1["heading"] = g_current_gnss_pose.yaw * 180 / PI;;
     j1["milage"] = g_vs.odometry; //行駛距離//0.0;
     j1["speed"] = g_vs.speed; //vs.speed 車速 
     j1["rotate"] = g_vs.rotating_speed; //轉速 //0.0;
@@ -750,8 +757,8 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["Steeringwheel"] = g_vs.steering_wheel; //方向盤 //0.0;
     j1["door"] = convertBoolean(g_vs.door); //車門 //true;
     j1["airconditioner"] = convertBoolean(g_vs.air_conditioner); //空調;
-    j1["lat"] = g_gps.lidar_Lat;  //vs.location 目前來源 lidar_lla
-    j1["lng"] = g_gps.lidar_Lon;  //vs.location 目前來源 lidar_lla
+    j1["lat"] = g_current_gnss_pose.x;  //vs.location 目前來源 gnss
+    j1["lng"] = g_current_gnss_pose.y;  //vs.location 目前來源 gnss
     j1["headlight"] = convertBoolean(g_vs.headlight); //車燈 //true;
     j1["wiper"] = convertBoolean(g_vs.wiper); //雨刷//true;
     j1["Interiorlight"] = convertBoolean(g_vs.indoor_light); //車內燈//true;
@@ -761,7 +768,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["EStop"] = convertBoolean(g_vs.estop); // E-Stop//true;
     j1["ACCpower"] = convertBoolean(g_vs.ACC_state); //ACC 電源//true;
     j1["route_id"] = g_route_id; //default 2000
-    j1["RouteMode"] = g_mode;
+    j1["RouteMode"] = 2;
     j1["Gx"] = g_imu.Gx; //   目前來源 imu_data_rad
     j1["Gy"] = g_imu.Gy; //   目前來源 imu_data_rad
     j1["Gz"] = g_imu.Gz; //   目前來源 imu_data_rad
@@ -1106,7 +1113,7 @@ void receiveRosRun(int argc, char** argv)
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
                                      callbackEvent, callbackBI, callbackSersorStatus,callbackTracking,callbackFailSafe,               
-                                     callback_flag_info04, is_new_map);
+                                     callback_flag_info04, callback_flag_info02, is_new_map);
 
 
   while (ros::ok())
@@ -1560,9 +1567,9 @@ json genMqttGnssMsg()
   json gnss;
   uint64_t timestamp_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   //uint64_t source_ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-  double lat = g_gps.lidar_Lat;
-  double lon = g_gps.lidar_Lon;
-  double alt = g_gps.lidar_Alt;
+  double lat = g_current_gnss_pose.x;
+  double lon = g_current_gnss_pose.y;
+  double alt = g_current_gnss_pose.z;
   gnss["coord"] = {lat, lon, alt};
   //gnss["speed"] = -1; remove speed
   gnss["heading"] = get_GNSS_heading_360(g_current_gnss_pose.yaw * 180 / PI);
