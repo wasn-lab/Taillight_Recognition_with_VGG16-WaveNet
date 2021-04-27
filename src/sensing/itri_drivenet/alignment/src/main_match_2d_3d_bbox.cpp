@@ -84,7 +84,9 @@ bool g_is_data_sync = false;
 bool g_is_enable_default_3d_bbox = true;
 bool g_is_display = false;
 bool g_img_result_publish = false;
+bool g_camera_detection_on_2d = false;
 bool g_lidar_detection_on_2d = false;
+bool g_lidar_raw_on_3d = false;
 
 /// ros
 std::vector<message_filters::Cache<sensor_msgs::Image>> g_cache_image(g_cam_ids.size());
@@ -109,7 +111,6 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr g_lidarall_ptr_process(new pcl::PointCloud<
 pcl::PointCloud<pcl::PointXYZIL>::Ptr g_lidar_detection_ptr(new pcl::PointCloud<pcl::PointXYZIL>);
 std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> g_cams_points_ptr(g_cam_ids.size());
 std::vector<pcl::visualization::Camera> g_cam;
-ros::Time g_lidar_header_time;
 
 /// object
 ros::Publisher g_object_pub;
@@ -677,53 +678,62 @@ void getSyncLidarCameraData()
         ros::Time sync_cam_time = ros::Time(0);
         size_t sync_time_index = 0;
         std::vector<ros::Time>::iterator sync_times_it;
-        std::vector<bool> is_cameras_update(g_cam_ids.size(), false);
-        for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+
+        if(g_img_result_publish)
         {
-          // std::cout << "objects_time[" << camera::names[g_cam_ids[cam_order]] << "]: " <<
-          // objects_time[cam_order].sec << "." <<
-          // objects_time[cam_order].nsec << std::endl;
-          sync_times_it =
-              std::find(cam_times_tmp[cam_order].begin(), cam_times_tmp[cam_order].end(), objects_time[cam_order]);
-
-          int time_index = std::distance(cam_times_tmp[cam_order].begin(), sync_times_it);
-          ros::Time cam_time = cam_times_tmp[cam_order][time_index];
-          if (sync_times_it != cam_times_tmp[cam_order].end() && cam_time != ros::Time(0))
+          std::vector<bool> is_cameras_update(g_cam_ids.size(), false);
+          for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
           {
-            // std::cout << "sync_camera_time: " << cam_time.sec << "." <<
-            // cam_time.nsec <<
-            // std::endl;
+            // std::cout << "objects_time[" << camera::names[g_cam_ids[cam_order]] << "]: " <<
+            // objects_time[cam_order].sec << "." <<
+            // objects_time[cam_order].nsec << std::endl;
+            sync_times_it =
+                std::find(cam_times_tmp[cam_order].begin(), cam_times_tmp[cam_order].end(), objects_time[cam_order]);
 
-            if (cam_order == 0)
+            int time_index = std::distance(cam_times_tmp[cam_order].begin(), sync_times_it);
+            ros::Time cam_time = cam_times_tmp[cam_order][time_index];
+            if (sync_times_it != cam_times_tmp[cam_order].end() && cam_time != ros::Time(0))
             {
-              sync_time_index = time_index;
-              sync_cam_time = cam_time;
-            }
+              // std::cout << "sync_camera_time: " << cam_time.sec << "." <<
+              // cam_time.nsec <<
+              // std::endl;
 
-            /// get camera image
-            cv::Mat message_mat;
-            message_mat = getSpecificTimeCameraMessage(g_cache_image[cam_order], cam_time, duration_time);
-            if (!message_mat.empty())
+              if (cam_order == 0)
+              {
+                sync_time_index = time_index;
+                sync_cam_time = cam_time;
+              }
+
+              /// get camera image
+              cv::Mat message_mat;
+              message_mat = getSpecificTimeCameraMessage(g_cache_image[cam_order], cam_time, duration_time);
+              if (!message_mat.empty())
+              {
+                g_mats[cam_order] = message_mat;
+                is_cameras_update[cam_order] = true;
+              }
+
+              // /// get camera object
+              // g_object_camera_arrs[cam_order] =
+              //     getSpecificTimeCameraObjectMessage(g_cache_cam_object[cam_order], cam_time, duration_time);
+              // std::unique_lock<std::mutex> lock_data(g_mutex_data, std::adopt_lock);
+              // g_cam_object_times.erase(g_cam_object_times.begin(), g_cam_object_times.begin() + 1);
+              // lock_data.unlock();
+            }
+            else
             {
-              g_mats[cam_order] = message_mat;
-              is_cameras_update[cam_order] = true;
+              std::cout << "Not found the same timestamp in camera " << camera::names[g_cam_ids[cam_order]]
+                        << " time buffer." << std::endl;
             }
-
-            // /// get camera object
-            // g_object_camera_arrs[cam_order] =
-            //     getSpecificTimeCameraObjectMessage(g_cache_cam_object[cam_order], cam_time, duration_time);
-            // std::unique_lock<std::mutex> lock_data(g_mutex_data, std::adopt_lock);
-            // g_cam_object_times.erase(g_cam_object_times.begin(), g_cam_object_times.begin() + 1);
-            // lock_data.unlock();
           }
-          else
+          if (std::all_of(is_cameras_update.begin(), is_cameras_update.end(), [](bool v) { return v; }))
           {
-            std::cout << "Not found the same timestamp in camera " << camera::names[g_cam_ids[cam_order]]
-                      << " time buffer." << std::endl;
+            is_camera_update = true;
           }
         }
-        if (std::all_of(is_cameras_update.begin(), is_cameras_update.end(), [](bool v) { return v; }))
+        else
         {
+          sync_cam_time = objects_time[0];
           is_camera_update = true;
         }
 
@@ -731,81 +741,89 @@ void getSyncLidarCameraData()
         if (is_camera_update)
         {
           ros::Time sync_lidar_time;
-          if (use_system_time)
+          if(g_lidar_raw_on_3d)
           {
-            sync_lidar_time = lidarall_times_tmp[sync_time_index];
-            if (sync_lidar_time == ros::Time(0))
+            if (use_system_time)
             {
-              for (size_t index = sync_time_index; index < lidarall_times_tmp.size(); index++)
-              {
-                if (lidarall_times_tmp[index] != ros::Time(0))
-                {
-                  sync_lidar_time = lidarall_times_tmp[index];
-                  break;
-                }
-              }
-            }
-          }
-          else
-          {
-            sync_lidar_time = sync_cam_time;
-            ros::Duration diff_time_lidar(0);
-            bool have_candidate_lidar = false;
-            std::vector<int> diff_time_lidar_nsec(lidarall_times_tmp.size());
-            for (size_t i = 0; i < lidarall_times_tmp.size(); i++)
-            {
-              diff_time_lidar = ros::Duration(0);
-              diff_time_lidar_nsec[i] = nsec_max_time.nsec;
-
-              if (lidarall_times_tmp[i] <= sync_lidar_time)
-              {
-                diff_time_lidar = sync_lidar_time - lidarall_times_tmp[i];
-              }
-              else if (lidarall_times_tmp[i] > sync_lidar_time)
-              {
-                diff_time_lidar = lidarall_times_tmp[i] - sync_lidar_time;
-              }
-
-              if (diff_time_lidar.sec == 0 && diff_time_lidar.nsec != 0)
-              {
-                if (diff_time_lidar < diff_max_time)
-                {
-                  // std::cout << "index: " << i << ", lidarall_times_tmp[i]: " << lidarall_times_tmp[i] << ",
-                  // diff_time_lidar.nsec: " << diff_time_lidar.nsec << std::endl;
-                  diff_time_lidar_nsec[i] = diff_time_lidar.nsec;
-                  have_candidate_lidar = true;
-                }
-              }
-            }
-            if (have_candidate_lidar)
-            {
-              std::vector<int>::iterator result_iter =
-                  std::min_element(diff_time_lidar_nsec.begin(), diff_time_lidar_nsec.end());
-              sync_time_index = std::distance(diff_time_lidar_nsec.begin(), result_iter);
               sync_lidar_time = lidarall_times_tmp[sync_time_index];
+              if (sync_lidar_time == ros::Time(0))
+              {
+                for (size_t index = sync_time_index; index < lidarall_times_tmp.size(); index++)
+                {
+                  if (lidarall_times_tmp[index] != ros::Time(0))
+                  {
+                    sync_lidar_time = lidarall_times_tmp[index];
+                    break;
+                  }
+                }
+              }
             }
             else
             {
-              sync_lidar_time = ros::Time(0);
-            }
-          }
+              sync_lidar_time = sync_cam_time;
+              ros::Duration diff_time_lidar(0);
+              bool have_candidate_lidar = false;
+              std::vector<int> diff_time_lidar_nsec(lidarall_times_tmp.size());
+              for (size_t i = 0; i < lidarall_times_tmp.size(); i++)
+              {
+                diff_time_lidar = ros::Duration(0);
+                diff_time_lidar_nsec[i] = nsec_max_time.nsec;
 
-          if (sync_lidar_time == ros::Time(0))
-          {
-            is_lidar_update = false;
-            std::cout << "Not found the same timestamp in lidar time buffer." << std::endl;
+                if (lidarall_times_tmp[i] <= sync_lidar_time)
+                {
+                  diff_time_lidar = sync_lidar_time - lidarall_times_tmp[i];
+                }
+                else if (lidarall_times_tmp[i] > sync_lidar_time)
+                {
+                  diff_time_lidar = lidarall_times_tmp[i] - sync_lidar_time;
+                }
+
+                if (diff_time_lidar.sec == 0 && diff_time_lidar.nsec != 0)
+                {
+                  if (diff_time_lidar < diff_max_time)
+                  {
+                    // std::cout << "index: " << i << ", lidarall_times_tmp[i]: " << lidarall_times_tmp[i] << ",
+                    // diff_time_lidar.nsec: " << diff_time_lidar.nsec << std::endl;
+                    diff_time_lidar_nsec[i] = diff_time_lidar.nsec;
+                    have_candidate_lidar = true;
+                  }
+                }
+              }
+              if (have_candidate_lidar)
+              {
+                std::vector<int>::iterator result_iter =
+                    std::min_element(diff_time_lidar_nsec.begin(), diff_time_lidar_nsec.end());
+                sync_time_index = std::distance(diff_time_lidar_nsec.begin(), result_iter);
+                sync_lidar_time = lidarall_times_tmp[sync_time_index];
+              }
+              else
+              {
+                sync_lidar_time = ros::Time(0);
+              }
+            }
+
+            if (sync_lidar_time == ros::Time(0))
+            {
+              is_lidar_update = false;
+              std::cout << "Not found the same timestamp in lidar time buffer." << std::endl;
+            }
+            else
+            {
+              // std::cout << "sync_lidar_time: " << sync_time_index << " : " << sync_lidar_time.sec << "." <<
+              // sync_lidar_time.nsec << std::endl;
+              pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr =
+                  getSpecificTimeLidarMessage(g_cache_lidarall, sync_lidar_time, duration_time);
+              if (lidar_ptr != nullptr)
+              {
+                *g_lidarall_ptr = *lidar_ptr;
+                is_lidar_update = true;
+              }
+            }
           }
           else
           {
-            // std::cout << "sync_lidar_time: " << sync_time_index << " : " << sync_lidar_time.sec << "." <<
-            // sync_lidar_time.nsec << std::endl;
-            pcl::PointCloud<pcl::PointXYZI>::Ptr lidar_ptr =
-                getSpecificTimeLidarMessage(g_cache_lidarall, sync_lidar_time, duration_time);
-            if (lidar_ptr != nullptr)
-            {
-              *g_lidarall_ptr = *lidar_ptr;
-              is_lidar_update = true;
-            }
+            is_lidar_update = true;
+            sync_lidar_time = sync_cam_time;
           }
 
           /// lidar detection
@@ -875,7 +893,6 @@ void getSyncLidarCameraData()
                 // std::endl;
                 g_object_lidar = getSpecificTimeLidarObjectMessage(g_cache_lidar_detection, sync_lidar_detection_time,
                                                                    duration_time);
-                g_lidar_header_time = sync_lidar_detection_time;
                 is_lidar_detection_update = true;
               }
             }
@@ -957,7 +974,6 @@ void runInference()
   std::cout << "===== runInference... =====" << std::endl;
 
   /// create variable
-  ros::Time lidar_header_time;
   std::vector<cv::Mat> cam_mats(g_cam_ids.size());
   std::vector<msgs::DetectedObjectArray> object_arrs(g_cam_ids.size());
   pcl::PointCloud<pcl::PointXYZI>::Ptr lidarall_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -978,21 +994,26 @@ void runInference()
   {
     if (g_is_data_sync)
     {
-      /// copy camera data
-      for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+      /// copy data
+      if(g_img_result_publish)
       {
-        cam_mats[cam_order] = g_mats[cam_order].clone();
+        for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+        {
+          cam_mats[cam_order] = g_mats[cam_order].clone();
+        }
       }
       object_arrs = g_object_arrs_process;
-      pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
+      if(g_lidar_raw_on_3d)
+      {
+        pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
+      }
       object_lidar = g_object_lidar;
-      lidar_header_time = g_lidar_header_time;
 
       /// get results
       std::cout << "===== doInference once =====" << std::endl;
       g_is_data_sync = false;
       // getPointCloudInAllImageFOV(lidarall_ptr, cams_points_ptr, cam_pixels, g_image_w, g_image_h);
-      projectLidarBBoxOntoImage(cam_mats, object_lidar, object_lidar_filter, lidar_pixels_obj);
+      getBoxInImageFOV(object_lidar, object_lidar_filter, lidar_pixels_obj, g_alignments);
       std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_lidar_roi =
           g_roi_fusion.getLidar2DROI(lidar_pixels_obj);
       std::vector<std::vector<sensor_msgs::RegionOfInterest>> object_camera_roi = g_roi_fusion.getCam2DROI(object_arrs);
@@ -1001,23 +1022,31 @@ void runInference()
       g_roi_fusion.getFusionCamObj(object_arrs, fusion_index, cam_pixels_obj);
       object_publisher(object_arrs, object_lidar, object_lidar_filter, fusion_index);
 
-      if (g_img_result_publish)
+      if (g_img_result_publish || g_is_display)
       {
-        drawBoxOnImages(cam_mats, object_arrs);     // camera detection result
-        drawBoxOnImages(cam_mats, cam_pixels_obj);  // fusion camera result
-        image_publisher(cam_mats, object_lidar.header);
+        // camera detection result
+        if(g_camera_detection_on_2d)
+        {
+          drawBoxOnImages(cam_mats, object_arrs);
+        }
+
+        // lidar detection result
+        if (g_lidar_detection_on_2d)
+        {
+          drawLidarBoxOnImage(cam_mats, lidar_pixels_obj);
+        }
+
+        // fusion result
+        drawBoxOnImages(cam_mats, cam_pixels_obj);
+
+        if (g_img_result_publish)
+        {
+          image_publisher(cam_mats, object_lidar.header);
+        }
       }
 
       if (g_is_display)
       {
-        /// draw results on image
-        // drawPointCloudOnImages(cam_mats, cam_pixels, cams_points_ptr);
-        // drawBoxOnImages(cam_mats, object_arrs);
-        if (!g_img_result_publish)
-        {
-          drawBoxOnImages(cam_mats, cam_pixels_obj);
-        }
-
         /// prepare image visualization
         std::lock_guard<std::mutex> lock_cams_process(g_mutex_cams_process);
         for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
@@ -1029,11 +1058,11 @@ void runInference()
         // std::lock_guard<std::mutex> lock_lidar_process(g_mutex_lidar_process);
         // pcl::copyPointCloud(*lidarall_ptr, *g_lidarall_ptr_process);
 
-        std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points);
-        for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
-        {
-          pcl::copyPointCloud(*cams_points_ptr[cam_order], *g_cams_points_ptr[cam_order]);
-        }
+        // std::lock_guard<std::mutex> lock_cams_points(g_mutex_cams_points);
+        // for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+        // {
+        //   pcl::copyPointCloud(*cams_points_ptr[cam_order], *g_cams_points_ptr[cam_order]);
+        // }
       }
 
       release(cam_pixels);
@@ -1156,8 +1185,8 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
 
-  ros::param::get(ros::this_node::getName() + "/display", g_is_display);
   ros::param::get(ros::this_node::getName() + "/imgResult_publish", g_img_result_publish);
+  ros::param::get(ros::this_node::getName() + "/camera_detection_on_2d", g_camera_detection_on_2d);
   ros::param::get(ros::this_node::getName() + "/lidar_detection_on_2d", g_lidar_detection_on_2d);
 
   /// ros Subscriber
