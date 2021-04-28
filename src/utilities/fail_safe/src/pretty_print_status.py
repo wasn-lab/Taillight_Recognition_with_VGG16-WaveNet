@@ -1,24 +1,22 @@
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
 from __future__ import print_function
+import argparse
 import json
-import pprint
 import rospy
 from std_msgs.msg import String
 
-_TOPIC = "/vehicle/report/itri/fail_safe_status"
-
 
 class PrettyPrintStatus(object):
-    def __init__(self):
+    def __init__(self, topic):
         rospy.init_node("PrettyPrintStatus", anonymous=True)
         rospy.logwarn("Init PrettyPrintStatus")
-        rospy.wait_for_message(_TOPIC, String)
-        rospy.Subscriber(_TOPIC, String, self._cb)
+        rospy.wait_for_message(topic, String)
+        rospy.Subscriber(topic, String, self._cb)
 
     def _cb(self, msg):
         jdata = json.loads(msg.data)
-        pprint.pprint(jdata)
+        print(json.dumps(jdata, indent=2))
 
     def run(self):
         """Send out aggregated info to backend server every second."""
@@ -27,6 +25,12 @@ class PrettyPrintStatus(object):
             rate.sleep()
 
 
-if __name__ == "__main__":
-    printer = PrettyPrintStatus()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--topic", "-t", default="/vehicle/report/itri/fail_safe_status")
+    args = parser.parse_args()
+    printer = PrettyPrintStatus(args.topic)
     printer.run()
+
+if __name__ == "__main__":
+    main()

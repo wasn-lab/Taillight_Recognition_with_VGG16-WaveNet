@@ -120,19 +120,19 @@ void FollowingLaneState::update()
 
 State FollowingLaneState::getNextState() const
 {
-  if (current_lanes_.empty()) {
-    ROS_ERROR_THROTTLE(1, "current lanes empty. Keeping state.");
-    return State::FOLLOWING_LANE;
-  }
-  if (route_handler_ptr_->isInPreferredLane(current_pose_) && isLaneBlocked(current_lanes_)) {
-    return State::BLOCKED_BY_OBSTACLE;
-  }
-  if (isLaneChangeAvailable() && laneChangeForcedByOperator()) {
-    return State::FORCING_LANE_CHANGE;
-  }
-  if (isLaneChangeReady() && isLaneChangeApproved()) {
-    return State::EXECUTING_LANE_CHANGE;
-  }
+  // if (current_lanes_.empty()) {
+  //   ROS_ERROR_THROTTLE(1, "current lanes empty. Keeping state.");
+  //   return State::FOLLOWING_LANE;
+  // }
+  // if (route_handler_ptr_->isInPreferredLane(current_pose_) && isLaneBlocked(current_lanes_)) {
+  //   return State::BLOCKED_BY_OBSTACLE;
+  // }
+  // if (isLaneChangeAvailable() && laneChangeForcedByOperator()) {
+  //   return State::FORCING_LANE_CHANGE;
+  // }
+  // if (isLaneChangeReady() && isLaneChangeApproved()) {
+  //   return State::EXECUTING_LANE_CHANGE;
+  // }
   return State::FOLLOWING_LANE;
 }
 
