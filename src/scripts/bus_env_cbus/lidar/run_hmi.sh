@@ -6,3 +6,7 @@ sleep 10;
 chromium-browser --password-store=basic --kiosk --app="https://service.itriadv.co:8784/Unit/DriverDashboard?plate=MOREA&URL=local" &
 sleep 5 
 python /usr/local/bin/move_window.py -m DP-5 -w "駕駛艙畫面"
+while true; do
+  python /usr/local/bin/raise_window.py -w "駕駛艙畫面"
+  sleep 1
+done
