@@ -85,20 +85,20 @@
     <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
     <arg name="group_name" value="/LidarFrontLeft" />
     <arg name="tf_prefix" value="lidar_front_left" doc="as frame_id" />
-    <arg name="sensor_hostname" value="192.168.0.227" />
+    <arg name="sensor_hostname" value="192.168.0.228" />
     <arg name="udp_dest" value="192.168.0.1" />
-    <arg name="lidar_port" value="7507" />
-    <arg name="imu_port" value="7517" />
+    <arg name="lidar_port" value="7508" />
+    <arg name="imu_port" value="7518" />
     </include>
 
     <!-- Right -->
     <include file="$(find ouster_ros)/ouster.launch" if="$(arg hardware_enable)">
     <arg name="group_name" value="/LidarFrontRight" />
     <arg name="tf_prefix" value="lidar_front_right" doc="as frame_id" />
-    <arg name="sensor_hostname" value="192.168.0.228" />
+    <arg name="sensor_hostname" value="192.168.0.227" />
     <arg name="udp_dest" value="192.168.0.1" />
-    <arg name="lidar_port" value="7508" />
-    <arg name="imu_port" value="7518" />
+    <arg name="lidar_port" value="7507" />
+    <arg name="imu_port" value="7517" />
     </include>
 
     <!-- Top-->
