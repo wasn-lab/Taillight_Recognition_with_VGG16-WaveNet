@@ -3,6 +3,8 @@
       <arg name="hardware_enable" value="false" />
       <arg name="mode" value="0" />
     </include>
+    <include file="$(find msg_replay)/launch/replay_cmpr_pc2_to_camera.launch">
+    </include>
 
     <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-12-28-16-53-14_21.bag -l" />
 
@@ -18,19 +20,10 @@
                 - name: /LidarFrontTop/Raw/heartbeat
                   timeout: 60
                   negative: False
-                - name: /LidarFrontTop/Compressed/heartbeat
-                  timeout: 60
-                  negative: False
                 - name: /LidarFrontRight/Raw/heartbeat
                   timeout: 60
                   negative: False
-                - name: /LidarFrontRight/Compressed/heartbeat
-                  timeout: 60
-                  negative: False
                 - name: /LidarFrontLeft/Raw/heartbeat
-                  timeout: 60
-                  negative: False
-                - name: /LidarFrontLeft/Compressed/heartbeat
                   timeout: 60
                   negative: False
         </rosparam>

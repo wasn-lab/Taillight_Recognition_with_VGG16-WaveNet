@@ -61,9 +61,9 @@ catkin_package(
 ###########
 
 #add wrapper
-set(TRT_WRAPPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/tensorRTWrapper/code)
-add_subdirectory(${TRT_WRAPPER_DIR})
-include_directories(${TRT_WRAPPER_DIR}/include)
+#set(TRT_WRAPPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/tensorRTWrapper/code)
+#add_subdirectory(${TRT_WRAPPER_DIR})
+#include_directories(${TRT_WRAPPER_DIR}/include)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -107,7 +107,7 @@ set(CPP_SOURCES
  #   src/SignalNetMain.cpp
 #    ${JENRO_SOURCES}
     )
-    
+
 add_executable(${PROJECT_NAME}_node ${CPP_SOURCES})
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} trtNet_itri_new_layout ${OpenCV_LIBS} ${LEPTONICA_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/resources/libdetector.so ${OpenCV_LIBS} ${LEPTONICA_LIBRARIES} )
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

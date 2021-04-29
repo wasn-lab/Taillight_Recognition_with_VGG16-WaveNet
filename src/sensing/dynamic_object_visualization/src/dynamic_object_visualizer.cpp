@@ -25,6 +25,7 @@ DynamicObjectVisualizer::DynamicObjectVisualizer() : nh_(""), private_nh_("~")
   bool with_feature;
   private_nh_.param<bool>("with_feature", with_feature, true);
   private_nh_.param<bool>("only_known_objects", only_known_objects_, true);
+  private_nh_.param<double>("label_scale", label_scale_, 1.0);
   if (with_feature)
     sub_ = nh_.subscribe("input", 1, &DynamicObjectVisualizer::dynamicObjectWithFeatureCallback, this);
   else
@@ -167,8 +168,8 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
     std::string label;
     if (!getLabel(input_msg->objects.at(i).semantic, label))
       continue;
-    marker.scale.x = 0.5;
-    marker.scale.z = 0.5;
+    marker.scale.x = label_scale_;
+    marker.scale.z = label_scale_;
     std::string id_str = unique_id::toHexString(input_msg->objects.at(i).id);
     std::remove(id_str.begin(), id_str.end(), '-');
     marker.text = label + ":" + id_str.substr(0, 4);

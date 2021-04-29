@@ -97,7 +97,7 @@ public:
   void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
                      boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
                      std::vector<SkeletonBuffer>& skeleton_buffer);
-  bool crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject obj_pub);
+  bool crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject& obj_pub);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);

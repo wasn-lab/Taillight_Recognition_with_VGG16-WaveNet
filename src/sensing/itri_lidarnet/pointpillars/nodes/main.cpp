@@ -9,6 +9,9 @@
 #include <mutex>
 #include <thread>
 
+// time stamp
+#include <pcl_conversions/pcl_conversions.h>
+
 // msg
 #include "msgs/DetectedObjectArray.h"
 
@@ -19,8 +22,7 @@
 static ros::Publisher g_pub_lidar_detection;
 
 //--------------------------- Global Variables
-std::mutex g_car_lock;
-std::mutex g_ped_cyc_lock;
+std::mutex g_total_lock;
 
 ros::Time g_car_msg_rostime;
 ros::Time g_ped_cyc_msg_rostime;
@@ -32,7 +34,7 @@ pcl::StopWatch g_integrator_stopWatch;
 //------------------------------ Callbacks
 void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
-  g_car_lock.lock();
+  g_total_lock.lock();
   g_car_msg_rostime = msgArr->header.stamp;
   
   for (const auto & object : msgArr->objects)
@@ -40,13 +42,14 @@ void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArr
     g_msgArr.objects.push_back(object);
   }
 
-  g_car_lock.unlock();
+  g_total_lock.unlock();
 }
 
 
 void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
-  g_ped_cyc_lock.lock();
+  g_total_lock.lock();
+
   g_integrator_stopWatch.reset();
   g_ped_cyc_msg_rostime = msgArr->header.stamp;
 
@@ -54,7 +57,7 @@ void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjec
   {
     g_msgArr.objects.push_back(object);
   }
-  g_ped_cyc_lock.unlock();
+  g_total_lock.unlock();
 }
 
 void LidarDetection_Publisher(int argc, char** argv)
@@ -62,6 +65,7 @@ void LidarDetection_Publisher(int argc, char** argv)
   ros::Rate loop_rate(20);  
   while (ros::ok())
   {
+    g_total_lock.lock();
     uint64_t time_diff_ms = 0;
     time_diff_ms = g_car_msg_rostime.toSec()*1000 - g_ped_cyc_msg_rostime.toSec()*1000;
     
@@ -72,8 +76,20 @@ void LidarDetection_Publisher(int argc, char** argv)
     
     if(!g_msgArr.objects.empty())
     {
+      if (g_ped_cyc_msg_rostime.isValid())
+      {
+        g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
+      }
+      else if(g_car_msg_rostime.isValid())
+      {
+        g_msgArr.header.stamp = g_car_msg_rostime;
+      }
+      else
+      {
+        std::cout << "[WARNING]: NO VALID TIMESTAMP FOR LiDAR DETECTION!!" << std::endl;
+      }
+      
       g_msgArr.header.frame_id = "lidar";
-      g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
 
       g_pub_lidar_detection.publish(g_msgArr);
       g_msgArr.objects.clear();
@@ -85,8 +101,9 @@ void LidarDetection_Publisher(int argc, char** argv)
       {
         std::cout << "[Latency]: " << top_to_now_time << "ms" << std::endl;
       }
-      std::cout << "" << std::endl;
+      std::cout << std::endl << std::endl;
     }
+    g_total_lock.unlock();
     loop_rate.sleep();
   }
 }

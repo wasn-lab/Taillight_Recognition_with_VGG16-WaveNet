@@ -2,7 +2,7 @@
 <launch>
 
   <arg name="force_disable_avoidance" default="false" />
-  <arg name="disable_lane_event" default="false" />
+  <arg name="disable_lane_event" default="true" />
 
   <arg name="Look_ahead_time" default="1.6" />
   <arg name="Look_ahead_S0" default="3" />
@@ -21,6 +21,8 @@
   <arg name="predict_s_max" default="13.8" />
   <arg name="predict_t" default="2.0" />
 
+  <arg name="location_name" default="ITRI"/>
+
   <!-- decision maker node -->
   <node pkg="decision_maker" type="decision_maker" name="decision_maker" output="screen" cwd="node" respawn="true">
         <param name="force_disable_avoidance" value="$(arg force_disable_avoidance)" />
@@ -29,6 +31,7 @@
   
   <!-- scene_register_checker node -->
   <node pkg="scene_register_checker" type="scene_register_checker" name="scene_register_checker" output="screen" cwd="node" respawn="true">
+	<param name="location_name" value="$(arg location_name)" />
   </node>
 
   <!-- path transfer node -->

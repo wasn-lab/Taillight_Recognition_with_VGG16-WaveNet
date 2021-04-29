@@ -3,31 +3,29 @@
 import datetime
 import unittest
 from load_collector import LoadCollector
+from status_level import OK, WARN
 
 class LoadCollectorTest(unittest.TestCase):
     def test_get_current_loads(self):
         now = datetime.datetime.now()
 
-        collector = LoadCollector()
-        collector.ipcs = ["my"]
+        collector = LoadCollector("127.0.0.1", 1883)
+        collector.ipcs = ["xavier"]
         collector.setup_records()
-        collector.records["my"]["cpu_load"] = "0.16, 0.21, 0.18"
-        collector.timestamps["my"]["cpu_load"] = now
-        collector.records["my"]["gpu_load"] = "47"
-        collector.timestamps["my"]["gpu_load"] = now
+        collector.records["xavier"]["cpu_load"] = 0.16
+        collector.records["xavier"]["gpu_load"] = "47"
+        collector.records["xavier"]["cpu_load_threshold"] = 12
+        collector.timestamps["xavier"] = now
 
         delta = datetime.timedelta(seconds=1)
         for _ in range(3):
-            collector.timestamps["my"]["cpu_load"] -= delta
-            collector.timestamps["my"]["gpu_load"] -= delta
+            collector.timestamps["xavier"] -= delta
             loads = collector.get_current_loads(now=now)
-            self.assertEqual(loads["my"]["cpu_load"], "0.16, 0.21, 0.18")
-            self.assertEqual(loads["my"]["gpu_load"], "47")
-        collector.timestamps["my"]["cpu_load"] -= delta
-        collector.timestamps["my"]["gpu_load"] -= delta
+            self.assertEqual(loads["xavier"]["status"], OK)
+            self.assertEqual(loads["xavier"]["status_str"], "")
+        collector.timestamps["xavier"] -= delta * 10
         loads = collector.get_current_loads(now=now)
-        self.assertEqual(loads["my"]["cpu_load"], "NA")
-        self.assertEqual(loads["my"]["gpu_load"], "NA")
+        self.assertEqual(loads["xavier"]["status"], WARN)
 
 
 if __name__ == "__main__":

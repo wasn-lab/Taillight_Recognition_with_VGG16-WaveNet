@@ -22,6 +22,7 @@
 #if HEARTBEAT == 1
 #include <std_msgs/Empty.h>
 #endif
+#define UNDRIVABLE_AREA_FILTER 1  // 0: OFF  1: ON
 
 namespace tf2_ros
 {
@@ -75,6 +76,9 @@ private:
   double prediction_sampling_delta_time_;
   double interpolating_resolution_;
   double debug_accumulated_time_;
+  double drivable_four_wheeled_;
+  double drivable_two_wheeled_;
+  double drivable_ped_;
 
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;
@@ -103,8 +107,8 @@ private:
   void mapCallback(const autoware_lanelet2_msgs::MapBin& msg);
 
   bool getClosestLanelets(const autoware_perception_msgs::DynamicObject& object,
-                          const lanelet::LaneletMapPtr& lanelet_map_ptr,
-                          std::vector<lanelet::Lanelet>& closest_lanelets, std::string uuid_string);
+                          std::vector<lanelet::Lanelet>& closest_lanelets, const std::string& uuid_string,
+                          const double max_dist_for_searching_lanelet);
 
 public:
   MapBasedPredictionROS();

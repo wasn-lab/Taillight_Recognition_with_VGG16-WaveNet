@@ -57,10 +57,10 @@ void obsdisbaseCallback(const std_msgs::Float64::ConstPtr& obsdismsg_base)
     overtake_over.data = 0;
   }
 
-  if (!lane_event_enable_overtake && project_dis < 0.5)
-  {
-    overtake_over.data = 1;
-  }
+  // if (!lane_event_enable_overtake && project_dis < 0.5)
+  // {
+  //   overtake_over.data = 1;
+  // }
   
   overtake_over_pub.publish(overtake_over);
 }
@@ -70,7 +70,7 @@ void avoidstatesubCallback(const msgs::Flag_Info& msg)
   double avoid_state_index_ = msg.Dspace_Flag03;
   // std::cout << "avoid_state_index_ : " << avoid_state_index_ << std::endl;
   std_msgs::Bool enable_avoidance;// = false;
-  std::cout << "force_disable_avoidance_ : " << force_disable_avoidance_ << std::endl;
+  // std::cout << "force_disable_avoidance_ : " << force_disable_avoidance_ << std::endl;
   if (avoid_state_index_ == 1 && !force_disable_avoidance_)
   {
     enable_avoidance.data = true;
