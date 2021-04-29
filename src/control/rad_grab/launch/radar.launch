@@ -6,7 +6,7 @@
 	<arg name="radar_detection" default="1" />
 	<arg name="delphi_enable" default="1" />
 	<arg name="umec_enable" default="0" />
-	<arg name="cubtek_enable" default="1" />
+	<arg name="cubtek_enable" default="0" />
 	<arg name="alpha_test" default="0" />
 	<arg name="alpha_front_enable" default="0" />
 	<arg name="alpha_side_enable" default="0" />
