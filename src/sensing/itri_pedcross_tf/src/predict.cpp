@@ -117,8 +117,9 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
 
   for (unsigned int index = 0; index < FRAME_NUM; index++)
   {
-    if (test_new_model_)
+    if (g_test_new_model_)
     {
+      int from_camera = req.cam_index;
       if (from_camera == 1) //left
       {
         feature.push_back(1);
