@@ -113,8 +113,14 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
 
   // initialize feature
   std::vector<float> feature;
-  feature.reserve(FEATURE_NUM * FRAME_NUM);
-
+  if (g_test_new_model_)
+  {
+    feature.reserve((FEATURE_NUM + 4) * FRAME_NUM);
+  }
+  else
+  {
+    feature.reserve(FEATURE_NUM * FRAME_NUM);
+  }
   for (unsigned int index = 0; index < FRAME_NUM; index++)
   {
     if (g_test_new_model_)
@@ -232,6 +238,47 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
       float* zero_arr;
       // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
       int other_feature = FEATURE_NUM - 4;
+      if (g_test_new_model_)
+      {
+        int from_camera = req.cam_index;
+        if (from_camera == 1) //left
+        {
+          feature.push_back(1);
+        }
+        else
+        {
+          feature.push_back(0);
+        }
+        if (from_camera == 3) //FOV30
+        {
+          feature.push_back(1);
+        }
+        else
+        {
+          feature.push_back(0);
+        }
+        if (from_camera == 0) //center
+        {
+          feature.push_back(1);
+        }
+        else
+        {
+          feature.push_back(0);
+        }
+        if (from_camera == 2) //right
+        {
+          feature.push_back(1);
+        }
+        else
+        {
+          feature.push_back(0);
+        }
+      }
+
+      // Add bbox to feature vector
+      std::vector<float> bbox = bbox_array.at(index);
+      feature.insert(feature.end(), bbox.begin(), bbox.end());
+
       zero_arr = new float[other_feature]();
       feature.insert(feature.end(), zero_arr, zero_arr + other_feature);
       delete[] zero_arr;
@@ -342,6 +389,11 @@ int main(int argc, char** argv)
   float* zero_arr;
   // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
   int other_feature = FEATURE_NUM * FRAME_NUM;
+  if (g_test_new_model_)
+  {
+    other_feature = (FEATURE_NUM + 4) * FRAME_NUM;
+  }
+  std::cout << "other_feature: " << other_feature << std::endl;
   zero_arr = new float[other_feature]();
   feature.insert(feature.end(), zero_arr, zero_arr + other_feature);
   delete[] zero_arr;
