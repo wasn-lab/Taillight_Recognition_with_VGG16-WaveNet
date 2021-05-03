@@ -5,11 +5,13 @@ Return the corresponding class for a given msg_name
 """
 from std_msgs.msg import Bool, Empty, Float64, Int32
 from msgs.msg import DetectedObjectArray, VehInfo, BackendInfo
+from geometry_msgs.msg import PoseStamped
 
 MSG_TO_CLASS = {
     "BackendInfo": BackendInfo,
     "Bool": Bool,
     "DetectedObjectArray": DetectedObjectArray,
+    "PoseStamped": PoseStamped,
     "Empty": Empty,
     "Float64": Float64,
     "Int32": Int32,
