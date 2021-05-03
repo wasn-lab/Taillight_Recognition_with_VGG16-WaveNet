@@ -33,7 +33,7 @@ def main():
     msg = String()
     msg.data = json.dumps(car_info)
 
-    topic = "/vehicle/report/itri/car_info"
+    topic = "/vehicle/report/car_info"
     rospy.logwarn("Publish latched data on %s", topic)
     print(json.dumps(car_info, indent=2))
 
