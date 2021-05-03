@@ -77,7 +77,7 @@ def _parse_cpu_load_output(text):
     match = W_RGX.search(text)
     if match is None:
         return "100.0"
-    return match.expand(r"\g<load15>")
+    return match.expand(r"\g<load1>")
 
 
 def _get_cpu_load():
