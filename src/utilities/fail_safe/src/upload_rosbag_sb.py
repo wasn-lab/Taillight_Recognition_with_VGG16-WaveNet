@@ -13,7 +13,6 @@ import rosbag
 def _analyze(bag_filename):
     bag = rosbag.Bag(bag_filename)
     for item in bag.read_messages("/vehicle/report/itri/sensor_status"):
-    for item in bag.read_messages("/cam/right_front_60/jpg"):
         _msg = item.message
         _timestamp = item.timestamp
         _topic = item.topic
