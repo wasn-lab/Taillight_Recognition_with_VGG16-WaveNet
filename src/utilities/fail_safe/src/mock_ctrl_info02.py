@@ -17,8 +17,9 @@ def gen_flag02(fps, self_driving_mode):
     msg = Flag_Info()
     msg.Dspace_Flag08 = float(self_driving_mode)
 
-    publisher = rospy.Publisher("/Flag_Info02", Flag_Info, queue_size=1)
-    print("Keep publishing msg.Dspace_Flag08 = {}".format(msg.Dspace_Flag08))
+    topic = "/Flag_Info02"
+    publisher = rospy.Publisher(topic, Flag_Info, queue_size=1)
+    print("publish msg.Dspace_Flag08={} at {} with fps={}".format(msg.Dspace_Flag08, topic, fps))
     while not rospy.is_shutdown():
         publisher.publish(msg)
         rate.sleep()
