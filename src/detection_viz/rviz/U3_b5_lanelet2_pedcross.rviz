@@ -157,7 +157,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /CameraDetection/polygon/delayTxt
+      Marker Topic: /CameraDetection/delayTxt
       Name: Camera_latency
       Namespaces:
         {}
