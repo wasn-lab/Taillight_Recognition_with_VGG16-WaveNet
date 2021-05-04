@@ -80,18 +80,37 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
       // Algo 2: Use IoU comparison with heading(still working)
       // float overlap2 = iou_compare_with_heading(input_copy1[i], input_copy1[j]);
 
-      if (overlap > iou_threshold_)
+      if (overlap == 1)
       {
-        if (abs(no_oriented[i].bPoint.p6.x - no_oriented[i].bPoint.p0.x) *
-                abs(no_oriented[i].bPoint.p6.y - no_oriented[i].bPoint.p0.y) >
-            abs(no_oriented[j].bPoint.p6.x - no_oriented[j].bPoint.p0.x) *
-                abs(no_oriented[j].bPoint.p6.y - no_oriented[j].bPoint.p0.y))
+        int first_id = no_oriented[i].camInfo[0].id;
+        int second_id = no_oriented[j].camInfo[0].id;
+        if (first_id == camera::id::front_bottom_60 && second_id == camera::id::front_top_far_30)
         {
-          no_oriented[j].classId = overlapped::OverLapped;
+          float min_point = min(no_oriented[i].bPoint.p0.x, no_oriented[i].bPoint.p6.x);
+          if (min_point > 15) // if distance > 15, choose front_top_far_30 for PedCross
+          {
+            no_oriented[i].classId = overlapped::OverLapped;
+          }
+          else //choose front_bottom_60
+          {
+            no_oriented[j].classId = overlapped::OverLapped;
+          }
+        }
+        else if (first_id == camera::id::front_top_far_30 && second_id == camera::id::front_bottom_60)
+        {
+          float min_point = min(no_oriented[i].bPoint.p0.x, no_oriented[i].bPoint.p6.x);
+          if (min_point > 15) // if distance > 15, choose front_top_far_30 for PedCross
+          {
+            no_oriented[j].classId = overlapped::OverLapped;
+          }
+          else //choose front_bottom_60
+          {
+            no_oriented[i].classId = overlapped::OverLapped;
+          }
         }
         else
         {
-          no_oriented[i].classId = overlapped::OverLapped;
+          no_oriented[j].classId = overlapped::OverLapped;
         }
       }
     }
