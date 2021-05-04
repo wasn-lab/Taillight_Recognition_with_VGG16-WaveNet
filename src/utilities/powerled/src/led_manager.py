@@ -60,6 +60,8 @@ class LEDManager(object):
 
         ret = 0
         if self.driving_mode != self.prev_mode:
+            rospy.logwarn("Receive msg, driving mode is {}, prev mode is {}".format(
+                self.driving_mode, self.prev_mode))
             change_led_text(self.driving_mode)
             ret = 1
         self.prev_mode = self.driving_mode

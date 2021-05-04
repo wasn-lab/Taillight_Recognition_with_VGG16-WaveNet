@@ -1,0 +1,15 @@
+<launch>
+    <include file="$(find alignment)/launch/b1_v3_2d_3d_matching.launch"/>
+
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/alignment_auto_record_2021-04-22-23-13-32_27.bag -l">
+    </node>
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+          topics:
+            - name: /CameraDetection
+              timeout: 35
+              negative: False
+        </rosparam>
+    </test>
+</launch>
