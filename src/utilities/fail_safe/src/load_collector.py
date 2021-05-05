@@ -63,7 +63,6 @@ class LoadCollector(object):
             status_str = "high cpu load: " + str(self.records[ipc]["cpu_load"])[:5]
 
         if jdata["gpu_load"] >= 99:
-            self.records[ipc]["status"] = WARN
             temp = "high gpu load: " + str(self.records[ipc]["gpu_load"])[:5]
             if status_str:
                 status_str += ", " + temp
