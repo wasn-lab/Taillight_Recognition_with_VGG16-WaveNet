@@ -5,7 +5,7 @@
   <arg name="prediction_sampling_delta_time" default="0.5" />
   <arg name="vector_map_topic" default="/map/vector_map" />
   <arg name="drivable_four_wheeled" default="0.5" />
-  <arg name="drivable_two_wheeled" default="5.0" />
+  <arg name="drivable_two_wheeled" default="2.0" />
   <arg name="drivable_ped" default="2.0" />
   <node pkg="map_based_prediction" type="map_based_prediction" name="map_based_prediction" output="screen">
     <param name="prediction_time_horizon" value="$(arg prediction_time_horizon)" />
