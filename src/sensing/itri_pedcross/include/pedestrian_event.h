@@ -197,6 +197,8 @@ public:
   int car_model_ = 0;
   double scaling_ratio_width_ = 0.3167;
   double scaling_ratio_height_ = 0.3179;
+  double cam_width = 608;
+  double cam_height = 384;
   const unsigned int number_keypoints_ = 25;
   const unsigned int feature_num_ = 1174;
   const unsigned int frame_num_ = 10;

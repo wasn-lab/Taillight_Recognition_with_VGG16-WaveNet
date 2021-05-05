@@ -1852,17 +1852,17 @@ float PedestrianEvent::crossing_predict(int from_camera, std::vector<std::vector
       {
         if (car_model_ == 0)
         {
-          bbox.at(0) = bbox.at(0) / 608;
-          bbox.at(1) = bbox.at(1) / 384;
-          bbox.at(2) = bbox.at(2) / 608;
-          bbox.at(3) = bbox.at(3) / 384;
+          bbox.at(0) = bbox.at(0) / cam_width;
+          bbox.at(1) = bbox.at(1) / cam_height;
+          bbox.at(2) = bbox.at(2) / cam_width;
+          bbox.at(3) = bbox.at(3) / cam_height;
         }
         else if (car_model_ == 1)
         {
-          bbox.at(0) = bbox.at(0) / 608;
-          bbox.at(1) = bbox.at(1) / 342;
-          bbox.at(2) = bbox.at(2) / 608;
-          bbox.at(3) = bbox.at(3) / 342;
+          bbox.at(0) = bbox.at(0) / cam_width;
+          bbox.at(1) = bbox.at(1) / cam_height;
+          bbox.at(2) = bbox.at(2) / cam_width;
+          bbox.at(3) = bbox.at(3) / cam_height;
         }
       }
       feature.insert(feature.end(), bbox.begin(), bbox.end());
@@ -2594,6 +2594,8 @@ int main(int argc, char** argv)
   {
     pe.scaling_ratio_width_ = 0.475;
     pe.scaling_ratio_height_ = 0.475;
+    pe.cam_width = 608;
+    pe.cam_height = 342;
   }
   std::string model_name = "";
   if (pe.test_new_model_)
