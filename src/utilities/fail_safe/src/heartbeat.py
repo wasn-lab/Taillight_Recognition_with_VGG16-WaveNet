@@ -9,41 +9,20 @@ from object_ids import (OBJECT_ID_PERSON, OBJECT_ID_BICYCLE, OBJECT_ID_MOTOBIKE,
 from message_utils import get_message_type_by_str
 from status_level import OK, WARN, ERROR, FATAL, UNKNOWN, OFF, ALARM, NORMAL
 from redzone_def import in_3d_roi
+from timestamp_utils import get_timestamp_mot
 
-def localization_state_func(msg, fps):
-    if msg is None:
-        return ERROR, "No localizaton state message"
-    state = msg.data
-    low_gnss_frequency = (state & 1) > 0
-    low_lidar_frequency = (state & 2) > 0
-    low_pose_frequency = (state & 4) > 0
-    pose_unstable = (state & 8) > 0
-    status_strs = ["FPS: " + str(fps)[:5]]
-    status = OK
-
-    if low_gnss_frequency:
-        status = WARN
-        status_strs.append("low_gnss_frequency")
-
-    if low_lidar_frequency:
-        status = WARN
-        status_strs.append("low_lidar_frequency")
-
-    if low_pose_frequency:
-        status = WARN
-        status_strs.append("low_pose_frequency")
-
-    if pose_unstable:
-        status = FATAL
-        status_strs.append("pose_unstable")
-
-    status_str = " ".join(status_strs)
-    if status != OK:
-        rospy.logwarn("Localization state: %s", status_str)
-    return status, status_str
+def localization_state_func(_msg, fps):
+    """localization stability depends on /current_pose"""
+    if fps <= 12:
+        # localization drifts when /current_pose fps <= 12
+        return FATAL, "FPS: {}".format(fps)
+    elif fps < 15:
+        # FPS in [12, 15) is tolerable.
+        return WARN, "FPS: {}".format(fps)
+    return OK, "FPS: {}".format(fps)
 
 
-def backend_connection_state_func(msg, fps):
+def backend_connection_state_func(msg, _fps):
     status = ERROR
     status_str = "No backend connection message"
     if msg is not None:
@@ -122,7 +101,7 @@ def lidar_detection_func(msg, fps):
         status = OK
         status_str = "OK"
         for obj in msg.objects:
-            if len(obj.camInfo) == 0:
+            if not obj.camInfo:
                 # LidarDetection stores the prob in camInfo for now.
                 # If we cannot get the prob, just ignore the message.
                 continue
@@ -291,8 +270,8 @@ class Heartbeat(object):
             status = ALARM
 
         return {"uid": self.sensor_uid,
-                "timestamp": int(time.time()),
-                "source_time": int(time.time()),
+                "timestamp": get_timestamp_mot(),
+                "source_time": get_timestamp_mot(),
                 "status": status}
 
     def get_ego_speed(self):

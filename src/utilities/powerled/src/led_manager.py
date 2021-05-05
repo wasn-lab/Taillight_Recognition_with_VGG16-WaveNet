@@ -50,14 +50,22 @@ class LEDManager(object):
         self.prev_mode = 0
 
     def _cb(self, msg):
+        """
+        Return -- 1: change led text 0: no change
+        """
         if int(msg.Dspace_Flag08) == 1:
             self.driving_mode = AUTO_DRIVING
         else:
             self.driving_mode = MANUAL_DRIVING
 
+        ret = 0
         if self.driving_mode != self.prev_mode:
+            rospy.logwarn("Receive msg, driving mode is {}, prev mode is {}".format(
+                self.driving_mode, self.prev_mode))
             change_led_text(self.driving_mode)
+            ret = 1
         self.prev_mode = self.driving_mode
+        return ret
 
     def run(self):
         node_name = "LEDManagerNode"
