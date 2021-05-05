@@ -48,10 +48,10 @@ using namespace DriveNet;
 
 /// camera layout
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
-const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60,     camera::id::front_top_far_30,
-                                         camera::id::front_top_close_120, camera::id::right_front_60,
-                                         camera::id::right_back_60,       camera::id::left_front_60,
-                                         camera::id::left_back_60 };
+const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::front_top_far_30,
+                                         camera::id::left_back_60, camera::id::right_back_60,
+                                         camera::id::front_top_close_120, camera::id::left_front_60,
+                                         camera::id::right_front_60};
 #elif CAR_MODEL_IS_C1
 const std::vector<camera::id> g_cam_ids{ camera::id::front_bottom_60, camera::id::right_front_60,
                                          camera::id::right_back_60, camera::id::left_front_60,
@@ -735,7 +735,7 @@ void getSyncLidarCameraData()
         if (is_camera_update)
         {
           ros::Time sync_lidar_time;
-          if(g_lidar_raw_on_3d && !g_lidarall_times.empty())
+          if(g_is_display && g_lidar_raw_on_3d && !g_lidarall_times.empty())
           {
             if (use_system_time)
             {
@@ -776,8 +776,6 @@ void getSyncLidarCameraData()
                 {
                   if (diff_time_lidar < diff_max_time)
                   {
-                    // std::cout << "index: " << i << ", lidarall_times_tmp[i]: " << lidarall_times_tmp[i] << ",
-                    // diff_time_lidar.nsec: " << diff_time_lidar.nsec << std::endl;
                     diff_time_lidar_nsec[i] = diff_time_lidar.nsec;
                     have_candidate_lidar = true;
                   }
@@ -823,31 +821,40 @@ void getSyncLidarCameraData()
           /// lidar detection
           if (is_lidar_update)
           {
-            sync_times_it =
-                std::find(lidar_detection_times_tmp.begin(), lidar_detection_times_tmp.end(), sync_lidar_time);
-            sync_time_index = std::distance(lidar_detection_times_tmp.begin(), sync_times_it);
+            ros::Time sync_lidar_detection_time(0);
+            sync_time_index = lidar_detection_times_tmp.size();
+            if(g_is_display && g_lidar_raw_on_3d)
+            {
+              sync_times_it =
+                  std::find(lidar_detection_times_tmp.begin(), lidar_detection_times_tmp.end(), sync_lidar_time);
+              sync_time_index = std::distance(lidar_detection_times_tmp.begin(), sync_times_it);
+            }
 
             if (sync_time_index == lidar_detection_times_tmp.size())
             {
-              ros::Duration diff_time_detection;
+              ros::Duration diff_time_detection(0);
               bool have_candidate_detection = false;
               std::vector<int> diff_time_nsec_detection(lidar_detection_times_tmp.size());
               for (size_t i = 0; i < lidar_detection_times_tmp.size(); i++)
               {
+                diff_time_detection = ros::Duration(0);
                 diff_time_nsec_detection[i] = nsec_max_time.nsec;
+
                 if (lidar_detection_times_tmp[i] <= sync_lidar_time)
                 {
                   diff_time_detection = sync_lidar_time - lidar_detection_times_tmp[i];
-                  if (diff_time_detection.sec == 0)
+                }
+                else if (lidar_detection_times_tmp[i] > sync_lidar_time)
+                {
+                  diff_time_detection = lidar_detection_times_tmp[i] - sync_lidar_time;
+                }
+
+                if (diff_time_detection.sec == 0 && diff_time_detection.nsec != 0)
+                {
+                  if (diff_time_detection < diff_max_time)
                   {
-                    if (diff_time_detection < diff_max_time)
-                    {
-                      // std::cout << "index: " << i << ", lidar_detection_times_tmp[i]: "
-                      // << lidar_detection_times_tmp[i] << ", diff_time_detection.nsec: " << diff_time_detection.nsec
-                      // << std::endl;
-                      diff_time_nsec_detection[i] = diff_time_detection.nsec;
-                      have_candidate_detection = true;
-                    }
+                    diff_time_nsec_detection[i] = diff_time_detection.nsec;
+                    have_candidate_detection = true;
                   }
                 }
               }
@@ -856,43 +863,23 @@ void getSyncLidarCameraData()
                 std::vector<int>::iterator result_iter =
                     std::min_element(diff_time_nsec_detection.begin(), diff_time_nsec_detection.end());
                 sync_time_index = std::distance(diff_time_nsec_detection.begin(), result_iter);
-              }
-            }
-
-            if (sync_time_index < lidar_detection_times_tmp.size())
-            {
-              ros::Time sync_lidar_detection_time = lidar_detection_times_tmp[sync_time_index];
-
-              if (sync_lidar_detection_time == ros::Time(0))
-              {
-                for (size_t index = sync_time_index; index < lidar_detection_times_tmp.size(); index++)
-                {
-                  if (lidar_detection_times_tmp[index] != ros::Time(0))
-                  {
-                    sync_lidar_detection_time = lidar_detection_times_tmp[index];
-                    sync_time_index = index;
-                    break;
-                  }
-                }
-              }
-              if (sync_lidar_detection_time == ros::Time(0))
-              {
-                is_lidar_detection_update = false;
+                sync_lidar_detection_time = lidar_detection_times_tmp[sync_time_index];
               }
               else
               {
-                // std::cout << "sync_lidar_detection_time: " << sync_lidar_detection_time.sec << "." <<
-                // sync_lidar_detection_time.nsec
-                // <<
-                // std::endl;
-                g_object_lidar = getSpecificTimeLidarObjectMessage(g_cache_lidar_detection, sync_lidar_detection_time,
-                                                                   duration_time);
-                is_lidar_detection_update = true;
+                sync_lidar_detection_time = ros::Time(0);
               }
+            }
+            if (sync_lidar_detection_time == ros::Time(0))
+            {
+              is_lidar_detection_update = false;
+              std::cout << "Not found the same timestamp in lidar detection time buffer." << std::endl;
             }
             else
             {
-              std::cout << "Not found the same timestamp in lidar detection time buffer." << std::endl;
+              g_object_lidar = getSpecificTimeLidarObjectMessage(g_cache_lidar_detection, sync_lidar_detection_time,
+                                                                  duration_time);
+              is_lidar_detection_update = true;
             }
           }
         }
@@ -997,7 +984,7 @@ void runInference()
         }
       }
       object_arrs = g_object_arrs_process;
-      if(g_lidar_raw_on_3d)
+      if(g_is_display && g_lidar_raw_on_3d)
       {
         pcl::copyPointCloud(*g_lidarall_ptr, *lidarall_ptr);
       }
@@ -1103,7 +1090,7 @@ void buffer_monitor()
         lock_cam_time.unlock();
       }
     }
-    if (g_lidar_raw_on_3d)
+    if (g_is_display && g_lidar_raw_on_3d)
     {
       std::unique_lock<std::mutex> lock_lidar_time(g_mutex_lidar_time, std::adopt_lock);
       if (!g_lidarall_time_buffer.empty())
@@ -1135,7 +1122,7 @@ void buffer_monitor()
     {
       g_cam_times[cam_order].push_back(cam_time_last[cam_order]);
     }
-    if (g_lidar_raw_on_3d)
+    if (g_is_display && g_lidar_raw_on_3d)
     {
       g_lidarall_times.push_back(lidarall_time_last);
     }
@@ -1154,7 +1141,7 @@ void buffer_monitor()
                                       g_cam_times[cam_order].begin() + g_buffer_size / 3);
         }
       }
-      if (g_lidar_raw_on_3d)
+      if (g_is_display && g_lidar_raw_on_3d)
       {
         g_lidarall_times.erase(g_lidarall_times.begin(), g_lidarall_times.begin() + g_buffer_size / 3);
       }
@@ -1192,14 +1179,14 @@ int main(int argc, char** argv)
   /// get callback function
 #if CAR_MODEL_IS_B1_V2 || CAR_MODEL_IS_B1_V3
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
-    callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_front_top_close_120,
-    callback_cam_right_front_60,  callback_cam_right_back_60,    callback_cam_left_front_60,
-    callback_cam_left_back_60
+    callback_cam_front_bottom_60, callback_cam_front_top_far_30, callback_cam_left_back_60,
+    callback_cam_right_back_60,  callback_cam_front_top_close_120,    callback_cam_left_front_60,
+    callback_cam_right_front_60
   };
   static void (*f_callbacks_object[])(const msgs::DetectedObjectArray::ConstPtr&) = {
-    callback_object_cam_front_bottom_60, callback_object_cam_front_top_far_30, callback_object_cam_front_top_close_120,
-    callback_object_cam_right_front_60,  callback_object_cam_right_back_60,    callback_object_cam_left_front_60,
-    callback_object_cam_left_back_60
+    callback_object_cam_front_bottom_60, callback_object_cam_front_top_far_30, callback_object_cam_left_back_60,
+    callback_object_cam_right_back_60,  callback_object_cam_front_top_close_120,    callback_object_cam_left_front_60,
+    callback_object_cam_right_front_60
   };
 #elif CAR_MODEL_IS_C1
   static void (*f_callbacks_cam[])(const sensor_msgs::Image::ConstPtr&) = {
@@ -1240,7 +1227,7 @@ int main(int argc, char** argv)
     ros::topic::waitForMessage<msgs::DetectedObjectArray>(g_bbox_topic_names[cam_order]);
     std::cout << g_bbox_topic_names[cam_order] << " is ready" << std::endl;
   }
-  if (g_lidar_raw_on_3d)
+  if (g_is_display && g_lidar_raw_on_3d)
   {
     std::cout << "Wait for input topic " << lidar_raw_topic << std::endl;
     ros::topic::waitForMessage<pcl::PointCloud<pcl::PointXYZI>>(lidar_raw_topic);
@@ -1274,7 +1261,7 @@ int main(int argc, char** argv)
     }
   }
 
-  if (g_lidar_raw_on_3d)
+  if (g_is_display && g_lidar_raw_on_3d)
   {
     sub_filter_lidarall.subscribe(nh, lidar_raw_topic, 1);
     g_cache_lidarall.setCacheSize(g_buffer_size);
@@ -1309,7 +1296,17 @@ int main(int argc, char** argv)
 
   /// main loop start
   std::thread main_thread(runInference);
-  int thread_count = int(g_cam_ids.size()) * 2 + 2;  /// camera raw + lidar raw + objects
+  int lidar_thread = 1;
+  if(g_is_display && g_lidar_raw_on_3d)
+  {
+    lidar_thread++;
+  }
+  int camera_thread = 1;
+  if((g_is_display || g_img_result_publish) && g_camera_detection_on_2d)
+  {
+    camera_thread ++;
+  }
+  int thread_count = int(g_cam_ids.size()) * camera_thread + lidar_thread;  /// camera raw + lidar raw + objects
   ros::MultiThreadedSpinner spinner(thread_count);
   spinner.spin();
   std::cout << "===== match_2d_3d_bbox running... =====" << std::endl;

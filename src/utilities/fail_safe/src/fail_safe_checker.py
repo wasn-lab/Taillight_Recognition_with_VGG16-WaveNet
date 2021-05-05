@@ -4,7 +4,6 @@ from __future__ import print_function
 import configparser
 import json
 import pprint
-import time
 import rospy
 from std_msgs.msg import String, Bool
 from heartbeat import Heartbeat
@@ -90,6 +89,8 @@ class FailSafeChecker(object):
             "/vehicle/report/itri/sensor_status", String, queue_size=1000)
         self.fail_safe_status_publisher = rospy.Publisher(
             "/vehicle/report/itri/fail_safe_status", String, queue_size=1000)
+        self.self_driving_mode_publisher = rospy.Publisher(
+            "/vehicle/report/itri/self_driving_mode", Bool, queue_size=2)
         self.sys_ready_publisher = rospy.Publisher(
             "/ADV_op/sys_ready", Bool, queue_size=1000)
 
@@ -153,11 +154,11 @@ class FailSafeChecker(object):
         status, status_str = aggregate_event_status(status, status_str, ret["events"])
         ret["status"] = status
         ret["status_str"] = status_str
-        self._publish_sys_ready(status, status_str)
+        self._publish_sys_ready(status)
 
         return ret
 
-    def _publish_sys_ready(self, status, status_str):
+    def _publish_sys_ready(self, status):
         if status == FATAL:
             # force stop self-driving mode
             self.sys_ready_publisher.publish(False)
@@ -233,6 +234,7 @@ class FailSafeChecker(object):
             self.mqtt_client.publish(_MQTT_FAIL_SAFE_STATUS_TOPIC, current_status_json)
             self.fail_safe_status_publisher.publish(current_status_json)
             self.sensor_status_publisher.publish(json.dumps(sensor_status))
+            self.self_driving_mode_publisher.publish(Bool(self.is_self_driving()))
 
             if self.warn_count + self.error_count > 0:
                 rospy.logwarn("warn_count: %d, error_count: %d",
