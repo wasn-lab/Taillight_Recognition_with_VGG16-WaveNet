@@ -72,6 +72,42 @@ float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, floa
   return angle;
 }
 
+void add_camera_features(int cam_index, std::vector<float>& feature)
+{
+  if (cam_index == 1) //left
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+  if (cam_index == 3) //FOV30
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+  if (cam_index == 0) //center
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+  if (cam_index == 2) //right
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+}
+
 bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Response& res)
 {
   ros::Time start = ros::Time::now();
@@ -125,39 +161,7 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   {
     if (g_test_new_model_)
     {
-      int from_camera = req.cam_index;
-      if (from_camera == 1) //left
-      {
-        feature.push_back(1);
-      }
-      else
-      {
-        feature.push_back(0);
-      }
-      if (from_camera == 3) //FOV30
-      {
-        feature.push_back(1);
-      }
-      else
-      {
-        feature.push_back(0);
-      }
-      if (from_camera == 0) //center
-      {
-        feature.push_back(1);
-      }
-      else
-      {
-        feature.push_back(0);
-      }
-      if (from_camera == 2) //right
-      {
-        feature.push_back(1);
-      }
-      else
-      {
-        feature.push_back(0);
-      }
+      add_camera_features(req.cam_index, feature);
     }
     // Add bbox to feature vector
     std::vector<float> bbox = bbox_array.at(index);
@@ -240,39 +244,7 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
       int other_feature = FEATURE_NUM - 4;
       if (g_test_new_model_)
       {
-        int from_camera = req.cam_index;
-        if (from_camera == 1) //left
-        {
-          feature.push_back(1);
-        }
-        else
-        {
-          feature.push_back(0);
-        }
-        if (from_camera == 3) //FOV30
-        {
-          feature.push_back(1);
-        }
-        else
-        {
-          feature.push_back(0);
-        }
-        if (from_camera == 0) //center
-        {
-          feature.push_back(1);
-        }
-        else
-        {
-          feature.push_back(0);
-        }
-        if (from_camera == 2) //right
-        {
-          feature.push_back(1);
-        }
-        else
-        {
-          feature.push_back(0);
-        }
+        add_camera_features(req.cam_index, feature);
       }
 
       // Add bbox to feature vector
