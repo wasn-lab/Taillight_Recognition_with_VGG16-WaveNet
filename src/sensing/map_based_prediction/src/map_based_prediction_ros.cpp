@@ -195,7 +195,7 @@ MapBasedPredictionROS::MapBasedPredictionROS() : pnh_("~"), interpolating_resolu
   pnh_.param<bool>("map_based_prediction/has_subscribed_map", has_subscribed_map_, false);
   pnh_.param<double>("prediction_time_horizon", prediction_time_horizon_, 10.0);
   pnh_.param<double>("prediction_sampling_delta_time", prediction_sampling_delta_time_, 0.5);
-  pnh_.param<double>("drivable_four_wheeled", drivable_four_wheeled_, 1.0);
+  pnh_.param<double>("drivable_four_wheeled", drivable_four_wheeled_, 0.5);
   pnh_.param<double>("drivable_two_wheeled", drivable_two_wheeled_, 5.0);
   pnh_.param<double>("drivable_ped", drivable_ped_, 2.0);
   map_based_prediction_ = std::make_shared<MapBasedPrediction>(interpolating_resolution_, prediction_time_horizon_,
