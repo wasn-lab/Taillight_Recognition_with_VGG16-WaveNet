@@ -11,7 +11,7 @@ download_file(
 )
 
 download_file(
-   URL "140.96.172.66:8080/share.cgi?ssid=0RTQaYe&fid=0RTQaYe&filename=libdetector.so&openfolder=forcedownload&ep="
+   URL "drive.google.com/u/0/uc?id=1QgeuUWBXkYRHWRzacLLYZo0vjdHzhUwd&export=download"
     DESTINATION "${LIGHTNET_WEIGHTS_DIR}/libdetector.so"
     MD5 c3543102328474ae57ed3d18f38e69bd
 )
