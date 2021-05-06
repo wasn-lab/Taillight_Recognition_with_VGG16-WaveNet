@@ -981,6 +981,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           if (has_keypoint)
           {
             msgs::PredictCrossing srv_pedcorss_tf;
+            srv_pedcorss_tf.request.cam_index = from_camera;
             srv_pedcorss_tf.request.bboxes.reserve(skeleton_buffer.at(skeleton_index).data_bbox_.size());
             // prepare bboxes for ros service
             for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).data_bbox_.size(); i++)
@@ -1015,7 +1016,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
             else
             {
-              obj_pub.crossProbability = crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox_,
+              obj_pub.crossProbability = crossing_predict(from_camera, skeleton_buffer.at(skeleton_index).data_bbox_,
                                                           skeleton_buffer.at(skeleton_index).stored_skeleton_);
               std::lock_guard<std::mutex> lk(mu_using_LSTM_);
               using_LSTM_ = false;
@@ -1799,7 +1800,7 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
  * return
  * cross probability
  */
-float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_array,
+float PedestrianEvent::crossing_predict(int from_camera, std::vector<std::vector<float>>& bbox_array,
                                         std::vector<std::vector<cv::Point2f>>& keypoint_array)
 {
   try
@@ -1807,11 +1808,53 @@ float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_ar
     // initialize feature
     std::vector<float> feature;
     feature.reserve(frame_num_ * feature_num_);
+    if (test_new_model_)
+    {
+      if (from_camera == 1) //left
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+      if (from_camera == 3) //FOV30
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+      if (from_camera == 0) //center
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+      if (from_camera == 2) //right
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+    }
 
     for (unsigned int index = 0; index < frame_num_; index++)
     {
       // Add bbox to feature vector
       std::vector<float> bbox = bbox_array.at(index);
+      if (test_new_model_)
+      {
+        bbox.at(0) = bbox.at(0) / cam_width;
+        bbox.at(1) = bbox.at(1) / cam_height;
+        bbox.at(2) = bbox.at(2) / cam_width;
+        bbox.at(3) = bbox.at(3) / cam_height;
+      }
       feature.insert(feature.end(), bbox.begin(), bbox.end());
 
       std::vector<cv::Point2f> keypoint = keypoint_array.at(index);
@@ -2488,9 +2531,6 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
   tf2_ros::TransformListener tf_listener(pe.tf_buffer_);
-  std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
-  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
-                                                                                    "yml"));
 
   ros::NodeHandle nh1;
   pe.chatter_pub_front_ = nh1.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_bottom_60",
@@ -2538,12 +2578,26 @@ int main(int argc, char** argv)
   nh.param<int>("/pedestrian_event/crossing_threshold", pe.cross_threshold_, 55);
   nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
   nh.param<double>("/pedestrian_event/ground_z", pe.ground_z_, -5);
-  nh.param<int>("/pedestrian_event/car_model", pe.car_model, 0);
-  if (pe.car_model == 1)
+  nh.param<int>("/pedestrian_event/car_model", pe.car_model_, 0);
+  nh.param<bool>("/pedestrian_event/test_new_model", pe.test_new_model_, false);
+  if (pe.car_model_ == 1)
   {
     pe.scaling_ratio_width_ = 0.475;
     pe.scaling_ratio_height_ = 0.475;
+    pe.cam_width = 608;
+    pe.cam_height = 342;
   }
+  std::string model_name = "";
+  if (pe.test_new_model_)
+  {
+    model_name = "/RF_with_one_hot_4_camera_features_30depth_7-3.yml";
+  }
+  else
+  {
+    model_name = "/rf_10frames_normalization_15peek.yml";
+  }
+  std::cout << PED_MODEL_DIR + model_name << std::endl;
+  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + model_name);
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
   pe.tf_client_ = nh.serviceClient<msgs::PredictCrossing>("pedcross_tf");
