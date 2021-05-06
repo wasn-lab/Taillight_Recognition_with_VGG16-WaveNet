@@ -62,7 +62,7 @@ class HeartbeatTest(unittest.TestCase):
 
         obj.camInfo = _gen_cam_info_array(low_prob=True)
         status, status_str = cam_object_detection_func(det_obj_arr, 12.345)
-        self.assertEqual(status, WARN)
+        self.assertEqual(status, OK)
         self.assertTrue("Low confidence" in status_str)
 
     def test_disabled(self):
