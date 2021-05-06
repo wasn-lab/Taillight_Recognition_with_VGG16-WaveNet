@@ -2,6 +2,7 @@
 #include <chrono>
 #include <glog/logging.h>
 #include <cv_bridge/cv_bridge.h>
+#include <std_msgs/Empty.h>
 #include "image_flip_node.h"
 #include "image_flip_args_parser.h"
 
@@ -25,6 +26,7 @@ void ImageFlipNode::callback(const sensor_msgs::ImageConstPtr& msg)
   cv::Mat flip_img;
   cv::flip(cv_ptr->image, flip_img, 1);
   publisher_.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", flip_img).toImageMsg());
+  heartbeat_publisher_.publish(std_msgs::Empty());
 }
 
 static bool is_topic_published(const std::string& topic)
@@ -70,8 +72,9 @@ int ImageFlipNode::set_publisher()
     return EXIT_FAILURE;
   }
   LOG(INFO) << ros::this_node::getName() << ":"
-            << " publish decompressed image at topic " << topic;
+            << " publish flipped image at topic " << topic;
   publisher_ = node_handle_.advertise<sensor_msgs::Image>(topic, /*queue size=*/2);
+  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/1);
   return EXIT_SUCCESS;
 }
 

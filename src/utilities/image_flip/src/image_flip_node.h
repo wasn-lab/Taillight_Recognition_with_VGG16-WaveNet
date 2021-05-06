@@ -10,6 +10,7 @@ private:
   // member variables
   ros::Subscriber subscriber_;
   ros::Publisher publisher_;
+  ros::Publisher heartbeat_publisher_;
   ros::NodeHandle node_handle_;
 
   // functions
