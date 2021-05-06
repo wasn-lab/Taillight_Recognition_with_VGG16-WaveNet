@@ -71,35 +71,41 @@ def __calc_center_by_3d_bpoint(bpoint):
 
 
 def cam_object_detection_func(msg, fps):
-    status = ERROR
-    status_str = "No camera 3d detection result"
+    if fps <= 0:
+        return ERROR, "FPS: 0"
+    if fps > 0 and fps <= 8.0:
+        return WARN, "Low FPS: " + str(fps)[:5]
+
+    status = OK
+    weak_detection_str = ""
     if msg is not None:
         status = OK
         status_str = "OK"
         for obj in msg.objects:
             center = __calc_center_by_3d_bpoint(obj.bPoint)
             if not in_3d_roi(center[0], center[1]):
-                print("object not in 3d_roi")
                 continue
             prob = max(cam_instance.prob for cam_instance in obj.camInfo)
             if prob < 0.6:
-                status = WARN
-                status_str = ("Low confidence: classId: {}, prob: {}, "
-                              "center: ({:.2f}, {:.2f})").format(
-                                  obj.classId, prob, center[0], center[1])
-    if status != OK:
-        rospy.logwarn("CameraDetection: %s", status_str)
-    else:
-        status_str = "FPS: " + str(fps)[:5]
+                weak_detection_str = ("Low confidence: classId: {}, prob: {}, "
+                                      "center: ({:.2f}, {:.2f})").format(
+                                          obj.classId, prob, center[0], center[1])
+                rospy.logwarn("CameraDetection: %s", weak_detection_str)
+    status_str = "FPS: " + str(fps)[:5]
+    if weak_detection_str:
+        status_str += ", " + weak_detection_str
     return status, status_str
 
 
 def lidar_detection_func(msg, fps):
-    status = ERROR
-    status_str = "No lidar detection result"
+    if fps <= 0:
+        return ERROR, "FPS: 0"
+    if fps > 0 and fps <= 5:
+        return WARN, "Low FPS: " + str(fps)[:5]
+
+    status = OK
+    weak_detection_str = ""
     if msg is not None:
-        status = OK
-        status_str = "OK"
         for obj in msg.objects:
             if not obj.camInfo:
                 # LidarDetection stores the prob in camInfo for now.
@@ -114,14 +120,14 @@ def lidar_detection_func(msg, fps):
                     (obj.classId == OBJECT_ID_PERSON and prob < 0.31) or
                     (obj.classId == OBJECT_ID_BICYCLE and prob < 0.31) or
                     (obj.classId == OBJECT_ID_MOTOBIKE and prob < 0.31)):
-                status = WARN
-                status_str = ("Low confidence: classId: {}, prob: {}, "
-                              "center: ({:.2f}, {:.2f})").format(
-                                  obj.classId, prob, center[0], center[1])
-    if status != OK:
-        rospy.logwarn("LidarDetection: %s", status_str)
-    else:
-        status_str = "FPS: " + str(fps)[:5]
+                weak_detection_str = (
+                    "Low confidence: classId: {}, prob: {}, "
+                    "center: ({:.2f}, {:.2f})").format(
+                        obj.classId, prob, center[0], center[1])
+                rospy.logwarn("LidarDetection: %s", weak_detection_str)
+    status_str = "FPS: " + str(fps)[:5]
+    if weak_detection_str:
+        status_str += ", " + weak_detection_str
     return status, status_str
 
 
