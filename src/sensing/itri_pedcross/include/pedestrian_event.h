@@ -102,7 +102,7 @@ public:
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, const int cam_id);
   void pedestrian_event();
-  float crossing_predict(std::vector<std::vector<float>>& bbox_array,
+  float crossing_predict(int from_camera, std::vector<std::vector<float>>& bbox_array,
                          std::vector<std::vector<cv::Point2f>>& keypoint_array);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
@@ -191,9 +191,11 @@ public:
   bool tf_error_ = false;
 
   // Setup variables
-  int car_model = 0;
+  int car_model_ = 0;
   double scaling_ratio_width_ = 0.3167;
   double scaling_ratio_height_ = 0.3179;
+  double cam_width = 608;
+  double cam_height = 384;
   const unsigned int number_keypoints_ = 25;
   const unsigned int feature_num_ = 1174;
   const unsigned int frame_num_ = 10;
@@ -207,6 +209,7 @@ public:
   bool use_2d_for_alarm_ = false;
   int skip_frame_number_ = 1;
   double ground_z_ = -5;
+  bool test_new_model_ = false;
 
   int direction_table_[16][5] = {
     { 0, 0, 0, 0, 4 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 1 }, { 0, 0, 1, 0, 0 }, { 1, 0, 1, 0, 4 },

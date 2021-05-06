@@ -19,6 +19,8 @@
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
 
+bool g_test_new_model_ = false;
+
 const std::vector<std::int64_t> INPUT_DIMS = { 1, FRAME_NUM, FEATURE_NUM };
 
 TF_Graph* g_graph = nullptr;
@@ -70,6 +72,42 @@ float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, floa
   return angle;
 }
 
+void add_camera_features(int cam_index, std::vector<float>& feature)
+{
+  if (cam_index == 1) //left
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+  if (cam_index == 3) //FOV30
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+  if (cam_index == 0) //center
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+  if (cam_index == 2) //right
+  {
+    feature.push_back(1);
+  }
+  else
+  {
+    feature.push_back(0);
+  }
+}
+
 bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Response& res)
 {
   ros::Time start = ros::Time::now();
@@ -111,10 +149,20 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
 
   // initialize feature
   std::vector<float> feature;
-  feature.reserve(FEATURE_NUM * FRAME_NUM);
-
+  if (g_test_new_model_)
+  {
+    feature.reserve((FEATURE_NUM + 4) * FRAME_NUM);
+  }
+  else
+  {
+    feature.reserve(FEATURE_NUM * FRAME_NUM);
+  }
   for (unsigned int index = 0; index < FRAME_NUM; index++)
   {
+    if (g_test_new_model_)
+    {
+      add_camera_features(req.cam_index, feature);
+    }
     // Add bbox to feature vector
     std::vector<float> bbox = bbox_array.at(index);
     feature.insert(feature.end(), bbox.begin(), bbox.end());
@@ -194,6 +242,15 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
       float* zero_arr;
       // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
       int other_feature = FEATURE_NUM - 4;
+      if (g_test_new_model_)
+      {
+        add_camera_features(req.cam_index, feature);
+      }
+
+      // Add bbox to feature vector
+      std::vector<float> bbox = bbox_array.at(index);
+      feature.insert(feature.end(), bbox.begin(), bbox.end());
+
       zero_arr = new float[other_feature]();
       feature.insert(feature.end(), zero_arr, zero_arr + other_feature);
       delete[] zero_arr;
@@ -257,9 +314,25 @@ int main(int argc, char** argv)
   ros::Time::init();
   ros::Time start = ros::Time::now();
 
+  ros::init(argc, argv, "pedcross_tf_server");
+  ros::NodeHandle n;
+  ros::ServiceServer service = n.advertiseService("pedcross_tf", callback);
+
+  n.param<bool>("/pedcross_tf_server/test_new_model", g_test_new_model_, false);
+
   std::cout << "Load graph testing..." << std::endl;
 
-  g_graph = tf_utils::LoadGraph((PED_TF_MODEL_DIR + std::string("/keras_2.2.4_model.pb")).c_str(), nullptr, nullptr);
+  std::string model_name = "";
+  if (g_test_new_model_)
+  {
+    model_name = "/LSTM_data_onehot_4_new_and_old_test.pb";
+  }
+  else
+  {
+    model_name = "/keras_2.2.4_model.pb";
+  }
+
+  g_graph = tf_utils::LoadGraph((PED_TF_MODEL_DIR + model_name).c_str(), nullptr, nullptr);
   SCOPE_EXIT
   {
     tf_utils::DeleteGraph(g_graph);
@@ -288,6 +361,11 @@ int main(int argc, char** argv)
   float* zero_arr;
   // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
   int other_feature = FEATURE_NUM * FRAME_NUM;
+  if (g_test_new_model_)
+  {
+    other_feature = (FEATURE_NUM + 4) * FRAME_NUM;
+  }
+  std::cout << "other_feature: " << other_feature << std::endl;
   zero_arr = new float[other_feature]();
   feature.insert(feature.end(), zero_arr, zero_arr + other_feature);
   delete[] zero_arr;
@@ -328,10 +406,6 @@ int main(int argc, char** argv)
                 nullptr,                      // Run metadata.
                 g_status                      // Output status.
   );
-
-  ros::init(argc, argv, "pedcross_tf_server");
-  ros::NodeHandle n;
-  ros::ServiceServer service = n.advertiseService("pedcross_tf", callback);
 
   ros::Time stop = ros::Time::now();
   std::cout << "PedCross TF Server started. Init time: " << stop - start << " sec" << std::endl;

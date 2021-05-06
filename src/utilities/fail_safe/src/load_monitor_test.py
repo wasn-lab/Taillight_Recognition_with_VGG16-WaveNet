@@ -34,11 +34,11 @@ class LoadMonitorTest(unittest.TestCase):
     def test_parse_cpu_load_output(self):
         text = " 10:48:40 up  2:04,  1 user,  load average: 0.34, 0.19, 0.17"
         res = _parse_cpu_load_output(text)
-        self.assertEqual(res, "0.17")
+        self.assertEqual(res, "0.34")
 
         text = " 10:57:05 up 18:43,  9 users,  load average: 13.18, 13.21, 10.15"
         res = _parse_cpu_load_output(text)
-        self.assertEqual(res, "10.15")
+        self.assertEqual(res, "13.18")
 
     def test_get_gpu_load_fallback(self):
         line = "| 22%   34C    P8     9W / 250W |     44MiB / 11016MiB |      17%      Default |"

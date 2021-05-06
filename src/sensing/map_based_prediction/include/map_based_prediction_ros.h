@@ -76,6 +76,9 @@ private:
   double prediction_sampling_delta_time_;
   double interpolating_resolution_;
   double debug_accumulated_time_;
+  double drivable_four_wheeled_;
+  double drivable_two_wheeled_;
+  double drivable_ped_;
 
   ros::NodeHandle nh_;
   ros::NodeHandle pnh_;

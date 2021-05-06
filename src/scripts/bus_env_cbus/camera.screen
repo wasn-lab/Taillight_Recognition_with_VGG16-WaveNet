@@ -45,3 +45,6 @@ stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_lightnet.sh^M"
 
 screen -t replay_jpg
 stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/run_replay_jpg.sh^M"
+
+screen -t init_msg_recorder
+stuff "/home/camera/itriadv/src/scripts/bus_env_cbus/camera/init_msg_recorder.sh^M"

@@ -26,10 +26,10 @@
 
     <!-- mission input module -->
       <arg name="ORGS" default="0" />
-      <arg name="route_choose" default="02" />
+      <arg name="route_choose" default="01" />
       <include file="$(find control)/launch/mission_input.launch" pass_all_args="true">
         <param name="ORGS" value="$(arg ORGS)" />
-        <param name="route_choose" value="$(arg route_choose)" />
+        <param name="route_choose" value="$(arg route_choose)" type="string"/>
 	<param name="location_name" value="$(arg location_name)" />
       </include>
 
