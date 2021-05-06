@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-
+import time
 import torch
 import numpy as np
 from mgcvae import MultimodalGenerativeCVAE
@@ -188,11 +188,13 @@ class Trajectron(object):
         
         model = self.node_models_dict[node_type]
         
+        # timer = time.time()
         # Get Input data for node type and given timesteps
         batch = get_timesteps_data(env=env, scene=scene, t=timesteps, node_type=node_type, state=self.state,
                                     pred_state=self.pred_state, edge_types=model.edge_types,
                                     min_ht=min_history_timesteps, max_ht=self.max_ht, min_ft=min_future_timesteps,
                                     max_ft=min_future_timesteps, hyperparams=self.hyperparams)
+        # print ("get data time : ",time.time() - timer)
         # print(batch)
         # There are no nodes of type present for timestep
         # print("Standarization parameter : ",env.standardization)
@@ -214,6 +216,7 @@ class Trajectron(object):
         if type(map) == torch.Tensor:
             map = map.to(self.device)
 
+        # timer = time.time()
         # Run forward pass
         predictions = model.predict(inputs=x,
                                     inputs_st=x_st_t,
@@ -228,6 +231,7 @@ class Trajectron(object):
                                     gmm_mode=gmm_mode,
                                     full_dist=full_dist,
                                     all_z_sep=all_z_sep)
+        # print ("prediction use time : ",time.time() - timer)
 
         predictions_np = predictions.cpu().detach().numpy()
 

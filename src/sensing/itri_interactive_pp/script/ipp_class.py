@@ -29,6 +29,7 @@ class parameter():
 class buffer_data():
     def __init__(self):
         self.buffer_frame = pd.DataFrame(columns=['frame_id',
+                                                  'timer_sec',
                                                   'type',
                                                   'node_id',
                                                   'robot',
@@ -82,6 +83,7 @@ class buffer_data():
                 'VEHICLE',
                 'PEDESTRIAN'],
             standardization=standardization)
+
         self.attention_radius = dict()
         self.attention_radius[(self.env.NodeType.PEDESTRIAN,
                                self.env.NodeType.PEDESTRIAN)] = 10.0
@@ -128,8 +130,8 @@ class buffer_data():
                 self.obstacle_buffer[node_id] = 1
                 
             node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
-            node_df = node_df[node_df['frame_id'] ==  self.get_curr_frame() - 1].copy()
-            node_df = node_df.replace('frame_id',self.get_curr_frame())
+            node_df = node_df[node_df['frame_id'] ==  self.get_attribute("current_frame") - 1].copy()
+            node_df = node_df.replace('frame_id',self.get_attribute("current_frame"))
             # print('Node_id : ',node_id,'copy data : ',node_df)
             self.update_buffer(node_df)
 
@@ -143,12 +145,30 @@ class buffer_data():
                 del self.obstacle_buffer[node_id]
                 continue
             node_df = self.buffer_frame[self.buffer_frame['node_id'] == node_id]
-            node_df = node_df[node_df['frame_id'] ==  self.get_curr_frame() - 1].copy()
-            node_df = node_df.replace('frame_id',self.get_curr_frame())
+            node_df = node_df[node_df['frame_id'] ==  self.get_attribute("current_frame") - 1].copy()
+            node_df = node_df.replace('frame_id',self.get_attribute("current_frame"))
             # print('Node_id : ',node_id,'copy data : ',node_df)
             self.update_buffer(node_df)
         
         return list(mask_id)
+
+    def refresh_buffer(self):
+        # If frame_id < current_time - 11 remove the data
+        self.buffer_frame = self.buffer_frame.reset_index(drop = True)
+        if len(self.frame_length) > 11:
+            if self.frame_length[0] > 0:
+                self.buffer_frame = self.buffer_frame.drop(range(0,self.frame_length[0]))
+            del self.frame_length[0]
+            
+    def add_frame_length(self,frame_obj_nb):
+        self.frame_length.append(frame_obj_nb)
+    
+    def get_attribute(self,attribute_name):
+        for attribute in self.__dict__.keys():
+            if attribute == attribute_name:
+                value = getattr(self,attribute)
+                return value
+        print("attribute_name : ", attribute_name, " not found !")
     
     def update_heading_buffer(self,datas):
         self.heading_buffer.clear()
@@ -172,35 +192,10 @@ class buffer_data():
         '''
             data : pd.series
         '''
-        # update T frame objects in last element array
         if self.buffer_predicted_frame is not None:
             self.buffer_predicted_frame = pd.concat([self.buffer_predicted_frame,data])
         else:
             self.buffer_predicted_frame = data
-
-    def refresh_buffer(self):
-        # If frame_id < current_time - 11 remove the data
-        if len(self.frame_length) > 11:
-            self.buffer_frame = self.buffer_frame.drop(range(0,self.frame_length[0]))
-            del self.frame_length[0]
-            
-    def add_frame_length(self,frame_obj_nb):
-        self.frame_length.append(frame_obj_nb)
-    
-    def get_curr_frame(self):
-        return self.current_frame
-    
-    def get_buffer_frame(self):
-        return self.buffer_frame
-    
-    def get_heading_buffer(self):
-        return self.heading_buffer
-
-    def get_predicted_buffer(self):
-        return self.buffer_predicted_frame
-
-    def print_buffer(self):
-        print(self.buffer_frame)
 
     def reset_buffers(self):
         self.buffer_frame = pd.DataFrame(columns=['frame_id',
@@ -217,4 +212,8 @@ class buffer_data():
         self.frame_length = []
         self.previous_id_list = []
         self.obstacle_buffer = dict()
+        
+    # def print_buffer(self):
+    #     print(self.buffer_frame)
+
 

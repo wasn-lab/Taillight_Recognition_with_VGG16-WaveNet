@@ -106,7 +106,7 @@ def create_scene(scene_ids, present_id):
 
             output_dict = {
                 ('node','id') : node_id,
-                ('frame','id') : buffer.get_curr_frame(),
+                ('frame','id') : buffer.get_attribute("current_frame"),
                 ('position', 'x'): x[-1],
                 ('position', 'y'): y[-1],
                 ('velocity', 'x'): vx[-1],
@@ -222,7 +222,7 @@ def transform_data(data, tf_map, tf_buffer, rospy):
         '''
             calculate heading data
         '''
-        past_obj = buffer.get_heading_buffer()
+        past_obj = buffer.get_attribute("heading_buffer")
         
         if id in past_obj.keys():
             # print(id,past_obj[id])
@@ -245,12 +245,9 @@ def transform_data(data, tf_map, tf_buffer, rospy):
             else:
                 heading = heading - 180
             heading_rad = math.radians(heading)
-        '''
-            
-        '''
-        # print 'ros method heading : ',yaw
-        # print 'our method heading : ',heading
-        node_data = pd.Series({'frame_id': buffer.get_curr_frame(),
+        
+        node_data = pd.Series({'frame_id': buffer.get_attribute("current_frame"),
+                               'timer_sec' : (data.header.stamp).to_sec(),
                                'type': category,
                                'node_id': str(obj.track.id),
                                'robot': False,  # frame_data.loc[i]['robot']
@@ -272,9 +269,8 @@ def transform_data(data, tf_map, tf_buffer, rospy):
         mask_id_list = []
     
     buffer.update_heading_buffer(heading_data)
-    buffer.refresh_buffer()
+    # buffer.refresh_buffer()
     # buffer.print_buffer()
-    buffer.add_frame_length(len(present_id_list))
     
     return present_id_list,mask_id_list
 
@@ -308,7 +304,7 @@ def predict(data):
     
     # remove obstacle prediction
     timer.append(time.time())
-    timesteps = np.array([buffer.get_curr_frame()])
+    timesteps = np.array([buffer.get_attribute("current_frame")])
 
     predictions = eval_stg.predict(scene,
                                    timesteps,
@@ -364,7 +360,7 @@ def predict(data):
         print ('[RunTime] Data preprocessing all cost time : ',timer[5] - timer[1] - timer[4] + timer[3])
         print ('[RunTime] IPP Module cost time : ',timer[5] - timer[1])
     elif args.get_print() == 2:
-        print ('Current time : ', buffer.get_curr_frame())
+        print ('Current time : ', buffer.get_attribute("current_frame"))
         print ('Current obj count : ', obj_cnt)
         for _ , node in enumerate(predictions[t].keys()):
             for obj in data.objects:
@@ -379,10 +375,10 @@ def predict(data):
                 else:
                     continue
     elif args.get_print() == 3:
-        print('Current time : ', buffer.get_curr_frame())
+        print('Current time : ', buffer.get_attribute("current_frame"))
         print('Masked id : ',list(mask_id_list))
     elif args.get_print() == 4:
-        print('Current time : ', buffer.get_curr_frame())
+        print('Current time : ', buffer.get_attribute("current_frame"))
         for node in scene.nodes:
             print('Node_id : ',node.id)
             print('Node_data : ',node.pd_data)
@@ -390,7 +386,7 @@ def predict(data):
 def listener_ipp():
     global tf_buffer, tf_listener
     rospy.init_node('IPP')
-    rospy.Subscriber('/IPP/delay_Alert', DetectedObjectArray, predict)
+    rospy.Subscriber(args.get_source(), DetectedObjectArray, predict)
     tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
     tf_listener = tf2_ros.TransformListener(tf_buffer)  # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
@@ -445,6 +441,8 @@ if __name__ == '__main__':
         input_topic = '/Tracking3D'
     else:
 	    input_topic = '/PathPredictionOutput'
+
+
     
     args.set_params(input_topic, prediction_horizon, show_log)
     past_obj = []
@@ -462,5 +460,5 @@ if __name__ == '__main__':
 
     if output_csv:
         print('Write to csv complete!')
-        atexit.register(output_csvfile, "./", "ros_bag_data.csv", buffer.get_buffer_frame())
-        atexit.register(output_csvfile, "./", "ros_preprocess.csv", buffer.get_predicted_buffer())
+        atexit.register(output_csvfile, "./", "ros_bag_data.csv", buffer.get_attribute("buffer_frame"))
+        atexit.register(output_csvfile, "./", "ros_preprocess.csv", buffer.get_attribute("buffer_predicted_frame"))

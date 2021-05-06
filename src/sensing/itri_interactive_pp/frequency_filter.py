@@ -18,7 +18,7 @@ def publish_msg(data):
     # if(data.header.stamp - prev).to_sec() > 10:
         # print('Initialize')
     
-
+    # print (data.header.stamp).to_sec()
     if(data.header.stamp - prev).to_sec() > 0.5:
         # print((data.header.stamp - prev).to_sec())
         for obj in data.objects:

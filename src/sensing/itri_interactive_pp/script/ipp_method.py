@@ -65,7 +65,7 @@ def create_scene(buffer, scene_ids, present_id):
                 data_dict, columns=buffer.data_columns_vehicle)
             output_node_data = node_data
             output_node_data = node_data['frame_id'] = buffer.get_curr_frame()
-            print('node_data : ',output_node_data)
+            # print('node_data : ',output_node_data)
         else:
             data_dict = {('position', 'x'): x,
                             ('position', 'y'): y,
