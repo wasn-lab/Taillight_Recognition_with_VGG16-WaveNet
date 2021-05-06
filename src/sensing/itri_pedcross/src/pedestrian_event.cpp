@@ -1850,20 +1850,10 @@ float PedestrianEvent::crossing_predict(int from_camera, std::vector<std::vector
       std::vector<float> bbox = bbox_array.at(index);
       if (test_new_model_)
       {
-        if (car_model_ == 0)
-        {
-          bbox.at(0) = bbox.at(0) / cam_width;
-          bbox.at(1) = bbox.at(1) / cam_height;
-          bbox.at(2) = bbox.at(2) / cam_width;
-          bbox.at(3) = bbox.at(3) / cam_height;
-        }
-        else if (car_model_ == 1)
-        {
-          bbox.at(0) = bbox.at(0) / cam_width;
-          bbox.at(1) = bbox.at(1) / cam_height;
-          bbox.at(2) = bbox.at(2) / cam_width;
-          bbox.at(3) = bbox.at(3) / cam_height;
-        }
+        bbox.at(0) = bbox.at(0) / cam_width;
+        bbox.at(1) = bbox.at(1) / cam_height;
+        bbox.at(2) = bbox.at(2) / cam_width;
+        bbox.at(3) = bbox.at(3) / cam_height;
       }
       feature.insert(feature.end(), bbox.begin(), bbox.end());
 
