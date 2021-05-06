@@ -90,9 +90,9 @@ class LoadMonitor(object):
         self.hostname = get_hostname()
         nproc = get_nproc()
         if self.hostname == "xavier":
-            self.cpu_load_threshold = 14.0  # empirical
+            self.cpu_load_threshold = 18.0  # empirical
         else:
-            self.cpu_load_threshold = float(nproc)
+            self.cpu_load_threshold = float(nproc) * 1.5
 
         self.use_nvidia_smi = False
         self.check_nvidia_tooling()
