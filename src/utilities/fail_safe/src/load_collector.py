@@ -59,7 +59,6 @@ class LoadCollector(object):
         status_str = ""
 
         if jdata["cpu_load"] >= jdata["cpu_load_threshold"]:
-            self.records[ipc]["status"] = WARN
             status_str = "high cpu load: " + str(self.records[ipc]["cpu_load"])[:5]
 
         if jdata["gpu_load"] >= 99:
