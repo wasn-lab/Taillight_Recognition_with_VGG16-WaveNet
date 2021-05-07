@@ -103,3 +103,6 @@ stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_hmi.sh^M"
 
 screen -t replay_on_switch
 stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_replay_lidar_data_to_localization_switch.sh^M"
+
+screen -t pad_issue_reporter
+stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_pad_issue_reporter.sh^M"
