@@ -35,10 +35,10 @@ screen -t init_edge_detection
 stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_edge_detection.sh^M"
 
 screen -t init_map_lanelet2
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_map_lanelet2.sh^M"
+stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_map_lanelet2.sh^M"
 
 screen -t init_localization_lanelet2
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_localization_lanelet2.sh^M"
+stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_localization_lanelet2.sh^M"
 
 screen -t init_planning_all_lanelet2
-stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/tmp_init_planning_all_lanelet2.sh^M"
+stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_planning_all_lanelet2.sh^M"
