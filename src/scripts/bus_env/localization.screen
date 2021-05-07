@@ -43,9 +43,6 @@ stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_map_lanelet
 screen -t tmp_init_localization_lanelet2
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_localization_lanelet2.sh^M"
 
-screen -t init_localization_supervision
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_supervision.sh^M"
-
 screen -t init_up_led_badger.sh
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_up_led_badger.sh^M"
 
