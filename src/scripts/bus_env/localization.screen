@@ -38,11 +38,10 @@ screen -t tmp_init_planning_all_lanelet2
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_planning_all_lanelet2.sh^M"
 
 screen -t tmp_init_map_lanelet2
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_map_lanelet2.sh^M"
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_map_lanelet2.sh^M"
 
 screen -t tmp_init_localization_lanelet2
-stuff "/home/localization/itriadv/src/scripts/bus_env/local/tmp_init_localization_lanelet2.sh^M"
+stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_localization_lanelet2.sh^M"
 
 screen -t init_up_led_badger.sh
 stuff "/home/localization/itriadv/src/scripts/bus_env/local/init_up_led_badger.sh^M"
-
