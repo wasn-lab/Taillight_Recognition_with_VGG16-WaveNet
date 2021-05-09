@@ -281,6 +281,8 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
   // path confidence label
   {
     int id = 0;
+    int precision = 2;
+    float precision_scale = (float)std::pow(10, 2);
     for (size_t i = 0; i < input_msg->objects.size(); ++i)
     {
       if (only_known_objects_)
@@ -309,7 +311,9 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
           marker.pose.position =
               input_msg->objects.at(i).state.predicted_paths.at(j).path.at(path_final_index).pose.pose.position;
           marker.text = to_string_with_precision(
-              (int)((input_msg->objects.at(i).state.predicted_paths.at(j).confidence) * 100.0 + 0.5) / 100.0, 2);
+              (int)((input_msg->objects.at(i).state.predicted_paths.at(j).confidence) * precision_scale + 0.5) /
+                  precision_scale,
+              precision);
           marker.color.a = std::max(
               (double)std::min((double)input_msg->objects.at(i).state.predicted_paths.at(j).confidence, 1.0), 0.5);
           marker.id = ++id;
