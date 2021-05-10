@@ -20,6 +20,15 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <string>
 
+template <typename T>
+std::string to_string_with_precision(const T a_value, const int n)
+{
+  std::ostringstream out;
+  out.precision(n);
+  out << std::fixed << a_value;
+  return out.str();
+}
+
 DynamicObjectVisualizer::DynamicObjectVisualizer() : nh_(""), private_nh_("~")
 {
   bool with_feature;
@@ -272,6 +281,8 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
   // path confidence label
   {
     int id = 0;
+    int precision = 2;
+    float precision_scale = (float)std::pow(10, 2);
     for (size_t i = 0; i < input_msg->objects.size(); ++i)
     {
       if (only_known_objects_)
@@ -299,7 +310,10 @@ void DynamicObjectVisualizer::dynamicObjectCallback(
           int path_final_index = (int)input_msg->objects.at(i).state.predicted_paths.at(j).path.size() - 1;
           marker.pose.position =
               input_msg->objects.at(i).state.predicted_paths.at(j).path.at(path_final_index).pose.pose.position;
-          marker.text = std::to_string(input_msg->objects.at(i).state.predicted_paths.at(j).confidence);
+          marker.text = to_string_with_precision(
+              (int)((input_msg->objects.at(i).state.predicted_paths.at(j).confidence) * precision_scale + 0.5) /
+                  precision_scale,
+              precision);
           marker.color.a = std::max(
               (double)std::min((double)input_msg->objects.at(i).state.predicted_paths.at(j).confidence, 1.0), 0.5);
           marker.id = ++id;
