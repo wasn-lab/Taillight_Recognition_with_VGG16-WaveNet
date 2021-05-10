@@ -2324,7 +2324,7 @@ void PedestrianEvent::pedestrian_event()
   // Set custom callback queue
   nh_sub_2.setCallbackQueue(&callback_queue);
 
-  ros::Subscriber sub_0;
+  ros::Subscriber sub_1;
   ros::Subscriber sub_5;
   ros::Subscriber sub_6;
   ros::Subscriber sub_7;
@@ -2384,7 +2384,7 @@ void PedestrianEvent::pedestrian_event()
     // ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic14);
     // std::cout << in_topic14 << " is ready" << std::endl;
 
-    sub_0 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::tracking3d_callback, this);
+    sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::tracking3d_callback, this);
 
     sub_5 = nh_sub_2.subscribe(in_topic5, 1, &PedestrianEvent::cache_front_image_callback, this);
     sub_6 = nh_sub_2.subscribe(in_topic6, 1, &PedestrianEvent::cache_left_image_callback, this);
