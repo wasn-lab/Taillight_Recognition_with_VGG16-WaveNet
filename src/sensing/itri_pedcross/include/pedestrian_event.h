@@ -47,6 +47,8 @@
 //#include <scope_guard.hpp>
 //#include <tf_utils.hpp>
 
+#include "cam_id.h"
+
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
 #define PRINT_MESSAGE 0
@@ -102,7 +104,7 @@ public:
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                  boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, const int cam_id);
   void pedestrian_event();
-  float crossing_predict(int from_camera, std::vector<std::vector<float>>& bbox_array,
+  float crossing_predict(const int cam_id, std::vector<std::vector<float>>& bbox_array,
                          std::vector<std::vector<cv::Point2f>>& keypoint_array);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);

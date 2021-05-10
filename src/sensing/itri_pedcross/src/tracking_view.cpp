@@ -43,7 +43,7 @@ void TrackingView::tracking_callback(const msgs::DetectedObjectArray::ConstPtr& 
 
   for (const auto& obj : msg->objects)
   {
-    if (obj.camInfo[0].prob != -1)  // cam_id 0
+    if (obj.camInfo[sensor_msgs_itri::CamID::F60].prob != -1)
     {
       latest_tracking.objects.push_back(obj);
     }
@@ -90,10 +90,10 @@ void TrackingView::draw_tracking_with_detection()
   for (const auto& obj : latest_detection.objects)
   {
     cv::Rect box;
-    box.x = obj.camInfo[0].u * scaling_ratio_width;
-    box.y = obj.camInfo[0].v * scaling_ratio_height;
-    box.width = obj.camInfo[0].width * scaling_ratio_width;
-    box.height = obj.camInfo[0].height * scaling_ratio_height;
+    box.x = obj.camInfo[sensor_msgs_itri::CamID::F60].u * scaling_ratio_width;
+    box.y = obj.camInfo[sensor_msgs_itri::CamID::F60].v * scaling_ratio_height;
+    box.width = obj.camInfo[sensor_msgs_itri::CamID::F60].width * scaling_ratio_width;
+    box.height = obj.camInfo[sensor_msgs_itri::CamID::F60].height * scaling_ratio_height;
     if (box.x + box.width > matrix.cols)
     {
       box.width = matrix.cols - box.x;
@@ -109,10 +109,10 @@ void TrackingView::draw_tracking_with_detection()
   for (const auto& obj : latest_tracking.objects)
   {
     cv::Rect box;
-    box.x = obj.camInfo[0].u * scaling_ratio_width;
-    box.y = obj.camInfo[0].v * scaling_ratio_height;
-    box.width = obj.camInfo[0].width * scaling_ratio_width;
-    box.height = obj.camInfo[0].height * scaling_ratio_height;
+    box.x = obj.camInfo[sensor_msgs_itri::CamID::F60].u * scaling_ratio_width;
+    box.y = obj.camInfo[sensor_msgs_itri::CamID::F60].v * scaling_ratio_height;
+    box.width = obj.camInfo[sensor_msgs_itri::CamID::F60].width * scaling_ratio_width;
+    box.height = obj.camInfo[sensor_msgs_itri::CamID::F60].height * scaling_ratio_height;
     if (box.x + box.width > matrix.cols)
     {
       box.width = matrix.cols - box.x;

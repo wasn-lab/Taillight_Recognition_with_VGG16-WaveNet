@@ -84,6 +84,7 @@ include_directories(
     ${PROJECT_BINARY_DIR}/include
     ${TENSORFLOW_INCLUDE_DIR}
     src/
+    ${msgs_SOURCE_DIR}/include
 )
 link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 

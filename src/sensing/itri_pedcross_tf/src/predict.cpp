@@ -16,6 +16,8 @@
 #include <opencv2/opencv.hpp>  // opencv general include file
 #include "camera_params.h"
 
+#include "cam_id.h"
+
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
 
@@ -74,7 +76,7 @@ float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, floa
 
 void add_camera_features(int cam_index, std::vector<float>& feature)
 {
-  if (cam_index == 1) //left
+  if (cam_index == sensor_msgs_itri::CamID::LB60)
   {
     feature.push_back(1);
   }
@@ -82,7 +84,7 @@ void add_camera_features(int cam_index, std::vector<float>& feature)
   {
     feature.push_back(0);
   }
-  if (cam_index == 3) //FOV30
+  if (cam_index == sensor_msgs_itri::CamID::F30)
   {
     feature.push_back(1);
   }
@@ -90,7 +92,7 @@ void add_camera_features(int cam_index, std::vector<float>& feature)
   {
     feature.push_back(0);
   }
-  if (cam_index == 0) //center
+  if (cam_index == sensor_msgs_itri::CamID::F60)
   {
     feature.push_back(1);
   }
@@ -98,7 +100,7 @@ void add_camera_features(int cam_index, std::vector<float>& feature)
   {
     feature.push_back(0);
   }
-  if (cam_index == 2) //right
+  if (cam_index == sensor_msgs_itri::CamID::RB60)
   {
     feature.push_back(1);
   }
