@@ -8,6 +8,13 @@ if (CATKIN_ENABLE_TESTING)
     MD5 563baab43a945a286039be37711a26ec
   )
 
+  set(TEST_BAG "alignment_auto_record_2021-04-22-23-13-32_27.bag")
+  catkin_download_test_data(${TEST_BAG}
+    "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"
+    DESTINATION ${Project_SOURCE_DIR}/bags
+    MD5 a94bf732bd48ac0aea72ef3bbf1a36bb
+  )
+
   set(TEST_BAG "auto_record_2020-11-04-15-29-32_0.bag")
   catkin_download_test_data(${TEST_BAG}
     "http://118.163.54.109:8888/Share/ADV/Rosbag/B1/test_case/${TEST_BAG}"

@@ -10,6 +10,7 @@ if [[ "${CAR_MODEL}" != "B1_V3" ]]; then
 fi
 
 if [[ ! -f ${bag_dir}/camera_raw_2021-02-25-15-53-00_77.bag
+  || ! -f ${bag_dir}/alignment_auto_record_2021-04-22-23-13-32_27.bag
   || ! -f ${bag_dir}/auto_record_2020-11-04-15-29-32_0.bag
   || ! -f ${bag_dir}/auto_record_2020-04-14-16-41-15_89.bag
   || ! -f ${bag_dir}/geofence_pp_2020-11-16-16-35-39.bag
@@ -33,6 +34,7 @@ set -x
 src/car_model/scripts/gen_drivenet_engine.py --package car_model --launch gen_drivenet_engine.launch
 export LD_PRELOAD=/usr/local/lib/libopencv_core.so
 rostest car_model publish_test_drivenet_b1_v3.test
+rostest car_model publish_test_alignment_b1_v3.test
 rostest car_model publish_test_track2d_b1_v3.test
 
 # cache the contents of the bag for avoid timing problem.
@@ -49,5 +51,6 @@ rostest car_model publish_test_rad_grab_b1_v3.test
 rostest car_model publish_test_geofence_pp_b1_v3.test
 rostest car_model publish_test_ukf_mm_b1_v3.test
 rostest car_model publish_test_target_planner_b1_v3.test
+rostest car_model publish_test_image_flip.test
 
 popd
