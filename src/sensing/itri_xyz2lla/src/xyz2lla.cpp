@@ -354,28 +354,28 @@ int XYZ2LLA::convertClassID(const autoware_perception_msgs::Semantic& semantic)
   int res = 0;
   switch (semantic.type)
   {
-    case semantic.UNKNOWN:
+    case 0:  // semantic.UNKNOWN
       res = sensor_msgs_itri::DetectedObjectClassId::Unknown;
       break;
-    case semantic.CAR:
+    case 1:  // semantic.CAR
       res = sensor_msgs_itri::DetectedObjectClassId::Car;
       break;
-    case semantic.TRUCK:
+    case 2:  // semantic.TRUCK
       res = sensor_msgs_itri::DetectedObjectClassId::Truck;
       break;
-    case semantic.BUS:
+    case 3:  // semantic.BUS
       res = sensor_msgs_itri::DetectedObjectClassId::Bus;
       break;
-    case semantic.BICYCLE:
+    case 4:  // semantic.BICYCLE
       res = sensor_msgs_itri::DetectedObjectClassId::Bicycle;
       break;
-    case semantic.MOTORBIKE:
+    case 5:  // semantic.MOTORBIKE
       res = sensor_msgs_itri::DetectedObjectClassId::Motobike;
       break;
-    case semantic.PEDESTRIAN:
+    case 6:  // semantic.PEDESTRIAN
       res = sensor_msgs_itri::DetectedObjectClassId::Person;
       break;
-    case semantic.ANIMAL:
+    case 7:  // semantic.ANIMAL
       res = sensor_msgs_itri::DetectedObjectClassId::Unknown;
       break;
     default:
