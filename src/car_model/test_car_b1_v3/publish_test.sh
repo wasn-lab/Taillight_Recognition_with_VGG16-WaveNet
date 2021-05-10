@@ -51,5 +51,6 @@ rostest car_model publish_test_rad_grab_b1_v3.test
 rostest car_model publish_test_geofence_pp_b1_v3.test
 rostest car_model publish_test_ukf_mm_b1_v3.test
 rostest car_model publish_test_target_planner_b1_v3.test
+rostest car_model publish_test_image_flip.test
 
 popd
