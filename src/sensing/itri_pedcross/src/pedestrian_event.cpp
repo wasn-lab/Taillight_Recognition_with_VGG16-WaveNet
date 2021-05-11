@@ -45,7 +45,7 @@ void PedestrianEvent::display_on_terminal()
    */
   while (ros::ok() && !PRINT_MESSAGE)
   {
-    struct winsize terminal_size;
+    struct winsize terminal_size{};
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
     std::stringstream ss;
     for (int i = 0; i < terminal_size.ws_row; i++)
@@ -256,8 +256,8 @@ void PedestrianEvent::display_on_terminal()
         else  // i >= 12
         {
           std::lock_guard<std::mutex> lk(mu_ped_info_);
-          int size_ped_info_ = ped_info_.size();
-          if (i - 9 < size_ped_info_)
+          int size_ped_info = ped_info_.size();
+          if (i - 9 < size_ped_info)
           {
             line << ped_info_[i - 9];
           }
@@ -315,7 +315,7 @@ void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerAr
 
   for (auto const& obj : msg->markers)
   {
-    if (obj.ns.compare("left_lane_bound") == 0)
+    if (obj.ns == "left_lane_bound")
     {
       for (auto const& obj_point : obj.points)
       {
@@ -337,7 +337,7 @@ void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerAr
         }
       }
     }
-    else if (obj.ns.compare("right_lane_bound") == 0)
+    else if (obj.ns == "right_lane_bound")
     {
       for (auto const& obj_point : obj.points)
       {
@@ -808,12 +808,12 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
               }
               double max_w = max_x - min_x;
               double max_h = max_y - min_y;
-              for (unsigned int i = 0; i < keypoints.size(); i++)
+              for (auto & keypoint : keypoints)
               {
-                if (keypoints.at(i).x != 0 && keypoints.at(i).y != 0)
+                if (keypoint.x != 0 && keypoint.y != 0)
                 {
-                  keypoints.at(i).x = (keypoints.at(i).x - min_x) / max_w * w_h_ratio;
-                  keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
+                  keypoint.x = (keypoint.x - min_x) / max_w * w_h_ratio;
+                  keypoint.y = (keypoint.y - min_y) / max_h;
                 }
               }
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
@@ -1004,25 +1004,25 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
             srv_pedcorss_tf.request.cam_index = cam_id;
             srv_pedcorss_tf.request.bboxes.reserve(skeleton_buffer.at(skeleton_index).data_bbox_.size());
             // prepare bboxes for ros service
-            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).data_bbox_.size(); i++)
+            for (auto & data_bbox : skeleton_buffer.at(skeleton_index).data_bbox_)
             {
               msgs::CamInfo msgs_bbox;
-              msgs_bbox.u = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(0);
-              msgs_bbox.v = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(1);
-              msgs_bbox.width = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(2) - msgs_bbox.u;
-              msgs_bbox.height = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(3) - msgs_bbox.v;
+              msgs_bbox.u = data_bbox.at(0);
+              msgs_bbox.v = data_bbox.at(1);
+              msgs_bbox.width = data_bbox.at(2) - msgs_bbox.u;
+              msgs_bbox.height = data_bbox.at(3) - msgs_bbox.v;
               srv_pedcorss_tf.request.bboxes.emplace_back(msgs_bbox);
             }
             // prepare keypoints for ros service
-            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton_.size(); i++)
+            for (auto & stored_skeleton : skeleton_buffer.at(skeleton_index).stored_skeleton_)
             {
               msgs::Keypoints msgs_keypoints;
-              msgs_keypoints.keypoint.reserve(skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size());
-              for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size(); j++)
+              msgs_keypoints.keypoint.reserve(stored_skeleton.size());
+              for (unsigned int j = 0; j < stored_skeleton.size(); j++)
               {
                 msgs::Keypoint msgs_keypoint;
-                msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).x;
-                msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).y;
+                msgs_keypoint.x = stored_skeleton.at(j).x;
+                msgs_keypoint.y = stored_skeleton.at(j).y;
                 msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
               }
               srv_pedcorss_tf.request.keypoints.emplace_back(msgs_keypoints);
@@ -1744,8 +1744,10 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   bool face_detection[4] = { right_ear, right_eye, left_eye, left_ear };
   for (int i = 0; i < 16; i++)
   {
-    if (face_detection[0] == direction_table_[i][0] && face_detection[1] == direction_table_[i][1] &&
-        face_detection[2] == direction_table_[i][2] && face_detection[3] == direction_table_[i][3])
+    if (static_cast<int>(face_detection[0]) == direction_table_[i][0]
+       && static_cast<int>(face_detection[1]) == direction_table_[i][1] 
+       && static_cast<int>(face_detection[2]) == direction_table_[i][2]
+       && static_cast<int>(face_detection[3]) == direction_table_[i][3])
     {
       return direction_table_[i][4];
     }
@@ -1810,11 +1812,7 @@ int PedestrianEvent::get_body_direction(const std::vector<cv::Point2f>& keypoint
 
 bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
 {
-  if (keypoint.x > 0 || keypoint.y > 0)
-  {
-    return true;
-  }
-  return false;
+  return (keypoint.x > 0 || keypoint.y > 0);
 }
 
 /**
@@ -2286,14 +2284,8 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
       c = 1 + c;
     }
   }
-  if (c % 2 == 0)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+
+  return (c % 2 == 0);
 }
 
 void PedestrianEvent::clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer, ros::Time msg_timestamp)
@@ -2592,7 +2584,7 @@ int main(int argc, char** argv)
     pe.cam_width = 608;
     pe.cam_height = 342;
   }
-  std::string model_name = "";
+  std::string model_name;
   if (pe.test_new_model_)
   {
     model_name = "/RF_with_one_hot_4_camera_features_30depth_7-3.yml";

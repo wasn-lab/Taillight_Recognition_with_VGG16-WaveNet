@@ -21,7 +21,7 @@
 #define FEATURE_NUM 1174
 #define FRAME_NUM 10
 
-bool g_test_new_model_ = false;
+bool g_test_new_model = false;
 
 const std::vector<std::int64_t> INPUT_DIMS = { 1, FRAME_NUM, FEATURE_NUM };
 
@@ -117,15 +117,15 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   std::vector<std::vector<cv::Point2f>> keypoint_array;
   keypoint_array.reserve(req.keypoints.size());
   // get processed_keypoints return from skip_frame service
-  for (unsigned int i = 0; i < req.keypoints.size(); i++)
+  for (auto& req_keypoint : req.keypoints)
   {
     std::vector<cv::Point2f> back_predict_keypoints;
-    back_predict_keypoints.reserve(req.keypoints.at(i).keypoint.size());
-    for (unsigned int j = 0; j < req.keypoints.at(i).keypoint.size(); j++)
+    back_predict_keypoints.reserve(req_keypoint.keypoint.size());
+    for (unsigned int j = 0; j < req_keypoint.keypoint.size(); j++)
     {
       cv::Point2f back_predict_keypoint;
-      back_predict_keypoint.x = req.keypoints.at(i).keypoint.at(j).x;
-      back_predict_keypoint.y = req.keypoints.at(i).keypoint.at(j).y;
+      back_predict_keypoint.x = req_keypoint.keypoint.at(j).x;
+      back_predict_keypoint.y = req_keypoint.keypoint.at(j).y;
       back_predict_keypoints.emplace_back(back_predict_keypoint);
     }
     keypoint_array.emplace_back(back_predict_keypoints);
@@ -136,14 +136,14 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   std::vector<std::vector<float>> bbox_array;
   bbox_array.reserve(req.bboxes.size());
   // get processed_keypoints return from skip_frame service
-  for (unsigned int i = 0; i < req.bboxes.size(); i++)
+  for (auto& req_bbox : req.bboxes)
   {
     std::vector<float> bbox;
     bbox.reserve(4);
-    bbox.emplace_back(req.bboxes.at(i).u / camera::image_width);
-    bbox.emplace_back(req.bboxes.at(i).v / camera::image_height);
-    bbox.emplace_back((req.bboxes.at(i).u + req.bboxes.at(i).width) / camera::image_width);
-    bbox.emplace_back((req.bboxes.at(i).v + req.bboxes.at(i).height) / camera::image_height);
+    bbox.emplace_back(req_bbox.u / camera::image_width);
+    bbox.emplace_back(req_bbox.v / camera::image_height);
+    bbox.emplace_back((req_bbox.u + req_bbox.width) / camera::image_width);
+    bbox.emplace_back((req_bbox.v + req_bbox.height) / camera::image_height);
     bbox_array.emplace_back(bbox);
     bbox.clear();
     std::vector<float>().swap(bbox);
@@ -151,7 +151,7 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
 
   // initialize feature
   std::vector<float> feature;
-  if (g_test_new_model_)
+  if (g_test_new_model)
   {
     feature.reserve((FEATURE_NUM + 4) * FRAME_NUM);
   }
@@ -161,7 +161,7 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
   }
   for (unsigned int index = 0; index < FRAME_NUM; index++)
   {
-    if (g_test_new_model_)
+    if (g_test_new_model)
     {
       add_camera_features(req.cam_index, feature);
     }
@@ -244,7 +244,7 @@ bool callback(msgs::PredictCrossing::Request& req, msgs::PredictCrossing::Respon
       float* zero_arr;
       // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
       int other_feature = FEATURE_NUM - 4;
-      if (g_test_new_model_)
+      if (g_test_new_model)
       {
         add_camera_features(req.cam_index, feature);
       }
@@ -320,12 +320,12 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
   ros::ServiceServer service = n.advertiseService("pedcross_tf", callback);
 
-  n.param<bool>("/pedcross_tf_server/test_new_model", g_test_new_model_, false);
+  n.param<bool>("/pedcross_tf_server/test_new_model", g_test_new_model, false);
 
   std::cout << "Load graph testing..." << std::endl;
 
-  std::string model_name = "";
-  if (g_test_new_model_)
+  std::string model_name;
+  if (g_test_new_model)
   {
     model_name = "/LSTM_data_onehot_4_new_and_old_test.pb";
   }
@@ -363,7 +363,7 @@ int main(int argc, char** argv)
   float* zero_arr;
   // The first four feature are bb_x1, bb_y1, bb_x2, bb_y2
   int other_feature = FEATURE_NUM * FRAME_NUM;
-  if (g_test_new_model_)
+  if (g_test_new_model)
   {
     other_feature = (FEATURE_NUM + 4) * FRAME_NUM;
   }
