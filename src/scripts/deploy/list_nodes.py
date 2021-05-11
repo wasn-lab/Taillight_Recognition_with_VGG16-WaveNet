@@ -24,10 +24,14 @@ def __find_machines(nodes):
 def __find_pub_subs(nodes):
     master = rosgraph.Master("/rosnode")
     state = master.getSystemState()
+    pub_topics = master.getPublishedTopics('/')
+    pub_topics_dict = {name_type[0]: name_type[1] for name_type in pub_topics}
     for node in nodes:
         node_name = node["name"]
         node["publications"] = [{"name": t} for t, l in state[0] if node_name in l]
         node["subscriptions"] = [{"name": t} for t, l in state[1] if node_name in l]
+        for doc in node["publications"]:
+            doc["type"] = pub_topics_dict.get(doc["name"], "unknown")
     return nodes
 
 
@@ -56,7 +60,11 @@ def list_nodes():
     __find_machines(nodes)
     __find_pub_subs(nodes)
     __calc_topic_subcriptions(nodes)
-    print(json.dumps(nodes, indent=2, sort_keys=True))
+    jdata = json.dumps(nodes, sort_keys=True)
+    output = "/tmp/node_info.json"
+    with open(output, "w") as _fp:
+        _fp.write(jdata)
+    print("Write {}".format(output))
 
 
 def main():
