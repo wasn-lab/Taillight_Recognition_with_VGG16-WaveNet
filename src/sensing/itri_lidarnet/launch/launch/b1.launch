@@ -3,8 +3,8 @@
 <launch>
 <!-- ******** Ros Parameter For Stitching Do Not Edit By Hand ******** -->
 <!-- Update Time: 20210203 -->
-<rosparam param="LidarFrontLeft_Fine_Param">[0.323, 1.171, -1.942, 0.054, 0.015, 1.798]</rosparam>
-<rosparam param="LidarFrontRight_Fine_Param">[0.363, -1.033, -1.827, 0.0, 0.001, -1.836]</rosparam>
+<rosparam param="LidarFrontLeft_Fine_Param">[0.403, 1.066, -1.816, 0.031, 0.000, 1.793]</rosparam>
+<rosparam param="LidarFrontRight_Fine_Param">[0.444, -1.082, -1.825, -0.023, -0.008, -1.841]</rosparam>
 <rosparam param="LidarRearLeft_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 <rosparam param="LidarRearRight_Fine_Param">[0, 0, 0, 0, 0, 0]</rosparam>
 
