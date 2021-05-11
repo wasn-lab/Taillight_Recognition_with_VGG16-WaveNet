@@ -106,7 +106,7 @@ private:
                double& out_U, const double in_x, const double in_y, const double in_z);
   void centerPointGPS(msgs::DetectedObjectArray& output);
   void publishMsg(const msgs::DetectedObjectArray& output);
-  int convertClassID(const autoware_perception_msgs::Semantic& obj);
+  int convertClassID(const autoware_perception_msgs::Semantic& semantic);
   void callbackTracking1(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& input);
   void callbackTracking2(const msgs::DetectedObjectArray::ConstPtr& input);
 };

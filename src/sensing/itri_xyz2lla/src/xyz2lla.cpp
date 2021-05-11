@@ -40,13 +40,12 @@ void XYZ2LLA::initParam()
 
   while (fin.getline(line, sizeof(line), ','))
   {
-    // fin.getline(line,sizeof(line),'\n');
     std::string nmea_str(line);
     std::stringstream ss(nmea_str);
     std::string token;
 
     getline(ss, token, ',');
-    read_tmp[read_index] = atof(token.c_str());
+    read_tmp[read_index] = strtod(token.c_str(), NULL);
     read_index += 1;
   }
 
@@ -58,9 +57,9 @@ void XYZ2LLA::initParam()
   lat0_ = read_tmp[1];
   alt0_ = read_tmp[2];
 
-  if (XYZ2ENU_switch_ == false)
+  int idx = 3;
+  if (!XYZ2ENU_switch_)
   {
-    int idx = 3;
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
         R_[i][j] = read_tmp[idx++];
@@ -70,7 +69,6 @@ void XYZ2LLA::initParam()
   }
   else
   {
-    int idx = 3;
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
         R1_[i][j] = read_tmp[idx++];
@@ -147,7 +145,7 @@ void XYZ2LLA::initParamTWD97()
     std::string token;
 
     getline(ss, token, ',');
-    read_tmp_1[read_index_1] = atof(token.c_str());
+    read_tmp_1[read_index_1] = strtod(token.c_str(), NULL);
     read_index_1 += 1;
   }
   twd97_shift_x_ = read_tmp_1[0];
@@ -190,7 +188,7 @@ void XYZ2LLA::initParamUTM()
     std::string token;
 
     getline(ss, token, ',');
-    read_tmp_2[read_index_2] = atof(token.c_str());
+    read_tmp_2[read_index_2] = strtod(token.c_str(), NULL);
     read_index_2 += 1;
   }
   utm_shift_x_ = read_tmp_2[0];
@@ -209,47 +207,69 @@ void XYZ2LLA::convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_
 {
   double R_final[3][3], T_final[3];
 
-  if (XYZ2ENU_switch_ == false)
+  if (!XYZ2ENU_switch_)
   {
     for (int i = 0; i < 3; i++)
     {
+      T_final[i] = T_[i];
+
       for (int j = 0; j < 3; j++)
       {
         R_final[i][j] = R_[i][j];
-        T_final[i] = T_[i];
       }
     }
   }
   else
   {
+    double in_x1 = 0;
+    double in_x2 = 100;
+    double in_x3 = 225;
+    double in_x4 = 350;
+
     for (int i = 0; i < 3; i++)
     {
+      if (in_x <= in_x1)
+      {
+        T_final[i] = T1_[i];
+      }
+      else if (in_x > in_x1 && in_x <= in_x2)
+      {
+        T_final[i] = T2_[i];
+      }
+      else if (in_x > in_x2 && in_x <= in_x3)
+      {
+        T_final[i] = T3_[i];
+      }
+      else if (in_x > in_x3 && in_x <= in_x4)
+      {
+        T_final[i] = T4_[i];
+      }
+      else
+      {
+        T_final[i] = T5_[i];
+      }
+
       for (int j = 0; j < 3; j++)
       {
-        if (in_x <= 0)
+        if (in_x <= in_x1)
         {
           R_final[i][j] = R1_[i][j];
-          T_final[i] = T1_[i];
         }
-        else if (in_x > 0 && in_x <= 100)
+        else if (in_x > in_x1 && in_x <= in_x2)
         {
           R_final[i][j] = R2_[i][j];
-          T_final[i] = T2_[i];
         }
-        else if (in_x > 100 && in_x <= 225)
+        else if (in_x > in_x2 && in_x <= in_x3)
         {
           R_final[i][j] = R3_[i][j];
-          T_final[i] = T3_[i];
         }
-        else if (in_x > 225 && in_x <= 350)
+        else if (in_x > in_x3 && in_x <= in_x4)
         {
           R_final[i][j] = R4_[i][j];
-          T_final[i] = T4_[i];
         }
         else
         {
           R_final[i][j] = R5_[i][j];
-          T_final[i] = T5_[i];
         }
       }
     }
@@ -390,29 +410,29 @@ void XYZ2LLA::callbackTracking1(const autoware_perception_msgs::DynamicObjectArr
   output.header = input->header;
   output.objects.reserve(input->objects.size());
 
-  for (size_t i = 0; i < input->objects.size(); i++)
+  for (const auto& obj : input->objects)
   {
-    msgs::DetectedObject obj;
-    obj.classId = convertClassID(input->objects[i].semantic);
+    msgs::DetectedObject out;
+    out.classId = convertClassID(obj.semantic);
 
     // take the last three uint8 of uuid_msgs/UniqueID to create float id
-    obj.track.id = ((unsigned int)input->objects[i].id.uuid[13] << 16) +
-                   ((unsigned int)input->objects[i].id.uuid[14] << 8) + (unsigned int)input->objects[i].id.uuid[15];
+    out.track.id =
+        ((unsigned int)obj.id.uuid[13] << 16) + ((unsigned int)obj.id.uuid[14] << 8) + (unsigned int)obj.id.uuid[15];
 
-    obj.center_point_gps.x = input->objects[i].state.pose_covariance.pose.position.x;
-    obj.center_point_gps.y = input->objects[i].state.pose_covariance.pose.position.y;
-    obj.center_point_gps.z = input->objects[i].state.pose_covariance.pose.position.z;
+    out.center_point_gps.x = obj.state.pose_covariance.pose.position.x;
+    out.center_point_gps.y = obj.state.pose_covariance.pose.position.y;
+    out.center_point_gps.z = obj.state.pose_covariance.pose.position.z;
 
-    obj.heading_enu.x = input->objects[i].state.pose_covariance.pose.orientation.x;
-    obj.heading_enu.y = input->objects[i].state.pose_covariance.pose.orientation.y;
-    obj.heading_enu.z = input->objects[i].state.pose_covariance.pose.orientation.z;
-    obj.heading_enu.w = input->objects[i].state.pose_covariance.pose.orientation.w;
+    out.heading_enu.x = obj.state.pose_covariance.pose.orientation.x;
+    out.heading_enu.y = obj.state.pose_covariance.pose.orientation.y;
+    out.heading_enu.z = obj.state.pose_covariance.pose.orientation.z;
+    out.heading_enu.w = obj.state.pose_covariance.pose.orientation.w;
 
-    obj.dimension.length = input->objects[i].shape.dimensions.x;
-    obj.dimension.width = input->objects[i].shape.dimensions.y;
-    obj.dimension.height = input->objects[i].shape.dimensions.z;
+    out.dimension.length = obj.shape.dimensions.x;
+    out.dimension.width = obj.shape.dimensions.y;
+    out.dimension.height = obj.shape.dimensions.z;
 
-    output.objects.push_back(obj);
+    output.objects.push_back(out);
   }
 
   centerPointGPS(output);
