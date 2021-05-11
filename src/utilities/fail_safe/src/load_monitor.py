@@ -11,6 +11,12 @@ from std_msgs.msg import String
 
 W_RGX = re.compile(r"load average: (?P<load1>[\.\d]+), (?P<load5>[\.\d]+), (?P<load15>[\.\d]+)")
 NVIDIA_SMI_LOAD_RGX = re.compile(r".+[\s]+(?P<load>[\d]+)%[\s]+Default.+")
+_DEFAULT_GPU_STATES = {
+    "gpu_power_draw": -1.0,
+    "gpu_temperature": -1,
+    "gpu_load": -1.0,
+    "gpu_memory_used": -1,
+    "gpu_pstate": "NA"}
 
 def get_hostname():
     """
@@ -39,39 +45,39 @@ def _parse_nvidia_smi_output(line):
 
 
 def _get_gpu_load_by_nvidia_smi():
-    cmd = ["nvidia-smi", "--format=csv,noheader,nounits",
-           "--query-gpu=utilization.gpu"]
-    ret = None
+    cmd = ["nvidia-smi",
+           "--format=csv,noheader,nounits",
+           "--query-gpu=power.draw,temperature.gpu,utilization.gpu,memory.used,pstate"]
+    output = ""
     try:
         output = subprocess.check_output(cmd).decode("utf-8")
-        line = output.splitlines()[-1]
-        ret = float(line.strip())
+        output = output.splitlines()[-1]
     except subprocess.CalledProcessError:
-        ret = -1
-    if ret is not None:
-        return ret
-    cmd = ["nvidia-smi"]  # fall back to nvidia-smi
-    ret = -1.0
-    try:
-        output = str(subprocess.check_output(cmd))
-        for line in output.splitlines():
-            temp = _parse_nvidia_smi_output(line)
-            if temp:
-                ret = float(temp)
-    except subprocess.CalledProcessError:
-        ret = -1.0
+        output = ""
+    if not output:
+        return _DEFAULT_GPU_STATES
+    ret = _DEFAULT_GPU_STATES.copy()
+
+    fields = output.split(",")
+    if len(fields) == 5:
+        ret["gpu_power_draw"] = float(fields[0].strip())
+        ret["gpu_temperature"] = int(fields[1].strip())
+        ret["gpu_load"] = float(fields[2].strip())
+        ret["gpu_memory_used"] = int(fields[3].strip())
+        ret["gpu_pstate"] = fields[4].strip()
     return ret
+
 
 def _get_gpu_load_by_tegra_stats():
     # Machines like Xavier do not have nvidia-smi.
-    return -1.0
+    return _DEFAULT_GPU_STATES
 
 
 def _parse_cpu_load_output(text):
     match = W_RGX.search(text)
     if match is None:
         return "100.0"
-    return match.expand(r"\g<load15>")
+    return match.expand(r"\g<load1>")
 
 
 def _get_cpu_load():
@@ -84,9 +90,9 @@ class LoadMonitor(object):
         self.hostname = get_hostname()
         nproc = get_nproc()
         if self.hostname == "xavier":
-            self.cpu_load_threshold = 14.0  # empirical
+            self.cpu_load_threshold = 18.0  # empirical
         else:
-            self.cpu_load_threshold = float(nproc)
+            self.cpu_load_threshold = float(nproc) * 1.5
 
         self.use_nvidia_smi = False
         self.check_nvidia_tooling()
@@ -106,8 +112,9 @@ class LoadMonitor(object):
             gpu_load = _get_gpu_load_by_tegra_stats()
         ret = {"hostname": self.hostname,
                "cpu_load": _get_cpu_load(),
-               "cpu_load_threshold": self.cpu_load_threshold,
-               "gpu_load": gpu_load}
+               "cpu_load_threshold": self.cpu_load_threshold}
+        for key in gpu_load:
+            ret[key] = gpu_load[key]
         return json.dumps(ret)
 
     def run(self):

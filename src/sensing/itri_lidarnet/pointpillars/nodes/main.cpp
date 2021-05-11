@@ -22,8 +22,6 @@
 static ros::Publisher g_pub_lidar_detection;
 
 //--------------------------- Global Variables
-std::mutex g_car_lock;
-std::mutex g_ped_cyc_lock;
 std::mutex g_total_lock;
 
 ros::Time g_car_msg_rostime;
@@ -36,7 +34,7 @@ pcl::StopWatch g_integrator_stopWatch;
 //------------------------------ Callbacks
 void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
-  g_car_lock.lock();
+  g_total_lock.lock();
   g_car_msg_rostime = msgArr->header.stamp;
   
   for (const auto & object : msgArr->objects)
@@ -44,13 +42,13 @@ void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArr
     g_msgArr.objects.push_back(object);
   }
 
-  g_car_lock.unlock();
+  g_total_lock.unlock();
 }
 
 
 void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
-  g_ped_cyc_lock.lock();
+  g_total_lock.lock();
 
   g_integrator_stopWatch.reset();
   g_ped_cyc_msg_rostime = msgArr->header.stamp;
@@ -59,7 +57,7 @@ void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjec
   {
     g_msgArr.objects.push_back(object);
   }
-  g_ped_cyc_lock.unlock();
+  g_total_lock.unlock();
 }
 
 void LidarDetection_Publisher(int argc, char** argv)

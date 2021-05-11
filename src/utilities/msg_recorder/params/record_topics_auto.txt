@@ -236,3 +236,9 @@
 # For debugging how sys_ready changes.
 /vehicle/report/itri/fail_safe_status
 /vehicle/report/itri/sensor_status
+/vehicle/report/car_info
+/vehicle/report/system_loads
+/vehicle/report/lidar/load
+/vehicle/report/camera/load
+/vehicle/report/localization/load
+/vehicle/report/xavier/load

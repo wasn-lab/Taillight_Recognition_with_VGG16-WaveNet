@@ -7,3 +7,4 @@ export ROS_IP=192.168.1.3
 /home/lidar/itriadv/devel/lib/adv_to_server/adv_to_server -newMap -no_can -udp_srv
 #/home/nvidia/itriadv/devel/lib/adv_to_server/adv_to_server
 #/home/nvidia/test_ws/devel/lib/adv_to_server/adv_to_server -tcp_srv -udp_srv -newMap
+roslaunch --wait adv_to_server adv_to_server.launch

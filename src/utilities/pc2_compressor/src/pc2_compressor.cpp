@@ -89,7 +89,7 @@ sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud
 
 bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::PointCloud2ConstPtr& b)
 {
-  if (a->header != b->header)
+  if (a->header.seq != b->header.seq || a->header.stamp != b->header.stamp || a->header.frame_id != b->header.frame_id)
   {
     LOG(INFO) << "inconstent header";
     return false;

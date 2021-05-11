@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="image_flip" type="image_flip_node" name="image_flip_node_left_front_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/left_front_60/raw -output_topic /cam/left_front_60/raw/flip" />
+  <node pkg="image_flip" type="image_flip_node" name="image_flip_node_right_front_60" output="screen" cwd="node" respawn="true" args="-input_topic /cam/right_front_60/raw -output_topic /cam/right_front_60/raw/flip" />
+</launch>

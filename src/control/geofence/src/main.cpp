@@ -277,12 +277,15 @@ void callback_LidarAll(const sensor_msgs::PointCloud2::ConstPtr& msg)
   vector<Point> PointCloud_temp;
   for (size_t i = 0; i < cloud->points.size(); ++i)
   {
-    Point_temp.X = cloud->points[i].x;
-    Point_temp.Y = cloud->points[i].y;
-    // double z = cloud->points[i].z;
-    // int intensity = cloud->points[i].intensity;
-    Point_temp.Speed = 0.0;
-    PointCloud_temp.push_back(Point_temp);
+    if (cloud->points[i].x != 0 || cloud->points[i].y != 0)
+    {
+      Point_temp.X = cloud->points[i].x;
+      Point_temp.Y = cloud->points[i].y;
+      // double z = cloud->points[i].z;
+      // int intensity = cloud->points[i].intensity;
+      Point_temp.Speed = 0.0;
+      PointCloud_temp.push_back(Point_temp);
+    }
   }
   PCloud_Geofence.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);
   PCloud_Geofence_original.setPointCloud(PointCloud_temp, true, SLAM_x, SLAM_y, Heading);

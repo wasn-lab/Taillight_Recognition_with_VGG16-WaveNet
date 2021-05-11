@@ -291,9 +291,9 @@ bool TrafficLightModule::isOverDeadLine(
 bool TrafficLightModule::isStopRequired(
   const autoware_perception_msgs::TrafficLightState & tl_state)
 {
-  // if (hasLamp(tl_state, autoware_perception_msgs::LampState::GREEN)) {
-  //   return false;
-  // }
+  if (hasLamp(tl_state, autoware_perception_msgs::LampState::GREEN)) {
+    return false;
+  }
 
   // const std::string turn_direction = lane_.attributeOr("turn_direction", "else");
   std::string turn_direction = planner_data_->LRturn;

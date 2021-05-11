@@ -25,7 +25,6 @@ private:
   int image_h_ = camera::image_height;
   CheckArea front_bottom, left_back;
   int pixelthres_ = 40;
-  float iou_threshold_ = 0;
 
   static constexpr int FB_left_top_x = 0;
   static constexpr int FB_left_top_y = 821;
@@ -37,6 +36,9 @@ private:
   static constexpr int LB_right_bottom_x = 1832;
   static constexpr int LB_right_bottom_y = 340;
 
+  std::vector<msgs::CamInfo> cam_info_vector;
+  std::vector<msgs::CamInfo> cam_info_vector_tmp;
+  
 public:
   Boxfusion();
   ~Boxfusion();
