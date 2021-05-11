@@ -26,8 +26,8 @@ def __find_pub_subs(nodes):
     state = master.getSystemState()
     for node in nodes:
         node_name = node["name"]
-        node["publications"] = [{"topic_name": t for t, l in state[0] if node_name in l}]
-        node["subscriptions"] = [{"topic_name": t for t, l in state[1] if node_name in l}]
+        node["publications"] = [{"name": t} for t, l in state[0] if node_name in l]
+        node["subscriptions"] = [{"name": t} for t, l in state[1] if node_name in l]
     return nodes
 
 
@@ -35,17 +35,17 @@ def __calc_topic_subcriptions(nodes):
     cnt = {}
     for node in nodes:
         for topic in node["publications"]:
-            cnt[topic["topic_name"]] = 0
+            cnt[topic["name"]] = 0
         for topic in node["subscriptions"]:
-            cnt[topic["topic_name"]] = 0
+            cnt[topic["name"]] = 0
 
     for node in nodes:
         for topic in node["subscriptions"]:
-            cnt[topic["topic_name"]] += 1
+            cnt[topic["name"]] += 1
 
     for node in nodes:
         for topic in node["publications"]:
-            tname = topic["topic_name"]
+            tname = topic["name"]
             topic["num_subscribers"] = cnt[tname]
     return nodes
 
