@@ -12,36 +12,30 @@ sudo bash -c "echo '# To disable dnsmasq DNS server functionality.' >> /etc/dnsm
 sudo bash -c "echo 'port=0' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# To enable dnsmasq DHCP server functionality.' >> /etc/dnsmasq.d/dhcp.conf"
-sudo bash -c "echo 'dhcp-range=192.168.0.100,192.168.0.250,255.255.255.0,12h' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'dhcp-range=192.168.0.100,192.168.0.230,255.255.255.0,12h' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set static IPs of other PC' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# dhcp_client_mac_address,dhcp_client_name,dhcp_client_ip,dhcp_client_lease' >> /etc/dnsmasq.d/dhcp.conf"
 
-# b1
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:05:f2,os1-991925000304,192.168.0.220,infinite' >> /etc/dnsmasq.d/dhcp.conf" #220
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:ad,os1-991940000164,192.168.0.224,infinite' >> /etc/dnsmasq.d/dhcp.conf" #222	
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:90,os1-991941000030,192.168.0.230,infinite' >> /etc/dnsmasq.d/dhcp.conf" #224	
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:b4,os1-991939001245,192.168.0.225,infinite' >> /etc/dnsmasq.d/dhcp.conf" #225	
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:f5,os1-991941001040,192.168.0.226,infinite' >> /etc/dnsmasq.d/dhcp.conf" #226
+#--- Ouster List
+# b1 @ 20210511
+sudo bash -c "echo '#---- b1 @ 20210511' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:9a,os1-122035000204,192.168.0.226,infinite' >> /etc/dnsmasq.d/dhcp.conf" 
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:f5,os1-991941001040,192.168.0.224,infinite' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:b4,os1-991939001245,192.168.0.225,infinite' >> /etc/dnsmasq.d/dhcp.conf" 
+# c1 
+sudo bash -c "echo '#---- c1 ' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:15:af,os1-122016000062,192.168.0.228,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Left
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:ed,os1-122035000199,192.168.0.227,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Right
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:52,os1-122032000008,192.168.0.229,infinite' >> /etc/dnsmasq.d/dhcp.conf" # Top
+# lab @ 20210511
+sudo bash -c "echo '#---- lab @ 20210511' >> /etc/dnsmasq.d/dhcp.conf"
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:05:4f,os1-122033000240,192.168.0.104,infinite' >> /etc/dnsmasq.d/dhcp.conf" 
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1f:dd,os1-122043000296,192.168.0.122,infinite' >> /etc/dnsmasq.d/dhcp.conf" 
+sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0d:57,os1-992003000215,192.168.0.177,infinite' >> /etc/dnsmasq.d/dhcp.conf" 
+#--- End of Ouster List
 
 
-# c1
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:ed,os1-122035000199,192.168.0.227,infinite' >> /etc/dnsmasq.d/dhcp.conf" #227 Left
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:15:af,os1-122016000062,192.168.0.228,infinite' >> /etc/dnsmasq.d/dhcp.conf" #228 Right
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:1e:52,os1-122032000008,192.168.0.229,infinite' >> /etc/dnsmasq.d/dhcp.conf" #229 Top
-
-
-
-# not in use
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:26,os1-991940000799,192.168.0.223,infinite' >> /etc/dnsmasq.d/dhcp.conf" #223
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:11:ba,os1-991941000026,192.168.0.221,infinite' >> /etc/dnsmasq.d/dhcp.conf" #221
-
-
-# in lab
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:16:94,os1-122021000109,192.168.0.101,infinite' >> /etc/dnsmasq.d/dhcp.conf" #101
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0a:77,os1-122024000217,192.168.0.102,infinite' >> /etc/dnsmasq.d/dhcp.conf" #102
-sudo bash -c "echo 'dhcp-host=bc:0f:a7:00:0c:dd,os1-122024000328,192.168.0.103,infinite' >> /etc/dnsmasq.d/dhcp.conf" #103
-	
 sudo bash -c "echo '' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo '# Set gateway as Router. Following two lines are identical.' >> /etc/dnsmasq.d/dhcp.conf"
 sudo bash -c "echo 'dhcp-option=3,192.168.0.1' >> /etc/dnsmasq.d/dhcp.conf"
@@ -63,6 +57,3 @@ fi
 
 sudo systemctl enable dnsmasq.service
 sudo systemctl start dnsmasq.service
-#sudo restart network-manager
-#sudo systemctl stop dnsmasq.service
-#sudo systemctl status dnsmasq.service
