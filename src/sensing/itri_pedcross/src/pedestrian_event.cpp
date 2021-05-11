@@ -476,19 +476,19 @@ void PedestrianEvent::tracking3d_callback(const msgs::DetectedObjectArray::Const
 
   for (const auto& obj : in->objects)
   {
-    if (obj.camInfo[sensor_msgs_itri::CamID::F60].prob != -1)
+    if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
     {
       in_F60.objects.push_back(obj);
     }
-    else if (obj.camInfo[sensor_msgs_itri::CamID::F30].prob != -1)
+    else if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
     {
       in_F30.objects.push_back(obj);
     }
-    else if (obj.camInfo[sensor_msgs_itri::CamID::RB60].prob != -1)
+    else if (obj.camInfo[camera::id::right_back_60].prob != -1)
     {
       in_RB60.objects.push_back(obj);
     }
-    else if (obj.camInfo[sensor_msgs_itri::CamID::LB60].prob != -1)
+    else if (obj.camInfo[camera::id::left_back_60].prob != -1)
     {
       in_LB60.objects.push_back(obj);
     }
@@ -1049,7 +1049,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
         // obj_pub.body_direction = get_body_direction(keypoints);
 
         // only for front camera
-        if (cam_id == sensor_msgs_itri::CamID::F60)
+        if (cam_id == camera::id::front_bottom_60)
         {
           obj_pub.crossProbability = adjust_probability(obj_pub);
         }
@@ -1253,19 +1253,19 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
     alert_obj_array.header.stamp = msgs_timestamp;
     alert_obj_array.objects.assign(alert_objs.begin(), alert_objs.end());
 
-    if (cam_id == sensor_msgs_itri::CamID::F60)
+    if (cam_id == camera::id::front_bottom_60)
     {
       alert_pub_front_.publish(alert_obj_array);
     }
-    else if (cam_id == sensor_msgs_itri::CamID::F30)
+    else if (cam_id == camera::id::front_top_far_30)
     {
       alert_pub_fov30_.publish(alert_obj_array);
     }
-    else if (cam_id == sensor_msgs_itri::CamID::RB60)
+    else if (cam_id == camera::id::right_back_60)
     {
       alert_pub_right_.publish(alert_obj_array);
     }
-    else if (cam_id == sensor_msgs_itri::CamID::LB60)
+    else if (cam_id == camera::id::left_back_60)
     {
       alert_pub_left_.publish(alert_obj_array);
     }
@@ -1285,19 +1285,19 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
 
     ped_obj_array.objects.assign(ped_objs.begin(), ped_objs.end());
 
-    if (cam_id == sensor_msgs_itri::CamID::F60)
+    if (cam_id == camera::id::front_bottom_60)
     {
       chatter_pub_front_.publish(ped_obj_array);
     }
-    else if (cam_id == sensor_msgs_itri::CamID::F30)
+    else if (cam_id == camera::id::front_top_far_30)
     {
       chatter_pub_fov30_.publish(ped_obj_array);
     }
-    else if (cam_id == sensor_msgs_itri::CamID::RB60)
+    else if (cam_id == camera::id::right_back_60)
     {
       chatter_pub_right_.publish(ped_obj_array);
     }
-    else if (cam_id == sensor_msgs_itri::CamID::LB60)
+    else if (cam_id == camera::id::left_back_60)
     {
       chatter_pub_left_.publish(ped_obj_array);
     }
@@ -1458,22 +1458,22 @@ bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, ms
 
 void PedestrianEvent::draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, front_image_cache_, sensor_msgs_itri::CamID::F60);
+  draw_pedestrians_callback(msg, front_image_cache_, camera::id::front_bottom_60);
 }
 
 void PedestrianEvent::draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, left_image_cache_, sensor_msgs_itri::CamID::LB60);
+  draw_pedestrians_callback(msg, left_image_cache_, camera::id::left_back_60);
 }
 
 void PedestrianEvent::draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, right_image_cache_, sensor_msgs_itri::CamID::RB60);
+  draw_pedestrians_callback(msg, right_image_cache_, camera::id::right_back_60);
 }
 
 void PedestrianEvent::draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, fov30_image_cache_, sensor_msgs_itri::CamID::F30);
+  draw_pedestrians_callback(msg, fov30_image_cache_, camera::id::front_top_far_30);
 }
 
 void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
@@ -1707,19 +1707,19 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // make cv::Mat to sensor_msgs::Image
   sensor_msgs::ImageConstPtr viz_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
 
-  if (cam_id == sensor_msgs_itri::CamID::F60)
+  if (cam_id == camera::id::front_bottom_60)
   {
     box_pub_front_.publish(viz_pub);
   }
-  else if (cam_id == sensor_msgs_itri::CamID::F30)
+  else if (cam_id == camera::id::front_top_far_30)
   {
     box_pub_fov30_.publish(viz_pub);
   }
-  else if (cam_id == sensor_msgs_itri::CamID::RB60)
+  else if (cam_id == camera::id::right_back_60)
   {
     box_pub_right_.publish(viz_pub);
   }
-  else if (cam_id == sensor_msgs_itri::CamID::LB60)
+  else if (cam_id == camera::id::left_back_60)
   {
     box_pub_left_.publish(viz_pub);
   }
@@ -1833,7 +1833,7 @@ float PedestrianEvent::crossing_predict(const int cam_id, std::vector<std::vecto
 
     if (test_new_model_)
     {
-      if (cam_id == sensor_msgs_itri::CamID::LB60)
+      if (cam_id == camera::id::left_back_60)
       {
         feature.push_back(1);
       }
@@ -1842,7 +1842,7 @@ float PedestrianEvent::crossing_predict(const int cam_id, std::vector<std::vecto
         feature.push_back(0);
       }
 
-      if (cam_id == sensor_msgs_itri::CamID::F30)
+      if (cam_id == camera::id::front_top_far_30)
       {
         feature.push_back(1);
       }
@@ -1851,7 +1851,7 @@ float PedestrianEvent::crossing_predict(const int cam_id, std::vector<std::vecto
         feature.push_back(0);
       }
 
-      if (cam_id == sensor_msgs_itri::CamID::F60)
+      if (cam_id == camera::id::front_bottom_60)
       {
         feature.push_back(1);
       }
@@ -1860,7 +1860,7 @@ float PedestrianEvent::crossing_predict(const int cam_id, std::vector<std::vecto
         feature.push_back(0);
       }
 
-      if (cam_id == sensor_msgs_itri::CamID::RB60)
+      if (cam_id == camera::id::right_back_60)
       {
         feature.push_back(1);
       }

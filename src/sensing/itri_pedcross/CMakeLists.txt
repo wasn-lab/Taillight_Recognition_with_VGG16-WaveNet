@@ -83,8 +83,9 @@ include_directories(
     ${GLOG_INCLUDE_DIR}
     ${PROJECT_BINARY_DIR}/include
     ${TENSORFLOW_INCLUDE_DIR}
+    ${camera_utils_SOURCE_DIR}/include
+    ${car_model_BINARY_DIR}/include
     src/
-    ${msgs_SOURCE_DIR}/include
 )
 link_directories(${TENSORFLOW_ROOT_DIR}/lib)
 

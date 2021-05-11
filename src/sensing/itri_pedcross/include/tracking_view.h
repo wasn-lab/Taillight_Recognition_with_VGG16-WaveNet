@@ -17,7 +17,7 @@
 #include <thread>  // std::this_thread
 #include <fstream>
 
-#include "cam_id.h"
+#include "camera_params.h"
 
 #define PRINT_MESSAGE 0
 #define USE_GLOG 1

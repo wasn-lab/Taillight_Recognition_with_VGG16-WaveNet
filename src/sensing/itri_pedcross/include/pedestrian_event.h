@@ -47,7 +47,7 @@
 //#include <scope_guard.hpp>
 //#include <tf_utils.hpp>
 
-#include "cam_id.h"
+#include "camera_params.h"
 
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
