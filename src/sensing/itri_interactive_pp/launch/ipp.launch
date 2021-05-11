@@ -7,7 +7,7 @@
   <!-- 3: /Tracking3D -->
   <arg name="input_topic" default="3" />
 
-  <!-- Set time to prediction (3fps)-->
+  <!-- Set time to prediction (2fps)-->
   <arg name="prediction_horizon" default="6" />
 
   <!-- Set if delay or not-->
@@ -24,7 +24,7 @@
   <arg name="tf_map" default="0" />
   <!-- 0: Don't short memory-->
   <!-- 1: Short memory-->
-  <arg name="short_mem" default="1"/>
+  <arg name="short_mem" default="0"/>
   <!-- True : output csv-->
   <!-- False : Don't output-->
   <arg name="output_csv" default="False"/>
