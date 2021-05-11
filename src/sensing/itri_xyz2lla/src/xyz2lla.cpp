@@ -40,13 +40,12 @@ void XYZ2LLA::initParam()
 
   while (fin.getline(line, sizeof(line), ','))
   {
-    // fin.getline(line,sizeof(line),'\n');
     std::string nmea_str(line);
     std::stringstream ss(nmea_str);
     std::string token;
 
     getline(ss, token, ',');
-    read_tmp[read_index] = atof(token.c_str());
+    read_tmp[read_index] = strtod(token.c_str(), NULL);
     read_index += 1;
   }
 
@@ -58,9 +57,9 @@ void XYZ2LLA::initParam()
   lat0_ = read_tmp[1];
   alt0_ = read_tmp[2];
 
-  if (XYZ2ENU_switch_ == false)
+  int idx = 3;
+  if (!XYZ2ENU_switch_)
   {
-    int idx = 3;
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
         R_[i][j] = read_tmp[idx++];
@@ -70,7 +69,6 @@ void XYZ2LLA::initParam()
   }
   else
   {
-    int idx = 3;
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
         R1_[i][j] = read_tmp[idx++];
@@ -147,7 +145,7 @@ void XYZ2LLA::initParamTWD97()
     std::string token;
 
     getline(ss, token, ',');
-    read_tmp_1[read_index_1] = atof(token.c_str());
+    read_tmp_1[read_index_1] = strtod(token.c_str(), NULL);
     read_index_1 += 1;
   }
   twd97_shift_x_ = read_tmp_1[0];
@@ -190,7 +188,7 @@ void XYZ2LLA::initParamUTM()
     std::string token;
 
     getline(ss, token, ',');
-    read_tmp_2[read_index_2] = atof(token.c_str());
+    read_tmp_2[read_index_2] = strtod(token.c_str(), NULL);
     read_index_2 += 1;
   }
   utm_shift_x_ = read_tmp_2[0];
@@ -209,47 +207,69 @@ void XYZ2LLA::convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_
 {
   double R_final[3][3], T_final[3];
 
-  if (XYZ2ENU_switch_ == false)
+  if (!XYZ2ENU_switch_)
   {
     for (int i = 0; i < 3; i++)
     {
+      T_final[i] = T_[i];
+
       for (int j = 0; j < 3; j++)
       {
         R_final[i][j] = R_[i][j];
-        T_final[i] = T_[i];
       }
     }
   }
   else
   {
+    double in_x1 = 0;
+    double in_x2 = 100;
+    double in_x3 = 225;
+    double in_x4 = 350;
+
     for (int i = 0; i < 3; i++)
     {
+      if (in_x <= in_x1)
+      {
+        T_final[i] = T1_[i];
+      }
+      else if (in_x > in_x1 && in_x <= in_x2)
+      {
+        T_final[i] = T2_[i];
+      }
+      else if (in_x > in_x2 && in_x <= in_x3)
+      {
+        T_final[i] = T3_[i];
+      }
+      else if (in_x > in_x3 && in_x <= in_x4)
+      {
+        T_final[i] = T4_[i];
+      }
+      else
+      {
+        T_final[i] = T5_[i];
+      }
+
       for (int j = 0; j < 3; j++)
       {
-        if (in_x <= 0)
+        if (in_x <= in_x1)
         {
           R_final[i][j] = R1_[i][j];
-          T_final[i] = T1_[i];
         }
-        else if (in_x > 0 && in_x <= 100)
+        else if (in_x > in_x1 && in_x <= in_x2)
         {
           R_final[i][j] = R2_[i][j];
-          T_final[i] = T2_[i];
         }
-        else if (in_x > 100 && in_x <= 225)
+        else if (in_x > in_x2 && in_x <= in_x3)
         {
           R_final[i][j] = R3_[i][j];
-          T_final[i] = T3_[i];
         }
-        else if (in_x > 225 && in_x <= 350)
+        else if (in_x > in_x3 && in_x <= in_x4)
         {
           R_final[i][j] = R4_[i][j];
-          T_final[i] = T4_[i];
         }
         else
         {
           R_final[i][j] = R5_[i][j];
-          T_final[i] = T5_[i];
         }
       }
     }
@@ -313,7 +333,113 @@ void XYZ2LLA::convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_
 #endif
 }
 
-void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
+void XYZ2LLA::centerPointGPS(msgs::DetectedObjectArray& output)
+{
+  for (auto& obj : output.objects)
+  {
+    double out_lat = 0.;
+    double out_lon = 0.;
+    double out_alt = 0.;
+    double out_E = 0.;
+    double out_N = 0.;
+    double out_U = 0.;
+
+    convert(out_lat, out_lon, out_alt, out_E, out_N, out_U, obj.center_point_gps.x, obj.center_point_gps.y,
+            obj.center_point_gps.z);
+
+    obj.center_point_gps.x = out_lat;
+    obj.center_point_gps.y = out_lon;
+    obj.center_point_gps.z = out_alt;
+
+    std::cout << "[ID " << obj.track.id << "]" << std::endl;
+    std::cout << "Lat (center_point_gps.x): " << std::setprecision(7) << obj.center_point_gps.x << std::endl;
+    std::cout << "Lon (center_point_gps.y): " << std::setprecision(7) << obj.center_point_gps.y << std::endl;
+    std::cout << "Alt (center_point_gps.z): " << std::setprecision(7) << obj.center_point_gps.z << std::endl;
+    std::cout << "heading_enu: (" << std::setprecision(6) << obj.heading_enu.x << ", " << obj.heading_enu.y << ", "
+              << obj.heading_enu.z << ", " << obj.heading_enu.w << ")" << std::endl;
+  }
+}
+
+void XYZ2LLA::publishMsg(const msgs::DetectedObjectArray& output)
+{
+  pub_xyz2lla_.publish(output);
+#if HEARTBEAT == 1
+  std_msgs::Empty output_heartbeat;
+  pub_xyz2lla_heartbeat_.publish(output_heartbeat);
+#endif
+}
+
+int XYZ2LLA::convertClassID(const autoware_perception_msgs::Semantic& semantic)
+{
+  int res = 0;
+  switch (semantic.type)
+  {
+    case 0:  // semantic.UNKNOWN
+      res = sensor_msgs_itri::DetectedObjectClassId::Unknown;
+      break;
+    case 1:  // semantic.CAR
+      res = sensor_msgs_itri::DetectedObjectClassId::Car;
+      break;
+    case 2:  // semantic.TRUCK
+      res = sensor_msgs_itri::DetectedObjectClassId::Truck;
+      break;
+    case 3:  // semantic.BUS
+      res = sensor_msgs_itri::DetectedObjectClassId::Bus;
+      break;
+    case 4:  // semantic.BICYCLE
+      res = sensor_msgs_itri::DetectedObjectClassId::Bicycle;
+      break;
+    case 5:  // semantic.MOTORBIKE
+      res = sensor_msgs_itri::DetectedObjectClassId::Motobike;
+      break;
+    case 6:  // semantic.PEDESTRIAN
+      res = sensor_msgs_itri::DetectedObjectClassId::Person;
+      break;
+    case 7:  // semantic.ANIMAL
+      res = sensor_msgs_itri::DetectedObjectClassId::Unknown;
+      break;
+    default:
+      res = sensor_msgs_itri::DetectedObjectClassId::Unknown;
+  }
+  return res;
+}
+
+void XYZ2LLA::callbackTracking1(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& input)
+{
+  msgs::DetectedObjectArray output;
+  output.header = input->header;
+  output.objects.reserve(input->objects.size());
+
+  for (const auto& obj : input->objects)
+  {
+    msgs::DetectedObject out;
+    out.classId = convertClassID(obj.semantic);
+
+    // take the last three uint8 of uuid_msgs/UniqueID to create float id
+    out.track.id =
+        ((unsigned int)obj.id.uuid[13] << 16) + ((unsigned int)obj.id.uuid[14] << 8) + (unsigned int)obj.id.uuid[15];
+
+    out.center_point_gps.x = obj.state.pose_covariance.pose.position.x;
+    out.center_point_gps.y = obj.state.pose_covariance.pose.position.y;
+    out.center_point_gps.z = obj.state.pose_covariance.pose.position.z;
+
+    out.heading_enu.x = obj.state.pose_covariance.pose.orientation.x;
+    out.heading_enu.y = obj.state.pose_covariance.pose.orientation.y;
+    out.heading_enu.z = obj.state.pose_covariance.pose.orientation.z;
+    out.heading_enu.w = obj.state.pose_covariance.pose.orientation.w;
+
+    out.dimension.length = obj.shape.dimensions.x;
+    out.dimension.width = obj.shape.dimensions.y;
+    out.dimension.height = obj.shape.dimensions.z;
+
+    output.objects.push_back(out);
+  }
+
+  centerPointGPS(output);
+  publishMsg(output);
+}
+
+void XYZ2LLA::callbackTracking2(const msgs::DetectedObjectArray::ConstPtr& input)
 {
   msgs::DetectedObjectArray output;
   output.header = input->header;
@@ -374,30 +500,10 @@ void XYZ2LLA::callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input)
       obj.center_point_gps.y = pose_in_map.position.y;
       obj.center_point_gps.z = pose_in_map.position.z;
     }
-
-    double out_lat = 0.;
-    double out_lon = 0.;
-    double out_alt = 0.;
-    double out_E = 0.;
-    double out_N = 0.;
-    double out_U = 0.;
-    convert(out_lat, out_lon, out_alt, out_E, out_N, out_U, obj.center_point_gps.x, obj.center_point_gps.y,
-            obj.center_point_gps.z);
-    // #if DEBUG == 1
-    std::cout << "out Lat : " << std::setprecision(20) << out_lat << std::endl;
-    std::cout << "out Lon : " << std::setprecision(20) << out_lon << std::endl;
-    std::cout << "out Alt : " << std::setprecision(20) << out_alt << std::endl;
-    // #endif
-    obj.center_point_gps.x = out_lat;
-    obj.center_point_gps.y = out_lon;
-    obj.center_point_gps.z = out_alt;
   }
 
-  pub_xyz2lla_.publish(output);
-#if HEARTBEAT == 1
-  std_msgs::Empty output_heartbeat;
-  pub_xyz2lla_heartbeat_.publish(output_heartbeat);
-#endif
+  centerPointGPS(output);
+  publishMsg(output);
 }
 
 int XYZ2LLA::run()
@@ -414,13 +520,15 @@ int XYZ2LLA::run()
   initParamUTM();
 #endif
 
-  std::string in_topic = "Tracking3D";
-  std::string out_topic = in_topic + "/xyz2lla";
+#if INPUT_DYNAMIC_OBJ == 1
+  sub_xyz2lla_ = nh_.subscribe(in_topic1_, 1, &XYZ2LLA::callbackTracking1, this);
+#else
+  sub_xyz2lla_ = nh_.subscribe(in_topic2_, 1, &XYZ2LLA::callbackTracking2, this);
+#endif
 
-  sub_xyz2lla_ = nh_.subscribe(in_topic, 1, &XYZ2LLA::callbackTracking, this);
-  pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic, 1);
+  pub_xyz2lla_ = nh_.advertise<msgs::DetectedObjectArray>(out_topic_, 1);
 #if HEARTBEAT == 1
-  pub_xyz2lla_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic + std::string("/heartbeat"), 1);
+  pub_xyz2lla_heartbeat_ = nh_.advertise<std_msgs::Empty>(out_topic_ + std::string("/heartbeat"), 1);
 #endif
 
   tf2_ros::TransformListener tf_listener(tf_buffer_);
