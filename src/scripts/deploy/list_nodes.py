@@ -60,6 +60,7 @@ def list_nodes():
     __find_machines(nodes)
     __find_pub_subs(nodes)
     __calc_topic_subcriptions(nodes)
+    print(json.dumps(nodes, indent=2, sort_keys=True))
     jdata = json.dumps(nodes, sort_keys=True)
     output = "/tmp/node_info.json"
     with open(output, "w") as _fp:
