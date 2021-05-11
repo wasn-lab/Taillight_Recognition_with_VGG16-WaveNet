@@ -9,7 +9,7 @@ from ctrl_info03 import CtrlInfo03, BrakeStatus
 
 class CtrlInfo03Test(unittest.TestCase):
     def setUp(self):
-        self.node = rospy.init_node("ctrl_info_test_node", anonymous=True)
+        rospy.init_node("ctrl_info_test_node", anonymous=True)
         self.ctrl03 = CtrlInfo03()
         self.msg = Flag_Info()
 
