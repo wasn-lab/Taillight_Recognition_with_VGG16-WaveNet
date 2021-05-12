@@ -484,7 +484,7 @@ void PedestrianEvent::tracking3d_callback(const msgs::DetectedObjectArray::Const
     }
     else if (obj.camInfo.size() != 8)
     {
-      std::cout << "ERROR: obj.camInfo.size() is not 8." << std::endl;
+      std::cout << "ERROR: obj.camInfo.size() is " << obj.camInfo.size() << ", not 8." << std::endl;
     }
     else
     {
