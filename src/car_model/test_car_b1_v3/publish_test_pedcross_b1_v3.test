@@ -1,20 +1,19 @@
 <launch>
     <include file="$(find image_compressor)/launch/decmpr.launch" />
-    <remap from="/cam/front_bottom_60/raw" to="/cam/front_bottom_60" />
-    <remap from="/cam/front_top_far_30/raw" to="/cam/front_top_far_30" />
-    <remap from="/cam/front_top_close_120/raw" to="/cam/front_top_close_120" />
-    <remap from="/cam/right_front_60/raw" to="/cam/right_front_60" />
-    <remap from="/cam/right_back_60/raw" to="/cam/right_back_60" />
-    <remap from="/cam/left_front_60/raw" to="/cam/left_front_60" />
-    <remap from="/cam/left_back_60/raw" to="/cam/left_back_60" />
-    <remap from="/cam/back_top_120/raw" to="/cam/back_top_120" />
-
     <include file="$(find alignment)/launch/b1_v3_2d_3d_matching.launch" />
     <include file="$(find itri_tracking_3d)/launch/tpp.launch" />
 
     <arg name="car_model" default="0" />
     <include file="$(find itri_pedcross)/launch/ped.launch">
         <arg name="car_model" value="$(arg car_model)"/>
+        <remap from="/cam/front_bottom_60/raw" to="/cam/front_bottom_60" />
+        <remap from="/cam/front_top_far_30/raw" to="/cam/front_top_far_30" />
+        <remap from="/cam/front_top_close_120/raw" to="/cam/front_top_close_120" />
+        <remap from="/cam/right_front_60/raw" to="/cam/right_front_60" />
+        <remap from="/cam/right_back_60/raw" to="/cam/right_back_60" />
+        <remap from="/cam/left_front_60/raw" to="/cam/left_front_60" />
+        <remap from="/cam/left_back_60/raw" to="/cam/left_back_60" />
+        <remap from="/cam/back_top_120/raw" to="/cam/back_top_120" />
     </include>
 
     <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/pedcross_2021-05-06-13-36-41_0.bag /CameraDetection:=/CameraDetection_bak /PedCross/3D_marker:=/PedCross/3D_marker_bak /PedCross/Alert:=/PedCross/Alert_bak /PedCross/Alert/front_bottom_60:=/PedCross/Alert/front_bottom_60_bak /PedCross/Alert/front_top_far_60:=/PedCross/Alert/front_top_far_60_bak /PedCross/Alert/left_back_60:=/PedCross/Alert/left_back_60_bak /PedCross/Alert/right_back_60:=/PedCross/Alert/right_back_60_bak /PedCross/Pedestrians/front_bottom_60:=/PedCross/Pedestrians/front_bottom_60_bak /PedCross/Pedestrians/front_top_far_30:=/PedCross/Pedestrians/front_top_far_30_bak /PedCross/Pedestrians/left_back_60:=/PedCross/Pedestrians/left_back_60_bak /PedCross/Pedestrians/right_back_60:=/PedCross/Pedestrians/right_back_60_bak /PedCross/Polygon:=/PedCross/Polygon_bak" />
