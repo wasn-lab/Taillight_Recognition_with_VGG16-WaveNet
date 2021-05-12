@@ -3,12 +3,23 @@
 # All rights reserved.
 import unittest
 import datetime
+import rospy
 from issue_reporter import IssueReporter, generate_issue_description
 from jira_utils import PROJECT_ID_SCM, ISSUE_TYPE_ID_TASK
 from status_level import OK, WARN
 
 
 class IssueReporterTest(unittest.TestCase):
+    def setUp(self):
+        self.plate = None
+        if rospy.has_param("/south_bridge/license_plate_number"):
+            self.plate = rospy.get_param("/south_bridge/license_plate_number")
+        rospy.set_param("/south_bridge/license_plate_number", u"試0002")
+
+    def tearDown(self):
+        if self.plate:
+            rospy.set_param("/south_bridge/license_plate_number", self.plate)
+
     def test_post_issue(self):
         reporter = IssueReporter()
         reporter.set_project_id(PROJECT_ID_SCM)

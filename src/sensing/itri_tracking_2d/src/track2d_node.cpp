@@ -49,6 +49,7 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
   dt_ = vel_.get_dt();
 
   KTs_.header_ = objs_header_;
+  KTs_.cam_id_ = in_source_;
 
   if (is_legal_dt_)
   {
@@ -59,7 +60,7 @@ void Track2DNode::callback_camera(const msgs::DetectedObjectArray::ConstPtr& inp
     KTs_.objs_.reserve(input->objects.size());
     for (unsigned i = 0; i < input->objects.size(); i++)
     {
-      if (input->objects[i].camInfo[0].id == in_source_)
+      if (input->objects[i].camInfo[in_source_].prob != -1)
       {
         KTs_.objs_.push_back(input->objects[i]);
       }
