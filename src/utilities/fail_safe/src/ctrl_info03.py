@@ -14,6 +14,7 @@ class BrakeStatus:
     Y_ANCHORING = 2  # maintaining static to prevent from sliding
     Y_AEB = 3        # AEB event
     Y_MANUAL_BRAKE = 4  # driver press brake pedal
+    NUM_STATUS = 5
 
 
 class CtrlInfo03(object):
@@ -30,7 +31,8 @@ class CtrlInfo03(object):
         self.aeb_enable = False
         self.acc_enable = False
         self.xbywire_enable = False
-        self.brake_status = BrakeStatus.N_UNPRESSED
+        self.brake_status_counts = {_: 0 for _ in range(BrakeStatus.NUM_STATUS)}
+        self.prev_reported_events = {_: False for _ in range(BrakeStatus.NUM_STATUS)}
 
         # runtime status
         self.status = UNKNOWN
@@ -76,26 +78,57 @@ class CtrlInfo03(object):
                 "status": status,
                 "status_str": status_str}
 
-    def get_events_in_list(self):
-        status = ""
+    def __get_aeb_event(self):
+        status = OK
+        status_str = ""
+        module = "aeb_event"
+
+
+        if self.brake_status_counts[BrakeStatus.Y_AEB] > 0:
+            if self.prev_reported_events[BrakeStatus.Y_AEB]:
+                rospy.loginfo("Skip reporting AEB event as it has been reported")
+            else:
+                # New AEB event
+                status = WARN
+                status_str = "AEB: Automatic emergency brake!"
+                self.prev_reported_events[BrakeStatus.Y_AEB] = True
+        else:
+            self.prev_reported_events[BrakeStatus.Y_AEB] = False
+        self.brake_status_counts[BrakeStatus.Y_AEB] = 0
+
+        if status != OK:
+            doc = {"module": module,
+                   "status": status,
+                   "status_str": status_str}
+            return [doc]
+        return []
+
+    def __get_disengage_event(self):
+        status = OK
         status_str = ""
         module = ""
 
-        if self.brake_status == BrakeStatus.Y_AEB:
-            status = WARN
-            status_str = "AEB: Automatic emergency brake!"
-            module = "aeb_event"
-        if self.brake_status == BrakeStatus.Y_MANUAL_BRAKE:
-            status = FATAL
-            status_str = "Disengage: Driver manually press brake pedals!"
-            module = "disengage_event"
+        if self.brake_status_counts[BrakeStatus.Y_MANUAL_BRAKE] > 0:
+            if self.prev_reported_events[BrakeStatus.Y_MANUAL_BRAKE]:
+                rospy.loginfo("Skip reporting disengage event as it has been reported")
+            else:
+                status = FATAL
+                status_str = "Disengage: Driver manually press brake pedals!"
+                module = "disengage_event"
+                self.prev_reported_events[BrakeStatus.Y_MANUAL_BRAKE] = True
+        else:
+            self.prev_reported_events[BrakeStatus.Y_MANUAL_BRAKE] = False
 
+        self.brake_status_counts[BrakeStatus.Y_MANUAL_BRAKE] = 0
         if status:
             doc = {"module": module,
                    "status": status,
                    "status_str": status_str}
             return [doc]
         return []
+
+    def get_events_in_list(self):
+        return self.__get_disengage_event() + self.__get_aeb_event()
 
     def get_status_in_list(self):
         ret = [self._get_acc_status(),
@@ -124,7 +157,12 @@ class CtrlInfo03(object):
     def _cb(self, msg):
         self._update_heap()
         heapq.heappush(self.heap, time.time())
-        self.brake_status = int(msg.Dspace_Flag05)
+        brake_status = int(msg.Dspace_Flag05)
+        if brake_status >= 0 and brake_status < BrakeStatus.NUM_STATUS:
+            self.brake_status_counts[brake_status] += 1
+        else:
+            rospy.logwarn("Unknown brake_status (Dspace_Flag05) of %s: %f", CtrlInfo03.TOPIC, msg.Dspace_Flag05)
+
         self.xbywire_enable = bool(int(msg.Dspace_Flag06))
         self.aeb_enable = bool(int(msg.Dspace_Flag07))
         self.acc_enable = bool(int(msg.Dspace_Flag08))

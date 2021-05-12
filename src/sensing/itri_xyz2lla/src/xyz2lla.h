@@ -14,10 +14,18 @@
 #include "gnss_utility/gnss_utility.h"
 #include "gnss_utility_utm/gnss_utility_utm.h"
 
+// for INPUT_DYNAMIC_OBJ == 1
+#include <unique_id/unique_id.h>
+#include "detected_object_class_id.h"
+#include <autoware_perception_msgs/Semantic.h>
+#include <autoware_perception_msgs/DynamicObject.h>
+#include <autoware_perception_msgs/DynamicObjectArray.h>
+
 #define TWD97 0
 #define UTM 1
 #define DEBUG 0
 #define HEARTBEAT 1
+#define INPUT_DYNAMIC_OBJ 1
 
 namespace xyz2lla
 {
@@ -41,6 +49,10 @@ private:
 #if HEARTBEAT == 1
   ros::Publisher pub_xyz2lla_heartbeat_;
 #endif
+
+  std::string in_topic1_ = "objects";
+  std::string in_topic2_ = "Tracking3D";
+  std::string out_topic_ = "Tracking3D/xyz2lla";
 
   tf2_ros::Buffer tf_buffer_;
   std::string frame_id_target_ = "map";
@@ -92,7 +104,11 @@ private:
 
   void convert(double& out_lat_wgs84, double& out_lon_wgs84, double& out_alt_wgs84, double& out_E, double& out_N,
                double& out_U, const double in_x, const double in_y, const double in_z);
-  void callbackTracking(const msgs::DetectedObjectArray::ConstPtr& input);
+  void centerPointGPS(msgs::DetectedObjectArray& output);
+  void publishMsg(const msgs::DetectedObjectArray& output);
+  int convertClassID(const autoware_perception_msgs::Semantic& semantic);
+  void callbackTracking1(const autoware_perception_msgs::DynamicObjectArray::ConstPtr& input);
+  void callbackTracking2(const msgs::DetectedObjectArray::ConstPtr& input);
 };
 }  // namespace xyz2lla
 #endif  // __XYZ2LLA_H__

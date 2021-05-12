@@ -17,6 +17,8 @@
 #include <thread>  // std::this_thread
 #include <fstream>
 
+#include "camera_params.h"
+
 #define PRINT_MESSAGE 0
 #define USE_GLOG 1
 #if USE_GLOG
