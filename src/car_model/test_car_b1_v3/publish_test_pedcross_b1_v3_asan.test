@@ -1,9 +1,11 @@
 <launch>
     <arg name="car_model" default="0" />
 
+    <include file="$(find itri_tracking_3d)/launch/tpp.launch" />
     <include file="$(find itri_pedcross)/launch/ped.launch">
-        <arg name="car_model"     value="$(arg car_model)"/>
+        <arg name="car_model" value="$(arg car_model)"/>
     </include>
+
     <!-- bag in NAS: 10T-1/Share/ADV/Rosbag/B1/20201104_in_itri_1.3_sunny_afternoon/ped_skip9_left_10km_fail -->
     <node pkg="car_model" type="publish_empty_msg.py" name="stop_node" required="true" args="-d 1800 -t /stop_running" />
     <node pkg="rosbag" type="play" name="player" output="log" args="-l $(find car_model)/../bags/auto_record_2020-11-04-15-29-32_0.bag /PedCross/3D_marker:=/PedCross/3D_marker_bak /PedCross/Alert:=/PedCross/Alert_bak /PedCross/Alert/front_bottom_60:=/PedCross/Alert/front_bottom_60_bak /PedCross/Alert/front_top_far_60:=/PedCross/Alert/front_top_far_60_bak /PedCross/Alert/left_back_60:=/PedCross/Alert/left_back_60_bak /PedCross/Alert/right_back_60:=/PedCross/Alert/right_back_60_bak /PedCross/Pedestrians/front_bottom_60:=/PedCross/Pedestrians/front_bottom_60_bak /PedCross/Pedestrians/front_top_far_30:=/PedCross/Pedestrians/front_top_far_30_bak /PedCross/Pedestrians/left_back_60:=/PedCross/Pedestrians/left_back_60_bak /PedCross/Pedestrians/right_back_60:=/PedCross/Pedestrians/right_back_60_bak /PedCross/Polygon:=/PedCross/Polygon_bak" />
@@ -11,6 +13,9 @@
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest" time-limit="3600.0">
         <rosparam>
             topics:
+                - name: /Tracking3D
+                  timeout: 15
+                  negative: False
                 - name: /PedCross/Alert
                   timeout: 15
                   negative: False

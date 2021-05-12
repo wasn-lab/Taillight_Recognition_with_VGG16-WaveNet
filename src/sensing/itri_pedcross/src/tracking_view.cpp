@@ -33,9 +33,22 @@ void TrackingView::detection_callback(const msgs::DetectedObjectArray::ConstPtr&
   latest_detection = *msg;
   draw_tracking_with_detection();
 }
+
 void TrackingView::tracking_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
 {
-  latest_tracking = *msg;
+  latest_tracking.header = msg->header;
+
+  std::vector<msgs::DetectedObject>().swap(latest_tracking.objects);
+  latest_tracking.objects.reserve(msg->objects.size());
+
+  for (const auto& obj : msg->objects)
+  {
+    if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
+    {
+      latest_tracking.objects.push_back(obj);
+    }
+  }
+
   draw_tracking_with_detection();
 }
 
@@ -77,10 +90,10 @@ void TrackingView::draw_tracking_with_detection()
   for (const auto& obj : latest_detection.objects)
   {
     cv::Rect box;
-    box.x = obj.camInfo[0].u * scaling_ratio_width;
-    box.y = obj.camInfo[0].v * scaling_ratio_height;
-    box.width = obj.camInfo[0].width * scaling_ratio_width;
-    box.height = obj.camInfo[0].height * scaling_ratio_height;
+    box.x = obj.camInfo[camera::id::front_bottom_60].u * scaling_ratio_width;
+    box.y = obj.camInfo[camera::id::front_bottom_60].v * scaling_ratio_height;
+    box.width = obj.camInfo[camera::id::front_bottom_60].width * scaling_ratio_width;
+    box.height = obj.camInfo[camera::id::front_bottom_60].height * scaling_ratio_height;
     if (box.x + box.width > matrix.cols)
     {
       box.width = matrix.cols - box.x;
@@ -96,10 +109,10 @@ void TrackingView::draw_tracking_with_detection()
   for (const auto& obj : latest_tracking.objects)
   {
     cv::Rect box;
-    box.x = obj.camInfo[0].u * scaling_ratio_width;
-    box.y = obj.camInfo[0].v * scaling_ratio_height;
-    box.width = obj.camInfo[0].width * scaling_ratio_width;
-    box.height = obj.camInfo[0].height * scaling_ratio_height;
+    box.x = obj.camInfo[camera::id::front_bottom_60].u * scaling_ratio_width;
+    box.y = obj.camInfo[camera::id::front_bottom_60].v * scaling_ratio_height;
+    box.width = obj.camInfo[camera::id::front_bottom_60].width * scaling_ratio_width;
+    box.height = obj.camInfo[camera::id::front_bottom_60].height * scaling_ratio_height;
     if (box.x + box.width > matrix.cols)
     {
       box.width = matrix.cols - box.x;
