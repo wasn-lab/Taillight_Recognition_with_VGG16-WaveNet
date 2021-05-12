@@ -23,3 +23,5 @@ sleep 30
 gnome-terminal -e 'ssh -t xavier "screen -c /home/nvidia/itriadv/src/scripts/bus_env/xavier.screen"'
 sleep 5
 gnome-terminal -e 'ssh -t camera "screen -c /home/camera/itriadv/src/scripts/bus_env/camera.screen"'
+sleep 5
+gnome-terminal -e "screen -c ${cur_dir}/lidar_rviz.screen"
