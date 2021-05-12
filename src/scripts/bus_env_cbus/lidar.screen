@@ -61,9 +61,6 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_tracking_3d.sh^M"
 screen -t init_xyz2lla
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_xyz2lla.sh^M"
 
-screen -t init_grid_pp
-stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_grid_pp.sh^M"
-
 screen -t init_obj_msg_converter
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_obj_msg_converter.sh^M"
 
@@ -88,14 +85,21 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_pedcross_tf.sh^M"
 screen -t replay_lidar_data_to_localization
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_lidar_data_to_localization.sh^M"
 
+screen -t replay_on_switch
+stuff "bash /home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_lidar_data_to_localization_switch.sh^M"
+
 screen -t replay_cmpr_pc2
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_cmpr_pc2_to_camera.sh^M"
 
-screen -t GUI_B_car.launch
-stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch --wait opengl_test GUI_B_car.launch^M"
+# Disable GUI as passenger cabinet HMI does not display it anymore.
+# screen -t GUI_B_car.launch
+# stuff "source /home/lidar/itriadv/devel/setup.bash;roslaunch --wait opengl_test GUI_B_car.launch^M"
 
 screen -t detection_viz
 stuff "source /home/lidar/itriadv/devel/setup.bash; roslaunch --wait detection_viz itriadv_viz.launch rviz_config:=\"U3_b5_lanelet2_pedcross\"^M"
 
 screen -t hmi
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_hmi.sh^M"
+
+screen -t pad_issue_reporter
+stuff "bash /home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_pad_issue_reporter.sh^M"

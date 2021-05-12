@@ -299,7 +299,7 @@ bool convertBoolean(int state)
 
 void callback_flag_info02(const msgs::Flag_Info::ConstPtr& input)
 {
-    g_mode = input->Dspace_Flag01;
+    g_mode = input->Dspace_Flag08;
     std::cout << "adv mode: " << g_mode << std::endl;
 }
 

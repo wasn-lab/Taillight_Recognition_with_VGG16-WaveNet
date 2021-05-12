@@ -112,7 +112,7 @@ class RosModuleTraffic
       
       static ros::Subscriber fps = n.subscribe("/GUI/topic_fps_out", 1, cb5);
       static ros::Subscriber busStopInfo = n.subscribe("/BusStop/Info", 1, cb6);
-      static ros::Subscriber reverse = n.subscribe("/mileage/relative_mileage", 1, cb7);
+      //static ros::Subscriber reverse = n.subscribe("/mileage/relative_mileage", 1, cb7);
       static ros::Subscriber next_stop = n.subscribe("/NextStop/Info", 1, cb8);
       static ros::Subscriber round = n.subscribe("/BusStop/Round", 1, cb9);
       static ros::Subscriber imu = n.subscribe("imu_data_rad", 1, cb10);

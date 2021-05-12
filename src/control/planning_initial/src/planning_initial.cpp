@@ -223,7 +223,7 @@ void objectsCallback(const autoware_perception_msgs::DynamicObjectArray& objects
   {
     // object.header.frame_id = "map";
     // object.header.stamp = ros::Time::now();
-    object.objects[i].semantic.confidence = 1.0;
+    // object.objects[i].semantic.confidence = 1.0;
 
     // object.objects[i].state.pose_covariance.pose.position.x = 2039.41529092;
     // object.objects[i].state.pose_covariance.pose.position.y = 41618.2901704;
@@ -233,12 +233,12 @@ void objectsCallback(const autoware_perception_msgs::DynamicObjectArray& objects
     // object.objects[i].state.pose_covariance.pose.orientation.z = -0.951199478151;
     // object.objects[i].state.pose_covariance.pose.orientation.w = 0.30855072448;
 
-    object.objects[i].state.twist_covariance.twist.linear.x = 0;
-    object.objects[i].state.twist_covariance.twist.linear.y = 0;
-    object.objects[i].state.twist_covariance.twist.linear.z = 0;
-    object.objects[i].state.twist_covariance.twist.angular.x = 0;
-    object.objects[i].state.twist_covariance.twist.angular.y = 0;
-    object.objects[i].state.twist_covariance.twist.angular.z = 0;
+    // object.objects[i].state.twist_covariance.twist.linear.x = 0;
+    // object.objects[i].state.twist_covariance.twist.linear.y = 0;
+    // object.objects[i].state.twist_covariance.twist.linear.z = 0;
+    // object.objects[i].state.twist_covariance.twist.angular.x = 0;
+    // object.objects[i].state.twist_covariance.twist.angular.y = 0;
+    // object.objects[i].state.twist_covariance.twist.angular.z = 0;
 
     // object.objects[i].state.pose_covariance.covariance = {9.999999747378752e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.999999747378752e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 9.999999747378752e-05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.007615434937179089};
     // object.objects[i].shape.type = 0;
@@ -447,45 +447,45 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   
   if (signal_state == 0)
   {
-    // 0:red 1:yellow 2:green 3:left 4:straight 5:right 6:ped green 7:ped red
+    // 0:ped red 1:ped green 2:right 3:straight 4:left 5:green 6:yellow 7:red
     std::string light_status_binary = toBinary(light_status);
     // std::cout << "light_status_binary = " << light_status_binary << std::endl;
     // std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
     // std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
-    if (light_status_binary[0] == 49) // red // "1" = 49
+    if (light_status_binary[2] == 49) // right
     {
-      // std::cout << "REDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD " << std::endl;
-      lampstate.type = autoware_perception_msgs::LampState::RED;
+      lampstate.type = autoware_perception_msgs::LampState::RIGHT;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[1] == 49) // yellow
-    {
-      lampstate.type = autoware_perception_msgs::LampState::YELLOW;
-      lampstate.confidence = confidence;
-      trafficlightstate.lamp_states.push_back(lampstate);
-    }
-    if (light_status_binary[2] == 49) // green
-    {
-      lampstate.type = autoware_perception_msgs::LampState::GREEN;
-      lampstate.confidence = confidence;
-      trafficlightstate.lamp_states.push_back(lampstate);
-    }
-    if (light_status_binary[3] == 49) // left
-    {
-      lampstate.type = autoware_perception_msgs::LampState::LEFT;
-      lampstate.confidence = confidence;
-      trafficlightstate.lamp_states.push_back(lampstate);
-    }
-    if (light_status_binary[4] == 49) // straight
+    if (light_status_binary[3] == 49) // straight
     {
       lampstate.type = autoware_perception_msgs::LampState::UP;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[5] == 49) // right
+    if (light_status_binary[4] == 49) // left
     {
-      lampstate.type = autoware_perception_msgs::LampState::RIGHT;
+      lampstate.type = autoware_perception_msgs::LampState::LEFT;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[5] == 49) // green
+    {
+      lampstate.type = autoware_perception_msgs::LampState::GREEN;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[6] == 49) // yellow
+    {
+      lampstate.type = autoware_perception_msgs::LampState::YELLOW;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
+    if (light_status_binary[7] == 49) // red // "1" = 49
+    {
+      // std::cout << "REDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD " << std::endl;
+      lampstate.type = autoware_perception_msgs::LampState::RED;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }

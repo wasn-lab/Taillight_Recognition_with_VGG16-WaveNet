@@ -228,17 +228,13 @@ int main(int argc, char** argv)
   std::vector<ros::Subscriber> cam_subs(g_cam_ids.size());
   static void (*f_cam_callbacks[])(const sensor_msgs::Image::ConstPtr&) = { callback_cam_front_bottom_60,
                                                                             callback_cam_front_top_far_30 };
+  std::string lidar_raw_topic = "/LidarFrontTop/Raw";
 
   for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
   {
     cam_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]];
     cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
-
-    /// Wait for all message
-    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
-    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
-    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
 
     cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
 
@@ -248,11 +244,6 @@ int main(int argc, char** argv)
     }
     if (g_lidarall_publish)
     {
-      std::string lidar_raw_topic = "/LidarFrontTop/Raw";
-      std::cout << "Wait for input topic " << lidar_raw_topic << std::endl;
-      ros::topic::waitForMessage<sensor_msgs::PointCloud2>(lidar_raw_topic);
-      std::cout << lidar_raw_topic << " is ready" << std::endl;
-
       g_lidar_sub = nh.subscribe(lidar_raw_topic, 1, callback_LidarAll);
       g_lidar_repub = nh.advertise<pcl::PointCloud<pcl::PointXYZI>>("/LidarAll_re", 2);
     }
@@ -288,6 +279,20 @@ int main(int argc, char** argv)
   g_yolo_app.init_yolo(pkg_path, cfg_file);
   g_dist_est.init(pkg_path, g_dist_est_mode);
 
+  /// wait for input topic
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    /// Wait for all message
+    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
+    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+  }
+  if (g_lidarall_publish)
+  {
+    std::cout << "Wait for input topic " << lidar_raw_topic << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::PointCloud2>(lidar_raw_topic);
+    std::cout << lidar_raw_topic << " is ready" << std::endl;
+  }
   ros::MultiThreadedSpinner spinner(3);
   spinner.spin();
 
