@@ -107,7 +107,7 @@ void detection(int argc, char** argv)
   projector.init(0);
 
   image_transport::ImageTransport it(n);
-  image_transport::Subscriber sub_image2 = it.subscribe("/cam/front_top_close_120/raw", 1, callbackCamera);
+  image_transport::Subscriber sub_image2 = it.subscribe("/cam/right_front_60/raw", 1, callbackCamera);
 
   ros::Subscriber LidFrontTopSub = n.subscribe("/LidarAll", 1, callbackLidarAll);
 
@@ -138,7 +138,7 @@ void detection(int argc, char** argv)
           double hight = (double)release_cloud->points[i].z;
           int red_int = 0, gre_int = 0, blu_int = 0;
           double depths_float = (double)release_cloud->points[i].x;
-          if(hight > -2.4 && hight < -0.3 && abs(depths_float) <= 14)
+          if(hight > -2.4 && hight < -0.3)
           {
             cv::circle(M_MID_temp, cv::Point(result[0], result[1]), 2.5, CV_RGB(0, 0, 0), -1, 8, 0);
           }
