@@ -8,7 +8,7 @@
         <arg name="car_model" value="1"/>
     </include>
 
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/pedcross_2021-05-06-13-36-41_0_filtered.bag /cam/front_bottom_60/raw:=/cam/front_bottom_60 /cam/front_top_far_30/raw:=/cam/front_top_far_30 /cam/right_back_60/raw:=/cam/right_back_60 /cam/left_back_60/raw:=/cam/left_back_60/>
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/pedcross_2021-05-06-13-36-41_0_filtered.bag /cam/front_bottom_60/raw:=/cam/front_bottom_60 /cam/front_top_far_30/raw:=/cam/front_top_far_30 /cam/right_back_60/raw:=/cam/right_back_60 /cam/left_back_60/raw:=/cam/left_back_60" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>
