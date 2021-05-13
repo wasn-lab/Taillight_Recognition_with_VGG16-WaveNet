@@ -49,6 +49,7 @@
 
 #include "camera_params.h"
 
+#define INPUT_IMAGE_RAW 0
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
 #define PRINT_MESSAGE 0

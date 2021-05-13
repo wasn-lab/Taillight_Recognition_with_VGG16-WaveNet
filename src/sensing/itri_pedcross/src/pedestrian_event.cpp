@@ -2350,6 +2350,27 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic1 << " is ready" << std::endl;
 
     // input topics from raw images
+#if INPUT_IMAGE_RAW == 1
+    std::string in_topic5 = "cam/front_bottom_60/raw";
+    // std::cout << "Wait for input topic " << in_topic5 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
+    // std::cout << in_topic5 << " is ready" << std::endl;
+
+    std::string in_topic6 = "cam/left_back_60/raw";
+    // std::cout << "Wait for input topic " << in_topic6 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
+    // std::cout << in_topic6 << " is ready" << std::endl;
+
+    std::string in_topic7 = "cam/right_back_60/raw";
+    // std::cout << "Wait for input topic " << in_topic7 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
+    // std::cout << in_topic7 << " is ready" << std::endl;
+
+    std::string in_topic8 = "cam/front_top_far_30/raw";
+    // std::cout << "Wait for input topic " << in_topic8 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
+    // std::cout << in_topic8 << " is ready" << std::endl;
+#else
     std::string in_topic5 = "cam/front_bottom_60";
     // std::cout << "Wait for input topic " << in_topic5 << std::endl;
     // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
@@ -2369,6 +2390,7 @@ void PedestrianEvent::pedestrian_event()
     // std::cout << "Wait for input topic " << in_topic8 << std::endl;
     // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
     // std::cout << in_topic8 << " is ready" << std::endl;
+#endif
 
     // input topics from pedestrian_subscriber.py
     // Warning: Do NOT apply waitForMessage to topics of PedCross/Pedestrian/...
