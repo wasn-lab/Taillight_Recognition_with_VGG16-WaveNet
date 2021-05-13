@@ -11,7 +11,7 @@
     <node pkg="car_model" type="publish_empty_msg.py" name="stop_node" required="true" args="-d 1800 -t /stop_running" />
     <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/pedcross_2021-05-06-13-36-41_0_filtered.bag /cam/front_bottom_60/raw:=/cam/front_bottom_60 /cam/front_top_far_30/raw:=/cam/front_top_far_30 /cam/right_back_60/raw:=/cam/right_back_60 /cam/left_back_60/raw:=/cam/left_back_60" />
 
-    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest" time-limit="3600.0">
         <rosparam>
             topics:
                 - name: /Tracking3D
