@@ -20,6 +20,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
+  ${msgs_SOURCE_DIR}/include
 )
 
 set(SOURCES_SRCS

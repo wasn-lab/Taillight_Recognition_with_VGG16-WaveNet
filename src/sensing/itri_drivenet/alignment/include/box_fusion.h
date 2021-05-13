@@ -36,6 +36,9 @@ private:
   static constexpr int LB_right_bottom_x = 1832;
   static constexpr int LB_right_bottom_y = 340;
 
+  std::vector<msgs::CamInfo> cam_info_vector;
+  std::vector<msgs::CamInfo> cam_info_vector_tmp;
+  
 public:
   Boxfusion();
   ~Boxfusion();

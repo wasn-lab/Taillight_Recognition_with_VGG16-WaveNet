@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 sleep 10;
 # Old setting, streamed images freeze after 8 seconds.
 # firefox "https://service.itriadv.co:8784/Unit/DriverDashboard?URL=local&R=true"
@@ -10,4 +9,5 @@ echo "run infinite loop to raise HMI to be the top window."
 while true; do
   python /usr/local/bin/raise_window.py -w "駕駛艙畫面"
   sleep 1
+  set +x
 done
