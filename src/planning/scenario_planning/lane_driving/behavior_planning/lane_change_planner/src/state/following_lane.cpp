@@ -124,6 +124,11 @@ State FollowingLaneState::getNextState() const
     ROS_ERROR_THROTTLE(1, "current lanes empty. Keeping state.");
     return State::FOLLOWING_LANE;
   }
+  if (!isLaneChangeApproved())
+  {
+    ROS_INFO("Lane Change is Unapproved !");
+    return State::FOLLOWING_LANE;
+  }
   if (route_handler_ptr_->isInPreferredLane(current_pose_) && isLaneBlocked(current_lanes_)) {
     return State::BLOCKED_BY_OBSTACLE;
   }

@@ -452,37 +452,37 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     // std::cout << "light_status_binary = " << light_status_binary << std::endl;
     // std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
     // std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
-    if (light_status_binary[2] == 49) // right
+    if (light_status_binary[2] == '1') // right
     {
       lampstate.type = autoware_perception_msgs::LampState::RIGHT;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[3] == 49) // straight
+    if (light_status_binary[3] == '1') // straight
     {
       lampstate.type = autoware_perception_msgs::LampState::UP;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[4] == 49) // left
+    if (light_status_binary[4] == '1') // left
     {
       lampstate.type = autoware_perception_msgs::LampState::LEFT;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[5] == 49) // green
+    if (light_status_binary[5] == '1') // green
     {
       lampstate.type = autoware_perception_msgs::LampState::GREEN;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[6] == 49) // yellow
+    if (light_status_binary[6] == '1') // yellow
     {
       lampstate.type = autoware_perception_msgs::LampState::YELLOW;
       lampstate.confidence = confidence;
       trafficlightstate.lamp_states.push_back(lampstate);
     }
-    if (light_status_binary[7] == 49) // red // "1" = 49
+    if (light_status_binary[7] == '1') // red
     {
       // std::cout << "REDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD " << std::endl;
       lampstate.type = autoware_perception_msgs::LampState::RED;
