@@ -1543,6 +1543,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
+#if DEBUG_SKIP_FRAME == 1
       if (obj.using_skip_frame == 1)
       {
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
@@ -1551,6 +1552,9 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       {
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
       }
+#else
+      cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
+#endif
     }
     else
     {
