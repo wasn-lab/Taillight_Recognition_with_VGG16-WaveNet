@@ -492,15 +492,15 @@ void PedestrianEvent::tracking3d_callback(const msgs::DetectedObjectArray::Const
       {
         in_F60.objects.push_back(obj);
       }
-      else if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
+      if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
       {
         in_F30.objects.push_back(obj);
       }
-      else if (obj.camInfo[camera::id::right_back_60].prob != -1)
+      if (obj.camInfo[camera::id::right_back_60].prob != -1)
       {
         in_RB60.objects.push_back(obj);
       }
-      else if (obj.camInfo[camera::id::left_back_60].prob != -1)
+      if (obj.camInfo[camera::id::left_back_60].prob != -1)
       {
         in_LB60.objects.push_back(obj);
       }
@@ -1270,15 +1270,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
     {
       alert_pub_front_.publish(alert_obj_array);
     }
-    else if (cam_id == camera::id::front_top_far_30)
+    if (cam_id == camera::id::front_top_far_30)
     {
       alert_pub_fov30_.publish(alert_obj_array);
     }
-    else if (cam_id == camera::id::right_back_60)
+    if (cam_id == camera::id::right_back_60)
     {
       alert_pub_right_.publish(alert_obj_array);
     }
-    else if (cam_id == camera::id::left_back_60)
+    if (cam_id == camera::id::left_back_60)
     {
       alert_pub_left_.publish(alert_obj_array);
     }
@@ -1302,15 +1302,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
     {
       chatter_pub_front_.publish(ped_obj_array);
     }
-    else if (cam_id == camera::id::front_top_far_30)
+    if (cam_id == camera::id::front_top_far_30)
     {
       chatter_pub_fov30_.publish(ped_obj_array);
     }
-    else if (cam_id == camera::id::right_back_60)
+    if (cam_id == camera::id::right_back_60)
     {
       chatter_pub_right_.publish(ped_obj_array);
     }
-    else if (cam_id == camera::id::left_back_60)
+    if (cam_id == camera::id::left_back_60)
     {
       chatter_pub_left_.publish(ped_obj_array);
     }
@@ -1724,15 +1724,15 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   {
     box_pub_front_.publish(viz_pub);
   }
-  else if (cam_id == camera::id::front_top_far_30)
+  if (cam_id == camera::id::front_top_far_30)
   {
     box_pub_fov30_.publish(viz_pub);
   }
-  else if (cam_id == camera::id::right_back_60)
+  if (cam_id == camera::id::right_back_60)
   {
     box_pub_right_.publish(viz_pub);
   }
-  else if (cam_id == camera::id::left_back_60)
+  if (cam_id == camera::id::left_back_60)
   {
     box_pub_left_.publish(viz_pub);
   }
