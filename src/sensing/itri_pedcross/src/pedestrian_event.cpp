@@ -45,7 +45,9 @@ void PedestrianEvent::display_on_terminal()
    */
   while (ros::ok() && !PRINT_MESSAGE)
   {
-    struct winsize terminal_size{};
+    struct winsize terminal_size
+    {
+    };
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
     std::stringstream ss;
     for (int i = 0; i < terminal_size.ws_row; i++)
@@ -476,21 +478,32 @@ void PedestrianEvent::tracking3d_callback(const msgs::DetectedObjectArray::Const
 
   for (const auto& obj : in->objects)
   {
-    if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
+    if (obj.camInfo.empty())
     {
-      in_F60.objects.push_back(obj);
+      std::cout << "ERROR: obj.camInfo is empty." << std::endl;
     }
-    else if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
+    else if (obj.camInfo.size() != 8)
     {
-      in_F30.objects.push_back(obj);
+      std::cout << "ERROR: obj.camInfo.size() is " << obj.camInfo.size() << ", not 8." << std::endl;
     }
-    else if (obj.camInfo[camera::id::right_back_60].prob != -1)
+    else
     {
-      in_RB60.objects.push_back(obj);
-    }
-    else if (obj.camInfo[camera::id::left_back_60].prob != -1)
-    {
-      in_LB60.objects.push_back(obj);
+      if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
+      {
+        in_F60.objects.push_back(obj);
+      }
+      else if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
+      {
+        in_F30.objects.push_back(obj);
+      }
+      else if (obj.camInfo[camera::id::right_back_60].prob != -1)
+      {
+        in_RB60.objects.push_back(obj);
+      }
+      else if (obj.camInfo[camera::id::left_back_60].prob != -1)
+      {
+        in_LB60.objects.push_back(obj);
+      }
     }
   }
 
@@ -808,7 +821,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
               }
               double max_w = max_x - min_x;
               double max_h = max_y - min_y;
-              for (auto & keypoint : keypoints)
+              for (auto& keypoint : keypoints)
               {
                 if (keypoint.x != 0 && keypoint.y != 0)
                 {
@@ -1004,7 +1017,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
             srv_pedcorss_tf.request.cam_index = cam_id;
             srv_pedcorss_tf.request.bboxes.reserve(skeleton_buffer.at(skeleton_index).data_bbox_.size());
             // prepare bboxes for ros service
-            for (auto & data_bbox : skeleton_buffer.at(skeleton_index).data_bbox_)
+            for (auto& data_bbox : skeleton_buffer.at(skeleton_index).data_bbox_)
             {
               msgs::CamInfo msgs_bbox;
               msgs_bbox.u = data_bbox.at(0);
@@ -1014,7 +1027,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
               srv_pedcorss_tf.request.bboxes.emplace_back(msgs_bbox);
             }
             // prepare keypoints for ros service
-            for (auto & stored_skeleton : skeleton_buffer.at(skeleton_index).stored_skeleton_)
+            for (auto& stored_skeleton : skeleton_buffer.at(skeleton_index).stored_skeleton_)
             {
               msgs::Keypoints msgs_keypoints;
               msgs_keypoints.keypoint.reserve(stored_skeleton.size());
@@ -1744,10 +1757,10 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   bool face_detection[4] = { right_ear, right_eye, left_eye, left_ear };
   for (int i = 0; i < 16; i++)
   {
-    if (static_cast<int>(face_detection[0]) == direction_table_[i][0]
-       && static_cast<int>(face_detection[1]) == direction_table_[i][1] 
-       && static_cast<int>(face_detection[2]) == direction_table_[i][2]
-       && static_cast<int>(face_detection[3]) == direction_table_[i][3])
+    if (static_cast<int>(face_detection[0]) == direction_table_[i][0] &&
+        static_cast<int>(face_detection[1]) == direction_table_[i][1] &&
+        static_cast<int>(face_detection[2]) == direction_table_[i][2] &&
+        static_cast<int>(face_detection[3]) == direction_table_[i][3])
     {
       return direction_table_[i][4];
     }
