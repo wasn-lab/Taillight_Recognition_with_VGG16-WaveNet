@@ -106,7 +106,7 @@ class CtrlInfo03(object):
     def __get_disengage_event(self):
         status = OK
         status_str = ""
-        module = ""
+        module = "disengage_event"
 
         if self.brake_status_counts[BrakeStatus.Y_MANUAL_BRAKE] > 0:
             if self.prev_reported_events[BrakeStatus.Y_MANUAL_BRAKE]:
@@ -114,7 +114,6 @@ class CtrlInfo03(object):
             else:
                 status = FATAL
                 status_str = "Disengage: Driver manually press brake pedals!"
-                module = "disengage_event"
                 self.prev_reported_events[BrakeStatus.Y_MANUAL_BRAKE] = True
         else:
             self.prev_reported_events[BrakeStatus.Y_MANUAL_BRAKE] = False
