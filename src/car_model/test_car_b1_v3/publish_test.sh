@@ -11,7 +11,7 @@ fi
 
 if [[ ! -f ${bag_dir}/camera_raw_2021-02-25-15-53-00_77.bag
   || ! -f ${bag_dir}/alignment_auto_record_2021-04-22-23-13-32_27.bag
-  || ! -f ${bag_dir}/auto_record_2020-11-04-15-29-32_0.bag
+  || ! -f ${bag_dir}/pedcross_2021-05-06-13-36-41_0_filtered.bag
   || ! -f ${bag_dir}/auto_record_2020-04-14-16-41-15_89.bag
   || ! -f ${bag_dir}/geofence_pp_2020-11-16-16-35-39.bag
   || ! -f ${bag_dir}/lidar_raw_compressed_2021-02-03.bag
@@ -38,7 +38,7 @@ rostest car_model publish_test_alignment_b1_v3.test
 rostest car_model publish_test_track2d_b1_v3.test
 
 # cache the contents of the bag for avoid timing problem.
-cat ${bag_dir}/auto_record_2020-11-04-15-29-32_0.bag > /dev/null 2>&1
+cat ${bag_dir}/pedcross_2021-05-06-13-36-41_0_filtered.bag > /dev/null 2>&1
 rostest car_model publish_test_pedcross_b1_v3.test
 rostest car_model publish_test_lidarnet_b1_v3.test
 rostest car_model publish_test_lidars_grabber_b1_v3.test

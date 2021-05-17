@@ -2,10 +2,10 @@
 # All rights reserved.
 import time
 import heapq
-import rospy
 import json
-from status_level import OK, WARN
+import rospy
 from std_msgs.msg import String
+from status_level import OK
 from load_collector import SYSTEM_LOADS_TOPIC
 
 
@@ -36,9 +36,10 @@ class SystemLoadChecker(object):
             for ipc in jdata:
                 ipc_load = jdata[ipc]
                 ipc_status = ipc_load["status"]
+                ipc_status_str = ipc_load.get("status_str", "")
                 status = max(status, ipc_status)
-                if ipc_status != OK:
-                    status_strs.append("{} ({})".format(ipc, ipc_load["status_str"]))
+                if ipc_status != OK or ipc_status_str:
+                    status_strs.append("{} ({})".format(ipc, ipc_status_str))
         doc["status"] = status
         doc["status_str"] = ", ".join(status_strs)
         return [doc]

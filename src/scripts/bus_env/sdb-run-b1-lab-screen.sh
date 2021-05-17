@@ -4,6 +4,16 @@ echo starting programs........
 
 readonly cur_dir=$(dirname $(readlink -e $0))
 
+rosparam set /south_bridge/vid dc5360f91e74
+rosparam set /south_bridge/license_plate_number 試0002
+rosparam set /south_bridge/company_name itri
+rosparam set /car_model B1
+
+# out-of-the-car setting, used for development.
+rosparam set /fail_safe/should_post_issue 0
+rosparam set /fail_safe/should_notify_backend 0
+rosparam set /fail_safe/should_send_bags 0
+
 gnome-terminal -e "screen -c ${cur_dir}/lidar.screen"
 echo "Wait a few seconds before bringing up other nodes."
 sleep 5
