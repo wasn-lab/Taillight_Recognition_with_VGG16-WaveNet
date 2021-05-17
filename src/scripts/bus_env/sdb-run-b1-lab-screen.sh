@@ -14,7 +14,7 @@ rosparam set /fail_safe/should_post_issue 0
 rosparam set /fail_safe/should_notify_backend 0
 rosparam set /fail_safe/should_send_bags 0
 
-gnome-terminal -e "screen -c ${cur_dir}/lidar.screen"
+gnome-terminal -e "screen -c ${cur_dir}/lidar-lab.screen"
 echo "Wait a few seconds before bringing up other nodes."
 sleep 5
 
