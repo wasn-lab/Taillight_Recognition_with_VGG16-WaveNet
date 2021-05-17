@@ -8,12 +8,6 @@ export ROS_IP=192.168.1.3
 readonly CWD=`pwd`
 roscd car_model
 python scripts/check_ros_master.py --wait-until-alive
-python scripts/wait_topic.py --topic-name /cam/back_top_120/jpg
-python scripts/wait_topic.py --topic-name /cam/front_top_close_120/jpg
-python scripts/wait_topic.py --topic-name /cam/left_back_60/jpg
-python scripts/wait_topic.py --topic-name /cam/left_front_60/jpg
-python scripts/wait_topic.py --topic-name /cam/right_back_60/jpg
-python scripts/wait_topic.py --topic-name /cam/right_front_60/jpg
 python scripts/wait_node.py --node-name /web_video_server
 
 cd $CWD
