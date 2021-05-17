@@ -1,9 +1,23 @@
 #!/bin/bash
-sleep 10;
-# Old setting, streamed images freeze after 8 seconds.
-# firefox "https://service.itriadv.co:8784/Unit/DriverDashboard?URL=local&R=true"
+set -x
+source /home/lidar/itriadv/devel/setup.bash
+export ROS_MASTER_URI=http://192.168.1.3:11311
+export ROS_IP=192.168.1.3
+
+
+readonly PWD=`pwd`
+roscd car_model
+python scripts/check_ros_master.py --wait-until-alive
+python scripts/wait_topic.py --topic-name /cam/back_top_120/jpg
+python scripts/wait_topic.py --topic-name /cam/front_top_close_120/jpg
+python scripts/wait_topic.py --topic-name /cam/left_back_60/jpg
+python scripts/wait_topic.py --topic-name /cam/left_front_60/jpg
+python scripts/wait_topic.py --topic-name /cam/right_back_60/jpg
+python scripts/wait_topic.py --topic-name /cam/right_front_60/jpg
+python scripts/wait_node.py --node-name /web_video_server
+
+cd $PWD
 opera "http://service.itriadv.co:8785/Unit/DriverDashboard?URL=local&R=true" &
-sleep 5 
 python /usr/local/bin/move_window.py -m DP-5 -w "駕駛艙畫面"
 echo "run infinite loop to raise HMI to be the top window."
 while true; do
