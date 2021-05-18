@@ -55,7 +55,7 @@ const std::string TOPIC_RESERVE = "/reserve/request";
 // route 
 const std::string TOPIC_ROUTE = "/reserve/route";
 
-
+const int SEND_CHECK_MICROSECONDS = 1000 * 1000; // 1 sec
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 //reserve waiting timeout: 3 seconds
@@ -260,6 +260,9 @@ json genMqttBmsMsg();
 json genMqttECUMsg(ecu_type);
 json genMqttIMUMsg();
 json getMqttDOMsg();
+
+bool g_backend_state = false;
+bool g_occ_state = false;
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, const std::string& command)
@@ -824,6 +827,27 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= json parsers end =========================*/
 
 /*========================= thread runnables begin =========================*/
+
+void backendStateChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubBackendState(g_backend_state);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+}
+
+void occChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubOCCState(g_occ_state);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+
+}
+
+
 void mqtt_pubish( const std::string& msg)
 {
   if(g_is_mqtt_connected){
@@ -1787,7 +1811,8 @@ int main(int argc, char** argv)
     2. /serverStatus : server status for ADV_op/sys_ready.
     3. /reserve/request: Reserve request from back end to Control team.
   */
-  boost::thread thread_ros_send(sendROSRun, argc, argv);
+  boost::thread thread_backend_check(backendStateChecker, argc, argv);
+  boost::thread thread_occ_check(occChecker, argc, argv);
 
   /*Strart thread for TCP client: Send VK005 to get server status.*/
   boost::thread thread_get_server_status(getServerStatusRun, argc, argv);
