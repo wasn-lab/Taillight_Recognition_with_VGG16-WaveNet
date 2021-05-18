@@ -73,7 +73,7 @@ def __calc_center_by_3d_bpoint(bpoint):
 def cam_object_detection_func(msg, fps):
     if fps <= 0:
         return ERROR, "FPS: 0"
-    if fps > 0 and fps <= 8.0:
+    if fps > 0 and fps <= 6.0:
         return WARN, "Low FPS: " + str(fps)[:5]
 
     status = OK
