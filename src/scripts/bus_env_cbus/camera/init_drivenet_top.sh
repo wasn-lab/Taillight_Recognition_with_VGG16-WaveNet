@@ -2,4 +2,4 @@
 source /home/camera/itriadv/devel/setup.bash
 export ROS_MASTER_URI=http://192.168.1.3:11311
 export ROS_IP=192.168.3.4
-roslaunch --wait sdb camera_c1.launch
+roslaunch --wait drivenet c1_drivenet_top.launch
