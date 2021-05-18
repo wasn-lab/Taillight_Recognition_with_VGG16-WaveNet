@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 import rospy
-from msgs.msg import Flag_Info
+from std_msgs.msg import Bool
 
 MANUAL_DRIVING = 1
 AUTO_DRIVING = 2
@@ -53,7 +53,8 @@ class LEDManager(object):
         """
         Return -- 1: change led text 0: no change
         """
-        if int(msg.Dspace_Flag08) == 1:
+        # msg.data = True ==> self_driving mode
+        if msg.data:
             self.driving_mode = AUTO_DRIVING
         else:
             self.driving_mode = MANUAL_DRIVING
@@ -71,7 +72,7 @@ class LEDManager(object):
         node_name = "LEDManagerNode"
         rospy.init_node(node_name)
         rospy.logwarn("Init %s", node_name)
-        rospy.Subscriber("/Flag_Info02", Flag_Info, self._cb)
+        rospy.Subscriber("/vehicle/report/itri/self_driving_mode", Bool, self._cb)
 
         rate = rospy.Rate(1)  # FPS: 1
 

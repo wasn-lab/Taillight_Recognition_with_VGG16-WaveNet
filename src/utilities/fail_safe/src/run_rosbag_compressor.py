@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--rosbag-dir",
-        default=os.path.join(os.environ["HOME"], "rosbag_files", "backup"))
+        default=os.path.join(os.environ["HOME"], "rosbag_files"))
     args = parser.parse_known_args()[0]
 
     rospy.init_node("RosbagCompressor")

@@ -13,6 +13,11 @@ def generate_issue_description(status_code, status_str, timestamp):
     if status_code == OK:
         logging.warn("Do not generate description for status OK")
         return ""
+    # timestamp is expected to be of length 10
+    ts_len = len(str(int(timestamp)))
+    if ts_len == 13:
+        # South bridge format.
+        timestamp = timestamp / 1000
     dt = datetime.datetime.fromtimestamp(timestamp)
     plate = get_license_plate_number()
     start_dt = "{}-{}-{} {}:{}".format(
