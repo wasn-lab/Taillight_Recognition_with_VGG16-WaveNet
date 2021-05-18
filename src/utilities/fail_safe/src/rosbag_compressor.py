@@ -11,18 +11,31 @@ import subprocess
 import rospy
 
 
+def should_compress_bag(root, filename):
+    if not filename.endswith(".bag"):
+        return False
+    if "backup" not in root:
+        return False
+    return True
+
+
 def decompress_bag(bag_fullpath):
+    if not os.path.isfile(bag_fullpath):
+        return
     cmd = ["gzip", "-d", bag_fullpath]
     subprocess.check_call(cmd)
 
+
 def compress_bag(bag_fullpath):
+    if not os.path.isfile(bag_fullpath):
+        return -1
     if not bag_fullpath.endswith(".bag"):
         return -1
     # 19 is least favorable to the process
     cmd = ["nice", "-n", "19", "gzip", bag_fullpath]
     org_size = os.path.getsize(bag_fullpath)
     cmpr_file = bag_fullpath + ".gz"
-    ratio = 1.0
+    ratio = -1
     try:
         subprocess.check_call(cmd)
         cmpr_size = os.path.getsize(cmpr_file)
@@ -50,9 +63,8 @@ class RosbagCompressor(object):
         bags = []
         for root, _dirs, files in os.walk(self.rosbag_dir):
             for filename in files:
-                if not filename.endswith(".bag"):
-                    continue
-                bags.append(os.path.join(root, filename))
+                if should_compress_bag(root, filename):
+                    bags.append(os.path.join(root, filename))
         bags.sort()
         for bag in bags:
             start_time = time.time()
