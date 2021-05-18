@@ -6,15 +6,13 @@ Send backup rosbag files to backend.
 """
 from __future__ import print_function
 import time
-import datetime
 import os
-import io
 import subprocess
 import rospy
 
 
 def decompress_bag(bag_fullpath):
-    cmd = ["gzip", "-d" , bag_fullpath]
+    cmd = ["gzip", "-d", bag_fullpath]
     subprocess.check_call(cmd)
 
 def compress_bag(bag_fullpath):
@@ -23,10 +21,15 @@ def compress_bag(bag_fullpath):
     # 19 is least favorable to the process
     cmd = ["nice", "-n", "19", "gzip", bag_fullpath]
     org_size = os.path.getsize(bag_fullpath)
-    subprocess.check_call(cmd)
     cmpr_file = bag_fullpath + ".gz"
-    cmpr_size = os.path.getsize(cmpr_file)
-    ratio = float(cmpr_size) / org_size
+    ratio = 1.0
+    try:
+        subprocess.check_call(cmd)
+        cmpr_size = os.path.getsize(cmpr_file)
+        ratio = float(cmpr_size) / org_size
+    except subprocess.CalledProcessError:
+        if os.path.isfile(bag_fullpath) and os.path.isfile(cmpr_file):
+            os.unlink(cmpr_file)
     return ratio
 
 
@@ -59,4 +62,4 @@ class RosbagCompressor(object):
             gz_size = os.path.getsize(bag + ".gz") / (1024 * 1024)
             rospy.loginfo(("Done compressing %s, ratio: %.2f, file size: %d MB, "
                            "elapsed_time: %f seconds"),
-                           bag, ratio, gz_size, elapsed_time)
+                          bag, ratio, gz_size, elapsed_time)
