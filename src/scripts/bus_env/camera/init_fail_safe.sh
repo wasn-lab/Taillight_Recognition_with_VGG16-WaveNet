@@ -18,6 +18,7 @@ python scripts/wait_topic.py --topic-name /cam/right_front_60/heartbeat
 python scripts/wait_topic.py --topic-name /cam/back_top_120/detect_image/heartbeat
 python scripts/wait_topic.py --topic-name /cam/left_front_60/detect_image/heartbeat
 python scripts/wait_topic.py --topic-name /cam/front_bottom_60/detect_image/heartbeat
+python scripts/wait_topic.py --topic-name /CameraDetection/heartbeat
 
 cd $CWD
 
