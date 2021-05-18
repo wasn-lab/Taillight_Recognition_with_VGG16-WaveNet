@@ -85,7 +85,7 @@ class RosModuleTraffic
                       void
                       (*cb10) (const sensor_msgs::Imu::ConstPtr&),
                       void
-                      (*cb11) (const std_msgs::String::ConstPtr&),
+                      (*cb11) (const std_msgs::Bool::ConstPtr&),
                       void
                       (*cb12) (const msgs::BackendInfo::ConstPtr&),
                       void
@@ -123,7 +123,7 @@ class RosModuleTraffic
       static ros::Subscriber imu = n.subscribe("imu_data_rad", 1, cb10);
       //checker big buffer for multi event at the same time.
       //get event from fail_safe
-      //static ros::Subscriber checker = n.subscribe("/ADV_op/event_json", 1000, cb11);
+      static ros::Subscriber checker = n.subscribe("/ADV_op/sys_ready", 1000, cb11);
       static ros::Subscriber backendInfo = n.subscribe("Backend/Info", 1, cb12);
       static ros::Subscriber sensor_status = n.subscribe("/vehicle/report/itri/sensor_status", 1, cb13);
       static ros::Subscriber tracking = n.subscribe("/Tracking3D/xyz2lla", 100, cb14);

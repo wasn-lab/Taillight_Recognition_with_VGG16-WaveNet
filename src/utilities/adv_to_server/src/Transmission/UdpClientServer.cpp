@@ -122,7 +122,7 @@ int UdpClient::send_obj_to_server(const std::string& str, bool show)
 {
   std::stringstream stream;
   stream << std::fixed << std::setprecision(2);
-  //cout<< str << endl;
+  cout<< str << endl;
   const char* msg = str.c_str();
   std::string typestring = "M8.2.VK003.2";
   const char* type = typestring.c_str();
