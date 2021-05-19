@@ -18,8 +18,8 @@ class SBParamUtilsTest(unittest.TestCase):
         self.assertEqual(vid, "0c9d92107992")
 
         rospy.delete_param(param_name)
-        vid = get_vid()  # should match car_model/south_bridge/sb.ini
-        self.assertEqual(vid, "dc5360f91e74")
+        vid = get_vid()
+        self.assertEqual(vid, "unknown_vid")
 
         if org_vid:
             rospy.set_param(param_name, org_vid)
@@ -36,7 +36,7 @@ class SBParamUtilsTest(unittest.TestCase):
 
         rospy.delete_param(param_name)
         actual = get_license_plate_number()
-        self.assertEqual(actual, u"試0002")
+        self.assertEqual(actual, u"unknown_license_plate_number")
 
         if org_val:
             rospy.set_param(param_name, org_val)

@@ -45,7 +45,9 @@ void PedestrianEvent::display_on_terminal()
    */
   while (ros::ok() && !PRINT_MESSAGE)
   {
-    struct winsize terminal_size;
+    struct winsize terminal_size
+    {
+    };
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
     std::stringstream ss;
     for (int i = 0; i < terminal_size.ws_row; i++)
@@ -256,8 +258,8 @@ void PedestrianEvent::display_on_terminal()
         else  // i >= 12
         {
           std::lock_guard<std::mutex> lk(mu_ped_info_);
-          int size_ped_info_ = ped_info_.size();
-          if (i - 9 < size_ped_info_)
+          int size_ped_info = ped_info_.size();
+          if (i - 9 < size_ped_info)
           {
             line << ped_info_[i - 9];
           }
@@ -315,7 +317,7 @@ void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerAr
 
   for (auto const& obj : msg->markers)
   {
-    if (obj.ns.compare("left_lane_bound") == 0)
+    if (obj.ns == "left_lane_bound")
     {
       for (auto const& obj_point : obj.points)
       {
@@ -337,7 +339,7 @@ void PedestrianEvent::lanelet2_route_callback(const visualization_msgs::MarkerAr
         }
       }
     }
-    else if (obj.ns.compare("right_lane_bound") == 0)
+    else if (obj.ns == "right_lane_bound")
     {
       for (auto const& obj_point : obj.points)
       {
@@ -457,32 +459,63 @@ void PedestrianEvent::cache_fov30_image_callback(const sensor_msgs::Image::Const
 #endif
 }
 
-void PedestrianEvent::front_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
+void PedestrianEvent::tracking3d_callback(const msgs::DetectedObjectArray::ConstPtr& in)
 {
-  // 0 for front
-  main_callback(msg, front_image_cache_, 0, skeleton_buffer_front_);
-}
-void PedestrianEvent::left_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
-{
-  // 1 for left
-  main_callback(msg, left_image_cache_, 1, skeleton_buffer_left_);
+  msgs::DetectedObjectArray in_F60;
+  msgs::DetectedObjectArray in_F30;
+  msgs::DetectedObjectArray in_RB60;
+  msgs::DetectedObjectArray in_LB60;
+
+  in_F60.header = in->header;
+  in_F30.header = in->header;
+  in_RB60.header = in->header;
+  in_LB60.header = in->header;
+
+  in_F60.objects.reserve(in->objects.size());
+  in_F30.objects.reserve(in->objects.size());
+  in_RB60.objects.reserve(in->objects.size());
+  in_LB60.objects.reserve(in->objects.size());
+
+  for (const auto& obj : in->objects)
+  {
+    if (obj.camInfo.empty())
+    {
+      std::cout << "ERROR: obj.camInfo is empty." << std::endl;
+    }
+    else if (obj.camInfo.size() != 8)
+    {
+      std::cout << "ERROR: obj.camInfo.size() is " << obj.camInfo.size() << ", not 8." << std::endl;
+    }
+    else
+    {
+      if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
+      {
+        in_F60.objects.push_back(obj);
+      }
+      if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
+      {
+        in_F30.objects.push_back(obj);
+      }
+      if (obj.camInfo[camera::id::right_back_60].prob != -1)
+      {
+        in_RB60.objects.push_back(obj);
+      }
+      if (obj.camInfo[camera::id::left_back_60].prob != -1)
+      {
+        in_LB60.objects.push_back(obj);
+      }
+    }
+  }
+
+  main_callback(in_F60, front_image_cache_, 0, skeleton_buffer_front_);
+  main_callback(in_F30, fov30_image_cache_, 1, skeleton_buffer_fov30_);
+  main_callback(in_RB60, right_image_cache_, 4, skeleton_buffer_right_);
+  main_callback(in_LB60, left_image_cache_, 6, skeleton_buffer_left_);
 }
 
-void PedestrianEvent::right_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
-{
-  // 2 for right
-  main_callback(msg, right_image_cache_, 2, skeleton_buffer_right_);
-}
-
-void PedestrianEvent::fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg)
-{
-  // 3 for fov30
-  main_callback(msg, fov30_image_cache_, 3, skeleton_buffer_fov30_);
-}
-
-void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
-                                    boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
-                                    std::vector<SkeletonBuffer>& skeleton_buffer)
+void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
+                                    boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache,
+                                    const int cam_id, std::vector<SkeletonBuffer>& skeleton_buffer)
 {
   if (!image_cache.empty())  // do if there is image in buffer
   {
@@ -497,10 +530,10 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
     ros::Time msgs_timestamp;
     std::vector<msgs::PedObject> ped_objs;
     std::vector<msgs::DetectedObject> alert_objs;
-    ped_objs.reserve(msg->objects.size());
-    alert_objs.reserve(msg->objects.size());
+    ped_objs.reserve(msg.objects.size());
+    alert_objs.reserve(msg.objects.size());
 
-    for (auto const& obj : msg->objects)
+    for (auto const& obj : msg.objects)
     {
       // Only first object need to check raw image
       if (!get_timestamp)
@@ -509,9 +542,9 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
         {
           msgs_timestamp = obj.header.stamp;
         }
-        else if (msg->header.stamp.toSec() > 1)
+        else if (msg.header.stamp.toSec() > 1)
         {
-          msgs_timestamp = msg->header.stamp;
+          msgs_timestamp = msg.header.stamp;
         }
         else
         {
@@ -549,7 +582,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
       obj_pub.header.frame_id = obj.header.frame_id;
       obj_pub.header.stamp = obj.header.stamp;
       obj_pub.classId = obj.classId;
-      obj_pub.camInfo = obj.camInfo[0];
+      obj_pub.camInfo = obj.camInfo[cam_id];
       obj_pub.bPoint = obj.bPoint;
       obj_pub.track.id = obj.track.id;
       // resize from 1920*1208 to 608*384
@@ -563,7 +596,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
        * return true if pedestrian is filtered out
        * return false if pedestrian is in sensing zone
        **/
-      if (filter(obj.bPoint, msg->header.stamp))
+      if (filter(obj.bPoint, msg.header.stamp))
       {
         obj_pub.crossProbability = -1;
       }
@@ -601,7 +634,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_width_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.rows / (float)cropped_image.cols;
           resize_height_to = int(aspect_ratio * resize_width_to);
-	  resize_height_to = std::min(std::max(resize_height_to, 0), max_pixel);
+          resize_height_to = std::min(std::max(resize_height_to, 0), max_pixel);
         }
         else
         {  // height larger than width
@@ -609,7 +642,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           resize_height_to = max_pixel;  // force to max pixel
           aspect_ratio = cropped_image.cols / (float)cropped_image.rows;
           resize_width_to = int(aspect_ratio * resize_height_to);
-	  resize_width_to = std::min(std::max(resize_width_to, 0), max_pixel);
+          resize_width_to = std::min(std::max(resize_width_to, 0), max_pixel);
         }
         // resize image for openpose (max input pixel 368)
         cv::resize(cropped_image, cropped_image, cv::Size(resize_width_to, resize_height_to));
@@ -635,7 +668,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           if (skeleton_index == -1)  // if there is no data in skeleton buffer
           {
             SkeletonBuffer new_person;
-            new_person.timestamp_ = msg->header.stamp;
+            new_person.timestamp_ = msg.header.stamp;
             new_person.track_id_ = obj_pub.track.id;
 
             keypoints = get_openpose_keypoint(padded);
@@ -742,7 +775,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
                 // get processed_keypoints return from skip_frame service
                 for (const auto& processed_keypoints_obj : srv_skip_frame.response.processed_keypoints)
                 {
-                  skeleton_buffer.at(skeleton_index).timestamp_ = msg->header.stamp;
+                  skeleton_buffer.at(skeleton_index).timestamp_ = msg.header.stamp;
                   std::vector<cv::Point2f> back_predict_keypoints;
                   back_predict_keypoints.reserve(processed_keypoints_obj.keypoint.size());
                   for (const auto& processed_keypoints_obj_p : processed_keypoints_obj.keypoint)
@@ -788,12 +821,12 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               }
               double max_w = max_x - min_x;
               double max_h = max_y - min_y;
-              for (unsigned int i = 0; i < keypoints.size(); i++)
+              for (auto& keypoint : keypoints)
               {
-                if (keypoints.at(i).x != 0 && keypoints.at(i).y != 0)
+                if (keypoint.x != 0 && keypoint.y != 0)
                 {
-                  keypoints.at(i).x = (keypoints.at(i).x - min_x) / max_w * w_h_ratio;
-                  keypoints.at(i).y = (keypoints.at(i).y - min_y) / max_h;
+                  keypoint.x = (keypoint.x - min_x) / max_w * w_h_ratio;
+                  keypoint.y = (keypoint.y - min_y) / max_h;
                 }
               }
               skeleton_buffer.at(skeleton_index).stored_skeleton_.emplace_back(keypoints);
@@ -981,27 +1014,28 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           if (has_keypoint)
           {
             msgs::PredictCrossing srv_pedcorss_tf;
+            srv_pedcorss_tf.request.cam_index = cam_id;
             srv_pedcorss_tf.request.bboxes.reserve(skeleton_buffer.at(skeleton_index).data_bbox_.size());
             // prepare bboxes for ros service
-            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).data_bbox_.size(); i++)
+            for (auto& data_bbox : skeleton_buffer.at(skeleton_index).data_bbox_)
             {
               msgs::CamInfo msgs_bbox;
-              msgs_bbox.u = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(0);
-              msgs_bbox.v = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(1);
-              msgs_bbox.width = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(2) - msgs_bbox.u;
-              msgs_bbox.height = skeleton_buffer.at(skeleton_index).data_bbox_.at(i).at(3) - msgs_bbox.v;
+              msgs_bbox.u = data_bbox.at(0);
+              msgs_bbox.v = data_bbox.at(1);
+              msgs_bbox.width = data_bbox.at(2) - msgs_bbox.u;
+              msgs_bbox.height = data_bbox.at(3) - msgs_bbox.v;
               srv_pedcorss_tf.request.bboxes.emplace_back(msgs_bbox);
             }
             // prepare keypoints for ros service
-            for (unsigned int i = 0; i < skeleton_buffer.at(skeleton_index).stored_skeleton_.size(); i++)
+            for (auto& stored_skeleton : skeleton_buffer.at(skeleton_index).stored_skeleton_)
             {
               msgs::Keypoints msgs_keypoints;
-              msgs_keypoints.keypoint.reserve(skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size());
-              for (unsigned int j = 0; j < skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).size(); j++)
+              msgs_keypoints.keypoint.reserve(stored_skeleton.size());
+              for (unsigned int j = 0; j < stored_skeleton.size(); j++)
               {
                 msgs::Keypoint msgs_keypoint;
-                msgs_keypoint.x = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).x;
-                msgs_keypoint.y = skeleton_buffer.at(skeleton_index).stored_skeleton_.at(i).at(j).y;
+                msgs_keypoint.x = stored_skeleton.at(j).x;
+                msgs_keypoint.y = stored_skeleton.at(j).y;
                 msgs_keypoints.keypoint.emplace_back(msgs_keypoint);
               }
               srv_pedcorss_tf.request.keypoints.emplace_back(msgs_keypoints);
@@ -1015,20 +1049,20 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
             }
             else
             {
-              obj_pub.crossProbability = crossing_predict(skeleton_buffer.at(skeleton_index).data_bbox_,
+              obj_pub.crossProbability = crossing_predict(cam_id, skeleton_buffer.at(skeleton_index).data_bbox_,
                                                           skeleton_buffer.at(skeleton_index).stored_skeleton_);
               std::lock_guard<std::mutex> lk(mu_using_LSTM_);
               using_LSTM_ = false;
             }
           }
-          clean_old_skeleton_buffer(skeleton_buffer, msg->header.stamp);
+          clean_old_skeleton_buffer(skeleton_buffer, msg.header.stamp);
         }
 
         obj_pub.facing_direction = get_facing_direction(keypoints);
         // obj_pub.body_direction = get_body_direction(keypoints);
 
         // only for front camera
-        if (from_camera == 0)
+        if (cam_id == camera::id::front_bottom_60)
         {
           obj_pub.crossProbability = adjust_probability(obj_pub);
         }
@@ -1045,7 +1079,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
           geometry_msgs::TransformStamped transform_stamped;
           try
           {
-            transform_stamped = tf_buffer_.lookupTransform("map", "base_link", msg->header.stamp, ros::Duration(0.5));
+            transform_stamped = tf_buffer_.lookupTransform("map", "base_link", msg.header.stamp, ros::Duration(0.5));
 #if PRINT_MESSAGE
             std::cout << transform_stamped << std::endl;
 #endif
@@ -1155,7 +1189,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
               try
               {
                 transform_stamped =
-                    tf_buffer_.lookupTransform("base_link", "map", msg->header.stamp, ros::Duration(0.5));
+                    tf_buffer_.lookupTransform("base_link", "map", msg.header.stamp, ros::Duration(0.5));
 #if PRINT_MESSAGE
                 std::cout << transform_stamped << std::endl;
 #endif
@@ -1227,56 +1261,58 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 
     msgs::DetectedObjectArray alert_obj_array;
 
-    alert_obj_array.header = msg->header;
-    alert_obj_array.header.frame_id = msg->header.frame_id;
+    alert_obj_array.header = msg.header;
+    alert_obj_array.header.frame_id = msg.header.frame_id;
     alert_obj_array.header.stamp = msgs_timestamp;
     alert_obj_array.objects.assign(alert_objs.begin(), alert_objs.end());
-    if (from_camera == 0)  // front
+
+    if (cam_id == camera::id::front_bottom_60)
     {
       alert_pub_front_.publish(alert_obj_array);
     }
-    else if (from_camera == 1)  // left
+    if (cam_id == camera::id::front_top_far_30)
     {
-      alert_pub_left_.publish(alert_obj_array);
+      alert_pub_fov30_.publish(alert_obj_array);
     }
-    else if (from_camera == 2)  // right
+    if (cam_id == camera::id::right_back_60)
     {
       alert_pub_right_.publish(alert_obj_array);
     }
-    else if (from_camera == 3)  // fov30
+    if (cam_id == camera::id::left_back_60)
     {
-      alert_pub_fov30_.publish(alert_obj_array);
+      alert_pub_left_.publish(alert_obj_array);
     }
 
     msgs::PedObjectArray ped_obj_array;
     // ped_obj_array.raw_image = img_msg;
-    ped_obj_array.header = msg->header;
-    ped_obj_array.header.frame_id = msg->header.frame_id;
+    ped_obj_array.header = msg.header;
+    ped_obj_array.header.frame_id = msg.header.frame_id;
     if (msgs_timestamp.toSec() > 1)
     {
       ped_obj_array.header.stamp = msgs_timestamp;
     }
     else
     {
-      ped_obj_array.header.stamp = msg->header.stamp;
+      ped_obj_array.header.stamp = msg.header.stamp;
     }
 
     ped_obj_array.objects.assign(ped_objs.begin(), ped_objs.end());
-    if (from_camera == 0)  // front
+
+    if (cam_id == camera::id::front_bottom_60)
     {
       chatter_pub_front_.publish(ped_obj_array);
     }
-    else if (from_camera == 1)  // left
+    if (cam_id == camera::id::front_top_far_30)
     {
-      chatter_pub_left_.publish(ped_obj_array);
+      chatter_pub_fov30_.publish(ped_obj_array);
     }
-    else if (from_camera == 2)  // right
+    if (cam_id == camera::id::right_back_60)
     {
       chatter_pub_right_.publish(ped_obj_array);
     }
-    else if (from_camera == 3)  // fov30
+    if (cam_id == camera::id::left_back_60)
     {
-      chatter_pub_fov30_.publish(ped_obj_array);
+      chatter_pub_left_.publish(ped_obj_array);
     }
 
     alert_objs.clear();
@@ -1304,7 +1340,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray::ConstPtr& m
 #endif
 #if PRINT_MESSAGE
     std::cout << "Delay from camera: " << delay_from_camera_ << std::endl;
-    std::cout << "Camera source: " << from_camera << std::endl;
+    std::cout << "Camera source: " << cam_id << std::endl;
     std::cout << chatter_callback_info_ << std::endl;
     std::cout << "Total time: " << total_time_ << " sec / loop: " << count_ << std::endl;
 #endif
@@ -1435,27 +1471,27 @@ bool PedestrianEvent::crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, ms
 
 void PedestrianEvent::draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, front_image_cache_, 0);
+  draw_pedestrians_callback(msg, front_image_cache_, camera::id::front_bottom_60);
 }
 
 void PedestrianEvent::draw_ped_left_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, left_image_cache_, 1);
+  draw_pedestrians_callback(msg, left_image_cache_, camera::id::left_back_60);
 }
 
 void PedestrianEvent::draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, right_image_cache_, 2);
+  draw_pedestrians_callback(msg, right_image_cache_, camera::id::right_back_60);
 }
 
 void PedestrianEvent::draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg)
 {
-  draw_pedestrians_callback(msg, fov30_image_cache_, 3);
+  draw_pedestrians_callback(msg, fov30_image_cache_, camera::id::front_top_far_30);
 }
 
 void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
                                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache,
-                                                int from_camera)
+                                                const int cam_id)
 {
   if (image_cache.empty())  // do if there is image in buffer
   {
@@ -1507,6 +1543,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
+#if DEBUG_SKIP_FRAME == 1
       if (obj.using_skip_frame == 1)
       {
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
@@ -1515,6 +1552,9 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       {
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
       }
+#else
+      cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
+#endif
     }
     else
     {
@@ -1684,21 +1724,21 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   // make cv::Mat to sensor_msgs::Image
   sensor_msgs::ImageConstPtr viz_pub = cv_bridge::CvImage(std_msgs::Header(), "bgr8", matrix).toImageMsg();
 
-  if (from_camera == 0)  // front
+  if (cam_id == camera::id::front_bottom_60)
   {
     box_pub_front_.publish(viz_pub);
   }
-  else if (from_camera == 1)  // left
+  if (cam_id == camera::id::front_top_far_30)
   {
-    box_pub_left_.publish(viz_pub);
+    box_pub_fov30_.publish(viz_pub);
   }
-  else if (from_camera == 2)  // right
+  if (cam_id == camera::id::right_back_60)
   {
     box_pub_right_.publish(viz_pub);
   }
-  else if (from_camera == 3)  // fov30
+  if (cam_id == camera::id::left_back_60)
   {
-    box_pub_fov30_.publish(viz_pub);
+    box_pub_left_.publish(viz_pub);
   }
 
   matrix.release();
@@ -1721,8 +1761,10 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   bool face_detection[4] = { right_ear, right_eye, left_eye, left_ear };
   for (int i = 0; i < 16; i++)
   {
-    if (face_detection[0] == direction_table_[i][0] && face_detection[1] == direction_table_[i][1] &&
-        face_detection[2] == direction_table_[i][2] && face_detection[3] == direction_table_[i][3])
+    if (static_cast<int>(face_detection[0]) == direction_table_[i][0] &&
+        static_cast<int>(face_detection[1]) == direction_table_[i][1] &&
+        static_cast<int>(face_detection[2]) == direction_table_[i][2] &&
+        static_cast<int>(face_detection[3]) == direction_table_[i][3])
     {
       return direction_table_[i][4];
     }
@@ -1787,11 +1829,7 @@ int PedestrianEvent::get_body_direction(const std::vector<cv::Point2f>& keypoint
 
 bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
 {
-  if (keypoint.x > 0 || keypoint.y > 0)
-  {
-    return true;
-  }
-  return false;
+  return (keypoint.x > 0 || keypoint.y > 0);
 }
 
 /**
@@ -1799,7 +1837,7 @@ bool PedestrianEvent::keypoint_is_detected(cv::Point2f keypoint)
  * return
  * cross probability
  */
-float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_array,
+float PedestrianEvent::crossing_predict(const int cam_id, std::vector<std::vector<float>>& bbox_array,
                                         std::vector<std::vector<cv::Point2f>>& keypoint_array)
 {
   try
@@ -1808,10 +1846,56 @@ float PedestrianEvent::crossing_predict(std::vector<std::vector<float>>& bbox_ar
     std::vector<float> feature;
     feature.reserve(frame_num_ * feature_num_);
 
+    if (test_new_model_)
+    {
+      if (cam_id == camera::id::left_back_60)
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+
+      if (cam_id == camera::id::front_top_far_30)
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+
+      if (cam_id == camera::id::front_bottom_60)
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+
+      if (cam_id == camera::id::right_back_60)
+      {
+        feature.push_back(1);
+      }
+      else
+      {
+        feature.push_back(0);
+      }
+    }
+
     for (unsigned int index = 0; index < frame_num_; index++)
     {
       // Add bbox to feature vector
       std::vector<float> bbox = bbox_array.at(index);
+      if (test_new_model_)
+      {
+        bbox.at(0) = bbox.at(0) / cam_width;
+        bbox.at(1) = bbox.at(1) / cam_height;
+        bbox.at(2) = bbox.at(2) / cam_width;
+        bbox.at(3) = bbox.at(3) / cam_height;
+      }
       feature.insert(feature.end(), bbox.begin(), bbox.end());
 
       std::vector<cv::Point2f> keypoint = keypoint_array.at(index);
@@ -2217,14 +2301,8 @@ bool PedestrianEvent::check_in_polygon(cv::Point2f position, std::vector<cv::Poi
       c = 1 + c;
     }
   }
-  if (c % 2 == 0)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+
+  return (c % 2 == 0);
 }
 
 void PedestrianEvent::clean_old_skeleton_buffer(std::vector<SkeletonBuffer>& skeleton_buffer, ros::Time msg_timestamp)
@@ -2256,9 +2334,6 @@ void PedestrianEvent::pedestrian_event()
   nh_sub_2.setCallbackQueue(&callback_queue);
 
   ros::Subscriber sub_1;
-  ros::Subscriber sub_2;
-  ros::Subscriber sub_3;
-  ros::Subscriber sub_4;
   ros::Subscriber sub_5;
   ros::Subscriber sub_6;
   ros::Subscriber sub_7;
@@ -2272,32 +2347,38 @@ void PedestrianEvent::pedestrian_event()
 
   if (input_source_ == 4)
   {
-    // input topics from itri_tracking_2d
-    std::string in_topic1 = "Tracking2D/front_bottom_60";
+    // input topics from itri_tracking_3d
+    std::string in_topic1 = "Tracking3D";
     std::cout << "Wait for input topic " << in_topic1 << std::endl;
     ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic1);
     std::cout << in_topic1 << " is ready" << std::endl;
 
-    std::string in_topic2 = "Tracking2D/left_back_60";
-    // std::cout << "Wait for input topic " << in_topic2 << std::endl;
-    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic2);
-    // std::cout << in_topic2 << " is ready" << std::endl;
-
-    std::string in_topic3 = "Tracking2D/right_back_60";
-    // std::cout << "Wait for input topic " << in_topic3 << std::endl;
-    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic3);
-    // std::cout << in_topic3 << " is ready" << std::endl;
-
-    std::string in_topic4 = "Tracking2D/front_top_far_30";
-    // std::cout << "Wait for input topic " << in_topic4 << std::endl;
-    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic4);
-    // std::cout << in_topic4 << " is ready" << std::endl;
-
     // input topics from raw images
+#if INPUT_IMAGE_RAW == 1
+    std::string in_topic5 = "cam/front_bottom_60/raw";
+    // std::cout << "Wait for input topic " << in_topic5 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
+    // std::cout << in_topic5 << " is ready" << std::endl;
+
+    std::string in_topic6 = "cam/left_back_60/raw";
+    // std::cout << "Wait for input topic " << in_topic6 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
+    // std::cout << in_topic6 << " is ready" << std::endl;
+
+    std::string in_topic7 = "cam/right_back_60/raw";
+    // std::cout << "Wait for input topic " << in_topic7 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
+    // std::cout << in_topic7 << " is ready" << std::endl;
+
+    std::string in_topic8 = "cam/front_top_far_30/raw";
+    // std::cout << "Wait for input topic " << in_topic8 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
+    // std::cout << in_topic8 << " is ready" << std::endl;
+#else
     std::string in_topic5 = "cam/front_bottom_60";
-    std::cout << "Wait for input topic " << in_topic5 << std::endl;
-    ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
-    std::cout << in_topic5 << " is ready" << std::endl;
+    // std::cout << "Wait for input topic " << in_topic5 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
+    // std::cout << in_topic5 << " is ready" << std::endl;
 
     std::string in_topic6 = "cam/left_back_60";
     // std::cout << "Wait for input topic " << in_topic6 << std::endl;
@@ -2313,6 +2394,7 @@ void PedestrianEvent::pedestrian_event()
     // std::cout << "Wait for input topic " << in_topic8 << std::endl;
     // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
     // std::cout << in_topic8 << " is ready" << std::endl;
+#endif
 
     // input topics from pedestrian_subscriber.py
     // Warning: Do NOT apply waitForMessage to topics of PedCross/Pedestrian/...
@@ -2333,10 +2415,7 @@ void PedestrianEvent::pedestrian_event()
     // ros::topic::waitForMessage<visualization_msgs::MarkerArray>(in_topic14);
     // std::cout << in_topic14 << " is ready" << std::endl;
 
-    sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::front_callback, this);
-    sub_2 = nh_sub_2.subscribe(in_topic2, 1, &PedestrianEvent::left_callback, this);
-    sub_3 = nh_sub_2.subscribe(in_topic3, 1, &PedestrianEvent::right_callback, this);
-    sub_4 = nh_sub_2.subscribe(in_topic4, 1, &PedestrianEvent::fov30_callback, this);
+    sub_1 = nh_sub_1.subscribe(in_topic1, 1, &PedestrianEvent::tracking3d_callback, this);
 
     sub_5 = nh_sub_2.subscribe(in_topic5, 1, &PedestrianEvent::cache_front_image_callback, this);
     sub_6 = nh_sub_2.subscribe(in_topic6, 1, &PedestrianEvent::cache_left_image_callback, this);
@@ -2488,9 +2567,6 @@ int main(int argc, char** argv)
 
   ped::PedestrianEvent pe;
   tf2_ros::TransformListener tf_listener(pe.tf_buffer_);
-  std::cout << PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek.yml") << std::endl;
-  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + std::string("/rf_10frames_normalization_15peek."
-                                                                                    "yml"));
 
   ros::NodeHandle nh1;
   pe.chatter_pub_front_ = nh1.advertise<msgs::PedObjectArray>("/PedCross/Pedestrians/front_bottom_60",
@@ -2538,12 +2614,26 @@ int main(int argc, char** argv)
   nh.param<int>("/pedestrian_event/crossing_threshold", pe.cross_threshold_, 55);
   nh.param<int>("/skip_frame_server/skip_frame_number", pe.skip_frame_number_, 1);
   nh.param<double>("/pedestrian_event/ground_z", pe.ground_z_, -5);
-  nh.param<int>("/pedestrian_event/car_model", pe.car_model, 0);
-  if (pe.car_model == 1)
+  nh.param<int>("/pedestrian_event/car_model", pe.car_model_, 0);
+  nh.param<bool>("/pedestrian_event/test_new_model", pe.test_new_model_, false);
+  if (pe.car_model_ == 1)
   {
     pe.scaling_ratio_width_ = 0.475;
     pe.scaling_ratio_height_ = 0.475;
+    pe.cam_width = 608;
+    pe.cam_height = 342;
   }
+  std::string model_name;
+  if (pe.test_new_model_)
+  {
+    model_name = "/RF_with_one_hot_4_camera_features_30depth_7-3.yml";
+  }
+  else
+  {
+    model_name = "/rf_10frames_normalization_15peek.yml";
+  }
+  std::cout << PED_MODEL_DIR + model_name << std::endl;
+  pe.rf_pose_ = cv::ml::StatModel::load<cv::ml::RTrees>(PED_MODEL_DIR + model_name);
 
   pe.skip_frame_client_ = nh.serviceClient<msgs::PredictSkeleton>("skip_frame");
   pe.tf_client_ = nh.serviceClient<msgs::PredictCrossing>("pedcross_tf");

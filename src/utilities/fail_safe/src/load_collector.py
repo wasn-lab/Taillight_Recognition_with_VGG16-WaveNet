@@ -18,10 +18,9 @@ class LoadCollector(object):
     def __init__(self, mqtt_fqdn, mqtt_port):
         rospy.init_node("LoadCollector")
         car_model = get_car_model_as_str()
-        self.ipcs = []
-        if car_model in ["B1", "B1_V2", "B1_V3", "C1"]:
-            self.ipcs = ["lidar", "camera", "localization", "xavier"]
-        else:
+        self.ipcs = ["lidar", "camera", "localization", "xavier"]
+        if car_model not in ["B1", "B1_V2", "B1_V3", "C1"]:
+            # We may not set car_model in testing env.
             rospy.logerr("Unrecognized car_model: %s", car_model)
 
         rospy.logwarn("Init LoadCollector node")
@@ -59,7 +58,6 @@ class LoadCollector(object):
         status_str = ""
 
         if jdata["cpu_load"] >= jdata["cpu_load_threshold"]:
-            self.records[ipc]["status"] = WARN
             status_str = "high cpu load: " + str(self.records[ipc]["cpu_load"])[:5]
 
         if jdata["gpu_load"] >= 99:

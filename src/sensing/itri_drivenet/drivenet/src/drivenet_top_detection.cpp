@@ -209,11 +209,6 @@ int main(int argc, char** argv)
     cam_raw_topic_names[cam_order] = camera::topics[g_cam_ids[cam_order]] + std::string("/raw");
     bbox_topic_names[cam_order] = camera::topics_obj[g_cam_ids[cam_order]];
 
-    /// Wait for all message
-    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
-    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
-    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
-
     cam_subs[cam_order] = nh.subscribe(cam_raw_topic_names[cam_order], 1, f_cam_callbacks[cam_order]);
 
     if (g_img_result_publish)
@@ -250,6 +245,15 @@ int main(int argc, char** argv)
   image_init();
   g_yolo_app.init_yolo(pkg_path, cfg_file);
   g_dist_est.init(pkg_path, g_dist_est_mode);
+
+  /// wait for input topic
+  for (size_t cam_order = 0; cam_order < g_cam_ids.size(); cam_order++)
+  {
+    /// Wait for all message
+    std::cout << "Wait for input topic " << cam_raw_topic_names[cam_order] << std::endl;
+    ros::topic::waitForMessage<sensor_msgs::Image>(cam_raw_topic_names[cam_order]);
+    std::cout << cam_raw_topic_names[cam_order] << " is ready" << std::endl;
+  }
 
   ros::MultiThreadedSpinner spinner(2);
   spinner.spin();

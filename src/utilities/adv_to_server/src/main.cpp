@@ -55,7 +55,7 @@ const std::string TOPIC_RESERVE = "/reserve/request";
 // route 
 const std::string TOPIC_ROUTE = "/reserve/route";
 
-const int SEND_CHECK_MICROSECONDS = 1000 * 1000; // 1 sec
+const int SEND_CHECK_MICROSECONDS = 500 * 1000; // 0.5 sec
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 //reserve waiting timeout: 3 seconds

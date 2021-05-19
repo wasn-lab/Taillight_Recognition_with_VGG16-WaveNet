@@ -47,6 +47,10 @@
 //#include <scope_guard.hpp>
 //#include <tf_utils.hpp>
 
+#include "camera_params.h"
+
+#define INPUT_IMAGE_RAW 0
+#define DEBUG_SKIP_FRAME 0
 #define USE_2D_FOR_ALARM 0
 #define DUMP_LOG 0
 #define PRINT_MESSAGE 0
@@ -90,12 +94,9 @@ public:
   void cache_left_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_right_image_callback(const sensor_msgs::Image::ConstPtr& msg);
   void cache_fov30_image_callback(const sensor_msgs::Image::ConstPtr& msg);
-  void front_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void left_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void right_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void fov30_callback(const msgs::DetectedObjectArray::ConstPtr& msg);
-  void main_callback(const msgs::DetectedObjectArray::ConstPtr& msg,
-                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera,
+  void tracking3d_callback(const msgs::DetectedObjectArray::ConstPtr& in);
+  void main_callback(const msgs::DetectedObjectArray& msg,
+                     boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, const int cam_id,
                      std::vector<SkeletonBuffer>& skeleton_buffer);
   bool crop_ped_image(cv::Mat& matrix, cv::Mat& cropped_image, msgs::PedObject& obj_pub);
   void draw_ped_front_callback(const msgs::PedObjectArray::ConstPtr& msg);
@@ -103,9 +104,9 @@ public:
   void draw_ped_right_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_ped_fov30_callback(const msgs::PedObjectArray::ConstPtr& msg);
   void draw_pedestrians_callback(const msgs::PedObjectArray::ConstPtr& msg,
-                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, int from_camera);
+                                 boost::circular_buffer<std::pair<ros::Time, cv::Mat>>& image_cache, const int cam_id);
   void pedestrian_event();
-  float crossing_predict(std::vector<std::vector<float>>& bbox_array,
+  float crossing_predict(const int cam_id, std::vector<std::vector<float>>& bbox_array,
                          std::vector<std::vector<cv::Point2f>>& keypoint_array);
   float* get_triangle_angle(float x1, float y1, float x2, float y2, float x3, float y3);
   float get_distance2(float x1, float y1, float x2, float y2);
@@ -194,9 +195,11 @@ public:
   bool tf_error_ = false;
 
   // Setup variables
-  int car_model = 0;
+  int car_model_ = 0;
   double scaling_ratio_width_ = 0.3167;
   double scaling_ratio_height_ = 0.3179;
+  double cam_width = 608;
+  double cam_height = 384;
   const unsigned int number_keypoints_ = 25;
   const unsigned int feature_num_ = 1174;
   const unsigned int frame_num_ = 10;
@@ -210,6 +213,7 @@ public:
   bool use_2d_for_alarm_ = false;
   int skip_frame_number_ = 1;
   double ground_z_ = -5;
+  bool test_new_model_ = false;
 
   int direction_table_[16][5] = {
     { 0, 0, 0, 0, 4 }, { 1, 0, 0, 0, 1 }, { 0, 1, 0, 0, 1 }, { 1, 1, 0, 0, 1 }, { 0, 0, 1, 0, 0 }, { 1, 0, 1, 0, 4 },
