@@ -264,6 +264,7 @@ json getMqttDOMsg();
 bool g_backend_state_001 = false;
 bool g_backend_state_006 = false;
 bool g_occ_state = false;
+bool g_sys_ready = false;
 
 
 /*=========================tools begin=========================*/
@@ -448,38 +449,10 @@ void callbackRound(const std_msgs::Int32::ConstPtr& input)
   g_cuttent_arrive_stop.round = (int) input->data;
 }
 
-void callbackEvent(const std_msgs::String::ConstPtr& input)
+void callbackSysReady(const std_msgs::Bool::ConstPtr& input)
 {
-  using namespace std;
-  g_event_json = input->data.c_str();
-  json j0 = json::parse(g_event_json);
-  json j1;
-  
-  j1["type"] = "M8.2.VK003";
-  j1["deviceid"] = g_plate;
-  j1["lat"] = g_gps.lidar_Lat;
-  j1["lng"] = g_gps.lidar_Lon;  
-  j1["module"] = j0.at("module");
-  j1["status"] = j0.at("status");
-  j1["event_str"] = j0.at("event_str");
-  j1["timestamp"] = j0.at("timestamp");
-  
-  
-  if(g_event_queue_switch)
-  {
-    cout << " push to queue1 event: " << j1.dump() << endl;
-    g_mutex_event_1.lock();
-    g_event_queue_1.push(j1);
-    g_mutex_event_1.unlock();
-  }
-  else
-  {
-    cout << " push to queue2 event: " << j1.dump() << endl;
-    g_mutex_event_2.lock();
-    g_event_queue_2.push(j1);
-    g_mutex_event_2.unlock();
-  }
-  g_event_recv_count ++;
+    std::cout << "====================================" << input->data << std::endl;
+    g_sys_ready = (bool)input->data;
 }
 
 std::string get_msg_type(int id)
@@ -744,6 +717,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["CMS"] = 1; //無資料
     j1["setting"] = g_mode; // 自動/半自動/手動/鎖定
     j1["board_list"] = g_board_list;
+    j1["sys_ready"] = g_sys_ready;
   }
   else if (type == "M8.2.VK002")
   {
@@ -790,6 +764,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["setting"] = g_mode; 
     j1["EExit"] = g_emergency_exit; 
     j1["board_list"] = g_board_list;
+    j1["sys_ready"] = g_sys_ready;
   }else if (type == "M8.2.VK003"){
     j1["lat"] = g_gps.lidar_Lat;
     j1["lng"] = g_gps.lidar_Lon;
@@ -1154,7 +1129,7 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, callbackSersorStatus,callbackTracking,callbackFailSafe,               
+                                     callbackSysReady, callbackBI,callbackSersorStatus,callbackTracking,callbackFailSafe,               
                                      callback_flag_info04, callback_flag_info02, is_new_map);
 
 
