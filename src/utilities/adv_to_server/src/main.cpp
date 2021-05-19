@@ -55,7 +55,7 @@ const std::string TOPIC_RESERVE = "/reserve/request";
 // route 
 const std::string TOPIC_ROUTE = "/reserve/route";
 
-
+const int SEND_CHECK_MICROSECONDS = 500 * 1000; // 0.5 sec
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 //reserve waiting timeout: 3 seconds
@@ -260,6 +260,11 @@ json genMqttBmsMsg();
 json genMqttECUMsg(ecu_type);
 json genMqttIMUMsg();
 json getMqttDOMsg();
+
+bool g_backend_state_001 = false;
+bool g_backend_state_006 = false;
+bool g_occ_state = false;
+
 
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, const std::string& command)
@@ -824,12 +829,40 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= json parsers end =========================*/
 
 /*========================= thread runnables begin =========================*/
+
+void backendStateChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubBackendState(g_backend_state_001 & g_backend_state_006);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+}
+
+void occChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubOCCState(g_occ_state);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+
+}
+
+
 void mqtt_pubish( const std::string& msg)
 {
-  if(g_is_mqtt_connected){
-      std::string topic = "vehicle/report/" + g_vid;
-      std::cout << "publish "  << msg << std::endl;
-      g_mqtt_client.publish(topic, msg);
+    if(g_is_mqtt_connected){
+        std::string topic = "vehicle/report/" + g_vid;
+        std::cout << "publish "  << msg << std::endl;
+        int rc = g_mqtt_client.publish(topic, msg);
+        if(rc == 0){ 
+            g_occ_state = true;
+        }else{
+             g_occ_state = false;
+        }
+    }else{
+     g_occ_state = false;
     }
 }
 
@@ -874,14 +907,23 @@ void sendRun(int argc, char** argv)
 
     while (!g_vk_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send);
+      if(udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send) != -1){
+          g_backend_state_006 = true;
+      }else{
+          g_backend_state_006 = false;
+      }
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       g_vk_queue.pop();
     }
     
     while (!g_vk_status_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true);
+      if(udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true) != -1)
+      {
+          g_backend_state_001 = true;
+      }else{
+          g_backend_state_001 = false;
+      }
       udp_vk_fg_client.send_obj_to_server(g_vk_status_queue.front(), true);
       udp_tablet_client.send_obj_to_server(g_vk_status_queue.front(), g_flag_show_udp_send);
       g_vk_status_queue.pop();
@@ -1149,11 +1191,13 @@ void receiveRosRun(int argc, char** argv)
       g_vk_status_queue.push(temp_vk001);
       g_mutex_queue.unlock();
     }
-
+    
+    /*
     std::string temp_vk004 = get_jsonmsg_to_vk_server("M8.2.VK004");
     g_mutex_queue.lock();
     g_vk_queue.push(temp_vk004);
     g_mutex_queue.unlock();
+    */
 
     std::string temp_vk_006 = get_jsonmsg_to_vk_server("M8.2.VK006");
     g_mutex_queue.lock();
@@ -1787,7 +1831,8 @@ int main(int argc, char** argv)
     2. /serverStatus : server status for ADV_op/sys_ready.
     3. /reserve/request: Reserve request from back end to Control team.
   */
-  boost::thread thread_ros_send(sendROSRun, argc, argv);
+  boost::thread thread_backend_check(backendStateChecker, argc, argv);
+  boost::thread thread_occ_check(occChecker, argc, argv);
 
   /*Strart thread for TCP client: Send VK005 to get server status.*/
   boost::thread thread_get_server_status(getServerStatusRun, argc, argv);

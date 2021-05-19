@@ -25,6 +25,9 @@
 
 
 static ros::Publisher traffic_pub;
+static ros::Publisher backend_pub;
+static ros::Publisher occ_pub;
+
 class RosModuleTraffic
 {
   public:
@@ -36,6 +39,8 @@ class RosModuleTraffic
       ros::init (argc, argv, "adv_to_server");
       ros::NodeHandle n;
       traffic_pub = n.advertise<msgs::Spat>("/traffic", 1000);
+      backend_pub = n.advertise<std_msgs::Bool>("/backend_sender/status", 1000);
+      occ_pub = n.advertise<std_msgs::Bool>("/occ_sender/status", 1000);
     }
 
     static std::string getPlate(){
@@ -132,6 +137,16 @@ class RosModuleTraffic
     {
       std::cout << "publishTraffic topic " << topic <<  std::endl;
       traffic_pub.publish(input);
+    }
+
+    static void pubBackendState(bool input)
+    {
+        backend_pub.publish(input);
+    }
+
+    static void pubOCCState(bool input)
+    {
+        occ_pub.publish(input);
     }
 
     static void
