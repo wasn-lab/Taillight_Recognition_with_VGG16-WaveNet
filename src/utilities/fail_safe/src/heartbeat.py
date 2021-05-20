@@ -44,7 +44,7 @@ def backend_info_func(msg, fps):
         gross_voltage = msg.gross_voltage
         lowest_voltage = msg.lowest_volage
         status = OK
-        status_str = ""
+        status_str = "FPS: " + str(fps)[:5]
         if gross_voltage < 350 or lowest_voltage < 3.2:
             status = ERROR
             status_str = ("Battery too low: gross voltage is {}, "
@@ -57,6 +57,34 @@ def backend_info_func(msg, fps):
                               gross_voltage, lowest_voltage)
     if status != OK:
         rospy.logwarn("BackendInfo: %s", status_str)
+    return status, status_str
+
+
+def backend_sender_func(msg, fps):
+    status = WARN
+    status_str = "No message from /backend_sender/status"
+    if msg is not None:
+        if msg.data:
+            status = OK
+            status_str = "FPS: " + str(fps)[:5]
+        else:
+            status = WARN
+            status_str = "Cannot send data to backend. FPS: " + str(fps)[:5]
+
+    return status, status_str
+
+
+def occ_sender_func(msg, fps):
+    status = WARN
+    status_str = "No message from /occ_sender/status"
+    if msg is not None:
+        if msg.data:
+            status = OK
+            status_str = "FPS: " + str(fps)[:5]
+        else:
+            status = WARN
+            status_str = "Cannot send data to OCC. FPS: " + str(fps)[:5]
+
     return status, status_str
 
 
@@ -166,6 +194,14 @@ class Heartbeat(object):
         if module_name == "LidarDetection":
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = lidar_detection_func
+
+        if module_name == "backend_sender":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = backend_sender_func
+
+        if module_name == "occ_sender":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = occ_sender_func
 
         # internal variables:
         self.heap = []
