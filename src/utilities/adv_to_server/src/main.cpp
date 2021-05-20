@@ -55,7 +55,7 @@ const std::string TOPIC_RESERVE = "/reserve/request";
 // route 
 const std::string TOPIC_ROUTE = "/reserve/route";
 
-
+const int SEND_CHECK_MICROSECONDS = 500 * 1000; // 0.5 sec
 // wait reserve result: 300ms.
 const int REVERSE_SLEEP_TIME_MICROSECONDS = 300 * 1000;
 //reserve waiting timeout: 3 seconds
@@ -261,6 +261,12 @@ json genMqttECUMsg(ecu_type);
 json genMqttIMUMsg();
 json getMqttDOMsg();
 
+bool g_backend_state_001 = false;
+bool g_backend_state_006 = false;
+bool g_occ_state = false;
+bool g_sys_ready = false;
+
+
 /*=========================tools begin=========================*/
 bool checkCommand(int argc, char** argv, const std::string& command)
 {
@@ -443,38 +449,10 @@ void callbackRound(const std_msgs::Int32::ConstPtr& input)
   g_cuttent_arrive_stop.round = (int) input->data;
 }
 
-void callbackEvent(const std_msgs::String::ConstPtr& input)
+void callbackSysReady(const std_msgs::Bool::ConstPtr& input)
 {
-  using namespace std;
-  g_event_json = input->data.c_str();
-  json j0 = json::parse(g_event_json);
-  json j1;
-  
-  j1["type"] = "M8.2.VK003";
-  j1["deviceid"] = g_plate;
-  j1["lat"] = g_gps.lidar_Lat;
-  j1["lng"] = g_gps.lidar_Lon;  
-  j1["module"] = j0.at("module");
-  j1["status"] = j0.at("status");
-  j1["event_str"] = j0.at("event_str");
-  j1["timestamp"] = j0.at("timestamp");
-  
-  
-  if(g_event_queue_switch)
-  {
-    cout << " push to queue1 event: " << j1.dump() << endl;
-    g_mutex_event_1.lock();
-    g_event_queue_1.push(j1);
-    g_mutex_event_1.unlock();
-  }
-  else
-  {
-    cout << " push to queue2 event: " << j1.dump() << endl;
-    g_mutex_event_2.lock();
-    g_event_queue_2.push(j1);
-    g_mutex_event_2.unlock();
-  }
-  g_event_recv_count ++;
+    std::cout << "====================================" << input->data << std::endl;
+    g_sys_ready = (bool)input->data;
 }
 
 std::string get_msg_type(int id)
@@ -739,6 +717,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["CMS"] = 1; //無資料
     j1["setting"] = g_mode; // 自動/半自動/手動/鎖定
     j1["board_list"] = g_board_list;
+    j1["sys_ready"] = g_sys_ready;
   }
   else if (type == "M8.2.VK002")
   {
@@ -785,6 +764,7 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
     j1["setting"] = g_mode; 
     j1["EExit"] = g_emergency_exit; 
     j1["board_list"] = g_board_list;
+    j1["sys_ready"] = g_sys_ready;
   }else if (type == "M8.2.VK003"){
     j1["lat"] = g_gps.lidar_Lat;
     j1["lng"] = g_gps.lidar_Lon;
@@ -824,12 +804,40 @@ std::string get_jsonmsg_to_vk_server(const std::string& type)
 /*========================= json parsers end =========================*/
 
 /*========================= thread runnables begin =========================*/
+
+void backendStateChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubBackendState(g_backend_state_001 & g_backend_state_006);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+}
+
+void occChecker(int argc, char** argv)
+{
+    while (true)
+    {
+        RosModuleTraffic::pubOCCState(g_occ_state);
+        boost::this_thread::sleep(boost::posix_time::microseconds(SEND_CHECK_MICROSECONDS));
+    }
+
+}
+
+
 void mqtt_pubish( const std::string& msg)
 {
-  if(g_is_mqtt_connected){
-      std::string topic = "vehicle/report/" + g_vid;
-      std::cout << "publish "  << msg << std::endl;
-      g_mqtt_client.publish(topic, msg);
+    if(g_is_mqtt_connected){
+        std::string topic = "vehicle/report/" + g_vid;
+        std::cout << "publish "  << msg << std::endl;
+        int rc = g_mqtt_client.publish(topic, msg);
+        if(rc == 0){ 
+            g_occ_state = true;
+        }else{
+             g_occ_state = false;
+        }
+    }else{
+     g_occ_state = false;
     }
 }
 
@@ -874,14 +882,23 @@ void sendRun(int argc, char** argv)
 
     while (!g_vk_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send);
+      if(udp_vk_client.send_obj_to_server(g_vk_queue.front(), g_flag_show_udp_send) != -1){
+          g_backend_state_006 = true;
+      }else{
+          g_backend_state_006 = false;
+      }
       //UDP_TABLET_client.send_obj_to_server(vkQueue.front(), flag_show_udp_send);
       g_vk_queue.pop();
     }
     
     while (!g_vk_status_queue.empty())
     {
-      udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true);
+      if(udp_vk_client.send_obj_to_server(g_vk_status_queue.front(), true) != -1)
+      {
+          g_backend_state_001 = true;
+      }else{
+          g_backend_state_001 = false;
+      }
       udp_vk_fg_client.send_obj_to_server(g_vk_status_queue.front(), true);
       udp_tablet_client.send_obj_to_server(g_vk_status_queue.front(), g_flag_show_udp_send);
       g_vk_status_queue.pop();
@@ -1112,7 +1129,7 @@ void receiveRosRun(int argc, char** argv)
 
   RosModuleTraffic::RegisterCallBack(callback_detObj, callback_gps, callback_veh, callback_gnss2local, callback_fps,
                                      callbackBusStopInfo, callbackMileage, callbackNextStop, callbackRound, callbackIMU, 
-                                     callbackEvent, callbackBI, callbackSersorStatus,callbackTracking,callbackFailSafe,               
+                                     callbackSysReady, callbackBI,callbackSersorStatus,callbackTracking,callbackFailSafe,               
                                      callback_flag_info04, callback_flag_info02, is_new_map);
 
 
@@ -1149,11 +1166,13 @@ void receiveRosRun(int argc, char** argv)
       g_vk_status_queue.push(temp_vk001);
       g_mutex_queue.unlock();
     }
-
+    
+    /*
     std::string temp_vk004 = get_jsonmsg_to_vk_server("M8.2.VK004");
     g_mutex_queue.lock();
     g_vk_queue.push(temp_vk004);
     g_mutex_queue.unlock();
+    */
 
     std::string temp_vk_006 = get_jsonmsg_to_vk_server("M8.2.VK006");
     g_mutex_queue.lock();
@@ -1787,7 +1806,8 @@ int main(int argc, char** argv)
     2. /serverStatus : server status for ADV_op/sys_ready.
     3. /reserve/request: Reserve request from back end to Control team.
   */
-  boost::thread thread_ros_send(sendROSRun, argc, argv);
+  boost::thread thread_backend_check(backendStateChecker, argc, argv);
+  boost::thread thread_occ_check(occChecker, argc, argv);
 
   /*Strart thread for TCP client: Send VK005 to get server status.*/
   boost::thread thread_get_server_status(getServerStatusRun, argc, argv);
