@@ -24,7 +24,7 @@ def main():
         default=os.path.join(src_dir, "sb_rosbag_sender_local.ini"))
     parser.add_argument(
         "--rosbag-dir",
-        default=os.path.join(os.environ["HOME"], "rosbag_files", "tmp"))
+        default=os.path.join(os.environ["HOME"], "rosbag_files", "backup"))
     args = parser.parse_known_args()[0]
 
     rospy.init_node("SBRosbagSender")
