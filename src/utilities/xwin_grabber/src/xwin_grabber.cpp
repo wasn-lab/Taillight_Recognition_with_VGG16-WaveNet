@@ -4,12 +4,15 @@
 #include <X11/extensions/Xcomposite.h>  // for XCompositeNameWindowPixmap
 #include <X11/extensions/composite.h>   // for CompositeRedirectAutomatic
 #include <glog/logging.h>               // for COMPACT_GOOGLE_LOG_INFO, LOG
-#include <opencv2/core/mat.hpp>         // for Mat
-#include <opencv2/core/mat.inl.hpp>     // for Mat::Mat, Mat::~Mat, Mat::empty
-#include <opencv2/highgui.hpp>          // for destroyAllWindows, imshow
-#include <string>                       // for string
+#include <sensor_msgs/CompressedImage.h>
+#include <std_msgs/Empty.h>
+#include <opencv2/core/mat.hpp>      // for Mat
+#include <opencv2/core/mat.inl.hpp>  // for Mat::Mat, Mat::~Mat, Mat::empty
+#include <opencv2/highgui.hpp>       // for destroyAllWindows, imshow
+#include <string>                    // for string
 #include <chrono>
 #include <thread>
+#include "xwin_grabber_args_parser.h"
 #include "xwin_grabber_utils.h"  // for search_xid_by_title, ximage_t...
 #include "xwin_grabber.h"
 
@@ -25,6 +28,11 @@ XWinGrabber::XWinGrabber(const std::string&& xwin_title) : xwin_title_(xwin_titl
   composite_enabled_ = bool(XCompositeQueryExtension(display_, &event_base_return, &error_base_return));
 
   XSynchronize(display_, true);
+
+  // Set up publishers
+  std::string topic = get_output_topic();
+  publisher_ = node_handle_.advertise<sensor_msgs::CompressedImage>(topic, /*queue size=*/1);
+  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/1);
 }
 
 XWinGrabber::~XWinGrabber()
@@ -60,6 +68,50 @@ cv::Mat XWinGrabber::capture_window()
   return img;
 }
 
+void XWinGrabber::find_xid_if_necessary()
+{
+  if (xid_ > 0)
+  {
+    return;
+  }
+  xid_ = search_xid_by_title(xwin_title_);
+  if (xid_ == 0)
+  {
+    LOG(INFO) << "xid is lost, reconnecting...";
+  }
+  else
+  {
+    LOG(INFO) << "Find xid " << xid_;
+  }
+}
+
+void XWinGrabber::streaming_xwin()
+{
+  cv::Mat img = capture_window();
+  if (img.empty())
+  {
+    return;
+  }
+  std::vector<int> jpg_params{
+    cv::IMWRITE_JPEG_QUALITY,
+    75,
+    cv::IMWRITE_JPEG_OPTIMIZE,
+    1,
+  };
+
+  sensor_msgs::CompressedImagePtr msg{ new sensor_msgs::CompressedImage };
+  msg->data.reserve(img.total());
+  msg->format = "jpeg";
+  cv::imencode(".jpg", img, msg->data, jpg_params);
+  publisher_.publish(msg);
+  heartbeat_publisher_.publish(std_msgs::Empty{});
+
+  const uint64_t org_len = img.total() * img.elemSize();
+  const uint64_t cmpr_len = msg->data.size();
+  VLOG(2) << "Image size: " << img.cols << "x" << img.rows << ", jpg quality: " << jpg_params[1]
+          << ", compression rate : " << cmpr_len << "/" << org_len << " = " << double(cmpr_len) / org_len;
+}
+
 int XWinGrabber::run()
 {
   if (!display_)
@@ -74,53 +126,17 @@ int XWinGrabber::run()
     return 1;
   }
 
-  bool stop = false;
-  constexpr int esc_key = 27;
-  while (!stop)
+  ros::Rate r(15);
+
+  while (ros::ok())
   {
-    while (xid_ == 0)
+    find_xid_if_necessary();
+    if (xid_)
     {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      xid_ = search_xid_by_title(xwin_title_);
-      if (xid_ == 0)
-      {
-        LOG(INFO) << "xid is lost, reconnecting...";
-      }
-      else
-      {
-        LOG(INFO) << "Find xid " << xid_;
-      }
+      streaming_xwin();
     }
-
-    cv::Mat img = capture_window();
-    for (int q = 5; q <= 95; q += 5)
-    {
-      std::vector<int> jpg_params{
-        cv::IMWRITE_JPEG_QUALITY,
-        q,
-        cv::IMWRITE_JPEG_OPTIMIZE,
-        1,
-      };
-      std::vector<uint8_t> cmpr_data;
-      cmpr_data.reserve(img.total());
-      cv::imencode(".jpg", img, cmpr_data, jpg_params);
-      const uint64_t org_len = img.total() * img.elemSize();
-      const uint64_t cmpr_len = cmpr_data.size();
-      LOG(INFO) << "jpg quality: " << q
-                << ", compression rate : " << cmpr_len << "/" << org_len << " = " << double(cmpr_len) / org_len;
-    }
-
-    if (!img.empty())
-    {
-      cv::imshow("test", img);
-    }
-    // Set FPS = 15
-    if (cv::waitKey(1000 / 15) == esc_key)
-    {
-      stop = true;
-    }
+    r.sleep();
   }
-  cv::destroyAllWindows();
   return 0;
 }
 };  // namespace xwin_grabber
