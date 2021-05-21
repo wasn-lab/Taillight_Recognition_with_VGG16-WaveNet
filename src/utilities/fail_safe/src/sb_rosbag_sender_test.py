@@ -17,9 +17,9 @@ class SBRosbagSenderTest(unittest.TestCase):
         self.sender = SBRosbagSender(ini, self.rosbag_dir)
         if not os.path.isdir(self.rosbag_dir):
             os.makedirs(self.rosbag_dir)
-        self.bag_names = ["auto_record_2020-09-08-06-24-34_18.bag",
-                          "auto_record_2020-10-06-16-39-20_77.bag",
-                          "auto_record_2020-10-06-16-39-05_76.bag"]
+        self.bag_names = ["auto_record_2020-09-08-06-24-34_18.bag.gz",
+                          "auto_record_2020-10-06-16-39-20_77.bag.gz",
+                          "auto_record_2020-10-06-16-39-05_76.bag.gz"]
         for bag in self.bag_names:
             subprocess.call(["touch", os.path.join(self.rosbag_dir, bag)])
         self.sb_vars = {"/south_bridge/" + _ : None
@@ -48,11 +48,11 @@ class SBRosbagSenderTest(unittest.TestCase):
     def test_get_sb_bag_name(self):
         bags = self.sender.get_bag_files()
         sb_fn = self.sender.get_sb_bag_name(bags[0])
-        self.assertEqual(sb_fn, "itri_dc5360f91e74_camera_20200908_0624_1.bag")
+        self.assertEqual(sb_fn, "itri_dc5360f91e74_camera_20200908_0624_1.bag.gz")
         sb_fn = self.sender.get_sb_bag_name(bags[1])
-        self.assertEqual(sb_fn, "itri_dc5360f91e74_camera_20201006_1639_1.bag")
+        self.assertEqual(sb_fn, "itri_dc5360f91e74_camera_20201006_1639_1.bag.gz")
         sb_fn = self.sender.get_sb_bag_name(bags[2])
-        self.assertEqual(sb_fn, "itri_dc5360f91e74_camera_20201006_1639_2.bag")
+        self.assertEqual(sb_fn, "itri_dc5360f91e74_camera_20201006_1639_2.bag.gz")
 
     def test_generate_lftp_script(self):
         script = self.sender.generate_lftp_script()

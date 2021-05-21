@@ -1806,6 +1806,7 @@ int main(int argc, char** argv)
     2. /serverStatus : server status for ADV_op/sys_ready.
     3. /reserve/request: Reserve request from back end to Control team.
   */
+  boost::thread thread_ros_send(sendROSRun, argc, argv);
   boost::thread thread_backend_check(backendStateChecker, argc, argv);
   boost::thread thread_occ_check(occChecker, argc, argv);
 
