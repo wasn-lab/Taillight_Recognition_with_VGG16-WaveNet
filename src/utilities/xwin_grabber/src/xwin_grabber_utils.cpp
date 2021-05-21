@@ -47,16 +47,16 @@ static Window* get_client_list(Display* disp, unsigned long* size)
 {
   Window* client_list;
 
-  if ((client_list = (Window*)get_property(disp, DefaultRootWindow(disp), XA_WINDOW, "_NET_CLIENT_LIST", size)) == NULL)
+  if ((client_list = (Window*)get_property(disp, DefaultRootWindow(disp), XA_WINDOW, "_NET_CLIENT_LIST", size)) == nullptr)
   {
     if ((client_list = (Window*)get_property(disp, DefaultRootWindow(disp), XA_CARDINAL, "_WIN_CLIENT_LIST", size)) ==
-        NULL)
+        nullptr)
     {
       fputs("Cannot get client list properties. \n"
             "(_NET_CLIENT_LIST or _WIN_CLIENT_LIST)"
             "\n",
             stderr);
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -67,8 +67,8 @@ static char* get_window_title(Display* disp, Window win)
 {
   char* title = nullptr;
 
-  char* wm_name = get_property(disp, win, XA_STRING, "WM_NAME", NULL);
-  char* net_wm_name = get_property(disp, win, XInternAtom(disp, "UTF8_STRING", false), "_NET_WM_NAME", NULL);
+  char* wm_name = get_property(disp, win, XA_STRING, "WM_NAME", nullptr);
+  char* net_wm_name = get_property(disp, win, XInternAtom(disp, "UTF8_STRING", false), "_NET_WM_NAME", nullptr);
   if (net_wm_name)
   {
     title = strdup(net_wm_name);
@@ -116,13 +116,13 @@ static char* get_property(Display* disp, Window win, Atom xa_prop_type, const st
                          &ret_format, &ret_nitems, &ret_bytes_after, &ret_prop) != Success)
   {
     LOG(INFO) << "Cannot get " << prop_name << " property.";
-    return NULL;
+    return nullptr;
   }
 
   if (xa_ret_type != xa_prop_type)
   {
     XFree(ret_prop);
-    return NULL;
+    return nullptr;
   }
 
   /* null terminate the result to make string handling easier */
