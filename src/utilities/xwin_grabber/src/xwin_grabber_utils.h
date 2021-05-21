@@ -9,5 +9,5 @@ namespace xwin_grabber
 cv::Mat ximage_to_cvmat(XImage* image);
 cv::Mat capture_window(XID xid);
 
-XID search_xid_by_title(const std::string title);
+XID search_xid_by_title(const std::string& title);
 };  // namespace xwin_grabber

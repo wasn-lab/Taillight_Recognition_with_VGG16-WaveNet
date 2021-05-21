@@ -5,9 +5,9 @@
 #include <X11/Xutil.h>                   // for XGetPixel
 #include <glog/logging.h>                // for COMPACT_GOOGLE_LOG_INFO, LOG
 #include <opencv2/core/hal/interface.h>  // for CV_8UC3
-#include <stdio.h>                       // for NULL, fputs, size_t, stderr
-#include <stdlib.h>                      // for free, malloc
-#include <string.h>                      // for strdup, memcpy
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <opencv2/core/mat.hpp>          // for Mat
 #include <opencv2/core/mat.inl.hpp>      // for Mat::Mat, Mat::~Mat, Mat::at
 #include <opencv2/core/matx.hpp>         // for Vec, Vec3b
@@ -68,23 +68,23 @@ static char* get_window_title(Display* disp, Window win)
   char* title = nullptr;
 
   char* wm_name = get_property(disp, win, XA_STRING, "WM_NAME", nullptr);
-  char* net_wm_name = get_property(disp, win, XInternAtom(disp, "UTF8_STRING", false), "_NET_WM_NAME", nullptr);
-  if (net_wm_name)
+  char* net_wm_name = get_property(disp, win, XInternAtom(disp, "UTF8_STRING", 0), "_NET_WM_NAME", nullptr);
+  if (net_wm_name != nullptr)
   {
     title = strdup(net_wm_name);
   }
-  else if (wm_name)
+  else if (wm_name != nullptr)
   {
     title = strdup(wm_name);
   }
 
-  if (net_wm_name)
+  if (net_wm_name != nullptr)
   {
     free(net_wm_name);
     net_wm_name = nullptr;
   }
 
-  if (wm_name)
+  if (wm_name != nullptr)
   {
     free(wm_name);
     wm_name = nullptr;
@@ -105,14 +105,14 @@ static char* get_property(Display* disp, Window win, Atom xa_prop_type, const st
   unsigned char* ret_prop;
   char* ret;
 
-  xa_prop_name = XInternAtom(disp, prop_name.c_str(), false);
+  xa_prop_name = XInternAtom(disp, prop_name.c_str(), 0);
 
   /* MAX_PROPERTY_VALUE_LEN / 4 explanation (XGetWindowProperty manpage):
    *
    * long_length = Specifies the length in 32-bit multiples of the
    *               data to be retrieved.
    */
-  if (XGetWindowProperty(disp, win, xa_prop_name, 0, MAX_PROPERTY_VALUE_LEN / 4, false, xa_prop_type, &xa_ret_type,
+  if (XGetWindowProperty(disp, win, xa_prop_name, 0, MAX_PROPERTY_VALUE_LEN / 4, 0, xa_prop_type, &xa_ret_type,
                          &ret_format, &ret_nitems, &ret_bytes_after, &ret_prop) != Success)
   {
     LOG(INFO) << "Cannot get " << prop_name << " property.";
@@ -129,7 +129,9 @@ static char* get_property(Display* disp, Window win, Atom xa_prop_type, const st
   tmp_size = (ret_format / 8) * ret_nitems;
   // Correct 64 Architecture implementation of 32 bit data
   if (ret_format == 32)
+  {
     tmp_size *= sizeof(long) / 4;
+  }
   ret = (char*)malloc(tmp_size + 1);
   memcpy(ret, ret_prop, tmp_size);
   ret[tmp_size] = '\0';
@@ -143,7 +145,7 @@ static char* get_property(Display* disp, Window win, Atom xa_prop_type, const st
   return ret;
 }
 
-XID search_xid_by_title(const std::string title)
+XID search_xid_by_title(const std::string& title)
 {
   Display* display = XOpenDisplay(nullptr);
   Window* client_list;
@@ -158,7 +160,7 @@ XID search_xid_by_title(const std::string title)
   {
     char* title_out = get_window_title(display, client_list[i]);
     std::string whole_title{ title_out };
-    if (title_out)
+    if (title_out != nullptr)
     {
       free(title_out);
       title_out = nullptr;
