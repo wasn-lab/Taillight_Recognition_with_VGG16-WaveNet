@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <memory>
 #include <opencv2/core/mat.hpp>          // for Mat
 #include <opencv2/core/mat.inl.hpp>      // for Mat::Mat, Mat::~Mat, Mat::at
 #include <opencv2/core/matx.hpp>         // for Vec, Vec3b
@@ -66,18 +65,32 @@ static Window* get_client_list(Display* disp, unsigned long* size)
 
 static char* get_window_title(Display* disp, Window win)
 {
-  std::unique_ptr<char> net_wm_name{get_property(disp, win, XInternAtom(disp, "UTF8_STRING", 0), "_NET_WM_NAME", nullptr)};
-  if (net_wm_name)
+  char* title = nullptr;
+
+  char* wm_name = get_property(disp, win, XA_STRING, "WM_NAME", nullptr);
+  char* net_wm_name = get_property(disp, win, XInternAtom(disp, "UTF8_STRING", 0), "_NET_WM_NAME", nullptr);
+  if (net_wm_name != nullptr)
   {
-    return strdup(net_wm_name.get());
+    title = strdup(net_wm_name);
+  }
+  else if (wm_name != nullptr)
+  {
+    title = strdup(wm_name);
   }
 
-  std::unique_ptr<char> wm_name{get_property(disp, win, XA_STRING, "WM_NAME", nullptr)};
-  if (wm_name)
+  if (net_wm_name != nullptr)
   {
-    return strdup(wm_name.get());
+    free(net_wm_name);
+    net_wm_name = nullptr;
   }
-  return nullptr;
+
+  if (wm_name != nullptr)
+  {
+    free(wm_name);
+    wm_name = nullptr;
+  }
+
+  return title;
 }
 
 static char* get_property(Display* disp, Window win, Atom xa_prop_type, const std::string& prop_name,
