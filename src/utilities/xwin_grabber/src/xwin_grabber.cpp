@@ -18,6 +18,18 @@
 
 namespace xwin_grabber
 {
+
+bool g_xerror = false;
+
+int xerror_handler(Display * d, XErrorEvent * e)
+{
+  // Deal with X Error of failed request:  BadMatch (invalid parameter attributes)
+  LOG(INFO) << "Error code: " << e->error_code;
+  g_xerror = true;
+  return 0;
+}
+
+
 XWinGrabber::XWinGrabber(const std::string&& xwin_title) : xwin_title_(xwin_title)
 {
   display_ = XOpenDisplay(nullptr);
@@ -28,6 +40,7 @@ XWinGrabber::XWinGrabber(const std::string&& xwin_title) : xwin_title_(xwin_titl
   composite_enabled_ = bool(XCompositeQueryExtension(display_, &event_base_return, &error_base_return));
 
   XSynchronize(display_, true);
+  XSetErrorHandler(xerror_handler);
 
   // Set up publishers
   std::string topic = get_output_topic();
@@ -57,11 +70,18 @@ cv::Mat XWinGrabber::capture_window()
   }
 
   XImage* ximage = XGetImage(display_, xid_, 0, 0, attr.width, attr.height, AllPlanes, ZPixmap);
-  if (!ximage)
+
+  if ((!ximage) || g_xerror)
   {
     LOG(INFO) << "XGetImage failed";
+    if (ximage)
+    {
+      XDestroyImage(ximage);
+    }
+    g_xerror = false;
     return cv::Mat{};
   }
+  g_xerror = false;
 
   auto img = ximage_to_cvmat(ximage);
   XDestroyImage(ximage);
