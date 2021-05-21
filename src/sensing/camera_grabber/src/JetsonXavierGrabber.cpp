@@ -453,8 +453,8 @@ bool JetsonXavierGrabber::runPerceptionGst()
 #ifdef MV_IMAGE_DEBUG
               cv::arrowedLine(cvMV[selected_channel], cv::Point(src_x, src_y), cv::Point(dst_x, dst_y), cv::Scalar(0, 255, 0), 2, 8, 0, 0.5);
 #endif              
-              mv_msg.mv_x = dst_x;
-              mv_msg.mv_y = dst_y;
+              mv_msg.mv_x = dst_x - src_x;
+              mv_msg.mv_y = dst_y - src_y;
               mv_msg.src_x = src_x;
               mv_msg.src_y = src_y;
               

@@ -4,6 +4,7 @@ import unittest
 import os
 from led_manager import (get_powerled_exe, change_led_text, LEDManager,
     AUTO_DRIVING, MANUAL_DRIVING)
+from std_msgs.msg import Bool
 
 class LEDManagerTest(unittest.TestCase):
     def setUp(self):
@@ -20,6 +21,17 @@ class LEDManagerTest(unittest.TestCase):
         ret = change_led_text(MANUAL_DRIVING)
         self.assertEqual(ret, 0)
 
+    def test_cb(self):
+        led_mgr = LEDManager()
+
+        self.assertEqual(led_mgr._cb(Bool(True)), 1)
+        # Don't change text when self-driving state does not change.
+        self.assertEqual(led_mgr._cb(Bool(True)), 0)
+        self.assertEqual(led_mgr._cb(Bool(True)), 0)
+
+        self.assertEqual(led_mgr._cb(Bool(False)), 1)
+        self.assertEqual(led_mgr._cb(Bool(False)), 0)
+        self.assertEqual(led_mgr._cb(Bool(True)), 1)
 
 if __name__ == "__main__":
     unittest.main()

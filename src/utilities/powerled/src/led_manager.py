@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2021, Industrial Technology and Research Institute.
 # All rights reserved.
 """
@@ -8,7 +9,7 @@ import os
 import subprocess
 import sys
 import rospy
-from msgs.msg import Flag_Info
+from std_msgs.msg import Bool
 
 MANUAL_DRIVING = 1
 AUTO_DRIVING = 2
@@ -49,20 +50,29 @@ class LEDManager(object):
         self.prev_mode = 0
 
     def _cb(self, msg):
-        if int(msg.Dspace_Flag08) == 1:
+        """
+        Return -- 1: change led text 0: no change
+        """
+        # msg.data = True ==> self_driving mode
+        if msg.data:
             self.driving_mode = AUTO_DRIVING
         else:
             self.driving_mode = MANUAL_DRIVING
 
+        ret = 0
         if self.driving_mode != self.prev_mode:
+            rospy.logwarn("Receive msg, driving mode is {}, prev mode is {}".format(
+                self.driving_mode, self.prev_mode))
             change_led_text(self.driving_mode)
+            ret = 1
         self.prev_mode = self.driving_mode
+        return ret
 
     def run(self):
         node_name = "LEDManagerNode"
         rospy.init_node(node_name)
         rospy.logwarn("Init %s", node_name)
-        rospy.Subscriber("/Flag_Info02", Flag_Info, self._cb)
+        rospy.Subscriber("/vehicle/report/itri/self_driving_mode", Bool, self._cb)
 
         rate = rospy.Rate(1)  # FPS: 1
 
