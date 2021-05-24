@@ -141,12 +141,16 @@ class RosModuleTraffic
 
     static void pubBackendState(bool input)
     {
-        backend_pub.publish(input);
+        std_msgs::Bool result;
+        result.data = input;
+        backend_pub.publish(result);
     }
 
     static void pubOCCState(bool input)
     {
-        occ_pub.publish(input);
+        std_msgs::Bool result;
+        result.data = input;
+        occ_pub.publish(result);
     }
 
     static void
