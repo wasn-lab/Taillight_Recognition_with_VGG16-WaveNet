@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="xwin_grabber" type="xwin_grabber_node" name="xwin_grabber_rviz" output="screen" cwd="node" respawn="true" />
+</launch>
