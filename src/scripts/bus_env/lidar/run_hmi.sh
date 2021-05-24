@@ -9,6 +9,7 @@ readonly CWD=`pwd`
 roscd car_model
 python scripts/check_ros_master.py --wait-until-alive
 python scripts/wait_node.py --node-name /web_video_server
+python scripts/wait_node.py --node-name /xwin_grabber_rviz
 
 cd $CWD
 opera "http://service.itriadv.co:8785/Unit/DriverDashboard?URL=local&R=true" &

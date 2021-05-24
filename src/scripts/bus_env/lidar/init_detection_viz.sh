@@ -12,6 +12,7 @@ python scripts/wait_node.py --node-name /localization
 python scripts/wait_node.py --node-name /lidar_point_pillars_car
 python scripts/wait_node.py --node-name /lidar_point_pillars_ped_cyc
 python scripts/wait_node.py --node-name /lidar_point_pillars_integrator
+python scripts/wait_node.py --node-name /pedestrian_event
 python scripts/wait_topic.py --topic-name /CameraDetection
 
 cd $CWD

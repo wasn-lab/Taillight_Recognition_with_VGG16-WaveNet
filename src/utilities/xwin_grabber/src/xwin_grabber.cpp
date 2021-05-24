@@ -9,6 +9,7 @@
 #include <opencv2/core/mat.hpp>      // for Mat
 #include <opencv2/core/mat.inl.hpp>  // for Mat::Mat, Mat::~Mat, Mat::empty
 #include <opencv2/highgui.hpp>       // for destroyAllWindows, imshow
+#include <opencv2/imgproc.hpp>
 #include <string>                    // for string
 #include <chrono>
 #include <thread>
@@ -113,6 +114,15 @@ void XWinGrabber::streaming_xwin()
   {
     return;
   }
+
+  if (img.cols > 1024)
+  {
+    // resize image
+    const double scale = 1024.0 / img.cols;
+    cv::Mat temp;
+    cv::resize(img, temp, cv::Size(), /*width*/scale, /*height*/ scale);
+    img = temp;
+  }
   std::vector<int> jpg_params{
     cv::IMWRITE_JPEG_QUALITY,
     75,
@@ -135,7 +145,7 @@ void XWinGrabber::streaming_xwin()
 
 int XWinGrabber::run()
 {
-  if (display_ != nullptr)
+  if (display_ == nullptr)
   {
     LOG(ERROR) << "Cannot open display";
     return 1;
@@ -147,7 +157,7 @@ int XWinGrabber::run()
     return 1;
   }
 
-  ros::Rate r(15);
+  ros::Rate r(20);
 
   while (ros::ok())
   {
