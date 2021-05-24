@@ -31,6 +31,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_load_monitor.sh^M
 screen -t init_lidar_lab
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_lidar_lab.sh^M"
 
+screen -t run_xwin_grabber_rviz
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_xwin_grabber_rviz.sh^M"
+
 screen -t run_web_video_server
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_web_video_server.sh^M"
 
@@ -79,6 +82,9 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_replay_cmpr_pc2_to
 
 screen -t detection_viz
 stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/init_detection_viz.sh^M"
+
+screen -t hmi
+stuff "/home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_hmi.sh^M"
 
 screen -t pad_issue_reporter
 stuff "bash /home/lidar/itriadv/src/scripts/bus_env_cbus/lidar/run_pad_issue_reporter.sh^M"
