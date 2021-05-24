@@ -27,6 +27,9 @@ std::mutex g_total_lock;
 ros::Time g_car_msg_rostime;
 ros::Time g_ped_cyc_msg_rostime;
 
+ros::Time g_car_msg_rostime_last;
+ros::Time g_ped_cyc_msg_rostime_last;
+
 msgs::DetectedObjectArray g_msgArr;
 
 pcl::StopWatch g_integrator_stopWatch;
@@ -38,6 +41,7 @@ bool await_msgs_;
 void cb_LidarDetection_Car(const boost::shared_ptr<const msgs::DetectedObjectArray>& msgArr)
 {
   g_total_lock.lock();
+  g_car_msg_rostime_last = g_car_msg_rostime;
   g_car_msg_rostime = msgArr->header.stamp;
   
   for (const auto & object : msgArr->objects)
@@ -54,6 +58,7 @@ void cb_LidarDetection_Ped_Cyc(const boost::shared_ptr<const msgs::DetectedObjec
   g_total_lock.lock();
 
   g_integrator_stopWatch.reset();
+  g_ped_cyc_msg_rostime_last = g_ped_cyc_msg_rostime;
   g_ped_cyc_msg_rostime = msgArr->header.stamp;
 
   for (const auto & object : msgArr->objects)
@@ -77,39 +82,39 @@ void LidarDetection_Publisher(int argc, char** argv)
       std::cout << "WARNING: Car & Ped_Cyc is Out of Sync! " << time_diff_ms << "ms" << std::endl;
     }
     
-    // if(!g_msgArr.objects.empty())
+    if(!g_msgArr.objects.empty() || (g_car_msg_rostime_last == g_car_msg_rostime && g_ped_cyc_msg_rostime_last == g_ped_cyc_msg_rostime))
+    {
+    // if (g_msgArr.objects.empty())
     // {
-    if (g_msgArr.objects.empty())
-    {
-      g_integrator_stopWatch.reset();
-    }
-    if (g_ped_cyc_msg_rostime.isValid())
-    {
-      g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
-    }
-    else if(g_car_msg_rostime.isValid())
-    {
-      g_msgArr.header.stamp = g_car_msg_rostime;
-    }
-    else
-    {
-      std::cout << "[WARNING]: NO VALID TIMESTAMP FOR LiDAR DETECTION!!" << std::endl;
-    }
-    
-    g_msgArr.header.frame_id = "lidar";
-
-    g_pub_lidar_detection.publish(g_msgArr);
-    g_msgArr.objects.clear();
-
-    std::cout << "[Integrator]: " << g_integrator_stopWatch.getTimeSeconds() << 's' << std::endl;
-
-    uint64_t top_to_now_time = (ros::Time::now().toSec() - g_msgArr.header.stamp.toSec()) * 1000;
-    if (top_to_now_time < 3600)
-    {
-      std::cout << "[Latency]: " << top_to_now_time << "ms" << std::endl;
-    }
-    std::cout << std::endl << std::endl;
+    //   g_integrator_stopWatch.reset();
     // }
+      if (g_ped_cyc_msg_rostime.isValid())
+      {
+        g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
+      }
+      else if(g_car_msg_rostime.isValid())
+      {
+        g_msgArr.header.stamp = g_car_msg_rostime;
+      }
+      else
+      {
+        std::cout << "[WARNING]: NO VALID TIMESTAMP FOR LiDAR DETECTION!!" << std::endl;
+      }
+      
+      g_msgArr.header.frame_id = "lidar";
+
+      g_pub_lidar_detection.publish(g_msgArr);
+      g_msgArr.objects.clear();
+
+      std::cout << "[Integrator]: " << g_integrator_stopWatch.getTimeSeconds() << 's' << std::endl;
+
+      uint64_t top_to_now_time = (ros::Time::now().toSec() - g_msgArr.header.stamp.toSec()) * 1000;
+      if (top_to_now_time < 3600)
+      {
+        std::cout << "[Latency]: " << top_to_now_time << "ms" << std::endl;
+      }
+      std::cout << std::endl << std::endl;
+    }
     g_total_lock.unlock();
     loop_rate.sleep();
   }

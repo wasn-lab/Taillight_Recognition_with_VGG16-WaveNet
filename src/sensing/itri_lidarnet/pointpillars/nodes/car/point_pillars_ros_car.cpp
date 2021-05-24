@@ -200,8 +200,15 @@ void PointPillarsROS_Car::pubDetectedObject(const std::vector<float>& detections
       // pub
       MsgObjArr.objects.push_back(object);
     }
+    
     pub_objects_.publish(MsgObjArr);
     std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
+  }
+  else
+  {
+    pub_objects_.publish(MsgObjArr);
+    std::cout << "[PPillars_Car]: " << g_stopWatch_car.getTimeSeconds() << 's' << std::endl;
+    std::cout << "[PPillars_Car]: No objects in message array" << std::endl;
   }
 }
 
