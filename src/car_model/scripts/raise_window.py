@@ -8,6 +8,8 @@ from __future__ import print_function
 import argparse
 import sys
 import subprocess
+import sys
+import time
 
 def _installed(prog):
     found = False
@@ -32,14 +34,18 @@ def find_window_id(window_title):
     return ""
 
 
-def raise_window(window_title):
+def raise_window(window_title, forever):
     wid = find_window_id(window_title)
     if not wid:
         print("Cannot find window with title {}".format(window_title))
         return
     cmd = ["xdotool", "windowraise", wid]
-    print(" ".join(cmd))
-    subprocess.check_call(cmd)
+    while True:
+        print(" ".join(cmd))
+        subprocess.check_call(cmd)
+        if not forver:
+            break
+        time.sleep(1.0)
 
 
 def main():
@@ -48,8 +54,12 @@ def main():
             sys.exit(1)
     parser = argparse.ArgumentParser()
     parser.add_argument("--window-title", "-w", required=True)
+    parser.add_argument("--forever", action="store_true")
     args = parser.parse_args()
-    raise_window(args.window_title.decode("utf-8"))
+    raise_window(args.window_title.decode("utf-8"), args.forever)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(1)
