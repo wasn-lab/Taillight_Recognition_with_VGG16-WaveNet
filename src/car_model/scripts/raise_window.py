@@ -8,7 +8,6 @@ from __future__ import print_function
 import argparse
 import sys
 import subprocess
-import sys
 import time
 
 def _installed(prog):
@@ -43,7 +42,7 @@ def raise_window(window_title, forever):
     while True:
         print(" ".join(cmd))
         subprocess.check_call(cmd)
-        if not forver:
+        if not forever:
             break
         time.sleep(1.0)
 
