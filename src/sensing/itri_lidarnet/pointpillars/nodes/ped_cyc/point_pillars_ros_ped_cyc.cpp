@@ -217,6 +217,12 @@ void PointPillarsROS_Ped_Cyc::pubDetectedObject(const std::vector<float>& detect
     pub_objects_.publish(MsgObjArr);
     std::cout << "[PPilars_PedCyc]: " << g_stopWatch_Ped_Cyc.getTimeSeconds() << 's' << std::endl;
   }
+  else
+  {
+    pub_objects_.publish(MsgObjArr);
+    std::cout << "[PPilars_PedCyc]: " << g_stopWatch_Ped_Cyc.getTimeSeconds() << 's' << std::endl;
+    std::cout << "[PPilars_PedCyc]: No objects in message array" << std::endl;
+  }
 }
 
 void PointPillarsROS_Ped_Cyc::getBaselinkToLidarTF(const std::string& target_frameid)
