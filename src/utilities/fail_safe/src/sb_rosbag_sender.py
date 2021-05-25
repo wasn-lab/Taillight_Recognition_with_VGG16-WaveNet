@@ -15,7 +15,7 @@ from sb_param_utils import get_license_plate_number, get_company_name, get_vid
 
 _BAG_RGX = re.compile(
     r".+_(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})-"
-    r"(?P<hour>\d{2})-(?P<minute>\d{2})-(?P<second>\d{2})_[\d]+.bag")
+    r"(?P<hour>\d{2})-(?P<minute>\d{2})-(?P<second>\d{2})_[\d]+.bag.gz")
 
 
 def get_bag_yymmdd(bag):
@@ -55,7 +55,7 @@ class SBRosbagSender(object):
         ret = []
         for root, _dirs, files in os.walk(self.rosbag_dir):
             for filename in files:
-                if ".bag" not in filename:
+                if ".bag.gz" not in filename:
                     continue
                 fullpath = os.path.join(root, filename)
                 rel_path = fullpath.replace(self.rosbag_dir, "")
@@ -84,7 +84,7 @@ class SBRosbagSender(object):
         basename = self._get_sb_bag_basename(bag_fullpath)
         seq = self.bag_seqs.get(basename, 0) + 1
         self.bag_seqs[basename] = seq
-        return basename + "_{}.bag".format(seq)
+        return basename + "_{}.bag.gz".format(seq)
 
     def generate_lftp_script(self):
         if not os.path.isdir(self.rosbag_dir):
@@ -107,6 +107,8 @@ class SBRosbagSender(object):
 
     def write_lftp_script(self):
         script = self.generate_lftp_script()
+        if not os.path.isdir(self.rosbag_dir):
+            os.makedirs(self.rosbag_dir)
         script_file = os.path.join(self.rosbag_dir, "lftp_script.txt")
         with io.open(script_file, "w", encoding="utf-8") as _fp:
             if sys.version_info.major == 2:
