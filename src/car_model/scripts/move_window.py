@@ -34,7 +34,11 @@ def find_window_id(window_title):
     return ""
 
 
-def move_window(wid, monitor):
+def move_window(window_title, monitor):
+    wid = find_window_id(window_title)
+    if not wid:
+        print("Cannot find window id")
+        return
     xrandr_out = subprocess.check_output(["xrandr"]).decode("utf-8")
     hpos = ""
     for line in xrandr_out.splitlines():
@@ -54,11 +58,6 @@ def move_window(wid, monitor):
     print(" ".join(cmd))
     subprocess.check_call(cmd)
 
-def move_and_max(window_title, monitor):
-    wid = find_window_id(window_title)
-    if not wid:
-        return
-    move_window(wid, monitor)
 
 def main():
     for prog in ["xrandr", "wmctrl", "xdotool"]:
@@ -68,7 +67,8 @@ def main():
     parser.add_argument("--window-title", "-w", required=True)
     parser.add_argument("--monitor", "-m", required=True)
     args = parser.parse_args()
-    move(args.window_title.decode("utf-8"), args.monitor)
+    move_window(args.window_title.decode("utf-8"), args.monitor)
+
 
 if __name__ == "__main__":
     main()
