@@ -504,7 +504,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   }
   else
   {
-    lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+    lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
     lampstate.confidence = 0.0;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
