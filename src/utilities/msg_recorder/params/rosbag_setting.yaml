@@ -39,7 +39,7 @@ chunksize:                  # Advanced, memory with SIZE KB for each chunks befo
 
 # Disk operation
 #-----------------------------------#
-is_cleaning_space:              true # false
-freespace_low_threshold_GB:     350  # GB. If the disk has freespace smaller than this value, oldest files will be removed
+is_cleaning_space:              false # false
+freespace_low_threshold_GB:     100  # GB. If the disk has freespace smaller than this value, oldest files will be removed
 rm_hours_before:                24   # hour(s). If the file is not older than rm_hours_before, it will not be removed. (too new to be removed)
 #-----------------------------------#
