@@ -160,7 +160,7 @@ bool TrafficLightModule::modifyPathVelocity(
   {
     if (!getHighestConfidenceTrafficLightState(traffic_lights, tl_state_)) 
     {
-      // Don't stop when UNKNOWN or TIMEOUT as discussed at #508
+      // Don't stop when FALSHING_YELLOW or TIMEOUT as discussed at #508
       return true;
     }
 
@@ -347,9 +347,14 @@ bool TrafficLightModule::getHighestConfidenceTrafficLightState(
     }
 
     if (
-      tl_state.lamp_states.empty() ||
-      tl_state.lamp_states.front().type == autoware_perception_msgs::LampState::UNKNOWN) {
-      reason = "LampStateUnknown";
+      tl_state.lamp_states.empty()) {
+      reason = "LampStateEmpty";
+      continue;
+    }
+
+    if (
+      tl_state.lamp_states.front().type == autoware_perception_msgs::LampState::FLASHING_YELLOW) {
+      reason = "LampStateFlashingYellow";
       continue;
     }
 

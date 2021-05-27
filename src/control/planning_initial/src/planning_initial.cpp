@@ -452,6 +452,12 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
     // std::cout << "light_status_binary = " << light_status_binary << std::endl;
     // std::cout << "light_status_binary[0] = " << int(light_status_binary[0]) << std::endl;
     // std::cout << "light_status_binary[1] = " << int(light_status_binary[1]) << std::endl;
+    if (light_status == 0) // flashing yellow
+    {
+      lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
+      lampstate.confidence = confidence;
+      trafficlightstate.lamp_states.push_back(lampstate);
+    }
     if (light_status_binary[2] == '1') // right
     {
       lampstate.type = autoware_perception_msgs::LampState::RIGHT;
@@ -498,7 +504,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
   }
   else
   {
-    lampstate.type = autoware_perception_msgs::LampState::UNKNOWN;
+    lampstate.type = autoware_perception_msgs::LampState::FLASHING_YELLOW;
     lampstate.confidence = 0.0;
     trafficlightstate.lamp_states.push_back(lampstate);
   }
