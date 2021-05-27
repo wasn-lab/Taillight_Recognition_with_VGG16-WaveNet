@@ -40,7 +40,7 @@ XWinGrabber::XWinGrabber(const std::string&& xwin_title) : xwin_title_(xwin_titl
   int error_base_return;
   composite_enabled_ = bool(XCompositeQueryExtension(display_, &event_base_return, &error_base_return));
 
-  XSynchronize(display_, 1);
+  // XSynchronize(display_, 1);
   XSetErrorHandler(xerror_handler);
 
   // Set up publishers
@@ -56,6 +56,7 @@ XWinGrabber::~XWinGrabber()
 
 cv::Mat XWinGrabber::capture_window()
 {
+  auto start_time = std::chrono::system_clock::now();
   if (xid_ == 0)
   {
     return cv::Mat{};
@@ -87,6 +88,9 @@ cv::Mat XWinGrabber::capture_window()
 
   auto img = ximage_to_cvmat(ximage);
   XDestroyImage(ximage);
+  auto end_time = std::chrono::system_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+  VLOG(2) << __FUNCTION__ << " takes " << duration.count() << " ms.";
   return img;
 }
 
@@ -157,7 +161,7 @@ int XWinGrabber::run()
     return 1;
   }
 
-  ros::Rate r(20);
+  ros::Rate r(15);
 
   while (ros::ok())
   {
