@@ -25,14 +25,14 @@ defbce on # erase background with current bg color
 cjkwidth off
 caption always "%n(%t@%H)"
 
-screen -t set_in_lab_param
-stuff "rosparam set /fail_safe/should_post_issue 0; rosparam set /fail_safe/should_notify_backend 0; rosparam set /fail_safe/should_send_bags 0^M"
-
 screen -t init_load_monitor
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_load_monitor.sh^M"
 
 screen -t init_lidar
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_lidar_lab.sh^M"
+
+screen -t run_xwin_grabber_rviz
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_xwin_grabber_rviz.sh^M"
 
 screen -t run_web_video_server
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_web_video_server.sh^M"
@@ -81,7 +81,7 @@ screen -t replay_on_switch
 stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_replay_lidar_data_to_localization_switch.sh^M"
 
 screen -t detection_viz
-stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/init_detection_viz.sh^M"
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_detection_viz.sh^M"
 
 screen -t hmi
 stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_hmi.sh^M"

@@ -242,3 +242,6 @@
 /vehicle/report/camera/load
 /vehicle/report/localization/load
 /vehicle/report/xavier/load
+
+# streamed rviz
+/xwin_grabber/rviz/jpg

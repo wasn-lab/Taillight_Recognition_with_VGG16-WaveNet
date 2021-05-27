@@ -39,6 +39,9 @@ void LaneChanger::init()
   lane_change_approval_subscriber_ = pnh_.subscribe(
     "input/lane_change_approval", 1, &DataManager::laneChangeApprovalCallback,
     &(*data_manager_ptr_));
+  obstacle_lane_change_approval_subscriber_ = pnh_.subscribe(
+    "input/obstacle_lane_change_approval", 1, &DataManager::ObstaclelaneChangeApprovalCallback,
+    &(*data_manager_ptr_));
   force_lane_change_subscriber_ = pnh_.subscribe(
     "input/force_lane_change", 1, &DataManager::forceLaneChangeSignalCallback,
     &(*data_manager_ptr_));
