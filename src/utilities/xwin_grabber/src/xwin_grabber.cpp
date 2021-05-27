@@ -161,7 +161,7 @@ int XWinGrabber::run()
     return 1;
   }
 
-  ros::Rate r(10);
+  ros::Rate r(15);
 
   while (ros::ok())
   {
