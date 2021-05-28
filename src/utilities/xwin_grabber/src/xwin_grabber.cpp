@@ -40,7 +40,7 @@ XWinGrabber::XWinGrabber(const std::string&& xwin_title) : xwin_title_(xwin_titl
   int error_base_return;
   composite_enabled_ = bool(XCompositeQueryExtension(display_, &event_base_return, &error_base_return));
 
-  XSynchronize(display_, 1);
+  // XSynchronize(display_, 1);
   XSetErrorHandler(xerror_handler);
 
   // Set up publishers
@@ -161,7 +161,7 @@ int XWinGrabber::run()
     return 1;
   }
 
-  ros::Rate r(10);
+  ros::Rate r(15);
 
   while (ros::ok())
   {
