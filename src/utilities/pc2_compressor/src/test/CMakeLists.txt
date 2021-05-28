@@ -21,6 +21,7 @@ catkin_download_test_data(lidar_compressed_2020-03-10-10-48-39_41.bag
   MD5 e62b87e69f9a96ceaf60f81999463f1d)
 
 catkin_add_gtest(pc2_compressor_test
+  filter_node_test.cpp
   pc2_compressor_test_main.cpp
   pc2_compressor_test_utils.cpp
   pc2_compressor_test.cpp)

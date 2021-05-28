@@ -4,6 +4,7 @@ set(PC2_COMPRESSOR_LIB_SRCS
     pc2_args_parser.cpp
     itri_pcd_reader.cpp
     itri_pcd_writer.cpp
+    filter_node.cpp
     pc2_compressor.cpp)
 
 set(PC2_COMPRESSOR_INCLUDE_DIRS
