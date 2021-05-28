@@ -45,12 +45,9 @@ TEST(PC2FilterTest, test_filter_ouster64_pc2)
   pcl_conversions::toPCL(*g_org_ros_pc2_ptr, before_pc2);
   pcl::fromPCLPointCloud2(before_pc2, *before_cloud);
 
-  // TODO: Segmentation fault (core dumped)
-/*
   pcl::PCLPointCloud2 after_pc2;
   pcl_conversions::toPCL(*msg, after_pc2);
-  pcl::PointCloud<PointXYZIR>::Ptr after_cloud(new pcl::PointCloud<PointXYZIR>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr after_cloud(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromPCLPointCloud2(after_pc2, *after_cloud);
-  */
 }
 

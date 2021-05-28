@@ -47,7 +47,7 @@ sensor_msgs::PointCloud2Ptr filter_ouster64_pc2(const sensor_msgs::PointCloud2Co
   res->width = msg->width;
   res->height = msg->height;
   res->is_bigendian = msg->is_bigendian;
-  res->row_step = num_points * res->point_step;
+  res->row_step = msg->width * res->point_step;
   res->is_dense = msg->is_dense;
   return res;
 }
