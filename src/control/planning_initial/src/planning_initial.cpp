@@ -425,6 +425,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
 {
   int signal_state = msg->signal_state;
   int light_status = (int)(msg->spat_state);
+  double spat_sec = msg->spat_sec;
   int RoadId = msg->road_id;
   int IntersectionId = msg->intersection_id;
   double confidence = 1.0;
@@ -440,6 +441,7 @@ void trafficCallback(const msgs::Spat::ConstPtr& msg)
       if (IntersectionId == trafficlight_IntersectionId[i] && RoadId == trafficlight_RoadId[i])
       {
         trafficlightstate.id = trafficlight_Id[i];
+        trafficlightstate.spat_sec = spat_sec;
       }
     }
     // trafficlightstate.id = 402079;

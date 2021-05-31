@@ -9,6 +9,7 @@
 #include <cmath>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/Bool.h>
 
 #define RT_PI 3.14159265358979323846
 
@@ -30,11 +31,14 @@ double distouphill = 0;
 bool current_pose_init_flag = false;
 geometry_msgs::PoseStamped rear_pose;
 
+int end_path_size_set = 100;
+
 ros::Publisher nav_path_pub;
 ros::Publisher nav_path_base_pub;
 ros::Publisher currenttrajinfo_pub;
 ros::Publisher nav_path_heartbeat_pub;
 ros::Publisher veh_overshoot_pub;
+ros::Publisher end_path_flag_pub;
 
 struct Point3D
 {
@@ -346,6 +350,19 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
     current_path.poses.push_back(current_posestamped);
   }
   nav_path_pub.publish(current_path);
+
+  std::cout << "traj_size : " << traj_size << std::endl;
+  std_msgs::Bool end_path_flag;
+  if (traj_size < end_path_size_set)
+  {
+    end_path_flag.data = true;
+  }
+  else
+  {
+    end_path_flag.data = false;
+  }
+
+  end_path_flag_pub.publish(end_path_flag);
   
   std_msgs::Empty empty_msg;
   nav_path_heartbeat_pub.publish(empty_msg);
@@ -409,6 +426,8 @@ int main(int argc, char** argv)
   ros::param::get(ros::this_node::getName()+"/z_diff_setting_out", z_diff_setting_out);
   ros::param::get(ros::this_node::getName()+"/slope_setting_distouphill", slope_setting_distouphill);
 
+  ros::param::get(ros::this_node::getName()+"/end_path_size_set", end_path_size_set);
+
   ros::Subscriber current_pose_sub = node.subscribe("rear_current_pose", 1, CurrentPoseCallback);
   ros::Subscriber safety_waypoints_sub = node.subscribe("/planning/scenario_planning/trajectory", 1, transfer_callback);
   ros::Subscriber base_path_sub = node.subscribe("/planning/scenario_planning/lane_driving/behavior_planning/path", 1, transfer_path_callback);
@@ -417,6 +436,7 @@ int main(int argc, char** argv)
   currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
   nav_path_heartbeat_pub = node.advertise<std_msgs::Empty>("nav_path_astar_final/heartbeat",1);
   veh_overshoot_pub = node.advertise<std_msgs::Float64>("veh_overshoot_orig_dis",1);
+  end_path_flag_pub = node.advertise<std_msgs::Bool>("end_path_flag",1);
 
   ros::spin();
   return 0;
