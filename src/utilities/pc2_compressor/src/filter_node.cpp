@@ -15,39 +15,38 @@
 
 namespace pc2_compressor
 {
-
 sensor_msgs::PointCloud2Ptr filter_ouster64_pc2(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   // Ouster has 9 fields: x y z intensity t reflectivity ring noise range
   // We only needs 5 fields: x, y, z, intensity and ring.
-  sensor_msgs::PointCloud2Ptr res{new sensor_msgs::PointCloud2};
-  std::vector<sensor_msgs::PointField> fields(5);
-  for(int i=0; i<4; i++){
-    fields[i] = msg->fields[i];
+  constexpr int32_t msg_ring_field_idx = 6;
+  constexpr int32_t res_ring_field_idx = 4;
+  sensor_msgs::PointCloud2Ptr res{ new sensor_msgs::PointCloud2 };
+  res->fields.reserve(res_ring_field_idx + 1);
+  for (int32_t i = 0; i < res_ring_field_idx; i++)
+  {
+    res->fields.push_back(msg->fields[i]);
   }
-  sensor_msgs::PointField ring_field = msg->fields[6];
-  fields[4] = ring_field;
-  res->fields = fields;
+  res->fields.push_back(msg->fields[msg_ring_field_idx]);
+
   res->point_step = 0;
-  for(auto& field: fields)
+  for (const auto& field : res->fields)
   {
     res->point_step += pcl::getFieldSize(field.datatype);
   }
   // dest_front_size = 16 (x, y, z, intensity: 4 bytes each)
-  int dest_front_size = res->point_step - pcl::getFieldSize(ring_field.datatype);
-  int ring_size = pcl::getFieldSize(ring_field.datatype);
-  res->fields[4].offset = dest_front_size;
+  const int32_t ring_size = pcl::getFieldSize(res->fields[res_ring_field_idx].datatype);
+  const int32_t dest_front_size = res->point_step - ring_size;
+  res->fields[res_ring_field_idx].offset = dest_front_size;
 
-  int src_front_size = 0;
-  for(int i=0; i<6; i++){
-    src_front_size += pcl::getFieldSize(msg->fields[i].datatype);
-  }
-
-  int32_t num_points = msg->width * msg->height;
+  const int32_t num_points = msg->width * msg->height;
+  const int32_t msg_ring_field_offset = msg->fields[msg_ring_field_idx].offset;
   res->data.resize(num_points * res->point_step);
-  for(int i=0, src_offset=0, dest_offset=0; i<num_points; i++, src_offset+=msg->point_step, dest_offset+=res->point_step){
+  for (int32_t i = 0, src_offset = 0, dest_offset = 0; i < num_points;
+       i++, src_offset += msg->point_step, dest_offset += res->point_step)
+  {
     memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), dest_front_size);
-    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + src_front_size]), ring_size);
+    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + msg_ring_field_offset]), ring_size);
   }
 
   res->header = msg->header;
@@ -99,7 +98,7 @@ int FilterNode::set_publisher()
   LOG(INFO) << ros::this_node::getName() << ":"
             << " publish compressed pointcloud at topic " << topic;
   publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(topic, /*queue size=*/2);
-  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic+"/heartbeat", /*queue size=*/2);
+  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/2);
   return EXIT_SUCCESS;
 }
 
