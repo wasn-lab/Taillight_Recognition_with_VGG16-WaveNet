@@ -351,6 +351,7 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
   }
   nav_path_pub.publish(current_path);
 
+  std::cout << "traj_size : " << traj_size << std::endl;
   std_msgs::Bool end_path_flag;
   if (traj_size < end_path_size_set)
   {
