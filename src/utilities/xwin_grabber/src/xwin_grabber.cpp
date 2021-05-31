@@ -90,7 +90,7 @@ cv::Mat XWinGrabber::capture_window()
   XDestroyImage(ximage);
   auto end_time = std::chrono::system_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-  VLOG(2) << __FUNCTION__ << " takes " << duration.count() << " ms.";
+  LOG_EVERY_N(INFO, 20) << __FUNCTION__ << " takes " << duration.count() << " ms.";
   return img;
 }
 
@@ -119,6 +119,8 @@ void XWinGrabber::streaming_xwin()
     return;
   }
 
+  int32_t org_width = img.cols;
+  int32_t org_height = img.rows;
   if (img.cols > 1024)
   {
     // resize image
@@ -141,10 +143,11 @@ void XWinGrabber::streaming_xwin()
   publisher_.publish(msg);
   heartbeat_publisher_.publish(std_msgs::Empty{});
 
-  const uint64_t org_len = img.total() * img.elemSize();
+  const uint64_t org_len = img.step[0] * img.rows;
   const uint64_t cmpr_len = msg->data.size();
-  VLOG(2) << "Image size: " << img.cols << "x" << img.rows << ", jpg quality: " << jpg_params[1]
-          << ", compression rate : " << cmpr_len << "/" << org_len << " = " << double(cmpr_len) / org_len;
+  LOG_EVERY_N(INFO, 20) << "Image size: " << img.cols << "x" << img.rows << ", original image size:" << org_width << "x"
+                        << org_height << ", jpg quality: " << jpg_params[1] << ", compression rate : " << cmpr_len
+                        << "/" << org_len << " = " << double(cmpr_len) / org_len;
 }
 
 int XWinGrabber::run()
