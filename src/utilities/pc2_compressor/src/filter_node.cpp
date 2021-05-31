@@ -33,14 +33,21 @@ sensor_msgs::PointCloud2Ptr filter_ouster64_pc2(const sensor_msgs::PointCloud2Co
   {
     res->point_step += pcl::getFieldSize(field.datatype);
   }
-  int front_size = res->point_step - pcl::getFieldSize(ring_field.datatype);
+  // dest_front_size = 16 (x, y, z, intensity: 4 bytes each)
+  int dest_front_size = res->point_step - pcl::getFieldSize(ring_field.datatype);
   int ring_size = pcl::getFieldSize(ring_field.datatype);
+  res->fields[4].offset = dest_front_size;
+
+  int src_front_size = 0;
+  for(int i=0; i<6; i++){
+    src_front_size += pcl::getFieldSize(msg->fields[i].datatype);
+  }
 
   int32_t num_points = msg->width * msg->height;
   res->data.resize(num_points * res->point_step);
   for(int i=0, src_offset=0, dest_offset=0; i<num_points; i++, src_offset+=msg->point_step, dest_offset+=res->point_step){
-    memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), front_size);
-    memcpy(&(res->data[dest_offset + front_size]), &(msg->data[src_offset + front_size]), ring_size);
+    memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), dest_front_size);
+    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + src_front_size]), ring_size);
   }
 
   res->header = msg->header;
