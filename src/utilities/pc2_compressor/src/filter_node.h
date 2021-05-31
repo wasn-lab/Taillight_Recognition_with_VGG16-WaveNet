@@ -8,7 +8,6 @@
 
 namespace pc2_compressor
 {
-sensor_msgs::PointCloud2Ptr filter_ouster64_pc2(const sensor_msgs::PointCloud2ConstPtr& msg);
 
 class FilterNode
 {
@@ -28,6 +27,6 @@ public:
   FilterNode();
   ~FilterNode();
   void run();
-};    
+};
 };  // namespace pc2_compressor
 

@@ -40,6 +40,15 @@ add_executable(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_NODE_SRCS})
 target_link_libraries(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})
 add_dependencies(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB})
 
+set(PC2_FILTER_NODE_EXE pc2_filter_node)
+set(PC2_FILTER_NODE_SRCS
+  filter_main.cpp)
+add_executable(${PC2_FILTER_NODE_EXE} ${PC2_FILTER_NODE_SRCS})
+target_link_libraries(${PC2_FILTER_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})
+add_dependencies(${PC2_FILTER_NODE_EXE} ${PC2_COMPRESSOR_LIB})
+
+
+
 set(PC2_DECOMPRESSOR_NODE_EXE pc2_decompressor_node)
 set(PC2_DECOMPRESSOR_NODE_SRCS
   pc2_decompressor_node.cpp

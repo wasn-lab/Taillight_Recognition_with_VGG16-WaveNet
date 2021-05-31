@@ -87,6 +87,48 @@ sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud
   return __decompress(cmpr_msg);
 }
 
+sensor_msgs::PointCloud2Ptr filter_ouster64_pc2(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+  // Ouster has 9 fields: x y z intensity t reflectivity ring noise range
+  // We only needs 5 fields: x, y, z, intensity and ring.
+  constexpr int32_t msg_ring_field_idx = 6;
+  constexpr int32_t res_ring_field_idx = 4;
+  sensor_msgs::PointCloud2Ptr res{ new sensor_msgs::PointCloud2 };
+  res->fields.reserve(res_ring_field_idx + 1);
+  for (int32_t i = 0; i < res_ring_field_idx; i++)
+  {
+    res->fields.push_back(msg->fields[i]);
+  }
+  res->fields.push_back(msg->fields[msg_ring_field_idx]);
+
+  res->point_step = 0;
+  for (const auto& field : res->fields)
+  {
+    res->point_step += pcl::getFieldSize(field.datatype);
+  }
+  // dest_front_size = 16 (x, y, z, intensity: 4 bytes each)
+  const int32_t ring_size = pcl::getFieldSize(res->fields[res_ring_field_idx].datatype);
+  const int32_t dest_front_size = res->point_step - ring_size;
+  res->fields[res_ring_field_idx].offset = dest_front_size;
+  const int32_t num_points = msg->width * msg->height;
+  const int32_t msg_ring_field_offset = msg->fields[msg_ring_field_idx].offset;
+  res->data.resize(num_points * res->point_step);
+  for (int32_t i = 0, src_offset = 0, dest_offset = 0; i < num_points;
+       i++, src_offset += msg->point_step, dest_offset += res->point_step)
+  {
+    memcpy(&(res->data[dest_offset]), &(msg->data[src_offset]), dest_front_size);
+    memcpy(&(res->data[dest_offset + dest_front_size]), &(msg->data[src_offset + msg_ring_field_offset]), ring_size);
+  }
+
+  res->header = msg->header;
+  res->width = msg->width;
+  res->height = msg->height;
+  res->is_bigendian = msg->is_bigendian;
+  res->row_step = msg->width * res->point_step;
+  res->is_dense = msg->is_dense;
+  return res;
+}
+
 bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::PointCloud2ConstPtr& b)
 {
   if (a->header.seq != b->header.seq || a->header.stamp != b->header.stamp || a->header.frame_id != b->header.frame_id)
