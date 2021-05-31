@@ -9,7 +9,7 @@
 namespace pc2_compressor
 {
 
-class FilterNode
+class PC2FilterNode
 {
 private:
   // member variables
@@ -24,8 +24,8 @@ private:
   int set_publisher();
 
 public:
-  FilterNode();
-  ~FilterNode();
+  PC2FilterNode();
+  ~PC2FilterNode();
   void run();
 };
 };  // namespace pc2_compressor

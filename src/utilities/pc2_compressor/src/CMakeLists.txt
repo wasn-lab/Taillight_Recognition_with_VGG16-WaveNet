@@ -4,7 +4,6 @@ set(PC2_COMPRESSOR_LIB_SRCS
     pc2_args_parser.cpp
     itri_pcd_reader.cpp
     itri_pcd_writer.cpp
-    filter_node.cpp
     pc2_compressor.cpp)
 
 set(PC2_COMPRESSOR_INCLUDE_DIRS
@@ -42,6 +41,7 @@ add_dependencies(${PC2_COMPRESSOR_NODE_EXE} ${PC2_COMPRESSOR_LIB})
 
 set(PC2_FILTER_NODE_EXE pc2_filter_node)
 set(PC2_FILTER_NODE_SRCS
+  pc2_filter_node.cpp
   filter_main.cpp)
 add_executable(${PC2_FILTER_NODE_EXE} ${PC2_FILTER_NODE_SRCS})
 target_link_libraries(${PC2_FILTER_NODE_EXE} ${PC2_COMPRESSOR_LIB} ${catkin_LIBRARIES})

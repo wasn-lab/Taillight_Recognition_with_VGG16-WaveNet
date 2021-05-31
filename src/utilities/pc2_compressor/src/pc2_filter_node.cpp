@@ -12,18 +12,18 @@
 #include <pcl/io/pcd_io.h>
 #include "pc2_args_parser.h"
 #include "pc2_compressor.h"
-#include "filter_node.h"
+#include "pc2_filter_node.h"
 
 namespace pc2_compressor
 {
 
-FilterNode::FilterNode()
+PC2FilterNode::PC2FilterNode()
 {
 }
 
-FilterNode::~FilterNode() = default;
+PC2FilterNode::~PC2FilterNode() = default;
 
-void FilterNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
+void PC2FilterNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   auto filtered_msg = filter_ouster64_pc2(msg);
   publisher_.publish(filtered_msg);
@@ -32,7 +32,7 @@ void FilterNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
   heartbeat_publisher_.publish(empty_msg);
 }
 
-int FilterNode::set_subscriber()
+int PC2FilterNode::set_subscriber()
 {
   std::string topic = pc2_compressor::get_input_topic();
   if (topic.empty())
@@ -42,11 +42,11 @@ int FilterNode::set_subscriber()
   }
   LOG(INFO) << ros::this_node::getName() << ":"
             << " subscribe " << topic;
-  subscriber_ = node_handle_.subscribe(topic, /*queue size*/ 2, &FilterNode::callback, this);
+  subscriber_ = node_handle_.subscribe(topic, /*queue size*/ 2, &PC2FilterNode::callback, this);
   return EXIT_SUCCESS;
 }
 
-int FilterNode::set_publisher()
+int PC2FilterNode::set_publisher()
 {
   std::string topic = pc2_compressor::get_output_topic();
   if (topic.empty())
@@ -61,7 +61,7 @@ int FilterNode::set_publisher()
   return EXIT_SUCCESS;
 }
 
-void FilterNode::run()
+void PC2FilterNode::run()
 {
   if ((set_subscriber() != EXIT_SUCCESS) || (set_publisher() != EXIT_SUCCESS))
   {
