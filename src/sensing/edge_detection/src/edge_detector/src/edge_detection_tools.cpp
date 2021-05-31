@@ -240,11 +240,20 @@ bool approximateProgressiveMorphological(const pcl::PointCloud<PointT>::ConstPtr
   apmf.setInputCloud(input);
 
   // BoChun's Parameters
-   apmf.setCellSize(1);
-   apmf.setBase(3);  // 0.1
+  // apmf.setCellSize(1);
+  // apmf.setBase(3);  // 0.1
+  // apmf.setExponential(false);
+  // apmf.setMaxWindowSize(1.0);    // 3.0
+  // apmf.setSlope(0.2);            // 0.2 //1.0f
+  // apmf.setInitialDistance(0.3);  // 0.12 //0.1
+  // apmf.setMaxDistance(0.6);      // 0.2 //0.3
+  
+  //  // Mike's Para for Rainy
+   apmf.setCellSize(0.75);
+   apmf.setBase(0.1);  // 0.1
    apmf.setExponential(false);
    apmf.setMaxWindowSize(1.0);    // 3.0
-   apmf.setSlope(0.2);            // 0.2 //1.0f
+   apmf.setSlope(0.6);            // 0.2 //1.0f
    apmf.setInitialDistance(0.3);  // 0.12 //0.1
    apmf.setMaxDistance(0.6);      // 0.2 //0.3
 

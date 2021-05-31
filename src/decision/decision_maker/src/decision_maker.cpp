@@ -141,7 +141,7 @@ int main(int argc, char** argv)
   ros::Subscriber veh_overshoot_orig_dis_sub = node.subscribe("veh_overshoot_orig_dis", 1, overshootorigdisCallback);
   ros::Subscriber lane_event_sub = node.subscribe("lane_event", 1, laneeventCallback);
   ros::Subscriber lanechangeready_sub = node.subscribe("/planning/scenario_planning/lane_driving/lane_change_ready", 1, lanechangereadyCallback);
-  enable_lane_change_by_obstacle_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/lane_change_approval", 10, true);
+  enable_lane_change_by_obstacle_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/obstacle_lane_change_approval", 10, true);
   enable_avoid_pub = node.advertise<std_msgs::Bool>("/planning/scenario_planning/lane_driving/motion_planning/obstacle_avoidance_planner/enable_avoidance", 10, true);
   overtake_over_pub = node.advertise<std_msgs::Int32>("avoidpath_reach_goal", 10, true);
 
