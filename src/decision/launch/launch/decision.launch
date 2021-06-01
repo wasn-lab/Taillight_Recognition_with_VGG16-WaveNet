@@ -17,6 +17,7 @@
   <arg name="z_diff_setting_in" default="1.0" /><!--1.0-->
   <arg name="z_diff_setting_out" default="0.1" /><!--0.1-->
   <arg name="slope_setting_distouphill" default="0.08" />
+  <arg name="end_path_size_set" default="100" />
 
   <arg name="predict_s_max" default="13.8" />
   <arg name="predict_t" default="2.0" />
@@ -42,6 +43,7 @@
         <param name="z_diff_setting_in" value="$(arg z_diff_setting_in)" />
         <param name="z_diff_setting_out" value="$(arg z_diff_setting_out)" />
 	<param name="slope_setting_distouphill" value="$(arg slope_setting_distouphill)" />
+	<param name="end_path_size_set" value="$(arg end_path_size_set)" />
   </node>
     
   <!-- target pub node -->
