@@ -101,6 +101,7 @@ class SBRosbagSender(object):
             sb_fn = self.get_sb_bag_name(bag)
             sftp_cmds += ["mkdir -p {}/{}".format(self.vid, sftp_dir_name),
                           "cd {}/{}".format(self.vid, sftp_dir_name),
+                          "set net:limit-total-rate 0:4800000",
                           "put -c {} -o {}".format(bag, sb_fn)]
         sftp_cmds += ["bye", ""]
         return "\n".join(sftp_cmds)
