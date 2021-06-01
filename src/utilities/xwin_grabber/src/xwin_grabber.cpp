@@ -163,9 +163,7 @@ cv::Mat XWinGrabber::capture_window_by_xshmgetimage()
     LOG(INFO) << "Fail to call XShmGetImage.";
     return cv::Mat{};
   }
-  auto img = ximage_to_cvmat(x_shm_image_);
-
-  return img;
+  return ximage_to_cvmat(x_shm_image_);
 }
 
 cv::Mat XWinGrabber::capture_window_by_xgetimage()
@@ -216,7 +214,7 @@ cv::Mat XWinGrabber::capture_window()
   auto end_time = std::chrono::system_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
   std::string backend = (use_shm_) ? "XShmGetImage" : "XGetImage";
-  VLOG(2) << __FUNCTION__ << " takes " << duration.count() << " ms. Uisng " << backend;
+  LOG_EVERY_N(INFO, 64) << __FUNCTION__ << " takes " << duration.count() << " ms. Uisng " << backend;
 
   return img;
 }
@@ -248,17 +246,17 @@ void XWinGrabber::streaming_xwin()
 
   int32_t org_width = img.cols;
   int32_t org_height = img.rows;
-  if (img.cols > 1024)
+  if (img.cols > 640)
   {
     // resize image
-    const double scale = 1024.0 / img.cols;
+    const double scale = 640.0 / img.cols;
     cv::Mat temp;
     cv::resize(img, temp, cv::Size(), /*width*/scale, /*height*/ scale);
     img = temp;
   }
   std::vector<int> jpg_params{
     cv::IMWRITE_JPEG_QUALITY,
-    75,
+    70,
     cv::IMWRITE_JPEG_OPTIMIZE,
     1,
   };
@@ -272,7 +270,7 @@ void XWinGrabber::streaming_xwin()
 
   const uint64_t org_len = img.step[0] * img.rows;
   const uint64_t cmpr_len = msg->data.size();
-  LOG_EVERY_N(INFO, 20) << "Image size: " << img.cols << "x" << img.rows << ", original image size:" << org_width << "x"
+  LOG_EVERY_N(INFO, 64) << "Image size: " << img.cols << "x" << img.rows << ", original image size:" << org_width << "x"
                         << org_height << ", jpg quality: " << jpg_params[1] << ", compression rate : " << cmpr_len
                         << "/" << org_len << " = " << double(cmpr_len) / org_len;
 }
