@@ -256,7 +256,7 @@ void XWinGrabber::streaming_xwin()
   }
   std::vector<int> jpg_params{
     cv::IMWRITE_JPEG_QUALITY,
-    70,
+    85,
     cv::IMWRITE_JPEG_OPTIMIZE,
     1,
   };
