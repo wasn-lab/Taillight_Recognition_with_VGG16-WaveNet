@@ -6,9 +6,8 @@
 	<arg name="can_name" default="can1"/>
 
 	<arg name="location_name" default="ITRI"/>
-
-	<arg name="num_of_selected_pp" default="1"/> 
-	<arg name="confidence_threshold" default="0.8"/>
+ 
+	<arg name="confidence_threshold" default="0.3"/> <!--filter when lower than threshold-->
 	<arg name="input_objects" default="objects/filtered"/>
 
 	<!-- nodes -->
@@ -51,7 +50,6 @@
 
 	</node>
 	<node pkg="geofence_map_pp_filter" type="geofence_map_pp_filter" name="geofence_map_pp_filter" output="screen" cwd="node" respawn="true"  >
-		<param name="num_of_selected_pp" value="$(arg num_of_selected_pp)"/>
 		<param name="confidence_threshold" value="$(arg confidence_threshold)"/>
 
 </launch>
