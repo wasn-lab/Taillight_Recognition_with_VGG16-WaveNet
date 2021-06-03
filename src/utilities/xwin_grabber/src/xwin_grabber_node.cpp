@@ -73,7 +73,16 @@ void XWinGrabberNode::streaming_xwin()
 
   if (should_publish_raw_image())
   {
-    raw_publisher_.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg());
+    cv::Mat temp_img;
+    if (img.type() == CV_8UC4)
+    {
+      cv::cvtColor(img, temp_img, cv::COLOR_RGBA2RGB);
+    }
+    else
+    {
+      temp_img = img;
+    }
+    raw_publisher_.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", temp_img).toImageMsg());
   }
   heartbeat_publisher_.publish(std_msgs::Empty{});
 

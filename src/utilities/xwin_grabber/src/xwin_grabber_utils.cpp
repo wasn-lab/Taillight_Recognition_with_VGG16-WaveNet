@@ -32,9 +32,7 @@ static cv::Mat fast_ximage_to_cvmat(XImage* image)
   // Ximage depth = 24
   cv::Mat res(image->height, image->width, CV_8UC4);
   memcpy(res.data, image->data, image->height * image->width * 4);
-  cv::Mat dst;
-  cv::cvtColor(res, dst, cv::COLOR_RGBA2RGB);
-  return dst;
+  return res;
 }
 
 cv::Mat slow_ximage_to_cvmat(XImage* image)
