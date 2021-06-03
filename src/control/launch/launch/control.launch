@@ -7,6 +7,10 @@
 
 	<arg name="location_name" default="ITRI"/>
 
+	<arg name="num_of_selected_pp" default="1"/> 
+	<arg name="confidence_threshold" default="0.8"/>
+	<arg name="input_objects" default="objects/filtered"/>
+
 	<!-- nodes -->
 	<node pkg="from_dspace" type="from_dspace" name="from_dspace" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
@@ -38,10 +42,16 @@
         </node-->
 	<node pkg="geofence_map_pp" type="geofence_map_pp" name="geofence_map_pp" output="screen" cwd="node" respawn="true"  >
 		<param name="can_name" value="$(arg can_name)"/>
+		<remap from="objects" to="$(arg input_objects)"/>
 	</node>
         <node pkg="control_checker" type="control_checker" name="control_checker" output="screen" cwd="node" respawn="true"  />
 	<!--node pkg="mm_tp" type="mm_tp" name="mm_tp" output="screen" cwd="node" respawn="true"  >
 		<param name="Path_flag" value="0" type="int"/>
 	</node-->
+
+	</node>
+	<node pkg="geofence_map_pp_filter" type="geofence_map_pp_filter" name="geofence_map_pp_filter" output="screen" cwd="node" respawn="true"  >
+		<param name="num_of_selected_pp" value="$(arg num_of_selected_pp)"/>
+		<param name="confidence_threshold" value="$(arg confidence_threshold)"/>
 
 </launch>
