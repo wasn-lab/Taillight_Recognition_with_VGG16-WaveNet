@@ -15,5 +15,6 @@ target_link_libraries(xwin_grabber_node
   ${GLOG_LIBRARIES}
   ${X11_X11_LIB}
   ${X11_Xcomposite_LIB}
+  ${X11_Xext_LIB}
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES})
