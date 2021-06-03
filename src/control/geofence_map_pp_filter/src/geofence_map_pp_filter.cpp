@@ -6,8 +6,7 @@
 ros::Publisher filtered_objects_pub;
 
 //-------------ROS Param-------------
-int num_of_selected_pp = 1;
-double confidence_threshold = 0.3; //Did not used
+double confidence_threshold = 0.3; 
 autoware_perception_msgs::DynamicObjectArray input;
 
 //=========================Filtered Map PP Functions========================
@@ -18,14 +17,10 @@ void MapPPConfidenceFilter(autoware_perception_msgs::DynamicObjectArray &input)
     output.header.frame_id = input.header.frame_id;
     output.header.stamp    = ros::Time::now();
 
-       
-
-    ROS_INFO("[Geofence_Map_PP_Filter] brfore for...");
     for (int i=0 ; i < input.objects.size() ; i++)
     {   
         double max_confidence = 0;
         autoware_perception_msgs::DynamicObject object_;
-        ROS_INFO("[Geofence_Map_PP_Filter] inside for...");
         object_.id                            = input.objects[i].id;
         object_.semantic                      = input.objects[i].semantic;
         object_.shape                         = input.objects[i].shape;
@@ -44,9 +39,8 @@ void MapPPConfidenceFilter(autoware_perception_msgs::DynamicObjectArray &input)
         }  
         for (const auto &path : input.objects[i].state.predicted_paths)
         {
-            if (path.confidence == max_confidence ){ // || path.confidence >= confidence_threshold)
+            if (path.confidence == max_confidence || path.confidence >= confidence_threshold)
                 object_.state.predicted_paths.push_back(path);
-            }
         }
 
         std::cout << " Checking filter: " << std::endl
@@ -54,7 +48,6 @@ void MapPPConfidenceFilter(autoware_perception_msgs::DynamicObjectArray &input)
                   << " --filtered PP    " << object_.state.predicted_paths.size() << std::endl;
         output.objects.push_back(object_);
     }
-    ROS_INFO("[Geofence_Map_PP_Filter] after for...");
     filtered_objects_pub.publish(output);
 }
 
@@ -72,7 +65,6 @@ int main(int argc, char **argv)
     // Initialize-----------------------------------
     ros::init(argc, argv, "Geofence_Map_PP_Filter");
     ros::NodeHandle node;
-    ros::param::get(ros::this_node::getName()+"/num_of_selected_pp", num_of_selected_pp);
     ros::param::get(ros::this_node::getName()+"/confidence_threshold", confidence_threshold);
 
     // Subscriber-----------------------------------
