@@ -42,3 +42,6 @@ stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_localization_lane
 
 screen -t init_planning_all_lanelet2
 stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/init_planning_all_lanelet2.sh^M"
+
+screen -t replay_lidar_front_top_localization.sh
+stuff "/home/local/itriadv/src/scripts/bus_env_cbus/local/run_replay_lidar_front_top_localization.sh^M"
