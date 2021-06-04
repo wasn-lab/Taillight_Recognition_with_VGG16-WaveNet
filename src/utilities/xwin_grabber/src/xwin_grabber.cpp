@@ -5,8 +5,6 @@
 #include <X11/extensions/Xcomposite.h>  // for XCompositeNameWindowPixmap
 #include <X11/extensions/composite.h>   // for CompositeRedirectAutomatic
 #include <glog/logging.h>               // for COMPACT_GOOGLE_LOG_INFO, LOG
-#include <sensor_msgs/CompressedImage.h>
-#include <std_msgs/Empty.h>
 #include <opencv2/core/mat.hpp>      // for Mat
 #include <opencv2/core/mat.inl.hpp>  // for Mat::Mat, Mat::~Mat, Mat::empty
 #include <opencv2/highgui.hpp>       // for destroyAllWindows, imshow
@@ -62,11 +60,6 @@ XWinGrabber::XWinGrabber(const std::string&& xwin_title) : xwin_title_(xwin_titl
 
   // XSynchronize(display_, 1);
   XSetErrorHandler(xerror_handler);
-
-  // Set up publishers
-  std::string topic = get_output_topic();
-  publisher_ = node_handle_.advertise<sensor_msgs::CompressedImage>(topic, /*queue size=*/1);
-  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/1);
 }
 
 void XWinGrabber::release_shm()
@@ -197,6 +190,19 @@ cv::Mat XWinGrabber::capture_window_by_xgetimage()
 cv::Mat XWinGrabber::capture_window()
 {
   auto start_time = std::chrono::system_clock::now();
+  if (display_ == nullptr)
+  {
+    LOG(ERROR) << "Cannot open display";
+    return cv::Mat{};
+  }
+
+  if (!composite_enabled_)
+  {
+    LOG(INFO) << "Composite is NOT enabled!";
+    return cv::Mat{};
+  }
+
+  find_xid_if_necessary();
   if (xid_ == 0)
   {
     return cv::Mat{};
@@ -236,70 +242,4 @@ void XWinGrabber::find_xid_if_necessary()
   }
 }
 
-void XWinGrabber::streaming_xwin()
-{
-  cv::Mat img = capture_window();
-  if (img.empty())
-  {
-    return;
-  }
-
-  int32_t org_width = img.cols;
-  int32_t org_height = img.rows;
-  if (img.cols > 640)
-  {
-    // resize image
-    const double scale = 640.0 / img.cols;
-    cv::Mat temp;
-    cv::resize(img, temp, cv::Size(), /*width*/scale, /*height*/ scale);
-    img = temp;
-  }
-  std::vector<int> jpg_params{
-    cv::IMWRITE_JPEG_QUALITY,
-    85,
-    cv::IMWRITE_JPEG_OPTIMIZE,
-    1,
-  };
-
-  sensor_msgs::CompressedImagePtr msg{ new sensor_msgs::CompressedImage };
-  msg->data.reserve(img.total());
-  msg->format = "jpeg";
-  cv::imencode(".jpg", img, msg->data, jpg_params);
-  publisher_.publish(msg);
-  heartbeat_publisher_.publish(std_msgs::Empty{});
-
-  const uint64_t org_len = img.step[0] * img.rows;
-  const uint64_t cmpr_len = msg->data.size();
-  LOG_EVERY_N(INFO, 64) << "Image size: " << img.cols << "x" << img.rows << ", original image size:" << org_width << "x"
-                        << org_height << ", jpg quality: " << jpg_params[1] << ", compression rate : " << cmpr_len
-                        << "/" << org_len << " = " << double(cmpr_len) / org_len;
-}
-
-int XWinGrabber::run()
-{
-  if (display_ == nullptr)
-  {
-    LOG(ERROR) << "Cannot open display";
-    return 1;
-  }
-
-  if (!composite_enabled_)
-  {
-    LOG(INFO) << "Composite is NOT enabled!";
-    return 1;
-  }
-
-  ros::Rate r(15);
-
-  while (ros::ok())
-  {
-    find_xid_if_necessary();
-    if (xid_ > 0)
-    {
-      streaming_xwin();
-    }
-    r.sleep();
-  }
-  return 0;
-}
 };  // namespace xwin_grabber

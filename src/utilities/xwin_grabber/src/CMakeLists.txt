@@ -6,6 +6,7 @@ include_directories(
 
 add_executable(xwin_grabber_node
   xwin_grabber_main.cpp
+  xwin_grabber_node.cpp
   xwin_grabber_utils.cpp
   xwin_grabber.cpp
   xwin_grabber_args_parser.cpp)
