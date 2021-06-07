@@ -66,11 +66,13 @@ def mqtt_publish(fail_safe_json_obj):
 
 def gen_json(events):
     plate = rospy.get_param("/south_bridge/license_plate_number", "ITRI-ADV")
-    json_obj = {"type": "M8.2.VK003.2", "deviceid": plate, "events": events}
+    dt_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    json_obj = {"type": "M8.2.VK003.2", "deviceid": plate, "timestamp": dt_string,  "events": events}
     return json.dumps(json_obj)
 
 
 def callback(data):
+    print(data.data)
     fail_safe_json_obj = json.loads(data.data)
     mqtt_publish(fail_safe_json_obj)
 
