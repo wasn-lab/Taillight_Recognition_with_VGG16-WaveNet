@@ -197,6 +197,7 @@
 /gnss_utm_data
 /map/vector_map_marker
 /objects
+/objects/filtered
 /planning/mission_planning/route_marker
 /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/blind_spot
 /planning/scenario_planning/lane_driving/behavior_planning/behavior_velocity_planner/debug/crosswalk
@@ -242,3 +243,6 @@
 /vehicle/report/camera/load
 /vehicle/report/localization/load
 /vehicle/report/xavier/load
+
+# streamed rviz
+/xwin_grabber/rviz/jpg

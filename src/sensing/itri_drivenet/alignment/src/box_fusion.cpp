@@ -85,6 +85,7 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
   {
     for (uint j = 0; j < input_copy1.size(); j++)
     {
+      bool remove_new_obj = false;
       if (input_copy1[j].classId == overlapped::OverLapped || input_copy1[i].classId == overlapped::OverLapped ||
           i == j)
       {
@@ -98,6 +99,24 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
 
       if (overlap == 1)
       {
+        if (input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::person) && input_copy1[j].classId == static_cast<int>(DriveNet::common_type_id::motorbike))
+        {
+          input_copy1[i].classId = static_cast<int>(DriveNet::common_type_id::motorbike);
+        }
+        else if (input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::person) && input_copy1[j].classId == static_cast<int>(DriveNet::common_type_id::bicycle))
+        {
+          input_copy1[i].classId = static_cast<int>(DriveNet::common_type_id::bicycle);
+        }
+
+        if (input_copy1[i].camInfo[0].id == input_copy1[j].camInfo[0].id)
+        {
+          if ((input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::motorbike) || input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::bicycle))
+          && input_copy1[j].classId == static_cast<int>(DriveNet::common_type_id::person))
+          {
+            remove_new_obj = true;
+          }
+        }
+
         cam_info_vector_tmp = cam_info_vector;
         if (input_copy1[i].camInfo.size() == camera::id::num_ids)
         {
@@ -107,16 +126,19 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
         {
           cam_info_vector_tmp[input_copy1[i].camInfo[0].id] = input_copy1[i].camInfo[0];
         }
-        if (input_copy1[j].camInfo.size() == camera::id::num_ids)
+        if (!remove_new_obj)
         {
-          for (size_t id = 0; id < camera::id::num_ids; id++)
+          if (input_copy1[j].camInfo.size() == camera::id::num_ids)
           {
-            cam_info_vector_tmp[id] = input_copy1[j].camInfo[id];
+            for (size_t id = 0; id < camera::id::num_ids; id++)
+            {
+              cam_info_vector_tmp[id] = input_copy1[j].camInfo[id];
+            }
           }
-        }
-        else
-        {
-          cam_info_vector_tmp[input_copy1[j].camInfo[0].id] = input_copy1[j].camInfo[0];
+          else
+          {
+            cam_info_vector_tmp[input_copy1[j].camInfo[0].id] = input_copy1[j].camInfo[0];
+          }
         }
         
         input_copy1[i].camInfo = cam_info_vector_tmp;
