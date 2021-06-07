@@ -1,6 +1,3 @@
 <launch>
-    <node name="events" pkg="adv_to_server" type="events.py" output="screen" launch-prefix="gnome-terminal -e" />
-    <!--<node name="mileage" pkg="adv_to_server" type="mileage.py" output="screen" launch-prefix="gnome-terminal -e" />-->
-    <!--<node name="adv_to_server" pkg="adv_to_server" type="adv_to_server" output="screen" launch-prefix="gnome-terminal -x" />-->
-   
+    <node name="events" pkg="adv_to_server" type="events.py" output="screen"/>
 </launch>
