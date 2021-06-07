@@ -25,7 +25,7 @@
 
 namespace xwin_grabber
 {
-std::vector<int> JPG_PARAMS{
+const std::vector<int> JPG_PARAMS{
   cv::IMWRITE_JPEG_QUALITY,
   80,
   cv::IMWRITE_JPEG_OPTIMIZE,
