@@ -18,6 +18,22 @@ Boxfusion::Boxfusion()
   left_back.LeftLinePoint2 = cv::Point(LB_left_top_x, LB_right_bottom_y);
   left_back.RightLinePoint1 = cv::Point(LB_right_bottom_x, LB_left_top_y);
   left_back.RightLinePoint2 = cv::Point(LB_right_bottom_x, LB_right_bottom_y);
+
+  cam_info_vector = std::vector<msgs::CamInfo>(camera::id::num_ids);
+  cam_info_vector_tmp = std::vector<msgs::CamInfo>(camera::id::num_ids);
+  
+  for (size_t id = 0; id < camera::id::num_ids; id++)
+  {
+    msgs::CamInfo cam_info;
+    cam_info.u = 0;
+    cam_info.v = 0;
+    cam_info.width = 0;
+    cam_info.height = 0;
+    cam_info.prob = -1;
+    cam_info.id = id;
+    cam_info_vector[id] = cam_info;
+    cam_info_vector_tmp[id] = cam_info;
+  }
 }
 
 enum checkBoxStatus
@@ -65,11 +81,12 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
   }
 
   // Compare 3D bounding boxes
-  for (uint i = 0; i < no_oriented.size(); i++)
+  for (uint i = 0; i < input_copy1.size(); i++)
   {
-    for (uint j = 0; j < no_oriented.size(); j++)
+    for (uint j = 0; j < input_copy1.size(); j++)
     {
-      if (no_oriented[j].classId == overlapped::OverLapped || no_oriented[i].classId == overlapped::OverLapped ||
+      bool remove_new_obj = false;
+      if (input_copy1[j].classId == overlapped::OverLapped || input_copy1[i].classId == overlapped::OverLapped ||
           i == j)
       {
         continue;
@@ -82,36 +99,73 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
 
       if (overlap == 1)
       {
-        int first_id = no_oriented[i].camInfo[0].id;
-        int second_id = no_oriented[j].camInfo[0].id;
-        if (first_id == camera::id::front_bottom_60 && second_id == camera::id::front_top_far_30)
+        if (input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::person) && input_copy1[j].classId == static_cast<int>(DriveNet::common_type_id::motorbike))
         {
-          float min_point = min(no_oriented[i].bPoint.p0.x, no_oriented[i].bPoint.p6.x);
-          if (min_point > 15) // if distance > 15, choose front_top_far_30 for PedCross
+          input_copy1[i].classId = static_cast<int>(DriveNet::common_type_id::motorbike);
+        }
+        else if (input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::person) && input_copy1[j].classId == static_cast<int>(DriveNet::common_type_id::bicycle))
+        {
+          input_copy1[i].classId = static_cast<int>(DriveNet::common_type_id::bicycle);
+        }
+
+        if (input_copy1[i].camInfo[0].id == input_copy1[j].camInfo[0].id)
+        {
+          if ((input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::motorbike) || input_copy1[i].classId == static_cast<int>(DriveNet::common_type_id::bicycle))
+          && input_copy1[j].classId == static_cast<int>(DriveNet::common_type_id::person))
           {
-            no_oriented[i].classId = overlapped::OverLapped;
-          }
-          else //choose front_bottom_60
-          {
-            no_oriented[j].classId = overlapped::OverLapped;
+            remove_new_obj = true;
           }
         }
-        else if (first_id == camera::id::front_top_far_30 && second_id == camera::id::front_bottom_60)
+
+        cam_info_vector_tmp = cam_info_vector;
+        if (input_copy1[i].camInfo.size() == camera::id::num_ids)
         {
-          float min_point = min(no_oriented[i].bPoint.p0.x, no_oriented[i].bPoint.p6.x);
-          if (min_point > 15) // if distance > 15, choose front_top_far_30 for PedCross
-          {
-            no_oriented[j].classId = overlapped::OverLapped;
-          }
-          else //choose front_bottom_60
-          {
-            no_oriented[i].classId = overlapped::OverLapped;
-          }
+          cam_info_vector_tmp = input_copy1[i].camInfo;
         }
         else
         {
-          no_oriented[j].classId = overlapped::OverLapped;
+          cam_info_vector_tmp[input_copy1[i].camInfo[0].id] = input_copy1[i].camInfo[0];
         }
+        if (!remove_new_obj)
+        {
+          if (input_copy1[j].camInfo.size() == camera::id::num_ids)
+          {
+            for (size_t id = 0; id < camera::id::num_ids; id++)
+            {
+              cam_info_vector_tmp[id] = input_copy1[j].camInfo[id];
+            }
+          }
+          else
+          {
+            cam_info_vector_tmp[input_copy1[j].camInfo[0].id] = input_copy1[j].camInfo[0];
+          }
+        }
+        
+        input_copy1[i].camInfo = cam_info_vector_tmp;
+        input_copy1[j].classId = overlapped::OverLapped; // Clear box
+      }
+      else
+      {
+        if (input_copy1[i].camInfo.size() == camera::id::num_ids)
+        {
+          cam_info_vector_tmp = input_copy1[i].camInfo;
+        }
+        else
+        {
+          cam_info_vector_tmp[input_copy1[i].camInfo[0].id] = input_copy1[i].camInfo[0];
+        }
+        input_copy1[i].camInfo = cam_info_vector_tmp;
+
+        cam_info_vector_tmp = cam_info_vector;
+        if (input_copy1[j].camInfo.size() == camera::id::num_ids)
+        {
+          cam_info_vector_tmp = input_copy1[j].camInfo;
+        }
+        else
+        {
+          cam_info_vector_tmp[input_copy1[j].camInfo[0].id] = input_copy1[j].camInfo[0];
+        }
+        input_copy1[j].camInfo = cam_info_vector_tmp;
       }
     }
   }
@@ -119,9 +173,9 @@ std::vector<msgs::DetectedObject> Boxfusion::multi_cambox_fuse(std::vector<msgs:
   std::vector<msgs::DetectedObject> output;
 
   // Delete box
-  for (uint a = 0; a < no_oriented.size(); a++)
+  for (uint a = 0; a < input_copy1.size(); a++)
   {
-    if (no_oriented[a].classId != overlapped::OverLapped)
+    if (input_copy1[a].classId != overlapped::OverLapped)
     {
       output.push_back(input_copy1[a]);
     }
