@@ -59,9 +59,15 @@ def write_to_db(json_str):
 
 def mqtt_publish(fail_safe_json_obj):
     global mqtt_client
-    event_json_str = gen_json(fail_safe_json_obj["events"])
-    write_to_db(event_json_str)
-    mqtt_client.publish(TOPIC, event_json_str)
+    if len(fail_safe_json_obj["events"]) > 0:
+        event_json_str = gen_json(fail_safe_json_obj["events"])
+        write_to_db(event_json_str)
+        result = mqtt_client.publish(TOPIC, event_json_str)
+        print("publish result: ",  "success" if result[0] == 0 else "fail")
+    else:
+        print("No events.")
+
+    
 
 
 def gen_json(events):
@@ -72,7 +78,7 @@ def gen_json(events):
 
 
 def callback(data):
-    print(data.data)
+    # print(data.data)
     fail_safe_json_obj = json.loads(data.data)
     mqtt_publish(fail_safe_json_obj)
 
