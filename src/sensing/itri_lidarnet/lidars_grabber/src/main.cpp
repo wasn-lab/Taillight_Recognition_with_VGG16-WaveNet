@@ -31,9 +31,6 @@ static ros::Publisher g_pub_LidarFrontRight;
 static ros::Publisher g_pub_LidarFrontTop;
 static ros::Publisher g_pub_LidarAll;
 
-static ros::Publisher g_pub_LidarFrontLeft_Raw_HeartBeat;
-static ros::Publisher g_pub_LidarFrontRight_Raw_HeartBeat;
-static ros::Publisher g_pub_LidarFrontTop_Raw_HeartBeat;
 static ros::Publisher g_pub_LidarAll_HeartBeat;
 
 static ros::Publisher g_pub_LidarFrontTop_Localization;
@@ -68,11 +65,6 @@ void Compressor(pcl::PointCloud<pcl::PointXYZIR>::Ptr input_cloud_tmp_ring, ros:
 void cloud_cb_LidarFrontLeft(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_L_Lock.lock();
-
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  std_msgs::Empty empty_msg;
-  g_pub_LidarFrontLeft_Raw_HeartBeat.publish(empty_msg);
 
   if (input_cloud->width * input_cloud->height > 100)
   {
@@ -169,11 +161,6 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 {
   g_R_Lock.lock();
 
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  std_msgs::Empty empty_msg;
-  g_pub_LidarFrontRight_Raw_HeartBeat.publish(empty_msg);
-
   if (input_cloud->width * input_cloud->height > 100)
   {
     g_stopWatch_R.reset();
@@ -264,11 +251,6 @@ void cloud_cb_LidarFrontRight(const boost::shared_ptr<const sensor_msgs::PointCl
 void cloud_cb_LidarFrontTop(const boost::shared_ptr<const sensor_msgs::PointCloud2>& input_cloud)
 {
   g_T_Lock.lock();
-
-  // -------------------Raw/heartbeat publisher
-  // check heartbeat by subcriber data receiver
-  std_msgs::Empty empty_msg;
-  g_pub_LidarFrontTop_Raw_HeartBeat.publish(empty_msg);
 
   if (input_cloud->width * input_cloud->height > 100)
   {
@@ -567,18 +549,10 @@ int main(int argc, char** argv)
   g_pub_LidarAll = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarAll", 1);
 
   // publisher - heartbeat
-  g_pub_LidarFrontLeft_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontLeft/Raw/heartbeat", 1);
-  g_pub_LidarFrontRight_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontRight/Raw/heartbeat", 1);
-  g_pub_LidarFrontTop_Raw_HeartBeat = n.advertise<std_msgs::Empty>("/LidarFrontTop/Raw/heartbeat", 1);
   g_pub_LidarAll_HeartBeat = n.advertise<std_msgs::Empty>("/LidarAll/heartbeat", 1);
 
   // publisher - localization
   g_pub_LidarFrontTop_Localization = n.advertise<pcl::PointCloud<pcl::PointXYZI> >("/LidarFrontTop/Localization", 1);
-
-  // publisher - compressed
-  g_pub_LidarFrontLeft_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontLeft/Oct_Compressed", 1);
-  g_pub_LidarFrontRight_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontRight/Oct_Compressed", 1);
-  g_pub_LidarFrontTop_Compress = n.advertise<msgs::CompressedPointCloud>("/LidarFrontTop/Oct_Compressed", 1);
 
   thread ThreadDetection_UI(UI, argc, argv);
   thread ThreadDetection_Pub(LidarAll_Publisher, argc, argv);

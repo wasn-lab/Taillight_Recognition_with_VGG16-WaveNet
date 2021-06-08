@@ -8,22 +8,34 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <opencv2/core/mat.hpp>          // for Mat
-#include <opencv2/core/mat.inl.hpp>      // for Mat::Mat, Mat::~Mat, Mat::at
-#include <opencv2/core/matx.hpp>         // for Vec, Vec3b
-#include <ostream>                       // for operator<<, basic_ostream
-#include <string>                        // for string, operator<<, char_traits
+#include <opencv2/core/mat.hpp>      // for Mat
+#include <opencv2/core/mat.inl.hpp>  // for Mat::Mat, Mat::~Mat, Mat::at
+#include <opencv2/core/matx.hpp>     // for Vec, Vec3b
+#include <opencv2/imgproc.hpp>
+#include <ostream>                   // for operator<<, basic_ostream
+#include <string>                    // for string, operator<<, char_traits
 
 namespace xwin_grabber
 {
 constexpr int MAX_PROPERTY_VALUE_LEN = 4096;
+
+static cv::Mat slow_ximage_to_cvmat(XImage* image);
+static cv::Mat fast_ximage_to_cvmat(XImage* image);
 
 static Window* get_client_list(Display* disp, unsigned long* size);
 static char* get_window_title(Display* disp, Window win);
 static char* get_property(Display* disp, Window win, Atom xa_prop_type, const std::string& prop_name,
                           unsigned long* size);
 
-cv::Mat ximage_to_cvmat(XImage* image)
+static cv::Mat fast_ximage_to_cvmat(XImage* image)
+{
+  // Ximage depth = 24
+  cv::Mat res(image->height, image->width, CV_8UC4);
+  memcpy(res.data, image->data, image->height * image->width * 4);
+  return res;
+}
+
+cv::Mat slow_ximage_to_cvmat(XImage* image)
 {
   cv::Mat res(image->height, image->width, CV_8UC3);
   unsigned long red_mask = image->red_mask;
@@ -43,11 +55,24 @@ cv::Mat ximage_to_cvmat(XImage* image)
   return res;
 }
 
+cv::Mat ximage_to_cvmat(XImage* image)
+{
+  if (image->depth == 24 && image->bitmap_unit == 32)
+  {
+    return fast_ximage_to_cvmat(image);
+  }
+  else
+  {
+    return slow_ximage_to_cvmat(image);
+  }
+}
+
 static Window* get_client_list(Display* disp, unsigned long* size)
 {
   Window* client_list;
 
-  if ((client_list = (Window*)get_property(disp, DefaultRootWindow(disp), XA_WINDOW, "_NET_CLIENT_LIST", size)) == nullptr)
+  if ((client_list = (Window*)get_property(disp, DefaultRootWindow(disp), XA_WINDOW, "_NET_CLIENT_LIST", size)) ==
+      nullptr)
   {
     if ((client_list = (Window*)get_property(disp, DefaultRootWindow(disp), XA_CARDINAL, "_WIN_CLIENT_LIST", size)) ==
         nullptr)

@@ -6,6 +6,7 @@ include_directories(
 
 add_executable(xwin_grabber_node
   xwin_grabber_main.cpp
+  xwin_grabber_node.cpp
   xwin_grabber_utils.cpp
   xwin_grabber.cpp
   xwin_grabber_args_parser.cpp)
@@ -15,5 +16,6 @@ target_link_libraries(xwin_grabber_node
   ${GLOG_LIBRARIES}
   ${X11_X11_LIB}
   ${X11_Xcomposite_LIB}
+  ${X11_Xext_LIB}
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES})
