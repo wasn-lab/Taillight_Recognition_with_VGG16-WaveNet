@@ -26,8 +26,7 @@ class ItriMqttClient():
         print("Connect to mqtt broker {}".format(self.fqdn))
 
     def publish(self, topic, payload):
-        self.client.publish(topic, payload=payload, qos=2, retain=False)
-        return 0
+        return self.client.publish(topic, payload=payload, qos=2, retain=False)
 
     def subscribe(self, topic, callback, qos=2):
         """

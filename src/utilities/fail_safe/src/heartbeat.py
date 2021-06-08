@@ -213,11 +213,13 @@ class Heartbeat(object):
         self.alive = False
         self.status = UNKNOWN
         self.status_str = ""
+        self.subscriber = None
 
         if not self.latch:
             rospy.logwarn("%s: subscribe %s with type %s",
                           self.module_name, self.topic, message_type)
-            rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
+            self.subscriber = rospy.Subscriber(self.topic,
+                get_message_type_by_str(self.message_type), self.heartbeat_cb)
         else:
             rospy.logwarn("%s: subscribe latched %s with type %s",
                           self.module_name, self.topic, message_type)
@@ -233,7 +235,13 @@ class Heartbeat(object):
         return ret
 
     def get_fps(self):
-        return len(self.heap) / self.sampling_period_in_seconds
+        fps = len(self.heap) / self.sampling_period_in_seconds
+        if fps == 0 and self.subscriber is not None:
+            rospy.logwarn("Publisher might be down. Reconnect to get topic %s", self.topic)
+            self.subscriber.unregister()
+            self.subscriber = rospy.Subscriber(self.topic,
+                get_message_type_by_str(self.message_type), self.heartbeat_cb)
+        return fps
 
     def _update_status(self):
         self._update_heap()  # Clear out-of-date timestamps

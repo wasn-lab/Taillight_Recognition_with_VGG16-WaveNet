@@ -205,7 +205,7 @@ bool TrafficLightModule::modifyPathVelocity(
         if (
           (calcSignedArcLength(input_path, self_pose.pose, stop_line_point) <
            pass_judge_line_distance + planner_data_->base_link2front) &&
-          (3.0 /* =10.8km/h */ < self_twist_ptr->twist.linear.x)) 
+          (10.0 /* =10.8km/h */ < self_twist_ptr->twist.linear.x)) ////////////////////////////////////////////////////// 3.0
         {
           ROS_WARN_THROTTLE(
             1.0, "[traffic_light] vehicle is over stop border (%f m)",
@@ -298,19 +298,21 @@ bool TrafficLightModule::isStopRequired(
   // const std::string turn_direction = lane_.attributeOr("turn_direction", "else");
   std::string turn_direction = planner_data_->LRturn;
   std::cout << "turn_direction : " << turn_direction << std::endl;
+  std::cout << "tl_state.spat_sec : " << tl_state.spat_sec << std::endl;
+  std::cout << "planner_param_.tl_countdown_set : " << planner_param_.tl_countdown_set << std::endl;
   if (turn_direction == "else") {
     return true;
   }
 
-  if (turn_direction == "right" && hasLamp(tl_state, autoware_perception_msgs::LampState::RIGHT)) {
+  if (turn_direction == "right" && hasLamp(tl_state, autoware_perception_msgs::LampState::RIGHT) && tl_state.spat_sec >= planner_param_.tl_countdown_set) {
     return false;
   }
 
-  if (turn_direction == "left" && hasLamp(tl_state, autoware_perception_msgs::LampState::LEFT)) {
+  if (turn_direction == "left" && hasLamp(tl_state, autoware_perception_msgs::LampState::LEFT) && tl_state.spat_sec >= planner_param_.tl_countdown_set) {
     return false;
   }
 
-  if (turn_direction == "straight" && hasLamp(tl_state, autoware_perception_msgs::LampState::UP)) {
+  if (turn_direction == "straight" && hasLamp(tl_state, autoware_perception_msgs::LampState::UP) && tl_state.spat_sec >= planner_param_.tl_countdown_set) {
     return false;
   }
 
