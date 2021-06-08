@@ -90,7 +90,7 @@ screen -t pad_issue_reporter
 stuff "bash /home/lidar/itriadv/src/scripts/bus_env/lidar/run_pad_issue_reporter.sh^M"
 
 screen -t init_adv_to_server_lanelet2
-stuff "/home/itri-amr-sim/itriadv/src/scripts/bus_env/lidar/init_adv_to_server_lanelet2.sh^M"
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_adv_to_server_lanelet2.sh^M"
 
 screen -t init_adv_to_server_events
-stuff "/home/itri-amr-sim/itriadv/src/scripts/bus_env/lidar/init_adv_to_server_lanelet2_events.sh^M"
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_adv_to_server_lanelet2_events.sh^M"
