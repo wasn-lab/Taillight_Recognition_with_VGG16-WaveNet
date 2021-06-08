@@ -39,7 +39,7 @@ def get_path():
        rospack = rospkg.RosPack()
        rospack.list()
        pk_path = rospack.get_path('events_to_server')
-       print pk_path
+       # print pk_path
        return pk_path
 
 
