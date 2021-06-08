@@ -70,6 +70,15 @@ void XWinGrabberNode::publish_lidar_zone_img(const cv::Mat& img)
   cv::Rect rect(x1, y1, x2 - x1, y2 - y1);
   cv::Mat lidar_zone_img = img(rect);
 
+  if (lidar_zone_img.cols > 640)
+  {
+    // resize image
+    const double scale = 640.0 / lidar_zone_img.cols;
+    cv::Mat temp;
+    cv::resize(lidar_zone_img, temp, cv::Size(), /*width*/scale, /*height*/ scale);
+    lidar_zone_img = temp;
+  }
+
   sensor_msgs::CompressedImagePtr msg{ new sensor_msgs::CompressedImage };
   msg->data.reserve(lidar_zone_img.total());
   msg->format = "jpeg";
