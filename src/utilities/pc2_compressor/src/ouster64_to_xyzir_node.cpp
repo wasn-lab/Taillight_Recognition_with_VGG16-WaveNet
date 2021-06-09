@@ -16,7 +16,6 @@
 
 namespace pc2_compressor
 {
-
 void Ouster64ToXYZIRNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   msgs_per_second_++;
@@ -54,7 +53,8 @@ int Ouster64ToXYZIRNode::set_publisher()
   xyzir_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(xyzir_topic, /*queue size=*/2);
   xyzir_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(xyzir_topic + "/heartbeat", /*queue size=*/2);
 
-  raw_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(pc2_compressor::get_input_topic()+ "/heartbeat", /*queue size=*/2);
+  raw_heartbeat_publisher_ =
+      node_handle_.advertise<std_msgs::Empty>(pc2_compressor::get_input_topic() + "/heartbeat", /*queue size=*/2);
   return EXIT_SUCCESS;
 }
 
@@ -71,7 +71,8 @@ void Ouster64ToXYZIRNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << xyzir_publisher_.getTopic() << " fps: " << msgs_per_second_ << ", latency: " << latency_wrt_raw_in_ms_ << " ms";
+    LOG(INFO) << xyzir_publisher_.getTopic() << " fps: " << msgs_per_second_ << ", latency: " << latency_wrt_raw_in_ms_
+              << " ms";
     msgs_per_second_ = 0;
 
     r.sleep();

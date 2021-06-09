@@ -196,7 +196,7 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
       }
     }
   }
-#endif  
+#endif
   return true;
 }
 
@@ -237,8 +237,8 @@ std::string describe(const sensor_msgs::PointCloud2ConstPtr& in_msg)
     field_names.pop_back();
   }
   auto num_points = in_msg->height * in_msg->width;
-  auto is_bigendian = in_msg->is_bigendian ? "true" : "false";
-  auto is_dense = in_msg->is_dense ? "true" : "false";
+  auto is_bigendian = in_msg->is_bigendian != 0u ? "true" : "false";
+  auto is_dense = in_msg->is_dense != 0u ? "true" : "false";
   return "#points: " + std::to_string(num_points) + ", is_bigendian: " + is_bigendian +
          ", point_step: " + std::to_string(in_msg->point_step) + ", row_step: " + std::to_string(in_msg->row_step) +
          ", is_dense: " + is_dense + ", point cloud fields: " + field_names;

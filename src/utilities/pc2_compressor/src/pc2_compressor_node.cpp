@@ -104,7 +104,7 @@ int PC2CompressorNode::set_publisher()
   LOG(INFO) << ros::this_node::getName() << ":"
             << " publish compressed pointcloud at topic " << topic;
   publisher_ = node_handle_.advertise<msgs::CompressedPointCloud2>(topic, /*queue size=*/2);
-  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic+"/heartbeat", /*queue size=*/2);
+  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/2);
 
   return EXIT_SUCCESS;
 }

@@ -8,7 +8,6 @@
 
 namespace pc2_compressor
 {
-
 class Ouster64ToXYZIRNode
 {
 private:
@@ -32,4 +31,3 @@ public:
   void run();
 };
 };  // namespace pc2_compressor
-
