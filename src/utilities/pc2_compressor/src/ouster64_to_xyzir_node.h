@@ -17,6 +17,7 @@ private:
   ros::Publisher xyzir_publisher_, xyzir_heartbeat_publisher_;
   ros::NodeHandle node_handle_;
   int32_t msgs_per_second_;
+  int32_t latency_wrt_raw_in_ms_;
 
   // functions
   void callback(const sensor_msgs::PointCloud2ConstPtr& msg);

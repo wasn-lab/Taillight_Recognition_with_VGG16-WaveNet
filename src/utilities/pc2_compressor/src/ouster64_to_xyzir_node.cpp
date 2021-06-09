@@ -16,11 +16,15 @@
 
 namespace pc2_compressor
 {
+
 void Ouster64ToXYZIRNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   msgs_per_second_++;
   auto filtered_msg = ouster64_to_xyzir(msg);
   xyzir_publisher_.publish(filtered_msg);
+
+  ros::Time now = ros::Time::now();
+  latency_wrt_raw_in_ms_ = (now.sec - msg->header.stamp.sec) * 1000 + (now.nsec - msg->header.stamp.nsec) / 1000000;
 
   std_msgs::Empty empty_msg;
   xyzir_heartbeat_publisher_.publish(empty_msg);
@@ -58,12 +62,13 @@ void Ouster64ToXYZIRNode::run()
     return;
   }
   msgs_per_second_ = 0;
+  latency_wrt_raw_in_ms_ = 0;
   ros::AsyncSpinner spinner(/*thread_count*/ 1);
   spinner.start();
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << xyzir_publisher_.getTopic() << " fps: " << msgs_per_second_;
+    LOG(INFO) << xyzir_publisher_.getTopic() << " fps: " << msgs_per_second_ << ", latency: " << latency_wrt_raw_in_ms_ << " ms";
     msgs_per_second_ = 0;
 
     r.sleep();
