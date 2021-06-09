@@ -6,14 +6,14 @@
 #include <gflags/gflags_gflags.h>
 #include <ros/ros.h>
 #include <glog/logging.h>
-#include "pc2_filter_node.h"
+#include "ouster64_to_xyzir_node.h"
 
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "pc2_filter_node", ros::init_options::AnonymousName);
+  ros::init(argc, argv, "ouster64_to_xyzir_node", ros::init_options::AnonymousName);
   gflags::ParseCommandLineFlags(&argc, &argv, false);
   google::InstallFailureSignalHandler();
-  pc2_compressor::PC2FilterNode node;
+  pc2_compressor::Ouster64ToXYZIRNode node;
   node.run();
 
   return 0;

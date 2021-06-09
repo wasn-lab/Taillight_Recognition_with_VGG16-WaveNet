@@ -12,27 +12,21 @@
 #include <pcl/io/pcd_io.h>
 #include "pc2_args_parser.h"
 #include "pc2_compressor.h"
-#include "pc2_filter_node.h"
+#include "ouster64_to_xyzir_node.h"
 
 namespace pc2_compressor
 {
 
-PC2FilterNode::PC2FilterNode()
-{
-}
-
-PC2FilterNode::~PC2FilterNode() = default;
-
-void PC2FilterNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
+void Ouster64ToXYZIRNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   auto filtered_msg = filter_ouster64_pc2(msg);
-  publisher_.publish(filtered_msg);
+  xyzir_publisher_.publish(filtered_msg);
 
   std_msgs::Empty empty_msg;
-  heartbeat_publisher_.publish(empty_msg);
+  xyzir_heartbeat_publisher_.publish(empty_msg);
 }
 
-int PC2FilterNode::set_subscriber()
+int Ouster64ToXYZIRNode::set_subscriber()
 {
   std::string topic = pc2_compressor::get_input_topic();
   if (topic.empty())
@@ -42,11 +36,11 @@ int PC2FilterNode::set_subscriber()
   }
   LOG(INFO) << ros::this_node::getName() << ":"
             << " subscribe " << topic;
-  subscriber_ = node_handle_.subscribe(topic, /*queue size*/ 2, &PC2FilterNode::callback, this);
+  subscriber_ = node_handle_.subscribe(topic, /*queue size*/ 2, &Ouster64ToXYZIRNode::callback, this);
   return EXIT_SUCCESS;
 }
 
-int PC2FilterNode::set_publisher()
+int Ouster64ToXYZIRNode::set_publisher()
 {
   std::string topic = pc2_compressor::get_output_topic();
   if (topic.empty())
@@ -56,12 +50,12 @@ int PC2FilterNode::set_publisher()
   }
   LOG(INFO) << ros::this_node::getName() << ":"
             << " publish compressed pointcloud at topic " << topic;
-  publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(topic, /*queue size=*/2);
-  heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/2);
+  xyzir_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(topic, /*queue size=*/2);
+  xyzir_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/2);
   return EXIT_SUCCESS;
 }
 
-void PC2FilterNode::run()
+void Ouster64ToXYZIRNode::run()
 {
   if ((set_subscriber() != EXIT_SUCCESS) || (set_publisher() != EXIT_SUCCESS))
   {

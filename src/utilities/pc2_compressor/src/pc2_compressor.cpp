@@ -79,7 +79,8 @@ static sensor_msgs::PointCloud2ConstPtr __decompress(const msgs::CompressedPoint
 msgs::CompressedPointCloud2ConstPtr compress_msg(const sensor_msgs::PointCloud2ConstPtr& in_msg, const int32_t fmt)
 {
   CHECK(fmt >= 0 && fmt < compression_format::nums) << "unsupported format " << fmt;
-  return __compress(in_msg, fmt);
+  auto filtered_msg = filter_ouster64_pc2(in_msg);
+  return __compress(filtered_msg, fmt);
 }
 
 sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud2ConstPtr& cmpr_msg)
@@ -159,6 +160,7 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
     }
   }
 
+#if 0
   if (pc_a.channels.size() != pc_b.channels.size())
   {
     LOG(INFO) << "Inconsitent channels size: pc_a channel=" << pc_a.channels.size()
@@ -196,6 +198,7 @@ bool is_equal_pc2(const sensor_msgs::PointCloud2ConstPtr& a, const sensor_msgs::
       }
     }
   }
+#endif  
   return true;
 }
 

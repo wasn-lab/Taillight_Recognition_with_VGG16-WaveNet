@@ -9,12 +9,12 @@
 namespace pc2_compressor
 {
 
-class PC2FilterNode
+class Ouster64ToXYZIRNode
 {
 private:
   // member variables
   ros::Subscriber subscriber_;
-  ros::Publisher publisher_, heartbeat_publisher_;
+  ros::Publisher xyzir_publisher_, xyzir_heartbeat_publisher_;
   ros::NodeHandle node_handle_;
 
   // functions
@@ -24,8 +24,8 @@ private:
   int set_publisher();
 
 public:
-  PC2FilterNode();
-  ~PC2FilterNode();
+  Ouster64ToXYZIRNode() = default;
+  ~Ouster64ToXYZIRNode() = default;
   void run();
 };
 };  // namespace pc2_compressor
