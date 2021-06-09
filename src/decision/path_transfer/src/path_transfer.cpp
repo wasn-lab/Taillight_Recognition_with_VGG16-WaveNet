@@ -353,13 +353,27 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
 
   std::cout << "traj_size : " << traj_size << std::endl;
   std_msgs::Bool end_path_flag;
-  if (traj_size < end_path_size_set)
+  // if (traj_size < end_path_size_set)
+  // {
+  //   end_path_flag.data = true;
+  // }
+  // else
+  // {
+  //   end_path_flag.data = false;
+  // }
+  end_path_flag.data = true;
+  double total_distance = 0;
+  for (int i=1; i<traj_size; i++)
   {
-    end_path_flag.data = true;
-  }
-  else
-  {
-    end_path_flag.data = false;
+    double diff_x = traj.points[i].pose.position.x - traj.points[i-1].pose.position.x;
+    double diff_y = traj.points[i].pose.position.y - traj.points[i-1].pose.position.y;
+    double distance = std::sqrt(diff_x*diff_x + diff_y*diff_y);
+    total_distance += distance;
+    if (total_distance >= 20)
+    {
+      end_path_flag.data = false;
+      break;
+    }
   }
 
   end_path_flag_pub.publish(end_path_flag);
