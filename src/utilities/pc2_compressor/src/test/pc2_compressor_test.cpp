@@ -133,6 +133,7 @@ TEST(PC2CompressorTest, test_ouster64_to_xyzir)
   EXPECT_EQ(msg->height, 64U);
   EXPECT_EQ(msg->is_bigendian, g_org_ros_pc2_ptr->is_bigendian);
   EXPECT_EQ(msg->is_dense, g_org_ros_pc2_ptr->is_dense);
+  EXPECT_EQ(msg->header, g_org_ros_pc2_ptr->header);
 
   int32_t org_size = pc2_compressor::size_of_msg(g_org_ros_pc2_ptr);
   int32_t result_size = pc2_compressor::size_of_msg(msg);
