@@ -63,7 +63,7 @@ void Ouster64ToXYZIRNode::run()
   ros::Rate r(1);
   while (ros::ok())
   {
-    LOG(INFO) << "#msgs per second: " << msgs_per_second_;
+    LOG(INFO) << xyzir_publisher_.getTopic() << " fps: " << msgs_per_second_;
     msgs_per_second_ = 0;
 
     r.sleep();
