@@ -15,6 +15,7 @@ private:
   // member variables
   ros::Subscriber subscriber_;
   ros::Publisher xyzir_publisher_, xyzir_heartbeat_publisher_;
+  ros::Publisher raw_heartbeat_publisher_;
   ros::NodeHandle node_handle_;
   int32_t msgs_per_second_;
   int32_t latency_wrt_raw_in_ms_;

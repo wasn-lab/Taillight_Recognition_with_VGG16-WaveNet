@@ -28,6 +28,7 @@ void Ouster64ToXYZIRNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 
   std_msgs::Empty empty_msg;
   xyzir_heartbeat_publisher_.publish(empty_msg);
+  raw_heartbeat_publisher_.publish(empty_msg);
 }
 
 int Ouster64ToXYZIRNode::set_subscriber()
@@ -52,6 +53,8 @@ int Ouster64ToXYZIRNode::set_publisher()
             << " publish compressed pointcloud at topic " << xyzir_topic;
   xyzir_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(xyzir_topic, /*queue size=*/2);
   xyzir_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(xyzir_topic + "/heartbeat", /*queue size=*/2);
+
+  raw_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(pc2_compressor::get_input_topic()+ "/heartbeat", /*queue size=*/2);
   return EXIT_SUCCESS;
 }
 
