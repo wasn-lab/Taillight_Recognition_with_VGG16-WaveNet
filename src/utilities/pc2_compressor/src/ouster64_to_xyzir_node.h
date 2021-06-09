@@ -16,6 +16,7 @@ private:
   ros::Subscriber subscriber_;
   ros::Publisher xyzir_publisher_, xyzir_heartbeat_publisher_;
   ros::NodeHandle node_handle_;
+  int32_t msgs_per_second_;
 
   // functions
   void callback(const sensor_msgs::PointCloud2ConstPtr& msg);

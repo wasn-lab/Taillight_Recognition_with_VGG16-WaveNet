@@ -78,9 +78,7 @@ static sensor_msgs::PointCloud2ConstPtr __decompress(const msgs::CompressedPoint
 
 msgs::CompressedPointCloud2ConstPtr compress_msg(const sensor_msgs::PointCloud2ConstPtr& in_msg, const int32_t fmt)
 {
-  CHECK(fmt >= 0 && fmt < compression_format::nums) << "unsupported format " << fmt;
-  auto filtered_msg = filter_ouster64_pc2(in_msg);
-  return __compress(filtered_msg, fmt);
+  return __compress(in_msg, fmt);
 }
 
 sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud2ConstPtr& cmpr_msg)
@@ -88,7 +86,7 @@ sensor_msgs::PointCloud2ConstPtr decompress_msg(const msgs::CompressedPointCloud
   return __decompress(cmpr_msg);
 }
 
-sensor_msgs::PointCloud2Ptr filter_ouster64_pc2(const sensor_msgs::PointCloud2ConstPtr& msg)
+sensor_msgs::PointCloud2Ptr ouster64_to_xyzir(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   // Ouster has 9 fields: x y z intensity t reflectivity ring noise range
   // We only needs 5 fields: x, y, z, intensity and ring.

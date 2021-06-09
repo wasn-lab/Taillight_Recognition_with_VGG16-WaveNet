@@ -16,10 +16,10 @@
 
 namespace pc2_compressor
 {
-
 void Ouster64ToXYZIRNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
-  auto filtered_msg = filter_ouster64_pc2(msg);
+  msgs_per_second_++;
+  auto filtered_msg = ouster64_to_xyzir(msg);
   xyzir_publisher_.publish(filtered_msg);
 
   std_msgs::Empty empty_msg;
@@ -42,16 +42,12 @@ int Ouster64ToXYZIRNode::set_subscriber()
 
 int Ouster64ToXYZIRNode::set_publisher()
 {
-  std::string topic = pc2_compressor::get_output_topic();
-  if (topic.empty())
-  {
-    LOG(ERROR) << "Empty output topic name is not allow. Please pass it with -output_topic in the command line";
-    return EXIT_FAILURE;
-  }
+  std::string xyzir_topic = pc2_compressor::get_input_topic() + "/xyzir";
+
   LOG(INFO) << ros::this_node::getName() << ":"
-            << " publish compressed pointcloud at topic " << topic;
-  xyzir_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(topic, /*queue size=*/2);
-  xyzir_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(topic + "/heartbeat", /*queue size=*/2);
+            << " publish compressed pointcloud at topic " << xyzir_topic;
+  xyzir_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(xyzir_topic, /*queue size=*/2);
+  xyzir_heartbeat_publisher_ = node_handle_.advertise<std_msgs::Empty>(xyzir_topic + "/heartbeat", /*queue size=*/2);
   return EXIT_SUCCESS;
 }
 
@@ -61,11 +57,15 @@ void Ouster64ToXYZIRNode::run()
   {
     return;
   }
+  msgs_per_second_ = 0;
   ros::AsyncSpinner spinner(/*thread_count*/ 1);
   spinner.start();
   ros::Rate r(1);
   while (ros::ok())
   {
+    LOG(INFO) << "#msgs per second: " << msgs_per_second_;
+    msgs_per_second_ = 0;
+
     r.sleep();
   }
   spinner.stop();
