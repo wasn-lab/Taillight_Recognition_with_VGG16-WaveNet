@@ -31,6 +31,12 @@ stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_load_monitor.sh^M"
 screen -t init_lidar
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_lidar_lab.sh^M"
 
+screen -t init_ouster64_to_xyzir.sh
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_ouster64_to_xyzir.sh^M"
+
+screen -t init_pc2_compressor
+stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/init_pc2_compressor.sh^M"
+
 screen -t run_xwin_grabber_rviz
 stuff "/home/lidar/itriadv/src/scripts/bus_env/lidar/run_xwin_grabber_rviz.sh^M"
 
