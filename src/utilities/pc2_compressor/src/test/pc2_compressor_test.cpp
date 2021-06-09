@@ -118,10 +118,10 @@ TEST(PC2CompressorTest, test_zlib_cmpr_decmpr)
   EXPECT_TRUE(pc2_compressor::is_equal_pc2(decmpr_msg_ptr, g_org_ros_pc2_ptr));
 }
 
-TEST(PC2CompressorTest, test_filter_ouster64_pc2)
+TEST(PC2CompressorTest, test_ouster64_to_xyzir)
 {
   gen_rand_cloud();
-  auto msg = pc2_compressor::filter_ouster64_pc2(g_org_ros_pc2_ptr);
+  auto msg = pc2_compressor::ouster64_to_xyzir(g_org_ros_pc2_ptr);
   EXPECT_EQ(msg->fields.size(), 5U);
   EXPECT_EQ(msg->fields[0].name, "x");
   EXPECT_EQ(msg->fields[1].name, "y");
@@ -226,11 +226,11 @@ TEST(PC2CompressorTest, test_zlib_decmpr_perf)
   }
 }
 
-TEST(PC2CompressorTest, test_filter_ouster64_pc2_perf)
+TEST(PC2CompressorTest, test_ouster64_to_xyzir_perf)
 {
   gen_rand_cloud();
   for (int i = 0; i < num_perf_loops; i++)
   {
-    auto msg = pc2_compressor::filter_ouster64_pc2(g_org_ros_pc2_ptr);
+    auto msg = pc2_compressor::ouster64_to_xyzir(g_org_ros_pc2_ptr);
   }
 }
