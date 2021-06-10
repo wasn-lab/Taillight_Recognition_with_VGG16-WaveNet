@@ -455,7 +455,7 @@ int main(int argc, char **argv)
         for (int i =0; i <NumOfReceiveID; i++)
         {
             nbytes = read(s, &frame, sizeof(struct can_frame));
-            printf("Read %d bytes\n", nbytes);
+            printf("from_dspace : Read %d bytes\n", nbytes);
             ProcessFrame(frame, Publisher);
         }
         Publisher_Backend.publish(msg_Backend);
