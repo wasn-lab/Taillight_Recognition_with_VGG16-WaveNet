@@ -472,7 +472,8 @@ class Node:
             text,
             point=Point(),
             ns="T",
-            scale=2.0):
+            scale=2.0,
+            lifetime=1.0):
         """
         Generate the prototype of text
         """
@@ -486,7 +487,7 @@ class Node:
         # marker.scale.x = 10.0
         # marker.scale.y = 1.0
         marker.scale.z = scale
-        marker.lifetime = rospy.Duration(1.0)
+        marker.lifetime = rospy.Duration(lifetime)
         marker.color.r = self.c_red
         marker.color.g = self.c_green
         marker.color.b = self.c_blue
