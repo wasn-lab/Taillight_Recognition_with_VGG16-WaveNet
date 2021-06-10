@@ -51,6 +51,7 @@ class Node:
         self.delay_pos_y = rospy.get_param("~delay_pos_y", 30.0)
         self.is_ignoring_empty_obj = rospy.get_param("~is_ignoring_empty_obj", True)
         self.is_tracking_mode = rospy.get_param("~is_tracking_mode", False)
+        self.is_output_class_name = rospy.get_param("~is_output_class_name", False)
         self.txt_frame_id = rospy.get_param("~txt_frame_id", "txt_frame")
         self.is_using_costmap_listener = rospy.get_param("~is_using_costmap_listener", False)
         self.t_clock = rospy.Time()
@@ -77,6 +78,7 @@ class Node:
         # Publishers
         self.box_mark_pub = rospy.Publisher(self.inputTopic + "/bbox", MarkerArray, queue_size=1)
         self.delay_txt_mark_pub = rospy.Publisher(self.inputTopic + "/delayTxt", MarkerArray, queue_size=1)
+        # Subscribers
         # self.clock_sub = rospy.Subscriber("/clock", Clock, self.clock_CB)
         self.detection_sub = rospy.Subscriber(self.inputTopic, DetectedObjectArray, self.detection_callback)
         self.is_showing_depth_sub = rospy.Subscriber("/d_viz/req_show_depth", Bool, self.req_show_depth_CB)
@@ -225,6 +227,19 @@ class Node:
         point_2 = np.array( (bbox.p4.x, bbox.p4.y) )
         return (0.5 * np.linalg.norm( (point_1 + point_2) ) )
 
+    def class_id_to_class_name(self, class_id):
+        return {
+        0: 'Unknown',    
+        1: 'Person',
+        2: 'Bicycle',
+        3: 'Motorbike',
+        4: 'Car',
+        5: 'Bus',
+        6: 'Truck',
+        7: 'Sign',
+        8: 'Light',
+        }.get(class_id,'Undefined')
+
     def detection_callback(self, message):
         current_stamp = rospy.get_rostime()
         current_latency = (current_stamp - message.header.stamp).to_sec() # sec.
@@ -260,7 +275,7 @@ class Node:
         box_list = MarkerArray()
         delay_list = MarkerArray()
         box_list.markers.append(self.create_bounding_box_list_marker(1, message.header, _objects ) )
-        delay_list.markers.append( self.create_delay_text_marker( 1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps, _num_removed_obj ) )
+        delay_list.markers.append(self.create_delay_text_marker(1, message.header, current_stamp, self.text_marker_position_origin(), self.fps_cal.fps, _num_removed_obj ) )
         # idx = 1
         # for i in range(len(_objects)):
         #     # point = self.text_marker_position(_objects[i].bPoint)
@@ -272,7 +287,7 @@ class Node:
             if self.is_showing_track_id:
                 for i in range(len(_objects)):
                     obj_id = _objects[i].track.id
-                    box_list.markers.append( self.create_tracking_text_marker( idx, message.header, _objects[i].bPoint, obj_id) )
+                    box_list.markers.append(self.create_tracking_text_marker(idx, message.header, _objects[i].bPoint, obj_id))
                     idx += 1
         else:
             if self.is_showing_depth:
@@ -280,8 +295,15 @@ class Node:
                     # Decide the source of id
                     obj_id = _objects[i].track.id if self.is_showing_track_id else i
                     #prob_ = _objects[i].camInfo.prob if _objects[i].camInfo.prob > 0.0 else None
-                    #box_list.markers.append( self.create_depth_text_marker( idx, message.header, _objects[i].bPoint, obj_id, prob=prob_ ) )
+                    #box_list.markers.append( self.create_depth_text_marker(idx, message.header, _objects[i].bPoint, obj_id, prob=prob_ ) )
                     idx += 1
+
+        if self.is_output_class_name:
+            for i in range(len(_objects)):
+                class_name = self.class_id_to_class_name(_objects[i].classId)
+                box_list.markers.append(self.create_class_name_text_marker(idx, message.header, _objects[i].bPoint, class_name))
+                idx += 1
+
         #
         self.box_mark_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
@@ -412,6 +434,16 @@ class Node:
         text = "<%s>" % str(bbox_id )
         scale = 1.0
         return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_tracking"), scale=scale )
+
+    def create_class_name_text_marker(self, idx, header, bbox, class_name=None):
+        """
+        Generate a text marker for showing class name info.
+        """
+        point = self.text_marker_position( bbox )
+        # Generate text
+        text = "%s" % str(class_name)
+        scale = 2.0
+        return self.text_marker_prototype(idx, header, text, point=point, ns=(self.inputTopic + "_class"), scale=scale )
 
     def text_marker_prototype(self, idx, header, text, point=Point(), ns="T", scale=2.0):
         """
