@@ -346,43 +346,6 @@ class Node:
         self.box_mark_pub.publish(box_list)
         self.delay_txt_mark_pub.publish(delay_list)
 
-    # def create_bounding_box_marker(self, idx, header, bbox):
-    #     marker = Marker()
-    #     marker.header.frame_id = header.frame_id
-    #     marker.header.stamp = header.stamp
-    #     marker.ns = self.inputTopic
-    #     marker.action = Marker.ADD
-    #     marker.pose.orientation.w = 1.0
-    #     marker.id = idx
-    #     marker.type = Marker.LINE_LIST
-    #     marker.scale.x = 0.2
-    #     marker.lifetime = rospy.Duration(1.0)
-    #     marker.color.r = self.c_red
-    #     marker.color.g = self.c_green
-    #     marker.color.b = self.c_blue
-    #     marker.color.a = 1.0
-    #
-    #     point_list = [
-    #         bbox.p0,
-    #         bbox.p1,
-    #         bbox.p2,
-    #         bbox.p3,
-    #         bbox.p4,
-    #         bbox.p5,
-    #         bbox.p6,
-    #         bbox.p7
-    #     ]
-    #
-    #     for index in BOX_ORDER:
-    #         point = point_list[index]
-    #         point_msg = Point()
-    #         point_msg.x = point.x
-    #         point_msg.y = point.y
-    #         point_msg.z = point.z
-    #         marker.points.append(point_msg)
-    #
-    #     return marker
-
     def create_bounding_box_list_marker(self, idx, header, objects):
         marker = Marker()
         marker.header.frame_id = 'base_link'
