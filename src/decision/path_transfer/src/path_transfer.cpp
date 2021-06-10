@@ -369,7 +369,7 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
     double diff_y = traj.points[i].pose.position.y - traj.points[i-1].pose.position.y;
     double distance = std::sqrt(diff_x*diff_x + diff_y*diff_y);
     total_distance += distance;
-    if (total_distance >= 20)
+    if (total_distance >= 35)
     {
       end_path_flag.data = false;
       break;
@@ -450,7 +450,7 @@ int main(int argc, char** argv)
   currenttrajinfo_pub = node.advertise<msgs::CurrentTrajInfo>("current_trajectory_info",1);
   nav_path_heartbeat_pub = node.advertise<std_msgs::Empty>("nav_path_astar_final/heartbeat",1);
   veh_overshoot_pub = node.advertise<std_msgs::Float64>("veh_overshoot_orig_dis",1);
-  end_path_flag_pub = node.advertise<std_msgs::Bool>("end_path_flag",1);
+  end_path_flag_pub = node.advertise<std_msgs::Bool>("/control/end_path_flag",1);
 
   ros::spin();
   return 0;
