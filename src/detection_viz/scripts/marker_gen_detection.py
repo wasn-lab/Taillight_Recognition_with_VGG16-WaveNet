@@ -473,7 +473,7 @@ class Node:
             point=Point(),
             ns="T",
             scale=2.0,
-            lifetime=1.0):
+            lifetime=0.15):
         """
         Generate the prototype of text
         """
