@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="pc2_compressor" type="ouster64_to_xyzir_node" name="ouster64_to_xyzir_node_front_top" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontTop/Raw" />
+  <node pkg="pc2_compressor" type="ouster64_to_xyzir_node" name="ouster64_to_xyzir_node_front_left" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontLeft/Raw" />
+  <node pkg="pc2_compressor" type="ouster64_to_xyzir_node" name="ouster64_to_xyzir_node_front_right" output="screen" cwd="node" respawn="true" args="-input_topic /LidarFrontRight/Raw" />
+</launch>

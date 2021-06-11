@@ -9,19 +9,10 @@
                 - name: /LidarFrontTop/Compressed
                   timeout: 10
                   negative: False
-                - name: /LidarFrontTop/Raw/heartbeat
-                  timeout: 10
-                  negative: False
                 - name: /LidarFrontLeft/Compressed
                   timeout: 10
                   negative: False
-                - name: /LidarFrontLeft/Raw/heartbeat
-                  timeout: 10
-                  negative: False
                 - name: /LidarFrontRight/Compressed
-                  timeout: 10
-                  negative: False
-                - name: /LidarFrontRight/Raw/heartbeat
                   timeout: 10
                   negative: False
         </rosparam>
