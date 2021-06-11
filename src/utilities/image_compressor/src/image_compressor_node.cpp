@@ -92,6 +92,11 @@ void ImageCompressorNode::run()
   while (ros::ok())
   {
     LOG(INFO) << "compress " << image_compressor::get_input_topic() << " in 1s: " << num_compression_;
+    if (num_compression_ == 0)
+    {
+      subscriber_.shutdown();
+      set_subscriber();
+    }
     num_compression_ = 0;
     r.sleep();
   }

@@ -45,7 +45,9 @@ void PedestrianEvent::display_on_terminal()
    */
   while (ros::ok() && !PRINT_MESSAGE)
   {
-    struct winsize terminal_size{};
+    struct winsize terminal_size
+    {
+    };
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &terminal_size);
     std::stringstream ss;
     for (int i = 0; i < terminal_size.ws_row; i++)
@@ -476,21 +478,32 @@ void PedestrianEvent::tracking3d_callback(const msgs::DetectedObjectArray::Const
 
   for (const auto& obj : in->objects)
   {
-    if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
+    if (obj.camInfo.empty())
     {
-      in_F60.objects.push_back(obj);
+      std::cout << "ERROR: obj.camInfo is empty." << std::endl;
     }
-    else if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
+    else if (obj.camInfo.size() != 8)
     {
-      in_F30.objects.push_back(obj);
+      std::cout << "ERROR: obj.camInfo.size() is " << obj.camInfo.size() << ", not 8." << std::endl;
     }
-    else if (obj.camInfo[camera::id::right_back_60].prob != -1)
+    else
     {
-      in_RB60.objects.push_back(obj);
-    }
-    else if (obj.camInfo[camera::id::left_back_60].prob != -1)
-    {
-      in_LB60.objects.push_back(obj);
+      if (obj.camInfo[camera::id::front_bottom_60].prob != -1)
+      {
+        in_F60.objects.push_back(obj);
+      }
+      if (obj.camInfo[camera::id::front_top_far_30].prob != -1)
+      {
+        in_F30.objects.push_back(obj);
+      }
+      if (obj.camInfo[camera::id::right_back_60].prob != -1)
+      {
+        in_RB60.objects.push_back(obj);
+      }
+      if (obj.camInfo[camera::id::left_back_60].prob != -1)
+      {
+        in_LB60.objects.push_back(obj);
+      }
     }
   }
 
@@ -808,7 +821,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
               }
               double max_w = max_x - min_x;
               double max_h = max_y - min_y;
-              for (auto & keypoint : keypoints)
+              for (auto& keypoint : keypoints)
               {
                 if (keypoint.x != 0 && keypoint.y != 0)
                 {
@@ -1004,7 +1017,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
             srv_pedcorss_tf.request.cam_index = cam_id;
             srv_pedcorss_tf.request.bboxes.reserve(skeleton_buffer.at(skeleton_index).data_bbox_.size());
             // prepare bboxes for ros service
-            for (auto & data_bbox : skeleton_buffer.at(skeleton_index).data_bbox_)
+            for (auto& data_bbox : skeleton_buffer.at(skeleton_index).data_bbox_)
             {
               msgs::CamInfo msgs_bbox;
               msgs_bbox.u = data_bbox.at(0);
@@ -1014,7 +1027,7 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
               srv_pedcorss_tf.request.bboxes.emplace_back(msgs_bbox);
             }
             // prepare keypoints for ros service
-            for (auto & stored_skeleton : skeleton_buffer.at(skeleton_index).stored_skeleton_)
+            for (auto& stored_skeleton : skeleton_buffer.at(skeleton_index).stored_skeleton_)
             {
               msgs::Keypoints msgs_keypoints;
               msgs_keypoints.keypoint.reserve(stored_skeleton.size());
@@ -1257,15 +1270,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
     {
       alert_pub_front_.publish(alert_obj_array);
     }
-    else if (cam_id == camera::id::front_top_far_30)
+    if (cam_id == camera::id::front_top_far_30)
     {
       alert_pub_fov30_.publish(alert_obj_array);
     }
-    else if (cam_id == camera::id::right_back_60)
+    if (cam_id == camera::id::right_back_60)
     {
       alert_pub_right_.publish(alert_obj_array);
     }
-    else if (cam_id == camera::id::left_back_60)
+    if (cam_id == camera::id::left_back_60)
     {
       alert_pub_left_.publish(alert_obj_array);
     }
@@ -1289,15 +1302,15 @@ void PedestrianEvent::main_callback(const msgs::DetectedObjectArray& msg,
     {
       chatter_pub_front_.publish(ped_obj_array);
     }
-    else if (cam_id == camera::id::front_top_far_30)
+    if (cam_id == camera::id::front_top_far_30)
     {
       chatter_pub_fov30_.publish(ped_obj_array);
     }
-    else if (cam_id == camera::id::right_back_60)
+    if (cam_id == camera::id::right_back_60)
     {
       chatter_pub_right_.publish(ped_obj_array);
     }
-    else if (cam_id == camera::id::left_back_60)
+    if (cam_id == camera::id::left_back_60)
     {
       chatter_pub_left_.publish(ped_obj_array);
     }
@@ -1530,6 +1543,7 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
     box.height = obj.camInfo.height;
     if (obj.crossProbability >= 0)
     {
+#if DEBUG_SKIP_FRAME == 1
       if (obj.using_skip_frame == 1)
       {
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 0, 255), 2);
@@ -1538,6 +1552,9 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
       {
         cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
       }
+#else
+      cv::rectangle(matrix, box.tl(), box.br(), CV_RGB(0, 255, 0), 2);
+#endif
     }
     else
     {
@@ -1711,15 +1728,15 @@ void PedestrianEvent::draw_pedestrians_callback(const msgs::PedObjectArray::Cons
   {
     box_pub_front_.publish(viz_pub);
   }
-  else if (cam_id == camera::id::front_top_far_30)
+  if (cam_id == camera::id::front_top_far_30)
   {
     box_pub_fov30_.publish(viz_pub);
   }
-  else if (cam_id == camera::id::right_back_60)
+  if (cam_id == camera::id::right_back_60)
   {
     box_pub_right_.publish(viz_pub);
   }
-  else if (cam_id == camera::id::left_back_60)
+  if (cam_id == camera::id::left_back_60)
   {
     box_pub_left_.publish(viz_pub);
   }
@@ -1744,10 +1761,10 @@ int PedestrianEvent::get_facing_direction(const std::vector<cv::Point2f>& keypoi
   bool face_detection[4] = { right_ear, right_eye, left_eye, left_ear };
   for (int i = 0; i < 16; i++)
   {
-    if (static_cast<int>(face_detection[0]) == direction_table_[i][0]
-       && static_cast<int>(face_detection[1]) == direction_table_[i][1] 
-       && static_cast<int>(face_detection[2]) == direction_table_[i][2]
-       && static_cast<int>(face_detection[3]) == direction_table_[i][3])
+    if (static_cast<int>(face_detection[0]) == direction_table_[i][0] &&
+        static_cast<int>(face_detection[1]) == direction_table_[i][1] &&
+        static_cast<int>(face_detection[2]) == direction_table_[i][2] &&
+        static_cast<int>(face_detection[3]) == direction_table_[i][3])
     {
       return direction_table_[i][4];
     }
@@ -2337,6 +2354,27 @@ void PedestrianEvent::pedestrian_event()
     std::cout << in_topic1 << " is ready" << std::endl;
 
     // input topics from raw images
+#if INPUT_IMAGE_RAW == 1
+    std::string in_topic5 = "cam/front_bottom_60/raw";
+    // std::cout << "Wait for input topic " << in_topic5 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
+    // std::cout << in_topic5 << " is ready" << std::endl;
+
+    std::string in_topic6 = "cam/left_back_60/raw";
+    // std::cout << "Wait for input topic " << in_topic6 << std::endl;
+    // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic6);
+    // std::cout << in_topic6 << " is ready" << std::endl;
+
+    std::string in_topic7 = "cam/right_back_60/raw";
+    // std::cout << "Wait for input topic " << in_topic7 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic7);
+    // std::cout << in_topic7 << " is ready" << std::endl;
+
+    std::string in_topic8 = "cam/front_top_far_30/raw";
+    // std::cout << "Wait for input topic " << in_topic8 << std::endl;
+    // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
+    // std::cout << in_topic8 << " is ready" << std::endl;
+#else
     std::string in_topic5 = "cam/front_bottom_60";
     // std::cout << "Wait for input topic " << in_topic5 << std::endl;
     // ros::topic::waitForMessage<sensor_msgs::Image>(in_topic5);
@@ -2356,6 +2394,7 @@ void PedestrianEvent::pedestrian_event()
     // std::cout << "Wait for input topic " << in_topic8 << std::endl;
     // ros::topic::waitForMessage<msgs::DetectedObjectArray>(in_topic8);
     // std::cout << in_topic8 << " is ready" << std::endl;
+#endif
 
     // input topics from pedestrian_subscriber.py
     // Warning: Do NOT apply waitForMessage to topics of PedCross/Pedestrian/...

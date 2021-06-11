@@ -1,13 +1,14 @@
 <launch>
-    <arg name="car_model" default="0" />
+    <include file="$(find itri_tracking_3d)/launch/tpp.launch">
+        <arg name="input_source" value="6" />
+        <arg name="drivable_area_filter" value="False" />
+    </include>    
 
-    <include file="$(find itri_tracking_3d)/launch/tpp.launch" />
     <include file="$(find itri_pedcross)/launch/ped.launch">
-        <arg name="car_model" value="$(arg car_model)"/>
+        <arg name="car_model" value="1"/>
     </include>
 
-    <!-- bag in NAS: 10T-1/Share/ADV/Rosbag/B1/20201104_in_itri_1.3_sunny_afternoon/ped_skip9_left_10km_fail -->
-    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/auto_record_2020-11-04-15-29-32_0.bag /PedCross/3D_marker:=/PedCross/3D_marker_bak /PedCross/Alert:=/PedCross/Alert_bak /PedCross/Alert/front_bottom_60:=/PedCross/Alert/front_bottom_60_bak /PedCross/Alert/front_top_far_60:=/PedCross/Alert/front_top_far_60_bak /PedCross/Alert/left_back_60:=/PedCross/Alert/left_back_60_bak /PedCross/Alert/right_back_60:=/PedCross/Alert/right_back_60_bak /PedCross/Pedestrians/front_bottom_60:=/PedCross/Pedestrians/front_bottom_60_bak /PedCross/Pedestrians/front_top_far_30:=/PedCross/Pedestrians/front_top_far_30_bak /PedCross/Pedestrians/left_back_60:=/PedCross/Pedestrians/left_back_60_bak /PedCross/Pedestrians/right_back_60:=/PedCross/Pedestrians/right_back_60_bak /PedCross/Polygon:=/PedCross/Polygon_bak" />
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/pedcross_2021-05-06-13-36-41_0_filtered.bag /cam/front_bottom_60/raw:=/cam/front_bottom_60 /cam/front_top_far_30/raw:=/cam/front_top_far_30 /cam/right_back_60/raw:=/cam/right_back_60 /cam/left_back_60/raw:=/cam/left_back_60" />
 
     <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
         <rosparam>

@@ -44,7 +44,7 @@ def backend_info_func(msg, fps):
         gross_voltage = msg.gross_voltage
         lowest_voltage = msg.lowest_volage
         status = OK
-        status_str = ""
+        status_str = "FPS: " + str(fps)[:5]
         if gross_voltage < 350 or lowest_voltage < 3.2:
             status = ERROR
             status_str = ("Battery too low: gross voltage is {}, "
@@ -57,6 +57,34 @@ def backend_info_func(msg, fps):
                               gross_voltage, lowest_voltage)
     if status != OK:
         rospy.logwarn("BackendInfo: %s", status_str)
+    return status, status_str
+
+
+def backend_sender_func(msg, fps):
+    status = WARN
+    status_str = "No message from /backend_sender/status"
+    if msg is not None:
+        if msg.data:
+            status = OK
+            status_str = "FPS: " + str(fps)[:5]
+        else:
+            status = WARN
+            status_str = "Cannot send data to backend. FPS: " + str(fps)[:5]
+
+    return status, status_str
+
+
+def occ_sender_func(msg, fps):
+    status = WARN
+    status_str = "No message from /occ_sender/status"
+    if msg is not None:
+        if msg.data:
+            status = OK
+            status_str = "FPS: " + str(fps)[:5]
+        else:
+            status = WARN
+            status_str = "Cannot send data to OCC. FPS: " + str(fps)[:5]
+
     return status, status_str
 
 
@@ -73,7 +101,7 @@ def __calc_center_by_3d_bpoint(bpoint):
 def cam_object_detection_func(msg, fps):
     if fps <= 0:
         return ERROR, "FPS: 0"
-    if fps > 0 and fps <= 8.0:
+    if fps > 0 and fps <= 6.0:
         return WARN, "Low FPS: " + str(fps)[:5]
 
     status = OK
@@ -167,6 +195,14 @@ class Heartbeat(object):
             rospy.logwarn("%s: register inspection function for message", module_name)
             self.inspect_func = lidar_detection_func
 
+        if module_name == "backend_sender":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = backend_sender_func
+
+        if module_name == "occ_sender":
+            rospy.logwarn("%s: register inspection function for message", module_name)
+            self.inspect_func = occ_sender_func
+
         # internal variables:
         self.heap = []
         self.sampling_period_in_seconds = 30 / fps_low
@@ -177,11 +213,13 @@ class Heartbeat(object):
         self.alive = False
         self.status = UNKNOWN
         self.status_str = ""
+        self.subscriber = None
 
         if not self.latch:
             rospy.logwarn("%s: subscribe %s with type %s",
                           self.module_name, self.topic, message_type)
-            rospy.Subscriber(self.topic, get_message_type_by_str(message_type), self.heartbeat_cb)
+            self.subscriber = rospy.Subscriber(self.topic,
+                get_message_type_by_str(self.message_type), self.heartbeat_cb)
         else:
             rospy.logwarn("%s: subscribe latched %s with type %s",
                           self.module_name, self.topic, message_type)
@@ -197,7 +235,13 @@ class Heartbeat(object):
         return ret
 
     def get_fps(self):
-        return len(self.heap) / self.sampling_period_in_seconds
+        fps = len(self.heap) / self.sampling_period_in_seconds
+        if fps == 0 and self.subscriber is not None:
+            rospy.logwarn("Publisher might be down. Reconnect to get topic %s", self.topic)
+            self.subscriber.unregister()
+            self.subscriber = rospy.Subscriber(self.topic,
+                get_message_type_by_str(self.message_type), self.heartbeat_cb)
+        return fps
 
     def _update_status(self):
         self._update_heap()  # Clear out-of-date timestamps

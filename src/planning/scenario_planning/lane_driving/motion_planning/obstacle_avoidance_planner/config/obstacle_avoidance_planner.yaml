@@ -6,7 +6,7 @@ forward_fixing_distance: 5.0 # forward fixing length from base_link[m]
 backward_fixing_distance: 5.0 # backward fixing length from base_link[m]
 
 # clearance(distance) when generating trajectory
-min_clearance_from_road: 0.2 # clearance from road boundary[m]
+min_clearance_from_road: 0.5 #0.2 # clearance from road boundary[m]
 min_clearance_from_object: 1.0 #1.2 # clearance from object[m]
 # clearance for unique points
 clearance_for_straight_line_: 0.05 # minimum optimizing range around straight points

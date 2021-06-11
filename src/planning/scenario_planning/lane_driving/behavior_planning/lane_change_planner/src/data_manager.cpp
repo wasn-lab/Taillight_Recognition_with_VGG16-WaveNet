@@ -20,7 +20,7 @@
 namespace lane_change_planner
 {
 DataManager::DataManager()
-: is_parameter_set_(false), lane_change_approval_(false), force_lane_change_(false)
+: is_parameter_set_(false), lane_change_approval_(false), obstacle_lane_change_approval_(false), force_lane_change_(false)
 {
   self_pose_listener_ptr_ = std::make_shared<SelfPoseLinstener>();
 }
@@ -41,6 +41,12 @@ void DataManager::laneChangeApprovalCallback(const std_msgs::Bool & input_approv
 {
   lane_change_approval_.data = input_approval_msg.data;
   lane_change_approval_.stamp = ros::Time::now();
+}
+
+void DataManager::ObstaclelaneChangeApprovalCallback(const std_msgs::Bool & input_approval_msg)
+{
+  obstacle_lane_change_approval_.data = input_approval_msg.data;
+  obstacle_lane_change_approval_.stamp = ros::Time::now();
 }
 
 void DataManager::forceLaneChangeSignalCallback(const std_msgs::Bool & input_force_lane_change_msg)
@@ -81,6 +87,16 @@ bool DataManager::getLaneChangeApproval()
   }
 
   return lane_change_approval_.data;
+}
+
+bool DataManager::getObstacleLaneChangeApproval()
+{
+  constexpr double timeout = 0.5;
+  if (ros::Time::now() - obstacle_lane_change_approval_.stamp > ros::Duration(timeout)) {
+    return false;
+  }
+
+  return obstacle_lane_change_approval_.data;
 }
 
 bool DataManager::getForceLaneChangeSignal()

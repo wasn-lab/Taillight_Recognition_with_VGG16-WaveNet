@@ -3,6 +3,8 @@ project(opengl_test)
 set(CMAKE_MODULE_PATH ${Project_SOURCE_DIR}/cmake)
 
 set (CMAKE_CXX_STANDARD 14)
+message("We do not use this package anymore. To be removed in the future.")
+return()
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
