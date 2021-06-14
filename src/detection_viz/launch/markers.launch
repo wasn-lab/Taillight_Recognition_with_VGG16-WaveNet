@@ -199,6 +199,7 @@
       <param name="delay_prefix"  value="cam_bbox"/>
       <param name="delay_pos_x"  value="1.0"/>
       <param name="is_using_costmap_listener"  value="True"/>
+      <param name="is_output_class_name"  value="True"/>
   </node>
 
   <!-- Camera Port A ******************************************************************************** -->

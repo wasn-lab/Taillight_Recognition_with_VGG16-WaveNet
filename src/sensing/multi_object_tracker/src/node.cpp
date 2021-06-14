@@ -31,9 +31,20 @@ MultiObjectTrackerNode::MultiObjectTrackerNode() : nh_(""), pnh_("~"), tf_listen
   pub_ = pnh_.advertise<autoware_perception_msgs::DynamicObjectArray>("output", 1, true);
   double publish_rate;
   pnh_.param<double>("publish_rate", publish_rate, double(30.0));
+  pnh_.param<bool>("enable_delay_compensation", enable_delay_compensation_, false);
   publish_timer_ =
       nh_.createTimer(ros::Duration(1.0 / publish_rate), &MultiObjectTrackerNode::publishTimerCallback, this);
   pnh_.param<std::string>("world_frame_id", world_frame_id_, std::string("world"));
+  std::vector<int> can_assign_matrix;
+  pnh_.getParam("can_assign_matrix", can_assign_matrix);
+  std::vector<double> max_dist_matrix;
+  pnh_.getParam("max_dist_matrix", max_dist_matrix);
+  std::vector<double> max_area_matrix;
+  pnh_.getParam("max_area_matrix", max_area_matrix);
+  std::vector<double> min_area_matrix;
+  pnh_.getParam("min_area_matrix", min_area_matrix);
+  data_association_ =
+      std::make_unique<DataAssociation>(can_assign_matrix, max_dist_matrix, max_area_matrix, min_area_matrix);
 }
 
 void MultiObjectTrackerNode::measurementCallback(
@@ -70,21 +81,29 @@ void MultiObjectTrackerNode::measurementCallback(
   }
 
   /* tracker prediction */
-  ros::Time measuremet_time = input_objects_msg->header.stamp;
+  ros::Time measurement_time = input_objects_msg->header.stamp;
   for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
   {
-    (*itr)->predict(measuremet_time);
+    (*itr)->predict(measurement_time);
   }
 
   /* life cycle check */
-  // TODO
+  for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
+  {
+    if (1.0 < (*itr)->getElapsedTimeFromLastUpdate())
+    {
+      auto erase_itr = itr;
+      --itr;
+      list_tracker_.erase(erase_itr);
+    }
+  }
 
-  /* global nearest neighboor */
+  /* global nearest neighbor */
   std::unordered_map<int, int> direct_assignment;
   std::unordered_map<int, int> reverse_assignment;
   Eigen::MatrixXd score_matrix =
-      data_association_.calcScoreMatrix(input_transformed_objects, list_tracker_);  // row : tracker, col : measurement
-  data_association_.assign(score_matrix, direct_assignment, reverse_assignment);
+      data_association_->calcScoreMatrix(input_transformed_objects, list_tracker_);  // row : tracker, col : measurement
+  data_association_->assign(score_matrix, direct_assignment, reverse_assignment);
 
   /* tracker measurement update */
   int tracker_idx = 0;
@@ -95,7 +114,7 @@ void MultiObjectTrackerNode::measurementCallback(
       (*(tracker_itr))
           ->updateWithMeasurement(
               input_transformed_objects.feature_objects.at(direct_assignment.find(tracker_idx)->second).object,
-              measuremet_time);
+              measurement_time);
     }
     else  // not found
     {
@@ -116,13 +135,13 @@ void MultiObjectTrackerNode::measurementCallback(
         input_transformed_objects.feature_objects.at(i).object.semantic.type == autoware_perception_msgs::Semantic::BUS)
     {
       list_tracker_.push_back(
-          std::make_shared<VehicleTracker>(measuremet_time, input_transformed_objects.feature_objects.at(i).object));
+          std::make_shared<VehicleTracker>(measurement_time, input_transformed_objects.feature_objects.at(i).object));
     }
     else if (input_transformed_objects.feature_objects.at(i).object.semantic.type ==
              autoware_perception_msgs::Semantic::PEDESTRIAN)
     {
-      list_tracker_.push_back(
-          std::make_shared<PedestrianTracker>(measuremet_time, input_transformed_objects.feature_objects.at(i).object));
+      list_tracker_.push_back(std::make_shared<PedestrianTracker>(
+          measurement_time, input_transformed_objects.feature_objects.at(i).object));
     }
     else if (input_transformed_objects.feature_objects.at(i).object.semantic.type ==
                  autoware_perception_msgs::Semantic::BICYCLE ||
@@ -130,12 +149,32 @@ void MultiObjectTrackerNode::measurementCallback(
                  autoware_perception_msgs::Semantic::MOTORBIKE)
     {
       list_tracker_.push_back(
-          std::make_shared<BicycleTracker>(measuremet_time, input_transformed_objects.feature_objects.at(i).object));
+          std::make_shared<BicycleTracker>(measurement_time, input_transformed_objects.feature_objects.at(i).object));
     }
     else
     {
-      // list_tracker_.push_back(std::make_shared<PedestrianTracker>(input_transformed_objects.feature_objects.at(i).object));
+      list_tracker_.push_back(std::make_shared<PedestrianTracker>(
+          measurement_time, input_transformed_objects.feature_objects.at(i).object));
     }
+  }
+
+  if (!enable_delay_compensation_)
+  {
+    // Create output msg
+    autoware_perception_msgs::DynamicObjectArray output_msg;
+    output_msg.header.frame_id = world_frame_id_;
+    output_msg.header.stamp = measurement_time;
+    for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
+    {
+      if ((*itr)->getTotalMeasurementCount() < 3)
+        continue;
+      autoware_perception_msgs::DynamicObject object;
+      (*itr)->getEstimatedDynamicObject(measurement_time, object);
+      output_msg.objects.push_back(object);
+    }
+
+    // Publish
+    pub_.publish(output_msg);
   }
 }
 
@@ -145,32 +184,35 @@ void MultiObjectTrackerNode::publishTimerCallback(const ros::TimerEvent& e)
   if (pub_.getNumSubscribers() < 1)
     return;
 
-  /* life cycle check */
-  for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
+  if (enable_delay_compensation_)
   {
-    if (1.0 < (*itr)->getElapsedTimeFromLastUpdate())
+    /* life cycle check */
+    for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
     {
-      auto erase_itr = itr;
-      --itr;
-      list_tracker_.erase(erase_itr);
+      if (1.0 < (*itr)->getElapsedTimeFromLastUpdate())
+      {
+        auto erase_itr = itr;
+        --itr;
+        list_tracker_.erase(erase_itr);
+      }
     }
-  }
 
-  // Create output msg
-  ros::Time current_time = ros::Time::now();
-  autoware_perception_msgs::DynamicObjectArray output_msg;
-  output_msg.header.frame_id = world_frame_id_;
-  output_msg.header.stamp = current_time;
-  for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
-  {
-    if ((*itr)->getTotalMeasurementCount() < 3)
-      continue;
-    autoware_perception_msgs::DynamicObject object;
-    (*itr)->getEstimatedDynamicObject(current_time, object);
-    output_msg.objects.push_back(object);
-  }
+    // Create output msg
+    ros::Time current_time = ros::Time::now();
+    autoware_perception_msgs::DynamicObjectArray output_msg;
+    output_msg.header.frame_id = world_frame_id_;
+    output_msg.header.stamp = current_time;
+    for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
+    {
+      if ((*itr)->getTotalMeasurementCount() < 3)
+        continue;
+      autoware_perception_msgs::DynamicObject object;
+      (*itr)->getEstimatedDynamicObject(current_time, object);
+      output_msg.objects.push_back(object);
+    }
 
-  // Publish
-  pub_.publish(output_msg);
-  return;
+    // Publish
+    pub_.publish(output_msg);
+    return;
+  }
 }
