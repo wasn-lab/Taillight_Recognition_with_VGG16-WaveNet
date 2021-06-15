@@ -31,6 +31,9 @@ MultiObjectTrackerNode::MultiObjectTrackerNode() : nh_(""), pnh_("~"), tf_listen
   pub_ = pnh_.advertise<autoware_perception_msgs::DynamicObjectArray>("output", 1, true);
   double publish_rate;
   pnh_.param<double>("publish_rate", publish_rate, double(30.0));
+  pnh_.param<int>("publish_thr_four_wheeled", publish_thr_four_wheeled_, int(3));
+  pnh_.param<int>("publish_thr_two_wheeled", publish_thr_two_wheeled_, int(3));
+  pnh_.param<int>("publish_thr_ped", publish_thr_ped_, int(3));
   pnh_.param<bool>("enable_delay_compensation", enable_delay_compensation_, false);
   publish_timer_ =
       nh_.createTimer(ros::Duration(1.0 / publish_rate), &MultiObjectTrackerNode::publishTimerCallback, this);
@@ -45,6 +48,35 @@ MultiObjectTrackerNode::MultiObjectTrackerNode() : nh_(""), pnh_("~"), tf_listen
   pnh_.getParam("min_area_matrix", min_area_matrix);
   data_association_ =
       std::make_unique<DataAssociation>(can_assign_matrix, max_dist_matrix, max_area_matrix, min_area_matrix);
+}
+
+void MultiObjectTrackerNode::filterOutputObjects(autoware_perception_msgs::DynamicObjectArray& output_msg,
+                                                 const ros::Time obj_time)
+{
+  for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
+  {
+    autoware_perception_msgs::DynamicObject object;
+    (*itr)->getEstimatedDynamicObject(obj_time, object);
+    if (object.semantic.type == autoware_perception_msgs::Semantic::CAR ||
+        object.semantic.type == autoware_perception_msgs::Semantic::TRUCK ||
+        object.semantic.type == autoware_perception_msgs::Semantic::BUS)
+    {
+      if ((*itr)->getTotalMeasurementCount() < publish_thr_four_wheeled_)
+        continue;
+    }
+    else if (object.semantic.type == autoware_perception_msgs::Semantic::BICYCLE ||
+             object.semantic.type == autoware_perception_msgs::Semantic::MOTORBIKE)
+    {
+      if ((*itr)->getTotalMeasurementCount() < publish_thr_two_wheeled_)
+        continue;
+    }
+    else
+    {
+      if ((*itr)->getTotalMeasurementCount() < publish_thr_ped_)
+        continue;
+    }
+    output_msg.objects.push_back(object);
+  }
 }
 
 void MultiObjectTrackerNode::measurementCallback(
@@ -164,14 +196,7 @@ void MultiObjectTrackerNode::measurementCallback(
     autoware_perception_msgs::DynamicObjectArray output_msg;
     output_msg.header.frame_id = world_frame_id_;
     output_msg.header.stamp = measurement_time;
-    for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
-    {
-      if ((*itr)->getTotalMeasurementCount() < 3)
-        continue;
-      autoware_perception_msgs::DynamicObject object;
-      (*itr)->getEstimatedDynamicObject(measurement_time, object);
-      output_msg.objects.push_back(object);
-    }
+    filterOutputObjects(output_msg, measurement_time);
 
     // Publish
     pub_.publish(output_msg);
@@ -202,14 +227,7 @@ void MultiObjectTrackerNode::publishTimerCallback(const ros::TimerEvent& e)
     autoware_perception_msgs::DynamicObjectArray output_msg;
     output_msg.header.frame_id = world_frame_id_;
     output_msg.header.stamp = current_time;
-    for (auto itr = list_tracker_.begin(); itr != list_tracker_.end(); ++itr)
-    {
-      if ((*itr)->getTotalMeasurementCount() < 3)
-        continue;
-      autoware_perception_msgs::DynamicObject object;
-      (*itr)->getEstimatedDynamicObject(current_time, object);
-      output_msg.objects.push_back(object);
-    }
+    filterOutputObjects(output_msg, current_time);
 
     // Publish
     pub_.publish(output_msg);
