@@ -369,7 +369,7 @@ void transfer_callback(const autoware_planning_msgs::Trajectory& traj)
     double diff_y = traj.points[i].pose.position.y - traj.points[i-1].pose.position.y;
     double distance = std::sqrt(diff_x*diff_x + diff_y*diff_y);
     total_distance += distance;
-    if (total_distance >= 35)
+    if (total_distance >= 52)
     {
       end_path_flag.data = false;
       break;

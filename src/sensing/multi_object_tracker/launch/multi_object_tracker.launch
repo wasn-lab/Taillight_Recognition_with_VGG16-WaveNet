@@ -5,12 +5,18 @@
   <arg name="output" default="/tracked_objs/aw"/>
   <arg name="world_frame_id" default="map"/>
   <arg name="publish_rate" default="10"/>
+  <arg name="publish_thr_four_wheeled" default="3"/>
+  <arg name="publish_thr_two_wheeled" default="8"/>
+  <arg name="publish_thr_ped" default="3"/>
   <arg name="data_association_matrix_path" default="$(find multi_object_tracker)/config/data_assosiaction_matrix.yaml" />
   <node pkg="multi_object_tracker" type="multi_object_tracker_node" name="multi_object_tracker" output="screen">
     <remap from="~input" to="$(arg input)"/>
     <remap from="~output" to="$(arg output)"/>
     <param name="world_frame_id" value="$(arg world_frame_id)" />
     <param name="publish_rate" value="$(arg publish_rate)" />
+    <param name="publish_thr_four_wheeled" value="$(arg publish_thr_four_wheeled)" />
+    <param name="publish_thr_two_wheeled" value="$(arg publish_thr_two_wheeled)" />
+    <param name="publish_thr_ped" value="$(arg publish_thr_ped)" />
     <rosparam command="load" file="$(arg data_association_matrix_path)" />
   </node>
 

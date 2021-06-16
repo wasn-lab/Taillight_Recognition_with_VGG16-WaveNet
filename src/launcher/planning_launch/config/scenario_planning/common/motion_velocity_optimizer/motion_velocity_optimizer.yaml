@@ -20,7 +20,7 @@ extract_behind_dist: 5.0          # backward trajectory distance used for planni
 delta_yaw_threshold: 1.0472       # Allowed delta yaw between ego pose and trajecotory pose [radian]
 
 max_trajectory_length: 200.0          # max trajectory length for resampling [m]
-min_trajectory_length: 40.0           # min trajectory length for resampling [m] #30.0
+min_trajectory_length: 55.0           # min trajectory length for resampling [m] #30.0
 resample_time: 10.0                   # resample total time [s]
 resample_dt: 0.1                      # resample time interval [s]
 min_trajectory_interval_distance: 0.1 # resample points-interval length [m]
