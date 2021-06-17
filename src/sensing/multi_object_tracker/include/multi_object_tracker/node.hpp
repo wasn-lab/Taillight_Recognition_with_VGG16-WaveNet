@@ -47,11 +47,15 @@ private:  // ros
   void measurementCallback(
     const autoware_perception_msgs::DynamicObjectWithFeatureArray::ConstPtr & input_objects_msg);
   void publishTimerCallback(const ros::TimerEvent & e);
+  void filterOutputObjects(autoware_perception_msgs::DynamicObjectArray& output_msg, const ros::Time obj_time);
 
   std::string world_frame_id_;  // tracking frame
   std::list<std::shared_ptr<Tracker>> list_tracker_;
   std::unique_ptr<DataAssociation> data_association_;
   bool enable_delay_compensation_;
+  int publish_thr_four_wheeled_;
+  int publish_thr_two_wheeled_;
+  int publish_thr_ped_;
 
 public:
   MultiObjectTrackerNode();
