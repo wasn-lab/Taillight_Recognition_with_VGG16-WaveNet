@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 import rospy
+import time
 from std_msgs.msg import Bool
 
 MANUAL_DRIVING = 1
@@ -27,21 +28,26 @@ def change_led_text(mode):
     Return -- 0: success
               1: failure
     """
+    msg = ""
     if mode == AUTO_DRIVING:
-        print("Change powerled text to auto driving mode.")
+        msg = "Change powerled text to auto driving mode."
     elif mode == MANUAL_DRIVING:
-        print("Change powerled text to manual driving mode.")
+        msg = "Change powerled text to manual driving mode."
     else:
         print("Undefined mode: {}".format(mode))
         return 1
     powerled = get_powerled_exe()
     powerled_dir, _base_name = os.path.split(powerled)
     cmd = [powerled, str(mode)]
-    try:
-        subprocess.check_output(cmd, cwd=powerled_dir)
-    except subprocess.CalledProcessError:
-        print("Fail to run command: {}".format(" ".join(cmd)))
-        return 1
+    done = False
+    while not done:
+        try:
+            subprocess.check_call(cmd, cwd=powerled_dir)
+            done = True
+            print(msg)
+        except subprocess.CalledProcessError:
+            print("Fail to run command: {}".format(" ".join(cmd)))
+            time.sleep(1)
     return 0
 
 class LEDManager(object):
