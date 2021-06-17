@@ -515,6 +515,42 @@ void chatterCallback_08(const msgs::BehaviorSceneRegister::ConstPtr& msg)
 	//Close the SocketCAN
 }
 
+void chatterCallback_09(const std_msgs::Bool::ConstPtr& msg)
+{
+	int s;
+	int nbytes;
+	struct sockaddr_can addr;
+	struct can_frame frame;
+	struct ifreq ifr;
+
+	const char *ifname = CAN_INTERFACE_NAME;
+
+	if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0)
+	{
+		perror("Error while opening socket");
+	}
+
+	strcpy(ifr.ifr_name, ifname);
+	ioctl(s, SIOCGIFINDEX, &ifr);
+
+	addr.can_family  = AF_CAN;
+	addr.can_ifindex = ifr.ifr_ifindex;
+
+	printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
+
+	if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+	{
+		perror("Error in socket bind");
+	}
+	
+	frame.can_dlc = CAN_DLC;
+	frame.can_id  = 0x067;
+	frame.data[0] = (short int)(msg->data);
+	nbytes = write(s, &frame, sizeof(struct can_frame));
+	close(s);
+	printf("Wrote %d bytes\n", nbytes);
+	//Close the SocketCAN
+}
 
 int main(int argc, char **argv)
 {
@@ -531,6 +567,7 @@ int main(int argc, char **argv)
   ros::Subscriber dSPACE_subscriber_06 = n.subscribe("/current_trajectory_info", 1, chatterCallback_06);
   ros::Subscriber dSPACE_subscriber_07 = n.subscribe("/bus_stop_register_info", 1, chatterCallback_07);
   ros::Subscriber dSPACE_subscriber_08 = n.subscribe("/traffic_light_register_info", 1, chatterCallback_08);
+  ros::Subscriber dSPACE_subscriber_09 = n.subscribe("/control/end_path_flag", 1, chatterCallback_09);
   ros::spin();
   return 0;
 }

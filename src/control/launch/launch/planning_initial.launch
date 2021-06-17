@@ -14,7 +14,7 @@
   <arg name="location_name" default="ITRI"/>
 
   <!--tf rear_wheel-->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 0 0 0 0  /base_link /rear_wheel"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="rearwheel2baselink" args="-3.8 0 -4 0 0 0  /base_link /rear_wheel"/>
 
   <!-- planning initial node -->
   <node pkg="planning_initial" type="planning_initial" name="planning_initial" output="screen" cwd="node" respawn="true">

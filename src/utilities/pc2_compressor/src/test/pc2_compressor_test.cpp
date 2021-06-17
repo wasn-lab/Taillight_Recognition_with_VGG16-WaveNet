@@ -12,6 +12,7 @@
 #include "pc2_compression_format.h"
 #include "pc2_args_parser.h"
 #include "point_os1.h"
+#include "point_xyzir.h"
 
 constexpr int num_perf_loops = 100;
 
@@ -117,6 +118,52 @@ TEST(PC2CompressorTest, test_zlib_cmpr_decmpr)
   EXPECT_TRUE(pc2_compressor::is_equal_pc2(decmpr_msg_ptr, g_org_ros_pc2_ptr));
 }
 
+TEST(PC2CompressorTest, test_ouster64_to_xyzir)
+{
+  gen_rand_cloud();
+  auto msg = pc2_compressor::ouster64_to_xyzir(g_org_ros_pc2_ptr);
+  EXPECT_EQ(msg->fields.size(), 5U);
+  EXPECT_EQ(msg->fields[0].name, "x");
+  EXPECT_EQ(msg->fields[1].name, "y");
+  EXPECT_EQ(msg->fields[2].name, "z");
+  EXPECT_EQ(msg->fields[3].name, "intensity");
+  EXPECT_EQ(msg->fields[4].name, "ring");
+  EXPECT_EQ(msg->header, g_org_ros_pc2_ptr->header);
+  EXPECT_EQ(msg->width, 1024U);
+  EXPECT_EQ(msg->height, 64U);
+  EXPECT_EQ(msg->is_bigendian, g_org_ros_pc2_ptr->is_bigendian);
+  EXPECT_EQ(msg->is_dense, g_org_ros_pc2_ptr->is_dense);
+  EXPECT_EQ(msg->header, g_org_ros_pc2_ptr->header);
+
+  int32_t org_size = pc2_compressor::size_of_msg(g_org_ros_pc2_ptr);
+  int32_t result_size = pc2_compressor::size_of_msg(msg);
+  double ratio = double(result_size) / org_size;
+
+  LOG(INFO) << "Filtered size: " << result_size << ", org size: " << org_size << ", ratio: " << ratio;
+
+  // Check x, y, z, intensity
+  pcl::PCLPointCloud2 before_pc2;
+  pcl::PointCloud<ouster_ros::OS1::PointXYZIR>::Ptr before_cloud(new pcl::PointCloud<ouster_ros::OS1::PointXYZIR>);
+  pcl_conversions::toPCL(*g_org_ros_pc2_ptr, before_pc2);
+  pcl::fromPCLPointCloud2(before_pc2, *before_cloud);
+
+  pcl::PCLPointCloud2 after_pc2;
+  pcl_conversions::toPCL(*msg, after_pc2);
+  pcl::PointCloud<ouster_ros::OS1::PointXYZIR>::Ptr after_cloud(new pcl::PointCloud<ouster_ros::OS1::PointXYZIR>);
+  pcl::fromPCLPointCloud2(after_pc2, *after_cloud);
+  EXPECT_EQ(after_cloud->size(), 65536U);
+  for(int i=0; i<after_cloud->size(); i++)
+  {
+    EXPECT_EQ(before_cloud->points[i].x, after_cloud->points[i].x);
+    EXPECT_EQ(before_cloud->points[i].y, after_cloud->points[i].y);
+    EXPECT_EQ(before_cloud->points[i].z, after_cloud->points[i].z);
+    EXPECT_EQ(before_cloud->points[i].intensity, after_cloud->points[i].intensity);
+    EXPECT_EQ(before_cloud->points[i].ring, after_cloud->points[i].ring);
+    EXPECT_EQ(before_cloud->points[i].ring, i % 64);
+  }
+}
+
+
 TEST(PC2CompressorTest, test_sizeof_msg)
 {
   gen_rand_cloud();
@@ -177,5 +224,14 @@ TEST(PC2CompressorTest, test_zlib_decmpr_perf)
   for (int i = 0; i < num_perf_loops; i++)
   {
     auto decmpr_msg_ptr = pc2_compressor::decompress_msg(cmpr_msg);
+  }
+}
+
+TEST(PC2CompressorTest, test_ouster64_to_xyzir_perf)
+{
+  gen_rand_cloud();
+  for (int i = 0; i < num_perf_loops; i++)
+  {
+    auto msg = pc2_compressor::ouster64_to_xyzir(g_org_ros_pc2_ptr);
   }
 }
