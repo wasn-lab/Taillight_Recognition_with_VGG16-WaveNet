@@ -84,10 +84,14 @@ void LidarDetection_Publisher(int argc, char** argv)
     
     if(!(g_car_msg_rostime_last == g_car_msg_rostime && g_ped_cyc_msg_rostime_last == g_ped_cyc_msg_rostime))
     {
-    // if (g_msgArr.objects.empty())
-    // {
-    //   g_integrator_stopWatch.reset();
-    // }
+      if (g_car_msg_rostime_last == g_car_msg_rostime)
+      {
+        ROS_WARN_STREAM("PointPillars car model time not updated.");
+      }
+      if (g_ped_cyc_msg_rostime_last == g_ped_cyc_msg_rostime)
+      {
+        ROS_WARN_STREAM("PointPillars pedestrian/cyclist model time not updated.");
+      }
       if (g_ped_cyc_msg_rostime.isValid())
       {
         g_msgArr.header.stamp = g_ped_cyc_msg_rostime;
