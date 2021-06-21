@@ -77,7 +77,7 @@ void ImageDecompressorNode::run()
 {
   CHECK(set_subscriber() == EXIT_SUCCESS);
   CHECK(set_publisher() == EXIT_SUCCESS);
-  ros::AsyncSpinner spinner(/*thread_count*/1);
+  ros::AsyncSpinner spinner(/*thread_count*/ 1);
   spinner.start();
   ros::Rate r(1);
   while (ros::ok())
