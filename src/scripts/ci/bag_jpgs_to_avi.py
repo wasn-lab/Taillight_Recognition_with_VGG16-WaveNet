@@ -20,7 +20,8 @@ def _save_avi(bag_filename, topic, avi_filename):
             avi = cv2.VideoWriter(avi_filename, fourcc, fps, (width, height))
         avi.write(image)
     bag.close()
-    avi.release()
+    if avi:
+        avi.release()
     print("Write {}".format(avi_filename))
 
 def main():
