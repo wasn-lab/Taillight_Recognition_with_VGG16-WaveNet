@@ -1,4 +1,4 @@
-#include "pc_transformer_gpu.h"
+#include "pc_transform_gpu.h"
 #include "glog/stl_logging.h"
 #include "glog/logging.h"
 #include <cuda.h>
@@ -10,7 +10,7 @@ template <typename PointT>
 cudaError_t cudaTransformPoints(int threads, PointT* cloud_gpu_, int number_of_points, float* d_matrix);
 
 template <typename PointT>
-PCTransformerGPU<PointT>::PCTransformerGPU(): num_cuda_threads_(0)
+PCTransformGPU<PointT>::PCTransformGPU(): num_cuda_threads_(0)
 {
   cudaError_t err = ::cudaSuccess;
   err = cudaSetDevice(0);
@@ -29,7 +29,7 @@ PCTransformerGPU<PointT>::PCTransformerGPU(): num_cuda_threads_(0)
 }
 
 template <typename PointT>
-PCTransformerGPU<PointT>::~PCTransformerGPU()
+PCTransformGPU<PointT>::~PCTransformGPU()
 {
   if (tm_elements_gpu_ != nullptr)
   {
@@ -41,7 +41,7 @@ PCTransformerGPU<PointT>::~PCTransformerGPU()
 }
 
 template <typename PointT>
-void PCTransformerGPU<PointT>::free_cloud_gpu_if_necessary()
+void PCTransformGPU<PointT>::free_cloud_gpu_if_necessary()
 {
   if (cloud_gpu_ != nullptr)
   {
@@ -52,7 +52,7 @@ void PCTransformerGPU<PointT>::free_cloud_gpu_if_necessary()
 }
 
 template <typename PointT>
-int PCTransformerGPU<PointT>::set_transform_matrix(const float tx, const float ty, const float tz, const float rx,
+int PCTransformGPU<PointT>::set_transform_matrix(const float tx, const float ty, const float tz, const float rx,
                                                    const float ry, const float rz)
 {
   transform_matrix_ = Eigen::Affine3f::Identity();
@@ -89,7 +89,7 @@ int PCTransformerGPU<PointT>::set_transform_matrix(const float tx, const float t
 }
 
 template <typename PointT>
-bool PCTransformerGPU<PointT>::transform(pcl::PointCloud<PointT>& cloud)
+bool PCTransformGPU<PointT>::transform(pcl::PointCloud<PointT>& cloud)
 {
   if (cloud_gpu_ == nullptr || cloud_gpu_size_ != cloud.points.size() * sizeof(PointT))
   {
@@ -128,5 +128,5 @@ bool PCTransformerGPU<PointT>::transform(pcl::PointCloud<PointT>& cloud)
   return true;
 }
 
-template class PCTransformerGPU<pcl::PointXYZI>;
+template class PCTransformGPU<pcl::PointXYZI>;
 };  // namespace pc_transform

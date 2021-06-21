@@ -7,11 +7,11 @@
 namespace pc_transform
 {
 template <typename PointT>
-class PCTransformerGPU
+class PCTransformGPU
 {
 public:
-  PCTransformerGPU();
-  ~PCTransformerGPU();
+  PCTransformGPU();
+  ~PCTransformGPU();
   int set_transform_matrix(const float tx, const float ty, const float tz, const float rx, const float ry,
                            const float rz);
 
@@ -26,7 +26,7 @@ private:
   int num_cuda_threads_;
 
   void free_cloud_gpu_if_necessary();
-  PCTransformerGPU(PCTransformerGPU& other) = delete;
-  PCTransformerGPU operator=(const PCTransformerGPU& other) = delete;
+  PCTransformGPU(PCTransformGPU& other) = delete;
+  PCTransformGPU operator=(const PCTransformGPU& other) = delete;
 };
 };  // namespace pc_transform

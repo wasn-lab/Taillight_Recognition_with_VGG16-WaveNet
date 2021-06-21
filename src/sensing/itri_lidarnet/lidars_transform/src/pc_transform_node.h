@@ -3,14 +3,13 @@
  * All rights reserved.
  */
 #pragma once
-#include <mutex>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
-#include "pc2_compressor.h"
+#include "pc_transform_gpu.h"
 
-namespace pc2_compressor
+namespace pc_transform
 {
-class PC2CompressorNode
+class PCTransformNode
 {
 private:
   // member variables
@@ -18,18 +17,17 @@ private:
   ros::Publisher publisher_;
   ros::Publisher heartbeat_publisher_;
   ros::NodeHandle node_handle_;
-  std::mutex mu_publisher_;  // guard publisher_
-  compression_format cmpr_fmt_;
+  PCTransformGPU<pcl::PointXYZI> pc_transform_gpu_;
 
   // functions
   void callback(const sensor_msgs::PointCloud2ConstPtr& msg);
-  void publish_compressed_pc2(const sensor_msgs::PointCloud2ConstPtr& msg);
+  void publish(const sensor_msgs::PointCloud2ConstPtr& msg);
   int set_subscriber();
   int set_publisher();
 
 public:
-  PC2CompressorNode();
-  ~PC2CompressorNode();
+  PCTransformNode();
+  ~PCTransformNode() = default;
   void run();
 };
-};  // namespace pc2_compressor
+};  // namespace pc_transform

@@ -8,7 +8,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "pc_transform_cpu.h"
-#include "pc_transformer_gpu.h"
+#include "pc_transform_gpu.h"
 
 using namespace pc_transform;
 
@@ -56,7 +56,7 @@ static auto get_affine3f()
 
 TEST(kk, test_transform_gpu_eq_cpu_varing_clouds)
 {
-  PCTransformerGPU<pcl::PointXYZI> obj;
+  PCTransformGPU<pcl::PointXYZI> obj;
   obj.set_transform_matrix(tx, ty, tz, rx, ry, rz);
   for (int k = 0; k < 4; k++)
   {
@@ -98,7 +98,7 @@ TEST(kk, test_transform_cpu_perf)
 TEST(kk, test_transform_gpu_perf)
 {
   auto cloud = gen_random_cloud();
-  PCTransformerGPU<pcl::PointXYZI> obj;
+  PCTransformGPU<pcl::PointXYZI> obj;
   obj.set_transform_matrix(tx, ty, tz, rx, ry, rz);
 
   for(int i=0; i<nloop; i++)
