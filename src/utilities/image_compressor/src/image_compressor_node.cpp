@@ -16,24 +16,13 @@ ImageCompressorNode::~ImageCompressorNode() = default;
 void ImageCompressorNode::callback(const sensor_msgs::ImageConstPtr& msg)
 {
   num_compression_ += 1;
-  if (image_compressor::use_threading())
-  {
-    std::thread t(&ImageCompressorNode::publish, this, msg);
-    t.detach();
-  }
-  else
-  {
-    publish(msg);
-  }
+  publish(msg);
 }
 
 void ImageCompressorNode::publish(const sensor_msgs::ImageConstPtr& msg)
 {
   auto cmpr_msg_ptr = compress_msg(msg);
-  {
-    std::lock_guard<std::mutex> lk(mu_publisher_);
-    publisher_.publish(cmpr_msg_ptr);
-  }
+  publisher_.publish(cmpr_msg_ptr);
   heartbeat_publisher_.publish(std_msgs::Empty{});
 }
 
