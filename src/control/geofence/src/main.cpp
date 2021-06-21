@@ -44,12 +44,12 @@
 //#define VIRTUAL
 //#define TRACKINGBOX
 
-static Geofence PCloud_Geofence(1.3);
-static Geofence CPoint_Geofence(1.3);
-static Geofence BBox_Geofence(1.3);
+static Geofence PCloud_Geofence(1.5);
+static Geofence CPoint_Geofence(1.5);
+static Geofence BBox_Geofence(1.5);
 static Geofence Radar_Geofence(1.6);
-static Geofence PCloud_Geofence_original(1.3);
-static Geofence Deviate_Geofence(1.3);
+static Geofence PCloud_Geofence_original(1.5);
+static Geofence Deviate_Geofence(1.5);
 static double Heading, SLAM_x, SLAM_y, SLAM_z;
 // static uint Deadend_flag;
 static uint overtake_over_flag;
@@ -202,7 +202,10 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
     size = msg->poses.size();
   }
 
+  std::cout << "size : " << size << std::endl;
+
   double Resolution = 10;
+  int index = 0;
   for (uint i = 1; i < size; i++)
   {
     for (int j = 0; j < Resolution; j++)
@@ -212,8 +215,10 @@ void astar_callback(const nav_msgs::Path::ConstPtr& msg)
       Pos.Y = msg->poses[i - 1].pose.position.y +
               j * (1 / Resolution) * (msg->poses[i].pose.position.y - msg->poses[i - 1].pose.position.y);
       Position.push_back(Pos);
+      index ++;
     }
   }
+  std::cout << "index : " << index << std::endl;
   PCloud_Geofence.setPath(Position);
   BBox_Geofence.setPath(Position);
   Radar_Geofence.setPath(Position);
