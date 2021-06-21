@@ -100,7 +100,15 @@ void LidarDetection_Publisher(int argc, char** argv)
       {
         std::cout << "[WARNING]: NO VALID TIMESTAMP FOR LiDAR DETECTION!!" << std::endl;
       }
-      
+      if (g_ped_cyc_msg_rostime.isValid())
+      {
+        g_ped_cyc_msg_rostime_last = g_ped_cyc_msg_rostime;
+      }
+      if (g_car_msg_rostime.isValid())
+      {
+        g_car_msg_rostime_last = g_car_msg_rostime;
+      }
+
       g_msgArr.header.frame_id = "lidar";
 
       g_pub_lidar_detection.publish(g_msgArr);
