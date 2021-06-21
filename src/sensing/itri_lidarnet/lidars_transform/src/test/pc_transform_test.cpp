@@ -66,8 +66,8 @@ TEST(pc_transform, test_transform_gpu)
   pc2_msg_ptr->header.stamp.nsec = 10007;
   pc2_msg_ptr->header.frame_id = "test";
 
-  PCTransformGPU<pcl::PointXYZI> obj;
-  obj.transform(pc2_msg_ptr);
+  pc_transform::PCTransformNode node;
+  node.transform(pc2_msg_ptr);
   auto transformed_pc2_ptr = pc2_msg_ptr;
   EXPECT_EQ(transformed_pc2_ptr->header.seq, 31415);
   EXPECT_EQ(transformed_pc2_ptr->header.stamp.sec, 1608000995);

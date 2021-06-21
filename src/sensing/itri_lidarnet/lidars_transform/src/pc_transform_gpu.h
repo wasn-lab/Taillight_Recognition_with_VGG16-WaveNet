@@ -17,7 +17,6 @@ public:
                            const float rz);
 
   bool transform(pcl::PointCloud<PointT>& cloud);
-  bool transform(sensor_msgs::PointCloud2Ptr msg);
 
 private:
   Eigen::Affine3f transform_matrix_;

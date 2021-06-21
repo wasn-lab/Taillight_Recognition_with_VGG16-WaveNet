@@ -8,20 +8,21 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/PointCloud.h>
 #include <std_msgs/Empty.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include "pc_transform_args_parser.h"
 #include "pc_transform_node.h"
 
 namespace pc_transform
 {
-static int pc2_msg_to_xyzi(const sensor_msgs::PointCloud2& cloud_msg, pcl::PointCloud<pcl::PointXYZI>::Ptr target_cloud)
+static int pc2_msg_to_xyzi(const sensor_msgs::PointCloud2ConstPtr& msg_ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr target_cloud)
 {
   // Get the field structure of this point cloud
-  int point_bytes = cloud_msg.point_step;
+  int point_bytes = msg_ptr->point_step;
   int offset_x = 0;
   int offset_y = 0;
   int offset_z = 0;
   int offset_intensity = 0;
-  for (const auto& field: cloud_msg.fields)
+  for (const auto& field: msg_ptr->fields)
   {
     if (field.name == "x")
     {
@@ -42,17 +43,17 @@ static int pc2_msg_to_xyzi(const sensor_msgs::PointCloud2& cloud_msg, pcl::Point
   }
 
   // populate point cloud object
-  target_cloud->points.resize(cloud_msg.width * cloud_msg.height);
-  for (size_t p = 0, bound = cloud_msg.width * cloud_msg.height, point_offset = 0; p < bound;
+  target_cloud->points.resize(msg_ptr->width * msg_ptr->height);
+  for (size_t p = 0, bound = msg_ptr->width * msg_ptr->height, point_offset = 0; p < bound;
        ++p, point_offset += point_bytes)
   {
-    const auto base_addr = &cloud_msg.data[0] + point_offset;
+    const auto base_addr = &msg_ptr->data[0] + point_offset;
     target_cloud->points[p].x = *(float*)(base_addr + offset_x);
     target_cloud->points[p].y = *(float*)(base_addr + offset_y);
     target_cloud->points[p].z = *(float*)(base_addr + offset_z);
     target_cloud->points[p].intensity = *(float*)(base_addr + offset_intensity);
   }
-  pcl_conversions::toPCL(cloud_msg.header, target_cloud->header);
+  pcl_conversions::toPCL(msg_ptr->header, target_cloud->header);
   return 0;
 }
 
@@ -63,8 +64,19 @@ PCTransformNode::PCTransformNode() : pc_transform_gpu_()
 
 void PCTransformNode::callback(sensor_msgs::PointCloud2Ptr msg)
 {
-  pc_transform_gpu_.transform(msg);
-  publish(msg);
+  publish(transform(msg));
+}
+
+sensor_msgs::PointCloud2ConstPtr PCTransformNode::transform(const sensor_msgs::PointCloud2ConstPtr& msg)
+{
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud{new pcl::PointCloud<pcl::PointXYZI>};
+  pc2_msg_to_xyzi(msg, cloud);
+  bool ret = pc_transform_gpu_.transform(*cloud);
+  CHECK(ret == true) << "Fail to transform point cloud";
+  sensor_msgs::PointCloud2Ptr output_msg{new sensor_msgs::PointCloud2};
+  pcl::toROSMsg(*cloud, *output_msg);
+  output_msg->header = msg->header;
+  return output_msg;
 }
 
 void PCTransformNode::publish(sensor_msgs::PointCloud2ConstPtr msg)

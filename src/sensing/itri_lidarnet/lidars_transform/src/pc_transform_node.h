@@ -26,9 +26,11 @@ private:
   int set_publisher();
   int set_transform_parameters();
 
+
 public:
   PCTransformNode();
   ~PCTransformNode() = default;
+  sensor_msgs::PointCloud2ConstPtr transform(const sensor_msgs::PointCloud2ConstPtr& msg);
   void run();
 };
 };  // namespace pc_transform

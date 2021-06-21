@@ -3,6 +3,7 @@ set(PC_TRANSFORM_LIB "pc_transform")
 set(PC_TRANSFORM_LIB_SRCS
   transform_points.cu
   pc_transform_args_parser.cpp
+  pc_transform_node.cpp
   pc_transform_cpu.cpp
   pc_transform_gpu.cpp)
 
@@ -33,7 +34,6 @@ add_dependencies(${PC_TRANSFORM_LIB} ${catkin_EXPORTED_TARGETS})
 
 set(PC_TRANSFORM_NODE_EXE pc_transform_node)
 set(PC_TRANSFORM_NODE_SRCS
-  pc_transform_node.cpp
   pc_transform_main.cpp)
 add_executable(${PC_TRANSFORM_NODE_EXE} ${PC_TRANSFORM_NODE_SRCS})
 target_link_libraries(${PC_TRANSFORM_NODE_EXE} ${PC_TRANSFORM_LIB} ${catkin_LIBRARIES})

@@ -130,18 +130,5 @@ bool PCTransformGPU<PointT>::transform(pcl::PointCloud<PointT>& cloud)
   return true;
 }
 
-
-template <typename PointT>
-bool PCTransformGPU<PointT>::transform(sensor_msgs::PointCloud2Ptr msg)
-{
-  pcl::PointCloud<PointT> cloud;
-  auto header = msg->header;
-  pcl::fromROSMsg(*msg, cloud);
-  bool ret = transform(cloud);
-  pcl::toROSMsg(cloud, *msg);
-  msg->header = header;
-  return ret;
-}
-
 template class PCTransformGPU<pcl::PointXYZI>;
 };  // namespace pc_transform
