@@ -1,0 +1,20 @@
+<launch>
+    <include file="$(find pc2_compressor)/launch/cmpr_and_verify.launch">
+    </include>
+    <node pkg="rosbag" type="play" name="player" output="log" args="$(find car_model)/../bags/lidar_raw_2020-12-28-16-53-14_21.bag -l" />
+
+    <test name="publishtest" test-name="publishtest" pkg="rostest" type="publishtest">
+        <rosparam>
+            topics:
+                - name: /LidarFrontTop/Compressed
+                  timeout: 10
+                  negative: False
+                - name: /LidarFrontLeft/Compressed
+                  timeout: 10
+                  negative: False
+                - name: /LidarFrontRight/Compressed
+                  timeout: 10
+                  negative: False
+        </rosparam>
+    </test>
+</launch>
