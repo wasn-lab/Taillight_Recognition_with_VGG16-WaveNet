@@ -4,6 +4,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+namespace pc_transform
+{
 template <typename PointT>
 cudaError_t cudaTransformPoints(int threads, PointT* cloud_gpu_, int number_of_points, float* d_matrix);
 
@@ -29,7 +31,8 @@ PCTransformerGPU<PointT>::PCTransformerGPU()
   {
     num_cuda_threads_ = 0;
   }
-  LOG(INFO) << "cuda version: " << prop.major << "." << prop.minor << ", set num_cuda_threads_ to " << num_cuda_threads_;
+  LOG(INFO) << "cuda device version: " << prop.major << "." << prop.minor << ", set num_cuda_threads_ to "
+            << num_cuda_threads_;
   CHECK(num_cuda_threads_ > 0) << "Cuda threads is 0!";
 
   err = cudaMalloc((void**)&tm_elements_gpu_, 16 * sizeof(float));
@@ -61,7 +64,7 @@ void PCTransformerGPU<PointT>::free_cloud_gpu_if_necessary()
 
 template <typename PointT>
 int PCTransformerGPU<PointT>::set_transform_matrix(const float tx, const float ty, const float tz, const float rx,
-                                               const float ry, const float rz)
+                                                   const float ry, const float rz)
 {
   transform_matrix_ = Eigen::Affine3f::Identity();
   transform_matrix_.translation() << tx, ty, tz;
@@ -137,3 +140,4 @@ bool PCTransformerGPU<PointT>::transform(pcl::PointCloud<PointT>& cloud)
 }
 
 template class PCTransformerGPU<pcl::PointXYZI>;
+};  // namespace pc_transform

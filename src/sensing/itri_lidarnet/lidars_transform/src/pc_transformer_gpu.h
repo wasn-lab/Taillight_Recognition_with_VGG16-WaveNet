@@ -4,6 +4,8 @@
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
 
+namespace pc_transform
+{
 template <typename PointT>
 class PCTransformerGPU
 {
@@ -17,7 +19,7 @@ public:
 
 private:
   Eigen::Affine3f transform_matrix_;
-  float tm_elements_[16]; // 4x4 matrix, column-major
+  float tm_elements_[16];  // 4x4 matrix, column-major
   float* tm_elements_gpu_ = nullptr;
   PointT* cloud_gpu_ = nullptr;
   size_t cloud_gpu_size_ = 0;
@@ -27,3 +29,4 @@ private:
   PCTransformerGPU(PCTransformerGPU& other) = delete;
   PCTransformerGPU operator=(const PCTransformerGPU& other) = delete;
 };
+};  // namespace pc_transform

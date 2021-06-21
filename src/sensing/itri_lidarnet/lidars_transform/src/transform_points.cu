@@ -1,6 +1,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+namespace pc_transform
+{
 template <typename PointT>
 __global__ void kernel_cudaTransformPoints(PointT* d_point_cloud, const int number_of_points, float* d_matrix)
 {
@@ -70,4 +72,4 @@ cudaError_t cudaRemovePointsInsideSphere(int threads, pcl::PointXYZ* d_point_clo
   cudaDeviceSynchronize();
   return cudaGetLastError();
 }
-
+}; // namespace pc_transform

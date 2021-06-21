@@ -10,6 +10,8 @@
 #include "pc_transform_cpu.h"
 #include "pc_transformer_gpu.h"
 
+using namespace pc_transform;
+
 constexpr int cloud_width = 1024;
 constexpr int cloud_height = 64;
 constexpr int nloop = 100;
