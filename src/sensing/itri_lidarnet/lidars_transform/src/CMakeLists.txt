@@ -1,6 +1,8 @@
 set(PC_TRANSFORM_LIB "pc_transform")
 
 set(PC_TRANSFORM_LIB_SRCS
+  transform_points.cu
+  pc_transform_cpu.cpp
   pc_transformer_gpu.cpp)
 
 set(PC_TRANSFORM_INCLUDE_DIRS
@@ -24,7 +26,7 @@ set(PC_TRANSFORM_LIB_DEPS
 
 include_directories(${PC_TRANSFORM_INCLUDE_DIRS})
 
-add_library(${PC_TRANSFORM_LIB} STATIC ${PC_TRANSFORM_LIB_SRCS})
+cuda_add_library(${PC_TRANSFORM_LIB} STATIC ${PC_TRANSFORM_LIB_SRCS})
 target_link_libraries(${PC_TRANSFORM_LIB} ${PC_TRANSFORM_LIB_DEPS})
 add_dependencies(${PC_TRANSFORM_LIB} ${catkin_EXPORTED_TARGETS})
 
@@ -37,4 +39,4 @@ add_dependencies(${PC_TRANSFORM_LIB} ${catkin_EXPORTED_TARGETS})
 #add_dependencies(${PC_TRANSFORM_NODE_EXE} ${PC_TRANSFORM_LIB})
 
 
-#add_subdirectory(test)
+add_subdirectory(test)
