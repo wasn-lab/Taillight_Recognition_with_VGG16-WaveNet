@@ -24,6 +24,7 @@ private:
   void publish(const sensor_msgs::PointCloud2ConstPtr& msg);
   int set_subscriber();
   int set_publisher();
+  int set_transform_parameters();
 
 public:
   PCTransformNode();

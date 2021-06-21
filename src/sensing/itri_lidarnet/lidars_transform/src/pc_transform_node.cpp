@@ -3,6 +3,7 @@
  * All rights reserved.
  */
 #include <string>
+#include <vector>
 #include <glog/logging.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/PointCloud.h>
@@ -12,12 +13,16 @@
 
 namespace pc_transform
 {
+
 PCTransformNode::PCTransformNode() : pc_transform_gpu_()
 {
 }
 
 void PCTransformNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
+  pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>);
+
+  pcl_conversions::toPCL(msg, *cloud);
 }
 
 void PCTransformNode::publish(const sensor_msgs::PointCloud2ConstPtr& msg)
@@ -34,7 +39,7 @@ void PCTransformNode::publish(const sensor_msgs::PointCloud2ConstPtr& msg)
 
 int PCTransformNode::set_subscriber()
 {
-  std::string topic = pc_transform::get_input_topic();
+  std::string topic = get_input_topic();
   if (topic.empty())
   {
     LOG(ERROR) << "Empty input topic name is not allow. Please pass it with -input_topic in the command line";
@@ -48,7 +53,7 @@ int PCTransformNode::set_subscriber()
 
 int PCTransformNode::set_publisher()
 {
-  std::string topic = pc_transform::get_output_topic();
+  std::string topic = get_output_topic();
   if (topic.empty())
   {
     LOG(ERROR) << "Empty output topic name is not allow. Please pass it with -output_topic in the command line";
@@ -62,8 +67,34 @@ int PCTransformNode::set_publisher()
   return EXIT_SUCCESS;
 }
 
+
+int PCTransformNode::set_transform_parameters()
+{
+  std::string param_name = get_transform_param_name();
+  // params is {tx, ty, tz, rx, ry, rz}, where t* is translation and r* is rotation
+  std::vector<double> transform_params{0, 0, 0, 0, 0.2, 0};
+
+  if (ros::param::has(param_name))
+  {
+    node_handle_.getParam(param_name, transform_params);
+  }
+  else
+  {
+    LOG(INFO) << "Cannot find transform parameters from " << param_name << ". Assume this is front-top lidar and use default values.";
+  }
+
+  LOG(INFO) << "transform parameters -- tx: " << transform_params[0] << ", ty: " << transform_params[1]
+            << ", tz: " << transform_params[2] << ", rx: " << transform_params[3] << ", ry: " << transform_params[4]
+            << ", rz: " << transform_params[5];
+  pc_transform_gpu_.set_transform_matrix(transform_params[0], transform_params[1], transform_params[2],
+                                         transform_params[3], transform_params[4], transform_params[5]);
+
+  return 0;
+}
+
 void PCTransformNode::run()
 {
+  set_transform_parameters();
   if ((set_subscriber() != EXIT_SUCCESS) || (set_publisher() != EXIT_SUCCESS))
   {
     return;
